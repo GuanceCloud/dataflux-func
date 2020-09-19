@@ -1,0 +1,492 @@
+<%
+  var CONFIG_LIST = [
+    {
+      name      : '加密密钥',
+      key       : 'SECRET',
+      type      : 'string',
+      input     : 'password',
+      inputAttrs: 'minlength="8" maxlength="20"',
+      tips      : '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改',
+    },
+
+    {
+      name : '日志等级',
+      key  : 'LOG_LEVEL',
+      type : 'string',
+      input: 'select',
+      tips : '建议设置为<code>WARNING</code>级别',
+      options: [
+        { name: 'NONE（不输出）',  value: 'NONE'    },
+        { name: 'ERROR',           value: 'ERROR'   },
+        { name: 'WARNING',         value: 'WARNING' },
+        { name: 'INFO',            value: 'INFO'    },
+        { name: 'DEBUG',           value: 'DEBUG'   },
+        { name: 'ALL（全部输出）', value: 'ALL'     },
+      ],
+    },
+    {
+      name : '日志文件路径',
+      key  : 'LOG_FILE_PATH',
+      type : 'string',
+      input: 'text',
+      tips : '日志文件输出位置，如留空则日志不会输出到文件。',
+    },
+    {
+      name : '日志文件格式',
+      key  : 'LOG_FILE_FORMAT',
+      type : 'string',
+      input: 'select',
+      tips : '如有日志相关分析系统，可选择<code>JSON</code>方便处理。否则指定为<code>TEXT</code>即可',
+      options: [
+        { name: 'TEXT', value: 'text' },
+        { name: 'JSON', value: 'json' },
+      ],
+    },
+
+    {
+      name : 'WEB访问URL',
+      key  : 'WEB_BASE_URL',
+      type : 'string',
+      input: 'url',
+      tips : '实际访问DataFlux Func 的完整URL地址，如：<code>http://my-dataflux-func.com:1234<code>',
+    },
+    {
+      name : '访问方式',
+      key  : 'WEB_BIND',
+      type : 'string',
+      input: 'select',
+      tips : '如本地存在Nginx 作为反向代理，可选择<code>仅本地访问<code>',
+      options: [
+        { name: '仅本地访问（127.0.0.1）', value: '127.0.0.1' },
+        { name: '公开访问（0.0.0.0）',     value: '0.0.0.0' },
+      ],
+    },
+    {
+      name      : '绑定端口',
+      key       : 'WEB_PORT',
+      type      : 'integer',
+      input     : 'integer',
+      inputAttrs: 'min="1" max="65535"',
+      tips      : 'HTTP默认端口为<code>80</code>，HTTPS默认端口为<code>443</code>。配置时应确保端口没有被其他应用程序占用。',
+    },
+
+    {
+      name    : 'MySQL主机',
+      key     : 'MYSQL_HOST',
+      type    : 'string',
+      input   : 'text',
+      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      errorKey: 'mysql',
+    },
+    {
+      name      : 'MySQL端口',
+      key       : 'MYSQL_PORT',
+      type      : 'integer',
+      input     : 'integer',
+      inputAttrs: 'min="1" max="65535"',
+      tips      : '默认一般为<code>3306</code>',
+      errorKey  : 'mysql',
+    },
+    {
+      name    : 'MySQL用户',
+      key     : 'MYSQL_USER',
+      type    : 'string',
+      input   : 'text',
+      tips    : '建议为DataFlux Func 创建专用用户<code>dataflux_func</code>，不要直接使用root用户',
+      errorKey: 'mysql',
+    },
+    {
+      name    : 'MySQL密码',
+      key     : 'MYSQL_PASSWORD',
+      type    : 'string',
+      input   : 'password',
+      tips    : '合适的密码可以保护您的数据安全',
+      errorKey: 'mysql',
+    },
+    {
+      name    : 'MySQL数据库',
+      key     : 'MYSQL_DATABASE',
+      type    : 'string',
+      input   : 'text',
+      tips    : '建议为DataFlux Func 创建专用数据库<code>dataflux_func</code>，不要和其他系统混用数据库。此外，数据库默认编码应设置为<code>utf8mb4</code>',
+      errorKey: 'mysql',
+    },
+
+    {
+      name    : 'Redis主机',
+      key     : 'REDIS_HOST',
+      type    : 'string',
+      input   : 'text',
+      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      errorKey: 'redis',
+    },
+    {
+      name      : 'Redis端口',
+      key       : 'REDIS_PORT',
+      type      : 'integer',
+      input     : 'integer',
+      inputAttrs: 'min="1" max="65535"',
+      tips      : '默认一般为<code>6379</code>',
+      errorKey  : 'redis',
+    },
+    {
+      name    : 'Redis密码',
+      key     : 'REDIS_PASSWORD',
+      type    : 'string',
+      input   : 'password',
+      tips    : '合适的密码可以保护您的数据安全',
+      errorKey: 'redis',
+    },
+    {
+      name    : 'Redis数据库',
+      key     : 'REDIS_DATABASE',
+      type    : 'integer',
+      input   : 'text',
+      tips    : '建议为DataFlux Func 指定专用的数据库，不要和其他系统混用数据库',
+      errorKey: 'redis',
+    },
+
+    {
+      name    : '管理员用户',
+      key     : 'ADMIN_USERNAME',
+      type    : 'string',
+      input   : 'text',
+      tips    : '为系统配置一个初始管理员用户',
+      errorKey: 'adminUser',
+    },
+    {
+      name    : '管理员密码',
+      key     : 'ADMIN_PASSWORD',
+      type    : 'string',
+      input   : 'password',
+      tips    : '合适的密码可以保护您的数据安全',
+      errorKey: 'adminUser',
+    },
+    {
+      name    : '重复管理员密码',
+      key     : 'ADMIN_PASSWORD_REPEAT',
+      type    : 'string',
+      input   : 'password',
+      tips    : '请在输入一遍密码',
+      errorKey: 'adminUser',
+    },
+    // {
+    //   name : '钉钉机器人URL',
+    //   key  : 'DING_TALK_ROBOT_URL',
+    //   type : 'string',
+    //   input: 'url',
+    //   tips : '需要在钉钉机器人的「安全设置」中添加「自定义关键字」<code>DataFlux</code>',
+    // },
+  ]
+%>
+
+<div class="modal fade" id="runningModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">安装DataFlux Func</h4>
+      </div>
+      <div class="modal-body text-center">
+        <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-muted"></i>
+        <p style="padding-top: 20px">正在处理，请稍后...</p>
+        <span id="redirectTip">如长时间未跳转，可尝试立即点击前往 <a id="redirectURL" href="#"></a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">安装DataFlux Func 失败</h4>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-left text-danger">安装过程中存在以下问题：</p>
+        <p id="errorTEXT" class="text-left" style="padding-top: 20px"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Pragma" content="no-cache,no-store,must-revalidate" />
+    <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="renderer" content="webkit" />
+    <meta name="robots" content="none" />
+    <meta name="apple-mobile-web-app-title" content="DataFlux Func 初始安装" />
+
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" /> -->
+    <!-- <meta name="viewport" content="width=980" /> -->
+    <meta name="viewport" content="width=1440" />
+
+    <link rel="stylesheet" href="/statics/libs/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/statics/libs/font-awesome/css/font-awesome.min.css">
+
+    <title>DataFlux Func 初始安装</title>
+
+    <style type="text/css">
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        padding-top: 30px;
+        padding-bottom: 100px;
+      }
+      #logo {
+        width: 300px;
+        display: block;
+        margin: auto;
+        text-align: right;
+      }
+      #logo img {
+        width: 100%;
+      }
+      #logo span {
+        font-weight: bold;
+        font-style: italic;
+        font-size: 16px;
+      }
+      #installPanel {
+        width: 600px;
+        margin: auto;
+      }
+      .form-group {
+        margin-bottom: 25px;
+      }
+      #tipsPanel {
+        width: 300px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        display: none;
+      }
+      .text-important {
+        color: red;
+        font-weight: bold;
+      }
+      .bad-config {
+        color: red;
+        border: 1px solid red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="installPanel" class="panel panel-default">
+        <div class="panel-body">
+          <div id="logo">
+            <img src="/statics/img/logo-dataflux-func.png">
+            <span>初始安装</span>
+          </div>
+
+          <hr>
+
+          <p>
+            DataFlux Func 在运行之前需要一些基本的配置。
+            在配置之前，请确保您已经准备了如下运行环境：
+            <ul>
+              <li>MySQL 5.7 或以上版本</li>
+              <li>MySQL中存在编码格式为<code>utf8mb4</code>的数据库</li>
+              <li>MySQL中存在具有操作上述数据库的用户</li>
+              <li>Redis 4.0 或以上版本</li>
+            </ul>
+            此外，在配置完成前，请<span class="text-important">不要启动</span>DataFlux Func Worker 和Beat 组件。
+          </p>
+
+          <hr>
+
+          <%_ CONFIG_LIST.forEach(function(c) { _%>
+            <div class="form-group">
+              <label><%= c.name %><code><%= c.key %></code></label>
+              <%_ if (c.input === 'integer') { _%>
+                <input
+                  type="number"
+                  step="1"
+                  <%- c.inputAttrs || '' %>
+                  class="form-control"
+                  config-key="<%= c.key %>"
+                  config-type="<%= c.type %>"
+                  config-tips="<%= c.tips %>"
+                  error-key="<%= c.errorKey %>"
+                  value="<%= CONFIG[c.key] || '' %>">
+
+              <%_ } else if (c.input === 'password' || c.input === 'text' || c.input === 'url') { _%>
+                <input
+                  type="<%= c.input %>"
+                  <%- c.inputAttrs || '' %>
+                  class="form-control"
+                  config-key="<%= c.key %>"
+                  config-type="<%= c.type %>"
+                  config-tips="<%= c.tips %>"
+                  error-key="<%= c.errorKey %>"
+                  value="<%= CONFIG[c.key] || '' %>">
+
+              <%_ } else if (c.input === 'select') { _%>
+                <select
+                  class="form-control"
+                  config-key="<%= c.key %>"
+                  config-type="<%= c.type %>"
+                  config-tips="<%= c.tips %>"
+                  error-key="<%= c.errorKey %>">
+                  <%_ c.options.forEach(function(opt) { _%>
+                    <option value="<%= opt.value %>" <%= CONFIG[c.key] === opt.value ? 'selected' : '' %>><%= opt.name %></option>
+                  <%_ }) _%>
+                </select>
+              <%_ } _%>
+            </div>
+          <%_ }) _%>
+
+          <hr>
+
+          <div class="text-right">
+            <button id="installWithDBInit" class="btn btn-danger">保存配置并初始化数据库</button>
+            <button id="installWithoutDBInit" class="btn btn-default">仅保存配置</button>
+            <button id="skipInstall" class="btn btn-default pull-left">跳过</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tipsPanel" class="panel panel-default">
+      <div class="panel-body text-info">
+        <i class="fa fa-info-circle"></i>
+        <span id="tipsPanelContent">选中配置项以显示提示</span>
+      </div>
+    </div>
+  </body>
+
+  <script src="/statics/libs/jquery/jquery.min.js"></script>
+  <script src="/statics/libs/bootstrap/js/bootstrap.min.js"></script>
+  <script>
+  $(function() {
+    var $tipsPanel        = $('#tipsPanel');
+    var $tipsPanelContent = $('#tipsPanelContent');
+    var $runningModal     = $('#runningModal');
+    var $errorModal       = $('#errorModal');
+    var $errorTEXT        = $('#errorTEXT');
+
+    function install(options) {
+      options = options || {};
+
+      var reqBody = {
+        config: {},
+        initDB: !!options.initDB,
+        skip  : !!options.skip,
+      };
+
+      // Collect config
+      $('[config-key]').each(function() {
+        var $this = $(this);
+        var key   = $this.attr('config-key');
+        var type  = $this.attr('config-type');
+        var value = $this.val().trim();
+
+        if (value.length <= 0) return;
+
+        switch(type) {
+          case 'integer':
+            value = parseInt(value);
+            break;
+        }
+
+        reqBody.config[key] = value;
+      });
+
+      $runningModal.modal('show');
+
+      // Send
+      var reqOpt = {
+        method     : 'post',
+        url        : '/install',
+        data       : JSON.stringify(reqBody),
+        contentType: 'application/json',
+        dataType   : 'json',
+        success: function(data, textStatus, jqXHR) {
+          var $redirectTip = $('#redirectTip');
+          var $redirectURL = $('#redirectURL');
+          if (reqBody.config.WEB_BASE_URL) {
+            $redirectTip.show();
+            $redirectURL.attr('href', reqBody.config.WEB_BASE_URL).text(reqBody.config.WEB_BASE_URL);
+          } else {
+            $redirectTip.hide();
+          }
+
+          setTimeout(function() {
+            location.href = jqXHR.responseJSON.redirect;
+          }, 10 * 1000);
+        },
+        error: function(jqXHR, textStatus) {
+          $runningModal.modal('hide');
+
+          $('[error-key]').removeClass('bad-config');
+
+          var errorTEXT = [];
+          for (var k in jqXHR.responseJSON.configErrors) {
+            $('[error-key=' + k + ']').addClass('bad-config');
+
+            errorTEXT.push('<code>' + k + '</code>' + ': ' + jqXHR.responseJSON.configErrors[k]);
+          }
+          errorTEXT = errorTEXT.join('<hr>');
+
+          $errorTEXT.html(errorTEXT);
+          $errorModal.modal('show');
+        },
+
+      }
+      $.ajax(reqOpt);
+    }
+
+    $(document).on('click', '#installWithDBInit', function() {
+      install({ initDB: true });
+    });
+    $(document).on('click', '#installWithoutDBInit', function() {
+      install({ initDB: false });
+    });
+    $(document).on('click', '#skipInstall', function() {
+      install({ skip: true });
+    });
+    $(document).on('mouseover', '[config-key]', function() {
+      var $this = $(this);
+
+      var configTips = $this.attr('config-tips');
+      if (!configTips) {
+        $tipsPanel.hide();
+
+      } else {
+        var offset = $this.offset();
+        offset.left += $this.outerWidth(true) + 5;
+
+        $tipsPanelContent.html(configTips);
+        $tipsPanel.animate(offset, 100, function() {
+          $tipsPanel.show();
+        });
+      }
+    });
+    $errorModal.on('hidden.bs.modal', function() {
+      var $statusBad = $('[error-key].bad-config');
+
+      var $firstBadEl = $statusBad[0];
+      if ($firstBadEl) {
+        var goToTop = $firstBadEl.offsetTop - (window.innerHeight / 4);
+        if (goToTop < 0) goToTop = 0;
+
+        $(document).scrollTop(goToTop);
+      }
+    });
+
+    // 自动填充"WEB_BASE_URL"
+    $('[config-key=WEB_BASE_URL]').val(location.origin);
+  });
+  </script>
+</html>

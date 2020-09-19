@@ -1,0 +1,219 @@
+APP_NAME: DataFluxFunc
+
+# 配置文件路径
+# 必须使用绝对路径
+CONFIG_FILE_PATH: '/data/user-config.yaml'
+
+# 运行模式
+# 可选：
+#   "dev" : 开发模式
+#   "prod": 生产模式
+# 注意：除特殊需要，应当总是使用生产模式
+MODE: dev
+
+# 私钥
+# 用于登录令牌、数据源配置加密等
+# 一旦配置后请勿修改，否则会导致系统无法正常运行
+SECRET: 'your_secret'
+
+# 日志等级
+# 可选：
+#   ALL    : 全部输出
+#   DEBUG  : 调试、信息、警告和错误
+#   INFO   : 信息、警告和错误
+#   WARNING: 警告和错误
+#   ERROR  : 错误
+#   NONE   : 不输出
+LOG_LEVEL: ALL
+
+# 日志文件输出地址
+# 必须使用绝对路径
+LOG_FILE_PATH: '/data/dataflux-func.log'
+
+# 日志输出格式
+# 可选：
+#   text: 纯文本格式
+#   json: JSON格式
+LOG_FILE_FORMAT: text
+
+# 终端日志是否着色
+LOG_CONSOLE_COLOR: true
+
+# Web服务器访问URL
+# 即用户在访问时，浏览器地址栏中需要输入的地址
+# 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
+WEB_BASE_URL: http://127.0.0.1:8088
+
+# Web服务器绑定IP
+# 如：
+#   0.0.0.0  : 为公开访问
+#   127.0.0.1: 为仅本地访问
+# 注意：当系统部署在反向代理服务器后时，应配置为 127.0.0.1
+WEB_BIND: '0.0.0.0'
+
+# Web服务器绑定端口
+# 注意：当系统部署在反向代理服务器后时，绑定端口与浏览器中输入地址的端口不必相同
+WEB_PORT: 8088
+
+# CORS配置
+WEB_CORS_ORIGIN     : true
+WEB_CORS_CREDENTIALS: true
+
+# MySQL连接配置
+MYSQL_HOST    : '127.0.0.1'
+MYSQL_PORT    : 3306
+MYSQL_USER    : dataflux_func
+MYSQL_PASSWORD: dataflux_func
+MYSQL_DATABASE: dataflux_func
+
+# Redis连接配置
+# 建议：为避免与其他应用冲突，不使用默认数据库0
+REDIS_HOST    : '127.0.0.1'
+REDIS_PORT    : 6379
+REDIS_DATABASE: 5
+REDIS_PASSWORD: ''
+
+########################
+#   以下配置请勿修改   #
+########################
+
+# 钉钉机器人URL
+DING_TALK_ROBOT_URL: ''
+
+# 文件存储根目录
+FILE_STORE_ROOT_FOLDER: uploaded-files
+
+# 是否停用鉴权（DataFlux Studio集成专用）
+_IS_STREAKING: false
+
+# DataWay配置（DataFlux Studio集成专用）
+_DF_DATAWAY_URL  : ''
+_DF_DATAWAY_TOKEN: ''
+_DF_DATAWAY_DEBUG: false
+
+# 是否启用函数监控（DataFlux Studio集成专用）
+_ENABLE_FUNC_MONITOR: false
+
+# 客户端冲突过期时间
+_CLIENT_CONFLICT_EXPIRES: 5
+
+# 函数包导出文件名
+_FUNC_PKG_EXPORT_FILENAME: dataflux-fx
+# 函数包导出扩展名名
+_FUNC_PKG_EXPORT_EXT: .func-pkg
+
+# 函数包导入确认超时
+_FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
+
+# 函数包密码范围
+_FUNC_PKG_PASSWORD_RANGE_LIST: 12,20
+
+# API文档介绍文章
+_API_DOC_INTRODUCTION_LIST: ''
+
+# 示例代码
+_SAMPLE_SCRIPT: |
+  @DFF.API('我的函数')
+  def my_func(x, y):
+      '''
+      我的函数
+      输入参数 x, y 均为数字类型，返回结果为两者之和
+      '''
+      return x + y
+
+  def test_my_func():
+      '''
+      测试我的函数
+      '''
+      assert my_func(1, 1) == 2
+      assert my_func(1.1, 1.2) == 2.3
+
+# MySQL一般作为常量的配置
+_MYSQL_CONNECTION_LIMIT   : 30
+_MYSQL_ACQUIRE_TIMEOUT    : 30000
+_MYSQL_CHARSET            : utf8mb4
+_MYSQL_TIMEZONE           : ''
+
+# WEB模块一般作为常量的配置
+_WEB_INDEX_PAGE            : datafluxFuncPage.clientApp
+_WEB_SIGN_IN_PAGE          : datafluxFuncPage.clientApp
+_WEB_DASHBOARD_PAGE        : indexPage.dashboard
+_WEB_CLIENT_ID_COOKIE      : xDFFClientId
+_WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
+_WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
+_WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
+_WEB_PAGE_SIZE_COOKIE      : xDFFPageSize
+_WEB_TRACE_ID_HEADER       : X-Trace-Id
+_WEB_REQUEST_COST_HEADER   : X-Request-Cost
+_WEB_AUTH_HEADER           : X-Dff-Auth-Token
+_WEB_AUTH_QUERY            : xDFFAuthToken
+_WEB_AUTH_LOCAL_STORAGE    : xDFFAuthToken
+_WEB_AUTH_COOKIE           : xDFFAuthToken
+_WEB_AUTH_EXPIRES          : 86400
+_WEB_CAPTCHA_EXPIRES       : 300
+_WEB_DRY_RUN_MODE_HEADER   : X-Dff-Use-Dry-Run-Mode
+_WEB_AK_ID_HEADER          : X-Dff-Ak-Id
+_WEB_AK_TIMESTAMP_HEADER   : X-Dff-Ak-Timestamp
+_WEB_AK_NONCE_HEADER       : X-Dff-Ak-Nonce
+_WEB_AK_SIGN_HEADER        : X-Dff-Ak-Sign
+_WEB_AK_SIGN_VERSION_HEADER: X-Dff-Ak-Sign-Version
+_WEB_AK_TIMESTAMP_MAX_DIFF : 900
+_WEB_AK_NONCE_TTL          : 86400
+
+# Worker模块一般作为常量的配置
+_WORKER_CONCURRENCY        : 5
+_WORKER_PREFETCH_MULTIPLIER: 10
+_WORKER_MAX_TASKS_PER_CHILD: 3000
+_WORKER_RESULT_EXPIRES     : 3600
+
+# 监控模块一般作为常量的配置
+_MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL      : 60
+_MONITOR_CPU_MEM_USAGE_KEEP_DURATION       : 43200
+_MONITOR_CACHE_USAGE_CHECK_INTERVAL        : 60
+_MONITOR_CACHE_USAGE_KEEP_DURATION         : 43200
+_MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL: 60
+_MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION : 43200
+_MONITOR_WORKER_QUEUE_LIST                 : default,internal,result,webhook,utils,runnerOnDebugger,runnerOnCrontab,runnerOnRPC,runnerOnBatch,runnerOnBatchBuiltin
+_MONITOR_MATCHED_ROUTE_EXPIRES             : 86400
+_MONITOR_SLOW_API_COUNT_EXPIRES            : 604800
+
+# 自动执行任务频率
+_CRONTAB_STARTER            : '* * * * *'
+_CRONTAB_SYNC_CACHE         : '* * * * *'
+_CRONTAB_AUTO_CLEANER       : '*/15 * * * *'
+_CRONTAB_SCRIPT_FORCE_RELOAD: '* * * * *'
+
+
+
+# 函数任务模块一般作为常量的配置
+_FUNC_TASK_WORKER_QUEUE_MAX_LENGTH              : 1000
+_FUNC_TASK_MIN_TIMEOUT                          : 1
+_FUNC_TASK_MAX_TIMEOUT                          : 3600
+_FUNC_TASK_DEFAULT_API_TIMEOUT                  : 10
+_FUNC_TASK_MIN_API_TIMEOUT                      : 1
+_FUNC_TASK_MAX_API_TIMEOUT                      : 30
+_FUNC_TASK_DEFAULT_TIMEOUT                      : 30
+_FUNC_TASK_DEFAULT_TIMEOUT_TO_EXPIRE_SCALE      : 10
+_FUNC_TASK_DEFAULT_BATCH_TIMEOUT                : 3600
+_FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE: 24
+_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL                : 5
+_FUNC_TASK_LOCAL_CACHE_EXPIRES                  : 5
+_FUNC_TASK_COMPILE_CACHE_MAX_SIZE               : 1000
+_FUNC_TASK_ASYNC_POOL_SIZE                      : 5
+_FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
+
+_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT                 : 10000
+_BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH: 20000
+
+# 数据量限量
+_DBDATA_SCRIPT_LOG_LIMIT       : 30000
+_DBDATA_SCRIPT_FAILURE_LIMIT   : 30000
+_DBDATA_FUNC_RESULT_LIMIT      : 30000
+_DBDATA_CRONTAB_TASK_INFO_LIMIT: 30000
+_DBDATA_BATCH_TASK_INFO_LIMIT  : 30000
+_DBDATA_OPERATION_RECORD_LIMIT : 50000
+
+# 是否已安装完成
+_IS_INSTALLED: false
+# 是否禁用配置
+_DISABLE_SETUP: false

@@ -1,0 +1,4 @@
+upgradeInfo:
+  - seq: 0
+    database: |-
+      SELECT 'Base DB';

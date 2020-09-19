@@ -1,0 +1,45 @@
+<%
+  var e = pageData.error;
+%>
+
+<% include ../_utils/header %>
+
+<style type="text/css">
+  .not-found-tip {
+    font-size  : larger;
+    line-height: 30px;
+    padding    : 30px 30px 50px 30px;
+  }
+</style>
+<div class="container">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <h1><%= __('404 Content Not Found') %></h1>
+    <p class="not-found-tip">
+      <%= __('Cannot find the content,') %><br />
+      <%= __('The content has been moved or deleted.') %>
+    </p>
+
+    <hr />
+    <h4><%= __('Please check the URL or contact the administrator to report the information below.') %></h4>
+    <h4>
+      <label class="label label-default text-uppercase"><%= __("Trace ID") %></label>
+      <code><%= traceId %></code>
+    </h4>
+    <% if (e.detail) { %>
+      <% if (e.detail.url) { %>
+        <h4>
+          <label class="label label-default text-uppercase">URL</label>
+          <code><%= e.detail.url %></code>
+        </h4>
+      <% } %>
+      <% if (e.detail.id) { %>
+        <h4>
+          <label class="label label-default text-uppercase">ID</label>
+          <code><%= e.detail.id %></code>
+        </h4>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+
+<% include ../_utils/footer %>

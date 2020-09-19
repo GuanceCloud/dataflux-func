@@ -1,0 +1,445 @@
+<%
+  var data = pageData.data || [];
+%>
+
+<% include ../_utils/header %>
+
+<% components.confirmModal() %>
+
+<style type="text/css">
+  .pie-chart {
+    width : 100%;
+    height: 400px;
+  }
+  .bar-chart {
+    width : 100%;
+    height: 300px;
+  }
+  .line-chart {
+    width : 100%;
+    height: 400px;
+  }
+</style>
+
+<div class="container-fluid col-sm-10 col-sm-offset-1">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title"><i class="fa fa-fw fa-bar-chart"></i> <%= __('System Stats') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+          <%
+            components.submitButton('monitorAPI.clearSysStats', {
+              for           : 'clearSysStats',
+              method        : 'get',
+              title         : '复位监控数据',
+              icon          : 'refresh',
+              style         : 'warning',
+              size          : 'md',
+              confirm       : 'ok,cancel',
+              confirmTitle  : '复位监控数据',
+              confirmMessage: '<p>是否确认执行<strong class="text-danger">复位监控数据</strong>操作？</p>',
+            })
+          %>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="serverCPUPercent" class="line-chart col-xs-12"></div>
+      </div>
+      <div class="panel-body">
+        <div id="serverMemoryRSS" class="line-chart col-xs-12"></div>
+        <div id="serverMemoryHeapTotal" class="line-chart col-xs-12"></div>
+        <div id="serverMemoryHeapUsed" class="line-chart col-xs-12"></div>
+        <div id="serverMemoryHeapExternal" class="line-chart col-xs-12"></div>
+      </div>
+      <div class="panel-body">
+        <div id="cacheDBKeyUsed" class="line-chart col-xs-12"></div>
+        <div id="cacheDBMemoryUsed" class="line-chart col-xs-12"></div>
+        <div id="cacheDBKeyCountByPrefix" class="bar-chart col-xs-12"></div>
+      </div>
+      <div class="panel-body">
+        <div id="workerQueueLength" class="line-chart col-xs-12"></div>
+      </div>
+      <div class="panel-body">
+        <div id="matchedRouteCount" class="bar-chart col-xs-12"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% include ../_utils/footer %>
+
+<%- components.js('libs/echarts/echarts.min.js') %>
+
+<script type="text/javascript">
+var SPLIT_MATCHED_ROUTE_BY_HOSTNAME = false;
+
+$(function() {
+  function prepareSeries(series, opt) {
+    series.forEach(function(s) {
+      s.showSymbol = false;
+
+      if (!toolkit.isNothing(opt.seriesOptions)) {
+        Object.assign(s, opt.seriesOptions);
+      }
+
+      switch(s.type) {
+        case 'bar':
+          s.label = s.label || {};
+          s.label.normal = s.label.normal || {
+            show    : true,
+            position: 'right',
+          };
+          break;
+
+        case 'pie':
+          s.label = s.label || {};
+          s.label.formatter = s.label.formatter || '{b}: {c} ({d}%)';
+          break;
+      }
+
+      s.data.forEach(function(dp) {
+        switch(opt.dataConvert) {
+          case 'percent':
+            dp[1] = (dp[1] * 100).toFixed(1);
+            break;
+
+          case 'mb':
+            dp[1] = (dp[1] / 1024 / 1024).toFixed(1);
+            break;
+
+          case 'xyTranspose':
+            dp.reverse();
+            break;
+        }
+      });
+    });
+
+    return series;
+  }
+  function resizeBarChart(chart) {
+    var chartSeries = chart.getOption().series;
+
+    var dataLength = 0;
+    chartSeries.forEach(function(s) {
+      dataLength = Math.max(dataLength, s.data.length);
+    });
+    $(chart.getDom()).height(dataLength * chartSeries.length * 25 - (10 / dataLength) + 150);
+    chart.resize();
+  }
+
+  function COMMON_TOOLTIP(opt) {
+    opt = opt || {};
+    return {
+      trigger: 'axis',
+      axisPointer: {
+        animation: false
+      }
+    };
+  }
+  function TIMESERIES_TOOLTIP(opt) {
+    opt = opt || {};
+    return {
+      trigger: 'axis',
+      axisPointer: {
+        animation: false
+      },
+      formatter: function(params) {
+        var tooltipHTML = moment(params[0].value[0]).locale('zh_CN').utcOffset("+08:00").format('YYYY-MM-DD HH:mm:ss');
+        params.forEach(function(p) {
+          tooltipHTML += '<br>' + p.marker + p.seriesName + ': ' + p.value[1];
+        });
+        return tooltipHTML;
+      }
+    };
+  }
+  function PIE_TOOLTIP() {
+    return {
+      trigger  : 'item',
+      formatter: '{b}: {c} ({d}%)',
+    };
+  }
+  function COMMON_GRID() {
+    return {
+      left        : 80,
+      right       : 50,
+      containLabel: true,
+    };
+  }
+  function COUNT_GRID() {
+    return {
+      left        : 50,
+      right       : '35%',
+      containLabel: true,
+    };
+  }
+  function TIME_X_AXIS() {
+    return {
+      type  : 'time',
+      offset: 10,
+      axisLabel: {
+        formatter: function(value, index) {
+          return toolkit.getDateTimeStringCN(value, 'YYYY-MM-DD HH:mm');
+        }
+      }
+    };
+  }
+  function COUNT_X_AXIS() {
+    return {
+      type: 'value',
+      max: function(value) {
+        return Math.ceil(value.max * 1.1);
+      }
+    };
+  }
+  function COUNT_Y_AXIS() {
+    return {
+      type       : 'value',
+      offset     : 10,
+      min        : 0,
+      minInterval: 1
+    };
+  }
+  function PERCENT_Y_AXIS() {
+    return {
+      type  : 'value',
+      offset: 10,
+      max   : 100,
+      min   : 0,
+      boundaryGap: ['20%', '20%'],
+      axisLabel: {
+        formatter: function(value, index) {
+          return value + '%';
+        }
+      }
+    };
+  }
+  function VOLUME_Y_AXIS(opt) {
+    opt = opt || {};
+    return {
+      type  : 'value',
+      offset: 10,
+      min   : 0,
+      max   : opt.max,
+      axisLabel: {
+        formatter: function(value, index) {
+          return value + 'MB';
+        }
+      }
+    };
+  }
+  function CATE_Y_AXIS() {
+    return {
+      type    : 'category',
+      position: 'right',
+      offset  : 50,
+      inverse : true,
+      axisLabel: {
+        interval: 0,
+      }
+    };
+  }
+  function COMMON_X_AXIS_DATA_ZOOM(opt) {
+    opt = opt || {};
+
+    var ret = {
+      type          : 'slider',
+      show          : true,
+      realtime      : true,
+      showDetail    : true,
+      showDataShadow: true,
+    };
+
+    if (opt.startValue || opt.endValue) {
+      ret.startValue = opt.startValue;
+      ret.endValue   = opt.endValue;
+    } else {
+      ret.start = opt.start || 66;
+      ret.end   = opt.end   || 100;
+    }
+
+    return [ret];
+  }
+
+  var CHARTS = {};
+  CHARTS.serverCPUPercent = echarts.init($('#serverCPUPercent')[0]);
+  CHARTS.serverCPUPercent.setOption({
+    title   : {text: '<%= __('Server CPU Usage') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : PERCENT_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.serverMemoryRSS = echarts.init($('#serverMemoryRSS')[0]);
+  CHARTS.serverMemoryRSS.setOption({
+    title   : {text: '<%= __('Server Memory RSS') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.serverMemoryHeapTotal = echarts.init($('#serverMemoryHeapTotal')[0]);
+  CHARTS.serverMemoryHeapTotal.setOption({
+    title  : {text: '<%= __('Server Memory Heap Total') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.serverMemoryHeapUsed = echarts.init($('#serverMemoryHeapUsed')[0]);
+  CHARTS.serverMemoryHeapUsed.setOption({
+    title   : {text: '<%= __('Server Memory Heap Used') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.serverMemoryHeapExternal = echarts.init($('#serverMemoryHeapExternal')[0]);
+  CHARTS.serverMemoryHeapExternal.setOption({
+    title   : {text: '<%= __('Server Memory exteranl') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.cacheDBKeyUsed = echarts.init($('#cacheDBKeyUsed')[0]);
+  CHARTS.cacheDBKeyUsed.setOption({
+    title   : {text: '<%= __('Cache DB Key Used') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : COUNT_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.cacheDBMemoryUsed = echarts.init($('#cacheDBMemoryUsed')[0]);
+  CHARTS.cacheDBMemoryUsed.setOption({
+    title   : {text: '<%= __('Cache DB Memory Used') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.cacheDBKeyCountByPrefix = echarts.init($('#cacheDBKeyCountByPrefix')[0]);
+  CHARTS.cacheDBKeyCountByPrefix.setOption({
+    title   : {text: '<%= __('Cache DB Key Prefix Count') %>'},
+    tooltip: COMMON_TOOLTIP(),
+    grid   : COUNT_GRID(),
+    xAxis  : COUNT_X_AXIS(),
+    yAxis  : CATE_Y_AXIS(),
+  });
+
+  CHARTS.workerQueueLength = echarts.init($('#workerQueueLength')[0]);
+  CHARTS.workerQueueLength.setOption({
+    title   : {text: '<%= __('Worker Queue Waiting Length') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : COUNT_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
+  CHARTS.matchedRouteCount = echarts.init($('#matchedRouteCount')[0]);
+  CHARTS.matchedRouteCount.setOption({
+    title: {text: '<%= __('Matched Route Count (Today)') %>'},
+    tooltip: COMMON_TOOLTIP(),
+    grid   : COUNT_GRID(),
+    xAxis  : COUNT_X_AXIS(),
+    yAxis  : CATE_Y_AXIS(),
+  });
+
+  function updatePageData(resp) {
+    var currentHostname = resp.data.hostname;
+    var sysStats        = resp.data.sysStats;
+
+    for (var metric in sysStats) if (sysStats.hasOwnProperty(metric)) {
+      var chart = CHARTS[metric];
+      if (!chart) continue;
+
+      var series = sysStats[metric];
+      if (toolkit.isNothing(series)) continue;
+
+      // Prepare Series
+      switch(metric) {
+        case 'serverCPUPercent':
+          series = prepareSeries(series, {
+            dataConvert: 'percent',
+            seriesOptions: {
+              type: 'line',
+            },
+          });
+          break;
+
+        case 'serverMemoryRSS':
+        case 'serverMemoryHeapTotal':
+        case 'serverMemoryHeapUsed':
+        case 'serverMemoryHeapExternal':
+        case 'cacheDBMemoryUsed':
+          series = prepareSeries(series, {
+            dataConvert: 'mb',
+            seriesOptions: {
+              type: 'line',
+            },
+          });
+          break;
+
+        case 'cacheDBKeyUsed':
+        case 'workerQueueLength':
+          series = prepareSeries(series, {
+            seriesOptions: {
+              type: 'line',
+            },
+          });
+          break;
+
+        case 'cacheDBKeyCountByPrefix':
+        case 'matchedRouteCount':
+          series = prepareSeries(series, {
+            dataConvert: 'xyTranspose',
+            seriesOptions: {
+              type: 'bar',
+            },
+          });
+          break;
+      }
+
+      // Set Series
+      chart.setOption({
+        series: series,
+      });
+
+      // Resize Chart
+      switch(metric) {
+        case 'cacheDBKeyCountByPrefix':
+        case 'matchedRouteCount':
+          resizeBarChart(chart);
+          break;
+      }
+    };
+  };
+
+  function pageDataTick() {
+    var opt = {
+      url: '<%- urlFor('monitorAPI.getSysStats') %>'
+    };
+    toolkit.callAPI(opt, {
+      ok: updatePageData
+    });
+  }
+  setInterval(pageDataTick, 30 * 1000);
+  pageDataTick();
+});
+</script>

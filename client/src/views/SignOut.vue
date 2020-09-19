@@ -1,0 +1,81 @@
+<template>
+  <div class="sign-out">
+    <div class="sign-out-info">
+      <Logo type="auto" class="logo" width="400px" height="70px"></Logo>
+      <p>
+        正在登出...<br>
+        <small>如页面未跳转，可<a href="/">点击此处</a>进行跳转</small>
+      </p>
+    </div>
+  </div>
+</template>
+
+<script>
+import logo_ftdp from '@/assets/img/logo-dataflux-func.png'
+
+export default {
+  name: 'SignOut',
+  components: {
+  },
+  watch: {
+  },
+  methods: {
+  },
+  computed: {
+    IMAGES() {
+      return {
+        logo_ftdp,
+      }
+    }
+  },
+  props: {
+  },
+  data() {
+    return {}
+  },
+  created() {
+  },
+  mounted() {
+    this.$store.dispatch('signOut');
+    setTimeout(() => {
+      this.$router.push({
+        name: 'index',
+      });
+    }, 2.5 * 1000);
+  },
+}
+</script>
+
+<style scoped>
+@keyframes logo-fade-out {
+  from {opacity: 1; }
+  to   {opacity: 0; }
+}
+@keyframes sign-out-info-go-up {
+  from {top: 40%; }
+  to   {top: 30%; }
+}
+.sign-out {
+  background-color: #f3f3f7;
+  height: 100%;
+  width: 100%;
+  z-index: 9999;
+  text-align: center;
+}
+.logo {
+  display: block;
+  margin: 10px auto;
+  animation: logo-fade-out 0.7s linear .3s 1;
+  animation-fill-mode: forwards;
+}
+.sign-out-info {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%,-60%);
+  line-height: 2;
+  animation: sign-out-info-go-up 1s ease-out 1s 1;
+  animation-fill-mode: forwards;
+}
+
+</style>

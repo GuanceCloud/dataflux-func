@@ -1,0 +1,76 @@
+<%
+%>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-2 text-left">
+        </div>
+        <div class="col-xs-8 text-center">
+          <h4><%= __('Profile') %></h4>
+        </div>
+        <div class="col-xs-2 text-right">
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label class="control-label col-xs-2"><%= __('Username') %></label>
+            <div class="col-xs-10">
+              <input type="text" class="form-control" value="<%= currentUser.username %>" readonly />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-2"><%= __('Name__user') %></label>
+            <div class="col-xs-10">
+              <input type="text" class="form-control" wat-data-for="submit" wat-data-key="body.data.name" value="<%= currentUser.name %>" placeholder="<%= __('Enter your name') %>">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-2"><%= __('Mobile') %></label>
+            <div class="col-xs-10">
+              <input type="text" class="form-control" wat-data-for="submit" wat-data-key="body.data.mobile" value="<%= currentUser.mobile %>" placeholder="<%= __('Enter your mobile') %>">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-2"><%= __('Role') %></label>
+            <div class="col-xs-10 checkbox">
+              <%
+                for (var r in PRIVILEGE.roles) if (PRIVILEGE.roles.hasOwnProperty(r)) {
+                  var roleInfo = PRIVILEGE.roles[r];
+                  %>
+                    <label data-toggle="tooltip" data-placement="right" title="<%= __(roleInfo.desc) %>">
+                      <input type="checkbox" disabled
+                        <%= currentUser.roles.indexOf(r) > -1 ? 'checked' : ''%>
+                      > <%= __(roleInfo.name) %>
+                    </label>
+                    <br />
+                  <%
+                }
+              %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="col-xs-12 text-right">
+              <%
+                components.saveButton('authAPI.modifyProfile', {
+                  ok: 'goToIndex',
+                  ng: 'showHelpBlock',
+                });
+              %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% include ../_utils/footer %>

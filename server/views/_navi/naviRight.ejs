@@ -1,0 +1,107 @@
+<%_ if (currentUser.isSignedIn && currentUser.is('sa') && !pageConfigs.isDocPage) { _%>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+      <i class="fa fa-fw fa-cogs"></i>
+      <%= __('Management') %>
+      <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <%_ if (currentUser.can('systemConfig_r')) { _%>
+        <li>
+          <a href="<%= urlFor('systemConfigPage.list') %>" >
+            <i class="fa fa-fw fa-cogs"></i>
+            <%= __('System Config') %>
+          </a>
+        </li>
+      <%_ } _%>
+    </ul>
+  </li>
+<%_ } _%>
+
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+    <i class="fa fa-fw fa-question-circle"></i>
+    <%= __('Help') %>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="/doc">
+        <i class="fa fa-fw fa-book"></i>
+        <%= __('API Documents') %>
+      </a>
+    </li>
+    <li>
+      <a href="/doc/enum-const-reference">
+        <i class="fa fa-fw fa-book"></i>
+        <%= __('ENUM/CONST Reference') %>
+      </a>
+    </li>
+    <li role="separator" class="divider"></li>
+    <li>
+      <a href="/doc/change-log">
+        <i class="fa fa-fw fa-history"></i>
+        <%= __('Change Log') %>
+      </a>
+    </li>
+  </ul>
+</li>
+
+<%_ if (currentUser.isSignedIn) { _%>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+      <i class="fa fa-fw fa-user-circle"></i>
+      <%= __('ME') %>
+      <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li class="dropdown-header"><%= currentUser.name || currentUser.mobile || currentUser.username %></li>
+      <li role="separator" class="divider"></li>
+      <li>
+        <%_
+          components.aLink('authPage.profile', {
+            icon : 'user',
+            title: __('Profile')
+          })
+        _%>
+      </li>
+      <li>
+        <%_
+          components.aLink('authPage.changePassword', {
+            icon : 'lock',
+            title: __('Change Password')
+          })
+        _%>
+      </li>
+      <%_ if (currentUser.can('accessKey_r')) { _%>
+        <li role="separator" class="divider"></li>
+        <li>
+          <%_
+            components.aLink('accessKeyPage.list', {
+              icon : 'key',
+              title: 'Access Key'
+            })
+          _%>
+        </li>
+      <%_ } _%>
+      <li role="separator" class="divider"></li>
+      <li>
+        <%_
+          components.aLink('authPage.signOut', {
+            icon : 'sign-out',
+            title: __('Sign Out')
+          })
+        _%>
+      </li>
+    </ul>
+  </li>
+<%_ } else { _%>
+  <li>
+    <%
+      components.aLink('authPage.signIn', {
+        icon : 'sign-in',
+        title: __('Sign In')
+      })
+    %>
+  </li>
+<%_ } _%>

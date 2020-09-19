@@ -1,0 +1,128 @@
+<%
+  var data = pageData.data || [];
+%>
+
+<% include ../_utils/header %>
+
+<% components.confirmModal() %>
+<% components.infoModal() %>
+
+<div class="container">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title"><i class="fa fa-fw fa-key"></i> Access Key</span>
+        </div>
+        <div class="col-xs-9 text-right">
+          <% components.exportButtonGroup('accessKeyAPI.list', {fileName: 'accessKey'}) %>
+          <%
+            currentUser.can('accessKey_w') &&
+            components.aButton('accessKeyPage.add', {
+              style: 'default',
+              icon : 'plus',
+            })
+          %>
+        </div>
+      </div>
+      <div class="panel-body wat-panel-heading form-inline">
+        <% components.fuzzySearch() %>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <% components.tableFilterHintRow() %>
+            <tr>
+              <th><%= __('Name') %></th>
+              <th><%= __('Create User') %></th>
+              <th>AK ID</th>
+              <th>AK Secret</th>
+              <th>Webhook</th>
+              <th><%= __('Create Time') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% data.forEach(function(d, index) { %>
+            <tr>
+              <td><%= d.name %></td>
+              <td>
+                <%
+                  components.aLink('userPage.list', {
+                    query : {id: d.u_id},
+                    title : d.u_name || d_username,
+                    asText: !currentUser.can('user_r'),
+                  })
+                %>
+              </td>
+              <td class="wat-mono"><%= d.id %></td>
+              <td>
+                <button type="button" class="btn btn-default btn-xs" data-container="body" data-toggle="popover" data-placement="top" data-content="<%= d.secret %>">
+                  <i class="fa fa-fw fa-eye"></i> <%= __('View') %>
+                </button>
+              </td>
+              <td>
+                <% if (d.webhookURL) { %>
+                  <button type="button" class="btn btn-default btn-xs" data-container="body" data-toggle="popover" data-placement="top" data-content="<%= d.webhookURL %>">
+                    <i class="fa fa-fw fa-plug"></i> <%= __('View') %>
+                  </button>
+
+                  <% if (d.allowWebhookEcho) { %>
+                    <button type="button" class="btn btn-default btn-xs" data-container="body" data-toggle="popover" data-placement="top" data-content="<%= __('Allow Webhook Echo') %>">
+                      <i class="fa fa-fw fa-wifi fa-rotate-270"></i>
+                    </button>
+                  <% } %>
+                <% } else { %>
+                  <span class="text-danger">
+                    <i class="fa fa-fw fa-plug"></i> <%= __('Not Set') %>
+                  </span>
+                <% } %>
+              </td>
+              <td><%= localMoment(d.createTime).format('YYYY-MM-DD HH:mm:ss') %></td>
+              <td class="text-right wat-nowrap">
+                <%
+                  if (d.webhookURL) {
+                    var okScript = toolkit.strf("core.showInfoModal('{0}', 'POST {1}')", __('Test Event Sent'), d.webhookURL);
+
+                    currentUser.can('accessKey_r') &&
+                    components.submitButton('accessKeyAPI.testWebhook', {
+                      params: {id: d.id},
+                      title : __('Test'),
+                      icon  : 'play',
+                      style : 'success',
+                      size  : 'xs',
+                      ok    : okScript,
+                    })
+                  }
+                %>
+
+                <!-- Edit -->
+                <%
+                  currentUser.can('accessKey_w') &&
+                  components.tableLink('accessKeyPage.modify', {
+                    params: {id: d.id},
+                    title : __('Edit'),
+                    icon  : 'pencil',
+                    style : 'default',
+                  })
+                %>
+                <!-- Delete -->
+                <%
+                  currentUser.can('accessKey_w') &&
+                  components.tableDeleteButton('accessKeyAPI.delete', {
+                    params     : {id: d.id},
+                    confirmData: d.name,
+                  });
+                %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <% components.paging() %>
+</div>
+
+<% include ../_utils/footer %>

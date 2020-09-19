@@ -1,0 +1,97 @@
+# Mac System Files
+.DS_Store
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Vim Temp Files
+*.swp
+
+# Redis Dump Files
+dump.rdb
+
+# SQLite databases
+*.sqlite
+
+# Heap Dump Files
+*.heapsnapshot
+
+# Any Logs
+*.log
+
+# Python
+*.py[cod]
+
+# Virtual environment
+venv
+.python-version
+
+# Installer logs
+pip-log.txt
+
+# supervisord
+*.out
+*.out.*
+*.err
+*.err.*
+*.log
+*.log.*
+*.pid
+*.sock
+
+# Translations
+*.mo
+
+# NPM Packages & Logs
+node_modules
+client/node_modules
+npm-debug.log
+
+# Celery Beat
+celerybeat.pid
+celerybeat-schedule
+celerybeat-schedule.*
+
+# Code try
+*.try.py
+.idea/
+
+# Cache/upload files
+server/.*/
+uploaded-files/
+
+# Vue dist
+client/dist
+
+# Test file
+config/user-config.yaml
+docker-stack.yaml

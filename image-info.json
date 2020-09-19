@@ -1,0 +1,7 @@
+{
+  "CREATE_TIMESTAMP"  : 0,
+  "CI_COMMIT_REF_NAME": "local",
+  "CI_PIPELINE_ID"    : "None",
+  "CI_JOB_ID"         : "None",
+  "CI_BUILD_ID"       : "None"
+}

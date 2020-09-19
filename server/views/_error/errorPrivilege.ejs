@@ -1,0 +1,41 @@
+<%
+  var e = pageData.error;
+%>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <% components.errorInfo(e) %>
+
+    <h4>
+      <label class="label label-default text-uppercase"><%= __('Required Any Privilege of Below') %></label>
+    </h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th><%= __('Name') %></th>
+          <th><%= __('Key') %></th>
+          <th><%= __('Description') %></th>
+          <th><%= __('role') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          for (var i = 0; i < e.detail.requiredPrivileges.length; i++) {
+            var p = e.detail.requiredPrivileges[i];
+            var privlegeInfo = PRIVILEGE.privileges[p] || {};
+        %>
+        <tr>
+          <td><%= privlegeInfo.name %></td>
+          <td><code><%= p %></code></td>
+          <td><%= privlegeInfo.desc %></td>
+          <td><%= privlegeInfo.role %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% include ../_utils/footer %>

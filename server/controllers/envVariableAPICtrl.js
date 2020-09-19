@@ -1,0 +1,140 @@
+'use strict';
+
+/* Builtin Modules */
+
+/* 3rd-party Modules */
+var async = require('async');
+
+/* Project Modules */
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
+
+var envVariableMod = require('../models/envVariableMod');
+
+/* Configure */
+
+/* Handlers */
+var crudHandler = exports.crudHandler = envVariableMod.createCRUDHandler();
+
+exports.list   = crudHandler.createListHandler();
+exports.delete = crudHandler.createDeleteHandler();
+
+exports.add = function(req, res, next) {
+  var data = req.body.data;
+
+  var envVariableModel = envVariableMod.createModel(req, res);
+
+  async.series([
+    // 检查ID重名
+    function(asyncCallback) {
+      var opt = {
+        limit  : 1,
+        fields : ['evar.id'],
+        filters: {
+          'evar.id': {eq: data.id},
+        },
+      };
+      envVariableModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes.length > 0) {
+          return asyncCallback(new E('EBizCondition.DuplicatedEnvVariableID', 'ID of ENV Variable already exists.'));
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 数据入库
+    function(asyncCallback) {
+      envVariableModel.add(data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: data.id,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.modify = function(req, res, next) {
+  var id   = req.params.id;
+  var data = req.body.data;
+
+  var envVariableModel = envVariableMod.createModel(req, res);
+
+  var envVariable = null;
+
+  async.series([
+    // 获取环境变量
+    function(asyncCallback) {
+      envVariableModel.getWithCheck(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        envVariable = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 数据入库
+    function(asyncCallback) {
+      envVariableModel.modify(id, data, asyncCallback);
+    },
+    // 刷新环境变量缓存标志位
+    function(asyncCallback) {
+      updateEnvVariableRefreshTimestamp(req, res, envVariable, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: id,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.delete = function(req, res, next) {
+  var id = req.params.id;
+
+  var envVariableModel = envVariableMod.createModel(req, res);
+
+  var envVariable = null;
+
+  async.series([
+    // 获取环境变量
+    function(asyncCallback) {
+      envVariableModel.getWithCheck(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        envVariable = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 数据入库
+    function(asyncCallback) {
+      envVariableModel.delete(id, asyncCallback);
+    },
+    // 刷新helper缓存标志位
+    function(asyncCallback) {
+      updateEnvVariableRefreshTimestamp(req, res, envVariable, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: id,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+function updateEnvVariableRefreshTimestamp(req, res, envVariable, callback) {
+  var tags    = ['id', envVariable.id];
+  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestamp', tags);
+
+  res.locals.cacheDB.set(cacheKey, Date.now(), callback);
+};

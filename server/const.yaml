@@ -1,0 +1,178 @@
+respCodeMap:
+  OK                  : 200
+
+  EUser               : 400.10  ## Common user operation error.
+  EUserPassword       : 400.12  # Invalid username or password
+  EUserCaptcha        : 400.13  # Wrong captcha
+  EUserAuth           : 401.14  # Not signed in or x-auth-token is not sent.
+  EUserPrivilege      : 401.15  # No privilege to execute current operation.
+  EUserDisabled       : 401.16  # User is disabled.
+
+  EBiz                : 403.20  ## Common business error.
+  EBizCondition       : 403.21  # Condition is not satisfied.
+  EBizNotOwner        : 403.22  # Try to access data belongs to others.
+  EBizBadData         : 403.23  # Bad data found.
+  EBizBadDataStatus   : 403.24  # Bad status found.
+  EBizRequestConflict : 409.25  # Request conflict.
+
+  EClient             : 400.40  ## Common client error.
+  EClientNotFound     : 404.41  # No such data.
+  EClientDuplicated   : 409.42  # Duplicated request.
+  EClientBadRequest   : 400.43  # Bad request.
+  EClientUnsupported  : 400.44  # Unsupported operation.
+  EClientIP           : 400.99  # Bad client IP.
+
+  ESys                : 500.50  ## Common system error.
+  ESysWebServer       : 500.51  # Web server error.
+  ESysDB              : 500.52  # DB error.
+  ESysCache           : 500.53  # Cache error.
+  ESysLimitReached    : 503.10  # Limit reached error.
+  ESysAsyncTaskFailed : 503.20  # Async task failed error.
+  ESysAsyncTaskTimeout: 503.21  # Async task timeout error.
+
+  EOuterSystem        : 500.60 ## Common outer system error.
+  EOuterSystemNotFound: 500.61 # No such data in outer system.
+
+  EAssert             : 500.99 # For Assert
+
+  ########## Content for YOUR project below ##########
+  # ESomethingWrong   : 400.91 # Something wrong
+
+  EAPITimeout             : 599.10  # API超时超时
+  EScriptPreCheck         : 599.20  # 脚本预检查失败
+  EFuncFailed             : 599.30  # 函数执行失败
+  EFuncTimeout            : 599.31  # 函数执行超时
+  EFuncResultParsingFailed: 599.40  # 函数返回值无法解析
+  EWorkerQueueCongestion  : 599.50  # 工作队列拥堵
+
+# File icon for extension
+fileIcon:
+  apk : android
+  pdf : file-pdf-o
+  7z  : file-zip-o
+  zip : file-zip-o
+  rar : file-zip-o
+  txt : file-text-o
+  doc : file-word-o
+  docx: file-word-o
+  xls : file-excel-o
+  xlsx: file-excel-o
+  ppt : file-powerpoint-o
+  pptx: file-powerpoint-o
+  jpg : file-image-o
+  jpeg: file-image-o
+  bmp : file-image-o
+  png : file-image-o
+  gif : file-image-o
+  avi : file-video-o
+  mp4 : file-video-o
+  mov : file-video-o
+  wav : ile-audio-o
+  json: file-code-o
+  xml : file-code-o
+  csv : file-code-o
+
+# Dispaly text (<key>:<Display text>)
+displayText:
+  MODULE_FIELD:
+    KEY: DISPLAY TEXT
+
+  ########## Content for YOUR project below ##########
+  systemConfig_id:
+    config.example: Example Config__systemConfig_id
+    officialScript.installed.version: 已安装的官方脚本版本号__systemConfig_id
+
+  execMode:
+    sync   : 同步__execMode
+    async  : 异步__execMode
+    crontab: Crontab触发__execMode
+    batch  : 批处理__execMode
+
+  scriptSet_type:
+    official: 官方__scriptSet_type
+    user    : 用户__scriptSet_type
+
+  func_category:
+    general             : 一般__func_category
+    prediction          : 预测__func_category
+    transformation      : 转换__func_category
+    action              : 动作__func_category
+    command             : 命令__func_category
+    query               : 查询__func_category
+    check               : 检测__func_category
+    batch               : 批处理（通用）__func_category
+    batchMetric         : 批处理（指标处理）__func_category
+    batchLog            : 批处理（日志处理）__func_category
+    builtinQuery        : 内置查询__func_category
+    builtinCheck        : 内置检测__func_category
+    builtinBatch        : 内置批处理（通用）__func_category
+    builtinBatchMetric  : 内置批处理（指标处理）__func_category
+    builtinBatchLog     : 内置批处理（日志处理）__func_category
+    builtinBatchKeyevent: 内置批处理（关键事件处理）__func_category
+    builtinCollector    : 内置采集__func_category
+
+  func_integration:
+    login: 登录__func_integration
+
+  dataSource_type:
+    df_dataway   : DataFlux DataWay__dataSource_type
+    influxdb     : InfluxDB__dataSource_type
+    mysql        : MySQL__dataSource_type
+    redis        : Redis__dataSource_type
+    memcached    : Memcached__dataSource_type
+    clickhouse   : Clickhouse__dataSource_type
+    oracle       : Oracle数据库__dataSource_type
+    sqlserver    : Microsoft SQL Server__dataSource_type
+    postgresql   : PostgreSQL__dataSource_type
+    mongodb      : mongoDB__dataSource_type
+    elasticsearch: elasticsearch__dataSource_type
+
+  scriptRecoverPoint_type:
+    import : 导入__scriptRecoverPoint_type
+    recover: 还原__scriptRecoverPoint_type
+    manual : 手动__scriptRecoverPoint_type
+
+  authLink_origin:
+    API: API__authLink_origin
+    UI : UI__authLink_origin
+
+  crontabConfig_origin:
+    API: API__crontabConfig_origin
+    UI : UI__crontabConfig_origin
+
+  batch_origin:
+    API: API__batch_origin
+    UI : UI__batch_origin
+
+  ErrorMessage:
+    EScriptPreCheck: 脚本预检查失败
+    EFuncTimeout   : 脚本执行超时
+
+    EBizRequestConflict.scriptDraftAlreadyChanged: 脚本草稿已修改
+
+    EClientBadRequest.ConnectingToDataSourceFailed: 连接到数据源失败
+    EClientBadRequest.InvalidCronTabExpression    : Crontab表达式不正确
+    EClientBadRequest.InvalidDataSourceConfigJSON : 数据源配置JSON不正确
+    EClientBadRequest.QueryFailed                 : 查询失败
+    EClientBadRequest.QueryTimeout                : 查询超时
+
+    EBizCondition.AddingScriptNotAllowed              : 不允许添加脚本
+    EBizCondition.AuthLinkDisabled                    : 授权链接已禁用
+    EBizCondition.AuthLinkExpired                     : 授权链接已过期
+    EBizCondition.AuthLinkThrottling                  : 授权链接已超额
+    EBizCondition.BatchDisabled                       : 批处理已禁用
+    EBizCondition.ConfirmingImportTimeout             : 确认导入超时
+    EBizCondition.DeletingBuiltinDataSourceNotAllowed : 不允许删除内置数据源
+    EBizCondition.DeletingScriptNotAllowed            : 不允许删除脚本
+    EBizCondition.DeletingScriptSetNotAllowed         : 不允许删除脚本集
+    EBizCondition.DuplicatedCrontabConfig             : 自动触发配置重复
+    EBizCondition.DuplicatedDataSourceID              : 数据源ID重复
+    EBizCondition.DuplicatedEnvVariableID             : 环境变量ID重复
+    EBizCondition.DuplicatedScriptID                  : 脚本ID重复
+    EBizCondition.DuplicatedScriptSetID               : 脚本集ID重复
+    EBizCondition.InvalidPassword                     : 导入令牌不正确
+    EBizCondition.ModifyingBuiltinDataSourceNotAllowed: 不允许修改内置数据源
+    EBizCondition.ModifyingScriptNotAllowed           : 不允许修改脚本
+    EBizCondition.ModifyingScriptSetNotAllowed        : 不允许修改脚本集
+    EBizCondition.ReservedDataSourceIDPrefix          : 自定义数据源引用名不得以 df_ 开头
+    EBizCondition.ScriptNotEdited                     : 脚本并无修改

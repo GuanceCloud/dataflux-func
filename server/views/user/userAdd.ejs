@@ -1,0 +1,98 @@
+<% include ../_utils/header %>
+
+<div class="container">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <% components.goBackButton() %>
+        </div>
+        <div class="col-xs-6 text-center">
+          <span class="wat-modifying-title"><%= __('New User') %></span>
+        </div>
+        <div class="col-xs-3 text-right">
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Username') %></label>
+            <div class="col-xs-9">
+              <input class="form-control" type="text" wat-data-for="submit" wat-data-key="body.data.username">
+              <% components.errorBlock(__('This username is already existed.'), 'EClientDuplicated.username'); %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Password') %></label>
+            <div class="col-xs-9">
+              <input class="form-control" type="password" wat-data-for="submit" wat-data-key="body.data.password">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Name') %></label>
+            <div class="col-xs-9">
+              <input class="form-control" type="text" wat-data-for="submit" wat-data-key="body.data.name">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Mobile') %></label>
+            <div class="col-xs-9">
+              <input class="form-control" type="text" wat-data-for="submit" wat-data-key="body.data.mobile">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Role') %></label>
+            <div class="col-xs-9">
+              <%
+                for (var r in PRIVILEGE.roles) if (PRIVILEGE.roles.hasOwnProperty(r)) {
+                  var role = PRIVILEGE.roles[r];
+                  if (role.isSystemRole) continue;
+                  %>
+                    <div class="checkbox">
+                      <label data-toggle="tooltip" data-placement="top" title="<%= __(role.desc) %>">
+                        <input type="checkbox" wat-data-for="submit" wat-data-key="body.data.roles[]" value="<%= r %>">
+                        <span><%= __(role.name) %></span>
+                      </label>
+                    </div>
+                  <%
+                }
+              %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-3"><%= __('Custom Privileges') %></label>
+            <div class="col-xs-9">
+              <input class="form-control" type="text" wat-data-for="submit" wat-data-key="body.data.customPrivileges">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="col-xs-offset-3 col-xs-9 checkbox">
+              <label>
+                <input type="checkbox" wat-data-for="submit" wat-data-type="boolean" wat-data-key="body.data.isDisabled"> <%= __('Disabled') %>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="col-xs-12 text-right">
+              <%
+                components.addButton('userAPI.add', {
+                  ok: 'goBack',
+                  ng: 'showHelpBlock',
+                });
+              %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% include ../_utils/footer %>

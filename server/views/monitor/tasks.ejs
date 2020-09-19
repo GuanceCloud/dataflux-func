@@ -1,0 +1,301 @@
+<%
+  var queuedTasks    = pageData.queuedTasks    || [];
+  var scheduledTasks = pageData.scheduledTasks || [];
+  var recentTasks    = pageData.recentTasks    || [];
+
+  var queuedTaskTotalCount    = pageData.queuedTaskTotalCount    || 0;
+  var scheduledTaskTotalCount = pageData.scheduledTaskTotalCount || 0;
+  var recentTaskTotalCount    = pageData.recentTaskTotalCount    || 0;
+
+  var statusClassMap = {
+    SUCCESS: 'success',
+    FAILURE: 'danger',
+    RETRY  : 'info',
+    PENDING: 'warning',
+  };
+
+  var statusDisplayName = {
+    SUCCESS: __('Success'),
+    FAILURE: __('Failure'),
+    RETRY  : __('Retry'),
+    PENDING: __('Pending'),
+  };
+%>
+
+<% include ../_utils/header %>
+
+<div class="modal fade" id="detailViewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fa fa-2x fa-close close" data-dismiss="modal" role="button"></i>
+        <h4 id="detailViewTitle" class="modal-title"></h4>
+      </div>
+      <div class="modal-body">
+        <pre id="detailViewText" class="wat-plain-text wat-nowrap"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><%= __('Close') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid col-sm-10 col-sm-offset-1">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title-sm"><i class="fa fa-fw fa-tasks"></i> <%= __('Tasks') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+        </div>
+      </div>
+      <div class="panel-body wat-panel-heading form-inline">
+        <div class="pull-right">
+          <%
+            components.filterText({
+              title     : __('Task'),
+              filterName: 'task',
+            })
+            components.filterButton()
+          %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title-sm"><i class="fa fa-fw fa-tasks"></i> <%= __('Tasks in Queue') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover wat-td-middle">
+          <thead>
+            <tr>
+              <th class="col-xs-2"><%= __('Queue') %></th>
+              <th class="col-xs-3"><%= __('Task') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody class="wat-mono">
+            <% if (toolkit.isNothing(queuedTasks)) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('No Task') %></h4>
+                </td>
+              </tr>
+            <% } %>
+            <% queuedTasks.forEach(function(d, index) { %>
+              <tr>
+                <td><%= d.queue %></td>
+                <td>
+                  <strong><%= d.task %></strong>
+                  <br />
+                  <span class="text-muted" data-toggle="tooltip" data-placement="right" title="<%= d.id %>">ID: <%= d.id.split('-').slice(0, 2).join('-') %></span>
+                  <br />
+                  <span class="text-muted">Origin: <%= toolkit.getFirstPart(d.origin) || '-' %></span>
+                </td>
+                <td class="text-right wat-nowrap">
+                  <%
+                    var peraDumps = [
+                      __('List Parameters') + ': ', toolkit.isNothing(d.args) ? '-' : JSON.stringify(d.args, null, 2),
+                      '',
+                      __('Dict Parameters') + ': ', toolkit.isNothing(d.kwargs) ? '-' : JSON.stringify(d.kwargs, null, 2),
+                    ].join('\n');
+                  %>
+                  <a type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#detailViewModal" detail-view="<%= peraDumps %>">
+                    <i class="fa fa-fw fa-search"></i><%= __('Show Parameters') %>
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (queuedTaskTotalCount > queuedTasks.length) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('Total {0} Records', queuedTaskTotalCount) %></h4>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title-sm"><i class="fa fa-fw fa-tasks"></i> <%= __('Planned Tasks (most recent to latest)') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover wat-td-middle">
+          <thead>
+            <tr>
+              <th class="col-xs-2"><%= __('Queue') %></th>
+              <th class="col-xs-3"><%= __('Task') %></th>
+              <th class="col-xs-3"><%= __('Time') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody class="wat-mono">
+            <% if (toolkit.isNothing(scheduledTasks)) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('No Task') %></h4>
+                </td>
+              </tr>
+            <% } %>
+            <% scheduledTasks.forEach(function(d, index) { %>
+              <tr>
+                <td><%= d.queue %></td>
+                <td>
+                  <strong><%= d.task %></strong>
+                  <br />
+                  <span class="text-muted" data-toggle="tooltip" data-placement="right" title="<%= d.id %>">ID: <%= d.id.split('-').slice(0, 2).join('-') %></span>
+                  <br />
+                  <span class="text-muted"><%= __('Origin') %>: <%= toolkit.getFirstPart(d.origin) || '-' %></span>
+                </td>
+                <td class="wat-nowrap">
+                  <%= __('Planned Time') %>: <%= d.eta ? localMoment(d.eta).format('YYYY-MM-DD HH:mm:ss') : '-' %>
+                  <br />
+                  <%= __('Expire Time') %>：<%= d.expires ? localMoment(d.expires).format('YYYY-MM-DD HH:mm:ss') : '-' %>
+                </td>
+                <td class="text-right wat-nowrap">
+                  <%
+                    var peraDumps = [
+                      __('List Parameters') + ': ', toolkit.isNothing(d.args) ? '-' : JSON.stringify(d.args, null, 2),
+                      '',
+                      __('Dict Parameters') + ': ', toolkit.isNothing(d.kwargs) ? '-' : JSON.stringify(d.kwargs, null, 2),
+                    ].join('\n');
+                  %>
+                  <a type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#detailViewModal" detail-view="<%= peraDumps %>">
+                    <i class="fa fa-fw fa-search"></i><%= __('Show Parameters') %>
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (scheduledTaskTotalCount > scheduledTasks.length) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('Total {0} Records', queuedTaskTotalCount) %></h4>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title-sm"><i class="fa fa-fw fa-tasks"></i> <%= __('Recent Tasks (most recent to oldest)') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover wat-td-middle">
+          <thead>
+            <tr>
+              <th class="col-xs-2"><%= __('Queue') %></th>
+              <th class="col-xs-3"><%= __('Task') %></th>
+              <th class="col-xs-3"><%= __('Time') %></th>
+              <th class="col-xs-1"><%= __('Status') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody class="wat-mono wat-td-middle">
+            <% if (toolkit.isNothing(recentTasks)) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('No Task') %></h4>
+                </td>
+              </tr>
+            <% } %>
+            <% recentTasks.forEach(function(d, index) { %>
+              <tr>
+                <td><%= d.queue %></td>
+                <td>
+                  <strong><%= d.task %></strong>
+                  <br />
+                  <span class="text-muted" data-toggle="tooltip" data-placement="right" title="<%= d.id %>">ID: <%= toolkit.getFirstPart(d.id) %></span>
+                  <br />
+                  <span class="text-muted">Origin: <%= toolkit.getFirstPart(d.origin) || '-' %></span>
+                </td>
+                <td class="wat-nowrap">
+                  <%= __('Start Time') %>: <%= d.startTime ? localMoment(d.startTime * 1000).format('YYYY-MM-DD HH:mm:ss') : '-' %>
+                  <br />
+                  <%= __('End Time') %>: <%= d.endTime ? localMoment(d.endTime * 1000).format('YYYY-MM-DD HH:mm:ss') : '-' %>
+                  <br />
+                  <% if (d.endTime && d.startTime) { %>
+                    <%= __('Cost') %>: <%= localDuration(parseInt(d.endTime - d.startTime), 'seconds').humanize(); %> (<%= d.endTime - d.startTime %>)
+                  <% } else { %>
+                    <%= __('Cost') %>: -
+                  <% } %>
+                </td>
+                <td>
+                  <label class="label label-<%= statusClassMap[d.status] %>"><%= statusDisplayName[d.status] %></label>
+                </td>
+                <td class="text-right wat-nowrap">
+                  <%
+                    var paramDump = [
+                      __('List Parameters') + ': ', toolkit.isNothing(d.args) ? '-' : JSON.stringify(d.args, null, 2),
+                      '',
+                      __('Dict Parameters') + ': ', toolkit.isNothing(d.kwargs) ? '-' : JSON.stringify(d.kwargs, null, 2),
+                    ].join('\n');
+                  %>
+                  <a type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#detailViewModal" detail-view="<%= paramDump %>">
+                    <i class="fa fa-fw fa-search"></i><%= __('Show Parameters') %>
+                  </a>
+
+                  <% if (d.status === 'FAILURE' && d.einfoTEXT) { %>
+                    <a type="button" class="btn btn-<%= statusClassMap[d.status] %> btn-xs" data-toggle="modal" data-target="#detailViewModal" detail-view="<%= d.einfoTEXT %>">
+                      <i class="fa fa-fw fa-bug"></i><%= __('Show Error') %>
+                    </a>
+                  <% } else if (d.status === 'SUCCESS' && d.retval) { %>
+                    <a type="button" class="btn btn-<%= statusClassMap[d.status] %> btn-xs" data-toggle="modal" data-target="#detailViewModal" detail-view="<%= JSON.stringify(d.retval, null, 2) %>">
+                      <i class="fa fa-fw fa-search"></i><%= __('Show Result') %>
+                    </a>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (recentTaskTotalCount > recentTasks.length) { %>
+              <tr>
+                <td colspan="100%" class="text-center">
+                  <h4><%= __('Total {0} Records', recentTaskTotalCount) %></h4>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% include ../_utils/footer %>
+
+<script type="text/javascript">
+  $(function(){
+    $(document).on('click', '[detail-view]', function(ev) {
+      var detailViewTitle = $(this).text();
+      var detailViewText = $(this).attr('detail-view');
+      $('#detailViewTitle').text(detailViewTitle);
+      $('#detailViewText').text(detailViewText);
+    });
+  });
+</script>

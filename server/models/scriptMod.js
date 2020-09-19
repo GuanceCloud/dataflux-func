@@ -1,0 +1,207 @@
+'use strict';
+
+/* Builtin Modules */
+
+/* 3rd-party Modules */
+var async = require('async');
+
+/* Project Modules */
+var E           = require('../utils/serverError');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
+var toolkit     = require('../utils/toolkit');
+var modelHelper = require('../utils/modelHelper');
+
+/* Configure */
+var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
+  displayName: 'script',
+  entityName : 'script',
+  tableName  : 'biz_main_script',
+  alias      : 'scpt',
+
+  objectFields: {
+    isLocked: 'boolean',
+  },
+
+  defaultOrders: [
+    {field: 'sset.id', method: 'ASC'},
+    {field: 'scpt.id', method: 'ASC'},
+  ],
+};
+
+exports.createCRUDHandler = function() {
+  return modelHelper.createCRUDHandler(EntityModel);
+};
+
+exports.createModel = function(req, res) {
+  return new EntityModel(req, res);
+};
+
+var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
+
+EntityModel.prototype.list = function(options, callback) {
+  options = options || {};
+  options.extra = options.extra || {};
+
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('   scpt.seq');
+  sql.append('  ,scpt.id');
+  sql.append('  ,scpt.title');
+  sql.append('  ,scpt.description');
+  sql.append('  ,scpt.scriptSetId');
+  sql.append('  ,scpt.publishVersion');
+  sql.append('  ,scpt.codeMD5');
+  sql.append('  ,scpt.codeDraftMD5');
+  sql.append('  ,scpt.lockedByUserId');
+  sql.append('  ,scpt.createTime');
+  sql.append('  ,scpt.updateTime');
+
+  sql.append('  ,sset.title          AS sset_title');
+  sql.append('  ,sset.description    AS sset_description');
+  sql.append('  ,sset.lockedByUserId AS sset_lockedByUserId');
+
+  sql.append('  ,(NOT ISNULL(scpt.lockedByUserId)) OR (NOT ISNULL(sset.lockedByUserId)) AS isLocked');
+
+  if (options.extra.withCode)      sql.append(',scpt.code');
+  if (options.extra.withCodeDraft) sql.append(',scpt.codeDraft');
+
+  sql.append('FROM biz_main_script AS scpt');
+
+  sql.append('LEFT JOIN biz_main_script_set AS sset');
+  sql.append('  ON sset.id = scpt.scriptSetId');
+
+  options.baseSQL = sql.toString();
+
+  return this._list(options, callback);
+};
+
+EntityModel.prototype.overview = function(options, callback) {
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('   scpt.seq');
+  sql.append('  ,scpt.id');
+  sql.append('  ,scpt.title');
+  sql.append('  ,scpt.scriptSetId');
+  sql.append('  ,scpt.publishVersion');
+  sql.append('  ,scpt.codeMD5');
+  sql.append('  ,scpt.codeDraftMD5');
+  sql.append('  ,LENGTH(scpt.code) AS codeSize');
+  sql.append('  ,scpt.createTime');
+  sql.append('  ,scpt.updateTime');
+
+  sql.append('  ,sset.title AS sset_title');
+
+  sql.append('  ,MAX(scph.createTime) AS latestPublishTime');
+  sql.append('  ,COUNT(func.id)       AS funcCount');
+
+  sql.append('FROM biz_main_script AS scpt');
+
+  sql.append('LEFT JOIN biz_main_script_set AS sset');
+  sql.append('  ON sset.id = scpt.scriptSetId');
+
+  sql.append('LEFT JOIN biz_main_script_publish_history as scph');
+  sql.append('  ON  scph.scriptId             = scpt.id');
+  sql.append('  AND scph.scriptPublishVersion = scpt.publishVersion');
+
+  sql.append('LEFT JOIN biz_main_func as func');
+  sql.append('  ON func.scriptId = scpt.id');
+
+  sql.append('GROUP BY');
+  sql.append('  scpt.id');
+
+  sql.append('ORDER BY');
+  sql.append('   sset.id ASC');
+  sql.append('  ,scpt.id ASC');
+
+  this.db.query(sql, null, callback);
+};
+
+EntityModel.prototype.add = function(data, callback) {
+  // 自动填入脚本集ID
+  data.scriptSetId = data.id.split('__')[0];
+
+  // 自动填入示例代码
+  data.codeDraft = CONFIG._SAMPLE_SCRIPT;
+
+  try {
+    data = _prepareData(data);
+  } catch(err) {
+    this.logger.logError(err);
+    if (err instanceof E) {
+      return callback(err);
+    } else {
+      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+    }
+  }
+
+  return this._add(data, callback);
+};
+
+EntityModel.prototype.modify = function(id, data, callback) {
+  try {
+    data = _prepareData(data);
+  } catch(err) {
+    this.logger.logError(err);
+    if (err instanceof E) {
+      return callback(err);
+    } else {
+      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+    }
+  }
+
+  return this._modify(id, data, callback);
+};
+
+EntityModel.prototype.delete = function(id, callback) {
+  var self = this;
+
+  var retId = id;
+
+  var transScope = modelHelper.createTransScope(self.db);
+  async.series([
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    // 数据入库
+    function(asyncCallback) {
+      self._delete(id, asyncCallback);
+    },
+    // 删除相关数据
+    function(asyncCallback) {
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM ??');
+      sql.append('WHERE');
+      sql.append('  scriptId = ?');
+
+      var tables = [
+        'biz_main_func',
+      ];
+      async.eachSeries(tables, function(table, eachCallback) {
+        var sqlParams = [table, id];
+
+        self.db.query(sql, sqlParams, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return callback(scopeErr);
+
+      return callback(null, retId);
+    });
+  });
+};
+
+function _prepareData(data) {
+  data = toolkit.jsonCopy(data);
+
+  if (data.code) {
+    data.code = data.code.replace(/\t/g, ' '.repeat(4));
+    data.codeMD5 = toolkit.getMD5(data.code);
+  }
+  if (data.codeDraft) {
+    data.codeDraft = data.codeDraft.replace(/\t/g, ' '.repeat(4));
+    data.codeDraftMD5 = toolkit.getMD5(data.codeDraft);
+  }
+
+  return data;
+};

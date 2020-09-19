@@ -1,0 +1,93 @@
+<%
+  var data = pageData.data;
+%>
+
+<% function baiduSearchLink(keyword) { %>
+  &nbsp;<a href="https://www.baidu.com/s?wd=<%= keyword %>" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a>
+<% } %>
+<% function npmPackagePage(packageName) { %>
+  <a href="https://www.npmjs.com/package/<%= packageName %>" target="_blank"><i class="fa fa-fw fa-home"></i></a>
+<% } %>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <div class="panel panel-default">
+    <div class="panel-body wat-panel-heading">
+      <div class="col-xs-9 text-left">
+        <span class="wat-panel-title"><i class="fa fa-fw fa-cube"></i> <%= __('Server Environment') %></span>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="col-xs-12">
+        <h3><%= __('Host') %></h3>
+        <table class="table table-bordered wat-big-text">
+          <tbody>
+            <tr>
+              <td class="text-right" style="width: 300px"><strong><%= __('OS Architecture') %></strong></td>
+              <td><%= data.osArch %><% baiduSearchLink(data.osArch) %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong><%= __('OS Type') %></strong></td>
+              <td><%= data.osType %><% baiduSearchLink(data.osType) %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong><%= __('OS Release') %></strong></td>
+              <td><%= data.osRelease %><% baiduSearchLink(data.osRelease) %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong><%= __('CPU Model') %></strong></td>
+              <td><%= data.cpuModel %><% baiduSearchLink(data.cpuModel) %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong><%= __('CPU Cores') %></strong></td>
+              <td><%= data.cpuCores %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="col-xs-12">
+        <h3><%= __('Software Version') %></h3>
+        <table class="table table-bordered  wat-big-text">
+          <tbody>
+            <tr>
+              <td class="text-right" style="width: 300px"><strong>Node.js</strong> <a href="https://nodejs.org" target="_blank"><i class="fa fa-fw fa-home"></i></a></td>
+              <td><%= data.nodeVersion %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong>MySQL</strong> <a href="https://www.mysql.com" target="_blank"><i class="fa fa-fw fa-home"></i></a></td>
+              <td><%= data.mysqlVersion %></td>
+            </tr>
+            <tr>
+              <td class="text-right"><strong>Redis</strong> <a href="https://redis.io" target="_blank"><i class="fa fa-fw fa-home"></i></a></td>
+              <td><%= data.redisVersion %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="col-xs-12">
+        <h3><%= __('Node Packages') %></h3>
+        <table class="table table-bordered  wat-big-text">
+          <tbody>
+            <% for (var pkg in data.nodePackages) if (data.nodePackages.hasOwnProperty(pkg)) { %>
+              <tr>
+                <td class="text-right" style="width: 300px"><strong><%= pkg %></strong> <% npmPackagePage(pkg) %></td>
+                <td><%= data.nodePackages[pkg] %></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<% include ../_utils/footer %>

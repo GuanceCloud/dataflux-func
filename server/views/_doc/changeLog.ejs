@@ -1,0 +1,39 @@
+<%
+  pageConfigs.isDocPage = true;
+
+  var sections = pageData.sections;
+%>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <div>
+    <h1>
+      <i class="fa fa-history"></i> <%= __('Change Log') %>
+      <span class="pull-right" style="font-size: 18px; line-height: 60px;">
+        <a href="/doc"><i class="fa fa-book"></i> <%= __('API Documents') %></a> /
+        <a href="/doc/enum-const-reference"><i class="fa fa-book"></i> <%= __('ENUM/CONST Reference') %></a>
+      </span>
+    </h1>
+
+    <% sections.forEach(function(s, index) { %>
+    <div api-type class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" data-target="#docSection-<%= index %>">
+        <span class="wat-doc-title" data-toggle="collapse" data-target="#docSection-<%= index %>">
+          <i class="fa fa-info-circle"></i> <%= s.title %>
+        </span>
+      </div>
+
+      <div class="panel-collapse <%= index < 5 ? 'collapse in' : 'collapse' %>" id="docSection-<%= index %>">
+        <div class="panel-body wat-doc">
+          <div class="col-md-10 col-md-offset-1 col-xs-11 col-xs-offset-1">
+            <%- s.contentHTML %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+
+<% include ../_utils/footer %>

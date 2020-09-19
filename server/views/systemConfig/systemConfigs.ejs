@@ -1,0 +1,88 @@
+<%
+  var data = pageData.data || [];
+
+  var systemConfigIds = toolkit.jsonKeys(CONST.displayText.systemConfig_id).sort();
+
+  var systemConfigMap = {};
+  data.forEach(function(d) {
+    systemConfigMap[d.id] = d.value;
+  });
+%>
+
+<% include ../_utils/header %>
+
+<% components.confirmModal() %>
+
+<div class="container">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title"><i class="fa fa-fw fa-cogs"></i> <%= __('System Config') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+          <% components.exportButtonGroup('systemConfigAPI.list', {fileName: 'systemConfig'}) %>
+        </div>
+      </div>
+      <div class="panel-body wat-panel-heading form-inline">
+        <% components.fuzzySearch() %>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover wat-td-middle">
+          <thead>
+            <% components.tableFilterHintRow() %>
+            <tr>
+              <th><%= __('ID') %></th>
+              <th><%= __('Name') %></th>
+              <th style="width: 340px;"><%= __('Value') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% systemConfigIds.forEach(function(systemConfigId, index) { %>
+            <% var systemConfigValue = systemConfigMap[systemConfigId] || null %>
+            <tr>
+              <td><code><%= systemConfigId %></code></td>
+              <td><%= __(CONST.displayText.systemConfig_id[systemConfigId]) %></td>
+              <td>
+                <div class="form-inline">
+                  <div class="input-group">
+                    <input type="text" class="form-control" wat-data-key="body.data.value" wat-data-for="<%= toolkit.getMD5('set-' + systemConfigId) %>" value="<%= systemConfigValue %>">
+                    <span class="input-group-btn">
+                      <%
+                        currentUser.can('systemConfig_w') &&
+                        components.tableModifyButton('systemConfigAPI.set', {
+                          for   : toolkit.getMD5('set-' + systemConfigId),
+                          params: {id: systemConfigId},
+                          title : __('Set'),
+                          style : 'primary',
+                          icon  : null,
+                          size  : 'md',
+                        });
+                      %>
+                    </span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <%
+                  currentUser.can('systemConfig_w') &&
+                  components.tableDeleteButton('systemConfigAPI.delete', {
+                    params     : {id: systemConfigId},
+                    confirmData: systemConfigId,
+                    style      : 'danger',
+                    size       : 'md',
+                  });
+                %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <% components.paging() %>
+</div>
+
+<% include ../_utils/footer %>

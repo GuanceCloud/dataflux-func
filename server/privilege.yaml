@@ -1,0 +1,101 @@
+roles:
+  sa:
+    name        : Super administrator
+    desc        : Super administrator of the site
+    isSystemRole: true
+
+  admin:
+    name: Administrator
+    desc: Administrator
+
+  user:
+    name: User
+    desc: User
+
+  readonlyUser:
+    name: Readonly user
+    desc: Readonly user
+
+  customUser:
+    name: Custom User
+    desc: Custom User
+
+privileges:
+  # General
+  '*':
+    name: ALL
+    desc: All privileges
+    role: sa
+
+  debug:
+    name: Debug
+    desc: Access the debug information of the site
+    role: sa
+
+  general_r:
+    name: General READ privilege
+    desc: General list, detail, etc
+    role:
+      - admin
+      - user
+      - readonlyUser
+
+  general_w:
+    name: General WRITE privilege
+    desc: General add, modify, delete, etc.
+    role:
+      - admin
+      - user
+
+  # User
+  user_r:
+    name: User module READ privilege
+    desc: User list, detail, etc.
+    role:
+      - admin
+      - user
+      - readonlyUser
+
+  user_w:
+    name: User module WRITE privilege
+    desc: User add, modify, delete, etc.
+    role:
+      - admin
+
+  user_roleSetting:
+    name: User role setting privlege
+    desc: User role setting for any user
+    role:
+      - admin
+
+  user_customPrivilege:
+    name: User privilege setting privilege
+    desc: User privilege setting for any user
+    role:
+      - admin
+
+  # Access Key
+  accessKey_r:
+    name: Access Key module READ privilege
+    desc: Access Key list, view, etc.
+    role:
+      - admin
+
+  accessKey_w:
+    name: Access Key module WRITE privilege
+    desc: Access Key add, delete, etc.
+    role:
+      - admin
+
+  # System Config
+  systemConfig_r:
+    name: System Config module READ privilege
+    desc: System Config list, get, etc.
+    role:
+      - sa
+
+  systemConfig_w:
+    name: System Config module WRITE privilege
+    desc: System Config set, delete, etc.
+    role:
+      - sa

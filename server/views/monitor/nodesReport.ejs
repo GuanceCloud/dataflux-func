@@ -1,0 +1,44 @@
+<%
+  var data = pageData.data || [];
+%>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title"><i class="fa fa-fw fa-stethoscope"></i> <%= __('Nodes Report') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (toolkit.isNothing(data)) { %>
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading form-inline">
+        <h4 class="text-danger text-center"><i class="fa fa-fw fa-times"></i> <%= __('Node No Response') %></h4>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% data.forEach(function(d) { %>
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading form-inline">
+        <h4><i class="fa fa-fw fa-cube"></i> <%= __('Node') %>: <%= d.node %></h4>
+      </div>
+      <div class="panel-body">
+        <pre><%= d.report %></pre>
+      </div>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<% include ../_utils/footer %>

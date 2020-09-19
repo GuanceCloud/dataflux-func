@@ -1,0 +1,116 @@
+<%
+  var data = pageData.data || [];
+%>
+
+<% include ../_utils/header %>
+
+<% components.confirmModal() %>
+
+<div class="container">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body wat-panel-heading">
+        <div class="col-xs-3 text-left">
+          <span class="wat-panel-title"><i class="fa fa-fw fa-users"></i> <%= __('Users') %></span>
+        </div>
+        <div class="col-xs-9 text-right">
+          <% components.exportButtonGroup('userAPI.list', {fileName: __('user-list__export')}) %>
+          <%
+            currentUser.can('user_w') &&
+            components.aButton('userPage.add', {
+              style: 'default',
+              icon : 'plus',
+            })
+          %>
+        </div>
+      </div>
+      <div class="panel-body wat-panel-heading form-inline">
+        <% components.fuzzySearch() %>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <% components.tableFilterHintRow() %>
+            <tr>
+              <th><%= __('Username') %></th>
+              <th><%= __('Name') %></th>
+              <th><%= __('Mobile') %></th>
+              <th><%= __('Roles') %></th>
+              <th><%= __('Status') %></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% data.forEach(function(d, index) { %>
+            <tr>
+              <td class="wat-mono">
+                <% if (d.roles === 'shadow') { %>
+                  <label class="label label-default"><%= __('SHADOW') %></label>
+                <% } else { %>
+                  <%= d.username %>
+                <% } %>
+
+                <% if (currentUser.id === d.id) { %>
+                  <span class="label label-primary"><%= __('ME') %></span>
+                <% } %>
+              </td>
+              <td><%= d.name %></td>
+              </td>
+              <td><%= d.mobile %></td>
+              <td>
+                <%
+                  for (var r in PRIVILEGE.roles) if (PRIVILEGE.roles.hasOwnProperty(r)) {
+                    var roleInfo = PRIVILEGE.roles[r];
+                    if (d.roles.indexOf(r) === -1) continue;
+                    %>
+                      <span data-toggle="tooltip" data-placement="top" title="<%= __(roleInfo.desc) %>"><%= __(roleInfo.name) %></span><br />
+                    <%
+                  }
+                %>
+              </td>
+              <td>
+                <% if (d.isDisabled) { %>
+                  <span class="text-danger"><%= __('DISABLED') %></span>
+                <% } else {%>
+                  <span class="text-success"><%= __('NORMAL') %></span>
+                <% } %>
+              </td>
+              <td class="text-right wat-nowrap">
+                <!-- Edit -->
+                <%
+                  currentUser.can('user_w') &&
+                  components.tableLink('userPage.modify', {
+                    params: {id: d.id},
+                    title : __('Edit'),
+                    icon  : 'pencil',
+                    style : 'default',
+                  })
+                %>
+                <!-- Disable -->
+                <%
+                  currentUser.can('user_w') &&
+                  components.tableModifyButton('userAPI.modify', {
+                    params: {id: d.id},
+                    body: {
+                      data: {
+                        isDisabled: !d.isDisabled
+                      }
+                    },
+                    style   : d.isDisabled ? 'success'    : 'danger',
+                    tipTitle: d.isDisabled ? __('Enable') : __('Disable'),
+                    icon    : d.isDisabled ? 'check': 'ban',
+                    disabled: (currentUser.id === d.id),
+                  });
+                %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <% components.paging() %>
+</div>
+
+<% include ../_utils/footer %>

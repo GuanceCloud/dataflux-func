@@ -1,0 +1,31 @@
+<% include _utils/header %>
+
+<div class="container">
+  <h2 class="page-header">
+    <%- __('Welcome back, {0}!', currentUser.name || currentUser.username) %>
+    <br />
+    <small><%= __('You can get a start with the entry below') %></small>
+  </h2>
+
+  <div class="row">
+    <%
+      currentUser.can('user_r') &&
+      components.dashboardPanel('userPage.list', {
+        icon          : 'users',
+        title         : __('Users'),
+        extraInfo     : pageData.users_count || 0,
+        extraInfoStyle: 'danger',
+      })
+    %>
+
+    <%
+      currentUser.can('general_r') &&
+      components.dashboardPanel('monitorPage.sysStats', {
+        icon          : 'desktop',
+        title         : __('System Stats'),
+      })
+    %>
+  </div>
+</div>
+
+<% include _utils/footer %>

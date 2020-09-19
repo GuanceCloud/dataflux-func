@@ -1,0 +1,107 @@
+# 注意事项：
+# 1. 默认情况下，数据存储于`/usr/local/dataflux-func/`目录下，
+#    部署前应当保证目录已经存在。
+#    参考命令：
+#       sudo mkdir -p /usr/local/dataflux-func/{data,mysql,redis}
+#
+#    如果需要将数据保存于其他地方，
+#    请注意修下面的`/usr/local/dataflux-func/`（存在多处）
+#
+# 2. 部署时，程序会自动配置设置数据库root密码，
+#    请注意修下面的`mysql_root_password`（存在多处）
+#
+# 3. 部署时，程序会根据密钥创建DataFlux Func 的管理员账户，
+#    请注意修改下面的`your_secret`（存在多处）
+#
+# 4. 修改完成后，即可使用进行部署。
+#    参考命令（假设本配置文件名为"docker-stack.yaml"）：
+#       sudo docker stack deploy dataflux-func -c docker-stack.yaml
+
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:5.7.26
+    networks:
+      - datafluxfunc
+    environment:
+      - "MYSQL_ROOT_PASSWORD=mysql_root_password"
+      - "MYSQL_DATABASE=dataflux_func"
+    volumes:
+      - "/usr/local/dataflux-func/mysql:/var/lib/mysql"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:5.0.7
+    networks:
+      - datafluxfunc
+    volumes:
+      - "/usr/local/dataflux-func/redis:/data"
+
+  server:
+    image: dataflux-func
+    environment:
+      - "SECRET=your_secret"
+      - "MYSQL_HOST=mysql"
+      - "MYSQL_USER=root"
+      - "MYSQL_PASSWORD=mysql_root_password"
+      - "MYSQL_DATABASE=dataflux_func"
+      - "REDIS_HOST=redis"
+      - "ADMIN_USERNAME=admin"
+      - "ADMIN_PASSWORD=admin"
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    ports:
+      - "8088:8088"
+    command: ./run-server.sh
+
+  worker:
+    image: dataflux-func
+    environment:
+      - "SECRET=your_secret"
+      - "MYSQL_HOST=mysql"
+      - "MYSQL_USER=root"
+      - "MYSQL_PASSWORD=mysql_root_password"
+      - "MYSQL_DATABASE=dataflux_func"
+      - "REDIS_HOST=redis"
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker.sh
+
+  beat:
+    image: dataflux-func
+    environment:
+      - "SECRET=your_secret"
+      - "MYSQL_HOST=mysql"
+      - "MYSQL_USER=root"
+      - "MYSQL_PASSWORD=mysql_root_password"
+      - "MYSQL_DATABASE=dataflux_func"
+      - "REDIS_HOST=redis"
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-beat.sh
+
+networks:
+  default:
+    external:
+      name: bridge
+  datafluxfunc:
+    driver: overlay

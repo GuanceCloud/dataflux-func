@@ -1,0 +1,17 @@
+<%
+%>
+
+<% include ../_utils/header %>
+
+<div class="container">
+  <h1><%= __('Sign Out') %>...</h1>
+</div>
+
+<% include ../_utils/footer %>
+
+<script>
+  $(function() {
+    core.removeXAuthToken();
+    core.goToURL('/sign-in');
+  });
+</script>

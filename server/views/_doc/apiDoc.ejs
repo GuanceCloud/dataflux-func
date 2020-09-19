@@ -1,0 +1,608 @@
+<%
+  pageConfigs.isDocPage = true;
+
+  // This ejs code is becoming a mess, will been refactored later...
+
+  var marked = require('marked');
+
+  var pageFn                         = pageData.fn;
+  var routes                         = pageData.routes;
+  var htmlAPIDocIntroductionSections = pageData.htmlAPIDocIntroductionSections;
+
+  var methodClassMap = {
+    get   : 'success',
+    post  : 'warning',
+    put   : 'info',
+    delete: 'danger',
+  };
+
+  var noneDescriptionDirectives = [
+    '$desc',
+    '$name',
+    '$type',
+    '$example',
+    '$isDeprecated',
+    '$isOptional',
+    '$optional',
+    '$isRequired',
+    '$required',
+    '$skipSQL',
+  ];
+%>
+
+<% include ../_utils/header %>
+
+<% components.hidden(CONFIG._WEB_AUTH_HEADER, {id: 'xAuthHeader'}) %>
+
+<% var renderParamTable = function(apiId, routeConfig, category) { %>
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th><%= __('Field') %></th>
+          <th><%= __('Type') %></th>
+          <th><%= __('Description') %></th>
+          <th class="wat-doc-body-sample-col"><%= __('Test') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          var flattenedParamConfig = category === 'query'
+                                   ? pageFn.flattenQueryConfig(routeConfig[category])
+                                   : pageFn.flattenParamConfig(routeConfig[category]);
+          var isFirstRow = true;
+          var paramCount = flattenedParamConfig ? toolkit.jsonKeys(flattenedParamConfig).length : 0;
+
+          for (var paramPath in flattenedParamConfig) if (flattenedParamConfig.hasOwnProperty(paramPath)) {
+            var paramOption = flattenedParamConfig[paramPath];
+            var isRequiredParam = (category === 'params'
+                    || toolkit.toBoolean(paramOption.$isOptional) === false
+                    || toolkit.toBoolean(paramOption.$optional)   === false
+                    || toolkit.toBoolean(paramOption.$isRequired) === true
+                    || toolkit.toBoolean(paramOption.$required)   === true);
+            var isOptionalParam = (toolkit.toBoolean(paramOption.$isOptional) === true
+                    || toolkit.toBoolean(paramOption.$optional)   === true
+                    || toolkit.toBoolean(paramOption.$isRequired) === false
+                    || toolkit.toBoolean(paramOption.$required)   === false);
+            var isItDependsParam = (paramOption.$isOptional === 'itDepends'
+                    || paramOption.$optional === 'itDepends'
+                    || paramOption.$isRequired === 'itDepends'
+                    || paramOption.$required === 'itDepends');
+        %>
+          <tr
+            <% if (paramOption.$deprecated || paramOption.$isDeprecated) { %>
+              class="wat-doc-deprecated"
+            <% } %>
+          >
+            <td class="wat-mono">
+              <%= paramPath.replace(/\.0/g, '[#]') %>
+              <% if (isRequiredParam) { %>
+                <label class="label label-primary pull-right"><%= __('Required') %></label>
+              <% } else if (isOptionalParam) { %>
+                <label class="label label-default pull-right"><%= __('Optional') %></label>
+              <% } else if (isItDependsParam) { %>
+                <label class="label label-warning pull-right"><%= __('It Depends') %></label>
+              <% } else if (paramOption.$type.toLowerCase() !== 'json') { %>
+                <label class="label label-default pull-right"><%= __('Optional') %></label>
+              <% } %>
+            </td>
+            <td class="text-uppercase wat-mono"><%= paramOption.$type %></td>
+            <td>
+              <span>
+                <% if (paramOption.$deprecated || paramOption.$isDeprecated) { %>
+                  <label class="label label-danger pull-right"><%= __('Deprecated') %></label>
+                <% } %>
+
+                <% __(paramOption.$desc || '').trim().split('\n').forEach(function(line) { %>
+                  <%= line %><br />
+                <% }) %>
+              </span>
+
+              <%
+                for (var directive in paramOption) if (paramOption.hasOwnProperty(directive)) {
+                  if (noneDescriptionDirectives.indexOf(directive) > -1) continue;
+
+                  var directiveName        = directive.replace('$', '');
+                  var directiveValue       = paramOption[directive];
+                  var directiveValueString = JSON.stringify(paramOption[directive], null, ' ');
+              %>
+                <div>
+                  <span class="fa fa-fw fa-minus"></span>
+                  <strong class="text-capitalize"><%= __(directiveName + '__APIDoc_directiveName') %> :</strong>
+                  <% if (Array.isArray(directiveValue)) { %>
+                    <pre class="wat-plain-text"><%= directiveValueString.split('\n').slice(1, -1).join('\n') %></pre>
+
+                  <% } else if ('boolean' === typeof directiveValue) { %>
+                    <span class="wat-mono"><%= directiveValue ? __('Yes') : __('No') %></span>
+
+                  <% } else if ('string' === typeof directiveValue) { %>
+                    <% if (directiveName === 'searchType') { %>
+                      <span class="wat-mono"><%= __(directiveValue + '__APIDoc_searchType') %></span>
+
+                    <% } else { %>
+                      <span class="wat-mono"><% components.limitedSpan(directiveValue) %></span>
+                    <% } %>
+
+                  <% } else if ('object' === typeof directiveValue) { %>
+                    <dl class="dl-horizontal">
+                      <% for (var _k in directiveValue) if (directiveValue.hasOwnProperty(_k)) { %>
+                        <%
+                          var _v = directiveValue[_k];
+                          if (Array.isArray(_v)) {
+                            _v = _v.join(', ');
+                          }
+                        %>
+                        <dt class="wat-mono"><% components.limitedSpan(_k) %>:</dt>
+                        <dd class="wat-mono"><% components.limitedSpan(_v) %></dd>
+                      <% } %>
+                    </dl>
+                  <% } else { %>
+                    <span class="wat-mono"><%= directiveValueString %></span>
+                  <% } %>
+                </div>
+              <% } %>
+            </td>
+            <% if (category === 'body') { %>
+              <%
+                if (isFirstRow) {
+                  isFirstRow = false;
+
+                  var bodySample = JSON.stringify(pageFn.genParamSample(routeConfig[category]), null, 2)
+              %>
+                <td rowspan="100%" class="wat-nowrap">
+                  <div class="form-group">
+                    <textarea
+                      class="form-control wat-doc-no-break"
+                      rows="<%= Math.max(parseInt(paramCount * 3), 10) %>"
+                      placeholder="<%= __('Body value') %>"
+                      target-api="<%= apiId %>"
+                      handler="options"
+                      category="<%= category %>"
+                      name="body"
+                      default-value="<%= bodySample %>"
+                    ><%= bodySample %></textarea>
+                  </div>
+                  <div class="form-group text-right">
+                    <button
+                    class="btn btn-default btn-sm"
+                    target-api="<%= apiId %>"
+                    handler="reset"
+                    category="<%= category %>"
+                    name="body"
+                    ><i class="fa fa-repeat fa-flip-horizontal"></i> <%= __('Reset') %></button>
+                    <button
+                    class="btn btn-primary btn-sm"
+                    target-api="<%= apiId %>"
+                    target-api-method="<%= routeConfig.method %>"
+                    handler="run"
+                    ><%= __('Run Request') %> <i class="fa fa-play"></i></button>
+                  </div>
+                </td>
+              <% } %>
+            <% } else { %>
+              <td class="wat-nowrap">
+                <div class="form-inline">
+                  <% if (paramOption.$type === 'enum')  { %>
+                    <select
+                      class="form-control wat-mono wat-doc-select-control"
+                      target-api="<%= apiId %>"
+                      handler="options"
+                      category="<%= category %>"
+                      name="<%= paramPath %>"
+                    >
+                      <option value=""><%= __('(None)') %></option>
+
+                      <% (paramOption.$in || []).forEach(function(opt) { %>
+                        <option value="<%= opt %>"><%= opt %></option>
+                      <% }) %>
+                    </select>
+                  <% } else if (paramOption.$type === 'bool' || paramOption.$type === 'boolean') { %>
+                    <select
+                      class="form-control wat-mono wat-doc-select-control"
+                      target-api="<%= apiId %>"
+                      handler="options"
+                      category="<%= category %>"
+                      name="<%= paramPath %>"
+                    >
+                      <option value=""><%= __('(None)') %></option>
+                      <option value="true"><%= __('Yes') %></option>
+                      <option value="false"><%= __('No') %></option>
+                    </select>
+                  <% } else if (paramOption.$type === 'commaArray' && Array.isArray(paramOption.$commaArrayIn)) { %>
+                    <select multiple style="height: <%= paramOption.$commaArrayIn.length * 25 + 'px;'%>"
+                      class="form-control wat-mono wat-doc-select-control"
+                      target-api="<%= apiId %>"
+                      handler="options"
+                      category="<%= category %>"
+                      name="<%= paramPath %>"
+                    >
+                      <% (paramOption.$commaArrayIn || []).forEach(function(opt) { %>
+                        <option value="<%= opt %>"><%= opt %></option>
+                      <% }) %>
+                    </select>
+                  <% } else { %>
+                    <input
+                      class="form-control wat-mono wat-doc-input-control"
+                      target-api="<%= apiId %>"
+                      handler="options"
+                      category="<%= category %>"
+                      name="<%= paramPath %>"
+                      placeholder="<%= paramPath.split('.').pop() + ' ' + __('value') %>"
+                    >
+                  <% } %>
+
+                  <button
+                    class="btn btn-default wat-doc-reset-btn"
+                    target-api="<%= apiId %>"
+                    handler="reset"
+                    category="<%= category %>"
+                    name="<%= paramPath %>"
+                  ><i class="fa fa-repeat fa-flip-horizontal"></i> <%= __('Reset') %></button>
+                </div>
+              </td>
+            <% } %>
+          </tr>
+        <% } %>
+        <% if (paramCount === 0) { %>
+          <tr>
+            <td class="text-uppercase wat-mono"><%= category %></td>
+            <td class="text-uppercase wat-mono"><%= routeConfig[category].$type %></td>
+            <td class="text-uppercase wat-mono"><%= category %></td>
+            <td rowspan="100%" class="wat-nowrap">
+              <div class="form-group">
+                <textarea
+                  class="form-control wat-doc-no-break"
+                  rows="10"
+                  placeholder="<%= __('Body value') %>"
+                  target-api="<%= apiId %>"
+                  handler="options"
+                  category="<%= category %>"
+                  name="body"
+                  default-value="{}"
+                >{}</textarea>
+              </div>
+              <div class="form-group text-right">
+                <button
+                class="btn btn-default btn-sm"
+                target-api="<%= apiId %>"
+                handler="reset"
+                category="<%= category %>"
+                name="body"
+                ><i class="fa fa-repeat fa-flip-horizontal"></i> <%= __('Reset') %></button>
+                <button
+                class="btn btn-primary btn-sm"
+                target-api="<%= apiId %>"
+                target-api-method="<%= routeConfig.method %>"
+                handler="run"
+                ><%= __('Run Request') %> <i class="fa fa-play"></i></button>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<div class="modal fade" id="badJSONBodyModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="myModalLabel"><%= __('Bad JSON Body') %></h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <p class="text-danger"><%= __('The JSON body is invalid. Please check it out and try again.') %></p>
+            <pre id="badJSONBody" class="text-danger"></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><%= __('Close') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="apiResultModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document" style="width: 80%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="myModalLabel"><%= __('API Result') %></h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-xs-12 col-sm-6">
+            <h3><%= __('Request') %></h3>
+            <pre id="apiResultRequestInfo"><code class="apiurl"></code></pre>
+            <br />
+            <pre id="apiResultRequestBody"><code class="json"></code></pre>
+          </div>
+          <div class="col-xs-12 col-sm-6">
+            <h3><%= __('Response') %></h3>
+            <pre id="apiResultResponseInfo"><code class="plaintext"></code></pre>
+            <br />
+            <pre id="apiResultResponseBody"><code class="json"></code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><%= __('Close') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="navbar navbar-default navbar-fixed-bottom">
+  <div class="container-fluid" style="width: 90%">
+    <div class="navbar-form">
+      <div class="input-group">
+        <strong class="input-group-addon"><i class="fa fa-filter fa-2x"></i></strong>
+        <input id="routeDocFilter" type="text" class="form-control input-lg" tip="<%= __('API Doc can be filtered by entering part of API Name or URL') %>" placeholder="<%= __('Filter By Part of API Name/URL') %>" style="color: red; width: 300px;">
+        <span class="input-group-btn">
+          <i class="fa fa-repeat fa-flip-horizontal"></i>
+          <button id="resetRouteDocFilter" class="btn btn-default input-lg wat-big-text" type="button"><%= __('Reset') %></button>
+        </span>
+      </div>
+
+      <div class="pull-right">
+        <div class="checkbox">
+          <label>
+            <input id="useDryRunMode" type="checkbox"> <%= __('Use Dry Run Mode') %>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="container-fluid" style="width: 90%">
+  <div>
+    <h1>
+      <i class="fa fa-book"></i> <%= __('API Documents') %>
+      <span class="pull-right" style="font-size: 18px; line-height: 60px;">
+        <a href="/doc/enum-const-reference"><i class="fa fa-book"></i> <%= __('ENUM/CONST Reference') %></a> /
+        <a href="/doc/change-log"><i class="fa fa-history"></i> <%= __('Change Log') %></a>
+      </span>
+    </h1>
+
+    <div class="panel-group">
+      <% htmlAPIDocIntroductionSections.forEach(function(s, index) { %>
+      <div doc-section class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse" data-target="#docSection-<%= index %>">
+          <span class="wat-doc-title" data-toggle="collapse" data-target="#docSection-<%= index %>">
+            <i class="fa fa-info-circle"></i> <%= s.title %>
+          </span>
+        </div>
+
+        <div class="panel-collapse collapse" id="docSection-<%= index %>">
+          <div class="panel-body wat-doc">
+            <div class="col-md-10 col-md-offset-1 col-xs-11 col-xs-offset-1">
+              <%- s.contentHTML %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <%
+    routes.forEach(function(route, routeIndex) {
+      var c = route.config;
+
+      if (!c.showInDoc) return;
+
+      var apiId   = toolkit.getMD5('api' + c.method + c.url);
+      var apiType = c.url.indexOf('/api') === 0 ? 'api' : 'page';
+
+      var docPanelId = 'routeDocDetail' + routeIndex;
+  %>
+    <div id="<%= apiId %>" doc-section api-type="<%= apiType %>" class="panel panel-default">
+      <div class="panel-heading" data-toggle="collapse" data-target="#<%= docPanelId %>">
+        <span class="wat-doc-title">
+          <div class="pull-right">
+            <% if (c.deprecated || c.isDeprecated) { %>
+              <label class="label label-danger"><%= __('Deprecated') %></label>
+            <% } %>
+          </div>
+
+          <%= c.name %>
+        </span>
+        <br />
+        &#12288;<label class="label label-<%= methodClassMap[c.method] %> text-uppercase"><%= c.method %></label>
+        <span class="wat-mono"><%= c.url %></span>
+      </div>
+      <div class="panel-collapse collapse" id="<%= docPanelId %>">
+        <div class="panel-body">
+          <h2>
+            <div class="col-xs-12">
+              <label class="label label-<%= methodClassMap[c.method] %> text-uppercase"><%= c.method %></label>
+
+              <% if (['get', 'delete'].indexOf(c.method) > -1) { %>
+                <pre class="wat-doc-url"><code class="apiurl"
+                    target-api="<%= apiId %>"
+                    base-url="<%= c.url %>"
+                    href="<%= toolkit.strf('{0}?{1}={2}', c.url, CONFIG._WEB_AUTH_QUERY, res.locals.xAuthToken || '') %>"
+                  ><%= c.url %></code></pre>
+              <% } else if (['post', 'put'].indexOf(c.method) > -1) { %>
+                <pre class="wat-doc-url"><code class="apiurl"
+                    target-api="<%= apiId %>"
+                    base-url="<%= c.url %>"
+                    href="<%= c.url %>"
+                  ><%= c.url %></code></pre>
+              <% } %>
+            </div>
+
+            <div class="col-xs-12 text-right">
+              <% if (apiType === 'page') { %>
+                <a class="btn btn-primary" href="<%= c.url %>" target="_blank">
+                  <%= __('Go To Page') %> <i class="fa fa-external-link"></i>
+                </a>
+
+              <% } else { %>
+                <a class="btn btn-primary"
+                  target-api="<%= apiId %>"
+                  target-api-method="<%= c.method %>"
+                  handler="<%= apiType === 'api' ? 'run' : '' %>"
+                ><%= __('Run Request') %> <i class="fa fa-play"></i></a>
+              <% } %>
+
+              <%
+                components.copyButton(c.url, {
+                  style    : 'default',
+                  size     : 'md',
+                  iconRight: true,
+                  title    : __('Copy URL'),
+                })
+              %>
+
+              <a class="btn btn-default" href="<%= req.baseUrl + '?apiId=' + apiId %>" target="_blank">
+                <%= __('New window') %> <i class="fa fa-external-link"></i>
+              </a>
+            </div>
+          </h2>
+
+          <hr />
+
+          <h4>
+            <% if (c.deprecated || c.isDeprecated) { %>
+              <label class="label label-danger"><%= __('Deprecated') %></label>
+            <% } %>
+
+            <% if (c.response) { %>
+              <label class="label label-default"><%= __('Response Type') %> <span class="text-uppercase"><%= c.response %></span></label>
+            <% } %>
+
+            <% if (c.requireSignIn) { %>
+              <label class="label label-primary"><i class="fa fa-lock"></i> <%= __('Require Sign In') %></label>
+            <% } else { %>
+              <label class="label label-success"><i class="fa fa-unlock"></i> <%= __('Public Access') %></label>
+            <% } %>
+
+            <% if (c.requireSignIn && c.authType) { %>
+              <%
+                var authTypeTexts = [];
+                if (c.authType) {
+                  authTypeTexts.push(__(c.authType));
+                }
+                var authTypeText = authTypeTexts.join('|');
+              %>
+              <label class="label label-primary"><i class="fa fa-key"></i> <%= __('Allowed Auth Types') %> <span class="wat-mono"><%= authTypeText %></span></label>
+            <% } %>
+
+            <% if (c.tagDataField) { %>
+              <label class="label label-info"><i class="fa fa-w fa-tags"></i> <%= __('Support Tagging') %></label>
+            <% } %>
+
+            <% if (c.export === true) { %>
+              <label class="label label-info"><i class="fa fa-w fa-download"></i> <%= __('Support Export') %></label>
+            <% } %>
+
+            <% if (c.paging === true) { %>
+              <label class="label label-success"><i class="fa fa-book"></i> <%= __('Support Paging') %></label>
+            <% } else if (c.paging === 'simple') { %>
+              <label class="label label-warning"><i class="fa fa-book"></i> <%= __('Support Paging (Simple)') %></label>
+            <% } else if (c.paging === 'marker') { %>
+              <label class="label label-warning"><i class="fa fa-book"></i> <%= __('Support Paging (Marker)') %></label>
+            <% } %>
+
+            <% if (c.fieldPicking === true) { %>
+              <label class="label label-info"><i class="fa fa-w fa-th"></i> <%= __('Support Field Picking') %></label>
+            <% } %>
+            <% if (c.fieldKicking === true) { %>
+              <label class="label label-info"><i class="fa fa-w fa-th"></i> <%= __('Support Field Kicking') %></label>
+            <% } %>
+          </h4>
+
+          <% if (c.desc) { %>
+            <div>
+              <h3><%= __('Description') %></h3>
+              <% if (c.descType === 'markdown') { %>
+                <div class="wat-doc-desc wat-doc"><%- marked(c.desc) %></div>
+              <% } else { %>
+                <pre class="wat-doc-desc wat-plain-text"><%= c.desc %></pre>
+              <% } %>
+            </div>
+          <% } %>
+
+          <% if (c.headers) { %>
+            <div>
+              <h3><%= __('HTTP Headers') %></h3>
+              <% renderParamTable(apiId, c, 'headers') %>
+            </div>
+          <% } %>
+
+          <% if (c.params) { %>
+            <div>
+              <h3><%= __('Params') %></h3>
+              <% renderParamTable(apiId, c, 'params') %>
+            </div>
+          <% } %>
+
+          <% if (c.query) { %>
+            <div>
+              <h3><%= __('Query') %></h3>
+              <% renderParamTable(apiId, c, 'query') %>
+            </div>
+          <% } %>
+
+          <% if (c.body) { %>
+            <div>
+              <h3><%= __('Body') %></h3>
+              <% renderParamTable(apiId, c, 'body') %>
+            </div>
+          <% } %>
+
+          <% if (c.files) { %>
+            <div>
+              <h3><%= __('Files') %></h3>
+
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th class="col-xs-4"><%= __('Field') %></th>
+                      <th class="col-xs-4"><%= __('Limit Size') %></th>
+                      <th class="col-xs-4"><%= __('Allowed Types') %></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>files</td>
+                      <td><%= c.files.$limitSize || __('Unlimited') %></td>
+                      <td><%= (c.files.$allowedTypes === '*' || c.files.$allowedTypes === '*/*') ? __('Any') : toolkit.asArray(c.files.$allowedTypes).join(', ') %></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+  <div style="height: 150px"></div>
+</div>
+
+<div style="position: fixed; right: -5px; bottom: 150px; z-index: 99999">
+  <div class="btn-group-vertical">
+    <button id="backToTop" class="btn btn-default" style="text-align: left;">
+      <i class="fa fa-fw fa-arrow-up"></i>
+      <%= __('Back to TOP') %>
+    </button>
+    <button id="expandAll" class="btn btn-default" style="text-align: left;">
+      <i class="fa fa-fw fa-plus"></i>
+      <%= __('Expand All') %>
+    </button>
+    <button id="collapseAll" class="btn btn-default" style="text-align: left;">
+      <i class="fa fa-fw fa-minus"></i>
+      <%= __('Collapse All') %>
+    </button>
+  </div>
+</div>
+
+<% include ../_utils/footer %>
+
+<%- components.js('js/doc/apiDoc.js') %>

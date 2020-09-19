@@ -1,0 +1,80 @@
+<%_ try { _%>
+    <footer class="col-xs-8 col-xs-offset-2">
+      <%_ if (!pageConfigs.hideFooter) { _%>
+        <hr />
+        <div class="col-xs-12">
+          <ul class="list-inline text-center">
+            <li data-toggle="tooltip" data-placement="top" title="<%= imageInfo.CREATE_TIMESTAMP ? localMoment(imageInfo.CREATE_TIMESTAMP * 1000).format('YYYY-MM-DD HH:mm:ss') : 'local' %>">
+              <%= __('Version') %>: <span class="wat-mono">
+                <%= imageInfo.CI_COMMIT_REF_NAME %>@<%= moment(imageInfo.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset("+08:00").format('YYYYMMDD_HHmmss') %>
+              </span>
+            </li>
+            <li>/</li>
+            <li><%= __('Cost') %>: <span class="wat-mono"><span id="watReqCostLabel"></span><%= __('ms') %></span></li>
+            <%_ if (CONFIG.showAPIDocLink) { _%>
+              <li>/</li>
+              <li><a href="/doc"><%= __('API Documents') %></a></li>
+              <li>/</li>
+              <li><a href="/doc/enum-const-reference"><%= __('ENUM/CONST Reference') %></a></li>
+              <li>/</li>
+              <li><a href="/doc/change-log"><%= __('Change Log') %></a></li>
+            <%_ } _%>
+            <%_ if (CONFIG.showLanguageSwitcher) { _%>
+              <li>/</li>
+              <li>
+                <div class="dropup">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"><%= __('Language') %> <span class="caret"></span></a>
+                  <ul class="dropdown-menu dropdown-menu-right">
+                    <%_
+                      for (var locale in CONFIG.supportedLocales) if (CONFIG.supportedLocales.hasOwnProperty(locale)) {
+                        var detail = CONFIG.supportedLocales[locale];
+                    _%>
+                      <li><%_ components.aLink({title: detail.name, attrs: {onclick: "core.switchLocale('" + locale + "')"}}) _%></li>
+                    <%_ } _%>
+                  </ul>
+                </div>
+              </li>
+            <%_ } _%>
+          </ul>
+        </div>
+        <div class="col-xs-12 text-center">
+          <div>
+            <strong class="wat-big-text" style="text-shadow: 3px 3px 1px lightgrey;"><%= __('Project Name__projectInfo') -%></strong>
+            <%_ if (CONFIG.showCopyright) { _%>
+              <br />
+              <%= __('Company Name__projectInfo') %> <%= __('Copyright') %> &copy; <%= CONFIG.copyrightStartYear || moment().year() %> - <%= moment().year() -%>
+            <%_ } _%>
+          </div>
+        </div>
+      <%_ } _%>
+    </footer>
+  </body>
+
+  <%- components.js('libs/jquery/jquery.min.js') _%>
+  <%- components.js('libs/jquery-ui/jquery-ui.min.js') _%>
+  <%- components.js('libs/jquery-cookie/jquery.cookie.min.js') _%>
+  <%- components.js('libs/bootstrap/js/bootstrap.min.js') _%>
+  <%- components.js('libs/highlight-js/js/highlight.min.js') _%>
+  <%- components.js('libs/moment-js/moment-with-locales.min.js') _%>
+  <%- components.js('libs/async/async.min.js') _%>
+  <%- components.js('libs/validator/validator.min.js') _%>
+  <%- components.js('libs/object-checker/object-checker.js') _%>
+  <%- components.js('libs/clipboard/clipboard.min.js') _%>
+  <%- components.js('libs/js-base64/base64.min.js') _%>
+
+  <%- components.js('js/browserToolkit.js') _%>
+  <%- components.js('js/apiHooks.js') _%>
+  <%- components.js('js/core.translates.js') _%>
+  <%- components.js('js/core.js') _%>
+
+  <%_ if (_componentsInPage.filterDateTimeRange) { _%>
+    <%- components.css('libs/jquery-datetime-picker/jquery.datetimepicker.min.css') _%>
+    <%- components.js('libs/jquery-datetime-picker/jquery.datetimepicker.full.min.js') _%>
+  <%_ } _%>
+
+  <%_ if (currentUser.isSignedIn) { _%>
+    <%- components.js('js/global.js') _%>
+  <%_ } _%>
+</html>
+
+<%_ } catch(ex) { console.log(ex.stack) } _%>
