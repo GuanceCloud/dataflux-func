@@ -296,17 +296,17 @@ def dataflux_func_runner(self, *args, **kwargs):
             raise e
 
         extra_vars = {
-            '_DFF_is_debug'         : False,
-            '_DFF_root_task_id'     : root_task_id,
-            '_DFF_func_chain'       : func_chain,
-            '_DFF_origin'           : origin,
-            '_DFF_origin_id'        : origin_id,
-            '_DFF_exec_mode'        : exec_mode,
-            '_DFF_start_time'       : start_time,
-            '_DFF_start_time_ms'    : start_time_ms,
-            '_DFF_trigger_time'     : kwargs.get('triggerTime') or start_time,
-            '_DFF_crontab'          : kwargs.get('crontab'),
-            '_DFF_crontab_config_id': kwargs.get('crontabConfigId'),
+            '_DFF_IS_DEBUG'         : False,
+            '_DFF_ROOT_TASK_ID'     : root_task_id,
+            '_DFF_FUNC_CHAIN'       : func_chain,
+            '_DFF_ORIGIN'           : origin,
+            '_DFF_ORIGIN_ID'        : origin_id,
+            '_DFF_EXEC_MODE'        : exec_mode,
+            '_DFF_START_TIME'       : start_time,
+            '_DFF_START_TIME_MS'    : start_time_ms,
+            '_DFF_TRIGGER_TIME'     : kwargs.get('triggerTime') or start_time,
+            '_DFF_CRONTAB'          : kwargs.get('crontab'),
+            '_DFF_CRONTAB_CONFIG_ID': kwargs.get('crontabConfigId'),
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
@@ -417,7 +417,7 @@ def dataflux_func_runner(self, *args, **kwargs):
     finally:
         if script_scope:
             # 记录输出日志（开启debug或函数执行失败时保留）
-            if script_scope.get('_DFF_is_debug') or not is_succeeded:
+            if script_scope.get('_DFF_IS_DEBUG') or not is_succeeded:
                 log_messages = script_scope['DFF'].log_messages or None
                 self.cache_script_log(func_id, target_script['publishVersion'], log_messages,
                         exec_mode=exec_mode)

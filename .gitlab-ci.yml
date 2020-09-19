@@ -1,0 +1,47 @@
+stages:
+   - build
+
+variables:
+  PROJECT_NAME: dataflux-func
+
+build:
+  stage: build
+  only:
+    - dev
+    - preprod
+    - /^release_\d+_\d+$/ # 如：release_20190101_01
+    - /^pre_\d+_\d+$/     # 如：pre_20190101_01
+    - /^\d+\.\d+\.\d+$/   # 如：1.2.3
+  script:
+    - python echo-image-info.py > image-info.json
+    - REPO=registry.jiagouyun.com/middlewares/$PROJECT_NAME
+    - IMAGE=$PROJECT_NAME:$CI_COMMIT_REF_NAME
+    - docker build -t $IMAGE .
+    - docker tag $IMAGE $REPO:$CI_COMMIT_REF_NAME
+    - docker push $REPO:$CI_COMMIT_REF_NAME
+  tags:
+    - middleware-prod
+
+buildPub:
+  stage: build
+  only:
+    - /^\d+\.\d+\.\d+$/ # 如：1.2.3
+  script:
+    - python echo-image-info.py > image-info.json
+    - REPO=pubrepo.jiagouyun.com/$PROJECT_NAME/$PROJECT_NAME
+    - IMAGE=$PROJECT_NAME:$CI_COMMIT_REF_NAME
+    - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
+    - V_MAJOR=${V_PARTS[0]}
+    - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
+    - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
+    - docker build -t $IMAGE .
+    - docker tag $IMAGE $REPO:latest
+    - docker tag $IMAGE $REPO:$V_MAJOR
+    - docker tag $IMAGE $REPO:$V_MAJOR_MINOR
+    - docker tag $IMAGE $REPO:$V_MAJOR_MINOR_PATCH
+    - docker push $REPO:latest
+    - docker push $REPO:$V_MAJOR
+    - docker push $REPO:$V_MAJOR_MINOR
+    - docker push $REPO:$V_MAJOR_MINOR_PATCH
+  tags:
+    - middleware-prod

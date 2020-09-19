@@ -1061,7 +1061,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         pass
 
     def _print(self, safe_scope, *args, **kwargs):
-        if safe_scope.get('_DFF_is_debug'):
+        if safe_scope.get('_DFF_IS_DEBUG'):
             print(*args, **kwargs)
 
         try:
@@ -1079,7 +1079,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 self.logger.error(line)
 
     def _call_func(self, safe_scope, func_id, kwargs=None, save_result=False):
-        func_chain = safe_scope.get('_DFF_func_chain') or []
+        func_chain = safe_scope.get('_DFF_FUNC_CHAIN') or []
         func_chain_info = ' -> '.join(map(lambda x: '`{}`'.format(x), func_chain))
 
         # 检查函数链长度
@@ -1128,7 +1128,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
         queue = toolkit.get_worker_queue('runnerOnRPC')
-        if safe_scope.get('_DFF_is_debug'):
+        if safe_scope.get('_DFF_IS_DEBUG'):
             queue = toolkit.get_worker_queue('runnerOnDebugger')
 
         task_headers = {
@@ -1138,13 +1138,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcId'         : func_id,
             'funcKwargs'     : kwargs,
             'saveResult'     : save_result,
-            'isDebug'        : safe_scope.get('_DFF_is_debug'),
-            'rootTaskId'     : safe_scope.get('_DFF_root_task_id'),
+            'isDebug'        : safe_scope.get('_DFF_IS_DEBUG'),
+            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
             'funcChain'      : func_chain,
             'execMode'       : 'async',
-            'triggerTime'    : safe_scope.get('_DFF_trigger_time'),
-            'crontab'        : safe_scope.get('_DFF_crontab'),
-            'crontabConfigId': safe_scope.get('_DFF_crontab_config_id'),
+            'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'crontab'        : safe_scope.get('_DFF_CRONTAB'),
+            'crontabConfigId': safe_scope.get('_DFF_CRONTAB_CONFIG_ID'),
         }
 
         from worker.tasks.dataflux_func.runner import dataflux_func_runner
