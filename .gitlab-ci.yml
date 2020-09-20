@@ -11,7 +11,6 @@ build:
     - preprod
     - /^release_\d+_\d+$/ # 如：release_20190101_01
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
-    - /^\d+\.\d+\.\d+$/   # 如：1.2.3
   script:
     - python echo-image-info.py > image-info.json
     - REPO=registry.jiagouyun.com/middlewares/$PROJECT_NAME
@@ -22,13 +21,14 @@ build:
   tags:
     - middleware-prod
 
-buildPub:
+buildWithPub:
   stage: build
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     - python echo-image-info.py > image-info.json
-    - REPO=pubrepo.jiagouyun.com/$PROJECT_NAME/$PROJECT_NAME
+    - REPO=registry.jiagouyun.com/middlewares/$PROJECT_NAME
+    - PUB_REPO=pubrepo.jiagouyun.com/$PROJECT_NAME/$PROJECT_NAME
     - IMAGE=$PROJECT_NAME:$CI_COMMIT_REF_NAME
     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
     - V_MAJOR=${V_PARTS[0]}
@@ -39,9 +39,17 @@ buildPub:
     - docker tag $IMAGE $REPO:$V_MAJOR
     - docker tag $IMAGE $REPO:$V_MAJOR_MINOR
     - docker tag $IMAGE $REPO:$V_MAJOR_MINOR_PATCH
+    - docker tag $IMAGE $PUB_REPO:latest
+    - docker tag $IMAGE $PUB_REPO:$V_MAJOR
+    - docker tag $IMAGE $PUB_REPO:$V_MAJOR_MINOR
+    - docker tag $IMAGE $PUB_REPO:$V_MAJOR_MINOR_PATCH
     - docker push $REPO:latest
     - docker push $REPO:$V_MAJOR
     - docker push $REPO:$V_MAJOR_MINOR
     - docker push $REPO:$V_MAJOR_MINOR_PATCH
+    - docker push $PUB_REPO:latest
+    - docker push $PUB_REPO:$V_MAJOR
+    - docker push $PUB_REPO:$V_MAJOR_MINOR
+    - docker push $PUB_REPO:$V_MAJOR_MINOR_PATCH
   tags:
     - middleware-prod
