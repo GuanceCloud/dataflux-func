@@ -21,8 +21,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 > 可以使用`docker swarm init`初始化当前节点。
 >
 > 如果本机存在多个网卡，需要在上述初始化命令中指定网卡，
-> 如：`docker swarm init --advertise-addr=eth0`
->
+> 如：`docker swarm init --advertise-addr=eth0`。
 > 本机网卡列表可以通过`ifconfig`查询
 
 
@@ -48,12 +47,16 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 ## 使用基于`docker stack`的自动部署脚本部署
 
+*注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
+
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
 ```shell
 sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/run-docker-stack.sh)"
 ```
 
 ## 创建配置文件，并使用`docker stack`手工部署
+
+*注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
 
 下载示例配置文件，并复制一份作为配置文件：
 ```shell
