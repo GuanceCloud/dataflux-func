@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -x
+set -e
 
 __PREV_DIR=$PWD
 __PROJECT_NAME=dataflux-func
@@ -48,11 +48,11 @@ wget $__RESOURCE_BASE_URL/$__DOCKER_STACK_EXAMPLE_FILE -O $__DOCKER_STACK_EXAMPL
 # 创建docker stack 配置文件
 if [ ! -f $__DOCKER_STACK_FILE ]; then
     # 创建配置文件并使用随机密钥/密码
-    sed -e "s#your_secret#$__RANDOM_SECRET#g" \
-        -e "s#mysql_root_password#$__RANDOM_MYSQL_ROOT_PASSWORD#g" \
+    sed -e "s#=your_secret#=$__RANDOM_SECRET#g" \
+        -e "s#=mysql_root_password#=$__RANDOM_MYSQL_ROOT_PASSWORD#g" \
         -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
-        -e "s#image: ${__PROJECT_NAME}.*#image: ${_DOCKER_IMAGE}#g" \
+        -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_DOCKER_IMAGE}#g" \
         $__DOCKER_STACK_EXAMPLE_FILE > $__DOCKER_STACK_FILE
 
     echo "New docker stack file with random secret/password created:"

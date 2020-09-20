@@ -21,7 +21,7 @@ version: '3.1'
 
 services:
   mysql:
-    image: mysql
+    image: mysql:5.7.26
     networks:
       - datafluxfunc
     environment:
@@ -32,14 +32,14 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   redis:
-    image: redis
+    image: redis:5.0.7
     networks:
       - datafluxfunc
     volumes:
       - "/usr/local/dataflux-func/redis:/data"
 
   server:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"
@@ -62,7 +62,7 @@ services:
     command: ./run-server.sh
 
   worker:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"
@@ -81,7 +81,7 @@ services:
     command: ./run-worker.sh
 
   beat:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"

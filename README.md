@@ -13,6 +13,10 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 *本系统推荐使用`docker stack`部署，*
 *因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
 
+> 程序本体镜像默认从驻云维护的镜像库中拉取，
+> 因此在执行操作之前，请先确保已经执行了登录操作。
+> 可以使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
+>
 > 使用`docker stack`需要Docker Swarm模式，
 > 可以使用`docker swarm init`初始化当前节点。
 >
@@ -49,15 +53,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/run-docker-stack.sh)"
 ```
 
-*上述操作默认从驻云维护的镜像库中拉取镜像，*
-*因此在执行操作之前，请先确保已经执行了登录操作。*
-
-*参考命令：*
-
-```shell
-sudo docker login <用户名> <密码> pubrepo.jiagouyun.com
-```
-
 ## 创建配置文件，并使用`docker stack`手工部署
 
 下载示例配置文件，并复制一份作为配置文件：
@@ -73,6 +68,7 @@ grep -E '^#' docker-stack.yaml
 
 修改完成后，即可使用`docker stack`进行部署：
 ```shell
+sudo docker pull {docker-stack.yaml中的镜像}
 sudo docker stack deploy dataflux-func -c docker-stack.yaml
 ```
 
