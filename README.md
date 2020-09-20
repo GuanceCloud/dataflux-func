@@ -8,10 +8,10 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - Server：使用Node.js + Express 构建，主要提供Web UI 客户端、对外API 接口
 - Worker：使用Python3 + Celery 构建，主要提供Python 脚本的执行环境
 
-<br>
 
-<span style="color: red">本系统推荐使用`docker stack`部署，</span>
-<span style="color: red">因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`</span>
+
+*本系统推荐使用`docker stack`部署，*
+*因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
 
 > 使用`docker stack`需要Docker Swarm模式，
 > 可以使用`docker swarm init`初始化当前节点。
@@ -49,10 +49,10 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/run-docker-stack.sh)"
 ```
 
-<span style="color: red">上述操作默认从驻云维护的镜像库中拉取镜像，</span>
-<span style="color: red">因此在执行操作之前，请先确保已经执行了登录操作。</span>
+*上述操作默认从驻云维护的镜像库中拉取镜像，*
+*因此在执行操作之前，请先确保已经执行了登录操作。*
 
-<span style="color: red">参考命令：</span>
+*参考命令：*
 
 ```shell
 sudo docker login <用户名> <密码> pubrepo.jiagouyun.com
