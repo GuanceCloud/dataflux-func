@@ -39,7 +39,7 @@ services:
       - "/usr/local/dataflux-func/redis:/data"
 
   server:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"
@@ -62,7 +62,7 @@ services:
     command: ./run-server.sh
 
   worker:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"
@@ -81,7 +81,7 @@ services:
     command: ./run-worker.sh
 
   beat:
-    image: dataflux-func
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     environment:
       - "SECRET=your_secret"
       - "MYSQL_HOST=mysql"

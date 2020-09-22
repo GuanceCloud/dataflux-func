@@ -350,110 +350,26 @@ exports.afterAppCreated = function(app, server) {
 
   var IMAGE_INFO = require('../image-info.json');
 
-  // 自动更新最新版官方脚本
-  if (false) {
-    var OFFICIAL_SCRIPT_INSTALLED_VER = 'officialScript.installed.version';
+  // 重置管理员账号密码
+  if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
+    var RESET_ADMIN_ID = 'u-admin';
+    var adminPasswordHash = toolkit.getSaltedPasswordHash(
+        RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
 
-    var baseVersion = 'STOCK-' + moment(IMAGE_INFO.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset('+08:00').format('YYYYMMDD_HHmmss');
-    var installedVersion = null;
+    var sql = toolkit.createStringBuilder();
+    sql.append('UPDATE wat_main_user');
+    sql.append('SET');
+    sql.append('   username     = ?');
+    sql.append('  ,passwordHash = ?');
+    sql.append('WHERE');
+    sql.append('  id = ?')
 
-    async.series([
-      // 获取锁
-      function(asyncCallback) {
-        var lockKey   = toolkit.getCacheKey('lock', 'autoInstallOfficialScriptLib');
-        var lockValue = Date.now().toString();
-        var lockAge   = 600;
-
-        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-          if (err) return asyncCallback(err);
-
-          if (!cacheRes) {
-            var e = new Error('Installing Official Script Lib is just launched');
-            e.isWarning = true;
-            return asyncCallback(e);
-          }
-
-          return asyncCallback();
-        });
-      },
-      // 读取已安装、基准官方脚本版本
-      function(asyncCallback) {
-        var sql = toolkit.createStringBuilder();
-        sql.append('SELECT');
-        sql.append('   id');
-        sql.append('  ,value');
-        sql.append('FROM wat_main_system_config');
-        sql.append('WHERE');
-        sql.append('  id = ?')
-
-        var sqlParams = [OFFICIAL_SCRIPT_INSTALLED_VER];
-
-        app.locals.db.query(sql, sqlParams, function(err, dbRes) {
-          if (err) return asyncCallback(err);
-
-          dbRes = dbRes[0];
-          if (dbRes) {
-            installedVersion = dbRes.value;
-          }
-
-          return asyncCallback();
-        });
-      },
-      // 读取最新脚本包文件，并安装
-      function(asyncCallback) {
-        if (installedVersion && installedVersion === baseVersion) {
-          var e = new Error('Official Script Lib is up to date');
-          e.isWarning = true;
-          return asyncCallback(e);
-        }
-
-        app.locals.logger.info('Official Script Lib update: {0} -> {1}', installedVersion, baseVersion);
-
-        var filename = 'dataflux-fx.latest.official';
-        var officialScriptPkg = fs.readFileSync(path.join(__dirname, '../func-pkg/' + filename));
-
-        var watClient = new WATClient({host: 'localhost', port: 8088});
-        var opt = {
-          path      : '/api/v1/script-sets/do/import',
-          fileBuffer: officialScriptPkg,
-          filename  : filename,
-        }
-        watClient.upload(opt, function(err, apiRes) {
-          if (err) return asyncCallback(err);
-
-          if (!apiRes.ok) {
-            return asyncCallback(new Error('Installing Official Script Lib failed: ' + apiRes.message));
-          }
-
-          return asyncCallback();
-        });
-      },
-      // 记录更新信息
-      function(asyncCallback) {
-        var sql = toolkit.createStringBuilder();
-        var sqlParams = null;
-
-        if (installedVersion) {
-          sql.append('UPDATE wat_main_system_config');
-          sql.append('SET');
-          sql.append('  value = ?');
-          sql.append('WHERE');
-          sql.append('  id = ?')
-
-          sqlParams = [baseVersion, OFFICIAL_SCRIPT_INSTALLED_VER];
-
-        } else {
-          sql.append('INSERT INTO wat_main_system_config');
-          sql.append('SET');
-          sql.append('   id    = ?');
-          sql.append('  ,value = ?');
-
-          sqlParams = [OFFICIAL_SCRIPT_INSTALLED_VER, baseVersion];
-        }
-
-        app.locals.db.query(sql, sqlParams, asyncCallback);
-      },
-    ], function(err) {
+    var sqlParams = [
+      process.env.RESET_ADMIN_USERNAME,
+      adminPasswordHash,
+      RESET_ADMIN_ID,
+    ];
+    app.locals.db.query(sql, sqlParams, function(err) {
       if (err && 'string' === typeof err.stack) {
         if (err.isWarning) {
           app.locals.logger.warning(err.message);
