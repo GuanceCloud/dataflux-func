@@ -93,5 +93,7 @@ uploaded-files/
 client/dist
 
 # Test file
-config/user-config.yaml
 docker-stack.yaml
+
+# Other
+.gitlab-ci.yml
