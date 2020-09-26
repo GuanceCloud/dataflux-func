@@ -340,7 +340,6 @@ class DataWay(object):
             lines.append('{0}{1}{2}{3}'.format(ensure_str(measurement), ensure_str(tag_set), ensure_str(field_set), ensure_str(timestamp)))
 
         body = '\n'.join(lines)
-        body = ensure_binary(body)
 
         return body
 
@@ -349,6 +348,8 @@ class DataWay(object):
 
         if query:
             path = path + '?' + urlencode(query)
+        if body:
+            body = ensure_binary(body)
 
         if self.debug:
             print('[Request] {0} {1}://{2}:{3}{4}'.format(method, ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(path)))

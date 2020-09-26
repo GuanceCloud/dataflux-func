@@ -234,7 +234,7 @@ export const ENV_VARIABLE = [
   {
     key : 'boolean',
     name: '布尔值',
-    tips: '可用"true"/"false"、"yes"/"no"、"on"/"off"、"1"/"0"表示对应的布尔值',
+    tips: '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值',
   },
   {
     key : 'json',
@@ -430,43 +430,11 @@ export const FUNC_CATEGORY = [
   },
   {
     key : 'batch',
-    name: '批处理（通用）',
+    name: '批处理',
   },
   {
-    key : 'batchMetric',
-    name: '批处理（指标处理）',
-  },
-  {
-    key : 'batchLog',
-    name: '批处理（日志处理）',
-  },
-  {
-    key : 'builtinQuery',
-    name: '内置查询',
-  },
-  {
-    key : 'builtinCheck',
-    name: '内置检测',
-  },
-  {
-    key : 'builtinBatch',
-    name: '内置批处理（通用）',
-  },
-  {
-    key : 'builtinBatchMetric',
-    name: '内置批处理（指标处理）',
-  },
-  {
-    key : 'builtinBatchLog',
-    name: '内置批处理（日志处理）',
-  },
-  {
-    key : 'builtinBatchKeyevent',
-    name: '内置批处理（关键事件处理）',
-  },
-  {
-    key : 'builtinCollector',
-    name: '内置采集',
+    key : 'collector',
+    name: '采集器',
   },
 ];
 export const FUNC_CATEGORY_MAP = createMap(FUNC_CATEGORY);

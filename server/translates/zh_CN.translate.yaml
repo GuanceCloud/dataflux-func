@@ -239,8 +239,8 @@ Stack__error                                      : 调用栈
 Start Time                                        : 开始时间
 Status                                            : 状态
 Success                                           : 成功
-Super administrator                               : 超级管理员
-Super administrator of the site                   : 网站超级管理员
+Super administrator                               : 系统管理员
+Super administrator of the site                   : 网站系统管理员
 Support Export                                    : 支持导出
 Support Field Kicking                             : 支持剔除返回字段
 Support Field Picking                             : 支持挑选返回字段

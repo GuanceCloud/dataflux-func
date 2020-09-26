@@ -1042,14 +1042,17 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         env_value         = db_res[0]['valueTEXT']
         auto_type_casting = db_res[0]['autoTypeCasting']
-        try:
-            if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-                env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
-        except Exception:
-            return None
+        casted_env_value  = env_value
 
-        ENV_VARIABLES_CACHE[env_variable_id] = env_value
-        return env_value
+        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+            casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
+
+            # 防止boolean类型转换失败时返回`None`
+            if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
+                raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
+
+        ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
+        return casted_env_value
 
     def _log(self, safe_scope, message):
         message_time = arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
