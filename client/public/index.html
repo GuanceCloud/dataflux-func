@@ -18,7 +18,9 @@
   <script>
     (function() {
       var vuexData = localStorage.getItem('vuex');
-      if ('string' === typeof vuexData) {
+      if (!vuexData) {
+        vuexData = {};
+      } else if ('string' === typeof vuexData) {
         vuexData = JSON.parse(vuexData);
       }
 
