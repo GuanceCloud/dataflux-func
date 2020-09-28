@@ -84,7 +84,7 @@ task_queues.extend([
     # Batch执行队列（批处理，execMode=batch）
     create_queue(toolkit.get_worker_queue('runnerOnBatch')),
     # BatchBuiltin执行队列（优先批处理，execMode=batch。主要用于内置日志处理）
-    create_queue(toolkit.get_worker_queue('runnerOnBatchBuiltin')),
+    create_queue(toolkit.get_worker_queue('runnerOnBatchVIP')),
 ])
 
 # Task

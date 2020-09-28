@@ -1,20 +1,22 @@
-# DataFlux Func
+# DataFlux.f(x)
 
-DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
+DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
+
+> DataFlux.f(x) 读作`data flux function`，有时也可能写作`DataFlux Func`。
 
 前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组建，目前已成为可独立运行的系统。
 
 本系统主要分为2个部分：
 - Server：使用Node.js + Express 构建，主要提供Web UI 客户端、对外API 接口
-- Worker：使用Python3 + Celery 构建，主要提供Python 脚本的执行环境
+- Worker：使用Python3 + Celery 构建，主要提供Python 脚本的执行环境（内含Beat模块）
 
 
 
 *本系统推荐使用`docker stack`部署，*
 *因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
 
-> 程序本体镜像默认从驻云维护的镜像库中拉取，
-> 因此在执行操作之前，请先确保已经执行了登录操作。
+> 程序本体镜像默认从上海驻云维护的镜像库中拉取，
+> 因此在执行操作之前，请确保已经登录到镜像库。
 > 可以使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
 >
 > 使用`docker stack`需要Docker Swarm模式，
@@ -33,6 +35,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
     - [推荐方式：使用基于`docker stack`的自动部署脚本部署](#%E6%8E%A8%E8%8D%90%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
+- [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
     - [主要功能](#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
     - [支持的数据库](#%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93)
@@ -45,33 +48,29 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 # 部署运行
 
-部署运行DataFlux Func 使用`docker stack`进行。
+部署运行DataFlux.f(x) 使用`docker stack`进行。
 
 用户可以选择官方提供的一键部署命令，也可以自行调整配置文件后手动启动。
 
 ## 推荐方式：使用基于`docker stack`的自动部署脚本部署
 
-使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
-- 运行MySQL、Redis、DataFlux Func（Server+Worker+Beat)
-- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux Func配置文件）
-- MySQL `root`用户密码、系统Secret 随机生成，并保存于DataFlux Func 配置文件中
-- Redis不设密码
-- MySQL、Redis 不提供外部访问
-
 *注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
 
-运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
+运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux.f(x)：
 ```shell
 sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/run-docker-stack.sh)"
 ```
 
-## 进阶方式：使用`docker stack`配置文件进行部署
+使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
+- 运行MySQL、Redis、DataFlux.f(x)，包含Server，Worker，Beat
+- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux.f(x)配置文件）
+- 随机生成MySQL `root`用户密码、系统Secret，并保存于DataFlux.f(x) 配置文件中
+- Redis不设密码
+- MySQL、Redis 不提供外部访问
 
-使用进阶部署方式可以提供一定程度的个性化定制，相比推荐方式，可以方便对以下内容进行修改：
-- DataFlux Func 版本（从最新版`latest`改为其他）
-- 数据存储位置（从`/usr/local/dataflux-func/`改为其他）
-- 修改DataFlux Func运行方式（如指定既存MySQL、Redis 作为数据存储等）
-- 修改MySQL、Redis运行方式（如允许公开访问，指定密码、修改配置等。具体内容请参考对应镜像的官方说明）
+执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面。
+
+## 进阶方式：使用`docker stack`配置文件进行部署
 
 *注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
 
@@ -81,16 +80,47 @@ wget https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflu
 cp docker-stack.example.yaml docker-stack.yaml
 ```
 
-根据配置文件说明进行修改：
+配置文件最开头标注了详细说明，可以根据说明进行修改：
 ```shell
 grep -E '^#' docker-stack.yaml
 ```
 
 修改完成后，即可使用`docker stack`进行部署：
 ```shell
-sudo docker pull {docker-stack.yaml中的镜像}
+sudo docker pull {docker-stack.yaml中的所有镜像}
 sudo docker stack deploy dataflux-func -c docker-stack.yaml
 ```
+
+使用进阶部署方式可以提供一定程度的个性化定制，相比推荐方式，可以方便对以下内容进行修改：
+- DataFlux.f(x) 版本（从最新版`latest`改为其他）
+- 数据存储位置（从`/usr/local/dataflux-func/`改为其他）
+- 修改DataFlux.f(x)运行方式（如指定既存MySQL、Redis 作为数据存储等）
+- 修改MySQL、Redis运行方式（如允许公开访问，指定密码、修改配置等。具体内容请参考对应镜像的官方说明）
+
+执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面（假设使用默认端口）。
+
+
+
+# 版本号规则
+
+版本号由3个部分组成：`主版本号`.`次版本号`.`修订版本号`。
+
+主版本号从`1`开始。
+只有数据结构前后不兼容时才会向上加一。
+
+> 即相同主版本号的两套代码，数据结构一定是兼容的。
+
+次版本号从`0`开始，偶数为测试版，奇数为稳定版。
+只有在主要功能发生变化时，才会向上加一。
+每当主版本号加一后，次版本号归零。
+
+修订版本号从`0`开始，表示某个次版本的修订次数。
+只要发生代码修改，一定会向上加一。
+每当次版本号加一后，修订版本号归零。
+
+> 因此，系统首个版本为`1.0.0`且为测试版，
+> 一段时间修改后版本号可能为`1.0.10`，
+> 而首个稳定版为`1.1.0`。
 
 
 
@@ -125,7 +155,7 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 ## 相关链接
 
-- [DataFlux Func 宣传小册子](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-introduce.pdf)
+- [DataFlux.f(x) 宣传小册子](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-introduce.pdf)
 
 - [DataFlux官方网站](https://dataflux.cn/)
 

@@ -360,7 +360,7 @@ function _createFuncCallKwargsOptions(req, res, origin) {
   } else {
     switch(origin) {
       case 'batch':
-        var _BATCH_QUEUES = ['runnerOnBatch', 'runnerOnBatchBuiltin'];
+        var _BATCH_QUEUES = ['runnerOnBatch', 'runnerOnBatchVIP'];
         if (_BATCH_QUEUES.indexOf(inputedFuncCallOptions.queue) < 0) {
           throw new E('EClientBadRequest', toolkit.strf('Invalid options：`queue` of batch should be one of `{0}`', _BATCH_QUEUES.join(',')));
         }
@@ -1466,8 +1466,8 @@ exports.callBatch = function(req, res, next) {
     }
 
     // 执行队列 queue
-    if (func.category.indexOf('builtin') === 0) {
-      inputedFuncCallOptions.queue = 'runnerOnBatchBuiltin';
+    if (func.category === 'batchVIP') {
+      inputedFuncCallOptions.queue = 'runnerOnBatchVIP';
     }
 
     /*** 合并参数 ***/
@@ -1714,9 +1714,9 @@ exports.getSystemConfig = function(req, res, next) {
     MODE        : CONFIG.MODE,
     WEB_BASE_URL: CONFIG.WEB_BASE_URL,
 
-    _FUNC_PKG_EXPORT_FILENAME    : CONFIG._FUNC_PKG_EXPORT_FILENAME,
-    _FUNC_PKG_EXPORT_EXT         : CONFIG._FUNC_PKG_EXPORT_EXT,
-    _FUNC_PKG_PASSWORD_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_RANGE_LIST,
+    _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
+    _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
+    _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
 
     _LIMIT_SCRIPT_LOG       : null,
     _LIMIT_SCRIPT_FAILURE   : null,

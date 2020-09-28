@@ -143,7 +143,7 @@ export default {
       // 自动生成密码
       let password = null
       if (this.isPasswordEnabled === true) {
-        let _range = this.$store.getters.CONFIG('_FUNC_PKG_PASSWORD_RANGE_LIST');
+        let _range = this.$store.getters.CONFIG('_FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST');
         let _minLength = parseInt(_range[0]);
         let _maxLength = parseInt(_range[1]);
         [_minLength, _maxLength] = [_minLength, _maxLength].sort();
