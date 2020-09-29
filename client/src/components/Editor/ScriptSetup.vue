@@ -17,7 +17,7 @@
               <el-form ref="form" :model="form" label-width="100px" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item>
                   <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本已被其他人锁定，无法进行修改"></InfoBlock>
-                  <InfoBlock v-else-if="data.isLocked" type="warning" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
+                  <InfoBlock v-else-if="data.isLocked" type="success" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -153,10 +153,11 @@ export default {
       this.$store.commit('updateScriptListSyncTime');
     },
     async lockData(isLocked) {
+      let actionTitle = isLocked ? '锁定' : '解锁';
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: {id: this.scriptId},
         body  : {data: { isLocked: isLocked }},
-        alert : {entity: '脚本', action: '修改', showError: true, showSuccess: true},
+        alert : {entity: '脚本', action: actionTitle, showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
