@@ -1,4 +1,4 @@
-/*************************/
+  /*************************/
 /* Based on anyword hint */
 /*************************/
 
@@ -25,11 +25,32 @@
                         'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal',
                         'not', 'or', 'pass', 'raise', 'return', 'True', 'try',
                         'while', 'with', 'yield'];
-  var DFF_HINT = [
-    "DFF.API('函数名称', category=None, tags=[], cache_result=None)",
-    "DFF.SRC('数据源ID')",
-    "DFF.ENV('环境变量ID')",
-  ];
+
+  // Python builtins
+  var PYTHON_BUILTINS = ['abs', 'all', 'any', 'ascii', 'bin', 'breakpoint', 'callable',
+                        'chr', 'compile', 'delattr', 'dir', 'divmod', 'eval', 'exec', 'format',
+                        'getattr', 'globals', 'hasattr', 'hash', 'hex', 'id', 'input', 'isinstance',
+                        'issubclass', 'iter', 'len', 'locals', 'max', 'min', 'next', 'oct', 'ord',
+                        'pow', 'print', 'repr', 'round', 'setattr', 'sorted', 'sum', 'vars', 'None',
+                        'Ellipsis', 'NotImplemented', 'False', 'True', 'bool', 'memoryview', 'bytearray',
+                        'bytes', 'classmethod', 'complex', 'dict', 'enumerate', 'filter', 'float', 'frozenset',
+                        'property', 'int', 'list', 'map', 'object', 'range', 'reversed', 'set', 'slice',
+                        'staticmethod', 'str', 'super', 'tuple', 'type', 'zip', '__debug__', 'BaseException',
+                        'Exception', 'TypeError', 'StopAsyncIteration', 'StopIteration', 'GeneratorExit',
+                        'SystemExit', 'KeyboardInterrupt', 'ImportError', 'ModuleNotFoundError', 'OSError',
+                        'EnvironmentError', 'IOError', 'EOFError', 'RuntimeError', 'RecursionError',
+                        'NotImplementedError', 'NameError', 'UnboundLocalError', 'AttributeError',
+                        'SyntaxError', 'IndentationError', 'TabError', 'LookupError', 'IndexError',
+                        'KeyError', 'ValueError', 'UnicodeError', 'UnicodeEncodeError', 'UnicodeDecodeError',
+                        'UnicodeTranslateError', 'AssertionError', 'ArithmeticError', 'FloatingPointError',
+                        'OverflowError', 'ZeroDivisionError', 'SystemError', 'ReferenceError', 'MemoryError',
+                        'BufferError', 'Warning', 'UserWarning', 'DeprecationWarning', 'PendingDeprecationWarning',
+                        'SyntaxWarning', 'RuntimeWarning', 'FutureWarning', 'ImportWarning', 'UnicodeWarning',
+                        'BytesWarning', 'ResourceWarning', 'ConnectionError', 'BlockingIOError', 'BrokenPipeError',
+                        'ChildProcessError', 'ConnectionAbortedError', 'ConnectionRefusedError', 'ConnectionResetError',
+                        'FileExistsError', 'FileNotFoundError', 'IsADirectoryError', 'NotADirectoryError', 'InterruptedError',
+                        'PermissionError', 'ProcessLookupError', 'TimeoutError', 'open', 'quit', 'exit', 'copyright',
+                        'credits', 'license', 'help', '_'];
 
   CodeMirror.registerHelper("hint", "dff-anyword", function(editor, options) {
     var word = options && options.word || WORD;
@@ -43,13 +64,18 @@
 
     var curCode = editor.getValue();
 
-    // Add Python keywords
-    PYTHON_KEYWORD.forEach(function(kw) {
-      if (kw.toLowerCase().indexOf(curWord.toLowerCase()) === 0) {
-        list.push(kw);
-        seen[kw] = true;
-      }
-    });
+    function addKeyword(keywords) {
+      keywords.forEach(function(kw) {
+        if (kw.toLowerCase().indexOf(curWord.toLowerCase()) === 0) {
+          list.push(kw);
+          seen[kw] = true;
+        }
+      });
+    }
+
+    // Add Python keywords/builtins
+    addKeyword(PYTHON_KEYWORD);
+    addKeyword(PYTHON_BUILTINS);
 
     // Add DataFlux Func @DFF hint
     if (curWord.toLowerCase() === 'dff') {
