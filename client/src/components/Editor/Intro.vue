@@ -11,7 +11,7 @@
         <div class="intro-content">
           <InfoBlock type="warning" title="在开始之前，请大致阅读以下介绍"></InfoBlock>
 
-          <template v-if="false">
+          <template>
           <!-- 包学包会 -->
           <el-divider content-position="left">
             <h1>
@@ -21,7 +21,7 @@
           <p>
             我们编写了详细的操作使用手册《DataFlux.f(x)包学包会》<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/helps/dataflux_fx/dataflux-fx-user-guide.pdf" target="_blank">立即阅读《DataFlux.f(x)包学包会》（文档大小约15MB)</el-link>
+            <el-link type="primary" href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-user-guide.pdf" target="_blank">立即阅读《DataFlux.f(x)包学包会》（文档大小约5MB)</el-link>
           </p>
           </template>
 

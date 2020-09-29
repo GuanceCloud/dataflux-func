@@ -307,13 +307,16 @@ input:disabled {
 .el-dialog__title,
 .el-dialog__body,
 .el-message-box__title,
-.el-message-box__content {
+.el-message-box__content,
+.el-notification__title,
+.el-notification__content {
   color: #ccc !important;
 }
 .el-dialog,
-.el-message-box {
+.el-message-box,
+.el-notification {
   background: #222 !important;
-  border: none !important;
+  border: 1px solid #555 !important
 }
 
 .quick-view-window,
@@ -609,8 +612,8 @@ input:disabled {
 }
 .el-tag--warning {
   background-color: transparent !important;
-  border-color: #e6a23c !important;
-  color: #e6a23c !important;
+  border-color: #e6b770 !important;
+  color: #e6b770 !important;
 }
 
 .el-tag--dark.el-tag--danger {
@@ -627,21 +630,50 @@ input:disabled {
   color: #fff !important;
 }
 
-.el-alert--warning.is-light {
-  background-color: #563c17 !important;
-  color: #E6A23C !important;
+.el-message--info {
+  background-color: #4a4a4a !important;
+  border-color: #676060 !important;
 }
+.el-message--info * {
+  color: #cecece !important;
+}
+.el-message--success {
+  background-color: #326b12 !important;
+  border-color: #5d9a3a !important;
+}
+.el-message--success * {
+  color: #97f768 !important;
+}
+.el-message--warning {
+  background-color: #563c17 !important;
+  border-color: #865d23 !important;
+}
+.el-message--warning * {
+  color: #e6b770 !important;
+}
+.el-message--error {
+  background-color: #a02121 !important;
+  border-color: #bf4848 !important;
+}
+.el-message--error * {
+  color: #ffaeae !important;
+}
+
 .el-alert--info.is-light {
   background-color: #4a4a4a !important;
   color: #cecece !important;
 }
-.el-alert--error.is-light {
-  background-color: #a02121 !important;
-  color: #ffaeae !important;
-}
 .el-alert--success.is-light {
   background-color: #326b12 !important;
   color: #97f768 !important;
+}
+.el-alert--warning.is-light {
+  background-color: #563c17 !important;
+  color: #e6b770 !important;
+}
+.el-alert--error.is-light {
+  background-color: #a02121 !important;
+  color: #ffaeae !important;
 }
 
 /* CodeMirror theme */

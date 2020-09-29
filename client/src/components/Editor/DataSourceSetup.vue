@@ -131,7 +131,7 @@
                   <!-- 可变区域结束 -->
 
                   <el-form-item v-if="!data.isBuiltin">
-                    <el-button v-if="mode === 'setup'" @click="deleteData">删除数据源</el-button>
+                    <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
                     <div class="setup-right">
                       <el-button type="primary" @click="submitData">保存</el-button>
                     </div>

@@ -48,7 +48,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除脚本</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
                   <div class="setup-right">
                     <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? '解锁' : '锁定' }}</el-button>
                     <el-button type="primary" @click="submitData">保存</el-button>

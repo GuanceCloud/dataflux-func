@@ -59,7 +59,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除环境变量</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">保存</el-button>
                   </div>

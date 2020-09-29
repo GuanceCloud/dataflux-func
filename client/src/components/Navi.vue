@@ -41,8 +41,8 @@
         </el-menu-item>
       </template>
 
-      <el-menu-item index="" v-if="false">
-        <a href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/helps/dataflux_fx/dataflux-fx-user-guide.pdf" target="_blank">
+      <el-menu-item index="">
+        <a href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-user-guide.pdf" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
           包学包会
         </a>
