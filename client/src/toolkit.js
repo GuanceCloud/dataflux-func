@@ -21,9 +21,7 @@ import 'codemirror/addon/fold/comment-fold.js'
 // CodeMirror当前行高亮
 import 'codemirror/addon/selection/active-line.js'
 // CodeMirror代码提示
-import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/hint/show-hint.js'
-import 'codemirror/addon/hint/anyword-hint.js'
 // CodeMirror自动括号提示/自动补全
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
@@ -31,6 +29,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import 'codemirror/addon/edit/trailingspace.js'
 // CodeMirror注释
 import 'codemirror/addon/comment/comment.js'
+import 'codemirror/addon/comment/continuecomment.js'
 // CodeMirror查询
 import 'codemirror/addon/search/searchcursor.js'
 
@@ -55,6 +54,10 @@ import moment from 'moment'
 
 // DIFF
 import { diffTrimmedLines } from 'diff'
+
+// DataFlux Func hint
+import '@/assets/css/dff-hint.css'
+import '@/assets/js/dff-anyword.js'
 
 let handleCircular = function() {
   let cache = [];
@@ -1024,8 +1027,9 @@ export function initCodeMirror(id) {
 
     // 自动提示
     hintOptions: {
-      hint          : CodeMirror.hint.anyword,
+      hint          : CodeMirror.hint['dff-anyword'],
       completeSingle: false,
+      closeOnUnfocus: false,
     },
 
     // 自动括号提示/自动补全
@@ -1034,6 +1038,9 @@ export function initCodeMirror(id) {
 
     // 行尾空格
     showTrailingSpace: true,
+
+    // 连续注释
+    continueComments: true,
 
     extraKeys: {
       // Tab转空格处理

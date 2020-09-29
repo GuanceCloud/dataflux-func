@@ -94,7 +94,10 @@ export default {
       if (!apiRes.ok) return;
 
       let treeData = [];
+      window._DFF_envVariableIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_envVariableIds.push(d.id);
+
         // 缩减描述行数
         d.description = this.T.limitLines(d.description);
 

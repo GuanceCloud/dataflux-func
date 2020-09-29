@@ -217,7 +217,10 @@ export default {
       });
       if (!apiRes.ok) return;
 
+      window._DFF_scriptIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_scriptIds.push(d.id);
+
         // 记录节点
         nodeEntity[d.id] = 'script';
 
@@ -258,7 +261,10 @@ export default {
       });
       if (!apiRes.ok) return;
 
+      window._DFF_funcIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_funcIds.push(d.id);
+
         // 记录节点
         nodeEntity[d.id] = 'func';
 

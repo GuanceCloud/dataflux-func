@@ -676,7 +676,19 @@ input:disabled {
   color: #ffaeae !important;
 }
 
-/* CodeMirror theme */
+/* CodeMirror */
+.CodeMirror-hints {
+  border: 1px solid #555 !important;
+  background: #3c3c3c !important;
+}
+li.CodeMirror-hint {
+  color: #ccc !important;
+}
+li.CodeMirror-hint-active {
+  color: white !important;
+  background-color: #d25400 !important;
+}
+
 /* Based on Sublime Text's Monokai theme */
 
 .cm-s-eclipse-monokai.CodeMirror { background: #272822; color: #f8f8f2; }
