@@ -1029,7 +1029,7 @@ export function initCodeMirror(id) {
     hintOptions: {
       hint          : CodeMirror.hint['dff-anyword'],
       completeSingle: false,
-      closeOnUnfocus: false,
+      closeOnUnfocus: true,
     },
 
     // 自动括号提示/自动补全

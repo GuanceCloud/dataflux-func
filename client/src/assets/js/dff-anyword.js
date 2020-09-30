@@ -1,4 +1,4 @@
-  /*************************/
+/*************************/
 /* Based on anyword hint */
 /*************************/
 
@@ -15,8 +15,9 @@
 })(function(CodeMirror) {
   "use strict";
 
-  // RANGE 500 -> 1000
-  var WORD = /[\w$]+/, RANGE = 1000;
+  // WORD : /[\w$]+/ -> /[\w@$]+/
+  // RANGE: 500      -> 1000
+  var WORD = /[\w@$]+/, RANGE = 1000;
 
   // Python keywords
   var PYTHON_KEYWORD = ['and', 'as', 'assert', 'async', 'await', 'break',
@@ -62,47 +63,46 @@
 
     var list = options && options.list || [], seen = {};
 
-    var curCode = editor.getValue();
+    var _curCode = editor.getValue();
+    var _lowCurLine = 'string' === typeof curLine ? curLine.toLowerCase() : '';
+    var _lowCurWord = 'string' === typeof curWord ? curWord.toLowerCase() : '';
 
-    function addKeyword(keywords) {
-      keywords.forEach(function(kw) {
-        if (kw.toLowerCase().indexOf(curWord.toLowerCase()) === 0) {
-          list.push(kw);
-          seen[kw] = true;
-        }
-      });
-    }
+    console.log(curWord)
 
     // Add Python keywords/builtins
+    function addKeyword(keywords) {
+      keywords.forEach(function(kw) {
+        if (kw.toLowerCase().indexOf(_lowCurWord) < 0) return;
+
+        list.push(kw);
+        seen[kw] = true;
+      });
+    }
     addKeyword(PYTHON_KEYWORD);
     addKeyword(PYTHON_BUILTINS);
 
     // Add DataFlux Func @DFF hint
-    if (curWord.toLowerCase() === 'dff') {
-      list.push("DFF.API('函数名称', category=None, tags=[], cache_result=None)");
+    if ('dff'.indexOf(_lowCurLine) === 0 || '@dff'.indexOf(_lowCurLine) === 0) {
+      list.push("@DFF.API('函数名称', category=None, tags=[], cache_result=None)");
+    }
 
+    if ('dff'.indexOf(_lowCurWord) === 0) {
       if (window._DFF_dataSourceIds) {
         window._DFF_dataSourceIds.forEach(function(id) {
           list.push("DFF.SRC('" + id + "')");
         });
-
-      } else {
-        list.push("DFF.SRC('数据源ID')");
       }
 
       if (window._DFF_envVariableIds) {
         window._DFF_envVariableIds.forEach(function(id) {
           list.push("DFF.ENV('" + id + "')");
         });
-
-      } else {
-        list.push("DFF.ENV('环境变量ID')");
       }
     };
 
     // Add DataFlux Func import script hint
     var currentScriptId = location.href.split('/').pop();
-    if ('import'.indexOf(curWord.toLowerCase()) === 0) {
+    if ('import'.indexOf(_lowCurLine) === 0) {
       if (window._DFF_scriptIds) {
         window._DFF_scriptIds.forEach(function(id) {
           if (id === currentScriptId) return;
@@ -116,9 +116,9 @@
       window._DFF_funcIds.forEach(function(id) {
         var _scriptId = id.split('.')[0];
         if (_scriptId === currentScriptId) return;
-        if (curCode.indexOf('import ' + _scriptId) < 0) return;
+        if (_curCode.indexOf('import ' + _scriptId) < 0) return;
 
-        if (id.toLowerCase().indexOf(curWord.toLowerCase()) === 0) {
+        if (id.toLowerCase().indexOf(_lowCurWord) === 0) {
           list.push(id);
           seen[id] = true;
         }
