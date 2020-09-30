@@ -67,7 +67,18 @@
     var _lowCurLine = 'string' === typeof curLine ? curLine.toLowerCase() : '';
     var _lowCurWord = 'string' === typeof curWord ? curWord.toLowerCase() : '';
 
-    console.log(curWord)
+    // Add common use code piece
+    if (curWord === 'try') {
+      var _indent = curLine.indexOf('try');
+      list.push([
+         'try:'
+        ,'    // do something...'
+        ,'except Exception as e:'
+        ,'    raise e'
+        ,'finally:'
+        ,'    // do something...'
+      ].join('\n' + ' '.repeat(_indent)))
+    }
 
     // Add Python keywords/builtins
     function addKeyword(keywords) {
@@ -81,11 +92,12 @@
     addKeyword(PYTHON_KEYWORD);
     addKeyword(PYTHON_BUILTINS);
 
-    // Add DataFlux Func @DFF hint
+    // Add DataFlux Func @DFF.API hint
     if ('dff'.indexOf(_lowCurLine) === 0 || '@dff'.indexOf(_lowCurLine) === 0) {
       list.push("@DFF.API('函数名称', category=None, tags=[], cache_result=None)");
     }
 
+    // Add DataFlux DFF.* hint
     if ('dff'.indexOf(_lowCurWord) === 0) {
       if (window._DFF_dataSourceIds) {
         window._DFF_dataSourceIds.forEach(function(id) {
