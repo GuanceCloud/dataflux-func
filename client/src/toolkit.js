@@ -31,7 +31,10 @@ import 'codemirror/addon/edit/trailingspace.js'
 import 'codemirror/addon/comment/comment.js'
 import 'codemirror/addon/comment/continuecomment.js'
 // CodeMirror查询
+import 'codemirror/addon/search/search.js'
 import 'codemirror/addon/search/searchcursor.js'
+import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog.css'
 
 // CodeMirror主题
 import 'codemirror/theme/eclipse.css'
@@ -1042,6 +1045,7 @@ export function initCodeMirror(id) {
     // 连续注释
     continueComments: true,
 
+    // 快捷键
     extraKeys: {
       // Tab转空格处理
       Tab: (cm) => {
@@ -1051,7 +1055,24 @@ export function initCodeMirror(id) {
           cm.replaceSelection(' '.repeat(cm.getOption('indentUnit')), 'end', '+input');
         }
       },
+      'Cmd-F' : 'findPersistent',
+      'Ctrl-F': 'findPersistent',
     },
+
+    // 翻译
+    phrases: {
+      "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）',
+      "All": '全部',
+      "No": '否',
+      "Replace all:": '全部替换',
+      "Replace with:": '替换为',
+      "Replace:": '替换',
+      "Replace?": '是否替换',
+      "Search:": '搜索',
+      "Stop": '停止',
+      "With:": '替换为',
+      "Yes": '是',
+    }
   });
 
   // 随键入代码提示

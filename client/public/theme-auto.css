@@ -688,6 +688,9 @@ li.CodeMirror-hint-active {
   color: white !important;
   background-color: #d25400 !important;
 }
+.CodeMirror-selected {
+  background-color: #555 !important;
+}
 
 /* Based on Sublime Text's Monokai theme */
 

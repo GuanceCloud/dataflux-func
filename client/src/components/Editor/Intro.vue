@@ -91,6 +91,7 @@
               <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>[</kbd>：减少缩进（支持多行操作）</li>
               <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>：增加缩进</li>
               <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Shift</kbd> + <kbd>Tab</kbd>：减少缩进</li>
+              <li>焦点在编辑器内 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd>：搜索</li>
             </ul>
           </p>
 

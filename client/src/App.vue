@@ -621,6 +621,11 @@ content: "\25B2";
 .CodeMirror-line * {
   font-family: Iosevka !important;
 }
+.cm-searching {
+  background: none !important;
+  border: 1px solid #f60 !important;
+  border-radius: 3px !important;
+}
 .cm-trailingspace {
   background-color: lightgrey;
   border-radius: 3px;
