@@ -67,19 +67,6 @@
     var _lowCurLine = 'string' === typeof curLine ? curLine.toLowerCase() : '';
     var _lowCurWord = 'string' === typeof curWord ? curWord.toLowerCase() : '';
 
-    // Add common use code piece
-    if (curWord === 'try') {
-      var _indent = curLine.indexOf('try');
-      list.push([
-         'try:'
-        ,'    // do something...'
-        ,'except Exception as e:'
-        ,'    raise e'
-        ,'finally:'
-        ,'    // do something...'
-      ].join('\n' + ' '.repeat(_indent)))
-    }
-
     // Add Python keywords/builtins
     function addKeyword(keywords) {
       keywords.forEach(function(kw) {
