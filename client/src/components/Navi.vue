@@ -42,7 +42,7 @@
       </template>
 
       <el-menu-item index="">
-        <a href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-user-guide.pdf" target="_blank">
+        <a href="https://t.dataflux.cn/func-user-guide" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
           包学包会
         </a>

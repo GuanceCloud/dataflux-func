@@ -58,7 +58,7 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux.f(x)：
 ```shell
-sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/run-docker-stack.sh)"
+sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
@@ -76,7 +76,7 @@ sudo /bin/bash -c "$(curl -fsSL https://zhuyun-static-files-production.oss-cn-ha
 
 下载示例配置文件，并复制一份作为配置文件：
 ```shell
-wget https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/docker-stack.example.yaml
+wget https://t.dataflux.cn/func-docker-stack -O docker-stack.example.yaml
 cp docker-stack.example.yaml docker-stack.yaml
 ```
 
@@ -155,7 +155,7 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 ## 相关链接
 
-- [DataFlux.f(x) 宣传小册子](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource/dataflux-func-introduce.pdf)
+- [DataFlux.f(x) 宣传小册子](https://t.dataflux.cn/func-intro)
 
 - [DataFlux官方网站](https://dataflux.cn/)
 
