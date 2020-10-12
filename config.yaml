@@ -4,6 +4,10 @@ APP_NAME: DataFluxFunc
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
 
+# 额外Python import 路径列表
+# 必须使用绝对路径，多个路径都好分隔，如：'/path1,/path2'
+EXTRA_PYTHON_IMPORT_PATH_LIST: '/data/extra-python-packages'
+
 # 运行模式
 # 可选：
 #   "dev" : 开发模式

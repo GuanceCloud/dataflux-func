@@ -2,7 +2,7 @@
 # 1. 默认情况下，数据存储于`/usr/local/dataflux-func/`目录下，
 #    部署前应当保证目录已经存在。
 #    参考命令：
-#       sudo mkdir -p /usr/local/dataflux-func/{data,mysql,redis}
+#       sudo mkdir -p /usr/local/dataflux-func/{data,data/extra-python-packages,mysql,redis}
 #
 #    如果需要将数据保存于其他地方，
 #    请注意修下面的`/usr/local/dataflux-func/`（存在多处）

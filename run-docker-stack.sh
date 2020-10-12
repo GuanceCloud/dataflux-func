@@ -39,7 +39,7 @@ if [ $_DOCKER_SERVER ]; then
 fi
 
 # 创建运行环境目录
-mkdir -p $_DOCKER_STACK_DIR/{data,mysql,redis}
+mkdir -p $_DOCKER_STACK_DIR/{data,data/extra-python-packages,mysql,redis}
 cd $_DOCKER_STACK_DIR
 
 # 下载docker stack 示例文件
