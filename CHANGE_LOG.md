@@ -1,10 +1,11 @@
 # Change Log
 
-### dev
+### 1.0.6
 
 - 代码编辑器添加搜索功能
 - 代码编辑器增加Python关键字、DataFlux Func 内置功能语句等自动补全
 - 添加《包学包会》文档链接
+- 添加`EXTRA_PYTHON_IMPORT_PATH_LIST`配置，支持额外Python import 路径列表。
 - 修复已知故障
 
 ### 1.0.5
