@@ -267,7 +267,11 @@ export default {
 
       let example = {};
       parameters.forEach(p => {
-        example[p] = 'FROM_PARAMETER';
+        if (p.indexOf('**') === 0) {
+          example['OTHER_ARGS'] = 'FROM_PARAMETER';
+        } else {
+          example[p] = 'FROM_PARAMETER';
+        }
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);

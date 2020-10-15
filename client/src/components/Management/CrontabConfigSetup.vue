@@ -396,7 +396,11 @@ export default {
 
       let example = {};
       parameters.forEach(p => {
-        example[p] = p.toUpperCase();
+        if (p.indexOf('**') === 0) {
+          example['OTHER_ARGS'] = 'OTHER_ARGS_VALUES';
+        } else {
+          example[p] = p.toUpperCase();
+        }
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);

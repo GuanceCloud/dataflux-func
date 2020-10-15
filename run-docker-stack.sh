@@ -46,12 +46,12 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file with random secret/password created:"
-    log "  $PWD/${__DOCKER_STACK_FILE}"
 
 else
     log "Docker stack file already exists:"
-    log "  $PWD/${__DOCKER_STACK_FILE}"
 fi
+
+log "  $PWD/${__DOCKER_STACK_FILE}"
 
 # 执行部署
 docker pull ${__MYSQL_IMAGE}
