@@ -195,7 +195,19 @@ export default {
       let nextAPIBodyExample = {}
       if (!this.T.isNothing(apiBodyExample.kwargs)) {
         nextAPIBodyExample.kwargs = apiBodyExample.kwargs;
+
+        // **kwargs 转换为OTHER_ARGS: FROM_PARAMETER
+        if (!this.T.isNothing(nextAPIBodyExample.kwargs)) {
+          for (let k in nextAPIBodyExample.kwargs) {
+            if (k.indexOf('**') < 0) continue;
+
+            delete nextAPIBodyExample.kwargs[k];
+            nextAPIBodyExample.kwargs['OTHER_ARGS'] = 'FROM_PARAMETER';
+            break;
+          }
+        }
       }
+
       if (!this.T.isNothing(nextCallOptions)) {
         nextAPIBodyExample.options = nextCallOptions;
       }

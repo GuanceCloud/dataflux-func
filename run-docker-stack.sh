@@ -11,8 +11,8 @@ __RANDOM_MYSQL_ROOT_PASSWORD=`openssl rand -hex 8`
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
-__MYSQL_IMAGE=mysql:5.7.26
-__REDIS_IMAGE=redis:5.0.7
+__MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
+__REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
 
 __PROJECT_NAME=dataflux-func
 _INSTALL_DIR=/usr/local/dataflux-func

@@ -32,7 +32,8 @@
                   <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.kwargsJSON">
                     <code class="func-kwargs-name">{{ name }}</code>
                     <code class="func-kwargs-equal">:</code>
-                    <code class="func-kwargs-value" v-if="!value || !value.default">必选</code>
+                    <code class="func-kwargs-value" v-if="name.indexOf('**') === 0">自定义</code>
+                    <code class="func-kwargs-value" v-else-if="!value || !value.default">必选</code>
                     <el-tooltip placement="top" v-else>
                       <pre class="func-kwargs-value" slot="content">默认值为：{{ JSON.stringify(value.default, null, 2) }}</pre>
                       <code class="func-kwargs-value">可选</code>

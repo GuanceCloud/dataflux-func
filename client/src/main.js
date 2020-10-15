@@ -115,3 +115,6 @@ window.vm = vm;
 Vue.config.devtools = true;
 Vue.config.productionTip = false;
 Vue.config.silent = true;
+
+import * as thanks from '@/thanks'
+window.thanks = thanks.thanks;

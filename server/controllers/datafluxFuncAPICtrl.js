@@ -273,7 +273,7 @@ function _createFuncCallKwargsOptions(req, res, origin) {
       break;
 
     default:
-      inputedFuncCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT_TO_EXPIRE_SCALE;
+      inputedFuncCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
       break;
   }
 
@@ -384,43 +384,21 @@ function _createFuncCallKwargsOptions(req, res, origin) {
 };
 
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
-  // 【特殊处理：GET 简化形式时，自动去除不存在的参数）
-  if (format === 'simplified') {
-    for (var k in inputedFuncCallKwargs) if (inputedFuncCallKwargs.hasOwnProperty(k)) {
-      if (!(k in baseFuncCallKwargs)) {
-        delete inputedFuncCallKwargs[k];
-      }
-    }
-  }
-
-  // 检查多余参数
-  for (var k in inputedFuncCallKwargs) if (inputedFuncCallKwargs.hasOwnProperty(k)) {
-    if (!(k in baseFuncCallKwargs)) {
-      throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
-        kwargsField: k,
-        kwargsValue: inputedFuncCallKwargs[k],
-      });
-    }
-  }
-
   // 合并请求参数
-  var mergedFuncCallKwargs = {};
+  var mergedFuncCallKwargs = toolkit.jsonCopy(inputedFuncCallKwargs);
   for (var k in baseFuncCallKwargs) if (baseFuncCallKwargs.hasOwnProperty(k)) {
     var v = baseFuncCallKwargs[k];
-    if (v === 'FROM_PARAMETER') {
-      if (k in inputedFuncCallKwargs) {
-        mergedFuncCallKwargs[k] = inputedFuncCallKwargs[k] || null;
-      } else {
-        // Nope
-      }
 
-    } else {
-      if (k in inputedFuncCallKwargs) {
+    // 检查固定参数是否存在非法传递
+    if (v !== 'FROM_PARAMETER') {
+      if (k in mergedFuncCallKwargs && mergedFuncCallKwargs[k] !== v) {
         throw new E('EClientBadRequest', 'Found disallowed function kwargs field', {
           kwargsField: k,
-          kwargsValue: inputedFuncCallKwargs[k],
+          kwargsValue: mergedFuncCallKwargs[k],
         });
       }
+
+      // 填入固定参数
       mergedFuncCallKwargs[k] = v;
     }
   }
@@ -1087,24 +1065,24 @@ exports.callFunc = function(req, res, next) {
     }
 
     /*** 检查多余参数 ***/
-    for (var k in inputedFuncCallKwargs) if (inputedFuncCallKwargs.hasOwnProperty(k)) {
-      if (!(k in func.kwargsJSON)) {
-        var _err = new E('EClientBadRequest', 'Found unexpected function kwargs field', {
-          funcId     : funcId,
-          kwargsField: k,
-          kwargsValue: inputedFuncCallKwargs[k],
-        });
+    // for (var k in inputedFuncCallKwargs) if (inputedFuncCallKwargs.hasOwnProperty(k)) {
+    //   if (!(k in func.kwargsJSON)) {
+    //     var _err = new E('EClientBadRequest', 'Found unexpected function kwargs field', {
+    //       funcId     : funcId,
+    //       kwargsField: k,
+    //       kwargsValue: inputedFuncCallKwargs[k],
+    //     });
 
-        _monitorFunc(req, res, {
-          funcId  : funcId,
-          origin  : inputedFuncCallOptions.origin,
-          execMode: inputedFuncCallOptions.mode,
-          error   : _err,
-        });
+    //     _monitorFunc(req, res, {
+    //       funcId  : funcId,
+    //       origin  : inputedFuncCallOptions.origin,
+    //       execMode: inputedFuncCallOptions.mode,
+    //       error   : _err,
+    //     });
 
-        return next(_err);
-      }
-    }
+    //     return next(_err);
+    //   }
+    // }
 
     // 函数调用参数
     var kwargs = {

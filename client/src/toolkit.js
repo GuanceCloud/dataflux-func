@@ -88,7 +88,7 @@ export function _switchToBuiltinAuth() {
   store.commit('switchToBuiltinAuth');
 };
 
-export function getBrowserName(){
+export function getBrowserName() {
   var userAgent = navigator.userAgent.toLowerCase();
   var isOpera = userAgent.indexOf('opera') > -1;
   if (isOpera) return 'opera';

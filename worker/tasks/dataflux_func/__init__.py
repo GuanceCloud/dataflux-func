@@ -1135,7 +1135,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             soft_time_limit = func_timeout
             time_limit      = func_timeout + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
 
-        _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT_TO_EXPIRE_SCALE'])
+        _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
         queue = toolkit.get_worker_queue('runnerOnRPC')
