@@ -82,8 +82,8 @@ class DataFluxFuncDebugger(ScriptBaseTask):
         return script_dict
 
 @app.task(name='DataFluxFunc.debugger', bind=True, base=DataFluxFuncDebugger,
-    soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
-    time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
+    soft_time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'],
+    time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
 def dataflux_func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
@@ -129,17 +129,17 @@ def dataflux_func_debugger(self, *args, **kwargs):
             raise e
 
         extra_vars = {
-            '_DFF_IS_DEBUG'         : True,
-            '_DFF_ROOT_TASK_ID'     : root_task_id,
-            '_DFF_FUNC_CHAIN'       : func_chain,
-            '_DFF_ORIGIN'           : origin,
-            '_DFF_ORIGIN_ID'        : origin_id,
-            '_DFF_EXEC_MODE'        : exec_mode,
-            '_DFF_START_TIME'       : start_time,
-            '_DFF_START_TIME_MS'    : start_time_ms,
-            '_DFF_TRIGGER_TIME'     : kwargs.get('triggerTime') or start_time,
-            '_DFF_CRONTAB'          : kwargs.get('crontab'),
-            '_DFF_CRONTAB_CONFIG_ID': kwargs.get('crontabConfigId'),
+            '_DFF_IS_DEBUG'     : True,
+            '_DFF_ROOT_TASK_ID' : root_task_id,
+            '_DFF_FUNC_CHAIN'   : func_chain,
+            '_DFF_ORIGIN'       : origin,
+            '_DFF_ORIGIN_ID'    : origin_id,
+            '_DFF_EXEC_MODE'    : exec_mode,
+            '_DFF_START_TIME'   : start_time,
+            '_DFF_START_TIME_MS': start_time_ms,
+            '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
+            '_DFF_CRONTAB'      : kwargs.get('crontab'),
+            '_DFF_QUEUE'        : kwargs.get('queue'),
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(

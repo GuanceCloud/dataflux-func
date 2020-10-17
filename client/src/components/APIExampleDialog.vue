@@ -9,9 +9,9 @@
       <template v-if="showOptions">
         <el-divider content-position="left">请求选项</el-divider>
         <el-form class="call-options" label-width="80px">
-          <el-form-item label="异步执行" v-if="showModeOption">
+          <el-form-item label="异步执行" v-if="showExecModeOption">
             <el-switch
-              v-model="callOptions.mode"
+              v-model="callOptions.execMode"
               inactive-value="sync"
               active-value="async">
             </el-switch>
@@ -25,13 +25,23 @@
             </el-switch>
           </el-form-item>
 
+          <el-form-item label="执行超时" v-if="showTimeoutOption">
+            <el-input-number
+              v-model="callOptions.timeout"
+              size="mini"
+              step-strictly
+              :step="1"
+              :min="$store.getters.CONFIG('_FUNC_TASK_MIN_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_TIMEOUT')">
+            </el-input-number>&#12288;秒
+          </el-form-item>
+
           <el-form-item label="API超时" v-if="showAPITimeoutOption">
             <el-input-number
               v-model="callOptions.apiTimeout"
               size="mini"
               step-strictly
               :step="1"
-              :min="1" :max="30">
+              :min="$store.getters.CONFIG('_FUNC_TASK_MIN_API_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_API_TIMEOUT')">
             </el-input-number>&#12288;秒
           </el-form-item>
         </el-form>
@@ -188,9 +198,10 @@ export default {
         nextCallOptions[field] = this.callOptions[field];
       }
 
-      fillOptions('mode', 'sync');
+      fillOptions('execMode', 'sync');
       fillOptions('saveResult', false);
-      fillOptions('apiTimeout', 5);
+      fillOptions('timeout',    this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'));
+      fillOptions('apiTimeout', this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'));
 
       let nextAPIBodyExample = {}
       if (!this.T.isNothing(apiBodyExample.kwargs)) {
@@ -223,8 +234,9 @@ export default {
       return '<span style="color:red">本内容与上述POST请求内容联动，但Body内容填写存在错误</span>';
     },
     showOptions() {
-      return this.showModeOption
+      return this.showExecModeOption
           || this.showSaveResultOption
+          || this.showTimeoutOption
           || this.showAPITimeoutOption;
     },
     apiBody() {
@@ -324,7 +336,8 @@ export default {
   props: {
     title: String,
     description: String,
-    showModeOption: {
+
+    showExecModeOption: {
       type: Boolean,
       default: false,
     },
@@ -332,10 +345,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    showTimeoutOption: {
+      type: Boolean,
+      default: false,
+    },
     showAPITimeoutOption: {
       type: Boolean,
       default: false,
     },
+
     showGetExample: {
       type: Boolean,
       default: true,
@@ -361,9 +379,10 @@ export default {
       apiBodyExample: null,
 
       callOptions: {
-        mode      : 'sync',
+        execMode  : 'sync',
         saveResult: false,
-        apiTimeout: 5,
+        timeout   : this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'),
+        apiTimeout: this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
       }
     }
   },

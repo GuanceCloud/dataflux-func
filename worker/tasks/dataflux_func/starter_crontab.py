@@ -163,7 +163,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
 
         # 分发任务
         for c in crontab_configs:
-            queue = toolkit.get_worker_queue('runnerOnCrontab')
+            queue = toolkit.get_worker_queue(c['funcExtraConfig'].get('queue') or 0)
 
             task_headers = {
                 'origin': '{}-{}'.format(c['id'], current_timestamp) # 来源标记为「<自动触发配置ID>-<时间戳>」
@@ -174,24 +174,24 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             lock_value = toolkit.gen_uuid()
 
             task_kwargs = {
-                'funcId'         : c['funcId'],
-                'funcCallKwargs' : c['funcCallKwargs'],
-                'origin'         : 'crontab',
-                'originId'       : c['id'],
-                'saveResult'     : c['saveResult'],
-                'execMode'       : 'crontab',
-                'triggerTime'    : trigger_time,
-                'crontab'        : c['crontab'],
-                'crontabConfigId': c['id'],
-                'lockKey'        : lock_key,
-                'lockValue'      : lock_value,
+                'funcId'        : c['funcId'],
+                'funcCallKwargs': c['funcCallKwargs'],
+                'origin'        : 'crontab',
+                'originId'      : c['id'],
+                'saveResult'    : c['saveResult'],
+                'execMode'      : 'crontab',
+                'triggerTime'   : trigger_time,
+                'crontab'       : c['crontab'],
+                'queue'         : c['funcExtraConfig'].get('queue'),
+                'lockKey'       : lock_key,
+                'lockValue'     : lock_value,
             }
 
             soft_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
             time_limit      = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
 
             func_timeout = None
-            if c['funcExtraConfig'] and isinstance(c['funcExtraConfig'].get('timeout'), (six.integer_types, float)):
+            if isinstance(c['funcExtraConfig'].get('timeout'), (six.integer_types, float)):
                 func_timeout = c['funcExtraConfig']['timeout']
 
                 soft_time_limit = func_timeout

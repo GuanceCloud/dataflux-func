@@ -177,7 +177,7 @@ _MONITOR_CACHE_USAGE_CHECK_INTERVAL        : 60
 _MONITOR_CACHE_USAGE_KEEP_DURATION         : 43200
 _MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL: 60
 _MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION : 43200
-_MONITOR_WORKER_QUEUE_LIST                 : default,internal,result,webhook,utils,runnerOnDebugger,runnerOnCrontab,runnerOnRPC,runnerOnBatch,runnerOnBatchVIP
+_MONITOR_WORKER_QUEUE_LIST                 : default,0,1,2,3,4,5,6,7,8,9
 _MONITOR_MATCHED_ROUTE_EXPIRES             : 86400
 _MONITOR_SLOW_API_COUNT_EXPIRES            : 604800
 
@@ -190,7 +190,9 @@ _CRONTAB_SCRIPT_FORCE_RELOAD: '* * * * *'
 
 
 # 函数任务模块一般作为常量的配置
+_FUNC_DEFAULT_QUEUE                             : '0'
 _FUNC_TASK_WORKER_QUEUE_MAX_LENGTH              : 1000
+_FUNC_TASK_DEBUG_TIMEOUT                        : 60
 _FUNC_TASK_DEFAULT_TIMEOUT                      : 30
 _FUNC_TASK_MIN_TIMEOUT                          : 1
 _FUNC_TASK_MAX_TIMEOUT                          : 3600

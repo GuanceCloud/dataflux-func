@@ -80,24 +80,11 @@ displayText:
   ########## Content for YOUR project below ##########
   systemConfig_id:
     config.example: Example Config__systemConfig_id
-    officialScript.installed.version: 已安装的官方脚本版本号__systemConfig_id
 
   execMode:
     sync   : 同步__execMode
     async  : 异步__execMode
     crontab: Crontab触发__execMode
-    batch  : 批处理__execMode
-
-  func_category:
-    general       : 一般__func_category
-    prediction    : 预测__func_category
-    transformation: 转换__func_category
-    action        : 动作__func_category
-    command       : 命令__func_category
-    query         : 查询__func_category
-    check         : 检测__func_category
-    batch         : 批处理__func_category
-    collector     : 采集器__func_category
 
   func_integration:
     login: 登录__func_integration

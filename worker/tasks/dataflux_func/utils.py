@@ -889,22 +889,6 @@ def dataflux_func_data_source_debugger(self, *args, **kwargs):
         ret = db_res
     return ret
 
-# DataFluxFunc.getSystemConfig
-@app.task(name='DataFluxFunc.getSystemConfig', bind=True, base=BaseTask)
-def dataflux_func_get_system_config(self, *args, **kwargs):
-    system_config = {
-        '_FUNC_TASK_DEFAULT_TIMEOUT'     : CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
-        '_CRONTAB_STARTER'               : CONFIG['_CRONTAB_STARTER'],
-        '_CRONTAB_AUTO_CLEANER'          : CONFIG['_CRONTAB_AUTO_CLEANER'],
-        '_DBDATA_SCRIPT_LOG_LIMIT'       : CONFIG['_DBDATA_SCRIPT_LOG_LIMIT'],
-        '_DBDATA_SCRIPT_FAILURE_LIMIT'   : CONFIG['_DBDATA_SCRIPT_FAILURE_LIMIT'],
-        '_DBDATA_FUNC_RESULT_LIMIT'      : CONFIG['_DBDATA_FUNC_RESULT_LIMIT'],
-        '_DBDATA_CRONTAB_TASK_INFO_LIMIT': CONFIG['_DBDATA_CRONTAB_TASK_INFO_LIMIT'],
-        '_DBDATA_BATCH_TASK_INFO_LIMIT'  : CONFIG['_DBDATA_BATCH_TASK_INFO_LIMIT'],
-        '_DBDATA_OPERATION_RECORD_LIMIT' : CONFIG['_DBDATA_OPERATION_RECORD_LIMIT'],
-    }
-    return system_config
-
 # 启动时自动执行（已附带锁）
 # dataflux_func_reload_scripts.apply_async(kwargs={'isStartUp': True, 'force': True, 'startup_sleep': 10})
 # dataflux_func_auto_cleaner.apply_async(kwargs={'startup_sleep': 30})

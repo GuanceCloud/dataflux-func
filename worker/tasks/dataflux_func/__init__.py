@@ -730,7 +730,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, kwargs_hint=None,
-            fixed_crontab=None, timeout=None, cache_result=None,
+            fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
             integration=None,
             is_hidden=False, is_disabled=False):
         ### 核心配置 ###
@@ -835,6 +835,20 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             extra_config['timeout'] = timeout
 
+        # API返回时限
+        if api_timeout is not None:
+            if not isinstance(api_timeout, six.integer_types):
+                e = InvalidFuncExportOption('`api_timeout` should be an integer or long')
+                raise e
+
+            _min_api_timeout = CONFIG['_FUNC_TASK_MIN_API_TIMEOUT']
+            _max_api_timeout = CONFIG['_FUNC_TASK_MAX_API_TIMEOUT']
+            if not (_min_api_timeout <= api_timeout <= _max_api_timeout):
+                e = InvalidFuncExportOption('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
+                raise e
+
+            extra_config['apiTimeout'] = api_timeout
+
         # 隐藏函数（不在文档中出现）
         if is_hidden is True:
             extra_config['isHidden'] = True
@@ -846,6 +860,14 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 raise e
 
             extra_config['cacheResult'] = cache_result
+
+        # 指定队列
+        if queue is not None:
+            if not isinstance(queue, int) or not (1 <= queue <= 9):
+                e = InvalidFuncExportOption('`queue` should be an int and between 1 ~ 9')
+                raise e
+
+            extra_config['queue'] = queue
 
         def decorater(F):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
@@ -1138,9 +1160,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = toolkit.get_worker_queue('runnerOnRPC')
+        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or 0)
         if safe_scope.get('_DFF_IS_DEBUG'):
-            queue = toolkit.get_worker_queue('runnerOnDebugger')
+            queue = toolkit.get_worker_queue('0')
 
         task_headers = {
             'origin': self.request.id,
@@ -1481,4 +1503,3 @@ from worker.tasks.dataflux_func.utils import dataflux_func_sync_cache
 from worker.tasks.dataflux_func.utils import dataflux_func_auto_cleaner
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_checker
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_debugger
-from worker.tasks.dataflux_func.utils import dataflux_func_get_system_config

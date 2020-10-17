@@ -590,7 +590,7 @@ function _getCallAPIOpt(method, pathPattern, options) {
   let axiosOpt = {
     method      : method,
     url         : url,
-    timeout     : options.timeout || 35 * 1000,
+    timeout     : options.timeout || 180 * 1000,
     extraOptions: options.extraOptions,
   };
 

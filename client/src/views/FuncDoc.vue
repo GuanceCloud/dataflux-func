@@ -47,8 +47,7 @@
                 <template v-if="!T.isNothing(scope.row.category)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_CATEGORY_MAP[scope.row.category]">{{ C.FUNC_CATEGORY_MAP[scope.row.category].name }}</code>
-                    <code v-else>{{ scope.row.category }}</code>
+                    <code>{{ scope.row.category }}</code>
                   </el-tag>
                 </template>
 
@@ -84,7 +83,7 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         description="通过内部接口直接调用函数仅支持POST方式"
-        :showModeOption="true"
+        :showExecModeOption="true"
         :showSaveResultOption="true"
         :showAPITimeoutOption="true"
         :showPostExample="true"

@@ -34,17 +34,11 @@ task_default_queue       = toolkit.get_worker_queue('default')
 task_default_routing_key = task_default_queue
 task_queues = [
     create_queue(task_default_queue),
-
-    create_queue(toolkit.get_worker_queue('webhook')),
-    create_queue(toolkit.get_worker_queue('internal')),
-    create_queue(toolkit.get_worker_queue('result')),
 ]
 
 # Task
 task_routes = {
-    'webhook.*' : {'queue': toolkit.get_worker_queue('webhook')},
-    'internal.*': {'queue': toolkit.get_worker_queue('internal')},
-    '*.result'  : {'queue': toolkit.get_worker_queue('result')},
+    # 'taskName': {'queue': toolkit.get_worker_queue('default')},
 }
 
 imports = [
@@ -71,38 +65,17 @@ result_expires = 3600
 
 ########## Content for YOUR project below ##########
 # Queue
-task_queues.extend([
-    # Utils 通用队列
-    create_queue(toolkit.get_worker_queue('utils')),
-
-    # 调试执行队列（UI调用，execMode=sync）
-    create_queue(toolkit.get_worker_queue('runnerOnDebugger')),
-    # RPC执行队列（API调用，execMode=sync|async）
-    create_queue(toolkit.get_worker_queue('runnerOnRPC')),
-    # Crontab执行队列（CronTab触发，execMode=crontab）
-    create_queue(toolkit.get_worker_queue('runnerOnCrontab')),
-    # Batch执行队列（批处理，execMode=batch）
-    create_queue(toolkit.get_worker_queue('runnerOnBatch')),
-    # BatchBuiltin执行队列（优先批处理，execMode=batch。主要用于内置日志处理）
-    create_queue(toolkit.get_worker_queue('runnerOnBatchVIP')),
-])
+for i in range(10):
+    # 自动生成0～9号队列
+    q = toolkit.get_worker_queue(str(i))
+    task_queues.append(create_queue(q))
 
 # Task
 imports.append('worker.tasks.dataflux_func')
 
 # Route
 task_routes.update({
-    'DataFluxFunc.runner'  : {'queue': toolkit.get_worker_queue('runnerOnRPC')},
-    'DataFluxFunc.debugger': {'queue': toolkit.get_worker_queue('runnerOnDebugger')},
-
-    'DataFluxFunc.starterCrontab': {'queue': toolkit.get_worker_queue('utils')},
-
-    'DataFluxFunc.reloadScripts'     : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.syncCache'         : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.autoCleaner'       : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.dataSourceChecker' : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.dataSourceDebugger': {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.getSystemConfig'   : {'queue': toolkit.get_worker_queue('utils')},
+    'DataFluxFunc.*': {'queue': toolkit.get_worker_queue('0')},
 })
 
 # Beat

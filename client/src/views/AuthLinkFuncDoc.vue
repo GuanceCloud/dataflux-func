@@ -55,8 +55,7 @@
                 <template v-if="!T.isNothing(scope.row.funcCategory)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_CATEGORY_MAP[scope.row.funcCategory]">{{ C.FUNC_CATEGORY_MAP[scope.row.funcCategory].name }}</code>
-                    <code v-else>{{ scope.row.funcCategory }}</code>
+                    <code>{{ scope.row.funcCategory }}</code>
                   </el-tag>
                 </template>
 
@@ -124,7 +123,7 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         description="授权链接同时支持POST方式和GET方式进行调用，可根据需要任意选择"
-        :showModeOption="true"
+        :showExecModeOption="true"
         :showPostExample="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"

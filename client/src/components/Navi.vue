@@ -12,20 +12,6 @@
         <Logo type="auto"></Logo>
       </el-menu-item>
       <template v-if="isSignedIn">
-        <!--
-        <el-menu-item>
-          <span>
-            <i class="fa fa-fw fa-dashboard"></i>
-            仪表台
-          </span>
-        </el-menu-item>
-        -->
-        <el-menu-item index="/editor/intro" v-if="$store.getters.CONFIG('IS_OFFICIAL_PUBLISHER')">
-          <el-tooltip content="当前为中心版，可制作/导出官方脚本集" placement="bottom" :enterable="false">
-            <i class="fa fa-fw fa-star"></i>
-          </el-tooltip>
-        </el-menu-item>
-
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>

@@ -390,54 +390,8 @@ export const FUNC_EXEC_MODE = [
     name     : '定时运行',
     textClass: 'text-info',
   },
-  {
-    key      : 'batch',
-    name     : '批处理',
-    textClass: 'text-info',
-  },
 ];
 export const FUNC_EXEC_MODE_MAP = createMap(FUNC_EXEC_MODE);
-
-// 函数分类
-export const FUNC_CATEGORY = [
-  {
-    key : 'general',
-    name: '一般',
-  },
-  {
-    key : 'prediction',
-    name: '预测',
-  },
-  {
-    key : 'transformation',
-    name: '转换',
-  },
-  {
-    key : 'action',
-    name: '动作',
-  },
-  {
-    key : 'command',
-    name: '命令',
-  },
-  {
-    key : 'query',
-    name: '查询',
-  },
-  {
-    key : 'check',
-    name: '检测',
-  },
-  {
-    key : 'batch',
-    name: '批处理',
-  },
-  {
-    key : 'collector',
-    name: '采集器',
-  },
-];
-export const FUNC_CATEGORY_MAP = createMap(FUNC_CATEGORY);
 
 // 函数集成
 export const FUNC_INTEGRATION = [

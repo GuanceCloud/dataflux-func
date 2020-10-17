@@ -1,5 +1,6 @@
 stages:
-   - build
+  - build
+  - afterBuilt
 
 variables:
   PROJECT_NAME: dataflux-func
@@ -53,3 +54,8 @@ buildWithPub:
     - docker push $PUB_REPO:$V_MAJOR_MINOR_PATCH
   tags:
     - middleware-prod
+
+afterBuilt:
+  stage: afterBuilt
+  script:
+    - "curl -X POST -F token=a572df3146b69e59d3737494510982 -F ref=master http://gitlab.jiagouyun.com/api/v4/projects/654/trigger/pipeline"
