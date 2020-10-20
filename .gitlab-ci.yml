@@ -8,7 +8,7 @@ variables:
   OSS_ENDPOINT             : http://oss-cn-hangzhou-internal.aliyuncs.com
   IMAGE                    : dataflux-func
   IMAGE_PRIVATE            : registry.jiagouyun.com/middlewares/dataflux-func
-  IMAGE_PUBBLIC            : pubrepo.jiagouyun.com/dataflux-func/dataflux-func
+  IMAGE_PUBLIC             : pubrepo.jiagouyun.com/dataflux-func/dataflux-func
   IMAGE_FILE               : dataflux-func.tar
   DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
@@ -44,18 +44,18 @@ buildWithPub:
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR}
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR_MINOR_PATCH}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBBLIC}:latest
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBBLIC}:${V_MAJOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBBLIC}:${V_MAJOR_MINOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBBLIC}:${V_MAJOR_MINOR_PATCH}
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:latest
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR}
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
     - docker push ${IMAGE_PRIVATE}:latest
     - docker push ${IMAGE_PRIVATE}:${V_MAJOR}
     - docker push ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
     - docker push ${IMAGE_PRIVATE}:${V_MAJOR_MINOR_PATCH}
-    - docker push ${IMAGE_PUBBLIC}:latest
-    - docker push ${IMAGE_PUBBLIC}:${V_MAJOR}
-    - docker push ${IMAGE_PUBBLIC}:${V_MAJOR_MINOR}
-    - docker push ${IMAGE_PUBBLIC}:${V_MAJOR_MINOR_PATCH}
+    - docker push ${IMAGE_PUBLIC}:latest
+    - docker push ${IMAGE_PUBLIC}:${V_MAJOR}
+    - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
+    - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
   tags:
     - middleware-prod
 
@@ -64,7 +64,7 @@ afterBuildWithPub:
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
-    - docker save ${IMAGE_PUBBLIC}:latest:${CI_COMMIT_REF_NAME} > ${IMAGE_FILE}
+    - docker save ${IMAGE_PUBLIC}:latest > ${IMAGE_FILE}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${README_FILE}               ${OSS_RESOURCE_BASE_URL}/${README_FILE}               -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
