@@ -35,6 +35,7 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
     - [推荐方式：使用基于`docker stack`的自动部署脚本部署](#%E6%8E%A8%E8%8D%90%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
+- [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
     - [主要功能](#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
@@ -58,6 +59,10 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux.f(x)：
 ```shell
+# 使用root用户【推荐】
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
+
+# 或者，使用非root用户
 sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 ```
 
@@ -69,6 +74,13 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 - MySQL、Redis 不提供外部访问
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面。
+
+*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表，共5个）*
+1. `dataflux-func_mysql`
+2. `dataflux-func_redis`
+3. `dataflux-func_worker`
+4. `dataflux-func_server`
+5. `dataflux-func_beat`
 
 ## 进阶方式：使用`docker stack`配置文件进行部署
 
@@ -87,6 +99,11 @@ grep -E '^#' docker-stack.yaml
 
 修改完成后，即可使用`docker stack`进行部署：
 ```shell
+# 使用root用户【推荐】
+docker pull {docker-stack.yaml中的所有镜像}
+docker stack deploy dataflux-func -c docker-stack.yaml
+
+# 或者，使用非root用户
 sudo docker pull {docker-stack.yaml中的所有镜像}
 sudo docker stack deploy dataflux-func -c docker-stack.yaml
 ```
@@ -98,6 +115,22 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 - 修改MySQL、Redis运行方式（如允许公开访问，指定密码、修改配置等。具体内容请参考对应镜像的官方说明）
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面（假设使用默认端口）。
+
+*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表，共5个）*
+1. `dataflux-func_mysql`
+2. `dataflux-func_redis`
+3. `dataflux-func_worker`
+4. `dataflux-func_server`
+5. `dataflux-func_beat`
+
+
+
+# 更新部署
+
+需要更新部署时，请按照以下步骤进行：
+2. 使用`docker stack rm dataflux-func`命令，移除正在运行的旧版本（此步骤可能需要一定时间）
+3. 使用`docker ps`确认所有容器都已经退出
+4. 参考上文，重新部署（脚本不会删除原先的数据）
 
 
 
