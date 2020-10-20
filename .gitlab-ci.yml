@@ -59,8 +59,10 @@ buildWithPub:
   tags:
     - middleware-prod
 
-afterBuilt:
+afterBuildWithPub:
   stage: afterBuilt
+  only:
+    - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     - docker save ${IMAGE}:${CI_COMMIT_REF_NAME} > ${IMAGE_FILE}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
