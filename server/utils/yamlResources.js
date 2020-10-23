@@ -96,10 +96,13 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
   // User config from env
   for (var k in process.env) {
-    if (!(k in configObj)) continue;
+    if (k in configObj) {
+      configObj[k] = process.env[k];
+      console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    configObj[k] = process.env[k];
-    console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
+    } else if (toolkit.startsWith(k, 'CUSTOM_')) {
+      console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
+    }
   }
 
   // Convert config value type

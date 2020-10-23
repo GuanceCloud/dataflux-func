@@ -6,7 +6,22 @@
     - 去除`default`队列
     - `0`作为整个系统兜底默认队列，主要执行系统级任务
     - `1`作为函数执行的默认队列，函数默认在此队列中执行
-- 添加`WORKER_QUEUE_ALIAS_MAP`参数，支持队列别名，如：`cpu=9`表示，指定`queue='cpu'`时，函数运行在`9`队列
+    - 添加`WORKER_QUEUE_ALIAS_MAP`参数，支持队列别名，如：`cpu=9`表示，指定`queue='cpu'`时，函数运行在`9`队列
+- 配置载入时，允许以`CUSTOM_`开头添加自定义配置。且脚本内可以访问`CUSTOM_`开头的配置
+- 增强`DFF`对象：
+    - 添加`DFF.STORE(key, scope=None)`访问方式
+    - 添加`DFF.CACHE(key, scope=None)`访问方式
+    - 增强`DFF.SRC`，添加以下功能
+        - `DFF.SRC.list()`列出数据源
+        - `DFF.SRC.save(...)`保存数据源
+        - `DFF.SRC.delete(...)`删除数据源
+    - 增强`DFF.ENV`，添加以下功能
+        - `DFF.ENV.list()`列出环境变量
+        - `DFF.ENV.save(...)`保存环境变量
+        - `DFF.ENV.delete(...)`删除环境变量
+    - 添加`DFF.CONFIG`用于访问自定义配置，包含
+        - `DFF.CONFIG(...)` / `DFF.get(...)`获取配置
+        - `DFF.list()`列出配置
 
 ### 1.0.11 ~ 1.0.14
 

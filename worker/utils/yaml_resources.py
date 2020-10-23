@@ -82,11 +82,15 @@ def load_config(config_file_path):
 
     # User config from env
     for k, v in os.environ.items():
-        if k not in config_obj:
-            continue
+        if k in config_obj:
+            # Config override
+            config_obj[k] = os.environ.get(k)
+            print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
-        config_obj[k] = os.environ.get(k)
-        print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
+        elif k.startswith('CUSTOM_'):
+            # Custom config
+            config_obj[k] = os.environ.get(k)
+            print('[YAML Resource] Custom config item `{}` added by env.'.format(k))
 
     # Convert config value type
     for k, v in config_obj.items():

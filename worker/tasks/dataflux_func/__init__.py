@@ -234,23 +234,19 @@ KWARGS_HINT_FIELD_MAP = {
 
 class DataFluxFuncBaseException(Exception):
     pass
-class JailBreakException(Exception):
+class JailBreakException(DataFluxFuncBaseException):
     pass
-class FuncCategoryNotSupportedException(DataFluxFuncBaseException):
+class NotFoundException(DataFluxFuncBaseException):
     pass
-class DataSourceTypeNotSupportException(DataFluxFuncBaseException):
+class DuplicationException(DataFluxFuncBaseException):
     pass
-class ScriptNotFoundException(DataFluxFuncBaseException):
+class NotSupportException(DataFluxFuncBaseException):
     pass
-class FunctionNotFoundException(DataFluxFuncBaseException):
+class InvalidOptionException(DataFluxFuncBaseException):
+    pass
+class AccessDenyException(DataFluxFuncBaseException):
     pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
-    pass
-class DuplicatedFuncInChainException(DataFluxFuncBaseException):
-    pass
-class DuplicatedAsyncResultKey(DataFluxFuncBaseException):
-    pass
-class InvalidFuncExportOption(DataFluxFuncBaseException):
     pass
 
 def jailbreak_check(script_code):
@@ -416,7 +412,7 @@ class FuncAsyncHelper(object):
         self.__task.logger.debug('[ASYNC POOL] Submit Key=`{0}`'.format(key))
 
         if key in CONCURRENT_RESULT_MAP:
-            e = DuplicatedAsyncResultKey('Async result key already existed: `{0}`'.format(key))
+            e = DuplicationException('Async result key already existed: `{0}`'.format(key))
             raise e
 
         args   = args   or []
@@ -465,6 +461,9 @@ class FuncStoreHelper(object):
         self.__task = task
 
         self.default_scope = default_scope
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
 
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         if scope is None:
@@ -585,6 +584,9 @@ class FuncCacheHelper(object):
 
         self.default_scope = default_scope
 
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
     def _get_cache_key(self, key, scope):
         if scope is None:
             scope = self.default_scope
@@ -613,10 +615,40 @@ class FuncCacheHelper(object):
         return self.__task.cache_db.run('incr', key, amount=step)
 
 class FuncDataSourceHelper(object):
+    AVAILABLE_TYPES = (
+        'df_dataway',
+        'influxdb',
+        'mysql',
+        'redis',
+        'memcached',
+        'clickhouse',
+        'oracle',
+        'sqlserver',
+        'postgresql',
+        'mongodb',
+        'elasticsearch',
+    )
+    AVAILABLE_CONFIG_KEYS = (
+        'host',
+        'port',
+        'servers',
+        'protocol',
+        'database',
+        'user',
+        'password',
+        'charset',
+        'token',
+        'accessKey',
+        'secretKey',
+    )
+
     def __init__(self, task):
         self.__task = task
 
-    def __call__(self, data_source_id, **helper_kwargs):
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def get(self, data_source_id, **helper_kwargs):
         global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
         global DATA_SOURCE_HELPERS_CACHE
         global DATA_SOURCE_HELPER_CLASS_MAP
@@ -654,7 +686,7 @@ class FuncDataSourceHelper(object):
         sql_params = [data_source_id]
         db_res = self.__task.db.query(sql, sql_params)
         if not db_res:
-            e = IDNotFoundException('Data source `{}` not found'.format(data_source_id))
+            e = NotFoundException('Data source `{}` not found'.format(data_source_id))
             raise e
 
         helper_type = db_res[0]['type']
@@ -670,7 +702,7 @@ class FuncDataSourceHelper(object):
             helper = helper_class(self.__task.logger, config, **helper_kwargs);
 
         else:
-            e = DataSourceTypeNotSupportException('Data source type not support: `{}`'.format(helper_type))
+            e = NotSupportException('Data source type not support: `{}`'.format(helper_type))
             raise e
 
         if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
@@ -680,6 +712,11 @@ class FuncDataSourceHelper(object):
 
         self.__task.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
         return helper
+
+    def update_refresh_timestamp(self, data_source_id):
+        # 更新缓存刷新时间
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        self.__task.cache_db.set(cache_key, int(time.time() * 1000))
 
     def list(self):
         sql = '''
@@ -700,11 +737,89 @@ class FuncDataSourceHelper(object):
 
         return data
 
+    def save(self, data_source_id, type_, config, title=None, description=None):
+        if type_ not in self.AVAILABLE_TYPES:
+            raise NotSupportException('Data source type `{}` not supported'.format(type_))
+
+        if not config:
+            config = {}
+        if not isinstance(config, dict):
+            raise InvalidOptionException('Data source config should be a dict')
+
+        for k in config.keys():
+            if k not in self.AVAILABLE_CONFIG_KEYS:
+                raise NotSupportException('Data source config item `{}` not supported'.format(k))
+
+        config_json = toolkit.json_safe_dumps(config)
+
+        sql = '''
+            SELECT `id` FROM biz_main_data_source WHERE `id` = ?
+            '''
+        sql_params = [data_source_id]
+        db_res = self.__task.db.query(sql, sql_params)
+
+        if len(db_res) > 0:
+            # 已存在，更新
+            sql = '''
+                UPDATE biz_main_data_source
+                SET
+                     `title`
+                    ,`description`
+                    ,`type`
+                    ,`configJSON`
+                WHERE
+                    `id` = ?
+                '''
+            sql_params = [
+                title,
+                description,
+                type_,
+                config_json,
+                data_source_id,
+            ]
+            self.__task.db.query(sql, sql_params)
+
+        else:
+            # 不存在，插入
+            sql = '''
+                INSERT INTO biz_main_data_source
+                SET
+                     `id`
+                    ,`title`
+                    ,`description`
+                    ,`type`
+                    ,`configJSON`
+                '''
+            sql_params = [
+                data_source_id,
+                title,
+                description,
+                type_,
+                config_json,
+            ]
+            self.__task.db.query(sql, sql_params)
+
+        self.update_refresh_timestamp(data_source_id)
+
+    def delete(self, data_source_id):
+        sql = '''
+            DELETE FROM biz_main_data_source
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [data_source_id]
+        self.__task.db.query(sql, sql_params)
+
+        self.update_refresh_timestamp(data_source_id)
+
 class FuncEnvVariableHelper(object):
     def __init__(self, task):
         self.__task = task
 
-    def __call__(self, env_variable_id):
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def get(self, env_variable_id):
         # 用户自定义Helper
         global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
         global ENV_VARIABLES_CACHE
@@ -755,6 +870,11 @@ class FuncEnvVariableHelper(object):
         ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
         return casted_env_value
 
+    def update_refresh_timestamp(self, env_variable_id):
+        # 更新缓存刷新时间
+        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
+        self.__task.cache_db.set(cache_key, int(time.time() * 1000))
+
     def list(self):
         sql = '''
             SELECT
@@ -765,11 +885,120 @@ class FuncEnvVariableHelper(object):
                 ,`autoTypeCasting`
                 ,`createTime`
                 ,`updateTime`
-            FROM biz_main_data_source AS dsrc
+            FROM biz_main_env_variable
             '''
         data = self.__task.db.query(sql)
 
         return data
+
+    def save(self, env_variable_id, value, title=None, description=None):
+        if value is None:
+            value = ''
+
+        auto_type_casting = 'string'
+        if isinstance(value, bool):
+            # Python中`isinstance(True, int)`返回`True`，布尔值要优先判断
+            auto_type_casting = 'boolean'
+        elif isinstance(value, int):
+            auto_type_casting = 'integer'
+        elif isinstance(value, float):
+            auto_type_casting = 'float'
+        elif isinstance(value, dict):
+            auto_type_casting = 'json'
+        elif isinstance(value, list):
+            if all(map(lambda x: isinstance(x, str) and ',' not in x, value)):
+                auto_type_casting = 'commaArray'
+            else:
+                auto_type_casting = 'json'
+
+        value_text = value
+        if auto_type_casting in ('string', 'int', 'float'):
+            value_text = str(value)
+        elif auto_type_casting == 'boolean':
+            value_text = str(value).lower()
+        elif auto_type_casting == 'json':
+            value_text = toolkit.json_safe_dumps(value)
+        elif auto_type_casting == 'commaArray':
+            value_text = ','.join(value)
+
+        sql = '''
+            SELECT `id` FROM biz_main_env_variable WHERE `id` = ?
+            '''
+        sql_params = [env_variable_id]
+        db_res = self.__task.db.query(sql, sql_params)
+
+        if len(db_res) > 0:
+            # 已存在，更新
+            sql = '''
+                UPDATE biz_main_env_variable
+                SET
+                     `title`           = ?
+                    ,`description`     = ?
+                    ,`valueTEXT`       = ?
+                    ,`autoTypeCasting` = ?
+                WHERE
+                    `id` = ?
+                '''
+            sql_params = [
+                title,
+                description,
+                value_text,
+                auto_type_casting,
+                env_variable_id,
+            ]
+            self.__task.db.query(sql, sql_params)
+
+        else:
+            # 不存在，插入
+            sql = '''
+                INSERT INTO biz_main_env_variable
+                SET
+                     `id`              = ?
+                    ,`title`           = ?
+                    ,`description`     = ?
+                    ,`valueTEXT`       = ?
+                    ,`autoTypeCasting` = ?
+                '''
+            sql_params = [
+                env_variable_id,
+                title,
+                description,
+                value_text,
+                auto_type_casting,
+            ]
+            self.__task.db.query(sql, sql_params)
+
+        self.update_refresh_timestamp(env_variable_id)
+
+    def delete(self, env_variable_id):
+        sql = '''
+            DELETE FROM biz_main_env_variable
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [env_variable_id]
+        self.__task.db.query(sql, sql_params)
+
+        self.update_refresh_timestamp(env_variable_id)
+
+class FuncConfigHelper(object):
+    def __init__(self, task):
+        self.__task = task
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def get(self, config_id):
+        if not config_id.startswith('CUSTOM_'):
+            raise AccessDenyException('Config `{}` is not accessible'.format(config_id))
+
+        if config_id not in CONFIG:
+            raise NotFoundException('Config `{}` not found'.format(config_id))
+
+        return CONFIG.get(config_id)
+
+    def list(self):
+        return [{ 'key': k, 'value': v } for k, v in CONFIG.items() if k.startswith('CUSTOM_')]
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def __call__(self, *args, **kwargs):
@@ -895,18 +1124,18 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         ### 核心配置 ###
         # 函数标题
         if title is not None and not isinstance(title, (six.string_types, six.text_type)):
-            e = InvalidFuncExportOption('`title` should be a string or unicode')
+            e = InvalidOptionException('`title` should be a string or unicode')
             raise e
 
         # 函数标签
         if tags is not None:
             if not isinstance(tags, (tuple, list)):
-                e = InvalidFuncExportOption('`tags` should be a tuple or a list')
+                e = InvalidOptionException('`tags` should be a tuple or a list')
                 raise e
 
             for tag in tags:
                 if not isinstance(tag, (six.string_types, six.text_type)):
-                    e = InvalidFuncExportOption('Element of `tags` should be a string or unicode')
+                    e = InvalidOptionException('Element of `tags` should be a string or unicode')
                     raise e
 
             tags = list(set(tags))
@@ -915,50 +1144,50 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 参数提示
         if kwargs_hint is not None:
             if not isinstance(kwargs_hint, dict):
-                e = InvalidFuncExportOption('`kwargs_hint` should be a dict')
+                e = InvalidOptionException('`kwargs_hint` should be a dict')
                 raise e
 
             for arg_key, arg_hint in kwargs_hint.items():
                 if not isinstance(arg_hint, dict):
-                    e = InvalidFuncExportOption('Value of `kwargs_hint` item should be a dict')
+                    e = InvalidOptionException('Value of `kwargs_hint` item should be a dict')
                     raise e
 
                 for hint_key, hint_value in arg_hint.items():
                     hint_spec = KWARGS_HINT_FIELD_MAP.get(hint_key)
                     if not hint_spec:
-                        e = InvalidFuncExportOption('Unsupported kwargs hint key: `{}`'.format(hint_key))
+                        e = InvalidOptionException('Unsupported kwargs hint key: `{}`'.format(hint_key))
                         raise e
 
                     # 检查 hint 配置值类型
                     if 'type' in hint_spec:
                         if not isinstance(hint_value, hint_spec['type']):
                             hint_spec_types = ', '.join(['`{}`'.format(x.__name__) for x in toolkit.as_array(hint_spec['type'])])
-                            e = InvalidFuncExportOption('Invalid type of hint value: `{}` should be {}'.format(hint_key, hint_spec_types))
+                            e = InvalidOptionException('Invalid type of hint value: `{}` should be {}'.format(hint_key, hint_spec_types))
                             raise e
 
                     # 检查 hint 配置值内容
                     if 'in' in hint_spec:
                         if hint_value not in hint_spec['in']:
                             hint_spec_in = ', '.join(['`{}`'.format(repr(x)) for x in toolkit.as_array(hint_spec['in'])])
-                            e = InvalidFuncExportOption('Invalid value of hint value: `{}` should be one of {}'.format(hint_key, hint_spec_in))
+                            e = InvalidOptionException('Invalid value of hint value: `{}` should be one of {}'.format(hint_key, hint_spec_in))
                             raise e
 
                     # 检查配置与类型是否匹配
                     if 'forTypes' in hint_spec and 'type' in arg_hint:
                         if arg_hint['type'] not in hint_spec['forTypes']:
                             hint_spec_for_types = ', '.join(['`{}`'.format(x) for x in hint_spec['forTypes']])
-                            e = InvalidFuncExportOption('Invalid hint key: `{}` can only be used for arguments of type {}'.format(hint_key, hint_spec_for_types))
+                            e = InvalidOptionException('Invalid hint key: `{}` can only be used for arguments of type {}'.format(hint_key, hint_spec_for_types))
                             raise e
 
         # 函数分类
         if category is not None and not isinstance(category, (six.string_types, six.text_type)):
-            e = InvalidFuncExportOption('`category` should be a string or unicode')
+            e = InvalidOptionException('`category` should be a string or unicode')
             raise e
 
         # 功能集成
         if integration is not None:
             if not isinstance(integration, (six.string_types, six.text_type)):
-                e = InvalidFuncExportOption('`integration` should be a string or unicode')
+                e = InvalidOptionException('`integration` should be a string or unicode')
                 raise e
 
             integration = FIXED_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
@@ -971,11 +1200,11 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             try:
                 parsed_crontab = crontab_parser.CronTab(fixed_crontab)
             except Exception as e:
-                e = InvalidFuncExportOption('`fixed_crontab` is not a valid crontab expression')
+                e = InvalidOptionException('`fixed_crontab` is not a valid crontab expression')
                 raise e
 
             if len(fixed_crontab.split(' ')) > 5:
-                e = InvalidFuncExportOption('`fixed_crontab` does not support second part')
+                e = InvalidOptionException('`fixed_crontab` does not support second part')
                 raise e
 
             extra_config['fixedCrontab'] = fixed_crontab
@@ -983,13 +1212,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 执行时限
         if timeout is not None:
             if not isinstance(timeout, six.integer_types):
-                e = InvalidFuncExportOption('`timeout` should be an integer or long')
+                e = InvalidOptionException('`timeout` should be an integer or long')
                 raise e
 
             _min_timeout = CONFIG['_FUNC_TASK_MIN_TIMEOUT']
             _max_timeout = CONFIG['_FUNC_TASK_MAX_TIMEOUT']
             if not (_min_timeout <= timeout <= _max_timeout):
-                e = InvalidFuncExportOption('`timeout` should be between `{}` and `{}` (seconds)'.format(_min_timeout, _max_timeout))
+                e = InvalidOptionException('`timeout` should be between `{}` and `{}` (seconds)'.format(_min_timeout, _max_timeout))
                 raise e
 
             extra_config['timeout'] = timeout
@@ -997,13 +1226,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # API返回时限
         if api_timeout is not None:
             if not isinstance(api_timeout, six.integer_types):
-                e = InvalidFuncExportOption('`api_timeout` should be an integer or long')
+                e = InvalidOptionException('`api_timeout` should be an integer or long')
                 raise e
 
             _min_api_timeout = CONFIG['_FUNC_TASK_MIN_API_TIMEOUT']
             _max_api_timeout = CONFIG['_FUNC_TASK_MAX_API_TIMEOUT']
             if not (_min_api_timeout <= api_timeout <= _max_api_timeout):
-                e = InvalidFuncExportOption('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
+                e = InvalidOptionException('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
                 raise e
 
             extra_config['apiTimeout'] = api_timeout
@@ -1015,7 +1244,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 结果缓存
         if cache_result is not None:
             if not isinstance(cache_result, (int, float)):
-                e = InvalidFuncExportOption('`cache_result` should be an int or a float')
+                e = InvalidOptionException('`cache_result` should be an int or a float')
                 raise e
 
             extra_config['cacheResult'] = cache_result
@@ -1024,7 +1253,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         if queue is not None:
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])) + list(CONFIG['WORKER_QUEUE_ALIAS_MAP'].keys())
             if queue not in available_queues:
-                e = InvalidFuncExportOption('`queue` should be one of {}'.format(json.dumps(available_queues)))
+                e = InvalidOptionException('`queue` should be one of {}'.format(json.dumps(available_queues)))
                 raise e
 
             extra_config['queue'] = queue
@@ -1036,7 +1265,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             if kwargs_hint is not None:
                 for arg_key, arg_hint in kwargs_hint.items():
                     if arg_key not in f_kwargs:
-                        e = InvalidFuncExportOption('Kwargs hint for `{}` is not a argument of the function'.format(arg_key))
+                        e = InvalidOptionException('Kwargs hint for `{}` is not a argument of the function'.format(arg_key))
                         raise e
 
                     for hint_field in KWARGS_HINT_FIELD_MAP.keys():
@@ -1128,122 +1357,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return dff_api_F
         return decorater
 
-    # def _get_data_source_helper(self, data_source_id, **helper_kwargs):
-    #     global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
-    #     global DATA_SOURCE_HELPERS_CACHE
-    #     global DATA_SOURCE_HELPER_CLASS_MAP
-
-    #     helper_target_key = simplejson.dumps(helper_kwargs, sort_keys=True, separators=(',', ':'))
-
-    #     # 判断是否需要刷新数据源
-    #     local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
-
-    #     cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-    #     refresh_time = int(self.cache_db.get(cache_key) or 0)
-
-    #     if refresh_time > local_time:
-    #         self.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-    #                 refresh_time, local_time, refresh_time - local_time))
-
-    #         DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
-    #         DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
-
-    #     # 已缓存的直接返回
-    #     helper = DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
-    #     if helper:
-    #         self.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
-    #         return helper
-
-    #     # 从数据库创建
-    #     sql = '''
-    #         SELECT
-    #              `type`
-    #             ,`configJSON`
-    #         FROM `biz_main_data_source`
-    #         WHERE
-    #             `id` = ?
-    #         '''
-    #     sql_params = [data_source_id]
-    #     db_res = self.db.query(sql, sql_params)
-    #     if not db_res:
-    #         e = IDNotFoundException('Data source `{}` not found'.format(data_source_id))
-    #         raise e
-
-    #     helper_type = db_res[0]['type']
-    #     config_json = db_res[0]['configJSON']
-    #     config      = ujson.loads(config_json)
-
-    #     # 解密字段
-    #     config = decipher_data_source_config_fields(config)
-
-    #     helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
-    #     if helper_class:
-    #         helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
-    #         helper = helper_class(self.logger, config, **helper_kwargs);
-
-    #     else:
-    #         e = DataSourceTypeNotSupportException('Data source type not support: `{}`'.format(helper_type))
-    #         raise e
-
-    #     if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
-    #         DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
-
-    #     DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
-
-    #     self.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
-    #     return helper
-
-    # def _get_env_variable(self, env_variable_id):
-    #     # 用户自定义Helper
-    #     global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
-    #     global ENV_VARIABLES_CACHE
-
-    #     # 判断是否需要刷新数据源
-    #     local_time = ENV_VARIABLE_LOCAL_TIMESTAMP_MAP.get(env_variable_id) or 0
-
-    #     cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
-    #     refresh_time = int(self.cache_db.get(cache_key) or 0)
-
-    #     if refresh_time > local_time:
-    #         self.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-    #                 refresh_time, local_time, refresh_time - local_time))
-
-    #         ENV_VARIABLE_LOCAL_TIMESTAMP_MAP[env_variable_id] = refresh_time
-    #         ENV_VARIABLES_CACHE[env_variable_id]              = None
-
-    #     # 已缓存的直接返回
-    #     env_value = ENV_VARIABLES_CACHE.get(env_variable_id)
-    #     if env_value:
-    #         return env_value
-
-    #     # 从数据库创建
-    #     sql = '''
-    #         SELECT
-    #             `valueTEXT`
-    #            ,`autoTypeCasting`
-    #         FROM `biz_main_env_variable`
-    #         WHERE
-    #             `id` = ?
-    #         '''
-    #     sql_params = [env_variable_id]
-    #     db_res = self.db.query(sql, sql_params)
-    #     if not db_res:
-    #         return None
-
-    #     env_value         = db_res[0]['valueTEXT']
-    #     auto_type_casting = db_res[0]['autoTypeCasting']
-    #     casted_env_value  = env_value
-
-    #     if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-    #         casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
-
-    #         # 防止boolean类型转换失败时返回`None`
-    #         if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
-    #             raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
-
-    #     ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
-    #     return casted_env_value
-
     def _log(self, safe_scope, message):
         message_time = arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
         line = '[{}] {}'.format(message_time, message)
@@ -1282,7 +1395,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 检查重复调用
         if func_id in func_chain:
-            e = DuplicatedFuncInChainException('{} -> [{}]'.format(func_chain_info, func_id))
+            e = DuplicationException('{} -> [{}]'.format(func_chain_info, func_id))
             raise e
 
         # 检查并获取函数信息
@@ -1298,7 +1411,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         sql_params = [func_id]
         db_res = self.db.query(sql, sql_params)
         if len(db_res) <= 0:
-            e = FunctionNotFoundException()
+            e = NotFoundException()
             raise e
 
         func = db_res[0]
@@ -1414,6 +1527,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
         __data_source_helper  = FuncDataSourceHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
+        __config_helper       = FuncConfigHelper(self)
 
         def __list_data_sources():
             return __data_source_helper.list()
@@ -1431,13 +1545,16 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             '__async_helper'       : __async_helper,        # 异步处理模块
             '__store_helper'       : __store_helper,        # 存储处理模块
             '__cache_helper'       : __cache_helper,        # 缓存处理模块
+            '__config_helper'      : __config_helper,       # 配置处理模块
 
             # 别名
-            'API'  : __export_as_api,
-            'SRC'  : __data_source_helper,
-            'ENV'  : __env_variable_helper,
-            'STORE': __store_helper,
-            'CACHE': __cache_helper,
+            'API'   : __export_as_api,
+            'SRC'   : __data_source_helper,
+            'ENV'   : __env_variable_helper,
+            'STORE' : __store_helper,
+            'CACHE' : __cache_helper,
+            'CONFIG': __config_helper,
+
             'FUNC' : __call_func,
             'EVAL' : __eval,
             'ASYNC': __async_helper,

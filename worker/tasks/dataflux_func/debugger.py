@@ -21,7 +21,7 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import DataFluxFuncBaseException, ScriptNotFoundException, FunctionNotFoundException
+from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -125,7 +125,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
         target_script = script_dict.get(script_id)
 
         if not target_script:
-            e = ScriptNotFoundException('Script `{}` not found'.format(script_id))
+            e = NotFoundException('Script `{}` not found'.format(script_id))
             raise e
 
         extra_vars = {
@@ -155,7 +155,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
         if func_name:
             entry_func = script_scope.get(func_name)
             if not entry_func:
-                e = FunctionNotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
+                e = NotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
                 raise e
 
             # 执行函数
