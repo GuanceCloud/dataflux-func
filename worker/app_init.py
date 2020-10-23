@@ -28,7 +28,7 @@ def before_app_create():
 
     toolkit.get_server_cache_key = get_server_cache_key
 
-    def get_worker_queue(name=None):
+    def get_worker_queue(name):
         worker_queue = toolkit._get_worker_queue(name)
 
         # Add queue prefix to queue name

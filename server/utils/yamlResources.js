@@ -50,6 +50,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       case 'number':
         if (configObj[k].toString().match(/^\d+$/)) {
           configTypeMap[k] = 'integer';
+
         } else {
           configTypeMap[k] = 'float';
         }
@@ -57,7 +58,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
       case 'string':
         if (toolkit.endsWith(k, '_LIST')) {
-          configTypeMap[k] = 'commaArray';
+          configTypeMap[k] = 'list';
+
+        } else if (toolkit.endsWith(k, '_MAP')) {
+          configTypeMap[k] = 'map';
+
         } else {
           configTypeMap[k] = 'string';
         }
@@ -113,13 +118,24 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         configObj[k] = parseFloat(configObj[k]);
         break;
 
-      case 'commaArray':
+      case 'list':
         configObj[k] = configObj[k].toString();
         if (configObj[k].length > 0) {
           configObj[k] = configObj[k].split(',');
         } else {
           configObj[k] = [];
         }
+        break;
+
+      case 'map':
+        var itemMap = {};
+        configObj[k].split(',').forEach(function(item) {
+          var itemParts = item.split('=');
+          var itemK = itemParts[0];
+          var itemV = itemParts[1] || '';
+          itemMap[itemK] = itemV;
+        });
+        configObj[k] = itemMap;
         break;
 
       case 'string':

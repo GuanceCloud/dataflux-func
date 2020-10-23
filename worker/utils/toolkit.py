@@ -435,8 +435,11 @@ def _get_cache_key(topic, name, tags=None):
         cache_key = '{}@{}:{}:'.format(topic, name, ':'.join(parts))
         return cache_key
 
-def _get_worker_queue(name=None):
-    name = name or 'default'
+def _get_worker_queue(name):
+    if not isinstance(name, int) and not name:
+        e = Exception('WAT: Queue name not specified.')
+        raise e
+
     return 'workerQueue@{}'.format(name)
 
 def as_array(o):

@@ -23,8 +23,8 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 > 可以使用`docker swarm init`初始化当前节点。
 >
 > 如果本机存在多个网卡，需要在上述初始化命令中指定网卡，
-> 如：`docker swarm init --advertise-addr=eth0`。
-> 本机网卡列表可以通过`ifconfig`查询
+> 如：`docker swarm init --advertise-addr=ens33`。
+> 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
 
 
 

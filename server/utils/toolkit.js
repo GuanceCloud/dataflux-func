@@ -1155,7 +1155,9 @@ var _getCacheKey = toolkit._getCacheKey = function _getCacheKey(topic, name, tag
 };
 
 var _getWorkerQueue = toolkit._getWorkerQueue = function _getWorkerQueue(name) {
-  name = name || 'default';
+  if ('number' !== typeof name && !name) {
+    throw new Error('WAT: Queue name not specified.')
+  }
   return strf('workerQueue@{0}', name);
 };
 

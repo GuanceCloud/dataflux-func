@@ -43,13 +43,20 @@ def load_config(config_file_path):
     for k, v in config_obj.items():
         if isinstance(v, int):
             config_type_map[k] = 'integer'
+
         elif isinstance(v, float):
             config_type_map[k] = 'float'
+
         elif isinstance(v, str):
             if k.endswith('_LIST'):
-                config_type_map[k] = 'commaArray'
+                config_type_map[k] = 'list'
+
+            elif k.endswith('_MAP'):
+                config_type_map[k] = 'map'
+
             else:
                 config_type_map[k] = 'string'
+
         elif isinstance(v, bool):
             config_type_map[k] = 'boolean'
 
@@ -73,7 +80,6 @@ def load_config(config_file_path):
 
             print('[YAML Resource] Config Overrided by: `{}`'.format(user_config_path))
 
-
     # User config from env
     for k, v in os.environ.items():
         if k not in config_obj:
@@ -93,16 +99,32 @@ def load_config(config_file_path):
 
         if type_ == 'integer':
             config_obj[k] = int(v)
+
         elif type_ == 'float':
             config_obj[k] = float(v)
-        elif type_ == 'commaArray':
+
+        elif type_ == 'list':
             v = str(v)
             if len(v) > 0:
                 config_obj[k] = v.split(',')
             else:
                 config_obj[k] = []
+
+        elif type_ == 'map':
+            item_map = {}
+            for item in config_obj[k].split(','):
+                item_parts = item.split('=')
+                item_k = item_parts[0]
+                item_v = ''
+                if len(item_parts) > 1:
+                    item_v = item_parts[1]
+                item_map[item_k] = item_v
+
+            config_obj[k] = item_map
+
         elif type_ == 'string':
             config_obj[k] = str(v)
+
         elif type_ == 'boolean':
             config_obj[k] = toolkit.to_boolean(v)
 

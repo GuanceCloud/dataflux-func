@@ -168,30 +168,6 @@ export default {
       setImmediate(() => {
         this.fixShowPosition();
       });
-
-      // 获取DataFlux 工作空间列表
-      let apiRes = await this.T.callAPI('/api/v1/dataflux/workspaces/do/list', {
-        alert: {entity: 'DataFlux 工作空间列表', action: '获取', showError: false},
-        extraOptions: {noCountProcessing: true},
-      });
-      if (apiRes.ok) {
-        let nextDFWorkspaceDBMap = {};
-        apiRes.data.forEach(d => {
-          if (!d.db) return;
-
-          if (!nextDFWorkspaceDBMap[d.db]) {
-            nextDFWorkspaceDBMap[d.db] = d;
-          } else {
-            if (!Array.isArray(nextDFWorkspaceDBMap[d.db])) {
-              nextDFWorkspaceDBMap[d.db] = [nextDFWorkspaceDBMap[d.db]];
-            }
-            nextDFWorkspaceDBMap[d.db].push(d);
-          }
-        });
-
-        this.dfWorkspaces      = apiRes.data;
-        this.dfWorkspacesDBMap = nextDFWorkspaceDBMap;
-      }
     },
     hideWindow() {
       this.show = false;
@@ -663,28 +639,6 @@ export default {
 
           // 提取数据
           switch(this.dataSource.type) {
-            // api/df_dataway
-            case 'df_dataway':
-              switch(browserConfig.ref) {
-                // api/df_dataway/token
-                case 'token':
-                  apiRes.data.forEach(d => {
-                    subNodeData.push({
-                      label: d.wsName,
-                      value: d.token,
-
-                      dfWorkspace: d.wsName,
-                      database   : d.db,
-                    });
-                  })
-                  break;
-
-                // api/df_dataway/*
-                default:
-                  break;
-              }
-              break;
-
             // api/*
             default:
               break;
@@ -903,16 +857,9 @@ export default {
         df_dataway: {
           name           : 'DataFlux DataWay',
           supportDebugger: false,
-          supportBrowser : true,
+          supportBrowser : false,
           supportDatabase: false,
           tagType        : 'info',
-          browsers       : {
-            title    : '工作空间',
-            type     : 'api',
-            api      : '/api/v1/dataflux/workspaces/do/list',
-            example  : `helper = DFF.SRC('${this.dataSource.id}', token='{token}')`,
-            ref      : 'token',
-          },
         },
         influxdb: {
           name              : 'InfluxDB',

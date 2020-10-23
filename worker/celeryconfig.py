@@ -30,7 +30,7 @@ worker_log_color           = False
 worker_redirect_stdouts    = False
 
 # Queue
-task_default_queue       = toolkit.get_worker_queue('default')
+task_default_queue       = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
 task_default_routing_key = task_default_queue
 task_queues = [
     create_queue(task_default_queue),
@@ -38,7 +38,7 @@ task_queues = [
 
 # Task
 task_routes = {
-    # 'taskName': {'queue': toolkit.get_worker_queue('default')},
+    # '<Task Name>': {'queue': toolkit.get_worker_queue('<Queue Name>')},
 }
 
 imports = [
@@ -65,8 +65,8 @@ result_expires = 3600
 
 ########## Content for YOUR project below ##########
 # Queue
-for i in range(10):
-    # 自动生成0～9号队列
+for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
+    # 自动生成队列
     q = toolkit.get_worker_queue(str(i))
     task_queues.append(create_queue(q))
 
@@ -75,7 +75,9 @@ imports.append('worker.tasks.dataflux_func')
 
 # Route
 task_routes.update({
-    'DataFluxFunc.*': {'queue': toolkit.get_worker_queue('0')},
+    'DataFluxFunc.*': {
+        'queue': toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
+    },
 })
 
 # Beat

@@ -141,7 +141,7 @@ function _monitorFunc(req, res, data, callback) {
 };
 
 function _checkWorkerQueue(req, res, queue, callback) {
-  var workerQueueKey = toolkit.getWorkerQueue('queue');
+  var workerQueueKey = toolkit.getWorkerQueue(queue);
   res.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
     if (err) return callback(err);
 
@@ -703,6 +703,30 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     },
     // 真实调用函数
     function(asyncCallback) {
+      // 处理队列别名
+      if (toolkit.isNullOrUndefined(taskOptions.queue)) {
+        taskOptions.queue = CONFIG._FUNC_DEFAULT_QUEUE;
+
+      } else {
+        var queueNumber = parseInt(taskOptions.queue);
+        if (!isNaN(queueNumber) && queueNumber >= 0 && queueNumber < CONFIG._WORKER_QUEUE_COUNT) {
+          // 直接指定队列编号
+
+        } else {
+          // 指定队列别名
+          var queueNumber = parseInt(CONFIG.WORKER_QUEUE_ALIAS_MAP[taskOptions.queue]);
+          if (isNaN(queueNumber) || queueNumber < 0 || queueNumber >= CONFIG._WORKER_QUEUE_COUNT) {
+            // 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
+            // 保证无论如何都有Worker负责执行（实际运行会报错）
+            taskOptions.queue = CONFIG._FUNC_DEFAULT_QUEUE;
+
+          } else {
+            // 队列别名转换为队列编号
+            taskOptions.queue = queueNumber;
+          }
+        }
+      }
+
       var celery = celeryHelper.createHelper(res.locals.logger);
       celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
     },

@@ -30,8 +30,7 @@ exports.send = function(req, res, payload, options, callback) {
     from   : payload.from  || null,
     options: options       || null,
   };
-  var taskOptions = {queue: 'webhook'};
-  celery.putTask(task, taskArgs, taskKwargs, taskOptions, function(err, taskId) {
+  celery.putTask(task, taskArgs, taskKwargs, null, function(err, taskId) {
     if (err) {
       res.locals.logger.logError(err);
     } else {

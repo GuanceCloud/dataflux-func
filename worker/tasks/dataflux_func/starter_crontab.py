@@ -163,7 +163,30 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
 
         # 分发任务
         for c in crontab_configs:
-            queue = toolkit.get_worker_queue(c['funcExtraConfig'].get('queue') or 0)
+            specified_queue = c['funcExtraConfig'].get('queue')
+            if specified_queue is None:
+                specified_queue = CONFIG['_FUNC_DEFAULT_QUEUE']
+
+            else:
+                if isinstance(specified_queue, int) and 0 <= specified_queue < CONFIG['_WORKER_QUEUE_COUNT']:
+                    # 直接指定队列编号
+                    pass
+
+                else:
+                    # 指定队列别名
+                    try:
+                        queue_number = int(CONFIG['WORKER_QUEUE_ALIAS_MAP'].get(specified_queue))
+
+                    except ValueError as e:
+                        # 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
+                        # 保证无论如何都有Worker负责执行（实际运行会报错）
+                        specified_queue = CONFIG['_FUNC_DEFAULT_QUEUE']
+
+                    else:
+                        # 队列别名转换为队列编号
+                        specified_queue = queue_number
+
+            queue = toolkit.get_worker_queue(specified_queue)
 
             task_headers = {
                 'origin': '{}-{}'.format(c['id'], current_timestamp) # 来源标记为「<自动触发配置ID>-<时间戳>」
@@ -207,8 +230,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_id = gen_task_id()
 
             # 记录任务信息（入队）
-            self.cache_task_status(c['id'], task_id,
-                    func_id=c['funcId'])
+            self.cache_task_status(c['id'], task_id, func_id=c['funcId'])
 
             # 任务入队
             dataflux_func_runner.apply_async(

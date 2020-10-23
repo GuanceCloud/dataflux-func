@@ -612,6 +612,165 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('incr', key, amount=step)
 
+class FuncDataSourceHelper(object):
+    def __init__(self, task):
+        self.__task = task
+
+    def __call__(self, data_source_id, **helper_kwargs):
+        global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
+        global DATA_SOURCE_HELPERS_CACHE
+        global DATA_SOURCE_HELPER_CLASS_MAP
+
+        helper_target_key = simplejson.dumps(helper_kwargs, sort_keys=True, separators=(',', ':'))
+
+        # 判断是否需要刷新数据源
+        local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
+
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
+
+        if refresh_time > local_time:
+            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
+                    refresh_time, local_time, refresh_time - local_time))
+
+            DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
+            DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
+
+        # 已缓存的直接返回
+        helper = DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
+        if helper:
+            self.__task.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
+            return helper
+
+        # 从数据库创建
+        sql = '''
+            SELECT
+                 `type`
+                ,`configJSON`
+            FROM `biz_main_data_source`
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [data_source_id]
+        db_res = self.__task.db.query(sql, sql_params)
+        if not db_res:
+            e = IDNotFoundException('Data source `{}` not found'.format(data_source_id))
+            raise e
+
+        helper_type = db_res[0]['type']
+        config_json = db_res[0]['configJSON']
+        config      = ujson.loads(config_json)
+
+        # 解密字段
+        config = decipher_data_source_config_fields(config)
+
+        helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
+        if helper_class:
+            helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
+            helper = helper_class(self.__task.logger, config, **helper_kwargs);
+
+        else:
+            e = DataSourceTypeNotSupportException('Data source type not support: `{}`'.format(helper_type))
+            raise e
+
+        if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
+            DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
+
+        DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
+
+        self.__task.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
+        return helper
+
+    def list(self):
+        sql = '''
+            SELECT
+                 `id`
+                ,`title`
+                ,`description`
+                ,`type`
+                ,`isBuiltin`
+                ,`createTime`
+                ,`updateTime`
+            FROM biz_main_data_source AS dsrc
+            '''
+        data = self.__task.db.query(sql)
+
+        for d in data:
+            d['isBuiltin'] = bool(d['isBuiltin'])
+
+        return data
+
+class FuncEnvVariableHelper(object):
+    def __init__(self, task):
+        self.__task = task
+
+    def __call__(self, env_variable_id):
+        # 用户自定义Helper
+        global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
+        global ENV_VARIABLES_CACHE
+
+        # 判断是否需要刷新数据源
+        local_time = ENV_VARIABLE_LOCAL_TIMESTAMP_MAP.get(env_variable_id) or 0
+
+        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
+        refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
+
+        if refresh_time > local_time:
+            self.__task.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
+                    refresh_time, local_time, refresh_time - local_time))
+
+            ENV_VARIABLE_LOCAL_TIMESTAMP_MAP[env_variable_id] = refresh_time
+            ENV_VARIABLES_CACHE[env_variable_id]              = None
+
+        # 已缓存的直接返回
+        env_value = ENV_VARIABLES_CACHE.get(env_variable_id)
+        if env_value:
+            return env_value
+
+        # 从数据库创建
+        sql = '''
+            SELECT
+                `valueTEXT`
+               ,`autoTypeCasting`
+            FROM `biz_main_env_variable`
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [env_variable_id]
+        db_res = self.__task.db.query(sql, sql_params)
+        if not db_res:
+            return None
+
+        env_value         = db_res[0]['valueTEXT']
+        auto_type_casting = db_res[0]['autoTypeCasting']
+        casted_env_value  = env_value
+
+        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+            casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
+
+            # 防止boolean类型转换失败时返回`None`
+            if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
+                raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
+
+        ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
+        return casted_env_value
+
+    def list(self):
+        sql = '''
+            SELECT
+                 `id`
+                ,`title`
+                ,`description`
+                ,`valueTEXT`
+                ,`autoTypeCasting`
+                ,`createTime`
+                ,`updateTime`
+            FROM biz_main_data_source AS dsrc
+            '''
+        data = self.__task.db.query(sql)
+
+        return data
+
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def __call__(self, *args, **kwargs):
         self.logger = LogHelper(self)
@@ -683,8 +842,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 raise e
 
     def _custom_import(self, script_dict, imported_script_dict,
-            name, globals=None, locals=None, fromlist=None, level=0,
-            parent_scope=None):
+        name, globals=None, locals=None, fromlist=None, level=0,
+        parent_scope=None):
         if name in script_dict:
             _module = None
 
@@ -730,9 +889,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, kwargs_hint=None,
-            fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
-            integration=None,
-            is_hidden=False, is_disabled=False):
+        fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
+        integration=None,
+        is_hidden=False, is_disabled=False):
         ### 核心配置 ###
         # 函数标题
         if title is not None and not isinstance(title, (six.string_types, six.text_type)):
@@ -863,8 +1022,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 指定队列
         if queue is not None:
-            if not isinstance(queue, int) or not (1 <= queue <= 9):
-                e = InvalidFuncExportOption('`queue` should be an int and between 1 ~ 9')
+            available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])) + list(CONFIG['WORKER_QUEUE_ALIAS_MAP'].keys())
+            if queue not in available_queues:
+                e = InvalidFuncExportOption('`queue` should be one of {}'.format(json.dumps(available_queues)))
                 raise e
 
             extra_config['queue'] = queue
@@ -968,121 +1128,121 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return dff_api_F
         return decorater
 
-    def _get_data_source_helper(self, data_source_id, **helper_kwargs):
-        global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
-        global DATA_SOURCE_HELPERS_CACHE
-        global DATA_SOURCE_HELPER_CLASS_MAP
+    # def _get_data_source_helper(self, data_source_id, **helper_kwargs):
+    #     global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
+    #     global DATA_SOURCE_HELPERS_CACHE
+    #     global DATA_SOURCE_HELPER_CLASS_MAP
 
-        helper_target_key = simplejson.dumps(helper_kwargs, sort_keys=True, separators=(',', ':'))
+    #     helper_target_key = simplejson.dumps(helper_kwargs, sort_keys=True, separators=(',', ':'))
 
-        # 判断是否需要刷新数据源
-        local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
+    #     # 判断是否需要刷新数据源
+    #     local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-        refresh_time = int(self.cache_db.get(cache_key) or 0)
+    #     cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+    #     refresh_time = int(self.cache_db.get(cache_key) or 0)
 
-        if refresh_time > local_time:
-            self.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    refresh_time, local_time, refresh_time - local_time))
+    #     if refresh_time > local_time:
+    #         self.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
+    #                 refresh_time, local_time, refresh_time - local_time))
 
-            DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
-            DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
+    #         DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
+    #         DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
 
-        # 已缓存的直接返回
-        helper = DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
-        if helper:
-            self.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
-            return helper
+    #     # 已缓存的直接返回
+    #     helper = DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
+    #     if helper:
+    #         self.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
+    #         return helper
 
-        # 从数据库创建
-        sql = '''
-            SELECT
-                 `type`
-                ,`configJSON`
-            FROM `biz_main_data_source`
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [data_source_id]
-        db_res = self.db.query(sql, sql_params)
-        if not db_res:
-            e = IDNotFoundException('Data source `{}` not found'.format(data_source_id))
-            raise e
+    #     # 从数据库创建
+    #     sql = '''
+    #         SELECT
+    #              `type`
+    #             ,`configJSON`
+    #         FROM `biz_main_data_source`
+    #         WHERE
+    #             `id` = ?
+    #         '''
+    #     sql_params = [data_source_id]
+    #     db_res = self.db.query(sql, sql_params)
+    #     if not db_res:
+    #         e = IDNotFoundException('Data source `{}` not found'.format(data_source_id))
+    #         raise e
 
-        helper_type = db_res[0]['type']
-        config_json = db_res[0]['configJSON']
-        config      = ujson.loads(config_json)
+    #     helper_type = db_res[0]['type']
+    #     config_json = db_res[0]['configJSON']
+    #     config      = ujson.loads(config_json)
 
-        # 解密字段
-        config = decipher_data_source_config_fields(config)
+    #     # 解密字段
+    #     config = decipher_data_source_config_fields(config)
 
-        helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
-        if helper_class:
-            helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
-            helper = helper_class(self.logger, config, **helper_kwargs);
+    #     helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
+    #     if helper_class:
+    #         helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
+    #         helper = helper_class(self.logger, config, **helper_kwargs);
 
-        else:
-            e = DataSourceTypeNotSupportException('Data source type not support: `{}`'.format(helper_type))
-            raise e
+    #     else:
+    #         e = DataSourceTypeNotSupportException('Data source type not support: `{}`'.format(helper_type))
+    #         raise e
 
-        if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
-            DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
+    #     if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
+    #         DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
 
-        DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
+    #     DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
 
-        self.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
-        return helper
+    #     self.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
+    #     return helper
 
-    def _get_env_variable(self, env_variable_id):
-        # 用户自定义Helper
-        global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
-        global ENV_VARIABLES_CACHE
+    # def _get_env_variable(self, env_variable_id):
+    #     # 用户自定义Helper
+    #     global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
+    #     global ENV_VARIABLES_CACHE
 
-        # 判断是否需要刷新数据源
-        local_time = ENV_VARIABLE_LOCAL_TIMESTAMP_MAP.get(env_variable_id) or 0
+    #     # 判断是否需要刷新数据源
+    #     local_time = ENV_VARIABLE_LOCAL_TIMESTAMP_MAP.get(env_variable_id) or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
-        refresh_time = int(self.cache_db.get(cache_key) or 0)
+    #     cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
+    #     refresh_time = int(self.cache_db.get(cache_key) or 0)
 
-        if refresh_time > local_time:
-            self.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    refresh_time, local_time, refresh_time - local_time))
+    #     if refresh_time > local_time:
+    #         self.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
+    #                 refresh_time, local_time, refresh_time - local_time))
 
-            ENV_VARIABLE_LOCAL_TIMESTAMP_MAP[env_variable_id] = refresh_time
-            ENV_VARIABLES_CACHE[env_variable_id]              = None
+    #         ENV_VARIABLE_LOCAL_TIMESTAMP_MAP[env_variable_id] = refresh_time
+    #         ENV_VARIABLES_CACHE[env_variable_id]              = None
 
-        # 已缓存的直接返回
-        env_value = ENV_VARIABLES_CACHE.get(env_variable_id)
-        if env_value:
-            return env_value
+    #     # 已缓存的直接返回
+    #     env_value = ENV_VARIABLES_CACHE.get(env_variable_id)
+    #     if env_value:
+    #         return env_value
 
-        # 从数据库创建
-        sql = '''
-            SELECT
-                `valueTEXT`
-               ,`autoTypeCasting`
-            FROM `biz_main_env_variable`
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [env_variable_id]
-        db_res = self.db.query(sql, sql_params)
-        if not db_res:
-            return None
+    #     # 从数据库创建
+    #     sql = '''
+    #         SELECT
+    #             `valueTEXT`
+    #            ,`autoTypeCasting`
+    #         FROM `biz_main_env_variable`
+    #         WHERE
+    #             `id` = ?
+    #         '''
+    #     sql_params = [env_variable_id]
+    #     db_res = self.db.query(sql, sql_params)
+    #     if not db_res:
+    #         return None
 
-        env_value         = db_res[0]['valueTEXT']
-        auto_type_casting = db_res[0]['autoTypeCasting']
-        casted_env_value  = env_value
+    #     env_value         = db_res[0]['valueTEXT']
+    #     auto_type_casting = db_res[0]['autoTypeCasting']
+    #     casted_env_value  = env_value
 
-        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-            casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
+    #     if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+    #         casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
 
-            # 防止boolean类型转换失败时返回`None`
-            if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
-                raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
+    #         # 防止boolean类型转换失败时返回`None`
+    #         if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
+    #             raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
 
-        ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
-        return casted_env_value
+    #     ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
+    #     return casted_env_value
 
     def _log(self, safe_scope, message):
         message_time = arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
@@ -1160,9 +1320,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or 0)
+        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE'])
         if safe_scope.get('_DFF_IS_DEBUG'):
-            queue = toolkit.get_worker_queue('0')
+            queue = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
 
         task_headers = {
             'origin': self.request.id,
@@ -1189,25 +1349,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
-
-    def _list_data_sources(self):
-        sql = '''
-            SELECT
-                 `id`
-                ,`title`
-                ,`description`
-                ,`type`
-                ,`isBuiltin`
-                ,`createTime`
-                ,`updateTime`
-            FROM biz_main_data_source AS dsrc
-            '''
-        data_sources = self.db.query(sql)
-
-        for d in data_sources:
-            d['isBuiltin'] = bool(d['isBuiltin'])
-
-        return data_sources
 
     def create_safe_scope(self, script_name=None, script_dict=None, imported_script_dict=None, extra_vars=None):
         '''
@@ -1265,40 +1406,44 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             return eval(expression, *args, **kwargs)
 
-        def __list_data_sources():
-            return self._list_data_sources()
-
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
 
-        __async_helper = FuncAsyncHelper(self)
-        __store_helper = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper = FuncCacheHelper(self, default_scope=script_name)
+        __async_helper        = FuncAsyncHelper(self)
+        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
+        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
+        __data_source_helper  = FuncDataSourceHelper(self)
+        __env_variable_helper = FuncEnvVariableHelper(self)
+
+        def __list_data_sources():
+            return __data_source_helper.list()
 
         safe_scope['DFF'] = DFFWraper(inject_funcs={
-            'export_as_api'         : __export_as_api,          # 导出为API
-            'get_data_source_helper': __get_data_source_helper, # 获取数据源操作对象
-            'get_env_variable'      : __get_env_variable,       # 获取环境变量
-            'log'                   : __log,                    # 输出日志
-            'plot'                  : __plot,                   # 输出图表
-            'call_func'             : __call_func,              # 调用函数（新Task）
-            'eval'                  : __eval,                   # 执行Python表达式
-            'list_data_sources'     : __list_data_sources,      # 列出数据源
-            'format_sql'            : format_sql,               # 格式化SQL语句
+            'export_as_api': __export_as_api,  # 导出为API
+            'log'          : __log,            # 输出日志
+            'plot'         : __plot,           # 输出图表
+            'call_func'    : __call_func,      # 调用函数（新Task）
+            'eval'         : __eval,           # 执行Python表达式
+            'format_sql'   : format_sql,       # 格式化SQL语句
 
-            '__async_helper': __async_helper, # 异步处理模块
-            '__store_helper': __store_helper, # 存储处理模块
-            '__cache_helper': __cache_helper, # 缓存处理模块
+            '__data_source_helper' : __data_source_helper,  # 数据源处理模块
+            '__env_variable_helper': __env_variable_helper, # 环境变量处理模块
+            '__async_helper'       : __async_helper,        # 异步处理模块
+            '__store_helper'       : __store_helper,        # 存储处理模块
+            '__cache_helper'       : __cache_helper,        # 缓存处理模块
 
             # 别名
             'API'  : __export_as_api,
-            'SRC'  : __get_data_source_helper,
-            'ENV'  : __get_env_variable,
+            'SRC'  : __data_source_helper,
+            'ENV'  : __env_variable_helper,
+            'STORE': __store_helper,
+            'CACHE': __cache_helper,
             'FUNC' : __call_func,
             'EVAL' : __eval,
             'ASYNC': __async_helper,
-            'STORE': __store_helper,
-            'CACHE': __cache_helper,
+
+            # 历史遗留
+            'list_data_sources': __list_data_sources, # 列出数据源
         })
 
         return safe_scope
