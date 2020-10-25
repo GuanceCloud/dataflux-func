@@ -346,41 +346,68 @@ exports.afterAppCreated = function(app, server) {
   var request = require('request');
   var fs      = require('fs-extra');
 
-  var WATClient  = require('../sdk/wat_sdk').WATClient;
+  var celeryHelper = require('./utils/extraHelpers/celeryHelper');
+  var WATClient    = require('../sdk/wat_sdk').WATClient;
+  var IMAGE_INFO   = require('../image-info.json');
 
-  var IMAGE_INFO = require('../image-info.json');
+  /***** 启动时自动运行 *****/
+  function printError(err) {
+    if (!err || 'string' !== typeof err.stack) return;
+
+    if (err.isWarning) {
+      app.locals.logger.warning(err.message);
+    } else {
+      err.stack.split('\n').forEach(function(line) {
+        app.locals.logger.error(line);
+      });
+    }
+  }
 
   // 重置管理员账号密码
-  if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
-    var RESET_ADMIN_ID = 'u-admin';
-    var adminPasswordHash = toolkit.getSaltedPasswordHash(
-        RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
+  async.series([
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'startupProcess');
+      var lockValue = Date.now().toString();
+      var lockAge   = 30;
 
-    var sql = toolkit.createStringBuilder();
-    sql.append('UPDATE wat_main_user');
-    sql.append('SET');
-    sql.append('   username     = ?');
-    sql.append('  ,passwordHash = ?');
-    sql.append('WHERE');
-    sql.append('  id = ?')
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
-    var sqlParams = [
-      process.env.RESET_ADMIN_USERNAME,
-      adminPasswordHash,
-      RESET_ADMIN_ID,
-    ];
-    app.locals.db.query(sql, sqlParams, function(err) {
-      if (err && 'string' === typeof err.stack) {
-        if (err.isWarning) {
-          app.locals.logger.warning(err.message);
-        } else {
-          err.stack.split('\n').forEach(function(line) {
-            app.locals.logger.error(line);
-          });
+        if (!cacheRes) {
+          var e = new Error('Startup process is already launched.');
+          e.isWarning = true;
+          return asyncCallback(e);
         }
-      }
-    });
-  }
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      if (!process.env.RESET_ADMIN_USERNAME || !process.env.RESET_ADMIN_PASSWORD) return asyncCallback();
+
+      var RESET_ADMIN_ID = 'u-admin';
+      var adminPasswordHash = toolkit.getSaltedPasswordHash(
+          RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('UPDATE wat_main_user');
+      sql.append('SET');
+      sql.append('   username     = ?');
+      sql.append('  ,passwordHash = ?');
+      sql.append('WHERE');
+      sql.append('  id = ?')
+
+      var sqlParams = [
+        process.env.RESET_ADMIN_USERNAME,
+        adminPasswordHash,
+        RESET_ADMIN_ID,
+      ];
+      app.locals.db.query(sql, sqlParams, asyncCallback);
+    }
+  ], printError);
+
+  // 自动安装脚本包
+  // TODO
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {

@@ -96,8 +96,8 @@ class BaseTask(app.Task):
             self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
-        if 'startup_sleep' in kwargs:
-            time.sleep(kwargs['startup_sleep'])
+        if 'startupSleep' in kwargs:
+            time.sleep(kwargs['startupSleep'])
 
         # Add logger
         self.logger = LogHelper(self)

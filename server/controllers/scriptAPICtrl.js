@@ -328,7 +328,7 @@ exports.publish = function(req, res, next) {
     },
     // 发送更新脚本缓存任务
     function(asyncCallback) {
-      celery.putTask('DataFluxFunc.reloadScripts', null, null, null, asyncCallback);
+      celery.putTask('DataFluxFunc.reloadScripts', null, null, null, null, asyncCallback);
     },
   ], function(err) {
     transScope.end(err, function(scopeErr) {
@@ -340,6 +340,35 @@ exports.publish = function(req, res, next) {
         exportedAPIFuncs: nextExportedAPIFuncs,
       });
       res.locals.sendJSON(ret);
+
+      // 发布成功后
+      // 1. 重新加载脚本
+      // 2. 运行发布后自动运行的函数
+      celery.putTask('DataFluxFunc.reloadScripts', null, null, null, null, function(err) {
+        if (err) return;
+
+        nextExportedAPIFuncs.forEach(function(func) {
+          if (func.integration !== 'autoRun') return;
+
+          try {
+            if (!func.extraConfig.integrationConfig.published) return;
+          } catch(err) {
+            return;
+          }
+
+          var funcId = toolkit.strf('{0}.{1}', id, func.name);
+          var kwargs = {
+            funcId: funcId,
+            origin: 'integration',
+            execMode: 'auto',
+            queue : CONFIG._FUNC_DEFAULT_QUEUE,
+          }
+          var taskOptions = {
+            queue: CONFIG._FUNC_DEFAULT_QUEUE,
+          }
+          celery.putTask('DataFluxFunc.runner', null, kwargs, taskOptions);
+        });
+      });
     });
   });
 };

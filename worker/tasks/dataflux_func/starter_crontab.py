@@ -28,47 +28,84 @@ from worker.tasks.dataflux_func.runner import dataflux_func_runner
 CONFIG = yaml_resources.get('CONFIG')
 
 class DataFluxFuncStarterCrontabTask(BaseTask):
-    def fetch_crontab_configs(self, current_tick_timestamp, next_seq=None):
+    # Crontab过滤器 - 向前筛选
+    def crontab_config_filter(self, trigger_time, crontab_config):
         '''
-        获取自动触发配置（附带按照crontab语法过滤）
+        Crontab执行时机过滤函数
+
+        算法描述如下：
+
+        trigger_time - 1m             trigger_time
+        |                             |    实际Starter执行时间（比trigger_time晚1秒，此时计算出trigger_time）
+        |                             | 1s |
+        |                             |    |
+        +-----------------------------+====+------------> Future
+        ^                             ^
+        |                             |
+        |                             start_time（需要执行的Crontab任务）
+        |
+        start_time（不需要执行的Crontab任务）
+
+        即：只有启动点大于等于当前触发点的才需要执行
         '''
-        now = arrow.get().to('Asia/Shanghai').datetime
+        crontab_expr = crontab_config['crontab']
+        try:
+            crontab_expr = crontab_config['funcExtraConfig']['fixedCrontab']
+        except Exception as e:
+            pass
+
+        if not crontab_expr:
+            return False
+
+        try:
+            parsed_crontab = crontab_parser.CronTab(crontab_expr)
+        except Exception as e:
+            return False
+        else:
+            now = arrow.get().to('Asia/Shanghai').datetime
+            start_time = int(parsed_crontab.previous(delta=False, now=now))
+            return start_time >= trigger_time
+
+    def get_integrated_func_crontab_configs(self):
+        sql = '''
+            SELECT
+                 `func`.`id`
+                ,`func`.`extraConfigJSON`
+            FROM `biz_main_func` AS `func`
+            WHERE
+                    `func`.`integration` = 'autoRun'
+                AND `func`.`extraConfigJSON`->>'$.integrationConfig.crontab' IS NOT NULL
+            '''
+        funcs = self.db.query(sql)
+
+        crontab_configs = []
+        for f in funcs:
+            extra_config_json = f.get('extraConfigJSON')
+            if extra_config_json:
+                f['extraConfig'] = ujson.loads(extra_config_json)
+            else:
+                f['extraConfig'] = {}
+
+            crontab_expr = None
+            try:
+                crontab_expr = f['extraConfig']['integrationConfig']['crontab']
+            except Exception as e:
+                continue
+
+            c = {
+                'id'            : 'cron-INTEGRATION',
+                'funcId'        : f['id'],
+                'funcCallKwargs': {},
+                'saveResult'    : False,
+                'crontab'       : crontab_expr,
+            }
+            crontab_configs.append(c)
+
+        return crontab_configs
+
+    def fetch_crontab_configs(self, next_seq=None):
         if next_seq is None:
             next_seq = 0
-
-        # Crontab过滤器 - 向前筛选
-        def crontab_filter(item):
-            '''
-            Crontab执行时机过滤函数
-
-            算法描述如下：
-
-            上一触发点(-T)                当前触发点(0)
-            |                             |
-            |                             |  +---------> Starter启动点
-            |                             |  |
-            +++++++++++++++++++++++++++++++++++++++
-            |                             |  |
-            |                             +--+--> 范围内启动点
-            |
-            +---------------------------------> 范围外启动点
-
-            即：只有启动点大于等于当前触发点的才需要执行
-            '''
-            crontab_expr = item['crontab']
-            if item.get('funcExtraConfig') and item['funcExtraConfig'].get('fixedCrontab'):
-                crontab_expr = item['funcExtraConfig']['fixedCrontab']
-
-            if not crontab_expr:
-                return False
-
-            try:
-                parsed_crontab = crontab_parser.CronTab(crontab_expr)
-            except Exception as e:
-                return False
-            else:
-                start_timestamp = int(parsed_crontab.previous(delta=False, now=now))
-                return start_timestamp >= current_tick_timestamp
 
         sql = '''
             SELECT
@@ -120,9 +157,6 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
             else:
                 c['saveResult'] = False
 
-        # 根据执行频率，筛选出本轮需要执行的脚本
-        crontab_configs = list(filter(crontab_filter, crontab_configs))
-
         return crontab_configs, latest_seq
 
     def cache_task_status(self, crontab_id, task_id, func_id):
@@ -154,48 +188,93 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
     now = arrow.get().to('Asia/Shanghai').datetime
     starter_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
     trigger_time = int(starter_crontab.previous(delta=False, now=now))
+    current_time = int(time.time())
+
+    # 获取函数功能集成自动触发
+    integrated_crontab_configs = self.get_integrated_func_crontab_configs()
 
     # 循环获取需要执行的自动触发配置
-    current_timestamp = int(time.time())
     next_seq = 0
     while next_seq is not None:
-        crontab_configs, next_seq = self.fetch_crontab_configs(trigger_time, next_seq)
+        crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
+
+        # 第一轮查询时，加入功能集成中自动执行的函数
+        if integrated_crontab_configs:
+            crontab_configs = integrated_crontab_configs + crontab_configs
+            integrated_crontab_configs = None
 
         # 分发任务
         for c in crontab_configs:
-            specified_queue = c['funcExtraConfig'].get('queue')
+            # 跳过未到达出发时间的任务
+            if not self.crontab_config_filter(trigger_time, c):
+                continue
+
+            print(c)
+
+            # 确定执行队列
+            specified_queue = None
+            try:
+                specified_queue = c['funcExtraConfig']['queue']
+            except Exception as e:
+                pass
+
+            queue = None
             if specified_queue is None:
-                specified_queue = CONFIG['_FUNC_DEFAULT_QUEUE']
+                queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
 
             else:
                 if isinstance(specified_queue, int) and 0 <= specified_queue < CONFIG['_WORKER_QUEUE_COUNT']:
                     # 直接指定队列编号
-                    pass
+                    queue = toolkit.get_worker_queue(specified_queue)
 
                 else:
                     # 指定队列别名
                     try:
-                        queue_number = int(CONFIG['WORKER_QUEUE_ALIAS_MAP'].get(specified_queue))
-
-                    except ValueError as e:
+                        queue_number = int(CONFIG['WORKER_QUEUE_ALIAS_MAP'][specified_queue])
+                    except Exception as e:
                         # 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
                         # 保证无论如何都有Worker负责执行（实际运行会报错）
-                        specified_queue = CONFIG['_FUNC_DEFAULT_QUEUE']
-
+                        queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
                     else:
                         # 队列别名转换为队列编号
-                        specified_queue = queue_number
+                        queue = toolkit.get_worker_queue(queue_number)
 
-            queue = toolkit.get_worker_queue(specified_queue)
+            # 确定超时时间
+            soft_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+            time_limit      = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
 
-            task_headers = {
-                'origin': '{}-{}'.format(c['id'], current_timestamp) # 来源标记为「<自动触发配置ID>-<时间戳>」
-            }
+            func_timeout = None
+            try:
+                func_timeout = c['funcExtraConfig']['timeout']
+            except Exception as e:
+                pass
 
-            # 自动触发锁，防止同一个自动触发配置任务存在多个在任务中
+            # 存在且正确配置，更新超时时间
+            if isinstance(func_timeout, (six.integer_types, float)) and func_timeout > 0:
+                soft_time_limit = func_timeout
+                time_limit      = func_timeout + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
+
+            # 计算任务过期时间
+            _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
+            expires = arrow.get().shift(seconds=_shift_seconds).datetime
+
+            # 上锁
             lock_key   = toolkit.get_cache_key('lock', 'CrontabConfig', ['crontabConfigId', c['id']])
             lock_value = toolkit.gen_uuid()
+            if not self.cache_db.lock(lock_key, lock_value, time_limit):
+                # 触发任务前上锁，失败则跳过
+                continue
 
+            # 任务ID
+            task_id = gen_task_id()
+
+            # 记录任务信息（入队）
+            self.cache_task_status(c['id'], task_id, func_id=c['funcId'])
+
+            # 任务入队
+            task_headers = {
+                'origin': '{}-{}'.format(c['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
+            }
             task_kwargs = {
                 'funcId'        : c['funcId'],
                 'funcCallKwargs': c['funcCallKwargs'],
@@ -205,34 +284,10 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
                 'execMode'      : 'crontab',
                 'triggerTime'   : trigger_time,
                 'crontab'       : c['crontab'],
-                'queue'         : c['funcExtraConfig'].get('queue'),
+                'queue'         : specified_queue,
                 'lockKey'       : lock_key,
                 'lockValue'     : lock_value,
             }
-
-            soft_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
-            time_limit      = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
-
-            func_timeout = None
-            if isinstance(c['funcExtraConfig'].get('timeout'), (six.integer_types, float)):
-                func_timeout = c['funcExtraConfig']['timeout']
-
-                soft_time_limit = func_timeout
-                time_limit      = func_timeout + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
-
-            _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
-            expires = arrow.get().shift(seconds=_shift_seconds).datetime
-
-            if not self.cache_db.lock(lock_key, lock_value, time_limit):
-                # 触发任务前上锁，失败则跳过
-                continue
-
-            task_id = gen_task_id()
-
-            # 记录任务信息（入队）
-            self.cache_task_status(c['id'], task_id, func_id=c['funcId'])
-
-            # 任务入队
             dataflux_func_runner.apply_async(
                     task_id=task_id,
                     kwargs=task_kwargs,

@@ -27,38 +27,18 @@ def get_config(c):
         'debug'     : c.get('debug', False),
     })
 
-CLIENT_CONFIG = None
-CLIENT        = None
-
 class DFDataWayHelper(object):
-    def __init__(self, logger, config=None, token=None, rp=None, *args, **kwargs):
+    def __init__(self, logger, config, token=None, rp=None, *args, **kwargs):
         self.logger = logger
 
-        if config:
-            if token:
-                config['token'] = token
+        if token:
+            config['token'] = token
 
-            if rp:
-                config['rp'] = rp
+        if rp:
+            config['rp'] = rp
 
-            self.config = config
-            self.client = DataWay(**get_config(config))
-
-        else:
-            global CLIENT_CONFIG
-            global CLIENT
-
-            if not CLIENT:
-                CLIENT_CONFIG = {
-                    'url'  : CONFIG['_DF_DATAWAY_URL'],
-                    'token': CONFIG['_DF_DATAWAY_TOKEN'],
-                    'debug': CONFIG['_DF_DATAWAY_DEBUG'],
-                }
-                CLIENT = DataWay(**get_config(CLIENT_CONFIG))
-
-            self.config = CLIENT_CONFIG
-            self.client = CLIENT
-
+        self.config = config
+        self.client = DataWay(**get_config(config))
 
     def __del__(self):
         pass

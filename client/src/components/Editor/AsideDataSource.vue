@@ -19,7 +19,10 @@
         @click="openEntity(node, data)">
 
         <span>
-          <el-link v-if="data.type === 'addDataSource'" type="primary" :underline="false">
+          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+          </el-link>
+          <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
             <i class="fa fa-fw fa-plus"></i>（添加数据源）
           </el-link>
           <div v-else>
@@ -109,6 +112,7 @@ export default {
   methods: {
     filterNode(value, data) {
       if (!value) return true;
+      if (['addDataSource', 'refresh'].indexOf(data.type) >= 0) return true;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -151,8 +155,8 @@ export default {
           dataSource: d,
         });
       });
-
-      treeData.push({type: 'addDataSource'});
+      treeData.unshift({type: 'addDataSource'});
+      treeData.unshift({type: 'refresh'});
 
       this.loading = false;
       this.data = treeData;
@@ -166,6 +170,11 @@ export default {
       }
 
       switch(data.type) {
+        // 刷新
+        case 'refresh':
+          this.loadData();
+          break;
+
         // 「添加数据源」节点
         case 'addDataSource':
           this.$router.push({

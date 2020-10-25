@@ -2272,6 +2272,7 @@ dataSourceAPI:
           - postgresql
           - mongodb
           - elasticsearch
+          - nsq
 
   add:
     showInDoc    : true
@@ -2313,6 +2314,7 @@ dataSourceAPI:
             - postgresql
             - mongodb
             - elasticsearch
+            - nsq
           $example: mysql
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。提交时检查，3秒超时）
@@ -2484,8 +2486,9 @@ dataSourceAPI:
       | `oracle`        | `"SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10"` |
       | `sqlserver`     | `"SELECT TOP 10 * FROM some_table"`             |
       | `postgresql`    | `"SELECT * FROM some_table LIMIT 10"`           |
-      | `elasticsearch` | `"GET /_search?q=field:value"`                  |
       | `mongodb`       | 使用封装方法操作，不适用SQL语句                 |
+      | `elasticsearch` | `"GET /_search?q=field:value"`                  |
+      | `nsq`           | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
     url          : /api/v1/data-sources/:id/do/query

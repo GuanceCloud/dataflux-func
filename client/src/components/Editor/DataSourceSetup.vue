@@ -152,18 +152,6 @@
 <script>
 import DataSourceArticles from '@/components/Editor/DataSourceArticles.vue'
 
-import logo_df_dataway    from '@/assets/img/logo-dataflux-dataway.png'
-import logo_influxdb      from '@/assets/img/logo-influxdb.png'
-import logo_mysql         from '@/assets/img/logo-mysql.png'
-import logo_memcached     from '@/assets/img/logo-memcached.png'
-import logo_redis         from '@/assets/img/logo-redis.png'
-import logo_clickhouse    from '@/assets/img/logo-clickhouse.png'
-import logo_oracle        from '@/assets/img/logo-oracle.png'
-import logo_sqlserver     from '@/assets/img/logo-sqlserver.png'
-import logo_postgresql    from '@/assets/img/logo-postgresql.png'
-import logo_mongodb       from '@/assets/img/logo-mongodb.png'
-import logo_elasticsearch from '@/assets/img/logo-elasticsearch.png'
-
 export default {
   name: 'DataSourceSetup',
   components: {
@@ -203,7 +191,7 @@ export default {
 
         let rule = this.formRules[`configJSON.${f}`];
         if (rule) {
-          rule[0].required = opt.isRequired;
+          rule[0].required = !!opt.isRequired;
         }
       }
     },
@@ -308,16 +296,27 @@ export default {
           return await this.modifyData();
       }
     },
+    _getFromData() {
+      let _formData = this.T.jsonCopy(this.form);
+      if (_formData.configJSON) {
+        for (let k in _formData.configJSON) {
+          if (this.T.isNothing(_formData.configJSON[k])) {
+            _formData.configJSON[k] = null;
+          }
+        }
+      }
+      return _formData;
+    },
     async addData() {
-      let _data = this.T.jsonCopy(this.form);
+      let _formData = this._getFromData();
 
       // 服务器列表字段自动合并换行
-      if ('string' === typeof _data.configJSON.servers) {
-        _data.configJSON.servers = _data.configJSON.servers.replace(/\n/g, ',').replace(/\s/g, '');
+      if ('string' === typeof _formData.configJSON.servers) {
+        _formData.configJSON.servers = _formData.configJSON.servers.replace(/\n/g, ',').replace(/\s/g, '');
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/do/add', {
-        body : {data: _data},
+        body : {data: _formData},
         alert: {entity: '数据源', action: '添加', showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
@@ -328,7 +327,7 @@ export default {
       this.$store.commit('updateDataSourceListSyncTime');
     },
     async modifyData() {
-      let _formData = this.T.jsonCopy(this.form);
+      let _formData = this._getFromData();
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
@@ -444,14 +443,20 @@ export default {
           {
             trigger : 'change',
             message : '请输入主机端口',
-            type    : 'integer',
             required: true,
           },
           {
             trigger: 'change',
-            message: '主机端口范围为 0-65535',
-            type   : 'integer', min: 0, max: 65535,
-          }
+            validator: (rule, value, callback) => {
+              if (!value) return callback();
+
+              value = parseInt(value);
+              if (value < 1 || value > 65535) {
+                return callback(new Error('主机端口范围为 1-65535'));
+              }
+              return callback();
+            },
+          },
         ],
         'configJSON.servers': [
           {
@@ -560,5 +565,8 @@ export default {
 }
 .data-source-logo.logo-elasticsearch {
   height: 70px !important;
+}
+.data-source-logo.logo-nsq {
+  height: 90px !important;
 }
 </style>

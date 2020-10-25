@@ -174,6 +174,18 @@ var DATA_SOURCE_CONFIG_PREPARE_FUNC_MAP = {
 
     return callback();
   },
+  nsq: function(config, callback) {
+    var REQUIRED_FIELDS = [];
+    var OPTIONAL_FIELDS = ['host', 'port', 'protocol', 'servers'];
+
+    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'NSQ');
+    if (err) return callback(err);
+
+    // 默认值
+    config.port = config.port || 4161;
+
+    return callback();
+  },
 };
 
 var HIDE_CONFIG_FIELDS = [

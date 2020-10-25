@@ -90,23 +90,15 @@ DING_TALK_ROBOT_URL: ''
 # 文件存储根目录
 FILE_STORE_ROOT_FOLDER: uploaded-files
 
-# 是否停用鉴权（DataFlux Studio等系统集成专用）
+# 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
-
-# DataWay配置（DataFlux Studio等系统集成专用）
-_DF_DATAWAY_URL  : ''
-_DF_DATAWAY_TOKEN: ''
-_DF_DATAWAY_DEBUG: false
-
-# 是否启用函数监控（DataFlux Studio等系统集成专用）
-_ENABLE_FUNC_MONITOR: false
 
 # 客户端冲突过期时间
 _CLIENT_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
 _FUNC_PKG_EXPORT_FILENAME: dataflux-fx
-# 函数包导出扩展名名
+# 函数包导出扩展名
 _FUNC_PKG_EXPORT_EXT: .func-pkg
 
 # 函数包导入确认超时
@@ -216,7 +208,7 @@ _FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
 _BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT                 : 10000
 _BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH: 20000
 
-# 数据量限量
+# 数据量限制
 _DBDATA_SCRIPT_LOG_LIMIT       : 30000
 _DBDATA_SCRIPT_FAILURE_LIMIT   : 30000
 _DBDATA_FUNC_RESULT_LIMIT      : 30000

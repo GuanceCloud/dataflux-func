@@ -24,7 +24,10 @@
         @click="openEntity(node, data)">
 
         <span>
-          <el-link v-if="data.type === 'addScript'" type="primary" :underline="false">
+          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+          </el-link>
+          <el-link v-else-if="data.type === 'addScript'" type="primary" :underline="false">
             <i class="fa fa-fw fa-plus"></i>（添加脚本）
           </el-link>
           <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
@@ -148,6 +151,8 @@ export default {
   methods: {
     filterNode(value, data) {
       if (!value) return true;
+      if (['addScriptSet', 'refresh'].indexOf(data.type) >= 0) return true;
+      if (data.type === 'addScript') return false;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -294,7 +299,7 @@ export default {
         }
       });
 
-      // 转换为tree数据，并增加「添加脚本集/脚本」项
+      // 转换为tree数据，并增加「刷新」/「添加脚本集/脚本」项
       let treeData = Object.values(scriptSetMap);
       treeData.forEach(d => {
         if (d.isLockedByOther) return;
@@ -303,7 +308,8 @@ export default {
           type       : 'addScript',
         });
       })
-      treeData.push({type: 'addScriptSet'});
+      treeData.unshift({type: 'addScriptSet'});
+      treeData.unshift({type: 'refresh'});
 
       // 清理无效数据（已经不存在的节点）
       let _d = this.T.jsonCopy(this.$store.state.asideScript_expandedNodeMap);
@@ -361,6 +367,11 @@ export default {
       }
 
       switch(data.type) {
+        // 刷新
+        case 'refresh':
+          this.loadData();
+          break;
+
         // 「添加脚本集」节点
         case 'addScriptSet':
           this.$router.push({

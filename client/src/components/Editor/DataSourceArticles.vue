@@ -270,6 +270,20 @@ export default {
           ],
           tip: `以上内容来自 https://zh.wikipedia.org/wiki/Elasticsearch`,
         },
+        nsq: {
+          name: 'NSQ',
+          infoTable: [
+            {label: '源代码库', value: 'https://github.com/nsqio/nsq'},
+            {label: '编程语言', value: 'Golang'},
+            {label: '类型', value: '消息队列'},
+            {label: '许可协议', value: 'MIT'},
+            {label: '网站', value: 'https://nsq.io/'},
+          ],
+          summary: [
+            `NSQ 是一个实时分布式消息传递平台,旨在在规模、处理 每天数十亿的消息。`,
+          ],
+          tip: `以上内容来自 https://baike.baidu.com/item/nsq`,
+        },
       }
     }
   },

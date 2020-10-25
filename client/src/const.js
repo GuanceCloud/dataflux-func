@@ -18,6 +18,7 @@ import logo_sqlserver     from '@/assets/img/logo-sqlserver.png'
 import logo_postgresql    from '@/assets/img/logo-postgresql.png'
 import logo_mongodb       from '@/assets/img/logo-mongodb.png'
 import logo_elasticsearch from '@/assets/img/logo-elasticsearch.png'
+import logo_nsq           from '@/assets/img/logo-nsq.png'
 export const DATE_SOURCE = [
   {
     key           : 'df_dataway',
@@ -210,6 +211,21 @@ export const DATE_SOURCE = [
       protocol: { default: 'http' },
       user    : { default: null },
       password: { default: null },
+    },
+  },
+  {
+    key           : 'nsq',
+    name          : 'NSQ',
+    fullName      : 'NSQ (Lookupd, HTTP Publisher)',
+    logo          : logo_nsq,
+    tagType       : 'info',
+    debugSupported: false,
+    sampleCode    : `helper = DFF.SRC('{0}')\helper.publish(\n    topic='some_topic',\n    message='some_message')`,
+    configFields: {
+      host    : { default: null },
+      port    : { default: 4161 },
+      protocol: { default: 'http' },
+      servers : { default: null },
     },
   },
 ];

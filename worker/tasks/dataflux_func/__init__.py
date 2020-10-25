@@ -29,7 +29,7 @@ from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
-from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper
+from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper
 from worker.utils.extra_helpers import DFDataWayHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
@@ -38,8 +38,19 @@ CONFIG = yaml_resources.get('CONFIG')
 COMPILED_CODE_LRU = pylru.lrucache(CONFIG['_FUNC_TASK_COMPILE_CACHE_MAX_SIZE'])
 
 FIXED_INTEGRATION_KEY_MAP = {
-    'login' : 'signIn',
+    # 登录用函数
+    #   函数必须为`def func(username, password)`形式
+    #   无配置项
     'signIn': 'signin',
+    'login' : 'signIn',
+
+    # 自动运行函数
+    #   函数必须为`def func()`形式
+    #   配置项：
+    #       crontab  : Crontab语法自动运行周期
+    #       startup  : True/False，是否启动时运行
+    #       published: True/False，是否发布后运行
+    'autoRun': 'autoRun',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
@@ -54,6 +65,7 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'postgresql'   : PostgreSQLHelper,
     'mongodb'      : MongoDBHelper,
     'elasticsearch': ElasticSearchHelper,
+    'nsq'          : NSQLookupHelper,
 }
 DATA_SOURCE_LOCAL_TIMESTAMP_MAP = {}
 DATA_SOURCE_HELPERS_CACHE       = {}
@@ -615,19 +627,6 @@ class FuncCacheHelper(object):
         return self.__task.cache_db.run('incr', key, amount=step)
 
 class FuncDataSourceHelper(object):
-    AVAILABLE_TYPES = (
-        'df_dataway',
-        'influxdb',
-        'mysql',
-        'redis',
-        'memcached',
-        'clickhouse',
-        'oracle',
-        'sqlserver',
-        'postgresql',
-        'mongodb',
-        'elasticsearch',
-    )
     AVAILABLE_CONFIG_KEYS = (
         'host',
         'port',
@@ -738,7 +737,7 @@ class FuncDataSourceHelper(object):
         return data
 
     def save(self, data_source_id, type_, config, title=None, description=None):
-        if type_ not in self.AVAILABLE_TYPES:
+        if type_ not in DATA_SOURCE_HELPER_CLASS_MAP:
             raise NotSupportException('Data source type `{}` not supported'.format(type_))
 
         if not config:
@@ -749,6 +748,12 @@ class FuncDataSourceHelper(object):
         for k in config.keys():
             if k not in self.AVAILABLE_CONFIG_KEYS:
                 raise NotSupportException('Data source config item `{}` not supported'.format(k))
+
+        # 加密字段
+        password = config.get('password')
+        if password:
+            config['passwordCipher'] = toolkit.cipher_by_aes(password, CONFIG['SECRET'])
+        config.pop('password', None)
 
         config_json = toolkit.json_safe_dumps(config)
 
@@ -763,10 +768,10 @@ class FuncDataSourceHelper(object):
             sql = '''
                 UPDATE biz_main_data_source
                 SET
-                     `title`
-                    ,`description`
-                    ,`type`
-                    ,`configJSON`
+                     `title`       = ?
+                    ,`description` = ?
+                    ,`type`        = ?
+                    ,`configJSON`  = ?
                 WHERE
                     `id` = ?
                 '''
@@ -784,11 +789,11 @@ class FuncDataSourceHelper(object):
             sql = '''
                 INSERT INTO biz_main_data_source
                 SET
-                     `id`
-                    ,`title`
-                    ,`description`
-                    ,`type`
-                    ,`configJSON`
+                     `id`          = ?
+                    ,`title`       = ?
+                    ,`description` = ?
+                    ,`type`        = ?
+                    ,`configJSON`  = ?
                 '''
             sql_params = [
                 data_source_id,
@@ -1000,13 +1005,12 @@ class FuncConfigHelper(object):
     def list(self):
         return [{ 'key': k, 'value': v } for k, v in CONFIG.items() if k.startswith('CUSTOM_')]
 
+    def dict(self):
+        return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
+
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def __call__(self, *args, **kwargs):
         self.logger = LogHelper(self)
-
-        if CONFIG['_DF_DATAWAY_URL']:
-            # 添加内置DataFlux DataWay
-            self.df_dataway = DFDataWayHelper(self.logger)
 
         return super(ScriptBaseTask, self).__call__(*args, **kwargs)
 
@@ -1119,7 +1123,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, kwargs_hint=None,
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
-        integration=None,
+        integration=None, integration_config=None,
         is_hidden=False, is_disabled=False):
         ### 核心配置 ###
         # 函数标题
@@ -1237,10 +1241,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             extra_config['apiTimeout'] = api_timeout
 
-        # 隐藏函数（不在文档中出现）
-        if is_hidden is True:
-            extra_config['isHidden'] = True
-
         # 结果缓存
         if cache_result is not None:
             if not isinstance(cache_result, (int, float)):
@@ -1258,8 +1258,16 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             extra_config['queue'] = queue
 
+        # 功能集成配置
+        if integration:
+            extra_config['integrationConfig'] = integration_config
+
         def decorater(F):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
+
+            # 隐藏函数（不在文档中出现）
+            if (is_hidden is True) or f_name.startswith('_'):
+                extra_config['isHidden'] = True
 
             # 添加 kwargs 附带信息
             if kwargs_hint is not None:
@@ -1763,5 +1771,6 @@ from worker.tasks.dataflux_func.starter_crontab import dataflux_func_starter_cro
 from worker.tasks.dataflux_func.utils import dataflux_func_reload_scripts
 from worker.tasks.dataflux_func.utils import dataflux_func_sync_cache
 from worker.tasks.dataflux_func.utils import dataflux_func_auto_cleaner
+from worker.tasks.dataflux_func.utils import dataflux_func_auto_run
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_checker
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_debugger

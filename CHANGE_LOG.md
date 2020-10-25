@@ -19,9 +19,15 @@
         - `DFF.ENV.list()`列出环境变量
         - `DFF.ENV.save(...)`保存环境变量
         - `DFF.ENV.delete(...)`删除环境变量
-    - 添加`DFF.CONFIG`用于访问自定义配置，包含
+    - 添加`DFF.CONFIG`用于访问自定义配置（`CUSTOM_`开头的配置项），包含
         - `DFF.CONFIG(...)` / `DFF.get(...)`获取配置
         - `DFF.list()`列出配置
+    - 添加`DFF.API(integration='autoRun', integration_config={...})`配置，允许函数自动运行
+        - `integration_config={ 'crontab': '* * * * *' }`函数定期自动执行
+        - `integration_config={ 'published': True }`函数发布后自动执行
+        - `integration_config={ 'startup': True }`系统启动时，函数自动执行
+- 添加`NSQ`数据源
+- 调整编辑器左侧树状列表样式
 
 ### 1.0.11 ~ 1.0.14
 

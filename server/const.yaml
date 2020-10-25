@@ -85,6 +85,7 @@ displayText:
     sync   : 同步__execMode
     async  : 异步__execMode
     crontab: Crontab触发__execMode
+    auto   : 自动触发__execMode
 
   func_integration:
     login: 登录__func_integration
@@ -101,6 +102,7 @@ displayText:
     postgresql   : PostgreSQL__dataSource_type
     mongodb      : mongoDB__dataSource_type
     elasticsearch: elasticsearch__dataSource_type
+    nsq          : NSQ__dataSource_type
 
   scriptRecoverPoint_type:
     import : 导入__scriptRecoverPoint_type

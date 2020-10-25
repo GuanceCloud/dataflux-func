@@ -79,6 +79,7 @@
       <!-- 代码区 -->
       <el-main id="editorContainer_CodeViewer" :style="$store.getters.codeMirrorSetting.style">
         <textarea id="editor_CodeViewer"></textarea>
+        <h1 id="viewModeHint">查看模式</h1>
       </el-main>
 
       <!-- 状态栏 -->
@@ -544,6 +545,16 @@ export default {
 }
 </style>
 <style>
+#viewModeHint {
+  position: absolute;
+  right: 30px;
+  top: 0px;
+  font-size: 30px;
+  color: grey;
+  border: 1px solid darkgray;
+  padding: 0 10px;
+  border-radius: 5px;
+}
 #editorContainer_CodeViewer {
   padding: 1px 0 0 5px;
   position: relative;

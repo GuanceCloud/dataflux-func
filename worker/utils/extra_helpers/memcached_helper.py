@@ -14,8 +14,8 @@ from worker.utils import toolkit
 from worker.utils.log_helper import LogHelper
 
 def get_config(c):
-    servers = c.get('servers')
-    if isinstance(servers, (six.string_types, six.text_type)):
+    servers = c.get('servers') or None
+    if servers and isinstance(servers, (six.string_types, six.text_type)):
         servers = servers.split(',')
 
     servers = servers or '127.0.0.1:11211'

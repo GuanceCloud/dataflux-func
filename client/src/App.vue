@@ -616,6 +616,9 @@ content: "\25B2";
   font-weight: normal;
   color: darkgrey !important;
 }
+.el-checkbox.el-transfer-panel__item {
+  margin-right: 0px !important;
+}
 
 /* CodeMirror 修正 */
 .CodeMirror-line * {

@@ -16,13 +16,21 @@ from worker.utils import toolkit
 LIMIT_MESSAGE_DUMP = 200
 
 def get_config(c):
+    fixed_nsq_nodes = c.get('fixedNSQNodes') or c.get('servers') or None
+    if fixed_nsq_nodes and isinstance(fixed_nsq_nodes, (six.string_types, six.text_type)):
+        fixed_nsq_nodes = fixed_nsq_nodes.split(',')
+
+    fixed_nsq_nodes = fixed_nsq_nodes or None
+    fixed_nsq_nodes = toolkit.as_array(fixed_nsq_nodes)
+
     config = {
-        'host'         : c.get('host')          or '127.0.0.1',
-        'port'         : c.get('port')          or 4161,
-        'protocol'     : c.get('protocol')      or 'http',
-        'timeout'      : c.get('timeout')       or 3,
-        'fixedNSQNodes': c.get('fixedNSQNodes') or None,
+        'host'         : c.get('host')     or '127.0.0.1',
+        'port'         : c.get('port')     or 4161,
+        'protocol'     : c.get('protocol') or 'http',
+        'timeout'      : c.get('timeout')  or 3,
+        'fixedNSQNodes': fixed_nsq_nodes,
     }
+    print(config)
     return config
 
 class NSQLookupHelper(object):
@@ -50,7 +58,14 @@ class NSQLookupHelper(object):
 
     def check(self):
         try:
-            self.query('get', '/nodes')
+            if self.config.get('fixedNSQNodes'):
+                for nsq_node in self.nsq_nodes:
+                    url = '{}://{}/ping'.format(self.config['protocol'], nsq_node)
+                    r = requests.get(url, timeout=self.config['timeout'])
+                    r.raise_for_status()
+
+            else:
+                self.query('get', '/nodes')
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

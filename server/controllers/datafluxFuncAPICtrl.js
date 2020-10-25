@@ -63,83 +63,7 @@ var FUNC_RESULT_LRU = new LRU({
 
 var WORKER_SYSTEM_CONFIG = null;
 
-var DF_DATAWAY = null;
-if (CONFIG._DF_DATAWAY_URL) {
-  DF_DATAWAY = new dataway.DataWay({
-    url  : CONFIG._DF_DATAWAY_URL,
-    token: CONFIG._DF_DATAWAY_TOKEN,
-    debug: CONFIG._DF_DATAWAY_DEBUG,
-  });
-}
-
 /* Handlers */
-function _monitorFunc(req, res, data, callback) {
-  if (!CONFIG._ENABLE_FUNC_MONITOR) {
-    return 'function' === callback ? callback() : null;
-  }
-  if (!DF_DATAWAY) {
-    return 'function' === callback ? callback() : null;
-  }
-
-  /*
-    最多消耗时间线
-    假设：
-      30个Studio函数
-      50个开启授权链接的同步自定义函数
-      20个开启授权链接的异步自定义函数
-
-    |           函数类型           | funcId |  origin  | execMode |           status          | 共计 |
-    |------------------------------|--------|----------|----------|---------------------------|------|
-    | Studio函数                   |     30 | direct   | sync     | SUCCESS, FAILURE, TIMEOUT |   90 |
-    | 开启授权链接的同步自定义函数 |     50 | authLink | sync     | SUCCESS, FAILURE, TIMEOUT |  150 |
-    | 开启授权链接的异步自定义函数 |     20 | authLink | async    | SUCCESS, FAILURE, TIMEOUT |   60 |
-    | 合计                         |    100 |          |          |                           |  300 |
-  */
-
-  var _status = null;
-  var _error  = '';
-  if (!data.error) {
-    _status = 'SUCCESS';
-  } else {
-    _error = data.error.toString();
-
-    if (data.error.info && data.error.info.reason === 'EFuncTimeout') {
-      _status = 'TIMEOUT';
-    } else {
-      _status = 'FAILURE';
-    }
-  }
-
-  var _cost = dataway.asInt(Date.now() - res.locals._requestStartTime);
-
-  var scriptSetId = 'UNKNOW';
-  var scriptId    = 'UNKNOW';
-  var funcId      = data.funcId;
-  if (funcId) {
-    scriptSetId = funcId.split('__')[0];
-    scriptId    = funcId.split('.')[0];
-  } else {
-    funcId = 'UNKNOW';
-  }
-
-  var monitorData = {
-    measurement: 'func_call',
-    tags: {
-      scriptSetId: scriptSetId,
-      scriptId   : scriptId,
-      funcId     : funcId,
-      origin     : data.origin   || 'UNKNOW', // direct|authLink
-      execMode   : data.execMode || 'UNKNOW', // sync|async
-      status     : _status       || 'UNKNOW', // SUCCESS|FAILURE|TIMEOUT
-    },
-    fields: {
-      cost : _cost,
-      error: _error,
-    }
-  };
-  DF_DATAWAY.writePoint(monitorData, callback);
-};
-
 function _checkWorkerQueue(req, res, queue, callback) {
   var workerQueueKey = toolkit.getWorkerQueue(queue);
   res.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
@@ -628,12 +552,6 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       } else {
         res.locals.sendJSON(ret);
       }
-
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-      });
     };
 
   } else {
@@ -1069,30 +987,9 @@ exports.callFunc = function(req, res, next) {
       _checkWorkerQueue(req, res, funcCallOptions.queue, asyncCallback);
     },
   ], function(err) {
-    if (err) {
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
+    if (err) return next(err);
 
-      return next(err);
-    }
-
-    _callFuncRunner(req, res, funcCallOptions, function(err) {
-      if (!err) return;
-
-      // 正常情况记录已经内置，此处只记录错误情况
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
-
-      return next(err);
-    });
+    _callFuncRunner(req, res, funcCallOptions, next);
   });
 };
 
@@ -1202,18 +1099,7 @@ exports.callAuthLink = function(req, res, next) {
       _checkWorkerQueue(req, res, funcCallOptions.queue, asyncCallback);
     },
   ], function(err) {
-    if (err) {
-      if (funcCallOptions) {
-        _monitorFunc(req, res, {
-          funcId  : funcCallOptions.funcId,
-          origin  : funcCallOptions.origin,
-          execMode: funcCallOptions.execMode,
-          error   : err,
-        });
-      }
-
-      return next(err);
-    }
+    if (err) return next(err);
 
     /*** 合并参数 ***/
     try {
@@ -1228,29 +1114,10 @@ exports.callAuthLink = function(req, res, next) {
         err.detail.funcId = funcCallOptions.funcId;
       }
 
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
-
       return next(err);
     }
 
-    _callFuncRunner(req, res, funcCallOptions, function(err) {
-      if (!err) return;
-
-      // 正常情况记录已经内置，此处只记录错误情况
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
-
-      return next(err);
-    });
+    _callFuncRunner(req, res, funcCallOptions, next);
   });
 };
 
@@ -1318,18 +1185,7 @@ exports.callBatch = function(req, res, next) {
 
     // 批处理不检查工作队列
   ], function(err) {
-    if (err) {
-      if (funcCallOptions) {
-        _monitorFunc(req, res, {
-          funcId  : funcCallOptions.funcId,
-          origin  : funcCallOptions.origin,
-          execMode: funcCallOptions.execMode,
-          error   : err,
-        });
-      }
-
-      return next(err);
-    }
+    if (err) return next(err);
 
     /*** 合并参数 ***/
     try {
@@ -1344,29 +1200,10 @@ exports.callBatch = function(req, res, next) {
         err.detail.funcId = funcCallOptions.funcId;
       }
 
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
-
       return next(err);
     }
 
-    _callFuncRunner(req, res, funcCallOptions, function(err) {
-      if (!err) return;
-
-      // 正常情况记录已经内置，此处只记录错误情况
-      _monitorFunc(req, res, {
-        funcId  : funcCallOptions.funcId,
-        origin  : funcCallOptions.origin,
-        execMode: funcCallOptions.execMode,
-        error   : err,
-      });
-
-      return next(err);
-    });
+    _callFuncRunner(req, res, funcCallOptions, next);
   });
 };
 

@@ -31,6 +31,12 @@ a {
 .sign-out {
   background-color: #222 !important;
 }
+.data-source-logo {
+  background-color: white;
+  padding: 5px;
+  border: grey solid 10px;
+  border-radius: 5px;
+}
 
 .splitter-pane-resizer {
   background-color: #3c3c3c !important;
@@ -251,7 +257,8 @@ input:disabled {
   border-color: #0000 !important;
   color: #bbb !important;
 }
-.el-tree-node__content:hover {
+.el-tree-node__content:hover,
+.el-tree-node:focus>.el-tree-node__content {
   background-color: #333 !important;
 }
 .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {

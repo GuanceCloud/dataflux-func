@@ -30,7 +30,7 @@ from worker.utils.extra_helpers import InfluxDBHelper
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
+from worker.tasks.dataflux_func import dataflux_func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -158,9 +158,10 @@ class DataFluxFuncReloadScriptsTask(BaseTask, ScriptCacherMixin):
 
 @app.task(name='DataFluxFunc.reloadScripts', bind=True, base=DataFluxFuncReloadScriptsTask)
 def dataflux_func_reload_scripts(self, *args, **kwargs):
-    is_startup = kwargs.get('isStartUp') or False
+    is_startup = kwargs.get('isStartup') or False
     force      = kwargs.get('force')     or False
 
+    # 启动时执行的，需要上锁
     if is_startup:
         lock_key   = toolkit.get_cache_key('lock', 'reloadScripts')
         lock_value = toolkit.gen_uuid()
@@ -817,6 +818,48 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
+# DataFluxFunc.autoRun
+class DataFluxFuncAutoRunTask(BaseTask):
+    def get_integrated_auto_run_funcs(self):
+        sql = '''
+            SELECT
+               `func`.`id`
+            FROM biz_main_func AS `func`
+            WHERE
+                  `func`.`integration` = 'autoRun'
+              AND `func`.`extraConfigJSON`->>'$.integrationConfig.startup' = 'true'
+            '''
+        return self.db.query(sql)
+
+@app.task(name='DataFluxFunc.autoRun', bind=True, base=DataFluxFuncAutoRunTask)
+def dataflux_func_auto_run(self, *args, **kwargs):
+    lock_key   = toolkit.get_cache_key('lock', 'autoRun')
+    lock_value = toolkit.gen_uuid()
+    if not self.cache_db.lock(lock_key, lock_value, 30):
+        self.logger.warning('DataFluxFunc AutoRun Task already launched.')
+        return
+
+    self.logger.info('DataFluxFunc AutoRun Task launched.')
+
+    # 获取函数功能集成自动运行函数
+    integrated_auto_run_funcs = self.get_integrated_auto_run_funcs()
+    for f in integrated_auto_run_funcs:
+        # 任务ID
+        task_id = gen_task_id()
+
+        # 任务参数
+        task_kwargs = {
+            'funcId'  : f['id'],
+            'origin'  : 'integration',
+            'execMode': 'auto',
+            'queue'   : CONFIG['_FUNC_DEFAULT_QUEUE'],
+        }
+
+        # 自动运行总是使用默认队列
+        queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
+
+        dataflux_func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
+
 # DataFluxFunc.dataSourceChecker
 @app.task(name='DataFluxFunc.dataSourceChecker', bind=True, base=BaseTask)
 def dataflux_func_data_source_checker(self, *args, **kwargs):
@@ -890,5 +933,6 @@ def dataflux_func_data_source_debugger(self, *args, **kwargs):
     return ret
 
 # 启动时自动执行（已附带锁）
-# dataflux_func_reload_scripts.apply_async(kwargs={'isStartUp': True, 'force': True, 'startup_sleep': 10})
-# dataflux_func_auto_cleaner.apply_async(kwargs={'startup_sleep': 30})
+# dataflux_func_reload_scripts.apply_async(kwargs={'isStartup': True, 'force': True, 'startupSleep': 10})
+# dataflux_func_auto_cleaner.apply_async(kwargs={'startupSleep': 30})
+dataflux_func_auto_run.apply_async(kwargs={'startupSleep': 10})
