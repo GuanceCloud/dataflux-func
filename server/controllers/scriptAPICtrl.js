@@ -361,10 +361,10 @@ exports.publish = function(req, res, next) {
             funcId: funcId,
             origin: 'integration',
             execMode: 'auto',
-            queue : CONFIG._FUNC_DEFAULT_QUEUE,
+            queue : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
           var taskOptions = {
-            queue: CONFIG._FUNC_DEFAULT_QUEUE,
+            queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
           celery.putTask('DataFluxFunc.runner', null, kwargs, taskOptions);
         });

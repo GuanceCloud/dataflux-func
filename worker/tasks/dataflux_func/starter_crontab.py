@@ -220,7 +220,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
 
             queue = None
             if specified_queue is None:
-                queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
+                queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_QUEUE'])
 
             else:
                 if isinstance(specified_queue, int) and 0 <= specified_queue < CONFIG['_WORKER_QUEUE_COUNT']:
@@ -234,7 +234,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
                     except Exception as e:
                         # 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
                         # 保证无论如何都有Worker负责执行（实际运行会报错）
-                        queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
+                        queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_QUEUE'])
                     else:
                         # 队列别名转换为队列编号
                         queue = toolkit.get_worker_queue(queue_number)

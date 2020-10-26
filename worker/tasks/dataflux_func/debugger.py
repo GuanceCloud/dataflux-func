@@ -129,8 +129,12 @@ def dataflux_func_debugger(self, *args, **kwargs):
             raise e
 
         extra_vars = {
-            '_DFF_IS_DEBUG'     : True,
+            '_DFF_DEBUG'        : True,
             '_DFF_ROOT_TASK_ID' : root_task_id,
+            '_DFF_SCRIPT_SET_ID': script_set_id,
+            '_DFF_SCRIPT_ID'    : script_id,
+            '_DFF_FUNC_ID'      : func_id,
+            '_DFF_FUNC_NAME'    : func_name,
             '_DFF_FUNC_CHAIN'   : func_chain,
             '_DFF_ORIGIN'       : origin,
             '_DFF_ORIGIN_ID'    : origin_id,

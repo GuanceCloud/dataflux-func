@@ -349,7 +349,7 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
       funcCallOptions.queue = '' + func.extraConfigJSON.queue;
 
     } else {
-      funcCallOptions.queue = CONFIG._FUNC_DEFAULT_QUEUE;
+      funcCallOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
     }
 
     // 触发时间
@@ -623,7 +623,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     function(asyncCallback) {
       // 处理队列别名
       if (toolkit.isNullOrUndefined(taskOptions.queue)) {
-        taskOptions.queue = CONFIG._FUNC_DEFAULT_QUEUE;
+        taskOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 
       } else {
         var queueNumber = parseInt(taskOptions.queue);
@@ -636,7 +636,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
           if (isNaN(queueNumber) || queueNumber < 0 || queueNumber >= CONFIG._WORKER_QUEUE_COUNT) {
             // 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
             // 保证无论如何都有Worker负责执行（实际运行会报错）
-            taskOptions.queue = CONFIG._FUNC_DEFAULT_QUEUE;
+            taskOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 
           } else {
             // 队列别名转换为队列编号
@@ -1285,7 +1285,7 @@ exports.callFuncDraft = function(req, res, next) {
     var celery = celeryHelper.createHelper(res.locals.logger);
 
     var taskOptions = {
-      queue            : CONFIG._FUNC_DEFAULT_QUEUE,
+      queue            : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
       resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
     }
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);

@@ -296,8 +296,12 @@ def dataflux_func_runner(self, *args, **kwargs):
             raise e
 
         extra_vars = {
-            '_DFF_IS_DEBUG'     : False,
+            '_DFF_DEBUG'        : False,
             '_DFF_ROOT_TASK_ID' : root_task_id,
+            '_DFF_SCRIPT_SET_ID': script_set_id,
+            '_DFF_SCRIPT_ID'    : script_id,
+            '_DFF_FUNC_ID'      : func_id,
+            '_DFF_FUNC_NAME'    : func_name,
             '_DFF_FUNC_CHAIN'   : func_chain,
             '_DFF_ORIGIN'       : origin,
             '_DFF_ORIGIN_ID'    : origin_id,
@@ -417,7 +421,8 @@ def dataflux_func_runner(self, *args, **kwargs):
     finally:
         if script_scope:
             # 记录输出日志（开启debug或函数执行失败时保留）
-            if script_scope.get('_DFF_IS_DEBUG') or not is_succeeded:
+            print(script_scope.get('_DFF_DEBUG'))
+            if script_scope.get('_DFF_DEBUG') or not is_succeeded:
                 log_messages = script_scope['DFF'].log_messages or None
                 self.cache_script_log(func_id, target_script['publishVersion'], log_messages,
                         exec_mode=exec_mode)

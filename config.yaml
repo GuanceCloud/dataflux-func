@@ -161,7 +161,7 @@ _WEB_AK_NONCE_TTL          : 86400
 
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10
-_WORKER_DEFAULT_QUEUE      : 0
+_WORKER_DEFAULT_QUEUE      : '0'
 _WORKER_CONCURRENCY        : 10
 _WORKER_PREFETCH_MULTIPLIER: 10
 _WORKER_MAX_TASKS_PER_CHILD: 3000
@@ -187,7 +187,7 @@ _CRONTAB_SCRIPT_FORCE_RELOAD: '* * * * *'
 
 
 # 函数任务模块一般作为常量的配置
-_FUNC_DEFAULT_QUEUE                             : 1
+_FUNC_TASK_DEFAULT_QUEUE                        : '1'
 _FUNC_TASK_WORKER_QUEUE_MAX_LENGTH              : 1000
 _FUNC_TASK_DEBUG_TIMEOUT                        : 60
 _FUNC_TASK_DEFAULT_TIMEOUT                      : 30

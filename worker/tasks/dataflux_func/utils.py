@@ -852,11 +852,11 @@ def dataflux_func_auto_run(self, *args, **kwargs):
             'funcId'  : f['id'],
             'origin'  : 'integration',
             'execMode': 'auto',
-            'queue'   : CONFIG['_FUNC_DEFAULT_QUEUE'],
+            'queue'   : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
         }
 
         # 自动运行总是使用默认队列
-        queue = toolkit.get_worker_queue(CONFIG['_FUNC_DEFAULT_QUEUE'])
+        queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_QUEUE'])
 
         dataflux_func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
 

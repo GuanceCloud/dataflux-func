@@ -49,6 +49,12 @@
               </el-radio-group>
             </el-form-item>
 
+            <el-form-item v-if="!isLockedByOther">
+              <el-tooltip content="下载" placement="bottom" :enterable="false">
+                <el-button @click="download" plain size="mini">下载{{ SHOW_MODE_META_MAP[showMode].text }}</el-button>
+              </el-tooltip>
+            </el-form-item>
+
             <el-form-item v-if="!isConflicted">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
@@ -123,6 +129,7 @@
 <script>
 // @ is an alias to /src
 import { createPatch } from 'diff'
+import FileSaver from 'file-saver';
 
 export default {
   name: 'CodeViewer',
@@ -413,6 +420,25 @@ export default {
           backgroundClass: 'current-func-background highlight-code-line-blink',
         });
       }
+    },
+    download() {
+      let blob = new Blob([this.codeMirror.getValue()], {type: 'text/plain'});
+
+      let fileName = null;
+      switch(this.showMode) {
+        case 'draft':
+          fileName = this.data.id + '.draft.py';
+          break;
+
+        case 'published':
+          fileName = this.data.id + '.py';
+          break;
+
+        case 'diff':
+          fileName = this.data.id + '.py.diff';
+          break;
+      }
+      FileSaver.saveAs(blob, fileName);
     },
   },
   computed: {

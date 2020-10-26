@@ -1199,6 +1199,10 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         ### 额外配置 ###
         extra_config = {}
 
+        # 隐藏函数（不在文档中出现）
+        if is_hidden is True:
+            extra_config['isHidden'] = True
+
         # 固定Crontab
         if fixed_crontab is not None:
             try:
@@ -1264,10 +1268,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         def decorater(F):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
-
-            # 隐藏函数（不在文档中出现）
-            if (is_hidden is True) or f_name.startswith('_'):
-                extra_config['isHidden'] = True
 
             # 添加 kwargs 附带信息
             if kwargs_hint is not None:
@@ -1375,7 +1375,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         pass
 
     def _print(self, safe_scope, *args, **kwargs):
-        if safe_scope.get('_DFF_IS_DEBUG'):
+        if safe_scope.get('_DFF_DEBUG'):
             print(*args, **kwargs)
 
         try:
@@ -1442,7 +1442,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
         queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE'])
-        if safe_scope.get('_DFF_IS_DEBUG'):
+        if safe_scope.get('_DFF_DEBUG'):
             queue = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
 
         task_headers = {
@@ -1452,7 +1452,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcId'         : func_id,
             'funcKwargs'     : kwargs,
             'saveResult'     : save_result,
-            'isDebug'        : safe_scope.get('_DFF_IS_DEBUG'),
             'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
             'funcChain'      : func_chain,
             'execMode'       : 'async',
