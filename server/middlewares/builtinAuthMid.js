@@ -225,7 +225,18 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
       accessKeyModel.getWithCheck(akId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        var watClient = new WATClient({akId: akId, akSecret: dbRes.secret, akSignVersion: akSignVersion});
+        var watClient = new WATClient({
+          akId         : akId,
+          akSecret     : dbRes.secret,
+          akSignVersion: akSignVersion,
+          headerFields: {
+            akSignVersion: CONFIG._WEB_AK_SIGN_VERSION_HEADER,
+            akId         : CONFIG._WEB_AK_ID_HEADER,
+            akTimestamp  : CONFIG._WEB_AK_TIMESTAMP_HEADER,
+            akNonce      : CONFIG._WEB_AK_NONCE_HEADER,
+            akSign       : CONFIG._WEB_AK_SIGN_HEADER,
+          }
+        });
         var isValidSign = watClient.verifyAuthHeader(req.headers, req.method, req.originalUrl, req.rawData);
 
         if (!isValidSign) {

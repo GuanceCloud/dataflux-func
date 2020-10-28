@@ -298,7 +298,16 @@ export default {
           break;
       }
     },
-    showAPI(d) {
+    async showAPI(d) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
+        alert: {entity: '函数', showError: true},
+      });
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
         baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
         params : {id: d.id},
@@ -313,7 +322,7 @@ export default {
       let apiBodyExample = {kwargs: funcCallKwargsJSON};
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample);
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {

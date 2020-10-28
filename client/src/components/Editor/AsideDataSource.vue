@@ -134,7 +134,7 @@ export default {
         window._DFF_dataSourceIds.push(d.id);
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 示例代码
         let sampleCode = this.T.strf(this.C.DATE_SOURCE_MAP[d.type].sampleCode, d.id);
@@ -155,6 +155,7 @@ export default {
           dataSource: d,
         });
       });
+      treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addDataSource'});
       treeData.unshift({type: 'refresh'});
 

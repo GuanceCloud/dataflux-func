@@ -119,6 +119,7 @@ export default {
           },
         });
       });
+      treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addEnvVariable'});
       treeData.unshift({type: 'refresh'});
 

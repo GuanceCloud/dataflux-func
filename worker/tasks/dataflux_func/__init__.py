@@ -123,12 +123,14 @@ def _kwargs_hint_type_converter_list(x):
     elif isinstance(x, str):
         x = ujson.loads(x)
         if not isinstance(x, list):
-            raise TypeError('Parse result of value is not a `list`, but `{}`'.format(type(x).__name__))
+            e = TypeError('Parse result of value is not a `list`, but `{}`'.format(type(x).__name__))
+            raise e
 
         return x
 
     else:
-        raise TypeError('Cannot parse the value to a `list`')
+        e = TypeError('Cannot parse the value to a `list`')
+        raise e
 
 def _kwargs_hint_type_converter_dict(x):
     if isinstance(x, dict):
@@ -614,6 +616,10 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('get', key)
 
+    def getset(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('getset', key, value)
+
     def delete(self, key, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('delete', key)
@@ -995,10 +1001,11 @@ class FuncConfigHelper(object):
 
     def get(self, config_id):
         if not config_id.startswith('CUSTOM_'):
-            raise AccessDenyException('Config `{}` is not accessible'.format(config_id))
+            e = AccessDenyException('Config `{}` is not accessible'.format(config_id))
+            raise e
 
         if config_id not in CONFIG:
-            raise NotFoundException('Config `{}` not found'.format(config_id))
+            return None
 
         return CONFIG.get(config_id)
 

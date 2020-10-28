@@ -580,6 +580,10 @@ export function fromNow(dt) {
   return moment.utc(dt).locale('zh_CN').fromNow();
 };
 
+export function asideItemSorter(a, b) {
+  return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+};
+
 function _getCallAPIOpt(method, pathPattern, options) {
   options = options || {};
 

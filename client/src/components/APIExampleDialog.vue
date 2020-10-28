@@ -72,6 +72,8 @@
             </el-input>
             <InfoBlock type="info" title="Content-Type 应设置为 application/json"></InfoBlock>
             <InfoBlock v-if="apiBodyExample && apiBodyExample.indexOf('FROM_PARAMETER') >= 0" type="info" title="&quot;FROM_PARAMETER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
+
+            <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
           </el-col>
           <el-col :span="2">
             <CopyButton v-if="apiURLWithQueryExample" :content="apiBodyExample"></CopyButton>
@@ -187,7 +189,7 @@ export default {
         return url;
       }
     },
-    update(apiURLExample, apiBodyExample) {
+    update(apiURLExample, apiBodyExample, funcKwargs) {
       if ('string' === typeof apiBodyExample) {
         apiBodyExample = JSON.parse(apiBodyExample);
       }
@@ -203,18 +205,26 @@ export default {
       fillOptions('timeout',    this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'));
       fillOptions('apiTimeout', this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'));
 
+      let nextAPICustomKwargsSupport = false;
+      if (!this.T.isNothing(funcKwargs)) {
+        for (let k in funcKwargs) {
+          if (k.indexOf('**') < 0) continue;
+
+          nextAPICustomKwargsSupport = true;
+          break;
+        }
+      }
+
       let nextAPIBodyExample = {}
       if (!this.T.isNothing(apiBodyExample.kwargs)) {
         nextAPIBodyExample.kwargs = apiBodyExample.kwargs;
 
-        // **kwargs 转换为OTHER_ARGS: FROM_PARAMETER
+        // 暂定：不展示**kwargs参数
         if (!this.T.isNothing(nextAPIBodyExample.kwargs)) {
           for (let k in nextAPIBodyExample.kwargs) {
             if (k.indexOf('**') < 0) continue;
 
             delete nextAPIBodyExample.kwargs[k];
-            nextAPIBodyExample.kwargs['OTHER_ARGS'] = 'FROM_PARAMETER';
-            break;
           }
         }
       }
@@ -223,8 +233,9 @@ export default {
         nextAPIBodyExample.options = nextCallOptions;
       }
 
-      this.apiURLExample  = apiURLExample;
-      this.apiBodyExample = JSON.stringify(nextAPIBodyExample, null, 2);
+      this.apiCustomKwargsSupport = nextAPICustomKwargsSupport;
+      this.apiURLExample          = apiURLExample;
+      this.apiBodyExample         = JSON.stringify(nextAPIBodyExample, null, 2);
 
       this.show = true;
     },
@@ -239,6 +250,7 @@ export default {
           || this.showTimeoutOption
           || this.showAPITimeoutOption;
     },
+
     apiBody() {
       if (!this.apiBodyExample) return '';
 
@@ -375,8 +387,9 @@ export default {
     return {
       show: false,
 
-      apiURLExample : null,
-      apiBodyExample: null,
+      apiCustomKwargsSupport: false,
+      apiURLExample         : null,
+      apiBodyExample        : null,
 
       callOptions: {
         execMode  : 'sync',

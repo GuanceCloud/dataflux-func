@@ -53,6 +53,8 @@ function colored(s, color) {
 };
 
 var WATClient = function(options) {
+  this.debug = options.debug || false;
+
   this.akId     = options.akId;
   this.akSecret = options.akSecret;
 
@@ -77,6 +79,18 @@ var WATClient = function(options) {
   }
 
   this.akSignVersion = options.akSignVersion || 'v1';
+
+  this.headerFields = {
+      akSignVersion: 'X-Wat-Ak-Sign-Version',
+      akId         : 'X-Wat-Ak-Id',
+      akTimestamp  : 'X-Wat-Ak-Timestamp',
+      akNonce      : 'X-Wat-Ak-Nonce',
+      akSign       : 'X-Wat-Ak-Sign',
+      traceId      : 'X-Trace-Id',
+  }
+  if (options.headerFields) {
+    Object.assign(this.headerFields, options.headerFields);
+  }
 };
 
 WATClient.prototype.getBodyMD5 = function(body) {
@@ -148,20 +162,20 @@ WATClient.prototype.getAuthHeader = function(method, path, body) {
 
   var sign = this.getSign(method, path, timestamp, nonce, body);
 
-  var authHeader = {
-    'X-Wat-Ak-Sign-Version': this.akSignVersion,
-    'X-Wat-Ak-Id'          : this.akId,
-    'X-Wat-Ak-Timestamp'   : timestamp,
-    'X-Wat-Ak-Nonce'       : nonce,
-    'X-Wat-Ak-Sign'        : sign,
-  }
+  var authHeader = {}
+  authHeader[this.headerFields.akSignVersion] = this.akSignVersion;
+  authHeader[this.headerFields.akId]          = this.akId;
+  authHeader[this.headerFields.akTimestamp]   = timestamp;
+  authHeader[this.headerFields.akNonce]       = nonce;
+  authHeader[this.headerFields.akSign]        = sign;
+
   return authHeader;
 };
 
 WATClient.prototype.verifyAuthHeader = function(headers, method, path, body) {
-  var timestamp = headers['x-wat-ak-timestamp'] || '';
-  var nonce     = headers['x-wat-ak-nonce']     || '';
-  var sign      = headers['x-wat-ak-sign']      || '';
+  var timestamp = headers[this.headerFields.akTimestamp.toLowerCase()] || '';
+  var nonce     = headers[this.headerFields.akNonce.toLowerCase()]     || '';
+  var sign      = headers[this.headerFields.akSign.toLowerCase()]      || '';
 
   return this.verifySign(sign, method, path, timestamp, nonce, body);
 };
@@ -201,7 +215,7 @@ WATClient.prototype.run = function(options, callback) {
   headers = headers || {};
   headers['Content-Type'] = 'application/json';
   if (traceId) {
-    headers['X-Trace-Id'] = traceId;
+    headers[this.headerFields.traceId] = traceId;
   }
 
   if (this.akId && this.akSecret) {
@@ -320,7 +334,7 @@ WATClient.prototype.upload = function(options, callback) {
   headers = headers || {};
   headers['Content-Type'] = 'application/json';
   if (traceId) {
-    headers['X-Trace-Id'] = traceId;
+    headers[this.headerFields.traceId] = traceId;
   }
 
   if (this.akId && this.akSecret) {

@@ -69,7 +69,7 @@
 
           <el-table-column label="函数文档">
             <template slot-scope="scope">
-              <pre class="func-doc">{{ scope.row.description }}</pre>
+              <pre class="func-doc">{{ T.limitLines(scope.row.description, 10) }}</pre>
             </template>
           </el-table-column>
 
@@ -119,7 +119,16 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showAPI(d) {
+    async showAPI(d) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.id, {
+        alert: {entity: '函数', showError: true},
+      });
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/func/:funcId', {
         baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
         params : {funcId: d.id},
@@ -131,7 +140,7 @@ export default {
       }
       let apiBodyExample = {kwargs: kwargsJSON};
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample);
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {},

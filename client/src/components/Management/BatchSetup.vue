@@ -28,6 +28,8 @@
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
                   <InfoBlock title="函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数"></InfoBlock>
+
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="备注">
@@ -158,6 +160,7 @@ export default {
 
       let funcCascaderOptions = Object.values(scriptSetMap);
 
+      this.funcMap             = funcMap;
       this.funcCascaderOptions = funcCascaderOptions;
       this.$store.commit('updateLoadStatus', true);
     },
@@ -268,7 +271,7 @@ export default {
       let example = {};
       parameters.forEach(p => {
         if (p.indexOf('**') === 0) {
-          example['OTHER_ARGS'] = 'FROM_PARAMETER';
+          // 暂定：不展示**kwargs参数
         } else {
           example[p] = 'FROM_PARAMETER';
         }
@@ -287,6 +290,15 @@ export default {
         add  : '添加',
       };
       return nameMap[this.mode];
+    },
+    apiCustomKwargsSupport() {
+      let funcId = this.form.funcId;
+      if (!funcId) return false;
+
+      for (let k in this.funcMap[funcId].kwargsJSON) {
+        if (k.indexOf('**') === 0) return true;
+      }
+      return false;
     },
     datetimePickerOptions() {
       const now = new Date().getTime();
@@ -314,6 +326,7 @@ export default {
   data() {
     return {
       data               : {},
+      funcMap            : {},
       funcCascaderOptions: [],
 
       form: {

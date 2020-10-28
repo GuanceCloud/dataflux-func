@@ -102,8 +102,8 @@ def colored(s, color=None):
     return color + '{}\033[0m'.format(s)
 
 class WATClient(object):
-    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, ak_sign_version=None):
-        self.debug = False
+    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, ak_sign_version=None, header_fields=None, debug=False):
+        self.debug = debug
 
         self.ak_id     = ak_id
         self.ak_secret = ak_secret
@@ -126,6 +126,17 @@ class WATClient(object):
                 self.port = 80
 
         self.ak_sign_version = ak_sign_version or 'v1'
+
+        self.header_fields = {
+            'akSignVersion': 'X-Wat-Ak-Sign-Version',
+            'akId'         : 'X-Wat-Ak-Id',
+            'akTimestamp'  : 'X-Wat-Ak-Timestamp',
+            'akNonce'      : 'X-Wat-Ak-Nonce',
+            'akSign'       : 'X-Wat-Ak-Sign',
+            'traceId'      : 'X-Trace-Id',
+        }
+        if header_fields:
+            self.header_fields.update(header_fields)
 
     def get_body_md5(self, body=None):
         body = body or ''
@@ -187,18 +198,18 @@ class WATClient(object):
         sign = self.get_sign(method, path, timestamp, nonce, body=body)
 
         auth_headers = {
-            'X-Wat-Ak-Sign-Version': self.ak_sign_version,
-            'X-Wat-Ak-Id'          : self.ak_id,
-            'X-Wat-Ak-Timestamp'   : timestamp,
-            'X-Wat-Ak-Nonce'       : nonce,
-            'X-Wat-Ak-Sign'        : sign,
+            self.header_fields['akSignVersion']: self.ak_sign_version,
+            self.header_fields['akId']         : self.ak_id,
+            self.header_fields['akTimestamp']  : timestamp,
+            self.header_fields['akNonce']      : nonce,
+            self.header_fields['akSign']       : sign,
         }
         return auth_headers
 
     def verify_auth_header(self, headers, method, path, body=None):
-        timestamp = headers.get('X-Wat-Ak-Timestamp', '')
-        nonce     = headers.get('X-Wat-Ak-Nonce', '')
-        sign      = headers.get('X-Wat-Ak-Sign', '')
+        timestamp = headers.get(self.header_fields['akTimestamp'], '')
+        nonce     = headers.get(self.header_fields['akNonce'], '')
+        sign      = headers.get(self.header_fields['akSign'], '')
 
         return self.verify_sign(sign, method, path, timestamp, nonce, body=body)
 
@@ -225,7 +236,7 @@ class WATClient(object):
         headers = headers or {}
         headers['Content-Type'] = 'application/json'
         if trace_id:
-            headers['X-Trace-Id'] = trace_id
+            headers[self.header_fields['traceId']] = trace_id
 
         if self.ak_id and self.ak_secret:
             auth_headers = self.get_auth_header(method, path, body=body)
@@ -252,6 +263,8 @@ class WATClient(object):
 
         if resp_content_type == 'application/json':
             resp_data = json.loads(ensure_str(resp_raw_data))
+        else:
+            resp_data = resp_raw_data
 
         if self.debug == True:
             _color = 'green'
@@ -299,7 +312,7 @@ class WATClient(object):
         # Prepare headers with auth info
         headers = headers or {}
         if trace_id:
-            headers['X-Trace-Id'] = trace_id
+            headers[self.header_fields['traceId']] = trace_id
 
         if self.ak_id and self.ak_secret:
             auth_headers = self.get_auth_header(method, path, prepared_req.body)

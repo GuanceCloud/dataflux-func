@@ -47,7 +47,7 @@
                 <i class="fa fa-pencil"></i>
                 已编辑
               </el-tag>
-              {{ node.label }}
+              {{ node.label }}<span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
             </span>
           </div>
         </span>
@@ -197,7 +197,7 @@ export default {
         nodeEntity[d.id] = 'scriptSet';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         let isLockedByOther = d.lockedByUserId && d.lockedByUserId !== this.$store.getters.userId;
@@ -230,7 +230,7 @@ export default {
         nodeEntity[d.id] = 'script';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         let isCodeEdited = d.codeMD5 !== d.codeDraftMD5;
@@ -274,7 +274,7 @@ export default {
         nodeEntity[d.id] = 'func';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         funcMap[d.id] = {
@@ -303,11 +303,23 @@ export default {
       let treeData = Object.values(scriptSetMap);
       treeData.forEach(d => {
         if (d.isLockedByOther) return;
+
+        if (!this.T.isNothing(d.children)) {
+          d.childrenCount = d.children.filter(x => x.type === 'script').length;
+        }
+        d.children.sort(this.T.asideItemSorter);
         d.children.push({
           scriptSetId: d.id,
           type       : 'addScript',
         });
+
+        d.children.forEach(dd => {
+          if (!this.T.isNothing(dd.children)) {
+            dd.childrenCount = dd.children.filter(x => x.type === 'func').length;
+          }
+        });
       })
+      treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addScriptSet'});
       treeData.unshift({type: 'refresh'});
 
@@ -534,5 +546,10 @@ pre.aside-tree-node-description {
   font-size: 12px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+.child-nodes-count {
+  font-family: monospace;
+  font-style: italic;
+  font-size: 12px;
 }
 </style>

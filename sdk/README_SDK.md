@@ -41,6 +41,38 @@ There is `v1` and `v2` signature versions:
 | `X-Wat-Ak-Sign`         | Signature result                              | `431f70c44d5f7c97dcc87c20060e2480acdf3a04` |
 | `X-Wat-Ak-Sign-Version` | AK Sign Version. New in `v2`. No need in `v1` | `v2`                                       |
 
+#### Custom HTTP headers for signature
+
+Signature information can be put in different headers by setting `Header Fields` option:
+
+- Python:
+```python
+header_fields = {
+    'akSignVersion': 'X-Custom-Header-For-Ak-Sign-Version',
+    'akId'         : 'X-Custom-Header-For-Ak-Id',
+    'akTimestamp'  : 'X-Custom-Header-For-Ak-Timestamp',
+    'akNonce'      : 'X-Custom-Header-For-Ak-Nonce',
+    'akSign'       : 'X-Custom-Header-For-Ak-Sign',
+}
+client = WATClient(host=host, ak_id=ak_id, ak_secret=ak_secret, header_fields=header_fields)
+```
+
+- Javascript:
+```javascript
+var watClient = new WATClient({
+  akId         : akId,
+  akSecret     : akSecret,
+  akSignVersion: akSignVersion,
+  headerFields: {
+    akSignVersion: 'X-Custom-Header-For-Ak-Sign-Version',
+    akId         : 'X-Custom-Header-For-Ak-Id',
+    akTimestamp  : 'X-Custom-Header-For-Ak-Timestamp',
+    akNonce      : 'X-Custom-Header-For-Ak-Nonce',
+    akSign       : 'X-Custom-Header-For-Ak-Sign',
+  }
+});
+```
+
 ### 4. Send your request
 
 Now, just send your request.
@@ -53,4 +85,3 @@ We already implemented HTTP Client for some programming language:
 |----------|------------------|------------------------------------------------------------------------------------------------------------------|
 | Python   | `sdk/wat_sdk.py` | No dependency for common operations. Compatible with Python 2.6 ~ 3.7. Require `requests` for upload supporting. |
 | Node.js  | `sdk/wat_sdk.js` | No dependency. No need to compile. Require `form-data` for upload supporting.                                    |
-| Golang   | `sdk/main.go`    | No dependency. Change package name for your project.                                                             |
