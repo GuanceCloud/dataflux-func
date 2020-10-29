@@ -159,7 +159,7 @@ exports.clearWorkerQueues = function(req, res, next) {
       workerQueue = toolkit.getWorkerQueue(workerQueue);
     }
 
-    res.locals.cacheDB.ltrim(workerQueue, 0, 0, eachCallback);
+    res.locals.cacheDB.ltrim(workerQueue, 1, 0, eachCallback);
 
   }, function(err) {
     if (err) return next(err);
