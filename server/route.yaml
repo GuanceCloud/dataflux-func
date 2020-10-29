@@ -1339,12 +1339,6 @@ datafluxFuncAPI:
         $example: {'msg': 'Tom'}
       options:
         $desc: 选项
-        apiTimeout:
-          $desc    : API超时时间（秒，默认5秒）
-          $type    : integer
-          $minValue: 1
-          $maxValue: 30
-          $example : 5
         returnType:
           $desc: 返回类型（默认raw）
           $type: enum

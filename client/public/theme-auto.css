@@ -310,6 +310,11 @@ input:disabled {
   color: #777 !important;
 }
 
+.el-switch.is-checked .el-switch__core {
+  border-color: #F60 !important;
+  background-color: #F60 !important;
+}
+
 .el-card,
 .el-table,
 .el-form-item__label,

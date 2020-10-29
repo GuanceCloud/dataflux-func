@@ -26,6 +26,10 @@
         - `integration_config={ 'crontab': '* * * * *' }`函数定期自动执行
         - `integration_config={ 'published': True }`函数发布后自动执行
         - `integration_config={ 'startup': True }`系统启动时，函数自动执行
+- 授权链接列表页面增加统计信息视图，包含
+    - 近日调用次数
+    - 近期响应速度（min, max, avg, mid）
+    - 近期响应速度分布（p75, p95, p99)
 - 添加`NSQ`数据源
 - 调整编辑器左侧树状列表样式
 - 脚本预览页面添加下载按钮（支持下载草稿、已发布、和DIFF）

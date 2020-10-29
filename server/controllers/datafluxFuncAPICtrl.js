@@ -249,7 +249,17 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
       }
     }
 
-    // 【固定】函数执行过期
+    // 授权链接方式调用时，函数执行超时不得大于API超时
+    //    超出时，函数执行超时自动跟随API超时
+    switch(origin) {
+      case 'authLink':
+        if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
+          funcCallOptions.timeout = funcCallOptions.apiTimeout;
+        }
+        break;
+    }
+
+    // 【固定】函数任务过期
     switch(origin) {
       case 'batch':
         funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE;
@@ -281,6 +291,12 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
     // 执行模式（优先级：调用时指定 > 默认值）
     if (!toolkit.isNothing(funcCallOptions.execMode)) {
       switch(origin) {
+        case 'authLink':
+          if (funcCallOptions.execMode !== 'sync') {
+            return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `sync`', origin)));
+          }
+          break;
+
         case 'crontab':
         case 'batch':
           if (funcCallOptions.execMode !== 'async') {
@@ -353,7 +369,8 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
     }
 
     // 触发时间
-    funcCallOptions.triggerTime = parseInt(Date.now() / 1000);
+    funcCallOptions.triggerTimeMs = Date.now();
+    funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
 
     // 结果缓存
     if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
@@ -450,6 +467,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     originId      : funcCallOptions.originId,
     execMode      : funcCallOptions.execMode,
     saveResult    : funcCallOptions.saveResult,
+    triggerTimeMs : funcCallOptions.triggerTimeMs,
     triggerTime   : funcCallOptions.triggerTime,
     queue         : funcCallOptions.queue,
   };
@@ -476,82 +494,133 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
   var onTaskCallback   = null;
   var onResultCallback = null;
   if (funcCallOptions.execMode === 'sync') {
-    onResultCallback = function(err, celeryRes, extraInfo) {
-      if (err) return callback(err);
+    onResultCallback = function(celeryErr, celeryRes, extraInfo) {
+      async.series([
+        // 结果处理
+        function(asyncCallback) {
+          if (celeryErr) return asyncCallback(celeryErr);
 
-      celeryRes = celeryRes || {};
-      extraInfo = extraInfo || {};
+          celeryRes = celeryRes || {};
+          extraInfo = extraInfo || {};
 
-      // 无法通过JSON.parse解析
-      if ('string' === typeof celeryRes) {
-        return callback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.', {
-          etype: celeryRes.result && celeryRes.result.exc_type,
-        }));
-      }
+          // 无法通过JSON.parse解析
+          if ('string' === typeof celeryRes) {
+            return asyncCallback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.', {
+              etype: celeryRes.result && celeryRes.result.exc_type,
+            }));
+          }
 
-      if (celeryRes.status === 'FAILURE') {
-        // 正式调用发生错误只返回堆栈错误信息最后两行
-        var einfoTEXT = celeryRes.einfoTEXT.trim().split('\n').slice(-2).join('\n').trim();
+          if (celeryRes.status === 'FAILURE') {
+            // 正式调用发生错误只返回堆栈错误信息最后两行
+            var einfoTEXT = celeryRes.einfoTEXT.trim().split('\n').slice(-2).join('\n').trim();
 
-        if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
-          // 超时错误
-          return callback(new E('EFuncTimeout', 'Calling Function timeout.', {
-            id       : celeryRes.id,
-            etype    : celeryRes.result && celeryRes.result.exc_type,
-            einfoTEXT: einfoTEXT,
-          }));
+            if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
+              // 超时错误
+              return asyncCallback(new E('EFuncTimeout', 'Calling Function timeout.', {
+                id       : celeryRes.id,
+                etype    : celeryRes.result && celeryRes.result.exc_type,
+                einfoTEXT: einfoTEXT,
+              }));
 
-        } else {
-          // 其他错误
-          return callback(new E('EFuncFailed', 'Calling Function failed.', {
-            id       : celeryRes.id,
-            etype    : celeryRes.result && celeryRes.result.exc_type,
-            einfoTEXT: einfoTEXT,
-          }));
-        }
+            } else {
+              // 其他错误
+              return asyncCallback(new E('EFuncFailed', 'Calling Function failed.', {
+                id       : celeryRes.id,
+                etype    : celeryRes.result && celeryRes.result.exc_type,
+                einfoTEXT: einfoTEXT,
+              }));
+            }
 
-      } else if (extraInfo.status === 'TIMEOUT') {
-        // API等待超时
-        return callback(new E('EAPITimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
-          id   : extraInfo.id,
-          etype: celeryRes.result && celeryRes.result.exc_type,
-        }));
-      }
+          } else if (extraInfo.status === 'TIMEOUT') {
+            // API等待超时
+            return asyncCallback(new E('EAPITimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
+              id   : extraInfo.id,
+              etype: celeryRes.result && celeryRes.result.exc_type,
+            }));
+          }
 
-      var result = celeryRes.retval;
-      if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
-        result = result[funcCallOptions.returnType];
+          var result = celeryRes.retval;
+          if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
+            result = result[funcCallOptions.returnType];
 
-        if (toolkit.isNullOrUndefined(result)) {
-          result = null;
-        }
-      }
+            if (toolkit.isNullOrUndefined(result)) {
+              result = null;
+            }
+          }
 
-      var ret = null;
-      if (funcCallOptions.saveResult) {
-        var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
+          var ret = null;
+          if (funcCallOptions.saveResult) {
+            var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
 
-        ret = toolkit.initRet({
-          result   : result,
-          taskId   : celeryRes.id,
-          resultURL: resultURL,
-        });
+            ret = toolkit.initRet({
+              result   : result,
+              taskId   : celeryRes.id,
+              resultURL: resultURL,
+            });
 
-      } else {
-        ret = toolkit.initRet({
-          result: result,
-        });
-      }
+          } else {
+            ret = toolkit.initRet({
+              result: result,
+            });
+          }
 
-      if (celeryRes.id === 'CACHED') {
-        res.set('X-Result-Cache', 'Cached');
-      }
+          if (celeryRes.id === 'CACHED') {
+            res.set('X-Result-Cache', 'Cached');
+          }
 
-      if (funcCallOptions.unfold) {
-        res.locals.sendRaw(ret.data.result);
-      } else {
-        res.locals.sendJSON(ret);
-      }
+          if (funcCallOptions.unfold) {
+            res.locals.sendRaw(ret.data.result);
+          } else {
+            res.locals.sendJSON(ret);
+          }
+
+          // 保证执行到最终处理
+          return asyncCallback();
+        },
+      ], function(err) {
+        // 记录最近几天调用次数
+        var dateStr = toolkit.getDateString();
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCount', [
+            'funcId'  , funcCallOptions.funcId,
+            'origin'  , funcCallOptions.origin,
+            'originId', funcCallOptions.originId,
+            'date'    , dateStr]);
+        async.series([
+          // 计数
+          function(asyncCallback) {
+            res.locals.cacheDB.incr(cacheKey, asyncCallback);
+          },
+          // 设置自动过期
+          function(asyncCallback) {
+            var expires = CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES;
+            res.locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+          },
+        ]);
+
+        // 记录最近几次调用时长
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCost', [
+            'funcId'  , funcCallOptions.funcId,
+            'origin'  , funcCallOptions.origin,
+            'originId', funcCallOptions.originId]);
+        async.series([
+          // 最近耗时推入队列
+          function(asyncCallback) {
+            var cost = Date.now() - funcCallOptions.triggerTimeMs;
+            res.locals.cacheDB.lpush(cacheKey, cost, asyncCallback);
+          },
+          function(asyncCallback) {
+            var limit = CONFIG._RECENT_FUNC_RUNNING_COST_LIMIT;
+            res.locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
+          },
+          // 设置自动过期
+          function(asyncCallback) {
+            var expires = CONFIG._RECENT_FUNC_RUNNING_COST_EXPIRES;
+            res.locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+          },
+        ]);
+
+        if (err) return callback(err);
+      });
     };
 
   } else {

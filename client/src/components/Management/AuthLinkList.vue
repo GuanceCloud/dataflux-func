@@ -6,6 +6,8 @@
         <h1>
           授权链接
           <div class="header-control">
+            <el-switch v-model="showCountCost" inactive-text="常规信息" active-text="统计信息"></el-switch>
+            &#12288;
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
             <el-tooltip content="勾选后展示由其他系统自动创建的内容" placement="bottom" :enterable="false">
               <el-checkbox
@@ -76,38 +78,73 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="160">
-            <template slot-scope="scope">
-              <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
-              <template v-else>
-                <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
-                >{{ scope.row.expireTime | datetime }}</span>
-                <br>
-                <span class="text-info">（{{ scope.row.expireTime | fromNow }}）</span>
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="限流策略" width="150">
-            <template slot-scope="scope">
-              <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
-              <template v-else>
-                <template v-for="opt in C.AUTH_LINK_THROTTLING">
-                  <span v-if="scope.row.throttlingJSON[opt.key]">{{ scope.row.throttlingJSON[opt.key] }} {{ opt.name }}<br></span>
+          <template v-if="!showCountCost">
+            <el-table-column label="有效期至" width="160">
+              <template slot-scope="scope">
+                <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
+                <template v-else>
+                  <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
+                  >{{ scope.row.expireTime | datetime }}</span>
+                  <br>
+                  <span class="text-info">（{{ scope.row.expireTime | fromNow }}）</span>
                 </template>
               </template>
-            </template>
-          </el-table-column>
+            </el-table-column>
 
-          <el-table-column label="状态" width="120">
-            <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
-              <br>
-              <span v-if="scope.row.showInDoc" class="text-good">在文档中显示</span>
-              <span v-else class="text-bad">在文档中隐藏</span>
-            </template>
-          </el-table-column>
+            <el-table-column label="限流策略" width="150">
+              <template slot-scope="scope">
+                <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
+                <template v-else>
+                  <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                    <span v-if="scope.row.throttlingJSON[opt.key]">{{ scope.row.throttlingJSON[opt.key] }} {{ opt.name }}<br></span>
+                  </template>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="状态" width="120">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
+                <span v-else class="text-good">已启用</span>
+                <br>
+                <span v-if="scope.row.showInDoc" class="text-good">在文档中显示</span>
+                <span v-else class="text-bad">在文档中隐藏</span>
+              </template>
+            </el-table-column>
+          </template>
+
+          <template v-else>
+            <el-table-column label="近日调用" width="240">
+              <template slot-scope="scope">
+                <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
+                  <code>{{ d.date }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="近期响应速度" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
+                <template v-else>
+                  <code>MIN:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.min }}</code> 毫秒<br>
+                  <code>MAX:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.max }}</code> 毫秒<br>
+                  <code>AVG:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.avg }}</code> 毫秒<br>
+                  <code>MID:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.mid }}</code> 毫秒<br>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="近期响应速度分布" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
+                <template v-else>
+                  <code>P75:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p75 }}</code> 毫秒<br>
+                  <code>P95:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p95 }}</code> 毫秒<br>
+                  <code>P99:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p99 }}</code> 毫秒<br>
+                </template>
+              </template>
+            </el-table-column>
+          </template>
 
           <el-table-column label="备注" width="150">
             <template slot-scope="scope">
@@ -118,15 +155,15 @@
 
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-button @click="showAPI(scope.row)" type="text" size="small">API调用示例</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text" size="small">API调用示例</el-button>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
 
-              <el-button v-if="scope.row.showInDoc" @click="quickSubmitData(scope.row, 'hide')" type="text" size="small">隐藏</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'show')" type="text" size="small">显示</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.showInDoc" @click="quickSubmitData(scope.row, 'hide')" type="text" size="small">隐藏</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'show')" type="text" size="small">显示</el-button>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
 
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
             </template>
@@ -152,7 +189,6 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         description="授权链接同时支持POST方式和GET方式进行调用，可根据需要任意选择"
-        :showExecModeOption="true"
         :showPostExample="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"
@@ -355,6 +391,8 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
         origin      : _dataFilter.origin,
       },
+
+      showCountCost: false,
     }
   },
 }
@@ -381,6 +419,11 @@ export default {
 pre.func-kwargs-value {
   padding: 0;
   margin: 0;
+}
+code.count-cost-value {
+  display: inline-block;
+  width: 60px;
+  text-align: right;
 }
 </style>
 

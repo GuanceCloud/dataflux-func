@@ -2100,3 +2100,44 @@ var toTransmissionRateUnitString = toolkit.toTransmissionRateUnitString = functi
 var toTransmissionRateUnitStringInByte = toolkit.toTransmissionRateUnitStringInByte = function toTransmissionRateUnitStringInByte(value, fromUnit, toUnit, digits) {
   return toValueUnitString(TRANSMISSION_RATE_UNITS_IN_BYTE, TRANSMISSION_RATE_RADIX_IN_BYTE, value, fromUnit, toUnit, digits)
 };
+
+var asNumberArr = toolkit.asNumberArr = function asNumberArr(arr) {
+  return arr.map(function(x) {
+    return parseFloat(x);
+  });
+};
+
+var mathMin = toolkit.mathMin = function mathMin(arr) {
+  return Math.min.apply(null, asNumberArr(arr));
+};
+var mathMax = toolkit.mathMax = function mathMax(arr) {
+  return Math.max.apply(null, asNumberArr(arr));
+};
+var mathAvg = toolkit.mathAvg = function mathAvg(arr) {
+  return asNumberArr(arr).reduce(function(acc, x) {
+    return acc + x;
+  }) / arr.length;
+};
+var mathMedian = toolkit.mathMedian = function mathMedian(arr) {
+  arr = asNumberArr(arr).sort(function(a, b) {
+    return a - b;
+  });
+  if (arr.length % 2 == 0) {
+    return (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2;
+  } else {
+    return arr[Math.floor(arr.length / 2)];
+  }
+};
+var mathPercentile = toolkit.mathPercentile = function mathPercentile(arr, p) {
+  arr = asNumberArr(arr).sort(function(a, b) {
+    return a - b;
+  });
+
+  var L = arr.length * p / 100;
+  var pos = Math.floor(L);
+  var extra = L - pos;
+  var n1 = arr[pos - 1];
+  var n2 = arr[pos];
+
+  return n1 + (n2 - n1) * extra;
+};
