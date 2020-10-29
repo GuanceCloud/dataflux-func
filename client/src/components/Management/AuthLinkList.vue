@@ -144,6 +144,20 @@
                 </template>
               </template>
             </el-table-column>
+
+            <el-table-column label="近期响应状态分布" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">暂无信息</span>
+                <template v-else>
+                  <template v-for="title, k in RUNNING_STATUS_MAP">
+                    <template v-if="scope.row.recentRunningStatus[k]">
+                      <code>{{ title }}:</code>
+                      <code class="count-cost-value">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code>%<br>
+                    </template>
+                  </template>
+                </template>
+              </template>
+            </el-table-column>
           </template>
 
           <el-table-column label="备注" width="150">
@@ -369,6 +383,17 @@ export default {
         delete : '删除',
       };
     },
+    RUNNING_STATUS_MAP() {
+      return {
+        OK                      : '成功执行',
+        cached                  : '命中缓存',
+        EFuncFailed             : '函数报错',
+        EFuncTimeout            : '函数超时',
+        EAPITimeout             : '接口超时',
+        EFuncResultParsingFailed: '非法结果',
+        UnknowError             : '未知错误',
+      }
+    },
     isLoaded() {
       return this.$store.state.isLoaded;
     },
@@ -424,6 +449,8 @@ code.count-cost-value {
   display: inline-block;
   width: 60px;
   text-align: right;
+  border-bottom: 1px solid grey;
+  line-height: 14px;
 }
 </style>
 

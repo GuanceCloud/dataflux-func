@@ -75,6 +75,7 @@ exports.list = function(req, res, next) {
       if (authLinks.length <= 0) return asyncCallback();
 
       async.eachLimit(authLinks, 10, function(authLink, eachCallback) {
+        authLink.recentRunningStatus = {};
         authLink.recentRunningCost = {
           samples: null,
           min    : null,
@@ -86,7 +87,7 @@ exports.list = function(req, res, next) {
           p99    : null,
         };
 
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCost', [
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningStatus', [
             'funcId'  , authLink.funcId,
             'origin'  , 'authLink',
             'originId', authLink.id]);
@@ -96,15 +97,32 @@ exports.list = function(req, res, next) {
           // 无数据跳过
           if (!cacheRes) return eachCallback();
 
-          authLink.recentRunningCost.samples = cacheRes.length;
-          if (cacheRes.length > 1) {
-            authLink.recentRunningCost.min = parseInt(toolkit.mathMin(cacheRes));
-            authLink.recentRunningCost.max = parseInt(toolkit.mathMax(cacheRes));
-            authLink.recentRunningCost.avg = parseInt(toolkit.mathAvg(cacheRes));
-            authLink.recentRunningCost.mid = parseInt(toolkit.mathMedian(cacheRes));
-            authLink.recentRunningCost.p75 = parseInt(toolkit.mathPercentile(cacheRes, 75));
-            authLink.recentRunningCost.p95 = parseInt(toolkit.mathPercentile(cacheRes, 95));
-            authLink.recentRunningCost.p99 = parseInt(toolkit.mathPercentile(cacheRes, 99));
+          authLink.recentRunningStatus = cacheRes.reduce(function(acc, x) {
+            x = JSON.parse(x);
+            if (!acc[x.status]) {
+              acc[x.status] = 1;
+            } else {
+              acc[x.status]++;
+            }
+            return acc;
+          }, {});
+          authLink.recentRunningStatus.total = cacheRes.length;
+
+          var costList = cacheRes.map(function(x) {
+            x = JSON.parse(x);
+            return x.costMs;
+          });
+          console.log(costList)
+
+          authLink.recentRunningCost.samples = costList.length;
+          if (costList.length > 1) {
+            authLink.recentRunningCost.min = parseInt(toolkit.mathMin(costList));
+            authLink.recentRunningCost.max = parseInt(toolkit.mathMax(costList));
+            authLink.recentRunningCost.avg = parseInt(toolkit.mathAvg(costList));
+            authLink.recentRunningCost.mid = parseInt(toolkit.mathMedian(costList));
+            authLink.recentRunningCost.p75 = parseInt(toolkit.mathPercentile(costList, 75));
+            authLink.recentRunningCost.p95 = parseInt(toolkit.mathPercentile(costList, 95));
+            authLink.recentRunningCost.p99 = parseInt(toolkit.mathPercentile(costList, 99));
           }
 
           return eachCallback();
