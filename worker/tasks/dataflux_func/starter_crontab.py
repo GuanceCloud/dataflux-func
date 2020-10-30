@@ -209,8 +209,6 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             if not self.crontab_config_filter(trigger_time, c):
                 continue
 
-            print(c)
-
             # 确定执行队列
             specified_queue = None
             try:

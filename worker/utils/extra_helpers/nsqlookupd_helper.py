@@ -30,7 +30,6 @@ def get_config(c):
         'timeout'      : c.get('timeout')  or 3,
         'fixedNSQNodes': fixed_nsq_nodes,
     }
-    print(config)
     return config
 
 class NSQLookupHelper(object):

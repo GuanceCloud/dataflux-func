@@ -421,7 +421,6 @@ def dataflux_func_runner(self, *args, **kwargs):
     finally:
         if script_scope:
             # 记录输出日志（开启debug或函数执行失败时保留）
-            print(script_scope.get('_DFF_DEBUG'))
             if script_scope.get('_DFF_DEBUG') or not is_succeeded:
                 log_messages = script_scope['DFF'].log_messages or None
                 self.cache_script_log(func_id, target_script['publishVersion'], log_messages,

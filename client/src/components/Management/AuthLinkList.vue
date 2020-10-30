@@ -126,10 +126,10 @@
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
-                  <code>MIN:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.min }}</code> 毫秒<br>
-                  <code>MAX:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.max }}</code> 毫秒<br>
-                  <code>AVG:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.avg }}</code> 毫秒<br>
-                  <code>MID:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.mid }}</code> 毫秒<br>
+                  <code>MIN:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.min)">{{ scope.row.recentRunningCost.min }}</code> 毫秒<br>
+                  <code>MAX:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.max)">{{ scope.row.recentRunningCost.max }}</code> 毫秒<br>
+                  <code>AVG:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.avg)">{{ scope.row.recentRunningCost.avg }}</code> 毫秒<br>
+                  <code>MID:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.mid)">{{ scope.row.recentRunningCost.mid }}</code> 毫秒<br>
                 </template>
               </template>
             </el-table-column>
@@ -138,9 +138,9 @@
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
-                  <code>P75:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p75 }}</code> 毫秒<br>
-                  <code>P95:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p95 }}</code> 毫秒<br>
-                  <code>P99:</code> <code class="count-cost-value">{{ scope.row.recentRunningCost.p99 }}</code> 毫秒<br>
+                  <code>P75:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p75)">{{ scope.row.recentRunningCost.p75 }}</code> 毫秒<br>
+                  <code>P95:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p95)">{{ scope.row.recentRunningCost.p95 }}</code> 毫秒<br>
+                  <code>P99:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p99)">{{ scope.row.recentRunningCost.p99 }}</code> 毫秒<br>
                 </template>
               </template>
             </el-table-column>
@@ -149,10 +149,10 @@
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">暂无信息</span>
                 <template v-else>
-                  <template v-for="title, k in RUNNING_STATUS_MAP">
+                  <template v-for="opt, k in RUNNING_STATUS_MAP">
                     <template v-if="scope.row.recentRunningStatus[k]">
-                      <code>{{ title }}:</code>
-                      <code class="count-cost-value">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code>%<br>
+                      <code>{{ opt.title }}:</code>
+                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code>%<br>
                     </template>
                   </template>
                 </template>
@@ -374,6 +374,15 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
       this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
+    getCostClass(cost) {
+      if (cost < 3000) {
+        return 'text-good';
+      } else if (cost < 10000) {
+        return 'text-watch';
+      } else {
+        return 'text-bad';
+      }
+    },
   },
   computed: {
     OP_NAME_MAP() {
@@ -385,13 +394,34 @@ export default {
     },
     RUNNING_STATUS_MAP() {
       return {
-        OK                      : '成功执行',
-        cached                  : '命中缓存',
-        EFuncFailed             : '函数报错',
-        EFuncTimeout            : '函数超时',
-        EAPITimeout             : '接口超时',
-        EFuncResultParsingFailed: '非法结果',
-        UnknowError             : '未知错误',
+        OK: {
+          title: '成功执行',
+          class: 'text-good',
+        },
+        cached: {
+          title: '命中缓存',
+          class: 'text-good',
+        },
+        EFuncFailed: {
+          title: '函数报错',
+          class: 'text-bad',
+        },
+        EFuncTimeout: {
+          title: '函数超时',
+          class: 'text-bad',
+        },
+        EAPITimeout: {
+          title: '接口超时',
+          class: 'text-bad',
+        },
+        EFuncResultParsingFailed: {
+          title: '非法结果',
+          class: 'text-bad',
+        },
+        UnknowError: {
+          title: '未知错误',
+          class: 'text-bad',
+        },
       }
     },
     isLoaded() {
