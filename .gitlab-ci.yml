@@ -84,7 +84,7 @@ afterBuildWithPub:
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
 
 # PaaS 预发
-buildPaaS_prod:
+buildPaaS_prev:
   stage: build
   only:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev

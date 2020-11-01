@@ -1,7 +1,7 @@
 # 1. 保证最新数据库结构
 # 2. 导入官方脚本包（从测试环境导出）
 # 3. 运行以下代码SQL，清空无用数据
-# 4. 导出所有数据库表，保存为`db/ft_data_processor_YYYY-MM-DD.sql`和`db/ft_data_processor_latest.sql`
+# 4. 导出所有数据库表，保存为`db/dataflux-func_YYYY-MM-DD.sql`和`db/dataflux-func_latest.sql`
 
 # 清空无用数据
 TRUNCATE biz_main_auth_link;

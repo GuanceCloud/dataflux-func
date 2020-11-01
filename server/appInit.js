@@ -366,7 +366,7 @@ exports.afterAppCreated = function(app, server) {
   // 重置管理员账号密码
   async.series([
     function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'startupProcess');
+      var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
       var lockValue = Date.now().toString();
       var lockAge   = 30;
 
