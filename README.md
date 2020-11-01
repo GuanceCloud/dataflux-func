@@ -2,7 +2,7 @@
 
 DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
 
-> DataFlux.f(x) 读作`data flux function`，有时也可能写作`DataFlux Func`。
+> `DataFlux.f(x)` 读作`data flux function`，有时也可能写作`DataFlux Func`，系统内有时会缩写为`DFF`。
 
 前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组建，目前已成为可独立运行的系统。
 
@@ -173,18 +173,20 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 ## 支持的数据库
 
-|        数据库        |                             第三方库                             |                                                             兼容数据库                                                              |
-|----------------------|------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| InfluxDB             | [influxdb](https://pypi.org/project/influxdb/)                   | `阿里云时序数据库InfluxDB 版`                                                                                                       |
-| MySQL                | [mysqlclient](https://pypi.org/project/mysqlclient/)             | `MariaDB`、<br>`Percona Server for MySQL`、<br>`阿里云PolarDB MySQL`、<br>`阿里云OceanBase`、<br>`阿里云分析型数据库(ADB) MySQL 版` |
-| Redis                | [redis](https://pypi.org/project/redis/)                         |                                                                                                                                     |
-| Memcached            | [python3-memcached](https://pypi.org/project/python3-memcached/) |                                                                                                                                     |
-| Clickhouse           | [clickhouse-driver](https://pypi.org/project/clickhouse-driver/) |                                                                                                                                     |
-| Oracle数据库         | [cx-Oracle](https://pypi.org/project/cx-Oracle/)                 |                                                                                                                                     |
-| Microsoft SQL Server | [pymssql](https://pypi.org/project/pymssql/)                     |                                                                                                                                     |
-| PostgreSQL           | [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)     | `Greenplum Database`、<br>`阿里云PolarDB MySQL`、<br>`阿里云分析型数据库(ADB) PostgreSQL 版`                                        |
-| mongoDB              | [pymongo](https://pypi.org/project/pymongo/)                     |                                                                                                                                     |
-| elasticsearch        | [requests](https://pypi.org/project/requests/)                   |                                                                                                                                     |
+|    数据库/消息队列/中间件    |                                    所用第三方库                                   |                                                             兼容数据库                                                              |
+|------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| DataFlux DataWay（HTTP方式） | [dataway-python-sdk-nodep](https://github.com/CloudCare/dataway-python-sdk-nodep) |                                                                                                                                     |
+| InfluxDB（HTTP方式）         | [influxdb](https://pypi.org/project/influxdb/)                                    | `阿里云时序数据库InfluxDB 版`                                                                                                       |
+| MySQL                        | [mysqlclient](https://pypi.org/project/mysqlclient/)                              | `MariaDB`、<br>`Percona Server for MySQL`、<br>`阿里云PolarDB MySQL`、<br>`阿里云OceanBase`、<br>`阿里云分析型数据库(ADB) MySQL 版` |
+| Redis                        | [redis](https://pypi.org/project/redis/)                                          |                                                                                                                                     |
+| Memcached                    | [python3-memcached](https://pypi.org/project/python3-memcached/)                  |                                                                                                                                     |
+| Clickhouse（TCP方式）        | [clickhouse-driver](https://pypi.org/project/clickhouse-driver/)                  |                                                                                                                                     |
+| Oracle数据库                 | [cx-Oracle](https://pypi.org/project/cx-Oracle/)                                  |                                                                                                                                     |
+| Microsoft SQL Server         | [pymssql](https://pypi.org/project/pymssql/)                                      |                                                                                                                                     |
+| PostgreSQL                   | [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)                      | `Greenplum Database`、<br>`阿里云PolarDB MySQL`、<br>`阿里云分析型数据库(ADB) PostgreSQL 版`                                        |
+| mongoDB                      | [pymongo](https://pypi.org/project/pymongo/)                                      |                                                                                                                                     |
+| elasticsearch（HTTP方式）    | [requests](https://pypi.org/project/requests/)                                    |                                                                                                                                     |
+| NSQ (Lookupd, HTTP方式)      | [requests](https://pypi.org/project/requests/)                                    |                                                                                                                                     |
 
 ## 相关链接
 

@@ -97,7 +97,7 @@ _IS_STREAKING: false
 _CLIENT_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
-_FUNC_PKG_EXPORT_FILENAME: dataflux-fx
+_FUNC_PKG_EXPORT_FILENAME: dataflux-func
 # 函数包导出扩展名
 _FUNC_PKG_EXPORT_EXT: .func-pkg
 
@@ -106,6 +106,9 @@ _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
 
 # 函数包密码长度范围
 _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
+
+# 脚本包自动安装锁定时间
+_FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 300
 
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''
@@ -158,6 +161,9 @@ _WEB_AK_NONCE_HEADER       : X-Dff-Ak-Nonce
 _WEB_AK_SIGN_HEADER        : X-Dff-Ak-Sign
 _WEB_AK_TIMESTAMP_MAX_DIFF : 900
 _WEB_AK_NONCE_TTL          : 86400
+
+# 本地临时认证令牌
+_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL: X-Localhost-Temp-Auth-Token
 
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10

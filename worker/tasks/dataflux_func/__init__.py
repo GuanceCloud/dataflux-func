@@ -48,8 +48,8 @@ FIXED_INTEGRATION_KEY_MAP = {
     #   函数必须为`def func()`形式
     #   配置项：
     #       crontab  : Crontab语法自动运行周期
-    #       startup  : True/False，是否启动时运行
-    #       published: True/False，是否发布后运行
+    #       onLaunch : True/False，是否启动时运行
+    #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
 }
 

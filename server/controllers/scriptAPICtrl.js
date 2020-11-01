@@ -351,7 +351,7 @@ exports.publish = function(req, res, next) {
           if (func.integration !== 'autoRun') return;
 
           try {
-            if (!func.extraConfig.integrationConfig.published) return;
+            if (!func.extraConfig.integrationConfig.onPublish) return;
           } catch(err) {
             return;
           }

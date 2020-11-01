@@ -96,9 +96,6 @@ class BaseTask(app.Task):
             self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
-        if 'startupSleep' in kwargs:
-            time.sleep(kwargs['startupSleep'])
-
         # Add logger
         self.logger = LogHelper(self)
 
@@ -120,6 +117,19 @@ class BaseTask(app.Task):
                     x_einfo_text=None,
                     x_exception_message=None,
                     x_exception_dump=None)
+
+        # Sleep delay
+        if 'sleepDelay' in kwargs:
+            sleep_delay = 0
+            try:
+                sleep_delay = float(kwargs['sleepDelay'])
+                self.logger.debug('[SLEEP DELAY] {} seconds...'.format(sleep_delay))
+
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
+            else:
+                time.sleep(sleep_delay)
 
         # Run
         try:

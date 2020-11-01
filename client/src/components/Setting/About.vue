@@ -16,7 +16,7 @@
               <!-- DataFlux.f(x) Web -->
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="warning" class="about-dataflux-fx-part">Web</el-tag>
+                <el-tag type="warning" class="about-dataflux-func-part">Web</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
@@ -33,7 +33,7 @@
               <br>
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="success" class="about-dataflux-fx-part">Worker</el-tag>
+                <el-tag type="success" class="about-dataflux-func-part">Worker</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
@@ -383,7 +383,7 @@ export default {
 .about-form {
   width: 600px;
 }
-.about-dataflux-fx-part {
+.about-dataflux-func-part {
   font-size: 16px;
   font-style: italic;
   font-family: monospace;

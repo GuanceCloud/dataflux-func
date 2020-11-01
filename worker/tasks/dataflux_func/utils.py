@@ -158,7 +158,7 @@ class DataFluxFuncReloadScriptsTask(BaseTask, ScriptCacherMixin):
 
 @app.task(name='DataFluxFunc.reloadScripts', bind=True, base=DataFluxFuncReloadScriptsTask)
 def dataflux_func_reload_scripts(self, *args, **kwargs):
-    is_startup = kwargs.get('isStartup') or False
+    is_startup = kwargs.get('isOnLaunch') or False
     force      = kwargs.get('force')     or False
 
     # 启动时执行的，需要上锁
@@ -827,7 +827,7 @@ class DataFluxFuncAutoRunTask(BaseTask):
             FROM biz_main_func AS `func`
             WHERE
                   `func`.`integration` = 'autoRun'
-              AND `func`.`extraConfigJSON`->>'$.integrationConfig.startup' = 'true'
+              AND `func`.`extraConfigJSON`->>'$.integrationConfig.onLaunch' = 'true'
             '''
         return self.db.query(sql)
 
@@ -931,8 +931,3 @@ def dataflux_func_data_source_debugger(self, *args, **kwargs):
     else:
         ret = db_res
     return ret
-
-# 启动时自动执行（已附带锁）
-# dataflux_func_reload_scripts.apply_async(kwargs={'isStartup': True, 'force': True, 'startupSleep': 10})
-# dataflux_func_auto_cleaner.apply_async(kwargs={'startupSleep': 30})
-dataflux_func_auto_run.apply_async(kwargs={'startupSleep': 10})

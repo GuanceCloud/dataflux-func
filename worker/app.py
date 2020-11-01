@@ -41,10 +41,11 @@ redis_url = 'redis://{}{}:{}/{}'.format(
 
 app.conf.update(broker_url=redis_url, result_backend=redis_url)
 
-@signals.setup_logging.connect
-def on_connect(**kwargs):
+@signals.worker_ready.connect
+def on_ready(*args, **kwargs):
+    after_app_created(app)
+
     print('Celery logging disabled')
     print('Celery is running (Press CTRL+C to quit)')
     print('Have fun!')
 
-after_app_created(app)

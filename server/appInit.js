@@ -403,16 +403,83 @@ exports.afterAppCreated = function(app, server) {
         RESET_ADMIN_ID,
       ];
       app.locals.db.query(sql, sqlParams, asyncCallback);
-    }
+    },
   ], printError);
 
   // 自动安装脚本包
-  // TODO
+  async.series([
+    // 获取锁
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'autoInstallFuncPackage');
+      var lockValue = Date.now().toString();
+      var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
+
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          var e = new Error('Function package auto installing is just launched');
+          e.isWarning = true;
+          return asyncCallback(e);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 安装脚本包
+    function(asyncCallback) {
+      // 获取脚本包列表
+      var funcPackagePath = path.join(__dirname, '../func-pkg/');
+      var funcPackages = fs.readdirSync(funcPackagePath);
+      funcPackages = funcPackages.filter(function(fileName) {
+        return fileName.split('.').pop() === 'func-pkg';
+      });
+
+      if (toolkit.isNothing(funcPackages)) return asyncCallback();
+
+      // 依次导入
+      var watClient = new WATClient({host: 'localhost', port: 8088});
+
+      // 本地临时认证令牌
+      app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
+
+      async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
+        app.locals.logger.info('Auto install function package: {0}', funcPackage);
+
+        var filePath = path.join(funcPackagePath, funcPackage);
+        var fileBuffer = fs.readFileSync(path.join(filePath));
+
+        // 使用本地临时认证令牌认证
+        var localhostTempAuthToken = toolkit.genRandString();
+        app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
+
+        var headers = {};
+        headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL] = localhostTempAuthToken;
+
+        var opt = {
+          headers   : headers,
+          path      : '/api/v1/script-sets/do/import',
+          fileBuffer: fileBuffer,
+          filename  : funcPackage,
+        }
+        watClient.upload(opt, function(err, apiRes) {
+          if (err) return eachCallback(err);
+
+          if (!apiRes.ok) {
+            return eachCallback(new Error('Auto install function package failed: ' + apiRes.message));
+          }
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], printError);
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
   /********** Content for YOUR project below **********/
 
+  // 操作记录
   if (res.locals._operationRecord) {
     var operationRecordMod = require('./models/operationRecordMod');
 

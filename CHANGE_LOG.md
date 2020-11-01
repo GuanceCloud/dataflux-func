@@ -24,8 +24,8 @@
         - `DFF.list()`列出配置
     - 添加`DFF.API(integration='autoRun', integration_config={...})`配置，允许函数自动运行
         - `integration_config={ 'crontab': '* * * * *' }`函数定期自动执行
-        - `integration_config={ 'published': True }`函数发布后自动执行
-        - `integration_config={ 'startup': True }`系统启动时，函数自动执行
+        - `integration_config={ 'onPublish': True }`函数发布后自动执行
+        - `integration_config={ 'onLaunch': True }`系统启动时，函数自动执行
 - 授权链接列表页面增加统计信息视图，包含
     - 近日调用次数
     - 近期响应速度（min, max, avg, mid）
@@ -35,7 +35,7 @@
 - 脚本预览页面添加下载按钮（支持下载草稿、已发布、和DIFF）
 - 在函数使用了命名参数`**kwargs`时，API示例、授权链接/批处理配置页面会展示相应允许自定义参数的提示
 - 升级WAT SDK，支持配置HTTP 认证头
-- 其他已知问题
+- 修复已知问题，优化代码
 
 ### 1.0.11 ~ 1.0.14
 
