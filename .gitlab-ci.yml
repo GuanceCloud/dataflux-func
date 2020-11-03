@@ -30,10 +30,10 @@ build:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
   script:
     - python echo-image-info.py > image-info.json
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
     - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} .
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
     - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
   tags:
     - middleware-prod
 
@@ -90,6 +90,7 @@ buildPaaS_prev:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
     - python echo-image-info.py > image-info.json
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
     - REPO=dataflux-prev/$VDIR
@@ -107,6 +108,7 @@ buildPaaS_prod:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
     - python echo-image-info.py > image-info.json
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}
     - REPO=dataflux/$VDIR
