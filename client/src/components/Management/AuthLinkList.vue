@@ -6,7 +6,7 @@
         <h1>
           授权链接
           <div class="header-control">
-            <el-switch v-model="showCountCost" inactive-text="常规信息" active-text="统计信息"></el-switch>
+            <el-switch v-model="showCountCost" inactive-text="常规" active-text="统计信息"></el-switch>
             &#12288;
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
             <el-tooltip content="勾选后展示由其他系统自动创建的内容" placement="bottom" :enterable="false">
@@ -111,13 +111,20 @@
                 <span v-else class="text-bad">在文档中隐藏</span>
               </template>
             </el-table-column>
+
+            <el-table-column label="备注" width="150">
+              <template slot-scope="scope">
+                <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
+                <span v-else class="text-info">{{ '<无备注>' }}</span>
+              </template>
+            </el-table-column>
           </template>
 
           <template v-else>
             <el-table-column label="近日调用" width="240">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
-                  <code>{{ d.date }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>
+                  <code>{{ ['今天', '昨天', '前天'][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>
                 </template>
               </template>
             </el-table-column>
@@ -159,13 +166,6 @@
               </template>
             </el-table-column>
           </template>
-
-          <el-table-column label="备注" width="150">
-            <template slot-scope="scope">
-              <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
-              <span v-else class="text-info">{{ '<无备注>' }}</span>
-            </template>
-          </el-table-column>
 
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
