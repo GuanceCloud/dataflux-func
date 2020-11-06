@@ -37,7 +37,7 @@ build:
   tags:
     - middleware-prod
 
-# 公开发布版
+# 公开发布版/携带版
 #   主要用于独立安装
 buildWithPub:
   stage: build
@@ -66,22 +66,14 @@ buildWithPub:
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR}
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
-  tags:
-    - middleware-prod
-
-# 携带版
-#   主要用于创建携带版OSS资源文件
-afterBuildWithPub:
-  stage: afterBuilt
-  only:
-    - /^\d+\.\d+\.\d+$/ # 如：1.2.3
-  script:
     - docker save ${IMAGE_PUBLIC}:latest > ${IMAGE_FILE}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${README_FILE}               ${OSS_RESOURCE_BASE_URL}/${README_FILE}               -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${IMAGE_FILE}                ${OSS_PORTABLE_BASE_URL}/${IMAGE_FILE}                -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+  tags:
+    - middleware-prod
 
 # PaaS 预发
 buildPaaS_prev:
