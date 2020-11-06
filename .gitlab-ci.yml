@@ -1,6 +1,5 @@
 stages:
   - build
-  - afterBuilt
 
 variables:
   # 用于 build, buildWithPub, afterBuildWithPub
