@@ -10,6 +10,9 @@ ARG ORACLE_CLIENT_PKG="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"
 
 USER root
 
+# Default data folder
+RUN mkdir -p /data
+
 # # Swith apt source to Aliyun
 # RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
 #         \ndeb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib \
