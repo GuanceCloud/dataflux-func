@@ -52,6 +52,14 @@ var FUNC_CACHE_OPT = {
   max   : 1000,
   maxAge: 15 * 1000,
 };
+
+var FUNC_TASK_DEFAULT_QUEUE_MAP = {
+  'auto'   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+  'sync'   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+  'async'  : CONFIG._FUNC_TASK_DEFAULT_ASYNC_QUEUE,
+  'crontab': CONFIG._FUNC_TASK_DEFAULT_CRONTAB_QUEUE,
+}
+
 var FUNC_LRU      = new LRU(FUNC_CACHE_OPT);
 var AUTH_LINK_LRU = new LRU(FUNC_CACHE_OPT);
 var BATCH_LRU     = new LRU(FUNC_CACHE_OPT);
@@ -64,21 +72,8 @@ var FUNC_RESULT_LRU = new LRU({
 var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
-function _checkWorkerQueue(req, res, queue, callback) {
-  var workerQueueKey = toolkit.getWorkerQueue(queue);
-  res.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
-    if (err) return callback(err);
-
-    var workerQueueLength = parseInt(cacheRes);
-    if (workerQueueLength >= CONFIG._FUNC_TASK_WORKER_QUEUE_MAX_LENGTH) {
-      return callback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue.', {
-        workerQueueKey   : workerQueueKey,
-        workerQueueLength: workerQueueLength,
-      }));
-    }
-
-    return callback();
-  });
+function _get_task_default_queue(execMode) {
+  return FUNC_TASK_DEFAULT_QUEUE_MAP[execMode] || CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 };
 
 function _createFuncCallOptions(req, res, funcId, origin, callback) {
@@ -365,7 +360,7 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
       funcCallOptions.queue = '' + func.extraConfigJSON.queue;
 
     } else {
-      funcCallOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
+      funcCallOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
     }
 
     // 触发时间
@@ -437,6 +432,23 @@ function _getFuncCallResultFromCache(req, res, taskKwargs, scriptCodeMD5, script
 
     FUNC_RESULT_LRU.set(lruKey, cacheRes);
     return callback(err, cacheRes);
+  });
+};
+
+function _checkWorkerQueue(req, res, queue, callback) {
+  var workerQueueKey = toolkit.getWorkerQueue(queue);
+  res.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
+    if (err) return callback(err);
+
+    var workerQueueLength = parseInt(cacheRes);
+    if (workerQueueLength >= CONFIG._FUNC_TASK_WORKER_QUEUE_MAX_LENGTH) {
+      return callback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue.', {
+        workerQueueKey   : workerQueueKey,
+        workerQueueLength: workerQueueLength,
+      }));
+    }
+
+    return callback();
   });
 };
 
@@ -703,11 +715,15 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
         return onResultCallback(null, dummyCeleryRes, null);
       });
     },
+    // 真实调用函数前，检查队列
+    function(asyncCallback) {
+      _checkWorkerQueue(req, res, funcCallOptions.queue, asyncCallback);
+    },
     // 真实调用函数
     function(asyncCallback) {
       // 处理队列别名
       if (toolkit.isNullOrUndefined(taskOptions.queue)) {
-        taskOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
+        taskOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
 
       } else {
         var queueNumber = parseInt(taskOptions.queue);
@@ -720,7 +736,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
           if (isNaN(queueNumber) || queueNumber < 0 || queueNumber >= CONFIG._WORKER_QUEUE_COUNT) {
             // 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
             // 保证无论如何都有Worker负责执行（实际运行会报错）
-            taskOptions.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
+            taskOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
 
           } else {
             // 队列别名转换为队列编号
@@ -1066,10 +1082,6 @@ exports.callFunc = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 检查工作队列
-    function(asyncCallback) {
-      _checkWorkerQueue(req, res, funcCallOptions.queue, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
@@ -1177,10 +1189,6 @@ exports.callAuthLink = function(req, res, next) {
 
         return asyncCallback();
       });
-    },
-    // 检查工作队列
-    function(asyncCallback) {
-      _checkWorkerQueue(req, res, funcCallOptions.queue, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

@@ -147,9 +147,9 @@ def dataflux_func_debugger(self, *args, **kwargs):
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
-                script_name=script_id,
-                script_dict=script_dict,
-                extra_vars=extra_vars)
+            script_name=script_id,
+            script_dict=script_dict,
+            extra_vars=extra_vars)
 
         # 加载代码
         self.logger.info('[LOAD SCRIPT] `{}`'.format(script_id))
@@ -194,7 +194,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
             result['plotCharts'] = plot_charts
 
         if func_name:
-            # 函数运行结果
+            # 准备函数运行结果
             func_result_raw        = None
             func_result_repr       = None
             func_result_json_dumps = None
@@ -224,7 +224,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
                 'cost'     : time.time() - start_time,
             }
 
-        # 返回值
+        # 准备返回值
         retval = {
             'result'   : result,
             'traceInfo': trace_info,
@@ -234,4 +234,5 @@ def dataflux_func_debugger(self, *args, **kwargs):
         # 清理资源
         self.clean_up()
 
+        # 返回函数结果
         return retval

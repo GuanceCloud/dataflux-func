@@ -358,10 +358,10 @@ exports.publish = function(req, res, next) {
 
           var funcId = toolkit.strf('{0}.{1}', id, func.name);
           var kwargs = {
-            funcId: funcId,
-            origin: 'integration',
+            funcId  : funcId,
+            origin  : 'integration',
             execMode: 'auto',
-            queue : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            queue   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
           var taskOptions = {
             queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,

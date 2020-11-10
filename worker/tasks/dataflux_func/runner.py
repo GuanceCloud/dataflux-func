@@ -221,13 +221,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-    def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs, result, cache_result):
-        if not cache_result:
+    def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
+        if not cache_result_expires:
             return
-
-        func_call_kwargs_dumps = toolkit.json_safe_dumps(func_call_kwargs, indent=None, sort_keys=True, separators=(',', ':'))
-        func_call_kwargs_md5   = toolkit.get_md5(func_call_kwargs_dumps)
-        result_dumps           = toolkit.json_safe_dumps(result)
 
         cache_key = toolkit.get_cache_key('cache', 'funcResult', tags=[
             'funcId'              , func_id,
@@ -235,7 +231,30 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
             'scriptPublishVersion', script_publish_version,
             'funcCallKwargsMD5'   , func_call_kwargs_md5])
 
-        self.cache_db.setex(cache_key, cache_result, result_dumps)
+        result_dumps = toolkit.json_safe_dumps(result)
+        self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
+
+    def cache_func_pressure(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, func_pressure, queue):
+        # 计算并记录函数压力
+        cache_key = toolkit.get_cache_key('cache', 'funcPressure', tags=[
+            'funcId'              , func_id,
+            'scriptCodeMD5'       , script_code_md5,
+            'scriptPublishVersion', script_publish_version])
+
+        prev_func_pressure = self.cache_db.get(cache_key)
+        if prev_func_pressure:
+            prev_func_pressure = int(prev_func_pressure)
+        else:
+            prev_func_pressure = 0
+
+        next_func_pressure = int((prev_func_pressure + func_pressure) / 2)
+
+        self.cache_db.setex(cache_key, CONFIG._FUNC_TASK_PRESSURE_DURATION, next_func_pressure)
+
+        # 计入队列压力序列
+        cache_key = toolkit.get_cache_key('cache', 'funcPressureQueue', tags=['queue', queue])
+        self.cache_db.lpush(cache_key, next_func_pressure)
+
 
 @app.task(name='DataFluxFunc.runner', bind=True, base=DataFluxFuncRunnerTask, ignore_result=True,
     soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
@@ -244,6 +263,9 @@ def dataflux_func_runner(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
     func_call_kwargs = kwargs.get('funcCallKwargs') or {}
+
+    func_call_kwargs_dumps = toolkit.json_safe_dumps(func_call_kwargs, indent=None, sort_keys=True, separators=(',', ':'))
+    func_call_kwargs_md5   = toolkit.get_md5(func_call_kwargs_dumps)
 
     script_set_id = func_id.split('__')[0]
     script_id     = func_id.split('.')[0]
@@ -256,8 +278,11 @@ def dataflux_func_runner(self, *args, **kwargs):
     origin_id = kwargs.get('originId')
 
     # 记录任务信息（运行中）
-    self.cache_task_status(origin, origin_id, 'pending',
-            func_id=func_id)
+    self.cache_task_status(
+        origin=origin,
+        origin_id=origin_id,
+        status='pending',
+        func_id=func_id)
 
     # 顶层任务ID
     root_task_id = kwargs.get('rootTaskId') or self.request.id
@@ -272,6 +297,9 @@ def dataflux_func_runner(self, *args, **kwargs):
     # 启动时间
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
+
+    # 队列
+    queue = kwargs.get('queue')
 
     # 函数结果、上下文
     save_result = kwargs.get('saveResult') or False
@@ -310,13 +338,13 @@ def dataflux_func_runner(self, *args, **kwargs):
             '_DFF_START_TIME_MS': start_time_ms,
             '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
             '_DFF_CRONTAB'      : kwargs.get('crontab'),
-            '_DFF_QUEUE'        : kwargs.get('queue'),
+            '_DFF_QUEUE'        : queue,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
-                script_name=script_id,
-                script_dict=SCRIPT_DICT_CACHE,
-                extra_vars=extra_vars)
+            script_name=script_id,
+            script_dict=SCRIPT_DICT_CACHE,
+            extra_vars=extra_vars)
 
         # 加载代码
         self.logger.info('[LOAD SCRIPT] `{}`'.format(script_id))
@@ -332,35 +360,46 @@ def dataflux_func_runner(self, *args, **kwargs):
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
         func_result = entry_func(**func_call_kwargs)
 
-        self.cache_script_running_info(func_id, target_script['publishVersion'],
-                exec_mode=exec_mode,
-                cost=time.time() - start_time)
-
     # except SoftTimeLimitExceeded as e:
     except Exception as e:
+        is_succeeded = False
+
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
         self.logger.error('Error occured in script. `{}`'.format(func_id))
 
-        # 记录运行信息
-        self.cache_script_running_info(func_id, target_script['publishVersion'],
-                exec_mode=exec_mode,
-                is_failed=True,
-                cost=time.time() - start_time)
+        # 记录函数运行信息
+        self.cache_script_running_info(
+            func_id=func_id,
+            script_publish_version=target_script['publishVersion'],
+            exec_mode=exec_mode,
+            is_failed=True,
+            cost=time.time() - start_time)
 
-        # 记录运行故障
+        # 记录函数运行故障
         trace_info = self.get_trace_info()
         einfo_text = self.get_formated_einfo(trace_info, only_in_script=True)
-        self.cache_script_failure(func_id, target_script['publishVersion'],
-                exec_mode=exec_mode, einfo_text=einfo_text, trace_info=trace_info)
+        self.cache_script_failure(
+            func_id=func_id,
+            script_publish_version=target_script['publishVersion'],
+            exec_mode=exec_mode,
+            einfo_text=einfo_text,
+            trace_info=trace_info)
 
         raise
 
     else:
         is_succeeded = True
 
-        # 函数运行结果
+        # 记录函数运行信息
+        self.cache_script_running_info(
+            func_id=func_id,
+            script_publish_version=target_script['publishVersion'],
+            exec_mode=exec_mode,
+            cost=time.time() - start_time)
+
+        # 准备函数运行结果
         func_result_raw        = None
         func_result_repr       = None
         func_result_json_dumps = None
@@ -389,7 +428,7 @@ def dataflux_func_runner(self, *args, **kwargs):
             'jsonDumps': func_result_json_dumps,
         }
 
-        # 保存结果
+        # 记录函数运行结果
         if save_result:
             args = (
                 self.request.id,
@@ -406,25 +445,33 @@ def dataflux_func_runner(self, *args, **kwargs):
             result_task_id = '{}-RESULT'.format(self.request.id)
             result_saving_task.apply_async(task_id=result_task_id, args=args)
 
-        # 缓存纯函数处理结果
-        cache_result = None
+        # 缓存函数运行结果
+        cache_result_expires = None
         try:
-            cache_result = target_script['funcExtraConfig'][func_id]['cacheResult']
+            cache_result_expires = target_script['funcExtraConfig'][func_id]['cacheResult']
         except (KeyError, TypeError) as e:
             pass
         else:
-            self.cache_func_result(func_id, target_script['codeMD5'], target_script['publishVersion'], func_call_kwargs, result, cache_result)
+            self.cache_func_result(
+                func_id=func_id,
+                script_code_md5=target_script['codeMD5'],
+                script_publish_version=target_script['publishVersion'],
+                func_call_kwargs_md5=func_call_kwargs_md5,
+                result=result,
+                cache_result_expires=cache_result_expires)
 
-        # 返回结果
+        # 返回函数结果
         return result
 
     finally:
         if script_scope:
             # 记录输出日志（开启debug或函数执行失败时保留）
             if script_scope.get('_DFF_DEBUG') or not is_succeeded:
-                log_messages = script_scope['DFF'].log_messages or None
-                self.cache_script_log(func_id, target_script['publishVersion'], log_messages,
-                        exec_mode=exec_mode)
+                self.cache_script_log(
+                    func_id=func_id,
+                    script_publish_version=target_script['publishVersion'],
+                    log_messages=script_scope['DFF'].log_messages or None,
+                    exec_mode=exec_mode)
 
         # Crontab解锁
         lock_key   = kwargs.get('lockKey')
@@ -438,11 +485,26 @@ def dataflux_func_runner(self, *args, **kwargs):
             end_status = 'success'
         else:
             end_status = 'failure'
-        self.cache_task_status(origin, origin_id, end_status,
+
+        self.cache_task_status(
+            origin=origin,
+            origin_id=origin_id,
+            status=end_status,
+            func_id=func_id,
+            script_publish_version=target_script['publishVersion'],
+            log_messages=log_messages,
+            einfo_text=einfo_text)
+
+        # 记录压力值（仅限同步方式）
+        if exec_mode == 'sync':
+            func_pressure = start_time_ms - time.time() * 1000
+            self.cache_func_pressure(
                 func_id=func_id,
+                script_code_md5=target_script['codeMD5'],
                 script_publish_version=target_script['publishVersion'],
-                log_messages=log_messages,
-                einfo_text=einfo_text)
+                func_call_kwargs_md5=func_call_kwargs_md5,
+                func_pressure=func_pressure,
+                queue=queue)
 
         # 清理资源
         self.clean_up()

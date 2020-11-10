@@ -55,7 +55,7 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 ## 推荐方式：使用基于`docker stack`的自动部署脚本部署
 
-*注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
+*注意操作前需要使用`docker login pubrepo.jiagouyun.com`进行登录*
 
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux.f(x)：
 ```shell
@@ -126,6 +126,8 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 
 # 更新部署
+
+*注意：视情况应使用`sudo`运行下文命令*
 
 需要更新部署时，请按照以下步骤进行：
 2. 使用`docker stack rm dataflux-func`命令，移除正在运行的旧版本（此步骤可能需要一定时间）
