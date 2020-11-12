@@ -235,6 +235,20 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
 
     def cache_func_pressure(self, func_id, func_call_kwargs_md5, func_pressure, func_cost, queue):
+        # 获取队列最大压力
+        worker_queue_max_pressure = CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
+
+        cache_key = toolkit.get_cache_key('heartbeat', 'workerCount')
+
+        worker_count = self.cache_db.get(cache_key)
+
+        if not worker_count:
+            worker_count = 1
+        else:
+            worker_count = int(worker_count)
+
+        worker_queue_max_pressure = worker_count * CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
+
         # 计算并记录新函数压力
         cache_key = toolkit.get_cache_key('cache', 'funcPressure', tags=[
             'funcId'           , func_id,
@@ -255,15 +269,15 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         current_worker_queue_pressure = self.cache_db.run('decrby', cache_key, func_pressure)
         if current_worker_queue_pressure < 0:
             self.cache_db.set(cache_key, 0)
-        elif current_worker_queue_pressure > CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE']:
-            self.cache_db.set(cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE'])
+        elif current_worker_queue_pressure > worker_queue_max_pressure:
+            self.cache_db.set(cache_key, worker_queue_max_pressure)
 
         self.cache_db.run('expire', cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES'])
 
         self.logger.debug('<<< FUNC PRESSURE >>> {}: {}, Cost: {}'.format(func_id, func_pressure, func_cost))
         self.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{}: {} (-{}, {}%)'.format(
                 queue, current_worker_queue_pressure, abs(func_pressure),
-                int(current_worker_queue_pressure / CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE'] * 100)))
+                int(current_worker_queue_pressure / worker_queue_max_pressure * 100)))
 
 @app.task(name='DataFluxFunc.runner', bind=True, base=DataFluxFuncRunnerTask, ignore_result=True,
     soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],

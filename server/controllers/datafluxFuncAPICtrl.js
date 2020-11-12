@@ -433,14 +433,30 @@ function _getFuncCallResultFromCache(req, res, funcCallOptions, callback) {
 
 function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
   // 检查工作队列压力
-  var funcPressure        = funcCallOptions.funcPressure;
-  var workerQueuePressure = 0;
+  var funcPressure           = funcCallOptions.funcPressure;
+  var workerCount            = 1;
+  var workerQueuePressure    = 0;
+  var workerQueueMaxPressure = CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
 
   var workerQueuePressureCacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', [
         'workerQueue', funcCallOptions.queue]);
 
   var denyPercent = 0;
   async.series([
+    // 查询工作单元数量
+    function(asyncCallback) {
+      var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCount');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          workerCount = parseInt(cacheRes);
+          workerQueueMaxPressure = workerCount * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
+        }
+
+        return asyncCallback();
+      });
+    },
     // 查询队列压力
     function(asyncCallback) {
       res.locals.cacheDB.get(workerQueuePressureCacheKey, function(err, cacheRes) {
@@ -451,19 +467,19 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
         }
 
         // 计算过压（预计总压力 - 最大可承受压力）
-        var workerQueueOverPressure = workerQueuePressure + funcPressure - CONFIG._WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE;
+        var workerQueueOverPressure = workerQueuePressure + funcPressure - workerQueueMaxPressure;
         if (workerQueueOverPressure < 0) {
           workerQueueOverPressure = 0;
         }
 
         // 计算任务丢弃率（过压 / 最大可承受压力 * 100%）
-        denyPercent = workerQueueOverPressure / CONFIG._WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE;
+        denyPercent = workerQueueOverPressure / workerQueueMaxPressure;
         if (CONFIG._WORKER_LIMIT_PRESSURE_ENABLED && Math.random() < denyPercent) {
           return asyncCallback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue.', {
             funcPressure          : funcPressure,
             workerQueue           : funcCallOptions.queue,
             workerQueuePressure   : workerQueuePressure,
-            workerQueueMaxPressure: CONFIG._WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE,
+            workerQueueMaxPressure: workerQueueMaxPressure,
           }));
         }
         return asyncCallback();
@@ -477,7 +493,7 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
         var currentWorkerQueuePressure = parseInt(cacheRes);
         res.locals.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{0}: {1} (+{2}, {3}%), Deny: {4}%',
             funcCallOptions.queue, currentWorkerQueuePressure, funcPressure,
-            parseInt(currentWorkerQueuePressure / CONFIG._WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE * 100),
+            parseInt(currentWorkerQueuePressure / workerQueueMaxPressure * 100),
             parseInt(denyPercent * 100));
 
         return asyncCallback();
