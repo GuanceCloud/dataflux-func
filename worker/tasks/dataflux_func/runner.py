@@ -234,38 +234,45 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         result_dumps = toolkit.json_safe_dumps(result)
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
 
-    def cache_func_pressure(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, func_pressure, queue):
-        # 计算并记录函数压力
+    def cache_func_pressure(self, func_id, func_call_kwargs_md5, func_pressure, func_cost, queue):
+        # 计算并记录新函数压力
         cache_key = toolkit.get_cache_key('cache', 'funcPressure', tags=[
-            'funcId'              , func_id,
-            'scriptCodeMD5'       , script_code_md5,
-            'scriptPublishVersion', script_publish_version])
+            'funcId'           , func_id,
+            'funcCallKwargsMD5', func_call_kwargs_md5])
 
         prev_func_pressure = self.cache_db.get(cache_key)
         if prev_func_pressure:
             prev_func_pressure = int(prev_func_pressure)
         else:
-            prev_func_pressure = 0
+            prev_func_pressure = CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_BASE']
 
-        next_func_pressure = int((prev_func_pressure + func_pressure) / 2)
+        next_func_pressure = int((prev_func_pressure + func_cost) / 2)
 
-        self.cache_db.setex(cache_key, CONFIG._FUNC_TASK_PRESSURE_DURATION, next_func_pressure)
+        self.cache_db.setex(cache_key, CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_EXPIRES'], next_func_pressure)
 
-        # 计入队列压力序列
-        cache_key = toolkit.get_cache_key('cache', 'funcPressureQueue', tags=['queue', queue])
-        self.cache_db.lpush(cache_key, next_func_pressure)
+        # 任务结束，减少队列压力
+        cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', queue])
+        current_worker_queue_pressure = self.cache_db.run('decrby', cache_key, func_pressure)
+        if current_worker_queue_pressure < 0:
+            self.cache_db.set(cache_key, 0)
+        elif current_worker_queue_pressure > CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE']:
+            self.cache_db.set(cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE'])
 
+        self.cache_db.run('expire', cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES'])
+
+        self.logger.debug('<<< FUNC PRESSURE >>> {}: {}, Cost: {}'.format(func_id, func_pressure, func_cost))
+        self.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{}: {} (-{}, {}%)'.format(
+                queue, current_worker_queue_pressure, abs(func_pressure),
+                int(current_worker_queue_pressure / CONFIG['_WORKER_LIMIT_WORKER_QUEUE_MAX_PRESSURE'] * 100)))
 
 @app.task(name='DataFluxFunc.runner', bind=True, base=DataFluxFuncRunnerTask, ignore_result=True,
     soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
     time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
 def dataflux_func_runner(self, *args, **kwargs):
     # 执行函数、参数
-    func_id          = kwargs.get('funcId')
-    func_call_kwargs = kwargs.get('funcCallKwargs') or {}
-
-    func_call_kwargs_dumps = toolkit.json_safe_dumps(func_call_kwargs, indent=None, sort_keys=True, separators=(',', ':'))
-    func_call_kwargs_md5   = toolkit.get_md5(func_call_kwargs_dumps)
+    func_id              = kwargs.get('funcId')
+    func_call_kwargs     = kwargs.get('funcCallKwargs') or {}
+    func_call_kwargs_md5 = kwargs.get('funcCallKwargsMD5')
 
     script_set_id = func_id.split('__')[0]
     script_id     = func_id.split('.')[0]
@@ -497,13 +504,14 @@ def dataflux_func_runner(self, *args, **kwargs):
 
         # 记录压力值（仅限同步方式）
         if exec_mode == 'sync':
-            func_pressure = start_time_ms - time.time() * 1000
+            func_pressure = kwargs.get('funcPressure') or CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_BASE']
+            func_cost = abs(time.time() * 1000 - start_time_ms)
+
             self.cache_func_pressure(
                 func_id=func_id,
-                script_code_md5=target_script['codeMD5'],
-                script_publish_version=target_script['publishVersion'],
                 func_call_kwargs_md5=func_call_kwargs_md5,
                 func_pressure=func_pressure,
+                func_cost=func_cost,
                 queue=queue)
 
         # 清理资源
