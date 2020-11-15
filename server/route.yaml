@@ -2367,6 +2367,10 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          meta:
+            $desc     : Meta数据（仅限API添加）
+            $allowNull: true
+            $type     : json
 
   modify:
     showInDoc    : true
@@ -2448,6 +2452,10 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          meta:
+            $desc     : Meta数据（仅限API添加）
+            $allowNull: true
+            $type     : json
 
   delete:
     showInDoc    : true

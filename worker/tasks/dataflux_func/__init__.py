@@ -645,6 +645,7 @@ class FuncDataSourceHelper(object):
         'token',
         'accessKey',
         'secretKey',
+        'meta',
     )
 
     def __init__(self, task):
