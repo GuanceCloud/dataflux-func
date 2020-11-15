@@ -133,6 +133,11 @@
                   <el-form-item v-if="!data.isBuiltin">
                     <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
                     <div class="setup-right">
+                      <el-button @click="testDataSource" v-if="mode === 'setup'">
+                        <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
+                        <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
+                        <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
+                        测试</el-button>
                       <el-button type="primary" @click="submitData">保存</el-button>
                     </div>
                   </el-form-item>
@@ -277,6 +282,8 @@ export default {
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         this.form = nextForm;
 
+        this.testDataSourceResult = null;
+
         this.updateValidator(this.data.type);
       }
 
@@ -363,6 +370,19 @@ export default {
         name: 'intro',
       });
       this.$store.commit('updateDataSourceListSyncTime');
+    },
+    async testDataSource() {
+      this.testDataSourceResult = 'running';
+
+      let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/test', {
+        params: {id: this.$route.params.id},
+        alert : {entity: '数据源', action: '测试', showError: true},
+      });
+      if (apiRes.ok) {
+        this.testDataSourceResult = 'ok';
+      } else {
+        this.testDataSourceResult = 'ng';
+      }
     },
     hasConfigField(type, field) {
       if (!this.C.DATE_SOURCE_MAP[type] || !this.C.DATE_SOURCE_MAP[type].configFields) {
@@ -521,6 +541,8 @@ export default {
           },
         ],
       },
+
+      testDataSourceResult: null,
     }
   },
 }

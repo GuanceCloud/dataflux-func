@@ -25,3 +25,7 @@ routeLoader.load(ROUTE.dataSourceAPI.delete, [
 routeLoader.load(ROUTE.dataSourceAPI.query, [
   dataSourceAPICtrl.query,
 ]);
+
+routeLoader.load(ROUTE.dataSourceAPI.test, [
+  dataSourceAPICtrl.test,
+]);

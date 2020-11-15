@@ -2519,6 +2519,19 @@ dataSourceAPI:
           - repr
           - json
 
+  test:
+    showInDoc    : true
+    name         : 测试数据源
+    method       : get
+    url          : /api/v1/data-sources/:id/do/test
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 数据源ID
+        $type: string
+
 # 环境变量
 envVariableAPI:
   list:
