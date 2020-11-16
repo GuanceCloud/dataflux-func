@@ -70,10 +70,12 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,func.integration     AS func_integration');
   sql.append('  ,func.tagsJSON        AS func_tagsJSON');
 
+  sql.append('  ,scpt.id             AS scpt_id');
   sql.append('  ,scpt.title          AS scpt_title');
   sql.append('  ,scpt.description    AS scpt_description');
   sql.append('  ,scpt.publishVersion AS scpt_publishVersion');
 
+  sql.append('  ,sset.id          AS sset_id');
   sql.append('  ,sset.title       AS sset_title');
   sql.append('  ,sset.description AS sset_description');
 

@@ -68,8 +68,10 @@ exports.list = function(req, res, next) {
               category            : d.category,
               integration         : d.integration,
               tagsJSON            : d.tagsJSON,
+              scriptId            : d.scpt_id,
               scriptTitle         : d.scpt_title,
               scriptDescription   : d.scpt_description,
+              scriptSetId         : d.sset_id,
               scriptSetTitle      : d.sset_title,
               scriptSetDescription: d.sset_description,
             });
