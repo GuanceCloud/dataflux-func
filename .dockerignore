@@ -96,4 +96,3 @@ client/dist
 docker-stack.yaml
 .gitlab-ci.yml
 release.sh
-func-pkg/dataflux.func-pkg
