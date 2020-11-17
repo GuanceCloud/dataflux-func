@@ -66,7 +66,8 @@
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               示例代码：
               <pre>{{ data.tip.sampleCode }}</pre>
-              <CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
             </div>
 
             <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported">

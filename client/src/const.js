@@ -231,6 +231,31 @@ export const DATE_SOURCE = [
 ];
 export const DATE_SOURCE_MAP = createMap(DATE_SOURCE);
 
+// 侧边栏项目类型
+export const ASIDE_ITEM_TYPE =[
+  {
+    'key' : 'scriptSet',
+    'name': '脚本集',
+  },
+  {
+    'key' : 'script',
+    'name': '脚本',
+  },
+  {
+    'key' : 'func',
+    'name': '函数',
+  },
+  {
+    'key' : 'dataSource',
+    'name': '数据源',
+  },
+  {
+    'key' : 'envVariable',
+    'name': '环境变量',
+  },
+];
+export const ASIDE_ITEM_TYPE_MAP = createMap(ASIDE_ITEM_TYPE);
+
 // 环境变量
 export const ENV_VARIABLE = [
   {

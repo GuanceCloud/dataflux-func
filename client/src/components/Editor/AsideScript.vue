@@ -94,7 +94,8 @@
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               示例代码：
               <pre>{{ data.tip.sampleCode }}</pre>
-              <CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
             </div>
             <div v-if="data.isCodeEdited" class="code-edited-tip">
               <span class="text-bad">代码已修改但尚未发布<br>引用/API调用实际将运行已发布代码</span>
