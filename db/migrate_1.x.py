@@ -19,15 +19,15 @@ DATAFLUX_SCRIPT_SET_REF_NAME_MAP = {
     'ft_lib': 'dataflux',
 }
 DATAFLUX_SCRIPT_REF_NAME_MAP = {
-    'ft_bat_log'     : 'log',
-    'ft_chk'         : 'chk',
-    'ft_clct'        : 'clct',
-    'ft_pred'        : 'pred',
-    'ft_tran'        : 'tran',
-    'ft_tran_str'    : 'tran_str',
-    'level_shift_chk': 'level_shift_chk',
-    'range_chk'      : 'range_chk',
-    'spike_chk'      : 'spike_chk',
+    'ft_bat_log'     : 'dataflux__log',
+    'ft_chk'         : 'dataflux__check_basic',
+    'ft_clct'        : 'dataflux__collect',
+    'ft_pred'        : 'dataflux__dps_predict',
+    'ft_tran'        : 'dataflux__dps_transform_number',
+    'ft_tran_str'    : 'dataflux__dps_transform_string',
+    'level_shift_chk': 'dataflux__check_level_shift',
+    'range_chk'      : 'dataflux__check_range',
+    'spike_chk'      : 'dataflux__check_spike',
 }
 DATAFLUX_FUNC_NAME_MAP = {
     'log_process_json_abstract'     : 'json_abstract',
@@ -575,7 +575,7 @@ def get_options_by_command_line():
     arg_parser = argparse.ArgumentParser(description='DataFlux Func Migrate from `FTDataProcessor` to `DataFlux Func`')
 
     arg_parser.add_argument('-H', '--host', dest='host', metavar='<Host>')
-    arg_parser.add_argument('-P', '--port', dest='port', metavar='<Port>')
+    arg_parser.add_argument('-P', '--port', dest='port', metavar='<Port>', type=int)
     arg_parser.add_argument('-u', '--user', dest='user', metavar='<User>')
     arg_parser.add_argument('-p', '--password', dest='password', metavar='<Password>')
     arg_parser.add_argument('-d', '--database', dest='database', metavar='<Database>')

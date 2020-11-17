@@ -822,7 +822,7 @@ export default {
     DATA_SOURCE_DEBUGGER_META_MAP() {
       // Redis第一层为Key首字母列表
       let REDIS_BROWSER_KEY = {
-        title  : '键（前100个）',
+        title  : '键（部分）',
         type   : 'query',
         query  : 'SCAN 0 MATCH "{pattern}" COUNT 100',
         example: 'TYPE "{key}"',

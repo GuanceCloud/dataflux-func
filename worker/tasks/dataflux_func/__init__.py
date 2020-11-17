@@ -624,13 +624,35 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('delete', key)
 
-    def increase(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('incr', key)
-
-    def increase_by(self, key, step, scope=None):
+    def incr(self, key, step=1, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('incr', key, amount=step)
+
+    def lpush(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('lpush', key, value)
+
+    def rpush(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('rpush', key, value)
+
+    def lpop(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('lpop', key)
+
+    def rpop(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('rpop', key)
+
+    def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
+        if dest_key is None:
+            dest_key = key
+        if dest_scope is None:
+            dest_scope = scope
+
+        key      = self._get_cache_key(key, scope)
+        dest_key = self._get_cache_key(dest_key, dest_scope)
+        return self.__task.cache_db.run('rpoplpush', key, dest_key)
 
 class FuncDataSourceHelper(object):
     AVAILABLE_CONFIG_KEYS = (
