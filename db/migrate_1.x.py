@@ -19,15 +19,15 @@ DATAFLUX_SCRIPT_SET_REF_NAME_MAP = {
     'ft_lib': 'dataflux',
 }
 DATAFLUX_SCRIPT_REF_NAME_MAP = {
-    'ft_bat_log'     : 'dataflux__log',
-    'ft_chk'         : 'dataflux__check_basic',
-    'ft_clct'        : 'dataflux__collect',
-    'ft_pred'        : 'dataflux__dps_predict',
-    'ft_tran'        : 'dataflux__dps_transform_number',
-    'ft_tran_str'    : 'dataflux__dps_transform_string',
-    'level_shift_chk': 'dataflux__check_level_shift',
-    'range_chk'      : 'dataflux__check_range',
-    'spike_chk'      : 'dataflux__check_spike',
+    'ft_bat_log'     : 'log',
+    'ft_chk'         : 'check_basic',
+    'ft_clct'        : 'collect',
+    'ft_pred'        : 'dps_predict',
+    'ft_tran'        : 'dps_transform_number',
+    'ft_tran_str'    : 'dps_transform_string',
+    'level_shift_chk': 'check_level_shift',
+    'range_chk'      : 'check_range',
+    'spike_chk'      : 'check_spike',
 }
 DATAFLUX_FUNC_NAME_MAP = {
     'log_process_json_abstract'     : 'json_abstract',
