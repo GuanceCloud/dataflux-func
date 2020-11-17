@@ -620,6 +620,10 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('getset', key, value)
 
+    def expire(self, key, expires, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('expire', key, expires)
+
     def delete(self, key, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('delete', key)
