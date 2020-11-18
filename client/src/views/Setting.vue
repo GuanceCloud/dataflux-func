@@ -93,7 +93,7 @@ export default {
 
 <style scoped>
 .aside {
-  margin-top: 20px;
+  margin-top: 60px;
 }
 .aside-content {
   height: 100%;

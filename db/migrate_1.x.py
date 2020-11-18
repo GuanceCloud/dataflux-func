@@ -3,7 +3,12 @@
 # Builtin Modules
 import sys
 import argparse
-import json
+
+try:
+    import simplejson as json
+except ImportError as e:
+    import json
+
 import re
 from pprint import pprint
 
@@ -216,9 +221,12 @@ def _get_id_map(client):
     for d in db_res:
         sset_ref_name = d['sset_refName']
         scpt_ref_name = d['scpt_refName']
-        id_map['script'][d['id']] = '{}__{}'.format(
-            DATAFLUX_SCRIPT_SET_REF_NAME_MAP.get(sset_ref_name) or sset_ref_name,
-            DATAFLUX_SCRIPT_REF_NAME_MAP.get(scpt_ref_name) or scpt_ref_name)
+
+        if sset_ref_name in DATAFLUX_SCRIPT_SET_REF_NAME_MAP:
+            sset_ref_name = DATAFLUX_SCRIPT_SET_REF_NAME_MAP.get(sset_ref_name) or sset_ref_name
+            scpt_ref_name = DATAFLUX_SCRIPT_REF_NAME_MAP.get(scpt_ref_name)     or scpt_ref_name
+
+        id_map['script'][d['id']] = '{}__{}'.format(sset_ref_name, scpt_ref_name)
 
     # 函数
     sql = '''
@@ -239,14 +247,17 @@ def _get_id_map(client):
         sset_ref_name = d['sset_refName']
         scpt_ref_name = d['scpt_refName']
         func_ref_name = d['func_refName']
-        id_map['func'][d['id']] = '{}__{}.{}'.format(
-            DATAFLUX_SCRIPT_SET_REF_NAME_MAP.get(sset_ref_name) or sset_ref_name,
-            DATAFLUX_SCRIPT_REF_NAME_MAP.get(scpt_ref_name) or scpt_ref_name,
-            DATAFLUX_FUNC_NAME_MAP.get(func_ref_name) or func_ref_name)
+
+        if sset_ref_name in DATAFLUX_SCRIPT_SET_REF_NAME_MAP:
+            sset_ref_name = DATAFLUX_SCRIPT_SET_REF_NAME_MAP.get(sset_ref_name) or sset_ref_name
+            scpt_ref_name = DATAFLUX_SCRIPT_REF_NAME_MAP.get(scpt_ref_name)     or scpt_ref_name
+            func_ref_name = DATAFLUX_FUNC_NAME_MAP.get(func_ref_name)           or func_ref_name
+
+        id_map['func'][d['id']] = '{}__{}.{}'.format(sset_ref_name, scpt_ref_name, func_ref_name)
 
     return id_map
 
-def _migrate_data(client, id_map, table, field_map):
+def _migrate_table(client, id_map, table, field_map):
     # 先SELECT INTO
     # 后循环UPDATE旧ID为新ID
 
@@ -331,11 +342,11 @@ def _migrate_data(client, id_map, table, field_map):
             sql_params = [new_id, old_id]
             client.execute(sql, sql_params)
 
-def convert_data(client):
+def migrate_tables(client):
     id_map = _get_id_map(client)
 
     # 迁移 biz_main_auth_link
-    _migrate_data(client, id_map, 'biz_main_auth_link', {
+    _migrate_table(client, id_map, 'biz_main_auth_link', {
         'id'            : 'id',
         'funcId'        : 'funcId',
         'funcKwargsJSON': 'funcCallKwargsJSON',
@@ -351,7 +362,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('biz_main_batch_task_info'), 'yellow'))
 
     # 迁移 biz_main_batch
-    _migrate_data(client, id_map, 'biz_main_batch', {
+    _migrate_table(client, id_map, 'biz_main_batch', {
         'id'            : 'id',
         'funcId'        : 'funcId',
         'funcKwargsJSON': 'funcCallKwargsJSON',
@@ -363,7 +374,7 @@ def convert_data(client):
     })
 
     # 迁移 biz_main_crontab_config
-    _migrate_data(client, id_map, 'biz_main_crontab_config', {
+    _migrate_table(client, id_map, 'biz_main_crontab_config', {
         'id'            : 'id',
         'funcId'        : 'funcId',
         'funcKwargsJSON': 'funcCallKwargsJSON',
@@ -382,7 +393,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('biz_main_crontab_task_info'), 'yellow'))
 
     # 迁移 biz_main_data_source
-    _migrate_data(client, id_map, 'biz_main_data_source', {
+    _migrate_table(client, id_map, 'biz_main_data_source', {
         'refName'    : 'id',
         'title'      : 'title',
         'description': 'description',
@@ -392,7 +403,7 @@ def convert_data(client):
     })
 
     # 迁移 biz_main_env_variable
-    _migrate_data(client, id_map, 'biz_main_env_variable', {
+    _migrate_table(client, id_map, 'biz_main_env_variable', {
         'refName'    : 'id',
         'title'      : 'title',
         'description': 'description',
@@ -403,7 +414,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('biz_main_func_store'), 'yellow'))
 
     # 迁移 biz_main_func
-    _migrate_data(client, id_map, 'biz_main_func', {
+    _migrate_table(client, id_map, 'biz_main_func', {
         'id'             : 'id',
         'scriptSetId'    : 'scriptSetId',
         'scriptId'       : 'scriptId',
@@ -429,7 +440,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('biz_main_script_log'), 'yellow'))
 
     # 迁移 biz_main_script_publish_history
-    _migrate_data(client, id_map, 'biz_main_script_publish_history', {
+    _migrate_table(client, id_map, 'biz_main_script_publish_history', {
         'id'                  : 'id',
         'scriptId'            : 'scriptId',
         'scriptPublishVersion': 'scriptPublishVersion',
@@ -438,7 +449,7 @@ def convert_data(client):
     })
 
     # 迁移 biz_main_script_recover_point
-    _migrate_data(client, id_map, 'biz_main_script_recover_point', {
+    _migrate_table(client, id_map, 'biz_main_script_recover_point', {
         'id'           : 'id',
         'type'         : 'type',
         'tableDumpJSON': 'tableDumpJSON',
@@ -446,28 +457,28 @@ def convert_data(client):
     })
 
     # 迁移 biz_main_script_set_export_history
-    _migrate_data(client, id_map, 'biz_main_script_set_export_history', {
+    _migrate_table(client, id_map, 'biz_main_script_set_export_history', {
         'id'           : 'id',
         'operationNote': 'note',
         'summaryJSON'  : 'summaryJSON',
     })
 
     # 迁移 biz_main_script_set_import_history
-    _migrate_data(client, id_map, 'biz_main_script_set_import_history', {
+    _migrate_table(client, id_map, 'biz_main_script_set_import_history', {
         'id'           : 'id',
         'operationNote': 'note',
         'summaryJSON'  : 'summaryJSON',
     })
 
     # 迁移 biz_main_script_set
-    _migrate_data(client, id_map, 'biz_main_script_set', {
+    _migrate_table(client, id_map, 'biz_main_script_set', {
         'id'         : 'id',
         'title'      : 'title',
         'description': 'description',
     })
 
     # 迁移 biz_main_script
-    _migrate_data(client, id_map, 'biz_main_script', {
+    _migrate_table(client, id_map, 'biz_main_script', {
         'id'            : 'id',
         'scriptSetId'   : 'scriptSetId',
         'title'         : 'title',
@@ -487,7 +498,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('biz_rel_func_running_info'), 'yellow'))
 
     # 迁移 wat_main_access_key
-    _migrate_data(client, id_map, 'wat_main_access_key', {
+    _migrate_table(client, id_map, 'wat_main_access_key', {
         'id'              : 'id',
         'userId'          : 'userId',
         'name'            : 'name',
@@ -498,7 +509,7 @@ def convert_data(client):
     })
 
     # 迁移 wat_main_system_config
-    _migrate_data(client, id_map, 'wat_main_system_config', {
+    _migrate_table(client, id_map, 'wat_main_system_config', {
         'id'   : 'id',
         'value': 'value',
     })
@@ -507,7 +518,7 @@ def convert_data(client):
     print(colored('Skip table {}'.format('wat_main_task_result_example'), 'yellow'))
 
     # 迁移 wat_main_user
-    _migrate_data(client, id_map, 'wat_main_user', {
+    _migrate_table(client, id_map, 'wat_main_user', {
         'id'              : 'id',
         'username'        : 'username',
         'passwordHash'    : 'passwordHash',
@@ -518,6 +529,97 @@ def convert_data(client):
         'customPrivileges': 'customPrivileges',
         'isDisabled'      : 'isDisabled',
     })
+
+def _convert_actions(actions):
+    if not actions:
+        return actions
+
+    for a in actions:
+        if a.get('type') != 'DataFluxFunc':
+            continue
+
+        if not all([a.get('scriptSetRefName'), a.get('scriptRefName'), a.get('funcRefName')]):
+            continue
+
+        sset_ref_name = a['scriptSetRefName']
+        scpt_ref_name = a['scriptRefName']
+        func_ref_name = a['funcRefName']
+
+        if sset_ref_name in DATAFLUX_SCRIPT_SET_REF_NAME_MAP:
+            sset_ref_name = DATAFLUX_SCRIPT_SET_REF_NAME_MAP.get(sset_ref_name) or sset_ref_name
+            scpt_ref_name = DATAFLUX_SCRIPT_REF_NAME_MAP.get(scpt_ref_name)     or scpt_ref_name
+            func_ref_name = DATAFLUX_FUNC_NAME_MAP.get(func_ref_name)           or func_ref_name
+
+        a['funcId'] = '{}__{}.{}'.format(sset_ref_name, scpt_ref_name, func_ref_name)
+        a.pop('scriptSetRefName', None)
+        a.pop('scriptRefName', None)
+        a.pop('funcRefName', None)
+
+    return actions
+
+def migrate_action_func(client):
+    page_index = 0
+    page_size  = 100
+    while True:
+        print('\tMigrating page #{}'.format(page_index + 1))
+        sql = '''
+            SELECT
+                 id
+                ,funcCallKwargsJSON
+            FROM biz_main_crontab_config
+            WHERE
+                funcCallKwargsJSON LIKE '%%funcRefName%%'
+            LIMIT %s
+            '''
+        sql_params = [page_size]
+        client.execute(sql, sql_params)
+        db_res = client.fetchall()
+
+        if not db_res:
+            break
+        else:
+            page_index += 1
+
+        for d in db_res:
+            data_id               = d['id']
+            func_call_kwargs_json = d['funcCallKwargsJSON']
+            if not func_call_kwargs_json:
+                continue
+
+            func_call_kwargs = json.loads(func_call_kwargs_json)
+
+            is_updated = False
+
+            # 无数据检测配置
+            try:
+                actions = func_call_kwargs['no_data_check_setting']['actions']
+            except:
+                pass
+            else:
+                _convert_actions(actions)
+                is_updated = True
+
+            # 条件检测数据
+            try:
+                actions = func_call_kwargs['condition_check_setting']['actions']
+            except:
+                pass
+            else:
+                _convert_actions(actions)
+                is_updated = True
+
+            next_func_call_kwargs_json = json.dumps(func_call_kwargs, ensure_ascii=False)
+            sql = '''
+                UPDATE biz_main_crontab_config
+                SET
+                    funcCallKwargsJSON = %s
+                WHERE
+                    id = %s
+                '''
+            sql_params = [next_func_call_kwargs_json, data_id]
+            client.execute(sql, sql_params)
+
+            print('\t\tMigrating data ID={}'.format(data_id))
 
 def main(options):
     host     = options.get('host') or 'localhost'
@@ -551,8 +653,12 @@ def main(options):
         import_new_ddl(cur)
         print()
 
-        print(colored('[STAGE] Convert data', 'green'))
-        convert_data(cur)
+        print(colored('[STAGE] Migrate tables', 'green'))
+        migrate_tables(cur)
+        print()
+
+        print(colored('[STAGE] Migrate action func', 'green'))
+        migrate_action_func(cur)
         print()
 
     except Exception as e:
