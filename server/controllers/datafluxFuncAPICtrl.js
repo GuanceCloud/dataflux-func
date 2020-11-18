@@ -235,7 +235,7 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
     } else {
       switch(origin) {
         case 'batch':
-          funcCallOptions.timeout = fCONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
+          funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
           break;
 
         default:
