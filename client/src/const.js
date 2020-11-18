@@ -431,6 +431,11 @@ export const FUNC_EXEC_MODE = [
     name     : '定时运行',
     textClass: 'text-info',
   },
+  {
+    key      : 'autoRun',
+    name     : '自动运行',
+    textClass: 'text-info',
+  },
 ];
 export const FUNC_EXEC_MODE_MAP = createMap(FUNC_EXEC_MODE);
 

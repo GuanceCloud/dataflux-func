@@ -98,6 +98,7 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
                 'funcCallKwargs': {},
                 'saveResult'    : False,
                 'crontab'       : crontab_expr,
+                'execMode'      : 'autoRun',
             }
             crontab_configs.append(c)
 
@@ -276,7 +277,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_kwargs = {
                 'funcId'        : c['funcId'],
                 'funcCallKwargs': c['funcCallKwargs'],
-                'origin'        : 'crontab',
+                'origin'        : c.get('execMode') or 'crontab',
                 'originId'      : c['id'],
                 'saveResult'    : c['saveResult'],
                 'execMode'      : 'crontab',

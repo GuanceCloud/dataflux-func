@@ -322,6 +322,9 @@ def dataflux_func_runner(self, *args, **kwargs):
     # 队列
     queue = kwargs.get('queue')
 
+    # HTTP请求
+    http_request = kwargs.get('httpRequest') or {}
+
     # 函数结果、上下文
     save_result = kwargs.get('saveResult') or False
     func_result  = None
@@ -360,6 +363,7 @@ def dataflux_func_runner(self, *args, **kwargs):
             '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
             '_DFF_CRONTAB'      : kwargs.get('crontab'),
             '_DFF_QUEUE'        : queue,
+            '_DFF_HTTP_REQUEST' : http_request,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(

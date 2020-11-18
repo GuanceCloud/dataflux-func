@@ -819,6 +819,20 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       taskOptions.expires = toolkit.getISO8601(Date.now() + _shiftMS);
     }
 
+    // 请求体
+    var httpRequest = {
+      method     : req.method.toUpperCase(),
+      originalUrl: req.originalUrl,
+      url        : path.join(req.baseUrl, req.path),
+      headers    : req.headers,
+      cookies    : req.cookies,
+      hostname   : req.hostname,
+      ip         : req.ip,
+      ips        : req.ips,
+      protocol   : req.protocol,
+      xhr        : req.xhr,
+    };
+
     var taskKwargs = {
       funcId           : funcCallOptions.funcId,
       funcCallKwargs   : funcCallOptions.funcCallKwargs,
@@ -831,6 +845,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       triggerTimeMs    : funcCallOptions.triggerTimeMs,
       triggerTime      : funcCallOptions.triggerTime,
       queue            : funcCallOptions.queue,
+      httpRequest      : httpRequest,
     };
     celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
   });
