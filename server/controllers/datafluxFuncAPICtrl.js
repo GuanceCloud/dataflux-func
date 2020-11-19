@@ -72,7 +72,7 @@ var FUNC_RESULT_LRU = new LRU({
 var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
-function _get_task_default_queue(execMode) {
+function _getTaskDefaultQueue(execMode) {
   return FUNC_TASK_DEFAULT_QUEUE_MAP[execMode] || CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 };
 
@@ -360,7 +360,7 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
       funcCallOptions.queue = '' + func.extraConfigJSON.queue;
 
     } else {
-      funcCallOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
+      funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
     }
 
     // 触发时间
@@ -528,7 +528,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
 
     // 处理队列别名
     if (toolkit.isNullOrUndefined(funcCallOptions.queue)) {
-      funcCallOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
+      funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
 
     } else {
       var queueNumber = parseInt(funcCallOptions.queue);
@@ -541,7 +541,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
         if (isNaN(queueNumber) || queueNumber < 0 || queueNumber >= CONFIG._WORKER_QUEUE_COUNT) {
           // 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
           // 保证无论如何都有Worker负责执行（实际运行会报错）
-          funcCallOptions.queue = _get_task_default_queue(funcCallOptions.execMode);
+          funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
 
         } else {
           // 队列别名转换为队列编号
@@ -1098,9 +1098,12 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    bizEntityCount  : [],
-    scriptOverview  : null,
-    latestOperations: [],
+    bizEntityCount        : [],
+    workerCount           : 0,
+    workerQueueMaxPressure: 0,
+    workerQueuePressure   : [],
+    scriptOverview        : null,
+    latestOperations      : [],
   };
 
   async.series([
@@ -1118,6 +1121,40 @@ exports.overview = function(req, res, next) {
           return eachCallback();
         });
       }, asyncCallback);
+    },
+    // 查询工作单元数量
+    function(asyncCallback) {
+      var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCount');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        overview.workerCount = 1;
+        if (cacheRes) {
+          overview.workerCount = parseInt(cacheRes) || 1;
+        }
+
+        overview.workerQueueMaxPressure = overview.workerCount * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
+
+        return asyncCallback();
+      });
+    },
+    // 队列压力
+    function(asyncCallback) {
+      var cacheKeys = [];
+      for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
+        cacheKeys.push(cacheKey);
+      }
+
+      res.locals.cacheDB._run('mget', cacheKeys, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        overview.workerQueuePressure = cacheRes.map(function(x) {
+          return parseInt(x || 0);
+        });
+
+        return asyncCallback();
+      });
     },
     // 脚本总览
     function(asyncCallback) {

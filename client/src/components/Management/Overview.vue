@@ -12,20 +12,29 @@
       <el-main>
         <el-divider content-position="left"><h1>资源计数</h1></el-divider>
 
-        <el-card class="overview-card" shadow="hover" v-for="d in data.bizEntityCount" :key="d.name">
+        <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP[d.name].icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP[d.name].icon"></i>
           <i v-else-if="C.OVERVIEW_ENTITY_MAP[d.name].tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP[d.name].tagText }}</code></i>
 
           <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP[d.name].name }}</span>
-          <span class="overview-count">
+          <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
             {{ d.count }}
             <span class="overview-count-unit">个</span>
           </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ data.scriptOverview.length }}个）</h1></el-divider>
+        <el-divider content-position="left"><h1>队列压力</h1></el-divider>
+        <el-card class="worker-queue-card" shadow="hover" v-for="p, i in workerQueuePressure" :key="i">
+          <el-progress type="dashboard"
+            :percentage="workerQueuePressurePercentage(p)"
+            :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
-        <el-table :data="data.scriptOverview" stripe style="width: 95%">
+          <span class="worker-queue-name">队列 #{{ i }}</span>
+        </el-card>
+
+        <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ scriptOverview.length }}个）</h1></el-divider>
+
+        <el-table :data="scriptOverview" stripe style="width: 95%">
           <el-table-column label="类型" sortable sort-by="sset_type" width="90">
             <template slot-scope="scope">
               <el-tag size="small" v-if="scope.row.sset_type === 'official'">官方</el-tag>
@@ -83,9 +92,9 @@
           </el-table-column>
         </el-table>
 
-        <el-divider class="overview-divider" content-position="left"><h1>最近操作记录（最近{{ data.latestOperations.length }}条）</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left"><h1>最近操作记录（最近{{ latestOperations.length }}条）</h1></el-divider>
 
-        <el-table :data="data.latestOperations" stripe style="width: 95%">
+        <el-table :data="latestOperations" stripe style="width: 95%">
           <el-table-column label="时间" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
@@ -192,7 +201,13 @@ export default {
         }
       });
 
-      this.data = apiRes.data;
+      this.bizEntityCount         = apiRes.data.bizEntityCount;
+      this.workerCount            = apiRes.data.workerCount;
+      this.workerQueueMaxPressure = apiRes.data.workerQueueMaxPressure;
+      this.workerQueuePressure    = apiRes.data.workerQueuePressure;
+      this.scriptOverview         = apiRes.data.scriptOverview;
+      this.latestOperations       = apiRes.data.latestOperations;
+
       this.$store.commit('updateLoadStatus', true);
     },
     showDetail(d) {
@@ -222,14 +237,41 @@ export default {
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
+    overviewCountFontSize(count) {
+      // 最大80px，每多一位减少15px
+      let numberLength = ('' + count).length;
+      return Math.min(80 - 15 * (numberLength - 4), 80);
+    },
+    workerQueuePressurePercentage(pressure) {
+      var percentage = parseInt(100 * pressure / (this.workerQueueMaxPressure * 2));
+      if (percentage < 0) {
+        percentage = 0;
+      } else if (percentage > 100) {
+        percentage = 100;
+      }
+
+      return percentage;
+    },
   },
   computed: {
+    WORKER_QUEUE_PRESSURE_COLORS() {
+      return [
+        {color: '#00aa00', percentage: 50},
+        {color: '#ff6600', percentage: 80},
+        {color: '#ff0000', percentage: 100}
+      ];
+    },
   },
   props: {
   },
   data() {
     return {
-      data: [],
+      bizEntityCount        : [],
+      workerCount           : 0,
+      workerQueueMaxPressure: 0,
+      workerQueuePressure   : [],
+      scriptOverview        : null,
+      latestOperations      : [],
     }
   },
 }
@@ -265,8 +307,8 @@ export default {
   position: relative;
 }
 .overview-count {
-  font-size: 80px;
   font-weight: 100;
+  line-height: 120px;
   font-family: sans-serif;
   display: block;
   padding-left: 20px;
@@ -282,6 +324,16 @@ export default {
   line-height: 1.5;
   margin: 0;
   color: grey;
+}
+.worker-queue-card {
+  width: 165px;
+  display: inline-block;
+  margin: 10px 20px;
+  text-align: center;
+}
+.overview-name {
+  font-size: 20px;
+  font-family: monospace;
 }
 </style>
 
