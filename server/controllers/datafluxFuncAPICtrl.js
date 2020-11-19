@@ -516,14 +516,21 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     }
   }
 
-  // 计算函数参数MD5
-  var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs, {
-        stringify: true,
-        sortArray: false});
-  funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
+  // 计算函数参数MD5，获取预期函数压力值
+  if (funcCallOptions.execMode === 'sync') {
+    var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs, {
+          stringify: true,
+          sortArray: false});
+    funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
 
-  // 预期函数压力值
-  funcCallOptions.funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE // 后续从Redis中获取实际预期压力值
+    // 预期函数压力值
+    funcCallOptions.funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE // 后续从Redis中获取实际预期压力值
+
+  } else {
+    // 非同步任务不计算MD5值/函数压力值
+    funcCallOptions.funcCallKwargsMD5 = 'NON_SYNC';
+    funcCallOptions.funcPressure      = 0;
+  }
 
   // 函数执行任务Callback
   var onTaskCallback   = null;
@@ -712,6 +719,9 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
   async.series([
     // 获取函数预期压力值
     function(asyncCallback) {
+      // 非同步任务不计算函数压力
+      if (funcCallOptions.execMode !== 'sync') return asyncCallback();
+
       var funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
 
       var cacheKey = toolkit.getWorkerCacheKey('cache', 'funcPressure', [
@@ -761,6 +771,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     },
     // 真实调用函数前，检查队列压力
     function(asyncCallback) {
+      // 非同步任务不检查队列压力
       if (funcCallOptions.execMode !== 'sync') return asyncCallback();
 
       _checkWorkerQueuePressure(req, res, funcCallOptions, asyncCallback);
