@@ -931,3 +931,16 @@ def dataflux_func_data_source_debugger(self, *args, **kwargs):
     else:
         ret = db_res
     return ret
+
+# DataFluxFunc.workerQueuePressureRecover
+@app.task(name='DataFluxFunc.workerQueuePressureRecover', bind=True, base=BaseTask)
+def dataflux_func_worker_queue_pressure_recover(self, *args, **kwargs):
+    self.logger.info('DataFluxFunc Worker Queue Pressure Recover Task launched.')
+
+    for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
+        queue_key = toolkit.get_worker_queue(i)
+        queue_length = self.cache_db.run('llen', queue_key)
+
+        if not queue_length or int(queue_length) <= 0:
+            cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
+            self.cache_db.run('set', cache_key, 0)

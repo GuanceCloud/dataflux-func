@@ -185,18 +185,17 @@ _MONITOR_MATCHED_ROUTE_EXPIRES             : 86400
 _MONITOR_SLOW_API_COUNT_EXPIRES            : 604800
 
 # 自动执行任务频率
-_CRONTAB_STARTER            : '* * * * *'
-_CRONTAB_SYNC_CACHE         : '* * * * *'
-_CRONTAB_AUTO_CLEANER       : '*/15 * * * *'
-_CRONTAB_SCRIPT_FORCE_RELOAD: '* * * * *'
-
+_CRONTAB_STARTER                      : '* * * * *'
+_CRONTAB_SYNC_CACHE                   : '* * * * *'
+_CRONTAB_AUTO_CLEANER                 : '*/15 * * * *'
+_CRONTAB_SCRIPT_FORCE_RELOAD          : '* * * * *'
+_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
 
 
 # 函数任务模块一般作为常量的配置
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
 _FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
-_FUNC_TASK_WORKER_QUEUE_MAX_LENGTH              : 1000
 _FUNC_TASK_DEBUG_TIMEOUT                        : 60
 _FUNC_TASK_DEFAULT_TIMEOUT                      : 30
 _FUNC_TASK_MIN_TIMEOUT                          : 1

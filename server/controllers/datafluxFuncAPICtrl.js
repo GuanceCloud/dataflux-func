@@ -761,7 +761,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     },
     // 真实调用函数前，检查队列压力
     function(asyncCallback) {
-      if (!funcCallOptions.execMode === 'sync') asyncCallback();
+      if (funcCallOptions.execMode !== 'sync') return asyncCallback();
 
       _checkWorkerQueuePressure(req, res, funcCallOptions, asyncCallback);
     },
@@ -820,6 +820,9 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
     }
 
     // 请求体
+    var useragent = toolkit.jsonCopy(req.useragent);
+    delete useragent.source;
+
     var httpRequest = {
       method     : req.method.toUpperCase(),
       originalUrl: req.originalUrl,
@@ -831,6 +834,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       ips        : req.ips,
       protocol   : req.protocol,
       xhr        : req.xhr,
+      useragent  : useragent,
     };
 
     var taskKwargs = {

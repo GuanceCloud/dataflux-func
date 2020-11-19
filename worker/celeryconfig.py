@@ -83,37 +83,45 @@ task_routes.update({
 # Beat
 import crontab as crontab_parser
 
-starter_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
+parsed_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
 beat_schedule['run-starter-crontab'] = {
     'task'    : 'DataFluxFunc.starterCrontab',
     'schedule': crontab(
-                    hour=starter_crontab.matchers.hour.input,
-                    minute=starter_crontab.matchers.minute.input),
+                    hour=parsed_crontab.matchers.hour.input,
+                    minute=parsed_crontab.matchers.minute.input),
 }
 
-force_reload_scripts_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD'])
+parsed_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD'])
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'DataFluxFunc.reloadScripts',
     'kwargs'  : {
         'force': True,
     },
     'schedule': crontab(
-                    hour=force_reload_scripts_crontab.matchers.hour.input,
-                    minute=force_reload_scripts_crontab.matchers.minute.input),
+                    hour=parsed_crontab.matchers.hour.input,
+                    minute=parsed_crontab.matchers.minute.input),
 }
 
-sync_cache_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SYNC_CACHE'])
+parsed_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SYNC_CACHE'])
 beat_schedule['run-sync-cache'] = {
     'task'    : 'DataFluxFunc.syncCache',
     'schedule': crontab(
-                    hour=sync_cache_crontab.matchers.hour.input,
-                    minute=sync_cache_crontab.matchers.minute.input),
+                    hour=parsed_crontab.matchers.hour.input,
+                    minute=parsed_crontab.matchers.minute.input),
 }
 
-auto_cleaner_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_AUTO_CLEANER'])
+parsed_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_AUTO_CLEANER'])
 beat_schedule['run-auto-cleaner'] = {
     'task'    : 'DataFluxFunc.autoCleaner',
     'schedule': crontab(
-                    hour=auto_cleaner_crontab.matchers.hour.input,
-                    minute=auto_cleaner_crontab.matchers.minute.input),
+                    hour=parsed_crontab.matchers.hour.input,
+                    minute=parsed_crontab.matchers.minute.input),
+}
+
+parsed_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER'])
+beat_schedule['run-worker-queue-pressure-recover'] = {
+    'task'    : 'DataFluxFunc.workerQueuePressureRecover',
+    'schedule': crontab(
+                    hour=parsed_crontab.matchers.hour.input,
+                    minute=parsed_crontab.matchers.minute.input),
 }
