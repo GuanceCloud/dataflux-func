@@ -1102,6 +1102,7 @@ exports.overview = function(req, res, next) {
     workerCount           : 0,
     workerQueueMaxPressure: 0,
     workerQueuePressure   : [],
+    workerQueueLength     : [],
     scriptOverview        : null,
     latestOperations      : [],
   };
@@ -1155,6 +1156,19 @@ exports.overview = function(req, res, next) {
 
         return asyncCallback();
       });
+    },
+    // 队列长度
+    function(asyncCallback) {
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
+        var workerQueue = toolkit.getWorkerQueue(i);
+        res.locals.cacheDB._run('llen', workerQueue, function(err, cacheRes) {
+          if (err) return timesCallback(err);
+
+          overview.workerQueueLength.push(parseInt(cacheRes || 0));
+
+          return timesCallback(err);
+        });
+      }, asyncCallback);
     },
     // 脚本总览
     function(asyncCallback) {
