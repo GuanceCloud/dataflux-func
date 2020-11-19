@@ -113,6 +113,12 @@ def dataflux_func_debugger(self, *args, **kwargs):
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
 
+    # 队列
+    queue = kwargs.get('queue')
+
+    # HTTP请求
+    http_request = kwargs.get('httpRequest') or {}
+
     # 函数结果、上下文、跟踪信息、错误堆栈
     func_result  = None
     script_scope = None
@@ -143,7 +149,8 @@ def dataflux_func_debugger(self, *args, **kwargs):
             '_DFF_START_TIME_MS': start_time_ms,
             '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
             '_DFF_CRONTAB'      : kwargs.get('crontab'),
-            '_DFF_QUEUE'        : kwargs.get('queue'),
+            '_DFF_QUEUE'        : queue,
+            '_DFF_HTTP_REQUEST' : http_request,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(

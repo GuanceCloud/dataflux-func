@@ -72,6 +72,27 @@ var FUNC_RESULT_LRU = new LRU({
 var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
+function _getHTTPRequestInfo(req, res) {
+  // 请求体
+  var useragent = toolkit.jsonCopy(req.useragent);
+  delete useragent.source;
+
+  var httpRequest = {
+    method     : req.method.toUpperCase(),
+    originalUrl: req.originalUrl,
+    url        : path.join(req.baseUrl, req.path),
+    headers    : req.headers,
+    cookies    : req.cookies,
+    hostname   : req.hostname,
+    ip         : req.ip,
+    ips        : req.ips,
+    protocol   : req.protocol,
+    xhr        : req.xhr,
+    useragent  : useragent,
+  };
+  return httpRequest;
+}
+
 function _getTaskDefaultQueue(execMode) {
   return FUNC_TASK_DEFAULT_QUEUE_MAP[execMode] || CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 };
@@ -443,14 +464,15 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
 
   var denyPercent = 0;
   async.series([
-    // 查询工作单元数量
+    // 查询所在队列工作单元数量
     function(asyncCallback) {
-      var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCount');
+      var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
+            'workerQueue', funcCallOptions.queue]);
       res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
-          workerCount = parseInt(cacheRes);
+          workerCount = parseInt(cacheRes) || 1;
           workerQueueMaxPressure = workerCount * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
         }
 
@@ -524,8 +546,6 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
   var sendTask = function(err) {
     if (err) return callback(err);
 
-    // 真实调用函数
-
     // 处理队列别名
     if (toolkit.isNullOrUndefined(funcCallOptions.queue)) {
       funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
@@ -575,24 +595,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       taskOptions.expires = toolkit.getISO8601(Date.now() + _shiftMS);
     }
 
-    // 请求体
-    var useragent = toolkit.jsonCopy(req.useragent);
-    delete useragent.source;
-
-    var httpRequest = {
-      method     : req.method.toUpperCase(),
-      originalUrl: req.originalUrl,
-      url        : path.join(req.baseUrl, req.path),
-      headers    : req.headers,
-      cookies    : req.cookies,
-      hostname   : req.hostname,
-      ip         : req.ip,
-      ips        : req.ips,
-      protocol   : req.protocol,
-      xhr        : req.xhr,
-      useragent  : useragent,
-    };
-
+    // 任务参数
     var taskKwargs = {
       funcId           : funcCallOptions.funcId,
       funcCallKwargs   : funcCallOptions.funcCallKwargs,
@@ -605,13 +608,13 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       triggerTimeMs    : funcCallOptions.triggerTimeMs,
       triggerTime      : funcCallOptions.triggerTime,
       queue            : funcCallOptions.queue,
-      httpRequest      : httpRequest,
+      httpRequest      : _getHTTPRequestInfo(req, res),
     };
     celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
   }
 
   if (funcCallOptions.execMode === 'sync') {
-  // 计算函数参数MD5，获取预期函数压力值
+    // 计算函数参数MD5，获取预期函数压力值
     var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs, {
           stringify: true,
           sortArray: false});
@@ -1077,6 +1080,15 @@ exports.integratedAuthMid = function(req, res, next) {
 };
 
 exports.overview = function(req, res, next) {
+  var sections = toolkit.asArray(req.query.sections);
+  var sectionMap = null;
+  if (!toolkit.isNothing(sections)) {
+    sectionMap = {};
+    sections.forEach(function(s) {
+      sectionMap[s] = true;
+    })
+  }
+
   var scriptSetModel     = scriptSetMod.createModel(req, res);
   var scriptModel        = scriptMod.createModel(req, res);
   var funcModel          = funcMod.createModel(req, res);
@@ -1098,18 +1110,17 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    bizEntityCount        : [],
-    workerCount           : 0,
-    workerQueueMaxPressure: 0,
-    workerQueuePressure   : [],
-    workerQueueLength     : [],
-    scriptOverview        : null,
-    latestOperations      : [],
+    bizEntityCount  : [],
+    workerQueueInfo : [],
+    scriptOverview  : null,
+    latestOperations: [],
   };
 
   async.series([
     // 业务实体计数
     function(asyncCallback) {
+      if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
+
       async.eachSeries(overviewParts, function(part, eachCallback) {
         part.model.count(null, function(err, dbRes) {
           if (err) return eachCallback(err);
@@ -1123,24 +1134,33 @@ exports.overview = function(req, res, next) {
         });
       }, asyncCallback);
     },
-    // 查询工作单元数量
+    // 查询所在队列工作单元数量、最大压力等信息
     function(asyncCallback) {
-      var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCount');
-      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
 
-        overview.workerCount = 1;
-        if (cacheRes) {
-          overview.workerCount = parseInt(cacheRes) || 1;
-        }
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
+        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
+              'workerQueue', i]);
+        res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+          if (err) return timesCallback(err);
 
-        overview.workerQueueMaxPressure = overview.workerCount * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
+          var workerCount = parseInt(cacheRes || 0) || 0;
+          var maxPressure = (workerCount || 1) * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
 
-        return asyncCallback();
-      });
+          var _info = {
+            workerCount: workerCount,
+            maxPressure: maxPressure,
+          }
+          overview.workerQueueInfo.push(_info);
+
+          return timesCallback();
+        });
+      }, asyncCallback);
     },
     // 队列压力
     function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
       var cacheKeys = [];
       for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
         var cacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
@@ -1150,8 +1170,8 @@ exports.overview = function(req, res, next) {
       res.locals.cacheDB._run('mget', cacheKeys, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        overview.workerQueuePressure = cacheRes.map(function(x) {
-          return parseInt(x || 0);
+        cacheRes.forEach(function(p, i) {
+          overview.workerQueueInfo[i].pressure = parseInt(p || 0) || 0;
         });
 
         return asyncCallback();
@@ -1159,12 +1179,14 @@ exports.overview = function(req, res, next) {
     },
     // 队列长度
     function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
         var workerQueue = toolkit.getWorkerQueue(i);
         res.locals.cacheDB._run('llen', workerQueue, function(err, cacheRes) {
           if (err) return timesCallback(err);
 
-          overview.workerQueueLength.push(parseInt(cacheRes || 0));
+          overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
 
           return timesCallback(err);
         });
@@ -1172,6 +1194,8 @@ exports.overview = function(req, res, next) {
     },
     // 脚本总览
     function(asyncCallback) {
+      if (sectionMap && !sectionMap.scriptOverview) return asyncCallback();
+
       scriptModel.overview(null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -1182,10 +1206,12 @@ exports.overview = function(req, res, next) {
     },
     // 最近若干次操作记录
     function(asyncCallback) {
+      if (sectionMap && !sectionMap.latestOperations) return asyncCallback();
+
       var operationRecordModel = operationRecordMod.createModel(req, res);
 
       var opt = {
-        limit: 20,
+        limit: 10,
       };
       operationRecordModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -1197,6 +1223,14 @@ exports.overview = function(req, res, next) {
     },
   ], function(err) {
     if (err) return next(err);
+
+    if (sectionMap) {
+      Object.keys(overview).forEach(function(k) {
+        if (!sectionMap[k]) {
+          delete overview[k];
+        }
+      })
+    }
 
     var ret = toolkit.initRet(overview);
     return res.locals.sendJSON(ret);
@@ -1482,6 +1516,7 @@ exports.callFuncDraft = function(req, res, next) {
     var kwargs = {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
+      httpRequest   : _getHTTPRequestInfo(req, res),
     };
 
     // 启动函数执行任务

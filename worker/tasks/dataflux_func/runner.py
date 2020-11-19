@@ -238,14 +238,13 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         # 获取队列最大压力
         worker_queue_max_pressure = CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
 
-        cache_key = toolkit.get_cache_key('heartbeat', 'workerCount')
-
+        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueueCount', tags=['workerQueue', queue])
         worker_count = self.cache_db.get(cache_key)
 
         if not worker_count:
             worker_count = 1
         else:
-            worker_count = int(worker_count)
+            worker_count = int(worker_count) or 1
 
         worker_queue_max_pressure = worker_count * CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
 
@@ -267,10 +266,6 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         # 任务结束，减少队列压力
         cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', queue])
         current_worker_queue_pressure = self.cache_db.run('decrby', cache_key, func_pressure)
-        if current_worker_queue_pressure < 0:
-            self.cache_db.set(cache_key, 0)
-        elif current_worker_queue_pressure > worker_queue_max_pressure:
-            self.cache_db.set(cache_key, worker_queue_max_pressure)
 
         self.cache_db.run('expire', cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES'])
 

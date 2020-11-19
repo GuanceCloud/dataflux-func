@@ -2,6 +2,8 @@
 
 # Builtin Modules
 import os
+import sys
+import simplejson as json
 import logging
 
 # 3rd-party Modules
@@ -57,14 +59,26 @@ def on_worker_ready(*args, **kwargs):
 
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(*args, **kwargs):
+    # Get queue list
+    _Q_flag = '-Q'
+
+    worker_queues = []
+    if _Q_flag in sys.argv:
+        worker_queues = sys.argv[sys.argv.index(_Q_flag) + 1].split(',')
+        worker_queues = list(map(lambda x: x.split('@').pop(), worker_queues))
+        worker_queues.sort()
+    else:
+        worker_queues = [str(i) for i in range(CONFIG['_WORKER_QUEUE_COUNT'])]
+
+    # Record worker count
     _expires = 30
 
-    cache_key = toolkit.get_cache_key('heartbeat', 'worker', tags=['workerId', WORKER_ID])
-    REDIS_CLIENT.set(cache_key, 'x', ex=_expires)
+    for q in worker_queues:
+        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', WORKER_ID, 'workerQueue', q])
+        REDIS_CLIENT.set(cache_key, 'x', ex=_expires)
 
-    cache_pattern = toolkit.get_cache_key('heartbeat', 'worker', tags=['workerId', '*'])
-    found_workers = list(REDIS_CLIENT.scan_iter(match=cache_pattern))
+        cache_pattern = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', '*', 'workerQueue', q])
+        found_workers = list(REDIS_CLIENT.scan_iter(match=cache_pattern))
 
-    cache_key = toolkit.get_cache_key('heartbeat', 'workerCount')
-    REDIS_CLIENT.set(cache_key, len(found_workers), ex=_expires)
-
+        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueueCount', tags=['workerQueue', q])
+        REDIS_CLIENT.set(cache_key, len(found_workers), ex=_expires)

@@ -9,6 +9,7 @@ const STATE_CONFIG = {
   systemConfig                             : { persist: true,  syncXTab: true  },
   isLoaded                                 : { persist: false, syncXTab: false },
   processingTaskCount                      : { persist: false, syncXTab: false },
+  processingTaskUpdateTime                 : { persist: false, syncXTab: false },
   isSocketIOReady                          : { persist: true,  syncXTab: true  },
   conflictedRouteMap                       : { persist: false, syncXTab: false },
   clientId                                 : { persist: true,  syncXTab: true  },
@@ -100,7 +101,9 @@ export default new Vuex.Store({
     // 主要内容加载完毕标识
     isLoaded: false,
     // 处理中数量
-    processingTaskCount: 0,
+    processingTaskCount     : 0,
+    processingTaskUpdateTime: 0,
+
     // Socket.io已认证标示
     isSocketIOAuthed: false,
 
@@ -185,7 +188,7 @@ export default new Vuex.Store({
       return 'u-admin';
     },
     isProcessing: state => {
-      return state.processingTaskCount > 0;
+      return state.processingTaskCount > 0 && (Date.now() - state.processingTaskUpdateTime) > 3000;
     },
     clientId: state => {
       if (!state.clientId) {
@@ -276,24 +279,12 @@ export default new Vuex.Store({
       }
     },
     startProcessing(state) {
-      let prev = state.processingTaskCount;
-      if (prev === 0) {
-        setTimeout(() => {
-          state.processingTaskCount++;
-        }, 3000);
-      } else {
-        state.processingTaskCount++;
-      }
+      state.processingTaskCount++;
+      state.processingTaskUpdateTime = Date.now();
     },
     endProcessing(state) {
-      let next = state.processingTaskCount - 1;
-      if (next === 0) {
-        setTimeout(() => {
-          state.processingTaskCount--;
-        }, 1000);
-      } else {
-        state.processingTaskCount--;
-      }
+      state.processingTaskCount--;
+      state.processingTaskUpdateTime = Date.now();
     },
     updateSocketIOStatus(state, isAuthed) {
       state.isSocketIOAuthed = isAuthed;

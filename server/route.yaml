@@ -1112,6 +1112,10 @@ datafluxFuncAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
+    query:
+      sections:
+        $desc: 总览小节
+        $type: commaArray
 
   describeFunc:
     showInDoc    : true

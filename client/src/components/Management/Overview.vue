@@ -23,15 +23,17 @@
           </span>
         </el-card>
 
-        <el-divider content-position="left"><h1>队列压力</h1></el-divider>
-        <el-card class="worker-queue-card" shadow="hover" v-for="p, i in workerQueuePressure" :key="i">
+        <el-divider content-position="left"><h1>队列信息</h1></el-divider>
+        <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
           <el-progress type="dashboard"
-            :percentage="workerQueuePressurePercentage(p)"
+            :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
+            :format="workerQueuePressureFormat"
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
           <span class="worker-queue-name">
             队列 # <span class="worker-queue-number">{{ i }}</span>
-            <br>积压：{{ workerQueueLength[i] || 0 }}
+            <br>工作单元：{{ workerQueue.workerCount || 0 }} 个
+            <br>请求排队：{{ workerQueue.taskCount || 0 }} 个
           </span>
         </el-card>
 
@@ -191,26 +193,29 @@ export default {
     },
   },
   methods: {
-    async loadData() {
+    async loadData(sections) {
+      let _query = null;
+      if (!this.T.isNothing(sections)) {
+        _query = { sections: sections.join(',') };
+      }
       let apiRes = await this.T.callAPI('/api/v1/func/overview', {
+        query: _query,
         alert: {entity: '总览', showError: true},
       });
       if (!apiRes.ok) return;
 
-      apiRes.data.scriptOverview.forEach(d => {
-        d.latestPublishTimestamp = 0;
-        if (d.latestPublishTime) {
-          d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
-        }
-      });
+      if (apiRes.data.scriptOverview) {
+        apiRes.data.scriptOverview.forEach(d => {
+          d.latestPublishTimestamp = 0;
+          if (d.latestPublishTime) {
+            d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
+          }
+        });
+      }
 
-      this.bizEntityCount         = apiRes.data.bizEntityCount;
-      this.workerCount            = apiRes.data.workerCount;
-      this.workerQueueMaxPressure = apiRes.data.workerQueueMaxPressure;
-      this.workerQueuePressure    = apiRes.data.workerQueuePressure;
-      this.workerQueueLength      = apiRes.data.workerQueueLength;
-      this.scriptOverview         = apiRes.data.scriptOverview;
-      this.latestOperations       = apiRes.data.latestOperations;
+      (sections || this.OVERVIEW_SECTIONS).forEach(s => {
+        this[s] = apiRes.data[s];
+      });
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -246,8 +251,8 @@ export default {
       let numberLength = ('' + count).length;
       return Math.min(80 - 15 * (numberLength - 4), 80);
     },
-    workerQueuePressurePercentage(pressure) {
-      var percentage = parseInt(100 * pressure / (this.workerQueueMaxPressure * 2));
+    workerQueuePressurePercentage(pressure, maxPressure) {
+      var percentage = 100 * pressure / (maxPressure * 2);
       if (percentage < 0) {
         percentage = 0;
       } else if (percentage > 100) {
@@ -256,8 +261,19 @@ export default {
 
       return percentage;
     },
+    workerQueuePressureFormat(percentage) {
+      return `压力: ${parseInt(percentage * 2)}`;
+    },
   },
   computed: {
+    OVERVIEW_SECTIONS() {
+      return [
+        'bizEntityCount',
+        'workerQueueInfo',
+        'scriptOverview',
+        'latestOperations',
+      ];
+    },
     WORKER_QUEUE_PRESSURE_COLORS() {
       return [
         {color: '#00aa00', percentage: 50},
@@ -270,14 +286,16 @@ export default {
   },
   data() {
     return {
-      bizEntityCount        : [],
-      workerCount           : 0,
-      workerQueueMaxPressure: 0,
-      workerQueuePressure   : [],
-      workerQueueLength     : [],
-      scriptOverview        : null,
-      latestOperations      : [],
+      bizEntityCount  : [],
+      workerQueueInfo : [],
+      scriptOverview  : [],
+      latestOperations: [],
     }
+  },
+  mounted() {
+    setInterval(() => {
+      this.loadData(['workerQueueInfo', 'bizEntityCount']);
+    }, 3000);
   },
 }
 </script>
@@ -341,9 +359,9 @@ export default {
   display: inline-block;
 }
 .worker-queue-name {
-  font-size: 20px;
+  font-size: 14px;
   position: absolute;
-  top: 50px;
+  bottom: 30px;
   left: 165px;
 }
 .worker-queue-name .worker-queue-number {
