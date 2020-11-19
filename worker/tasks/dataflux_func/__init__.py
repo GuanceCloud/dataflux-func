@@ -41,7 +41,7 @@ FIXED_INTEGRATION_KEY_MAP = {
     # 登录用函数
     #   函数必须为`def func(username, password)`形式
     #   无配置项
-    'signIn': 'signin',
+    'signIn': 'signIn',
     'login' : 'signIn',
 
     # 自动运行函数
