@@ -40,16 +40,9 @@
         <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ scriptOverview.length }}个）</h1></el-divider>
 
         <el-table :data="scriptOverview" stripe style="width: 95%">
-          <el-table-column label="类型" sortable sort-by="sset_type" width="90">
+          <el-table-column label="脚本集" sortable>
             <template slot-scope="scope">
-              <el-tag size="small" v-if="scope.row.sset_type === 'official'">官方</el-tag>
-              <el-tag size="small" v-else type="success">用户</el-tag>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="脚本集" sortable :sort-by="['sset_title', 'sset_id']">
-            <template slot-scope="scope">
-              <span>{{ scope.row.sset_title || scope.row.sset_id }}</span>
+              <span>{{ scope.row.scriptSetTitle || scope.row.scriptSetId }}</span>
             </template>
           </el-table-column>
 
@@ -294,7 +287,7 @@ export default {
   },
   mounted() {
     setInterval(() => {
-      this.loadData(['workerQueueInfo', 'bizEntityCount']);
+      this.loadData(['workerQueueInfo']);
     }, 3000);
   },
 }

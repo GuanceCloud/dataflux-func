@@ -89,7 +89,7 @@ EntityModel.prototype.overview = function(options, callback) {
   sql.append('  ,scpt.createTime');
   sql.append('  ,scpt.updateTime');
 
-  sql.append('  ,sset.title AS sset_title');
+  sql.append('  ,sset.title AS scriptSetTitle');
 
   sql.append('  ,MAX(scph.createTime) AS latestPublishTime');
   sql.append('  ,COUNT(func.id)       AS funcCount');
