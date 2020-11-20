@@ -11,6 +11,7 @@
       :highlight-current="true"
       :default-expand-all="false"
       :default-expanded-keys="defaultExpandedNodeKeys"
+      :auto-expand-parent="false"
       :expand-on-click-node="false"
       :indent="10"
       node-key="id"
@@ -21,6 +22,7 @@
       <span
         slot-scope="{node, data}"
         class="aside-tree-node"
+        :entry-id="data.id"
         @click="openEntity(node, data)">
 
         <span>
@@ -357,6 +359,18 @@ export default {
         // 自动选中
         this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
       });
+
+      setTimeout(() => {
+        // 滚动到目标位置
+        let entryId = this.$refs.tree.getCurrentKey();
+        if (entryId) {
+          let $asideContent = document.getElementById('pane-aside-script').parentElement;
+          let $target = document.querySelector(`[entry-id="${entryId}"]`);
+
+          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 100;
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
+      }, 1000);
     },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
@@ -435,10 +449,6 @@ export default {
               params: {id: data.id},
             });
 
-            // 记录选择的脚本ID，清空函数高亮
-            this.$store.commit('updateAsideScript_currentNodeKey', data.id);
-            this.$store.commit('updateEditor_highlightedFuncId', null);
-
             this.expandNode(data.id);
           }
           break;
@@ -459,16 +469,15 @@ export default {
             });
           }
 
-          // 记录选择的脚本ID，记录函数高亮
-          this.$store.commit('updateAsideScript_currentNodeKey', data.id);
-          this.$store.commit('updateEditor_highlightedFuncId', data.id);
-
           break;
 
         default:
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+
+      this.$store.commit('updateAsideScript_currentNodeKey', data.id);
+      this.$store.commit('updateEditor_highlightedFuncId', data.type === 'func' ? data.id : null);
     },
   },
   computed: {

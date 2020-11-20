@@ -115,11 +115,21 @@ export default {
         return console.error(err);
       }
 
+      let dataId = null;
       switch(this.mode) {
         case 'add':
-          return await this.addData();
+          dataId = await this.addData();
+          break;
+
         case 'setup':
-          return await this.modifyData();
+          dataId = await this.modifyData();
+          break;
+      }
+
+      if (dataId) {
+        console.log(dataId)
+        this.$store.commit('updateAsideScript_currentNodeKey', dataId);
+        this.$store.commit('updateEditor_highlightedFuncId', null);
       }
     },
     async addData() {
@@ -137,6 +147,8 @@ export default {
         name  : 'code-editor',
         params: {id: apiRes.data.id},
       });
+
+      return apiRes.data.id;
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
@@ -151,6 +163,8 @@ export default {
 
       await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
+
+      return this.scriptId;
     },
     async lockData(isLocked) {
       let actionTitle = isLocked ? '锁定' : '解锁';
