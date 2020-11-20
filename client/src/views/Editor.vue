@@ -94,16 +94,16 @@ export default {
     currentTabIcon() {
       let c = ['fa', 'fa-fw', 'icon-bg'];
       switch(this.currentTab) {
+        case 'aside-script':
+          c.push('fa-file-code-o');
+          break;
+
         case 'aside-data-source':
           c.push('fa-database');
           break;
 
         case 'aside-env-variable':
           c.push('fa-cogs');
-          break;
-
-        case 'aside-script':
-          c.push('fa-file-code-o');
           break;
       }
       return c;
