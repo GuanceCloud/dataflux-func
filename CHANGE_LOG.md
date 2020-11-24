@@ -1,5 +1,9 @@
 # Change Log
 
+### dev
+
+- 废除`EXTRA_PYTHON_IMPORT_PATH_LIST`配置，改为`EXTRA_PYTHON_IMPORT_PATH`（仅支持一个地址）。
+
 ### 1.0.18
 
 - 添加队列压力计算模块，保护队列（仅针对同步调用）

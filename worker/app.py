@@ -14,8 +14,10 @@ import redis
 from worker.utils import yaml_resources, toolkit
 
 # Configure
+print_detail = sys.argv[0] == '_celery.py'
+
 base_path  = os.path.dirname(os.path.abspath(__file__))
-CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'))
+CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'), print_detail=print_detail)
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../image-info.json'))
 
 WORKER_ID = toolkit.gen_time_serial_seq()

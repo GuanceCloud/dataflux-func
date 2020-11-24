@@ -95,12 +95,9 @@ CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
 
 # 添加额外import路径
-extra_import_path_list = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH_LIST')
-if extra_import_path_list:
-    if isinstance(extra_import_path_list, (list, tuple)):
-        sys.path.extend(extra_import_path_list)
-    elif isinstance(extra_import_path_list, str):
-        sys.path.append(extra_import_path_list)
+extra_import_path = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH')
+if extra_import_path:
+    sys.path.append(extra_import_path)
 
 def _kwargs_hint_type_converter_str(x):
     if isinstance(x, str):
