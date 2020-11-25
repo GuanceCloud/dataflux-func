@@ -1,8 +1,8 @@
-# DataFlux.f(x)
+# DataFlux Func
 
-DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
+DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
 
-> `DataFlux.f(x)` 读作`data flux function`，有时也可能写作`DataFlux Func`，系统内有时会缩写为`DFF`。
+> `DataFlux Func` 读作`data flux function`，系统内有时会缩写为`DFF`。
 
 前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组建，目前已成为可独立运行的系统。
 
@@ -49,7 +49,7 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 # 部署运行
 
-部署运行DataFlux.f(x) 使用`docker stack`进行。
+部署运行DataFlux Func 使用`docker stack`进行。
 
 用户可以选择官方提供的一键部署命令，也可以自行调整配置文件后手动启动。
 
@@ -57,7 +57,7 @@ DataFlux.f(x) 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 *注意操作前需要使用`docker login pubrepo.jiagouyun.com`进行登录*
 
-运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux.f(x)：
+运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
 ```shell
 # 使用root用户【推荐】
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
@@ -67,9 +67,9 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
-- 运行MySQL、Redis、DataFlux.f(x)，包含Server，Worker，Beat
-- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux.f(x)配置文件）
-- 随机生成MySQL `root`用户密码、系统Secret，并保存于DataFlux.f(x) 配置文件中
+- 运行MySQL、Redis、DataFlux Func，包含Server，Worker，Beat
+- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux Func 配置文件）
+- 随机生成MySQL `root`用户密码、系统Secret，并保存于DataFlux Func 配置文件中
 - Redis不设密码
 - MySQL、Redis 不提供外部访问
 
@@ -109,9 +109,9 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 ```
 
 使用进阶部署方式可以提供一定程度的个性化定制，相比推荐方式，可以方便对以下内容进行修改：
-- DataFlux.f(x) 版本（从最新版`latest`改为其他）
+- DataFlux Func 版本（从最新版`latest`改为其他）
 - 数据存储位置（从`/usr/local/dataflux-func/`改为其他）
-- 修改DataFlux.f(x)运行方式（如指定既存MySQL、Redis 作为数据存储等）
+- 修改DataFlux Func运行方式（如指定既存MySQL、Redis 作为数据存储等）
 - 修改MySQL、Redis运行方式（如允许公开访问，指定密码、修改配置等。具体内容请参考对应镜像的官方说明）
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面（假设使用默认端口）。
@@ -192,7 +192,7 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 ## 相关链接
 
-- [DataFlux.f(x) 宣传小册子](https://t.dataflux.cn/func-intro)
+- [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
 
 - [DataFlux官方网站](https://dataflux.cn/)
 

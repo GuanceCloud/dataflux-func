@@ -298,7 +298,6 @@ Webhook Events                                    : Webhook事件
 Webhook URL                                       : Webhook地址
 'Welcome back, {0}!'                              : 欢迎回来，{0}！
 Welcome to                                        : 欢迎来到
-Welcome to DataFlux.f(x)                          : null
 Worker Logs                                       : 工作单元日志
 Worker Queue Waiting Length                       : 工作队列等待长度
 'Yes'                                             : 是

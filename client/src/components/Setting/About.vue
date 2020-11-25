@@ -13,10 +13,10 @@
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="about-form">
-              <!-- DataFlux.f(x) Web -->
+              <!-- DataFlux Func Server -->
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="warning" class="about-dataflux-func-part">Web</el-tag>
+                <el-tag type="warning" class="about-dataflux-func-part">Server</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
@@ -29,7 +29,7 @@
                 </el-form-item>
               </el-form>
 
-              <!-- DataFlux.f(x) Worker -->
+              <!-- DataFlux Func Worker -->
               <br>
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>

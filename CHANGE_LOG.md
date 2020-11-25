@@ -1,5 +1,9 @@
 # Change Log
 
+### 1.0.20
+
+- 不再使用`DataFlux.f(x)`命名，统一使用`DataFlux Func`
+
 ### 1.0.19
 
 - 废除`EXTRA_PYTHON_IMPORT_PATH_LIST`配置，改为`EXTRA_PYTHON_IMPORT_PATH`（仅支持一个地址）。

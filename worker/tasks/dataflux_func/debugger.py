@@ -2,7 +2,7 @@
 
 '''
 脚本Debug模式执行处理任务
-主要用于脚本预检查、DataFlux.f(x)编辑页面直接调用函数
+主要用于脚本预检查、DataFlux Func编辑页面直接调用函数
 '''
 
 # Builtin Modules
