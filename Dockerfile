@@ -14,16 +14,17 @@ USER root
 # Default data folder
 RUN mkdir -p /data
 
-# # Swith apt source to Aliyun
-# RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-#         \ndeb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-#         \ndeb http://mirrors.aliyun.com/debian-security buster/updates main \
-#         \ndeb-src http://mirrors.aliyun.com/debian-security buster/updates main \
-#         \ndeb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-#         \ndeb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-#         \ndeb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib \
-#         \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
-#     > /etc/apt/sources.list
+# Swith apt source to Aliyun
+RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
+        \ndeb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib \
+        \ndeb http://mirrors.aliyun.com/debian-security buster/updates main \
+        \ndeb-src http://mirrors.aliyun.com/debian-security buster/updates main \
+        \ndeb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
+        \ndeb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
+        \ndeb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib \
+        \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
+    > /etc/apt/sources.list && \
+    apt-get install -y wget curl telnet unzip
 
 # Download, extract and install resources
 WORKDIR /usr/src/resource
