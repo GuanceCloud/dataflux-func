@@ -1,4 +1,5 @@
-FROM python:3.7.5
+FROM registry.jiagouyun.com/basis/python:3.7
+# FROM python:3.7.5
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
