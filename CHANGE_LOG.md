@@ -1,6 +1,6 @@
 # Change Log
 
-### dev
+### 1.0.19
 
 - 废除`EXTRA_PYTHON_IMPORT_PATH_LIST`配置，改为`EXTRA_PYTHON_IMPORT_PATH`（仅支持一个地址）。
 - 修复已知故障
