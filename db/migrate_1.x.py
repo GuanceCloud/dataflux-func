@@ -16,7 +16,7 @@ from pprint import pprint
 import MySQLdb
 from MySQLdb.cursors import DictCursor
 
-TABLE_MIGRATE_PREFIX  = '_MIGRATED'
+TABLE_MIGRATE_PREFIX  = '_migrated'
 TABLE_MIGRATE_VERSION = '1_x'
 MIGRATED_TABLE_PREFIX = '{}_{}'.format(TABLE_MIGRATE_PREFIX, TABLE_MIGRATE_VERSION)
 
@@ -178,7 +178,7 @@ def import_new_ddl(client):
 
     # 清空所有表
     tables = _get_all_tables(client)
-    tables = filter(lambda x: not x.startswith(TABLE_MIGRATE_PREFIX), tables)
+    tables = filter(lambda x: not x.lower().startswith(TABLE_MIGRATE_PREFIX.lower()), tables)
 
     for t in tables:
         sql = '''

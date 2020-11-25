@@ -283,12 +283,20 @@ export default {
       workerQueueInfo : [],
       scriptOverview  : [],
       latestOperations: [],
+      overviewInterval: null,
     }
   },
   mounted() {
-    setInterval(() => {
-      this.loadData(['workerQueueInfo']);
-    }, 3000);
+    if (!this.overviewInterval) {
+      this.overviewInterval = setInterval(() => {
+        if (this.$route.name !== 'overview') {
+          clearInterval(this.overviewInterval);
+          this.overviewInterval = null;
+        }
+
+        this.loadData(['workerQueueInfo']);
+      }, 3000);
+    }
   },
 }
 </script>

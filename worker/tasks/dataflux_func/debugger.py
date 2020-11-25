@@ -196,7 +196,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
             log_messages = script_scope['DFF'].log_messages or []
             result['logMessages'] = log_messages
 
-            # 脚本输出图标
+            # 【待废除】脚本输出图表
             plot_charts = script_scope['DFF'].plot_charts or []
             result['plotCharts'] = plot_charts
 

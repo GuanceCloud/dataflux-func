@@ -186,7 +186,7 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
 
         cache_key = toolkit.get_cache_key('syncCache', 'scriptLog')
 
-        data                      = {
+        data = {
             'funcId'              : func_id,
             'scriptPublishVersion': script_publish_version,
             'execMode'            : exec_mode,
@@ -484,20 +484,22 @@ def dataflux_func_runner(self, *args, **kwargs):
         return result
 
     finally:
-        if script_scope:
-            # 记录输出日志（开启debug或函数执行失败时保留）
-            if script_scope.get('_DFF_DEBUG') or not is_succeeded:
-                self.cache_script_log(
-                    func_id=func_id,
-                    script_publish_version=target_script['publishVersion'],
-                    log_messages=script_scope['DFF'].log_messages or None,
-                    exec_mode=exec_mode)
+        if script_scope and (script_scope.get('_DFF_DEBUG') or not is_succeeded):
+            # 提取输出日志（开启`_DFF_DEBUG`或函数执行失败时保留）
+            log_messages = script_scope['DFF'].log_messages or None
 
         # Crontab解锁
         lock_key   = kwargs.get('lockKey')
         lock_value = kwargs.get('lockValue')
         if lock_key and lock_value:
             self.cache_db.unlock(lock_key, lock_value)
+
+        # 记录脚本日志
+        self.cache_script_log(
+            func_id=func_id,
+            script_publish_version=target_script['publishVersion'],
+            log_messages=log_messages,
+            exec_mode=exec_mode)
 
         # 记录任务信息（结束）
         end_status = None
