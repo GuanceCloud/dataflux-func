@@ -53,7 +53,7 @@
                   </el-switch>
                   <div class="text-small form-item-tip">
                     用于管理允许外部系统调用本平台接口的认证信息。
-                    <br>开启后，可在「设置」<i class="fa fa-fw fa-long-arrow-right"></i>「AccessKey 管理」进入模块
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「AccessKey」进入模块
                   </div>
                 </el-form-item>
               </el-form>
