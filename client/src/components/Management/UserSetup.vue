@@ -89,6 +89,7 @@ export default {
       }
 
       if (this.mode === 'add') {
+        // 添加用户时，密码必填
         this.formRules['password'][0].required = true;
       }
 
@@ -171,6 +172,13 @@ export default {
             trigger: 'change',
             message: '引用名只能包含大小写英文、数字或下划线，且不能以数字开头',
             pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
+          }
+        ],
+        name: [
+          {
+            trigger : 'change',
+            message : '请输入名称',
+            required: true,
           }
         ],
         password: [

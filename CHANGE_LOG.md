@@ -1,5 +1,9 @@
 # Change Log
 
+### 1.0.21
+
+- 「成员管理」、「AccessKey 管理」移动只管理版块
+
 ### 1.0.20
 
 - 不再使用`DataFlux.f(x)`命名，统一使用`DataFlux Func`

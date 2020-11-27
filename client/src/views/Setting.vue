@@ -33,18 +33,6 @@
                 修改密码
               </span>
             </el-menu-item>
-            <el-menu-item index="/setting/user-list" v-if="$store.getters.isSuperAdmin">
-              <span>
-                <i class="fa fa-fw fa-users"></i>
-                成员管理
-              </span>
-            </el-menu-item>
-            <el-menu-item index="/setting/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
-              <span>
-                <i class="fa fa-fw fa-key"></i>
-                AccessKey 管理
-              </span>
-            </el-menu-item>
 
             <el-menu-item index="/setting/experimental-features">
               <span>

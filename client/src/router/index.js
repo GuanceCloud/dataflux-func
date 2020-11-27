@@ -188,6 +188,39 @@ const routes = [
       },
 
       {
+        path: 'user-list',
+        name: 'user-list',
+        component: () => import('../components/Management/UserList.vue'),
+      },
+      {
+        path: 'user-add',
+        name: 'user-add',
+        component: () => import('../components/Management/UserSetup.vue'),
+      },
+      {
+        path: 'user/:id/setup',
+        name: 'user-setup',
+        component: () => import('../components/Management/UserSetup.vue'),
+      },
+
+      {
+        path: 'operation-record-list',
+        name: 'operation-record-list',
+        component: () => import('../components/Management/OperationRecordList.vue'),
+      },
+
+      {
+        path: 'access-key-list',
+        name: 'access-key-list',
+        component: () => import('../components/Management/AccessKeyList.vue'),
+      },
+      {
+        path: 'access-key-add',
+        name: 'access-key-add',
+        component: () => import('../components/Management/AccessKeySetup.vue'),
+      },
+
+      {
         path: 'script-log-list',
         name: 'script-log-list',
         component: () => import('../components/Management/ScriptLogList.vue'),
@@ -198,11 +231,6 @@ const routes = [
         component: () => import('../components/Management/ScriptFailureList.vue'),
       },
 
-      {
-        path: 'operation-record-list',
-        name: 'operation-record-list',
-        component: () => import('../components/Management/OperationRecordList.vue'),
-      },
     ],
   },
   {
@@ -229,32 +257,6 @@ const routes = [
         path: 'password-setup',
         name: 'password-setup',
         component: () => import('../components/Setting/PasswordSetup.vue'),
-      },
-
-      {
-        path: 'user-list',
-        name: 'user-list',
-        component: () => import('../components/Setting/UserList.vue'),
-      },
-      {
-        path: 'user-add',
-        name: 'user-add',
-        component: () => import('../components/Setting/UserSetup.vue'),
-      },
-      {
-        path: 'user/:id/setup',
-        name: 'user-setup',
-        component: () => import('../components/Setting/UserSetup.vue'),
-      },
-      {
-        path: 'access-key-list',
-        name: 'access-key-list',
-        component: () => import('../components/Setting/AccessKeyList.vue'),
-      },
-      {
-        path: 'access-key-add',
-        name: 'access-key-add',
-        component: () => import('../components/Setting/AccessKeySetup.vue'),
       },
 
       {
