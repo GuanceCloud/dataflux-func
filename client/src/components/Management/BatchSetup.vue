@@ -15,6 +15,19 @@
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+                <el-form-item label="使用自定义ID" prop="useCustomId" v-show="mode === 'add'">
+                  <el-switch v-model="useCustomId"></el-switch>
+                </el-form-item>
+
+                <el-form-item label="ID" prop="id" v-show="useCustomId">
+                  <el-input :disabled="mode === 'setup'"
+                    maxlength="50"
+                    show-word-limit
+                    v-model="form.id">
+                  </el-input>
+                  <InfoBlock title="批处理ID关系到调用时的URL"></InfoBlock>
+                </el-form-item>
+
                 <el-form-item label="执行函数" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
@@ -81,6 +94,13 @@ export default {
             break;
         }
       },
+    },
+    useCustomId(val) {
+      if (val) {
+        this.form.id = `${this.ID_PREFIX}`;
+      } else {
+        this.form.id = null;
+      }
     },
   },
   methods: {
@@ -281,6 +301,9 @@ export default {
     },
   },
   computed: {
+    ID_PREFIX() {
+      return 'bat-';
+    },
     mode() {
       return this.$route.name.split('-').pop();
     },
@@ -329,12 +352,26 @@ export default {
       funcMap            : {},
       funcCascaderOptions: [],
 
+      useCustomId: false,
+
       form: {
-        funcId        : null,
+        id                : null,
+        funcId            : null,
         funcCallKwargsJSON: null,
-        note          : null,
+        note              : null,
       },
       formRules: {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) < 0 || value === this.ID_PREFIX)) {
+                return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
+              }
+              return callback();
+            },
+          }
+        ],
         funcId: [
           {
             trigger : 'change',

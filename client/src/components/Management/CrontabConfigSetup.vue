@@ -580,10 +580,10 @@ export default {
       funcCascaderOptions: [],
 
       form: {
-        funcId        : null,
+        funcId            : null,
         funcCallKwargsJSON: null,
-        expireTime    : null,
-        note          : null,
+        expireTime        : null,
+        note              : null,
         // crontab 单独处理
       },
       formRules: {

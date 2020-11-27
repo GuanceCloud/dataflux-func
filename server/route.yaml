@@ -2752,6 +2752,11 @@ authLinkAPI:
     body:
       data:
         $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
         funcId:
           $desc      : 函数ID
           $isRequired: true
@@ -3289,6 +3294,11 @@ batchAPI:
     body:
       data:
         $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
         funcId:
           $desc      : 函数ID
           $isRequired: true
