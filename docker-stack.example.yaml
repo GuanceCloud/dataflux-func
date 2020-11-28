@@ -17,6 +17,9 @@ services:
       - datafluxfunc
     volumes:
       - "/usr/local/dataflux-func/mysql:/var/lib/mysql"
+    environment:
+      - "MYSQL_ROOT_PASSWORD=mysql_root_password"
+      - "MYSQL_DATABASE=dataflux_func"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   redis:

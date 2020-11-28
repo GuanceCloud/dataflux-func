@@ -72,7 +72,8 @@ log "  $PWD/${__CONFIG_FILE}"
 # 创建docker stack 配置文件
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     # 创建配置文件并使用随机密钥/密码
-    sed -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
+    sed -e "s#=mysql_root_password#=${__RANDOM_MYSQL_ROOT_PASSWORD}#g" \
+        -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
