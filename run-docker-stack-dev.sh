@@ -78,6 +78,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
         -e "s#8088:8088#8089:8088#g" \
+        -e "s#/usr/local/dataflux-func#/usr/local/dataflux-func-dev#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file created:"
