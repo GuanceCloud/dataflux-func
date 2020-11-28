@@ -54,7 +54,7 @@ if [ ! -f ${__CONFIG_FILE} ]; then
     echo "# Auto generated config:" > ${__CONFIG_FILE}
 
     echo "MODE          : dev" >> ${__CONFIG_FILE}
-    echo "LOG_LEVEL     : WARNING" >> ${__CONFIG_FILE}
+    echo "LOG_LEVEL     : ALL" >> ${__CONFIG_FILE}
     echo "SECRET        : ${__RANDOM_SECRET}" >> ${__CONFIG_FILE}
     echo "MYSQL_HOST    : mysql" >> ${__CONFIG_FILE}
     echo "MYSQL_PORT    : 3306" >> ${__CONFIG_FILE}

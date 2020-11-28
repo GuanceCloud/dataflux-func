@@ -50,10 +50,10 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   if (!CONFIG._IS_INSTALLED) {
     // New setup
     console.log('Start setup guide...')
-    startInstallation();
+    runSetup();
 
   } else if (CONFIG._CURRENT_UPGRADE_SEQ < UPGRADE_INFO.seq) {
-    // Run upgrade
+    // Upgrade
     runUpgrade();
 
   } else {
@@ -62,7 +62,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   }
 });
 
-function startInstallation() {
+function runSetup() {
   /*
     安装向导为一个单页面应用，在服务器应用之前启动
     用户确认配置信息后，应用将配置写入`user-config.yaml`文件中并退出
@@ -82,7 +82,7 @@ function startInstallation() {
       }
 
       if (!_config._IS_INSTALLED) {
-        console.log('Waiting setup.');
+        console.log('Waiting for setup.');
         return;
       }
 
@@ -104,7 +104,7 @@ function startInstallation() {
   // Static files
   app.use('/statics', express.static(path.join(__dirname, 'statics')));
 
-  // Install page
+  // Setup page
   app.get('*', function(req, res) {
     var defaultConfig = toolkit.jsonCopy(CONFIG);
 
@@ -116,7 +116,7 @@ function startInstallation() {
     res.render('setup', { CONFIG: defaultConfig });
   });
 
-  // Install handler
+  // Setup handler
   app.use(bodyParser.json({limit: '1mb'}));
   app.post('/setup', function(req, res, next) {
     clearInterval(setupCheckerT);
