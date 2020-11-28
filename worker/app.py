@@ -5,6 +5,7 @@ import os
 import sys
 import simplejson as json
 import logging
+import time
 
 # 3rd-party Modules
 from celery import Celery, signals
@@ -14,13 +15,20 @@ import redis
 from worker.utils import yaml_resources, toolkit
 
 # Configure
-print_detail = sys.argv[0] == '_celery.py'
+base_path = os.path.dirname(os.path.abspath(__file__))
 
-base_path  = os.path.dirname(os.path.abspath(__file__))
-CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'), print_detail=print_detail)
+CONFIG     = {}
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../image-info.json'))
 
 WORKER_ID = toolkit.gen_time_serial_seq()
+
+# Wait for installation
+config_path = os.path.join(base_path, '../config.yaml')
+while not yaml_resources.load_config(config_path).get('_IS_INSTALLED'):
+    time.sleep(3)
+
+print_detail = sys.argv[0] == '_celery.py'
+CONFIG = yaml_resources.load_config(config_path, print_detail=print_detail)
 
 from worker.app_init import before_app_create, after_app_created
 

@@ -41,7 +41,8 @@ var loadFile = exports.loadFile = function loadFile(key, filePath) {
  * @param {Function} calback
  */
 var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callback) {
-  var configObj = loadFile(CONFIG_KEY, configFilePath);
+  var configObj     = loadFile(CONFIG_KEY, configFilePath);
+  var userConfigObj = {};
 
   // Collect config field type map
   var configTypeMap = {};
@@ -86,7 +87,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
     } else {
       var userConfigContent = fs.readFileSync(userConfigPath);
-      var userConfigObj     = yaml.load(userConfigContent);
+      userConfigObj = yaml.load(userConfigContent);
 
       Object.assign(configObj, userConfigObj)
 
@@ -161,7 +162,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
     FILE_CACHE[CONFIG_KEY] = configObj;
   }
 
-  return callback(null, configObj);
+  return callback(null, configObj, userConfigObj);
 };
 
 /**

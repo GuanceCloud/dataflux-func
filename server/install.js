@@ -18,6 +18,7 @@ var toolkit = require('./utils/toolkit');
 var yamlResources = require('./utils/yamlResources');
 
 var CONFIG       = null;
+var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 
 var SETUP_CHECKING_INTERVAL = 3 * 1000;
@@ -27,13 +28,14 @@ var mysqlHelper = null;
 var redisHelper = null;
 
 // Load extra YAML resources
-yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config) {
+yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config, _userConfig) {
   if (err) throw err;
 
   mysqlHelper = require('./utils/extraHelpers/mysqlHelper');
   redisHelper = require('./utils/extraHelpers/redisHelper');
 
-  CONFIG = _config;
+  CONFIG      = _config;
+  USER_CONFIG = _userConfig;
 
   if (CONFIG._DISABLE_SETUP) {
     console.log('Setup disabled, skip.');
@@ -121,18 +123,8 @@ function startInstallation() {
     clearInterval(installationCheckerT);
 
     var config = req.body.config || {};
-    var initDB = req.body.initDB || false;
-    var skip   = req.body.skip   || false;
 
     var redirectURL = config.WEB_BASE_URL || CONFIG.WEB_BASE_URL;
-
-    // Skip install
-    if (skip) {
-      res.send({ redirect: redirectURL });
-
-      server.close();
-      return process.exit(0);
-    }
 
     var configErrors = {};
 
@@ -187,7 +179,7 @@ function startInstallation() {
       },
       // Init DB
       function(asyncCallback) {
-        if (!initDB || configErrors.mysql) return asyncCallback();
+        if (configErrors.mysql) return asyncCallback();
 
         var initSQLPath = path.join(__dirname, '../db/dataflux_func_latest.sql');
         var initSQL = fs.readFileSync(initSQLPath).toString();
@@ -248,11 +240,11 @@ function startInstallation() {
       }
 
       // Write config file
-      config.MODE          = 'prod';
-      config._IS_INSTALLED = true;
-      config._CURRENT_UPGRADE_SEQ  = UPGRADE_INFO.seq;
+      Object.assign(USER_CONFIG, config)
+      USER_CONFIG._IS_INSTALLED = true;
+      USER_CONFIG._CURRENT_UPGRADE_SEQ  = UPGRADE_INFO.seq;
 
-      fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(config));
+      fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
       console.log('App installed.')
 

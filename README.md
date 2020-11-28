@@ -61,11 +61,9 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 ```shell
 # 在root用户下【推荐】
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-dev-run)" # 开发版
 
 # 或者，在非root用户下
 sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
-sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-dev-run)" # 开发版
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
