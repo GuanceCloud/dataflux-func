@@ -10,6 +10,7 @@ __PROJECT_NAME=dataflux-func
 __RANDOM_SECRET=`openssl rand -hex 8`
 __RANDOM_MYSQL_ROOT_PASSWORD=`openssl rand -hex 8`
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
+__CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
@@ -47,17 +48,35 @@ else
     exit 1
 fi
 
+# 创建配置文件
+if [ ! -f ${__CONFIG_FILE} ]; then
+    echo "# Auto generated config:" > ${__CONFIG_FILE}
+
+    echo "SECRET        : ${__RANDOM_SECRET}" >> ${__CONFIG_FILE}
+    echo "MYSQL_HOST    : mysql" >> ${__CONFIG_FILE}
+    echo "MYSQL_PORT    : 3306" >> ${__CONFIG_FILE}
+    echo "MYSQL_USER    : root" >> ${__CONFIG_FILE}
+    echo "MYSQL_PASSWORD: ${__RANDOM_MYSQL_ROOT_PASSWORD}" >> ${__CONFIG_FILE}
+    echo "MYSQL_DATABASE: dataflux_func" >> ${__CONFIG_FILE}
+    echo "REDIS_HOST    : redis" >> ${__CONFIG_FILE}
+    echo "REDIS_PORT    : 6379" >> ${__CONFIG_FILE}
+    echo "REDIS_DATABASE: 5" >> ${__CONFIG_FILE}
+
+    log "New config file with random secret/password created:"
+else
+    log "Config file already exists:"
+fi
+log "  $PWD/${__CONFIG_FILE}"
+
 # 创建docker stack 配置文件
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     # 创建配置文件并使用随机密钥/密码
-    sed -e "s#=your_secret#=${__RANDOM_SECRET}#g" \
-        -e "s#=mysql_root_password#=${__RANDOM_MYSQL_ROOT_PASSWORD}#g" \
-        -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
+    sed -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
-    log "New docker stack file with random secret/password created:"
+    log "New docker stack file created:"
 
 else
     log "Docker stack file already exists:"

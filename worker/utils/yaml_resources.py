@@ -116,6 +116,7 @@ def load_config(config_file_path, print_detail=False):
             v = str(v)
             if len(v) > 0:
                 config_obj[k] = v.split(',')
+                config_obj[k] = map(lambda x: x.strip(), config_obj[k])
             else:
                 config_obj[k] = []
 
@@ -123,10 +124,10 @@ def load_config(config_file_path, print_detail=False):
             item_map = {}
             for item in config_obj[k].split(','):
                 item_parts = item.split('=')
-                item_k = item_parts[0]
+                item_k = item_parts[0].strip()
                 item_v = ''
                 if len(item_parts) > 1:
-                    item_v = item_parts[1]
+                    item_v = item_parts[1].strip()
                 item_map[item_k] = item_v
 
             config_obj[k] = item_map

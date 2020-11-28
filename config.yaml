@@ -17,7 +17,7 @@ EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
 #   "dev" : 开发模式
 #   "prod": 生产模式
 # 注意：除特殊需要，应当总是使用生产模式
-MODE: dev
+MODE: prod
 
 # 私钥
 # 用于登录令牌、数据源配置加密等
@@ -32,11 +32,21 @@ SECRET: 'your_secret'
 #   WARNING: 警告和错误
 #   ERROR  : 错误
 #   NONE   : 不输出
-LOG_LEVEL: ALL
+LOG_LEVEL: WARNING
 
 # 日志文件输出地址
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/dataflux-func.log'
+
+# 数据库自动备份
+DB_AUTO_BACKUP_ENABLED: true
+
+# 数据库自动备份保留数量
+DB_AUTO_BACKUP_LIMIT: 168
+
+# 数据库自动备份目录
+# 必须使用绝对路径
+DB_AUTO_BACKUP_DIR: '/data/sqldump/'
 
 # 日志输出格式
 # 可选：
@@ -194,6 +204,7 @@ _CRONTAB_SYNC_CACHE                   : '* * * * *'
 _CRONTAB_AUTO_CLEANER                 : '*/15 * * * *'
 _CRONTAB_SCRIPT_FORCE_RELOAD          : '* * * * *'
 _CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
+_CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
 # 函数任务模块一般作为常量的配置
@@ -231,12 +242,21 @@ _RECENT_FUNC_RUNNING_STATUS_EXPIRES: 604800
 _RECENT_FUNC_RUNNING_STATUS_LIMIT  : 100
 
 # 数据量限制
-_DBDATA_SCRIPT_LOG_LIMIT       : 30000
-_DBDATA_SCRIPT_FAILURE_LIMIT   : 30000
-_DBDATA_FUNC_RESULT_LIMIT      : 30000
-_DBDATA_CRONTAB_TASK_INFO_LIMIT: 30000
-_DBDATA_BATCH_TASK_INFO_LIMIT  : 30000
-_DBDATA_OPERATION_RECORD_LIMIT : 50000
+_DBDATA_TABLE_LIMIT_MAP: >
+  biz_main_script_log=30000
+  ,biz_main_script_failure=30000
+  ,biz_main_task_result_dataflux_func=30000
+  ,biz_main_crontab_task_info=30000
+  ,biz_main_batch_task_info=30000
+  ,biz_main_operation_record=50000
+  ,biz_main_script_recover_point=1000
+  ,biz_main_script_set_export_history=1000
+  ,biz_main_script_set_import_history=1000
+  ,biz_main_script_publish_history=1000
+
+# 数据库自动备份
+_DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
+_DB_AUTO_BACKUP_EXT   : .sql
 
 # 是否已安装完成
 _IS_INSTALLED: false

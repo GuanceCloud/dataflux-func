@@ -1805,3 +1805,4 @@ from worker.tasks.dataflux_func.utils import dataflux_func_auto_run
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_checker
 from worker.tasks.dataflux_func.utils import dataflux_func_data_source_debugger
 from worker.tasks.dataflux_func.utils import dataflux_func_worker_queue_pressure_recover
+from worker.tasks.dataflux_func.utils import dataflux_func_db_auto_backup

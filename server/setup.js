@@ -107,13 +107,10 @@ function startInstallation() {
   app.get('*', function(req, res) {
     var defaultConfig = toolkit.jsonCopy(CONFIG);
 
-    if (process.env['ADMIN_USERNAME']) {
-      defaultConfig['ADMIN_USERNAME'] = process.env['ADMIN_USERNAME'];
-    }
-    if (process.env['ADMIN_PASSWORD']) {
-      defaultConfig['ADMIN_PASSWORD']        = process.env['ADMIN_PASSWORD'];
-      defaultConfig['ADMIN_PASSWORD_REPEAT'] = process.env['ADMIN_PASSWORD'];
-    }
+    // 默认管理员用户/密码
+    defaultConfig['ADMIN_USERNAME']        = 'admin';
+    defaultConfig['ADMIN_PASSWORD']        = 'admin';
+    defaultConfig['ADMIN_PASSWORD_REPEAT'] = 'admin';
 
     res.render('install', { CONFIG: defaultConfig });
   });

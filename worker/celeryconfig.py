@@ -93,11 +93,13 @@ def get_schedule_kwargs(crontab_expr):
     }
     return kwargs
 
+# 自动触发配置启动器
 beat_schedule['run-starter-crontab'] = {
     'task'    : 'DataFluxFunc.starterCrontab',
     'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_STARTER']))
 }
 
+# 强制重新加载脚本
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'DataFluxFunc.reloadScripts',
     'kwargs'  : {
@@ -106,17 +108,27 @@ beat_schedule['run-force-reload-scripts'] = {
     'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']))
 }
 
+# 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
     'task'    : 'DataFluxFunc.syncCache',
     'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SYNC_CACHE']))
 }
 
+# 工作队列压力恢复
+beat_schedule['run-worker-queue-pressure-recover'] = {
+    'task'    : 'DataFluxFunc.workerQueuePressureRecover',
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']))
+}
+
+# 自动清理
 beat_schedule['run-auto-cleaner'] = {
     'task'    : 'DataFluxFunc.autoCleaner',
     'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_AUTO_CLEANER']))
 }
 
-beat_schedule['run-worker-queue-pressure-recover'] = {
-    'task'    : 'DataFluxFunc.workerQueuePressureRecover',
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']))
-}
+if CONFIG['DB_AUTO_BACKUP_ENABLED']:
+    # 数据库自动备份
+    beat_schedule['run-db-auto-backup'] = {
+        'task'    : 'DataFluxFunc.dbAutoBackup',
+        'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_DB_AUTO_BACKUP']))
+    }

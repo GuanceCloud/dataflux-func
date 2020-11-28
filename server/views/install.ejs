@@ -296,14 +296,15 @@
             DataFlux Func 在运行之前需要一些基本的配置。
             <br>
             <br>
-            <span class="text-important">如果您正在使用纯手工的部署方式（未使用自动部署脚本、配置文件），请确保您已经准备了如下准备工作：</span>
+            <span class="text-important">如果您没有使用「自动部署脚本」进行部署，请确保您已经准备了如下准备工作：</span>
             <ul>
               <li>MySQL 5.7 或以上版本</li>
               <li>MySQL中存在编码格式为<code>utf8mb4</code>的数据库</li>
               <li>MySQL中存在具有操作上述数据库的用户</li>
               <li>Redis 4.0 或以上版本</li>
-              <li>在配置完成前，请<span class="text-important">不要启动</span>DataFlux Func Worker 和Beat 组件</li>
+              <li>在配置完成，配置文件创建前，请<span class="text-important">不要启动</span>DataFlux Func Worker 和Beat 组件</li>
             </ul>
+            <span class="text-important">如果您使用了「自动部署脚本」进行部署，但更改了除「管理员用户/密码」以外的配置，请在配置完成后重启所有组件</span>
           </p>
 
           <hr>

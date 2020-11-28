@@ -125,6 +125,10 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         configObj[k] = configObj[k].toString();
         if (configObj[k].length > 0) {
           configObj[k] = configObj[k].split(',');
+          configObj[k] = configObj[k].map(function(x) {
+            return x.trim();
+          });
+
         } else {
           configObj[k] = [];
         }
@@ -134,8 +138,8 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         var itemMap = {};
         configObj[k].split(',').forEach(function(item) {
           var itemParts = item.split('=');
-          var itemK = itemParts[0];
-          var itemV = itemParts[1] || '';
+          var itemK = itemParts[0].trim();
+          var itemV = (itemParts[1] || '').trim();
           itemMap[itemK] = itemV;
         });
         configObj[k] = itemMap;

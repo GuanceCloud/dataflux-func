@@ -19,12 +19,28 @@ variables:
   PROJECT     : dataflux-func
   FUNC_PKG_URL: https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
 
-# SaaS开发/预发/生产版
-#   主要用于驻云SaaS版开发/预发/生产环境
+# SaaS开发
+#   主要用于驻云SaaS版开发
 build:
   stage: build
   only:
     - dev
+  script:
+    - python echo-image-info.py > image-info.json
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
+    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} .
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:dev
+    - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
+    - docker push ${IMAGE_PUBLIC}:dev
+  tags:
+    - middleware-prod
+
+# SaaS预发/生产版
+#   主要用于驻云SaaS版预发/生产环境
+build:
+  stage: build
+  only:
     - /^release_\d+_\d+$/ # 如：release_20190101_01
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
   script:

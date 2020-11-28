@@ -11,6 +11,8 @@ import json
 import random
 import traceback
 import pprint
+import os
+import subprocess
 
 # 3rd-party Modules
 import six
@@ -770,53 +772,14 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
 
     self.logger.info('DataFluxFunc AutoCleaner Task launched.')
 
-    # 清除脚本日志
-    script_log_limit = CONFIG['_DBDATA_SCRIPT_LOG_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_script_log', limit=script_log_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 清除脚本错误记录
-    script_failure_limit = CONFIG['_DBDATA_SCRIPT_FAILURE_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_script_failure', limit=script_failure_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 清除函数结果
-    func_result_limit = CONFIG['_DBDATA_FUNC_RESULT_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_task_result_dataflux_func', limit=func_result_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 清除自动触发任务记录
-    crontab_task_info_limit = CONFIG['_DBDATA_CRONTAB_TASK_INFO_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_crontab_task_info', limit=crontab_task_info_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 清除批处理任务记录
-    batch_task_info_limit = CONFIG['_DBDATA_BATCH_TASK_INFO_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_batch_task_info', limit=batch_task_info_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 清除操作记录
-    operation_record_limit = CONFIG['_DBDATA_OPERATION_RECORD_LIMIT']
-    try:
-        self.clear_table_by_limit(table='biz_main_operation_record', limit=operation_record_limit)
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
+    # 清除数据
+    table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
+    for table, limit in table_limit_map.items():
+        try:
+            self.clear_table_by_limit(table=table, limit=int(limit))
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
 
 # DataFluxFunc.autoRun
 class DataFluxFuncAutoRunTask(BaseTask):
@@ -944,3 +907,85 @@ def dataflux_func_worker_queue_pressure_recover(self, *args, **kwargs):
         if not queue_length or int(queue_length) <= 0:
             cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
             self.cache_db.run('set', cache_key, 0)
+
+
+# DataFluxFunc.dbAutoBackup
+class DataFluxFuncDBAutoBackupTask(BaseTask):
+    def run_sqldump(self, tables, with_data, file_name):
+        dump_file_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        if not os.path.exists(dump_file_dir):
+            os.makedirs(dump_file_dir)
+
+        with_data_flag = ''
+        if with_data is False:
+            with_data_flag = '--no-data'
+
+        dump_file_path = os.path.join(dump_file_dir, file_name)
+
+        sqldump_args = [
+            'mysqldump',
+            f"--host={CONFIG['MYSQL_HOST']}",
+            f"--port={CONFIG['MYSQL_PORT']}",
+            f"--user={CONFIG['MYSQL_USER']}",
+            f"--password={CONFIG['MYSQL_PASSWORD']}",
+            '--databases', CONFIG['MYSQL_DATABASE'],
+            '--hex-blob',
+            '--default-character-set=utf8mb4',
+            '--skip-extended-insert',
+            with_data_flag,
+            '--tables', ' '.join(tables),
+            f"1>>{dump_file_path}",
+            '2>/dev/null',
+        ]
+
+        cmd_line = ' '.join(sqldump_args)
+        subprocess.Popen(cmd_line, shell=True).wait()
+
+    def limit_sqldump(self):
+        dump_file_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        if not os.path.exists(dump_file_dir):
+            return
+
+        backup_file_names = []
+        with os.scandir(dump_file_dir) as _dir:
+            for _f in _dir:
+                if _f.is_file() and _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']) and _f.name.endswith(CONFIG['_DB_AUTO_BACKUP_EXT']):
+                    backup_file_names.append(_f.name)
+
+        backup_file_names.sort()
+        if len(backup_file_names) > CONFIG['DB_AUTO_BACKUP_LIMIT']:
+            for file_name in backup_file_names[0:-1 * CONFIG['DB_AUTO_BACKUP_LIMIT']]:
+                file_path = os.path.join(dump_file_dir, file_name)
+                os.remove(file_path)
+
+@app.task(name='DataFluxFunc.dbAutoBackup', bind=True, base=DataFluxFuncDBAutoBackupTask)
+def dataflux_func_db_auto_backup(self, *args, **kwargs):
+    self.logger.info('DataFluxFunc DB Auto Backup Task launched.')
+
+    # 准备备份
+    date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
+    dump_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}{CONFIG['_DB_AUTO_BACKUP_EXT']}"
+
+    table_with_data    = []
+    table_without_data = []
+
+    # 查询需要导出的表
+    sql = '''
+        SHOW TABLES
+        '''
+    db_res = self.db.query(sql)
+    for d in db_res:
+        t = list(d.values())[0]
+        if t in CONFIG['_DBDATA_TABLE_LIMIT_MAP']:
+            table_without_data.append(t)
+        else:
+            table_with_data.append(t)
+
+    # 导出表+数据
+    self.run_sqldump(tables=table_with_data, with_data=True, file_name=dump_file_name)
+
+    # 导出表
+    self.run_sqldump(tables=table_without_data, with_data=False, file_name=dump_file_name)
+
+    # 自动删除旧备份
+    self.limit_sqldump()
