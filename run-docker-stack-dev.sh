@@ -9,15 +9,15 @@ __PREV_DIR=$PWD
 __PROJECT_NAME=dataflux-func
 __RANDOM_SECRET=`openssl rand -hex 8`
 __RANDOM_MYSQL_ROOT_PASSWORD=`openssl rand -hex 8`
-__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
+__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
 
-_INSTALL_DIR=/usr/local/dataflux-func
-_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+_INSTALL_DIR=/usr/local/dataflux-func-dev
+_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
 
 # 可配置环境变量
 if [ $INSTALL_DIR ]; then
