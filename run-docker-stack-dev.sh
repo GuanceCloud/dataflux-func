@@ -6,7 +6,7 @@ function log {
 }
 
 __PREV_DIR=$PWD
-__PROJECT_NAME=dataflux-func
+__PROJECT_NAME=dataflux-func-dev
 __RANDOM_SECRET=`openssl rand -hex 8`
 __RANDOM_MYSQL_ROOT_PASSWORD=`openssl rand -hex 8`
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
@@ -75,6 +75,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     sed -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
+        -e "s#8088:8088#8089:8088" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file created:"
