@@ -80,6 +80,8 @@ var MySQLHelper = function(logger, config, debug) {
         database          : CONFIG.MYSQL_DATABASE,
         connectionLimit   : CONFIG._MYSQL_CONNECTION_LIMIT,
         acquireTimeout    : CONFIG._MYSQL_ACQUIRE_TIMEOUT,
+        connectTimeout    : CONFIG._MYSQL_CONNECT_TIMEOUT,
+        timeout           : CONFIG._MYSQL_TIMEOUT,
         charset           : CONFIG._MYSQL_CHARSET,
         timezone          : CONFIG._MYSQL_TIMEZONE,
       });
