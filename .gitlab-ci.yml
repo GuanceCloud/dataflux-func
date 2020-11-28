@@ -21,7 +21,7 @@ variables:
 
 # SaaS开发
 #   主要用于驻云SaaS版开发
-build:
+buildDev:
   stage: build
   only:
     - dev
@@ -38,11 +38,11 @@ build:
 
 # SaaS预发/生产版
 #   主要用于驻云SaaS版预发/生产环境
-build:
+buildPreRelease:
   stage: build
   only:
-    - /^release_\d+_\d+$/ # 如：release_20190101_01
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
+    - /^release_\d+_\d+$/ # 如：release_20190101_01
   script:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
