@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# setup
+python _check_setup.py
+if [ $? -ne 0 ]; then
+    echo 'Setup failed.'
+    exit 1
+fi
+
 # pip install
 PIP_REQUIREMENTS_FILE_PATH=`python _config.py PIP_REQUIREMENTS_FILE_PATH`
 EXTRA_PYTHON_IMPORT_PATH=`python _config.py EXTRA_PYTHON_IMPORT_PATH`
@@ -21,4 +28,5 @@ for queue in $*; do
     fi
 done
 
+# run worker
 python _celery.py worker -A worker -l error -q -Q ${enabled_queues}
