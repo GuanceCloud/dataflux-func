@@ -406,11 +406,11 @@ exports.afterAppCreated = function(app, server) {
     },
   ], printError);
 
-  // 自动安装脚本包
+  // 自动导入脚本包
   async.series([
     // 获取锁
     function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'autoInstallFuncPackage');
+      var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
       var lockValue = Date.now().toString();
       var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
 
@@ -418,7 +418,7 @@ exports.afterAppCreated = function(app, server) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          var e = new Error('Function package auto installing is just launched');
+          var e = new Error('Function package auto importing is just launched');
           e.isWarning = true;
           return asyncCallback(e);
         }
@@ -466,7 +466,7 @@ exports.afterAppCreated = function(app, server) {
           if (err) return eachCallback(err);
 
           if (!apiRes.ok) {
-            return eachCallback(new Error('Auto install function package failed: ' + apiRes.message));
+            return eachCallback(new Error('Auto inport package failed: ' + apiRes.message));
           }
 
           return eachCallback();

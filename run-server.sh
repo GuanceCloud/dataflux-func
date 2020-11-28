@@ -1,12 +1,12 @@
 #!/bin/bash
 
-install_path="server/install.js"
+setup_path="server/setup.js"
 main_path="server/app.js"
 
-node ${install_path}
+node ${setup_path}
 
 if [ $? -ne 0 ]; then
-    echo 'Install failed.'
+    echo 'Setup failed.'
     exit 1
 fi
 

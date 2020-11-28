@@ -21,7 +21,7 @@ var CONFIG       = null;
 var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 
-var SETUP_CHECKING_INTERVAL = 3 * 1000;
+var INSTALL_CHECK_INTERVAL = 3 * 1000;
 
 // DB/Cache helper should load AFTER config is loaded.
 var mysqlHelper = null;
@@ -38,7 +38,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   USER_CONFIG = _userConfig;
 
   if (CONFIG._DISABLE_SETUP) {
-    console.log('Setup disabled, skip.');
+    console.log('Installation disabled, skip.');
     return process.exit(0);
   }
 
@@ -48,8 +48,8 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   UPGRADE_INFO = upgradeInfo[upgradeInfo.length - 1] || { seq: 0 };
 
   if (!CONFIG._IS_INSTALLED) {
-    // New install
-    console.log('Start Installation guide...')
+    // New setup
+    console.log('Start setup guide...')
     startInstallation();
 
   } else if (CONFIG._CURRENT_UPGRADE_SEQ < UPGRADE_INFO.seq) {
@@ -58,7 +58,6 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
   } else {
     // Do nothing
-    console.log('Nothing to setup, skip.');
     return process.exit(0);
   }
 });
@@ -73,27 +72,27 @@ function startInstallation() {
     每个进程定期检测配置信息中`_IS_INSTALLED`的值判断是否已经安装完毕
     检测发现安装完毕后自动退出
    */
-  function installationChecker() {
+  function setupChecker() {
     yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config) {
       if (err) {
         console.log(err);
 
-        if (installationCheckerT) clearInterval(installationCheckerT);
+        if (setupCheckerT) clearInterval(setupCheckerT);
         return process.exit(1);
       }
 
       if (!_config._IS_INSTALLED) {
-        console.log('Waiting installation.');
+        console.log('Waiting setup.');
         return;
       }
 
-      console.log('Other process finished installation.');
+      console.log('Other process finished setup.');
 
-      if (installationCheckerT) clearInterval(installationCheckerT);
+      if (setupCheckerT) clearInterval(setupCheckerT);
       return process.exit(0);
     });
   }
-  var installationCheckerT = setInterval(installationChecker, SETUP_CHECKING_INTERVAL);
+  var setupCheckerT = setInterval(setupChecker, INSTALL_CHECK_INTERVAL);
 
   // Express
   var app = express();
@@ -114,13 +113,13 @@ function startInstallation() {
     defaultConfig['ADMIN_PASSWORD']        = 'admin';
     defaultConfig['ADMIN_PASSWORD_REPEAT'] = 'admin';
 
-    res.render('install', { CONFIG: defaultConfig });
+    res.render('setup', { CONFIG: defaultConfig });
   });
 
   // Install handler
   app.use(bodyParser.json({limit: '1mb'}));
-  app.post('/install', function(req, res, next) {
-    clearInterval(installationCheckerT);
+  app.post('/setup', function(req, res, next) {
+    clearInterval(setupCheckerT);
 
     var config = req.body.config || {};
 
@@ -246,7 +245,7 @@ function startInstallation() {
 
       fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
-      console.log('App installed.')
+      console.log('App setup.')
 
       // Response for redirection
       res.send({ redirect: redirectURL });
@@ -337,7 +336,7 @@ function runUpgrade() {
               console.log('Upgrading ended, start application...');
               return process.exit(0)
             });
-          }, SETUP_CHECKING_INTERVAL);
+          }, INSTALL_CHECK_INTERVAL);
 
         } else {
           console.log(toolkit.strf('Run upgrade ({0} -> {1})...', CONFIG._CURRENT_UPGRADE_SEQ, UPGRADE_INFO.seq));

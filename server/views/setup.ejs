@@ -256,7 +256,7 @@
         font-style: italic;
         font-size: 16px;
       }
-      #installPanel {
+      #setupPanel {
         width: 600px;
         margin: auto;
       }
@@ -283,7 +283,7 @@
   </head>
   <body>
     <div class="container">
-      <div id="installPanel" class="panel panel-default">
+      <div id="setupPanel" class="panel panel-default">
         <div class="panel-body">
           <div id="logo">
             <img src="/statics/img/logo-dataflux-func.png">
@@ -351,7 +351,7 @@
           <hr>
 
           <div class="text-right">
-            <button id="install" class="btn btn-primary">保存配置并初始化数据库</button>
+            <button id="setup" class="btn btn-primary">保存配置并初始化数据库</button>
           </div>
         </div>
       </div>
@@ -375,7 +375,7 @@
     var $errorModal       = $('#errorModal');
     var $errorTEXT        = $('#errorTEXT');
 
-    function install() {
+    function setup() {
       var reqBody = {
         config: {},
       }
@@ -403,7 +403,7 @@
       // Send
       var reqOpt = {
         method     : 'post',
-        url        : '/install',
+        url        : '/setup',
         data       : JSON.stringify(reqBody),
         contentType: 'application/json',
         dataType   : 'json',
@@ -442,7 +442,7 @@
       $.ajax(reqOpt);
     }
 
-    $(document).on('click', '#install', install);
+    $(document).on('click', '#setup', setup);
     $(document).on('mouseover', '[config-key]', function() {
       var $this = $(this);
 

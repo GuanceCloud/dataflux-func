@@ -22,7 +22,7 @@ IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../
 
 WORKER_ID = toolkit.gen_time_serial_seq()
 
-# Wait for installation
+# Wait for setup
 config_path = os.path.join(base_path, '../config.yaml')
 while not yaml_resources.load_config(config_path).get('_IS_INSTALLED'):
     time.sleep(3)
