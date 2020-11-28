@@ -75,7 +75,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     sed -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
-        -e "s#8088:8088#8089:8088" \
+        -e "s#8088:8088#8089:8088#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file created:"
