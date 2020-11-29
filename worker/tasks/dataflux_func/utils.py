@@ -976,6 +976,12 @@ def dataflux_func_db_auto_backup(self, *args, **kwargs):
     db_res = self.db.query(sql)
     for d in db_res:
         t = list(d.values())[0]
+
+        # 避免备份到迁移数据
+        t_lower = t.lower()
+        if not t_lower.startswith('biz_') and not t_lower.startswith('wat_'):
+            continue
+
         if t in CONFIG['_DBDATA_TABLE_LIMIT_MAP']:
             table_without_data.append(t)
         else:
