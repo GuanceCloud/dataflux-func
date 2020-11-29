@@ -30,6 +30,16 @@ if [ $IMAGE ]; then
 fi
 log "Image path : ${_IMAGE}"
 
+# 拉取镜像
+log "Pulling image: ${__MYSQL_IMAGE}"
+docker pull ${__MYSQL_IMAGE}
+
+log "Pulling image: ${__REDIS_IMAGE}"
+docker pull ${__REDIS_IMAGE}
+
+log "Pulling image: ${_IMAGE}"
+docker pull ${_IMAGE}
+
 # 创建运行环境目录
 mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,mysql,redis}
 
@@ -90,15 +100,6 @@ fi
 log "  $PWD/${__DOCKER_STACK_FILE}"
 
 # 执行部署
-log "Pulling image: ${__MYSQL_IMAGE}"
-docker pull ${__MYSQL_IMAGE}
-
-log "Pulling image: ${__REDIS_IMAGE}"
-docker pull ${__REDIS_IMAGE}
-
-log "Pulling image: ${_IMAGE}"
-docker pull ${_IMAGE}
-
 log "Deploying: ${__PROJECT_NAME}"
 docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}
 
