@@ -92,7 +92,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#/usr/local/dataflux-func#/usr/local/dataflux-func-dev#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
-    log "New docker stack file created:"
+    log "New docker stack file with random secret/password created:"
 
 else
     log "Docker stack file already exists:"
