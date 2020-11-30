@@ -179,6 +179,30 @@ def assert_json_str(data, name):
 def json_copy(j):
     return json.loads(json.dumps(j))
 
+COLORS = {
+  'black'  : [30, 39],
+  'red'    : [31, 39],
+  'green'  : [32, 39],
+  'yellow' : [33, 39],
+  'blue'   : [34, 39],
+  'magenta': [35, 39],
+  'cyan'   : [36, 39],
+  'white'  : [37, 39],
+  'gray'   : [90, 39],
+  'grey'   : [90, 39],
+}
+
+def colored(s, name):
+    if name in COLORS:
+        left  = '\033[' + str(COLORS[name][0]) + 'm'
+        right = '\033[' + str(COLORS[name][1]) + 'm'
+
+        return left + str(s) + right
+
+    else:
+        raise AttributeError("Color '{}' not supported.".format(name))
+
+
 class DataWay(object):
     def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):
         self.host       = host or 'localhost'
@@ -224,18 +248,6 @@ class DataWay(object):
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
 
-    def _convert_to_ns(self, timestamp=None):
-        timestamp = timestamp or time.time()
-        timestamp = long_type(timestamp)
-
-        for i in range(3):
-            if timestamp < MIN_ALLOWED_NS_TIMESTAMP:
-                timestamp *= 1000
-            else:
-                break
-
-        return timestamp
-
     def _get_body_md5(self, body=None):
         h = md5()
         h.update(ensure_binary(body or ''))
@@ -276,7 +288,21 @@ class DataWay(object):
 
         return headers
 
-    def _prepare_line_protocol(self, points):
+    @classmethod
+    def convert_to_ns(self, timestamp=None):
+        timestamp = timestamp or time.time()
+        timestamp = long_type(timestamp)
+
+        for i in range(3):
+            if timestamp < MIN_ALLOWED_NS_TIMESTAMP:
+                timestamp *= 1000
+            else:
+                break
+
+        return timestamp
+
+    @classmethod
+    def prepare_line_protocol(cls, points):
         if not isinstance(points, (list, tuple)):
             points = [points]
 
@@ -334,13 +360,12 @@ class DataWay(object):
             field_set = ' {0}'.format(','.join(field_set_list))
 
             timestamp = p.get('timestamp')
-            timestamp = self._convert_to_ns(timestamp)
+            timestamp = cls.convert_to_ns(timestamp)
             timestamp = ' {0}'.format(timestamp)
 
             lines.append('{0}{1}{2}{3}'.format(ensure_str(measurement), ensure_str(tag_set), ensure_str(field_set), ensure_str(timestamp)))
 
         body = '\n'.join(lines)
-        body = ensure_binary(body)
 
         return body
 
@@ -349,6 +374,8 @@ class DataWay(object):
 
         if query:
             path = path + '?' + urlencode(query)
+        if body:
+            body = ensure_binary(body)
 
         if self.debug:
             print('[Request] {0} {1}://{2}:{3}{4}'.format(method, ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(path)))
@@ -381,8 +408,13 @@ class DataWay(object):
                 resp_data = json.loads(ensure_str(resp_raw_data))
 
             if self.debug:
-                print('\n[Response Status Code] {0}'.format(resp_status_code))
-                print('[Response Body] {0}'.format(ensure_str(resp_raw_data or '') or '<EMPTY>'))
+                output = '\n[Response Status Code] {0}\n[Response Body] {1}'.format(resp_status_code, ensure_str(resp_raw_data or '') or '<EMPTY>')
+
+                color = 'green'
+                if resp_status_code >= 400:
+                    color = 'red'
+
+                print(colored(output, color))
 
         return resp_status_code, resp_data
 
@@ -429,7 +461,7 @@ class DataWay(object):
         if headers:
             headers = json_copy(headers)
 
-        body = self._prepare_line_protocol(points)
+        body = self.prepare_line_protocol(points)
 
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
 
@@ -614,8 +646,8 @@ class DataWay(object):
         }
         return self._prepare_metric(prepared_data)
 
-    def write_keyevent(self, title, timestamp,
-        event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
+    def write_keyevent(self, title, status, timestamp,
+        event_id=None, source=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
         content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None,
         tags=None, fields=None):
         data = {

@@ -21,9 +21,7 @@ import 'codemirror/addon/fold/comment-fold.js'
 // CodeMirror当前行高亮
 import 'codemirror/addon/selection/active-line.js'
 // CodeMirror代码提示
-import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/hint/show-hint.js'
-import 'codemirror/addon/hint/anyword-hint.js'
 // CodeMirror自动括号提示/自动补全
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
@@ -31,8 +29,12 @@ import 'codemirror/addon/edit/closebrackets.js'
 import 'codemirror/addon/edit/trailingspace.js'
 // CodeMirror注释
 import 'codemirror/addon/comment/comment.js'
+import 'codemirror/addon/comment/continuecomment.js'
 // CodeMirror查询
+import 'codemirror/addon/search/search.js'
 import 'codemirror/addon/search/searchcursor.js'
+import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog.css'
 
 // CodeMirror主题
 import 'codemirror/theme/eclipse.css'
@@ -55,6 +57,10 @@ import moment from 'moment'
 
 // DIFF
 import { diffTrimmedLines } from 'diff'
+
+// DataFlux Func hint
+import '@/assets/css/dff-hint.css'
+import '@/assets/js/dff-anyword.js'
 
 let handleCircular = function() {
   let cache = [];
@@ -82,7 +88,7 @@ export function _switchToBuiltinAuth() {
   store.commit('switchToBuiltinAuth');
 };
 
-export function getBrowserName(){
+export function getBrowserName() {
   var userAgent = navigator.userAgent.toLowerCase();
   var isOpera = userAgent.indexOf('opera') > -1;
   if (isOpera) return 'opera';
@@ -574,6 +580,10 @@ export function fromNow(dt) {
   return moment.utc(dt).locale('zh_CN').fromNow();
 };
 
+export function asideItemSorter(a, b) {
+  return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+};
+
 function _getCallAPIOpt(method, pathPattern, options) {
   options = options || {};
 
@@ -584,7 +594,7 @@ function _getCallAPIOpt(method, pathPattern, options) {
   let axiosOpt = {
     method      : method,
     url         : url,
-    timeout     : options.timeout || 35 * 1000,
+    timeout     : options.timeout || 180 * 1000,
     extraOptions: options.extraOptions,
   };
 
@@ -1024,8 +1034,9 @@ export function initCodeMirror(id) {
 
     // 自动提示
     hintOptions: {
-      hint          : CodeMirror.hint.anyword,
+      hint          : CodeMirror.hint['dff-anyword'],
       completeSingle: false,
+      closeOnUnfocus: true,
     },
 
     // 自动括号提示/自动补全
@@ -1035,6 +1046,10 @@ export function initCodeMirror(id) {
     // 行尾空格
     showTrailingSpace: true,
 
+    // 连续注释
+    continueComments: true,
+
+    // 快捷键
     extraKeys: {
       // Tab转空格处理
       Tab: (cm) => {
@@ -1044,7 +1059,24 @@ export function initCodeMirror(id) {
           cm.replaceSelection(' '.repeat(cm.getOption('indentUnit')), 'end', '+input');
         }
       },
+      'Cmd-F' : 'findPersistent',
+      'Ctrl-F': 'findPersistent',
     },
+
+    // 翻译
+    phrases: {
+      "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）',
+      "All": '全部',
+      "No": '否',
+      "Replace all:": '全部替换',
+      "Replace with:": '替换为',
+      "Replace:": '替换',
+      "Replace?": '是否替换',
+      "Search:": '搜索',
+      "Stop": '停止',
+      "With:": '替换为',
+      "Yes": '是',
+    }
   });
 
   // 随键入代码提示

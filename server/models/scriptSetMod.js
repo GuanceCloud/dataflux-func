@@ -237,6 +237,7 @@ EntityModel.prototype.import = function(scriptData, callback) {
           kwargsJSON     : d.kwargsJSON      || null,
           extraConfigJSON: d.extraConfigJSON || null,
           category       : d.category,
+          integration    : d.integration     || null,
           tagsJSON       : d.tagsJSON        || null,
           defOrder       : d.defOrder,
         }

@@ -238,6 +238,7 @@ exports.export = function(req, res, next) {
           'func.kwargsJSON',
           'func.extraConfigJSON',
           'func.category',
+          'func.integration',
           'func.tagsJSON',
           'func.defOrder'
         ],

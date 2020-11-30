@@ -533,11 +533,10 @@ EntityModel.prototype.pingNodes = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task        = 'internal.ping';
-  var args        = null;
-  var kwargs      = null;
-  var taskOptions = {queue: 'internal'};
-  celery.putTask(task, args, kwargs, taskOptions, null, function(err, celeryRes) {
+  var task   = 'internal.ping';
+  var args   = null;
+  var kwargs = null;
+  celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
     if (err) return callback(err);
 
     if (!celeryRes) return callback();
@@ -567,11 +566,10 @@ EntityModel.prototype.getNodesStats = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task        = 'internal.stats';
-  var args        = null;
-  var kwargs      = null;
-  var taskOptions = {queue: 'internal'};
-  celery.putTask(task, args, kwargs, taskOptions, null, function(err, celeryRes) {
+  var task   = 'internal.stats';
+  var args   = null;
+  var kwargs = null;
+  celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
     if (err) return callback(err);
 
     if (!celeryRes) return callback();
@@ -599,11 +597,10 @@ EntityModel.prototype.getNodesActiveQueues = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task        = 'internal.activeQueues';
-  var args        = null;
-  var kwargs      = null;
-  var taskOptions = {queue: 'internal'};
-  celery.putTask(task, args, kwargs, taskOptions, null, function(err, celeryRes) {
+  var task   = 'internal.activeQueues';
+  var args   = null;
+  var kwargs = null;
+  celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
     if (err) return callback(err);
 
     if (!celeryRes) return callback();
@@ -635,11 +632,10 @@ EntityModel.prototype.getNodesReport = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task        = 'internal.report';
-  var args        = null;
-  var kwargs      = null;
-  var taskOptions = {queue: 'internal'};
-  celery.putTask(task, args, kwargs, taskOptions, null, function(err, celeryRes) {
+  var task   = 'internal.report';
+  var args   = null;
+  var kwargs = null;
+  celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
     if (err) return callback(err);
 
     if (!celeryRes) return callback();

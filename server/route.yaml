@@ -1112,6 +1112,10 @@ datafluxFuncAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
+    query:
+      sections:
+        $desc: 总览小节
+        $type: commaArray
 
   describeFunc:
     showInDoc    : true
@@ -1135,8 +1139,8 @@ datafluxFuncAPI:
 
       函数参数`kwargs`以字典`dict`方式传递（即`func(**kwargs)`）
 
-      - 当不指定，或指定同步模式`options.mode="sync"`时，接口会等待函数返回，并直接将结果返回给调用者，*但一定时间后API接口依然会超时*。
-      - 当指定同步模式`options.mode="async"`时，接口会立即返回，函数返回值需要另外调用接口查询。
+      - 当不指定，或指定同步模式`options.execMode="sync"`时，接口会等待函数返回，并直接将结果返回给调用者，*但一定时间后API接口依然会超时*。
+      - 当指定同步模式`options.execMode="async"`时，接口会立即返回，函数返回值需要另外调用接口查询。
 
       当`returnType`为`"ALL"`时，返回值结构如下：
 
@@ -1231,9 +1235,9 @@ datafluxFuncAPI:
             - repr
             - jsonDumps
         unfold:
-          $desc: 拆包（仅限mode=sync。默认false）
+          $desc: 拆包（仅限execMode=sync。默认false）
           $type: boolean
-        mode:
+        execMode:
           $desc: 执行模式（sync=同步；async=异步。默认sync）
           $type: enum
           $in:
@@ -1244,7 +1248,7 @@ datafluxFuncAPI:
           $type   : boolean
           $example: false
         eta:
-          $desc     : 预约执行（ISO8601格式，仅限mode=async）
+          $desc     : 预约执行（ISO8601格式，仅限execMode=async）
           $type     : string
           $isISO8601: true
           $example  : '2020-01-01T00:00:00Z'
@@ -1269,7 +1273,7 @@ datafluxFuncAPI:
       options:
         $desc   : 选项（详细参考POST方式描述）
         $type   : jsonstring
-        $example: {"mode": "async"}
+        $example: {"execMode": "async"}
 
   callAuthLinkByGetWithFormat:
     showInDoc    : true
@@ -1339,12 +1343,6 @@ datafluxFuncAPI:
         $example: {'msg': 'Tom'}
       options:
         $desc: 选项
-        apiTimeout:
-          $desc    : API超时时间（秒，默认5秒）
-          $type    : integer
-          $minValue: 1
-          $maxValue: 30
-          $example : 5
         returnType:
           $desc: 返回类型（默认raw）
           $type: enum
@@ -1354,9 +1352,9 @@ datafluxFuncAPI:
             - repr
             - jsonDumps
         unfold:
-          $desc: 拆包（仅限mode=sync。默认true）
+          $desc: 拆包（仅限execMode=sync。默认true）
           $type: boolean
-        mode:
+        execMode:
           $desc: 执行模式（sync=同步；async=异步。默认sync）
           $type: enum
           $in:
@@ -2272,6 +2270,7 @@ dataSourceAPI:
           - postgresql
           - mongodb
           - elasticsearch
+          - nsq
 
   add:
     showInDoc    : true
@@ -2313,6 +2312,7 @@ dataSourceAPI:
             - postgresql
             - mongodb
             - elasticsearch
+            - nsq
           $example: mysql
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。提交时检查，3秒超时）
@@ -2371,6 +2371,10 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          meta:
+            $desc     : Meta数据（仅限API添加）
+            $allowNull: true
+            $type     : json
 
   modify:
     showInDoc    : true
@@ -2452,6 +2456,10 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          meta:
+            $desc     : Meta数据（仅限API添加）
+            $allowNull: true
+            $type     : json
 
   delete:
     showInDoc    : true
@@ -2484,8 +2492,9 @@ dataSourceAPI:
       | `oracle`        | `"SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10"` |
       | `sqlserver`     | `"SELECT TOP 10 * FROM some_table"`             |
       | `postgresql`    | `"SELECT * FROM some_table LIMIT 10"`           |
-      | `elasticsearch` | `"GET /_search?q=field:value"`                  |
       | `mongodb`       | 使用封装方法操作，不适用SQL语句                 |
+      | `elasticsearch` | `"GET /_search?q=field:value"`                  |
+      | `nsq`           | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
     url          : /api/v1/data-sources/:id/do/query
@@ -2513,6 +2522,19 @@ dataSourceAPI:
         $in:
           - repr
           - json
+
+  test:
+    showInDoc    : true
+    name         : 测试数据源
+    method       : get
+    url          : /api/v1/data-sources/:id/do/test
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 数据源ID
+        $type: string
 
 # 环境变量
 envVariableAPI:
@@ -2730,6 +2752,11 @@ authLinkAPI:
     body:
       data:
         $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
         funcId:
           $desc      : 函数ID
           $isRequired: true
@@ -3267,6 +3294,11 @@ batchAPI:
     body:
       data:
         $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
         funcId:
           $desc      : 函数ID
           $isRequired: true

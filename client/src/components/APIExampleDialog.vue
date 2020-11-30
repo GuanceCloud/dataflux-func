@@ -9,9 +9,9 @@
       <template v-if="showOptions">
         <el-divider content-position="left">请求选项</el-divider>
         <el-form class="call-options" label-width="80px">
-          <el-form-item label="异步执行" v-if="showModeOption">
+          <el-form-item label="异步执行" v-if="showExecModeOption">
             <el-switch
-              v-model="callOptions.mode"
+              v-model="callOptions.execMode"
               inactive-value="sync"
               active-value="async">
             </el-switch>
@@ -25,13 +25,23 @@
             </el-switch>
           </el-form-item>
 
+          <el-form-item label="执行超时" v-if="showTimeoutOption">
+            <el-input-number
+              v-model="callOptions.timeout"
+              size="mini"
+              step-strictly
+              :step="1"
+              :min="$store.getters.CONFIG('_FUNC_TASK_MIN_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_TIMEOUT')">
+            </el-input-number>&#12288;秒
+          </el-form-item>
+
           <el-form-item label="API超时" v-if="showAPITimeoutOption">
             <el-input-number
               v-model="callOptions.apiTimeout"
               size="mini"
               step-strictly
               :step="1"
-              :min="1" :max="30">
+              :min="$store.getters.CONFIG('_FUNC_TASK_MIN_API_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_API_TIMEOUT')">
             </el-input-number>&#12288;秒
           </el-form-item>
         </el-form>
@@ -62,6 +72,8 @@
             </el-input>
             <InfoBlock type="info" title="Content-Type 应设置为 application/json"></InfoBlock>
             <InfoBlock v-if="apiBodyExample && apiBodyExample.indexOf('FROM_PARAMETER') >= 0" type="info" title="&quot;FROM_PARAMETER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
+
+            <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
           </el-col>
           <el-col :span="2">
             <CopyButton v-if="apiURLWithQueryExample" :content="apiBodyExample"></CopyButton>
@@ -177,7 +189,7 @@ export default {
         return url;
       }
     },
-    update(apiURLExample, apiBodyExample) {
+    update(apiURLExample, apiBodyExample, funcKwargs) {
       if ('string' === typeof apiBodyExample) {
         apiBodyExample = JSON.parse(apiBodyExample);
       }
@@ -188,20 +200,42 @@ export default {
         nextCallOptions[field] = this.callOptions[field];
       }
 
-      fillOptions('mode', 'sync');
+      fillOptions('execMode', 'sync');
       fillOptions('saveResult', false);
-      fillOptions('apiTimeout', 5);
+      fillOptions('timeout',    this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'));
+      fillOptions('apiTimeout', this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'));
+
+      let nextAPICustomKwargsSupport = false;
+      if (!this.T.isNothing(funcKwargs)) {
+        for (let k in funcKwargs) {
+          if (k.indexOf('**') < 0) continue;
+
+          nextAPICustomKwargsSupport = true;
+          break;
+        }
+      }
 
       let nextAPIBodyExample = {}
       if (!this.T.isNothing(apiBodyExample.kwargs)) {
         nextAPIBodyExample.kwargs = apiBodyExample.kwargs;
+
+        // 暂定：不展示**kwargs参数
+        if (!this.T.isNothing(nextAPIBodyExample.kwargs)) {
+          for (let k in nextAPIBodyExample.kwargs) {
+            if (k.indexOf('**') < 0) continue;
+
+            delete nextAPIBodyExample.kwargs[k];
+          }
+        }
       }
+
       if (!this.T.isNothing(nextCallOptions)) {
         nextAPIBodyExample.options = nextCallOptions;
       }
 
-      this.apiURLExample  = apiURLExample;
-      this.apiBodyExample = JSON.stringify(nextAPIBodyExample, null, 2);
+      this.apiCustomKwargsSupport = nextAPICustomKwargsSupport;
+      this.apiURLExample          = apiURLExample;
+      this.apiBodyExample         = JSON.stringify(nextAPIBodyExample, null, 2);
 
       this.show = true;
     },
@@ -211,10 +245,12 @@ export default {
       return '<span style="color:red">本内容与上述POST请求内容联动，但Body内容填写存在错误</span>';
     },
     showOptions() {
-      return this.showModeOption
+      return this.showExecModeOption
           || this.showSaveResultOption
+          || this.showTimeoutOption
           || this.showAPITimeoutOption;
     },
+
     apiBody() {
       if (!this.apiBodyExample) return '';
 
@@ -312,7 +348,8 @@ export default {
   props: {
     title: String,
     description: String,
-    showModeOption: {
+
+    showExecModeOption: {
       type: Boolean,
       default: false,
     },
@@ -320,10 +357,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    showTimeoutOption: {
+      type: Boolean,
+      default: false,
+    },
     showAPITimeoutOption: {
       type: Boolean,
       default: false,
     },
+
     showGetExample: {
       type: Boolean,
       default: true,
@@ -345,13 +387,15 @@ export default {
     return {
       show: false,
 
-      apiURLExample : null,
-      apiBodyExample: null,
+      apiCustomKwargsSupport: false,
+      apiURLExample         : null,
+      apiBodyExample        : null,
 
       callOptions: {
-        mode      : 'sync',
+        execMode  : 'sync',
         saveResult: false,
-        apiTimeout: 5,
+        timeout   : this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'),
+        apiTimeout: this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
       }
     }
   },

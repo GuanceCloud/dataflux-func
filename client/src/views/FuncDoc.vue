@@ -32,7 +32,8 @@
                   <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.kwargsJSON">
                     <code class="func-kwargs-name">{{ name }}</code>
                     <code class="func-kwargs-equal">:</code>
-                    <code class="func-kwargs-value" v-if="!value || !value.default">必选</code>
+                    <code class="func-kwargs-value" v-if="name.indexOf('**') === 0">自定义</code>
+                    <code class="func-kwargs-value" v-else-if="!value || !value.default">必选</code>
                     <el-tooltip placement="top" v-else>
                       <pre class="func-kwargs-value" slot="content">默认值为：{{ JSON.stringify(value.default, null, 2) }}</pre>
                       <code class="func-kwargs-value">可选</code>
@@ -46,8 +47,7 @@
                 <template v-if="!T.isNothing(scope.row.category)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_CATEGORY_MAP[scope.row.category]">{{ C.FUNC_CATEGORY_MAP[scope.row.category].name }}</code>
-                    <code v-else>{{ scope.row.category }}</code>
+                    <code>{{ scope.row.category }}</code>
                   </el-tag>
                 </template>
 
@@ -69,7 +69,7 @@
 
           <el-table-column label="函数文档">
             <template slot-scope="scope">
-              <pre class="func-doc">{{ scope.row.description }}</pre>
+              <pre class="func-doc">{{ T.limitLines(scope.row.description, 10) }}</pre>
             </template>
           </el-table-column>
 
@@ -83,7 +83,7 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         description="通过内部接口直接调用函数仅支持POST方式"
-        :showModeOption="true"
+        :showExecModeOption="true"
         :showSaveResultOption="true"
         :showAPITimeoutOption="true"
         :showPostExample="true"
@@ -119,7 +119,16 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showAPI(d) {
+    async showAPI(d) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.id, {
+        alert: {entity: '函数', showError: true},
+      });
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/func/:funcId', {
         baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
         params : {funcId: d.id},
@@ -131,7 +140,7 @@ export default {
       }
       let apiBodyExample = {kwargs: kwargsJSON};
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample);
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {},

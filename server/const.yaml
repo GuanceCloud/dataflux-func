@@ -80,36 +80,12 @@ displayText:
   ########## Content for YOUR project below ##########
   systemConfig_id:
     config.example: Example Config__systemConfig_id
-    officialScript.installed.version: 已安装的官方脚本版本号__systemConfig_id
 
   execMode:
     sync   : 同步__execMode
     async  : 异步__execMode
     crontab: Crontab触发__execMode
-    batch  : 批处理__execMode
-
-  scriptSet_type:
-    official: 官方__scriptSet_type
-    user    : 用户__scriptSet_type
-
-  func_category:
-    general             : 一般__func_category
-    prediction          : 预测__func_category
-    transformation      : 转换__func_category
-    action              : 动作__func_category
-    command             : 命令__func_category
-    query               : 查询__func_category
-    check               : 检测__func_category
-    batch               : 批处理（通用）__func_category
-    batchMetric         : 批处理（指标处理）__func_category
-    batchLog            : 批处理（日志处理）__func_category
-    builtinQuery        : 内置查询__func_category
-    builtinCheck        : 内置检测__func_category
-    builtinBatch        : 内置批处理（通用）__func_category
-    builtinBatchMetric  : 内置批处理（指标处理）__func_category
-    builtinBatchLog     : 内置批处理（日志处理）__func_category
-    builtinBatchKeyevent: 内置批处理（关键事件处理）__func_category
-    builtinCollector    : 内置采集__func_category
+    auto   : 自动触发__execMode
 
   func_integration:
     login: 登录__func_integration
@@ -126,6 +102,7 @@ displayText:
     postgresql   : PostgreSQL__dataSource_type
     mongodb      : mongoDB__dataSource_type
     elasticsearch: elasticsearch__dataSource_type
+    nsq          : NSQ__dataSource_type
 
   scriptRecoverPoint_type:
     import : 导入__scriptRecoverPoint_type

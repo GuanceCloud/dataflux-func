@@ -92,6 +92,6 @@ uploaded-files/
 # Vue dist
 client/dist
 
-# Test file
-config/user-config.yaml
+# Other
 docker-stack.yaml
+func-pkg/dataflux.func-pkg

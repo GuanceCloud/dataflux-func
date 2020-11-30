@@ -19,7 +19,10 @@
         @click="openEntity(node, data)">
 
         <span>
-          <el-link v-if="data.type === 'addDataSource'" type="primary" :underline="false">
+          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+          </el-link>
+          <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
             <i class="fa fa-fw fa-plus"></i>（添加数据源）
           </el-link>
           <div v-else>
@@ -63,7 +66,8 @@
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               示例代码：
               <pre>{{ data.tip.sampleCode }}</pre>
-              <CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
             </div>
 
             <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported">
@@ -109,6 +113,7 @@ export default {
   methods: {
     filterNode(value, data) {
       if (!value) return true;
+      if (['addDataSource', 'refresh'].indexOf(data.type) >= 0) return true;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -125,9 +130,12 @@ export default {
       if (!apiRes.ok) return;
 
       let treeData = [];
+      window._DFF_dataSourceIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_dataSourceIds.push(d.id);
+
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 示例代码
         let sampleCode = this.T.strf(this.C.DATE_SOURCE_MAP[d.type].sampleCode, d.id);
@@ -148,8 +156,9 @@ export default {
           dataSource: d,
         });
       });
-
-      treeData.push({type: 'addDataSource'});
+      treeData.sort(this.T.asideItemSorter);
+      treeData.unshift({type: 'addDataSource'});
+      treeData.unshift({type: 'refresh'});
 
       this.loading = false;
       this.data = treeData;
@@ -163,6 +172,11 @@ export default {
       }
 
       switch(data.type) {
+        // 刷新
+        case 'refresh':
+          this.loadData();
+          break;
+
         // 「添加数据源」节点
         case 'addDataSource':
           this.$router.push({

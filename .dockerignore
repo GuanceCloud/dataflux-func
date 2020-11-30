@@ -92,8 +92,7 @@ uploaded-files/
 # Vue dist
 client/dist
 
-# Test file
-docker-stack.yaml
-
 # Other
+docker-stack.yaml
 .gitlab-ci.yml
+release.sh

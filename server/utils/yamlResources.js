@@ -41,7 +41,8 @@ var loadFile = exports.loadFile = function loadFile(key, filePath) {
  * @param {Function} calback
  */
 var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callback) {
-  var configObj = loadFile(CONFIG_KEY, configFilePath);
+  var configObj     = loadFile(CONFIG_KEY, configFilePath);
+  var userConfigObj = {};
 
   // Collect config field type map
   var configTypeMap = {};
@@ -50,6 +51,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       case 'number':
         if (configObj[k].toString().match(/^\d+$/)) {
           configTypeMap[k] = 'integer';
+
         } else {
           configTypeMap[k] = 'float';
         }
@@ -57,7 +59,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
       case 'string':
         if (toolkit.endsWith(k, '_LIST')) {
-          configTypeMap[k] = 'commaArray';
+          configTypeMap[k] = 'list';
+
+        } else if (toolkit.endsWith(k, '_MAP')) {
+          configTypeMap[k] = 'map';
+
         } else {
           configTypeMap[k] = 'string';
         }
@@ -81,7 +87,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
     } else {
       var userConfigContent = fs.readFileSync(userConfigPath);
-      var userConfigObj     = yaml.load(userConfigContent);
+      userConfigObj = yaml.load(userConfigContent);
 
       Object.assign(configObj, userConfigObj)
 
@@ -91,10 +97,13 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
   // User config from env
   for (var k in process.env) {
-    if (!(k in configObj)) continue;
+    if (k in configObj) {
+      configObj[k] = process.env[k];
+      console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    configObj[k] = process.env[k];
-    console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
+    } else if (toolkit.startsWith(k, 'CUSTOM_')) {
+      console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
+    }
   }
 
   // Convert config value type
@@ -113,13 +122,28 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         configObj[k] = parseFloat(configObj[k]);
         break;
 
-      case 'commaArray':
+      case 'list':
         configObj[k] = configObj[k].toString();
         if (configObj[k].length > 0) {
           configObj[k] = configObj[k].split(',');
+          configObj[k] = configObj[k].map(function(x) {
+            return x.trim();
+          });
+
         } else {
           configObj[k] = [];
         }
+        break;
+
+      case 'map':
+        var itemMap = {};
+        configObj[k].split(',').forEach(function(item) {
+          var itemParts = item.split('=');
+          var itemK = itemParts[0].trim();
+          var itemV = (itemParts[1] || '').trim();
+          itemMap[itemK] = itemV;
+        });
+        configObj[k] = itemMap;
         break;
 
       case 'string':
@@ -138,7 +162,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
     FILE_CACHE[CONFIG_KEY] = configObj;
   }
 
-  return callback(null, configObj);
+  return callback(null, configObj, userConfigObj);
 };
 
 /**

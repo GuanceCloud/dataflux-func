@@ -23,7 +23,7 @@
     "cssmin": "0.4.3",
     "ejs": "2.5.6",
     "express": "4.15.3",
-    "express-useragent": "1.0.7",
+    "express-useragent": "1.0.15",
     "form-data": "3.0.0",
     "fs-extra": "3.0.1",
     "html-minifier": "3.4.2",

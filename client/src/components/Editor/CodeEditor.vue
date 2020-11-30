@@ -604,7 +604,7 @@ export default {
       const updateCountDownTipTitle = (countDown) => {
         let tipTitle = `函数执行中，长时间无响应后再尝试刷新页面`;
         if (countDown > 0) {
-          tipTitle = `函数执行中，最多等待 ${countDown} 秒，长时间无响应后再尝试刷新页面`;
+          tipTitle = `函数执行中，调试最多等待 ${countDown} 秒，长时间无响应后再尝试刷新页面`;
         }
         this.workerRunningTipTitle = tipTitle;
       }
@@ -616,7 +616,7 @@ export default {
         this.countDownTimer = null;
       }
 
-      let leftSeconds = this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT');
+      let leftSeconds = this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT');
       updateCountDownTipTitle(leftSeconds);
       this.countDownTimer = setInterval(() => {
         leftSeconds--;
@@ -1041,9 +1041,9 @@ export default {
           title   = isPublish ? '发布失败' : '等待超时';
           message = isPublish ? `脚本发布预检查超时，请注意不要再全局范围内编写耗时代码。
                                     <br>如果问题持续出现，可能是因为后端脚本执行模块未响应，请联系管理员排查问题`
-                              : `等待函数响应超时（10秒），函数可能还在后台运行中
+                              : `等待函数响应超时
                                     <span class="text-main">
-                                    <br>后台引擎最长允许一个函数运行30秒，
+                                    <br>在编辑器中运行函数时，最长允许等待${this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')}秒，
                                     <br>正式使用时应注意响应过慢的函数不适合同步方式调用</small>
                                     </span>`;
           this.$alert(message, title, {

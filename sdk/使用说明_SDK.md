@@ -41,6 +41,38 @@
 | `X-Wat-Ak-Sign`         | 签名结果                                   | `431f70c44d5f7c97dcc87c20060e2480acdf3a04` |
 | `X-Wat-Ak-Sign-Version` | AK签名算法版本。`v2`新增字段，`v1`不用传递 | `v2`                                       |
 
+#### 自定义签名用的HTTP请求头
+
+使用`Header Fields`选项，可以将签名信息附带在指定的HTTP 请求头中：
+
+- Python:
+```python
+header_fields = {
+    'akSignVersion': 'X-Custom-Header-For-Ak-Sign-Version',
+    'akId'         : 'X-Custom-Header-For-Ak-Id',
+    'akTimestamp'  : 'X-Custom-Header-For-Ak-Timestamp',
+    'akNonce'      : 'X-Custom-Header-For-Ak-Nonce',
+    'akSign'       : 'X-Custom-Header-For-Ak-Sign',
+}
+client = WATClient(host=host, ak_id=ak_id, ak_secret=ak_secret, header_fields=header_fields)
+```
+
+- Javascript:
+```javascript
+var watClient = new WATClient({
+  akId         : akId,
+  akSecret     : akSecret,
+  akSignVersion: akSignVersion,
+  headerFields: {
+    akSignVersion: 'X-Custom-Header-For-Ak-Sign-Version',
+    akId         : 'X-Custom-Header-For-Ak-Id',
+    akTimestamp  : 'X-Custom-Header-For-Ak-Timestamp',
+    akNonce      : 'X-Custom-Header-For-Ak-Nonce',
+    akSign       : 'X-Custom-Header-For-Ak-Sign',
+  }
+});
+```
+
 ### 4. 发送请求
 
 至此，发送请求即可
@@ -53,4 +85,3 @@
 |----------|------------------|----------------------------------------------------------------------------|
 | Python   | `sdk/wat_sdk.py` | 无依赖、支持所有操作。 兼容Python 2.6 ～ 3.7。（文件上传依赖`requests`包） |
 | Node.js  | `sdk/wat_sdk.js` | 无依赖、无需编译。（文件上传依赖`form-data`包）                            |
-| Golang   | `sdk/main.go`    | 无依赖。（注意使用时需要修改package名称）                                  |

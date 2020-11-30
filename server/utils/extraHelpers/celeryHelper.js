@@ -37,6 +37,7 @@ var CeleryHelper = function(logger, config) {
       new celery.RedisHandler(getConfig(this.config)),
       new celery.RedisHandler(getConfig(this.config))
     );
+    this.defaultQueue = config.defaultQueue || CONFIG._WORKER_DEFAULT_QUEUE;
 
   } else {
     if (!CLIENT) {
@@ -54,6 +55,7 @@ var CeleryHelper = function(logger, config) {
 
     this.config = CLIENT_CONFIG;
     this.client = CLIENT;
+    this.defaultQueue = CONFIG._WORKER_DEFAULT_QUEUE;
   }
 
   this.broker  = this.client.broker;
@@ -74,9 +76,11 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
 
   taskOptions.id = taskOptions.id || toolkit.genDataId('task');
 
-  if (!taskOptions.queue) {
-    taskOptions.queue = toolkit.getWorkerQueue('default');
+  if (toolkit.isNullOrUndefined(taskOptions.queue)) {
+    taskOptions.queue = toolkit.getWorkerQueue(this.defaultQueue);
+
   } else {
+    taskOptions.queue = '' + taskOptions.queue;
     if (taskOptions.queue.indexOf('#') < 0) {
       taskOptions.queue = toolkit.getWorkerQueue(taskOptions.queue);
     }
@@ -155,7 +159,7 @@ CeleryHelper.prototype.listQueues = function(callback) {
  */
 CeleryHelper.prototype.listQueued = function(queue, callback) {
   if (!queue) {
-    queue = toolkit.getWorkerQueue('default');
+    queue = toolkit.getWorkerQueue(this.defaultQueue);
   } else {
     if (queue.indexOf('#') < 0) {
       queue = toolkit.getWorkerQueue(queue);

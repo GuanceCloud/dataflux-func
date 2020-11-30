@@ -30,21 +30,15 @@ worker_log_color           = False
 worker_redirect_stdouts    = False
 
 # Queue
-task_default_queue       = toolkit.get_worker_queue('default')
+task_default_queue       = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
 task_default_routing_key = task_default_queue
 task_queues = [
     create_queue(task_default_queue),
-
-    create_queue(toolkit.get_worker_queue('webhook')),
-    create_queue(toolkit.get_worker_queue('internal')),
-    create_queue(toolkit.get_worker_queue('result')),
 ]
 
 # Task
 task_routes = {
-    'webhook.*' : {'queue': toolkit.get_worker_queue('webhook')},
-    'internal.*': {'queue': toolkit.get_worker_queue('internal')},
-    '*.result'  : {'queue': toolkit.get_worker_queue('result')},
+    # '<Task Name>': {'queue': toolkit.get_worker_queue('<Queue Name>')},
 }
 
 imports = [
@@ -71,74 +65,70 @@ result_expires = 3600
 
 ########## Content for YOUR project below ##########
 # Queue
-task_queues.extend([
-    # Utils 通用队列
-    create_queue(toolkit.get_worker_queue('utils')),
-
-    # 调试执行队列（UI调用，execMode=sync）
-    create_queue(toolkit.get_worker_queue('runnerOnDebugger')),
-    # RPC执行队列（API调用，execMode=sync|async）
-    create_queue(toolkit.get_worker_queue('runnerOnRPC')),
-    # Crontab执行队列（CronTab触发，execMode=crontab）
-    create_queue(toolkit.get_worker_queue('runnerOnCrontab')),
-    # Batch执行队列（批处理，execMode=batch）
-    create_queue(toolkit.get_worker_queue('runnerOnBatch')),
-    # BatchBuiltin执行队列（优先批处理，execMode=batch。主要用于内置日志处理）
-    create_queue(toolkit.get_worker_queue('runnerOnBatchBuiltin')),
-])
+for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
+    # 自动生成队列
+    q = toolkit.get_worker_queue(str(i))
+    task_queues.append(create_queue(q))
 
 # Task
 imports.append('worker.tasks.dataflux_func')
 
 # Route
 task_routes.update({
-    'DataFluxFunc.runner'  : {'queue': toolkit.get_worker_queue('runnerOnRPC')},
-    'DataFluxFunc.debugger': {'queue': toolkit.get_worker_queue('runnerOnDebugger')},
-
-    'DataFluxFunc.starterCrontab': {'queue': toolkit.get_worker_queue('utils')},
-
-    'DataFluxFunc.reloadScripts'     : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.syncCache'         : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.autoCleaner'       : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.dataSourceChecker' : {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.dataSourceDebugger': {'queue': toolkit.get_worker_queue('utils')},
-    'DataFluxFunc.getSystemConfig'   : {'queue': toolkit.get_worker_queue('utils')},
+    'DataFluxFunc.*': {
+        'queue': toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
+    },
 })
 
 # Beat
 import crontab as crontab_parser
+def get_schedule_kwargs(crontab_expr):
+    c = crontab_parser.CronTab(crontab_expr)
+    kwargs = {
+        'minute'       : c.matchers.minute.input,
+        'hour'         : c.matchers.hour.input,
+        'day_of_month' : c.matchers.day.input,
+        'month_of_year': c.matchers.month.input,
+        'day_of_week'  : c.matchers.weekday.input,
+    }
+    return kwargs
 
-starter_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
+# 自动触发配置启动器
 beat_schedule['run-starter-crontab'] = {
     'task'    : 'DataFluxFunc.starterCrontab',
-    'schedule': crontab(
-                    hour=starter_crontab.matchers.hour.input,
-                    minute=starter_crontab.matchers.minute.input),
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_STARTER']))
 }
 
-force_reload_scripts_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD'])
+# 强制重新加载脚本
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'DataFluxFunc.reloadScripts',
     'kwargs'  : {
         'force': True,
     },
-    'schedule': crontab(
-                    hour=force_reload_scripts_crontab.matchers.hour.input,
-                    minute=force_reload_scripts_crontab.matchers.minute.input),
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']))
 }
 
-sync_cache_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_SYNC_CACHE'])
+# 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
     'task'    : 'DataFluxFunc.syncCache',
-    'schedule': crontab(
-                    hour=sync_cache_crontab.matchers.hour.input,
-                    minute=sync_cache_crontab.matchers.minute.input),
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SYNC_CACHE']))
 }
 
-auto_cleaner_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_AUTO_CLEANER'])
+# 工作队列压力恢复
+beat_schedule['run-worker-queue-pressure-recover'] = {
+    'task'    : 'DataFluxFunc.workerQueuePressureRecover',
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']))
+}
+
+# 自动清理
 beat_schedule['run-auto-cleaner'] = {
     'task'    : 'DataFluxFunc.autoCleaner',
-    'schedule': crontab(
-                    hour=auto_cleaner_crontab.matchers.hour.input,
-                    minute=auto_cleaner_crontab.matchers.minute.input),
+    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_AUTO_CLEANER']))
 }
+
+if CONFIG['DB_AUTO_BACKUP_ENABLED']:
+    # 数据库自动备份
+    beat_schedule['run-db-auto-backup'] = {
+        'task'    : 'DataFluxFunc.dbAutoBackup',
+        'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_DB_AUTO_BACKUP']))
+    }

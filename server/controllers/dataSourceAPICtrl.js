@@ -9,6 +9,7 @@ var splitargs = require('splitargs');
 /* Project Modules */
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var CONST   = require('../utils/yamlResources').get('CONST');
 var toolkit = require('../utils/toolkit');
 
 var dataSourceMod = require('../models/dataSourceMod');
@@ -16,163 +17,170 @@ var dataSourceMod = require('../models/dataSourceMod');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
-var RESERVED_REF_NAME = 'df_';
+var RESERVED_REF_NAME = 'dataflux_';
 
-function _checkDataSourceConfig(config, requiredFields, optionalFields, databaseName) {
+function _checkDataSourceConfig(req, res, type, config, requiredFields, optionalFields, callback) {
+  var databaseName = CONST.displayText.dataSource_type[type];
+
+  // 检查字段
   for (var i = 0; i < requiredFields.length; i++) {
     var f = requiredFields[i];
 
     if ('undefined' === typeof config[f]) {
-      return new E('EClientBadRequest.InvalidDataSourceConfigJSON', toolkit.strf('Invalid config JSON for {0}', databaseName), {
+      return callback(new E('EClientBadRequest.InvalidDataSourceConfigJSON', toolkit.strf('Invalid config JSON for {0}', databaseName), {
         requiredFields: requiredFields,
         optionalFields: optionalFields,
-      });
+      }));
     }
   }
-}
 
-var DATA_SOURCE_CONFIG_PREPARE_FUNC_MAP = {
-  df_dataway: function(config, callback) {
-    var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['protocol', 'token', 'accessKey', 'secretKey'];
+  // 尝试连接
+  var celery = celeryHelper.createHelper(res.locals.logger);
 
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'DataFlux DataWay');
+  var kwargs = {
+    type  : type,
+    config: config,
+  };
+  celery.putTask('DataFluxFunc.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
     if (err) return callback(err);
 
+    celeryRes = celeryRes || {};
+    extraInfo = extraInfo || {};
+
+    var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
+    if (celeryRes.status === 'FAILURE') {
+      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', toolkit.strf('Connecting to DataSource failed. {0}', errorMessage), {
+        etype: celeryRes.result && celeryRes.result.exc_type,
+        error: errorMessage,
+      }));
+    } else if (extraInfo.status === 'TIMEOUT') {
+      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout.', {
+        etype: celeryRes.result && celeryRes.result.exc_type,
+      }));
+    }
+
+    return callback();
+  });
+}
+
+var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
+  df_dataway: function(req, res, config, callback) {
     // 默认值
     config.port     = config.port     || 9528;
     config.protocol = config.protocol || 'http';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host', 'port'];
+    var OPTIONAL_FIELDS = ['protocol', 'token', 'accessKey', 'secretKey'];
+
+    return _checkDataSourceConfig(req, res, 'df_dataway', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  influxdb: function(config, callback) {
-    var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'protocol', 'database', 'user', 'password'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'InfluxDB');
-    if (err) return callback(err);
-
+  influxdb: function(req, res, config, callback) {
     // 默认值
     config.port     = config.port     || 8086;
     config.protocol = config.protocol || 'http';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host'];
+    var OPTIONAL_FIELDS = ['port', 'protocol', 'database', 'user', 'password'];
+
+    return _checkDataSourceConfig(req, res, 'influxdb', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  mysql: function(config, callback) {
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'MySQL');
-    if (err) return callback(err);
-
+  mysql: function(req, res, config, callback) {
     // 默认值
     config.port    = config.port    || 3306;
     config.charset = config.charset || 'utf8mb4';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
+    var OPTIONAL_FIELDS = ['port'];
+
+    return _checkDataSourceConfig(req, res, 'mysql', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  redis: function(config, callback) {
-    var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'password'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'Redis');
-    if (err) return callback(err);
-
+  redis: function(req, res, config, callback) {
     // 默认值
     config.port     = config.port     || 6379;
     config.password = config.password || null;
     config.database = config.database || 0;
 
-    return callback();
+    var REQUIRED_FIELDS = ['host', 'database'];
+    var OPTIONAL_FIELDS = ['port', 'password'];
+
+    return _checkDataSourceConfig(req, res, 'redis', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  memcached: function(config, callback) {
-    var REQUIRED_FIELDS = ['servers'];
-    var OPTIONAL_FIELDS = [];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'Memcached');
-    if (err) return callback(err);
-
+  memcached: function(req, res, config, callback) {
     // 默认值
     config.port = config.port || 11211;
 
-    return callback();
+    var REQUIRED_FIELDS = ['servers'];
+    var OPTIONAL_FIELDS = [];
+
+    return _checkDataSourceConfig(req, res, 'memcached', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  clickhouse: function(config, callback) {
-    var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'user', 'password'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'ClickHouse');
-    if (err) return callback(err);
-
+  clickhouse: function(req, res, config, callback) {
     // 默认值
     config.port = config.port || 9000;
     config.user = config.user || 'default';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host', 'database'];
+    var OPTIONAL_FIELDS = ['port', 'user', 'password'];
+
+    return _checkDataSourceConfig(req, res, 'clickhouse', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  oracle: function(config, callback) {
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'Oracle Database');
-    if (err) return callback(err);
-
+  oracle: function(req, res, config, callback) {
     // 默认值
     config.port    = config.port    || 1521;
     config.charset = config.charset || 'utf8';
 
-    return callback();
-  },
-  sqlserver: function(config, callback) {
     var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
     var OPTIONAL_FIELDS = ['port'];
 
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'Microsoft SQL Server');
-    if (err) return callback(err);
-
+    return _checkDataSourceConfig(req, res, 'oracle', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  sqlserver: function(req, res, config, callback) {
     // 默认值
     config.port    = config.port    || 1433;
     config.charset = config.charset || 'utf8';
 
-    return callback();
-  },
-  postgresql: function(config, callback) {
     var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
     var OPTIONAL_FIELDS = ['port'];
 
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'PostgreSQL');
-    if (err) return callback(err);
-
+    return _checkDataSourceConfig(req, res, 'sqlserver', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  postgresql: function(req, res, config, callback) {
     // 默认值
     config.port    = config.port    || 5432;
     config.charset = config.charset || 'utf8';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
+    var OPTIONAL_FIELDS = ['port'];
+
+    return _checkDataSourceConfig(req, res, 'postgresql', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  mongodb: function(config, callback) {
-    var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'user', 'password', 'database'];
-
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'mongoDB');
-    if (err) return callback(err);
-
+  mongodb: function(req, res, config, callback) {
     // 默认值
     config.port = config.port || 27017;
 
-    return callback();
-  },
-  elasticsearch: function(config, callback) {
     var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'protocol', 'user', 'password'];
+    var OPTIONAL_FIELDS = ['port', 'user', 'password', 'database'];
 
-    var err = _checkDataSourceConfig(config, REQUIRED_FIELDS, OPTIONAL_FIELDS, 'elasticsearch');
-    if (err) return callback(err);
-
+    return _checkDataSourceConfig(req, res, 'mongodb', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  elasticsearch: function(req, res, config, callback) {
     // 默认值
     config.port     = config.port     || 9200;
     config.protocol = config.protocol || 'http';
 
-    return callback();
+    var REQUIRED_FIELDS = ['host'];
+    var OPTIONAL_FIELDS = ['port', 'protocol', 'user', 'password'];
+
+    return _checkDataSourceConfig(req, res, 'elasticsearch', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  nsq: function(req, res, config, callback) {
+    // 默认值
+    config.port = config.port || 4161;
+
+    var REQUIRED_FIELDS = [];
+    var OPTIONAL_FIELDS = ['host', 'port', 'protocol', 'servers'];
+
+    return _checkDataSourceConfig(req, res, 'nsq', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
 };
 
@@ -216,42 +224,11 @@ exports.add = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 准备数据源配置
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.configJSON)) return asyncCallback();
-
-      DATA_SOURCE_CONFIG_PREPARE_FUNC_MAP[data.type](data.configJSON, asyncCallback);
-    },
     // 检查数据源配置
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      var celery = celeryHelper.createHelper(res.locals.logger);
-
-      var kwargs = {
-        type  : data.type,
-        config: data.configJSON,
-      };
-      celery.putTask('DataFluxFunc.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
-        if (err) return asyncCallback(err);
-
-        celeryRes = celeryRes || {};
-        extraInfo = extraInfo || {};
-
-        var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
-        if (celeryRes.status === 'FAILURE') {
-          return asyncCallback(new E('EClientBadRequest.ConnectingToDataSourceFailed', toolkit.strf('Connecting to DataSource failed. {0}', errorMessage), {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-            error: errorMessage,
-          }));
-        } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout.', {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-          }));
-        }
-
-        return asyncCallback();
-      });
+      DATA_SOURCE_CHECK_CONFIG_FUNC_MAP[data.type](req, res, data.configJSON, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -289,42 +266,11 @@ exports.modify = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 准备数据源配置
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.configJSON)) return asyncCallback();
-
-      DATA_SOURCE_CONFIG_PREPARE_FUNC_MAP[dataSource.type](data.configJSON, asyncCallback);
-    },
     // 检查数据源配置
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      var celery = celeryHelper.createHelper(res.locals.logger);
-
-      var kwargs = {
-        type  : dataSource.type,
-        config: data.configJSON,
-      };
-      celery.putTask('DataFluxFunc.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
-        if (err) return asyncCallback(err);
-
-        celeryRes = celeryRes || {};
-        extraInfo = extraInfo || {};
-
-        var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
-        if (celeryRes.status === 'FAILURE') {
-          return asyncCallback(new E('EClientBadRequest.ConnectingToDataSourceFailed', toolkit.strf('Connecting to DataSource failed. {0}', errorMessage),  {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-            error: errorMessage,
-          }));
-        } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout.', {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-          }));
-        }
-
-        return asyncCallback();
-      });
+      DATA_SOURCE_CHECK_CONFIG_FUNC_MAP[dataSource.type](req, res, data.configJSON, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -495,6 +441,50 @@ exports.query = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet(queryResult);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.test = function(req, res, next) {
+  var id = req.params.id;
+
+  var dataSourceModel = dataSourceMod.createModel(req, res);
+
+  var dataSource = null;
+
+  async.series([
+    // 获取数据源
+    function(asyncCallback) {
+      dataSourceModel.getWithCheck(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        dataSource = dbRes;
+
+        // 解密相关字段
+        if (dataSource.configJSON && 'object' === typeof dataSource.configJSON) {
+          dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
+            var fCipher = toolkit.strf('{0}Cipher', f);
+
+            if (dataSource.configJSON[fCipher]) {
+              dataSource.configJSON[f] = toolkit.decipherByAES(dataSource.configJSON[fCipher], CONFIG.SECRET);
+              delete dataSource.configJSON[fCipher];
+            }
+          });
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 检查数据源配置
+    function(asyncCallback) {
+      DATA_SOURCE_CHECK_CONFIG_FUNC_MAP[dataSource.type](req, res, dataSource.configJSON, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      checkResult: 'OK',
+    });
     return res.locals.sendJSON(ret);
   });
 };

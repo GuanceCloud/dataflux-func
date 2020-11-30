@@ -210,6 +210,19 @@ exports.createAuthChecker = function(routeConfig) {
       res.locals.logger.debug('[MID] IN auth.authChecker');
     }
 
+    // Check X-Localhost-Temp-Auth-Token
+    if (req.hostname === 'localhost') {
+      var localhostTempAuthToken    = req.get(CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL);
+      var localhostTempAuthTokenMap = req.app.locals.localhostTempAuthTokenMap || {};
+
+      if (localhostTempAuthToken && localhostTempAuthTokenMap[localhostTempAuthToken]) {
+        delete localhostTempAuthTokenMap[localhostTempAuthToken];
+
+        res.locals.skipPrivilegeChecker = true;
+        return next();
+      }
+    }
+
     // Check only require sign-in
     if (!routeConfig.requireSignIn) {
       return next();
@@ -260,7 +273,7 @@ exports.createPrivilegeChecker = function(routeConfig) {
       res.locals.logger.debug('[MID] IN auth.privilegeChecker');
     }
 
-    if (!routeConfig.privilege) {
+    if (!routeConfig.privilege || res.locals.skipPrivilegeChecker) {
       return next();
     }
 

@@ -2,7 +2,7 @@
 
 '''
 脚本Debug模式执行处理任务
-主要用于脚本预检查、DataFlux.f(x)编辑页面直接调用函数
+主要用于脚本预检查、DataFlux Func编辑页面直接调用函数
 '''
 
 # Builtin Modules
@@ -21,7 +21,7 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import DataFluxFuncBaseException, ScriptNotFoundException, FunctionNotFoundException
+from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -82,8 +82,8 @@ class DataFluxFuncDebugger(ScriptBaseTask):
         return script_dict
 
 @app.task(name='DataFluxFunc.debugger', bind=True, base=DataFluxFuncDebugger,
-    soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
-    time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
+    soft_time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'],
+    time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
 def dataflux_func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
@@ -113,6 +113,12 @@ def dataflux_func_debugger(self, *args, **kwargs):
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
 
+    # 队列
+    queue = kwargs.get('queue')
+
+    # HTTP请求
+    http_request = kwargs.get('httpRequest') or {}
+
     # 函数结果、上下文、跟踪信息、错误堆栈
     func_result  = None
     script_scope = None
@@ -125,27 +131,32 @@ def dataflux_func_debugger(self, *args, **kwargs):
         target_script = script_dict.get(script_id)
 
         if not target_script:
-            e = ScriptNotFoundException('Script `{}` not found'.format(script_id))
+            e = NotFoundException('Script `{}` not found'.format(script_id))
             raise e
 
         extra_vars = {
-            '_DFF_IS_DEBUG'         : True,
-            '_DFF_ROOT_TASK_ID'     : root_task_id,
-            '_DFF_FUNC_CHAIN'       : func_chain,
-            '_DFF_ORIGIN'           : origin,
-            '_DFF_ORIGIN_ID'        : origin_id,
-            '_DFF_EXEC_MODE'        : exec_mode,
-            '_DFF_START_TIME'       : start_time,
-            '_DFF_START_TIME_MS'    : start_time_ms,
-            '_DFF_TRIGGER_TIME'     : kwargs.get('triggerTime') or start_time,
-            '_DFF_CRONTAB'          : kwargs.get('crontab'),
-            '_DFF_CRONTAB_CONFIG_ID': kwargs.get('crontabConfigId'),
+            '_DFF_DEBUG'        : True,
+            '_DFF_ROOT_TASK_ID' : root_task_id,
+            '_DFF_SCRIPT_SET_ID': script_set_id,
+            '_DFF_SCRIPT_ID'    : script_id,
+            '_DFF_FUNC_ID'      : func_id,
+            '_DFF_FUNC_NAME'    : func_name,
+            '_DFF_FUNC_CHAIN'   : func_chain,
+            '_DFF_ORIGIN'       : origin,
+            '_DFF_ORIGIN_ID'    : origin_id,
+            '_DFF_EXEC_MODE'    : exec_mode,
+            '_DFF_START_TIME'   : start_time,
+            '_DFF_START_TIME_MS': start_time_ms,
+            '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
+            '_DFF_CRONTAB'      : kwargs.get('crontab'),
+            '_DFF_QUEUE'        : queue,
+            '_DFF_HTTP_REQUEST' : http_request,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
-                script_name=script_id,
-                script_dict=script_dict,
-                extra_vars=extra_vars)
+            script_name=script_id,
+            script_dict=script_dict,
+            extra_vars=extra_vars)
 
         # 加载代码
         self.logger.info('[LOAD SCRIPT] `{}`'.format(script_id))
@@ -155,7 +166,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
         if func_name:
             entry_func = script_scope.get(func_name)
             if not entry_func:
-                e = FunctionNotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
+                e = NotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
                 raise e
 
             # 执行函数
@@ -185,12 +196,12 @@ def dataflux_func_debugger(self, *args, **kwargs):
             log_messages = script_scope['DFF'].log_messages or []
             result['logMessages'] = log_messages
 
-            # 脚本输出图标
+            # 【待废除】脚本输出图表
             plot_charts = script_scope['DFF'].plot_charts or []
             result['plotCharts'] = plot_charts
 
         if func_name:
-            # 函数运行结果
+            # 准备函数运行结果
             func_result_raw        = None
             func_result_repr       = None
             func_result_json_dumps = None
@@ -220,7 +231,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
                 'cost'     : time.time() - start_time,
             }
 
-        # 返回值
+        # 准备返回值
         retval = {
             'result'   : result,
             'traceInfo': trace_info,
@@ -230,4 +241,5 @@ def dataflux_func_debugger(self, *args, **kwargs):
         # 清理资源
         self.clean_up()
 
+        # 返回函数结果
         return retval

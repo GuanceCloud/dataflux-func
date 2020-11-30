@@ -88,7 +88,7 @@ export default {
     async loadData(useDefault) {
       if (useDefault) {
         let defaultSetting = {
-          theme: 'elegant-monokai',
+          theme: null,
           style: this.T.jsonCopy(this.$store.getters.DEFAULT_STATE.codeMirrorStyle),
         };
         this.form = defaultSetting;

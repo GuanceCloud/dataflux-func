@@ -19,7 +19,10 @@
         @click="openEntity(node, data)">
 
         <span>
-          <el-link v-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
+          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+          </el-link>
+          <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
             <i class="fa fa-fw fa-plus"></i>（添加环境变量）
           </el-link>
           <div v-else>
@@ -28,34 +31,37 @@
         </span>
 
         <div>
-          <el-tooltip effect="dark" content="配置" placement="left" :enterable="false">
-            <el-button v-if="data.type !== 'addEnvVariable'"
-              type="text"
-              size="small"
-              @click.stop="openEntity(node, data, 'setup')">
-              <i class="fa fa-fw fa-wrench text-info"></i>
-            </el-button>
-          </el-tooltip>
+          <div v-if="data.type === 'envVariable'">
+            <el-tooltip effect="dark" content="配置" placement="left" :enterable="false">
+              <el-button
+                type="text"
+                size="small"
+                @click.stop="openEntity(node, data, 'setup')">
+                <i class="fa fa-fw fa-wrench text-info"></i>
+              </el-button>
+            </el-tooltip>
 
-          <el-popover v-if="data.tip"
-            placement="right-start"
-            trigger="hover"
-            transition="el-fade-in"
-            popper-class="aside-tip"
-            :close-delay="500">
-            <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
-            <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-              示例代码：
-              <pre>{{ data.tip.sampleCode }}</pre>
-              <CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
-            </div>
-            <el-button slot="reference"
-              type="text"
-              size="small"
-              @click.stop>
-              <i class="fa fa-fw fa-question-circle"></i>
-            </el-button>
-          </el-popover>
+            <el-popover v-if="data.tip"
+              placement="right-start"
+              trigger="hover"
+              transition="el-fade-in"
+              popper-class="aside-tip"
+              :close-delay="500">
+              <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
+              <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
+                示例代码：
+                <pre>{{ data.tip.sampleCode }}</pre>
+                <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+                <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
+              </div>
+              <el-button slot="reference"
+                type="text"
+                size="small"
+                @click.stop>
+                <i class="fa fa-fw fa-question-circle"></i>
+              </el-button>
+            </el-popover>
+          </div>
         </div>
       </span>
     </el-tree>
@@ -78,6 +84,7 @@ export default {
   methods: {
     filterNode(value, data) {
       if (!value) return true;
+      if (['addEnvVariable', 'refresh'].indexOf(data.type) >= 0) return true;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -94,7 +101,10 @@ export default {
       if (!apiRes.ok) return;
 
       let treeData = [];
+      window._DFF_envVariableIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_envVariableIds.push(d.id);
+
         // 缩减描述行数
         d.description = this.T.limitLines(d.description);
 
@@ -108,11 +118,11 @@ export default {
             description: d.description,
             sampleCode : `DFF.ENV('${d.id}')`,
           },
-
         });
       });
-
-      treeData.push({type: 'addEnvVariable'});
+      treeData.sort(this.T.asideItemSorter);
+      treeData.unshift({type: 'addEnvVariable'});
+      treeData.unshift({type: 'refresh'});
 
       this.loading = false;
       this.data = treeData;
@@ -123,6 +133,11 @@ export default {
       }
 
       switch(data.type) {
+        // 刷新
+        case 'refresh':
+          this.loadData();
+          break;
+
         // 「添加环境变量」节点
         case 'addEnvVariable':
           this.$router.push({

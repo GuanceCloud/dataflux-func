@@ -11,6 +11,7 @@
       :highlight-current="true"
       :default-expand-all="false"
       :default-expanded-keys="defaultExpandedNodeKeys"
+      :auto-expand-parent="false"
       :expand-on-click-node="false"
       :indent="10"
       node-key="id"
@@ -21,10 +22,14 @@
       <span
         slot-scope="{node, data}"
         class="aside-tree-node"
+        :entry-id="data.id"
         @click="openEntity(node, data)">
 
         <span>
-          <el-link v-if="data.type === 'addScript'" type="primary" :underline="false">
+          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+          </el-link>
+          <el-link v-else-if="data.type === 'addScript'" type="primary" :underline="false">
             <i class="fa fa-fw fa-plus"></i>（添加脚本）
           </el-link>
           <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
@@ -44,7 +49,7 @@
                 <i class="fa fa-pencil"></i>
                 已编辑
               </el-tag>
-              {{ node.label }}
+              {{ node.label }}<span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
             </span>
           </div>
         </span>
@@ -91,7 +96,8 @@
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               示例代码：
               <pre>{{ data.tip.sampleCode }}</pre>
-              <CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
             </div>
             <div v-if="data.isCodeEdited" class="code-edited-tip">
               <span class="text-bad">代码已修改但尚未发布<br>引用/API调用实际将运行已发布代码</span>
@@ -148,6 +154,8 @@ export default {
   methods: {
     filterNode(value, data) {
       if (!value) return true;
+      if (['addScriptSet', 'refresh'].indexOf(data.type) >= 0) return true;
+      if (data.type === 'addScript') return false;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -192,7 +200,7 @@ export default {
         nodeEntity[d.id] = 'scriptSet';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         let isLockedByOther = d.lockedByUserId && d.lockedByUserId !== this.$store.getters.userId;
@@ -217,12 +225,15 @@ export default {
       });
       if (!apiRes.ok) return;
 
+      window._DFF_scriptIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_scriptIds.push(d.id);
+
         // 记录节点
         nodeEntity[d.id] = 'script';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         let isCodeEdited = d.codeMD5 !== d.codeDraftMD5;
@@ -258,12 +269,15 @@ export default {
       });
       if (!apiRes.ok) return;
 
+      window._DFF_funcIds = [];
       apiRes.data.forEach(d => {
+        window._DFF_funcIds.push(d.id);
+
         // 记录节点
         nodeEntity[d.id] = 'func';
 
         // 缩减描述行数
-        d.description = this.T.limitLines(d.description);
+        d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
         funcMap[d.id] = {
@@ -288,16 +302,29 @@ export default {
         }
       });
 
-      // 转换为tree数据，并增加「添加脚本集/脚本」项
+      // 转换为tree数据，并增加「刷新」/「添加脚本集/脚本」项
       let treeData = Object.values(scriptSetMap);
       treeData.forEach(d => {
         if (d.isLockedByOther) return;
+
+        if (!this.T.isNothing(d.children)) {
+          d.childrenCount = d.children.filter(x => x.type === 'script').length;
+        }
+        d.children.sort(this.T.asideItemSorter);
         d.children.push({
           scriptSetId: d.id,
           type       : 'addScript',
         });
+
+        d.children.forEach(dd => {
+          if (!this.T.isNothing(dd.children)) {
+            dd.childrenCount = dd.children.filter(x => x.type === 'func').length;
+          }
+        });
       })
-      treeData.push({type: 'addScriptSet'});
+      treeData.sort(this.T.asideItemSorter);
+      treeData.unshift({type: 'addScriptSet'});
+      treeData.unshift({type: 'refresh'});
 
       // 清理无效数据（已经不存在的节点）
       let _d = this.T.jsonCopy(this.$store.state.asideScript_expandedNodeMap);
@@ -332,6 +359,18 @@ export default {
         // 自动选中
         this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
       });
+
+      setTimeout(() => {
+        // 滚动到目标位置
+        let entryId = this.$refs.tree.getCurrentKey();
+        if (entryId) {
+          let $asideContent = document.getElementById('pane-aside-script').parentElement;
+          let $target = document.querySelector(`[entry-id="${entryId}"]`);
+
+          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 100;
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
+      }, 1000);
     },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
@@ -355,6 +394,11 @@ export default {
       }
 
       switch(data.type) {
+        // 刷新
+        case 'refresh':
+          this.loadData();
+          break;
+
         // 「添加脚本集」节点
         case 'addScriptSet':
           this.$router.push({
@@ -405,10 +449,6 @@ export default {
               params: {id: data.id},
             });
 
-            // 记录选择的脚本ID，清空函数高亮
-            this.$store.commit('updateAsideScript_currentNodeKey', data.id);
-            this.$store.commit('updateEditor_highlightedFuncId', null);
-
             this.expandNode(data.id);
           }
           break;
@@ -429,16 +469,15 @@ export default {
             });
           }
 
-          // 记录选择的脚本ID，记录函数高亮
-          this.$store.commit('updateAsideScript_currentNodeKey', data.id);
-          this.$store.commit('updateEditor_highlightedFuncId', data.id);
-
           break;
 
         default:
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+
+      this.$store.commit('updateAsideScript_currentNodeKey', data.id);
+      this.$store.commit('updateEditor_highlightedFuncId', data.type === 'func' ? data.id : null);
     },
   },
   computed: {
@@ -517,5 +556,10 @@ pre.aside-tree-node-description {
   font-size: 12px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+.child-nodes-count {
+  font-family: monospace;
+  font-style: italic;
+  font-size: 12px;
 }
 </style>

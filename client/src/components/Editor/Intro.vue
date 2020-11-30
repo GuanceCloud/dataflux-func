@@ -11,7 +11,7 @@
         <div class="intro-content">
           <InfoBlock type="warning" title="在开始之前，请大致阅读以下介绍"></InfoBlock>
 
-          <template v-if="false">
+          <template>
           <!-- 包学包会 -->
           <el-divider content-position="left">
             <h1>
@@ -19,9 +19,9 @@
             </h1>
           </el-divider>
           <p>
-            我们编写了详细的操作使用手册《DataFlux.f(x)包学包会》<br>
+            我们编写了详细的操作使用手册《DataFlux Func 包学包会》<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" href="https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/helps/dataflux_fx/dataflux-fx-user-guide.pdf" target="_blank">立即阅读《DataFlux.f(x)包学包会》（文档大小约15MB)</el-link>
+            <el-link type="primary" href="https://t.dataflux.cn/func-user-guide" target="_blank">立即阅读《DataFlux Func 包学包会》（文档大小约5MB）</el-link>
           </p>
           </template>
 
@@ -91,6 +91,7 @@
               <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>[</kbd>：减少缩进（支持多行操作）</li>
               <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>：增加缩进</li>
               <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Shift</kbd> + <kbd>Tab</kbd>：减少缩进</li>
+              <li>焦点在编辑器内 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd>：搜索</li>
             </ul>
           </p>
 

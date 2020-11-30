@@ -153,13 +153,13 @@ exports.getNodesReport = function(req, res, next) {
 exports.clearWorkerQueues = function(req, res, next) {
   var workerQueues = req.body.workerQueues;
 
-  var workerQueuePrefix = toolkit.getWorkerQueue().split('@')[0];
+  var workerQueuePrefix = toolkit.getWorkerQueue('x').split('@')[0];
   async.eachSeries(workerQueues, function(workerQueue, eachCallback) {
     if (workerQueue.indexOf(workerQueuePrefix) < 0) {
       workerQueue = toolkit.getWorkerQueue(workerQueue);
     }
 
-    res.locals.cacheDB.ltrim(workerQueue, 0, 0, eachCallback);
+    res.locals.cacheDB.ltrim(workerQueue, 1, 0, eachCallback);
 
   }, function(err) {
     if (err) return next(err);

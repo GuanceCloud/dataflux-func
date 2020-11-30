@@ -45,7 +45,14 @@ exports.createRequestValidator = function(routeConfig) {
 
     // Verify Query
     if (routeConfig.query) {
-      convertArrayQuerys(req, routeConfig.query);
+      var checkQueryConfig = toolkit.jsonCopy(routeConfig.query);
+      checkQueryConfig[CONFIG._WEB_AUTH_QUERY] = {
+        $desc      : 'XAuthToken',
+        $isRequired: false,
+        $type      : 'string',
+      };
+
+      convertArrayQuerys(req, checkQueryConfig);
 
       var checker = createObjectChecker({
         defaultRequired: false,
@@ -60,7 +67,7 @@ exports.createRequestValidator = function(routeConfig) {
         },
       });
 
-      ret = checker.check(req.query, routeConfig.query);
+      ret = checker.check(req.query, checkQueryConfig);
       if (!ret.isValid) {
         return next(new E('EClientBadRequest', 'Invalid query', {
           message: ret.message,
@@ -70,9 +77,9 @@ exports.createRequestValidator = function(routeConfig) {
       // Convert query options
       var convertOptions = {};
       for (var k in req.query) if (req.query.hasOwnProperty(k)) {
-        if (!routeConfig.query[k].$type) continue;
+        if (!checkQueryConfig[k].$type) continue;
 
-        convertOptions[k] = routeConfig.query[k].$type;
+        convertOptions[k] = checkQueryConfig[k].$type;
       }
 
       req.query = toolkit.convertObject(req.query, convertOptions);

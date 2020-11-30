@@ -17,7 +17,7 @@
               <el-form ref="form" :model="form" label-width="100px" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item>
                   <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本已被其他人锁定，无法进行修改"></InfoBlock>
-                  <InfoBlock v-else-if="data.isLocked" type="warning" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
+                  <InfoBlock v-else-if="data.isLocked" type="success" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -56,7 +56,7 @@
                 -->
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除脚本集</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
                   <div class="setup-right">
                     <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? '解锁' : '锁定' }}</el-button>
                     <el-button type="primary" @click="submitData">保存</el-button>
@@ -120,11 +120,20 @@ export default {
         return console.error(err);
       }
 
+      let dataId = null;
       switch(this.mode) {
         case 'add':
-          return await this.addData();
+          dataId = await this.addData();
+          break;
+
         case 'setup':
-          return await this.modifyData();
+          dataId = await this.modifyData();
+          break;
+      }
+
+      if (dataId) {
+        this.$store.commit('updateAsideScript_currentNodeKey', dataId);
+        this.$store.commit('updateEditor_highlightedFuncId', null);
       }
     },
     async addData() {
@@ -138,6 +147,8 @@ export default {
         name: 'intro',
       });
       this.$store.commit('updateScriptListSyncTime');
+
+      return apiRes.data.id;
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
@@ -152,12 +163,15 @@ export default {
 
       await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
+
+      return this.scriptSetId;
     },
     async lockData(isLocked) {
+      let actionTitle = isLocked ? '锁定' : '解锁';
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
         params: {id: this.scriptSetId},
         body  : {data: { isLocked: isLocked }},
-        alert : {entity: '脚本集', action: '修改', showError: true, showSuccess: true},
+        alert : {entity: '脚本集', action: actionTitle, showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 

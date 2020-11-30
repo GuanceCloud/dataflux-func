@@ -1,15 +1,23 @@
 APP_NAME: DataFluxFunc
 
+# PIP依赖文件路径
+# 必须使用绝对路径
+PIP_REQUIREMENTS_FILE_PATH: '/data/requirements.txt'
+
 # 配置文件路径
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
+
+# 额外Python import 路径
+# 必须使用绝对路径
+EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
 
 # 运行模式
 # 可选：
 #   "dev" : 开发模式
 #   "prod": 生产模式
 # 注意：除特殊需要，应当总是使用生产模式
-MODE: dev
+MODE: prod
 
 # 私钥
 # 用于登录令牌、数据源配置加密等
@@ -24,11 +32,21 @@ SECRET: 'your_secret'
 #   WARNING: 警告和错误
 #   ERROR  : 错误
 #   NONE   : 不输出
-LOG_LEVEL: ALL
+LOG_LEVEL: WARNING
 
 # 日志文件输出地址
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/dataflux-func.log'
+
+# 数据库自动备份
+DB_AUTO_BACKUP_ENABLED: true
+
+# 数据库自动备份保留数量
+DB_AUTO_BACKUP_LIMIT: 168
+
+# 数据库自动备份目录
+# 必须使用绝对路径
+DB_AUTO_BACKUP_DIR: '/data/sqldump/'
 
 # 日志输出格式
 # 可选：
@@ -73,6 +91,9 @@ REDIS_PORT    : 6379
 REDIS_DATABASE: 5
 REDIS_PASSWORD: ''
 
+# Worker配置
+WORKER_QUEUE_ALIAS_MAP: cpu=9
+
 ########################
 #   以下配置请勿修改   #
 ########################
@@ -83,30 +104,25 @@ DING_TALK_ROBOT_URL: ''
 # 文件存储根目录
 FILE_STORE_ROOT_FOLDER: uploaded-files
 
-# 是否停用鉴权（DataFlux Studio集成专用）
+# 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
-
-# DataWay配置（DataFlux Studio集成专用）
-_DF_DATAWAY_URL  : ''
-_DF_DATAWAY_TOKEN: ''
-_DF_DATAWAY_DEBUG: false
-
-# 是否启用函数监控（DataFlux Studio集成专用）
-_ENABLE_FUNC_MONITOR: false
 
 # 客户端冲突过期时间
 _CLIENT_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
-_FUNC_PKG_EXPORT_FILENAME: dataflux-fx
-# 函数包导出扩展名名
+_FUNC_PKG_EXPORT_FILENAME: dataflux-func
+# 函数包导出扩展名
 _FUNC_PKG_EXPORT_EXT: .func-pkg
 
 # 函数包导入确认超时
 _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
 
-# 函数包密码范围
-_FUNC_PKG_PASSWORD_RANGE_LIST: 12,20
+# 函数包密码长度范围
+_FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
+
+# 脚本包自动安装锁定时间
+_FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 300
 
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''
@@ -130,7 +146,9 @@ _SAMPLE_SCRIPT: |
 
 # MySQL一般作为常量的配置
 _MYSQL_CONNECTION_LIMIT   : 30
-_MYSQL_ACQUIRE_TIMEOUT    : 30000
+_MYSQL_ACQUIRE_TIMEOUT    : 60000
+_MYSQL_CONNECT_TIMEOUT    : 60000
+_MYSQL_TIMEOUT            : 60000
 _MYSQL_CHARSET            : utf8mb4
 _MYSQL_TIMEZONE           : ''
 
@@ -152,16 +170,21 @@ _WEB_AUTH_COOKIE           : xDFFAuthToken
 _WEB_AUTH_EXPIRES          : 86400
 _WEB_CAPTCHA_EXPIRES       : 300
 _WEB_DRY_RUN_MODE_HEADER   : X-Dff-Use-Dry-Run-Mode
+_WEB_AK_SIGN_VERSION_HEADER: X-Dff-Ak-Sign-Version
 _WEB_AK_ID_HEADER          : X-Dff-Ak-Id
 _WEB_AK_TIMESTAMP_HEADER   : X-Dff-Ak-Timestamp
 _WEB_AK_NONCE_HEADER       : X-Dff-Ak-Nonce
 _WEB_AK_SIGN_HEADER        : X-Dff-Ak-Sign
-_WEB_AK_SIGN_VERSION_HEADER: X-Dff-Ak-Sign-Version
 _WEB_AK_TIMESTAMP_MAX_DIFF : 900
 _WEB_AK_NONCE_TTL          : 86400
 
+# 本地临时认证令牌
+_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL: X-Localhost-Temp-Auth-Token
+
 # Worker模块一般作为常量的配置
-_WORKER_CONCURRENCY        : 5
+_WORKER_QUEUE_COUNT        : 10
+_WORKER_DEFAULT_QUEUE      : '0'
+_WORKER_CONCURRENCY        : 10
 _WORKER_PREFETCH_MULTIPLIER: 10
 _WORKER_MAX_TASKS_PER_CHILD: 3000
 _WORKER_RESULT_EXPIRES     : 3600
@@ -173,30 +196,34 @@ _MONITOR_CACHE_USAGE_CHECK_INTERVAL        : 60
 _MONITOR_CACHE_USAGE_KEEP_DURATION         : 43200
 _MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL: 60
 _MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION : 43200
-_MONITOR_WORKER_QUEUE_LIST                 : default,internal,result,webhook,utils,runnerOnDebugger,runnerOnCrontab,runnerOnRPC,runnerOnBatch,runnerOnBatchBuiltin
+_MONITOR_WORKER_QUEUE_LIST                 : 0,1,2,3,4,5,6,7,8,9
 _MONITOR_MATCHED_ROUTE_EXPIRES             : 86400
 _MONITOR_SLOW_API_COUNT_EXPIRES            : 604800
 
 # 自动执行任务频率
-_CRONTAB_STARTER            : '* * * * *'
-_CRONTAB_SYNC_CACHE         : '* * * * *'
-_CRONTAB_AUTO_CLEANER       : '*/15 * * * *'
-_CRONTAB_SCRIPT_FORCE_RELOAD: '* * * * *'
-
+_CRONTAB_STARTER                      : '* * * * *'
+_CRONTAB_SYNC_CACHE                   : '* * * * *'
+_CRONTAB_AUTO_CLEANER                 : '*/15 * * * *'
+_CRONTAB_SCRIPT_FORCE_RELOAD          : '* * * * *'
+_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
+_CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
 # 函数任务模块一般作为常量的配置
-_FUNC_TASK_WORKER_QUEUE_MAX_LENGTH              : 1000
+_FUNC_TASK_DEFAULT_QUEUE                        : '1'
+_FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
+_FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
+_FUNC_TASK_DEBUG_TIMEOUT                        : 60
+_FUNC_TASK_DEFAULT_TIMEOUT                      : 30
 _FUNC_TASK_MIN_TIMEOUT                          : 1
 _FUNC_TASK_MAX_TIMEOUT                          : 3600
 _FUNC_TASK_DEFAULT_API_TIMEOUT                  : 10
 _FUNC_TASK_MIN_API_TIMEOUT                      : 1
-_FUNC_TASK_MAX_API_TIMEOUT                      : 30
-_FUNC_TASK_DEFAULT_TIMEOUT                      : 30
-_FUNC_TASK_DEFAULT_TIMEOUT_TO_EXPIRE_SCALE      : 10
+_FUNC_TASK_MAX_API_TIMEOUT                      : 180
+_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE              : 10
+_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL                : 5
 _FUNC_TASK_DEFAULT_BATCH_TIMEOUT                : 3600
 _FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE: 24
-_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL                : 5
 _FUNC_TASK_LOCAL_CACHE_EXPIRES                  : 5
 _FUNC_TASK_COMPILE_CACHE_MAX_SIZE               : 1000
 _FUNC_TASK_ASYNC_POOL_SIZE                      : 5
@@ -205,13 +232,33 @@ _FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
 _BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT                 : 10000
 _BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH: 20000
 
-# 数据量限量
-_DBDATA_SCRIPT_LOG_LIMIT       : 30000
-_DBDATA_SCRIPT_FAILURE_LIMIT   : 30000
-_DBDATA_FUNC_RESULT_LIMIT      : 30000
-_DBDATA_CRONTAB_TASK_INFO_LIMIT: 30000
-_DBDATA_BATCH_TASK_INFO_LIMIT  : 30000
-_DBDATA_OPERATION_RECORD_LIMIT : 50000
+_WORKER_LIMIT_PRESSURE_ENABLED             : true
+_WORKER_LIMIT_FUNC_PRESSURE_BASE           : 1000
+_WORKER_LIMIT_FUNC_PRESSURE_EXPIRES        : 3600
+_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE   : 300000
+_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES: 3600
+
+# 最近函数运行信息配置
+_RECENT_FUNC_RUNNING_COUNT_EXPIRES : 604800
+_RECENT_FUNC_RUNNING_STATUS_EXPIRES: 604800
+_RECENT_FUNC_RUNNING_STATUS_LIMIT  : 100
+
+# 数据量限制
+_DBDATA_TABLE_LIMIT_MAP: >
+  biz_main_script_log=30000
+  ,biz_main_script_failure=30000
+  ,biz_main_task_result_dataflux_func=30000
+  ,biz_main_crontab_task_info=30000
+  ,biz_main_batch_task_info=30000
+  ,biz_main_operation_record=50000
+  ,biz_main_script_recover_point=1000
+  ,biz_main_script_set_export_history=1000
+  ,biz_main_script_set_import_history=1000
+  ,biz_main_script_publish_history=1000
+
+# 数据库自动备份
+_DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
+_DB_AUTO_BACKUP_EXT   : .sql
 
 # 是否已安装完成
 _IS_INSTALLED: false

@@ -111,5 +111,10 @@ const vm = new Vue({
 }).$mount('#app');
 window.vm = vm;
 
-// 总是开启Vue调试
+// 全剧配置
 Vue.config.devtools = true;
+Vue.config.productionTip = false;
+Vue.config.silent = true;
+
+import * as thanks from '@/thanks'
+window.thanks = thanks.thanks;

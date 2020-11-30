@@ -55,8 +55,7 @@
                 <template v-if="!T.isNothing(scope.row.funcCategory)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_CATEGORY_MAP[scope.row.funcCategory]">{{ C.FUNC_CATEGORY_MAP[scope.row.funcCategory].name }}</code>
-                    <code v-else>{{ scope.row.funcCategory }}</code>
+                    <code>{{ scope.row.funcCategory }}</code>
                   </el-tag>
                 </template>
 
@@ -124,7 +123,6 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         description="授权链接同时支持POST方式和GET方式进行调用，可根据需要任意选择"
-        :showModeOption="true"
         :showPostExample="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"
@@ -160,7 +158,16 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showAPI(d) {
+    async showAPI(d) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
+        alert: {entity: '函数', showError: true},
+      });
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
         baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
         params : {id: d.id},
@@ -174,7 +181,7 @@ export default {
       }
       let apiBodyExample = {kwargs: funcCallKwargsJSON};
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample);
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {

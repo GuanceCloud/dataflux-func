@@ -262,9 +262,9 @@ LoggerHelper.prototype._log = function() {
     level = level.toUpperCase();
   }
 
-  // Skip some logs
-  if (level !== 'ERROR'
-    && (!this.req.ip || this.req.ip === '127.0.0.1' || this.req.ip === '::ffff:127.0.0.1')) return;
+  // // Skip some logs
+  // if (level !== 'ERROR'
+  //   && (!this.req.ip || this.req.ip === '127.0.0.1' || this.req.ip === '::ffff:127.0.0.1')) return;
 
   var nowMs = Date.now();
   var now   = parseInt(nowMs / 1000);

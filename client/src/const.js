@@ -18,6 +18,7 @@ import logo_sqlserver     from '@/assets/img/logo-sqlserver.png'
 import logo_postgresql    from '@/assets/img/logo-postgresql.png'
 import logo_mongodb       from '@/assets/img/logo-mongodb.png'
 import logo_elasticsearch from '@/assets/img/logo-elasticsearch.png'
+import logo_nsq           from '@/assets/img/logo-nsq.png'
 export const DATE_SOURCE = [
   {
     key           : 'df_dataway',
@@ -212,8 +213,48 @@ export const DATE_SOURCE = [
       password: { default: null },
     },
   },
+  {
+    key           : 'nsq',
+    name          : 'NSQ',
+    fullName      : 'NSQ (Lookupd, HTTP Publisher)',
+    logo          : logo_nsq,
+    tagType       : 'info',
+    debugSupported: false,
+    sampleCode    : `helper = DFF.SRC('{0}')\helper.publish(\n    topic='some_topic',\n    message='some_message')`,
+    configFields: {
+      host    : { default: null },
+      port    : { default: 4161 },
+      protocol: { default: 'http' },
+      servers : { default: null },
+    },
+  },
 ];
 export const DATE_SOURCE_MAP = createMap(DATE_SOURCE);
+
+// 侧边栏项目类型
+export const ASIDE_ITEM_TYPE =[
+  {
+    'key' : 'scriptSet',
+    'name': '脚本集',
+  },
+  {
+    'key' : 'script',
+    'name': '脚本',
+  },
+  {
+    'key' : 'func',
+    'name': '函数',
+  },
+  {
+    'key' : 'dataSource',
+    'name': '数据源',
+  },
+  {
+    'key' : 'envVariable',
+    'name': '环境变量',
+  },
+];
+export const ASIDE_ITEM_TYPE_MAP = createMap(ASIDE_ITEM_TYPE);
 
 // 环境变量
 export const ENV_VARIABLE = [
@@ -234,7 +275,7 @@ export const ENV_VARIABLE = [
   {
     key : 'boolean',
     name: '布尔值',
-    tips: '可用"true"/"false"、"yes"/"no"、"on"/"off"、"1"/"0"表示对应的布尔值',
+    tips: '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值',
   },
   {
     key : 'json',
@@ -391,85 +432,12 @@ export const FUNC_EXEC_MODE = [
     textClass: 'text-info',
   },
   {
-    key      : 'batch',
-    name     : '批处理',
+    key      : 'autoRun',
+    name     : '自动运行',
     textClass: 'text-info',
   },
 ];
 export const FUNC_EXEC_MODE_MAP = createMap(FUNC_EXEC_MODE);
-
-// 函数分类
-export const FUNC_CATEGORY = [
-  {
-    key : 'general',
-    name: '一般',
-  },
-  {
-    key : 'prediction',
-    name: '预测',
-  },
-  {
-    key : 'transformation',
-    name: '转换',
-  },
-  {
-    key : 'action',
-    name: '动作',
-  },
-  {
-    key : 'command',
-    name: '命令',
-  },
-  {
-    key : 'query',
-    name: '查询',
-  },
-  {
-    key : 'check',
-    name: '检测',
-  },
-  {
-    key : 'batch',
-    name: '批处理（通用）',
-  },
-  {
-    key : 'batchMetric',
-    name: '批处理（指标处理）',
-  },
-  {
-    key : 'batchLog',
-    name: '批处理（日志处理）',
-  },
-  {
-    key : 'builtinQuery',
-    name: '内置查询',
-  },
-  {
-    key : 'builtinCheck',
-    name: '内置检测',
-  },
-  {
-    key : 'builtinBatch',
-    name: '内置批处理（通用）',
-  },
-  {
-    key : 'builtinBatchMetric',
-    name: '内置批处理（指标处理）',
-  },
-  {
-    key : 'builtinBatchLog',
-    name: '内置批处理（日志处理）',
-  },
-  {
-    key : 'builtinBatchKeyevent',
-    name: '内置批处理（关键事件处理）',
-  },
-  {
-    key : 'builtinCollector',
-    name: '内置采集',
-  },
-];
-export const FUNC_CATEGORY_MAP = createMap(FUNC_CATEGORY);
 
 // 函数集成
 export const FUNC_INTEGRATION = [

@@ -28,7 +28,7 @@ def before_app_create():
 
     toolkit.get_server_cache_key = get_server_cache_key
 
-    def get_worker_queue(name=None):
+    def get_worker_queue(name):
         worker_queue = toolkit._get_worker_queue(name)
 
         # Add queue prefix to queue name
@@ -38,4 +38,9 @@ def before_app_create():
     toolkit.get_worker_queue = get_worker_queue
 
 def after_app_created(celery_app):
-    pass
+    from worker.tasks.dataflux_func import dataflux_func_reload_scripts, dataflux_func_auto_cleaner, dataflux_func_auto_run
+
+    # 启动时自动执行
+    dataflux_func_reload_scripts.apply_async(kwargs={'sleepDelay': 10, 'isOnLaunch': True, 'force': True})
+    dataflux_func_auto_cleaner.apply_async(kwargs={'sleepDelay': 30})
+    dataflux_func_auto_run.apply_async(kwargs={'sleepDelay': 10})

@@ -15,6 +15,19 @@
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+                <el-form-item label="使用自定义ID" prop="useCustomId" v-show="mode === 'add'">
+                  <el-switch v-model="useCustomId"></el-switch>
+                </el-form-item>
+
+                <el-form-item label="ID" prop="id" v-show="useCustomId">
+                  <el-input :disabled="mode === 'setup'"
+                    maxlength="50"
+                    show-word-limit
+                    v-model="form.id">
+                  </el-input>
+                  <InfoBlock title="授权链接ID关系到调用时的URL"></InfoBlock>
+                </el-form-item>
+
                 <el-form-item label="执行函数" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
@@ -28,6 +41,8 @@
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
                   <InfoBlock title="函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数"></InfoBlock>
+
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="启用" prop="isDisabled">
@@ -121,6 +136,13 @@ export default {
         }
       },
     },
+    useCustomId(val) {
+      if (val) {
+        this.form.id = `${this.ID_PREFIX}`;
+      } else {
+        this.form.id = null;
+      }
+    },
   },
   methods: {
     async loadData() {
@@ -200,6 +222,7 @@ export default {
 
       let funcCascaderOptions = Object.values(scriptSetMap);
 
+      this.funcMap             = funcMap;
       this.funcCascaderOptions = funcCascaderOptions;
       this.$store.commit('updateLoadStatus', true);
     },
@@ -309,13 +332,20 @@ export default {
 
       let example = {};
       parameters.forEach(p => {
-        example[p] = 'FROM_PARAMETER';
+        if (p.indexOf('**') === 0) {
+          // 暂定：不展示**kwargs参数
+        } else {
+          example[p] = 'FROM_PARAMETER';
+        }
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
     },
   },
   computed: {
+    ID_PREFIX() {
+      return 'auln-';
+    },
     mode() {
       return this.$route.name.split('-').pop();
     },
@@ -325,6 +355,15 @@ export default {
         add  : '添加',
       };
       return nameMap[this.mode];
+    },
+    apiCustomKwargsSupport() {
+      let funcId = this.form.funcId;
+      if (!funcId) return false;
+
+      for (let k in this.funcMap[funcId].kwargsJSON) {
+        if (k.indexOf('**') === 0) return true;
+      }
+      return false;
     },
     datetimePickerOptions() {
       const now = new Date().getTime();
@@ -352,9 +391,13 @@ export default {
   data() {
     return {
       data               : {},
+      funcMap            : {},
       funcCascaderOptions: [],
 
+      useCustomId: false,
+
       form: {
+        id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
         expireTime        : null,
@@ -364,6 +407,17 @@ export default {
         note              : null,
       },
       formRules: {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) < 0 || value === this.ID_PREFIX)) {
+                return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
+              }
+              return callback();
+            },
+          }
+        ],
         funcId: [
           {
             trigger : 'change',

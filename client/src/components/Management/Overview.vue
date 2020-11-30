@@ -12,30 +12,37 @@
       <el-main>
         <el-divider content-position="left"><h1>资源计数</h1></el-divider>
 
-        <el-card class="overview-card" shadow="hover" v-for="d in data.bizEntityCount" :key="d.name">
+        <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP[d.name].icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP[d.name].icon"></i>
           <i v-else-if="C.OVERVIEW_ENTITY_MAP[d.name].tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP[d.name].tagText }}</code></i>
 
           <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP[d.name].name }}</span>
-          <span class="overview-count">
+          <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
             {{ d.count }}
             <span class="overview-count-unit">个</span>
           </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ data.scriptOverview.length }}个）</h1></el-divider>
+        <el-divider content-position="left"><h1>队列信息</h1></el-divider>
+        <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
+          <el-progress type="dashboard"
+            :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
+            :format="workerQueuePressureFormat"
+            :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
-        <el-table :data="data.scriptOverview" stripe style="width: 95%">
-          <el-table-column label="类型" sortable sort-by="sset_type" width="90">
-            <template slot-scope="scope">
-              <el-tag size="small" v-if="scope.row.sset_type === 'official'">官方</el-tag>
-              <el-tag size="small" v-else type="success">用户</el-tag>
-            </template>
-          </el-table-column>
+          <span class="worker-queue-name">
+            队列 # <span class="worker-queue-number">{{ i }}</span>
+            <br>工作单元：{{ workerQueue.workerCount || 0 }} 个
+            <br>请求排队：{{ workerQueue.taskCount || 0 }} 个
+          </span>
+        </el-card>
 
-          <el-table-column label="脚本集" sortable :sort-by="['sset_title', 'sset_id']">
+        <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ scriptOverview.length }}个）</h1></el-divider>
+
+        <el-table :data="scriptOverview" stripe style="width: 95%">
+          <el-table-column label="脚本集" sortable>
             <template slot-scope="scope">
-              <span>{{ scope.row.sset_title || scope.row.sset_id }}</span>
+              <span>{{ scope.row.scriptSetTitle || scope.row.scriptSetId }}</span>
             </template>
           </el-table-column>
 
@@ -83,9 +90,9 @@
           </el-table-column>
         </el-table>
 
-        <el-divider class="overview-divider" content-position="left"><h1>最近操作记录（最近{{ data.latestOperations.length }}条）</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left"><h1>最近操作记录（最近{{ latestOperations.length }}条）</h1></el-divider>
 
-        <el-table :data="data.latestOperations" stripe style="width: 95%">
+        <el-table :data="latestOperations" stripe style="width: 95%">
           <el-table-column label="时间" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
@@ -179,20 +186,30 @@ export default {
     },
   },
   methods: {
-    async loadData() {
+    async loadData(sections) {
+      let _query = null;
+      if (!this.T.isNothing(sections)) {
+        _query = { sections: sections.join(',') };
+      }
       let apiRes = await this.T.callAPI('/api/v1/func/overview', {
+        query: _query,
         alert: {entity: '总览', showError: true},
       });
       if (!apiRes.ok) return;
 
-      apiRes.data.scriptOverview.forEach(d => {
-        d.latestPublishTimestamp = 0;
-        if (d.latestPublishTime) {
-          d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
-        }
+      if (apiRes.data.scriptOverview) {
+        apiRes.data.scriptOverview.forEach(d => {
+          d.latestPublishTimestamp = 0;
+          if (d.latestPublishTime) {
+            d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
+          }
+        });
+      }
+
+      (sections || this.OVERVIEW_SECTIONS).forEach(s => {
+        this[s] = apiRes.data[s];
       });
 
-      this.data = apiRes.data;
       this.$store.commit('updateLoadStatus', true);
     },
     showDetail(d) {
@@ -222,14 +239,63 @@ export default {
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
+    overviewCountFontSize(count) {
+      // 最大80px，每多一位减少15px
+      let numberLength = ('' + count).length;
+      return Math.min(80 - 15 * (numberLength - 4), 80);
+    },
+    workerQueuePressurePercentage(pressure, maxPressure) {
+      var percentage = 100 * pressure / (maxPressure * 2);
+      if (percentage < 0) {
+        percentage = 0;
+      } else if (percentage > 100) {
+        percentage = 100;
+      }
+
+      return percentage;
+    },
+    workerQueuePressureFormat(percentage) {
+      return `压力: ${parseInt(percentage * 2)}`;
+    },
   },
   computed: {
+    OVERVIEW_SECTIONS() {
+      return [
+        'bizEntityCount',
+        'workerQueueInfo',
+        'scriptOverview',
+        'latestOperations',
+      ];
+    },
+    WORKER_QUEUE_PRESSURE_COLORS() {
+      return [
+        {color: '#00aa00', percentage: 50},
+        {color: '#ff6600', percentage: 80},
+        {color: '#ff0000', percentage: 100}
+      ];
+    },
   },
   props: {
   },
   data() {
     return {
-      data: [],
+      bizEntityCount  : [],
+      workerQueueInfo : [],
+      scriptOverview  : [],
+      latestOperations: [],
+      overviewInterval: null,
+    }
+  },
+  mounted() {
+    if (!this.overviewInterval) {
+      this.overviewInterval = setInterval(() => {
+        if (this.$route.name !== 'overview') {
+          clearInterval(this.overviewInterval);
+          this.overviewInterval = null;
+        }
+
+        this.loadData(['workerQueueInfo']);
+      }, 3000);
     }
   },
 }
@@ -265,8 +331,8 @@ export default {
   position: relative;
 }
 .overview-count {
-  font-size: 80px;
   font-weight: 100;
+  line-height: 120px;
   font-family: sans-serif;
   display: block;
   padding-left: 20px;
@@ -282,6 +348,25 @@ export default {
   line-height: 1.5;
   margin: 0;
   color: grey;
+}
+.worker-queue-card {
+  width: 330px;
+  height: 150px;
+  display: inline-block;
+  margin: 10px 20px;
+  position: relative;
+}
+.worker-queue-card .progressbar {
+  display: inline-block;
+}
+.worker-queue-name {
+  font-size: 14px;
+  position: absolute;
+  bottom: 30px;
+  left: 165px;
+}
+.worker-queue-name .worker-queue-number {
+  font-size: 30px;
 }
 </style>
 

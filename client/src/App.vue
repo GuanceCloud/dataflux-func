@@ -616,10 +616,18 @@ content: "\25B2";
   font-weight: normal;
   color: darkgrey !important;
 }
+.el-checkbox.el-transfer-panel__item {
+  margin-right: 0px !important;
+}
 
 /* CodeMirror 修正 */
 .CodeMirror-line * {
   font-family: Iosevka !important;
+}
+.cm-searching {
+  background: none !important;
+  border: 1px solid #f60 !important;
+  border-radius: 3px !important;
 }
 .cm-trailingspace {
   background-color: lightgrey;

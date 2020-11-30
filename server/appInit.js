@@ -346,46 +346,140 @@ exports.afterAppCreated = function(app, server) {
   var request = require('request');
   var fs      = require('fs-extra');
 
-  var WATClient  = require('../sdk/wat_sdk').WATClient;
+  var celeryHelper = require('./utils/extraHelpers/celeryHelper');
+  var WATClient    = require('../sdk/wat_sdk').WATClient;
+  var IMAGE_INFO   = require('../image-info.json');
 
-  var IMAGE_INFO = require('../image-info.json');
+  /***** 启动时自动运行 *****/
+  function printError(err) {
+    if (!err || 'string' !== typeof err.stack) return;
+
+    if (err.isWarning) {
+      app.locals.logger.warning(err.message);
+    } else {
+      err.stack.split('\n').forEach(function(line) {
+        app.locals.logger.error(line);
+      });
+    }
+  }
 
   // 重置管理员账号密码
-  if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
-    var RESET_ADMIN_ID = 'u-admin';
-    var adminPasswordHash = toolkit.getSaltedPasswordHash(
-        RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
+  async.series([
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
+      var lockValue = Date.now().toString();
+      var lockAge   = 30;
 
-    var sql = toolkit.createStringBuilder();
-    sql.append('UPDATE wat_main_user');
-    sql.append('SET');
-    sql.append('   username     = ?');
-    sql.append('  ,passwordHash = ?');
-    sql.append('WHERE');
-    sql.append('  id = ?')
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
-    var sqlParams = [
-      process.env.RESET_ADMIN_USERNAME,
-      adminPasswordHash,
-      RESET_ADMIN_ID,
-    ];
-    app.locals.db.query(sql, sqlParams, function(err) {
-      if (err && 'string' === typeof err.stack) {
-        if (err.isWarning) {
-          app.locals.logger.warning(err.message);
-        } else {
-          err.stack.split('\n').forEach(function(line) {
-            app.locals.logger.error(line);
-          });
+        if (!cacheRes) {
+          var e = new Error('Startup process is already launched.');
+          e.isWarning = true;
+          return asyncCallback(e);
         }
-      }
-    });
-  }
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      if (!process.env.RESET_ADMIN_USERNAME || !process.env.RESET_ADMIN_PASSWORD) return asyncCallback();
+
+      var RESET_ADMIN_ID = 'u-admin';
+      var adminPasswordHash = toolkit.getSaltedPasswordHash(
+          RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('UPDATE wat_main_user');
+      sql.append('SET');
+      sql.append('   username     = ?');
+      sql.append('  ,passwordHash = ?');
+      sql.append('WHERE');
+      sql.append('  id = ?')
+
+      var sqlParams = [
+        process.env.RESET_ADMIN_USERNAME,
+        adminPasswordHash,
+        RESET_ADMIN_ID,
+      ];
+      app.locals.db.query(sql, sqlParams, asyncCallback);
+    },
+  ], printError);
+
+  // 自动导入脚本包
+  async.series([
+    // 获取锁
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
+      var lockValue = Date.now().toString();
+      var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
+
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          var e = new Error('Function package auto importing is just launched');
+          e.isWarning = true;
+          return asyncCallback(e);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 安装脚本包
+    function(asyncCallback) {
+      // 获取脚本包列表
+      var funcPackagePath = path.join(__dirname, '../func-pkg/');
+      var funcPackages = fs.readdirSync(funcPackagePath);
+      funcPackages = funcPackages.filter(function(fileName) {
+        return fileName.split('.').pop() === 'func-pkg';
+      });
+
+      if (toolkit.isNothing(funcPackages)) return asyncCallback();
+
+      // 依次导入
+      var watClient = new WATClient({host: 'localhost', port: 8088});
+
+      // 本地临时认证令牌
+      app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
+
+      async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
+        app.locals.logger.info('Auto install function package: {0}', funcPackage);
+
+        var filePath = path.join(funcPackagePath, funcPackage);
+        var fileBuffer = fs.readFileSync(path.join(filePath));
+
+        // 使用本地临时认证令牌认证
+        var localhostTempAuthToken = toolkit.genRandString();
+        app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
+
+        var headers = {};
+        headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL] = localhostTempAuthToken;
+
+        var opt = {
+          headers   : headers,
+          path      : '/api/v1/script-sets/do/import',
+          fileBuffer: fileBuffer,
+          filename  : funcPackage,
+        }
+        watClient.upload(opt, function(err, apiRes) {
+          if (err) return eachCallback(err);
+
+          if (!apiRes.ok) {
+            return eachCallback(new Error('Auto inport package failed: ' + apiRes.message));
+          }
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], printError);
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
   /********** Content for YOUR project below **********/
 
+  // 操作记录
   if (res.locals._operationRecord) {
     var operationRecordMod = require('./models/operationRecordMod');
 

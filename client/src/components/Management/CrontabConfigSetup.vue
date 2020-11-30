@@ -27,6 +27,8 @@
                 <el-form-item label="调用参数" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
+
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -396,7 +398,11 @@ export default {
 
       let example = {};
       parameters.forEach(p => {
-        example[p] = p.toUpperCase();
+        if (p.indexOf('**') === 0) {
+          // 暂定：不展示**kwargs参数
+        } else {
+          example[p] = p.toUpperCase();
+        }
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
@@ -452,6 +458,15 @@ export default {
         add  : '添加',
       };
       return nameMap[this.mode];
+    },
+    apiCustomKwargsSupport() {
+      let funcId = this.form.funcId;
+      if (!funcId) return false;
+
+      for (let k in this.funcMap[funcId].kwargsJSON) {
+        if (k.indexOf('**') === 0) return true;
+      }
+      return false;
     },
     fixedCrontabExpr() {
       let selectedFunc = this.funcMap[this.form.funcId];
@@ -561,14 +576,14 @@ export default {
       MINUTES,
 
       data               : {},
+      funcMap            : {},
       funcCascaderOptions: [],
-      funcMap            : {}, // 用于快速获取函数配置信息（主要是`fixedCrontab`）
 
       form: {
-        funcId        : null,
+        funcId            : null,
         funcCallKwargsJSON: null,
-        expireTime    : null,
-        note          : null,
+        expireTime        : null,
+        note              : null,
         // crontab 单独处理
       },
       formRules: {

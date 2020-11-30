@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <link rel="stylesheet" id="uiTheme" href-pattern="<%= BASE_URL %>theme-XXX<%= VUE_APP_CSS_EXT || '.min.css' %>" href="">
-    <title>DataFlux.f(x)</title>
+    <title>DataFlux Func</title>
   </head>
   <body>
     <noscript>
@@ -18,7 +18,9 @@
   <script>
     (function() {
       var vuexData = localStorage.getItem('vuex');
-      if ('string' === typeof vuexData) {
+      if (!vuexData) {
+        vuexData = {};
+      } else if ('string' === typeof vuexData) {
         vuexData = JSON.parse(vuexData);
       }
 

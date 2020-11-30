@@ -56,6 +56,20 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/user-list" v-if="$store.getters.isSuperAdmin">
+              <span>
+                <i class="fa fa-fw fa-users"></i>
+                成员管理
+              </span>
+            </el-menu-item>
+
+            <el-menu-item index="/management/operation-record-list">
+              <span>
+                <i class="fa fa-fw fa-keyboard-o"></i>
+                操作记录
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/script-log-list" v-if="$store.getters.isExperimentalFeatureEnabled('ScriptLog')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
@@ -70,11 +84,11 @@
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-
-            <el-menu-item index="/management/operation-record-list">
+            <el-menu-item index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
               <span>
-                <i class="fa fa-fw fa-keyboard-o"></i>
-                操作记录
+                <i class="fa fa-fw fa-key"></i>
+                AccessKey
+                <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
           </el-menu>
@@ -111,7 +125,7 @@ export default {
 
 <style scoped>
 .aside {
-  margin-top: 60px;
+  margin-top: 40px;
 }
 .aside-content {
   height: 100%;

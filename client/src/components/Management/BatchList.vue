@@ -98,7 +98,7 @@
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-button @click="showAPI(scope.row)" type="text" size="small">任务投递示例</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text" size="small">任务投递示例</el-button>
 
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
@@ -107,10 +107,10 @@
                 >任务信息<code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
               </el-button>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-              <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
 
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
             </template>
@@ -137,7 +137,7 @@
       <APIExampleDialog ref="apiExampleDialog"
         title="任务投递示例"
         description="批处理任务投递API同时支持POST方式和GET方式进行调用，可根据需要任意选择"
-        :showModeOption="false"
+        :showExecModeOption="false"
         :showPostExample="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"
@@ -279,7 +279,16 @@ export default {
         query : prevRouteQuery,
       });
     },
-    showAPI(d) {
+    async showAPI(d) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
+        alert: {entity: '函数', showError: true},
+      });
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/bat/:id', {
         baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
         params : {id: d.id},
@@ -294,7 +303,7 @@ export default {
       let apiBodyExample = {kwargs: funcCallKwargsJSON};
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample);
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {

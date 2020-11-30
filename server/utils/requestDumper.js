@@ -12,7 +12,7 @@ var toolkit = require('./toolkit');
 
 exports.dumpRequest = function(req, res, next) {
   var dumpList = [
-    toolkit.strf('{0}=`{1}`', 'method',       req.method),
+    toolkit.strf('{0}=`{1}`', 'method',       req.method.toUpperCase()),
     toolkit.strf('{0}=`{1}`', 'url',          path.join(req.baseUrl, req.path)),
     // `req.params` not parsed here yet.
     // toolkit.strf('{0}=`{1}`', 'params',       JSON.stringify(req.params)),

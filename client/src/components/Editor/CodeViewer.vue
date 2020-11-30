@@ -49,6 +49,12 @@
               </el-radio-group>
             </el-form-item>
 
+            <el-form-item v-if="!isLockedByOther">
+              <el-tooltip content="下载" placement="bottom" :enterable="false">
+                <el-button @click="download" plain size="mini">下载{{ SHOW_MODE_META_MAP[showMode].text }}</el-button>
+              </el-tooltip>
+            </el-form-item>
+
             <el-form-item v-if="!isConflicted">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
@@ -79,6 +85,7 @@
       <!-- 代码区 -->
       <el-main id="editorContainer_CodeViewer" :style="$store.getters.codeMirrorSetting.style">
         <textarea id="editor_CodeViewer"></textarea>
+        <h1 id="viewModeHint">查看模式</h1>
       </el-main>
 
       <!-- 状态栏 -->
@@ -122,6 +129,7 @@
 <script>
 // @ is an alias to /src
 import { createPatch } from 'diff'
+import FileSaver from 'file-saver';
 
 export default {
   name: 'CodeViewer',
@@ -413,6 +421,25 @@ export default {
         });
       }
     },
+    download() {
+      let blob = new Blob([this.codeMirror.getValue()], {type: 'text/plain'});
+
+      let fileName = null;
+      switch(this.showMode) {
+        case 'draft':
+          fileName = this.data.id + '.draft.py';
+          break;
+
+        case 'published':
+          fileName = this.data.id + '.py';
+          break;
+
+        case 'diff':
+          fileName = this.data.id + '.py.diff';
+          break;
+      }
+      FileSaver.saveAs(blob, fileName);
+    },
   },
   computed: {
     USER_OPERATION_META_MAP() {
@@ -544,6 +571,16 @@ export default {
 }
 </style>
 <style>
+#viewModeHint {
+  position: absolute;
+  right: 30px;
+  top: 0px;
+  font-size: 30px;
+  color: grey;
+  border: 1px solid darkgray;
+  padding: 0 10px;
+  border-radius: 5px;
+}
 #editorContainer_CodeViewer {
   padding: 1px 0 0 5px;
   position: relative;

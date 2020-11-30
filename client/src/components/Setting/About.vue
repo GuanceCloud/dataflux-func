@@ -13,10 +13,10 @@
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="about-form">
-              <!-- DataFlux.f(x) Web -->
+              <!-- DataFlux Func Server -->
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="warning" class="about-dataflux-fx-part">Web</el-tag>
+                <el-tag type="warning" class="about-dataflux-func-part">Server</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
@@ -29,11 +29,11 @@
                 </el-form-item>
               </el-form>
 
-              <!-- DataFlux.f(x) Worker -->
+              <!-- DataFlux Func Worker -->
               <br>
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="success" class="about-dataflux-fx-part">Worker</el-tag>
+                <el-tag type="success" class="about-dataflux-func-part">Worker</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
@@ -61,7 +61,7 @@
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="info" :title="`节点完整名称为：\n&quot;celery@{名称}&quot;`"></InfoBlock>
+                    <InfoBlock type="info" :title="`节点完整名称为：\n&quot;celery@{编号}&quot;`"></InfoBlock>
                     <InfoBlock type="info" :title="`工作队列完整 Key 格式为：\n&quot;FTDataProcessor#workerQueue@{名称}&quot;`"></InfoBlock>
                   </el-form-item>
                 </template>
@@ -72,7 +72,7 @@
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>清空工作队列</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">{{ q.name }} ({{ q.value }})</el-dropdown-item>
+                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} ({{ q.value }}个待处理任务)</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-form-item>
@@ -383,7 +383,7 @@ export default {
 .about-form {
   width: 600px;
 }
-.about-dataflux-fx-part {
+.about-dataflux-func-part {
   font-size: 16px;
   font-style: italic;
   font-family: monospace;
