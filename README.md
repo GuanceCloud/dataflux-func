@@ -33,9 +33,11 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 <!-- MarkdownTOC -->
 
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
-    - [推荐方式：使用基于`docker stack`的自动部署脚本部署](#%E6%8E%A8%E8%8D%90%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
+    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
+- [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
+- [查询日志](#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97)
 - [完全卸载](#%E5%AE%8C%E5%85%A8%E5%8D%B8%E8%BD%BD)
 - [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
@@ -54,7 +56,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 用户可以选择官方提供的一键部署命令，也可以自行调整配置文件后手动启动。
 
-### 推荐方式：使用基于`docker stack`的自动部署脚本部署
+### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署
 
 *注意操作前需要使用`docker login pubrepo.jiagouyun.com`进行登录*
 
@@ -131,9 +133,31 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 *注意：视情况应使用`sudo`运行下文命令*
 
 需要更新部署时，请按照以下步骤进行：
-1. 使用`docker stack rm dataflux-func`命令，移除正在运行的旧版本（此步骤可能需要一定时间）
+1. 使用`docker stack rm dataflux-func`命令，移除正在运行的服务（此步骤可能需要一定时间）
 2. 使用`docker ps`确认所有容器都已经退出
 3. 参考上文，重新部署（脚本不会删除原先的数据）
+
+
+
+## 重启服务
+
+*注意：视情况应使用`sudo`运行下文命令*
+
+需要重新启动时，请按照以下步骤进行：
+1. 使用`docker stack rm dataflux-func`命令，移除正在运行的服务（此步骤可能需要一定时间）
+2. 使用`docker ps`确认所有容器都已经退出
+3. 使用`docker stack deploy dataflux-func -c /usr/local/dataflux-func/docker-stack.yaml`重启所有服务
+
+
+
+## 查询日志
+
+默认情况下，日志文件保存位置如下：
+
+|  环境  |                    日志文件位置                   |
+|--------|---------------------------------------------------|
+| 容器内 | `/data/dataflux-func.log`                         |
+| 宿主机 | `/usr/local/dataflux-func/data/dataflux-func.log` |
 
 
 
