@@ -1152,11 +1152,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         else:
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
-    def _export_as_api(self, safe_scope, title=None, category=None, tags=None, kwargs_hint=None,
+    def _export_as_api(self, safe_scope, title=None, category=None, tags=None, hint=None, kwargs_hint=None,
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
         integration=None, integration_config=None,
         is_hidden=False, is_disabled=False):
-        ### 核心配置 ###
+        ### 参数检查/预处理 ###
+        extra_config = {}
+
         # 函数标题
         if title is not None and not isinstance(title, (six.string_types, six.text_type)):
             e = InvalidOptionException('`title` should be a string or unicode')
@@ -1227,8 +1229,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             integration = FIXED_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
 
-        ### 额外配置 ###
-        extra_config = {}
+        # 函数提示
+        if hint is not None:
+            extra_config['hint'] = hint
 
         # 隐藏函数（不在文档中出现）
         if is_hidden is True:
@@ -1294,7 +1297,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             extra_config['queue'] = queue
 
         # 功能集成配置
-        if integration:
+        if integration is not None:
             extra_config['integrationConfig'] = integration_config
 
         def decorater(F):
