@@ -38,6 +38,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
 - [查询日志](#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97)
+    - [自动清理日志](#%E8%87%AA%E5%8A%A8%E6%B8%85%E7%90%86%E6%97%A5%E5%BF%97)
 - [完全卸载](#%E5%AE%8C%E5%85%A8%E5%8D%B8%E8%BD%BD)
 - [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
@@ -158,6 +159,19 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 |--------|---------------------------------------------------|
 | 容器内 | `/data/dataflux-func.log`                         |
 | 宿主机 | `/usr/local/dataflux-func/data/dataflux-func.log` |
+
+### 自动清理日志
+
+DataFlux Func 本身并不提供日志自动清理功能。可以使用Linux自带的Crontab功能实现：
+
+```shell
+# 开始编辑Crontab配置
+crontab -e
+
+# 添加如下配置：
+# （每周日备份日志，并重新开始记录）
+* * * * 0 cp /usr/local/dataflux-func/data/dataflux-func.log /usr/local/dataflux-func/data/dataflux-func.bak.log; echo '' > /usr/local/dataflux-func/data/dataflux-func.log
+```
 
 
 
