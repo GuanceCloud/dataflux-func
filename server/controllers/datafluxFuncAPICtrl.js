@@ -605,8 +605,8 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       originId         : funcCallOptions.originId,
       execMode         : funcCallOptions.execMode,
       saveResult       : funcCallOptions.saveResult,
-      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       triggerTime      : funcCallOptions.triggerTime,
+      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       queue            : funcCallOptions.queue,
       httpRequest      : _getHTTPRequestInfo(req, res),
     };

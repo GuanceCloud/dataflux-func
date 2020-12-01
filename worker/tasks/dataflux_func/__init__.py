@@ -1475,23 +1475,29 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE'])
+        queue = safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE']
         if safe_scope.get('_DFF_DEBUG'):
-            queue = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
+            queue = CONFIG['_FUNC_TASK_DEFAULT_DEBUG_QUEUE']
+
+        worker_queue = toolkit.get_worker_queue(queue)
 
         task_headers = {
             'origin': self.request.id,
         }
         task_kwargs = {
             'funcId'         : func_id,
-            'funcKwargs'     : kwargs,
-            'saveResult'     : save_result,
-            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
-            'funcChain'      : func_chain,
+            'funcCallKwargs' : kwargs,
+            'origin'         : safe_scope.get('_DFF_ORIGIN'),
+            'originId'       : safe_scope.get('_DFF_ORIGIN_ID'),
             'execMode'       : 'async',
+            'saveResult'     : save_result,
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'triggerTimeMs'  : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
+            'queue'          : queue,
             'crontab'        : safe_scope.get('_DFF_CRONTAB'),
             'crontabConfigId': safe_scope.get('_DFF_CRONTAB_CONFIG_ID'),
+            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
+            'funcChain'      : func_chain,
         }
 
         from worker.tasks.dataflux_func.runner import dataflux_func_runner
@@ -1499,7 +1505,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
-            queue=queue,
+            queue=worker_queue,
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
