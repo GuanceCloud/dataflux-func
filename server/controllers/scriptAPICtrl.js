@@ -257,7 +257,11 @@ exports.publish = function(req, res, next) {
       var kwargs = {
         funcId: script.id,
       }
-      celery.putTask('DataFluxFunc.debugger', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
+      var taskOptions = {
+        queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
+        resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
+      }
+      celery.putTask('DataFluxFunc.debugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
         if (err) return asyncCallback(err);
 
         celeryRes = celeryRes || {};

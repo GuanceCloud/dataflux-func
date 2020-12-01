@@ -1,5 +1,10 @@
 # Change Log
 
+### 1.0.30
+
+- DEBUG任务现在默认发送到7号队列
+- Docker Stack 文件默认按照：0, 1~6, 7, 8~9 才分为4个Worker
+
 ### 1.0.29
 
 - `@DFF.API`装饰器添加`hint`选项，可填写任意可序列化为JSON的内容，并在函数列表的`extraConfigJSON`字段中出现。

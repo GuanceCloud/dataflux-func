@@ -1573,7 +1573,7 @@ exports.callFuncDraft = function(req, res, next) {
     var celery = celeryHelper.createHelper(res.locals.logger);
 
     var taskOptions = {
-      queue            : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+      queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
       resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
     }
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);

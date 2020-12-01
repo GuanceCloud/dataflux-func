@@ -43,7 +43,7 @@ services:
       - "8088:8088"
     command: ./run-server.sh
 
-  worker:
+  worker-0:
     image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
     volumes:
       - "/usr/local/dataflux-func/data:/data"
@@ -53,7 +53,43 @@ services:
     networks:
       - datafluxfunc
       - default
-    command: ./run-worker.sh
+    command: ./run-worker-by-queue.sh 0
+
+  worker-1-6:
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 1 2 3 4 5 6
+
+  worker-7:
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 7
+
+  worker-8-9:
+    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    volumes:
+      - "/usr/local/dataflux-func/data:/data"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 8 9
 
   beat:
     image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
