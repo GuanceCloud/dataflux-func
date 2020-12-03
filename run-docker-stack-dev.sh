@@ -71,7 +71,7 @@ if [ ! -f ${__CONFIG_FILE} ]; then
             \nREDIS_HOST    : redis \
             \nREDIS_PORT    : 6379 \
             \nREDIS_DATABASE: 5 \
-            \nMODE          : ${__MODE} \
+            \nMODE          : dev \
             \nLOG_LEVEL     : ALL" \
         > ${__CONFIG_FILE}
 
@@ -84,8 +84,6 @@ log "  $PWD/${__CONFIG_FILE}"
 # 创建docker stack 配置文件
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     # 创建配置文件并使用随机密钥/密码
-    echo "s#/usr/local/dataflux-func#${_INSTALL_DIR}#g"
-
     sed -e "s#=mysql_root_password#=${__RANDOM_MYSQL_ROOT_PASSWORD}#g" \
         -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
