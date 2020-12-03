@@ -15,9 +15,10 @@ __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
 
 __PROJECT_NAME=dataflux-func-dev
-__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
 _IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
 _INSTALL_DIR=/usr/local/${__PROJECT_NAME}
+
+__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
 
 # 可配置环境变量
 if [ $INSTALL_DIR ]; then

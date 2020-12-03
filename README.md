@@ -81,12 +81,15 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面。
 
-*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表，共5个）*
+*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表）*
 1. `dataflux-func_mysql`
 2. `dataflux-func_redis`
-3. `dataflux-func_worker`
-4. `dataflux-func_server`
-5. `dataflux-func_beat`
+3. `dataflux-func_server`
+4. `dataflux-func_worker-0`
+5. `dataflux-func_worker-1-6`
+6. `dataflux-func_worker-7`
+7. `dataflux-func_worker-8-9`
+8. `dataflux-func_beat`
 
 #### 指定目录安装
 
@@ -136,18 +139,23 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面（假设使用默认端口）。
 
-*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表，共5个）*
+*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表）*
 1. `dataflux-func_mysql`
 2. `dataflux-func_redis`
-3. `dataflux-func_worker`
-4. `dataflux-func_server`
-5. `dataflux-func_beat`
+3. `dataflux-func_server`
+4. `dataflux-func_worker-0`
+5. `dataflux-func_worker-1-6`
+6. `dataflux-func_worker-7`
+7. `dataflux-func_worker-8-9`
+8. `dataflux-func_beat`
 
 
 
 ## 更新部署
 
 *注意：视情况应使用`sudo`运行下文命令*
+
+*注意：如果最初安装时指定了不同安装目录，更新时也需要指定完全相同的目录才行*
 
 需要更新部署时，请按照以下步骤进行：
 1. 使用`docker stack rm dataflux-func`命令，移除正在运行的服务（此步骤可能需要一定时间）
@@ -163,7 +171,7 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 需要重新启动时，请按照以下步骤进行：
 1. 使用`docker stack rm dataflux-func`命令，移除正在运行的服务（此步骤可能需要一定时间）
 2. 使用`docker ps`确认所有容器都已经退出
-3. 使用`docker stack deploy dataflux-func -c /usr/local/dataflux-func/docker-stack.yaml`重启所有服务
+3. 使用`docker stack deploy dataflux-func -c {安装目录}/docker-stack.yaml`重启所有服务
 
 
 
@@ -171,10 +179,10 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 默认情况下，日志文件保存位置如下：
 
-|  环境  |                    日志文件位置                   |
-|--------|---------------------------------------------------|
-| 容器内 | `/data/dataflux-func.log`                         |
-| 宿主机 | `/usr/local/dataflux-func/data/dataflux-func.log` |
+|  环境  |             日志文件位置            |
+|--------|-------------------------------------|
+| 容器内 | `/data/dataflux-func.log`           |
+| 宿主机 | `{安装目录}/data/dataflux-func.log` |
 
 ### 自动转储日志
 
@@ -189,7 +197,7 @@ vim /etc/logrotate.d/dataflux-func
 写入如下配置：
 
 ```text
-/usr/local/dataflux-func/data/dataflux-func.log {
+{安装目录}/data/dataflux-func.log {
     missingok
     copytruncate
     compress
@@ -210,7 +218,7 @@ vim /etc/logrotate.d/dataflux-func
 需要完全卸载时，请按照以下步骤进行：
 1. 视情况需要，使用脚本集导出功能导出脚本数据
 2. 使用`docker stack rm dataflux-func`命令，移除正在运行的旧版本（此步骤可能需要一定时间）
-3. 使用`rm -rf /usr/local/dataflux-func`命令，移除所有相关数据
+3. 使用`rm -rf {安装目录}`命令，移除所有相关数据
 
 
 
