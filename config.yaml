@@ -261,6 +261,16 @@ _DBDATA_TABLE_LIMIT_MAP: >
 _DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
 
+# 其他（内部控制）
+# 保留脚本错误信息
+_INTERNAL_KEEP_SCRIPT_FAILURE: false
+
+# 保留脚本日志信息
+_INTERNAL_KEEP_SCRIPT_LOG: false
+
+# 是否开启错误堆栈包含本地变量信息（开启后可能会产生巨量日志）
+_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO: false
+
 # 是否已安装完成
 _IS_INSTALLED: false
 # 是否禁用配置

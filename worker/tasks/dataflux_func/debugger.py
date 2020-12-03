@@ -11,7 +11,6 @@ import traceback
 import pprint
 
 # 3rd-party Modules
-from celery.exceptions import SoftTimeLimitExceeded
 import six
 
 # Project Modules
@@ -173,10 +172,10 @@ def dataflux_func_debugger(self, *args, **kwargs):
             self.logger.info('[RUN FUNC] `{}`'.format(func_id))
             func_result = entry_func(**func_call_kwargs)
 
-    # except SoftTimeLimitExceeded as e:
     except Exception as e:
+        # 函数报错只输出WARNING级别日志
         for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
+            self.logger.warning(line)
 
         trace_info = self.get_trace_info()
         error_stack = self.get_formated_einfo(trace_info, only_in_script=True)

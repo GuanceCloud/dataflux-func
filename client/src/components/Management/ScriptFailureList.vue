@@ -5,9 +5,6 @@
       <el-header height="60px">
         <h1>
           近期脚本故障
-          <small v-if="$store.getters.CONFIG('_DBDATA_SCRIPT_FAILURE_LIMIT')">
-            仅保留最近大约 {{ $store.getters.CONFIG('_DBDATA_SCRIPT_FAILURE_LIMIT') }} 条函数执行的故障
-          </small>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>

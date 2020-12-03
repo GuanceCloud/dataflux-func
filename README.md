@@ -38,8 +38,9 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
 - [查询日志](#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97)
-    - [自动清理日志](#%E8%87%AA%E5%8A%A8%E6%B8%85%E7%90%86%E6%97%A5%E5%BF%97)
+    - [自动转储日志](#%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%82%A8%E6%97%A5%E5%BF%97)
 - [完全卸载](#%E5%AE%8C%E5%85%A8%E5%8D%B8%E8%BD%BD)
+- [参数调优](#%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98)
 - [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
     - [主要功能](#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
@@ -160,17 +161,27 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 | 容器内 | `/data/dataflux-func.log`                         |
 | 宿主机 | `/usr/local/dataflux-func/data/dataflux-func.log` |
 
-### 自动清理日志
+### 自动转储日志
 
-DataFlux Func 本身并不提供日志自动清理功能。可以使用Linux自带的Crontab功能实现：
+DataFlux Func 本身并不提供日志管理功能。可以使用Linux自带的logrotate实现：
+
+编辑配置文件：
 
 ```shell
-# 开始编辑Crontab配置
-crontab -e
+vim /etc/logrotate.d/dataflux-func
+```
 
-# 添加如下配置：
-# （每周日备份日志，并重新开始记录）
-* * * * 0 cp /usr/local/dataflux-func/data/dataflux-func.log /usr/local/dataflux-func/data/dataflux-func.bak.log; echo '' > /usr/local/dataflux-func/data/dataflux-func.log
+写入如下配置：
+
+```text
+/usr/local/dataflux-func/data/dataflux-func.log {
+    missingok
+    copytruncate
+    compress
+    daily
+    rotate 7
+    dateext
+}
 ```
 
 
@@ -187,6 +198,16 @@ crontab -e
 3. 使用`rm -rf /usr/local/dataflux-func`命令，移除所有相关数据
 
 
+
+## 参数调优
+
+默认的参数主要应对最常见的情况，一些比较特殊的场景可以调整部分参数来优化系统：
+
+|              参数             |  默认值   |                                      说明                                     |
+|-------------------------------|-----------|-------------------------------------------------------------------------------|
+| `LOG_LEVEL`                   | `WARNING` | 日志等级。<br>可以改为`ERROR`减少日志输出量。<br>或直接改为`NONE`禁用日志     |
+| `_WORKER_CONCURRENCY`         | `10`      | 工作单元进程数量。<br>如存在大量慢IO任务（耗时大于1秒），可改为`20`提高并发量 |
+| `_WORKER_PREFETCH_MULTIPLIER` | `10`      | 工作单元任务预获取数量。<br>如存在大量慢速任务（耗时大于1秒），建议改为`1`    |
 
 ## 版本号规则
 

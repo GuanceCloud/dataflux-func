@@ -7,6 +7,7 @@ import traceback
 
 # 3rd-party Modules
 import six
+from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 import celery.states as celery_status
 import simplejson
 
@@ -108,6 +109,10 @@ class BaseTask(app.Task):
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
 
+        if CONFIG['MODE'] == 'prod':
+            self.db.skip_log       = True
+            self.cache_db.skip_log = True
+
         # Add extra information
         if not self.request.called_directly:
             self._set_task_status(celery_status.PENDING,
@@ -145,6 +150,9 @@ class BaseTask(app.Task):
                 self.logger.debug('[CALL] args: `{}`; kwargs: `{}`'.format(args_dumps, kwargs_dumps))
 
             return super(BaseTask, self).__call__(*args, **kwargs)
+
+        except (SoftTimeLimitExceeded, TimeLimitExceeded) as e:
+            raise
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

@@ -27,7 +27,6 @@ import funcsigs
 from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
-from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper
 from worker.utils.extra_helpers import DFDataWayHelper
@@ -1040,11 +1039,6 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
-    def __call__(self, *args, **kwargs):
-        self.logger = LogHelper(self)
-
-        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
-
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1735,7 +1729,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                 # 仅记录脚本的本地变量
                 locals_info = []
-                if is_in_script:
+                if CONFIG['_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO'] and is_in_script:
                     for var_name, var_value in frame.f_locals.items():
                         # 忽略引擎内置变量
                         if var_name in sample_scope or var_name in sample_scope['__builtins__']:

@@ -6,18 +6,18 @@ function log {
 }
 
 __PREV_DIR=$PWD
-__PROJECT_NAME=dataflux-func-dev
 __RANDOM_SECRET=`openssl rand -hex 8`
 __RANDOM_MYSQL_ROOT_PASSWORD=`openssl rand -hex 8`
-__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
 
-_INSTALL_DIR=/usr/local/dataflux-func-dev
+__PROJECT_NAME=dataflux-func-dev
+__RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
 _IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
+_INSTALL_DIR=/usr/local/${__PROJECT_NAME}
 
 # 可配置环境变量
 if [ $INSTALL_DIR ]; then
@@ -61,19 +61,23 @@ fi
 
 # 创建配置文件
 if [ ! -f ${__CONFIG_FILE} ]; then
-    echo "# Auto generated config:" > ${__CONFIG_FILE}
+    echo -e "# Auto generated config: \
+            \nSECRET        : ${__RANDOM_SECRET} \
+            \nMYSQL_HOST    : mysql \
+            \nMYSQL_PORT    : 3306 \
+            \nMYSQL_USER    : root \
+            \nMYSQL_PASSWORD: ${__RANDOM_MYSQL_ROOT_PASSWORD} \
+            \nMYSQL_DATABASE: dataflux_func \
+            \nREDIS_HOST    : redis \
+            \nREDIS_PORT    : 6379 \
+            \nREDIS_DATABASE: 5" \
+        > ${__CONFIG_FILE}
 
-    echo "MODE          : dev" >> ${__CONFIG_FILE}
-    echo "LOG_LEVEL     : ALL" >> ${__CONFIG_FILE}
-    echo "SECRET        : ${__RANDOM_SECRET}" >> ${__CONFIG_FILE}
-    echo "MYSQL_HOST    : mysql" >> ${__CONFIG_FILE}
-    echo "MYSQL_PORT    : 3306" >> ${__CONFIG_FILE}
-    echo "MYSQL_USER    : root" >> ${__CONFIG_FILE}
-    echo "MYSQL_PASSWORD: ${__RANDOM_MYSQL_ROOT_PASSWORD}" >> ${__CONFIG_FILE}
-    echo "MYSQL_DATABASE: dataflux_func" >> ${__CONFIG_FILE}
-    echo "REDIS_HOST    : redis" >> ${__CONFIG_FILE}
-    echo "REDIS_PORT    : 6379" >> ${__CONFIG_FILE}
-    echo "REDIS_DATABASE: 5" >> ${__CONFIG_FILE}
+    # dev通道特别配置
+    echo -e "# Dev Channel \
+            \nMODE          : ${__MODE} \
+            \nLOG_LEVEL     : ALL" \
+        >> ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
 else
@@ -88,8 +92,11 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
-        -e "s#8088:8088#8089:8088#g" \
-        -e "s#/usr/local/dataflux-func#/usr/local/dataflux-func-dev#g" \
+        -e "s#/usr/local/dataflux-func#${_INSTALL_DIR}#g" \
+        ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
+
+    # dev通道特别配置
+    sed -e "s#8088:8088#8089:8088#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file with random secret/password created:"
@@ -98,6 +105,19 @@ else
     log "Docker stack file already exists:"
 fi
 log "  $PWD/${__DOCKER_STACK_FILE}"
+
+# 创建logrotate配置
+if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
+    echo -e "${_INSTALL_DIR}/data/dataflux-func.log { \
+        \n    missingok \
+        \n    copytruncate \
+        \n    compress \
+        \n    daily \
+        \n    rotate 7 \
+        \n    dateext \
+        \n}" \
+    > /etc/logrotate.d/${__PROJECT_NAME}
+fi
 
 # 执行部署
 log "Deploying: ${__PROJECT_NAME}"

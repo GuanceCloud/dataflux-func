@@ -12,7 +12,6 @@ import traceback
 import pprint
 
 # 3rd-party Modules
-from celery.exceptions import SoftTimeLimitExceeded
 import celery.states as celery_status
 import six
 import ujson
@@ -163,6 +162,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
     def cache_script_failure(self, func_id, script_publish_version, exec_mode=None, einfo_text=None, trace_info=None):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
+            return
+
         if not einfo_text:
             return
 
@@ -181,6 +183,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
     def cache_script_log(self, func_id, script_publish_version, log_messages, exec_mode=None):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
+            return
+
         if not log_messages:
             return
 
@@ -384,12 +389,8 @@ def dataflux_func_runner(self, *args, **kwargs):
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
         func_result = entry_func(**func_call_kwargs)
 
-    # except SoftTimeLimitExceeded as e:
     except Exception as e:
         is_succeeded = False
-
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
 
         self.logger.error('Error occured in script. `{}`'.format(func_id))
 
