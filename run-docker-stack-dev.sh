@@ -112,6 +112,8 @@ if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
         \n}" \
     > /etc/logrotate.d/${__PROJECT_NAME}
 fi
+log "logrotate config file created:"
+log "  /etc/logrotate.d/${__PROJECT_NAME}"
 
 # 执行部署
 log "Deploying: ${__PROJECT_NAME}"

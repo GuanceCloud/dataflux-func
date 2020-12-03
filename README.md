@@ -95,6 +95,8 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 
 如需要安装到不同目录，可在脚本运行前指定`INSTALL_DIR`参数。
 
+*注意：`INSTALL_DIR`不要以`/`结尾*
+
 如安装目录改为`/usr/local/func`，那么，使用以下命令即可：
 
 ```shell
