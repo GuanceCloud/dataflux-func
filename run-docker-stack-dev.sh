@@ -88,6 +88,8 @@ log "  $PWD/${__CONFIG_FILE}"
 # 创建docker stack 配置文件
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     # 创建配置文件并使用随机密钥/密码
+    echo "s#/usr/local/dataflux-func#${_INSTALL_DIR}#g"
+
     sed -e "s#=mysql_root_password#=${__RANDOM_MYSQL_ROOT_PASSWORD}#g" \
         -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
@@ -97,7 +99,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 
     # dev通道特别配置
     sed -e "s#8088:8088#8089:8088#g" \
-        ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
+        ${__DOCKER_STACK_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file with random secret/password created:"
 

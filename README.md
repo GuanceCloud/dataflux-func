@@ -34,6 +34,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
     - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
+        - [指定目录安装](#%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E5%AE%89%E8%A3%85)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
@@ -86,6 +87,20 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 3. `dataflux-func_worker`
 4. `dataflux-func_server`
 5. `dataflux-func_beat`
+
+#### 指定目录安装
+
+如需要安装到不同目录，可在脚本运行前指定`INSTALL_DIR`参数。
+
+如安装目录改为`/usr/local/func`，那么，使用以下命令即可：
+
+```shell
+# 在root用户下【推荐】
+INSTALL_DIR=/usr/local/func /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
+
+# 或者，在非root用户下
+sudo INSTALL_DIR=/usr/local/func /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
+```
 
 ### 进阶方式：使用`docker stack`配置文件进行部署
 
