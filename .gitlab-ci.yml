@@ -10,7 +10,7 @@ variables:
   IMAGE                    : dataflux-func
   IMAGE_PRIVATE            : registry.jiagouyun.com/middlewares/dataflux-func
   IMAGE_PUBLIC             : pubrepo.jiagouyun.com/dataflux-func/dataflux-func
-  IMAGE_FILE               : dataflux-func.tar
+  IMAGE_GZIP_FILE          : dataflux-func.tar.gz
   DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
   RUN_DOCKER_STACK_DEV_FILE: run-docker-stack-dev.sh
@@ -86,11 +86,11 @@ buildWithPub:
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR}
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
     - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
-    - docker save ${IMAGE_PUBLIC}:latest > ${IMAGE_FILE}
+    - docker save ${IMAGE_PUBLIC}:latest | gzip -1 > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${README_FILE}               ${OSS_RESOURCE_BASE_URL}/${README_FILE}               -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${IMAGE_FILE}                ${OSS_PORTABLE_BASE_URL}/${IMAGE_FILE}                -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/${IMAGE_GZIP_FILE}                -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - middleware-prod
