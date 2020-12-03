@@ -70,14 +70,10 @@ if [ ! -f ${__CONFIG_FILE} ]; then
             \nMYSQL_DATABASE: dataflux_func \
             \nREDIS_HOST    : redis \
             \nREDIS_PORT    : 6379 \
-            \nREDIS_DATABASE: 5" \
-        > ${__CONFIG_FILE}
-
-    # dev通道特别配置
-    echo -e "# Dev Channel \
+            \nREDIS_DATABASE: 5 \
             \nMODE          : ${__MODE} \
             \nLOG_LEVEL     : ALL" \
-        >> ${__CONFIG_FILE}
+        > ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
 else
@@ -95,11 +91,8 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
         -e "s#/usr/local/dataflux-func#${_INSTALL_DIR}#g" \
+        -e "s#8088:8088#8089:8088#g" \
         ${__DOCKER_STACK_EXAMPLE_FILE} > ${__DOCKER_STACK_FILE}
-
-    # dev通道特别配置
-    sed -e "s#8088:8088#8089:8088#g" \
-        ${__DOCKER_STACK_FILE} > ${__DOCKER_STACK_FILE}
 
     log "New docker stack file with random secret/password created:"
 
