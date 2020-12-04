@@ -32,6 +32,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 <!-- MarkdownTOC -->
 
+- [系统要求](#%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
     - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
         - [指定目录安装](#%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E5%AE%89%E8%A3%85)
@@ -52,6 +53,15 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 <!-- /MarkdownTOC -->
 
 
+## 系统要求
+
+运行DataFlux Func 需要满足以下条件：
+- CPU 核心数 >= 2
+- 内存容量 >= 4GB
+- 磁盘空间 >= 20GB
+- 操作系统为 Ubuntu LTS版/CentOS 7.6
+
+*如需要在更低配置下运行的，请咨询驻云官方*
 
 ## 部署运行
 
