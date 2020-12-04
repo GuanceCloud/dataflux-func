@@ -85,15 +85,18 @@ def load_config(config_file_path, print_detail=False):
 
     # User config from env
     for k, v in os.environ.items():
+        if isinstance(v, str) and v.strip() == '':
+            continue
+
         if k in config_obj:
             # Config override
-            config_obj[k] = os.environ.get(k)
+            config_obj[k] = v
             if print_detail:
                 print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
         elif k.startswith('CUSTOM_'):
             # Custom config
-            config_obj[k] = os.environ.get(k)
+            config_obj[k] = v
             if print_detail:
                 print('[YAML Resource] Custom config item `{}` added by env.'.format(k))
 
@@ -103,7 +106,7 @@ def load_config(config_file_path, print_detail=False):
 
         if not type_:
             continue
-        if config_obj.get(k) is None:
+        if v is None:
             continue
 
         if type_ == 'integer':
@@ -116,13 +119,13 @@ def load_config(config_file_path, print_detail=False):
             v = str(v)
             if len(v) > 0:
                 config_obj[k] = v.split(',')
-                config_obj[k] = map(lambda x: x.strip(), config_obj[k])
+                config_obj[k] = map(lambda x: x.strip(), v)
             else:
                 config_obj[k] = []
 
         elif type_ == 'map':
             item_map = {}
-            for item in config_obj[k].split(','):
+            for item in v.split(','):
                 item_parts = item.split('=')
                 item_k = item_parts[0].strip()
                 item_v = ''

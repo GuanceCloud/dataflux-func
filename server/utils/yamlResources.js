@@ -97,36 +97,44 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
   // User config from env
   for (var k in process.env) {
+    var v = process.env[k];
+
+    if ('string' === typeof v && v.trim() === '') {
+      continue;
+    }
+
     if (k in configObj) {
-      configObj[k] = process.env[k];
+      configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
     } else if (toolkit.startsWith(k, 'CUSTOM_')) {
+      configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
     }
   }
 
   // Convert config value type
   for (var k in configObj) {
+    var v = configObj[k];
     var type = configTypeMap[k];
 
-    if (!type) continue;
-    if (configObj[k] === null) continue;
+    if (!type)      continue;
+    if (v === null) continue;
 
     switch(type) {
       case 'integer':
-        configObj[k] = parseInt(configObj[k]);
+        configObj[k] = parseInt(v);
         break;
 
       case 'float':
-        configObj[k] = parseFloat(configObj[k]);
+        configObj[k] = parseFloat(v);
         break;
 
       case 'list':
-        configObj[k] = configObj[k].toString();
+        configObj[k] = v.toString();
         if (configObj[k].length > 0) {
-          configObj[k] = configObj[k].split(',');
-          configObj[k] = configObj[k].map(function(x) {
+          configObj[k] = v.split(',');
+          configObj[k] = v.map(function(x) {
             return x.trim();
           });
 
@@ -147,11 +155,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         break;
 
       case 'string':
-        configObj[k] = configObj[k].toString();
+        configObj[k] = v.toString();
         break;
 
       case 'boolean':
-        configObj[k] = toolkit.toBoolean(configObj[k]);
+        configObj[k] = toolkit.toBoolean(v);
         break;
     }
   }
