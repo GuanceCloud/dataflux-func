@@ -118,8 +118,7 @@ def load_config(config_file_path, print_detail=False):
         elif type_ == 'list':
             v = str(v)
             if len(v) > 0:
-                config_obj[k] = v.split(',')
-                config_obj[k] = map(lambda x: x.strip(), v)
+                config_obj[k] = map(lambda x: x.strip(), v.split(','))
             else:
                 config_obj[k] = []
 

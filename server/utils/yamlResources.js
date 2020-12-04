@@ -133,8 +133,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       case 'list':
         configObj[k] = v.toString();
         if (configObj[k].length > 0) {
-          configObj[k] = v.split(',');
-          configObj[k] = v.map(function(x) {
+          configObj[k] = v.split(',').map(function(x) {
             return x.trim();
           });
 
@@ -145,7 +144,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
       case 'map':
         var itemMap = {};
-        configObj[k].split(',').forEach(function(item) {
+        v.split(',').forEach(function(item) {
           var itemParts = item.split('=');
           var itemK = itemParts[0].trim();
           var itemV = (itemParts[1] || '').trim();
