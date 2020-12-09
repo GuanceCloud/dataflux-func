@@ -1691,8 +1691,9 @@ exports.getAuthLinkFuncList = function(req, res, next) {
 
 exports.getSystemConfig = function(req, res, next) {
   var systemConfig = {
-    MODE        : CONFIG.MODE,
-    WEB_BASE_URL: CONFIG.WEB_BASE_URL,
+    MODE              : CONFIG.MODE,
+    WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
+    WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
 
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,

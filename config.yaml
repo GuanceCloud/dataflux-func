@@ -60,7 +60,8 @@ LOG_CONSOLE_COLOR: true
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
-WEB_BASE_URL: http://127.0.0.1:8088
+WEB_BASE_URL      : http://127.0.0.1:8088
+WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
 # Web服务器绑定IP
 # 如：
