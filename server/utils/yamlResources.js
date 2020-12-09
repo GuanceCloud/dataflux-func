@@ -12,7 +12,11 @@ var request = require('request');
 var toolkit = require('./toolkit');
 
 var FILE_CACHE = {};
-var CONFIG_KEY = 'CONFIG';
+
+/* Configure */
+var CONFIG_KEY           = 'CONFIG';
+var ENV_CONFIG_PREFIX    = 'DFF_';
+var CUSTOM_CONFIG_PREFIX = 'CUSTOM_';
 
 /**
  * Load a YAML file.
@@ -96,8 +100,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
   }
 
   // User config from env
-  for (var k in process.env) {
-    var v = process.env[k];
+  for (var envK in process.env) {
+    if (!toolkit.startsWith(envK, ENV_CONFIG_PREFIX)) continue;
+
+    var k = envK.slice(ENV_CONFIG_PREFIX.length);
+    var v = process.env[envK];
 
     if ('string' === typeof v && v.trim() === '') {
       continue;
@@ -107,7 +114,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    } else if (toolkit.startsWith(k, 'CUSTOM_')) {
+    } else if (toolkit.startsWith(k, CUSTOM_CONFIG_PREFIX)) {
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
     }

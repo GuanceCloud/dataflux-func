@@ -20,7 +20,11 @@ else:
     FILE_OPEN_KWARGS = dict(encoding='utf8')
 
 FILE_CACHE = {};
-CONFIG_KEY = 'CONFIG';
+
+# Configure
+CONFIG_KEY           = 'CONFIG';
+ENV_CONFIG_PREFIX    = 'DFF_';
+CUSTOM_CONFIG_PREFIX = 'CUSTOM_'
 
 def load_file(key, file_path):
     obj = None
@@ -84,7 +88,12 @@ def load_config(config_file_path, print_detail=False):
                 print('[YAML Resource] Config Overrided by: `{}`'.format(user_config_path))
 
     # User config from env
-    for k, v in os.environ.items():
+    for env_k, v in os.environ.items():
+        if not env_k.startswith(ENV_CONFIG_PREFIX):
+            continue
+
+        k = env_k[len(ENV_CONFIG_PREFIX):]
+
         if isinstance(v, str) and v.strip() == '':
             continue
 
@@ -94,7 +103,7 @@ def load_config(config_file_path, print_detail=False):
             if print_detail:
                 print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
-        elif k.startswith('CUSTOM_'):
+        elif k.startswith(CUSTOM_CONFIG_PREFIX):
             # Custom config
             config_obj[k] = v
             if print_detail:
