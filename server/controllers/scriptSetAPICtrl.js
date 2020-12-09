@@ -21,11 +21,61 @@ var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
 /* Configure */
 var FILENAME_IN_ZIP = 'dataflux-func.json';
+var BUILTIN_SCRIPT_SET_IDS = null;
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
-exports.list = crudHandler.createListHandler();
+exports.list = function(req, res, next) {
+  var scriptSets        = null;
+  var scriptSetPageInfo = null;
+
+  var scriptSetModel = scriptSetMod.createModel(req, res);
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      scriptSetModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        scriptSets        = dbRes;
+        scriptSetPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 查询内置记录
+    function(asyncCallback) {
+      if (BUILTIN_SCRIPT_SET_IDS) return asyncCallback();
+
+      var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          BUILTIN_SCRIPT_SET_IDS = JSON.parse(cacheRes);
+        } else {
+          BUILTIN_SCRIPT_SET_IDS = [];
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    // 内置
+    scriptSets.forEach(function(scriptSet) {
+      if (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0) {
+        scriptSet.isBuiltin = true;
+      }
+    });
+
+    var ret = toolkit.initRet(scriptSets, scriptSetPageInfo);
+    res.locals.sendJSON(ret);
+  });
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
