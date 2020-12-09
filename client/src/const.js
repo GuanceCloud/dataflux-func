@@ -401,6 +401,11 @@ export const SCRIPT_RECOVER_POINT = [
     textClass: 'text-main',
   },
   {
+    key      : 'install',
+    name     : '脚本包安装前',
+    textClass: 'text-primary',
+  },
+  {
     key      : 'recover',
     name     : '脚本库还原前',
     textClass: 'text-info',
