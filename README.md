@@ -59,7 +59,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - CPU 核心数 >= 2
 - 内存容量 >= 4GB
 - 磁盘空间 >= 20GB
-- 操作系统为 Ubuntu LTS版/CentOS 7.6
+- 操作系统为 Ubuntu 16.04 LTS/CentOS 7.6 以上
 - 纯净系统（安装完操作系统后，除了配置网络外没有进行过其他操作）
 
 *如需要在更低配置下运行的，请咨询驻云官方*
