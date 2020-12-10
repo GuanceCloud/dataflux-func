@@ -15,11 +15,11 @@
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
-                <el-form-item label="使用自定义ID" prop="useCustomId" v-show="mode === 'add'">
+                <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId">
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="mode === 'add'">
                   <el-input :disabled="mode === 'setup'"
                     maxlength="50"
                     show-word-limit
@@ -228,9 +228,12 @@ export default {
       });
     },
     async modifyData() {
+      let _formData = this.T.jsonCopy(this.form);
+      delete _formData.id;
+
       let opt = {
         params: {id: this.$route.params.id},
-        body  : {data: this.T.jsonCopy(this.form)},
+        body  : {data: _formData},
         alert : {entity: '批处理', action: '修改', showError: true}
       };
 
@@ -365,7 +368,7 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) < 0 || value === this.ID_PREFIX)) {
+              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                 return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
               }
               return callback();
