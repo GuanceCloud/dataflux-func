@@ -67,9 +67,7 @@ exports.list = function(req, res, next) {
 
     // 内置
     scriptSets.forEach(function(scriptSet) {
-      if (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0) {
-        scriptSet.isBuiltin = true;
-      }
+       scriptSet.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0);
     });
 
     var ret = toolkit.initRet(scriptSets, scriptSetPageInfo);
