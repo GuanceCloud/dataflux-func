@@ -32,37 +32,6 @@ def get_config(c):
 
 RESULT_SERIES_FIELD = 'series'
 
-def convert_to_dict(db_res):
-    dict_db_res = {
-        RESULT_SERIES_FIELD: []
-    }
-    for k, v in db_res.raw.items():
-        if k == RESULT_SERIES_FIELD:
-            continue
-
-        dict_db_res[k] = v
-
-    if RESULT_SERIES_FIELD in db_res.raw:
-        for series in db_res.raw[RESULT_SERIES_FIELD]:
-            dict_series = []
-
-            columns = series['columns']
-            values  = series['values']
-            tags    = series.get('tags') or {}
-            for value in values:
-                d = {}
-                for index, column_value in enumerate(value):
-                    column_name = columns[index]
-                    d[column_name] = column_value
-
-                d['tags'] = tags
-
-                dict_series.append(d)
-
-            dict_db_res[RESULT_SERIES_FIELD].append(dict_series)
-
-    return dict_db_res
-
 class InfluxDBHelper(object):
     def __init__(self, logger, config, database=None, *args, **kwargs):
         self.logger = logger
@@ -167,7 +136,7 @@ class InfluxDBHelper(object):
             if dict_output is False:
                 db_res_list = [x.raw for x in db_res]
             else:
-                db_res_list = [convert_to_dict(x) for x in db_res]
+                db_res_list = [self.convert_to_dict(x) for x in db_res]
 
             if is_list:
                 return db_res_list
@@ -195,9 +164,53 @@ class InfluxDBHelper(object):
             if dict_output is False:
                 db_res_list = [x.raw for x in db_res]
             else:
-                db_res_list = [convert_to_dict(x) for x in db_res]
+                db_res_list = [self.convert_to_dict(x) for x in db_res]
 
             if is_list:
                 return db_res_list
             else:
                 return db_res_list[0]
+
+    def convert_to_dict(self, db_res):
+        dict_db_res = {
+            RESULT_SERIES_FIELD: []
+        }
+        for k, v in db_res.raw.items():
+            if k == RESULT_SERIES_FIELD:
+                continue
+
+            dict_db_res[k] = v
+
+        if RESULT_SERIES_FIELD in db_res.raw:
+            for series in db_res.raw[RESULT_SERIES_FIELD]:
+                dict_series = []
+
+                columns = series['columns']
+                values  = series['values']
+                tags    = series.get('tags') or {}
+                for row in values:
+                    d = {}
+                    for index, value in enumerate(row):
+                        column = columns[index]
+                        d[column] = value
+
+                    tags_field = 'tags'
+                    while tags_field in d:
+                        tags_field = '_' + tags_field
+                    d[tags_field] = tags
+
+                    dict_series.append(d)
+
+                dict_db_res[RESULT_SERIES_FIELD].append(dict_series)
+
+        return dict_db_res
+
+    def get_ts_tags(self, point):
+        possible_tags_fields = [k for k in point.keys() if k.endswith('tags')]
+        possible_tags_fields.sort()
+        tags_field = 'tags'
+        if len(possible_tags_fields) > 0:
+            tags_field = possible_tags_fields[0]
+
+        tags = point.get(tags_field) or {}
+        return tags
