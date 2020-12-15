@@ -13,6 +13,7 @@ __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
+__EMQX_IMAGE=pubrepo.jiagouyun.com/dataflux-func/emqx:5.0.7
 
 __PROJECT_NAME=dataflux-func-dev
 _IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
@@ -37,6 +38,9 @@ docker pull ${__MYSQL_IMAGE}
 
 log "Pulling image: ${__REDIS_IMAGE}"
 docker pull ${__REDIS_IMAGE}
+
+log "Pulling image: ${__EMQX_IMAGE}"
+docker pull ${__EMQX_IMAGE}
 
 log "Pulling image: ${_IMAGE}"
 docker pull ${_IMAGE}
@@ -88,6 +92,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     sed -e "s#=mysql_root_password#=${__RANDOM_MYSQL_ROOT_PASSWORD}#g" \
         -e "s#image: mysql.*#image: ${__MYSQL_IMAGE}#g" \
         -e "s#image: redis.*#image: ${__REDIS_IMAGE}#g" \
+        -e "s#image: emqx.*#image: ${__EMQX_IMAGE}#g" \
         -e "s#image: pubrepo\.jiagouyun\.com/dataflux-func/dataflux-func.*#image: ${_IMAGE}#g" \
         -e "s#/usr/local/dataflux-func#${_INSTALL_DIR}#g" \
         -e "s#8088:8088#8089:8088#g" \
