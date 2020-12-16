@@ -205,7 +205,7 @@ function recordSlowAPI(req, res, reqCost) {
   };
 
   if (shouldSave) {
-    var slowAPICountModel = slowAPICountMod.createModel(req, res);
+    var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
     var data = toolkit.jsonCopy(slowAPICountMapCache);
     slowAPICountMapCache = {};

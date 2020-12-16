@@ -25,7 +25,7 @@ exports.list = function(req, res, next) {
   var authLinks        = null;
   var authLinkPageInfo = null;
 
-  var authLinkModel = authLinkMod.createModel(req, res);
+  var authLinkModel = authLinkMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -140,8 +140,8 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var funcModel     = funcMod.createModel(req, res);
-  var authLinkModel = authLinkMod.createModel(req, res);
+  var funcModel     = funcMod.createModel(res.locals);
+  var authLinkModel = authLinkMod.createModel(res.locals);
 
   var addedId = null;
 
@@ -179,8 +179,8 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel     = funcMod.createModel(req, res);
-  var authLinkModel = authLinkMod.createModel(req, res);
+  var funcModel     = funcMod.createModel(res.locals);
+  var authLinkModel = authLinkMod.createModel(res.locals);
 
   var authLink = null;
 

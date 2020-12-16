@@ -320,25 +320,21 @@ exports.addWhereCondition = function(options, conditionKey, searchType, conditio
 
 /**
  * @constructor
- * @param {Object} req     - `Express.js` request Object
- * @param {Object} res     - `Express.js` response Object
+ * @param {Object} locals  - `Express.js` req.locals/app.locals
  * @param {Object} options - CRUD options
  * @param {String} options.tableName
  * @param {String} [options.alias=null]
  * @param {String} [options.userIdField=null]
  */
-var Model = function(req, res, options) {
+var Model = function(locals, options) {
   var self = this;
 
-  req = req || toolkit.createFakeReq();
-  res = res || toolkit.createFakeRes();
   options = options || {};
 
   // Basic
-  self.req = req;
-  self.res = res;
+  self.locals = locals;
 
-  self.logger = res.locals.logger;
+  self.logger = locals.logger;
 
   // Table/Data description
   self.displayName  = options.displayName  || 'data';
@@ -350,7 +346,7 @@ var Model = function(req, res, options) {
 
   // Auto field filling
   // Field value to fill
-  self.userId = toolkit.jsonFind(self, (options.userIdPath || 'res.locals.user.id'), true) || null;
+  self.userId = toolkit.jsonFind(self, (options.userIdPath || 'locals.user.id'), true) || null;
 
   // Field name for ADD data
   self.userIdField = options.userIdField || null;
@@ -374,14 +370,14 @@ var Model = function(req, res, options) {
   self.objectFields = toolkit.jsonCopy(options.objectFields || {});
 
   // DB
-  self.db             = res.locals.db;
+  self.db             = locals.db;
   self.uniqueKeyMap   = options.uniqueKeyMap || {};
 
   // Cache DB
-  self.cacheDB = res.locals.cacheDB;
+  self.cacheDB = locals.cacheDB;
 
   // File Storage
-  self.fileStorage = res.locals.fileStorage;
+  self.fileStorage = locals.fileStorage;
 
   // Extra
   self.extra = toolkit.jsonCopy(options.extra || {});
@@ -2037,8 +2033,8 @@ exports.createCRUDHandler = function(modelProto) {
 };
 
 exports.createSubModel = function(options) {
-  var SubModel = function(req, res) {
-    Model.call(this, req, res, options);
+  var SubModel = function(locals) {
+    Model.call(this, locals, options);
   };
 
   toolkit.extend(SubModel, Model);

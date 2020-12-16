@@ -30,7 +30,7 @@ exports.list = function(req, res, next) {
   var scriptSets        = null;
   var scriptSetPageInfo = null;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -78,7 +78,7 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查ID重名
@@ -118,7 +118,7 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查脚本集锁定状态
@@ -158,7 +158,7 @@ exports.modify = function(req, res, next) {
 exports.delete = function(req, res, next) {
   var id = req.params.id;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查脚本集锁定状态
@@ -207,10 +207,10 @@ exports.export = function(req, res, next) {
     password = '';
   }
 
-  var scriptSetModel              = scriptSetMod.createModel(req, res);
-  var scriptModel                 = scriptMod.createModel(req, res);
-  var funcModel                   = funcMod.createModel(req, res);
-  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(req, res);
+  var scriptSetModel              = scriptSetMod.createModel(res.locals);
+  var scriptModel                 = scriptMod.createModel(res.locals);
+  var funcModel                   = funcMod.createModel(res.locals);
+  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
 
   var scriptData = {
     scriptSets: null,
@@ -366,7 +366,7 @@ exports.import = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   var fileBuf    = null;
   var scriptData = null;
@@ -493,7 +493,7 @@ exports.confirmImport = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 从缓存中读取导入数据

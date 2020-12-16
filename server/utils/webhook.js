@@ -12,12 +12,12 @@ var toolkit = require('./toolkit');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
-exports.send = function(req, res, payload, options, callback) {
-  var celery = celeryHelper.createHelper(res.locals.logger);
+exports.send = function(locals, payload, options, callback) {
+  var celery = celeryHelper.createHelper(locals.logger);
 
   var akId = null;
-  if (res.locals.authType === 'builtin.byAccessKey') {
-    akId = res.locals.authId;
+  if (locals.authType === 'builtin.byAccessKey') {
+    akId = locals.authId;
   }
 
   // Send Celery task
@@ -32,9 +32,9 @@ exports.send = function(req, res, payload, options, callback) {
   };
   celery.putTask(task, taskArgs, taskKwargs, null, function(err, taskId) {
     if (err) {
-      res.locals.logger.logError(err);
+      locals.logger.logError(err);
     } else {
-      res.locals.logger.debug('[WEBHOOK] {0}', payload.event);
+      locals.logger.debug('[WEBHOOK] {0}', payload.event);
     }
 
     // Will not stop even error occured.

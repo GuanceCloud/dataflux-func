@@ -24,7 +24,7 @@ exports.list = function(req, res, next) {
   var dfWorkspaces        = null;
   var dfWorkspacePageInfo = null;
 
-  var dfWorkspaceModel = dfWorkspaceMod.createModel(req, res);
+  var dfWorkspaceModel = dfWorkspaceMod.createModel(res.locals);
 
   async.series([
     // 正常查询

@@ -20,7 +20,7 @@ exports.sysStats = function(req, res, next) {
 };
 
 exports.serverEnvironment = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var pageData = {};
 
@@ -42,7 +42,7 @@ exports.serverEnvironment = function(req, res, next) {
 };
 
 exports.tasks = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var pageData = {};
 
@@ -88,7 +88,7 @@ exports.tasks = function(req, res, next) {
 };
 
 exports.nodesStats = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var pageData = {};
 
@@ -102,7 +102,7 @@ exports.nodesStats = function(req, res, next) {
 };
 
 exports.nodesReport = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var pageData = {};
 

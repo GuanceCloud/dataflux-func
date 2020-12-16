@@ -27,7 +27,7 @@ exports.recover = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptRecoverPointModel = scriptRecoverPointMod.createModel(req, res);
+  var scriptRecoverPointModel = scriptRecoverPointMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {

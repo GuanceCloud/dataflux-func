@@ -16,7 +16,7 @@ var slowAPICountMod = require('../models/slowAPICountMod');
 
 /* Handlers */
 exports.list = function(req, res, next) {
-  var slowAPICountModel = slowAPICountMod.createModel(req, res);
+  var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
   slowAPICountModel.list(function(err, dbRes) {
     if (err) return next(err);
@@ -29,7 +29,7 @@ exports.list = function(req, res, next) {
 exports.delete = function(req, res, next) {
   var id = req.params.id;
 
-  var slowAPICountModel = slowAPICountMod.createModel(req, res);
+  var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
   slowAPICountModel.delete(id, function(err, deletedId) {
     if (err) return next(err);
@@ -42,7 +42,7 @@ exports.delete = function(req, res, next) {
 };
 
 exports.clear = function(req, res, next) {
-  var slowAPICountModel = slowAPICountMod.createModel(req, res);
+  var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
   slowAPICountModel.clear(function(err) {
     if (err) return next(err);

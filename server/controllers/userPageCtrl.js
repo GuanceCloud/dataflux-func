@@ -14,7 +14,7 @@ var userMod = require('../models/userMod');
 
 /* Handlers */
 exports.list = function(req, res, next) {
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var pageData = {};
   async.series([
@@ -43,7 +43,7 @@ exports.add = function(req, res, next) {
 exports.modify = function(req, res, next) {
   var pageData = {};
 
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var id = req.params.id;
 

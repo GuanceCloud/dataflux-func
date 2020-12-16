@@ -22,8 +22,8 @@ var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
 
 exports.delete = crudHandler.createDeleteHandler();
 
-function getConfigHash(req, res, funcId, funcCallKwargsJSON, callback) {
-  var funcModel = funcMod.createModel(req, res);
+function getConfigHash(locals, funcId, funcCallKwargsJSON, callback) {
+  var funcModel = funcMod.createModel(locals);
   funcModel.getWithCheck(funcId, ['id', 'category'], function(err, dbRes) {
     if (err) return callback(err);
 
@@ -51,7 +51,7 @@ exports.list = function(req, res, next) {
   var crontabConfigs        = null;
   var crontabConfigPageInfo = null;
 
-  var crontabConfigModel = crontabConfigMod.createModel(req, res);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -73,7 +73,7 @@ exports.list = function(req, res, next) {
       var opt = res.locals.getQueryOptions();
       if (!opt.extra.withTaskInfoCount) return asyncCallback();
 
-      var crontabTaskInfoModel = crontabTaskInfoMod.createModel(req, res);
+      var crontabTaskInfoModel = crontabTaskInfoMod.createModel(res.locals);
 
       var ids = toolkit.arrayElementValues(crontabConfigs, 'id');
       crontabTaskInfoModel.countByCrontabConfigId(ids, function(err, dbRes) {
@@ -102,8 +102,8 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var funcModel          = funcMod.createModel(req, res);
-  var crontabConfigModel = crontabConfigMod.createModel(req, res);
+  var funcModel          = funcMod.createModel(res.locals);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
 
   var configMD5 = null;
   var addedId   = null;
@@ -124,7 +124,7 @@ exports.add = function(req, res, next) {
     },
     // 获取函数参数哈希
     function(asyncCallback) {
-      getConfigHash(req, res, data.funcId, data.funcCallKwargsJSON, function(err, _configMD5) {
+      getConfigHash(res.locals, data.funcId, data.funcCallKwargsJSON, function(err, _configMD5) {
         if (err) return asyncCallback(err);
 
         configMD5 = _configMD5;
@@ -178,8 +178,8 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel          = funcMod.createModel(req, res);
-  var crontabConfigModel = crontabConfigMod.createModel(req, res);
+  var funcModel          = funcMod.createModel(res.locals);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
 
   var crontabConfig  = null;
   var nextConfigMD5 = null;
@@ -215,7 +215,7 @@ exports.modify = function(req, res, next) {
       var nextFuncId         = data.funcId             || crontabConfig.funcId;
       var nextFuncKwargsJSON = data.funcCallKwargsJSON || crontabConfig.funcCallKwargsJSON;
 
-      getConfigHash(req, res, nextFuncId, nextFuncKwargsJSON, function(err, _configMD5) {
+      getConfigHash(res.locals, nextFuncId, nextFuncKwargsJSON, function(err, _configMD5) {
         if (err) return asyncCallback(err);
 
         nextConfigMD5 = _configMD5;

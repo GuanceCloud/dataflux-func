@@ -26,7 +26,7 @@ exports.list = function(req, res, next) {
   var batches       = null;
   var batchPageInfo = null;
 
-  var batchModel = batchMod.createModel(req, res);
+  var batchModel = batchMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -48,7 +48,7 @@ exports.list = function(req, res, next) {
       var opt = res.locals.getQueryOptions();
       if (!opt.extra.withTaskInfoCount) return asyncCallback();
 
-      var batchTaskInfoModel = batchTaskInfoMod.createModel(req, res);
+      var batchTaskInfoModel = batchTaskInfoMod.createModel(res.locals);
 
       var ids = toolkit.arrayElementValues(batches, 'id');
       batchTaskInfoModel.countByBatchId(ids, function(err, dbRes) {
@@ -77,8 +77,8 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var funcModel  = funcMod.createModel(req, res);
-  var batchModel = batchMod.createModel(req, res);
+  var funcModel  = funcMod.createModel(res.locals);
+  var batchModel = batchMod.createModel(res.locals);
 
   var addedId = null;
 
@@ -116,8 +116,8 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel  = funcMod.createModel(req, res);
-  var batchModel = batchMod.createModel(req, res);
+  var funcModel  = funcMod.createModel(res.locals);
+  var batchModel = batchMod.createModel(res.locals);
 
   var batch = null;
 

@@ -23,7 +23,7 @@ exports.delete = crudHandler.createDeleteHandler();
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var envVariableModel = envVariableMod.createModel(req, res);
+  var envVariableModel = envVariableMod.createModel(res.locals);
 
   async.series([
     // 检查ID重名
@@ -63,7 +63,7 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var envVariableModel = envVariableMod.createModel(req, res);
+  var envVariableModel = envVariableMod.createModel(res.locals);
 
   var envVariable = null;
 
@@ -84,7 +84,7 @@ exports.modify = function(req, res, next) {
     },
     // 刷新环境变量缓存标志位
     function(asyncCallback) {
-      updateEnvVariableRefreshTimestamp(req, res, envVariable, asyncCallback);
+      updateEnvVariableRefreshTimestamp(res.locals, envVariable, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -99,7 +99,7 @@ exports.modify = function(req, res, next) {
 exports.delete = function(req, res, next) {
   var id = req.params.id;
 
-  var envVariableModel = envVariableMod.createModel(req, res);
+  var envVariableModel = envVariableMod.createModel(res.locals);
 
   var envVariable = null;
 
@@ -120,7 +120,7 @@ exports.delete = function(req, res, next) {
     },
     // 刷新helper缓存标志位
     function(asyncCallback) {
-      updateEnvVariableRefreshTimestamp(req, res, envVariable, asyncCallback);
+      updateEnvVariableRefreshTimestamp(res.locals, envVariable, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -132,9 +132,9 @@ exports.delete = function(req, res, next) {
   });
 };
 
-function updateEnvVariableRefreshTimestamp(req, res, envVariable, callback) {
+function updateEnvVariableRefreshTimestamp(locals, envVariable, callback) {
   var tags    = ['id', envVariable.id];
   var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestamp', tags);
 
-  res.locals.cacheDB.set(cacheKey, Date.now(), callback);
+  locals.cacheDB.set(cacheKey, Date.now(), callback);
 };

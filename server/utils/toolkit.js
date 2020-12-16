@@ -1862,28 +1862,26 @@ var dbResToSelectOptions = toolkit.dbResToSelectOptions = function dbResToSelect
 };
 
 /**
+ * Create a fake Express.js req.locals/app.locals object for testing or other usage.
+ * @return {Object}
+ */
+var createFakeLocals = toolkit.createFakeLocals = function createFakeLocals(fakeTraceId) {
+  var fakeTraceId = fakeTraceId || 'TRACE-' + toolkit.genRandString(4).toUpperCase();
+
+  return {
+    traceId     : fakeTraceId,
+    traceIdShort: fakeTraceId,
+    clientId    : '00000000',
+    requestType : 'api',
+  };
+};
+
+/**
  * Create a fake Express.js Request object for testing or other usage.
  * @return {Object}
  */
 var createFakeReq = toolkit.createFakeReq = function createFakeReq() {
   return {ip: '<NON REQ>'};
-};
-
-/**
- * Create a fake Express.js Response object for testing or other usage.
- * @return {Object}
- */
-var createFakeRes = toolkit.createFakeRes = function createFakeRes(fakeTraceId) {
-  var fakeTraceId = fakeTraceId || 'TRACE-' + toolkit.genRandString(4).toUpperCase();
-
-  return {
-    locals: {
-      traceId     : fakeTraceId,
-      traceIdShort: fakeTraceId,
-      clientId    : '00000000',
-      requestType : 'api',
-    },
-  };
 };
 
 /**
@@ -1903,7 +1901,7 @@ var isWeChatBrowser = toolkit.isWeChatBrowser = function isWeChatBrowser(req) {
 /**
  * Add `rawData` to req in `body-parser.verify()`
  */
-var addRawData = toolkit.addRawData =function addRawData(req, res, buffer, encoding) {
+var addRawData = toolkit.addRawData = function addRawData(req, res, buffer, encoding) {
   req.rawData = buffer;
 }
 

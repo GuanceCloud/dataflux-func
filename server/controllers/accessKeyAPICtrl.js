@@ -47,7 +47,7 @@ exports.testWebhook = function(req, res, next) {
     kafkaPartition: 0,
     kafkaTopic    : 'basis',
   };
-  webhook.send(req, res, payload, options);
+  webhook.send(res.locals, payload, options);
 
   return res.locals.sendJSON();
 };

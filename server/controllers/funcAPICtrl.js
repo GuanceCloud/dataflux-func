@@ -29,7 +29,7 @@ exports.list = function(req, res, next) {
   var funcs        = null;
   var funcPageInfo = null;
 
-  var funcModel = funcMod.createModel(req, res);
+  var funcModel = funcMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {

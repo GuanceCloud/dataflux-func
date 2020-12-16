@@ -219,8 +219,6 @@ _CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
 _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
-# 集成函数一般作为常量的配置
-_INTEGRATION_FUNC_ID_CACHE_EXPIRES: 30
 
 # 函数任务模块一般作为常量的配置
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
@@ -275,6 +273,11 @@ _DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
 
 # 其他（内部控制）
+_LRU_FUNC_CACHE_MAX           : 1000
+_LRU_FUNC_CACHE_MAX_AGE       : 15
+_LRU_FUNC_RESULT_CACHE_MAX    : 2000
+_LRU_FUNC_RESULT_CACHE_MAX_AGE: 2000
+
 # 保留脚本错误信息
 _INTERNAL_KEEP_SCRIPT_FAILURE: false
 
