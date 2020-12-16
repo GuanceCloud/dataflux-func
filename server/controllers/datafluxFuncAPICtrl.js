@@ -864,221 +864,6 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
   }
 };
 
-exports.integratedSignIn = function(req, res, next) {
-  var funcId   = req.body.signIn.funcId;
-  var username = req.body.signIn.username;
-  var password = req.body.signIn.password;
-
-  // 函数调用参数
-  var name = 'DataFluxFunc.runner';
-  var kwargs = {
-    funcId        : funcId,
-    funcCallKwargs: { username: username, password: password },
-  };
-
-  // 启动函数执行任务
-  var onResultCallback = function(err, celeryRes, extraInfo) {
-    if (err) return next(err);
-
-    celeryRes = celeryRes || {};
-    extraInfo = extraInfo || {};
-
-    // 无法通过JSON.parse解析
-    if ('string' === typeof celeryRes) {
-      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
-    }
-
-    // 函数失败/超时
-    if (celeryRes.status === 'FAILURE') {
-      var errorMessage = null;
-      try { errorMessage = celeryRes.exceptionMessage } catch(_) {}
-      return next(new E('EFuncFailed.SignInFuncRaisedException', errorMessage));
-
-    } else if (extraInfo.status === 'TIMEOUT') {
-      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout.'));
-    }
-
-    // 函数返回False或没有实际意义内容
-    var funcRetval = null;
-    try { funcRetval = celeryRes.retval.raw } catch(_) {}
-    if (toolkit.isNothing(funcRetval) || funcRetval === false) {
-      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned `False` or nothing.'));
-    }
-
-    // 登录成功
-    var userId          = username;
-    var userDisplayName = username;
-    switch(typeof funcRetval) {
-      // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
-      case 'string':
-      case 'number':
-        userId = '' + funcRetval;
-        break;
-
-      // 集成函数返回对象时，尝试从中提取用户信息
-      case 'object':
-        function pickField(obj, possibleFields) {
-          for (var k in obj) {
-            k = ('' + k).toLowerCase();
-            if (possibleFields.indexOf(k) >= 0) {
-              return obj[k];
-            }
-          }
-        }
-        userId = pickField(funcRetval, [
-          'id', 'uid',
-          'userId', 'user_id',
-        ]);
-        userDisplayName = pickField(funcRetval, [
-          'name', 'title',
-          'fullname', 'full_name',
-          'displayName', 'display_name',
-          'realName', 'real_name',
-          'showName', 'show_name',
-        ]);
-        break;
-    }
-
-    // 避免与内置系统用户ID冲突
-    userId = toolkit.strf('igu_{0}-{1}', toolkit.getShortMD5(funcId), userId);
-
-    // 发行登录令牌
-    var authTokenObj = auth.genXAuthTokenObj(userId);
-    authTokenObj.ig = true;
-    authTokenObj.un = username
-    authTokenObj.nm = userDisplayName;
-
-    var cacheKey     = auth.getCacheKey(authTokenObj);
-    var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
-    var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
-
-    res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', function(err) {
-      if (err) return asyncCallback(err);
-
-      var ret = toolkit.initRet({
-        userId    : userId,
-        xAuthToken: xAuthToken,
-      });
-      return res.locals.sendJSON(ret);
-    });
-  };
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
-
-  var taskOptions = {
-    resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
-  }
-  celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
-};
-
-exports.integratedAuthMid = function(req, res, next) {
-  if (res.locals.user && res.locals.user.isSignedIn) return next();
-
-  // Get x-auth-token
-  var xAuthToken = null;
-
-  var headerField = CONFIG._WEB_AUTH_HEADER;
-  var queryField  = CONFIG._WEB_AUTH_QUERY;
-  var cookieField = CONFIG._WEB_AUTH_COOKIE;
-
-  if (cookieField
-      && req.signedCookies[cookieField]
-      && res.locals.requestType === 'page') {
-    // Try to get x-auth-token from cookie
-    xAuthToken = req.signedCookies[cookieField];
-
-  } else if (headerField && req.get(headerField)) {
-    // Try to get x-auth-token from HTTP header
-    xAuthToken = req.get(headerField);
-
-  } else if (queryField && req.query[queryField]) {
-    // Try to get x-auth-token from query
-    xAuthToken = req.query[queryField];
-  }
-
-  // Skip if no xAuthToken
-  if (!xAuthToken) return next();
-
-  if (CONFIG.MODE === 'dev') {
-    res.locals.logger.debug('[MID] IN datafluxFuncAPICtrl.integratedAuthMid');
-  }
-
-  res.locals.user = auth.createUserHandler();
-
-  // Check x-auth-token
-  var xAuthTokenObj      = null;
-  var xAuthTokenCacheKey = null;
-
-  async.series([
-    // Verify JWT
-    function(asyncCallback) {
-      auth.verifyXAuthToken(xAuthToken, function(err, obj) {
-        if (err) {
-          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token.');
-          return asyncCallback(res.locals.reqAuthError);
-        }
-
-        xAuthTokenObj = obj;
-
-        /*** 非集成登录则跳过 ***/
-        if (!xAuthTokenObj.ig) return next();
-
-        return asyncCallback();
-      });
-    },
-    // Check Redis
-    function(asyncCallback) {
-      xAuthTokenCacheKey = auth.getCacheKey(xAuthTokenObj);
-      res.locals.cacheDB.get(xAuthTokenCacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired.');
-          return asyncCallback(res.locals.reqAuthError);
-        }
-
-        res.locals.xAuthToken    = xAuthToken;
-        res.locals.xAuthTokenObj = xAuthTokenObj;
-
-        return asyncCallback();
-      });
-    },
-    // Refresh x-auth-token
-    function(asyncCallback) {
-      res.locals.cacheDB.expire(xAuthTokenCacheKey, CONFIG._WEB_AUTH_EXPIRES, asyncCallback);
-    },
-  ], function(err) {
-    if (err && res.locals.reqAuthError === err) {
-      // Skip request error here, throw later.
-      return next();
-    }
-
-    if (err) return next(err);
-
-    res.locals.user.load({
-      seq             : 0,
-      id              : xAuthTokenObj.uid,
-      username        : xAuthTokenObj.un,
-      name            : xAuthTokenObj.nm,
-      roles           : ['user'].join(','),
-      customPrivileges: ['systemConfig_r'].join(','),
-      isIntegratedUser: xAuthTokenObj.ig,
-    });
-
-    res.locals.logger.info('Auth by [Integrated Sign-in Func]: id=`{0}`; username=`{1}`',
-      res.locals.user.id,
-      res.locals.user.username);
-
-    // client detect
-    res.locals.authType = 'builtin.byXAuthToken';
-    res.locals.authId   = xAuthTokenObj.uid;
-
-    delete req.query[queryField];
-
-    return next();
-  });
-};
-
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
@@ -1769,4 +1554,335 @@ exports.getUpgradeInfo = function(req, res, next) {
 
   var ret = toolkit.initRet(upgradeInfo);
   return res.locals.sendJSON(ret);
+};
+
+// 集成处理
+exports.integratedSignIn = function(req, res, next) {
+  var funcId   = req.body.signIn.funcId;
+  var username = req.body.signIn.username;
+  var password = req.body.signIn.password;
+
+  // 函数调用参数
+  var name = 'DataFluxFunc.runner';
+  var kwargs = {
+    funcId        : funcId,
+    funcCallKwargs: { username: username, password: password },
+  };
+
+  // 启动函数执行任务
+  var onResultCallback = function(err, celeryRes, extraInfo) {
+    if (err) return next(err);
+
+    celeryRes = celeryRes || {};
+    extraInfo = extraInfo || {};
+
+    // 无法通过JSON.parse解析
+    if ('string' === typeof celeryRes) {
+      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+    }
+
+    // 函数失败/超时
+    if (celeryRes.status === 'FAILURE') {
+      var errorMessage = null;
+      try { errorMessage = celeryRes.exceptionMessage } catch(_) {}
+      return next(new E('EFuncFailed.SignInFuncRaisedException', errorMessage));
+
+    } else if (extraInfo.status === 'TIMEOUT') {
+      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout.'));
+    }
+
+    // 函数返回False或没有实际意义内容
+    var funcRetval = null;
+    try { funcRetval = celeryRes.retval.raw } catch(_) {}
+    if (toolkit.isNothing(funcRetval) || funcRetval === false) {
+      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned `False` or nothing.'));
+    }
+
+    // 登录成功
+    var userId          = username;
+    var userDisplayName = username;
+    switch(typeof funcRetval) {
+      // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
+      case 'string':
+      case 'number':
+        userId = '' + funcRetval;
+        break;
+
+      // 集成函数返回对象时，尝试从中提取用户信息
+      case 'object':
+        function pickField(obj, possibleFields) {
+          for (var k in obj) {
+            k = ('' + k).toLowerCase();
+            if (possibleFields.indexOf(k) >= 0) {
+              return obj[k];
+            }
+          }
+        }
+        userId = pickField(funcRetval, [
+          'id', 'uid',
+          'userId', 'user_id',
+        ]);
+        userDisplayName = pickField(funcRetval, [
+          'name', 'title',
+          'fullname', 'full_name',
+          'displayName', 'display_name',
+          'realName', 'real_name',
+          'showName', 'show_name',
+        ]);
+        break;
+    }
+
+    // 避免与内置系统用户ID冲突
+    userId = toolkit.strf('igu_{0}-{1}', toolkit.getShortMD5(funcId), userId);
+
+    // 发行登录令牌
+    var authTokenObj = auth.genXAuthTokenObj(userId);
+    authTokenObj.ig = true;
+    authTokenObj.un = username
+    authTokenObj.nm = userDisplayName;
+
+    var cacheKey     = auth.getCacheKey(authTokenObj);
+    var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
+    var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
+
+    res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', function(err) {
+      if (err) return asyncCallback(err);
+
+      var ret = toolkit.initRet({
+        userId    : userId,
+        xAuthToken: xAuthToken,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  };
+
+  var celery = celeryHelper.createHelper(res.locals.logger);
+
+  var taskOptions = {
+    resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
+  }
+  celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+};
+
+exports.integratedAuthMid = function(req, res, next) {
+  if (res.locals.user && res.locals.user.isSignedIn) return next();
+
+  // Get x-auth-token
+  var xAuthToken = null;
+
+  var headerField = CONFIG._WEB_AUTH_HEADER;
+  var queryField  = CONFIG._WEB_AUTH_QUERY;
+  var cookieField = CONFIG._WEB_AUTH_COOKIE;
+
+  if (cookieField
+      && req.signedCookies[cookieField]
+      && res.locals.requestType === 'page') {
+    // Try to get x-auth-token from cookie
+    xAuthToken = req.signedCookies[cookieField];
+
+  } else if (headerField && req.get(headerField)) {
+    // Try to get x-auth-token from HTTP header
+    xAuthToken = req.get(headerField);
+
+  } else if (queryField && req.query[queryField]) {
+    // Try to get x-auth-token from query
+    xAuthToken = req.query[queryField];
+  }
+
+  // Skip if no xAuthToken
+  if (!xAuthToken) return next();
+
+  if (CONFIG.MODE === 'dev') {
+    res.locals.logger.debug('[MID] IN datafluxFuncAPICtrl.integratedAuthMid');
+  }
+
+  res.locals.user = auth.createUserHandler();
+
+  // Check x-auth-token
+  var xAuthTokenObj      = null;
+  var xAuthTokenCacheKey = null;
+
+  async.series([
+    // Verify JWT
+    function(asyncCallback) {
+      auth.verifyXAuthToken(xAuthToken, function(err, obj) {
+        if (err) {
+          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token.');
+          return asyncCallback(res.locals.reqAuthError);
+        }
+
+        xAuthTokenObj = obj;
+
+        /*** 非集成登录则跳过 ***/
+        if (!xAuthTokenObj.ig) return next();
+
+        return asyncCallback();
+      });
+    },
+    // Check Redis
+    function(asyncCallback) {
+      xAuthTokenCacheKey = auth.getCacheKey(xAuthTokenObj);
+      res.locals.cacheDB.get(xAuthTokenCacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired.');
+          return asyncCallback(res.locals.reqAuthError);
+        }
+
+        res.locals.xAuthToken    = xAuthToken;
+        res.locals.xAuthTokenObj = xAuthTokenObj;
+
+        return asyncCallback();
+      });
+    },
+    // Refresh x-auth-token
+    function(asyncCallback) {
+      res.locals.cacheDB.expire(xAuthTokenCacheKey, CONFIG._WEB_AUTH_EXPIRES, asyncCallback);
+    },
+  ], function(err) {
+    if (err && res.locals.reqAuthError === err) {
+      // Skip request error here, throw later.
+      return next();
+    }
+
+    if (err) return next(err);
+
+    res.locals.user.load({
+      seq             : 0,
+      id              : xAuthTokenObj.uid,
+      username        : xAuthTokenObj.un,
+      name            : xAuthTokenObj.nm,
+      roles           : ['user'].join(','),
+      customPrivileges: ['systemConfig_r'].join(','),
+      isIntegratedUser: xAuthTokenObj.ig,
+    });
+
+    res.locals.logger.info('Auth by [Integrated Sign-in Func]: id=`{0}`; username=`{1}`',
+      res.locals.user.id,
+      res.locals.user.username);
+
+    // client detect
+    res.locals.authType = 'builtin.byXAuthToken';
+    res.locals.authId   = xAuthTokenObj.uid;
+
+    delete req.query[queryField];
+
+    return next();
+  });
+};
+
+exports.integratedEMQXAuth = function(req, res, next) {
+  var authInfo = toolkit.jsonCopy(req.body);
+  var username = authInfo.username;
+  var password = authInfo.password;
+  delete authInfo.username;
+  delete authInfo.password;
+
+  console.log(username, password, authInfo);
+  if (username === 'dev' && password === 'dev') {
+    return res.status(200).send('ok')
+  }
+  return res.status(200).send('ignore')
+
+  // 函数调用参数
+  var name = 'DataFluxFunc.runner';
+  var kwargs = {
+    funcId        : funcId,
+    funcCallKwargs: { username: username, password: password, auth_info: authInfo },
+  };
+
+  // 启动函数执行任务
+  var onResultCallback = function(err, celeryRes, extraInfo) {
+    if (err) return next(err);
+
+    celeryRes = celeryRes || {};
+    extraInfo = extraInfo || {};
+
+    // 无法通过JSON.parse解析
+    if ('string' === typeof celeryRes) {
+      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+    }
+
+    // 函数失败/超时
+    if (celeryRes.status === 'FAILURE') {
+      var errorMessage = null;
+      try { errorMessage = celeryRes.exceptionMessage } catch(_) {}
+      return next(new E('EFuncFailed.SignInFuncRaisedException', errorMessage));
+
+    } else if (extraInfo.status === 'TIMEOUT') {
+      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout.'));
+    }
+
+    // 函数返回False或没有实际意义内容
+    var funcRetval = null;
+    try { funcRetval = celeryRes.retval.raw } catch(_) {}
+    if (toolkit.isNothing(funcRetval) || funcRetval === false) {
+      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned `False` or nothing.'));
+    }
+
+    // 登录成功
+    var userId          = username;
+    var userDisplayName = username;
+    switch(typeof funcRetval) {
+      // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
+      case 'string':
+      case 'number':
+        userId = '' + funcRetval;
+        break;
+
+      // 集成函数返回对象时，尝试从中提取用户信息
+      case 'object':
+        function pickField(obj, possibleFields) {
+          for (var k in obj) {
+            k = ('' + k).toLowerCase();
+            if (possibleFields.indexOf(k) >= 0) {
+              return obj[k];
+            }
+          }
+        }
+        userId = pickField(funcRetval, [
+          'id', 'uid',
+          'userId', 'user_id',
+        ]);
+        userDisplayName = pickField(funcRetval, [
+          'name', 'title',
+          'fullname', 'full_name',
+          'displayName', 'display_name',
+          'realName', 'real_name',
+          'showName', 'show_name',
+        ]);
+        break;
+    }
+
+    // 避免与内置系统用户ID冲突
+    userId = toolkit.strf('igu_{0}-{1}', toolkit.getShortMD5(funcId), userId);
+
+    // 发行登录令牌
+    var authTokenObj = auth.genXAuthTokenObj(userId);
+    authTokenObj.ig = true;
+    authTokenObj.un = username
+    authTokenObj.nm = userDisplayName;
+
+    var cacheKey     = auth.getCacheKey(authTokenObj);
+    var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
+    var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
+
+    res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', function(err) {
+      if (err) return asyncCallback(err);
+
+      var ret = toolkit.initRet({
+        userId    : userId,
+        xAuthToken: xAuthToken,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  };
+
+  var celery = celeryHelper.createHelper(res.locals.logger);
+
+  var taskOptions = {
+    resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
+  }
+  celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
 };

@@ -12,6 +12,11 @@ routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
   datafluxFuncAPICtrl.integratedSignIn,
 ]);
 
+// 集成EMQ认证（HTTP）
+routeLoader.load(ROUTE.datafluxFuncAPI.integratedEMQXAuth, [
+  datafluxFuncAPICtrl.integratedEMQXAuth,
+]);
+
 // 总览
 routeLoader.load(ROUTE.datafluxFuncAPI.overview, [
   datafluxFuncAPICtrl.overview,

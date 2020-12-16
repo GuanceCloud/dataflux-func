@@ -360,6 +360,7 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
+  // require('./messageHandlers/emqxHandler')(app, server);
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,

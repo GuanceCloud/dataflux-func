@@ -1079,6 +1079,17 @@ export default {
             type: 'error',
           });
           break;
+
+        case 'EClientDuplicated':
+          title = '函数名重复';
+          message = `被@DFF.API(...)装饰的函数存在重名
+                      <br>请检查代码，修改后再试一次`
+          this.$alert(message, title, {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: '了解',
+            type: 'error',
+          });
+          break;
       }
 
       if (this.textOutput) this.openVueSplitPane();

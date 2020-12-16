@@ -302,6 +302,20 @@ exports.publish = function(req, res, next) {
 
         nextExportedAPIFuncs = celeryRes.retval && celeryRes.retval.result && celeryRes.retval.result.exportedAPIFuncs;
 
+        // 检查重名函数
+        var funcNameMap = {};
+        for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
+          var name = nextExportedAPIFuncs[i].name;
+
+          if (!funcNameMap[name]) {
+            funcNameMap[name] = true;
+          } else {
+            return asyncCallback(new E('EClientDuplicated', 'Found duplicated func names in script.', {
+              funcName: name,
+            }));
+          }
+        }
+
         return asyncCallback();
       });
     },

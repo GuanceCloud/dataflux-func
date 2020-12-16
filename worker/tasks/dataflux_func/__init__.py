@@ -36,20 +36,39 @@ CONFIG = yaml_resources.get('CONFIG')
 
 COMPILED_CODE_LRU = pylru.lrucache(CONFIG['_FUNC_TASK_COMPILE_CACHE_MAX_SIZE'])
 
-FIXED_INTEGRATION_KEY_MAP = {
-    # 登录用函数
+FIX_INTEGRATION_KEY_MAP = {
+    # 额外用于登录DataFlux Func平台的函数
+    # 集成为`POST /api/v1/func/integration/sign-in`
+    # 集成为DataFlux Func登录界面
     #   函数必须为`def func(username, password)`形式
+    #       返回`True`表示登录成功
+    #       返回`False`或`Exception('<错误信息>')`表示登录失败
     #   无配置项
     'signIn': 'signIn',
     'login' : 'signIn',
 
     # 自动运行函数
-    #   函数必须为`def func()`形式
+    # 集成为独立定时运行任务（即无需配置的自动触发配置）
+    # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
     #       crontab  : Crontab语法自动运行周期
-    #       onLaunch : True/False，是否启动时运行
+    #       onLaunch : True/False，是否启动后运行
     #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
+
+    # 用于EMQX认证的函数
+    # 集成为`POST /api/v1/func/integration/emqx-auth`
+    #   函数必须为`def func(username, password, client_id)`形式
+    #   无配置项
+    'emqxAuth': 'emqxAuth',
+
+    # 用于EMQX订阅消息的处理函数
+    # 集成为MQTT订阅
+    # 函数必须为`def func(message, topic)`形式
+    #   配置项：
+    #       topic: 订阅的主题，如：`topic1`, `topic2/+`, `topic3/#`, `$queue/topic4`, `$share/group1/topic5`
+    #       qos  : 服务质量，0=至多一次，1=至少一次，2=确保1次（默认0）
+    'emqxHandler': 'emqxHandler',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
@@ -1221,7 +1240,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 e = InvalidOptionException('`integration` should be a string or unicode')
                 raise e
 
-            integration = FIXED_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
+            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
 
         # 函数提示
         if hint is not None:
