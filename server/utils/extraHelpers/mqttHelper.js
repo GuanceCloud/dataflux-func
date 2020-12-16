@@ -10,13 +10,15 @@ var logHelper = require('../logHelper');
 
 var getConfig = function(c) {
   return {
-    clientId       : CONFIG.APP_NAME,
+    host           : c.host,
+    port           : c.post,
+    username       : c.username,
+    password       : c.password,
+    clientId       : c.clientId,
     protocolId     : 'MQTT',
     protocolVersion: 4,
     clean          : false,
     resubscribe    : true,
-    username       : c.username,
-    password       : c.password,
   };
 };
 
@@ -40,8 +42,11 @@ var MQTTHelper = function(logger, config) {
   } else {
     if (!CLIENT) {
       CLIENT_CONFIG = toolkit.noNullOrWhiteSpace({
-        username: CONFIG.EMQX_FUNC_USERNAME,
-        password: CONFIG.EMQX_FUNC_PASSWORD,
+        host    : CONFIG.MQTT_HOST,
+        port    : CONFIG.MQTT_PORT,
+        username: CONFIG.MQTT_USERNAME,
+        password: CONFIG.MQTT_PASSWORD,
+        clientId: CONFIG.MQTT_CLIENT_ID,
       });
       CLIENT = mqtt.connect(getConfig(CLIENT_CONFIG));
     }
@@ -57,13 +62,13 @@ var MQTTHelper = function(logger, config) {
  * @param  {String|String[]} topic
  * @param  {String|buffer}   message  [description]
  * @param  {Object}          options
- * @param  {Integer}         [options.qos=0]
+ * @param  {Integer}         [options.qos=CONFIG.MQTT_DEFAULT_QOS]
  * @param  {Function}        callback
  * @return {undefined}
  */
 MQTTHelper.prototype.pub = function(topic, message, options, callback) {
   options = options || {};
-  options.qos = options.qos || 0;
+  options.qos = options.qos || CONFIG.MQTT_DEFAULT_QOS;
 
   return this.client.publish(topic, message, options, callback);
 };
@@ -73,7 +78,7 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
  *
  * @param  {String|String[]} topic
  * @param  {Object}          options
- * @param  {Integer}         [options.qos=0]
+ * @param  {Integer}         [options.qos=CONFIG.MQTT_DEFAULT_QOS]
  * @param  {Function}        handler
  * @param  {Function}        callback
  * @return {undefined}
@@ -82,14 +87,17 @@ MQTTHelper.prototype.sub = function(topic, options, handler, callback) {
   var self = this;
 
   options = options || {};
-  options.qos = options.qos || 0;
+  options.qos = options.qos || CONFIG.MQTT_DEFAULT_QOS;
 
   self.client.subscribe(topic, options, function(err, granted) {
     if (err) return callback && callback(err, granted);
 
-    self.client.on('message', function(_topic, _message, _packet) {
-      return handler(_topic, _message, _packet);
+    self.client.on('message', function(topic, message, packet) {
+      console.log(packet)
+      return handler(topic, message, packet);
     });
+
+    return callback && callback(err, granted);
   });
 };
 

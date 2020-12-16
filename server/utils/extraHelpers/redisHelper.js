@@ -494,17 +494,12 @@ RedisHelper.prototype.pub = function(topic, message, options, callback) {
  * Subscribe from topic
  *
  * @param  {String}    topic
- * @param  {Object}    options *No options for Redis.pub*
  * @param  {Function}  handler
  * @param  {Function}  callback
  * @return {undefined}
  */
-RedisHelper.prototype.sub = function(topic, options, handler, callback) {
+RedisHelper.prototype.sub = function(topic, handler, callback) {
   var self = this;
-
-  options = options || {};
-
-  options.qos = options.qos || self.defaultQoS || 0;
 
   if (!this.skipLog) {
     self.logger && self.logger.debug('{0} {1} [{2}]',

@@ -57,18 +57,18 @@ FIX_INTEGRATION_KEY_MAP = {
     'autoRun': 'autoRun',
 
     # 用于EMQX认证的函数
-    # 集成为`POST /api/v1/func/integration/emqx-auth`
+    # 集成为`POST /api/v1/func/integration/auth-emqx`
     #   函数必须为`def func(username, password, client_id)`形式
+    #   全局只能存在一个`authEMQX`函数
     #   无配置项
-    'emqxAuth': 'emqxAuth',
+    'authEMQX': 'authEMQX',
 
     # 用于EMQX订阅消息的处理函数
     # 集成为MQTT订阅
-    # 函数必须为`def func(message, topic)`形式
+    # 函数必须为`def func(topic, message, packet)`形式
     #   配置项：
     #       topic: 订阅的主题，如：`topic1`, `topic2/+`, `topic3/#`, `$queue/topic4`, `$share/group1/topic5`
-    #       qos  : 服务质量，0=至多一次，1=至少一次，2=确保1次（默认0）
-    'emqxHandler': 'emqxHandler',
+    'onMQTTMessage': 'onMQTTMessage',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {

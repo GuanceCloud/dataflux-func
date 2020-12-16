@@ -97,6 +97,7 @@ function _getTaskDefaultQueue(execMode) {
   return FUNC_TASK_DEFAULT_QUEUE_MAP[execMode] || CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 };
 
+// 删除
 function _createFuncCallOptions(req, res, funcId, origin, callback) {
   // 注意：
   //  本函数内所有搜集的时长类数据均为秒
@@ -399,6 +400,312 @@ function _createFuncCallOptions(req, res, funcId, origin, callback) {
 
     return callback(null, funcCallOptions);
   });
+};
+
+function _getFunc(req, res, funcId, callback) {
+  var func = FUNC_LRU.get(funcId);
+  if (func) return callback(null, func);
+
+  // 此处由于需要同时获取函数所在脚本的MD5值，需要使用`list`方法
+  var funcModel = funcMod.createModel(req, res);
+
+  var opt = {
+    limit  : 1,
+    filters: {
+      'func.id': {eq: funcId},
+    }
+  };
+  funcModel.list(opt, function(err, dbRes) {
+    if (err) return callback(err);
+
+    dbRes = dbRes[0];
+    if (!dbRes) {
+      return callback(new E('EClientNotFound', toolkit.strf('No such function: `{0}`', funcId), {
+        funcId: funcId,
+      }));
+    }
+
+    func = dbRes;
+    FUNC_LRU.set(funcId, func);
+
+    return callback(null, func);
+  });
+};
+
+function _createFuncCallOptionsFromRequest(req, func, callback) {
+  // 注意：
+  //  本函数内所有搜集的时长类数据均为秒
+  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
+
+  func.extraConfigJSON = func.extraConfigJSON || {};
+
+  var origin = 'direct';
+  if (toolkit.startswith(req.path, '/api/v1/al/')) {
+    origin = 'authLink';
+  } else if (toolkit.startswith(req.path, '/api/v1/bat/')) {
+    origin = 'batch';
+  }
+
+  var format = req.params.format;
+
+  /*** 搜集函数参数（POST body优先） ***/
+  var funcCallKwargs = req.body.kwargs || req.query.kwargs || {};
+  if ('string' === typeof funcCallKwargs) {
+    try {
+      funcCallKwargs = JSON.parse(funcCallKwargs);
+    } catch(err) {
+      return callback(new E('EClientBadRequest', 'Invalid kwargs', {
+        error: err.toString(),
+      }));
+    }
+  }
+
+  /*** 搜集执行选项（POST body优先） ***/
+  var funcCallOptions = req.body.options || req.query.options || {};
+  if ('string' === typeof funcCallOptions) {
+    try {
+      funcCallOptions = JSON.parse(funcCallOptions);
+
+    } catch(err) {
+      return callback(new E('EClientBadRequest', 'Invalid options', {
+        error: err.toString(),
+      }));
+    }
+  }
+
+  /*** 搜集执行选项（GET 扁平、简化形式） ***/
+  switch(format) {
+    case 'flattened':
+      // 搜集扁平形式函数参数（options_*, kwargs_*）
+      var flattenedQuery = toolkit.jsonCopy(req.query || {});
+      for (var k in flattenedQuery) if (flattenedQuery.hasOwnProperty(k)) {
+        var v = flattenedQuery[k];
+
+        var keyParts = k.split('_');
+        if (keyParts.length > 1) {
+          var type = keyParts[0];
+          var name = keyParts.slice(1).join('_');
+          switch(type) {
+            case 'kwargs':
+              funcCallKwargs[name] = v;
+              break;
+
+            case 'options':
+              funcCallOptions[name] = v;
+              break;
+          }
+        }
+      }
+      break;
+
+    case 'simplified':
+      // 搜集简化形式函数参数
+      var simplifiedQuery = toolkit.jsonCopy(req.query || {});
+      for (var k in simplifiedQuery) if (simplifiedQuery.hasOwnProperty(k)) {
+        var v = simplifiedQuery[k];
+
+        funcCallKwargs[k] = v;
+      }
+      break;
+  }
+
+  /*** 开始组装参数 ***/
+
+  // 函数ID
+  funcCallOptions.funcId = func.id;
+
+  // 函数信息（用于函数结果缓存）
+  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
+  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
+
+  // 函数参数
+  funcCallOptions.funcCallKwargs = funcCallKwargs;
+
+  // 来源
+  funcCallOptions.origin = origin;
+
+  // 来源ID
+  switch(origin) {
+    case 'authLink':
+    case 'batch':
+      funcCallOptions.originId = req.params.id;
+      break;
+  }
+
+  // API超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
+    funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
+
+    if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
+    }
+    if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
+    }
+
+  } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
+
+  } else {
+    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+  }
+
+  // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.timeout)) {
+    funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
+
+    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
+    }
+
+  } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    funcCallOptions.timeout = func.extraConfigJSON.timeout;
+
+  } else {
+    switch(origin) {
+      case 'batch':
+        funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
+        break;
+
+      default:
+        funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+        break;
+    }
+  }
+
+  // 授权链接方式调用时，函数执行超时不得大于API超时
+  //    超出时，函数执行超时自动跟随API超时
+  switch(origin) {
+    case 'authLink':
+      if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
+        funcCallOptions.timeout = funcCallOptions.apiTimeout;
+      }
+      break;
+  }
+
+  // 【固定】函数任务过期
+  switch(origin) {
+    case 'batch':
+      funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE;
+      break;
+
+    default:
+      funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
+      break;
+  }
+
+  // 是否永不过期
+  if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
+    funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
+  } else {
+    funcCallOptions.neverExpire = false;
+  }
+
+  // 返回类型（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.returnType)) {
+    var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
+    if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
+    }
+
+  } else {
+    funcCallOptions.returnType = 'raw';
+  }
+
+  // 执行模式（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.execMode)) {
+    switch(origin) {
+      case 'authLink':
+        if (funcCallOptions.execMode !== 'sync') {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `sync`', origin)));
+        }
+        break;
+
+      case 'crontab':
+      case 'batch':
+        if (funcCallOptions.execMode !== 'async') {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `async`', origin)));
+        }
+        break;
+
+      default:
+        var _EXEC_MODES = ['sync', 'async'];
+        if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` should be one of `{0}`', _EXEC_MODES.join(','))));
+        }
+        break;
+    }
+
+  } else {
+    switch(origin) {
+      case 'direct':
+      case 'authLink':
+        funcCallOptions.execMode = 'sync';
+        break;
+
+      default:
+        funcCallOptions.execMode = 'async';
+        break;
+    }
+  }
+
+  // 结果保存（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.saveResult)) {
+    funcCallOptions.saveResult = !!funcCallOptions.saveResult;
+  } else {
+    funcCallOptions.saveResult = false;
+  }
+
+  // 结果拆包（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.unfold)) {
+    funcCallOptions.unfold = !!funcCallOptions.unfold;
+
+  } else {
+    switch(origin) {
+      case 'direct':
+        funcCallOptions.unfold = false;
+        break;
+
+      default:
+        funcCallOptions.unfold = true;
+        break;
+    }
+  }
+
+  // 预约执行
+  if (!toolkit.isNothing(funcCallOptions.eta)) {
+    if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
+    }
+  }
+
+  // 执行队列（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    var queueNumber = parseInt(func.extraConfigJSON.queue);
+    if (queueNumber < 1 || queueNumber > 9) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
+    }
+
+    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
+
+  } else {
+    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
+  }
+
+  // 触发时间
+  funcCallOptions.triggerTimeMs = Date.now();
+  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
+
+  // 结果缓存
+  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (!func.extraConfigJSON.cacheResult) {
+      funcCallOptions.cacheResult = false;
+    } else {
+      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
+    }
+  }
+
+  return callback(null, funcCallOptions);
 };
 
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
@@ -1050,8 +1357,19 @@ exports.describeFunc = function(req, res, next) {
 exports.callFunc = function(req, res, next) {
   var funcId = req.params.funcId;
 
+  var func = null;
   var funcCallOptions = null;
   async.series([
+    // 获取函数
+    function(asyncCallback) {
+      _getFunc(req, res, funcId, function(err, _func) {
+        if (err) return asyncCallback(err);
+
+        func = _func;
+
+        return asyncCallback();
+      });
+    },
     // 创建函数调用选项
     function(asyncCallback) {
       _createFuncCallOptions(req, res, funcId, 'direct', function(err, _funcCallOptions) {
@@ -1772,117 +2090,121 @@ exports.integratedAuthMid = function(req, res, next) {
   });
 };
 
-exports.integratedEMQXAuth = function(req, res, next) {
-  var authInfo = toolkit.jsonCopy(req.body);
-  var username = authInfo.username;
-  var password = authInfo.password;
-  delete authInfo.username;
-  delete authInfo.password;
+exports.integratedAuthEMQX = function(req, res, next) {
+  var username = req.body.username;
+  var password = req.body.password;
+  var clientId = req.body.clientid;
 
-  console.log(username, password, authInfo);
-  if (username === 'dev' && password === 'dev') {
-    return res.status(200).send('ok')
+  // 服务器登陆
+  if (username === CONFIG.MQTT_USERNAME
+      && password === CONFIG.MQTT_PASSWORD
+      && clientId === CONFIG.MQTT_CLIENT_ID) {
+    return res.locals.sendText('ok');
   }
-  return res.status(200).send('ignore')
 
-  // 函数调用参数
-  var name = 'DataFluxFunc.runner';
-  var kwargs = {
-    funcId        : funcId,
-    funcCallKwargs: { username: username, password: password, auth_info: authInfo },
-  };
+  // 以下为客户端登录
+  var authEMQXFunc = null;
+  var cacheKey = toolkit.getCacheKey('cache', 'integrationFunc', ['authEMQXFunc']);
+  async.series([
+    // 查询登录函数（从缓存查询）
+    function(asyncCallback) {
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
-  // 启动函数执行任务
-  var onResultCallback = function(err, celeryRes, extraInfo) {
-    if (err) return next(err);
-
-    celeryRes = celeryRes || {};
-    extraInfo = extraInfo || {};
-
-    // 无法通过JSON.parse解析
-    if ('string' === typeof celeryRes) {
-      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
-    }
-
-    // 函数失败/超时
-    if (celeryRes.status === 'FAILURE') {
-      var errorMessage = null;
-      try { errorMessage = celeryRes.exceptionMessage } catch(_) {}
-      return next(new E('EFuncFailed.SignInFuncRaisedException', errorMessage));
-
-    } else if (extraInfo.status === 'TIMEOUT') {
-      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout.'));
-    }
-
-    // 函数返回False或没有实际意义内容
-    var funcRetval = null;
-    try { funcRetval = celeryRes.retval.raw } catch(_) {}
-    if (toolkit.isNothing(funcRetval) || funcRetval === false) {
-      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned `False` or nothing.'));
-    }
-
-    // 登录成功
-    var userId          = username;
-    var userDisplayName = username;
-    switch(typeof funcRetval) {
-      // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
-      case 'string':
-      case 'number':
-        userId = '' + funcRetval;
-        break;
-
-      // 集成函数返回对象时，尝试从中提取用户信息
-      case 'object':
-        function pickField(obj, possibleFields) {
-          for (var k in obj) {
-            k = ('' + k).toLowerCase();
-            if (possibleFields.indexOf(k) >= 0) {
-              return obj[k];
-            }
-          }
+        if (cacheRes) {
+          authEMQXFunc = JSON.parse(cacheRes);
         }
-        userId = pickField(funcRetval, [
-          'id', 'uid',
-          'userId', 'user_id',
-        ]);
-        userDisplayName = pickField(funcRetval, [
-          'name', 'title',
-          'fullname', 'full_name',
-          'displayName', 'display_name',
-          'realName', 'real_name',
-          'showName', 'show_name',
-        ]);
-        break;
+
+        return asyncCallback();
+      });
+    },
+    // 查询登录函数
+    function(asyncCallback) {
+      if (authEMQXFunc) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   id');
+      sql.append('FROM biz_main_func');
+      sql.append('WHERE');
+      sql.append("  integration = 'authEMQX'");
+      sql.append('LIMIT 1');
+
+      res.locals.db.query(sql, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        authEMQXFunc = dbRes[0] || null;
+
+        // 建立缓存
+        var expires = CONFIG._INTEGRATION_FUNC_ID_CACHE_EXPIRES;
+        return res.locals.cacheDB.setex(cacheKey, expires, JSON.stringify(authEMQXFunc), asyncCallback);
+      });
+    },
+    // 执行查询
+    function(asyncCallback) {
+      if (!authEMQXFunc) return asyncCallback();
+
+      // 函数调用参数
+      var name = 'DataFluxFunc.runner';
+      var kwargs = {
+        funcId        : authEMQXFunc.id,
+        funcCallKwargs: {
+          username : username,
+          password : password,
+          client_id: clientId,
+        },
+      };
+
+      // 启动函数执行任务
+      var celery = celeryHelper.createHelper(res.locals.logger);
+
+      var taskOptions = {
+        resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
+      }
+      celery.putTask(name, null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
+        if (err) return asyncCallback(err);
+
+        celeryRes = celeryRes || {};
+        extraInfo = extraInfo || {};
+
+        // 无法通过JSON.parse解析
+        if ('string' === typeof celeryRes) {
+          return asyncCallback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+        }
+
+        // 函数失败/超时
+        if (celeryRes.status === 'FAILURE') {
+          var errorMessage = null;
+          try { errorMessage = celeryRes.exceptionMessage } catch(_) {}
+          return asyncCallback(new E('EFuncFailed.AuthEMQXFuncRaisedException', errorMessage));
+
+        } else if (extraInfo.status === 'TIMEOUT') {
+          return asyncCallback(new E('EFuncFailed.AuthEMQXFuncTimeout', 'Auth-EMQX function timeout.'));
+        }
+
+        // 函数返回False或没有实际意义内容
+        var funcRetval = null;
+        try { funcRetval = celeryRes.retval.raw } catch(_) {}
+        if (toolkit.isNothing(funcRetval) || funcRetval === false) {
+          return asyncCallback(new E('EFuncFailed.AuthEMQXFuncReturnedFalseOrNothing', 'Auth-EMQX function returned `False` or nothing.'));
+        }
+
+        // 登录成功
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) {
+      // 任何错误返回登录失败
+      res.locals.logger.logError(err);
+      return res.locals.sendText('ignore');
     }
 
-    // 避免与内置系统用户ID冲突
-    userId = toolkit.strf('igu_{0}-{1}', toolkit.getShortMD5(funcId), userId);
+    if (!authEMQXFunc) {
+      res.locals.logger.waring('Func integrated to `authEMQX` not found.');
+      return res.locals.sendText('ignore');
+    }
 
-    // 发行登录令牌
-    var authTokenObj = auth.genXAuthTokenObj(userId);
-    authTokenObj.ig = true;
-    authTokenObj.un = username
-    authTokenObj.nm = userDisplayName;
-
-    var cacheKey     = auth.getCacheKey(authTokenObj);
-    var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
-    var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
-
-    res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', function(err) {
-      if (err) return asyncCallback(err);
-
-      var ret = toolkit.initRet({
-        userId    : userId,
-        xAuthToken: xAuthToken,
-      });
-      return res.locals.sendJSON(ret);
-    });
-  };
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
-
-  var taskOptions = {
-    resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
-  }
-  celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+    return res.locals.sendText('ok');
+  });
 };

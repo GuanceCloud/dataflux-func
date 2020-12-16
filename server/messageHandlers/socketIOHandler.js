@@ -4,7 +4,6 @@
 
 /* 3rd-party Modules */
 var async = require('async');
-var LRU   = require('lru-cache');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -17,20 +16,11 @@ var datafluxFuncAPICtrl = require('../controllers/datafluxFuncAPICtrl');
 
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
 
-var CLIENT_CONFLICT_DB_DATA_SCRIPT_LRU = new LRU({
-  max   : 100,
-  maxAge: 3600 * 1000,
-});
-var CLIENT_CONFLICT_DB_DATA_DATA_SOURCE_LRU = new LRU({
-  max   : 100,
-  maxAge: 3600 * 1000,
-});
-
 module.exports = function(app, server) {
   // 初始化
-  app.locals.socketIO = socketIOServerHelper.createHelper(server, app.locals.logger);
+  var socketIO = socketIOServerHelper.createHelper(server, app.locals.logger);
 
-  app.locals.socketIO.server.on('connection', function(socket) {
+  socketIO.server.on('connection', function(socket) {
     app.locals.logger.debug('[SOCKET IO] Client connected. id=`{0}`', socket.id);
 
     // 欢迎消息
@@ -210,23 +200,11 @@ module.exports = function(app, server) {
             case 'reportAndCheckClientConflict':
               switch(data.name) {
                 case 'code-editor':
-                  var isEditing = CLIENT_CONFLICT_DB_DATA_SCRIPT_LRU.get(data.params.id);
-                  if (!isEditing) {
-                    CLIENT_CONFLICT_DB_DATA_SCRIPT_LRU.set(data.params.id, true);
-                  }
-
                   conflictSource = {name: data.name, params: 'id'};
-
                   break;
 
                 case 'data-source-setup':
-                  var isEditing = CLIENT_CONFLICT_DB_DATA_DATA_SOURCE_LRU.get(data.params.id);
-                  if (!isEditing) {
-                    CLIENT_CONFLICT_DB_DATA_DATA_SOURCE_LRU.set(data.params.id, true);
-                  }
-
                   conflictSource = {name: data.name, params: 'id'};
-
                   break;
 
                 case 'env-variable-setup':
@@ -429,4 +407,6 @@ module.exports = function(app, server) {
       delete AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
     });
   });
+
+  app.locals.socketIO = socketIO;
 };

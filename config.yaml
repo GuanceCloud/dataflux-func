@@ -92,6 +92,15 @@ REDIS_PORT    : 6379
 REDIS_DATABASE: 5
 REDIS_PASSWORD: ''
 
+# MQTT连接配置
+MQTT_HOST        : '127.0.0.1'
+MQTT_PORT        : 1883
+MQTT_USERNAME    : dataflux_func
+MQTT_PASSWORD    : dataflux_func
+MQTT_CLIENT_ID   : dataflux_func
+MQTT_DEFAULT_QOS : 0
+MQTT_SERVER_TOPIC: $queue/dataflux_func/#
+
 # Worker配置
 WORKER_QUEUE_ALIAS_MAP: cpu=9
 
@@ -209,6 +218,9 @@ _CRONTAB_SCRIPT_FORCE_RELOAD          : '* * * * *'
 _CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
 _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
+
+# 集成函数一般作为常量的配置
+_INTEGRATION_FUNC_ID_CACHE_EXPIRES: 30
 
 # 函数任务模块一般作为常量的配置
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'

@@ -179,7 +179,9 @@ EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return callback(scopeErr);
 
-      return callback();
+      // 清除函数名缓存
+      var cacheKeyPattern = toolkit.getCacheKey('cache', 'integrationFuncId', ['*']);
+      self.cacheDB.delByPattern(cacheKeyPattern, callback);
     });
   });
 };
