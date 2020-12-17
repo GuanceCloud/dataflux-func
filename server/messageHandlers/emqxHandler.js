@@ -129,7 +129,7 @@ module.exports = function(app, server) {
 
   // 服务器订阅
   var subOpt = { qos: CONFIG.MQTT_SERVER_SUB_QOS };
-  emqx.sub(CONFIG.MQTT_SERVER_TOPIC, subOpt, emqxHandler, function(err, granted) {
+  emqx.sub(CONFIG._EMQX_FUNC_HANDLE_TOPIC, subOpt, emqxHandler, function(err, granted) {
     if (err) return app.locals.logger.logError(err);
 
     granted = granted[0];

@@ -42,11 +42,11 @@ var MQTTHelper = function(logger, config) {
   } else {
     if (!CLIENT) {
       CLIENT_CONFIG = toolkit.noNullOrWhiteSpace({
-        host    : CONFIG.MQTT_HOST,
-        port    : CONFIG.MQTT_PORT,
-        username: CONFIG.MQTT_USERNAME,
-        password: CONFIG.MQTT_PASSWORD,
-        clientId: CONFIG.MQTT_CLIENT_ID,
+        host    : CONFIG.EMQX_HOST,
+        port    : CONFIG.EMQX_PORT,
+        username: CONFIG.EMQX_USERNAME,
+        password: CONFIG.EMQX_PASSWORD,
+        clientId: CONFIG.EMQX_CLIENT_ID_PREFIX + toolkit.genTimeSerialSeq().toString(),
       });
       CLIENT = mqtt.connect(getConfig(CLIENT_CONFIG));
     }
@@ -62,13 +62,13 @@ var MQTTHelper = function(logger, config) {
  * @param  {String|String[]} topic
  * @param  {String|buffer}   message  [description]
  * @param  {Object}          options
- * @param  {Integer}         [options.qos=CONFIG.MQTT_DEFAULT_QOS]
+ * @param  {Integer}         [options.qos=CONFIG.EMQX_DEFAULT_QOS]
  * @param  {Function}        callback
  * @return {undefined}
  */
 MQTTHelper.prototype.pub = function(topic, message, options, callback) {
   options = options || {};
-  options.qos = options.qos || CONFIG.MQTT_DEFAULT_QOS;
+  options.qos = options.qos || CONFIG.EMQX_DEFAULT_QOS;
 
   return this.client.publish(topic, message, options, callback);
 };
@@ -78,7 +78,7 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
  *
  * @param  {String|String[]} topic
  * @param  {Object}          options
- * @param  {Integer}         [options.qos=CONFIG.MQTT_DEFAULT_QOS]
+ * @param  {Integer}         [options.qos=CONFIG.EMQX_DEFAULT_QOS]
  * @param  {Function}        handler
  * @param  {Function}        callback
  * @return {undefined}
@@ -87,7 +87,7 @@ MQTTHelper.prototype.sub = function(topic, options, handler, callback) {
   var self = this;
 
   options = options || {};
-  options.qos = options.qos || CONFIG.MQTT_DEFAULT_QOS;
+  options.qos = options.qos || CONFIG.EMQX_DEFAULT_QOS;
 
   self.client.subscribe(topic, options, function(err, granted) {
     if (err) return callback && callback(err, granted);

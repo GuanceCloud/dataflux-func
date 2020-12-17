@@ -283,9 +283,9 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   func.extraConfigJSON = func.extraConfigJSON || {};
 
   var origin = 'direct';
-  if (toolkit.startswith(req.path, '/api/v1/al/')) {
+  if (toolkit.startsWith(req.path, '/api/v1/al/')) {
     origin = 'authLink';
-  } else if (toolkit.startswith(req.path, '/api/v1/bat/')) {
+  } else if (toolkit.startsWith(req.path, '/api/v1/bat/')) {
     origin = 'batch';
   }
 
@@ -1991,9 +1991,9 @@ exports.integratedAuthEMQX = function(req, res, next) {
   var clientId = req.body.clientid;
 
   // 服务器登陆
-  if (username === CONFIG.MQTT_USERNAME
-      && password === CONFIG.MQTT_PASSWORD
-      && clientId === CONFIG.MQTT_CLIENT_ID) {
+  if (username === CONFIG.EMQX_USERNAME
+      && password === CONFIG.EMQX_PASSWORD
+      && toolkit.startsWith(clientId, CONFIG.EMQX_CLIENT_ID_PREFIX)) {
     return res.locals.sendText('ok');
   }
 
