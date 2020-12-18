@@ -93,7 +93,7 @@ REDIS_DATABASE: 5
 REDIS_PASSWORD: ''
 
 # EMQX(MQTT)连接配置
-EMQX_HOST            : '127.0.0.1'
+EMQX_HOST            : null
 EMQX_PORT            : 1883
 EMQX_USERNAME        : dataflux_func
 EMQX_PASSWORD        : dataflux_func

@@ -225,6 +225,10 @@ a {
   border: grey solid 10px;
   border-radius: 5px;
 }
+.code-editor-status-bar {
+  background-color: black !important;
+}
+
 
 .splitter-pane-resizer {
   background-color: #3c3c3c !important;

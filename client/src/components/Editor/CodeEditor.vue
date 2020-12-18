@@ -1439,8 +1439,8 @@ export default {
 }
 .code-editor-output pre {
   margin: 0;
-  padding-bottom: 50px;
-  padding-right: 80px;
+  padding-bottom: 70px;
+  padding-right: 10px;
   white-space: pre-wrap;
 }
 .code-editor-output .el-tabs {
@@ -1487,6 +1487,7 @@ pre .code-editor-output-error-stack {
   border-radius: 5px;
   border: 1px solid darkgrey;
   color: grey;
+  background-color: white;
 }
 .code-editor-status-bar span {
   font-family: Iosevka;

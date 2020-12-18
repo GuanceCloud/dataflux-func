@@ -275,6 +275,8 @@ class InvalidOptionException(DataFluxFuncBaseException):
     pass
 class AccessDenyException(DataFluxFuncBaseException):
     pass
+class NotEnabledException(DataFluxFuncBaseException):
+    pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
 
@@ -1071,6 +1073,10 @@ class FuncEMQXHelper(object):
         return self.publish(*args, **kwargs)
 
     def call(self, method='get', url='/api/v4/clients', query=None, body=None):
+        if not CONFIG['EMQX_HOST']:
+            e = NotEnabledException('EMQX support not enabled. To enable EMQX support, please set DataFlux Func config `EMQX_HOST` to `true`.')
+            raise e
+
         method = method.upper()
         url    = 'http://{}:{}{}'.format(CONFIG['EMQX_HOST'], CONFIG['EMQX_API_PORT'], url)
 

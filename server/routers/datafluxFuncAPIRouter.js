@@ -2,20 +2,11 @@
 
 /* Project Modules */
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var routeLoader = require('../utils/routeLoader');
 var captcha     = require('../utils/captcha');
 
 var datafluxFuncAPICtrl = require('../controllers/datafluxFuncAPICtrl');
-
-// 集成登录
-routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
-  datafluxFuncAPICtrl.integratedSignIn,
-]);
-
-// 集成EMQ认证（HTTP）
-routeLoader.load(ROUTE.datafluxFuncAPI.integratedAuthEMQX, [
-  datafluxFuncAPICtrl.integratedAuthEMQX,
-]);
 
 // 总览
 routeLoader.load(ROUTE.datafluxFuncAPI.overview, [
@@ -92,3 +83,15 @@ routeLoader.load(ROUTE.datafluxFuncAPI.getSystemConfig, [
 routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
   datafluxFuncAPICtrl.getUpgradeInfo,
 ]);
+
+// 集成登录
+routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
+  datafluxFuncAPICtrl.integratedSignIn,
+]);
+
+if (CONFIG.EMQX_HOST) {
+  // 集成EMQ认证（HTTP）
+  routeLoader.load(ROUTE.datafluxFuncAPI.integratedAuthEMQX, [
+    datafluxFuncAPICtrl.integratedAuthEMQX,
+  ]);
+}
