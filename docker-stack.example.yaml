@@ -8,16 +8,16 @@
 #    参考命令（假设本配置文件名为"docker-stack.yaml"）：
 #       sudo docker stack deploy dataflux-func -c docker-stack.yaml
 #
-# 3. 如不需要内置MySQL组件，请删除`# BOF MySQL`～`# EOF MySQL`之间内容
-# 4. 如不需要内置Redis组件，请删除`# BOF REDIS`～`# EOF REDIS`之间内容
-# 5. 如不需要内置EMQX组件，请删除`# BOF EMQX`～`# EOF EMQX`之间内容
-# 6. 如使用默认方式安装，请删除`# BOF WORKER MINI`～`# EOF WORKER MINI`之间内容
-# 7. 如使用mini方式安装，请删除`# BOF WORKER DEFAULT`～`# EOF WORKER DEFAULT`之间内容
+# 3. 如不需要内置MySQL组件，请删除MySQL相关的内容块
+# 4. 如不需要内置Redis组件，请删除Redis相关的内容块
+# 5. 如不需要内置EMQX组件，请删除EMQX相关的内容块
+# 6. 如使用默认方式安装，请删除WORKER MINI相关的内容块
+# 7. 如使用mini方式安装，请删除WORKER DEFAULT相关的内容块
 
 version: '3.1'
 
 services:
-  # BOF MYSQL
+  # MYSQL START
   mysql:
     image: <MYSQL_IMAGE>
     restart: always
@@ -29,9 +29,9 @@ services:
       - "MYSQL_ROOT_PASSWORD=<RANDOM_PASSWORD>"
       - "MYSQL_DATABASE=dataflux_func"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-  # EOF MYSQL
+  # MYSQL END
 
-  # BOF REDIS
+  # REDIS START
   redis:
     image: <REDIS_IMAGE>
     restart: always
@@ -39,9 +39,9 @@ services:
       - datafluxfunc
     volumes:
       - "<INSTALL_DIR>/redis:/data"
-  # EOF REDIS
+  # REDIS END
 
-  # BOF EMQX
+  # EMQX START
   emqx:
     image: <EMQX_IMAGE>
     restart: always
@@ -55,9 +55,9 @@ services:
       - "EMQX_ALLOW_ANONYMOUS=false"
       - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__ID=dataflux_func"
       - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET=<RANDOM_PASSWORD>"
-  # EOF EMQX
+  # EMQX END
 
-  # BOF WORKER DEFAULT
+  # WORKER DEFAULT START
   worker-0:
     image: <DATAFLUX_FUNC_IMAGE>
     restart: always
@@ -97,9 +97,9 @@ services:
       - datafluxfunc
       - default
     command: ./run-worker-by-queue.sh 8 9
-  # EOF WORKER DEFAULT
+  # WORKER DEFAULT END
 
-  # BOF WORKER MINI
+  # WORKER MINI START
   worker:
     image: <DATAFLUX_FUNC_IMAGE>
     restart: always
@@ -109,7 +109,7 @@ services:
       - datafluxfunc
       - default
     command: ./run-worker.sh
-  # EOF WORKER MINI
+  # WORKER MINI END
 
   beat:
     image: <DATAFLUX_FUNC_IMAGE>

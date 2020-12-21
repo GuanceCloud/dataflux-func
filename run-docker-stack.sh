@@ -182,25 +182,25 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 
     if [ ${OPT_MINI} = "TRUE" ]; then
         # 启用mini方式安装，去除Worker default 配置部分
-        sed -i "/# BOF WORKER DEFAULT/,/# EOF WORKER DEFAULT/d" ${__DOCKER_STACK_FILE}
+        sed -i "/# WORKER DEFAULT START/,/# WORKER DEFAULT END/d" ${__DOCKER_STACK_FILE}
     else
         # 默认方式安装，去除Worker mini 配置部分
-        sed -i "/# BOF WORKER MINI/,/# EOF WORKER MINI/d" ${__DOCKER_STACK_FILE}
+        sed -i "/# WORKER MINI START/,/# WORKER MINI END/d" ${__DOCKER_STACK_FILE}
     fi
 
     # 关闭MySQL 时，去除MySQL 配置部分
     if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
-        sed -i "/# BOF MYSQL/,/# EOF MYSQL/d" ${__DOCKER_STACK_FILE}
+        sed -i "/# MYSQL START/,/# MYSQL END/d" ${__DOCKER_STACK_FILE}
     fi
 
     # 关闭Redis 时，去除Redis 配置部分
     if [ ${OPT_NO_REDIS} = "TRUE" ]; then
-        sed -i "/# BOF REDIS/,/# EOF REDIS/d" ${__DOCKER_STACK_FILE}
+        sed -i "/# REDIS START/,/# REDIS END/d" ${__DOCKER_STACK_FILE}
     fi
 
     # 未开启EMQX 支持时，去除EMQX 配置部分
     if [ ${OPT_EMQX} = "FALSE" ]; then
-        sed -i "/# BOF EMQX/,/# EOF EMQX/d" ${__DOCKER_STACK_FILE}
+        sed -i "/# EMQX START/,/# EMQX END/d" ${__DOCKER_STACK_FILE}
     fi
 
     log "New docker stack file with random secret/password created:"
