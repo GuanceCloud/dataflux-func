@@ -551,7 +551,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
       res.locals._operationRecord.respStatusCode = statusCode || 200;
       res.locals._operationRecord.respBodyJSON   = respType === 'json' ? toolkit.jsonCopy(respContent) : null;
 
-      var operationRecordModel = operationRecordMod.createModel(req, res);
+      var operationRecordModel = operationRecordMod.createModel(res.locals);
       operationRecordModel.add(res.locals._operationRecord);
     }
   }

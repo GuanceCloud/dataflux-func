@@ -39,6 +39,8 @@
     "marked": "0.3.18",
     "moment": "2.19.3",
     "moment-range": "3.0.3",
+    "mqtt": "4.2.6",
+    "mqtt-wildcard": "3.0.9",
     "mysql": "2.15.0",
     "object-checker": "1.0.20",
     "path-to-regexp": "1.7.0",

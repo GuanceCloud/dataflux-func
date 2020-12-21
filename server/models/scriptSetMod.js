@@ -37,8 +37,8 @@ exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
@@ -102,8 +102,8 @@ EntityModel.prototype.import = function(scriptData, callback) {
     scriptData = JSON.parse(scriptData);
   }
 
-  var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.req, self.res);
-  var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.req, self.res);
+  var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
+  var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
   var scriptSetIds = toolkit.arrayElementValues(scriptData.scriptSets, 'id');
 

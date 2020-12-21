@@ -1079,6 +1079,17 @@ export default {
             type: 'error',
           });
           break;
+
+        case 'EClientDuplicated':
+          title = '函数名重复';
+          message = `被@DFF.API(...)装饰的函数存在重名
+                      <br>请检查代码，修改后再试一次`
+          this.$alert(message, title, {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: '了解',
+            type: 'error',
+          });
+          break;
       }
 
       if (this.textOutput) this.openVueSplitPane();
@@ -1428,8 +1439,8 @@ export default {
 }
 .code-editor-output pre {
   margin: 0;
-  padding-bottom: 50px;
-  padding-right: 80px;
+  padding-bottom: 70px;
+  padding-right: 10px;
   white-space: pre-wrap;
 }
 .code-editor-output .el-tabs {
@@ -1476,6 +1487,7 @@ pre .code-editor-output-error-stack {
   border-radius: 5px;
   border: 1px solid darkgrey;
   color: grey;
+  background-color: white;
 }
 .code-editor-status-bar span {
   font-family: Iosevka;

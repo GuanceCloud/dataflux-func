@@ -1071,7 +1071,7 @@ datafluxFuncAPI:
   integratedSignIn:
     name    : 集成用户登录
     method  : post
-    url     : /api/v1/func/sign-in
+    url     : /api/v1/func/integration/sign-in
     response: json
     body:
       captchaToken:
@@ -1103,6 +1103,12 @@ datafluxFuncAPI:
           $type      : string
           $maxLength : 100
           $example   : 'Abc123'
+
+  integratedAuthEMQX:
+    name    : 集成EMQ认证（HTTP）
+    method  : post
+    url     : /api/v1/func/integration/auth-emqx
+    response: json
 
   overview:
     showInDoc    : true

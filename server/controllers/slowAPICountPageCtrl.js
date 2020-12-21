@@ -18,7 +18,7 @@ var slowAPICountMod = require('../models/slowAPICountMod');
 exports.list = function(req, res, next) {
   var pageData = {};
 
-  var slowAPICountModel = slowAPICountMod.createModel(req, res);
+  var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
   slowAPICountModel.list(null, function(err, dbRes) {
     if (err) return next(err);

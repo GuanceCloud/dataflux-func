@@ -361,6 +361,10 @@ function startApplication() {
 
   require('./messageHandlers/socketIOHandler')(app, server);
 
+  if (CONFIG.EMQX_HOST) {
+    require('./messageHandlers/emqxHandler')(app, server);
+  }
+
   var listenOpt = {
     host: CONFIG.WEB_BIND,
     port: CONFIG.WEB_PORT,

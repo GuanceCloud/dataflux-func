@@ -93,7 +93,7 @@ export default {
         signInURL = '/api/v1/auth/do/sign-in';
 
       } else {
-        signInURL = '/api/v1/func/sign-in';
+        signInURL = '/api/v1/func/integration/sign-in';
         signInBody.signIn.funcId = _formData.funcId;
       }
 

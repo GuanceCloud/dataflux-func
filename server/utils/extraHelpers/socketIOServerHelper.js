@@ -31,7 +31,7 @@ var PUB_CLIENT    = null;
  * @constructor
  * @param  {Object} server
  * @param  {Object} [logger=null]
- * @param  {Object} [config=CONFIG.redis]
+ * @param  {Object} [config=null]
  * @return {Object} - SocketIO Helper
  */
 var SocketIOServerHelper = function(server, logger, config) {

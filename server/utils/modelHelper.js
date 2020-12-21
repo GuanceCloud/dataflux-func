@@ -320,25 +320,21 @@ exports.addWhereCondition = function(options, conditionKey, searchType, conditio
 
 /**
  * @constructor
- * @param {Object} req     - `Express.js` request Object
- * @param {Object} res     - `Express.js` response Object
+ * @param {Object} locals  - `Express.js` req.locals/app.locals
  * @param {Object} options - CRUD options
  * @param {String} options.tableName
  * @param {String} [options.alias=null]
  * @param {String} [options.userIdField=null]
  */
-var Model = function(req, res, options) {
+var Model = function(locals, options) {
   var self = this;
 
-  req = req || toolkit.createFakeReq();
-  res = res || toolkit.createFakeRes();
   options = options || {};
 
   // Basic
-  self.req = req;
-  self.res = res;
+  self.locals = locals;
 
-  self.logger = res.locals.logger;
+  self.logger = locals.logger;
 
   // Table/Data description
   self.displayName  = options.displayName  || 'data';
@@ -350,7 +346,7 @@ var Model = function(req, res, options) {
 
   // Auto field filling
   // Field value to fill
-  self.userId = toolkit.jsonFind(self, (options.userIdPath || 'res.locals.user.id'), true) || null;
+  self.userId = toolkit.jsonFind(self, (options.userIdPath || 'locals.user.id'), true) || null;
 
   // Field name for ADD data
   self.userIdField = options.userIdField || null;
@@ -374,14 +370,14 @@ var Model = function(req, res, options) {
   self.objectFields = toolkit.jsonCopy(options.objectFields || {});
 
   // DB
-  self.db             = res.locals.db;
+  self.db             = locals.db;
   self.uniqueKeyMap   = options.uniqueKeyMap || {};
 
   // Cache DB
-  self.cacheDB = res.locals.cacheDB;
+  self.cacheDB = locals.cacheDB;
 
   // File Storage
-  self.fileStorage = res.locals.fileStorage;
+  self.fileStorage = locals.fileStorage;
 
   // Extra
   self.extra = toolkit.jsonCopy(options.extra || {});
@@ -1276,7 +1272,7 @@ CRUDHandler.prototype.createListHandler = function(fields, hooks) {
 
   var self = this;
   return function(req, res, next) {
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var opt = res.locals.getQueryOptions();
 
@@ -1326,7 +1322,7 @@ CRUDHandler.prototype.createListHandler = function(fields, hooks) {
 CRUDHandler.prototype.createCountByGroupHandler = function() {
   var self = this;
   return function(req, res, next) {
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var opt = res.locals.getQueryOptions();
 
@@ -1351,7 +1347,7 @@ CRUDHandler.prototype.createGetStatsHandler = function() {
     var latestData  = {};
     var totalCount  = 0;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     async.series([
       // Get lastest data
@@ -1404,7 +1400,7 @@ CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
 
   var self = this;
   return function(req, res, next) {
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var id = req.params.id;
 
     var opt = res.locals.getQueryOptions();
@@ -1459,7 +1455,7 @@ CRUDHandler.prototype.createAddHandler = function(hooks) {
 
   var self = this;
   return function(req, res, next) {
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var data = req.body.data || {};
 
     model.add(data, function(err, _addedId, _addedData) {
@@ -1513,7 +1509,7 @@ CRUDHandler.prototype.createModifyHandler = function(hooks) {
   return function(req, res, next) {
     var ret = null;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var data = req.body.data || {};
     var id   = req.params.id;
 
@@ -1592,7 +1588,7 @@ CRUDHandler.prototype.createPartialSetHandler = function(hooks) {
   return function(req, res, next) {
     var ret = null;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var data = req.body.data || {};
     var id   = req.params.id;
 
@@ -1671,7 +1667,7 @@ CRUDHandler.prototype.createDeleteHandler = function(hooks) {
   return function(req, res, next) {
     var ret = null;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var id = req.params.id;
 
     var oldData = null;
@@ -1746,7 +1742,7 @@ CRUDHandler.prototype.createSoftDeleteHandler = function(hooks) {
   return function(req, res, next) {
     var ret = null;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var data = {isDeleted: true};
     var id   = req.params.id;
 
@@ -1825,7 +1821,7 @@ CRUDHandler.prototype.createPartialDeleteHandler = function(hooks) {
   return function(req, res, next) {
     var ret = null;
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
     var id = req.params.id;
 
     var oldData = null;
@@ -1888,7 +1884,7 @@ CRUDHandler.prototype.createListPage = function(options) {
   return function(req, res, next) {
     options = options || {}
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var pageData = options.pageData || {};
     var template = options.template || toolkit.strf('{0}/{0}s',
@@ -1931,7 +1927,7 @@ CRUDHandler.prototype.createViewPage = function(options) {
   return function(req, res, next) {
     options = options || {}
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var pageData = options.pageData || {};
     var template = options.template || toolkit.strf('{0}/{0}View',
@@ -1974,7 +1970,7 @@ CRUDHandler.prototype.createAddPage = function(options) {
   return function(req, res, next) {
     options = options || {}
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var pageData = options.pageData || {};
     var template = options.template || toolkit.strf('{0}/{0}Add',
@@ -1999,7 +1995,7 @@ CRUDHandler.prototype.createModifyPage = function(options) {
   return function(req, res, next) {
     options = options || {}
 
-    var model = new self.modelProto(req, res);
+    var model = new self.modelProto(res.locals);
 
     var pageData = options.pageData || {};
     var template = options.template || toolkit.strf('{0}/{0}Modify',
@@ -2037,8 +2033,8 @@ exports.createCRUDHandler = function(modelProto) {
 };
 
 exports.createSubModel = function(options) {
-  var SubModel = function(req, res) {
-    Model.call(this, req, res, options);
+  var SubModel = function(locals) {
+    Model.call(this, locals, options);
   };
 
   toolkit.extend(SubModel, Model);

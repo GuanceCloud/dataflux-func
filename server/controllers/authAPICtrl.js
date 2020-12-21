@@ -15,7 +15,7 @@ var userMod = require('../models/userMod');
 exports.signIn = function(req, res, next) {
   var ret = null;
 
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var username = req.body.signIn.username;
   var password = req.body.signIn.password;
@@ -103,7 +103,7 @@ exports.signOut = function(req, res, next) {
 };
 
 exports.changePassword = function(req, res, next) {
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var userId = res.locals.user.id;
 
@@ -153,7 +153,7 @@ exports.profile = function(req, res, next) {
 };
 
 exports.modifyProfile = function(req, res, next) {
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var userId = res.locals.user.id;
   var data   = req.body.data;

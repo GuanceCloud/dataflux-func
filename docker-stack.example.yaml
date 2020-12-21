@@ -12,27 +12,27 @@ version: '3.1'
 
 services:
   mysql:
-    image: mysql:5.7.26
+    image: <MYSQL_IMAGE>
     networks:
       - datafluxfunc
     volumes:
-      - "/usr/local/dataflux-func/mysql:/var/lib/mysql"
+      - "<INSTALL_DIR>/mysql:/var/lib/mysql"
     environment:
-      - "MYSQL_ROOT_PASSWORD=mysql_root_password"
+      - "MYSQL_ROOT_PASSWORD=<RANDOM_PASSWORD>"
       - "MYSQL_DATABASE=dataflux_func"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   redis:
-    image: redis:5.0.7
+    image: <REDIS_IMAGE>
     networks:
       - datafluxfunc
     volumes:
-      - "/usr/local/dataflux-func/redis:/data"
+      - "<INSTALL_DIR>/redis:/data"
 
   server:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -44,9 +44,9 @@ services:
     command: ./run-server.sh
 
   worker-0:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -56,9 +56,9 @@ services:
     command: ./run-worker-by-queue.sh 0
 
   worker-1-6:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -68,9 +68,9 @@ services:
     command: ./run-worker-by-queue.sh 1 2 3 4 5 6
 
   worker-7:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -80,9 +80,9 @@ services:
     command: ./run-worker-by-queue.sh 7
 
   worker-8-9:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -92,9 +92,9 @@ services:
     command: ./run-worker-by-queue.sh 8 9
 
   beat:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
+      - "<INSTALL_DIR>/data:/data"
     depends_on:
       - mysql
       - redis
@@ -102,6 +102,23 @@ services:
       - datafluxfunc
       - default
     command: ./run-beat.sh
+
+  emqx:
+    image: <EMQX_IMAGE>
+    deploy:
+      replicas: 0 # EMQX
+    ports:
+      - "1883:1883"
+      - "8081:8081"
+      - "18083:18083"
+    environment:
+      - "EMQX_LOADED_PLUGINS=emqx_recon,emqx_retainer,emqx_management,emqx_dashboard,emqx_auth_http"
+      - "EMQX_AUTH__HTTP__AUTH_REQ=http://server:8088/api/v1/func/integration/auth-emqx"
+      - "EMQX_AUTH__HTTP__AUTH_REQ__METHOD=post"
+      - "EMQX_AUTH__HTTP__AUTH_REQ__PARAMS=clientid=%c,username=%u,password=%P"
+      - "EMQX_ALLOW_ANONYMOUS=false"
+      - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__ID=dataflux_func"
+      - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET=<RANDOM_PASSWORD>"
 
 networks:
   default:

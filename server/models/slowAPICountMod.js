@@ -17,8 +17,8 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
 var SLOW_API_THRESHOLDS_ORDERS = [10000, 5000, 2000, 1000, 500, 300];
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);

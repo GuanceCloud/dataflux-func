@@ -23,7 +23,7 @@ exports.index = function(req, res, next) {
 exports.dashboard = function(req, res, next) {
   var pageData = {};
 
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   async.series([
     // Get user count

@@ -29,8 +29,8 @@ exports.get  = crudHandler.createGetHandler(null, {beforeResp: hideOfficialCode}
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var scriptModel    = scriptMod.createModel(req, res);
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptModel    = scriptMod.createModel(res.locals);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查ID重名
@@ -85,8 +85,8 @@ exports.modify = function(req, res, next) {
 
   var prevCodeDraftMD5 = req.body.prevCodeDraftMD5;
 
-  var scriptModel    = scriptMod.createModel(req, res);
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptModel    = scriptMod.createModel(res.locals);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   var script = null;
 
@@ -155,8 +155,8 @@ exports.modify = function(req, res, next) {
 exports.delete = function(req, res, next) {
   var id = req.params.id;
 
-  var scriptModel    = scriptMod.createModel(req, res);
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptModel    = scriptMod.createModel(res.locals);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   var script = null;
 
@@ -211,11 +211,11 @@ exports.publish = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptModel               = scriptMod.createModel(req, res);
-  var scriptSetModel            = scriptSetMod.createModel(req, res);
-  var funcModel                 = funcMod.createModel(req, res);
-  var scriptRecoverPointModel   = scriptRecoverPointMod.createModel(req, res);
-  var scriptPublishHistoryModel = scriptPublishHistoryMod.createModel(req, res);
+  var scriptModel               = scriptMod.createModel(res.locals);
+  var scriptSetModel            = scriptSetMod.createModel(res.locals);
+  var funcModel                 = funcMod.createModel(res.locals);
+  var scriptRecoverPointModel   = scriptRecoverPointMod.createModel(res.locals);
+  var scriptPublishHistoryModel = scriptPublishHistoryMod.createModel(res.locals);
 
   var script    = null;
   var scriptSet = null;
@@ -301,6 +301,20 @@ exports.publish = function(req, res, next) {
         }
 
         nextExportedAPIFuncs = celeryRes.retval && celeryRes.retval.result && celeryRes.retval.result.exportedAPIFuncs;
+
+        // 检查重名函数
+        var funcNameMap = {};
+        for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
+          var name = nextExportedAPIFuncs[i].name;
+
+          if (!funcNameMap[name]) {
+            funcNameMap[name] = true;
+          } else {
+            return asyncCallback(new E('EClientDuplicated', 'Found duplicated func names in script.', {
+              funcName: name,
+            }));
+          }
+        }
 
         return asyncCallback();
       });
@@ -463,7 +477,7 @@ function hideOfficialCode(req, res, ret, hookExtra, callback) {
   if (!ret.data) return callback(null, ret);
   if (!ret.data.code && !ret.data.codeDraft) return callback(null, ret);
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
   scriptSetModel.getWithCheck(ret.data.scriptSetId, null, function(err, dbRes) {
     if (err) return callback(err);
 

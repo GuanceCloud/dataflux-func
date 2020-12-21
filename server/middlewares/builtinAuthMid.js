@@ -99,7 +99,7 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
     },
     // Get user data
     function(asyncCallback){
-      var userModel = userMod.createModel(req, res);
+      var userModel = userMod.createModel(res.locals);
 
       userModel.get(xAuthTokenObj.uid, null, function(err, cacheRes) {
         if (err) return asyncCallback(err);
@@ -220,7 +220,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     },
     // Get Access Key and verify Sign
     function(asyncCallback) {
-      var accessKeyModel = accessKeyMod.createModel(req, res);
+      var accessKeyModel = accessKeyMod.createModel(res.locals);
 
       accessKeyModel.getWithCheck(akId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -263,7 +263,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     },
     // Get user info
     function(asyncCallback) {
-      var userModel = userMod.createModel(req, res);
+      var userModel = userMod.createModel(res.locals);
 
       userModel.getWithCheck(userId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);

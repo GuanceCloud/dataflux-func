@@ -36,8 +36,8 @@ exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
@@ -179,7 +179,9 @@ EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return callback(scopeErr);
 
-      return callback();
+      // 清除函数名缓存
+      var cacheKeyPattern = toolkit.getCacheKey('cache', 'integrationFuncId', ['*']);
+      self.cacheDB.delByPattern(cacheKeyPattern, callback);
     });
   });
 };

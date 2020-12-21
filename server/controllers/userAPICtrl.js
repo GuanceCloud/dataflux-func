@@ -37,7 +37,7 @@ exports.add = function(req, res, next) {
   var data = req.body.data || {};
 
   // Do business check
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var opt = {
     filters: {
@@ -66,7 +66,7 @@ exports.modify = function(req, res, next) {
   }
 
   // Do business check
-  var userModel = userMod.createModel(req, res);
+  var userModel = userMod.createModel(res.locals);
 
   var opt = {
     filters: {

@@ -32,8 +32,8 @@ var METRICS_WITH_HOSTNAMES = [
   'cacheDBMemoryUsed',
 ]
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
