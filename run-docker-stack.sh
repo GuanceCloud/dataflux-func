@@ -152,7 +152,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 
     # 创建配置文件并使用随机密钥/密码
     sed -i \
-        -e "s#<RANDOM_PASSWORD>#=${__RANDOM_PASSWORD}#g" \
+        -e "s#<RANDOM_PASSWORD>#${__RANDOM_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
         -e "s#<EMQX_IMAGE>#${__EMQX_IMAGE}#g" \
