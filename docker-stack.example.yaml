@@ -20,7 +20,6 @@ services:
   # MYSQL START
   mysql:
     image: <MYSQL_IMAGE>
-    restart: always
     networks:
       - datafluxfunc
     volumes:
@@ -34,7 +33,6 @@ services:
   # REDIS START
   redis:
     image: <REDIS_IMAGE>
-    restart: always
     networks:
       - datafluxfunc
     volumes:
@@ -44,7 +42,8 @@ services:
   # EMQX START
   emqx:
     image: <EMQX_IMAGE>
-    restart: always
+    networks:
+      - datafluxfunc
     ports:
       - "1883:1883"
     environment:
@@ -60,7 +59,6 @@ services:
   # WORKER DEFAULT START
   worker-0:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -70,7 +68,6 @@ services:
 
   worker-1-6:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -80,7 +77,6 @@ services:
 
   worker-7:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -90,7 +86,6 @@ services:
 
   worker-8-9:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -102,7 +97,6 @@ services:
   # WORKER MINI START
   worker:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -113,7 +107,6 @@ services:
 
   beat:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -123,7 +116,6 @@ services:
 
   server:
     image: <DATAFLUX_FUNC_IMAGE>
-    restart: always
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
