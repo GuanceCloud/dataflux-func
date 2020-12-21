@@ -13,7 +13,6 @@ variables:
   IMAGE_GZIP_FILE          : dataflux-func.tar.gz
   DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
-  RUN_DOCKER_STACK_DEV_FILE: run-docker-stack-dev.sh
   README_FILE              : README.md
 
   # 用于buildSaaS, buildPaaS_prod, buildPaaS_prod
@@ -36,7 +35,7 @@ buildDev:
     - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
     - docker push ${IMAGE_PUBLIC}:dev
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_DEV_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${RUN_DOCKER_STACK_DEV_FILE} ${OSS_RESOURCE_DEV_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_DEV_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${README_FILE}               ${OSS_RESOURCE_DEV_BASE_URL}/${README_FILE}               -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - middleware-prod
