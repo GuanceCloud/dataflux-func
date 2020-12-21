@@ -157,7 +157,7 @@ if [ ! -f ${__CONFIG_FILE} ]; then
             \nEMQX_DEFAULT_QOS   : 0 \
             \nEMQX_API_PORT      : 8081 \
             \nEMQX_API_APP_ID    : dataflux_func \
-            \nEMQX_API_APP_SECRET: ${__RANDOM_SECRET}" \
+            \nEMQX_API_APP_SECRET: ${__RANDOM_PASSWORD}" \
         >> ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
