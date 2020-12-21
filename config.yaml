@@ -273,7 +273,7 @@ _DBDATA_TABLE_LIMIT_MAP: >
   ,biz_main_script_publish_history=1000
 
 # 数据库自动备份
-_DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
+_DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
 
 # 其他（内部控制）

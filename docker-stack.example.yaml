@@ -7,6 +7,12 @@
 # 2. 使用`docker stack`即进行部署。
 #    参考命令（假设本配置文件名为"docker-stack.yaml"）：
 #       sudo docker stack deploy dataflux-func -c docker-stack.yaml
+#
+# 3. 如不需要内置MySQL组件，请删除`# BOF MySQL`～`# EOF MySQL`之间内容
+# 4. 如不需要内置Redis组件，请删除`# BOF REDIS`～`# EOF REDIS`之间内容
+# 5. 如不需要内置EMQX组件，请删除`# BOF EMQX`～`# EOF EMQX`之间内容
+# 6. 如使用默认方式安装，请删除`# BOF WORKER MINI`～`# EOF WORKER MINI`之间内容
+# 7. 如使用mini方式安装，请删除`# BOF WORKER DEFAULT`～`# EOF WORKER DEFAULT`之间内容
 
 version: '3.1'
 
@@ -14,6 +20,7 @@ services:
   # BOF MYSQL
   mysql:
     image: <MYSQL_IMAGE>
+    restart: always
     networks:
       - datafluxfunc
     volumes:
@@ -27,89 +34,17 @@ services:
   # BOF REDIS
   redis:
     image: <REDIS_IMAGE>
+    restart: always
     networks:
       - datafluxfunc
     volumes:
       - "<INSTALL_DIR>/redis:/data"
   # EOF REDIS
 
-  server:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    ports:
-      - "8088:8088"
-    command: ./run-server.sh
-
-  worker-0:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-worker-by-queue.sh 0
-
-  worker-1-6:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-worker-by-queue.sh 1 2 3 4 5 6
-
-  worker-7:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-worker-by-queue.sh 7
-
-  worker-8-9:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-worker-by-queue.sh 8 9
-
-  beat:
-    image: <DATAFLUX_FUNC_IMAGE>
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-beat.sh
-
   # BOF EMQX
   emqx:
     image: <EMQX_IMAGE>
+    restart: always
     ports:
       - "1883:1883"
     environment:
@@ -121,6 +56,82 @@ services:
       - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__ID=dataflux_func"
       - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET=<RANDOM_PASSWORD>"
   # EOF EMQX
+
+  # BOF WORKER DEFAULT
+  worker-0:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 0
+
+  worker-1-6:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 1 2 3 4 5 6
+
+  worker-7:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 7
+
+  worker-8-9:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 8 9
+  # EOF WORKER DEFAULT
+
+  # BOF WORKER MINI
+  worker:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker.sh
+  # EOF WORKER MINI
+
+  beat:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-beat.sh
+
+  server:
+    image: <DATAFLUX_FUNC_IMAGE>
+    restart: always
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    ports:
+      - "8088:8088"
+    command: ./run-server.sh
 
 networks:
   default:

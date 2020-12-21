@@ -7,6 +7,7 @@ function log {
 
 # 处理选项
 OPT_DEV=FALSE
+OPT_MINI=FALSE
 OPT_INSTALL_DIR=DEFAULT
 OPT_IMAGE=DEFAULT
 OPT_NO_MYSQL=FALSE
@@ -17,6 +18,11 @@ while [ $# -ge 1 ]; do
     case $1 in
         '--dev' )
             OPT_DEV=TRUE
+            shift
+            ;;
+
+        '--mini' )
+            OPT_MINI=TRUE
             shift
             ;;
 
@@ -128,6 +134,12 @@ fi
 
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 if [ ! -f ${__CONFIG_FILE} ]; then
+    # 开启EMQX 组件时，需要自动添加EMQX的主机地址
+    emqxHost=null
+    if [ ${OPT_EMQX} = "TRUE" ]; then
+        emqxHost=emqx
+    fi
+
     echo -e "# Auto generated config: \
             \nSECRET             : ${__RANDOM_SECRET} \
             \nMYSQL_HOST         : mysql \
@@ -137,22 +149,16 @@ if [ ! -f ${__CONFIG_FILE} ]; then
             \nMYSQL_DATABASE     : dataflux_func \
             \nREDIS_HOST         : redis \
             \nREDIS_PORT         : 6379 \
-            \nREDIS_DATABASE     : 5" \
-        > ${__CONFIG_FILE}
-
-    # 开启EMQX 支持时，需要自动添加EMQX的配置
-    if [ ${OPT_EMQX} = "TRUE" ]; then
-        echo -e "# Auto generated config (EMQX): \
-                \nEMQX_HOST          : emqx \
-                \nEMQX_PORT          : 1883 \
-                \nEMQX_USERNAME      : dataflux_func \
-                \nEMQX_PASSWORD      : ${__RANDOM_PASSWORD} \
-                \nEMQX_DEFAULT_QOS   : 0 \
-                \nEMQX_API_PORT      : 8081 \
-                \nEMQX_API_APP_ID    : dataflux_func \
-                \nEMQX_API_APP_SECRET: ${__RANDOM_SECRET}" \
-            >> ${__CONFIG_FILE}
-    fi
+            \nREDIS_DATABASE     : 5 \
+            \nEMQX_HOST          : ${emqxHost} \
+            \nEMQX_PORT          : 1883 \
+            \nEMQX_USERNAME      : dataflux_func \
+            \nEMQX_PASSWORD      : ${__RANDOM_PASSWORD} \
+            \nEMQX_DEFAULT_QOS   : 0 \
+            \nEMQX_API_PORT      : 8081 \
+            \nEMQX_API_APP_ID    : dataflux_func \
+            \nEMQX_API_APP_SECRET: ${__RANDOM_SECRET}" \
+        >> ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
 else
@@ -173,6 +179,14 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
+
+    if [ ${OPT_MINI} = "TRUE" ]; then
+        # 启用mini方式安装，去除Worker default 配置部分
+        sed -i "/# BOF WORKER DEFAULT/,/# EOF WORKER DEFAULT/d" ${__DOCKER_STACK_FILE}
+    else
+        # 默认方式安装，去除Worker mini 配置部分
+        sed -i "/# BOF WORKER MINI/,/# EOF WORKER MINI/d" ${__DOCKER_STACK_FILE}
+    fi
 
     # 关闭MySQL 时，去除MySQL 配置部分
     if [ ${OPT_NO_MYSQL} = "TRUE" ]; then

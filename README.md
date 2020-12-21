@@ -34,15 +34,23 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 - [系统要求](#%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
-    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
-        - [指定目录安装](#%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E5%AE%89%E8%A3%85)
+    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署（默认方式）](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2%EF%BC%88%E9%BB%98%E8%AE%A4%E6%96%B9%E5%BC%8F%EF%BC%89)
+        - [安装选项](#%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
+            - [`--dev`：安装开发版](#--dev%EF%BC%9A%E5%AE%89%E8%A3%85%E5%BC%80%E5%8F%91%E7%89%88)
+            - [`--mini`：安装迷你版](#--mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
+            - [`--install-dir {安装目录}`：指定安装目录](#--install-dir-%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95%EF%BC%9A%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95)
+            - [`--image {主程序Docker镜像}`：指定主程序镜像](#--image-%E4%B8%BB%E7%A8%8B%E5%BA%8Fdocker%E9%95%9C%E5%83%8F%EF%BC%9A%E6%8C%87%E5%AE%9A%E4%B8%BB%E7%A8%8B%E5%BA%8F%E9%95%9C%E5%83%8F)
+            - [`--no-mysql`：禁用内置MySQL](#--no-mysql%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEmysql)
+            - [`--no-redis`：禁用内置Redis](#--no-redis%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEredis)
+            - [`--emqx`：启用内置EMQX](#--emqx%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEemqx)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
 - [查询日志](#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97)
     - [自动转储日志](#%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%82%A8%E6%97%A5%E5%BF%97)
+- [数据库自动备份](#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%87%AA%E5%8A%A8%E5%A4%87%E4%BB%BD)
 - [完全卸载](#%E5%AE%8C%E5%85%A8%E5%8D%B8%E8%BD%BD)
-- [参数调优](#%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98)
+- [参数调整](#%E5%8F%82%E6%95%B0%E8%B0%83%E6%95%B4)
 - [版本号规则](#%E7%89%88%E6%9C%AC%E5%8F%B7%E8%A7%84%E5%88%99)
 - [项目介绍](#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
     - [主要功能](#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
@@ -52,40 +60,35 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 <!-- /MarkdownTOC -->
 
+*注意：本文所有涉及到的shell命令，在root用户下可直接运行，非root用户下需要添加sudo运行*
 
 ## 系统要求
 
-运行DataFlux Func 需要满足以下条件：
+默认配置运行DataFlux Func 需要满足以下条件：
 - CPU 核心数 >= 2
 - 内存容量 >= 4GB
 - 磁盘空间 >= 20GB
 - 操作系统为 Ubuntu 16.04 LTS/CentOS 7.6 以上
 - 纯净系统（安装完操作系统后，除了配置网络外没有进行过其他操作）
 
-*如需要在更低配置下运行的，请咨询驻云官方*
-
 ## 部署运行
 
 部署运行DataFlux Func 使用`docker stack`进行。
 
-用户可以选择官方提供的一键部署命令，也可以自行调整配置文件后手动启动。
+用户可以选择官方提供的一键部署命令，也可以下载相关配置文件后，调整配置文件后手动启动。
 
-### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署
+### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署（默认方式）
 
 *注意操作前需要使用`docker login pubrepo.jiagouyun.com`进行登录*
 
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
 ```shell
-# 在root用户下【推荐】
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
-
-# 或者，在非root用户下
-sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
-- 运行MySQL、Redis、DataFlux Func，包含Server，Worker，Beat
-- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux Func 配置文件）
+- 运行MySQL、Redis、DataFlux Func（包含Server，Worker，Beat）
+- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux Func 配置、日志等文件）
 - 随机生成MySQL `root`用户密码、系统Secret，并保存于DataFlux Func 配置文件中
 - Redis不设密码
 - MySQL、Redis 不提供外部访问
@@ -102,21 +105,73 @@ sudo /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
 7. `dataflux-func_worker-8-9`
 8. `dataflux-func_beat`
 
-#### 指定目录安装
+#### 安装选项
 
-如需要安装到不同目录，可在脚本运行前指定`INSTALL_DIR`参数。
+自动安装脚本支持一些安装选项，用于适应不同的安装需求
 
-*注意：`INSTALL_DIR`不要以`/`结尾*
-
-如安装目录改为`/usr/local/func`，那么，使用以下命令即可：
-
+添加安装选项时，只需要在自动部署命令后添加`-- --{参数}[ 参数配置（如有）]`即可，如：
 ```shell
-# 在root用户下【推荐】
-INSTALL_DIR=/usr/local/func /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
-
-# 或者，在非root用户下
-sudo INSTALL_DIR=/usr/local/func /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
+# 安装开发版
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --dev
+# 指定安装目录，同时开启EMQX组件
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --emqx
 ```
+
+具体参数详情见下文
+
+##### `--dev`：安装开发版
+
+安装正在开发中的版本，*无特殊情况一般不建议使用*。
+
+开启后：
+- 程序镜像使用`dataflux-func:dev`
+- 默认安装目录改为`/usr/local/dataflux-func-dev`
+- Docker Stack 名改为`dataflux-func-dev`
+
+##### `--mini`：安装迷你版
+
+针对低配置环境下，需要节约资源时的安装模式。
+
+开启后：
+- 仅启动单个Worker 监听所有队列
+- 遇到重负载任务更容易导致队列阻塞和卡顿
+- 系统任务和函数任务共享处理队列，相互会受到影响
+- 系统要求降低为：
+    - CPU 核心数 >= 1
+    - 内存容量 >= 2GB
+- 如不适用内置的MySQL、Redis，系统要求可以进一步降低
+
+##### `--install-dir {安装目录}`：指定安装目录
+
+需要安装到与默认路径`/usr/local/dataflux-func`不同的路径下时，可指定此参数
+
+##### `--image {主程序Docker镜像}`：指定主程序镜像
+
+需要安装指定版本的主程序时，可指定此参数。如：
+```shell
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --image pubrepo.jiagouyun.com/dataflux-func/dataflux-func:1.0
+```
+
+##### `--no-mysql`：禁用内置MySQL
+
+需要使用已有的MySQL数据库时，可指定此参数，禁止在本机启动MySQL。
+
+*注意：启用此选项后，需要在安装完成后的配置页面指定正确的MySQL连接信息*
+
+##### `--no-redis`：禁用内置Redis
+
+需要使用已有的Redis数据库时，可指定此参数，禁止在本机启动Redis。
+
+*注意：启用此选项后，需要在安装完成后的配置页面指定正确的Redis连接信息*
+
+##### `--emqx`：启用内置EMQX
+
+需要安装后，同时在本机启动EMQX时，可指定此选项。
+
+*提示：未指定时，不会在本机启动EMQX，单依然可以通过填写EMQX配置来连接EMQX*
+
+*注意：本机启动的内置EMQX为单机版*
+
 
 ### 进阶方式：使用`docker stack`配置文件进行部署
 
@@ -135,13 +190,8 @@ grep -E '^#' docker-stack.yaml
 
 修改完成后，即可使用`docker stack`进行部署：
 ```shell
-# 使用root用户【推荐】
 docker pull {docker-stack.yaml中的所有镜像}
 docker stack deploy dataflux-func -c docker-stack.yaml
-
-# 或者，使用非root用户
-sudo docker pull {docker-stack.yaml中的所有镜像}
-sudo docker stack deploy dataflux-func -c docker-stack.yaml
 ```
 
 使用进阶部署方式可以提供一定程度的个性化定制，相比推荐方式，可以方便对以下内容进行修改：
@@ -152,21 +202,11 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面（假设使用默认端口）。
 
-*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表）*
-1. `dataflux-func_mysql`
-2. `dataflux-func_redis`
-3. `dataflux-func_server`
-4. `dataflux-func_worker-0`
-5. `dataflux-func_worker-1-6`
-6. `dataflux-func_worker-7`
-7. `dataflux-func_worker-8-9`
-8. `dataflux-func_beat`
+*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问*
 
 
 
 ## 更新部署
-
-*注意：视情况应使用`sudo`运行下文命令*
 
 *注意：如果最初安装时指定了不同安装目录，更新时也需要指定完全相同的目录才行*
 
@@ -178,8 +218,6 @@ sudo docker stack deploy dataflux-func -c docker-stack.yaml
 
 
 ## 重启服务
-
-*注意：视情况应使用`sudo`运行下文命令*
 
 需要重新启动时，请按照以下步骤进行：
 1. 使用`docker stack rm dataflux-func`命令，移除正在运行的服务（此步骤可能需要一定时间）
@@ -222,11 +260,24 @@ vim /etc/logrotate.d/dataflux-func
 
 
 
+## 数据库自动备份
+
+默认情况下，数据库备份文件保存位置如下：
+
+|  环境  |                             日志文件位置                            |
+|--------|---------------------------------------------------------------------|
+| 容器内 | `/data/sqldump/dataflux-func-sqldump-YYYYMMDD-hhmmss.sql`           |
+| 宿主机 | `{安装目录}/data/sqldump/dataflux-func-sqldump-YYYYMMDD-hhmmss.sql` |
+
+*提示：旧版本的备份文件命名可能为`dataflux-sqldump-YYYYMMDD-hhmmss.sql`*
+
+数据库备份文件默认默认情况下，每小时备份一次，最多保留7天（共168份）
+
+
+
 ## 完全卸载
 
 某些情况无法直接升级的时候，需要先完全卸载后重新部署
-
-*注意：视情况应使用`sudo`运行下文命令*
 
 需要完全卸载时，请按照以下步骤进行：
 1. 视情况需要，使用脚本集导出功能导出脚本数据
@@ -235,7 +286,7 @@ vim /etc/logrotate.d/dataflux-func
 
 
 
-## 参数调优
+## 参数调整
 
 默认的参数主要应对最常见的情况，一些比较特殊的场景可以调整部分参数来优化系统：
 

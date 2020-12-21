@@ -380,7 +380,6 @@
 
           <%_ CONFIG_LIST.forEach(function(c) { _%>
             <!-- 未开启EMQX配置时，不展示相关配置 -->
-            <%_ if (!CONFIG.EMQX_HOST && c.errorKey === 'emqx') return; _%>
             <div class="form-group">
               <label><%= c.name %><code><%= c.key %></code></label>
               <%_ if (c.input === 'select') { _%>
