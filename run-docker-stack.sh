@@ -6,11 +6,12 @@ function log {
 }
 
 # 处理选项
-OPT_NOTSET_VALUE=NOTSET
-OPT_DEV=${OPT_NOTSET_VALUE}
-OPT_INSTALL_DIR=${OPT_NOTSET_VALUE}
-OPT_IMAGE=${OPT_NOTSET_VALUE}
-OPT_EMQX=${OPT_NOTSET_VALUE}
+OPT_DEV=FALSE
+OPT_INSTALL_DIR=DEFAULT
+OPT_IMAGE=DEFAULT
+OPT_NO_MYSQL=FALSE
+OPT_NO_REDIS=FALSE
+OPT_EMQX=FALSE
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -27,6 +28,16 @@ while [ $# -ge 1 ]; do
         '--image' )
             OPT_IMAGE=$2
             shift 2
+            ;;
+
+        '--no-mysql' )
+            OPT_NO_MYSQL=TRUE
+            shift
+            ;;
+
+        '--no-redis' )
+            OPT_NO_REDIS=TRUE
+            shift
             ;;
 
         '--emqx' )
@@ -54,18 +65,20 @@ __EMQX_IMAGE=pubrepo.jiagouyun.com/dataflux-func/emqx:4.2.3
 __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
 _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
-if [ ${OPT_DEV} != ${OPT_NOTSET_VALUE} ]; then
+
+# 启用dev 部署时，项目名/资源等改为dev 专用版
+if [ ${OPT_DEV} = "TRUE" ]; then
     __PROJECT_NAME=dataflux-func-dev
     __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
     _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
 fi
 
 _INSTALL_DIR=/usr/local/${__PROJECT_NAME}
-if [ ${OPT_INSTALL_DIR} != ${OPT_NOTSET_VALUE} ]; then
+if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
     _INSTALL_DIR=${OPT_INSTALL_DIR}
 fi
 
-if [ ${OPT_IMAGE} != ${OPT_NOTSET_VALUE} ]; then
+if [ ${OPT_IMAGE} != "DEFAULT" ]; then
     _DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}
 fi
 
@@ -73,26 +86,32 @@ log "Project name: ${__PROJECT_NAME}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Image       : ${_DATAFLUX_FUNC_IMAGE}"
 
-# 拉取镜像
-log "Pulling image: ${__MYSQL_IMAGE}"
-docker pull ${__MYSQL_IMAGE}
-
-log "Pulling image: ${__REDIS_IMAGE}"
-docker pull ${__REDIS_IMAGE}
-
+# 拉取必要镜像
 log "Pulling image: ${_DATAFLUX_FUNC_IMAGE}"
 docker pull ${_DATAFLUX_FUNC_IMAGE}
 
-if [ ${OPT_EMQX} != ${OPT_NOTSET_VALUE} ]; then
+# 未关闭MySQL 时，需要拉取镜像
+if [ ${OPT_NO_MYSQL} = "FALSE" ]; then
+    log "Pulling image: ${__MYSQL_IMAGE}"
+    docker pull ${__MYSQL_IMAGE}
+fi
+
+# 未关闭Redis 时，需要拉取镜像
+if [ ${OPT_NO_REDIS} = "FALSE" ]; then
+    log "Pulling image: ${__REDIS_IMAGE}"
+    docker pull ${__REDIS_IMAGE}
+fi
+
+# 开启EMQX 支持时，需要拉取镜像
+if [ ${OPT_EMQX} = "TRUE" ]; then
     log "Pulling image: ${__EMQX_IMAGE}"
     docker pull ${__EMQX_IMAGE}
 fi
 
-# 创建运行环境目录
+# 创建运行环境目录并前往
 mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,mysql,redis}
-
-# 前往安装目录
 cd ${_INSTALL_DIR}
+log "In ${_INSTALL_DIR}"
 
 # 下载docker stack 示例文件
 log "Downloading ${__DOCKER_STACK_EXAMPLE_FILE}"
@@ -107,7 +126,7 @@ else
     exit 1
 fi
 
-# 创建配置文件
+# 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 if [ ! -f ${__CONFIG_FILE} ]; then
     echo -e "# Auto generated config: \
             \nSECRET        : ${__RANDOM_SECRET} \
@@ -132,7 +151,8 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     cp ${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_FILE}
 
     # 创建配置文件并使用随机密钥/密码
-    sed -e "s#<RANDOM_PASSWORD>#=${__RANDOM_PASSWORD}#g" \
+    sed -i \
+        -e "s#<RANDOM_PASSWORD>#=${__RANDOM_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
         -e "s#<EMQX_IMAGE>#${__EMQX_IMAGE}#g" \
@@ -140,9 +160,19 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}`
 
-    if [ ${OPT_EMQX} != ${OPT_NOTSET_VALUE} ]; then
-        sed -e "s/replicas: 0 # EMQX/replicas: 1 # EMQX/g" \
-            ${__DOCKER_STACK_FILE}`
+    # 关闭MySQL 时，去除MySQL 配置部分
+    if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
+        sed -i "/# BOF MYSQL/,/# EOF MYSQL/d" ${__DOCKER_STACK_FILE}`
+    fi
+
+    # 关闭Redis 时，去除Redis 配置部分
+    if [ ${OPT_NO_REDIS} = "TRUE" ]; then
+        sed -i "/# BOF REDIS/,/# EOF REDIS/d" ${__DOCKER_STACK_FILE}`
+    fi
+
+    # 未开启EMQX 支持时，去除EMQX 配置部分
+    if [ ${OPT_EMQX} = "FALSE" ]; then
+        sed -i "/# BOF EMQX/,/# EOF EMQX/d" ${__DOCKER_STACK_FILE}`
     fi
 
     log "New docker stack file with random secret/password created:"
@@ -151,7 +181,7 @@ else
     log "Docker stack file already exists:"
 fi
 log "  $PWD/${__DOCKER_STACK_FILE}"
-exit 0
+
 # 创建logrotate配置
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
     echo -e "${_INSTALL_DIR}/data/${__PROJECT_NAME}.log { \
@@ -172,11 +202,14 @@ log "Deploying: ${__PROJECT_NAME}"
 docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}
 
 # 等待完成
-log "Please wait for the container to run."
+log "Please wait for the container to run, wait 30 seconds..."
 sleep 30
-
-# 查询运行状态
 docker ps
 
 # 返回之前目录
 cd ${__PREV_DIR}
+
+log "To restart, use following commands:"
+log "   $ docker stack remove ${__PROJECT_NAME}"
+log "   # After all containers exited...($ docker ps)"
+log "   $ docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}"
