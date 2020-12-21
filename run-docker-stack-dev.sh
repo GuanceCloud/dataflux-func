@@ -13,13 +13,14 @@ __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-__EMQX_IMAGE=pubrepo.jiagouyun.com/dataflux-func/emqx:5.0.7
+__EMQX_IMAGE=pubrepo.jiagouyun.com/dataflux-func/emqx:4.2.3
 
 __PROJECT_NAME=dataflux-func-dev
-_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
-_INSTALL_DIR=/usr/local/${__PROJECT_NAME}
-
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
+
+_INSTALL_DIR=/usr/local/${__PROJECT_NAME}
+_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
+
 
 # 可配置环境变量
 if [ $INSTALL_DIR ]; then
