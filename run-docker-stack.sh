@@ -237,7 +237,10 @@ docker ps
 # 返回之前目录
 cd ${__PREV_DIR}
 
-log "To restart, use following commands:"
+log "\nTo shutdown, use following commands:"
 log "   $ docker stack remove ${__PROJECT_NAME}"
-log "   # After all containers exited...($ docker ps)"
+log "\nTo start, use following commands:"
 log "   $ docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}"
+log "\nTo uninstall, use following commands:"
+log "   $ docker stack remove ${__PROJECT_NAME}"
+log "   $ rm -rf ${_INSTALL_DIR}"
