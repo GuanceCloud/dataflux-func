@@ -158,21 +158,21 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<EMQX_IMAGE>#${__EMQX_IMAGE}#g" \
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
-        ${__DOCKER_STACK_FILE}`
+        ${__DOCKER_STACK_FILE}
 
     # 关闭MySQL 时，去除MySQL 配置部分
     if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
-        sed -i "/# BOF MYSQL/,/# EOF MYSQL/d" ${__DOCKER_STACK_FILE}`
+        sed -i "/# BOF MYSQL/,/# EOF MYSQL/d" ${__DOCKER_STACK_FILE}
     fi
 
     # 关闭Redis 时，去除Redis 配置部分
     if [ ${OPT_NO_REDIS} = "TRUE" ]; then
-        sed -i "/# BOF REDIS/,/# EOF REDIS/d" ${__DOCKER_STACK_FILE}`
+        sed -i "/# BOF REDIS/,/# EOF REDIS/d" ${__DOCKER_STACK_FILE}
     fi
 
     # 未开启EMQX 支持时，去除EMQX 配置部分
     if [ ${OPT_EMQX} = "FALSE" ]; then
-        sed -i "/# BOF EMQX/,/# EOF EMQX/d" ${__DOCKER_STACK_FILE}`
+        sed -i "/# BOF EMQX/,/# EOF EMQX/d" ${__DOCKER_STACK_FILE}
     fi
 
     log "New docker stack file with random secret/password created:"
