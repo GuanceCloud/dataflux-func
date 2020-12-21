@@ -75,7 +75,7 @@
       key     : 'MYSQL_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      tips    : 'DataFlux Func 所连接的MySQL数据库。可以为域名或IP地址，不含端口',
       errorKey: 'mysql',
     },
     {
@@ -92,7 +92,7 @@
       key     : 'MYSQL_USER',
       type    : 'string',
       input   : 'text',
-      tips    : '建议为DataFlux Func 创建专用用户<code>dataflux_func</code>，不要直接使用root用户',
+      tips    : '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限',
       errorKey: 'mysql',
     },
     {
@@ -100,7 +100,7 @@
       key     : 'MYSQL_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '合适的密码可以保护您的数据安全',
+      tips    : '上述MySQL用户的密码',
       errorKey: 'mysql',
     },
     {
@@ -117,7 +117,7 @@
       key     : 'REDIS_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      tips    : 'DataFlux Func 所连接的Redis数据库。可以为域名或IP地址，不含端口',
       errorKey: 'redis',
     },
     {
@@ -134,7 +134,7 @@
       key     : 'REDIS_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '合适的密码可以保护您的数据安全',
+      tips    : '如所连接的Redis不需要密码，此项请留空',
       errorKey: 'redis',
     },
     {
@@ -145,6 +145,74 @@
       tips    : '建议为DataFlux Func 指定专用的数据库，不要和其他系统混用数据库',
       errorKey: 'redis',
     },
+
+    {
+      name    : 'EMQX主机',
+      key     : 'EMQX_HOST',
+      type    : 'string',
+      input   : 'text',
+      tips    : 'DataFlux Func 所连接的EMQX数据库。可以为域名或IP地址，不含端口。<br>无EMQX连接时此项请留空',
+      errorKey: 'emqx',
+    },
+    {
+      name      : 'EMQX端口（MQTT）',
+      key       : 'EMQX_PORT',
+      type      : 'integer',
+      input     : 'integer',
+      inputAttrs: 'min="1" max="65535"',
+      tips      : '默认一般为<code>1883</code>',
+      errorKey  : 'emqx',
+    },
+    {
+      name    : 'EMQX用户名（用于DataFlux 端登录）',
+      key     : 'EMQX_USERNAME',
+      type    : 'string',
+      input   : 'text',
+      tips    : 'DataFlux Func 登录EMQX 时的用户名',
+      errorKey: 'emqx',
+    },
+    {
+      name    : 'EMQX密码（用于DataFlux 端登录）',
+      key     : 'EMQX_PASSWORD',
+      type    : 'string',
+      input   : 'password',
+      tips    : 'DataFlux Func 登录EMQX 时的密码',
+      errorKey: 'emqx',
+    },
+    {
+      name    : 'EMQX默认QoS（用于DataFlux 端收发消息）',
+      key     : 'EMQX_DEFAULT_QOS',
+      type    : 'integer',
+      input   : 'text',
+      tips    : 'DataFlux Func 端收发消息时的QoS。可选：0=至多1次、1=至少一次、2=正好1次（目前暂时建议0）',
+      errorKey: 'emqx',
+    },
+    {
+      name      : 'EMQX API端口（用于DataFlux 调用EMQX 管理接口）',
+      key       : 'EMQX_API_PORT',
+      type      : 'integer',
+      input     : 'integer',
+      inputAttrs: 'min="1" max="65535"',
+      tips      : '需要EMQX开启<code>emqx_dashboard</code>插件，默认一般为<code>8081</code>',
+      errorKey  : 'emqx',
+    },
+    {
+      name    : 'EMQX API APP ID（用于DataFlux 调用EMQX 管理接口）',
+      key     : 'EMQX_API_APP_ID',
+      type    : 'string',
+      input   : 'text',
+      tips    : 'DataFlux Func 调用EMQX 管理接口时的APP ID',
+      errorKey: 'emqx',
+    },
+    {
+      name    : 'EMQX API APP Secret（用于DataFlux 调用EMQX 管理接口）',
+      key     : 'EMQX_API_APP_SECRET',
+      type    : 'string',
+      input   : 'password',
+      tips    : 'DataFlux Func 调用EMQX 管理接口时的APP Secret',
+      errorKey: 'emqx',
+    },
+
 
     {
       name    : '管理员用户',
@@ -303,12 +371,15 @@
               <li>MySQL中存在具有操作上述数据库的用户</li>
               <li>MySQL开启<code>innodb_large_prefix</code>参数</li>
               <li>Redis 4.0 或以上版本</li>
+              <li>【可选】EMQX 4.2.3 或以上版本</li>
             </ul>
           </p>
 
           <hr>
 
           <%_ CONFIG_LIST.forEach(function(c) { _%>
+            <!-- 未开启EMQX配置时，不展示相关配置 -->
+            <%_ if (!CONFIG.EMQX_HOST && c.errorKey === 'emqx') return; _%>
             <div class="form-group">
               <label><%= c.name %><code><%= c.key %></code></label>
               <%_ if (c.input === 'integer') { _%>

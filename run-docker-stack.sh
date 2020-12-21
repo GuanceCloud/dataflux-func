@@ -129,16 +129,30 @@ fi
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 if [ ! -f ${__CONFIG_FILE} ]; then
     echo -e "# Auto generated config: \
-            \nSECRET        : ${__RANDOM_SECRET} \
-            \nMYSQL_HOST    : mysql \
-            \nMYSQL_PORT    : 3306 \
-            \nMYSQL_USER    : root \
-            \nMYSQL_PASSWORD: ${__RANDOM_PASSWORD} \
-            \nMYSQL_DATABASE: dataflux_func \
-            \nREDIS_HOST    : redis \
-            \nREDIS_PORT    : 6379 \
-            \nREDIS_DATABASE: 5" \
+            \nSECRET             : ${__RANDOM_SECRET} \
+            \nMYSQL_HOST         : mysql \
+            \nMYSQL_PORT         : 3306 \
+            \nMYSQL_USER         : root \
+            \nMYSQL_PASSWORD     : ${__RANDOM_PASSWORD} \
+            \nMYSQL_DATABASE     : dataflux_func \
+            \nREDIS_HOST         : redis \
+            \nREDIS_PORT         : 6379 \
+            \nREDIS_DATABASE     : 5" \
         > ${__CONFIG_FILE}
+
+    # 开启EMQX 支持时，需要自动添加EMQX的配置
+    if [ ${OPT_EMQX} = "TRUE" ]; then
+        echo -e "# Auto generated config (EMQX): \
+                \nEMQX_HOST          : emqx \
+                \nEMQX_PORT          : 1883 \
+                \nEMQX_USERNAME      : dataflux_func \
+                \nEMQX_PASSWORD      : ${__RANDOM_PASSWORD} \
+                \nEMQX_DEFAULT_QOS   : 0 \
+                \nEMQX_API_PORT      : 8081 \
+                \nEMQX_API_APP_ID    : dataflux_func \
+                \nEMQX_API_APP_SECRET: ${__RANDOM_SECRET}" \
+            >> ${__CONFIG_FILE}
+    fi
 
     log "New config file with random secret/password created:"
 else

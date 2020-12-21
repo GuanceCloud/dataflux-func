@@ -97,7 +97,6 @@ EMQX_HOST            : null
 EMQX_PORT            : 1883
 EMQX_USERNAME        : dataflux_func
 EMQX_PASSWORD        : dataflux_func
-EMQX_CLIENT_ID_PREFIX: dataflux_func@
 EMQX_DEFAULT_QOS     : 0
 EMQX_API_PORT        : 8081
 EMQX_API_APP_ID      : dataflux_func

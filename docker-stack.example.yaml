@@ -112,10 +112,8 @@ services:
     image: <EMQX_IMAGE>
     ports:
       - "1883:1883"
-      - "8081:8081"
-      - "18083:18083"
     environment:
-      - "EMQX_LOADED_PLUGINS=emqx_recon,emqx_retainer,emqx_management,emqx_dashboard,emqx_auth_http"
+      - "EMQX_LOADED_PLUGINS=emqx_recon,emqx_retainer,emqx_management,emqx_auth_http"
       - "EMQX_AUTH__HTTP__AUTH_REQ=http://server:8088/api/v1/func/integration/auth-emqx"
       - "EMQX_AUTH__HTTP__AUTH_REQ__METHOD=post"
       - "EMQX_AUTH__HTTP__AUTH_REQ__PARAMS=clientid=%c,username=%u,password=%P"

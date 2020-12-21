@@ -1993,7 +1993,7 @@ exports.integratedAuthEMQX = function(req, res, next) {
   // 服务器登陆
   if (username === CONFIG.EMQX_USERNAME
       && password === CONFIG.EMQX_PASSWORD
-      && toolkit.startsWith(clientId, CONFIG.EMQX_CLIENT_ID_PREFIX)) {
+      && toolkit.startsWith(clientId, CONFIG.APP_NAME)) {
     return res.locals.sendText('ok');
   }
 

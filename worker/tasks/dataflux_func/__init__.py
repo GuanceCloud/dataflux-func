@@ -1089,7 +1089,7 @@ class FuncEMQXHelper(object):
             'payload' : message,
             'qos'     : qos,
             'retain'  : retain,
-            'clientid': CONFIG['EMQX_CLIENT_ID_PREFIX'] + str(toolkit.gen_time_serial_seq())
+            'clientid': CONFIG['APP_NAME'] + str(toolkit.gen_time_serial_seq())
         }
         return self.call('POST', '/api/v4/mqtt/publish', body=body)
 

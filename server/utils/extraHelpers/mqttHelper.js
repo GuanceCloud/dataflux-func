@@ -46,7 +46,7 @@ var MQTTHelper = function(logger, config) {
         port    : CONFIG.EMQX_PORT,
         username: CONFIG.EMQX_USERNAME,
         password: CONFIG.EMQX_PASSWORD,
-        clientId: CONFIG.EMQX_CLIENT_ID_PREFIX + toolkit.genTimeSerialSeq().toString(),
+        clientId: CONFIG.APP_NAME + toolkit.genTimeSerialSeq().toString(),
       });
       CLIENT = mqtt.connect(getConfig(CLIENT_CONFIG));
     }
