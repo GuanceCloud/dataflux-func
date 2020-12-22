@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+function blankLine {
+    echo ''
+}
+
 function log {
     echo -e "\033[33m$1\033[0m"
 }
@@ -93,6 +97,7 @@ log "Install dir : ${_INSTALL_DIR}/"
 log "Image       : ${_DATAFLUX_FUNC_IMAGE}"
 
 # 拉取必要镜像
+blankLine
 log "Pulling image: ${_DATAFLUX_FUNC_IMAGE}"
 docker pull ${_DATAFLUX_FUNC_IMAGE}
 
@@ -115,11 +120,13 @@ if [ ${OPT_EMQX} = "TRUE" ]; then
 fi
 
 # 创建运行环境目录并前往
+blankLine
 mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,mysql,redis}
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
 
 # 下载docker stack 示例文件
+blankLine
 log "Downloading ${__DOCKER_STACK_EXAMPLE_FILE}"
 if [ `command -v wget` ]; then
     wget ${__RESOURCE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE} -O ${__DOCKER_STACK_EXAMPLE_FILE}
@@ -133,6 +140,7 @@ else
 fi
 
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
+blankLine
 if [ ! -f ${__CONFIG_FILE} ]; then
     # 开启EMQX 组件时，需要自动添加EMQX的主机地址
     emqxHost=null
@@ -167,6 +175,7 @@ fi
 log "  $PWD/${__CONFIG_FILE}"
 
 # 创建docker stack 配置文件
+blankLine
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     cp ${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_FILE}
 
@@ -211,6 +220,7 @@ fi
 log "  $PWD/${__DOCKER_STACK_FILE}"
 
 # 创建logrotate配置
+blankLine
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
     echo -e "${_INSTALL_DIR}/data/${__PROJECT_NAME}.log { \
         \n    missingok \
@@ -226,10 +236,12 @@ log "logrotate config file created:"
 log "  /etc/logrotate.d/${__PROJECT_NAME}"
 
 # 执行部署
+blankLine
 log "Deploying: ${__PROJECT_NAME}"
 docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}
 
 # 等待完成
+blankLine
 log "Please wait for the container to run, wait 30 seconds..."
 sleep 30
 docker ps
@@ -237,10 +249,14 @@ docker ps
 # 返回之前目录
 cd ${__PREV_DIR}
 
-log "\nTo shutdown, use following commands:"
+blankLine
+log "To shutdown:"
 log "   $ docker stack remove ${__PROJECT_NAME}"
-log "\nTo start, use following commands:"
+blankLine
+log "To start:"
 log "   $ docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}"
-log "\nTo uninstall, use following commands:"
+blankLine
+log "To uninstall:"
 log "   $ docker stack remove ${__PROJECT_NAME}"
 log "   $ rm -rf ${_INSTALL_DIR}"
+log "   $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
