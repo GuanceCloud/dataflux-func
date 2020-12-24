@@ -1457,8 +1457,9 @@ export default {
   right: 15px;
   top: 15px;
   z-index: 100;
-  background-color: rgb(255,255,255,.9);
+  background-color: white;
   padding: 0 0 5px 5px;
+  border-radius: 3px;
 }
 pre .code-editor-output-info {
   font-style: italic;

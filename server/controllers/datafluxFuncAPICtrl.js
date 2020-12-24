@@ -1346,7 +1346,7 @@ exports.callAuthLink = function(req, res, next) {
     },
     // 获取函数
     function(asyncCallback) {
-      _getFuncById(res.locals, funcId, function(err, _func) {
+      _getFuncById(res.locals, authLink.funcId, function(err, _func) {
         if (err) return asyncCallback(err);
 
         func = _func;
@@ -1445,7 +1445,7 @@ exports.callBatch = function(req, res, next) {
     },
     // 获取函数
     function(asyncCallback) {
-      _getFuncById(res.locals, funcId, function(err, _func) {
+      _getFuncById(res.locals, batch.funcId, function(err, _func) {
         if (err) return asyncCallback(err);
 
         func = _func;

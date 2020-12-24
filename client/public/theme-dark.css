@@ -78,7 +78,7 @@ a {
   color: #ff4848 !important;
 }
 .code-editor-output-close {
-  background: none !important;
+  background: #222 !important;
 }
 
 .aside-tree-node-sample-code pre {
