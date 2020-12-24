@@ -361,8 +361,8 @@ function startApplication() {
 
   require('./messageHandlers/socketIOHandler')(app, server);
 
-  if (CONFIG.EMQX_HOST) {
-    require('./messageHandlers/emqxHandler')(app, server);
+  if (CONFIG.MQTT_HOST) {
+    require('./messageHandlers/mqttHandler')(app, server);
   }
 
   var listenOpt = {

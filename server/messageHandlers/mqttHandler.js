@@ -26,10 +26,11 @@ var INTEGRATION_FUNC_LRU = new LRU(FUNC_CACHE_OPT);
 
 module.exports = function(app, server) {
   // 初始化
-  var emqx = mqttHelper.createHelper(app.locals.logger);
+  var mqtt = mqttHelper.createHelper(app.locals.logger);
 
   // 转发处理
-  function emqxHandler(topic, message, packet) {
+  function messageHandler(topic, message, packet) {
+    console.log('[MQTT]', packet)
     var triggerTime = parseInt(Date.now() / 1000);
 
     try {
@@ -49,30 +50,30 @@ module.exports = function(app, server) {
     // 去除不必要内容
     delete packet.payload;
 
-    var onMQTTMessageFuncs = null;
-    var onMQTTMessageFunc  = null;
+    var onMQTTFuncs = null;
+    var onMQTTFunc  = null;
     var funcCallOptions    = null;
     async.series([
       // 查询对应topic的处理函数（附带缓存）
       function(asyncCallback) {
-        onMQTTMessageFuncs = INTEGRATION_FUNC_LRU.get('onMQTTMessage');
-        if (onMQTTMessageFuncs) return asyncCallback();
+        onMQTTFuncs = INTEGRATION_FUNC_LRU.get('onMQTT');
+        if (onMQTTFuncs) return asyncCallback();
 
         // 此处由于需要同时获取函数所在脚本的MD5值，需要使用`list`方法
         var funcModel = funcMod.createModel(app.locals);
 
         var opt = {
           filters: {
-            'func.integration': {eq: 'onMQTTMessage'},
+            'func.integration': {eq: 'onMQTT'},
           }
         };
         funcModel.list(opt, function(err, dbRes) {
           if (err) return asyncCallback(err);
 
-          onMQTTMessageFuncs = dbRes;
+          onMQTTFuncs = dbRes;
 
           // 建立缓存
-          INTEGRATION_FUNC_LRU.set('onMQTTMessage', onMQTTMessageFuncs);
+          INTEGRATION_FUNC_LRU.set('onMQTT', onMQTTFuncs);
 
           return asyncCallback();
         });
@@ -80,27 +81,27 @@ module.exports = function(app, server) {
       // 创建函数调用选项
       function(asyncCallback) {
         // 判断目标函数
-        if (onMQTTMessageFuncs) {
-          for (var i = 0; i < onMQTTMessageFuncs.length; i++) {
-            var func = onMQTTMessageFuncs[i];
+        if (onMQTTFuncs) {
+          for (var i = 0; i < onMQTTFuncs.length; i++) {
+            var func = onMQTTFuncs[i];
 
             var targetTopicPattern = '';
             try { targetTopicPattern = func.extraConfigJSON.integrationConfig.topic } catch(_) {}
 
             var isMatched = !!mqttWildcard(topic, targetTopicPattern);
             if (isMatched) {
-              onMQTTMessageFunc = func;
+              onMQTTFunc = func;
               break;
             }
           }
         }
 
-        if (!onMQTTMessageFunc) {
-          return asyncCallback(new E('EClientNotFound', 'Func integrated to `onMQTTMessage` not found.'));
+        if (!onMQTTFunc) {
+          return asyncCallback(new E('EClientNotFound', 'Func integrated to `onMQTT` not found.'));
         }
 
         var options = {
-          funcId: onMQTTMessageFunc.id,
+          funcId: onMQTTFunc.id,
           funcCallKwargs: {
             topic  : topic,
             message: message,
@@ -108,7 +109,7 @@ module.exports = function(app, server) {
           },
           originId: topic,
         };
-        datafluxFuncAPICtrl.createFuncCallOptionsFromOptions(options, onMQTTMessageFunc, function(err, _funcCallOptions) {
+        datafluxFuncAPICtrl.createFuncCallOptionsFromOptions(options, onMQTTFunc, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -129,12 +130,12 @@ module.exports = function(app, server) {
 
   // 服务器订阅
   var subOpt = { qos: CONFIG.MQTT_SERVER_SUB_QOS };
-  emqx.sub(CONFIG._EMQX_FUNC_HANDLE_TOPIC, subOpt, emqxHandler, function(err, granted) {
+  mqtt.sub(CONFIG.MQTT_SUB_TOPIC, subOpt, messageHandler, function(err, granted) {
     if (err) return app.locals.logger.logError(err);
 
     granted = granted[0];
-    app.locals.logger.info(`[EMQX] Server subscribed topic ${granted.topic} on Qos=${granted.qos}`);
+    app.locals.logger.info(`[MQTT] Server subscribed topic ${granted.topic} on Qos=${granted.qos}`);
 
-    app.locals.emqx = emqx;
+    app.locals.mqtt = mqtt;
   });
 };

@@ -364,128 +364,130 @@ exports.afterAppCreated = function(app, server) {
   }
 
   // 重置管理员账号密码
-  async.series([
-    function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
-      var lockValue = Date.now().toString();
-      var lockAge   = 30;
+  if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
+    async.series([
+      function(asyncCallback) {
+        var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
+        var lockValue = Date.now().toString();
+        var lockAge   = 30;
 
-      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
+        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+          if (err) return asyncCallback(err);
 
-        if (!cacheRes) {
-          var e = new Error('Startup process is already launched.');
-          e.isWarning = true;
-          return asyncCallback(e);
-        }
-
-        return asyncCallback();
-      });
-    },
-    function(asyncCallback) {
-      if (!process.env.RESET_ADMIN_USERNAME || !process.env.RESET_ADMIN_PASSWORD) return asyncCallback();
-
-      var RESET_ADMIN_ID = 'u-admin';
-      var adminPasswordHash = toolkit.getSaltedPasswordHash(
-          RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('UPDATE wat_main_user');
-      sql.append('SET');
-      sql.append('   username     = ?');
-      sql.append('  ,passwordHash = ?');
-      sql.append('WHERE');
-      sql.append('  id = ?')
-
-      var sqlParams = [
-        process.env.RESET_ADMIN_USERNAME,
-        adminPasswordHash,
-        RESET_ADMIN_ID,
-      ];
-      app.locals.db.query(sql, sqlParams, asyncCallback);
-    },
-  ], printError);
-
-  // 自动导入脚本包
-  async.series([
-    // 获取锁
-    function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
-      var lockValue = Date.now().toString();
-      var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
-
-      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (!cacheRes) {
-          var e = new Error('Function package auto importing is just launched');
-          e.isWarning = true;
-          return asyncCallback(e);
-        }
-
-        return asyncCallback();
-      });
-    },
-    // 安装脚本包
-    function(asyncCallback) {
-      // 获取脚本包列表
-      var funcPackagePath = path.join(__dirname, '../func-pkg/');
-      var funcPackages = fs.readdirSync(funcPackagePath);
-      funcPackages = funcPackages.filter(function(fileName) {
-        return fileName.split('.').pop() === 'func-pkg';
-      });
-
-      if (toolkit.isNothing(funcPackages)) return asyncCallback();
-
-      // 依次导入
-      var watClient = new WATClient({host: 'localhost', port: 8088});
-
-      // 本地临时认证令牌
-      app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
-
-      var builtinScriptSetIds = [];
-      async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
-        app.locals.logger.info('Auto install function package: {0}', funcPackage);
-
-        var filePath = path.join(funcPackagePath, funcPackage);
-        var fileBuffer = fs.readFileSync(path.join(filePath));
-
-        // 使用本地临时认证令牌认证
-        var localhostTempAuthToken = toolkit.genRandString();
-        app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
-
-        var headers = {};
-        headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL] = localhostTempAuthToken;
-
-        var opt = {
-          headers   : headers,
-          path      : '/api/v1/script-sets/do/import',
-          fileBuffer: fileBuffer,
-          filename  : funcPackage,
-        }
-        watClient.upload(opt, function(err, apiRes) {
-          if (err) return eachCallback(err);
-
-          if (!apiRes.ok) {
-            return eachCallback(new Error('Auto import package failed: ' + apiRes.message));
+          if (!cacheRes) {
+            var e = new Error('Startup process is already launched.');
+            e.isWarning = true;
+            return asyncCallback(e);
           }
 
-          apiRes.data.summary.scriptSets.forEach(function(scriptSet) {
-            builtinScriptSetIds.push(scriptSet.id);
-          });
-
-          return eachCallback();
+          return asyncCallback();
         });
-      }, function(err) {
-        if (err) return asyncCallback(err);
+      },
+      function(asyncCallback) {
+        var RESET_ADMIN_ID = 'u-admin';
+        var adminPasswordHash = toolkit.getSaltedPasswordHash(
+            RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
 
-        var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
-        app.locals.cacheDB.set(cacheKey, JSON.stringify(builtinScriptSetIds));
+        var sql = toolkit.createStringBuilder();
+        sql.append('UPDATE wat_main_user');
+        sql.append('SET');
+        sql.append('   username     = ?');
+        sql.append('  ,passwordHash = ?');
+        sql.append('WHERE');
+        sql.append('  id = ?')
 
-        return asyncCallback();
-      });
-    },
-  ], printError);
+        var sqlParams = [
+          process.env.RESET_ADMIN_USERNAME,
+          adminPasswordHash,
+          RESET_ADMIN_ID,
+        ];
+        app.locals.db.query(sql, sqlParams, asyncCallback);
+      },
+    ], printError);
+  }
+
+  // 自动导入脚本包
+  if (!CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
+    async.series([
+      // 获取锁
+      function(asyncCallback) {
+        var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
+        var lockValue = Date.now().toString();
+        var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
+
+        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+          if (err) return asyncCallback(err);
+
+          if (!cacheRes) {
+            var e = new Error('Function package auto importing is just launched');
+            e.isWarning = true;
+            return asyncCallback(e);
+          }
+
+          return asyncCallback();
+        });
+      },
+      // 安装脚本包
+      function(asyncCallback) {
+        // 获取脚本包列表
+        var funcPackagePath = path.join(__dirname, '../func-pkg/');
+        var funcPackages = fs.readdirSync(funcPackagePath);
+        funcPackages = funcPackages.filter(function(fileName) {
+          return toolkit.endsWith(fileName, CONFIG._FUNC_PKG_EXPORT_EXT);
+        });
+
+        if (toolkit.isNothing(funcPackages)) return asyncCallback();
+
+        // 依次导入
+        var watClient = new WATClient({host: 'localhost', port: 8088});
+
+        // 本地临时认证令牌
+        app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
+
+        var builtinScriptSetIds = [];
+        async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
+          app.locals.logger.info('Auto install function package: {0}', funcPackage);
+
+          var filePath = path.join(funcPackagePath, funcPackage);
+          var fileBuffer = fs.readFileSync(path.join(filePath));
+
+          // 使用本地临时认证令牌认证
+          var localhostTempAuthToken = toolkit.genRandString();
+          app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
+
+          var headers = {};
+          headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL] = localhostTempAuthToken;
+
+          var opt = {
+            headers   : headers,
+            path      : '/api/v1/script-sets/do/import',
+            fileBuffer: fileBuffer,
+            filename  : funcPackage,
+          }
+          watClient.upload(opt, function(err, apiRes) {
+            if (err) return eachCallback(err);
+
+            if (!apiRes.ok) {
+              return eachCallback(new Error('Auto import package failed: ' + apiRes.message));
+            }
+
+            apiRes.data.summary.scriptSets.forEach(function(scriptSet) {
+              builtinScriptSetIds.push(scriptSet.id);
+            });
+
+            return eachCallback();
+          });
+        }, function(err) {
+          if (err) return asyncCallback(err);
+
+          var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+          app.locals.cacheDB.set(cacheKey, JSON.stringify(builtinScriptSetIds));
+
+          return asyncCallback();
+        });
+      },
+    ], printError);
+  }
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {

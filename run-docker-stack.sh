@@ -16,7 +16,7 @@ OPT_INSTALL_DIR=DEFAULT
 OPT_IMAGE=DEFAULT
 OPT_NO_MYSQL=FALSE
 OPT_NO_REDIS=FALSE
-OPT_EMQX=FALSE
+OPT_MQTT=FALSE
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -50,8 +50,8 @@ while [ $# -ge 1 ]; do
             shift
             ;;
 
-        '--emqx' )
-            OPT_EMQX=TRUE
+        '--mqtt' )
+            OPT_MQTT=TRUE
             shift
             ;;
 
@@ -68,9 +68,13 @@ __RANDOM_PASSWORD=`openssl rand -hex 8`
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
+__MOSQUITTO_CONFIG_FILE=mosquitto/config/mosquitto.conf
+__MOSQUITTO_PASSWD_FILE=mosquitto/passwd
+__MOSQUITTO_SAMPLE_USERNAME=mqttclient
+__MOSQUITTO_SAMPLE_PASSWORD=`openssl rand -hex 8`
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-__EMQX_IMAGE=pubrepo.jiagouyun.com/dataflux-func/emqx:4.2.3
+__MQTT_IMAGE=pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3
 
 __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
@@ -113,15 +117,21 @@ if [ ${OPT_NO_REDIS} = "FALSE" ]; then
     docker pull ${__REDIS_IMAGE}
 fi
 
-# 开启EMQX 支持时，需要拉取镜像
-if [ ${OPT_EMQX} = "TRUE" ]; then
-    log "Pulling image: ${__EMQX_IMAGE}"
-    docker pull ${__EMQX_IMAGE}
+# 开启MQTT 组件时，需要拉取镜像
+if [ ${OPT_MQTT} = "TRUE" ]; then
+    log "Pulling image: ${__MQTT_IMAGE}"
+    docker pull ${__MQTT_IMAGE}
 fi
 
 # 创建运行环境目录并前往
 blankLine
 mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,mysql,redis}
+
+# 开启MQTT 组件时，自动创建目录
+if [ ${OPT_MQTT} = "TRUE" ]; then
+    mkdir -p ${_INSTALL_DIR}/{mosquitto,mosquitto/config}
+fi
+
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
 
@@ -142,31 +152,28 @@ fi
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 blankLine
 if [ ! -f ${__CONFIG_FILE} ]; then
-    # 开启EMQX 组件时，需要自动添加EMQX的主机地址
-    emqxHost=null
-    if [ ${OPT_EMQX} = "TRUE" ]; then
-        emqxHost=emqx
+    # 开启MQTT 组件时，需要自动添加MQTT 的主机地址
+    mqttHost=null
+    if [ ${OPT_MQTT} = "TRUE" ]; then
+        mqttHost=mqtt
     fi
 
     echo -e "# Auto generated config: \
-            \nSECRET             : ${__RANDOM_SECRET} \
-            \nMYSQL_HOST         : mysql \
-            \nMYSQL_PORT         : 3306 \
-            \nMYSQL_USER         : root \
-            \nMYSQL_PASSWORD     : ${__RANDOM_PASSWORD} \
-            \nMYSQL_DATABASE     : dataflux_func \
-            \nREDIS_HOST         : redis \
-            \nREDIS_PORT         : 6379 \
-            \nREDIS_DATABASE     : 5 \
-            \nEMQX_HOST          : ${emqxHost} \
-            \nEMQX_PORT          : 1883 \
-            \nEMQX_USERNAME      : dataflux_func \
-            \nEMQX_PASSWORD      : ${__RANDOM_PASSWORD} \
-            \nEMQX_DEFAULT_QOS   : 0 \
-            \nEMQX_API_PORT      : 8081 \
-            \nEMQX_API_APP_ID    : dataflux_func \
-            \nEMQX_API_APP_SECRET: ${__RANDOM_PASSWORD}" \
-        >> ${__CONFIG_FILE}
+\nSECRET          : ${__RANDOM_SECRET} \
+\nMYSQL_HOST      : mysql \
+\nMYSQL_PORT      : 3306 \
+\nMYSQL_USER      : root \
+\nMYSQL_PASSWORD  : ${__RANDOM_PASSWORD} \
+\nMYSQL_DATABASE  : dataflux_func \
+\nREDIS_HOST      : redis \
+\nREDIS_PORT      : 6379 \
+\nREDIS_DATABASE  : 5 \
+\nMQTT_HOST       : ${mqttHost} \
+\nMQTT_PORT       : 1883 \
+\nMQTT_USERNAME   : dataflux_func \
+\nMQTT_PASSWORD   : ${__RANDOM_PASSWORD} \
+\nMQTT_DEFAULT_QOS: 0" \
+> ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
 else
@@ -184,7 +191,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<RANDOM_PASSWORD>#${__RANDOM_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
-        -e "s#<EMQX_IMAGE>#${__EMQX_IMAGE}#g" \
+        -e "s#<MQTT_IMAGE>#${__MQTT_IMAGE}#g" \
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
@@ -207,9 +214,9 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         sed -i "/# REDIS START/,/# REDIS END/d" ${__DOCKER_STACK_FILE}
     fi
 
-    # 未开启EMQX 支持时，去除EMQX 配置部分
-    if [ ${OPT_EMQX} = "FALSE" ]; then
-        sed -i "/# EMQX START/,/# EMQX END/d" ${__DOCKER_STACK_FILE}
+    # 未开启MQTT 组件时，去除MQTT 配置部分
+    if [ ${OPT_MQTT} = "FALSE" ]; then
+        sed -i "/# MQTT START/,/# MQTT END/d" ${__DOCKER_STACK_FILE}
     fi
 
     log "New docker stack file with random secret/password created:"
@@ -219,18 +226,40 @@ else
 fi
 log "  $PWD/${__DOCKER_STACK_FILE}"
 
+# 创建mosquitto 配置/密码文件
+blankLine
+if [ ${OPT_MQTT} = "TRUE" ]; then
+    if [ ! -f ${__MOSQUITTO_CONFIG_FILE} ]; then
+        echo -e "allow_anonymous false \
+\npassword_file /mosquitto/passwd \
+\nlistener 1883" \
+> ${__MOSQUITTO_CONFIG_FILE}/
+    fi
+
+    if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
+        echo -e "dataflux_func:${__RANDOM_PASSWORD} \
+\n${__MOSQUITTO_SAMPLE_USERNAME}:${__MOSQUITTO_SAMPLE_PASSWORD}"
+> ${__MOSQUITTO_PASSWD_FILE}
+
+        docker run --rm \
+        -v ${_INSTALL_DIR}/mosquitto:/mosquitto \
+        pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3 \
+        mosquitto_passwd -U /mosquitto/passwd
+    fi
+fi
+
 # 创建logrotate配置
 blankLine
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
     echo -e "${_INSTALL_DIR}/data/${__PROJECT_NAME}.log { \
-        \n    missingok \
-        \n    copytruncate \
-        \n    compress \
-        \n    daily \
-        \n    rotate 7 \
-        \n    dateext \
-        \n}" \
-    > /etc/logrotate.d/${__PROJECT_NAME}
+\n    missingok \
+\n    copytruncate \
+\n    compress \
+\n    daily \
+\n    rotate 7 \
+\n    dateext \
+\n}" \
+> /etc/logrotate.d/${__PROJECT_NAME}
 fi
 log "logrotate config file created:"
 log "  /etc/logrotate.d/${__PROJECT_NAME}"
@@ -250,13 +279,39 @@ docker ps
 cd ${__PREV_DIR}
 
 blankLine
+if [ ${OPT_DEV} = "TRUE" ]; then
+    log "Notice: A DEV version is deployed"
+fi
+if [ ${OPT_MINI} = "TRUE" ]; then
+    log "Notice: DataFlux Func is running in MINI mode"
+fi
+if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
+    log "Notice: DataFlux Func is deployed using a custom install dir: ${_INSTALL_DIR}"
+fi
+if [ ${OPT_IMAGE} != "DEFAULT" ]; then
+    log "Notice: DataFlux Func is deployed using a custom image: ${_DATAFLUX_FUNC_IMAGE}"
+fi
+if [ ${OPT_NO_MYSQL} != "TRUE" ]; then
+    log "Notice: Builtin MySQL is NOT deployed, please specify your MySQL server configs in setup page."
+fi
+if [ ${OPT_NO_REDIS} != "TRUE" ]; then
+    log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
+fi
+if [ ${OPT_MQTT} != "TRUE" ]; then
+    log "Notice: Builtin MQTT is deployed."
+    log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
+    log "To add more MQTT client users:"
+    log "    $ mosquitto_passwd ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE} anotheruser"
+fi
+
+blankLine
 log "To shutdown:"
-log "   $ docker stack remove ${__PROJECT_NAME}"
+log "    $ docker stack remove ${__PROJECT_NAME}"
 blankLine
 log "To start:"
-log "   $ docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}"
+log "    $ docker stack deploy ${__PROJECT_NAME} -c ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
 blankLine
 log "To uninstall:"
-log "   $ docker stack remove ${__PROJECT_NAME}"
-log "   $ rm -rf ${_INSTALL_DIR}"
-log "   $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
+log "    $ docker stack remove ${__PROJECT_NAME}"
+log "    $ rm -rf ${_INSTALL_DIR}"
+log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"

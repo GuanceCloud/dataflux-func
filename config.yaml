@@ -92,15 +92,13 @@ REDIS_PORT    : 6379
 REDIS_DATABASE: 5
 REDIS_PASSWORD: ''
 
-# EMQX(MQTT)连接配置
-EMQX_HOST            : null
-EMQX_PORT            : 1883
-EMQX_USERNAME        : dataflux_func
-EMQX_PASSWORD        : dataflux_func
-EMQX_DEFAULT_QOS     : 0
-EMQX_API_PORT        : 8081
-EMQX_API_APP_ID      : dataflux_func
-EMQX_API_APP_SECRET  : dataflux_func
+# MQTT连接配置
+MQTT_HOST       : null
+MQTT_PORT       : 1883
+MQTT_USERNAME   : dataflux_func
+MQTT_PASSWORD   : dataflux_func
+MQTT_DEFAULT_QOS: 0
+MQTT_SUB_TOPIC  : $share/g/dataflux_func/#
 
 # Worker配置
 WORKER_QUEUE_ALIAS_MAP: cpu=9
@@ -162,9 +160,6 @@ _MYSQL_CONNECT_TIMEOUT    : 60000
 _MYSQL_TIMEOUT            : 60000
 _MYSQL_CHARSET            : utf8mb4
 _MYSQL_TIMEZONE           : ''
-
-# EMQX(MQTT)一般作为常量的配置
-_EMQX_FUNC_HANDLE_TOPIC: $queue/dataflux_func/#
 
 # WEB模块一般作为常量的配置
 _WEB_INDEX_PAGE            : datafluxFuncPage.clientApp
@@ -295,3 +290,5 @@ _INTERNAL_ERROR_STACK_WITH_LOCALS_INFO: false
 _IS_INSTALLED: false
 # 是否禁用配置
 _DISABLE_SETUP: false
+# 是否禁用自动安装附带脚本
+_DISABLE_AUTO_INSTALL_FUNC_PKGS: false

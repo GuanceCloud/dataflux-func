@@ -88,10 +88,3 @@ routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
 routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
   datafluxFuncAPICtrl.integratedSignIn,
 ]);
-
-if (CONFIG.EMQX_HOST) {
-  // 集成EMQ认证（HTTP）
-  routeLoader.load(ROUTE.datafluxFuncAPI.integratedAuthEMQX, [
-    datafluxFuncAPICtrl.integratedAuthEMQX,
-  ]);
-}

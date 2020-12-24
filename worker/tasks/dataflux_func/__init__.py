@@ -56,19 +56,12 @@ FIX_INTEGRATION_KEY_MAP = {
     #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
 
-    # 用于EMQX认证的函数
-    # 集成为`POST /api/v1/func/integration/auth-emqx`
-    #   函数必须为`def func(username, password, client_id)`形式
-    #   全局只能存在一个`authEMQX`函数
-    #   无配置项
-    'authEMQX': 'authEMQX',
-
-    # 用于EMQX订阅消息的处理函数
+    # 用于MQTT订阅消息的处理函数
     # 集成为MQTT订阅
     # 函数必须为`def func(topic, message, packet)`形式
     #   配置项：
-    #       topic: 订阅的主题，如：`topic1`, `topic2/+`, `topic3/#`, `$queue/topic4`, `$share/group1/topic5`
-    'onMQTTMessage': 'onMQTTMessage',
+    #       topic: 订阅的主题，如：`topic1`, `topic2/+`, `topic3/#`, `$share/g/topic5`
+    'onMQTT': 'onMQTT',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
@@ -1059,67 +1052,17 @@ class FuncConfigHelper(object):
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
-class FuncEMQXHelper(object):
+class FuncMQTTHelper(object):
     _session = None
 
     def __init__(self, task):
         self.__task = task
 
-        if not self._session:
-            self._session = requests.Session()
-            self._session.auth = (CONFIG['EMQX_API_APP_ID'], CONFIG['EMQX_API_APP_SECRET'])
-
     def __call__(self, *args, **kwargs):
-        return self.publish(*args, **kwargs)
-
-    def call(self, method='get', url='/api/v4/clients', query=None, body=None):
-        if not CONFIG['EMQX_HOST']:
-            e = NotEnabledException('EMQX support not enabled. To enable EMQX support, please set DataFlux Func config `EMQX_HOST` to `true`.')
-            raise e
-
-        method = method.upper()
-        url    = 'http://{}:{}{}'.format(CONFIG['EMQX_HOST'], CONFIG['EMQX_API_PORT'], url)
-
-        resp = self._session.request(method, url, params=query, json=body)
-        return resp.status_code, resp.json()
+        pass
 
     def publish(self, topic, message, qos=0, retain=False):
-        body = {
-            'topic'   : topic,
-            'payload' : message,
-            'qos'     : qos,
-            'retain'  : retain,
-            'clientid': CONFIG['APP_NAME'] + str(toolkit.gen_time_serial_seq())
-        }
-        return self.call('POST', '/api/v4/mqtt/publish', body=body)
-
-    def list_clients(self, filters=None, page=None, limit=None):
-        query = {
-            '_page' : page,
-            '_limit': limit,
-        }
-        query.update(filters or {})
-        return self.call('GET', '/api/v4/clients', query=query)
-
-    def list_clients_by_username(self, username):
-        url = '/api/v4/clients/username/{}'.format(username)
-        return self.call('GET', url)
-
-    def get_client(self, client_id):
-        url = '/api/v4/clients/{}'.format(client_id)
-        return self.call('GET', url)
-
-    def delete_client(self, client_id):
-        url = '/api/v4/clients/{}'.format(client_id)
-        return self.call('DELETE', url)
-
-    def list_subscriptions(self, filters=None, page=None, limit=None):
-        query = {
-            '_page' : page,
-            '_limit': limit,
-        }
-        query.update(filters or {})
-        return self.call('GET', '/api/v4/subscriptions', query=query)
+        pass
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):
@@ -1652,7 +1595,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         __data_source_helper  = FuncDataSourceHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
         __config_helper       = FuncConfigHelper(self)
-        __emqx_helper         = FuncEMQXHelper(self)
+        __mqtt_helper         = FuncMQTTHelper(self)
 
         def __list_data_sources():
             return __data_source_helper.list()
@@ -1671,7 +1614,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             '__store_helper'       : __store_helper,        # 存储处理模块
             '__cache_helper'       : __cache_helper,        # 缓存处理模块
             '__config_helper'      : __config_helper,       # 配置处理模块
-            '__emqx_helper'        : __emqx_helper,         # EMQX对接模块
+            '__mqtt_helper'        : __mqtt_helper,         # MQTT对接模块
 
             # 别名
             'API'   : __export_as_api,
@@ -1680,7 +1623,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'STORE' : __store_helper,
             'CACHE' : __cache_helper,
             'CONFIG': __config_helper,
-            'EMQX'  : __emqx_helper,
+            'MQTT'  : __mqtt_helper,
 
             'FUNC' : __call_func,
             'EVAL' : __eval,

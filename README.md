@@ -42,7 +42,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
             - [`--image {主程序Docker镜像}`：指定主程序镜像](#--image-%E4%B8%BB%E7%A8%8B%E5%BA%8Fdocker%E9%95%9C%E5%83%8F%EF%BC%9A%E6%8C%87%E5%AE%9A%E4%B8%BB%E7%A8%8B%E5%BA%8F%E9%95%9C%E5%83%8F)
             - [`--no-mysql`：禁用内置MySQL](#--no-mysql%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEmysql)
             - [`--no-redis`：禁用内置Redis](#--no-redis%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEredis)
-            - [`--emqx`：启用内置EMQX](#--emqx%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEemqx)
+            - [`--mqtt`：启用内置MQTT Broker](#--mqtt%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEmqtt-broker)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
@@ -113,8 +113,8 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 ```shell
 # 安装开发版
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --dev
-# 指定安装目录，同时开启EMQX组件
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --emqx
+# 指定安装目录，同时开启MQTT组件（mosquitto）
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --mqtt
 ```
 
 具体参数详情见下文
@@ -164,13 +164,15 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 *注意：启用此选项后，需要在安装完成后的配置页面指定正确的Redis连接信息*
 
-##### `--emqx`：启用内置EMQX
+##### `--mqtt`：启用内置MQTT Broker
 
-需要安装后，同时在本机启动EMQX时，可指定此选项。
+需要安装后，同时在本机启动MQTT Broker时，可指定此选项。
 
-*提示：未指定时，不会在本机启动EMQX，单依然可以通过填写EMQX配置来连接EMQX*
+内置的MQTT Broker 为`eclipse-mosquitto`。
 
-*注意：本机启动的内置EMQX为单机版*
+*提示：未指定时，不会在本机启动MQTT Broker，但依然可以通过填写MQTT配置来连接MQTT Broker*
+
+*注意：本机启动的内置MQTT Broker（即`eclipse-mosquitto`）为单机版*
 
 
 ### 进阶方式：使用`docker stack`配置文件进行部署

@@ -8,11 +8,11 @@
 #    参考命令（假设本配置文件名为"docker-stack.yaml"）：
 #       sudo docker stack deploy dataflux-func -c docker-stack.yaml
 #
-# 3. 如不需要内置MySQL组件，请删除MySQL相关的内容块
-# 4. 如不需要内置Redis组件，请删除Redis相关的内容块
-# 5. 如不需要内置EMQX组件，请删除EMQX相关的内容块
-# 6. 如使用默认方式安装，请删除WORKER MINI相关的内容块
-# 7. 如使用mini方式安装，请删除WORKER DEFAULT相关的内容块
+# 3. 如不需要内置MySQL 组件，请删除MYSQL相关的内容块
+# 4. 如不需要内置Redis 组件，请删除REDIS相关的内容块
+# 5. 如不需要内置MQTT组件，请删除MQTT 相关的内容块
+# 6. 如使用默认方式安装，请删除WORKER MINI 相关的内容块
+# 7. 如使用mini 方式安装，请删除WORKER DEFAULT 相关的内容块
 
 version: '3.1'
 
@@ -39,22 +39,14 @@ services:
       - "<INSTALL_DIR>/redis:/data"
   # REDIS END
 
-  # EMQX START
-  emqx:
-    image: <EMQX_IMAGE>
+  # MQTT START
+  mqtt:
+    image: <MQTT_IMAGE>
     networks:
       - datafluxfunc
     ports:
       - "1883:1883"
-    environment:
-      - "EMQX_LOADED_PLUGINS=emqx_recon,emqx_retainer,emqx_management,emqx_auth_http"
-      - "EMQX_AUTH__HTTP__AUTH_REQ=http://server:8088/api/v1/func/integration/auth-emqx"
-      - "EMQX_AUTH__HTTP__AUTH_REQ__METHOD=post"
-      - "EMQX_AUTH__HTTP__AUTH_REQ__PARAMS=clientid=%c,username=%u,password=%P"
-      - "EMQX_ALLOW_ANONYMOUS=false"
-      - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__ID=dataflux_func"
-      - "EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET=<RANDOM_PASSWORD>"
-  # EMQX END
+  # MQTT END
 
   # WORKER DEFAULT START
   worker-0:

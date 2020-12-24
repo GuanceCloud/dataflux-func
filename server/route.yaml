@@ -1104,12 +1104,6 @@ datafluxFuncAPI:
           $maxLength : 100
           $example   : 'Abc123'
 
-  integratedAuthEMQX:
-    name    : 集成EMQ认证（HTTP）
-    method  : post
-    url     : /api/v1/func/integration/auth-emqx
-    response: json
-
   overview:
     showInDoc    : true
     name         : 获取总览
