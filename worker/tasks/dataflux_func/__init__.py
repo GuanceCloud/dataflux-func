@@ -1053,16 +1053,14 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class FuncMQTTHelper(object):
-    _session = None
-
     def __init__(self, task):
         self.__task = task
 
     def __call__(self, *args, **kwargs):
-        pass
+        self.publish(*args, **kwargs)
 
     def publish(self, topic, message, qos=0, retain=False):
-        pass
+        self.__task.mqtt.publish(topic=topic, message=message, qos=qos, retain=retain)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):

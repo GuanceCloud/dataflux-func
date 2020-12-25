@@ -20,6 +20,7 @@ jsonpath-ng==1.5.1
 mailer==0.8.1
 mysqlclient==1.4.6
 numpy==1.18.1
+paho-mqtt==1.5.1
 protobuf==3.14.0
 psycopg2-binary==2.8.5
 pycryptodomex==3.8.0

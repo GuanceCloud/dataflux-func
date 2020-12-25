@@ -15,7 +15,7 @@ import simplejson
 from worker import app
 from worker.utils import toolkit, yaml_resources
 from worker.utils.log_helper import LogHelper, LOG_LEVELS
-from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
+from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper, MQTTHelper
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -108,6 +108,10 @@ class BaseTask(app.Task):
 
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
+
+        # Add MQTT Helper
+        if CONFIG['MQTT_HOST']:
+            self.mqtt = MQTTHelper(self.logger)
 
         if CONFIG['MODE'] == 'prod':
             self.db.skip_log       = True
