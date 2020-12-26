@@ -179,7 +179,7 @@ if [ ! -f ${__CONFIG_FILE} ]; then
 else
     log "Config file already exists:"
 fi
-log "  $PWD/${__CONFIG_FILE}"
+log "  ${_INSTALL_DIR}/${__CONFIG_FILE}"
 
 # 创建docker stack 配置文件
 blankLine
@@ -224,7 +224,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 else
     log "Docker stack file already exists:"
 fi
-log "  $PWD/${__DOCKER_STACK_FILE}"
+log "  ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
 
 # 创建mosquitto 配置/密码文件
 blankLine
@@ -234,7 +234,11 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
 \npassword_file /mosquitto/passwd \
 \nlistener 1883" \
 > ${__MOSQUITTO_CONFIG_FILE}
+        log "New mosquitto config file created:"
+    else
+        log "Mosquitto config file already exists:"
     fi
+    log "  ${_INSTALL_DIR}/${__MOSQUITTO_CONFIG_FILE}"
 
     if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
         echo -e "dataflux_func:${__RANDOM_PASSWORD} \
@@ -245,7 +249,12 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
         -v ${_INSTALL_DIR}/mosquitto:/mosquitto \
         pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3 \
         mosquitto_passwd -U /mosquitto/passwd
+
+        log "New mosquitto passwd file created:"
+    else
+        log "Mosquitto passwd file already exists:"
     fi
+    log "  ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE}"
 fi
 
 # 创建logrotate配置
@@ -261,7 +270,7 @@ if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
 \n}" \
 > /etc/logrotate.d/${__PROJECT_NAME}
 fi
-log "logrotate config file created:"
+log "Logrotate config file created:"
 log "  /etc/logrotate.d/${__PROJECT_NAME}"
 
 # 执行部署
@@ -297,7 +306,7 @@ fi
 if [ ${OPT_NO_REDIS} != "TRUE" ]; then
     log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
 fi
-if [ ${OPT_MQTT} != "TRUE" ]; then
+if [ ${OPT_MQTT} = "TRUE" ]; then
     blankLine
     log "Notice: Builtin MQTT is deployed."
     log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
