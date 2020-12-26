@@ -238,7 +238,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
 
     if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
         echo -e "dataflux_func:${__RANDOM_PASSWORD} \
-\n${__MOSQUITTO_SAMPLE_USERNAME}:${__MOSQUITTO_SAMPLE_PASSWORD}"
+\n${__MOSQUITTO_SAMPLE_USERNAME}:${__MOSQUITTO_SAMPLE_PASSWORD}" \
 > ${__MOSQUITTO_PASSWD_FILE}
 
         docker run --rm \
