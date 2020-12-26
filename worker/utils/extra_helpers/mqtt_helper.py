@@ -57,7 +57,7 @@ class MQTTHelper(object):
                     'port'    : CONFIG['MQTT_PORT'],
                     'username': CONFIG['MQTT_USERNAME'],
                     'password': CONFIG['MQTT_PASSWORD'],
-                    'clientId': CONFIG['APP_NAME'] + '@' + str(toolkit.gen_time_serial_seq())
+                    'clientId': CONFIG['APP_NAME'] + '@worker-' + str(toolkit.gen_time_serial_seq())
                 }
                 CLIENT = mqtt.Client(**get_config(CLIENT_CONFIG))
                 CLIENT.username_pw_set(**get_auth_config(CLIENT_CONFIG))
