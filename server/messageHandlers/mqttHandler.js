@@ -30,7 +30,6 @@ module.exports = function(app, server) {
 
   // 转发处理
   function messageHandler(topic, message, packet) {
-    console.log('[MQTT]', packet)
     var triggerTime = parseInt(Date.now() / 1000);
 
     try {

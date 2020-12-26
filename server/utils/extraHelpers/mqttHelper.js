@@ -48,9 +48,7 @@ var MQTTHelper = function(logger, config) {
         password: CONFIG.MQTT_PASSWORD,
         clientId: CONFIG.APP_NAME + '@' + toolkit.genTimeSerialSeq().toString(),
       });
-      var c = getConfig(CLIENT_CONFIG)
-      console.log(c)
-      CLIENT = mqtt.connect(c);
+      CLIENT = mqtt.connect(getConfig(CLIENT_CONFIG));
     }
 
     this.config = CLIENT_CONFIG;

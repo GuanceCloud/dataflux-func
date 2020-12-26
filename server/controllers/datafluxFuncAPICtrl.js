@@ -1018,7 +1018,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
   }
 };
 
-function _doAPIResponse(locals, res, isCached, ret, unfold) {
+function _doAPIResponse(locals, res, ret, isCached, unfold) {
   // 缓存标记
   if (res && isCached) {
     res.set('X-Result-Cache', 'Cached');
