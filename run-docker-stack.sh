@@ -233,7 +233,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
         echo -e "allow_anonymous false \
 \npassword_file /mosquitto/passwd \
 \nlistener 1883" \
-> ${__MOSQUITTO_CONFIG_FILE}/
+> ${__MOSQUITTO_CONFIG_FILE}
     fi
 
     if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
@@ -298,10 +298,9 @@ if [ ${OPT_NO_REDIS} != "TRUE" ]; then
     log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
 fi
 if [ ${OPT_MQTT} != "TRUE" ]; then
+    blankLine
     log "Notice: Builtin MQTT is deployed."
     log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
-
-    blankLine
     log "To subcribe message:"
     log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test"
     log "To publish message:"
@@ -316,10 +315,8 @@ fi
 blankLine
 log "To shutdown:"
 log "    $ docker stack remove ${__PROJECT_NAME}"
-blankLine
 log "To start:"
 log "    $ docker stack deploy ${__PROJECT_NAME} -c ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
-blankLine
 log "To uninstall:"
 log "    $ docker stack remove ${__PROJECT_NAME}"
 log "    $ rm -rf ${_INSTALL_DIR}"
