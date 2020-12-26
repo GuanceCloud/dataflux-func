@@ -315,8 +315,8 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
     log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t dataflux_func/test -m 'hello'"
 
     log "To add more MQTT client users:"
-    log "    $ docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} -s HUP"
-    log "    ...and restart"
+    log "    $ docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} mosquitto_passwd -b /mosquitto/passwd username password"
+    log "    $ docker kill dataflux-func-mqtt -s HUP"
 fi
 
 blankLine

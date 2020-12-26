@@ -20,6 +20,7 @@ services:
   # MYSQL START
   mysql:
     image: <MYSQL_IMAGE>
+    container_name: dataflux-func-mysql
     networks:
       - datafluxfunc
     volumes:
@@ -33,6 +34,7 @@ services:
   # REDIS START
   redis:
     image: <REDIS_IMAGE>
+    container_name: dataflux-func-redis
     networks:
       - datafluxfunc
     volumes:
@@ -42,6 +44,7 @@ services:
   # MQTT START
   mqtt:
     image: <MQTT_IMAGE>
+    container_name: dataflux-func-mqtt
     networks:
       - datafluxfunc
     ports:
@@ -53,6 +56,7 @@ services:
   # WORKER DEFAULT START
   worker-0:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-worker-0
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -62,6 +66,7 @@ services:
 
   worker-1-6:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-worker-1-6
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -71,6 +76,7 @@ services:
 
   worker-7:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-worker-7
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -80,6 +86,7 @@ services:
 
   worker-8-9:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-worker-8-9
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -91,6 +98,7 @@ services:
   # WORKER MINI START
   worker:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-worker
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -101,6 +109,7 @@ services:
 
   beat:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-beat
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -110,6 +119,7 @@ services:
 
   server:
     image: <DATAFLUX_FUNC_IMAGE>
+    container_name: dataflux-func-server
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
