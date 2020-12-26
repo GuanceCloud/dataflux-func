@@ -308,7 +308,7 @@ if [ ${OPT_NO_REDIS} != "TRUE" ]; then
 fi
 if [ ${OPT_MQTT} = "TRUE" ]; then
     blankLine
-    log "Notice: Builtin MQTT is deployed."
+    log "Builtin MQTT is deployed."
     log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
     log "To subcribe message:"
     log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test"
@@ -319,6 +319,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
 
     log "To add more MQTT client users:"
     log "    $ mosquitto_passwd ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE} anotheruser"
+    log "    ...and restart"
 fi
 
 blankLine
