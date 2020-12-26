@@ -245,10 +245,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
 \n${__MOSQUITTO_SAMPLE_USERNAME}:${__MOSQUITTO_SAMPLE_PASSWORD}" \
 > ${__MOSQUITTO_PASSWD_FILE}
 
-        docker run --rm \
-        -v ${_INSTALL_DIR}/mosquitto:/mosquitto \
-        pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3 \
-        mosquitto_passwd -U /mosquitto/passwd
+        docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} mosquitto_passwd -U /mosquitto/passwd
 
         log "New mosquitto passwd file created:"
     else
@@ -318,7 +315,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
     log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t dataflux_func/test -m 'hello'"
 
     log "To add more MQTT client users:"
-    log "    $ mosquitto_passwd ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE} anotheruser"
+    log "    $ docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} -s HUP"
     log "    ...and restart"
 fi
 

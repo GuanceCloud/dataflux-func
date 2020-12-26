@@ -11,7 +11,7 @@ var logHelper = require('../logHelper');
 var getConfig = function(c) {
   return {
     host           : c.host,
-    port           : c.post,
+    port           : c.port,
     username       : c.username,
     password       : c.password,
     clientId       : c.clientId,
@@ -48,7 +48,9 @@ var MQTTHelper = function(logger, config) {
         password: CONFIG.MQTT_PASSWORD,
         clientId: CONFIG.APP_NAME + '@' + toolkit.genTimeSerialSeq().toString(),
       });
-      CLIENT = mqtt.connect(getConfig(CLIENT_CONFIG));
+      var c = getConfig(CLIENT_CONFIG)
+      console.log(c)
+      CLIENT = mqtt.connect(c);
     }
 
     this.config = CLIENT_CONFIG;
