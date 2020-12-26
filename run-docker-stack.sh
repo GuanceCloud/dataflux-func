@@ -300,6 +300,15 @@ fi
 if [ ${OPT_MQTT} != "TRUE" ]; then
     log "Notice: Builtin MQTT is deployed."
     log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
+
+    blankLine
+    log "To subcribe message:"
+    log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test"
+    log "To publish message:"
+    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test -m 'hello'"
+    log "To publish message to DataFlux Func:"
+    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t dataflux_func/test -m 'hello'"
+
     log "To add more MQTT client users:"
     log "    $ mosquitto_passwd ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE} anotheruser"
 fi

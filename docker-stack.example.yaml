@@ -46,6 +46,8 @@ services:
       - datafluxfunc
     ports:
       - "1883:1883"
+    volumes:
+      - "<INSTALL_DIR>/mosquitto:/mosquitto"
   # MQTT END
 
   # WORKER DEFAULT START
