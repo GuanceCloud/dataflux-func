@@ -20,7 +20,8 @@ services:
   # MYSQL START
   mysql:
     image: <MYSQL_IMAGE>
-    container_name: dataflux-func-mysql
+    labels:
+      - mysql
     networks:
       - datafluxfunc
     volumes:
@@ -34,7 +35,8 @@ services:
   # REDIS START
   redis:
     image: <REDIS_IMAGE>
-    container_name: dataflux-func-redis
+    labels:
+      - redis
     networks:
       - datafluxfunc
     volumes:
@@ -44,7 +46,8 @@ services:
   # MQTT START
   mqtt:
     image: <MQTT_IMAGE>
-    container_name: dataflux-func-mqtt
+    labels:
+      - mqtt
     networks:
       - datafluxfunc
     ports:
@@ -56,7 +59,8 @@ services:
   # WORKER DEFAULT START
   worker-0:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-worker-0
+    labels:
+      - worker-0
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -66,7 +70,8 @@ services:
 
   worker-1-6:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-worker-1-6
+    labels:
+      - worker-1-6
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -76,7 +81,8 @@ services:
 
   worker-7:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-worker-7
+    labels:
+      - worker-7
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -86,7 +92,8 @@ services:
 
   worker-8-9:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-worker-8-9
+    labels:
+      - worker-8-9
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -98,7 +105,8 @@ services:
   # WORKER MINI START
   worker:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-worker
+    labels:
+      - worker
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -109,7 +117,8 @@ services:
 
   beat:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-beat
+    labels:
+      - beat
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
@@ -119,7 +128,8 @@ services:
 
   server:
     image: <DATAFLUX_FUNC_IMAGE>
-    container_name: dataflux-func-server
+    labels:
+      - server
     volumes:
       - "<INSTALL_DIR>/data:/data"
     networks:
