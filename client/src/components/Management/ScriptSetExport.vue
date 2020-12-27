@@ -108,7 +108,7 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: {fieldPicking: ['id', 'title']},
+        query: {fields: ['id', 'title']},
         alert: {entity: '脚本集', showError: true},
       };
 

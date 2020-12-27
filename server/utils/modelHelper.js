@@ -285,7 +285,23 @@ exports.createRequestOrderCondition = function(routeConfig) {
 
     // Add order condition
     var orders = [];
-    if (req.query.orderBy) {
+    if (req.query.sort) {
+      // New version
+      req.query.sort.forEach(function(field) {
+        var orderMethod = 'ASC';
+        if (toolkit.startsWith(field, '-')) {
+          orderMethod = 'DESC';
+          field = field.slice(1).trim();
+        }
+
+        orders.push({
+          field : routeConfig.orderFields[field],
+          method: orderMethod,
+        });
+      });
+
+    } else if (req.query.orderBy) {
+      // Old version
       var orderMethod = req.query.orderMethod || 'ASC';
       orderMethod = orderMethod.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 

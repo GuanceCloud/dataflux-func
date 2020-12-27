@@ -643,6 +643,10 @@ function _getCallAPIOpt(method, pathPattern, options) {
       let v = axiosOpt.params[k];
 
       switch(k) {
+        // 新版
+        case 'fields':
+        case 'sort':
+        // 旧版
         case 'fieldPicking':
         case 'fieldKicking':
           if (Array.isArray(v)) axiosOpt.params[k] = v.join(',');

@@ -698,7 +698,7 @@ export default {
 
       // 检查发布状态
       apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-        query: {fieldPicking: ['codeMD5', 'codeDraftMD5']},
+        query: {fields: ['codeMD5', 'codeDraftMD5']},
         alert: {entity: '脚本', action: '确认', showError: true},
       });
       if (!apiRes.ok) return;

@@ -109,6 +109,7 @@ Failure                                           : null
 Field                                             : null
 Field kicking                                     : null
 Field picking                                     : null
+'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")': null
 Files                                             : null
 Filter                                            : null
 Filter By Part of API Name/URL                    : null
@@ -151,6 +152,7 @@ Mobile                                            : null
 Monitor                                           : null
 MySQL__dataSource_type                            : null
 NORMAL                                            : null
+NSQ__dataSource_type                              : null
 Name                                              : null
 Name__user                                        : null
 New Access Key                                    : null
@@ -236,6 +238,8 @@ Sign In NOW                                       : null
 Sign Out                                          : null
 Slow API Count                                    : null
 Software Version                                  : null
+'Sort by fields (e.g. "field1,field2")'           : null
+Sort by fields (field1, field2)                   : null
 Stack__error                                      : null
 Start Time                                        : null
 Status                                            : null
@@ -312,6 +316,7 @@ builtin.byAccessKey                               : null
 builtin.byXAuthToken                              : null
 commaArrayIn__APIDoc_directiveName                : null
 contains__APIDoc_searchType                       : null
+copied                                            : null
 elasticsearch__dataSource_type                    : null
 eq__APIDoc_searchType                             : null
 eqornull__APIDoc_searchType                       : null
@@ -378,13 +383,18 @@ value                                             : null
 不允许修改内置数据源                              : null
 不允许修改官方脚本                                : null
 不允许修改官方脚本集                              : null
+不允许修改脚本                                    : null
+不允许修改脚本集                                  : null
 不允许删除内置数据源                              : null
 不允许删除官方脚本                                : null
 不允许删除官方脚本集                              : null
+不允许删除脚本                                    : null
+不允许删除脚本集                                  : null
 不允许发布官方脚本                                : null
 不允许导出官方脚本                                : null
 不允许添加官方脚本                                : null
 不允许添加官方脚本集                              : null
+不允许添加脚本                                    : null
 内置批处理（关键事件处理）__func_category         : null
 内置批处理（指标处理）__func_category             : null
 内置批处理（日志处理）__func_category             : null
@@ -414,25 +424,31 @@ value                                             : null
 授权链接已禁用                                    : null
 授权链接已超额                                    : null
 授权链接已过期                                    : null
+数据源ID重复                                      : null
 数据源引用名重复                                  : null
 数据源配置JSON不正确                              : null
 查询__func_category                               : null
 查询失败                                          : null
 查询超时                                          : null
 检测__func_category                               : null
+环境变量ID重复                                    : null
 环境变量引用名重复                                : null
 用户__scriptSet_type                              : null
+登录__func_integration                            : null
 确认导入超时                                      : null
+脚本ID重复                                        : null
 脚本中不存在此函数                                : null
 脚本修改需要指定的用户                            : null
 脚本并无修改                                      : null
 脚本引用名重复                                    : null
 脚本执行超时                                      : null
 脚本草稿已修改                                    : null
+脚本集ID重复                                      : null
 脚本集修改需要指定的用户                          : null
 脚本集导入需要指定的用户                          : null
 脚本集引用名重复                                  : null
 脚本预检查失败                                    : null
+自动触发__execMode                                : null
 自动触发配置重复                                  : null
 自定义数据源引用名不得以 df_ 开头                 : null
 转换__func_category                               : null

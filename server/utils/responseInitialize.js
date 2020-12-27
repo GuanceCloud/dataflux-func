@@ -294,25 +294,49 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = toolkit.initRet();
     }
 
-    // Field picking
-    if (!toolkit.isNothing(res.locals.fieldPicking) && !toolkit.isNothing(ret.data)) {
-      if (Array.isArray(ret.data)) {
-        for (var i = 0; i < ret.data.length; i++) {
-          ret.data[i] = toolkit.jsonPick(ret.data[i], res.locals.fieldPicking);
-        }
-      } else if ('object' === typeof ret.data) {
-        ret.data = toolkit.jsonPick(ret.data, res.locals.fieldPicking);
+    if (!toolkit.isNothing(res.locals.fieldSelecting) && !toolkit.isNothing(ret.data)) {
+      // Field selecting (New version)
+      var selectingFunc = toolkit.jsonPick;
+      if (toolkit.startsWith(res.locals.fieldSelecting[0], '-')) {
+        selectingFunc = toolkit.jsonKick;
+        res.locals.fieldSelecting[0] = res.locals.fieldSelecting[0].slice(1).trim();
       }
-    }
 
-    // Field kicking
-    if (!toolkit.isNothing(res.locals.fieldKicking) && !toolkit.isNothing(ret.data)) {
+      var fields = [];
+      res.locals.fieldSelecting.forEach(function(f) {
+        if (toolkit.isNothing(f)) return;
+        fields.push(f);
+      })
+
       if (Array.isArray(ret.data)) {
         for (var i = 0; i < ret.data.length; i++) {
-          ret.data[i] = toolkit.jsonKick(ret.data[i], res.locals.fieldKicking);
+          ret.data[i] = selectingFunc(ret.data[i], fields);
         }
       } else if ('object' === typeof ret.data) {
-        ret.data = toolkit.jsonKick(ret.data, res.locals.fieldKicking);
+        ret.data = selectingFunc(ret.data, fields);
+      }
+
+    } else {
+      // Field picking (Old version)
+      if (!toolkit.isNothing(res.locals.fieldPicking) && !toolkit.isNothing(ret.data)) {
+        if (Array.isArray(ret.data)) {
+          for (var i = 0; i < ret.data.length; i++) {
+            ret.data[i] = toolkit.jsonPick(ret.data[i], res.locals.fieldPicking);
+          }
+        } else if ('object' === typeof ret.data) {
+          ret.data = toolkit.jsonPick(ret.data, res.locals.fieldPicking);
+        }
+      }
+
+      // Field kicking (Old version)
+      if (!toolkit.isNothing(res.locals.fieldKicking) && !toolkit.isNothing(ret.data)) {
+        if (Array.isArray(ret.data)) {
+          for (var i = 0; i < ret.data.length; i++) {
+            ret.data[i] = toolkit.jsonKick(ret.data[i], res.locals.fieldKicking);
+          }
+        } else if ('object' === typeof ret.data) {
+          ret.data = toolkit.jsonKick(ret.data, res.locals.fieldKicking);
+        }
       }
     }
 

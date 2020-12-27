@@ -168,7 +168,7 @@ export default {
 
       // 脚本集
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fieldPicking: ['id', 'title']},
+        query: {fields: ['id', 'title']},
         alert: {entity: '脚本集', showError: true},
       });
       if (!apiRes.ok) return;
@@ -182,7 +182,7 @@ export default {
 
       // 脚本
       apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fieldPicking: ['id', 'title', 'scriptSetId']},
+        query: {fields: ['id', 'title', 'scriptSetId']},
         alert: {entity: '脚本', showError: true},
       });
       if (!apiRes.ok) return;
@@ -201,7 +201,7 @@ export default {
 
       // 函数
       apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fieldPicking: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON']},
+        query: {fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON']},
         alert: {entity: '函数', showError: true},
       });
       if (!apiRes.ok) return;

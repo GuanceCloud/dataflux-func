@@ -109,6 +109,7 @@ Failure                                           : 失败
 Field                                             : 字段
 Field kicking                                     : 剔除返回字段
 Field picking                                     : 挑选返回字段
+'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")': '指定返回字段（仅返回："字段1,字段2"，不返回："-,字段1,字段2" / "-字段1,字段2"）'
 Files                                             : 文件
 Filter                                            : 过滤
 Filter By Part of API Name/URL                    : 根据部分API名称或URL过滤
@@ -151,6 +152,7 @@ Mobile                                            : 手机号
 Monitor                                           : 监控
 MySQL__dataSource_type                            : null
 NORMAL                                            : 正常
+NSQ__dataSource_type                              : null
 Name                                              : 名称
 Name__user                                        : 姓名
 New Access Key                                    : 新 Access Key
@@ -162,6 +164,7 @@ New window                                        : 新窗口
 No Data                                           : 没有数据
 No Task                                           : 无任务
 Node                                              : 工作节点
+Node No Response                                  : null
 Node Packages                                     : Node包
 Nodes Report                                      : 工作节点报告
 Nodes Stats                                       : 工作节点状态
@@ -235,6 +238,7 @@ Sign In NOW                                       : 立即登录
 Sign Out                                          : 登出
 Slow API Count                                    : 慢API计数
 Software Version                                  : 软件版本
+'Sort by fields (e.g. "field1,field2")'           : '按字段排序（如："字段1,字段2"）'
 Stack__error                                      : 调用栈
 Start Time                                        : 开始时间
 Status                                            : 状态
@@ -311,6 +315,7 @@ builtin.byAccessKey                               : 内建AK认证
 builtin.byXAuthToken                              : 内建XAuthToken认证
 commaArrayIn__APIDoc_directiveName                : 包含以下元素的逗号分隔数组
 contains__APIDoc_searchType                       : 包含（like）
+copied                                            : 已复制
 elasticsearch__dataSource_type                    : null
 eq__APIDoc_searchType                             : '等于（=）'
 eqornull__APIDoc_searchType                       : 等于或为NULL
@@ -350,6 +355,7 @@ maxLength__APIDoc_directiveName                   : 最大长度为
 maxValue__APIDoc_directiveName                    : 最大值为
 minLength__APIDoc_directiveName                   : 最小长度为
 minValue__APIDoc_directiveName                    : 最小值为
+mongoDB__dataSource_type                          : null
 ms                                                : 毫秒
 ne__APIDoc_searchType                             : 不等于
 neornull__APIDoc_searchType                       : 不等于或为空
@@ -376,13 +382,18 @@ value                                             : 值
 不允许修改内置数据源                              : null
 不允许修改官方脚本                                : null
 不允许修改官方脚本集                              : null
+不允许修改脚本                                    : null
+不允许修改脚本集                                  : null
 不允许删除内置数据源                              : null
 不允许删除官方脚本                                : null
 不允许删除官方脚本集                              : null
+不允许删除脚本                                    : null
+不允许删除脚本集                                  : null
 不允许发布官方脚本                                : null
 不允许导出官方脚本                                : null
 不允许添加官方脚本                                : null
 不允许添加官方脚本集                              : null
+不允许添加脚本                                    : null
 内置批处理（关键事件处理）__func_category         : null
 内置批处理（指标处理）__func_category             : null
 内置批处理（日志处理）__func_category             : null
@@ -412,25 +423,31 @@ value                                             : 值
 授权链接已禁用                                    : null
 授权链接已超额                                    : null
 授权链接已过期                                    : null
+数据源ID重复                                      : null
 数据源引用名重复                                  : null
 数据源配置JSON不正确                              : null
 查询__func_category                               : null
 查询失败                                          : null
 查询超时                                          : null
 检测__func_category                               : null
+环境变量ID重复                                    : null
 环境变量引用名重复                                : null
 用户__scriptSet_type                              : null
+登录__func_integration                            : null
 确认导入超时                                      : null
+脚本ID重复                                        : null
 脚本中不存在此函数                                : null
 脚本修改需要指定的用户                            : null
 脚本并无修改                                      : null
 脚本引用名重复                                    : null
 脚本执行超时                                      : null
 脚本草稿已修改                                    : null
+脚本集ID重复                                      : null
 脚本集修改需要指定的用户                          : null
 脚本集导入需要指定的用户                          : null
 脚本集引用名重复                                  : null
 脚本预检查失败                                    : null
+自动触发__execMode                                : null
 自动触发配置重复                                  : null
 自定义数据源引用名不得以 df_ 开头                 : null
 转换__func_category                               : null
