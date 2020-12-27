@@ -128,13 +128,24 @@ module.exports = function(app, server) {
   }
 
   // 服务器订阅
-  var subOpt = { qos: CONFIG.MQTT_SERVER_SUB_QOS };
-  mqtt.sub(CONFIG.MQTT_SUB_TOPIC, subOpt, messageHandler, function(err, granted) {
-    if (err) return app.locals.logger.logError(err);
+  // 注意：即使指定了自动重新订阅，
+  //  如果一开始就没有连上服务器，依然无法自动订阅
+  //  此处需要等待连接成功
+  var waitT = setInterval(function() {
+    if (!mqtt.client.connected) return app.locals.logger.warning('MQTT not connected, waiting...');
 
-    granted = granted[0];
-    app.locals.logger.info(`[MQTT] Server subscribed topic ${granted.topic} on Qos=${granted.qos}`);
+    // 连接成功后开始订阅
+    var subOpt = { qos: CONFIG.MQTT_SERVER_SUB_QOS };
+    mqtt.sub(CONFIG.MQTT_SUB_TOPIC, subOpt, messageHandler, function(err, granted) {
+      if (err) return app.locals.logger.logError(err);
 
-    app.locals.mqtt = mqtt;
-  });
+      granted = granted[0];
+      app.locals.logger.info(`[MQTT] Server subscribed topic ${granted.topic} on Qos=${granted.qos}`);
+
+      app.locals.mqtt = mqtt;
+
+      clearInterval(waitT);
+    });
+  }, 1000);
+
 };
