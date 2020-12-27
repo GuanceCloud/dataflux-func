@@ -77,6 +77,9 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
+  // 自动记录操作界面
+  data.origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+
   var funcModel  = funcMod.createModel(res.locals);
   var batchModel = batchMod.createModel(res.locals);
 

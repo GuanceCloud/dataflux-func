@@ -122,9 +122,6 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
-  // 自动记录操作界面
-  data.origin = this.req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
-
   return this._add(data, callback);
 };
 
