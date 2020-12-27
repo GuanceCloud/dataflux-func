@@ -32,8 +32,12 @@ except ImportError:
 
 shortuuid.set_alphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')
 
-UNIX_TIMESTAMP_OFFSET        = 1503982020
-MAX_UNIX_TIMESTAMP_IN_SECOND = 9999999999
+SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
+
+MIN_UNIX_TIMESTAMP    = 0;
+MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000
+MAX_UNIX_TIMESTAMP    = 2145888000 # 2038-01-01 00:00:00
+MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 
 def print_var(v, name=None):
     print('[VAR] `{}` type=`{}`, value=`{}`'.format(name or '<NO NAME>', type(v), str(v)))
@@ -81,7 +85,7 @@ def gen_time_serial_seq(d=None, rand_length=4):
 
     rand_pow_base = pow(10, rand_length)
 
-    offsetted_timestamp = int(d * 1000 - UNIX_TIMESTAMP_OFFSET * 1000) * rand_pow_base
+    offsetted_timestamp = int(d * 1000 - SHORT_UNIX_TIMESTAMP_OFFSET * 1000) * rand_pow_base
     rand_int = int(random.random() * rand_pow_base)
 
     return offsetted_timestamp + rand_int
@@ -284,14 +288,14 @@ def to_arrow(d):
     d_arrow = None
     if isinstance(d, (six.integer_types, float)):
         # UNIX Timstamp in number type
-        if d > MAX_UNIX_TIMESTAMP_IN_SECOND:
+        if d > MAX_UNIX_TIMESTAMP:
             d = int(d / 1000)
 
         d_arrow = arrow.get(d)
 
     elif isinstance(d, six.string_types) and d.isdigit():
         # UNIX Timstamp in string type
-        if len(d) > len(str(MAX_UNIX_TIMESTAMP_IN_SECOND)):
+        if len(d) > len(str(MAX_UNIX_TIMESTAMP)):
             d = d[0:-3]
 
         d_arrow = arrow.get(d)

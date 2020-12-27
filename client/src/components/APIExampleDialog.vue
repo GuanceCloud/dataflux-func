@@ -325,7 +325,6 @@ export default {
 
     apiURLWithQueryExampleText() {
       if (!this.apiURLWithQueryExample) return this.INVALID_BODY_HTML;
-      console.log(this.apiURLWithQueryExample)
       return this.prettyURLForHTML(this.apiURLWithQueryExample);
     },
     apiURLWithQueryFlattenedExampleText() {

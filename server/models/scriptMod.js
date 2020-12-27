@@ -130,7 +130,9 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
 
@@ -145,7 +147,9 @@ EntityModel.prototype.modify = function(id, data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
 

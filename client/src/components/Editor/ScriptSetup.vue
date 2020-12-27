@@ -127,7 +127,6 @@ export default {
       }
 
       if (dataId) {
-        console.log(dataId)
         this.$store.commit('updateAsideScript_currentNodeKey', dataId);
         this.$store.commit('updateEditor_highlightedFuncId', null);
       }

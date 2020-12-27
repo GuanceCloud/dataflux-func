@@ -594,6 +594,21 @@ export default {
             required: true,
           },
         ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : '只能选择1970年至2037年之间的日期',
+            validator: (rule, value, callback) => {
+              let ts = this.moment(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error('日期不能早于1970年'));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error('时间不能晚于2037年'));
+              }
+              return callback();
+            },
+          }
+        ],
         funcCallKwargsJSON: [
           {
             trigger : 'change',

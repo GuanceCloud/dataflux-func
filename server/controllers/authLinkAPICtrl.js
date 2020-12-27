@@ -112,7 +112,6 @@ exports.list = function(req, res, next) {
             x = JSON.parse(x);
             return x.costMs;
           });
-          console.log(costList)
 
           authLink.recentRunningCost.samples = costList.length;
           if (costList.length > 1) {

@@ -21,9 +21,12 @@ var shortUUIDTranslator = shortUUID('23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijk
 
 var toolkit = exports;
 
-var UNIX_TIMESTAMP_OFFSET = toolkit.UNIX_TIMESTAMP_OFFSET = 1503982020;
-var MAX_UNIX_TIMESTAMP    = toolkit.MAX_UNIX_TIMESTAMP    = 9999999999;
-var MIN_UNIX_TIMESTAMP_MS = toolkit.MIN_UNIX_TIMESTAMP_MS = 10000000000;
+var SHORT_UNIX_TIMESTAMP_OFFSET = toolkit.SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020;
+
+var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = 0;
+var MIN_UNIX_TIMESTAMP_MS = toolkit.MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
+var MAX_UNIX_TIMESTAMP    = toolkit.MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
+var MAX_UNIX_TIMESTAMP_MS = toolkit.MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 
 var VOLUMN_UNITS = toolkit.VOLUMN_UNITS = ['Byte', 'KB', 'MB', 'GB', 'TB'];
 var VOLUMN_RADIX = toolkit.VOLUMN_RADIX = Math.pow(2, 10);
@@ -265,7 +268,7 @@ var genTimeSerialSeq = toolkit.genTimeSerialSeq = function genTimeSerialSeq(d, r
 
   var randPowBase = Math.pow(10, randLength);
 
-  var offsettedUnixTimestamp = parseInt(d - UNIX_TIMESTAMP_OFFSET * 1000) * randPowBase;
+  var offsettedUnixTimestamp = parseInt(d - SHORT_UNIX_TIMESTAMP_OFFSET * 1000) * randPowBase;
   var randInt = parseInt(Math.random() * randPowBase);
 
   return offsettedUnixTimestamp + randInt;
@@ -976,12 +979,27 @@ var getSafeValue = toolkit.getSafeValue = function getSafeValue(v, defaultValue)
   }
 };
 
+/**
+ * Get Date object and safe for MySQL timestamp type
+ * @param  {*} v
+ */
+var getSafeDateTime = toolkit.getSafeDateTime = function getSafeDateTime(v) {
+  var d = new Date(v);
+  var ts = d.getTime();
+  if (ts < MIN_UNIX_TIMESTAMP_MS) {
+    throw Error(strf('Datetime should not be earlier than {0}', new Date(MIN_UNIX_TIMESTAMP_MS).toISOString()));
+  } else if (ts > MAX_UNIX_TIMESTAMP_MS) {
+    throw Error(strf('Datetime should not be later than {0}', new Date(MAX_UNIX_TIMESTAMP_MS).toISOString()));
+  }
+  return d;
+};
+
 function _padLength(text, length) {
   var count = text.length;
   var addCount = length - (count % length);
   text += ' '.repeat(addCount);
   return text;
-}
+};
 
 /**
  * Cipher by AES.

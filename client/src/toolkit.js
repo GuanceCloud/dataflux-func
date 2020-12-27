@@ -62,6 +62,11 @@ import { diffTrimmedLines } from 'diff'
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
 
+export const MIN_UNIX_TIMESTAMP    = 0;
+export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
+export const MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
+export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
+
 let handleCircular = function() {
   let cache = [];
   let keyCache = []
