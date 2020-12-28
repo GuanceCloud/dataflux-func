@@ -449,9 +449,12 @@
             $redirectTip.hide();
           }
 
-          setTimeout(function() {
-            location.href = jqXHR.responseJSON.redirect;
-          }, 10 * 1000);
+          var nextURL = jqXHR.responseJSON.redirect;
+          setInterval(function() {
+            $.get('/api/v1/do/ping', function() {
+              location.href = nextURL;
+            });
+          }, 1 * 1000);
         },
         error: function(jqXHR, textStatus) {
           $runningModal.modal('hide');
