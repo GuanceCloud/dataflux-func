@@ -288,6 +288,10 @@ docker ps
 # 返回之前目录
 cd ${__PREV_DIR}
 
+# 获取本机IP信息
+DOCKER_ADDRESS_LINE=(`docker info | grep 'Node Address'`)
+THIS_IP=${DOCKER_ADDRESS_LINE[-1]}
+
 # 提示信息
 blankLine
 if [ ${OPT_DEV} = "TRUE" ]; then
@@ -332,3 +336,6 @@ log "To uninstall:"
 log "    $ docker stack remove ${__PROJECT_NAME}"
 log "    $ rm -rf ${_INSTALL_DIR}"
 log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
+
+blankLine
+log "Now open http://127.0.0.1:8088/ or http://${THIS_IP}:8088/ and have fun!"
