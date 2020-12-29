@@ -12,29 +12,13 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 
 
-*本系统推荐使用`docker stack`部署，*
-*因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
-
-> 程序本体镜像默认从上海驻云维护的镜像库中拉取，
-> 因此在执行操作之前，请确保已经登录到镜像库。
-> 可以使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
->
-> 使用`docker stack`需要Docker Swarm模式，
-> 可以使用`docker swarm init`初始化当前节点。
->
-> 如果本机存在多个网卡，需要在上述初始化命令中指定网卡，
-> 如：`docker swarm init --advertise-addr=ens33`。
-> 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
-
-
-
 ## 目录
 
 <!-- MarkdownTOC -->
 
-- [系统要求](#%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
+- [系统及环境要求](#%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
-    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署（默认方式）](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2%EF%BC%88%E9%BB%98%E8%AE%A4%E6%96%B9%E5%BC%8F%EF%BC%89)
+    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
         - [安装选项](#%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
             - [`--dev`：安装开发版](#--dev%EF%BC%9A%E5%AE%89%E8%A3%85%E5%BC%80%E5%8F%91%E7%89%88)
             - [`--mini`：安装迷你版](#--mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
@@ -47,7 +31,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
 - [查询日志](#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97)
-    - [自动转储日志](#%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%82%A8%E6%97%A5%E5%BF%97)
 - [数据库自动备份](#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%87%AA%E5%8A%A8%E5%A4%87%E4%BB%BD)
 - [完全卸载](#%E5%AE%8C%E5%85%A8%E5%8D%B8%E8%BD%BD)
 - [参数调整](#%E5%8F%82%E6%95%B0%E8%B0%83%E6%95%B4)
@@ -62,9 +45,23 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 *注意：本文所有涉及到的shell命令，在root用户下可直接运行，非root用户下需要添加sudo运行*
 
-## 系统要求
+## 系统及环境要求
 
-默认配置运行DataFlux Func 需要满足以下条件：
+1. *本系统使用`docker stack`部署，*
+*因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
+
+> 程序本体镜像默认从上海驻云维护的镜像库中拉取，
+> 因此在执行操作之前，请确保已经登录到镜像库。
+> 可以使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
+>
+> 使用`docker stack`需要Docker Swarm模式，
+> 可以使用`docker swarm init`初始化当前节点。
+>
+> 如果本机存在多个网卡，需要在上述初始化命令中指定网卡，
+> 如：`docker swarm init --advertise-addr=ens33`。
+> 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
+
+2. 运行DataFlux Func 需要满足以下条件：
 - CPU 核心数 >= 2
 - 内存容量 >= 4GB
 - 磁盘空间 >= 20GB
@@ -73,13 +70,12 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 ## 部署运行
 
-部署运行DataFlux Func 使用`docker stack`进行。
+用户可以选择官方提供的一键部署命令，
+也可以下载相关配置文件后，调整配置文件后手动启动。
 
-用户可以选择官方提供的一键部署命令，也可以下载相关配置文件后，调整配置文件后手动启动。
+### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署
 
-### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署（默认方式）
-
-*注意操作前需要使用`docker login pubrepo.jiagouyun.com`进行登录*
+*确保已满足上文中的「系统及环境要求」*
 
 运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
 ```shell
@@ -175,9 +171,10 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 *注意：本机启动的内置MQTT Broker（即`eclipse-mosquitto`）为单机版*
 
 
+
 ### 进阶方式：使用`docker stack`配置文件进行部署
 
-*注意操作前需要使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录*
+*确保已满足上文中的「系统及环境要求」*
 
 下载示例配置文件，并复制一份作为配置文件：
 ```shell
@@ -236,29 +233,6 @@ docker stack deploy dataflux-func -c docker-stack.yaml
 |--------|-------------------------------------|
 | 容器内 | `/data/dataflux-func.log`           |
 | 宿主机 | `{安装目录}/data/dataflux-func.log` |
-
-### 自动转储日志
-
-DataFlux Func 本身并不提供日志管理功能。可以使用Linux自带的logrotate实现：
-
-编辑配置文件：
-
-```shell
-vim /etc/logrotate.d/dataflux-func
-```
-
-写入如下配置：
-
-```text
-{安装目录}/data/dataflux-func.log {
-    missingok
-    copytruncate
-    compress
-    daily
-    rotate 7
-    dateext
-}
-```
 
 
 
