@@ -1134,6 +1134,11 @@ export function setCodeMirrorForDiff(codeMirror) {
   return codeMirror;
 };
 
+export function setCodeMirrorForText(codeMirror) {
+  codeMirror.setOption('mode', null);
+  return codeMirror;
+};
+
 export function getCodeMirrorThemeName() {
   return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_DEFAULT_THEME;
 };

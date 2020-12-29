@@ -102,6 +102,19 @@
                         </el-button>
                       </el-tooltip>
 
+                      <el-tooltip placement="bottom" :enterable="false">
+                        <div slot="content">
+                          查看代码差异
+                        </div>
+                        <el-button
+                          @click="showDiff()"
+                          :disalbed="!workerRunning"
+                          plain
+                          size="mini">
+                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">差异</span>
+                        </el-button>
+                      </el-tooltip>
+
                       <el-tooltip content="保存并发布脚本，脚本立刻生效" placement="bottom" :enterable="false">
                         <el-button
                           @click="publishScript"
@@ -189,6 +202,8 @@
               </el-tooltip>
             </template>
           </div>
+
+          <LongTextDialog title="发布前后差异（diff）" :diffMode="true" ref="longTextDialog"></LongTextDialog>
         </el-container>
       </template>
 
@@ -220,12 +235,15 @@
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 
 // @ is an alias to /src
 export default {
   name: 'CodeEditor',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -481,6 +499,19 @@ export default {
           });
         }
       }
+    },
+    showDiff() {
+      let fileTitle = this.data.title ? ` (${this.data.title})` : '';
+      let fileName  = `${this.scriptId}${fileTitle}`;
+      let oldStr    = this.data.code      || '';
+      let newStr    = this.data.codeDraft || '';
+      let oldHeader = '已发布的正式代码';
+      let newHeader = '已保存的草稿代码';
+      let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
+
+      let createTimeStr = this.moment().utcOffset(8).format('YYYYMMDD_HHmmss');
+      let diffName = `${this.data.id}.diff.${createTimeStr}`;
+      this.$refs.longTextDialog.update(diffPatch, diffName);
     },
     async publishScript() {
       if (this.isLockedByOther) return;
@@ -1319,6 +1350,7 @@ export default {
     }, 100);
   },
   mounted() {
+    window.vmc = this;
     setImmediate(() => {
       // 初始化编辑器
       this.codeMirror = this.T.initCodeMirror('editor_CodeEditor');

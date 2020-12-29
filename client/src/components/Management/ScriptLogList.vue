@@ -131,7 +131,7 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       let createTimeStr = this.moment(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.funcId}-log-${createTimeStr}`;
+      let fileName = `${d.funcId}.log.${createTimeStr}`;
       this.$refs.longTextDialog.update(d.messageTEXT, fileName);
     },
   },

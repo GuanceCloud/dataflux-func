@@ -1,14 +1,18 @@
 <template>
   <el-dialog
+    id="LongTextDialog"
     :visible.sync="show"
     width="70%">
     <template slot="title">
-      <el-button type="primary" plain @click="download">作为文本文件下载</el-button>
+      <el-link type="primary" @click="download">
+        作为文本文件下载
+        <i class="fa fa-fw fa-download"></i>
+      </el-link>
     </template>
-    <span>
-      <span>{{ title }}</span>
-      <pre class="long-text-content">{{ content }}</pre>
-    </span>
+    <div>
+      <p>{{ title }}</p>
+      <textarea id="longTextDialogContent"></textarea>
+    </div>
   </el-dialog>
 </template>
 
@@ -27,6 +31,25 @@ export default {
       this.fileName = (fileName || 'dump') + '.txt';
 
       this.show = true;
+
+      setImmediate(() => {
+        // 初始化编辑器
+        if (!this.codeMirror) {
+          this.codeMirror = this.T.initCodeMirror('longTextDialogContent');
+          this.codeMirror.setOption('theme', this.T.getCodeMirrorThemeName());
+          this.T.setCodeMirrorReadOnly(this.codeMirror, true);
+        }
+
+        // 载入代码
+        this.codeMirror.setValue('');
+        this.codeMirror.setValue(this.content || '');
+        if (this.diffMode) {
+          this.T.setCodeMirrorForDiff(this.codeMirror);
+        } else {
+          this.T.setCodeMirrorForText(this.codeMirror);
+        }
+        this.codeMirror.refresh();
+      });
     },
     download() {
       let blob = new Blob([this.content], {type: 'text/plain'});
@@ -38,6 +61,7 @@ export default {
   },
   props: {
     title: String,
+    diffMode: Boolean,
   },
   data() {
     return {
@@ -45,6 +69,8 @@ export default {
 
       fileName: null,
       content : null,
+
+      codeMirror: null,
     }
   },
 }
@@ -52,9 +78,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.long-text-content {
-  font-size: 12px;
-}
 </style>
 <style>
+#LongTextDialog .el-dialog__body {
+  padding: 5px 20px;
+}
+#LongTextDialog .CodeMirror {
+  height: 100%;
+}
 </style>
