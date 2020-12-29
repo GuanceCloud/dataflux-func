@@ -443,6 +443,7 @@ exports.afterAppCreated = function(app, server) {
       // 本地临时认证令牌
       app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
 
+      var builtinScriptSetIds = [];
       async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
         app.locals.logger.info('Auto install function package: {0}', funcPackage);
 
@@ -466,12 +467,23 @@ exports.afterAppCreated = function(app, server) {
           if (err) return eachCallback(err);
 
           if (!apiRes.ok) {
-            return eachCallback(new Error('Auto inport package failed: ' + apiRes.message));
+            return eachCallback(new Error('Auto import package failed: ' + apiRes.message));
           }
+
+          apiRes.data.summary.scriptSets.forEach(function(scriptSet) {
+            builtinScriptSetIds.push(scriptSet.id);
+          });
 
           return eachCallback();
         });
-      }, asyncCallback);
+      }, function(err) {
+        if (err) return asyncCallback(err);
+
+        var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+        app.locals.cacheDB.set(cacheKey, JSON.stringify(builtinScriptSetIds));
+
+        return asyncCallback();
+      });
     },
   ], printError);
 };

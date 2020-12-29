@@ -12,7 +12,6 @@ import traceback
 import pprint
 
 # 3rd-party Modules
-from celery.exceptions import SoftTimeLimitExceeded
 import celery.states as celery_status
 import six
 import ujson
@@ -163,6 +162,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
     def cache_script_failure(self, func_id, script_publish_version, exec_mode=None, einfo_text=None, trace_info=None):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
+            return
+
         if not einfo_text:
             return
 
@@ -181,6 +183,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
     def cache_script_log(self, func_id, script_publish_version, log_messages, exec_mode=None):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
+            return
+
         if not log_messages:
             return
 
@@ -222,7 +227,7 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
-        if not cache_result_expires:
+        if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):
             return
 
         cache_key = toolkit.get_cache_key('cache', 'funcResult', tags=[
@@ -235,6 +240,9 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
 
     def cache_func_pressure(self, func_id, func_call_kwargs_md5, func_pressure, func_cost, queue):
+        if not all([func_id, func_call_kwargs_md5, func_pressure, func_cost, queue]):
+            return
+
         # 获取队列最大压力
         worker_queue_max_pressure = CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
 
@@ -343,22 +351,23 @@ def dataflux_func_runner(self, *args, **kwargs):
             raise e
 
         extra_vars = {
-            '_DFF_DEBUG'        : False,
-            '_DFF_ROOT_TASK_ID' : root_task_id,
-            '_DFF_SCRIPT_SET_ID': script_set_id,
-            '_DFF_SCRIPT_ID'    : script_id,
-            '_DFF_FUNC_ID'      : func_id,
-            '_DFF_FUNC_NAME'    : func_name,
-            '_DFF_FUNC_CHAIN'   : func_chain,
-            '_DFF_ORIGIN'       : origin,
-            '_DFF_ORIGIN_ID'    : origin_id,
-            '_DFF_EXEC_MODE'    : exec_mode,
-            '_DFF_START_TIME'   : start_time,
-            '_DFF_START_TIME_MS': start_time_ms,
-            '_DFF_TRIGGER_TIME' : kwargs.get('triggerTime') or start_time,
-            '_DFF_CRONTAB'      : kwargs.get('crontab'),
-            '_DFF_QUEUE'        : queue,
-            '_DFF_HTTP_REQUEST' : http_request,
+            '_DFF_DEBUG'          : False,
+            '_DFF_ROOT_TASK_ID'   : root_task_id,
+            '_DFF_SCRIPT_SET_ID'  : script_set_id,
+            '_DFF_SCRIPT_ID'      : script_id,
+            '_DFF_FUNC_ID'        : func_id,
+            '_DFF_FUNC_NAME'      : func_name,
+            '_DFF_FUNC_CHAIN'     : func_chain,
+            '_DFF_ORIGIN'         : origin,
+            '_DFF_ORIGIN_ID'      : origin_id,
+            '_DFF_EXEC_MODE'      : exec_mode,
+            '_DFF_START_TIME'     : start_time,
+            '_DFF_START_TIME_MS'  : start_time_ms,
+            '_DFF_TRIGGER_TIME'   : kwargs.get('triggerTime') or start_time,
+            '_DFF_TRIGGER_TIME_MS': kwargs.get('triggerTimeMs') or start_time_ms,
+            '_DFF_CRONTAB'        : kwargs.get('crontab'),
+            '_DFF_QUEUE'          : queue,
+            '_DFF_HTTP_REQUEST'   : http_request,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
@@ -380,12 +389,8 @@ def dataflux_func_runner(self, *args, **kwargs):
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
         func_result = entry_func(**func_call_kwargs)
 
-    # except SoftTimeLimitExceeded as e:
     except Exception as e:
         is_succeeded = False
-
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
 
         self.logger.error('Error occured in script. `{}`'.format(func_id))
 

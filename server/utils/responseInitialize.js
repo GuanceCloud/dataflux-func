@@ -579,19 +579,20 @@ router.all('*', require('./requestDumper').dumpRequestFrom);
 router.all('*', function functionalComponents(req, res, next) {
   var reqLogger = res.locals.logger;
 
-  var isDryRun = false;
-  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
-    isDryRun = true;
+  res.locals.db = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
+  res.locals.cacheDB = require('./extraHelpers/redisHelper').createHelper(reqLogger);
+  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
+
+  if (CONFIG.MODE === 'prod') {
+    res.locals.db.skipLog      = true;
+    res.locals.cacheDB.skipLog = true;
   }
 
-  res.locals.db = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
-  res.locals.db.isDryRun = isDryRun;
-
-  res.locals.cacheDB = require('./extraHelpers/redisHelper').createHelper(reqLogger);
-  res.locals.cacheDB.isDryRun = isDryRun;
-
-  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
-  res.locals.fileStorage.isDryRun = isDryRun;
+  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
+    res.locals.db.isDryRun          = true;
+    res.locals.cacheDB.isDryRun     = true;
+    res.locals.fileStorage.isDryRun = true;
+  }
 
   // Init user handler
   res.locals.user = auth.createUserHandler();

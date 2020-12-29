@@ -5,9 +5,6 @@
       <el-header height="60px">
         <h1>
           近期操作记录
-          <small v-if="$store.getters.CONFIG('_DBDATA_OPERATION_RECORD_LIMIT')">
-            仅保留最近大约 {{ $store.getters.CONFIG('_DBDATA_OPERATION_RECORD_LIMIT') }} 条操作记录
-          </small>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>

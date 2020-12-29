@@ -60,7 +60,8 @@ LOG_CONSOLE_COLOR: true
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
-WEB_BASE_URL: http://127.0.0.1:8088
+WEB_BASE_URL      : http://127.0.0.1:8088
+WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
 # Web服务器绑定IP
 # 如：
@@ -211,6 +212,7 @@ _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 # 函数任务模块一般作为常量的配置
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
+_FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
 _FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
 _FUNC_TASK_DEBUG_TIMEOUT                        : 60
@@ -259,6 +261,16 @@ _DBDATA_TABLE_LIMIT_MAP: >
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
+
+# 其他（内部控制）
+# 保留脚本错误信息
+_INTERNAL_KEEP_SCRIPT_FAILURE: false
+
+# 保留脚本日志信息
+_INTERNAL_KEEP_SCRIPT_LOG: false
+
+# 是否开启错误堆栈包含本地变量信息（开启后可能会产生巨量日志）
+_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO: false
 
 # 是否已安装完成
 _IS_INSTALLED: false

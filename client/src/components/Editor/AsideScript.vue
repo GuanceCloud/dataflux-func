@@ -45,11 +45,16 @@
             <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
 
             <span>
-              <el-tag effect="dark" type="danger" size="mini" v-if="data.isCodeEdited">
-                <i class="fa fa-pencil"></i>
-                已编辑
-              </el-tag>
-              {{ node.label }}<span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
+              <el-tag v-if="data.isCodeEdited"
+                effect="dark"
+                type="danger"
+                size="mini">已修改</el-tag>
+              <el-tag v-if="data.isBuiltin"
+                effect="dark"
+                type="warning"
+                size="mini">内置</el-tag>
+              <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
+              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
             </span>
           </div>
         </span>
@@ -190,7 +195,7 @@ export default {
 
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description', 'isLocked', 'lockedByUserId']},
+        query: {fieldPicking: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
         alert: {entity: '脚本集', showError: true},
       });
       if (!apiRes.ok) return;
@@ -210,6 +215,7 @@ export default {
           type           : 'scriptSet',
           isLocked       : d.isLocked,
           isLockedByOther: isLockedByOther,
+          isBuiltin    : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
             description: d.description || `脚本集 ${d.id}`,

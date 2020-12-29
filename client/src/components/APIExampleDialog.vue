@@ -4,7 +4,7 @@
     :visible.sync="show"
     width="750px">
     <span>
-      <span>{{ description }}</span>
+      <span :class="descriptionClass">{{ description }}</span>
 
       <template v-if="showOptions">
         <el-divider content-position="left">请求选项</el-divider>
@@ -348,6 +348,7 @@ export default {
   props: {
     title: String,
     description: String,
+    descriptionClass: Object,
 
     showExecModeOption: {
       type: Boolean,

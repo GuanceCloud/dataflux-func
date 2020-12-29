@@ -42,7 +42,7 @@ export const DATE_SOURCE = [
     name          : 'InfluxDB',
     fullName      : 'InfluxDB (HTTP)（及兼容数据库）',
     logo          : logo_influxdb,
-    tips          : '查询DataFlux 的数据请使用「内置InfluxDB 默认」\n外部InfluxDB 才需要在此额外添加',
+    tips          : '查询DataFlux 的数据请使用「DataFlux InfluxDB」\n外部InfluxDB 才需要在此额外添加',
     tagType       : null,
     debugSupported: true,
     sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM "some_measurement" LIMIT 10')`,
@@ -399,6 +399,11 @@ export const SCRIPT_RECOVER_POINT = [
     key      : 'import',
     name     : '脚本包导入前',
     textClass: 'text-main',
+  },
+  {
+    key      : 'install',
+    name     : '脚本包安装前',
+    textClass: 'text-primary',
   },
   {
     key      : 'recover',

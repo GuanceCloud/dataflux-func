@@ -18,7 +18,7 @@
                   <InfoBlock type="info" :title="'一些尚未正式公开的实验性功能可在本页面开启\n本页面配置仅保存在浏览器本地'"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item prop="ScriptLog">
+                <el-form-item prop="ScriptLog" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG')">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
@@ -31,7 +31,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptFailure">
+                <el-form-item prop="ScriptFailure" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE')">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"

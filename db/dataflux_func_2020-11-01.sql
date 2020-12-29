@@ -1,13 +1,13 @@
 # ************************************************************
 # Sequel Ace SQL dump
-# Version 2121
+# Version 2104
 #
 # https://sequel-ace.com/
 # https://github.com/Sequel-Ace/Sequel-Ace
 #
 # Host: ubuntu16-dev-big.vm (MySQL 5.7.27-0ubuntu0.16.04.1)
 # Database: dataflux_func
-# Generation Time: 2020-12-15 10:48:51 +0000
+# Generation Time: 2020-11-01 16:38:24 +0000
 # ************************************************************
 
 

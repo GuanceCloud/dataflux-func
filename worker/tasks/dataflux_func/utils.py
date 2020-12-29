@@ -386,6 +386,9 @@ class DataFluxFuncSyncCache(BaseTask):
                 self.db.query(sql, sql_params)
 
     def sync_script_failure(self):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
+            return
+
         cache_key = toolkit.get_cache_key('syncCache', 'scriptFailure')
 
         for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
@@ -453,6 +456,9 @@ class DataFluxFuncSyncCache(BaseTask):
             self.db.query(sql, sql_params)
 
     def sync_script_log(self):
+        if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
+            return
+
         cache_key = toolkit.get_cache_key('syncCache', 'scriptLog')
 
         # 当队列数量过大时，一些内容不再记录

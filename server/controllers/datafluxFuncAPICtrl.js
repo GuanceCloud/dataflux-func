@@ -605,8 +605,8 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       originId         : funcCallOptions.originId,
       execMode         : funcCallOptions.execMode,
       saveResult       : funcCallOptions.saveResult,
-      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       triggerTime      : funcCallOptions.triggerTime,
+      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       queue            : funcCallOptions.queue,
       httpRequest      : _getHTTPRequestInfo(req, res),
     };
@@ -1573,7 +1573,7 @@ exports.callFuncDraft = function(req, res, next) {
     var celery = celeryHelper.createHelper(res.locals.logger);
 
     var taskOptions = {
-      queue            : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+      queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
       resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
     }
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
@@ -1691,8 +1691,9 @@ exports.getAuthLinkFuncList = function(req, res, next) {
 
 exports.getSystemConfig = function(req, res, next) {
   var systemConfig = {
-    MODE        : CONFIG.MODE,
-    WEB_BASE_URL: CONFIG.WEB_BASE_URL,
+    MODE              : CONFIG.MODE,
+    WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
+    WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
 
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
@@ -1706,11 +1707,8 @@ exports.getSystemConfig = function(req, res, next) {
     _FUNC_TASK_MIN_API_TIMEOUT    : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
     _FUNC_TASK_MAX_API_TIMEOUT    : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
 
-    _DBDATA_OPERATION_RECORD_LIMIT: CONFIG._DBDATA_OPERATION_RECORD_LIMIT,
-    _DBDATA_SCRIPT_FAILURE_LIMIT  : CONFIG._DBDATA_SCRIPT_FAILURE_LIMIT,
-    _DBDATA_SCRIPT_LOG_LIMIT      : CONFIG._DBDATA_SCRIPT_LOG_LIMIT,
-
-    _INTEGRATED_SIGN_IN_FUNC: null,
+    _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
+    _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
   };
 
   var funcModel = funcMod.createModel(req, res);

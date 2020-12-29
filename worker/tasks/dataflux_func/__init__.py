@@ -27,7 +27,6 @@ import funcsigs
 from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
-from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper
 from worker.utils.extra_helpers import DFDataWayHelper
@@ -1040,11 +1039,6 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
-    def __call__(self, *args, **kwargs):
-        self.logger = LogHelper(self)
-
-        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
-
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1475,23 +1469,29 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE'])
+        queue = safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE']
         if safe_scope.get('_DFF_DEBUG'):
-            queue = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
+            queue = CONFIG['_FUNC_TASK_DEFAULT_DEBUG_QUEUE']
+
+        worker_queue = toolkit.get_worker_queue(queue)
 
         task_headers = {
             'origin': self.request.id,
         }
         task_kwargs = {
             'funcId'         : func_id,
-            'funcKwargs'     : kwargs,
-            'saveResult'     : save_result,
-            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
-            'funcChain'      : func_chain,
+            'funcCallKwargs' : kwargs,
+            'origin'         : safe_scope.get('_DFF_ORIGIN'),
+            'originId'       : safe_scope.get('_DFF_ORIGIN_ID'),
             'execMode'       : 'async',
+            'saveResult'     : save_result,
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'triggerTimeMs'  : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
+            'queue'          : queue,
             'crontab'        : safe_scope.get('_DFF_CRONTAB'),
             'crontabConfigId': safe_scope.get('_DFF_CRONTAB_CONFIG_ID'),
+            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
+            'funcChain'      : func_chain,
         }
 
         from worker.tasks.dataflux_func.runner import dataflux_func_runner
@@ -1499,7 +1499,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
-            queue=queue,
+            queue=worker_queue,
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
@@ -1729,7 +1729,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                 # 仅记录脚本的本地变量
                 locals_info = []
-                if is_in_script:
+                if CONFIG['_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO'] and is_in_script:
                     for var_name, var_value in frame.f_locals.items():
                         # 忽略引擎内置变量
                         if var_name in sample_scope or var_name in sample_scope['__builtins__']:
