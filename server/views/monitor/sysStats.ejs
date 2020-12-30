@@ -17,7 +17,7 @@
   }
   .line-chart {
     width : 100%;
-    height: 400px;
+    height: 300px;
   }
 </style>
 
@@ -54,8 +54,11 @@
         <div id="serverMemoryHeapExternal" class="line-chart col-xs-12"></div>
       </div>
       <div class="panel-body">
-        <div id="cacheDBKeyUsed" class="line-chart col-xs-12"></div>
+        <div id="dbDiskUsed" class="line-chart col-xs-12"></div>
+      </div>
+      <div class="panel-body">
         <div id="cacheDBMemoryUsed" class="line-chart col-xs-12"></div>
+        <div id="cacheDBKeyUsed" class="line-chart col-xs-12"></div>
         <div id="cacheDBKeyCountByPrefix" class="bar-chart col-xs-12"></div>
       </div>
       <div class="panel-body">
@@ -76,9 +79,15 @@
 var SPLIT_MATCHED_ROUTE_BY_HOSTNAME = false;
 
 $(function() {
-  function prepareSeries(series, opt) {
-    series.forEach(function(s) {
-      s.showSymbol = false;
+  function genSeries(tsDataMap, opt) {
+    var series = [];
+
+    for (var name in tsDataMap) {
+      var s = {
+        name      : name,
+        data      : tsDataMap[name],
+        showSymbol: false,
+      };
 
       if (!toolkit.isNothing(opt.seriesOptions)) {
         Object.assign(s, opt.seriesOptions);
@@ -101,20 +110,14 @@ $(function() {
 
       s.data.forEach(function(dp) {
         switch(opt.dataConvert) {
-          case 'percent':
-            dp[1] = (dp[1] * 100).toFixed(1);
-            break;
-
-          case 'mb':
-            dp[1] = (dp[1] / 1024 / 1024).toFixed(1);
-            break;
-
           case 'xyTranspose':
             dp.reverse();
             break;
         }
       });
-    });
+
+      series.push(s);
+    }
 
     return series;
   }
@@ -255,7 +258,7 @@ $(function() {
       ret.startValue = opt.startValue;
       ret.endValue   = opt.endValue;
     } else {
-      ret.start = opt.start || 66;
+      ret.start = opt.start || 0;
       ret.end   = opt.end   || 100;
     }
 
@@ -313,13 +316,13 @@ $(function() {
     dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
   });
 
-  CHARTS.cacheDBKeyUsed = echarts.init($('#cacheDBKeyUsed')[0]);
-  CHARTS.cacheDBKeyUsed.setOption({
-    title   : {text: '<%= __('Cache DB Key Used') %>'},
+  CHARTS.dbDiskUsed = echarts.init($('#dbDiskUsed')[0]);
+  CHARTS.dbDiskUsed.setOption({
+    title   : {text: '<%= __('DB Disk Used') %>'},
     tooltip : TIMESERIES_TOOLTIP(),
     grid    : COMMON_GRID(),
     xAxis   : TIME_X_AXIS(),
-    yAxis   : COUNT_Y_AXIS(),
+    yAxis   : VOLUME_Y_AXIS(),
     dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
   });
 
@@ -333,13 +336,24 @@ $(function() {
     dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
   });
 
+  CHARTS.cacheDBKeyUsed = echarts.init($('#cacheDBKeyUsed')[0]);
+  CHARTS.cacheDBKeyUsed.setOption({
+    title   : {text: '<%= __('Cache DB Key Used') %>'},
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : COUNT_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
+  });
+
   CHARTS.cacheDBKeyCountByPrefix = echarts.init($('#cacheDBKeyCountByPrefix')[0]);
   CHARTS.cacheDBKeyCountByPrefix.setOption({
     title   : {text: '<%= __('Cache DB Key Prefix Count') %>'},
-    tooltip: COMMON_TOOLTIP(),
-    grid   : COUNT_GRID(),
-    xAxis  : COUNT_X_AXIS(),
-    yAxis  : CATE_Y_AXIS(),
+    tooltip : TIMESERIES_TOOLTIP(),
+    grid    : COMMON_GRID(),
+    xAxis   : TIME_X_AXIS(),
+    yAxis   : COUNT_Y_AXIS(),
+    dataZoom: COMMON_X_AXIS_DATA_ZOOM(),
   });
 
   CHARTS.workerQueueLength = echarts.init($('#workerQueueLength')[0]);
@@ -369,48 +383,29 @@ $(function() {
       var chart = CHARTS[metric];
       if (!chart) continue;
 
-      var series = sysStats[metric];
-      if (toolkit.isNothing(series)) continue;
+      var tsDataMap = sysStats[metric];
+      if (toolkit.isNothing(tsDataMap)) continue;
+
+      if (Array.isArray(tsDataMap)) {
+        tsDataMap = { '': tsDataMap };
+      }
 
       // Prepare Series
+      var series = null;
       switch(metric) {
-        case 'serverCPUPercent':
-          series = prepareSeries(series, {
-            dataConvert: 'percent',
-            seriesOptions: {
-              type: 'line',
-            },
-          });
-          break;
-
-        case 'serverMemoryRSS':
-        case 'serverMemoryHeapTotal':
-        case 'serverMemoryHeapUsed':
-        case 'serverMemoryHeapExternal':
-        case 'cacheDBMemoryUsed':
-          series = prepareSeries(series, {
-            dataConvert: 'mb',
-            seriesOptions: {
-              type: 'line',
-            },
-          });
-          break;
-
-        case 'cacheDBKeyUsed':
-        case 'workerQueueLength':
-          series = prepareSeries(series, {
-            seriesOptions: {
-              type: 'line',
-            },
-          });
-          break;
-
-        case 'cacheDBKeyCountByPrefix':
         case 'matchedRouteCount':
-          series = prepareSeries(series, {
+          series = genSeries(tsDataMap, {
             dataConvert: 'xyTranspose',
             seriesOptions: {
               type: 'bar',
+            },
+          });
+          break;
+
+        default:
+          series = genSeries(tsDataMap, {
+            seriesOptions: {
+              type: 'line',
             },
           });
           break;
@@ -423,7 +418,6 @@ $(function() {
 
       // Resize Chart
       switch(metric) {
-        case 'cacheDBKeyCountByPrefix':
         case 'matchedRouteCount':
           resizeBarChart(chart);
           break;

@@ -42,9 +42,9 @@ CPU Cores                                         : CPU核心数
 CPU Model                                         : CPU型号
 CSV File                                          : CSV文件
 CSV File - For Microsoft Office Excel (Chinese)   : CSV文件 -  用于微软Office Excel（中文版）
-Cache DB Key Prefix Count                         : null
-Cache DB Key Used                                 : null
-Cache DB Memory Used                              : null
+Cache DB Key Prefix Count                         : 缓存键前缀数量
+Cache DB Key Used                                 : 缓存键数量
+Cache DB Memory Used                              : 缓存内存使用量
 Cancel                                            : 取消
 Cannot access the content by current authentication type.: 此内容无法以当前的认证方式访问
 Cannot access the content without sign-in.        : 此内容必须登录后访问

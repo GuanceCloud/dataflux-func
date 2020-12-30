@@ -162,7 +162,7 @@ function runSetup() {
           cacheHelper = redisHelper.createHelper(null, _config);
           cacheHelper.skipLog = true;
 
-          cacheHelper._run('select', (config.REDIS_DATABASE || 0), function(err, data) {
+          cacheHelper.run('select', (config.REDIS_DATABASE || 0), function(err, data) {
             if (err) configErrors['redis'] = '无法连接到Redis：' + err.toString();
 
             return asyncCallback();

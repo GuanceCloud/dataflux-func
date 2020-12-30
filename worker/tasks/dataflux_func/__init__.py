@@ -1771,8 +1771,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                         var_dump = None
                         if isinstance(var_value, (tuple, list, dict)):
                             # `sort_keys`参数可能导致报UnicodeDecodeError
-                            # var_dump = json.dumps(var_value, sort_keys=True, indent=2, default=toolkit.json_dump_default)
-                            var_dump = simplejson.dumps(var_value, indent=2, default=toolkit.json_dump_default)
+                            # var_dump = json.dumps(var_value, sort_keys=True,default=toolkit.json_dump_default)
+                            var_dump = simplejson.dumps(var_value, default=toolkit.json_dump_default)
                         else:
                             var_repr = pprint.saferepr(var_value)
 

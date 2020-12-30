@@ -694,6 +694,7 @@ accessKeyPage:
 # Monitor
 monitorAPI:
   getSysStats:
+    showInDoc: true
     name         : Get system stats
     method       : get
     url          : /api/v1/monitor/sys-stats/do/get
@@ -1068,42 +1069,6 @@ debugAPI:
 
 # DataFlux Func
 datafluxFuncAPI:
-  integratedSignIn:
-    name    : 集成用户登录
-    method  : post
-    url     : /api/v1/func/integration/sign-in
-    response: json
-    body:
-      captchaToken:
-        $desc      : 验证码令牌
-        $isRequired: true
-        $type      : string
-      captcha:
-        $desc      : 验证码
-        $isRequired: true
-        $type      : string
-        $isLength  : 4
-        $example   : '1234'
-      signIn:
-        funcId:
-          $desc      : 登录函数ID
-          $isRequired: true
-          $type      : string
-          $maxLength : 256
-          $example   : demo_test.sign_in
-        username:
-          $desc      : 用户名
-          $isRequired: true
-          $type      : string
-          $maxLength : 30
-          $example   : admin
-        password:
-          $desc      : 密码
-          $isRequired: true
-          $type      : string
-          $maxLength : 100
-          $example   : 'Abc123'
-
   overview:
     showInDoc    : true
     name         : 获取总览
@@ -1617,6 +1582,50 @@ datafluxFuncAPI:
       seq:
         $desc: 更新序号（数字或"latest"）
         $type: int
+
+  integratedSignIn:
+    name    : 集成用户登录
+    method  : post
+    url     : /api/v1/func/integration/sign-in
+    response: json
+    body:
+      captchaToken:
+        $desc      : 验证码令牌
+        $isRequired: true
+        $type      : string
+      captcha:
+        $desc      : 验证码
+        $isRequired: true
+        $type      : string
+        $isLength  : 4
+        $example   : '1234'
+      signIn:
+        funcId:
+          $desc      : 登录函数ID
+          $isRequired: true
+          $type      : string
+          $maxLength : 256
+          $example   : demo_test.sign_in
+        username:
+          $desc      : 用户名
+          $isRequired: true
+          $type      : string
+          $maxLength : 30
+          $example   : admin
+        password:
+          $desc      : 密码
+          $isRequired: true
+          $type      : string
+          $maxLength : 100
+          $example   : 'Abc123'
+
+  clearLogCacheTables:
+    name         : 清空日志/缓存表
+    method       : post
+    url          : /api/v1/log-cache-tables/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
 
 datafluxFuncPage:
   clientApp:

@@ -116,228 +116,123 @@ exports.beforeAppCreate = function(callback) {
 exports.afterAppCreated = function(app, server) {
   g.runUpTime = parseInt(Date.now() / 1000);
 
-  function getTimestampMsByInterval(interval) {
-    var timestampMs = Date.now() + 1000;
-    timestampMs = timestampMs - timestampMs % (interval * 1000);
-
-    return timestampMs;
-  }
+  var hostname = os.hostname();
 
   // Heartbeat
   function recordHeartbeat() {
-    var heartbeatCacheKey = toolkit.getCacheKey('monitor', 'heartbeat');
-
-    var serverTimestamp            = parseInt(Date.now() / 1000);
-    var validHeartbeatMinTimestamp = serverTimestamp - (300 * 1000);
-
-    async.series([
-      function(asyncCallback) {
-        app.locals.cacheDB._run('ZADD', heartbeatCacheKey, serverTimestamp, os.hostname(), asyncCallback);
-      },
-      function(asyncCallback) {
-        var validHeartbeatMinTimestamp = serverTimestamp - (300 * 1000);
-        app.locals.cacheDB._run('ZREMRANGEBYSCORE', heartbeatCacheKey, '-inf', validHeartbeatMinTimestamp, asyncCallback);
-      },
-    ]);
+    var heartbeatCacheKey = toolkit.getCacheKey('monitor', 'heartbeat', ['hostname', hostname]);
+    app.locals.cacheDB.setex(heartbeatCacheKey, 3 * 60, hostname, function(err) {
+      if (err) return app.locals.logger.logError(err);
+    });
   }
-  recordHeartbeat();
 
-  setInterval(recordHeartbeat, 30 * 1000);
-
-  // CPU/Memory Usage
+  // Sys Stats
   var startCPUUsage = process.cpuUsage();
+  function recordSysStats() {
+    var currentTimestamp = parseInt(Date.now() / 1000) * 1000;
 
-  function recordCPUMemoryUsage() {
-    var timestampMs = getTimestampMsByInterval(CONFIG._MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL);
-
-    var currentMemoryUsage = process.memoryUsage();
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
-    var cpuPercent         = (currentCPUUsage.user + currentCPUUsage.system) / (CONFIG._MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL * 1000 * 1000);
+    var currentMemoryUsage = process.memoryUsage();
+
+    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) / (CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000 * 1000);
+    cpuPercent = parseFloat(cpuPercent.toFixed(4));
 
     // Update `startCPUUsage` for next tick.
     startCPUUsage = process.cpuUsage();
 
-    var cpuMemoryUsageData = {
-      serverCPUPercent        : parseFloat(cpuPercent.toFixed(4)),
-      serverMemoryRSS         : currentMemoryUsage.rss,
-      serverMemoryHeapTotal   : currentMemoryUsage.heapTotal,
-      serverMemoryHeapUsed    : currentMemoryUsage.heapUsed,
-      serverMemoryHeapExternal: currentMemoryUsage.external,
-    };
-    async.eachOfLimit(cpuMemoryUsageData, 5, function(value, metric, eachCallback) {
-      var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-            'metric', metric,
-            'hostname', os.hostname()]);
-
-      async.series([
-        function(asyncCallback) {
-          app.locals.cacheDB.lpush(cacheKey, JSON.stringify([timestampMs, value]), asyncCallback);
-        },
-        function(asyncCallback) {
-          var keepPoints = parseInt(CONFIG._MONITOR_CPU_MEM_USAGE_KEEP_DURATION / CONFIG._MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL) - 1;
-          app.locals.cacheDB.ltrim(cacheKey, 0, keepPoints, asyncCallback);
-        },
-        function(asyncCallback) {
-          app.locals.cacheDB.expire(cacheKey, CONFIG._MONITOR_CPU_MEM_USAGE_KEEP_DURATION, eachCallback);
-        },
-      ], eachCallback);
-    });
-  };
-  recordCPUMemoryUsage();
-
-  setTimeout(function() {
-    setInterval(recordCPUMemoryUsage, CONFIG._MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL * 1000);
-  }, Date.now() % (CONFIG._MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL * 1000));
-
-  // Cache Usage
-  function recordCacheUsage() {
-    var timestampMs = getTimestampMsByInterval(CONFIG._MONITOR_CACHE_USAGE_CHECK_INTERVAL);
-
-    var cacheUsageData = {
-      cacheDBKeyUsed   : null,
-      cacheDBMemoryUsed: null,
-    };
-
     async.series([
+      function(asyncCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'serverCPUPercent', 'hostname', hostname]);
+        return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, cpuPercent, asyncCallback);
+      },
+      function(asyncCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'serverMemoryRSS', 'hostname', hostname]);
+        return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, currentMemoryUsage.rss, asyncCallback);
+      },
+      function(asyncCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'serverMemoryHeapTotal', 'hostname', hostname]);
+        return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, currentMemoryUsage.heapTotal, asyncCallback);
+      },
+      function(asyncCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'serverMemoryHeapUsed', 'hostname', hostname]);
+        return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, currentMemoryUsage.heapUsed, asyncCallback);
+      },
+      function(asyncCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'serverMemoryHeapExternal', 'hostname', hostname]);
+        return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, currentMemoryUsage.external, asyncCallback);
+      },
+      function(asyncCallback) {
+        app.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
+          var tableInfoList = dbRes.filter(function(d) {
+            return toolkit.startsWith(d.Name, 'biz_') || toolkit.startsWith(d.Name, 'wat_');
+          });
+
+          async.eachLimit(tableInfoList, 5, function(tableInfo, eachCallback) {
+            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'dbDiskUsed', 'table', tableInfo.Name]);
+            return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, tableInfo.Data_length, eachCallback);
+          }, asyncCallback);
+        });
+      },
       function(asyncCallback) {
         app.locals.cacheDB.dbsize(function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
-          cacheUsageData.cacheDBKeyUsed = parseInt(cacheRes) || null;
+          var cacheDBKeyUsed = parseInt(cacheRes) || null;
 
-          return asyncCallback();
+          var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'cacheDBKeyUsed']);
+          return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, cacheDBKeyUsed, asyncCallback);
         });
       },
       function(asyncCallback) {
         app.locals.cacheDB.info(function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
-          cacheUsageData.cacheDBMemoryUsed = parseInt(cacheRes.match(/used_memory:(\d+)/)[1]) || null;
+          var cacheDBMemoryUsed = parseInt(cacheRes.match(/used_memory:(\d+)/)[1]) || null;
 
-          return asyncCallback();
+          var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'cacheDBMemoryUsed']);
+          return app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, cacheDBMemoryUsed, asyncCallback);
         });
       },
       function(asyncCallback) {
-        async.eachOfLimit(cacheUsageData, 5, function(value, metric, eachCallback) {
-          var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-                'metric', metric,
-                'hostname', os.hostname()]);
+        async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queueName, eachCallback) {
+          var workerQueueKey = toolkit.getWorkerQueue(queueName);
+          app.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
+            if (err) return eachCallback(err);
 
-          async.series([
-            function(innerCallback) {
-              app.locals.cacheDB.lpush(cacheKey, JSON.stringify([timestampMs, value]), innerCallback);
-            },
-            function(innerCallback) {
-              var keepPoints = parseInt(CONFIG._MONITOR_CACHE_USAGE_KEEP_DURATION / CONFIG._MONITOR_CACHE_USAGE_CHECK_INTERVAL) - 1;
-              app.locals.cacheDB.ltrim(cacheKey, 0, keepPoints, innerCallback);
-            },
-            function(innerCallback) {
-              app.locals.cacheDB.expire(cacheKey, CONFIG._MONITOR_CACHE_USAGE_KEEP_DURATION, eachCallback);
-            },
-          ], eachCallback);
+            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'workerQueueLength', 'queueName', queueName]);
+            var workerQueueLength = parseInt(cacheRes) || 0;
+            app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, workerQueueLength, eachCallback);
+          });
+        }, asyncCallback);
+      },
+      function(asyncCallback) {
+        app.locals.cacheDB.keys('*', function(err, keys) {
+          if (err) return asyncCallback(err);
+
+          var keyPrefixCountMap = {};
+          keys.forEach(function(key) {
+            var prefix = key.indexOf(CONFIG.APP_NAME) === 0
+                       ? key.split(':')[0]
+                       : 'OTHER';
+
+            keyPrefixCountMap[prefix] = keyPrefixCountMap[prefix] || 0;
+            keyPrefixCountMap[prefix] += 1;
+          });
+
+          async.eachOfLimit(keyPrefixCountMap, 5, function(count, prefix, eachCallback) {
+            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', prefix]);
+            app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, count, eachCallback);
+          }, asyncCallback);
         });
       },
-    ]);
-  };
-  recordCacheUsage();
-
-  setTimeout(function() {
-    setInterval(recordCacheUsage, CONFIG._MONITOR_CACHE_USAGE_CHECK_INTERVAL * 1000);
-  }, Date.now() % (CONFIG._MONITOR_CACHE_USAGE_CHECK_INTERVAL * 1000));
-
-  // Cache Key count by prefix
-  function recordCacheKeyCountByPrefix() {
-    var keyPrefixCountMap = {};
-
-    var nextCursor  = 0;
-    async.doUntil(function(untilCallback) {
-      app.locals.cacheDB._run('scan', nextCursor, function(err, dbRes) {
-        if (err) return untilCallback(err);
-
-        nextCursor = dbRes[0];
-
-        var keys = dbRes[1];
-        if (keys && Array.isArray(keys) && keys.length > 0) {
-          keys.forEach(function(key) {
-            var prefix = null;
-            if (key.indexOf(CONFIG.APP_NAME) === 0) {
-              prefix = key.split(':')[0];
-            } else {
-              prefix = key.slice(0, 10) + '...';
-            }
-
-            if (prefix) {
-              if (!keyPrefixCountMap[prefix]) {
-                keyPrefixCountMap[prefix] = 1;
-              } else {
-                keyPrefixCountMap[prefix] += 1;
-              }
-            }
-          });
-        }
-
-        setTimeout(untilCallback, 1000);
-      });
-
-    }, function() {
-      return parseInt(nextCursor) === 0;
-
-    }, function(err) {
-      if (!err) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-              'metric', 'cacheDBKeyCountByPrefix']);
-
-        app.locals.cacheDB.del(cacheKey, function(err) {
-          if (!err) {
-            app.locals.cacheDB.hmset(cacheKey, keyPrefixCountMap);
-          }
-        });
-      }
+    ], function(err) {
+      if (err) return app.locals.logger.logError(err);
     });
   };
-  recordCacheKeyCountByPrefix()
 
-  setInterval(recordCacheKeyCountByPrefix, 15 * 60 * 1000);
-
-  // Worker Queue Length
-  function recordWorkerQueueLength() {
-    var timestampMs = getTimestampMsByInterval(CONFIG._MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL);
-
-    async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queueName, eachCallback) {
-      var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-            'metric', 'workerQueueLength',
-            'queueName', queueName,
-            'hostname', os.hostname()]);
-      var workerQueueLength = 0;
-      async.series([
-        function(asyncCallback) {
-          var workerQueue = toolkit.getWorkerQueue(queueName);
-          app.locals.cacheDB.llen(workerQueue, function(err, cacheRes) {
-            if (err) return asyncCallback(err);
-
-            workerQueueLength = parseInt(cacheRes);
-
-            return asyncCallback();
-          });
-        },
-        function(asyncCallback) {
-          app.locals.cacheDB.lpush(cacheKey, JSON.stringify([timestampMs, workerQueueLength]), asyncCallback);
-        },
-        function(asyncCallback) {
-          var keepPoints = parseInt(CONFIG._MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION / CONFIG._MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL) - 1;
-          app.locals.cacheDB.ltrim(cacheKey, 0, keepPoints, asyncCallback);
-        },
-        function(asyncCallback) {
-          app.locals.cacheDB.expire(cacheKey, CONFIG._MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION, eachCallback);
-        },
-      ], eachCallback);
-    });
-  };
-  recordWorkerQueueLength();
-
-  setTimeout(function() {
-    setInterval(recordWorkerQueueLength, CONFIG._MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL * 1000);
-  }, Date.now() % (CONFIG._MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL * 1000));
+  // Start interval
+  setInterval(recordHeartbeat, 30 * 1000);
+  setInterval(recordSysStats, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
 
   /********** Content for YOUR project below **********/
 

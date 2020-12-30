@@ -1120,7 +1120,7 @@ exports.overview = function(req, res, next) {
         cacheKeys.push(cacheKey);
       }
 
-      res.locals.cacheDB._run('mget', cacheKeys, function(err, cacheRes) {
+      res.locals.cacheDB.run('mget', cacheKeys, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         cacheRes.forEach(function(p, i) {
@@ -1136,7 +1136,7 @@ exports.overview = function(req, res, next) {
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
         var workerQueue = toolkit.getWorkerQueue(i);
-        res.locals.cacheDB._run('llen', workerQueue, function(err, cacheRes) {
+        res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
           if (err) return timesCallback(err);
 
           overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
@@ -1982,6 +1982,28 @@ exports.integratedAuthMid = function(req, res, next) {
     delete req.query[queryField];
 
     return next();
+  });
+};
+
+// 清空日志/缓存表
+exports.clearLogCacheTables = function(req, res, next) {
+  var logTables = [
+    'biz_main_script_log',
+    'biz_main_script_failure',
+    'biz_main_task_result_dataflux_func',
+    'biz_main_crontab_task_info',
+    'biz_main_batch_task_info',
+    'biz_main_operation_record',
+  ];
+
+  var sql = logTables.map(function(t) {
+    return 'TRUNCATE ' + t;
+  }).join('; ');
+
+  res.locals.db.query(sql, null, function(err) {
+    if (err) return next(err);
+
+    return res.locals.sendJSON();
   });
 };
 

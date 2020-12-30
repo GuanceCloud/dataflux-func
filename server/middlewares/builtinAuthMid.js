@@ -203,11 +203,11 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     // Clean up expired AK nonce
     function(asyncCallback) {
       var maxExpiredNonceTimestamp = serverTimestamp - CONFIG._WEB_AK_NONCE_TTL;
-      res.locals.cacheDB._run('ZREMRANGEBYSCORE', nonceCacheKey, '-inf', maxExpiredNonceTimestamp, asyncCallback);
+      res.locals.cacheDB.run('ZREMRANGEBYSCORE', nonceCacheKey, '-inf', maxExpiredNonceTimestamp, asyncCallback);
     },
     // Check AK nonce
     function(asyncCallback) {
-      res.locals.cacheDB._run('ZSCORE', nonceCacheKey, akNonce, function(err, cacheRes) {
+      res.locals.cacheDB.run('ZSCORE', nonceCacheKey, akNonce, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
@@ -258,7 +258,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
         userId = dbRes.userId;
 
         // Verify OK. Cache nonce.
-        res.locals.cacheDB._run('ZADD', nonceCacheKey, serverTimestamp, akNonce, asyncCallback);
+        res.locals.cacheDB.run('ZADD', nonceCacheKey, serverTimestamp, akNonce, asyncCallback);
       });
     },
     // Get user info

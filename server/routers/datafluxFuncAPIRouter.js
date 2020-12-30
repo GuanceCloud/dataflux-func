@@ -88,3 +88,8 @@ routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
 routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
   datafluxFuncAPICtrl.integratedSignIn,
 ]);
+
+// 清空日志/缓存表
+routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
+  datafluxFuncAPICtrl.clearLogCacheTables,
+]);
