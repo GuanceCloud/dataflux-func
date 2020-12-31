@@ -56,8 +56,8 @@ var RedisHelper = function(logger, config) {
     this.config = toolkit.noNullOrWhiteSpace(config);
 
     this.config.tsMaxAge         = config.tsMaxAge    || 3600 * 24;
-    this.config.tsMaxPeriod      = config.tsMaxPeriod  || 3600 * 24;
-    this.config.tsMaxLength      = config.tsMaxLength || 500;
+    this.config.tsMaxPeriod      = config.tsMaxPeriod || 3600 * 24;
+    this.config.tsMaxLength      = config.tsMaxLength || 2 * 60 * 24;
     this.config.retry_strategy = retryStrategy;
 
     this.client = redis.createClient(getConfig(this.config));

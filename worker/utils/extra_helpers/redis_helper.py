@@ -51,7 +51,7 @@ class RedisHelper(object):
 
             self.config['tsMaxAge']    = config.get('tsMaxAge')    or 3600 * 24
             self.config['tsMaxPeriod'] = config.get('tsMaxPeriod') or 3600 * 24
-            self.config['tsMaxLength'] = config.get('tsMaxLength') or 500
+            self.config['tsMaxLength'] = config.get('tsMaxLength') or 2 * 60 * 24
 
             self.client = redis.Redis(**get_config(config))
 
