@@ -849,7 +849,6 @@ RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
       });
     },
     function(asyncCallback) {
-      keys.sort();
       async.eachSeries(keys, function(key, eachCallback) {
         self.tsGet(key, options, function(err, tsData) {
           if (err) return eachCallback(err);

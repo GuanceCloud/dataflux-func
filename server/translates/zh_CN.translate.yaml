@@ -14,6 +14,7 @@ API Doc can be filtered by entering part of API Name or URL: '输入部分API名
 API Documents                                     : API 文档
 API Request                                       : API 请求
 API Result                                        : API 返回结果
+API Route                                         : API 路由
 API__authLink_origin                              : null
 API__batch_origin                                 : null
 API__crontabConfig_origin                         : null
@@ -25,7 +26,7 @@ Access Key module WRITE privilege                 : Access Key 模块写权限
 Access the debug information of the site          : 访问网站DEBUG信息
 Add                                               : 添加
 Administrator                                     : 管理员
-All Nodes                                         : null
+All Nodes                                         : 所有节点
 All privileges                                    : 全部权限
 Allow Webhook Echo                                : 允许Webhook回声
 Allowed Auth Types                                : 允许认证类型
@@ -42,6 +43,7 @@ CPU Cores                                         : CPU核心数
 CPU Model                                         : CPU型号
 CSV File                                          : CSV文件
 CSV File - For Microsoft Office Excel (Chinese)   : CSV文件 -  用于微软Office Excel（中文版）
+Cache DB                                          : 缓存数据库
 Cache DB Key Prefix Count                         : 缓存键前缀数量
 Cache DB Key Used                                 : 缓存键数量
 Cache DB Memory Used                              : 缓存内存使用量
@@ -73,10 +75,12 @@ Current User                                      : 当前用户
 Current/Max Thread Count                          : 当前/最大线程数量
 Custom Privileges                                 : 自定义权限
 Custom User                                       : 自定义用户
+DB Disk Used                                      : 数据库磁盘用量
 DISABLED                                          : 已禁用
 DISPLAY TEXT                                      : 【显示文字】
 Dashboard                                         : 仪表台
 DataFlux DataWay__dataSource_type                 : null
+Database                                          : 数据库
 Debug                                             : DEBUG
 Delete                                            : 删除
 'Deleting <code>{0}</code>'                       : '删除<code>{0}</code>'
@@ -164,7 +168,7 @@ New window                                        : 新窗口
 No Data                                           : 没有数据
 No Task                                           : 无任务
 Node                                              : 工作节点
-Node No Response                                  : null
+Node No Response                                  : 节点无响应
 Node Packages                                     : Node包
 Nodes Report                                      : 工作节点报告
 Nodes Stats                                       : 工作节点状态
@@ -222,11 +226,12 @@ Run Request                                       : 发送请求
 SHADOW                                            : 影子用户
 Save                                              : 保存
 Search                                            : 搜索
+Server                                            : 服务器
 Server CPU Usage                                  : 服务器CPU使用量
 Server Environment                                : 服务器环境
 Server Memory Heap Total                          : 服务器内存Heap总量
 Server Memory Heap Used                           : 服务器内存Heap使用量
-Server Memory RSS                                 : 服务器内存总使用量
+Server Memory RSS                                 : 服务器内存RSS
 Server Memory exteranl                            : 服务器内存外部对象使用量
 Set                                               : 设置
 Show Error                                        : 显示错误
@@ -302,7 +307,11 @@ Webhook Events                                    : Webhook事件
 Webhook URL                                       : Webhook地址
 'Welcome back, {0}!'                              : 欢迎回来，{0}！
 Welcome to                                        : 欢迎来到
+Worker                                            : 工作单元
+Worker CPU Usage                                  : 工作单元CPU使用量
 Worker Logs                                       : 工作单元日志
+Worker Memory PSS                                 : 工作单元内存PSS
+Worker Queue                                      : 工作队列
 Worker Queue Waiting Length                       : 工作队列等待长度
 'Yes'                                             : 是
 You can get a start with the entry below          : 您可以从下列入口开始操作

@@ -556,5 +556,17 @@ def to_short_unix_timestamp(t):
 def from_short_unix_timestamp(t):
     return t + SHORT_UNIX_TIMESTAMP_OFFSET
 
+class FakeTaskRequest(object):
+    def __init__(self, fake_task_id=None):
+        self.called_directly = False
+        self.id              = fake_task_id or 'TASK-' + gen_rand_string(4).upper()
+        self.delivery_info   = { 'routing_key': 'WORKER-INTERNAL' }
+        self.origin          = 'WORKER-INTERNAL'
+
+class FakeTask(object):
+    def __init__(self, fake_task_id=None):
+        self.request = FakeTaskRequest(fake_task_id)
+        self.name    = 'WORKER-INTERNAL'
+
 # Alias
 ensure_str = as_str

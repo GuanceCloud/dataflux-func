@@ -22,16 +22,6 @@ var nodePackages = require('../../package.json').dependencies;
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 };
 
-var METRICS_WITH_HOSTNAMES = [
-  'serverCPUPercent',
-  'serverMemoryRSS',
-  'serverMemoryHeapTotal',
-  'serverMemoryHeapUsed',
-  'serverMemoryHeapExternal',
-  'cacheDBKeyUsed',
-  'cacheDBMemoryUsed',
-]
-
 exports.createModel = function(locals) {
   return new EntityModel(locals);
 };
@@ -80,11 +70,13 @@ EntityModel.prototype.getSysStats = function(callback) {
     // Get CPU/Memory usage
     function(asyncCallback) {
       var metricScaleMap = {
-        serverCPUPercent        : 0.01,
+        serverCPUPercent        : 1,
         serverMemoryRSS         : 1024 * 1024,
         serverMemoryHeapTotal   : 1024 * 1024,
         serverMemoryHeapUsed    : 1024 * 1024,
         serverMemoryHeapExternal: 1024 * 1024,
+        workerCPUPercent        : 1,
+        workerMemoryPSS         : 1024 * 1024,
       };
 
       async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {

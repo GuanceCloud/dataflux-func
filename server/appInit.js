@@ -134,8 +134,8 @@ exports.afterAppCreated = function(app, server) {
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();
 
-    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) / (CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000 * 1000);
-    cpuPercent = parseFloat(cpuPercent.toFixed(4));
+    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) * 100 / (CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000 * 1000);
+    cpuPercent = parseFloat(cpuPercent.toFixed(2));
 
     // Update `startCPUUsage` for next tick.
     startCPUUsage = process.cpuUsage();

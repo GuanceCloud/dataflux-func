@@ -14,6 +14,7 @@ API Doc can be filtered by entering part of API Name or URL: null
 API Documents                                     : null
 API Request                                       : null
 API Result                                        : null
+API Route                                         : null
 API__authLink_origin                              : null
 API__batch_origin                                 : null
 API__crontabConfig_origin                         : null
@@ -42,6 +43,7 @@ CPU Cores                                         : null
 CPU Model                                         : null
 CSV File                                          : null
 CSV File - For Microsoft Office Excel (Chinese)   : null
+Cache DB                                          : null
 Cache DB Key Prefix Count                         : null
 Cache DB Key Used                                 : null
 Cache DB Memory Used                              : null
@@ -73,10 +75,12 @@ Current User                                      : null
 Current/Max Thread Count                          : null
 Custom Privileges                                 : null
 Custom User                                       : null
+DB Disk Used                                      : null
 DISABLED                                          : null
 DISPLAY TEXT                                      : null
 Dashboard                                         : null
 DataFlux DataWay__dataSource_type                 : null
+Database                                          : null
 Debug                                             : null
 Delete                                            : null
 'Deleting <code>{0}</code>'                       : null
@@ -222,6 +226,7 @@ Run Request                                       : null
 SHADOW                                            : null
 Save                                              : null
 Search                                            : null
+Server                                            : null
 Server CPU Usage                                  : null
 Server Environment                                : null
 Server Memory Heap Total                          : null
@@ -303,7 +308,11 @@ Webhook Events                                    : null
 Webhook URL                                       : null
 'Welcome back, {0}!'                              : null
 Welcome to                                        : null
+Worker                                            : null
+Worker CPU Usage                                  : null
 Worker Logs                                       : null
+Worker Memory PSS                                 : null
+Worker Queue                                      : null
 Worker Queue Waiting Length                       : null
 'Yes'                                             : null
 You can get a start with the entry below          : null

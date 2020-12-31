@@ -109,9 +109,12 @@ export default {
         alert: {entity: 'Web镜像信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
+                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
+                        : '-';
         this.aboutWeb = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
-          releaseDate: this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss'),
+          releaseDate: releaseDate,
         };
 
       } else {
@@ -127,9 +130,12 @@ export default {
         alert: {entity: 'Worker镜像信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
+                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
+                        : '-';
         this.aboutWorker = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
-          releaseDate: this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss'),
+          releaseDate: releaseDate,
         };
 
       } else {
@@ -162,6 +168,8 @@ export default {
     async _getSysStats() {
       this.serverCPUPercentInfoTEXT  = '';
       this.serverMemoryRSSInfoTEXT   = '';
+      this.workerCPUPercentInfoTEXT  = '';
+      this.workerMemoryPSSInfoTEXT   = '';
       this.dbDiskUsedInfoTEXT        = '';
       this.cacheDBMemoryUsedInfoTEXT = '';
       this.cacheDBKeyUsedInfoTEXT    = '';
@@ -201,6 +209,9 @@ export default {
             let latestValue = latestPoint[1];
             let padding = ' '.repeat(maxNameLength - name.length);
 
+            if (Array.isArray(unit)) {
+              unit = latestValue > 1 ? unit[0] : unit[1];
+            }
             infoLines.push(`${prefix}${name}${padding} = ${latestValue}${unit}`);
           }
 
@@ -210,11 +221,13 @@ export default {
         let sysStats = apiRes.data.sysStats;
 
         this.serverCPUPercentInfoTEXT  = _getInfo(sysStats.serverCPUPercent,  '%');
-        this.serverMemoryRSSInfoTEXT   = _getInfo(sysStats.serverMemoryRSS,   ' MiB');
-        this.dbDiskUsedInfoTEXT        = _getInfo(sysStats.dbDiskUsed,        ' MiB');
-        this.cacheDBKeyUsedInfoTEXT    = _getInfo(sysStats.cacheDBKeyUsed,    ' Keys');
-        this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, ' MiB');
-        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, ' Tasks', '#');
+        this.serverMemoryRSSInfoTEXT   = _getInfo(sysStats.serverMemoryRSS,   ' MB');
+        this.workerCPUPercentInfoTEXT  = _getInfo(sysStats.workerCPUPercent,  '%');
+        this.workerMemoryPSSInfoTEXT   = _getInfo(sysStats.workerMemoryPSS,   ' MB');
+        this.dbDiskUsedInfoTEXT        = _getInfo(sysStats.dbDiskUsed,        ' MB');
+        this.cacheDBKeyUsedInfoTEXT    = _getInfo(sysStats.cacheDBKeyUsed,    [' Keys', ' Key']);
+        this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, ' MB');
+        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, [' Tasks', ' Task'], '#');
 
         // 提取工作队列
         let workerQueues = [];
@@ -227,6 +240,8 @@ export default {
       } else {
         this.serverCPUPercentInfoTEXT  = this.NO_INFO_TEXT;
         this.serverMemoryRSSInfoTEXT   = this.NO_INFO_TEXT;
+        this.workerCPUPercentInfoTEXT  = this.NO_INFO_TEXT;
+        this.workerMemoryPSSInfoTEXT   = this.NO_INFO_TEXT;
         this.dbDiskUsedInfoTEXT        = this.NO_INFO_TEXT;
         this.cacheDBKeyUsedInfoTEXT    = this.NO_INFO_TEXT;
         this.cacheDBMemoryUsedInfoTEXT = this.NO_INFO_TEXT;
@@ -250,12 +265,12 @@ export default {
           infoLines.push(`  Proc   = ${d.pool.processes.join(', ')}`);
           infoLines.push(`  Dist#  = ${d.pool.writes.raw} Tasks`);
           infoLines.push(`  Dist%  = ${d.pool.writes.all}`);
-          infoLines.push(`  maxrss = ${(d.rusage.maxrss / 1024).toFixed(2)} MiB`); // 最大常驻
-          infoLines.push(`  ixrss  = ${(d.rusage.ixrss  / 1024).toFixed(2)} MiB`);  // 代码段
-          infoLines.push(`  idrss  = ${(d.rusage.idrss  / 1024).toFixed(2)} MiB`);  // 数据段
-          infoLines.push(`  isrss  = ${(d.rusage.isrss  / 1024).toFixed(2)} MiB`);  // 栈
+          infoLines.push(`  maxrss = ${(d.rusage.maxrss / 1024).toFixed(2)} MB`);  // 最大常驻
+          infoLines.push(`  ixrss  = ${(d.rusage.ixrss  / 1024).toFixed(2)} MB`);  // 代码段
+          infoLines.push(`  idrss  = ${(d.rusage.idrss  / 1024).toFixed(2)} MB`);  // 数据段
+          infoLines.push(`  isrss  = ${(d.rusage.isrss  / 1024).toFixed(2)} MB`);  // 栈
 
-          this.cacheDBNumberInfoTEXT = `DB = ${d.broker.virtual_host}`;
+          this.cacheDBNumberInfoTEXT = ` = ${d.broker.virtual_host}`;
         });
 
         this.nodesStatsInfoTEXT = infoLines.join('\n').trim();
@@ -362,16 +377,18 @@ export default {
     },
     systemReportTEXT() {
       return [
-          '[数据库结构版本]',    this.dbVersionInfoTEXT,
-        '\n[Web服务CPU使用率]',  this.serverCPUPercentInfoTEXT,
-        '\n[Web服务内存使用量]', this.serverMemoryRSSInfoTEXT,
-        '\n[数据库磁盘使用量]',  this.dbDiskUsedInfoTEXT,
-        '\n[缓存数据库序号]',    this.cacheDBNumberInfoTEXT,
-        '\n[缓存键数量]',        this.cacheDBKeyUsedInfoTEXT,
-        '\n[缓存内存使用量]',    this.cacheDBMemoryUsedInfoTEXT,
-        '\n[Worker节点状态]',    this.nodesStatsInfoTEXT,
-        '\n[Worker队列分布]',    this.nodesActiveQueuesInfoTEXT,
-        '\n[Worker队列长度]',    this.workerQueueLengthInfoTEXT,
+          '[数据库结构版本]',     this.dbVersionInfoTEXT,
+        '\n[Web服务CPU使用率]',   this.serverCPUPercentInfoTEXT,
+        '\n[Web服务内存使用量]',  this.serverMemoryRSSInfoTEXT,
+        '\n[Worker CPU使用率]',   this.workerCPUPercentInfoTEXT,
+        '\n[Worker内存使用量]',   this.workerMemoryPSSInfoTEXT,
+        '\n[数据库磁盘使用量]',   this.dbDiskUsedInfoTEXT,
+        '\n[缓存数据库序号]',     this.cacheDBNumberInfoTEXT,
+        '\n[缓存键数量]',         this.cacheDBKeyUsedInfoTEXT,
+        '\n[缓存内存使用量]',     this.cacheDBMemoryUsedInfoTEXT,
+        '\n[Worker节点状态]',     this.nodesStatsInfoTEXT,
+        '\n[Worker队列分布]',     this.nodesActiveQueuesInfoTEXT,
+        '\n[Worker队列长度]',     this.workerQueueLengthInfoTEXT,
       ].join('\n');
     },
   },
@@ -391,6 +408,8 @@ export default {
       cacheDBMemoryUsedInfoTEXT: '',
       serverCPUPercentInfoTEXT : '',
       serverMemoryRSSInfoTEXT  : '',
+      workerCPUPercentInfoTEXT : '',
+      workerMemoryPSSInfoTEXT  : '',
       nodesStatsInfoTEXT       : '',
       nodesActiveQueuesInfoTEXT: '',
       workerQueueLengthInfoTEXT: '',

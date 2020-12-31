@@ -2,8 +2,10 @@
 
 # Builtin Modules
 import re
+import math
 
 # 3rd-party Modules
+import psutil
 from celery.schedules import crontab
 from kombu import Queue
 
@@ -20,7 +22,16 @@ Some fixed Celery configs
 '''
 
 # Worker
-worker_concurrency         = CONFIG['_WORKER_CONCURRENCY']
+worker_concurrency = CONFIG['_WORKER_CONCURRENCY']
+if worker_concurrency == 'auto':
+    memory_gb = math.ceil(psutil.virtual_memory().total / 1024 / 1024 / 1024)
+    if memory_gb < 3:
+        worker_concurrency = 3
+    elif memory_gb > 10:
+        worker_concurrency = 10
+    else:
+        worker_concurrency = memory_gb
+
 worker_prefetch_multiplier = CONFIG['_WORKER_PREFETCH_MULTIPLIER']
 worker_max_tasks_per_child = CONFIG['_WORKER_MAX_TASKS_PER_CHILD']
 

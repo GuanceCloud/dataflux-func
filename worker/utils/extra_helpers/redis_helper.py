@@ -264,6 +264,9 @@ class RedisHelper(object):
         return self.run('eval', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lock_key, lock_value)
 
     def ts_add(self, key, value, timestamp=None):
+        if not self.skip_log:
+            self.logger.debug('[REDIS TS] ADD {}'.format(key))
+
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
             if six.ensure_str(cache_res) != 'zset':
@@ -287,6 +290,9 @@ class RedisHelper(object):
             self.client.zremrangebyrank(key, 0, -1 * self.config['tsMaxLength'] - 1)
 
     def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None):
+        if not self.skip_log:
+            self.logger.debug('[REDIS TS] GET {}'.format(key))
+
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
             if six.ensure_str(cache_res) != 'zset':

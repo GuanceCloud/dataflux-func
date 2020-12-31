@@ -180,8 +180,8 @@ class LogHelper(object):
     '''
     Logger helper
     '''
-    def __init__(self, task):
-        self.task = task
+    def __init__(self, task=None):
+        self.task = task or toolkit.FakeTask()
 
         self.level = CONFIG['LOG_LEVEL']
 
