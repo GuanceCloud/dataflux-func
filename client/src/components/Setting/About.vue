@@ -74,7 +74,7 @@
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>清空工作队列</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 {{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
+                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-form-item>
@@ -171,7 +171,10 @@ export default {
         alert: {entity: '系统信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
-        let _getInfo = (tsDataMap, unit) => {
+        let _getInfo = (tsDataMap, unit, prefix) => {
+          unit   = unit   || '';
+          prefix = prefix || '';
+
           if (Array.isArray(tsDataMap)) {
             tsDataMap = { '': tsDataMap };
           }
@@ -198,7 +201,7 @@ export default {
             let latestValue = latestPoint[1];
             let padding = ' '.repeat(maxNameLength - name.length);
 
-            infoLines.push(`${name}${padding} = ${latestValue}${unit}`);
+            infoLines.push(`${prefix}${name}${padding} = ${latestValue}${unit}`);
           }
 
           return infoLines.join('\n');
@@ -211,7 +214,7 @@ export default {
         this.dbDiskUsedInfoTEXT        = _getInfo(sysStats.dbDiskUsed,        ' MiB');
         this.cacheDBKeyUsedInfoTEXT    = _getInfo(sysStats.cacheDBKeyUsed,    ' Keys');
         this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, ' MiB');
-        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, ' Tasks');
+        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, ' Tasks', '#');
 
         // 提取工作队列
         let workerQueues = [];
@@ -300,12 +303,25 @@ export default {
       this._getNodesActiveQueues();
     },
     async clearWorkerQueue(queueName) {
+      try {
+        await this.$confirm(`清空队列后，所有未执行的任务都将丢失
+            <hr class="br">是否确认清空队列 "#${queueName}" ？`, '清空队列', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '确认清空',
+          cancelButtonText: '放弃',
+          type: 'warning',
+        });
+
+      } catch(err) {
+        return; // 取消操作
+      }
+
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
         body : {workerQueues: [queueName]},
         alert: {entity: '工作队列', action: '清空', showError: true},
       });
       if (apiRes.ok) {
-        this.$alert(`工作队列 "${queueName}" 已被清空
+        this.$alert(`工作队列 "#${queueName}" 已被清空
             <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空工作队列', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: '非常好',
@@ -314,6 +330,19 @@ export default {
       }
     },
     async clearLogCacheTables() {
+      try {
+        await this.$confirm(`清空日志/缓存表后，以往的日志等信息将无法查询
+            <hr class="br">是否确认清空日志/缓存表？`, '清空日志/缓存表', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '确认清空',
+          cancelButtonText: '放弃',
+          type: 'warning',
+        });
+
+      } catch(err) {
+        return; // 取消操作
+      }
+
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
         alert: {entity: '日志/缓存表', action: '清空', showError: true},
       });

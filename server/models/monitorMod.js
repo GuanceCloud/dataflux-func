@@ -158,7 +158,7 @@ EntityModel.prototype.getSysStats = function(callback) {
 
         for (var k in tsDataMap) {
           var queueName = toolkit.parseCacheKey(k).tags.queueName;
-          sysStats[metric]['#' + queueName] = tsDataMap[k];
+          sysStats[metric][queueName] = tsDataMap[k];
         }
 
         return asyncCallback();
