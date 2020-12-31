@@ -550,5 +550,11 @@ def merge_query(url, query):
 
     return merged_url
 
+def to_short_unix_timestamp(t):
+    return t - SHORT_UNIX_TIMESTAMP_OFFSET
+
+def from_short_unix_timestamp(t):
+    return t + SHORT_UNIX_TIMESTAMP_OFFSET
+
 # Alias
 ensure_str = as_str

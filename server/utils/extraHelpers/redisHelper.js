@@ -56,8 +56,8 @@ var RedisHelper = function(logger, config) {
     this.config = toolkit.noNullOrWhiteSpace(config);
 
     this.config.tsMaxAge         = config.tsMaxAge    || 3600 * 24;
-    this.config.tsMaxPeriod      = config.tsMaxPeriod || 3600 * 24;
-    this.config.tsMaxLength      = config.tsMaxLength || 2 * 60 * 24;
+    this.config.tsMaxPeriod      = config.tsMaxPeriod || 3600 * 24 * 3;
+    this.config.tsMaxLength      = config.tsMaxLength || 60 * 24 * 3;
     this.config.retry_strategy = retryStrategy;
 
     this.client = redis.createClient(getConfig(this.config));
@@ -648,7 +648,7 @@ RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
 
   if (self.isDryRun) return callback(null, 'OK');
 
-  timestamp = timestamp || parseInt(Date.now() / 1000) * 1000;
+  timestamp = timestamp || parseInt(Date.now() / 1000);
   value     = JSON.stringify(value);
 
   async.series([
@@ -677,7 +677,7 @@ RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
     function(asyncCallback) {
       if (!self.config.tsMaxPeriod) return asyncCallback();
 
-      var minTimestamp = Date.now() - (self.config.tsMaxPeriod * 1000);
+      var minTimestamp = parseInt(Date.now() / 1000) - self.config.tsMaxPeriod;
       self.client.zremrangebyscore(key, '-inf', minTimestamp, asyncCallback);
     },
     function(asyncCallback) {
@@ -727,7 +727,7 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
   options.agg        = options.agg        || 'avg';
   options.scale      = options.scale      || 1;
   options.ndigits    = options.ndigits    || 2;
-  options.timeUnit   = options.timeUnit   || 'ms';
+  options.timeUnit   = options.timeUnit   || 's';
   options.dictOutput = options.dictOutput || false;
   options.limit      = options.limit      || null;
 
@@ -756,11 +756,10 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
         });
 
         if (options.groupTime && options.groupTime > 1) {
-          var groupTimeMs = options.groupTime * 1000;
           var temp = [];
 
           tsData.forEach(function(d) {
-            var groupedTimestamp = parseInt(d[0] / groupTimeMs) * groupTimeMs;
+            var groupedTimestamp = parseInt(d[0] / options.groupTime) * options.groupTime;
             if (temp.length <= 0 || temp[temp.length - 1][0] !== groupedTimestamp) {
               temp.push([groupedTimestamp, [d[1]]]);
             } else {
@@ -815,8 +814,8 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
             }
           }
 
-          if (options.timeUnit === 's') {
-            d[0] = parseInt(d[0] / 1000);
+          if (options.timeUnit === 'ms') {
+            d[0] = d[0] * 1000;
           }
         });
 

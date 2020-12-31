@@ -109,6 +109,11 @@ $(function() {
       }
 
       s.data.forEach(function(dp) {
+        // 秒转毫秒
+        if ('number' === typeof dp[0]) {
+          dp[0] = dp[0] * 1000;
+        }
+
         switch(opt.dataConvert) {
           case 'xyTranspose':
             dp.reverse();

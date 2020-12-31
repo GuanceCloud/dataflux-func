@@ -50,8 +50,8 @@ class RedisHelper(object):
             self.config = config
 
             self.config['tsMaxAge']    = config.get('tsMaxAge')    or 3600 * 24
-            self.config['tsMaxPeriod'] = config.get('tsMaxPeriod') or 3600 * 24
-            self.config['tsMaxLength'] = config.get('tsMaxLength') or 2 * 60 * 24
+            self.config['tsMaxPeriod'] = config.get('tsMaxPeriod') or 3600 * 24 * 3
+            self.config['tsMaxLength'] = config.get('tsMaxLength') or 60 * 24 * 3
 
             self.client = redis.Redis(**get_config(config))
 
@@ -271,22 +271,22 @@ class RedisHelper(object):
 
             self.checked_keys.add(key)
 
-        timestamp = str(timestamp or (int(time.time()) * 1000))
+        timestamp = timestamp or int(time.time())
         value = toolkit.json_safe_dumps(value, indent=0)
 
-        data = ','.join([timestamp, value])
+        data = ','.join([str(timestamp), value])
         self.client.zadd(key, {data: timestamp})
 
         self.client.expire(key, self.config['tsMaxAge'])
 
         if self.config['tsMaxPeriod']:
-            min_timestamp = int(time.time() - self.config['tsMaxPeriod']) * 1000
+            min_timestamp = int(time.time()) - self.config['tsMaxPeriod']
             self.client.zremrangebyscore(key, '-inf', min_timestamp)
 
         if self.config['tsMaxLength']:
             self.client.zremrangebyrank(key, 0, -1 * self.config['tsMaxLength'] - 1)
 
-    def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='ms', dict_output=False, limit=None):
+    def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None):
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
             if six.ensure_str(cache_res) != 'zset':
@@ -305,11 +305,10 @@ class RedisHelper(object):
         ts_data = list(map(_parse, ts_data))
 
         if group_time and group_time > 1:
-            group_time_ms = group_time * 1000
             temp = []
 
             for d in ts_data:
-                grouped_timestamp = int(d[0] /  group_time_ms) * group_time_ms
+                grouped_timestamp = int(d[0] / group_time) * group_time
                 if len(temp) <= 0 or temp[-1][0] != grouped_timestamp:
                     temp.append([grouped_timestamp, [d[1]]])
                 else:
@@ -345,8 +344,8 @@ class RedisHelper(object):
                 if ndigits:
                     d[1] = round(d[1], ndigits)
 
-            if time_unit == 's':
-                d[0] = int(d[0] / 1000)
+            if time_unit == 'ms':
+                d[0] = d[0] * 1000
 
         if dict_output:
             ts_data = list(map(lambda x: { 't': x[0], 'v': x[1] }, ts_data))

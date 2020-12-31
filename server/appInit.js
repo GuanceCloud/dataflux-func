@@ -129,7 +129,7 @@ exports.afterAppCreated = function(app, server) {
   // Sys Stats
   var startCPUUsage = process.cpuUsage();
   function recordSysStats() {
-    var currentTimestamp = parseInt(Date.now() / 1000) * 1000;
+    var currentTimestamp = parseInt(Date.now() / 1000);
 
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();

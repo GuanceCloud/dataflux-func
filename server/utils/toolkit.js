@@ -2157,3 +2157,10 @@ var mathPercentile = toolkit.mathPercentile = function mathPercentile(arr, p) {
 
   return n1 + (n2 - n1) * extra;
 };
+
+var toShortUnixTimestamp = toolkit.toShortUnixTimestamp = function toShortUnixTimestamp(t) {
+  return t - SHORT_UNIX_TIMESTAMP_OFFSET;
+};
+var fromShortUnixTimestamp = toolkit.fromShortUnixTimestamp = function fromShortUnixTimestamp(t) {
+  return t + SHORT_UNIX_TIMESTAMP_OFFSET;
+};
