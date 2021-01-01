@@ -268,6 +268,8 @@ class LogHelper(object):
 
     def _stage(self, log_line):
         self._staged_logs.append(log_line)
+        if len(self._staged_logs) > 1000:
+            self._staged_logs = self._staged_logs[-1000:]
 
     def _recur(self):
         for log_line in self._staged_logs:

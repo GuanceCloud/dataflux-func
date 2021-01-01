@@ -334,6 +334,9 @@ LoggerHelper.prototype.logError = function(err) {
 
 LoggerHelper.prototype._stage = function(logLine) {
   this._stagedLogs.push(logLine);
+  if (this._stagedLogs.length > 1000) {
+    this._stagedLogs = this._stagedLogs.slice(-1000);
+  }
 };
 
 LoggerHelper.prototype._recur = function() {
