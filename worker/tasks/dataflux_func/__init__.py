@@ -680,6 +680,11 @@ class FuncDataSourceHelper(object):
         'meta',
     )
 
+    CIPHER_CONFIG_KEYS = [
+      'password',
+      'secretKey',
+    ];
+
     def __init__(self, task):
         self.__task = task
 
@@ -789,10 +794,11 @@ class FuncDataSourceHelper(object):
                 raise NotSupportException('Data source config item `{}` not supported'.format(k))
 
         # 加密字段
-        password = config.get('password')
-        if password:
-            config['passwordCipher'] = toolkit.cipher_by_aes(password, CONFIG['SECRET'])
-        config.pop('password', None)
+        for k in self.CIPHER_CONFIG_KEYS:
+            v = config.get(k)
+            if v is not None:
+                config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
+            config.pop(k, None)
 
         config_json = toolkit.json_safe_dumps(config)
 

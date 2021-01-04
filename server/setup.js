@@ -205,11 +205,11 @@ function runSetup() {
 
         var userPassword = ARGV.mqtt.split(':');
         var configJSON = JSON.stringify({
-          host         : 'mqtt',
-          port         : 1883,
-          user         : userPassword[0],
-          password     : toolkit.cipherByAES(userPassword[1], config.SECRET),
-          topicHandlers: [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
+          host          : 'mqtt',
+          port          : 1883,
+          user          : userPassword[0],
+          passwordCipher: toolkit.cipherByAES(userPassword[1], config.SECRET),
+          topicHandlers : [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
         });
 
         var sql = 'INSERT INTO `biz_main_data_source` SET ?';
