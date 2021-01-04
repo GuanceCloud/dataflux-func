@@ -32,7 +32,7 @@
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
                     v-model="form.funcId"
-                    :options="funcCascaderOptions"
+                    :options="funcCascader"
                     :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
@@ -161,69 +161,11 @@ export default {
         this.form = nextForm;
       }
 
-      // 获取关联数据
-      let scriptSetMap = {};
-      let scriptMap    = {};
-      let funcMap      = {};
+      // 获取函数列表
+      let funcList = await this.common.getFuncList();
 
-      // 脚本集
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fields: ['id', 'title']},
-        alert: {entity: '脚本集', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptSetMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-      });
-
-      // 脚本
-      apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fields: ['id', 'title', 'scriptSetId']},
-        alert: {entity: '脚本', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-
-        // 插入上一层"children"
-        if (scriptSetMap[d.scriptSetId]) {
-          scriptSetMap[d.scriptSetId].children.push(scriptMap[d.id]);
-        }
-      });
-
-      // 函数
-      apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON']},
-        alert: {entity: '函数', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        funcMap[d.id] = {
-          label     : d.title || d.definition,
-          value     : d.id,
-          argsJSON  : d.argsJSON,
-          kwargsJSON: d.kwargsJSON,
-        };
-
-        // 插入上一层"children"
-        if (scriptMap[d.scriptId]) {
-          scriptMap[d.scriptId].children.push(funcMap[d.id]);
-        }
-      });
-
-      let funcCascaderOptions = Object.values(scriptSetMap);
-
-      this.funcMap             = funcMap;
-      this.funcCascaderOptions = funcCascaderOptions;
+      this.funcMap      = funcList.map;
+      this.funcCascader = funcList.cascader;
       this.$store.commit('updateLoadStatus', true);
     },
     async submitData() {
@@ -393,9 +335,9 @@ export default {
   },
   data() {
     return {
-      data               : {},
-      funcMap            : {},
-      funcCascaderOptions: [],
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
 
       useCustomId: false,
 

@@ -27,7 +27,7 @@ services:
     volumes:
       - "<INSTALL_DIR>/mysql:/var/lib/mysql"
     environment:
-      - "MYSQL_ROOT_PASSWORD=<RANDOM_PASSWORD>"
+      - "MYSQL_ROOT_PASSWORD=<MYSQL_PASSWORD>"
       - "MYSQL_DATABASE=dataflux_func"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
   # MYSQL END
@@ -137,7 +137,7 @@ services:
       - default
     ports:
       - "8088:8088"
-    command: ./run-server.sh
+    command: ./run-server.sh <SERVER_ARGV>
 
 networks:
   default:

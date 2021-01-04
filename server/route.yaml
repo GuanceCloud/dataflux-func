@@ -2322,6 +2322,7 @@ dataSourceAPI:
             - mongodb
             - elasticsearch
             - nsq
+            - mqtt
           $example: mysql
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。提交时检查，3秒超时）
@@ -2380,6 +2381,22 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          clientId:
+            $desc     : 客户端ID
+            $allowNull: true
+            $type     : string
+          topicHandlers:
+            $desc     : 主题处理函数
+            $allowNull: true
+            $:
+              topic:
+                $desc     : 主题
+                $type     : string
+                $allowNull: true
+              funcId:
+                $desc     : 处理函数
+                $type     : string
+                $allowNull: true
           meta:
             $desc     : Meta数据（仅限API添加）
             $allowNull: true
@@ -2465,6 +2482,22 @@ dataSourceAPI:
             $desc     : Secret Key
             $allowNull: true
             $type     : string
+          clientId:
+            $desc     : 客户端ID
+            $allowNull: true
+            $type     : string
+          topicHandlers:
+            $desc     : 主题处理函数
+            $allowNull: true
+            $:
+              topic:
+                $desc     : 主题
+                $type     : string
+                $allowNull: true
+              funcId:
+                $desc     : 处理函数
+                $type     : string
+                $allowNull: true
           meta:
             $desc     : Meta数据（仅限API添加）
             $allowNull: true

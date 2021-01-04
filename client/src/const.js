@@ -19,6 +19,7 @@ import logo_postgresql    from '@/assets/img/logo-postgresql.png'
 import logo_mongodb       from '@/assets/img/logo-mongodb.png'
 import logo_elasticsearch from '@/assets/img/logo-elasticsearch.png'
 import logo_nsq           from '@/assets/img/logo-nsq.png'
+import logo_mqtt          from '@/assets/img/logo-mqtt.png'
 export const DATE_SOURCE = [
   {
     key           : 'df_dataway',
@@ -220,12 +221,34 @@ export const DATE_SOURCE = [
     logo          : logo_nsq,
     tagType       : 'info',
     debugSupported: false,
-    sampleCode    : `helper = DFF.SRC('{0}')\helper.publish(\n    topic='some_topic',\n    message='some_message')`,
+    sampleCode    : `helper = DFF.SRC('{0}')\helper.publish(topic='some_topic', message='some_message')`,
     configFields: {
       host    : { default: null },
       port    : { default: 4161 },
       protocol: { default: 'http' },
       servers : { default: null },
+    },
+  },
+  {
+    key           : 'mqtt',
+    name          : 'MQTT',
+    fullName      : 'MQTT Broker (v5.0)',
+    logo          : logo_mqtt,
+    tips          : '请使用支持MQTT v5.0 协议的Broker，并使用共享订阅 $share 防止接收到重复消息',
+    tagType       : 'info',
+    debugSupported: false,
+    sampleCode    : `helper = DFF.SRC('{0}')\nhelper.publish(topic='some_topic',  message='some_message')`,
+    compatibleDBs: [
+      'Mosquitto 2.0+',
+      'EMQX',
+    ],
+    configFields: {
+      host         : { default: null, isRequired: true },
+      port         : { default: 1883, isRequired: true },
+      user         : { default: null },
+      password     : { default: null },
+      clientId     : { default: null },
+      topicHandlers: { default: [{ topic: '$share/dataflux_func/#', funcId: null }] },
     },
   },
 ];

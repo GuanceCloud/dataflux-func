@@ -63,16 +63,20 @@ done
 
 # 配置
 __PREV_DIR=${PWD}
-__RANDOM_SECRET=`openssl rand -hex 8`
-__RANDOM_PASSWORD=`openssl rand -hex 8`
+__SERVER_SECRET=`openssl rand -hex 8`
+__MYSQL_PASSWORD=`openssl rand -hex 8`
+__MQTT_USERNAME=dataflux_func
+__MQTT_PASSWORD=`openssl rand -hex 8`
+__MQTT_SAMPLE_USERNAME=mqttclient
+__MQTT_SAMPLE_PASSWORD=`openssl rand -hex 8`
+
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __README_FILE=README.md
 __MOSQUITTO_CONFIG_FILE=mosquitto/config/mosquitto.conf
 __MOSQUITTO_PASSWD_FILE=mosquitto/passwd
-__MOSQUITTO_SAMPLE_USERNAME=mqttclient
-__MOSQUITTO_SAMPLE_PASSWORD=`openssl rand -hex 8`
+
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
 __MQTT_IMAGE=pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3
@@ -162,21 +166,16 @@ if [ ! -f ${__CONFIG_FILE} ]; then
         mqttHost=mqtt
     fi
 
-    echo -e "# Auto generated config: \
-\nSECRET          : ${__RANDOM_SECRET} \
+    echo -e "# Pre-generated config: \
+\nSECRET          : ${__SERVER_SECRET} \
 \nMYSQL_HOST      : mysql \
 \nMYSQL_PORT      : 3306 \
 \nMYSQL_USER      : root \
-\nMYSQL_PASSWORD  : ${__RANDOM_PASSWORD} \
+\nMYSQL_PASSWORD  : ${__MYSQL_PASSWORD} \
 \nMYSQL_DATABASE  : dataflux_func \
 \nREDIS_HOST      : redis \
 \nREDIS_PORT      : 6379 \
-\nREDIS_DATABASE  : 5 \
-\nMQTT_HOST       : ${mqttHost} \
-\nMQTT_PORT       : 1883 \
-\nMQTT_USERNAME   : dataflux_func \
-\nMQTT_PASSWORD   : ${__RANDOM_PASSWORD} \
-\nMQTT_DEFAULT_QOS: 0" \
+\nREDIS_DATABASE  : 5" \
 > ${__CONFIG_FILE}
 
     log "New config file with random secret/password created:"
@@ -190,38 +189,49 @@ blankLine
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     cp ${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_FILE}
 
+    __SERVER_ARGV=""
+
     # 创建配置文件并使用随机密钥/密码
+    if [ ${OPT_MINI} = "TRUE" ]; then
+        # 启用mini方式安装，去除Worker default 配置部分
+        sed -i "/# WORKER DEFAULT START/,/# WORKER DEFAULT END/d" \
+            ${__DOCKER_STACK_FILE}
+    else
+        # 默认方式安装，去除Worker mini 配置部分
+        sed -i "/# WORKER MINI START/,/# WORKER MINI END/d" \
+            ${__DOCKER_STACK_FILE}
+    fi
+
+    # 关闭MySQL 时，去除MySQL 配置部分
+    if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
+        sed -i "/# MYSQL START/,/# MYSQL END/d" \
+            ${__DOCKER_STACK_FILE}
+    fi
+
+    # 关闭Redis 时，去除Redis 配置部分
+    if [ ${OPT_NO_REDIS} = "TRUE" ]; then
+        sed -i "/# REDIS START/,/# REDIS END/d" \
+            ${__DOCKER_STACK_FILE}
+    fi
+
+    if [ ${OPT_MQTT} = "FALSE" ]; then
+        # 未开启MQTT 组件时，去除MQTT 配置部分
+        sed -i "/# MQTT START/,/# MQTT END/d" \
+            ${__DOCKER_STACK_FILE}
+    else
+        # 开启MQTT 组件时，附带启动参数，自动添加数据源
+        __SERVER_ARGV="${__SERVER_ARGV} --mqtt ${__MQTT_USERNAME}:${__MQTT_PASSWORD}@mqtt"
+    fi
+
     sed -i \
-        -e "s#<RANDOM_PASSWORD>#${__RANDOM_PASSWORD}#g" \
+        -e "s#<MYSQL_PASSWORD>#${__MYSQL_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
         -e "s#<MQTT_IMAGE>#${__MQTT_IMAGE}#g" \
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
+        -e "s#<SERVER_ARGV>#${__SERVER_ARGV}#g" \
         ${__DOCKER_STACK_FILE}
-
-    if [ ${OPT_MINI} = "TRUE" ]; then
-        # 启用mini方式安装，去除Worker default 配置部分
-        sed -i "/# WORKER DEFAULT START/,/# WORKER DEFAULT END/d" ${__DOCKER_STACK_FILE}
-    else
-        # 默认方式安装，去除Worker mini 配置部分
-        sed -i "/# WORKER MINI START/,/# WORKER MINI END/d" ${__DOCKER_STACK_FILE}
-    fi
-
-    # 关闭MySQL 时，去除MySQL 配置部分
-    if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
-        sed -i "/# MYSQL START/,/# MYSQL END/d" ${__DOCKER_STACK_FILE}
-    fi
-
-    # 关闭Redis 时，去除Redis 配置部分
-    if [ ${OPT_NO_REDIS} = "TRUE" ]; then
-        sed -i "/# REDIS START/,/# REDIS END/d" ${__DOCKER_STACK_FILE}
-    fi
-
-    # 未开启MQTT 组件时，去除MQTT 配置部分
-    if [ ${OPT_MQTT} = "FALSE" ]; then
-        sed -i "/# MQTT START/,/# MQTT END/d" ${__DOCKER_STACK_FILE}
-    fi
 
     log "New docker stack file with random secret/password created:"
 
@@ -245,8 +255,8 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
     log "  ${_INSTALL_DIR}/${__MOSQUITTO_CONFIG_FILE}"
 
     if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
-        echo -e "dataflux_func:${__RANDOM_PASSWORD} \
-\n${__MOSQUITTO_SAMPLE_USERNAME}:${__MOSQUITTO_SAMPLE_PASSWORD}" \
+        echo -e "${__MQTT_USERNAME}:${__MQTT_PASSWORD} \
+\n${__MQTT_SAMPLE_USERNAME}:${__MQTT_SAMPLE_PASSWORD}" \
 > ${__MOSQUITTO_PASSWD_FILE}
 
         docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} mosquitto_passwd -U /mosquitto/passwd
@@ -315,13 +325,13 @@ fi
 if [ ${OPT_MQTT} = "TRUE" ]; then
     blankLine
     log "Builtin MQTT is deployed."
-    log "    Sample client username/password is ${__MOSQUITTO_SAMPLE_USERNAME}/${__MOSQUITTO_SAMPLE_PASSWORD}"
+    log "    Sample client username/password is ${__MQTT_SAMPLE_USERNAME}/${__MQTT_SAMPLE_PASSWORD}"
     log "To subcribe message:"
-    log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test"
+    log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t test"
     log "To publish message:"
-    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t test -m 'hello'"
+    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t test -m 'hello'"
     log "To publish message to DataFlux Func:"
-    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MOSQUITTO_SAMPLE_USERNAME} -P ${__MOSQUITTO_SAMPLE_PASSWORD} -t dataflux_func/test -m 'hello'"
+    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t dataflux_func/test -m 'hello'"
     log "To add more MQTT client users:"
     log "    $ docker exec `docker ps -q -f label=mqtt` mosquitto_passwd -b /mosquitto/passwd username password"
     log "    $ docker kill `docker ps -q -f label=mqtt` -s HUP"

@@ -28,7 +28,7 @@ from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
-from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper
+from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper
 from worker.utils.extra_helpers import DFDataWayHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
@@ -55,13 +55,6 @@ FIX_INTEGRATION_KEY_MAP = {
     #       onLaunch : True/False，是否启动后运行
     #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
-
-    # 用于MQTT订阅消息的处理函数
-    # 集成为MQTT订阅
-    # 函数必须为`def func(topic, message, packet)`形式
-    #   配置项：
-    #       topic: 订阅的主题，如：`topic1`, `topic2/+`, `topic3/#`, `$share/g/topic5`
-    'onMQTT': 'onMQTT',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
@@ -77,6 +70,7 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'mongodb'      : MongoDBHelper,
     'elasticsearch': ElasticSearchHelper,
     'nsq'          : NSQLookupHelper,
+    'mqtt'         : MQTTHelper,
 }
 DATA_SOURCE_LOCAL_TIMESTAMP_MAP = {}
 DATA_SOURCE_HELPERS_CACHE       = {}
@@ -681,6 +675,8 @@ class FuncDataSourceHelper(object):
         'token',
         'accessKey',
         'secretKey',
+        'clientId',
+        'topicHandlers',
         'meta',
     )
 
@@ -700,7 +696,7 @@ class FuncDataSourceHelper(object):
         # 判断是否需要刷新数据源
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
         refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
 
         if refresh_time > local_time:
@@ -757,7 +753,7 @@ class FuncDataSourceHelper(object):
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
         self.__task.cache_db.set(cache_key, int(time.time() * 1000))
 
     def list(self):
@@ -1051,16 +1047,6 @@ class FuncConfigHelper(object):
 
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
-
-class FuncMQTTHelper(object):
-    def __init__(self, task):
-        self.__task = task
-
-    def __call__(self, *args, **kwargs):
-        self.publish(*args, **kwargs)
-
-    def publish(self, topic, message, qos=0, retain=False):
-        self.__task.mqtt.publish(topic=topic, message=message, qos=qos, retain=retain)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):
@@ -1593,7 +1579,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         __data_source_helper  = FuncDataSourceHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
         __config_helper       = FuncConfigHelper(self)
-        __mqtt_helper         = FuncMQTTHelper(self)
 
         def __list_data_sources():
             return __data_source_helper.list()
@@ -1612,7 +1597,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             '__store_helper'       : __store_helper,        # 存储处理模块
             '__cache_helper'       : __cache_helper,        # 缓存处理模块
             '__config_helper'      : __config_helper,       # 配置处理模块
-            '__mqtt_helper'        : __mqtt_helper,         # MQTT对接模块
 
             # 别名
             'API'   : __export_as_api,
@@ -1621,7 +1605,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'STORE' : __store_helper,
             'CACHE' : __cache_helper,
             'CONFIG': __config_helper,
-            'MQTT'  : __mqtt_helper,
 
             'FUNC' : __call_func,
             'EVAL' : __eval,

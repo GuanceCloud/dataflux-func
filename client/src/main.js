@@ -57,6 +57,9 @@ Vue.prototype.C = const_;
 import * as encoding from '@/encoding'
 Vue.prototype.encoding = encoding;
 
+import * as common from '@/common'
+Vue.prototype.common = common;
+
 Vue.config.productionTip = false
 
 // 常用业务组件

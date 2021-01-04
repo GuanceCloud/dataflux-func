@@ -35,7 +35,7 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
   }
 
   // 尝试连接
-  var celery = celeryHelper.createHelper(locals);
+  var celery = celeryHelper.createHelper(locals.logger);
 
   var kwargs = {
     type  : type,
@@ -182,6 +182,15 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
 
     return _checkDataSourceConfig(locals, 'nsq', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
+  mqtt: function(locals, config, callback) {
+    // 默认值
+    config.port = config.port || 1883;
+
+    var REQUIRED_FIELDS = ['host', 'port'];
+    var OPTIONAL_FIELDS = ['user', 'password', 'clientId', 'topicHandlers'];
+
+    return _checkDataSourceConfig(locals, 'mqtt', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
 };
 
 var HIDE_CONFIG_FIELDS = [
@@ -203,6 +212,8 @@ exports.add = function(req, res, next) {
   }
 
   var dataSourceModel = dataSourceMod.createModel(res.locals);
+
+  var newDataSource = null;
 
   async.series([
     // 检查ID重名
@@ -232,7 +243,17 @@ exports.add = function(req, res, next) {
     },
     // 数据入库
     function(asyncCallback) {
-      dataSourceModel.add(data, asyncCallback);
+      dataSourceModel.add(data, function(err, _addedId, _addedData) {
+        if (err) return asyncCallback(err);
+
+        newDataSource = _addedData;
+
+        return asyncCallback();
+      });
+    },
+    // 刷新helper缓存标志位
+    function(asyncCallback) {
+      updateDataSourceRefreshTimestamp(res.locals, newDataSource, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -510,8 +531,18 @@ function hidePassword(req, res, ret, hookExtra, callback) {
 };
 
 function updateDataSourceRefreshTimestamp(locals, dataSource, callback) {
-  var tags    = ['id', dataSource.id];
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestamp', tags);
+  async.series([
+    function(asyncCallback) {
+      var tags    = ['id', dataSource.id];
+      var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestamp', tags);
+      locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
+    },
+    function(asyncCallback) {
+      if (dataSource.type !== 'mqtt') return asyncCallback();
 
-  locals.cacheDB.set(cacheKey, Date.now(), callback);
+      var tags    = ['id', dataSource.id];
+      var cacheKey = toolkit.getCacheKey('cache', 'mqttRefreshTimestamp', tags);
+      locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
+    },
+  ], callback);
 };

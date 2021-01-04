@@ -211,15 +211,21 @@ exports.afterAppCreated = function(app, server) {
 
           var keyPrefixCountMap = {};
           keys.forEach(function(key) {
-            var prefix = key.indexOf(CONFIG.APP_NAME) === 0
-                       ? key.split(':')[0]
-                       : 'OTHER';
+            var prefix = null;
+            if (toolkit.startsWith(key, CONFIG.APP_NAME)) {
+              prefix = key.split(':')[0] + ':{Tags}';
+            } else if (toolkit.startsWith(key, 'celery-task-meta-')) {
+              prefix = 'celery-task-meta-{Task ID}';
+            } else {
+              prefix = 'OTHER';
+            }
 
             keyPrefixCountMap[prefix] = keyPrefixCountMap[prefix] || 0;
             keyPrefixCountMap[prefix] += 1;
           });
 
           async.eachOfLimit(keyPrefixCountMap, 5, function(count, prefix, eachCallback) {
+            prefix = toolkit.getBase64(prefix);
             var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', prefix]);
             app.locals.cacheDB.tsAdd(cacheKey, currentTimestamp, count, eachCallback);
           }, asyncCallback);

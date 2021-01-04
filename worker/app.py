@@ -25,8 +25,11 @@ IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../
 
 WORKER_ID = toolkit.gen_time_serial_seq()
 
-MAIN_PROCESS     = None
-WORKER_PROCESSES = []
+# For monitor
+MAIN_PROCESS = psutil.Process()
+MAIN_PROCESS.cpu_percent(interval=1)
+
+CHILD_PROCESS_MAP = {} # PID -> Process
 
 HEARTBEAT_EXEC_TIMESTAMP = 0
 
@@ -61,21 +64,11 @@ from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import RedisHelper
 WORKER_LOGGER = LogHelper()
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
+REDIS_HELPER.skip_log = True
 
 @signals.worker_ready.connect
 def on_worker_ready(*args, **kwargs):
     after_app_created(app)
-
-    # Init monitor
-    global MAIN_PROCESS
-    global WORKER_PROCESSES
-
-    MAIN_PROCESS = psutil.Process()
-    MAIN_PROCESS.cpu_percent(interval=1)
-
-    WORKER_PROCESSES = MAIN_PROCESS.children()
-    for p in WORKER_PROCESSES:
-        p.cpu_percent(interval=1)
 
     print('Celery logging disabled')
     print('Celery is running (Press CTRL+C to quit)')
@@ -83,8 +76,11 @@ def on_worker_ready(*args, **kwargs):
 
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(*args, **kwargs):
+    global MAIN_PROCESS
+    global CHILD_PROCESSES
     global HEARTBEAT_EXEC_TIMESTAMP
 
+    # Limit run interval
     current_timestamp = int(time.time())
     if current_timestamp - HEARTBEAT_EXEC_TIMESTAMP < CONFIG['_MONITOR_SYS_STATS_CHECK_INTERVAL']:
         return
@@ -121,11 +117,29 @@ def on_heartbeat_sent(*args, **kwargs):
         main_memory_info  = MAIN_PROCESS.memory_full_info()
         total_memory_pss = main_memory_info.pss
 
-        for p in WORKER_PROCESSES:
-            total_cpu_percent += p.cpu_percent()
+        # Update child process map
+        next_child_process_map = dict([(p.pid, p) for p in MAIN_PROCESS.children()])
 
+        prev_child_pids = set(CHILD_PROCESS_MAP.keys())
+        next_child_pids = set(next_child_process_map.keys())
+
+        exited_pids = prev_child_pids - next_child_pids
+        for pid in exited_pids:
+            CHILD_PROCESS_MAP.pop(pid, None)
+
+        new_pids = next_child_pids - prev_child_pids
+        for pid in new_pids:
+            new_child_process = next_child_process_map[pid]
+            new_child_process.cpu_percent(interval=1)
+            CHILD_PROCESS_MAP[pid] = new_child_process
+
+        # Count up
+        for p in CHILD_PROCESS_MAP.values():
+            child_cpu_percent = p.cpu_percent()
             child_memory_info = p.memory_full_info()
-            total_memory_pss += child_memory_info.pss
+
+            total_cpu_percent += child_cpu_percent
+            total_memory_pss  += child_memory_info.pss
 
         total_cpu_percent = round(total_cpu_percent, 2)
 

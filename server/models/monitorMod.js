@@ -61,7 +61,9 @@ EntityModel.prototype.getSysStats = function(callback) {
         if (err) return asyncCallback(err);
 
         cacheKeyPrefixs = cacheRes.map(function(key) {
-          return toolkit.parseCacheKey(key).tags.prefix;
+          var prefix = toolkit.parseCacheKey(key).tags.prefix;
+          prefix = toolkit.fromBase64(prefix);
+          return prefix;
         });
 
         return asyncCallback();

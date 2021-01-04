@@ -10,6 +10,7 @@ var express    = require('express');
 var bodyParser = require('body-parser');
 var async      = require('async');
 var yaml       = require('js-yaml');
+var minimist   = require('minimist');
 
 /* Project Modules */
 var toolkit = require('./utils/toolkit');
@@ -20,6 +21,8 @@ var yamlResources = require('./utils/yamlResources');
 var CONFIG       = null;
 var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
+
+var ARGV = minimist(process.argv.slice(2));
 
 var INSTALL_CHECK_INTERVAL            = 3 * 1000;
 var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
@@ -192,6 +195,31 @@ function runSetup() {
         var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
         dbHelper.query(sql, sqlParams, function(err, data) {
           if (err) configErrors['mysqlInit'] = '初始化系统配置项失败：' + err.toString();
+
+          return asyncCallback();
+        });
+      },
+      // Add builtin MQTT
+      function(asyncCallback) {
+        if (!ARGV.mqtt) return asyncCallback();
+
+        var usernamePassword = ARGV.mqtt.split(':');
+        var configJSON = JSON.stringify({
+          host    : 'mqtt',
+          port    : 1883,
+          username: usernamePassword[0],
+          password: usernamePassword[1],
+        });
+
+        var sql = 'INSERT INTO `biz_main_data_source` SET ?';
+        var sqlParams = {
+          id        : 'mqtt',
+          title     : 'Mosquitto',
+          type      : 'mqtt',
+          configJSON: configJSON,
+        };
+        dbHelper.query(sql, sqlParams, function(err) {
+          if (err) configErrors['mysqlInit'] = '自动添加内置数据源失败：' + err.toString();
 
           return asyncCallback();
         });
@@ -390,7 +418,13 @@ function checkAndRunUpgrade() {
               : 'UPDATE wat_main_system_config SET value = ? WHERE id = ?';
       var sqlParams = [nextUpgradeSeq, SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ];
 
-      dbHelper.query(sql, sqlParams, asyncCallback);
+      dbHelper.query(sql, sqlParams, function(err) {
+        if (err) return asyncCallback(err);
+
+        console.log('Upgrading completed.');
+
+        return asyncCallback();
+      });
     },
   ], function(err) {
     cacheHelper.unlock(lockKey, lockValue);
@@ -400,7 +434,6 @@ function checkAndRunUpgrade() {
       return process.exit(1);
     }
 
-    console.log('Upgrading completed.');
     return process.exit(0);
   });
 }

@@ -334,6 +334,7 @@ export default {
 
       /* 导航到当前节点配置 */
       let browserConfig = meta.browsers;
+
       for (let level = 0; level < node.level; level++) {
         switch(browserConfig.type) {
           case 'static':

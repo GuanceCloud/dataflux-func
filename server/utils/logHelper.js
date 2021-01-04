@@ -86,6 +86,7 @@ var LOG_JSON_FIELD_MAP = {
   diffTime          : 'diff_time',
   costTime          : 'cost_time',
 };
+var MAX_STAGED_LOGS = 3000;
 
 var createWinstonFormatter = function(opt) {
   opt = opt || {};
@@ -334,8 +335,8 @@ LoggerHelper.prototype.logError = function(err) {
 
 LoggerHelper.prototype._stage = function(logLine) {
   this._stagedLogs.push(logLine);
-  if (this._stagedLogs.length > 1000) {
-    this._stagedLogs = this._stagedLogs.slice(-1000);
+  if (this._stagedLogs.length > MAX_STAGED_LOGS) {
+    this._stagedLogs = this._stagedLogs.slice(-1 * MAX_STAGED_LOGS);
   }
 };
 

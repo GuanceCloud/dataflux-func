@@ -362,10 +362,7 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
-
-  if (CONFIG.MQTT_HOST) {
-    require('./messageHandlers/mqttHandler')(app, server);
-  }
+  require('./messageHandlers/mqttHandler')(app, server);
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,

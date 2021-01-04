@@ -70,8 +70,15 @@ class MQTTHelper(object):
         if self.client and self.client is not CLIENT:
             self.client.disconnect()
 
+    def check(self):
+        try:
+            self.publish(topic='test', message='test')
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+            raise Exception(str(e))
+
     def publish(self, topic, message, qos=0, retain=False):
-        print(self.client)
-        print(topic)
-        print(message)
-        self.client.publish(topic=topic, payload=message, qos=qos, retain=retain)
+        return self.client.publish(topic=topic, payload=message, qos=qos, retain=retain)

@@ -147,49 +147,6 @@
     },
 
     {
-      name    : 'MQTT主机',
-      key     : 'MQTT_HOST',
-      type    : 'string',
-      input   : 'text',
-      tips    : 'DataFlux Func 所连接的MQTT服务器。可以为域名或IP地址，不含端口。<br>无MQTT连接时此项请留空',
-      errorKey: 'mqtt',
-    },
-    {
-      name      : 'MQTT端口',
-      key       : 'MQTT_PORT',
-      type      : 'integer',
-      input     : 'number',
-      inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : '默认一般为<code>1883</code>',
-      errorKey  : 'mqtt',
-    },
-    {
-      name    : 'MQTT用户名（DataFlux 端登录）',
-      key     : 'MQTT_USERNAME',
-      type    : 'string',
-      input   : 'text',
-      tips    : 'DataFlux Func 登录MQTT 时的用户名',
-      errorKey: 'mqtt',
-    },
-    {
-      name    : 'MQTT密码（DataFlux 端登录）',
-      key     : 'MQTT_PASSWORD',
-      type    : 'string',
-      input   : 'password',
-      tips    : 'DataFlux Func 登录MQTT 时的密码',
-      errorKey: 'mqtt',
-    },
-    {
-      name      : 'MQTT默认QoS（DataFlux 端收发消息）',
-      key       : 'MQTT_DEFAULT_QOS',
-      type      : 'integer',
-      input     : 'number',
-      inputAttrs: 'min="0" max="2" step="1"',
-      tips      : 'DataFlux Func 端收发消息时的QoS。可选：0=至多1次、1=至少一次、2=正好1次（目前暂时建议0）',
-      errorKey  : 'mqtt',
-    },
-
-    {
       name    : '管理员用户',
       key     : 'ADMIN_USERNAME',
       type    : 'string',
@@ -346,7 +303,6 @@
               <li>MySQL中存在具有操作上述数据库的用户</li>
               <li>MySQL开启<code>innodb_large_prefix</code>参数</li>
               <li>Redis 4.0 或以上版本</li>
-              <li>【可选】Eclipse Mosquitto 2.0 或以上版本（或其他支持MQTT 5 协议的Broker）</li>
             </ul>
           </p>
 

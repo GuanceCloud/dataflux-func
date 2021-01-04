@@ -100,6 +100,7 @@ LOG_JSON_FIELD_MAP = {
     'diffTime'          : 'diff_time',
     'costTime'          : 'cost_time',
 }
+MAX_STAGED_LOGS = 3000
 
 class LoggingFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, **options):
@@ -268,8 +269,8 @@ class LogHelper(object):
 
     def _stage(self, log_line):
         self._staged_logs.append(log_line)
-        if len(self._staged_logs) > 1000:
-            self._staged_logs = self._staged_logs[-1000:]
+        if len(self._staged_logs) > MAX_STAGED_LOGS:
+            self._staged_logs = self._staged_logs[-1 * MAX_STAGED_LOGS:]
 
     def _recur(self):
         for log_line in self._staged_logs:

@@ -15,7 +15,7 @@ import simplejson
 from worker import app
 from worker.utils import toolkit, yaml_resources
 from worker.utils.log_helper import LogHelper, LOG_LEVELS
-from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper, MQTTHelper
+from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -24,6 +24,8 @@ LOG_LEVEL_SEQS = LOG_LEVELS['levels']
 LOG_CALL_ARGS  = LOG_LEVEL_SEQS[LOG_LEVEL] >= LOG_LEVEL_SEQS['DEBUG']
 
 LIMIT_ARGS_DUMP = 200
+
+CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
 
 def gen_task_id():
     '''
@@ -91,7 +93,7 @@ class BaseTask(app.Task):
 
         content = toolkit.json_safe_dumps(content, indent=None)
 
-        self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
+        # self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
 
         if status in (celery_status.SUCCESS, celery_status.FAILURE):
             self.backend.client.publish(key, content)
@@ -108,10 +110,6 @@ class BaseTask(app.Task):
 
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
-
-        # Add MQTT Helper
-        if CONFIG['MQTT_HOST']:
-            self.mqtt = MQTTHelper(self.logger)
 
         if CONFIG['MODE'] == 'prod':
             self.db.skip_log       = True

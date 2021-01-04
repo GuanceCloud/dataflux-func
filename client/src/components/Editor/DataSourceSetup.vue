@@ -128,6 +128,43 @@
                     <el-input placeholder="Secret Key"
                       v-model="form.configJSON.secretKey"></el-input>
                   </el-form-item>
+
+                  <el-form-item label="客户端ID" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
+                    <el-input placeholder="客户端ID"
+                      v-model="form.configJSON.clientId"></el-input>
+                  </el-form-item>
+
+                  <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers') && selectedType === 'mqtt'"
+                    label="订阅/处理">
+                    <InfoBlock type="info" :title="'建议使用共享订阅方式订阅，避免重复接收消息。如：订阅以下主题都能接收到来自{topic}的消息：\n 1. MQTTv5 的 $share/{group}/{topic}\n 2. EMQX 的 $queue/{topic}'"></InfoBlock>
+                  </el-form-item>
+                  <el-form-item v-for="(topicHandler, index) in form.configJSON.topicHandlers || []"
+                    :label="`#${index + 1}`"
+                    :key="index" v-if="hasConfigField(selectedType, 'topicHandlers')"
+                    :prop="`configJSON.topicHandlers.${index}`"
+                    :rules="formRules_topicHandler">
+                    <el-row type="flex" justify="space-between">
+                      <el-col :span="21">
+                        <el-input placeholder="订阅主题" v-model="topicHandler.topic"></el-input>
+                      </el-col>
+                      <el-col :span="2">
+                        <el-link type="primary" @click.prevent="removeTopicHandler(index)">删除</el-link>
+                      </el-col>
+                    </el-row>
+                    <el-row type="flex">
+                      <el-col :span="24">
+                        <el-cascader class="func-cascader-input" ref="funcCascader"
+                          filterable
+                          placeholder="请选择主题消息处理函数"
+                          v-model="topicHandler.funcId"
+                          :options="funcCascader"
+                          :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                      </el-col>
+                    </el-row>
+                  </el-form-item>
+                  <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')">
+                    <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> 新增主题处理函数</el-link>
+                  </el-form-item>
                   <!-- 可变区域结束 -->
 
                   <el-form-item v-if="!data.isBuiltin">
@@ -287,6 +324,12 @@ export default {
         this.updateValidator(this.data.type);
       }
 
+      // 获取函数列表
+      let funcList = await this.common.getFuncList();
+
+      this.funcMap      = funcList.map;
+      this.funcCascader = funcList.cascader;
+
       this.$store.commit('updateLoadStatus', true);
     },
     async submitData() {
@@ -344,7 +387,7 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      await this.loadData();
+      // await this.loadData();
       this.$store.commit('updateDataSourceListSyncTime');
     },
     async deleteData() {
@@ -390,6 +433,15 @@ export default {
       }
       return (field in this.C.DATE_SOURCE_MAP[type].configFields);
     },
+    removeTopicHandler(index) {
+      this.form.configJSON.topicHandlers.splice(index, 1);
+    },
+    addTopicHandler() {
+      if (this.T.isNothing(this.form.configJSON.topicHandlers)) {
+        this.$set(this.form.configJSON, 'topicHandlers', []);
+      }
+      this.form.configJSON.topicHandlers.push({ topic: '', funcId: '' });
+    },
   },
   computed: {
     mode() {
@@ -416,13 +468,17 @@ export default {
   },
   data() {
     return {
-      data: {},
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
+
       form: {
         id         : null,
         title      : null,
         description: null,
         configJSON : {},
       },
+
       formRules: {
         id: [
           {
@@ -540,6 +596,39 @@ export default {
             required: false,
           },
         ],
+        'configJSON.clientId': [
+          {
+            trigger : 'change',
+            message : '请输入客户端ID',
+            required: false,
+          },
+        ],
+      },
+      formRules_topicHandler: {
+        trigger: 'change',
+        validator: (rule, value, callback) => {
+          switch(this.selectedType) {
+            case 'mqtt':
+              if (this.T.isNothing(value.topic)) {
+                return callback(new Error('请输入订阅主题，建议使用共享订阅方式，如：MQTTv5协议的 $share/g/topic，或EMQX的 $queue/topic'));
+              }
+              if (this.T.isNothing(value.funcId)) {
+                return callback(new Error('请选择处理函数'));
+              }
+              break;
+
+            default:
+              if (this.T.isNothing(value.topic)) {
+                return callback(new Error('请输入订阅主题'));
+              }
+              if (this.T.isNothing(value.funcId)) {
+                return callback(new Error('请选择处理函数'));
+              }
+              break;
+          }
+
+          return callback();
+        },
       },
 
       testDataSourceResult: null,
@@ -550,6 +639,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.func-cascader-input {
+  width: 400px;
+}
 </style>
 <style>
 .data-source-logo img {
@@ -589,6 +681,9 @@ export default {
   height: 70px !important;
 }
 .data-source-logo.logo-nsq {
+  height: 90px !important;
+}
+.data-source-logo.logo-mqtt {
   height: 90px !important;
 }
 </style>
