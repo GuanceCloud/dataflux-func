@@ -36,39 +36,8 @@ EntityModel.prototype.getSysStats = function(callback) {
 
   var sysStats = {};
 
-  var hostnames       = null;
-  var cacheKeyPrefixs = null;
+  self.locals.cacheDB.skipLog = true;
   async.series([
-    // Get all hostnames
-    function(asyncCallback) {
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'heartbeat', ['hostname', '*']);
-
-      self.cacheDB.keys(cacheKeyPattern, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        hostnames = cacheRes.map(function(key) {
-          return toolkit.parseCacheKey(key).tags.hostname;
-        });
-
-        return asyncCallback();
-      });
-    },
-    // Get all cache key prefixs
-    function(asyncCallback) {
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', '*']);
-
-      self.cacheDB.keys(cacheKeyPattern, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        cacheKeyPrefixs = cacheRes.map(function(key) {
-          var prefix = toolkit.parseCacheKey(key).tags.prefix;
-          prefix = toolkit.fromBase64(prefix);
-          return prefix;
-        });
-
-        return asyncCallback();
-      });
-    },
     // Get CPU/Memory usage
     function(asyncCallback) {
       var metricScaleMap = {
@@ -172,7 +141,7 @@ EntityModel.prototype.getSysStats = function(callback) {
 
         for (var k in tsDataMap) {
           var prefix = toolkit.parseCacheKey(k).tags.prefix;
-          prefix = prefix === 'OTHER' ? prefix : prefix + '...';
+          prefix = toolkit.fromBase64(prefix);
           sysStats[metric][prefix] = tsDataMap[k];
         }
 
@@ -203,6 +172,8 @@ EntityModel.prototype.getSysStats = function(callback) {
       });
     },
   ], function(err) {
+    self.locals.cacheDB.skipLog = false;
+
     if (err) return callback(err);
     return callback(null, sysStats);
   })

@@ -118,14 +118,6 @@ exports.afterAppCreated = function(app, server) {
 
   var hostname = os.hostname();
 
-  // Heartbeat
-  function recordHeartbeat() {
-    var heartbeatCacheKey = toolkit.getCacheKey('monitor', 'heartbeat', ['hostname', hostname]);
-    app.locals.cacheDB.setex(heartbeatCacheKey, 3 * 60, hostname, function(err) {
-      if (err) return app.locals.logger.logError(err);
-    });
-  }
-
   // Sys Stats
   var startCPUUsage = process.cpuUsage();
   function recordSysStats() {
@@ -237,7 +229,6 @@ exports.afterAppCreated = function(app, server) {
   };
 
   // Start interval
-  setInterval(recordHeartbeat, 30 * 1000);
   setInterval(recordSysStats, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
 
   /********** Content for YOUR project below **********/

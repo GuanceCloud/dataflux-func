@@ -26,10 +26,10 @@ var getConfig = function(c) {
  * @constructor
  * @param  {Object}          [logger=null]
  * @param  {Object}          [config=null]
- * @param  {String|String[]} [subTopics=null]
+ * @param  {String|String[]} [topics=null]
  * @return {Object} - MQTT Helper
  */
-var MQTTHelper = function(logger, config, subTopics) {
+var MQTTHelper = function(logger, config, topics) {
   var self = this;
 
   self.logger = logger || logHelper.createHelper();
@@ -37,13 +37,17 @@ var MQTTHelper = function(logger, config, subTopics) {
   self.config = toolkit.noNullOrWhiteSpace(config);
   self.client = mqtt.connect(getConfig(self.config));
 
-  self.subTopics = [];
+  self.topics = topics;
   self.handlers  = [];
 
   self.client.on('connect', function() {
     self.logger.debug('[MQTT] Connected');
 
-    self.sub(subTopics);
+    self.sub(self.topics);
+  });
+
+  self.client.on('offline', function() {
+    self.client.reconnect();
   });
 };
 
@@ -69,35 +73,35 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
 /**
  * Subscribe from topic
  *
- * @param  {String|String[]} topic
+ * @param  {String|String[]} topics
  * @param  {Object}          options
  * @param  {Integer}         [options.qos=0]
  * @param  {Function}        callback
  * @return {undefined}
  */
-MQTTHelper.prototype.sub = function(topic, options, callback) {
+MQTTHelper.prototype.sub = function(topics, options, callback) {
   callback = toolkit.ensureFn(callback);
 
   var self = this;
 
-  var subTopics = toolkit.asArray(topic);
-  subTopics = subTopics.map(function(t) {
+  var topics = toolkit.asArray(topics);
+  topics = topics.map(function(t) {
     return t.trim();
   });
-  subTopics = subTopics.filter(function(t) {
-    return !toolkit.isNothing(t) && self.subTopics.indexOf(t) < 0;
+  topics = topics.filter(function(t) {
+    return !toolkit.isNothing(t);
   });
 
-  if (toolkit.isNothing(subTopics)) return callback();
+  if (toolkit.isNothing(topics)) return callback();
 
-  self.subTopics = self.subTopics.concat(subTopics);
+  self.topics = toolkit.noDuplication(self.topics.concat(topics));
 
   options = options || {};
   options.qos = options.qos || 0;
 
-  self.logger.debug(`[MQTT] Subscribe topic ${subTopics.join(', ')} on Qos=${options.qos}`);
+  self.logger.debug(`[MQTT] Subscribe topics ${topics.join(', ')} on Qos=${options.qos}`);
 
-  self.client.subscribe(subTopics, options, function(err, granted) {
+  self.client.subscribe(topics, options, function(err, granted) {
     if (err) {
       self.logger.logError(err);
       return callback(err);
@@ -140,19 +144,36 @@ MQTTHelper.prototype.handle = function(handler) {
 /**
  * Unsubscribe from topic
  *
- * @param  {String|String[]} topic
+ * @param  {String|String[]} topics
  * @param  {Function}        callback
  * @return {undefined}
  */
-MQTTHelper.prototype.unsub = function(topic, callback) {
+MQTTHelper.prototype.unsub = function(topics, callback) {
   callback = toolkit.ensureFn(callback);
 
-  if (toolkit.isNothing(topic)) return callback();
+  var self = this;
 
-  var topicStr = Array.isArray(topic) ? topic.join(',') : topic;
-  this.logger.info(`[MQTT] Unsubscribe topic ${topicStr}`);
+  var topics = toolkit.asArray(topics);
+  topics = topics.map(function(t) {
+    return t.trim();
+  });
+  topics = topics.filter(function(t) {
+    return !toolkit.isNothing(t);
+  });
 
-  this.client.unsubscribe(topic, callback);
+  if (toolkit.isNothing(topics)) return callback();
+
+  var topicStr = topic.join(',');
+  self.logger.info(`[MQTT] Unsubscribe topic ${topicStr}`);
+
+  topics.forEach(function(t) {
+    var index = self.topics.indexOf(t);
+    if (index >= 0) {
+      self.topics.splice(index, 1);
+    }
+  });
+
+  self.client.unsubscribe(topics, callback);
 };
 
 /**
@@ -164,12 +185,14 @@ MQTTHelper.prototype.unsub = function(topic, callback) {
 MQTTHelper.prototype.unsubAll = function(callback) {
   callback = toolkit.ensureFn(callback);
 
-  if (toolkit.isNothing(this.subTopics)) return callback();
+  if (toolkit.isNothing(this.topics)) return callback();
 
-  var topicStr = this.subTopics.join(',');
+  var topicStr = this.topics.join(',');
   this.logger.info(`[MQTT] Unsubscribe ALL topic ${topicStr}`);
 
-  this.client.unsubscribe(this.subTopics, callback);
+  this.topics = [];
+
+  this.client.unsubscribe(this.topics, callback);
 };
 
 /**
@@ -182,12 +205,12 @@ MQTTHelper.prototype.end = function(callback) {
 
   self.logger.info(`[MQTT] End`);
 
-  self.client.unsubscribe(self.subTopics, function() {
+  self.client.unsubscribe(self.topics, function() {
     self.client.end(false, callback);
   });
 };
 
 exports.MQTTHelper = MQTTHelper;
-exports.createHelper = function(logger, config, subTopics) {
-  return new MQTTHelper(logger, config, subTopics);
+exports.createHelper = function(logger, config, topics) {
+  return new MQTTHelper(logger, config, topics);
 };
