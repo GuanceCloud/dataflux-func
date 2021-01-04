@@ -93,6 +93,9 @@ _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
 
 # 不使用zhuyun 镜像时，从DockerHub拉取
 if [ ${OPT_ZHUYUN} = "FALSE" ]; then
+    __MYSQL_IMAGE=mysql:5.7.26
+    __REDIS_IMAGE=redis:5.0.7
+    __MQTT_IMAGE=eclipse-mosquitto:2.0.3
     _DATAFLUX_FUNC_IMAGE=dataflux-func/dataflux-func:latest
 fi
 

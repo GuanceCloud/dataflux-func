@@ -20,6 +20,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
     - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
         - [安装选项](#%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
+            - [`--zhuyun`：从驻云官方镜像库安装](#--zhuyun%EF%BC%9A%E4%BB%8E%E9%A9%BB%E4%BA%91%E5%AE%98%E6%96%B9%E9%95%9C%E5%83%8F%E5%BA%93%E5%AE%89%E8%A3%85)
             - [`--dev`：安装开发版](#--dev%EF%BC%9A%E5%AE%89%E8%A3%85%E5%BC%80%E5%8F%91%E7%89%88)
             - [`--mini`：安装迷你版](#--mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
             - [`--install-dir {安装目录}`：指定安装目录](#--install-dir-%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95%EF%BC%9A%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95)
@@ -50,9 +51,9 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 1. *本系统使用`docker stack`部署，*
 *因此要求当前系统已经安装`docker`，且可以正常使用`docker stack`*
 
-> 程序本体镜像默认从上海驻云维护的镜像库中拉取，
-> 因此在执行操作之前，请确保已经登录到镜像库。
-> 可以使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
+> 部署程序默认从hub.docker.com中拉取，
+> 也可以使用`--zhuyun`改为从驻云官方维护的镜像仓库拉取镜像。
+> 进行此操作时，请确保已经使用`docker login <用户名> <密码> pubrepo.jiagouyun.com`进行登录。
 >
 > 使用`docker stack`需要Docker Swarm模式，
 > 可以使用`docker swarm init`初始化当前节点。
@@ -114,6 +115,12 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 ```
 
 具体参数详情见下文
+
+##### `--zhuyun`：从驻云官方镜像库安装
+
+从驻云官方维护的镜像仓库获取镜像
+
+*注意：需要事先登录驻云官方镜像库*
 
 ##### `--dev`：安装开发版
 
