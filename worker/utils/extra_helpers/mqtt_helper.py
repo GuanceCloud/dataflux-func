@@ -22,7 +22,7 @@ def get_config(c):
 
 def get_auth_config(c):
     config = {
-        'username': c.get('username'),
+        'username': c.get('user') or c.get('username'),
         'password': c.get('password'),
     }
     return config

@@ -203,12 +203,12 @@ function runSetup() {
       function(asyncCallback) {
         if (!ARGV.mqtt) return asyncCallback();
 
-        var usernamePassword = ARGV.mqtt.split(':');
+        var userPassword = ARGV.mqtt.split(':');
         var configJSON = JSON.stringify({
-          host    : 'mqtt',
-          port    : 1883,
-          username: usernamePassword[0],
-          password: usernamePassword[1],
+          host         : 'mqtt',
+          port         : 1883,
+          user         : userPassword[0],
+          password     : userPassword[1],
           topicHandlers: [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
         });
 

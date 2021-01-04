@@ -12,7 +12,7 @@ var getConfig = function(c) {
   return {
     host           : c.host,
     port           : c.port,
-    username       : c.username,
+    username       : c.user || c.username,
     password       : c.password,
     clientId       : c.clientId || (CONFIG.APP_NAME + '@' + toolkit.genTimeSerialSeq()),
     protocolId     : 'MQTT',
