@@ -234,7 +234,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
             ${__DOCKER_STACK_FILE}
     else
         # 开启MQTT 组件时，附带启动参数，自动添加数据源
-        __SERVER_ARGV="${__SERVER_ARGV} --mqtt ${__MQTT_USERNAME}:${__MQTT_PASSWORD}@mqtt"
+        __SERVER_ARGV="${__SERVER_ARGV} --mqtt ${__MQTT_USERNAME}:${__MQTT_PASSWORD}"
     fi
 
     sed -i \
