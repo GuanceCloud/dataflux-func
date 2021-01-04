@@ -10,6 +10,7 @@ function log {
 }
 
 # 处理选项
+OPT_ZHUYUN=FALSE
 OPT_DEV=FALSE
 OPT_MINI=FALSE
 OPT_INSTALL_DIR=DEFAULT
@@ -20,6 +21,11 @@ OPT_MQTT=FALSE
 
 while [ $# -ge 1 ]; do
     case $1 in
+        '--zhuyun' )
+            OPT_ZHUYUN=TRUE
+            shift
+            ;;
+
         '--dev' )
             OPT_DEV=TRUE
             shift
@@ -85,11 +91,16 @@ __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
 _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
 
+# 不使用zhuyun 镜像时，从DockerHub拉取
+if [ ${OPT_ZHUYUN} = "FALSE" ]; then
+    _DATAFLUX_FUNC_IMAGE=dataflux-func/dataflux-func:latest
+fi
+
 # 启用dev 部署时，项目名/资源等改为dev 专用版
 if [ ${OPT_DEV} = "TRUE" ]; then
     __PROJECT_NAME=dataflux-func-dev
     __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
-    _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
+    _DATAFLUX_FUNC_IMAGE=`echo ${_DATAFLUX_FUNC_IMAGE} | sed "s#:latest#:dev#g"`
 fi
 
 _INSTALL_DIR=/usr/local/${__PROJECT_NAME}

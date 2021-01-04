@@ -209,6 +209,7 @@ function runSetup() {
           port    : 1883,
           username: usernamePassword[0],
           password: usernamePassword[1],
+          topicHandlers: [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
         });
 
         var sql = 'INSERT INTO `biz_main_data_source` SET ?';

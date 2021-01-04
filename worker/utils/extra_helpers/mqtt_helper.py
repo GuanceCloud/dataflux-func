@@ -29,9 +29,9 @@ def get_auth_config(c):
 
 def get_connect_config(c):
     config = {
-        'host'     : c.get('host') or '127.0.0.1',
-        'port'     : c.get('port') or 1883,
-        'keepalive': c.get('keepalive'),
+        'host'     : c.get('host')      or '127.0.0.1',
+        'port'     : c.get('port')      or 1883,
+        'keepalive': c.get('keepalive') or 60,
     }
     return config
 
@@ -70,7 +70,7 @@ class MQTTHelper(object):
             if rc == 0:
                 break
 
-            self.logger.warning('Try to reconnect to broker...')
+            self.logger.warning('[MQTT] Try to reconnect to broker')
             self.client.reconnect()
 
         else:
