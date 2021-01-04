@@ -208,7 +208,7 @@ function runSetup() {
           host         : 'mqtt',
           port         : 1883,
           user         : userPassword[0],
-          password     : userPassword[1],
+          password     : toolkit.cipherByAES(userPassword[1], config.SECRET),
           topicHandlers: [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
         });
 
