@@ -108,11 +108,15 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 添加安装选项时，只需要在自动部署命令后添加`-- --{参数}[ 参数配置（如有）]`即可，如：
 ```shell
+# 从驻云官方镜像库获取镜像
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --zhuyun
 # 安装开发版
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --dev
 # 指定安装目录，同时开启MQTT组件（mosquitto）
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --mqtt
 ```
+
+*注意：参数前确实有`--`，表示参数传递给需要执行的脚本，此处不是笔误*
 
 具体参数详情见下文
 

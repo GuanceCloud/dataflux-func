@@ -91,7 +91,7 @@ __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
 _DATAFLUX_FUNC_IMAGE=dataflux-func/dataflux-func:latest
 
-# 不使用zhuyun 镜像时，从DockerHub拉取
+# 使用zhuyun 镜像时，从驻云官方镜像仓库拉取
 if [ ${OPT_ZHUYUN} = "TRUE" ]; then
     __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
     __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
