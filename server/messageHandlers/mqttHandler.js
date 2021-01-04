@@ -226,7 +226,14 @@ module.exports = function(app, server) {
 
         if (dbRes.length > 0) {
           // 添加/更新
-          nextTopicHandlerMap[dataSourceId] = dbRes[0].configJSON;
+          var _configJSON = dbRes[0].configJSON;
+          if (_configJSON.passwordCipher) {
+            _configJSON.password = toolkit.decipherByAES(_configJSON.passwordCipher, CONFIG.SECRET);
+            delete _configJSON.passwordCipher;
+          }
+
+          nextTopicHandlerMap[dataSourceId] = _configJSON;
+
         } else {
           // 删除
           delete nextTopicHandlerMap[dataSourceId];
@@ -234,6 +241,11 @@ module.exports = function(app, server) {
       } else {
         // 全部更新
         nextTopicHandlerMap = dbRes.reduce(function(acc, x) {
+          if (x.configJSON.passwordCipher) {
+            x.configJSON.password = toolkit.decipherByAES(x.configJSON.passwordCipher, CONFIG.SECRET);
+            delete x.configJSON.passwordCipher;
+          }
+
           acc[x.id] = x.configJSON;
           return acc;
         }, {});
