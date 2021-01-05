@@ -330,10 +330,10 @@ fi
 if [ ${OPT_IMAGE} != "DEFAULT" ]; then
     log "Notice: DataFlux Func is deployed using a custom image: ${_DATAFLUX_FUNC_IMAGE}"
 fi
-if [ ${OPT_NO_MYSQL} != "TRUE" ]; then
+if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
     log "Notice: Builtin MySQL is NOT deployed, please specify your MySQL server configs in setup page."
 fi
-if [ ${OPT_NO_REDIS} != "TRUE" ]; then
+if [ ${OPT_NO_REDIS} = "TRUE" ]; then
     log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
 fi
 if [ ${OPT_MQTT} = "TRUE" ]; then
