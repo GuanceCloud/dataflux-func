@@ -15,39 +15,84 @@
         <div class="col-xs-2 text-right">
         </div>
       </div>
-      <div class="panel-body">
-        <div class="form-group">
-          <label class="control-label"><%= __('Username') %></label>
-          <input type="text" name="username" class="form-control" wat-data-for="submit" wat-data-key="body.signIn.username" placeholder="<%= __('Enter your username') %>">
+      <% if (currentUser && currentUser.isSignedIn) { %>
+        <div class="panel-body">
+          <h4><%= __('Current User') %>:</h4>
+          <ul>
+            <li>
+              <code><%= currentUser.name || currentUser.username %> (<%= __('Username') %>: <%= currentUser.username %>)</code>
+            </li>
+          </ul>
+
+          <hr>
+          <h4><%= __('Go To Page') %>:</h4>
+          <ul>
+            <li>
+              <%_
+                components.aLink('indexPage.index', {
+                  title: __('Index')
+                })
+              _%>
+            </li>
+            <li>
+              <%_
+                components.aLink('indexPage.dashboard', {
+                  title: __('Dashboard')
+                })
+              _%>
+            </li>
+            <li>
+              <%_
+                components.aLink('monitorPage.sysStats', {
+                  title: __('System Stats')
+                })
+              _%>
+            </li>
+          </ul>
+
+          <hr>
+          <%_
+            components.aButton('authPage.signOut', {
+              class: 'pull-right',
+              title: __('Sign Out')
+            })
+          _%>
         </div>
-        <div class="form-group">
-          <label class="control-label"><%= __('Password') %></label>
-          <input type="password" name="password" class="form-control" wat-data-for="submit" wat-data-key="body.signIn.password" placeholder="<%= __('Enter your password') %>">
-          <% components.errorBlock(__('Username or password is invalid.'), 'EUserPassword'); %>
+      <% } else { %>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="control-label"><%= __('Username') %></label>
+            <input type="text" name="username" class="form-control" wat-data-for="submit" wat-data-key="body.signIn.username" placeholder="<%= __('Enter your username') %>">
+          </div>
+          <div class="form-group">
+            <label class="control-label"><%= __('Password') %></label>
+            <input type="password" name="password" class="form-control" wat-data-for="submit" wat-data-key="body.signIn.password" placeholder="<%= __('Enter your password') %>">
+            <% components.errorBlock(__('Username or password is invalid.'), 'EUserPassword'); %>
+          </div>
+          <div class="form-group">
+            <label class="control-label"><%= __('CAPTCHA') %></label>
+            <% components.captcha('signIn') %>
+          </div>
+          <br />
+          <div class="form-group">
+            <%
+              components.submitButton('authAPI.signIn', {
+                title         : __('Sign In'),
+                skipAuth      : true,
+                size          : 'block',
+                icon          : 'sign-in',
+                ok            : 'saveAPIXAuthToken',
+                ng            : 'showHelpBlock',
+                useCaptcha    : true,
+                triggerByEnter: true,
+              });
+            %>
+          </div>
+          <div class="form-group">
+            <% components.errorBlock(__('Your account is disabled.'), 'EUserDisabled'); %>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="control-label"><%= __('CAPTCHA') %></label>
-          <% components.captcha('signIn') %>
-        </div>
-        <br />
-        <div class="form-group">
-          <%
-            components.submitButton('authAPI.signIn', {
-              title         : __('Sign In'),
-              skipAuth      : true,
-              size          : 'block',
-              icon          : 'sign-in',
-              ok            : 'saveAPIXAuthToken',
-              ng            : 'showHelpBlock',
-              useCaptcha    : true,
-              triggerByEnter: true,
-            });
-          %>
-        </div>
-        <div class="form-group">
-          <% components.errorBlock(__('Your account is disabled.'), 'EUserDisabled'); %>
-        </div>
-      </div>
+      <% } %>
     </div>
   </div>
 </div>
