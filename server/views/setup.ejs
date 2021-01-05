@@ -408,7 +408,7 @@
           var nextURL = jqXHR.responseJSON.redirect;
           setInterval(function() {
             $.get('/api/v1/do/ping', function() {
-              location.href = nextURL;
+              setTimeout(function() { location.href = nextURL }, 3 * 1000);
             });
           }, 1 * 1000);
         },

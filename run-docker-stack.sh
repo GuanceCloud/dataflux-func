@@ -345,7 +345,7 @@ if [ ${OPT_MQTT} = "TRUE" ]; then
     log "To publish message:"
     log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t test -m 'hello'"
     log "To add more MQTT client users:"
-    log "    $ docker exec `docker ps -q -f label=mqtt` mosquitto_passwd -b /mosquitto/passwd username password"
+    log "    $ docker exec `docker ps -q -f label=mqtt` mosquitto_passwd -b ${_INSTALL_DIR}/mosquitto/passwd username password"
     log "    $ docker kill `docker ps -q -f label=mqtt` -s HUP"
 fi
 
