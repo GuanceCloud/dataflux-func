@@ -1,23 +1,14 @@
 # Change Log
 
-### 1.0.45 ~ 1.0.46
+### 1.0.47
 
-- 新增内置MQTT Broker支持及配套脚本功能：
-
-```python
-# 订阅主题支持通配符
-#     如：integration_config={'topic': 'dataflux_func/+'}
-@DFF.API('MQTT消息收发', integration="onMQTT", integration_config={'topic': 'dataflux_func/test'})
-def handle_mqtt_message(topic, message, packet):
-    '''
-    处理MQTT数据
-    接收来自dataflux_func/test的消息，加上后缀后发送至test
-    '''
-    DFF.MQTT('test', str(message) + ' (forwarded)')
-```
-
+- 增加MQTT 数据源支持
 - 自动部署脚本优化，增加多个选项，详情见[README.md](README.md)
 - 修复已知Bug
+
+### 1.0.45 ~ 1.0.46
+
+*废弃版本*
 
 ### 1.0.44
 
