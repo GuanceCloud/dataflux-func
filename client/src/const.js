@@ -90,7 +90,7 @@ export const DATE_SOURCE = [
     logo          : logo_redis,
     tagType       : 'danger',
     debugSupported: true,
-    sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', '"some_key"')`,
+    sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', 'some_key')`,
     configFields: {
       host    : { default: null, isRequired: true },
       port    : { default: 6379 },
@@ -105,7 +105,7 @@ export const DATE_SOURCE = [
     logo          : logo_memcached,
     tagType       : 'success',
     debugSupported: true,
-    sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', '"some_key"')`,
+    sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', 'some_key')`,
     configFields: {
       servers: { default: null, isRequired: true },
     },

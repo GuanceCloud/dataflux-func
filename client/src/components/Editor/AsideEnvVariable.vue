@@ -43,7 +43,7 @@
 
             <el-popover v-if="data.tip"
               placement="right-start"
-              trigger="hover"
+              trigger="click"
               transition="el-fade-in"
               popper-class="aside-tip"
               :close-delay="500">

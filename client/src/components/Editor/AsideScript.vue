@@ -362,11 +362,15 @@ export default {
       this.defaultExpandedNodeKeys = Object.keys(this.expandedNodeMap);
 
       setImmediate(() => {
+        if (!this.$refs.tree) return;
+
         // 自动选中
         this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
       });
 
       setTimeout(() => {
+        if (!this.$refs.tree) return;
+
         // 滚动到目标位置
         let entryId = this.$refs.tree.getCurrentKey();
         if (entryId) {
