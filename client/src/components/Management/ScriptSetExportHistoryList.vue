@@ -73,7 +73,7 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-set-export-history/do/list', {
+      let apiRes = await this.T.callAPI('/api/v1/script-set-export-history/do/list', {
         alert: {entity: '导出历史', showError: true},
       });
       if (!apiRes.ok) return;
