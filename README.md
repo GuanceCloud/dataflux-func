@@ -18,16 +18,14 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 - [系统及环境要求](#%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
 - [部署运行](#%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C)
-    - [【推荐】方式：使用基于`docker stack`的自动部署脚本部署](#%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
-        - [安装选项](#%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-            - [`--zhuyun`：从驻云官方镜像库安装](#--zhuyun%EF%BC%9A%E4%BB%8E%E9%A9%BB%E4%BA%91%E5%AE%98%E6%96%B9%E9%95%9C%E5%83%8F%E5%BA%93%E5%AE%89%E8%A3%85)
-            - [`--dev`：安装开发版](#--dev%EF%BC%9A%E5%AE%89%E8%A3%85%E5%BC%80%E5%8F%91%E7%89%88)
-            - [`--mini`：安装迷你版](#--mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
-            - [`--install-dir {安装目录}`：指定安装目录](#--install-dir-%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95%EF%BC%9A%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95)
-            - [`--image {主程序Docker镜像}`：指定主程序镜像](#--image-%E4%B8%BB%E7%A8%8B%E5%BA%8Fdocker%E9%95%9C%E5%83%8F%EF%BC%9A%E6%8C%87%E5%AE%9A%E4%B8%BB%E7%A8%8B%E5%BA%8F%E9%95%9C%E5%83%8F)
-            - [`--no-mysql`：禁用内置MySQL](#--no-mysql%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEmysql)
-            - [`--no-redis`：禁用内置Redis](#--no-redis%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEredis)
-            - [`--mqtt`：启用内置MQTT Broker](#--mqtt%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEmqtt-broker)
+    - [推荐方式：使用基于`docker stack`的自动部署脚本部署](#%E6%8E%A8%E8%8D%90%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8Edocker-stack%E7%9A%84%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E9%83%A8%E7%BD%B2)
+    - [安装选项](#%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
+        - [`--zhuyun`：从驻云官方镜像库安装](#--zhuyun%EF%BC%9A%E4%BB%8E%E9%A9%BB%E4%BA%91%E5%AE%98%E6%96%B9%E9%95%9C%E5%83%8F%E5%BA%93%E5%AE%89%E8%A3%85)
+        - [`--mini`：安装迷你版](#--mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
+        - [`--install-dir {安装目录}`：指定安装目录](#--install-dir-%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95%EF%BC%9A%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95)
+        - [`--no-mysql`：禁用内置MySQL](#--no-mysql%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEmysql)
+        - [`--no-redis`：禁用内置Redis](#--no-redis%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEredis)
+        - [`--mqtt`：启用内置MQTT Broker](#--mqtt%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEmqtt-broker)
     - [进阶方式：使用`docker stack`配置文件进行部署](#%E8%BF%9B%E9%98%B6%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8docker-stack%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [更新部署](#%E6%9B%B4%E6%96%B0%E9%83%A8%E7%BD%B2)
 - [重启服务](#%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1)
@@ -40,7 +38,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
     - [主要功能](#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
     - [支持的数据库](#%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93)
     - [相关链接](#%E7%9B%B8%E5%85%B3%E9%93%BE%E6%8E%A5)
-- [附录](#%E9%99%84%E5%BD%95)
 
 <!-- /MarkdownTOC -->
 
@@ -74,7 +71,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 用户可以选择官方提供的一键部署命令，
 也可以下载相关配置文件后，调整配置文件后手动启动。
 
-### 【推荐】方式：使用基于`docker stack`的自动部署脚本部署
+### 推荐方式：使用基于`docker stack`的自动部署脚本部署
 
 *确保已满足上文中的「系统及环境要求」*
 
@@ -102,7 +99,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 7. `dataflux-func_worker-8-9`
 8. `dataflux-func_beat`
 
-#### 安装选项
+### 安装选项
 
 自动安装脚本支持一些安装选项，用于适应不同的安装需求
 
@@ -110,8 +107,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 ```shell
 # 从驻云官方镜像库获取镜像
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --zhuyun
-# 安装开发版
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --dev
 # 指定安装目录，同时开启MQTT组件（mosquitto）
 /bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --mqtt
 ```
@@ -125,15 +120,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 从驻云官方维护的镜像仓库获取镜像
 
 *注意：需要事先登录驻云官方镜像库*
-
-##### `--dev`：安装开发版
-
-安装正在开发中的版本，*无特殊情况一般不建议使用*。
-
-开启后：
-- 程序镜像使用`dataflux-func:dev`
-- 默认安装目录改为`/usr/local/dataflux-func-dev`
-- Docker Stack 名改为`dataflux-func-dev`
 
 ##### `--mini`：安装迷你版
 
@@ -152,13 +138,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 需要安装到与默认路径`/usr/local/dataflux-func`不同的路径下时，可指定此参数
 
-##### `--image {主程序Docker镜像}`：指定主程序镜像
-
-需要安装指定版本的主程序时，可指定此参数。如：
-```shell
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --image pubrepo.jiagouyun.com/dataflux-func/dataflux-func:1.0
-```
-
 ##### `--no-mysql`：禁用内置MySQL
 
 需要使用已有的MySQL数据库时，可指定此参数，禁止在本机启动MySQL。
@@ -175,11 +154,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 需要安装后，同时在本机启动MQTT Broker时，可指定此选项。
 
-内置的MQTT Broker 为`eclipse-mosquitto`。
-
-*提示：未指定时，不会在本机启动MQTT Broker，但依然可以通过填写MQTT配置来连接MQTT Broker*
-
-*注意：本机启动的内置MQTT Broker（即`eclipse-mosquitto`）为单机版*
+*注意：内置的MQTT Broker 为`eclipse-mosquitto`，并会自动生成对应的数据源*
 
 
 
@@ -277,11 +252,11 @@ docker stack deploy dataflux-func -c docker-stack.yaml
 
 默认的参数主要应对最常见的情况，一些比较特殊的场景可以调整部分参数来优化系统：
 
-|              参数             |  默认值   |                                      说明                                     |
-|-------------------------------|-----------|-------------------------------------------------------------------------------|
-| `LOG_LEVEL`                   | `WARNING` | 日志等级。<br>可以改为`ERROR`减少日志输出量。<br>或直接改为`NONE`禁用日志     |
-| `_WORKER_CONCURRENCY`         | `10`      | 工作单元进程数量。<br>如存在大量慢IO任务（耗时大于1秒），可改为`20`提高并发量 |
-| `_WORKER_PREFETCH_MULTIPLIER` | `10`      | 工作单元任务预获取数量。<br>如存在大量慢速任务（耗时大于1秒），建议改为`1`    |
+|              参数             |  默认值   |                                                   说明                                                  |
+|-------------------------------|-----------|---------------------------------------------------------------------------------------------------------|
+| `LOG_LEVEL`                   | `WARNING` | 日志等级。<br>可以改为`ERROR`减少日志输出量。<br>或直接改为`NONE`禁用日志                               |
+| `_WORKER_CONCURRENCY`         | `5`       | 工作单元进程数量。<br>如存在大量慢IO任务（耗时大于1秒），可改为`20`提高并发量，但不要过大，防止内存耗尽 |
+| `_WORKER_PREFETCH_MULTIPLIER` | `10`      | 工作单元任务预获取数量。<br>如存在大量慢速任务（耗时大于1秒），建议改为`1`                              |
 
 ## 版本号规则
 
@@ -336,18 +311,10 @@ docker stack deploy dataflux-func -c docker-stack.yaml
 | mongoDB                      | [pymongo](https://pypi.org/project/pymongo/)                                      |                                                                                                                                     |
 | elasticsearch（HTTP方式）    | [requests](https://pypi.org/project/requests/)                                    |                                                                                                                                     |
 | NSQ (Lookupd, HTTP方式)      | [requests](https://pypi.org/project/requests/)                                    |                                                                                                                                     |
+| MQTT                         | [paho-mqtt](https://pypi.org/project/paho-mqtt/)                                  |                                                                                                                                     |
 
 ### 相关链接
 
 - [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
 
 - [DataFlux官方网站](https://dataflux.cn/)
-
-
-
-## 附录
-
-构建Docker 镜像：
-```sh
-sudo docker build --rm -t dataflux-func -f ./Dockerfile .
-```
