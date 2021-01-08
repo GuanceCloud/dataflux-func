@@ -14,8 +14,6 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 
 
-## 目录
-
 <!-- MarkdownTOC -->
 
 - [系统及环境要求](#%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
