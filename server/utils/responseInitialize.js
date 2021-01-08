@@ -205,7 +205,7 @@ function recordSlowAPI(req, res, reqCost) {
   };
 
   if (shouldSave) {
-    var slowAPICountModel = slowAPICountMod.createModel(req, res);
+    var slowAPICountModel = slowAPICountMod.createModel(res.locals);
 
     var data = toolkit.jsonCopy(slowAPICountMapCache);
     slowAPICountMapCache = {};
@@ -294,25 +294,49 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = toolkit.initRet();
     }
 
-    // Field picking
-    if (!toolkit.isNothing(res.locals.fieldPicking) && !toolkit.isNothing(ret.data)) {
-      if (Array.isArray(ret.data)) {
-        for (var i = 0; i < ret.data.length; i++) {
-          ret.data[i] = toolkit.jsonPick(ret.data[i], res.locals.fieldPicking);
-        }
-      } else if ('object' === typeof ret.data) {
-        ret.data = toolkit.jsonPick(ret.data, res.locals.fieldPicking);
+    if (!toolkit.isNothing(res.locals.fieldSelecting) && !toolkit.isNothing(ret.data)) {
+      // Field selecting (New version)
+      var selectingFunc = toolkit.jsonPick;
+      if (toolkit.startsWith(res.locals.fieldSelecting[0], '-')) {
+        selectingFunc = toolkit.jsonKick;
+        res.locals.fieldSelecting[0] = res.locals.fieldSelecting[0].slice(1).trim();
       }
-    }
 
-    // Field kicking
-    if (!toolkit.isNothing(res.locals.fieldKicking) && !toolkit.isNothing(ret.data)) {
+      var fields = [];
+      res.locals.fieldSelecting.forEach(function(f) {
+        if (toolkit.isNothing(f)) return;
+        fields.push(f);
+      })
+
       if (Array.isArray(ret.data)) {
         for (var i = 0; i < ret.data.length; i++) {
-          ret.data[i] = toolkit.jsonKick(ret.data[i], res.locals.fieldKicking);
+          ret.data[i] = selectingFunc(ret.data[i], fields);
         }
       } else if ('object' === typeof ret.data) {
-        ret.data = toolkit.jsonKick(ret.data, res.locals.fieldKicking);
+        ret.data = selectingFunc(ret.data, fields);
+      }
+
+    } else {
+      // Field picking (Old version)
+      if (!toolkit.isNothing(res.locals.fieldPicking) && !toolkit.isNothing(ret.data)) {
+        if (Array.isArray(ret.data)) {
+          for (var i = 0; i < ret.data.length; i++) {
+            ret.data[i] = toolkit.jsonPick(ret.data[i], res.locals.fieldPicking);
+          }
+        } else if ('object' === typeof ret.data) {
+          ret.data = toolkit.jsonPick(ret.data, res.locals.fieldPicking);
+        }
+      }
+
+      // Field kicking (Old version)
+      if (!toolkit.isNothing(res.locals.fieldKicking) && !toolkit.isNothing(ret.data)) {
+        if (Array.isArray(ret.data)) {
+          for (var i = 0; i < ret.data.length; i++) {
+            ret.data[i] = toolkit.jsonKick(ret.data[i], res.locals.fieldKicking);
+          }
+        } else if ('object' === typeof ret.data) {
+          ret.data = toolkit.jsonKick(ret.data, res.locals.fieldKicking);
+        }
       }
     }
 
@@ -579,19 +603,20 @@ router.all('*', require('./requestDumper').dumpRequestFrom);
 router.all('*', function functionalComponents(req, res, next) {
   var reqLogger = res.locals.logger;
 
-  var isDryRun = false;
-  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
-    isDryRun = true;
+  res.locals.db = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
+  res.locals.cacheDB = require('./extraHelpers/redisHelper').createHelper(reqLogger);
+  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
+
+  if (CONFIG.MODE === 'prod') {
+    res.locals.db.skipLog      = true;
+    res.locals.cacheDB.skipLog = true;
   }
 
-  res.locals.db = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
-  res.locals.db.isDryRun = isDryRun;
-
-  res.locals.cacheDB = require('./extraHelpers/redisHelper').createHelper(reqLogger);
-  res.locals.cacheDB.isDryRun = isDryRun;
-
-  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
-  res.locals.fileStorage.isDryRun = isDryRun;
+  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
+    res.locals.db.isDryRun          = true;
+    res.locals.cacheDB.isDryRun     = true;
+    res.locals.fileStorage.isDryRun = true;
+  }
 
   // Init user handler
   res.locals.user = auth.createUserHandler();

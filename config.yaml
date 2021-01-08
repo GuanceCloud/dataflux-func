@@ -60,7 +60,8 @@ LOG_CONSOLE_COLOR: true
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
-WEB_BASE_URL: http://127.0.0.1:8088
+WEB_BASE_URL      : http://127.0.0.1:8088
+WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
 # Web服务器绑定IP
 # 如：
@@ -86,10 +87,14 @@ MYSQL_DATABASE: dataflux_func
 
 # Redis连接配置
 # 建议：为避免与其他应用冲突，不使用默认数据库0
-REDIS_HOST    : '127.0.0.1'
-REDIS_PORT    : 6379
-REDIS_DATABASE: 5
-REDIS_PASSWORD: ''
+REDIS_HOST        : '127.0.0.1'
+REDIS_PORT        : 6379
+REDIS_DATABASE    : 5
+REDIS_PASSWORD    : ''
+
+REDIS_TS_MAX_AGE   : 3600   # 1小时
+REDIS_TS_MAX_PERIOD: 259200 # 3天
+REDIS_TS_MAX_LENGTH: 4320   # 3天分钟数
 
 # Worker配置
 WORKER_QUEUE_ALIAS_MAP: cpu=9
@@ -184,21 +189,16 @@ _WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL: X-Localhost-Temp-Auth-Token
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10
 _WORKER_DEFAULT_QUEUE      : '0'
-_WORKER_CONCURRENCY        : 10
+_WORKER_CONCURRENCY        : 5
 _WORKER_PREFETCH_MULTIPLIER: 10
 _WORKER_MAX_TASKS_PER_CHILD: 3000
 _WORKER_RESULT_EXPIRES     : 3600
 
 # 监控模块一般作为常量的配置
-_MONITOR_CPU_MEM_USAGE_CHECK_INTERVAL      : 60
-_MONITOR_CPU_MEM_USAGE_KEEP_DURATION       : 43200
-_MONITOR_CACHE_USAGE_CHECK_INTERVAL        : 60
-_MONITOR_CACHE_USAGE_KEEP_DURATION         : 43200
-_MONITOR_WORKER_QUEUE_LENGTH_CHECK_INTERVAL: 60
-_MONITOR_WORKER_QUEUE_LENGTH_KEEP_DURATION : 43200
-_MONITOR_WORKER_QUEUE_LIST                 : 0,1,2,3,4,5,6,7,8,9
-_MONITOR_MATCHED_ROUTE_EXPIRES             : 86400
-_MONITOR_SLOW_API_COUNT_EXPIRES            : 604800
+_MONITOR_SYS_STATS_CHECK_INTERVAL: 60
+_MONITOR_WORKER_QUEUE_LIST       : 0,1,2,3,4,5,6,7,8,9
+_MONITOR_MATCHED_ROUTE_EXPIRES   : 86400
+_MONITOR_SLOW_API_COUNT_EXPIRES  : 604800
 
 # 自动执行任务频率
 _CRONTAB_STARTER                      : '* * * * *'
@@ -209,8 +209,10 @@ _CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
 _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
+
 # 函数任务模块一般作为常量的配置
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
+_FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
 _FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
 _FUNC_TASK_DEBUG_TIMEOUT                        : 60
@@ -245,11 +247,11 @@ _RECENT_FUNC_RUNNING_STATUS_LIMIT  : 100
 
 # 数据量限制
 _DBDATA_TABLE_LIMIT_MAP: >
-  biz_main_script_log=30000
-  ,biz_main_script_failure=30000
-  ,biz_main_task_result_dataflux_func=30000
-  ,biz_main_crontab_task_info=30000
-  ,biz_main_batch_task_info=30000
+  biz_main_script_log=10000
+  ,biz_main_script_failure=10000
+  ,biz_main_task_result_dataflux_func=10000
+  ,biz_main_crontab_task_info=10000
+  ,biz_main_batch_task_info=10000
   ,biz_main_operation_record=50000
   ,biz_main_script_recover_point=1000
   ,biz_main_script_set_export_history=1000
@@ -257,10 +259,26 @@ _DBDATA_TABLE_LIMIT_MAP: >
   ,biz_main_script_publish_history=1000
 
 # 数据库自动备份
-_DB_AUTO_BACKUP_PREFIX: dataflux-sqldump-
+_DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
+
+# 其他（内部控制）
+_LRU_FUNC_CACHE_MAX           : 1000
+_LRU_FUNC_CACHE_MAX_AGE       : 15
+_LRU_FUNC_RESULT_CACHE_MAX    : 2000
+_LRU_FUNC_RESULT_CACHE_MAX_AGE: 2000
+_MQTT_BROKER_REFRESH_INTERVAL : 3
+
+# 保留脚本错误信息（开启后可能会产生巨量日志）
+_INTERNAL_KEEP_SCRIPT_FAILURE: false
+# 保留脚本日志信息（开启后可能会产生巨量日志）
+_INTERNAL_KEEP_SCRIPT_LOG: false
+# 是否开启错误堆栈包含本地变量信息（开启后可能会产生巨量日志）
+_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO: false
 
 # 是否已安装完成
 _IS_INSTALLED: false
 # 是否禁用配置
 _DISABLE_SETUP: false
+# 是否禁用自动安装附带脚本
+_DISABLE_AUTO_INSTALL_FUNC_PKGS: false

@@ -20,7 +20,11 @@ else:
     FILE_OPEN_KWARGS = dict(encoding='utf8')
 
 FILE_CACHE = {};
-CONFIG_KEY = 'CONFIG';
+
+# Configure
+CONFIG_KEY           = 'CONFIG';
+ENV_CONFIG_PREFIX    = 'DFF_';
+CUSTOM_CONFIG_PREFIX = 'CUSTOM_'
 
 def load_file(key, file_path):
     obj = None
@@ -84,16 +88,24 @@ def load_config(config_file_path, print_detail=False):
                 print('[YAML Resource] Config Overrided by: `{}`'.format(user_config_path))
 
     # User config from env
-    for k, v in os.environ.items():
+    for env_k, v in os.environ.items():
+        if not env_k.startswith(ENV_CONFIG_PREFIX):
+            continue
+
+        k = env_k[len(ENV_CONFIG_PREFIX):]
+
+        if isinstance(v, str) and v.strip() == '':
+            continue
+
         if k in config_obj:
             # Config override
-            config_obj[k] = os.environ.get(k)
+            config_obj[k] = v
             if print_detail:
                 print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
-        elif k.startswith('CUSTOM_'):
+        elif k.startswith(CUSTOM_CONFIG_PREFIX):
             # Custom config
-            config_obj[k] = os.environ.get(k)
+            config_obj[k] = v
             if print_detail:
                 print('[YAML Resource] Custom config item `{}` added by env.'.format(k))
 
@@ -103,7 +115,7 @@ def load_config(config_file_path, print_detail=False):
 
         if not type_:
             continue
-        if config_obj.get(k) is None:
+        if v is None:
             continue
 
         if type_ == 'integer':
@@ -115,14 +127,13 @@ def load_config(config_file_path, print_detail=False):
         elif type_ == 'list':
             v = str(v)
             if len(v) > 0:
-                config_obj[k] = v.split(',')
-                config_obj[k] = map(lambda x: x.strip(), config_obj[k])
+                config_obj[k] = map(lambda x: x.strip(), v.split(','))
             else:
                 config_obj[k] = []
 
         elif type_ == 'map':
             item_map = {}
-            for item in config_obj[k].split(','):
+            for item in v.split(','):
                 item_parts = item.split('=')
                 item_k = item_parts[0].strip()
                 item_v = ''

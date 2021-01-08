@@ -22,274 +22,161 @@ var nodePackages = require('../../package.json').dependencies;
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 };
 
-var METRICS_WITH_HOSTNAMES = [
-  'serverCPUPercent',
-  'serverMemoryRSS',
-  'serverMemoryHeapTotal',
-  'serverMemoryHeapUsed',
-  'serverMemoryHeapExternal',
-  'cacheDBKeyUsed',
-  'cacheDBMemoryUsed',
-]
-
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
 /*
  * System stats data in Redis
- *
- * :type:timeSeries:
- *   Key : monitor@sysStats:type:timeSeries:metric:<Metric>:hostname:<Hostname>:
- *   Data: [[timestamp1, value1], [timestamp2, value2], ...]
- *
- * :type:count:
- *   Key : monitor@sysStats:type:timeSeries:metric:<Metric>:hostname:<Hostname>:date:<YYYY-MM-DD>:
- *   Data: {"key1": value1, "key2": value2}
- *
  */
 EntityModel.prototype.getSysStats = function(callback) {
   var self = this;
 
   var sysStats = {};
 
-  var sysStatsKeys = [];
+  self.locals.cacheDB.skipLog = true;
   async.series([
-    // Get all sysStats keys
+    // Get CPU/Memory usage
     function(asyncCallback) {
-      var heartbeatCacheKey = toolkit.getCacheKey('monitor', 'heartbeat');
+      var metricScaleMap = {
+        serverCPUPercent        : 1,
+        serverMemoryRSS         : 1024 * 1024,
+        serverMemoryHeapTotal   : 1024 * 1024,
+        serverMemoryHeapUsed    : 1024 * 1024,
+        serverMemoryHeapExternal: 1024 * 1024,
+        workerCPUPercent        : 1,
+        workerMemoryPSS         : 1024 * 1024,
+      };
 
-      var serverTimestamp            = parseInt(Date.now() / 1000);
-      var validHeartbeatMinTimestamp = serverTimestamp - (300 * 1000);
+      async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
+        sysStats[metric] = {};
 
-      self.cacheDB._run('ZRANGEBYSCORE', heartbeatCacheKey, validHeartbeatMinTimestamp, '+inf', function(err, cacheRes) {
+        var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'hostname', '*']);
+        var opt = { timeUnit: 'ms', groupTime: 60, scale: scale };
+
+        self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+          if (err) return eachCallback(err);
+
+          for (var k in tsDataMap) {
+            var hostname = toolkit.parseCacheKey(k).tags.hostname;
+            sysStats[metric][hostname] = tsDataMap[k];
+          }
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+    // Get DB Disk usage
+    function(asyncCallback) {
+      var metric = 'dbDiskUsed';
+
+      sysStats[metric] = {};
+
+      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'table', '*']);
+      var opt = { timeUnit: 'ms', groupTime: 60, scale: 1024 * 1024 };
+
+      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
         if (err) return asyncCallback(err);
 
-        var hostnames = cacheRes;
-
-        // CPU/Memory/Cache
-        METRICS_WITH_HOSTNAMES.forEach(function(metric) {
-          hostnames.forEach(function(hostname) {
-            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-                  'metric', metric,
-                  'hostname', hostname]);
-
-            sysStatsKeys.push(cacheKey);
-          });
-        });
-
-        // Worker Queue Length
-        CONFIG._MONITOR_WORKER_QUEUE_LIST.forEach(function(queueName) {
-          hostnames.forEach(function(hostname) {
-            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-                  'metric', 'workerQueueLength',
-                  'queueName', queueName,
-                  'hostname', hostname]);
-
-            sysStatsKeys.push(cacheKey);
-          });
-        });
-
-        // Cache Key count by prefix
-        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-            'metric', 'cacheDBKeyCountByPrefix']);
-        sysStatsKeys.push(cacheKey);
-
-        // Matched Route Count
-        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
-            'metric', 'matchedRouteCount',
-            'date', toolkit.getDateString()]);
-        sysStatsKeys.push(cacheKey);
+        for (var k in tsDataMap) {
+          var table = toolkit.parseCacheKey(k).tags.table;
+          sysStats[metric][table] = tsDataMap[k];
+        }
 
         return asyncCallback();
       });
     },
-    // Get all sysStats data
+    // Get Cache DB usage
     function(asyncCallback) {
-      if (toolkit.isNothing(sysStatsKeys)) return asyncCallback();
+      var metricScaleMap = {
+        cacheDBKeyUsed   : 1,
+        cacheDBMemoryUsed: 1024 * 1024,
+      };
 
-      var collectedQueueNameMap = {};
+      async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
+        var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric]);
+        var opt = { timeUnit: 'ms', groupTime: 60, scale: scale };
 
-      async.eachLimit(sysStatsKeys, 5, function(key, eachCallback) {
-        var keyInfo = toolkit.parseCacheKey(key);
+        self.locals.cacheDB.tsGet(cacheKey, opt, function(err, tsData) {
+          if (err) return eachCallback(err);
 
-        if (!sysStats[keyInfo.tags.metric]) {
-          sysStats[keyInfo.tags.metric] = [];
-        }
-
-        switch(keyInfo.tags.metric) {
-          case 'serverCPUPercent':
-          case 'serverMemoryRSS':
-          case 'serverMemoryHeapTotal':
-          case 'serverMemoryHeapUsed':
-          case 'serverMemoryHeapExternal':
-            self.cacheDB.lrange(key, 0, -1, function(err, cacheRes) {
-              if (err) return eachCallback(err);
-
-              var parsedData = [];
-              cacheRes.forEach(function(r) {
-                parsedData.push(JSON.parse(r));
-              });
-
-              sysStats[keyInfo.tags.metric].push({
-                name: keyInfo.tags.hostname,
-                data: parsedData,
-              });
-
-              return eachCallback();
-            });
-            break;
-
-          case 'cacheDBKeyUsed':
-          case 'cacheDBMemoryUsed':
-            self.cacheDB.lrange(key, 0, -1, function(err, cacheRes) {
-              if (err) return eachCallback(err);
-
-              var parsedData = [];
-              cacheRes.forEach(function(r) {
-                parsedData.push(JSON.parse(r));
-              })
-
-              sysStats[keyInfo.tags.metric].push({
-                name: 'CACHE',
-                data: parsedData,
-              });
-
-              return eachCallback();
-            });
-            break;
-
-          case 'workerQueueLength':
-            self.cacheDB.lrange(key, 0, -1, function(err, cacheRes) {
-              if (err) return eachCallback(err);
-
-              var parsedData = [];
-              cacheRes.forEach(function(r) {
-                parsedData.push(JSON.parse(r));
-              })
-
-              sysStats[keyInfo.tags.metric].push({
-                name: keyInfo.tags.queueName,
-                data: parsedData,
-              });
-
-              return eachCallback();
-            });
-            break;
-
-          case 'cacheDBKeyCountByPrefix':
-          case 'matchedRouteCount':
-            self.cacheDB.hgetall(key, function(err, cacheRes) {
-              if (err) return eachCallback(err);
-
-              var parsedData = [];
-              for (var k in cacheRes) if (cacheRes.hasOwnProperty(k)) {
-                var v = parseInt(cacheRes[k]) || 0;
-                parsedData.push([k, v]);
-              }
-              parsedData.sort(function(a, b) {
-                return b[1] - a[1];
-              });
-
-              sysStats[keyInfo.tags.metric].push({
-                name: keyInfo.tags.metric,
-                data: parsedData,
-              });
-
-              return eachCallback();
-            });
-            break;
-
-          default:
-            eachCallback();
-            break;
-        }
+          sysStats[metric] = tsData;
+          return eachCallback();
+        });
       }, asyncCallback);
     },
-  ], function(err) {
-    if (err) return callback(err);
+    // Get Worker queue length
+    function(asyncCallback) {
+      var metric = 'workerQueueLength';
 
-    for (var metric in sysStats) if (sysStats.hasOwnProperty(metric)) {
-      var series = sysStats[metric];
+      sysStats[metric] = {};
 
-      var nameDataMap = {};
+      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'queueName', '*']);
+      var opt = { timeUnit: 'ms', groupTime: 60 };
 
-      // Concat
-      switch(metric) {
-        case 'cacheDBKeyUsed':
-        case 'cacheDBMemoryUsed':
-        case 'workerQueueLength':
-        case 'matchedRouteCount':
-          series.forEach(function(s) {
-            if (!nameDataMap[s.name]) {
-              nameDataMap[s.name] = s.data;
-            } else {
-              nameDataMap[s.name] = nameDataMap[s.name].concat(s.data);
-            }
-          });
+      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        if (err) return asyncCallback(err);
 
-          sysStats[metric] = [];
-
-          break;
-      }
-
-      // Sort and Compact and Replace
-      for (var name in nameDataMap) if (nameDataMap.hasOwnProperty(name)) {
-        var data = nameDataMap[name];
-
-        var compactedData = [];
-        switch(metric) {
-          case 'cacheDBKeyUsed':
-          case 'cacheDBMemoryUsed':
-          case 'workerQueueLength':
-            data.sort(function(a, b) {
-              return a[0] - b[0];
-            });
-
-            var prevD = null;
-            data.forEach(function(d) {
-              if (!prevD || prevD[0] != d[0]) {
-                compactedData.push(d);
-                prevD = d;
-              }
-            });
-            break;
-
-          case 'cacheDBKeyCountByPrefix':
-          case 'matchedRouteCount':
-            data.sort(function(a, b) {
-              return b[1] - a[1];
-            });
-
-            var prevD = null
-            data.forEach(function(d) {
-              if (!prevD || prevD[1] != d[1]) {
-                compactedData.push(d);
-                prevD = d;
-              }
-            });
-            break;
+        for (var k in tsDataMap) {
+          var queueName = toolkit.parseCacheKey(k).tags.queueName;
+          sysStats[metric][queueName] = tsDataMap[k];
         }
 
-        sysStats[metric].push({
-          name: name,
-          data: compactedData,
-        });
-      }
-    }
-
-    // Sort worker queue length
-    if (sysStats.workerQueueLength) {
-      sysStats.workerQueueLength.sort(function(a, b) {
-        var queueOrder = CONFIG._MONITOR_WORKER_QUEUE_LIST;
-        return queueOrder.indexOf(a.name) - queueOrder.indexOf(b.name);
+        return asyncCallback();
       });
-    }
+    },
+    // Get Cache key prefixs
+    function(asyncCallback) {
+      var metric = 'cacheDBKeyCountByPrefix';
 
+      sysStats[metric] = {};
+
+      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'prefix', '*']);
+      var opt = { timeUnit: 'ms', groupTime: 60 };
+
+      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        if (err) return asyncCallback(err);
+
+        for (var k in tsDataMap) {
+          var prefix = toolkit.parseCacheKey(k).tags.prefix;
+          prefix = toolkit.fromBase64(prefix);
+          sysStats[metric][prefix] = tsDataMap[k];
+        }
+
+        return asyncCallback();
+      });
+    },
+    // Get Matched route count
+    function(asyncCallback) {
+      var metric = 'matchedRouteCount';
+
+      var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'date', toolkit.getDateString()]);
+
+      self.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var parsedData = [];
+        for (var route in cacheRes) {
+          var count = parseInt(cacheRes[route]) || 0;
+          parsedData.push([route, count]);
+        }
+        parsedData.sort(function(a, b) {
+          return b[1] - a[1];
+        });
+
+        sysStats[metric] = parsedData;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    self.locals.cacheDB.skipLog = false;
+
+    if (err) return callback(err);
     return callback(null, sysStats);
-  });
+  })
 };
 
 EntityModel.prototype.getServerEnvironment = function(callback) {

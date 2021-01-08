@@ -14,10 +14,6 @@ var userMod = require('../models/userMod');
 
 /* Hanlders */
 exports.signIn = function(req, res, next) {
-  if (res.locals.user && res.locals.user.isSignedIn) {
-    return res.locals.redirect('/');
-  }
-
   res.locals.render('_auth/signIn');
 };
 

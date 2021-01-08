@@ -37,8 +37,8 @@ exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
@@ -95,12 +95,11 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
-
-  // 自动记录操作界面
-  data.origin = this.req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
 
   return this._add(data, callback);
 };
@@ -113,7 +112,9 @@ EntityModel.prototype.modify = function(id, data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
 
@@ -149,7 +150,7 @@ function _prepareData(data) {
   }
 
   if (data.expireTime) {
-    data.expireTime = new Date(data.expireTime);
+    data.expireTime = toolkit.getSafeDateTime(data.expireTime);
   }
 
   return data;

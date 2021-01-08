@@ -32,7 +32,7 @@ exports.set = function(req, res, next) {
     }));
   }
 
-  var systemConfigModel = systemConfigMod.createModel(req, res);
+  var systemConfigModel = systemConfigMod.createModel(res.locals);
 
   systemConfigModel.set(id, value, function(err, dbRes) {
     if (err) return next(err);

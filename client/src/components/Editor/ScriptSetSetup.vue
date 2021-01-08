@@ -161,7 +161,7 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      await this.loadData();
+      // await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
 
       return this.scriptSetId;

@@ -104,6 +104,20 @@ function routeMonitor(routeConfig) {
   };
 };
 
+// New version
+function fieldSelectingCondition(req, res, next) {
+  var fieldSelecting = req.query.fields;
+  if (!toolkit.isNothing(fieldSelecting)) {
+    res.locals.fieldSelecting = fieldSelecting;
+
+    delete req.query.fieldPicking;
+    delete req.query.fieldKicking;
+  }
+
+  return next();
+};
+
+// Old version
 function fieldPickingCondition(req, res, next) {
   var fieldPicking = req.query.fieldPicking;
   if (!toolkit.isNothing(fieldPicking)) {
@@ -113,6 +127,7 @@ function fieldPickingCondition(req, res, next) {
   return next();
 };
 
+// Old version
 function fieldKickingCondition(req, res, next) {
   var fieldKicking = req.query.fieldKicking;
   if (!toolkit.isNothing(fieldKicking)) {
@@ -499,26 +514,50 @@ exports.load = function(config, middlewares) {
       orderFields.push(k);
     }
 
+    // New version
+    config.query.sort = {
+      $desc: 'Sort by fields (e.g. "field1,field2")',
+      $type: 'commaArray',
+      $commaArrayIn: orderFields.reduce(function(acc, x) {
+        acc.push(x, '-' + x);
+        return acc
+      }, []),
+    };
+
+    // Old version
     config.query.orderBy = {
       $desc: 'Order field',
       $type: 'enum',
       $in  : orderFields,
+      $isDeprecated: true,
     };
-
     config.query.orderMethod = {
       $desc: 'Order method',
       $type: 'enum',
       $in  : ['asc', 'desc'],
+      $isDeprecated: true,
     };
   }
 
-  // If a route allow field picking/kicking, add query configs
+  // If a route allow field selecting(picking/kicking), add query configs
+  // New version
+  if (config.fieldSelecting || config.fieldPicking || config.fieldKicking) {
+    config.query = config.query || {};
+
+    config.query.fields = {
+      $desc: 'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")',
+      $type: 'commaArray',
+    };
+  }
+
+  // Old version
   if (config.fieldPicking) {
     config.query = config.query || {};
 
     config.query.fieldPicking = {
       $desc: 'Field picking',
       $type: 'commaArray',
+      $isDeprecated: true,
     };
   }
   if (config.fieldKicking) {
@@ -527,6 +566,7 @@ exports.load = function(config, middlewares) {
     config.query.fieldKicking = {
       $desc: 'Field kicking',
       $type: 'commaArray',
+      $isDeprecated: true,
     };
   }
 
@@ -591,10 +631,15 @@ exports.mount = function(app) {
         preMiddlewares.push(modelHelper.createRequestOrderCondition(c));
       }
 
+      // New version
+      if (c.fieldSelecting || c.fieldPicking || c.fieldKicking) {
+        preMiddlewares.push(fieldSelectingCondition);
+      }
+
+      // Old version
       if (c.fieldPicking) {
         preMiddlewares.push(fieldPickingCondition);
       }
-
       if (c.fieldKicking) {
         preMiddlewares.push(fieldKickingCondition);
       }

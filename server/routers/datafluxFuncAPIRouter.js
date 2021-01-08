@@ -2,15 +2,11 @@
 
 /* Project Modules */
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var routeLoader = require('../utils/routeLoader');
 var captcha     = require('../utils/captcha');
 
 var datafluxFuncAPICtrl = require('../controllers/datafluxFuncAPICtrl');
-
-// 集成登录
-routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
-  datafluxFuncAPICtrl.integratedSignIn,
-]);
 
 // 总览
 routeLoader.load(ROUTE.datafluxFuncAPI.overview, [
@@ -86,4 +82,14 @@ routeLoader.load(ROUTE.datafluxFuncAPI.getSystemConfig, [
 // 获取升级信息
 routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
   datafluxFuncAPICtrl.getUpgradeInfo,
+]);
+
+// 集成登录
+routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
+  datafluxFuncAPICtrl.integratedSignIn,
+]);
+
+// 清空日志/缓存表
+routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
+  datafluxFuncAPICtrl.clearLogCacheTables,
 ]);

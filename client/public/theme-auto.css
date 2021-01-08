@@ -225,6 +225,10 @@ a {
   border: grey solid 10px;
   border-radius: 5px;
 }
+.code-editor-status-bar {
+  background-color: black !important;
+}
+
 
 .splitter-pane-resizer {
   background-color: #3c3c3c !important;
@@ -262,7 +266,7 @@ a {
   color: #ff4848 !important;
 }
 .code-editor-output-close {
-  background: none !important;
+  background: #222 !important;
 }
 
 .aside-tree-node-sample-code pre {
@@ -616,36 +620,42 @@ input:disabled {
   border-color: #F60 !important;
   color: #F60 !important;
 }
-.el-tag--info {
-  background-color: transparent !important;
-  border-color: #ccc !important;
-  color: #ccc !important;
-}
 .el-tag--danger {
   background-color: transparent !important;
   border-color: #f14444 !important;
   color: #f14444 !important;
-}
-.el-tag--success {
-  background-color: transparent !important;
-  border-color: #09a709 !important;
-  color: #09a709 !important;
 }
 .el-tag--warning {
   background-color: transparent !important;
   border-color: #e6b770 !important;
   color: #e6b770 !important;
 }
+.el-tag--success {
+  background-color: transparent !important;
+  border-color: #09a709 !important;
+  color: #09a709 !important;
+}
+.el-tag--info {
+  background-color: transparent !important;
+  border-color: #ccc !important;
+  color: #ccc !important;
+}
 
 .el-tag--dark.el-tag--danger {
   background-color: #f14444 !important;
   border-color: #f14444 !important;
-  color: #fff !important;
+}
+.el-tag--dark.el-tag--warning {
+  background-color: #865100 !important;
+  border-color: #865100 !important;
 }
 .el-tag--dark.el-tag--success {
   background-color: #326b12 !important;
   border-color: #326b12 !important;
-  color: #fff !important;
+}
+.el-tag--dark.el-tag--info {
+  background-color: #555 !important;
+  border-color: #555 !important;
 }
 .el-tag--dark {
   color: #fff !important;

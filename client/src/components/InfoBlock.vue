@@ -42,4 +42,7 @@ export default {
   line-height: 20px;
   padding: 5px 0 5px 0;
 }
+.el-alert {
+  align-items: baseline !important;
+}
 </style>

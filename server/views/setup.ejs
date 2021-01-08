@@ -65,8 +65,8 @@
       name      : '绑定端口',
       key       : 'WEB_PORT',
       type      : 'integer',
-      input     : 'integer',
-      inputAttrs: 'min="1" max="65535"',
+      input     : 'number',
+      inputAttrs: 'min="1" max="65535" step="1"',
       tips      : 'HTTP默认端口为<code>80</code>，HTTPS默认端口为<code>443</code>。配置时应确保端口没有被其他应用程序占用。',
     },
 
@@ -75,15 +75,15 @@
       key     : 'MYSQL_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      tips    : 'DataFlux Func 所连接的MySQL数据库。可以为域名或IP地址，不含端口',
       errorKey: 'mysql',
     },
     {
       name      : 'MySQL端口',
       key       : 'MYSQL_PORT',
       type      : 'integer',
-      input     : 'integer',
-      inputAttrs: 'min="1" max="65535"',
+      input     : 'number',
+      inputAttrs: 'min="1" max="65535" step="1"',
       tips      : '默认一般为<code>3306</code>',
       errorKey  : 'mysql',
     },
@@ -92,7 +92,7 @@
       key     : 'MYSQL_USER',
       type    : 'string',
       input   : 'text',
-      tips    : '建议为DataFlux Func 创建专用用户<code>dataflux_func</code>，不要直接使用root用户',
+      tips    : '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限',
       errorKey: 'mysql',
     },
     {
@@ -100,7 +100,7 @@
       key     : 'MYSQL_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '合适的密码可以保护您的数据安全',
+      tips    : '上述MySQL用户的密码',
       errorKey: 'mysql',
     },
     {
@@ -117,15 +117,15 @@
       key     : 'REDIS_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : '可以为域名或IP地址，不含端口<br>如使用Docker 运行本系统，那么宿主机一般可以通过<code>docker0</code>桥接访问，IP为<code>172.17.0.1</code>',
+      tips    : 'DataFlux Func 所连接的Redis数据库。可以为域名或IP地址，不含端口',
       errorKey: 'redis',
     },
     {
       name      : 'Redis端口',
       key       : 'REDIS_PORT',
       type      : 'integer',
-      input     : 'integer',
-      inputAttrs: 'min="1" max="65535"',
+      input     : 'number',
+      inputAttrs: 'min="1" max="65535" step="1"',
       tips      : '默认一般为<code>6379</code>',
       errorKey  : 'redis',
     },
@@ -134,7 +134,7 @@
       key     : 'REDIS_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '合适的密码可以保护您的数据安全',
+      tips    : '如所连接的Redis不需要密码，此项请留空',
       errorKey: 'redis',
     },
     {
@@ -155,7 +155,7 @@
       errorKey: 'adminUser',
     },
     {
-      name    : '管理员密码',
+      name    : '管理员密码（默认为 admin)',
       key     : 'ADMIN_PASSWORD',
       type    : 'string',
       input   : 'password',
@@ -311,30 +311,7 @@
           <%_ CONFIG_LIST.forEach(function(c) { _%>
             <div class="form-group">
               <label><%= c.name %><code><%= c.key %></code></label>
-              <%_ if (c.input === 'integer') { _%>
-                <input
-                  type="number"
-                  step="1"
-                  <%- c.inputAttrs || '' %>
-                  class="form-control"
-                  config-key="<%= c.key %>"
-                  config-type="<%= c.type %>"
-                  config-tips="<%= c.tips %>"
-                  error-key="<%= c.errorKey %>"
-                  value="<%= CONFIG[c.key] || '' %>">
-
-              <%_ } else if (c.input === 'password' || c.input === 'text' || c.input === 'url') { _%>
-                <input
-                  type="<%= c.input %>"
-                  <%- c.inputAttrs || '' %>
-                  class="form-control"
-                  config-key="<%= c.key %>"
-                  config-type="<%= c.type %>"
-                  config-tips="<%= c.tips %>"
-                  error-key="<%= c.errorKey %>"
-                  value="<%= CONFIG[c.key] || '' %>">
-
-              <%_ } else if (c.input === 'select') { _%>
+              <%_ if (c.input === 'select') { _%>
                 <select
                   class="form-control"
                   config-key="<%= c.key %>"
@@ -345,6 +322,16 @@
                     <option value="<%= opt.value %>" <%= CONFIG[c.key] === opt.value ? 'selected' : '' %>><%= opt.name %></option>
                   <%_ }) _%>
                 </select>
+              <%_ } else { _%>
+                <input
+                  type="<%= c.input %>"
+                  <%- c.inputAttrs || '' %>
+                  class="form-control"
+                  config-key="<%= c.key %>"
+                  config-type="<%= c.type %>"
+                  config-tips="<%= c.tips %>"
+                  error-key="<%= c.errorKey %>"
+                  value="<%= CONFIG[c.key] === null ? '' : CONFIG[c.key] %>">
               <%_ } _%>
             </div>
           <%_ }) _%>
@@ -418,9 +405,12 @@
             $redirectTip.hide();
           }
 
-          setTimeout(function() {
-            location.href = jqXHR.responseJSON.redirect;
-          }, 10 * 1000);
+          var nextURL = jqXHR.responseJSON.redirect;
+          setInterval(function() {
+            $.get('/api/v1/do/ping', function() {
+              setTimeout(function() { location.href = nextURL }, 3 * 1000);
+            });
+          }, 1 * 1000);
         },
         error: function(jqXHR, textStatus) {
           $runningModal.modal('hide');

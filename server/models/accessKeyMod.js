@@ -34,8 +34,8 @@ exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
 
-exports.createModel = function(req, res) {
-  return new EntityModel(req, res);
+exports.createModel = function(locals) {
+  return new EntityModel(locals);
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
@@ -78,7 +78,9 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
 
@@ -96,7 +98,9 @@ EntityModel.prototype.modify = function(id, data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+        error: err.toString(),
+      }));
     }
   }
 

@@ -86,6 +86,7 @@ var LOG_JSON_FIELD_MAP = {
   diffTime          : 'diff_time',
   costTime          : 'cost_time',
 };
+var MAX_STAGED_LOGS = 3000;
 
 var createWinstonFormatter = function(opt) {
   opt = opt || {};
@@ -208,12 +209,12 @@ var LOGGER = new winston.Logger(winstonOpt);
 /**
  * Logger Helper.
  *
+ * @param {Object} locals - `Express.js` req.locals/app.locals
  * @param {Object} req - `Express.js` request object
- * @param {Object} res - `Express.js` response object
  */
-var LoggerHelper = function(req, res) {
+var LoggerHelper = function(locals, req) {
+  this.locals = locals;
   this.req = req;
-  this.res = res;
 
   this.level = CONFIG.LOG_LEVEL.toUpperCase();
 
@@ -238,7 +239,7 @@ LoggerHelper.prototype.log = function() {
   var level = args[0];
 
   if (level !== 'ERROR'
-    && this.res.locals.requestType === 'page') return;
+    && this.locals.requestType === 'page') return;
 
   this._log.apply(this, args);
 };
@@ -262,10 +263,6 @@ LoggerHelper.prototype._log = function() {
     level = level.toUpperCase();
   }
 
-  // // Skip some logs
-  // if (level !== 'ERROR'
-  //   && (!this.req.ip || this.req.ip === '127.0.0.1' || this.req.ip === '::ffff:127.0.0.1')) return;
-
   var nowMs = Date.now();
   var now   = parseInt(nowMs / 1000);
 
@@ -282,15 +279,15 @@ LoggerHelper.prototype._log = function() {
       timestamp         : now,
       timestampMs       : nowMs,
       timestampHumanized: toolkit.getDateTimeString(),
-      requestType       : this.res.locals.requestType,
+      requestType       : this.locals.requestType,
       clientIP          : this.req.ip,
-      clientId          : this.res.locals.clientId,
-      traceId           : this.res.locals.traceId,
-      traceIdShort      : this.res.locals.traceIdShort,
-      diffTime          : nowMs - (this._prevLogTime || this.res.locals._requestStartTime),
-      costTime          : nowMs - this.res.locals._requestStartTime,
-      userId            : (this.res.locals.user && this.res.locals.user.id)           || null,
-      username          : (this.res.locals.user && this.res.locals.user.username)     || null,
+      clientId          : this.locals.clientId,
+      traceId           : this.locals.traceId,
+      traceIdShort      : this.locals.traceIdShort,
+      diffTime          : nowMs - (this._prevLogTime || this.locals._requestStartTime),
+      costTime          : nowMs - this.locals._requestStartTime,
+      userId            : (this.locals.user && this.locals.user.id)           || null,
+      username          : (this.locals.user && this.locals.user.username)     || null,
     }
   };
 
@@ -322,6 +319,7 @@ LoggerHelper.prototype._log = function() {
  */
 LoggerHelper.prototype.logError = function(err) {
   var strErr = err.toString();
+  this.error(strErr);
 
   var stack = err.originError
             ? err.originError.stack
@@ -337,6 +335,9 @@ LoggerHelper.prototype.logError = function(err) {
 
 LoggerHelper.prototype._stage = function(logLine) {
   this._stagedLogs.push(logLine);
+  if (this._stagedLogs.length > MAX_STAGED_LOGS) {
+    this._stagedLogs = this._stagedLogs.slice(-1 * MAX_STAGED_LOGS);
+  }
 };
 
 LoggerHelper.prototype._recur = function() {
@@ -374,14 +375,13 @@ for (var level in LOG_LEVELS.levels) if (LOG_LEVELS.levels.hasOwnProperty(level)
 }
 
 exports.LoggerHelper = LoggerHelper;
-exports.createHelper = function(req, res, fakeTraceId) {
-  req = req || toolkit.createFakeReq();
-  res = res || toolkit.createFakeRes(fakeTraceId);
-
-  return new LoggerHelper(req, res);
+exports.createHelper = function(locals, req, fakeTraceId) {
+  locals = locals || toolkit.createFakeLocals(fakeTraceId);
+  req    = req    || toolkit.createFakeReq();
+  return new LoggerHelper(locals, req);
 };
 
 exports.requestLoggerInitialize = function(req, res, next) {
-  res.locals.logger = new LoggerHelper(req, res);
+  res.locals.logger = new LoggerHelper(res.locals, req);
   return next();
 };

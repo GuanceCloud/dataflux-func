@@ -48,31 +48,31 @@ var THROTTLING_RULE_EXPIRES_MAP = {
   byYear  : 60 * 60 * 24 * 365,
 };
 
-var FUNC_CACHE_OPT = {
-  max   : 1000,
-  maxAge: 15 * 1000,
-};
-
 var FUNC_TASK_DEFAULT_QUEUE_MAP = {
   'auto'   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
   'sync'   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
   'async'  : CONFIG._FUNC_TASK_DEFAULT_ASYNC_QUEUE,
   'crontab': CONFIG._FUNC_TASK_DEFAULT_CRONTAB_QUEUE,
-}
+};
 
-var FUNC_LRU      = new LRU(FUNC_CACHE_OPT);
-var AUTH_LINK_LRU = new LRU(FUNC_CACHE_OPT);
-var BATCH_LRU     = new LRU(FUNC_CACHE_OPT);
+var FUNC_CACHE_OPT = {
+  max   : CONFIG._LRU_FUNC_CACHE_MAX,
+  maxAge: CONFIG._LRU_FUNC_CACHE_MAX_AGE * 1000,
+};
+var FUNC_LRU             = new LRU(FUNC_CACHE_OPT);
+var AUTH_LINK_LRU        = new LRU(FUNC_CACHE_OPT);
+var BATCH_LRU            = new LRU(FUNC_CACHE_OPT);
+var INTEGRATION_FUNC_LRU = new LRU(FUNC_CACHE_OPT);
 
 var FUNC_RESULT_LRU = new LRU({
-  max   : 2000,
-  maxAge: 5 * 1000,
+  max   : CONFIG._LRU_FUNC_RESULT_CACHE_MAX,
+  maxAge: CONFIG._LRU_FUNC_RESULT_CACHE_MAX_AGE * 1000,
 });
 
 var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
-function _getHTTPRequestInfo(req, res) {
+function _getHTTPRequestInfo(req) {
   // 请求体
   var useragent = toolkit.jsonCopy(req.useragent);
   delete useragent.source;
@@ -97,308 +97,459 @@ function _getTaskDefaultQueue(execMode) {
   return FUNC_TASK_DEFAULT_QUEUE_MAP[execMode] || CONFIG._FUNC_TASK_DEFAULT_QUEUE;
 };
 
-function _createFuncCallOptions(req, res, funcId, origin, callback) {
+function _getFuncById(locals, funcId, callback) {
+  var func = FUNC_LRU.get(funcId);
+  if (func) return callback(null, func);
+
+  // 此处由于需要同时获取函数所在脚本的MD5值，需要使用`list`方法
+  var funcModel = funcMod.createModel(locals);
+
+  var opt = {
+    limit  : 1,
+    filters: {
+      'func.id': {eq: funcId},
+    }
+  };
+  funcModel.list(opt, function(err, dbRes) {
+    if (err) return callback(err);
+
+    dbRes = dbRes[0];
+    if (!dbRes) {
+      return callback(new E('EClientNotFound', toolkit.strf('No such function: `{0}`', funcId), {
+        funcId: funcId,
+      }));
+    }
+
+    func = dbRes;
+
+    // 建立缓存
+    FUNC_LRU.set(funcId, func);
+
+    return callback(null, func);
+  });
+};
+
+function _createFuncCallOptionsFromOptions(options, func, callback) {
   // 注意：
   //  本函数内所有搜集的时长类数据均为秒
   //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
 
+  func.extraConfigJSON = func.extraConfigJSON || {};
+
+  var funcCallOptions = toolkit.jsonCopy(options);
+
+  /*** 开始组装参数 ***/
+
+  // 函数ID
+  funcCallOptions.funcId = func.id;
+
+  // 函数信息（用于函数结果缓存）
+  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
+  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
+
+  // 函数参数
+  funcCallOptions.funcCallKwargs = options.funcCallKwargs;
+
+  // 来源
+  funcCallOptions.origin = 'direct';
+
+  // 来源ID
+  funcCallOptions.originId = options.originId || null;
+
+  // API超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
+    funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
+
+    if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
+    }
+    if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
+    }
+
+  } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
+
+  } else {
+    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+  }
+
+  // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.timeout)) {
+    funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
+
+    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
+    }
+
+  } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    funcCallOptions.timeout = func.extraConfigJSON.timeout;
+
+  } else {
+    funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+  }
+
+  // 执行模式（优先级：调用时指定 > 默认值）
+  funcCallOptions.execMode = funcCallOptions.execMode || 'sync';
+
+  // 同步调用时，函数执行超时不得大于API超时
+  //    超出时，函数执行超时自动跟随API超时
+  if (funcCallOptions.execMode === 'sync') {
+    if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
+      funcCallOptions.timeout = funcCallOptions.apiTimeout;
+    }
+  }
+
+  // 【固定】函数任务过期
+  funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
+
+  // 是否永不过期
+  if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
+    funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
+  } else {
+    funcCallOptions.neverExpire = false;
+  }
+
+  // 返回类型（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.returnType)) {
+    var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
+    if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
+    }
+
+  } else {
+    funcCallOptions.returnType = 'raw';
+  }
+
+  // 结果保存（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.saveResult)) {
+    funcCallOptions.saveResult = !!funcCallOptions.saveResult;
+  } else {
+    funcCallOptions.saveResult = false;
+  }
+
+  // 结果拆包（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.unfold)) {
+    funcCallOptions.unfold = !!funcCallOptions.unfold;
+
+  } else {
+    funcCallOptions.unfold = true;
+  }
+
+  // 预约执行
+  if (!toolkit.isNothing(funcCallOptions.eta)) {
+    if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
+    }
+  }
+
+  // 执行队列（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    var queueNumber = parseInt(func.extraConfigJSON.queue);
+    if (queueNumber < 1 || queueNumber > 9) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
+    }
+
+    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
+
+  } else {
+    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
+  }
+
+  // 触发时间
+  funcCallOptions.triggerTimeMs = Date.now();
+  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
+
+  // 结果缓存
+  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (!func.extraConfigJSON.cacheResult) {
+      funcCallOptions.cacheResult = false;
+    } else {
+      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
+    }
+  }
+
+  // HTTP请求信息
+  funcCallOptions.httpRequest = null;
+
+  return callback(null, funcCallOptions);
+};
+
+function _createFuncCallOptionsFromRequest(req, func, callback) {
+  // 注意：
+  //  本函数内所有搜集的时长类数据均为秒
+  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
+
+  func.extraConfigJSON = func.extraConfigJSON || {};
+
+  var origin = 'direct';
+  if (toolkit.startsWith(req.path, '/api/v1/al/')) {
+    origin = 'authLink';
+  } else if (toolkit.startsWith(req.path, '/api/v1/bat/')) {
+    origin = 'batch';
+  }
+
   var format = req.params.format;
 
-  var func = null;
-  async.series([
-    // 查询函数信息
-    function(asyncCallback) {
-      func = FUNC_LRU.get(funcId);
-      if (func) return asyncCallback();
-
-      // 此处由于需要同时获取函数所在脚本的MD5值，需要使用`list`方法
-      var funcModel = funcMod.createModel(req, res);
-
-      var opt = {
-        limit  : 1,
-        filters: {
-          'func.id': {eq: funcId},
-        }
-      };
-      funcModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        dbRes = dbRes[0];
-        if (!dbRes) {
-          return asyncCallback(new E('EClientNotFound', toolkit.strf('No such function: `{0}`', funcId), {
-            funcId: funcId,
-          }));
-        }
-
-        func = dbRes;
-        FUNC_LRU.set(funcId, func);
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return callback(err);
-
-    /*** 搜集函数参数（POST body优先） ***/
-    var funcCallKwargs = req.body.kwargs || req.query.kwargs || {};
-    if ('string' === typeof funcCallKwargs) {
-      try {
-        funcCallKwargs = JSON.parse(funcCallKwargs);
-      } catch(err) {
-        return callback(new E('EClientBadRequest', 'Invalid kwargs', {
-          error: err.toString(),
-        }));
-      }
+  /*** 搜集函数参数（POST body优先） ***/
+  var funcCallKwargs = req.body.kwargs || req.query.kwargs || {};
+  if ('string' === typeof funcCallKwargs) {
+    try {
+      funcCallKwargs = JSON.parse(funcCallKwargs);
+    } catch(err) {
+      return callback(new E('EClientBadRequest', 'Invalid kwargs', {
+        error: err.toString(),
+      }));
     }
+  }
 
-    /*** 搜集执行选项（POST body优先） ***/
-    var funcCallOptions = req.body.options || req.query.options || {};
-    if ('string' === typeof funcCallOptions) {
-      try {
-        funcCallOptions = JSON.parse(funcCallOptions);
+  /*** 搜集执行选项（POST body优先） ***/
+  var funcCallOptions = req.body.options || req.query.options || {};
+  if ('string' === typeof funcCallOptions) {
+    try {
+      funcCallOptions = JSON.parse(funcCallOptions);
 
-      } catch(err) {
-        return callback(new E('EClientBadRequest', 'Invalid options', {
-          error: err.toString(),
-        }));
-      }
+    } catch(err) {
+      return callback(new E('EClientBadRequest', 'Invalid options', {
+        error: err.toString(),
+      }));
     }
+  }
 
-    /*** 搜集执行选项（GET 扁平、简化形式） ***/
-    switch(format) {
-      case 'flattened':
-        // 搜集扁平形式函数参数（options_*, kwargs_*）
-        var flattenedQuery = toolkit.jsonCopy(req.query || {});
-        for (var k in flattenedQuery) if (flattenedQuery.hasOwnProperty(k)) {
-          var v = flattenedQuery[k];
+  /*** 搜集执行选项（GET 扁平、简化形式） ***/
+  switch(format) {
+    case 'flattened':
+      // 搜集扁平形式函数参数（options_*, kwargs_*）
+      var flattenedQuery = toolkit.jsonCopy(req.query || {});
+      for (var k in flattenedQuery) if (flattenedQuery.hasOwnProperty(k)) {
+        var v = flattenedQuery[k];
 
-          var keyParts = k.split('_');
-          if (keyParts.length > 1) {
-            var type = keyParts[0];
-            var name = keyParts.slice(1).join('_');
-            switch(type) {
-              case 'kwargs':
-                funcCallKwargs[name] = v;
-                break;
+        var keyParts = k.split('_');
+        if (keyParts.length > 1) {
+          var type = keyParts[0];
+          var name = keyParts.slice(1).join('_');
+          switch(type) {
+            case 'kwargs':
+              funcCallKwargs[name] = v;
+              break;
 
-              case 'options':
-                funcCallOptions[name] = v;
-                break;
-            }
+            case 'options':
+              funcCallOptions[name] = v;
+              break;
           }
         }
-        break;
-
-      case 'simplified':
-        // 搜集简化形式函数参数
-        var simplifiedQuery = toolkit.jsonCopy(req.query || {});
-        for (var k in simplifiedQuery) if (simplifiedQuery.hasOwnProperty(k)) {
-          var v = simplifiedQuery[k];
-
-          funcCallKwargs[k] = v;
-        }
-        break;
-    }
-
-    /*** 开始组装参数 ***/
-    func.extraConfigJSON = func.extraConfigJSON || {};
-
-    // 函数ID
-    funcCallOptions.funcId = funcId;
-
-    // 函数信息（用于函数结果缓存）
-    funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
-    funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
-
-    // 函数参数
-    funcCallOptions.funcCallKwargs = funcCallKwargs;
-
-    // 来源
-    funcCallOptions.origin = origin;
-
-    // 来源ID
-    switch(origin) {
-      case 'authLink':
-      case 'batch':
-        funcCallOptions.originId = req.params.id;
-        break;
-    }
-
-    // API超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
-      funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
-
-      if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
       }
-      if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
+      break;
+
+    case 'simplified':
+      // 搜集简化形式函数参数
+      var simplifiedQuery = toolkit.jsonCopy(req.query || {});
+      for (var k in simplifiedQuery) if (simplifiedQuery.hasOwnProperty(k)) {
+        var v = simplifiedQuery[k];
+
+        funcCallKwargs[k] = v;
       }
+      break;
+  }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
-      funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
+  /*** 开始组装参数 ***/
 
-    } else {
-      funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+  // 函数ID
+  funcCallOptions.funcId = func.id;
+
+  // 函数信息（用于函数结果缓存）
+  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
+  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
+
+  // 函数参数
+  funcCallOptions.funcCallKwargs = funcCallKwargs;
+
+  // 来源
+  funcCallOptions.origin = origin;
+
+  // 来源ID
+  switch(origin) {
+    case 'authLink':
+    case 'batch':
+      funcCallOptions.originId = req.params.id;
+      break;
+  }
+
+  // API超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
+    funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
+
+    if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
+    }
+    if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
     }
 
-    // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.timeout)) {
-      funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
+  } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
 
-      if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-        return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
-      }
+  } else {
+    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+  }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
-      funcCallOptions.timeout = func.extraConfigJSON.timeout;
+  // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.timeout)) {
+    funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
 
-    } else {
-      switch(origin) {
-        case 'batch':
-          funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
-          break;
-
-        default:
-          funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
-          break;
-      }
+    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
     }
 
-    // 授权链接方式调用时，函数执行超时不得大于API超时
-    //    超出时，函数执行超时自动跟随API超时
-    switch(origin) {
-      case 'authLink':
-        if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
-          funcCallOptions.timeout = funcCallOptions.apiTimeout;
-        }
-        break;
-    }
+  } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    funcCallOptions.timeout = func.extraConfigJSON.timeout;
 
-    // 【固定】函数任务过期
+  } else {
     switch(origin) {
       case 'batch':
-        funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE;
+        funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
         break;
 
       default:
-        funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
+        funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+        break;
+    }
+  }
+
+  // 执行模式（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.execMode)) {
+    switch(origin) {
+      case 'authLink':
+        if (funcCallOptions.execMode !== 'sync') {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `sync`', origin)));
+        }
+        break;
+
+      case 'crontab':
+      case 'batch':
+        if (funcCallOptions.execMode !== 'async') {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `async`', origin)));
+        }
+        break;
+
+      default:
+        var _EXEC_MODES = ['sync', 'async'];
+        if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
+          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` should be one of `{0}`', _EXEC_MODES.join(','))));
+        }
         break;
     }
 
-    // 是否永不过期
-    if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
-      funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
+  } else {
+    switch(origin) {
+      case 'direct':
+      case 'authLink':
+        funcCallOptions.execMode = 'sync';
+        break;
+
+      default:
+        funcCallOptions.execMode = 'async';
+        break;
+    }
+  }
+
+  // 同步调用时，函数执行超时不得大于API超时
+  //    超出时，函数执行超时自动跟随API超时
+  if (funcCallOptions.execMode === 'sync') {
+    if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
+      funcCallOptions.timeout = funcCallOptions.apiTimeout;
+    }
+  }
+
+  // 【固定】函数任务过期
+  switch(origin) {
+    case 'batch':
+      funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE;
+      break;
+
+    default:
+      funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
+      break;
+  }
+
+  // 是否永不过期
+  if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
+    funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
+  } else {
+    funcCallOptions.neverExpire = false;
+  }
+
+  // 返回类型（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.returnType)) {
+    var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
+    if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
+      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
+    }
+
+  } else {
+    funcCallOptions.returnType = 'raw';
+  }
+
+  // 结果保存（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.saveResult)) {
+    funcCallOptions.saveResult = !!funcCallOptions.saveResult;
+  } else {
+    funcCallOptions.saveResult = false;
+  }
+
+  // 结果拆包（优先级：调用时指定 > 默认值）
+  if (!toolkit.isNothing(funcCallOptions.unfold)) {
+    funcCallOptions.unfold = !!funcCallOptions.unfold;
+
+  } else {
+    switch(origin) {
+      case 'direct':
+        funcCallOptions.unfold = false;
+        break;
+
+      default:
+        funcCallOptions.unfold = true;
+        break;
+    }
+  }
+
+  // 预约执行
+  if (!toolkit.isNothing(funcCallOptions.eta)) {
+    if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
+    }
+  }
+
+  // 执行队列（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    var queueNumber = parseInt(func.extraConfigJSON.queue);
+    if (queueNumber < 1 || queueNumber > 9) {
+      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
+    }
+
+    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
+
+  } else {
+    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
+  }
+
+  // 触发时间
+  funcCallOptions.triggerTimeMs = Date.now();
+  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
+
+  // 结果缓存
+  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (!func.extraConfigJSON.cacheResult) {
+      funcCallOptions.cacheResult = false;
     } else {
-      funcCallOptions.neverExpire = false;
+      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
     }
+  }
 
-    // 返回类型（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.returnType)) {
-      var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
-      if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
-        return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
-      }
+  // HTTP请求信息
+  funcCallOptions.httpRequest = _getHTTPRequestInfo(req);
 
-    } else {
-      funcCallOptions.returnType = 'raw';
-    }
-
-    // 执行模式（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.execMode)) {
-      switch(origin) {
-        case 'authLink':
-          if (funcCallOptions.execMode !== 'sync') {
-            return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `sync`', origin)));
-          }
-          break;
-
-        case 'crontab':
-        case 'batch':
-          if (funcCallOptions.execMode !== 'async') {
-            return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `async`', origin)));
-          }
-          break;
-
-        default:
-          var _EXEC_MODES = ['sync', 'async'];
-          if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
-            return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` should be one of `{0}`', _EXEC_MODES.join(','))));
-          }
-          break;
-      }
-
-    } else {
-      switch(origin) {
-        case 'direct':
-        case 'authLink':
-          funcCallOptions.execMode = 'sync';
-          break;
-
-        default:
-          funcCallOptions.execMode = 'async';
-          break;
-      }
-    }
-
-    // 结果保存（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.saveResult)) {
-      funcCallOptions.saveResult = !!funcCallOptions.saveResult;
-    } else {
-      funcCallOptions.saveResult = false;
-    }
-
-    // 结果拆包（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.unfold)) {
-      funcCallOptions.unfold = !!funcCallOptions.unfold;
-
-    } else {
-      switch(origin) {
-        case 'direct':
-          funcCallOptions.unfold = false;
-          break;
-
-        default:
-          funcCallOptions.unfold = true;
-          break;
-      }
-    }
-
-    // 预约执行
-    if (!toolkit.isNothing(funcCallOptions.eta)) {
-      if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
-        return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
-      }
-    }
-
-    // 执行队列（优先级：函数配置 > 默认值）
-    if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
-      var queueNumber = parseInt(func.extraConfigJSON.queue);
-      if (queueNumber < 1 || queueNumber > 9) {
-        return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
-      }
-
-      funcCallOptions.queue = '' + func.extraConfigJSON.queue;
-
-    } else {
-      funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
-    }
-
-    // 触发时间
-    funcCallOptions.triggerTimeMs = Date.now();
-    funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
-
-    // 结果缓存
-    if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
-      if (!func.extraConfigJSON.cacheResult) {
-        funcCallOptions.cacheResult = false;
-      } else {
-        funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
-      }
-    }
-
-    return callback(null, funcCallOptions);
-  });
+  return callback(null, funcCallOptions);
 };
 
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
@@ -424,7 +575,7 @@ function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format)
   return mergedFuncCallKwargs;
 };
 
-function _getFuncCallResultFromCache(req, res, funcCallOptions, callback) {
+function _getFuncCallResultFromCache(locals, funcCallOptions, callback) {
   var funcId = funcCallOptions.funcId;
 
   // 1. 从本地缓存中获取
@@ -440,7 +591,7 @@ function _getFuncCallResultFromCache(req, res, funcCallOptions, callback) {
       'scriptCodeMD5'       , funcCallOptions.scriptCodeMD5,
       'scriptPublishVersion', funcCallOptions.scriptPublishVersion,
       'funcCallKwargsMD5'   , funcCallOptions.funcCallKwargsMD5]);
-  res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+  locals.cacheDB.get(cacheKey, function(err, cacheRes) {
     if (err) return callback(err);
 
     if (cacheRes) {
@@ -452,7 +603,7 @@ function _getFuncCallResultFromCache(req, res, funcCallOptions, callback) {
   });
 };
 
-function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
+function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
   // 检查工作队列压力
   var funcPressure           = funcCallOptions.funcPressure;
   var workerCount            = 1;
@@ -468,7 +619,7 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
     function(asyncCallback) {
       var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
             'workerQueue', funcCallOptions.queue]);
-      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+      locals.cacheDB.get(cacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
@@ -481,7 +632,7 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
     },
     // 查询队列压力
     function(asyncCallback) {
-      res.locals.cacheDB.get(workerQueuePressureCacheKey, function(err, cacheRes) {
+      locals.cacheDB.get(workerQueuePressureCacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
@@ -509,11 +660,11 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
     },
     // 记录队列压力
     function(asyncCallback) {
-      res.locals.cacheDB.incrby(workerQueuePressureCacheKey, funcPressure, function(err, cacheRes) {
+      locals.cacheDB.incrby(workerQueuePressureCacheKey, funcPressure, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         var currentWorkerQueuePressure = parseInt(cacheRes);
-        res.locals.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{0}: {1} (+{2}, {3}%), Deny: {4}%',
+        locals.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{0}: {1} (+{2}, {3}%), Deny: {4}%',
             funcCallOptions.queue, currentWorkerQueuePressure, funcPressure,
             parseInt(currentWorkerQueuePressure / workerQueueMaxPressure * 100),
             parseInt(denyPercent * 100));
@@ -524,13 +675,13 @@ function _checkWorkerQueuePressure(req, res, funcCallOptions, callback) {
   ], callback);
 };
 
-function _callFuncRunner(req, res, funcCallOptions, callback) {
+function _callFuncRunner(locals, funcCallOptions, callback) {
   funcCallOptions = funcCallOptions || {};
 
   // 填入保护值
   var defaultFuncCallOptions = {
-    origin  : 'UNKONW',           // 来源
-    originId: res.locals.traceId, // 来源ID
+    origin  : 'UNKONW',       // 来源
+    originId: locals.traceId, // 来源ID
   }
   for (var key in defaultFuncCallOptions) {
     if (toolkit.isNullOrUndefined(funcCallOptions[key])) {
@@ -570,7 +721,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       }
     }
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
+    var celery = celeryHelper.createHelper(locals.logger);
 
     // 任务名
     var name = 'DataFluxFunc.runner';
@@ -605,10 +756,10 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
       originId         : funcCallOptions.originId,
       execMode         : funcCallOptions.execMode,
       saveResult       : funcCallOptions.saveResult,
-      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       triggerTime      : funcCallOptions.triggerTime,
+      triggerTimeMs    : funcCallOptions.triggerTimeMs,
       queue            : funcCallOptions.queue,
-      httpRequest      : _getHTTPRequestInfo(req, res),
+      httpRequest      : funcCallOptions.httpRequest,
     };
     celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
   }
@@ -623,6 +774,11 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
 
     // 同步函数回调函数
     onResultCallback = function(celeryErr, celeryRes, extraInfo) {
+      /* 此处有celeryErr也不能立刻callback，需要经过统计处理后再将错误抛出 */
+
+      var isCached = false;
+      var ret      = null;
+
       async.series([
         // 结果处理
         function(asyncCallback) {
@@ -676,7 +832,6 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
             }
           }
 
-          var ret = null;
           if (funcCallOptions.saveResult) {
             var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
 
@@ -692,20 +847,15 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
             });
           }
 
+          // 缓存结果标记
           if (celeryRes.id === 'CACHED') {
-            res.set('X-Result-Cache', 'Cached');
+            isCached = true
           }
 
-          if (funcCallOptions.unfold) {
-            res.locals.sendRaw(ret.data.result);
-          } else {
-            res.locals.sendJSON(ret);
-          }
-
-          // 保证执行到最终处理
           return asyncCallback();
         },
       ], function(err) {
+        /* 1. 统计记录 */
         // 记录最近几天调用次数
         var dateStr = toolkit.getDateString();
         var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCount', [
@@ -716,12 +866,12 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
         async.series([
           // 计数
           function(asyncCallback) {
-            res.locals.cacheDB.incr(cacheKey, asyncCallback);
+            locals.cacheDB.incr(cacheKey, asyncCallback);
           },
           // 设置自动过期
           function(asyncCallback) {
             var expires = CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES;
-            res.locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+            locals.cacheDB.expire(cacheKey, expires, asyncCallback);
           },
         ]);
 
@@ -749,20 +899,21 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
               costMs: costMs,
               status: status,
             });
-            res.locals.cacheDB.lpush(cacheKey, runningStatus, asyncCallback);
+            locals.cacheDB.lpush(cacheKey, runningStatus, asyncCallback);
           },
           function(asyncCallback) {
             var limit = CONFIG._RECENT_FUNC_RUNNING_STATUS_LIMIT;
-            res.locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
+            locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
           },
           // 设置自动过期
           function(asyncCallback) {
             var expires = CONFIG._RECENT_FUNC_RUNNING_STATUS_EXPIRES;
-            res.locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+            locals.cacheDB.expire(cacheKey, expires, asyncCallback);
           },
         ]);
 
-        if (err) return callback(err);
+        /* 2. 最终回调 */
+        return callback(err, ret, isCached);
       });
     };
 
@@ -775,7 +926,7 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
               'funcId'           , funcCallOptions.funcId,
               'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
 
-        res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        locals.cacheDB.get(cacheKey, function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
           if (cacheRes) {
@@ -793,10 +944,10 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
         // 未指定缓存结果时跳过
         if (!funcCallOptions.cacheResult) return asyncCallback();
 
-        _getFuncCallResultFromCache(req, res, funcCallOptions, function(err, cachedRetval) {
+        _getFuncCallResultFromCache(locals, funcCallOptions, function(err, cachedRetval) {
           if (err) {
             // 报错后改为真实调用函数
-            res.locals.logger.logError(err);
+            locals.logger.logError(err);
             return asyncCallback();
           }
 
@@ -812,11 +963,13 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
             einfoTEXT: null,
           };
           return onResultCallback(null, dummyCeleryRes, null);
+
+          /* 进入缓存时，到此结束，直接回调结果函数，不再继续执行 */
         });
       },
       // 真实调用函数前，检查队列压力
       function(asyncCallback) {
-        _checkWorkerQueuePressure(req, res, funcCallOptions, asyncCallback);
+        _checkWorkerQueuePressure(locals, funcCallOptions, asyncCallback);
       },
     ], sendTask);
 
@@ -854,16 +1007,769 @@ function _callFuncRunner(req, res, funcCallOptions, callback) {
           'status'     : 'queued',
           'timestamp'  : parseInt(Date.now() / 1000),
         }
-        res.locals.cacheDB.lpush(cacheKey, JSON.stringify(taskInfo));
+        locals.cacheDB.lpush(cacheKey, JSON.stringify(taskInfo));
       }
 
-      return res.locals.sendJSON(ret);
+      /* 最终回调 */
+      return callback(err, ret);
     };
 
     return sendTask();
   }
 };
 
+function _doAPIResponse(locals, res, ret, isCached, unfold) {
+  // 缓存标记
+  if (res && isCached) {
+    res.set('X-Result-Cache', 'Cached');
+  }
+
+  // 展开结果
+  if (unfold) {
+    return locals.sendRaw(ret.data.result);
+  } else {
+    return locals.sendJSON(ret);
+  }
+}
+
+exports.overview = function(req, res, next) {
+  var sections = toolkit.asArray(req.query.sections);
+  var sectionMap = null;
+  if (!toolkit.isNothing(sections)) {
+    sectionMap = {};
+    sections.forEach(function(s) {
+      sectionMap[s] = true;
+    })
+  }
+
+  var scriptSetModel     = scriptSetMod.createModel(res.locals);
+  var scriptModel        = scriptMod.createModel(res.locals);
+  var funcModel          = funcMod.createModel(res.locals);
+  var dataSourceModel    = dataSourceMod.createModel(res.locals);
+  var envVariableModel   = envVariableMod.createModel(res.locals);
+  var authLinkModel      = authLinkMod.createModel(res.locals);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var batchModel         = batchMod.createModel(res.locals);
+
+  var overviewParts = [
+    { name : 'scriptSet',     model: scriptSetModel},
+    { name : 'script',        model: scriptModel},
+    { name : 'func',          model: funcModel},
+    { name : 'dataSource',    model: dataSourceModel},
+    { name : 'envVariable',   model: envVariableModel},
+    { name : 'authLink',      model: authLinkModel},
+    { name : 'crontabConfig', model: crontabConfigModel},
+    { name : 'batch',         model: batchModel},
+  ];
+
+  var overview = {
+    bizEntityCount  : [],
+    workerQueueInfo : [],
+    scriptOverview  : null,
+    latestOperations: [],
+  };
+
+  async.series([
+    // 业务实体计数
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
+
+      async.eachSeries(overviewParts, function(part, eachCallback) {
+        part.model.count(null, function(err, dbRes) {
+          if (err) return eachCallback(err);
+
+          overview.bizEntityCount.push({
+            name : part.name,
+            count: dbRes,
+          });
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+    // 查询所在队列工作单元数量、最大压力等信息
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
+        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
+              'workerQueue', i]);
+        res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+          if (err) return timesCallback(err);
+
+          var workerCount = parseInt(cacheRes || 0) || 0;
+          var maxPressure = (workerCount || 1) * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
+
+          var _info = {
+            workerCount: workerCount,
+            maxPressure: maxPressure,
+          }
+          overview.workerQueueInfo.push(_info);
+
+          return timesCallback();
+        });
+      }, asyncCallback);
+    },
+    // 队列压力
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
+      var cacheKeys = [];
+      for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
+        cacheKeys.push(cacheKey);
+      }
+
+      res.locals.cacheDB.run('mget', cacheKeys, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        cacheRes.forEach(function(p, i) {
+          overview.workerQueueInfo[i].pressure = parseInt(p || 0) || 0;
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 队列长度
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
+        var workerQueue = toolkit.getWorkerQueue(i);
+        res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
+          if (err) return timesCallback(err);
+
+          overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
+
+          return timesCallback(err);
+        });
+      }, asyncCallback);
+    },
+    // 脚本总览
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.scriptOverview) return asyncCallback();
+
+      scriptModel.overview(null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        overview.scriptOverview = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 最近若干次操作记录
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.latestOperations) return asyncCallback();
+
+      var operationRecordModel = operationRecordMod.createModel(res.locals);
+
+      var opt = {
+        limit: 10,
+      };
+      operationRecordModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        overview.latestOperations = dbRes;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    if (sectionMap) {
+      Object.keys(overview).forEach(function(k) {
+        if (!sectionMap[k]) {
+          delete overview[k];
+        }
+      })
+    }
+
+    var ret = toolkit.initRet(overview);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.describeFunc = function(req, res, next) {
+  var funcId = req.params.funcId;
+
+  var funcModel = funcMod.createModel(res.locals);
+
+  var func = null;
+
+  async.series([
+    function(asyncCallback) {
+      funcModel.getWithCheck(funcId, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        func = dbRes;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(func);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.callFunc = function(req, res, next) {
+  var funcId = req.params.funcId;
+
+  var func = null;
+  var funcCallOptions = null;
+  async.series([
+    // 获取函数
+    function(asyncCallback) {
+      _getFuncById(res.locals, funcId, function(err, _func) {
+        if (err) return asyncCallback(err);
+
+        func = _func;
+
+        return asyncCallback();
+      });
+    },
+    // 创建函数调用选项
+    function(asyncCallback) {
+      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+        if (err) return asyncCallback(err);
+
+        funcCallOptions = _funcCallOptions;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+      if (err) return next(err);
+
+      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+    });
+  });
+};
+
+exports.callAuthLink = function(req, res, next) {
+  var id     = req.params.id;
+  var format = req.params.format;
+
+  if (id && id.slice(0, AUTH_LINK_PREFIX.length) !== AUTH_LINK_PREFIX) {
+    id = AUTH_LINK_PREFIX + id;
+  }
+
+  var authLink        = null;
+  var func            = null;
+  var funcCallOptions = null;
+
+  async.series([
+    // 检查授权链接是否存在
+    function(asyncCallback) {
+      authLink = AUTH_LINK_LRU.get(id);
+
+      if (authLink === null) {
+        // 已查询过不存在
+        return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
+
+      } else if (authLink) {
+        // 已查询确定存在
+        return asyncCallback();
+      }
+
+      var authLinkModel = authLinkMod.createModel(res.locals);
+
+      authLinkModel._get(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (!dbRes) {
+          // 查询不存在，缓存为`null`
+          AUTH_LINK_LRU.set(id, null);
+          return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
+        }
+
+        authLink = dbRes;
+        AUTH_LINK_LRU.set(id, authLink);
+
+        return asyncCallback();
+      });
+    },
+    // 检查限制
+    function(asyncCallback) {
+      // 是否已禁用
+      if (authLink.isDisabled) {
+        return asyncCallback(new E('EBizCondition.AuthLinkDisabled', 'This Auth Link is disabled.'))
+      }
+
+      // 是否已过期
+      if (authLink.expireTime && new Date(authLink.expireTime) < new Date()) {
+        return asyncCallback(new E('EBizCondition.AuthLinkExpired', 'This Auth Link is already expired.'))
+      }
+
+      // 是否限流
+      if (toolkit.isNothing(authLink.throttlingJSON)) return asyncCallback();
+
+      // 限流处理
+      async.eachOfSeries(authLink.throttlingJSON, function(limit, rule, eachCallback) {
+        var ruleSep = parseInt(Date.now() / 1000 / THROTTLING_RULE_EXPIRES_MAP[rule]);
+        var tags = [
+          'authLinkId', id,
+          'rule'      , rule,
+          'ruleSep'   , ruleSep,
+        ];
+        var cacheKey = toolkit.getCacheKey('throttling', 'authLink', tags);
+
+        res.locals.cacheDB.incr(cacheKey, function(err, cacheRes) {
+          if (err) return eachCallback(err);
+
+          var currentCount = parseInt(cacheRes);
+          if (currentCount > limit) {
+            // 触发限流
+            var waitSeconds = parseInt((ruleSep + 1) * THROTTLING_RULE_EXPIRES_MAP[rule] - Date.now() / 1000) + 1;
+            return eachCallback(new E('EBizCondition.AuthLinkThrottling', 'Maximum sending rate exceeded.', {
+              rule        : rule,
+              limit       : limit,
+              currentCount: currentCount,
+              waitSeconds : waitSeconds,
+            }));
+
+          } else {
+            // 更新过期时间
+            res.locals.cacheDB.expire(cacheKey, THROTTLING_RULE_EXPIRES_MAP[rule]);
+          }
+
+          return eachCallback();
+        });
+
+      }, asyncCallback);
+    },
+    // 获取函数
+    function(asyncCallback) {
+      _getFuncById(res.locals, authLink.funcId, function(err, _func) {
+        if (err) return asyncCallback(err);
+
+        func = _func;
+
+        return asyncCallback();
+      });
+    },
+    // 创建函数调用选项
+    function(asyncCallback) {
+      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+        if (err) return asyncCallback(err);
+
+        funcCallOptions = _funcCallOptions;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    /*** 合并参数 ***/
+    try {
+      funcCallOptions.funcCallKwargs = _mergeFuncCallKwargs(
+          authLink.funcCallKwargsJSON,
+          funcCallOptions.funcCallKwargs,
+          format);
+
+    } catch(err) {
+      if (err instanceof E) {
+        // 业务错误时补全脚本/函数信息
+        err.detail.funcId = funcCallOptions.funcId;
+      }
+
+      return next(err);
+    }
+
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+      if (err) return next(err);
+
+      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+    });
+  });
+};
+
+exports.callBatch = function(req, res, next) {
+  var id     = req.params.id;
+  var format = req.params.format;
+
+  if (id && id.slice(0, BATCH_PREFIX.length) !== BATCH_PREFIX) {
+    id = BATCH_PREFIX + id;
+  }
+
+  var batch           = null;
+  var func            = null;
+  var funcCallOptions = null;
+
+  async.series([
+    // 检查批处理是否存在
+    function(asyncCallback) {
+      batch = BATCH_LRU.get(id);
+
+      if (batch === null) {
+        // 已查询过不存在
+        return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
+
+      } else if (batch) {
+        // 已查询确定存在
+        return asyncCallback();
+      }
+
+      var batchModel = batchMod.createModel(res.locals);
+
+      batchModel._get(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (!dbRes) {
+          // 查询不存在，缓存为`null`
+          BATCH_LRU.set(id, null);
+          return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
+        }
+
+        batch = dbRes;
+        BATCH_LRU.set(id, batch);
+
+        return asyncCallback();
+      });
+    },
+    // 检查限制
+    function(asyncCallback) {
+      // 是否已禁用
+      if (batch.isDisabled) {
+        return asyncCallback(new E('EBizCondition.BatchDisabled', 'This Batch is disabled.'))
+      }
+
+      return asyncCallback();
+    },
+    // 获取函数
+    function(asyncCallback) {
+      _getFuncById(res.locals, batch.funcId, function(err, _func) {
+        if (err) return asyncCallback(err);
+
+        func = _func;
+
+        return asyncCallback();
+      });
+    },
+    // 创建函数调用选项
+    function(asyncCallback) {
+      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+        if (err) return asyncCallback(err);
+
+        funcCallOptions = _funcCallOptions;
+
+        return asyncCallback();
+      });
+    },
+
+    // 批处理不检查工作队列
+  ], function(err) {
+    if (err) return next(err);
+
+    /*** 合并参数 ***/
+    try {
+      funcCallOptions.funcCallKwargs = _mergeFuncCallKwargs(
+          batch.funcCallKwargsJSON,
+          funcCallOptions.funcCallKwargs,
+          format);
+
+    } catch(err) {
+      if (err instanceof E) {
+        // 业务错误时补全脚本/函数信息
+        err.detail.funcId = funcCallOptions.funcId;
+      }
+
+      return next(err);
+    }
+
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret) {
+      if (err) return next(err);
+
+      return _doAPIResponse(res.locals, res, ret);
+    });
+  });
+};
+
+exports.callFuncDraft = function(req, res, next) {
+  // 函数，参数
+  var funcId         = req.params.funcId;
+  var funcCallKwargs = req.body.kwargs || {};
+
+  var scriptId = funcId.split('.')[0];
+
+  var scriptModel = scriptMod.createModel(res.locals);
+
+  async.series([
+    // 检查脚本是否存在
+    function(asyncCallback) {
+      scriptModel.getWithCheck(scriptId, null, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    // 函数调用参数
+    var name = 'DataFluxFunc.debugger';
+    var kwargs = {
+      funcId        : funcId,
+      funcCallKwargs: funcCallKwargs,
+      httpRequest   : _getHTTPRequestInfo(req),
+    };
+
+    // 启动函数执行任务
+    var onResultCallback = function(err, celeryRes, extraInfo) {
+      if (err) return next(err);
+
+      celeryRes = celeryRes || {};
+      extraInfo = extraInfo || {};
+
+      // 无法通过JSON.parse解析
+      if ('string' === typeof celeryRes) {
+        return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+      }
+
+      // 失败/超时
+      if (celeryRes.status === 'FAILURE') {
+        // 注意：由于预检查任务本身永远不会失败
+        // 代码流程如果进入此处，必然是引擎内部故障
+        return next(new E('EFuncFailed', 'Calling Function failed.', {
+          id   : celeryRes.id,
+          etype: celeryRes.result && celeryRes.result.exc_type,
+          stack: celeryRes.einfoTEXT,
+        }));
+
+      } else if (extraInfo.status === 'TIMEOUT') {
+        return next(new E('EFuncTimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
+          id: extraInfo.id,
+        }));
+      }
+
+      var ret = null;
+      if (celeryRes.retval.stack) {
+        // 脚本执行错误，手工包装
+        ret = {
+          ok     : false,
+          error  : CONST.respCodeMap.EScriptPreCheck,
+          message: 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code.',
+          data   : {result: celeryRes.retval.result},
+          reason : 'EScriptPreCheck',
+          detail : {
+            stack    : celeryRes.retval.stack,
+            traceInfo: celeryRes.retval.traceInfo,
+          },
+        };
+        res.status(parseInt(CONST.respCodeMap.EScriptPreCheck));
+
+      } else {
+        ret = toolkit.initRet(celeryRes.retval);
+      }
+
+      res.locals.sendJSON(ret);
+    };
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+
+    var taskOptions = {
+      queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
+      resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
+    }
+    celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+  });
+};
+
+exports.getFuncResult = function(req, res, next) {
+  var taskId     = req.query.taskId;
+  var returnType = req.query.returnType || 'raw';
+  var unfold     = req.query.unfold;
+
+  var dataProcessorTaskResultModel = dataProcessorTaskResultMod.createModel(res.locals);
+  dataProcessorTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
+    if (err) return next(err);
+
+    var result = dbRes.retvalJSON || null;
+    if (result && returnType !== 'ALL') {
+      result = result[returnType];
+    }
+
+    var ret = toolkit.initRet({
+      request  : dbRes.kwargsJSON,
+      startTime: dbRes.startTime,
+      endTime  : dbRes.endTime,
+      status   : dbRes.status,
+      result   : result,
+    });
+
+    if (unfold) {
+      return res.locals.sendRaw(ret.data.result);
+    } else {
+      return res.locals.sendJSON(ret);
+    }
+  });
+};
+
+exports.getFuncList = function(req, res, next) {
+  req.query = req.query || {};
+  req.query._asFuncDoc = true;
+
+  return funcAPICtrl.list(req, res, next);
+};
+
+exports.getFuncTagList = function(req, res, next) {
+  var name = req.query.name;
+
+  var funcModel = funcMod.createModel(res.locals);
+
+  var opt = {
+    fileds: ['tagsJSON'],
+  };
+  funcModel.list(opt, function(err, dbRes) {
+    if (err) return next(err);
+
+    var funcTags = [];
+    dbRes.forEach(function(d) {
+      funcTags = funcTags.concat(d.tagsJSON || []);
+    });
+
+    funcTags = toolkit.noDuplication(funcTags);
+    funcTags.sort();
+
+    // 过滤
+    if (!toolkit.isNothing(name)) {
+      funcTags = funcTags.filter(function(x) {
+        return x.indexOf(name) >= 0;
+      });
+    }
+
+    var ret = toolkit.initRet(funcTags);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.getAuthLinkFuncList = function(req, res, next) {
+  var authLinkModel = authLinkMod.createModel(res.locals);
+
+  var opt = res.locals.getQueryOptions();
+  opt.filters = opt.filters || {};
+  opt.filters['auln.showInDoc'] = {eq: true};
+
+  authLinkModel.list(opt, function(err, dbRes) {
+    if (err) return next(err);
+
+    var funcList = [];
+    dbRes.forEach(function(d) {
+      funcList.push({
+        url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
+          params: { id: d.id },
+        }),
+
+        id                : d.id,
+        funcId            : d.funcId,
+        funcCallKwargsJSON: d.funcCallKwargsJSON,
+        expireTime        : d.expireTime,
+        throttlingJSON    : d.throttlingJSON,
+        isDisabled        : d.isDisabled,
+
+        funcName       : d.func_name,
+        funcTitle      : d.func_title,
+        funcDescription: d.func_description,
+        funcDefinition : d.func_definition,
+        funcArgsJSON   : d.func_argsJSON,
+        funcKwargsJSON : d.func_kwargsJSON,
+        funcCategory   : d.func_category,
+        funcIntegration: d.func_integration,
+        funcTagsJSON   : d.func_tagsJSON,
+      });
+    });
+
+    var ret = toolkit.initRet(funcList);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.getSystemConfig = function(req, res, next) {
+  var systemConfig = {
+    MODE              : CONFIG.MODE,
+    WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
+    WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
+
+    _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
+    _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
+    _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
+
+    _FUNC_TASK_DEBUG_TIMEOUT      : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
+    _FUNC_TASK_DEFAULT_TIMEOUT    : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,
+    _FUNC_TASK_MIN_TIMEOUT        : CONFIG._FUNC_TASK_MIN_TIMEOUT,
+    _FUNC_TASK_MAX_TIMEOUT        : CONFIG._FUNC_TASK_MAX_TIMEOUT,
+    _FUNC_TASK_DEFAULT_API_TIMEOUT: CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT,
+    _FUNC_TASK_MIN_API_TIMEOUT    : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
+    _FUNC_TASK_MAX_API_TIMEOUT    : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
+
+    _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
+    _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
+  };
+
+  var funcModel = funcMod.createModel(res.locals);
+
+  async.series([
+    // 获取登录集成函数
+    function(asyncCallback) {
+      var opt = {
+        filters: {
+          integration: {eq: 'signIn'}
+        }
+      };
+      funcModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes.length <= 0) return asyncCallback();
+
+        // 集成登录记录为配置信息
+        var integratedSignInFuncs = [];
+        dbRes.forEach(function(d) {
+          integratedSignInFuncs.push({
+            id  : d.id,
+            name: d.title,
+          });
+        });
+
+        systemConfig._INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(systemConfig);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.getUpgradeInfo = function(req, res, next) {
+  var seq = req.query.seq;
+  if (parseInt(seq) > 0) {
+    seq = parseInt(seq);
+  }
+
+  var filePath = path.join(__dirname, '../../upgrade-info.yaml');
+
+  var fileContent = fs.readFileSync(filePath);
+  var upgradeInfo = yaml.load(fileContent).upgradeInfo;
+
+  if ('number' === typeof seq) {
+    upgradeInfo = upgradeInfo.filter(function(x) {
+      return x.seq > seq;
+    });
+  } else if (seq === 'latest') {
+    upgradeInfo = upgradeInfo.slice(-1);
+  }
+
+  var ret = toolkit.initRet(upgradeInfo);
+  return res.locals.sendJSON(ret);
+};
+
+// 集成处理
 exports.integratedSignIn = function(req, res, next) {
   var funcId   = req.body.signIn.funcId;
   var username = req.body.signIn.username;
@@ -1079,696 +1985,28 @@ exports.integratedAuthMid = function(req, res, next) {
   });
 };
 
-exports.overview = function(req, res, next) {
-  var sections = toolkit.asArray(req.query.sections);
-  var sectionMap = null;
-  if (!toolkit.isNothing(sections)) {
-    sectionMap = {};
-    sections.forEach(function(s) {
-      sectionMap[s] = true;
-    })
-  }
-
-  var scriptSetModel     = scriptSetMod.createModel(req, res);
-  var scriptModel        = scriptMod.createModel(req, res);
-  var funcModel          = funcMod.createModel(req, res);
-  var dataSourceModel    = dataSourceMod.createModel(req, res);
-  var envVariableModel   = envVariableMod.createModel(req, res);
-  var authLinkModel      = authLinkMod.createModel(req, res);
-  var crontabConfigModel = crontabConfigMod.createModel(req, res);
-  var batchModel         = batchMod.createModel(req, res);
-
-  var overviewParts = [
-    { name : 'scriptSet',     model: scriptSetModel},
-    { name : 'script',        model: scriptModel},
-    { name : 'func',          model: funcModel},
-    { name : 'dataSource',    model: dataSourceModel},
-    { name : 'envVariable',   model: envVariableModel},
-    { name : 'authLink',      model: authLinkModel},
-    { name : 'crontabConfig', model: crontabConfigModel},
-    { name : 'batch',         model: batchModel},
+// 清空日志/缓存表
+exports.clearLogCacheTables = function(req, res, next) {
+  var logTables = [
+    'biz_main_script_log',
+    'biz_main_script_failure',
+    'biz_main_task_result_dataflux_func',
+    'biz_main_crontab_task_info',
+    'biz_main_batch_task_info',
+    'biz_main_operation_record',
   ];
 
-  var overview = {
-    bizEntityCount  : [],
-    workerQueueInfo : [],
-    scriptOverview  : null,
-    latestOperations: [],
-  };
+  var sql = logTables.map(function(t) {
+    return 'TRUNCATE ' + t;
+  }).join('; ');
 
-  async.series([
-    // 业务实体计数
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
-
-      async.eachSeries(overviewParts, function(part, eachCallback) {
-        part.model.count(null, function(err, dbRes) {
-          if (err) return eachCallback(err);
-
-          overview.bizEntityCount.push({
-            name : part.name,
-            count: dbRes,
-          });
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-    // 查询所在队列工作单元数量、最大压力等信息
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
-              'workerQueue', i]);
-        res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-          if (err) return timesCallback(err);
-
-          var workerCount = parseInt(cacheRes || 0) || 0;
-          var maxPressure = (workerCount || 1) * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
-
-          var _info = {
-            workerCount: workerCount,
-            maxPressure: maxPressure,
-          }
-          overview.workerQueueInfo.push(_info);
-
-          return timesCallback();
-        });
-      }, asyncCallback);
-    },
-    // 队列压力
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      var cacheKeys = [];
-      for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
-        cacheKeys.push(cacheKey);
-      }
-
-      res.locals.cacheDB._run('mget', cacheKeys, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        cacheRes.forEach(function(p, i) {
-          overview.workerQueueInfo[i].pressure = parseInt(p || 0) || 0;
-        });
-
-        return asyncCallback();
-      });
-    },
-    // 队列长度
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        var workerQueue = toolkit.getWorkerQueue(i);
-        res.locals.cacheDB._run('llen', workerQueue, function(err, cacheRes) {
-          if (err) return timesCallback(err);
-
-          overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
-
-          return timesCallback(err);
-        });
-      }, asyncCallback);
-    },
-    // 脚本总览
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.scriptOverview) return asyncCallback();
-
-      scriptModel.overview(null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        overview.scriptOverview = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 最近若干次操作记录
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.latestOperations) return asyncCallback();
-
-      var operationRecordModel = operationRecordMod.createModel(req, res);
-
-      var opt = {
-        limit: 10,
-      };
-      operationRecordModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        overview.latestOperations = dbRes;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
+  res.locals.db.query(sql, null, function(err) {
     if (err) return next(err);
 
-    if (sectionMap) {
-      Object.keys(overview).forEach(function(k) {
-        if (!sectionMap[k]) {
-          delete overview[k];
-        }
-      })
-    }
-
-    var ret = toolkit.initRet(overview);
-    return res.locals.sendJSON(ret);
+    return res.locals.sendJSON();
   });
 };
 
-exports.describeFunc = function(req, res, next) {
-  var funcId = req.params.funcId;
-
-  var funcModel = funcMod.createModel(req, res);
-
-  var func = null;
-
-  async.series([
-    function(asyncCallback) {
-      funcModel.getWithCheck(funcId, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        func = dbRes;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(func);
-    return res.locals.sendJSON(ret);
-  });
-};
-
-exports.callFunc = function(req, res, next) {
-  var funcId = req.params.funcId;
-
-  var funcCallOptions = null;
-  async.series([
-    // 创建函数调用选项
-    function(asyncCallback) {
-      _createFuncCallOptions(req, res, funcId, 'direct', function(err, _funcCallOptions) {
-        if (err) return asyncCallback(err);
-
-        funcCallOptions = _funcCallOptions;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    _callFuncRunner(req, res, funcCallOptions, next);
-  });
-};
-
-exports.callAuthLink = function(req, res, next) {
-  var id     = req.params.id;
-  var format = req.params.format;
-
-  if (id && id.slice(0, AUTH_LINK_PREFIX.length) !== AUTH_LINK_PREFIX) {
-    id = AUTH_LINK_PREFIX + id;
-  }
-
-  var authLink        = null;
-  var funcCallOptions = null;
-
-  async.series([
-    // 检查授权链接是否存在
-    function(asyncCallback) {
-      authLink = AUTH_LINK_LRU.get(id);
-
-      if (authLink === null) {
-        // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
-
-      } else if (authLink) {
-        // 已查询确定存在
-        return asyncCallback();
-      }
-
-      var authLinkModel = authLinkMod.createModel(req, res);
-
-      authLinkModel._get(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (!dbRes) {
-          // 查询不存在，缓存为`null`
-          AUTH_LINK_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
-        }
-
-        authLink = dbRes;
-        AUTH_LINK_LRU.set(id, authLink);
-
-        return asyncCallback();
-      });
-    },
-    // 检查限制
-    function(asyncCallback) {
-      // 是否已禁用
-      if (authLink.isDisabled) {
-        return asyncCallback(new E('EBizCondition.AuthLinkDisabled', 'This Auth Link is disabled.'))
-      }
-
-      // 是否已过期
-      if (authLink.expireTime && new Date(authLink.expireTime) < new Date()) {
-        return asyncCallback(new E('EBizCondition.AuthLinkExpired', 'This Auth Link is already expired.'))
-      }
-
-      // 是否限流
-      if (toolkit.isNothing(authLink.throttlingJSON)) return asyncCallback();
-
-      // 限流处理
-      async.eachOfSeries(authLink.throttlingJSON, function(limit, rule, eachCallback) {
-        var ruleSep = parseInt(Date.now() / 1000 / THROTTLING_RULE_EXPIRES_MAP[rule]);
-        var tags = [
-          'authLinkId', id,
-          'rule'      , rule,
-          'ruleSep'   , ruleSep,
-        ];
-        var cacheKey = toolkit.getCacheKey('throttling', 'authLink', tags);
-
-        res.locals.cacheDB.incr(cacheKey, function(err, cacheRes) {
-          if (err) return eachCallback(err);
-
-          var currentCount = parseInt(cacheRes);
-          if (currentCount > limit) {
-            // 触发限流
-            var waitSeconds = parseInt((ruleSep + 1) * THROTTLING_RULE_EXPIRES_MAP[rule] - Date.now() / 1000) + 1;
-            return eachCallback(new E('EBizCondition.AuthLinkThrottling', 'Maximum sending rate exceeded.', {
-              rule        : rule,
-              limit       : limit,
-              currentCount: currentCount,
-              waitSeconds : waitSeconds,
-            }));
-
-          } else {
-            // 更新过期时间
-            res.locals.cacheDB.expire(cacheKey, THROTTLING_RULE_EXPIRES_MAP[rule]);
-          }
-
-          return eachCallback();
-        });
-
-      }, asyncCallback);
-    },
-    // 创建函数调用选项
-    function(asyncCallback) {
-      _createFuncCallOptions(req, res, authLink.funcId, 'authLink', function(err, _funcCallOptions) {
-        if (err) return asyncCallback(err);
-
-        funcCallOptions = _funcCallOptions;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    /*** 合并参数 ***/
-    try {
-      funcCallOptions.funcCallKwargs = _mergeFuncCallKwargs(
-          authLink.funcCallKwargsJSON,
-          funcCallOptions.funcCallKwargs,
-          format);
-
-    } catch(err) {
-      if (err instanceof E) {
-        // 业务错误时补全脚本/函数信息
-        err.detail.funcId = funcCallOptions.funcId;
-      }
-
-      return next(err);
-    }
-
-    _callFuncRunner(req, res, funcCallOptions, next);
-  });
-};
-
-exports.callBatch = function(req, res, next) {
-  var id     = req.params.id;
-  var format = req.params.format;
-
-  if (id && id.slice(0, BATCH_PREFIX.length) !== BATCH_PREFIX) {
-    id = BATCH_PREFIX + id;
-  }
-
-  var batch           = null;
-  var funcCallOptions = null;
-
-  async.series([
-    // 检查批处理是否存在
-    function(asyncCallback) {
-      batch = BATCH_LRU.get(id);
-
-      if (batch === null) {
-        // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
-
-      } else if (batch) {
-        // 已查询确定存在
-        return asyncCallback();
-      }
-
-      var batchModel = batchMod.createModel(req, res);
-
-      batchModel._get(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (!dbRes) {
-          // 查询不存在，缓存为`null`
-          BATCH_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
-        }
-
-        batch = dbRes;
-        BATCH_LRU.set(id, batch);
-
-        return asyncCallback();
-      });
-    },
-    // 检查限制
-    function(asyncCallback) {
-      // 是否已禁用
-      if (batch.isDisabled) {
-        return asyncCallback(new E('EBizCondition.BatchDisabled', 'This Batch is disabled.'))
-      }
-
-      return asyncCallback();
-    },
-    // 创建函数调用选项
-    function(asyncCallback) {
-      _createFuncCallOptions(req, res, batch.funcId, 'batch', function(err, _funcCallOptions) {
-        if (err) return asyncCallback(err);
-
-        funcCallOptions = _funcCallOptions;
-
-        return asyncCallback();
-      });
-    },
-
-    // 批处理不检查工作队列
-  ], function(err) {
-    if (err) return next(err);
-
-    /*** 合并参数 ***/
-    try {
-      funcCallOptions.funcCallKwargs = _mergeFuncCallKwargs(
-          batch.funcCallKwargsJSON,
-          funcCallOptions.funcCallKwargs,
-          format);
-
-    } catch(err) {
-      if (err instanceof E) {
-        // 业务错误时补全脚本/函数信息
-        err.detail.funcId = funcCallOptions.funcId;
-      }
-
-      return next(err);
-    }
-
-    _callFuncRunner(req, res, funcCallOptions, next);
-  });
-};
-
-exports.callFuncDraft = function(req, res, next) {
-  // 函数，参数
-  var funcId         = req.params.funcId;
-  var funcCallKwargs = req.body.kwargs || {};
-
-  var scriptId = funcId.split('.')[0];
-
-  var scriptModel = scriptMod.createModel(req, res);
-
-  async.series([
-    // 检查脚本是否存在
-    function(asyncCallback) {
-      scriptModel.getWithCheck(scriptId, null, asyncCallback);
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    // 函数调用参数
-    var name = 'DataFluxFunc.debugger';
-    var kwargs = {
-      funcId        : funcId,
-      funcCallKwargs: funcCallKwargs,
-      httpRequest   : _getHTTPRequestInfo(req, res),
-    };
-
-    // 启动函数执行任务
-    var onResultCallback = function(err, celeryRes, extraInfo) {
-      if (err) return next(err);
-
-      celeryRes = celeryRes || {};
-      extraInfo = extraInfo || {};
-
-      // 无法通过JSON.parse解析
-      if ('string' === typeof celeryRes) {
-        return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
-      }
-
-      // 失败/超时
-      if (celeryRes.status === 'FAILURE') {
-        // 注意：由于预检查任务本身永远不会失败
-        // 代码流程如果进入此处，必然是引擎内部故障
-        return next(new E('EFuncFailed', 'Calling Function failed.', {
-          id   : celeryRes.id,
-          etype: celeryRes.result && celeryRes.result.exc_type,
-          stack: celeryRes.einfoTEXT,
-        }));
-
-      } else if (extraInfo.status === 'TIMEOUT') {
-        return next(new E('EFuncTimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
-          id: extraInfo.id,
-        }));
-      }
-
-      var ret = null;
-      if (celeryRes.retval.stack) {
-        // 脚本执行错误，手工包装
-        ret = {
-          ok     : false,
-          error  : CONST.respCodeMap.EScriptPreCheck,
-          message: 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code.',
-          data   : {result: celeryRes.retval.result},
-          reason : 'EScriptPreCheck',
-          detail : {
-            stack    : celeryRes.retval.stack,
-            traceInfo: celeryRes.retval.traceInfo,
-          },
-        };
-        res.status(parseInt(CONST.respCodeMap.EScriptPreCheck));
-
-      } else {
-        ret = toolkit.initRet(celeryRes.retval);
-      }
-
-      res.locals.sendJSON(ret);
-    };
-
-    var celery = celeryHelper.createHelper(res.locals.logger);
-
-    var taskOptions = {
-      queue            : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
-      resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
-    }
-    celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
-  });
-};
-
-exports.getFuncResult = function(req, res, next) {
-  var taskId     = req.query.taskId;
-  var returnType = req.query.returnType || 'raw';
-  var unfold     = req.query.unfold;
-
-  var dataProcessorTaskResultModel = dataProcessorTaskResultMod.createModel(req, res);
-  dataProcessorTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
-    if (err) return next(err);
-
-    var result = dbRes.retvalJSON || null;
-    if (result && returnType !== 'ALL') {
-      result = result[returnType];
-    }
-
-    var ret = toolkit.initRet({
-      request  : dbRes.kwargsJSON,
-      startTime: dbRes.startTime,
-      endTime  : dbRes.endTime,
-      status   : dbRes.status,
-      result   : result,
-    });
-
-    if (unfold) {
-      return res.locals.sendRaw(ret.data.result);
-    } else {
-      return res.locals.sendJSON(ret);
-    }
-  });
-};
-
-exports.getFuncList = function(req, res, next) {
-  req.query = req.query || {};
-  req.query._asFuncDoc = true;
-
-  return funcAPICtrl.list(req, res, next);
-};
-
-exports.getFuncTagList = function(req, res, next) {
-  var name = req.query.name;
-
-  var funcModel = funcMod.createModel(req, res);
-
-  var opt = {
-    fileds: ['tagsJSON'],
-  };
-  funcModel.list(opt, function(err, dbRes) {
-    if (err) return next(err);
-
-    var funcTags = [];
-    dbRes.forEach(function(d) {
-      funcTags = funcTags.concat(d.tagsJSON || []);
-    });
-
-    funcTags = toolkit.noDuplication(funcTags);
-    funcTags.sort();
-
-    // 过滤
-    if (!toolkit.isNothing(name)) {
-      funcTags = funcTags.filter(function(x) {
-        return x.indexOf(name) >= 0;
-      });
-    }
-
-    var ret = toolkit.initRet(funcTags);
-    return res.locals.sendJSON(ret);
-  });
-};
-
-exports.getAuthLinkFuncList = function(req, res, next) {
-  var authLinkModel = authLinkMod.createModel(req, res);
-
-  var opt = res.locals.getQueryOptions();
-  opt.filters = opt.filters || {};
-  opt.filters['auln.showInDoc'] = {eq: true};
-
-  authLinkModel.list(opt, function(err, dbRes) {
-    if (err) return next(err);
-
-    var funcList = [];
-    dbRes.forEach(function(d) {
-      funcList.push({
-        url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
-          params: { id: d.id },
-        }),
-
-        id                : d.id,
-        funcId            : d.funcId,
-        funcCallKwargsJSON: d.funcCallKwargsJSON,
-        expireTime        : d.expireTime,
-        throttlingJSON    : d.throttlingJSON,
-        isDisabled        : d.isDisabled,
-
-        funcName       : d.func_name,
-        funcTitle      : d.func_title,
-        funcDescription: d.func_description,
-        funcDefinition : d.func_definition,
-        funcArgsJSON   : d.func_argsJSON,
-        funcKwargsJSON : d.func_kwargsJSON,
-        funcCategory   : d.func_category,
-        funcIntegration: d.func_integration,
-        funcTagsJSON   : d.func_tagsJSON,
-      });
-    });
-
-    var ret = toolkit.initRet(funcList);
-    return res.locals.sendJSON(ret);
-  });
-};
-
-exports.getSystemConfig = function(req, res, next) {
-  var systemConfig = {
-    MODE        : CONFIG.MODE,
-    WEB_BASE_URL: CONFIG.WEB_BASE_URL,
-
-    _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
-    _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
-    _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
-
-    _FUNC_TASK_DEBUG_TIMEOUT      : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
-    _FUNC_TASK_DEFAULT_TIMEOUT    : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,
-    _FUNC_TASK_MIN_TIMEOUT        : CONFIG._FUNC_TASK_MIN_TIMEOUT,
-    _FUNC_TASK_MAX_TIMEOUT        : CONFIG._FUNC_TASK_MAX_TIMEOUT,
-    _FUNC_TASK_DEFAULT_API_TIMEOUT: CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT,
-    _FUNC_TASK_MIN_API_TIMEOUT    : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
-    _FUNC_TASK_MAX_API_TIMEOUT    : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
-
-    _DBDATA_OPERATION_RECORD_LIMIT: CONFIG._DBDATA_OPERATION_RECORD_LIMIT,
-    _DBDATA_SCRIPT_FAILURE_LIMIT  : CONFIG._DBDATA_SCRIPT_FAILURE_LIMIT,
-    _DBDATA_SCRIPT_LOG_LIMIT      : CONFIG._DBDATA_SCRIPT_LOG_LIMIT,
-
-    _INTEGRATED_SIGN_IN_FUNC: null,
-  };
-
-  var funcModel = funcMod.createModel(req, res);
-
-  async.series([
-    // 获取登录集成函数
-    function(asyncCallback) {
-      var opt = {
-        filters: {
-          integration: {eq: 'signIn'}
-        }
-      };
-      funcModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes.length <= 0) return asyncCallback();
-
-        // 集成登录记录为配置信息
-        var integratedSignInFuncs = [];
-        dbRes.forEach(function(d) {
-          integratedSignInFuncs.push({
-            id  : d.id,
-            name: d.title,
-          });
-        });
-
-        systemConfig._INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(systemConfig);
-    return res.locals.sendJSON(ret);
-  });
-};
-
-exports.getUpgradeInfo = function(req, res, next) {
-  var seq = req.query.seq;
-  if (parseInt(seq) > 0) {
-    seq = parseInt(seq);
-  }
-
-  var filePath = path.join(__dirname, '../../upgrade-info.yaml');
-
-  var fileContent = fs.readFileSync(filePath);
-  var upgradeInfo = yaml.load(fileContent).upgradeInfo;
-
-  if ('number' === typeof seq) {
-    upgradeInfo = upgradeInfo.filter(function(x) {
-      return x.seq > seq;
-    });
-  } else if (seq === 'latest') {
-    upgradeInfo = upgradeInfo.slice(-1);
-  }
-
-  var ret = toolkit.initRet(upgradeInfo);
-  return res.locals.sendJSON(ret);
-};
+/* 允许其他模块调用 */
+exports.createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
+exports.callFuncRunner                   = _callFuncRunner;

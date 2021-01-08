@@ -45,11 +45,16 @@
             <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
 
             <span>
-              <el-tag effect="dark" type="danger" size="mini" v-if="data.isCodeEdited">
-                <i class="fa fa-pencil"></i>
-                已编辑
-              </el-tag>
-              {{ node.label }}<span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
+              <el-tag v-if="data.isCodeEdited"
+                effect="dark"
+                type="danger"
+                size="mini">已修改</el-tag>
+              <el-tag v-if="data.isBuiltin"
+                effect="dark"
+                type="warning"
+                size="mini">内置</el-tag>
+              <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
+              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
             </span>
           </div>
         </span>
@@ -190,7 +195,7 @@ export default {
 
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description', 'isLocked', 'lockedByUserId']},
+        query: {fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
         alert: {entity: '脚本集', showError: true},
       });
       if (!apiRes.ok) return;
@@ -210,6 +215,7 @@ export default {
           type           : 'scriptSet',
           isLocked       : d.isLocked,
           isLockedByOther: isLockedByOther,
+          isBuiltin    : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
             description: d.description || `脚本集 ${d.id}`,
@@ -220,7 +226,7 @@ export default {
 
       /***** 脚本 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
+        query: {fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
         alert: {entity: '脚本', showError: true},
       });
       if (!apiRes.ok) return;
@@ -264,7 +270,7 @@ export default {
 
       /***** 函数 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type']},
+        query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type']},
         alert: {entity: '函数', showError: true},
       });
       if (!apiRes.ok) return;
@@ -356,11 +362,15 @@ export default {
       this.defaultExpandedNodeKeys = Object.keys(this.expandedNodeMap);
 
       setImmediate(() => {
+        if (!this.$refs.tree) return;
+
         // 自动选中
         this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
       });
 
       setTimeout(() => {
+        if (!this.$refs.tree) return;
+
         // 滚动到目标位置
         let entryId = this.$refs.tree.getCurrentKey();
         if (entryId) {

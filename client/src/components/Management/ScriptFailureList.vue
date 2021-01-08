@@ -5,9 +5,6 @@
       <el-header height="60px">
         <h1>
           近期脚本故障
-          <small v-if="$store.getters.CONFIG('_DBDATA_SCRIPT_FAILURE_LIMIT')">
-            仅保留最近大约 {{ $store.getters.CONFIG('_DBDATA_SCRIPT_FAILURE_LIMIT') }} 条函数执行的故障
-          </small>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
@@ -135,7 +132,7 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       let createTimeStr = this.moment(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.funcId}-error-${createTimeStr}`;
+      let fileName = `${d.funcId}.error.${createTimeStr}`;
       this.$refs.longTextDialog.update(d.einfoTEXT, fileName);
     },
   },

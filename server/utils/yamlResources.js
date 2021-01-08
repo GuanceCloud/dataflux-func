@@ -12,7 +12,11 @@ var request = require('request');
 var toolkit = require('./toolkit');
 
 var FILE_CACHE = {};
-var CONFIG_KEY = 'CONFIG';
+
+/* Configure */
+var CONFIG_KEY           = 'CONFIG';
+var ENV_CONFIG_PREFIX    = 'DFF_';
+var CUSTOM_CONFIG_PREFIX = 'CUSTOM_';
 
 /**
  * Load a YAML file.
@@ -96,37 +100,47 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
   }
 
   // User config from env
-  for (var k in process.env) {
+  for (var envK in process.env) {
+    if (!toolkit.startsWith(envK, ENV_CONFIG_PREFIX)) continue;
+
+    var k = envK.slice(ENV_CONFIG_PREFIX.length);
+    var v = process.env[envK];
+
+    if ('string' === typeof v && v.trim() === '') {
+      continue;
+    }
+
     if (k in configObj) {
-      configObj[k] = process.env[k];
+      configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    } else if (toolkit.startsWith(k, 'CUSTOM_')) {
+    } else if (toolkit.startsWith(k, CUSTOM_CONFIG_PREFIX)) {
+      configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
     }
   }
 
   // Convert config value type
   for (var k in configObj) {
+    var v = configObj[k];
     var type = configTypeMap[k];
 
-    if (!type) continue;
-    if (configObj[k] === null) continue;
+    if (!type)      continue;
+    if (v === null) continue;
 
     switch(type) {
       case 'integer':
-        configObj[k] = parseInt(configObj[k]);
+        configObj[k] = parseInt(v);
         break;
 
       case 'float':
-        configObj[k] = parseFloat(configObj[k]);
+        configObj[k] = parseFloat(v);
         break;
 
       case 'list':
-        configObj[k] = configObj[k].toString();
+        configObj[k] = v.toString();
         if (configObj[k].length > 0) {
-          configObj[k] = configObj[k].split(',');
-          configObj[k] = configObj[k].map(function(x) {
+          configObj[k] = v.split(',').map(function(x) {
             return x.trim();
           });
 
@@ -137,7 +151,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
       case 'map':
         var itemMap = {};
-        configObj[k].split(',').forEach(function(item) {
+        v.split(',').forEach(function(item) {
           var itemParts = item.split('=');
           var itemK = itemParts[0].trim();
           var itemV = (itemParts[1] || '').trim();
@@ -147,11 +161,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         break;
 
       case 'string':
-        configObj[k] = configObj[k].toString();
+        configObj[k] = v.toString();
         break;
 
       case 'boolean':
-        configObj[k] = toolkit.toBoolean(configObj[k]);
+        configObj[k] = toolkit.toBoolean(v);
         break;
     }
   }

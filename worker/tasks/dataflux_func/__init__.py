@@ -27,9 +27,8 @@ import funcsigs
 from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
-from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
-from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper
+from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper
 from worker.utils.extra_helpers import DFDataWayHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
@@ -37,18 +36,23 @@ CONFIG = yaml_resources.get('CONFIG')
 
 COMPILED_CODE_LRU = pylru.lrucache(CONFIG['_FUNC_TASK_COMPILE_CACHE_MAX_SIZE'])
 
-FIXED_INTEGRATION_KEY_MAP = {
-    # 登录用函数
+FIX_INTEGRATION_KEY_MAP = {
+    # 额外用于登录DataFlux Func平台的函数
+    # 集成为`POST /api/v1/func/integration/sign-in`
+    # 集成为DataFlux Func登录界面
     #   函数必须为`def func(username, password)`形式
+    #       返回`True`表示登录成功
+    #       返回`False`或`Exception('<错误信息>')`表示登录失败
     #   无配置项
     'signIn': 'signIn',
     'login' : 'signIn',
 
     # 自动运行函数
-    #   函数必须为`def func()`形式
+    # 集成为独立定时运行任务（即无需配置的自动触发配置）
+    # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
     #       crontab  : Crontab语法自动运行周期
-    #       onLaunch : True/False，是否启动时运行
+    #       onLaunch : True/False，是否启动后运行
     #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
 }
@@ -66,6 +70,7 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'mongodb'      : MongoDBHelper,
     'elasticsearch': ElasticSearchHelper,
     'nsq'          : NSQLookupHelper,
+    'mqtt'         : MQTTHelper,
 }
 DATA_SOURCE_LOCAL_TIMESTAMP_MAP = {}
 DATA_SOURCE_HELPERS_CACHE       = {}
@@ -256,6 +261,8 @@ class NotSupportException(DataFluxFuncBaseException):
 class InvalidOptionException(DataFluxFuncBaseException):
     pass
 class AccessDenyException(DataFluxFuncBaseException):
+    pass
+class NotEnabledException(DataFluxFuncBaseException):
     pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
@@ -668,8 +675,15 @@ class FuncDataSourceHelper(object):
         'token',
         'accessKey',
         'secretKey',
+        'clientId',
+        'topicHandlers',
         'meta',
     )
+
+    CIPHER_CONFIG_KEYS = [
+      'password',
+      'secretKey',
+    ];
 
     def __init__(self, task):
         self.__task = task
@@ -687,7 +701,7 @@ class FuncDataSourceHelper(object):
         # 判断是否需要刷新数据源
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
         refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
 
         if refresh_time > local_time:
@@ -744,7 +758,7 @@ class FuncDataSourceHelper(object):
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
         self.__task.cache_db.set(cache_key, int(time.time() * 1000))
 
     def list(self):
@@ -780,10 +794,11 @@ class FuncDataSourceHelper(object):
                 raise NotSupportException('Data source config item `{}` not supported'.format(k))
 
         # 加密字段
-        password = config.get('password')
-        if password:
-            config['passwordCipher'] = toolkit.cipher_by_aes(password, CONFIG['SECRET'])
-        config.pop('password', None)
+        for k in self.CIPHER_CONFIG_KEYS:
+            v = config.get(k)
+            if v is not None:
+                config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
+            config.pop(k, None)
 
         config_json = toolkit.json_safe_dumps(config)
 
@@ -1040,11 +1055,6 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
-    def __call__(self, *args, **kwargs):
-        self.logger = LogHelper(self)
-
-        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
-
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1227,7 +1237,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 e = InvalidOptionException('`integration` should be a string or unicode')
                 raise e
 
-            integration = FIXED_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
+            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
 
         # 函数提示
         if hint is not None:
@@ -1475,23 +1485,29 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = toolkit.get_worker_queue(safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE'])
+        queue = safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE']
         if safe_scope.get('_DFF_DEBUG'):
-            queue = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
+            queue = CONFIG['_FUNC_TASK_DEFAULT_DEBUG_QUEUE']
+
+        worker_queue = toolkit.get_worker_queue(queue)
 
         task_headers = {
             'origin': self.request.id,
         }
         task_kwargs = {
             'funcId'         : func_id,
-            'funcKwargs'     : kwargs,
-            'saveResult'     : save_result,
-            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
-            'funcChain'      : func_chain,
+            'funcCallKwargs' : kwargs,
+            'origin'         : safe_scope.get('_DFF_ORIGIN'),
+            'originId'       : safe_scope.get('_DFF_ORIGIN_ID'),
             'execMode'       : 'async',
+            'saveResult'     : save_result,
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'triggerTimeMs'  : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
+            'queue'          : queue,
             'crontab'        : safe_scope.get('_DFF_CRONTAB'),
             'crontabConfigId': safe_scope.get('_DFF_CRONTAB_CONFIG_ID'),
+            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
+            'funcChain'      : func_chain,
         }
 
         from worker.tasks.dataflux_func.runner import dataflux_func_runner
@@ -1499,7 +1515,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
-            queue=queue,
+            queue=worker_queue,
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
@@ -1729,7 +1745,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                 # 仅记录脚本的本地变量
                 locals_info = []
-                if is_in_script:
+                if CONFIG['_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO'] and is_in_script:
                     for var_name, var_value in frame.f_locals.items():
                         # 忽略引擎内置变量
                         if var_name in sample_scope or var_name in sample_scope['__builtins__']:
@@ -1744,8 +1760,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                         var_dump = None
                         if isinstance(var_value, (tuple, list, dict)):
                             # `sort_keys`参数可能导致报UnicodeDecodeError
-                            # var_dump = json.dumps(var_value, sort_keys=True, indent=2, default=toolkit.json_dump_default)
-                            var_dump = simplejson.dumps(var_value, indent=2, default=toolkit.json_dump_default)
+                            # var_dump = json.dumps(var_value, sort_keys=True,default=toolkit.json_dump_default)
+                            var_dump = simplejson.dumps(var_value, default=toolkit.json_dump_default)
                         else:
                             var_repr = pprint.saferepr(var_value)
 

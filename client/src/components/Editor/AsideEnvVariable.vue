@@ -43,7 +43,7 @@
 
             <el-popover v-if="data.tip"
               placement="right-start"
-              trigger="hover"
+              trigger="click"
               transition="el-fade-in"
               popper-class="aside-tip"
               :close-delay="500">
@@ -95,7 +95,7 @@ export default {
       this.loading = true;
 
       let apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description']},
+        query: {fields: ['id', 'title', 'description']},
         alert: {entity: '环境变量', action: '获取', showError: true},
       });
       if (!apiRes.ok) return;

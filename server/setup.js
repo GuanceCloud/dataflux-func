@@ -10,6 +10,7 @@ var express    = require('express');
 var bodyParser = require('body-parser');
 var async      = require('async');
 var yaml       = require('js-yaml');
+var minimist   = require('minimist');
 
 /* Project Modules */
 var toolkit = require('./utils/toolkit');
@@ -21,7 +22,10 @@ var CONFIG       = null;
 var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 
-var INSTALL_CHECK_INTERVAL = 3 * 1000;
+var ARGV = minimist(process.argv.slice(2));
+
+var INSTALL_CHECK_INTERVAL            = 3 * 1000;
+var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
 
 // DB/Cache helper should load AFTER config is loaded.
 var mysqlHelper = null;
@@ -37,28 +41,24 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   CONFIG      = _config;
   USER_CONFIG = _userConfig;
 
+  // Load upgrade info
+  var upgradeInfoPath = path.join(__dirname, '../upgrade-info.yaml')
+  UPGRADE_INFO = yaml.load(fs.readFileSync(upgradeInfoPath)).upgradeInfo;
+
   if (CONFIG._DISABLE_SETUP) {
     console.log('Installation disabled, skip.');
     return process.exit(0);
   }
-
-  // Load upgrade info
-  var upgradeInfoPath = path.join(__dirname, '../upgrade-info.yaml')
-  var upgradeInfo = yaml.load(fs.readFileSync(upgradeInfoPath)).upgradeInfo;
-  UPGRADE_INFO = upgradeInfo[upgradeInfo.length - 1] || { seq: 0 };
 
   if (!CONFIG._IS_INSTALLED) {
     // New setup
     console.log('Start setup guide...')
     runSetup();
 
-  } else if (CONFIG._CURRENT_UPGRADE_SEQ < UPGRADE_INFO.seq) {
-    // Upgrade
-    runUpgrade();
-
   } else {
-    // Do nothing
-    return process.exit(0);
+    // Upgrade
+    console.log('Start upgrade process...')
+    checkAndRunUpgrade();
   }
 });
 
@@ -165,7 +165,7 @@ function runSetup() {
           cacheHelper = redisHelper.createHelper(null, _config);
           cacheHelper.skipLog = true;
 
-          cacheHelper._run('select', (config.REDIS_DATABASE || 0), function(err, data) {
+          cacheHelper.run('select', (config.REDIS_DATABASE || 0), function(err, data) {
             if (err) configErrors['redis'] = '无法连接到Redis：' + err.toString();
 
             return asyncCallback();
@@ -185,6 +185,42 @@ function runSetup() {
 
         dbHelper.query(initSQL, null, function(err, data) {
           if (err) configErrors['mysqlInit'] = '初始化MySQL失败：' + err.toString();
+
+          return asyncCallback();
+        });
+      },
+      // Add sys config
+      function(asyncCallback) {
+        var sql = 'INSERT INTO `wat_main_system_config` SET `id` = ?, `value` = ?';
+        var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
+        dbHelper.query(sql, sqlParams, function(err, data) {
+          if (err) configErrors['mysqlInit'] = '初始化系统配置项失败：' + err.toString();
+
+          return asyncCallback();
+        });
+      },
+      // Add builtin MQTT
+      function(asyncCallback) {
+        if (!ARGV.mqtt) return asyncCallback();
+
+        var userPassword = ARGV.mqtt.split(':');
+        var configJSON = JSON.stringify({
+          host          : 'mqtt',
+          port          : 1883,
+          user          : userPassword[0],
+          passwordCipher: toolkit.cipherByAES(userPassword[1], config.SECRET),
+          topicHandlers : [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
+        });
+
+        var sql = 'INSERT INTO `biz_main_data_source` SET ?';
+        var sqlParams = {
+          id        : 'mqtt',
+          title     : 'Mosquitto',
+          type      : 'mqtt',
+          configJSON: configJSON,
+        };
+        dbHelper.query(sql, sqlParams, function(err) {
+          if (err) configErrors['mysqlInit'] = '自动添加内置数据源失败：' + err.toString();
 
           return asyncCallback();
         });
@@ -241,7 +277,6 @@ function runSetup() {
       // Write config file
       Object.assign(USER_CONFIG, config)
       USER_CONFIG._IS_INSTALLED = true;
-      USER_CONFIG._CURRENT_UPGRADE_SEQ  = UPGRADE_INFO.seq;
 
       fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
@@ -267,7 +302,7 @@ function runSetup() {
   });
 }
 
-function runUpgrade() {
+function checkAndRunUpgrade() {
   /*
     更新处理默认数据库/缓存能够正常连接
 
@@ -276,27 +311,18 @@ function runUpgrade() {
     当发现有其他进程正在更新时，则转为定期检查是否已经更新完毕
     检测发现更新完毕后自动退出
    */
-
-  // Load upgrade info
-  var upgradeInfoPath = path.join(__dirname, '../upgrade-info.yaml')
-  var upgradeInfo = yaml.load(fs.readFileSync(upgradeInfoPath)).upgradeInfo;
-
-  if (toolkit.isNothing(upgradeInfo)) {
+  if (toolkit.isNothing(UPGRADE_INFO)) {
     console.log('No upgrade info, skip.');
     process.exit(0);
   }
 
-  var upgradeItems = upgradeInfo.filter(function(d) {
-    return d.seq > CONFIG._CURRENT_UPGRADE_SEQ;
-  });
+  // Init
+  var cacheHelper = redisHelper.createHelper();
+  var dbHelper    = mysqlHelper.createHelper();
 
-  if (toolkit.isNothing(upgradeItems)) {
-    console.log('Already up to date, skip.');
-    process.exit(0);
-  }
-
-  var cacheHelper = null;
-  var dbHelper    = null;
+  var currentUpgradeSeq = null;
+  var nextUpgradeSeq    = null;
+  var upgradeItems      = null;
 
   var lockKey     = toolkit.strf('{0}#upgradeLock', CONFIG.APP_NAME);
   var lockValue   = toolkit.genRandString();
@@ -304,66 +330,77 @@ function runUpgrade() {
   async.series([
     // Check upgrade lock
     function(asyncCallback) {
-      var _config = {
-        host    : CONFIG.REDIS_HOST,
-        port    : CONFIG.REDIS_PORT,
-        password: CONFIG.REDIS_PASSWORD,
-      }
-      cacheHelper = redisHelper.createHelper(null, _config);
-      cacheHelper.skipLog = true;
-
       cacheHelper.lock(lockKey, lockValue, maxLockTime, function(err, cacheRes) {
         if (err) {
           console.log('Checking upgrade status failed: ', err);
           return process.exit(1);
         }
 
-        if (!cacheRes) {
-          console.log('Other process is running upgrade, waiting...');
+        // 正常取得锁，继续执行
+        if (cacheRes) return asyncCallback();
 
-          setInterval(function() {
-            cacheHelper.get(lockKey, function(err, cacheRes) {
-              if (err) {
-                console.log('Waiting upgrade status failed: ', err);
-                return process.exit(1);
-              }
+        // 未能取得锁，其他进程正在更新，等待锁失效后认为更新完毕
+        console.log('Other process is running upgrade, waiting...');
+        setInterval(function() {
+          cacheHelper.get(lockKey, function(err, cacheRes) {
+            if (err) {
+              console.log('Waiting upgrade status failed: ', err);
+              return process.exit(1);
+            }
 
-              if (cacheRes) {
-                console.log('Upgrading is still running...');
-                return;
-              }
+            if (cacheRes) {
+              console.log('Upgrading is still running...');
+              return;
+            }
 
-              console.log('Upgrading ended, start application...');
-              return process.exit(0)
-            });
-          }, INSTALL_CHECK_INTERVAL);
+            console.log('Upgrading ended, start application...');
+            return process.exit(0)
+          });
+        }, INSTALL_CHECK_INTERVAL);
+      });
+    },
+    // Get upgrade items
+    function(asyncCallback) {
+      var sql = 'SELECT value FROM wat_main_system_config WHERE id = ?';
+      var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ];
+      dbHelper.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
 
-        } else {
-          console.log(toolkit.strf('Run upgrade ({0} -> {1})...', CONFIG._CURRENT_UPGRADE_SEQ, UPGRADE_INFO.seq));
-          return asyncCallback();
+        if (dbRes.length <= 0) {
+          // 从未升级过，执行所有升级项
+          currentUpgradeSeq = null;
+          upgradeItems = UPGRADE_INFO;
+
+        } else if (dbRes.length > 0) {
+          // 曾经升级过，仅执行后续升级项
+          currentUpgradeSeq = parseInt(dbRes[0].value);
+
+          upgradeItems = UPGRADE_INFO.filter(function(d) {
+            return d.seq > currentUpgradeSeq;
+          });
         }
+
+        return asyncCallback();
       });
     },
     // Do upgrade
     function(asyncCallback) {
-      var _config = {
-        host    : CONFIG.MYSQL_HOST,
-        port    : CONFIG.MYSQL_PORT,
-        user    : CONFIG.MYSQL_USER,
-        password: CONFIG.MYSQL_PASSWORD,
-        database: CONFIG.MYSQL_DATABASE,
+      if (toolkit.isNothing(upgradeItems)) {
+        console.log('Already up to date, skip.');
+        return asyncCallback();
       }
-      dbHelper = mysqlHelper.createHelper(null, _config);
-      dbHelper.skipLog = true;
 
-      var currentUpgradeSeq = CONFIG._CURRENT_UPGRADE_SEQ;
+      console.log(toolkit.strf('Run upgrade: {0} -> {1}',
+          toolkit.isNothing(currentUpgradeSeq) ? 'BASE' : currentUpgradeSeq,
+          upgradeItems[upgradeItems.length -1].seq));
+
       async.eachSeries(upgradeItems, function(item, eachCallback) {
         console.log(toolkit.strf('Upgading to SEQ {0}...', item.seq));
 
         dbHelper.query(item.database, null, function(err) {
           if (err) return eachCallback(err);
 
-          currentUpgradeSeq = item.seq;
+          nextUpgradeSeq = item.seq;
 
           cacheHelper.extendLockTime(lockKey, lockValue, maxLockTime, function(err) {
             if (err) return console.log('Extend upgrading lock time failed: ', err);
@@ -371,24 +408,33 @@ function runUpgrade() {
 
           return eachCallback();
         });
-      }, function(err) {
-        // Save upgrade seq to user-config.yaml
-        var userConfig = yaml.load(fs.readFileSync(CONFIG.CONFIG_FILE_PATH));
+      }, asyncCallback);
+    },
+    // Update upgrade seq
+    function(asyncCallback) {
+      if (toolkit.isNothing(nextUpgradeSeq)) return asyncCallback();
 
-        userConfig._CURRENT_UPGRADE_SEQ = currentUpgradeSeq;
+      var sql = toolkit.isNothing(currentUpgradeSeq)
+              ? 'INSERT INTO wat_main_system_config SET value = ?, id = ?'
+              : 'UPDATE wat_main_system_config SET value = ? WHERE id = ?';
+      var sqlParams = [nextUpgradeSeq, SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ];
 
-        fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(userConfig));
-
-        cacheHelper.unlock(lockKey, lockValue);
-
-        if (err) {
-          console.log('Upgrading failed: ', err);
-          return process.exit(1);
-        }
+      dbHelper.query(sql, sqlParams, function(err) {
+        if (err) return asyncCallback(err);
 
         console.log('Upgrading completed.');
-        return process.exit(0);
+
+        return asyncCallback();
       });
     },
-  ]);
+  ], function(err) {
+    cacheHelper.unlock(lockKey, lockValue);
+
+    if (err) {
+      console.log('Upgrading failed: ', err);
+      return process.exit(1);
+    }
+
+    return process.exit(0);
+  });
 }

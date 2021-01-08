@@ -7,65 +7,137 @@
 # 2. 使用`docker stack`即进行部署。
 #    参考命令（假设本配置文件名为"docker-stack.yaml"）：
 #       sudo docker stack deploy dataflux-func -c docker-stack.yaml
+#
+# 3. 如不需要内置MySQL 组件，请删除MYSQL相关的内容块
+# 4. 如不需要内置Redis 组件，请删除REDIS相关的内容块
+# 5. 如不需要内置MQTT组件，请删除MQTT 相关的内容块
+# 6. 如使用默认方式安装，请删除WORKER MINI 相关的内容块
+# 7. 如使用mini 方式安装，请删除WORKER DEFAULT 相关的内容块
 
 version: '3.1'
 
 services:
+  # MYSQL START
   mysql:
-    image: mysql:5.7.26
+    image: <MYSQL_IMAGE>
+    labels:
+      - mysql
     networks:
       - datafluxfunc
     volumes:
-      - "/usr/local/dataflux-func/mysql:/var/lib/mysql"
+      - "<INSTALL_DIR>/mysql:/var/lib/mysql"
     environment:
-      - "MYSQL_ROOT_PASSWORD=mysql_root_password"
+      - "MYSQL_ROOT_PASSWORD=<MYSQL_PASSWORD>"
       - "MYSQL_DATABASE=dataflux_func"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  # MYSQL END
 
+  # REDIS START
   redis:
-    image: redis:5.0.7
+    image: <REDIS_IMAGE>
+    labels:
+      - redis
     networks:
       - datafluxfunc
     volumes:
-      - "/usr/local/dataflux-func/redis:/data"
+      - "<INSTALL_DIR>/redis:/data"
+  # REDIS END
+
+  # MQTT START
+  mqtt:
+    image: <MQTT_IMAGE>
+    labels:
+      - mqtt
+    networks:
+      - datafluxfunc
+    ports:
+      - "1883:1883"
+    volumes:
+      - "<INSTALL_DIR>/mosquitto:/mosquitto"
+  # MQTT END
+
+  # WORKER DEFAULT START
+  worker-0:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - worker-0
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 0
+
+  worker-1-6:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - worker-1-6
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 1 2 3 4 5 6
+
+  worker-7:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - worker-7
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 7
+
+  worker-8-9:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - worker-8-9
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker-by-queue.sh 8 9
+  # WORKER DEFAULT END
+
+  # WORKER MINI START
+  worker:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - worker
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-worker.sh
+  # WORKER MINI END
+
+  beat:
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - beat
+    volumes:
+      - "<INSTALL_DIR>/data:/data"
+    networks:
+      - datafluxfunc
+      - default
+    command: ./run-beat.sh
 
   server:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+    image: <DATAFLUX_FUNC_IMAGE>
+    labels:
+      - server
     volumes:
-      - "/usr/local/dataflux-func/data:/data"
-    depends_on:
-      - mysql
-      - redis
+      - "<INSTALL_DIR>/data:/data"
     networks:
       - datafluxfunc
       - default
     ports:
       - "8088:8088"
-    command: ./run-server.sh
-
-  worker:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
-    volumes:
-      - "/usr/local/dataflux-func/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-worker.sh
-
-  beat:
-    image: pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
-    volumes:
-      - "/usr/local/dataflux-func/data:/data"
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-beat.sh
+    command: ./run-server.sh <SERVER_ARGV>
 
 networks:
   default:

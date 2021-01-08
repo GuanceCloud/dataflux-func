@@ -25,6 +25,19 @@
               &#12288;
             </el-form-item>
 
+            <el-form-item v-if="!isConflicted">
+              <el-tooltip placement="bottom" :enterable="false">
+                <div slot="content">
+                  快捷键：<code>{{ T.getSuperKeyName() }} + E</code>
+                </div>
+                <el-button
+                  @click="startEdit"
+                  type="primary" plain
+                  size="mini">
+                  <i class="fa fa-fw" :class="[USER_OPERATION_META_MAP[userOperation].icon]"></i> 开始{{ USER_OPERATION_META_MAP[userOperation].text }}</el-button>
+              </el-tooltip>
+            </el-form-item>
+
             <el-form-item>
               <el-select
                 style="width: 200px"
@@ -52,19 +65,6 @@
             <el-form-item v-if="!isLockedByOther">
               <el-tooltip content="下载" placement="bottom" :enterable="false">
                 <el-button @click="download" plain size="mini">下载{{ SHOW_MODE_META_MAP[showMode].text }}</el-button>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item v-if="!isConflicted">
-              <el-tooltip placement="bottom" :enterable="false">
-                <div slot="content">
-                  快捷键：<code>{{ T.getSuperKeyName() }} + E</code>
-                </div>
-                <el-button
-                  @click="startEdit"
-                  type="primary" plain
-                  size="mini">
-                  <i class="fa fa-fw" :class="[USER_OPERATION_META_MAP[userOperation].icon]"></i> 开始{{ USER_OPERATION_META_MAP[userOperation].text }}</el-button>
               </el-tooltip>
             </el-form-item>
 
@@ -227,8 +227,7 @@ export default {
             let newStr    = this.data.codeDraft || '';
             let oldHeader = '已发布的正式代码';
             let newHeader = '已保存的草稿代码';
-            let context   = Math.max(oldStr.split('\n').length, newStr.split('\n').length);
-            let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader, {context: context});
+            let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
             this.codeMirror.setValue(diffPatch);
             this.T.setCodeMirrorForDiff(this.codeMirror);

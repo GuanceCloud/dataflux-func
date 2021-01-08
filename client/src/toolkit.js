@@ -62,6 +62,11 @@ import { diffTrimmedLines } from 'diff'
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
 
+export const MIN_UNIX_TIMESTAMP    = 0;
+export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
+export const MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
+export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
+
 let handleCircular = function() {
   let cache = [];
   let keyCache = []
@@ -638,6 +643,10 @@ function _getCallAPIOpt(method, pathPattern, options) {
       let v = axiosOpt.params[k];
 
       switch(k) {
+        // 新版
+        case 'fields':
+        case 'sort':
+        // 旧版
         case 'fieldPicking':
         case 'fieldKicking':
           if (Array.isArray(v)) axiosOpt.params[k] = v.join(',');
@@ -1122,6 +1131,11 @@ export function setCodeMirrorForPython(codeMirror) {
 
 export function setCodeMirrorForDiff(codeMirror) {
   codeMirror.setOption('mode', 'diff');
+  return codeMirror;
+};
+
+export function setCodeMirrorForText(codeMirror) {
+  codeMirror.setOption('mode', null);
   return codeMirror;
 };
 

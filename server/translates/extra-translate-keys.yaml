@@ -14,6 +14,8 @@
 - Page number
 - Page size
 - Tags
+- 'Sort by fields (e.g. "field1,field2")'
+- 'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")'
 
 - assertFalse__APIDoc_directiveName
 - assertTrue__APIDoc_directiveName

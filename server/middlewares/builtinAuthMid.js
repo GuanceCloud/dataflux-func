@@ -99,7 +99,7 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
     },
     // Get user data
     function(asyncCallback){
-      var userModel = userMod.createModel(req, res);
+      var userModel = userMod.createModel(res.locals);
 
       userModel.get(xAuthTokenObj.uid, null, function(err, cacheRes) {
         if (err) return asyncCallback(err);
@@ -203,11 +203,11 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     // Clean up expired AK nonce
     function(asyncCallback) {
       var maxExpiredNonceTimestamp = serverTimestamp - CONFIG._WEB_AK_NONCE_TTL;
-      res.locals.cacheDB._run('ZREMRANGEBYSCORE', nonceCacheKey, '-inf', maxExpiredNonceTimestamp, asyncCallback);
+      res.locals.cacheDB.run('ZREMRANGEBYSCORE', nonceCacheKey, '-inf', maxExpiredNonceTimestamp, asyncCallback);
     },
     // Check AK nonce
     function(asyncCallback) {
-      res.locals.cacheDB._run('ZSCORE', nonceCacheKey, akNonce, function(err, cacheRes) {
+      res.locals.cacheDB.run('ZSCORE', nonceCacheKey, akNonce, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
@@ -220,7 +220,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     },
     // Get Access Key and verify Sign
     function(asyncCallback) {
-      var accessKeyModel = accessKeyMod.createModel(req, res);
+      var accessKeyModel = accessKeyMod.createModel(res.locals);
 
       accessKeyModel.getWithCheck(akId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -258,12 +258,12 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
         userId = dbRes.userId;
 
         // Verify OK. Cache nonce.
-        res.locals.cacheDB._run('ZADD', nonceCacheKey, serverTimestamp, akNonce, asyncCallback);
+        res.locals.cacheDB.run('ZADD', nonceCacheKey, serverTimestamp, akNonce, asyncCallback);
       });
     },
     // Get user info
     function(asyncCallback) {
-      var userModel = userMod.createModel(req, res);
+      var userModel = userMod.createModel(res.locals);
 
       userModel.getWithCheck(userId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);

@@ -7,6 +7,7 @@ import traceback
 
 # 3rd-party Modules
 import six
+from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 import celery.states as celery_status
 import simplejson
 
@@ -23,6 +24,8 @@ LOG_LEVEL_SEQS = LOG_LEVELS['levels']
 LOG_CALL_ARGS  = LOG_LEVEL_SEQS[LOG_LEVEL] >= LOG_LEVEL_SEQS['DEBUG']
 
 LIMIT_ARGS_DUMP = 200
+
+CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
 
 def gen_task_id():
     '''
@@ -90,7 +93,7 @@ class BaseTask(app.Task):
 
         content = toolkit.json_safe_dumps(content, indent=None)
 
-        self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
+        # self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
 
         if status in (celery_status.SUCCESS, celery_status.FAILURE):
             self.backend.client.publish(key, content)
@@ -107,6 +110,10 @@ class BaseTask(app.Task):
 
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
+
+        if CONFIG['MODE'] == 'prod':
+            self.db.skip_log       = True
+            self.cache_db.skip_log = True
 
         # Add extra information
         if not self.request.called_directly:
@@ -145,6 +152,9 @@ class BaseTask(app.Task):
                 self.logger.debug('[CALL] args: `{}`; kwargs: `{}`'.format(args_dumps, kwargs_dumps))
 
             return super(BaseTask, self).__call__(*args, **kwargs)
+
+        except (SoftTimeLimitExceeded, TimeLimitExceeded) as e:
+            raise
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

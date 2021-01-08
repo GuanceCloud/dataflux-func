@@ -14,6 +14,7 @@ API Doc can be filtered by entering part of API Name or URL: '输入部分API名
 API Documents                                     : API 文档
 API Request                                       : API 请求
 API Result                                        : API 返回结果
+API Route                                         : API 路由
 API__authLink_origin                              : null
 API__batch_origin                                 : null
 API__crontabConfig_origin                         : null
@@ -25,7 +26,7 @@ Access Key module WRITE privilege                 : Access Key 模块写权限
 Access the debug information of the site          : 访问网站DEBUG信息
 Add                                               : 添加
 Administrator                                     : 管理员
-All Nodes                                         : null
+All Nodes                                         : 所有节点
 All privileges                                    : 全部权限
 Allow Webhook Echo                                : 允许Webhook回声
 Allowed Auth Types                                : 允许认证类型
@@ -42,9 +43,10 @@ CPU Cores                                         : CPU核心数
 CPU Model                                         : CPU型号
 CSV File                                          : CSV文件
 CSV File - For Microsoft Office Excel (Chinese)   : CSV文件 -  用于微软Office Excel（中文版）
-Cache DB Key Prefix Count                         : null
-Cache DB Key Used                                 : null
-Cache DB Memory Used                              : null
+Cache DB                                          : 缓存数据库
+Cache DB Key Prefix Count                         : 缓存键前缀数量
+Cache DB Key Used                                 : 缓存键数量
+Cache DB Memory Used                              : 缓存内存使用量
 Cancel                                            : 取消
 Cannot access the content by current authentication type.: 此内容无法以当前的认证方式访问
 Cannot access the content without sign-in.        : 此内容必须登录后访问
@@ -73,10 +75,12 @@ Current User                                      : 当前用户
 Current/Max Thread Count                          : 当前/最大线程数量
 Custom Privileges                                 : 自定义权限
 Custom User                                       : 自定义用户
+DB Disk Used                                      : 数据库磁盘用量
 DISABLED                                          : 已禁用
 DISPLAY TEXT                                      : 【显示文字】
 Dashboard                                         : 仪表台
 DataFlux DataWay__dataSource_type                 : null
+Database                                          : 数据库
 Debug                                             : DEBUG
 Delete                                            : 删除
 'Deleting <code>{0}</code>'                       : '删除<code>{0}</code>'
@@ -109,6 +113,7 @@ Failure                                           : 失败
 Field                                             : 字段
 Field kicking                                     : 剔除返回字段
 Field picking                                     : 挑选返回字段
+'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")': '指定返回字段（仅返回："字段1,字段2"，不返回："-,字段1,字段2" / "-字段1,字段2"）'
 Files                                             : 文件
 Filter                                            : 过滤
 Filter By Part of API Name/URL                    : 根据部分API名称或URL过滤
@@ -151,6 +156,7 @@ Mobile                                            : 手机号
 Monitor                                           : 监控
 MySQL__dataSource_type                            : null
 NORMAL                                            : 正常
+NSQ__dataSource_type                              : null
 Name                                              : 名称
 Name__user                                        : 姓名
 New Access Key                                    : 新 Access Key
@@ -162,6 +168,7 @@ New window                                        : 新窗口
 No Data                                           : 没有数据
 No Task                                           : 无任务
 Node                                              : 工作节点
+Node No Response                                  : 节点无响应
 Node Packages                                     : Node包
 Nodes Report                                      : 工作节点报告
 Nodes Stats                                       : 工作节点状态
@@ -219,11 +226,12 @@ Run Request                                       : 发送请求
 SHADOW                                            : 影子用户
 Save                                              : 保存
 Search                                            : 搜索
+Server                                            : 服务器
 Server CPU Usage                                  : 服务器CPU使用量
 Server Environment                                : 服务器环境
 Server Memory Heap Total                          : 服务器内存Heap总量
 Server Memory Heap Used                           : 服务器内存Heap使用量
-Server Memory RSS                                 : 服务器内存总使用量
+Server Memory RSS                                 : 服务器内存RSS
 Server Memory exteranl                            : 服务器内存外部对象使用量
 Set                                               : 设置
 Show Error                                        : 显示错误
@@ -235,6 +243,7 @@ Sign In NOW                                       : 立即登录
 Sign Out                                          : 登出
 Slow API Count                                    : 慢API计数
 Software Version                                  : 软件版本
+'Sort by fields (e.g. "field1,field2")'           : '按字段排序（如："字段1,字段2"）'
 Stack__error                                      : 调用栈
 Start Time                                        : 开始时间
 Status                                            : 状态
@@ -298,7 +307,11 @@ Webhook Events                                    : Webhook事件
 Webhook URL                                       : Webhook地址
 'Welcome back, {0}!'                              : 欢迎回来，{0}！
 Welcome to                                        : 欢迎来到
+Worker                                            : 工作单元
+Worker CPU Usage                                  : 工作单元CPU使用量
 Worker Logs                                       : 工作单元日志
+Worker Memory PSS                                 : 工作单元内存PSS
+Worker Queue                                      : 工作队列
 Worker Queue Waiting Length                       : 工作队列等待长度
 'Yes'                                             : 是
 You can get a start with the entry below          : 您可以从下列入口开始操作
@@ -311,6 +324,7 @@ builtin.byAccessKey                               : 内建AK认证
 builtin.byXAuthToken                              : 内建XAuthToken认证
 commaArrayIn__APIDoc_directiveName                : 包含以下元素的逗号分隔数组
 contains__APIDoc_searchType                       : 包含（like）
+copied                                            : 已复制
 elasticsearch__dataSource_type                    : null
 eq__APIDoc_searchType                             : '等于（=）'
 eqornull__APIDoc_searchType                       : 等于或为NULL
@@ -350,6 +364,7 @@ maxLength__APIDoc_directiveName                   : 最大长度为
 maxValue__APIDoc_directiveName                    : 最大值为
 minLength__APIDoc_directiveName                   : 最小长度为
 minValue__APIDoc_directiveName                    : 最小值为
+mongoDB__dataSource_type                          : null
 ms                                                : 毫秒
 ne__APIDoc_searchType                             : 不等于
 neornull__APIDoc_searchType                       : 不等于或为空
@@ -376,13 +391,18 @@ value                                             : 值
 不允许修改内置数据源                              : null
 不允许修改官方脚本                                : null
 不允许修改官方脚本集                              : null
+不允许修改脚本                                    : null
+不允许修改脚本集                                  : null
 不允许删除内置数据源                              : null
 不允许删除官方脚本                                : null
 不允许删除官方脚本集                              : null
+不允许删除脚本                                    : null
+不允许删除脚本集                                  : null
 不允许发布官方脚本                                : null
 不允许导出官方脚本                                : null
 不允许添加官方脚本                                : null
 不允许添加官方脚本集                              : null
+不允许添加脚本                                    : null
 内置批处理（关键事件处理）__func_category         : null
 内置批处理（指标处理）__func_category             : null
 内置批处理（日志处理）__func_category             : null
@@ -412,25 +432,31 @@ value                                             : 值
 授权链接已禁用                                    : null
 授权链接已超额                                    : null
 授权链接已过期                                    : null
+数据源ID重复                                      : null
 数据源引用名重复                                  : null
 数据源配置JSON不正确                              : null
 查询__func_category                               : null
 查询失败                                          : null
 查询超时                                          : null
 检测__func_category                               : null
+环境变量ID重复                                    : null
 环境变量引用名重复                                : null
 用户__scriptSet_type                              : null
+登录__func_integration                            : null
 确认导入超时                                      : null
+脚本ID重复                                        : null
 脚本中不存在此函数                                : null
 脚本修改需要指定的用户                            : null
 脚本并无修改                                      : null
 脚本引用名重复                                    : null
 脚本执行超时                                      : null
 脚本草稿已修改                                    : null
+脚本集ID重复                                      : null
 脚本集修改需要指定的用户                          : null
 脚本集导入需要指定的用户                          : null
 脚本集引用名重复                                  : null
 脚本预检查失败                                    : null
+自动触发__execMode                                : null
 自动触发配置重复                                  : null
 自定义数据源引用名不得以 df_ 开头                 : null
 转换__func_category                               : null

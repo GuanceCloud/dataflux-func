@@ -281,6 +281,11 @@ const routes = [
     name: 'auth-link-func-doc',
     component: () => import('../views/AuthLinkFuncDoc.vue'),
   },
+  {
+    path: '/dream',
+    name: 'dream',
+    component: () => import('../views/Dream.vue'),
+  },
 ];
 
 const router = new VueRouter({

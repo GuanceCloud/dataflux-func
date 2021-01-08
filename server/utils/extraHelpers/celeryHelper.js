@@ -97,18 +97,18 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
   );
 
   // Use <Trace ID> for origin.
-  taskOptions.origin = this.logger.res.locals.traceId;
+  taskOptions.origin = this.logger.locals.traceId;
 
   taskOptions.extra = taskOptions.extra || {};
-  if (!taskOptions.extra.userId && this.logger.res.locals.user) {
-    taskOptions.extra.userId = this.logger.res.locals.user.id;
+  if (!taskOptions.extra.userId && this.logger.locals.user) {
+    taskOptions.extra.userId = this.logger.locals.user.id;
   }
 
-  if (!taskOptions.extra.username && this.logger.res.locals.user) {
-    taskOptions.extra.username = this.logger.res.locals.user.username;
+  if (!taskOptions.extra.username && this.logger.locals.user) {
+    taskOptions.extra.username = this.logger.locals.user.username;
   }
 
-  taskOptions.extra.clientId = taskOptions.extra.clientId || this.logger.res.locals.clientId;
+  taskOptions.extra.clientId = taskOptions.extra.clientId || this.logger.locals.clientId;
   taskOptions.extra.clientIP = taskOptions.extra.clientIP || this.logger.req.ip;
 
   return this.client.putTask(name, args, kwargs, taskOptions, callback, onResultCallback);

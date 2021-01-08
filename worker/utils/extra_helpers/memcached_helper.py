@@ -68,12 +68,6 @@ class MemcachedHelper(object):
 
         return getattr(self.client, command.lower())(*command_args, **kwargs)
 
-    def run_quiet(self, *args, **kwargs):
-        command      = args[0]
-        command_args = args[1:]
-
-        return getattr(self.client, command.lower())(*command_args, **kwargs)
-
     def get(self, key):
         return self.run('get', key)
 

@@ -35,9 +35,9 @@ var getConfig = function(c) {
 };
 
 /* Singleton Client */
-var CLIENT_CONFIG        = null;
-var CLIENT               = null;
-var DEFAULT_REDIS_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
+var CLIENT_CONFIG  = null;
+var CLIENT         = null;
+var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
 
 /**
  * @constructor
@@ -50,9 +50,14 @@ var RedisHelper = function(logger, config) {
 
   this.isDryRun = false;
   this.skipLog  = false;
+  this.checkedKeyMap = {};
 
   if (config) {
     this.config = toolkit.noNullOrWhiteSpace(config);
+
+    this.config.tsMaxAge         = config.tsMaxAge    || 3600 * 24;
+    this.config.tsMaxPeriod      = config.tsMaxPeriod || 3600 * 24 * 3;
+    this.config.tsMaxLength      = config.tsMaxLength || 60 * 24 * 3;
     this.config.retry_strategy = retryStrategy;
 
     this.client = redis.createClient(getConfig(this.config));
@@ -65,13 +70,17 @@ var RedisHelper = function(logger, config) {
         db      : CONFIG.REDIS_DATABASE,
         password: CONFIG.REDIS_PASSWORD,
       });
+
+      CLIENT_CONFIG.tsMaxAge       = CONFIG.REDIS_TS_MAX_AGE;
+      CLIENT_CONFIG.tsMaxPeriod    = CONFIG.REDIS_TS_MAX_PERIOD;
+      CLIENT_CONFIG.tsMaxLength    = CONFIG.REDIS_TS_MAX_LENGTH;
       CLIENT_CONFIG.retry_strategy = retryStrategy;
 
       CLIENT = redis.createClient(getConfig(CLIENT_CONFIG));
 
       // Error handling
       CLIENT.on('error', function (err) {
-        DEFAULT_REDIS_LOGGER.error(err);
+        DEFAULT_LOGGER.error(err);
       });
     }
 
@@ -89,7 +98,7 @@ var RedisHelper = function(logger, config) {
  * @param  {...*} arguments - Redis command arguments
  * @return {undefined}
  */
-RedisHelper.prototype._run = function() {
+RedisHelper.prototype.run = function() {
   var args = Array.prototype.slice.call(arguments);
   var command = args.shift();
 
@@ -112,7 +121,7 @@ RedisHelper.prototype.keys = function(pattern, callback) {
   var COUNT_LIMIT = 1000;
   var nextCursor  = 0;
   async.doUntil(function(untilCallback) {
-    self._run('scan', nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
+    self.run('scan', nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
       if (err) return untilCallback(err);
 
       nextCursor = dbRes[0];
@@ -138,64 +147,79 @@ RedisHelper.prototype.keys = function(pattern, callback) {
 };
 
 RedisHelper.prototype.exists = function(key, callback) {
-  return this._run('exists', key, callback);
+  return this.run('exists', key, callback);
 };
 
 RedisHelper.prototype.get = function(key, callback) {
-  return this._run('get', key, callback);
+  return this.run('get', key, callback);
 };
 
 RedisHelper.prototype.getset = function(key, value, callback) {
   if (this.isDryRun) {
-    return this._run('get', key, callback);
+    return this.run('get', key, callback);
   } else {
-    return this._run('getset', key, value, callback);
+    return this.run('getset', key, value, callback);
   }
 };
 
 RedisHelper.prototype.set = function(key, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('set', key, value, callback);
+  return this.run('set', key, value, callback);
 };
 
 RedisHelper.prototype.setnx = function(key, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('setnx', key, value, callback);
+  return this.run('setnx', key, value, callback);
 };
 
 RedisHelper.prototype.setex = function(key, maxAge, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('setex', key, maxAge, value, callback);
+  return this.run('setex', key, maxAge, value, callback);
 };
 
 RedisHelper.prototype.setexnx = function(key, maxAge, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('set', key, value, 'EX', maxAge, 'NX', callback);
+  return this.run('set', key, value, 'EX', maxAge, 'NX', callback);
+};
+
+RedisHelper.prototype.mget = function(keys, callback) {
+  return this.run('mget', keys, callback);
+};
+
+RedisHelper.prototype.mset = function(keyValues, callback) {
+  if (!Array.isArray(keyValues)) {
+    var tmp = []
+    for (var k in keyValues) {
+      tmp.push(k, keyValues[k]);
+    }
+    keyValues = tmp;
+  }
+  return this.run('mset', keyValues, callback);
 };
 
 RedisHelper.prototype.incr = function(key, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('incr', key, callback);
+  return this.run('incr', key, callback);
 };
 
 RedisHelper.prototype.incrby = function(key, increment, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('incrby', key, increment, callback);
+  return this.run('incrby', key, increment, callback);
 };
 
 RedisHelper.prototype.del = function(keys, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('del', keys, callback);
+  return this.run('del', keys, callback);
 };
 
 RedisHelper.prototype.expire = function(key, expires, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('expire', key, expires, callback);
+  return this.run('expire', key, expires, callback);
 };
 
 RedisHelper.prototype.expireat = function(key, timestamp, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('expireat', key, timestamp, callback);
+  return this.run('expireat', key, timestamp, callback);
 };
 
 RedisHelper.prototype.hkeys = function(key, pattern, callback) {
@@ -206,7 +230,7 @@ RedisHelper.prototype.hkeys = function(key, pattern, callback) {
   var COUNT_LIMIT = 1000;
   var nextCursor  = 0;
   async.doUntil(function(untilCallback) {
-    self._run('hscan', key, nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
+    self.run('hscan', key, nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
       if (err) return untilCallback(err);
 
       nextCursor = dbRes[0];
@@ -232,94 +256,94 @@ RedisHelper.prototype.hkeys = function(key, pattern, callback) {
 };
 
 RedisHelper.prototype.hget = function(key, field, callback) {
-  return this._run('hget', key, field, callback);
+  return this.run('hget', key, field, callback);
 };
 
 RedisHelper.prototype.hmget = function(key, fields, callback) {
-  return this._run('hmget', key, fields, callback);
+  return this.run('hmget', key, fields, callback);
 };
 
 RedisHelper.prototype.hgetall = function(key, callback) {
-  return this._run('hgetall', key, callback);
+  return this.run('hgetall', key, callback);
 };
 
 RedisHelper.prototype.hset = function(key, feild, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hset', key, feild, value, callback);
+  return this.run('hset', key, feild, value, callback);
 };
 
 RedisHelper.prototype.hsetnx = function(key, feild, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hsetnx', key, feild, value, callback);
+  return this.run('hsetnx', key, feild, value, callback);
 };
 
 RedisHelper.prototype.hmset = function(key, obj, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hmset', key, obj, callback);
+  return this.run('hmset', key, obj, callback);
 };
 
 RedisHelper.prototype.hincr = function(key, field, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hincrby', key, field, 1, callback);
+  return this.run('hincrby', key, field, 1, callback);
 };
 
 RedisHelper.prototype.hincrby = function(key, field, increment, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hincrby', key, field, increment, callback);
+  return this.run('hincrby', key, field, increment, callback);
 };
 
 RedisHelper.prototype.hdel = function(key, fields, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('hdel', key, fields, callback);
+  return this.run('hdel', key, fields, callback);
 };
 
 RedisHelper.prototype.lpush = function(key, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('lpush', key, value, callback);
+  return this.run('lpush', key, value, callback);
 };
 
 RedisHelper.prototype.rpush = function(key, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('rpush', key, value, callback);
+  return this.run('rpush', key, value, callback);
 };
 
 RedisHelper.prototype.lpop = function(key, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('lpop', key, callback);
+  return this.run('lpop', key, callback);
 };
 
 RedisHelper.prototype.rpop = function(key, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('rpop', key, callback);
+  return this.run('rpop', key, callback);
 };
 
 RedisHelper.prototype.llen = function(key, callback) {
-  return this._run('llen', key, callback);
+  return this.run('llen', key, callback);
 };
 
 RedisHelper.prototype.lrange = function(key, start, stop, callback) {
-  return this._run('lrange', key, start, stop, callback);
+  return this.run('lrange', key, start, stop, callback);
 };
 
 RedisHelper.prototype.ltrim = function(key, start, stop, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this._run('ltrim', key, start, stop, callback);
+  return this.run('ltrim', key, start, stop, callback);
 };
 
 RedisHelper.prototype.ttl = function(key, callback) {
-  return this._run('ttl', key, callback);
+  return this.run('ttl', key, callback);
 };
 
 RedisHelper.prototype.type = function(key, callback) {
-  return this._run('type', key, callback);
+  return this.run('type', key, callback);
 };
 
 RedisHelper.prototype.dbsize = function(callback) {
-  return this._run('dbsize', callback);
+  return this.run('dbsize', callback);
 };
 
 RedisHelper.prototype.info = function(callback) {
-  return this._run('info', callback);
+  return this.run('info', callback);
 };
 
 /**
@@ -348,7 +372,7 @@ RedisHelper.prototype.getByPattern = function(pattern, callback) {
     if (keys.length <= 0) {
       return callback && callback();
     } else {
-      return self._run('MGET', keys, function(err, cacheRes) {
+      return self.run('MGET', keys, function(err, cacheRes) {
         if (Array.isArray(cacheRes)) {
           var ret = {};
           for (var i = 0; i < keys.length; i++) {
@@ -425,7 +449,7 @@ RedisHelper.prototype.hgetByPattern = function(key, pattern, callback) {
     if (fields.length <= 0) {
       return callback && callback();
     } else {
-      return self._run('HMGET', key, fields, callback);
+      return self.run('HMGET', key, fields, callback);
     }
   });
 };
@@ -494,17 +518,12 @@ RedisHelper.prototype.pub = function(topic, message, options, callback) {
  * Subscribe from topic
  *
  * @param  {String}    topic
- * @param  {Object}    options *No options for Redis.pub*
  * @param  {Function}  handler
  * @param  {Function}  callback
  * @return {undefined}
  */
-RedisHelper.prototype.sub = function(topic, options, handler, callback) {
+RedisHelper.prototype.sub = function(topic, handler, callback) {
   var self = this;
-
-  options = options || {};
-
-  options.qos = options.qos || self.defaultQoS || 0;
 
   if (!this.skipLog) {
     self.logger && self.logger.debug('{0} {1} [{2}]',
@@ -568,7 +587,7 @@ RedisHelper.prototype.unsub = function(topic, callback) {
  * @return {undefined}
  */
 RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback) {
-  return this._run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', callback);
+  return this.run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', callback);
 };
 
 /**
@@ -583,14 +602,14 @@ RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback)
 RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime, callback) {
   var self = this;
 
-  self._run('GET', lockKey, function(err, cacheRes) {
+  self.run('GET', lockKey, function(err, cacheRes) {
     if (err) return callback && callback(err);
 
     if (cacheRes !== lockValue) {
       return callback && callback(new Error('Not lock owner'));
     }
 
-    return self._run('EXPIRE', lockKey, maxLockTime, callback);
+    return self.run('EXPIRE', lockKey, maxLockTime, callback);
   });
 };
 
@@ -603,7 +622,247 @@ RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime,
  * @return {undefined}
  */
 RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
-  return this._run('EVAL', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lockKey, lockValue, callback);
+  return this.run('EVAL', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lockKey, lockValue, callback);
+};
+
+/**
+ * Add time-series point
+ *
+ * @param  {String}   key
+ * @param  {*}        value
+ * @param  {Function} callback
+ * @return {undefined}
+ */
+RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS TS] ADD {0}', key);
+  }
+
+  var self = this;
+
+  if (arguments.length === 3) {
+    callback  = value;
+    value     = timestamp;
+    timestamp = null;
+  }
+
+  if (self.isDryRun) return callback(null, 'OK');
+
+  timestamp = timestamp || parseInt(Date.now() / 1000);
+  value     = JSON.stringify(value);
+
+  async.series([
+    function(asyncCallback) {
+      if (self.checkedKeyMap[key]) return asyncCallback();
+
+      self.client.type(key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        self.checkedKeyMap[key] = true;
+
+        if (cacheRes !== 'zset') {
+          return self.client.del(key, asyncCallback);
+        }
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      var data = [timestamp, value].join(',');
+      self.client.zadd(key, timestamp, data, asyncCallback);
+    },
+    function(asyncCallback) {
+      self.client.expire(key, self.config.tsMaxAge, asyncCallback);
+    },
+    function(asyncCallback) {
+      if (!self.config.tsMaxPeriod) return asyncCallback();
+
+      var minTimestamp = parseInt(Date.now() / 1000) - self.config.tsMaxPeriod;
+      self.client.zremrangebyscore(key, '-inf', minTimestamp, asyncCallback);
+    },
+    function(asyncCallback) {
+      if (!self.config.tsMaxLength) return asyncCallback();
+
+      self.client.zremrangebyrank(key, 0, -1 * self.config.tsMaxLength -1, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback();
+  });
+};
+
+/**
+ * Get time-series points
+ *
+ * @param  {String}   key
+ * @param  {Object}   options
+ * @param  {Integer}  options.start
+ * @param  {Integer}  options.stop
+ * @param  {Integer}  options.groupTime   Group by seconds
+ * @param  {String}   options.agg         count, avg, sum, min, max
+ * @param  {Integer}  options.scale
+ * @param  {Integer}  options.ndigits
+ * @param  {Integer}  options.timeUnit        ms, s
+ * @param  {Boolean}  options.dictOutput
+ * @param  {Integer}  options.limit
+ * @param  {Function} callback
+ * @return {undefined}
+ */
+RedisHelper.prototype.tsGet = function(key, options, callback) {
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS TS] GET {0}', key);
+  }
+
+  var self = this;
+
+  if (arguments.length === 2) {
+    callback = options;
+    options  = null;
+  }
+
+  options = options || {};
+  options.start      = options.start      || '-inf';
+  options.stop       = options.stop       || '+inf';
+  options.groupTime  = options.groupTime  || 1;
+  options.agg        = options.agg        || 'avg';
+  options.scale      = options.scale      || 1;
+  options.ndigits    = options.ndigits    || 2;
+  options.timeUnit   = options.timeUnit   || 's';
+  options.dictOutput = options.dictOutput || false;
+  options.limit      = options.limit      || null;
+
+  var tsData = [];
+  async.series([
+    function(asyncCallback) {
+      self.client.type(key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes !== 'zset') {
+          return self.client.del(key, asyncCallback);
+        }
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      self.client.zrangebyscore(key, options.start, options.stop, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        tsData = cacheRes.map(function(p) {
+          var sepIndex  = p.indexOf(',');
+          var timestamp = parseInt(p.slice(0, sepIndex));
+          var value     = JSON.parse(p.slice(sepIndex + 1));
+          return [timestamp, value];
+        });
+
+        if (options.groupTime && options.groupTime > 1) {
+          var temp = [];
+
+          tsData.forEach(function(d) {
+            var groupedTimestamp = parseInt(d[0] / options.groupTime) * options.groupTime;
+            if (temp.length <= 0 || temp[temp.length - 1][0] !== groupedTimestamp) {
+              temp.push([groupedTimestamp, [d[1]]]);
+            } else {
+              temp[temp.length - 1][1].push(d[1]);
+            }
+          });
+
+          temp.forEach(function(d) {
+            switch(options.agg) {
+              case 'count':
+                d[1] = d[1].length;
+                break;
+
+              case 'avg':
+                var count = d[1].length;
+                d[1] = d[1].reduce(function(acc, x) {
+                  return acc + x;
+                }, 0) / count;
+                break;
+
+              case 'sum':
+                d[1] = d[1].reduce(function(acc, x) {
+                  return acc + x;
+                }, 0);
+                break;
+
+              case 'min':
+                d[1] = Math.min.apply(null, d[1]);
+
+                break;
+              case 'max':
+                d[1] = Math.max.apply(null, d[1]);
+                break;
+            }
+          });
+
+          tsData = temp;
+        }
+
+        if (options.limit) {
+          tsData = tsData.slice(-1 * options.limit);
+        }
+
+        tsData.forEach(function(d) {
+          if ('number' === typeof d[1]) {
+            if (options.scale && options.scale != 1) {
+              d[1] = d[1] / options.scale;
+            }
+
+            if (options.ndigits) {
+              d[1] = parseFloat(d[1].toFixed(options.ndigits));
+            }
+          }
+
+          if (options.timeUnit === 'ms') {
+            d[0] = d[0] * 1000;
+          }
+        });
+
+        if (options.dictOutput) {
+          tsData = tsData.map(function(d) {
+            return { t: d[0], v: d[1] };
+          });
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, tsData);
+  });
+};
+
+RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
+  var self = this;
+
+  var tsDataMap = {};
+  var keys = null;
+  async.series([
+    function(asyncCallback) {
+      self.keys(pattern, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        keys = cacheRes;
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      async.eachSeries(keys, function(key, eachCallback) {
+        self.tsGet(key, options, function(err, tsData) {
+          if (err) return eachCallback(err);
+
+          tsDataMap[key] = tsData;
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return asyncCallback(err);
+    return callback(err, tsDataMap);
+  });
 };
 
 exports.RedisHelper = RedisHelper;

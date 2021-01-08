@@ -111,9 +111,8 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/access-keys/do/list', {
         query: this.T.createListQuery({
-          fieldPicking: ['id', 'userId', 'name', 'secret', 'createTime'],
-          orderBy     : 'seq',
-          orderMethod : 'desc',
+          fields: ['id', 'userId', 'name', 'secret', 'createTime'],
+          sort  : ['-seq'],
         }),
         alert: {entity: 'AccessKey', action: '获取',  showError: true},
       });

@@ -17,7 +17,7 @@ var monitorMod = require('../models/monitorMod');
 
 /* Handlers */
 exports.getSysStats = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.getSysStats(function(err, dbRes) {
     if (err) return next(err);
@@ -33,7 +33,7 @@ exports.getSysStats = function(req, res, next) {
 };
 
 exports.getServerEnvironment = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.getServerEnvironment(function(err, dbRes) {
     if (err) return next(err);
@@ -46,7 +46,7 @@ exports.getServerEnvironment = function(req, res, next) {
 };
 
 exports.clearSysStats = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.clearSysStats(function(err, clearCount, clearKeys) {
     if (err) return next(err);
@@ -62,7 +62,7 @@ exports.clearSysStats = function(req, res, next) {
 };
 
 exports.listQueuedTasks = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var opt = req.query;
   monitorModel.listQueuedTasks(opt, function(err, dbRes, totalCount) {
@@ -77,7 +77,7 @@ exports.listQueuedTasks = function(req, res, next) {
 };
 
 exports.listScheduledTasks = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var opt = req.query;
   monitorModel.listScheduledTasks(opt, function(err, dbRes, totalCount) {
@@ -92,7 +92,7 @@ exports.listScheduledTasks = function(req, res, next) {
 };
 
 exports.listRecentTasks = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   var opt = req.query;
   monitorModel.listRecentTasks(opt, function(err, dbRes) {
@@ -107,7 +107,7 @@ exports.listRecentTasks = function(req, res, next) {
 };
 
 exports.pingNodes = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.pingNodes(function(err, dbRes) {
     if (err) return next(err);
@@ -118,7 +118,7 @@ exports.pingNodes = function(req, res, next) {
 };
 
 exports.getNodesStats = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.getNodesStats(function(err, dbRes) {
     if (err) return next(err);
@@ -129,7 +129,7 @@ exports.getNodesStats = function(req, res, next) {
 };
 
 exports.getNodesActiveQueues = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.getNodesActiveQueues(function(err, dbRes) {
     if (err) return next(err);
@@ -140,7 +140,7 @@ exports.getNodesActiveQueues = function(req, res, next) {
 };
 
 exports.getNodesReport = function(req, res, next) {
-  var monitorModel = monitorMod.createModel(req, res);
+  var monitorModel = monitorMod.createModel(res.locals);
 
   monitorModel.getNodesReport(function(err, dbRes) {
     if (err) return next(err);

@@ -111,7 +111,7 @@ export default {
     },
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/users/do/list', {
-        query: this.T.createListQuery({orderBy: 'seq', orderMethod: 'asc'}),
+        query: this.T.createListQuery({ sort: ['seq'] }),
         alert: {entity: '成员', action: '获取',  showError: true},
       });
       if (!apiRes.ok) return;

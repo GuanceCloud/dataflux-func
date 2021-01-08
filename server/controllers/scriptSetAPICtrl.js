@@ -21,16 +21,64 @@ var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
 /* Configure */
 var FILENAME_IN_ZIP = 'dataflux-func.json';
+var BUILTIN_SCRIPT_SET_IDS = null;
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
-exports.list = crudHandler.createListHandler();
+exports.list = function(req, res, next) {
+  var scriptSets        = null;
+  var scriptSetPageInfo = null;
+
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      scriptSetModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        scriptSets        = dbRes;
+        scriptSetPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 查询内置记录
+    function(asyncCallback) {
+      if (BUILTIN_SCRIPT_SET_IDS) return asyncCallback();
+
+      var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          BUILTIN_SCRIPT_SET_IDS = JSON.parse(cacheRes);
+        } else {
+          BUILTIN_SCRIPT_SET_IDS = [];
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    // 内置
+    scriptSets.forEach(function(scriptSet) {
+       scriptSet.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0);
+    });
+
+    var ret = toolkit.initRet(scriptSets, scriptSetPageInfo);
+    res.locals.sendJSON(ret);
+  });
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查ID重名
@@ -70,7 +118,7 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查脚本集锁定状态
@@ -110,7 +158,7 @@ exports.modify = function(req, res, next) {
 exports.delete = function(req, res, next) {
   var id = req.params.id;
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 检查脚本集锁定状态
@@ -159,10 +207,10 @@ exports.export = function(req, res, next) {
     password = '';
   }
 
-  var scriptSetModel              = scriptSetMod.createModel(req, res);
-  var scriptModel                 = scriptMod.createModel(req, res);
-  var funcModel                   = funcMod.createModel(req, res);
-  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(req, res);
+  var scriptSetModel              = scriptSetMod.createModel(res.locals);
+  var scriptModel                 = scriptMod.createModel(res.locals);
+  var funcModel                   = funcMod.createModel(res.locals);
+  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
 
   var scriptData = {
     scriptSets: null,
@@ -318,7 +366,7 @@ exports.import = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   var fileBuf    = null;
   var scriptData = null;
@@ -445,7 +493,7 @@ exports.confirmImport = function(req, res, next) {
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var scriptSetModel = scriptSetMod.createModel(req, res);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
     // 从缓存中读取导入数据

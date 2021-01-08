@@ -218,3 +218,4 @@ from .postgresql_helper      import PostgreSQLHelper
 from .mongodb_helper         import MongoDBHelper
 from .elasticsearch_helper   import ElasticSearchHelper
 from .nsqlookupd_helper      import NSQLookupHelper
+from .mqtt_helper            import MQTTHelper

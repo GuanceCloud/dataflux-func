@@ -2,7 +2,7 @@
 set -e
 
 # setup
-node server/setup.js
+node server/setup.js $*
 if [ $? -ne 0 ]; then
     echo 'Setup failed.'
     exit 1

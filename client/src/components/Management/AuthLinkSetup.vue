@@ -15,11 +15,11 @@
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
-                <el-form-item label="使用自定义ID" prop="useCustomId" v-show="mode === 'add'">
+                <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId">
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="mode === 'add'">
                   <el-input :disabled="mode === 'setup'"
                     maxlength="50"
                     show-word-limit
@@ -32,7 +32,7 @@
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
                     v-model="form.funcId"
-                    :options="funcCascaderOptions"
+                    :options="funcCascader"
                     :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
@@ -161,69 +161,11 @@ export default {
         this.form = nextForm;
       }
 
-      // 获取关联数据
-      let scriptSetMap = {};
-      let scriptMap    = {};
-      let funcMap      = {};
+      // 获取函数列表
+      let funcList = await this.common.getFuncList();
 
-      // 脚本集
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fieldPicking: ['id', 'title']},
-        alert: {entity: '脚本集', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptSetMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-      });
-
-      // 脚本
-      apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fieldPicking: ['id', 'title', 'scriptSetId']},
-        alert: {entity: '脚本', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-
-        // 插入上一层"children"
-        if (scriptSetMap[d.scriptSetId]) {
-          scriptSetMap[d.scriptSetId].children.push(scriptMap[d.id]);
-        }
-      });
-
-      // 函数
-      apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fieldPicking: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON']},
-        alert: {entity: '函数', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        funcMap[d.id] = {
-          label     : d.title || d.definition,
-          value     : d.id,
-          argsJSON  : d.argsJSON,
-          kwargsJSON: d.kwargsJSON,
-        };
-
-        // 插入上一层"children"
-        if (scriptMap[d.scriptId]) {
-          scriptMap[d.scriptId].children.push(funcMap[d.id]);
-        }
-      });
-
-      let funcCascaderOptions = Object.values(scriptSetMap);
-
-      this.funcMap             = funcMap;
-      this.funcCascaderOptions = funcCascaderOptions;
+      this.funcMap      = funcList.map;
+      this.funcCascader = funcList.cascader;
       this.$store.commit('updateLoadStatus', true);
     },
     async submitData() {
@@ -270,9 +212,12 @@ export default {
       });
     },
     async modifyData() {
+      let _formData = this.T.jsonCopy(this.form);
+      delete _formData.id;
+
       let opt = {
         params: {id: this.$route.params.id},
-        body  : {data: this.T.jsonCopy(this.form)},
+        body  : {data: _formData},
         alert : {entity: '授权链接', action: '修改', showError: true},
       };
 
@@ -390,9 +335,9 @@ export default {
   },
   data() {
     return {
-      data               : {},
-      funcMap            : {},
-      funcCascaderOptions: [],
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
 
       useCustomId: false,
 
@@ -411,7 +356,7 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) < 0 || value === this.ID_PREFIX)) {
+              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                 return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
               }
               return callback();
@@ -424,6 +369,21 @@ export default {
             message : '请选择执行函数',
             required: true,
           },
+        ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : '只能选择1970年至2037年之间的日期',
+            validator: (rule, value, callback) => {
+              let ts = this.moment(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error('日期不能早于1970年'));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error('时间不能晚于2037年'));
+              }
+              return callback();
+            },
+          }
         ],
         funcCallKwargsJSON: [
           {

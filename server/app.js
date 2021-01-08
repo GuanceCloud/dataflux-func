@@ -227,7 +227,9 @@ function startApplication() {
   var serverLogger = logHelper.createHelper();
   app.locals.logger = serverLogger;
 
-  app.locals.db      = require('./utils/extraHelpers/mysqlHelper').createHelper(serverLogger);
+  app.locals.db = require('./utils/extraHelpers/mysqlHelper').createHelper(serverLogger);
+  app.locals.db.skipLog = true;
+
   app.locals.cacheDB = require('./utils/extraHelpers/redisHelper').createHelper(serverLogger);
   app.locals.cacheDB.skipLog = true;
 
@@ -360,6 +362,7 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
+  require('./messageHandlers/mqttHandler')(app, server);
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,

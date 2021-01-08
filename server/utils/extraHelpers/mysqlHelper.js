@@ -37,10 +37,12 @@ var getConfig = function(c) {
     user           : c.user,
     password       : c.password,
     database       : c.database,
-    connectionLimit: c.connectionLimit,
-    acquireTimeout : c.acquireTimeout,
     charset        : c.charset,
     timezone       : c.timezone,
+    connectionLimit: CONFIG._MYSQL_CONNECTION_LIMIT,
+    acquireTimeout : CONFIG._MYSQL_ACQUIRE_TIMEOUT,
+    connectTimeout : CONFIG._MYSQL_CONNECT_TIMEOUT,
+    timeout        : CONFIG._MYSQL_TIMEOUT,
 
     multipleStatements: true,
   };
@@ -73,17 +75,13 @@ var MySQLHelper = function(logger, config, debug) {
   } else {
     if (!CLIENT) {
       CLIENT_CONFIG = toolkit.noNullOrWhiteSpace({
-        host              : CONFIG.MYSQL_HOST,
-        port              : CONFIG.MYSQL_PORT,
-        user              : CONFIG.MYSQL_USER,
-        password          : CONFIG.MYSQL_PASSWORD,
-        database          : CONFIG.MYSQL_DATABASE,
-        connectionLimit   : CONFIG._MYSQL_CONNECTION_LIMIT,
-        acquireTimeout    : CONFIG._MYSQL_ACQUIRE_TIMEOUT,
-        connectTimeout    : CONFIG._MYSQL_CONNECT_TIMEOUT,
-        timeout           : CONFIG._MYSQL_TIMEOUT,
-        charset           : CONFIG._MYSQL_CHARSET,
-        timezone          : CONFIG._MYSQL_TIMEZONE,
+        host    : CONFIG.MYSQL_HOST,
+        port    : CONFIG.MYSQL_PORT,
+        user    : CONFIG.MYSQL_USER,
+        password: CONFIG.MYSQL_PASSWORD,
+        database: CONFIG.MYSQL_DATABASE,
+        charset : CONFIG._MYSQL_CHARSET,
+        timezone: CONFIG._MYSQL_TIMEZONE,
       });
       CLIENT = mysql.createPool(getConfig(CLIENT_CONFIG));
     }

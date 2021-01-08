@@ -21,7 +21,8 @@
         <br />
         <span style="font-size: 28px;">
           <%
-            components.aLink(CONFIG._WEB_SIGN_IN_PAGE || 'authPage.signIn', {
+            // components.aLink(CONFIG._WEB_SIGN_IN_PAGE || 'authPage.signIn', {
+            components.aLink('authPage.signIn', {
               query: {
                 nextURL: toolkit.getBase64(req.originalUrl),
               },

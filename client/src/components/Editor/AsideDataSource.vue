@@ -57,7 +57,7 @@
 
           <el-popover v-if="data.tip"
             placement="right-start"
-            trigger="hover"
+            trigger="click"
             transition="el-fade-in"
             popper-class="aside-tip"
             :close-delay="500">
@@ -124,7 +124,7 @@ export default {
       this.loading = true;
 
       let apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', {
-        query: {fieldPicking: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
+        query: {fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
         alert: {entity: '数据源', showError: true},
       });
       if (!apiRes.ok) return;

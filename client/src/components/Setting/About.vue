@@ -69,10 +69,12 @@
                 <el-form-item>
                   <el-button @click="getSystemReport">{{ showSystemReport ? '重新' : '' }}获取系统报告</el-button>
 
+                  <el-button @click="clearLogCacheTables" v-if="dbDiskUsedInfoTEXT">清空日志/缓存表</el-button>
+
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>清空工作队列</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} ({{ q.value }}个待处理任务)</el-dropdown-item>
+                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-form-item>
@@ -101,15 +103,18 @@ export default {
     },
   },
   methods: {
+    // Web镜像信息
     async _getWebVersion() {
-      // 获取HTTP 服务器镜像信息
       let apiRes = await this.T.callAPI('/api/v1/image-info/do/get', {
         alert: {entity: 'Web镜像信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
+                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
+                        : '-';
         this.aboutWeb = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
-          releaseDate: this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss'),
+          releaseDate: releaseDate,
         };
 
       } else {
@@ -119,15 +124,18 @@ export default {
         }
       }
     },
+    // Worker镜像信息
     async _getWorkerVersion() {
-      // 获取Worker工作单元镜像信息
       let apiRes = await this.T.callAPI('/api/v1/worker-image-info/do/get', {
         alert: {entity: 'Worker镜像信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
+                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
+                        : '-';
         this.aboutWorker = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
-          releaseDate: this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss'),
+          releaseDate: releaseDate,
         };
 
       } else {
@@ -137,13 +145,13 @@ export default {
         }
       }
     },
-    async _getDBVersion() {
+    // 数据库结构版本
+    async _getDBSchemaVersion() {
       this.dbVersionInfoTEXT = '';
 
-      // 获取数据库版本
       let apiRes = await this.T.callAPI('/api/v1/upgrade-info', {
         query: {seq: 'latest'},
-        alert: {entity: 'Worker镜像信息'},
+        alert: {entity: '数据库结构版本'},
       });
       if (apiRes.ok) {
         if (this.T.isNothing(apiRes.data)) {
@@ -156,107 +164,96 @@ export default {
         this.dbVersionInfoTEXT = this.NO_INFO_TEXT;
       }
     },
+    // 系统信息
     async _getSysStats() {
       this.serverCPUPercentInfoTEXT  = '';
       this.serverMemoryRSSInfoTEXT   = '';
-      this.cacheDBKeyUsedInfoTEXT    = '';
+      this.workerCPUPercentInfoTEXT  = '';
+      this.workerMemoryPSSInfoTEXT   = '';
+      this.dbDiskUsedInfoTEXT        = '';
       this.cacheDBMemoryUsedInfoTEXT = '';
+      this.cacheDBKeyUsedInfoTEXT    = '';
       this.workerQueueLengthInfoTEXT = '';
 
-      // 获取系统信息
       let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get', {
         alert: {entity: '系统信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
-        let _getInfo = (seriesList, options) => {
-          options = options || {};
-          options.scale   = options.scale   || 1;
-          options.unit    = options.unit    || '';
-          options.toFixed = options.toFixed || 0;
-          options.json    = options.json    || false;
+        let _getInfo = (tsDataMap, unit, prefix) => {
+          unit   = unit   || '';
+          prefix = prefix || '';
+
+          if (Array.isArray(tsDataMap)) {
+            tsDataMap = { '': tsDataMap };
+          }
 
           let infoLines = [];
 
           let maxNameLength = 0;
-          seriesList.forEach(s => {
-            if (s.name.length > maxNameLength) maxNameLength = s.name.length;
-          });
+          for (let name in tsDataMap) {
+            if (name.length > maxNameLength) maxNameLength = name.length;
+          }
 
-          seriesList.forEach(s => {
-            let dps = s.data;
+          for (let name in tsDataMap) {
+            let tsData = tsDataMap[name];
 
             // 忽略无数据条目
-            if (this.T.isNothing(dps)) return;
+            if (this.T.isNothing(tsData)) continue;
 
-            dps.sort((a, b) => b[0] - a[0]);
+            let latestPoint = tsData.slice(-1)[0];
 
             // 忽略超过15分钟无数据的条目
-            let latestTimestamp = dps[0][0];
+            let latestTimestamp = latestPoint[0];
             if (Date.now() - latestTimestamp > 15 * 60 * 1000) return;
 
-            let latestValue = dps[0][1];
-            if (options.scale) {
-              latestValue = (latestValue / options.scale).toFixed(options.toFixed);
+            let latestValue = latestPoint[1];
+            let padding = ' '.repeat(maxNameLength - name.length);
+
+            if (Array.isArray(unit)) {
+              unit = latestValue > 1 ? unit[0] : unit[1];
             }
-
-            if (options.json) {
-              infoLines.push({ name: s.name, value: latestValue, unit: options.unit });
-
-            } else {
-              let padding = ' '.repeat(maxNameLength - s.name.length);
-              infoLines.push(`${s.name}${padding} = ${latestValue}${options.unit}`);
-            }
-          });
-
-          if (options.json) {
-            return infoLines;
-          } else {
-            return infoLines.join('\n');
+            infoLines.push(`${prefix}${name}${padding} = ${latestValue}${unit}`);
           }
+
+          return infoLines.join('\n');
         }
 
         let sysStats = apiRes.data.sysStats;
-        this.serverCPUPercentInfoTEXT = _getInfo(sysStats.serverCPUPercent, {
-          scale  : 0.01,
-          unit   : '%',
-          toFixed: 2,
-        });
-        this.serverMemoryRSSInfoTEXT = _getInfo(sysStats.serverMemoryRSS, {
-          scale  : 1024 * 1024,
-          unit   : ' MiB',
-          toFixed: 2,
-        });
-        this.cacheDBKeyUsedInfoTEXT = _getInfo(sysStats.cacheDBKeyUsed, {
-          unit: ' Keys',
-        });
-        this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, {
-          scale  : 1024 * 1024,
-          unit   : ' MiB',
-          toFixed: 2,
-        });
-        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, {
-          unit: ' Tasks',
-        });
 
-        this.workerQueues = _getInfo(sysStats.workerQueueLength, {
-          unit: ' Tasks',
-          json: true,
-        });
+        this.serverCPUPercentInfoTEXT  = _getInfo(sysStats.serverCPUPercent,  '%');
+        this.serverMemoryRSSInfoTEXT   = _getInfo(sysStats.serverMemoryRSS,   ' MB');
+        this.workerCPUPercentInfoTEXT  = _getInfo(sysStats.workerCPUPercent,  '%');
+        this.workerMemoryPSSInfoTEXT   = _getInfo(sysStats.workerMemoryPSS,   ' MB');
+        this.dbDiskUsedInfoTEXT        = _getInfo(sysStats.dbDiskUsed,        ' MB');
+        this.cacheDBKeyUsedInfoTEXT    = _getInfo(sysStats.cacheDBKeyUsed,    [' Keys', ' Key']);
+        this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, ' MB');
+        this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, [' Tasks', ' Task'], '#');
+
+        // 提取工作队列
+        let workerQueues = [];
+        for (let name in sysStats.workerQueueLength) {
+          let tsData = sysStats.workerQueueLength[name];
+          workerQueues.push({ name: name, value: tsData.slice(-1)[0][1] });
+        }
+        this.workerQueues = workerQueues;
 
       } else {
         this.serverCPUPercentInfoTEXT  = this.NO_INFO_TEXT;
         this.serverMemoryRSSInfoTEXT   = this.NO_INFO_TEXT;
+        this.workerCPUPercentInfoTEXT  = this.NO_INFO_TEXT;
+        this.workerMemoryPSSInfoTEXT   = this.NO_INFO_TEXT;
+        this.dbDiskUsedInfoTEXT        = this.NO_INFO_TEXT;
         this.cacheDBKeyUsedInfoTEXT    = this.NO_INFO_TEXT;
         this.cacheDBMemoryUsedInfoTEXT = this.NO_INFO_TEXT;
         this.workerQueueLengthInfoTEXT = this.NO_INFO_TEXT;
       }
     },
+    // Worker工作单元信息
     async _getNodesStats() {
       this.nodesStatsInfoTEXT = '';
 
-      // 获取Worker工作单元状态
       let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-stats', {
-        alert: {entity: 'Worker工作单元状态'},
+        alert: {entity: 'Worker工作单元信息'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
@@ -268,12 +265,12 @@ export default {
           infoLines.push(`  Proc   = ${d.pool.processes.join(', ')}`);
           infoLines.push(`  Dist#  = ${d.pool.writes.raw} Tasks`);
           infoLines.push(`  Dist%  = ${d.pool.writes.all}`);
-          infoLines.push(`  maxrss = ${(d.rusage.maxrss / 1024).toFixed(2)} MiB`); // 最大常驻
-          infoLines.push(`  ixrss  = ${(d.rusage.ixrss  / 1024).toFixed(2)} MiB`);  // 代码段
-          infoLines.push(`  idrss  = ${(d.rusage.idrss  / 1024).toFixed(2)} MiB`);  // 数据段
-          infoLines.push(`  isrss  = ${(d.rusage.isrss  / 1024).toFixed(2)} MiB`);  // 栈
+          infoLines.push(`  maxrss = ${(d.rusage.maxrss / 1024).toFixed(2)} MB`);  // 最大常驻
+          infoLines.push(`  ixrss  = ${(d.rusage.ixrss  / 1024).toFixed(2)} MB`);  // 代码段
+          infoLines.push(`  idrss  = ${(d.rusage.idrss  / 1024).toFixed(2)} MB`);  // 数据段
+          infoLines.push(`  isrss  = ${(d.rusage.isrss  / 1024).toFixed(2)} MB`);  // 栈
 
-          this.cacheDBNumberInfoTEXT = `DB = ${d.broker.virtual_host}`;
+          this.cacheDBNumberInfoTEXT = ` = ${d.broker.virtual_host}`;
         });
 
         this.nodesStatsInfoTEXT = infoLines.join('\n').trim();
@@ -282,12 +279,12 @@ export default {
         this.nodesStatsInfoTEXT = this.NO_INFO_TEXT;
       }
     },
+    // Worker工作单元监听队列
     async _getNodesActiveQueues() {
       this.nodesActiveQueuesInfoTEXT = '';
 
-      // 获取Worker工作单元监视队列
       let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-active-queues', {
-        alert: {entity: 'Worker工作单元监视队列'},
+        alert: {entity: 'Worker工作单元监听队列'},
       });
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
@@ -295,9 +292,8 @@ export default {
           let nodeShortName = d.node.split('@')[1];
           infoLines.push(`\nNODE = ${nodeShortName}`);
 
-          d.activeQueues.forEach(q => {
-            infoLines.push(`  - ${q.shortName}`);
-          });
+          let activeQueues = d.activeQueues.map(q => '#' + q.shortName);
+          infoLines.push(`  ${activeQueues.join(', ')}`);
           infoLines.push(`  --- ${d.activeQueues.length} Active Queues ---`)
         });
 
@@ -316,19 +312,58 @@ export default {
     async getSystemReport() {
       this.showSystemReport = true;
 
-      this._getDBVersion();
+      this._getDBSchemaVersion();
       this._getSysStats();
       this._getNodesStats();
       this._getNodesActiveQueues();
     },
     async clearWorkerQueue(queueName) {
+      try {
+        await this.$confirm(`清空队列后，所有未执行的任务都将丢失
+            <hr class="br">是否确认清空队列 "#${queueName}" ？`, '清空队列', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '确认清空',
+          cancelButtonText: '放弃',
+          type: 'warning',
+        });
+
+      } catch(err) {
+        return; // 取消操作
+      }
+
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
         body : {workerQueues: [queueName]},
         alert: {entity: '工作队列', action: '清空', showError: true},
       });
       if (apiRes.ok) {
-        this.$alert(`工作队列 "${queueName}" 已被清空
+        this.$alert(`工作队列 "#${queueName}" 已被清空
             <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空工作队列', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '非常好',
+          type: 'success',
+        });
+      }
+    },
+    async clearLogCacheTables() {
+      try {
+        await this.$confirm(`清空日志/缓存表后，以往的日志等信息将无法查询
+            <hr class="br">是否确认清空日志/缓存表？`, '清空日志/缓存表', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '确认清空',
+          cancelButtonText: '放弃',
+          type: 'warning',
+        });
+
+      } catch(err) {
+        return; // 取消操作
+      }
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
+        alert: {entity: '日志/缓存表', action: '清空', showError: true},
+      });
+      if (apiRes.ok) {
+        this.$alert(`日志/缓存表已被清空
+            <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空日志/缓存表', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: '非常好',
           type: 'success',
@@ -338,19 +373,22 @@ export default {
   },
   computed: {
     NO_INFO_TEXT() {
-      return '无法获取';
+      return '暂无数据';
     },
     systemReportTEXT() {
       return [
-          '[数据库版本]',        this.dbVersionInfoTEXT,
-        '\n[缓存数据库]',        this.cacheDBNumberInfoTEXT,
-        '\n[缓存键数量]',        this.cacheDBKeyUsedInfoTEXT,
-        '\n[缓存使用量]',        this.cacheDBMemoryUsedInfoTEXT,
-        '\n[Web服务CPU使用率]',  this.serverCPUPercentInfoTEXT,
-        '\n[Web服务内存使用量]', this.serverMemoryRSSInfoTEXT,
-        '\n[Worker节点状态]',    this.nodesStatsInfoTEXT,
-        '\n[Worker队列分布]',    this.nodesActiveQueuesInfoTEXT,
-        '\n[Worker队列长度]',    this.workerQueueLengthInfoTEXT,
+          '[数据库结构版本]',     this.dbVersionInfoTEXT,
+        '\n[Web服务CPU使用率]',   this.serverCPUPercentInfoTEXT,
+        '\n[Web服务内存使用量]',  this.serverMemoryRSSInfoTEXT,
+        '\n[Worker CPU使用率]',   this.workerCPUPercentInfoTEXT,
+        '\n[Worker内存使用量]',   this.workerMemoryPSSInfoTEXT,
+        '\n[数据库磁盘使用量]',   this.dbDiskUsedInfoTEXT,
+        '\n[缓存数据库序号]',     this.cacheDBNumberInfoTEXT,
+        '\n[缓存键数量]',         this.cacheDBKeyUsedInfoTEXT,
+        '\n[缓存内存使用量]',     this.cacheDBMemoryUsedInfoTEXT,
+        '\n[Worker节点状态]',     this.nodesStatsInfoTEXT,
+        '\n[Worker队列分布]',     this.nodesActiveQueuesInfoTEXT,
+        '\n[Worker队列长度]',     this.workerQueueLengthInfoTEXT,
       ].join('\n');
     },
   },
@@ -364,11 +402,14 @@ export default {
       showSystemReport: false,
 
       dbVersionInfoTEXT        : '',
+      dbDiskUsedInfoTEXT       : '',
       cacheDBNumberInfoTEXT    : '',
       cacheDBKeyUsedInfoTEXT   : '',
       cacheDBMemoryUsedInfoTEXT: '',
       serverCPUPercentInfoTEXT : '',
       serverMemoryRSSInfoTEXT  : '',
+      workerCPUPercentInfoTEXT : '',
+      workerMemoryPSSInfoTEXT  : '',
       nodesStatsInfoTEXT       : '',
       nodesActiveQueuesInfoTEXT: '',
       workerQueueLengthInfoTEXT: '',

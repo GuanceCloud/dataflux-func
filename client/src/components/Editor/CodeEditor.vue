@@ -102,6 +102,19 @@
                         </el-button>
                       </el-tooltip>
 
+                      <el-tooltip placement="bottom" :enterable="false">
+                        <div slot="content">
+                          查看代码差异
+                        </div>
+                        <el-button
+                          @click="showDiff()"
+                          :disalbed="!workerRunning"
+                          plain
+                          size="mini">
+                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">差异</span>
+                        </el-button>
+                      </el-tooltip>
+
                       <el-tooltip content="保存并发布脚本，脚本立刻生效" placement="bottom" :enterable="false">
                         <el-button
                           @click="publishScript"
@@ -189,6 +202,8 @@
               </el-tooltip>
             </template>
           </div>
+
+          <LongTextDialog title="发布前后差异（diff）" :diffMode="true" ref="longTextDialog"></LongTextDialog>
         </el-container>
       </template>
 
@@ -220,12 +235,15 @@
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 
 // @ is an alias to /src
 export default {
   name: 'CodeEditor',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -482,6 +500,19 @@ export default {
         }
       }
     },
+    showDiff() {
+      let fileTitle = this.data.title ? ` (${this.data.title})` : '';
+      let fileName  = `${this.scriptId}${fileTitle}`;
+      let oldStr    = this.data.code      || '';
+      let newStr    = this.data.codeDraft || '';
+      let oldHeader = '已发布的正式代码';
+      let newHeader = '已保存的草稿代码';
+      let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
+
+      let createTimeStr = this.moment().utcOffset(8).format('YYYYMMDD_HHmmss');
+      let diffName = `${this.data.id}.diff.${createTimeStr}`;
+      this.$refs.longTextDialog.update(diffPatch, diffName);
+    },
     async publishScript() {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
@@ -698,7 +729,7 @@ export default {
 
       // 检查发布状态
       apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-        query: {fieldPicking: ['codeMD5', 'codeDraftMD5']},
+        query: {fields: ['codeMD5', 'codeDraftMD5']},
         alert: {entity: '脚本', action: '确认', showError: true},
       });
       if (!apiRes.ok) return;
@@ -1079,6 +1110,17 @@ export default {
             type: 'error',
           });
           break;
+
+        case 'EClientDuplicated':
+          title = '函数名重复';
+          message = `被@DFF.API(...)装饰的函数存在重名
+                      <br>请检查代码，修改后再试一次`
+          this.$alert(message, title, {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: '了解',
+            type: 'error',
+          });
+          break;
       }
 
       if (this.textOutput) this.openVueSplitPane();
@@ -1308,6 +1350,7 @@ export default {
     }, 100);
   },
   mounted() {
+    window.vmc = this;
     setImmediate(() => {
       // 初始化编辑器
       this.codeMirror = this.T.initCodeMirror('editor_CodeEditor');
@@ -1428,8 +1471,8 @@ export default {
 }
 .code-editor-output pre {
   margin: 0;
-  padding-bottom: 50px;
-  padding-right: 80px;
+  padding-bottom: 70px;
+  padding-right: 10px;
   white-space: pre-wrap;
 }
 .code-editor-output .el-tabs {
@@ -1446,8 +1489,9 @@ export default {
   right: 15px;
   top: 15px;
   z-index: 100;
-  background-color: rgb(255,255,255,.9);
+  background-color: white;
   padding: 0 0 5px 5px;
+  border-radius: 3px;
 }
 pre .code-editor-output-info {
   font-style: italic;
@@ -1476,6 +1520,7 @@ pre .code-editor-output-error-stack {
   border-radius: 5px;
   border: 1px solid darkgrey;
   color: grey;
+  background-color: white;
 }
 .code-editor-status-bar span {
   font-family: Iosevka;

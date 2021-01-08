@@ -82,7 +82,8 @@
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        description="通过内部接口直接调用函数仅支持POST方式"
+        description="直接调用函数仅支持使用POST方式通过内部接口调用，不允许公开调用"
+        :descriptionClass="{'text-bad': true}"
         :showExecModeOption="true"
         :showSaveResultOption="true"
         :showAPITimeoutOption="true"
@@ -130,7 +131,7 @@ export default {
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/func/:funcId', {
-        baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
+        baseURL: this.$store.getters.CONFIG('WEB_INNER_BASE_URL'),
         params : {funcId: d.id},
       });
 

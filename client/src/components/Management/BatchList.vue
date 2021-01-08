@@ -136,7 +136,7 @@
 
       <APIExampleDialog ref="apiExampleDialog"
         title="任务投递示例"
-        description="批处理任务投递API同时支持POST方式和GET方式进行调用，可根据需要任意选择"
+        description="批处理任务投递API固定为异步调用"
         :showExecModeOption="false"
         :showPostExample="true"
         :showGetExample="true"

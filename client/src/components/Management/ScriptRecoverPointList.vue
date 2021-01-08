@@ -70,7 +70,7 @@ export default {
     async loadData(pageNumber) {
       // 只加载近100条
       let apiRes = await this.T.callAPI('/api/v1/script-recover-points/do/list', {
-        query: {pageSize: 100},
+        query: {pageSize: 50},
         alert: {entity: '脚本库还原点', showError: true},
       });
       if (!apiRes.ok) return;

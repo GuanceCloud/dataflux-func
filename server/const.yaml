@@ -103,6 +103,7 @@ displayText:
     mongodb      : mongoDB__dataSource_type
     elasticsearch: elasticsearch__dataSource_type
     nsq          : NSQ__dataSource_type
+    mqtt         : MQTT Broker__dataSource_type
 
   scriptRecoverPoint_type:
     import : 导入__scriptRecoverPoint_type

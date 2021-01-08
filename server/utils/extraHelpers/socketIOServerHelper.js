@@ -11,15 +11,15 @@ var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
 function retryStrategy(options) {
-    if (options.error) {
-      console.error(options.error.toString());
+  if (options.error) {
+    console.error(options.error.toString());
 
-      if (options.error.code === 'ECONNREFUSED') {
-          return new Error('The Redis refused the connection');
-      }
+    if (options.error.code === 'ECONNREFUSED') {
+        return new Error('The Redis refused the connection');
     }
+  }
 
-    return Math.min(options.attempt * 100, 3000);
+  return Math.min(options.attempt * 100, 3000);
 }
 
 /* Singleton Client */
@@ -31,7 +31,7 @@ var PUB_CLIENT    = null;
  * @constructor
  * @param  {Object} server
  * @param  {Object} [logger=null]
- * @param  {Object} [config=CONFIG.redis]
+ * @param  {Object} [config=null]
  * @return {Object} - SocketIO Helper
  */
 var SocketIOServerHelper = function(server, logger, config) {

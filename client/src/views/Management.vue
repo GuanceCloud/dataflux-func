@@ -70,14 +70,14 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-log-list" v-if="$store.getters.isExperimentalFeatureEnabled('ScriptLog')">
+            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
                 脚本日志
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
+            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
               <span>
                 <i class="fa fa-fw fa-bug"></i>
                 脚本故障

@@ -108,7 +108,7 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: {fieldPicking: ['id', 'title']},
+        query: {fields: ['id', 'title']},
         alert: {entity: '脚本集', showError: true},
       };
 
@@ -165,7 +165,6 @@ export default {
         this.M().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
       ];
       let fileName = fileNameParts.join('-') + this.$store.getters.CONFIG('_FUNC_PKG_EXPORT_EXT');
-      console.log(fileName)
       FileSaver.saveAs(blob, fileName);
 
       this.password     = password;

@@ -19,7 +19,7 @@
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
                     v-model="form.funcId"
-                    :options="funcCascaderOptions"
+                    :options="funcCascader"
                     :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
@@ -200,78 +200,19 @@ export default {
         }
       }
 
-      // 获取关联数据
-      let scriptSetMap = {};
-      let scriptMap    = {};
-      let funcMap      = {};
+      // 获取函数列表
+      let funcList = await this.common.getFuncList();
 
-      // 脚本集
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fieldPicking: ['id', 'title']},
-        alert: {entity: '脚本集', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptSetMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-      });
-
-      // 脚本
-      apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fieldPicking: ['id', 'title', 'scriptSetId']},
-        alert: {entity: '脚本', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        scriptMap[d.id] = {
-          label   : d.title || d.id,
-          children: [],
-        };
-
-        // 插入上一层"children"
-        if (scriptSetMap[d.scriptSetId]) {
-          scriptSetMap[d.scriptSetId].children.push(scriptMap[d.id]);
+      for (var funcId in funcList.map) {
+        let f = funcList.map[funcId];
+        f.isFixedCrontab = !!(f.extraConfigJSON && f.extraConfigJSON.fixedCrontab);
+        if (f.isFixedCrontab) {
+          f.label += ' (固定Crontab)';
         }
-      });
+      }
 
-      // 函数
-      apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fieldPicking: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON']},
-        alert: {entity: '函数', showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      apiRes.data.forEach(d => {
-        let isFixedCrontab = false;
-        if (d.extraConfigJSON && d.extraConfigJSON.fixedCrontab) {
-          isFixedCrontab = true;
-        }
-
-        let title = `${d.title || d.definition}`;
-        if (isFixedCrontab) title += ` (固定Crontab)`;
-
-        funcMap[d.id] = {
-          label         : title,
-          value         : d.id,
-          argsJSON      : d.argsJSON,
-          kwargsJSON    : d.kwargsJSON,
-          isFixedCrontab: isFixedCrontab,
-        };
-
-        // 插入上一层"children"
-        if (scriptMap[d.scriptId]) {
-          scriptMap[d.scriptId].children.push(funcMap[d.id]);
-        }
-      });
-
-      let funcCascaderOptions = Object.values(scriptSetMap);
-
-      this.funcCascaderOptions = funcCascaderOptions;
-      this.funcMap             = funcMap;
+      this.funcMap      = funcList.map;
+      this.funcCascader = funcList.cascader;
       this.$store.commit('updateLoadStatus', true);
     },
     async submitData() {
@@ -575,9 +516,9 @@ export default {
       HOURS,
       MINUTES,
 
-      data               : {},
-      funcMap            : {},
-      funcCascaderOptions: [],
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
 
       form: {
         funcId            : null,
@@ -593,6 +534,21 @@ export default {
             message : '请选择执行函数',
             required: true,
           },
+        ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : '只能选择1970年至2037年之间的日期',
+            validator: (rule, value, callback) => {
+              let ts = this.moment(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error('日期不能早于1970年'));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error('时间不能晚于2037年'));
+              }
+              return callback();
+            },
+          }
         ],
         funcCallKwargsJSON: [
           {
