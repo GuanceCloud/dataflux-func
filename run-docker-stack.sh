@@ -10,7 +10,6 @@ function log {
 }
 
 # 处理选项
-OPT_ZHUYUN=FALSE
 OPT_DEV=FALSE
 OPT_MINI=FALSE
 OPT_INSTALL_DIR=DEFAULT
@@ -21,11 +20,6 @@ OPT_MQTT=FALSE
 
 while [ $# -ge 1 ]; do
     case $1 in
-        '--zhuyun' )
-            OPT_ZHUYUN=TRUE
-            shift
-            ;;
-
         '--dev' )
             OPT_DEV=TRUE
             shift
@@ -83,21 +77,13 @@ __README_FILE=README.md
 __MOSQUITTO_CONFIG_FILE=mosquitto/config/mosquitto.conf
 __MOSQUITTO_PASSWD_FILE=mosquitto/passwd
 
-__MYSQL_IMAGE=mysql:5.7.26
-__REDIS_IMAGE=redis:5.0.7
-__MQTT_IMAGE=eclipse-mosquitto:2.0.3
+__MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
+__REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
+__MQTT_IMAGE=pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3
 
 __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
-_DATAFLUX_FUNC_IMAGE=dataflux-func/dataflux-func:latest
-
-# 使用zhuyun 镜像时，从驻云官方镜像仓库拉取
-if [ ${OPT_ZHUYUN} = "TRUE" ]; then
-    __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
-    __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-    __MQTT_IMAGE=pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3
-    _DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
-fi
+_DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
 
 # 启用dev 部署时，项目名/资源等改为dev 专用版
 if [ ${OPT_DEV} = "TRUE" ]; then
