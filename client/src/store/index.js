@@ -418,13 +418,13 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    async updateSystemConfig({ commit }) {
+    async reloadSystemConfig({ commit }) {
       let apiRes = await toolkit.callAPI('/api/v1/func-system-config');
       if (!apiRes.ok) return;
 
       commit('updateSystemConfig', apiRes.data);
     },
-    async updateUserProfile({ commit, state }) {
+    async reloadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;
 
       let apiRes = await toolkit.callAPI('/api/v1/auth/profile/do/get');

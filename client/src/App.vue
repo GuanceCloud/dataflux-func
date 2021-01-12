@@ -165,8 +165,8 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('updateSystemConfig');
-    this.$store.dispatch('updateUserProfile');
+    this.$store.dispatch('reloadSystemConfig');
+    this.$store.dispatch('reloadUserProfile');
   },
   mounted() {
     const connectSocketIO = () => {

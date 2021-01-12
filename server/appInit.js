@@ -155,6 +155,8 @@ exports.afterAppCreated = function(app, server) {
       },
       function(asyncCallback) {
         app.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
+          if (err) return asyncCallback(err);
+
           var tableInfoList = dbRes.filter(function(d) {
             return toolkit.startsWith(d.Name, 'biz_') || toolkit.startsWith(d.Name, 'wat_');
           });
