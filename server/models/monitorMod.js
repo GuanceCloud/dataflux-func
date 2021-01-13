@@ -54,7 +54,7 @@ EntityModel.prototype.getSysStats = function(callback) {
         sysStats[metric] = {};
 
         var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'hostname', '*']);
-        var opt = { timeUnit: 'ms', groupTime: 60, scale: scale };
+        var opt = { timeUnit: 'ms', groupTime: 300, scale: scale };
 
         self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
           if (err) return eachCallback(err);

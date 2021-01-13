@@ -16,6 +16,13 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/about">
+              <span>
+                <i class="fa fa-fw fa-info-circle"></i>
+                关于
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/auth-link-list">
               <span>
                 <i class="fa fa-fw fa-link"></i>
@@ -84,10 +91,25 @@
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
+
+            <el-menu-item index="/management/experimental-features">
+              <span>
+                <i class="fa fa-fw fa-flask"></i>
+                实验性功能
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
               <span>
                 <i class="fa fa-fw fa-key"></i>
                 AccessKey
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/sys-stats" v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')">
+              <span>
+                <i class="fa fa-fw fa-line-chart"></i>
+                系统指标
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
@@ -97,7 +119,7 @@
     </el-aside>
 
     <!-- 主要 -->
-      <router-view />
+    <router-view />
   </el-container>
 </template>
 

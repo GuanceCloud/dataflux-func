@@ -51,11 +51,8 @@ exports.list = function(req, res, next) {
         var days = parseInt(CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES / oneDaySeconds);
         async.timesLimit(days, 10, function(n, timesCallback) {
           var dateStr = toolkit.getDateString(Date.now() - n * oneDaySeconds * 1000);
-          var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCount', [
-              'funcId'  , authLink.funcId,
-              'origin'  , 'authLink',
-              'originId', authLink.id,
-              'date'    , dateStr]);
+          var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallCount', [
+              'authLinkId', authLink.id, 'date', dateStr]);
           res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
             // 报错跳过
             if (err) return timesCallback();
@@ -87,10 +84,8 @@ exports.list = function(req, res, next) {
           p99    : null,
         };
 
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningStatus', [
-            'funcId'  , authLink.funcId,
-            'origin'  , 'authLink',
-            'originId', authLink.id]);
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
+            'authLinkId', authLink.id, 'date', dateStr]);
         res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
           // 报错跳过
           if (err) return eachCallback();

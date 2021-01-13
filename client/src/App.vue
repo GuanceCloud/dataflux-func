@@ -50,7 +50,7 @@ export default {
         }
       }
     },
-    uiTheme(val) {
+    '$store.getters.uiTheme': function(val) {
       let $uiThemeLink = document.getElementById('uiTheme');
       let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
@@ -152,9 +152,6 @@ export default {
     },
     isSignedIn() {
       return !!this.$store.state.xAuthToken;
-    },
-    uiTheme() {
-      return this.$store.getters.uiTheme;
     },
   },
   props: {

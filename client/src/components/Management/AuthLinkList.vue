@@ -228,7 +228,7 @@ export default {
         await this.loadData();
       }
     },
-    isLoaded(val) {
+    '$store.state.isLoaded': function(val) {
       if (!val) return;
 
       setImmediate(() => {
@@ -423,9 +423,6 @@ export default {
           class: 'text-bad',
         },
       }
-    },
-    isLoaded() {
-      return this.$store.state.isLoaded;
     },
   },
   props: {

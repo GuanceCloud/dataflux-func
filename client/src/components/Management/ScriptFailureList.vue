@@ -137,9 +137,6 @@ export default {
     },
   },
   computed: {
-    isLoaded() {
-      return this.$store.state.isLoaded;
-    },
   },
   props: {
   },

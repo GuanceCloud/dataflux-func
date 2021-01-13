@@ -179,9 +179,6 @@ export default {
         delete : '删除',
       };
     },
-    isLoaded() {
-      return this.$store.state.isLoaded;
-    },
   },
   props: {
   },

@@ -97,7 +97,7 @@ export default {
         await this.loadData();
       }
     },
-    isLoaded(val) {
+    '$store.state.isLoaded': function(val) {
       if (!val) return;
 
       setImmediate(() => {
@@ -194,9 +194,6 @@ export default {
         disable: '禁用',
         enable : '启用',
       };
-    },
-    isLoaded() {
-      return this.$store.state.isLoaded;
     },
   },
   props: {

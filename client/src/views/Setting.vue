@@ -33,20 +33,6 @@
                 修改密码
               </span>
             </el-menu-item>
-
-            <el-menu-item index="/setting/experimental-features">
-              <span>
-                <i class="fa fa-fw fa-flask"></i>
-                实验性功能
-              </span>
-            </el-menu-item>
-
-            <el-menu-item index="/setting/about">
-              <span>
-                <i class="fa fa-fw fa-info-circle"></i>
-                关于
-              </span>
-            </el-menu-item>
           </el-menu>
         </div>
       </div>

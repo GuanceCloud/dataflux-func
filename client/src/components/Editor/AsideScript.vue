@@ -144,7 +144,7 @@ export default {
     filterText(val) {
       this.$refs.tree.filter(val);
     },
-    scriptListSyncTime() {
+    '$store.state.scriptListSyncTime': function() {
       this.loadData();
     },
     expandedNodeMap(val) {
@@ -491,9 +491,6 @@ export default {
     },
   },
   computed: {
-    scriptListSyncTime() {
-      return this.$store.state.scriptListSyncTime;
-    },
     highlightedFuncId() {
       switch(this.$route.name) {
         case 'code-editor':

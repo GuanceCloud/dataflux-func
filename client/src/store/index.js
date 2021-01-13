@@ -233,6 +233,14 @@ export default new Vuex.Store({
       }
       return uiTheme;
     },
+    uiColorSchema: (state, getters) => {
+      if (getters.uiTheme === 'auto') {
+        let isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return isDark ? 'dark' : 'light';
+      } else {
+        return getters.uiTheme;
+      }
+    },
     codeMirrorSetting: (state, getters) => {
       let theme = state.codeMirrorSetting.theme || C.CODE_MIRROR_DEFAULT_THEME;
 

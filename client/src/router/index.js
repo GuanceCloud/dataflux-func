@@ -98,6 +98,11 @@ const routes = [
         component: () => import('../components/Management/Overview.vue'),
       },
       {
+        path: 'about',
+        name: 'about',
+        component: () => import('../components/Management/About.vue'),
+      },
+      {
         path: 'auth-link-list',
         name: 'auth-link-list',
         component: () => import('../components/Management/AuthLinkList.vue'),
@@ -210,17 +215,6 @@ const routes = [
       },
 
       {
-        path: 'access-key-list',
-        name: 'access-key-list',
-        component: () => import('../components/Management/AccessKeyList.vue'),
-      },
-      {
-        path: 'access-key-add',
-        name: 'access-key-add',
-        component: () => import('../components/Management/AccessKeySetup.vue'),
-      },
-
-      {
         path: 'script-log-list',
         name: 'script-log-list',
         component: () => import('../components/Management/ScriptLogList.vue'),
@@ -231,6 +225,26 @@ const routes = [
         component: () => import('../components/Management/ScriptFailureList.vue'),
       },
 
+      {
+        path: 'experimental-features',
+        name: 'experimental-features',
+        component: () => import('../components/Management/ExperimentalFeatures.vue'),
+      },
+      {
+        path: 'access-key-list',
+        name: 'access-key-list',
+        component: () => import('../components/Management/AccessKeyList.vue'),
+      },
+      {
+        path: 'access-key-add',
+        name: 'access-key-add',
+        component: () => import('../components/Management/AccessKeySetup.vue'),
+      },
+      {
+        path: 'sys-stats',
+        name: 'sys-stats',
+        component: () => import('../components/Management/SysStats.vue'),
+      },
     ],
   },
   {
@@ -257,17 +271,6 @@ const routes = [
         path: 'password-setup',
         name: 'password-setup',
         component: () => import('../components/Setting/PasswordSetup.vue'),
-      },
-
-      {
-        path: 'experimental-features',
-        name: 'experimental-features',
-        component: () => import('../components/Setting/ExperimentalFeatures.vue'),
-      },
-      {
-        path: 'about',
-        name: 'about',
-        component: () => import('../components/Setting/About.vue'),
       },
     ],
   },

@@ -77,7 +77,7 @@ export default {
     filterText(val) {
       this.$refs.tree.filter(val);
     },
-    envVariableListSyncTime() {
+    '$store.state.envVariableListSyncTime': function() {
       this.loadData();
     },
   },
@@ -157,11 +157,6 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
-    },
-  },
-  computed: {
-    envVariableListSyncTime() {
-      return this.$store.state.envVariableListSyncTime;
     },
   },
   props: {

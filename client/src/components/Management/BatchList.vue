@@ -163,7 +163,7 @@ export default {
         await this.loadData();
       }
     },
-    isLoaded(val) {
+    '$store.state.isLoaded': function(val) {
       if (!val) return;
 
       setImmediate(() => {
@@ -313,9 +313,6 @@ export default {
         enable : '启用',
         delete : '删除',
       };
-    },
-    isLoaded() {
-      return this.$store.state.isLoaded;
     },
   },
   props: {

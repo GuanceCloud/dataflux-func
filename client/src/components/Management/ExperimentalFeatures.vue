@@ -56,6 +56,19 @@
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「AccessKey」进入模块
                   </div>
                 </el-form-item>
+
+                <el-form-item prop="SysStat">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启系统指标查看模块"
+                    v-model="form.SysStat">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于查看本系统的一些运行指标信息。
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统指标」进入模块
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -108,6 +121,7 @@ export default {
         ScriptLog    : false,
         ScriptFailure: false,
         AccessKey    : false,
+        SysStat      : false,
       },
     }
   },

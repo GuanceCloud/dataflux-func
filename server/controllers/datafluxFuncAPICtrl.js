@@ -856,61 +856,58 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
         },
       ], function(err) {
         /* 1. 统计记录 */
-        // 记录最近几天调用次数
-        var dateStr = toolkit.getDateString();
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningCount', [
-            'funcId'  , funcCallOptions.funcId,
-            'origin'  , funcCallOptions.origin,
-            'originId', funcCallOptions.originId,
-            'date'    , dateStr]);
-        async.series([
-          // 计数
-          function(asyncCallback) {
-            locals.cacheDB.incr(cacheKey, asyncCallback);
-          },
-          // 设置自动过期
-          function(asyncCallback) {
-            var expires = CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES;
-            locals.cacheDB.expire(cacheKey, expires, asyncCallback);
-          },
-        ]);
+        if (funcCallOptions.origin === 'authLink') {
+          // 记录最近几天调用次数
+          var dateStr = toolkit.getDateString();
+          var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallCount', [
+              'authLinkId', funcCallOptions.originId, 'date', dateStr]);
+          async.series([
+            // 计数
+            function(asyncCallback) {
+              locals.cacheDB.incr(cacheKey, asyncCallback);
+            },
+            // 设置自动过期
+            function(asyncCallback) {
+              var expires = CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES;
+              locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+            },
+          ]);
 
-        // 记录最近几次调用状态
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentFuncRunningStatus', [
-            'funcId'  , funcCallOptions.funcId,
-            'origin'  , funcCallOptions.origin,
-            'originId', funcCallOptions.originId]);
-        async.series([
-          // 最近耗时推入队列
-          function(asyncCallback) {
-            var costMs = Date.now() - funcCallOptions.triggerTimeMs;
-            var status = 'OK';
-            if (err) {
-              if (err.info && err.info.reason) {
-                status = err.info.reason;
-              } else {
-                status = 'UnknowError';
+          // 记录最近几次调用状态
+          var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
+              'authLinkId', funcCallOptions.originId, 'date', dateStr]);
+          async.series([
+            // 最近耗时推入队列
+            function(asyncCallback) {
+              var costMs = Date.now() - funcCallOptions.triggerTimeMs;
+              var status = 'OK';
+              if (err) {
+                if (err.info && err.info.reason) {
+                  status = err.info.reason;
+                } else {
+                  status = 'UnknowError';
+                }
+              } else if (celeryRes.id === 'CACHED') {
+                status = 'cached';
               }
-            } else if (celeryRes.id === 'CACHED') {
-              status = 'cached';
-            }
 
-            var runningStatus = JSON.stringify({
-              costMs: costMs,
-              status: status,
-            });
-            locals.cacheDB.lpush(cacheKey, runningStatus, asyncCallback);
-          },
-          function(asyncCallback) {
-            var limit = CONFIG._RECENT_FUNC_RUNNING_STATUS_LIMIT;
-            locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
-          },
-          // 设置自动过期
-          function(asyncCallback) {
-            var expires = CONFIG._RECENT_FUNC_RUNNING_STATUS_EXPIRES;
-            locals.cacheDB.expire(cacheKey, expires, asyncCallback);
-          },
-        ]);
+              var runningStatus = JSON.stringify({
+                costMs: costMs,
+                status: status,
+              });
+              locals.cacheDB.lpush(cacheKey, runningStatus, asyncCallback);
+            },
+            function(asyncCallback) {
+              var limit = CONFIG._RECENT_FUNC_RUNNING_STATUS_LIMIT;
+              locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
+            },
+            // 设置自动过期
+            function(asyncCallback) {
+              var expires = CONFIG._RECENT_FUNC_RUNNING_STATUS_EXPIRES;
+              locals.cacheDB.expire(cacheKey, expires, asyncCallback);
+            },
+          ]);
+        }
 
         /* 2. 最终回调 */
         return callback(err, ret, isCached);

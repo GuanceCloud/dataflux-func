@@ -106,7 +106,7 @@ export default {
     filterText(val) {
       this.$refs.tree.filter(val);
     },
-    dataSourceListSyncTime() {
+    '$store.state.dataSourceListSyncTime': function() {
       this.loadData();
     },
   },
@@ -196,11 +196,6 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
-    },
-  },
-  computed: {
-    dataSourceListSyncTime() {
-      return this.$store.state.dataSourceListSyncTime;
     },
   },
   props: {

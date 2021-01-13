@@ -128,9 +128,6 @@ export default {
         recover: '还原',
       };
     },
-    isLoaded() {
-      return this.$store.state.isLoaded;
-    },
   },
   props: {
   },

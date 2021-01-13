@@ -585,6 +585,10 @@ export function fromNow(dt) {
   return moment.utc(dt).locale('zh_CN').fromNow();
 };
 
+export function getDateTimeStringCN(dt, f) {
+  return moment(dt).locale('zh_CN').utcOffset('+08:00').format(f || 'YYYY-MM-DD HH:mm:ss');
+};
+
 export function asideItemSorter(a, b) {
   return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
 };
@@ -1141,4 +1145,22 @@ export function setCodeMirrorForText(codeMirror) {
 
 export function getCodeMirrorThemeName() {
   return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_DEFAULT_THEME;
+};
+
+export function getEchartTextStyle() {
+  let colorMap = {
+    light: 'black',
+    dark : '#ccc',
+  };
+  let color = colorMap[store.getters.uiColorSchema];
+  return { color: color };
+};
+
+export function getEchartSplitLineStyle() {
+  let colorMap = {
+    light: '#ccc',
+    dark : '#3c3c3c',
+  };
+  let color = colorMap[store.getters.uiColorSchema];
+  return { color: color };
 };
