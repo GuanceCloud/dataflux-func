@@ -166,22 +166,26 @@
                     <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> 新增主题处理函数</el-link>
                   </el-form-item>
                   <!-- 可变区域结束 -->
-
-                  <el-form-item>
-                    <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">删除</el-button>
-
-                    <div class="setup-right">
-                      <el-button @click="testDataSource" v-if="mode === 'setup'">
-                        <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
-                        <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
-                        <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
-                        测试
-                      </el-button>
-
-                      <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">保存</el-button>
-                    </div>
-                  </el-form-item>
                 </template>
+              </el-form>
+
+
+              <!-- 此处特殊处理：要始终保证可以测试数据源 -->
+              <el-form label-width="100px">
+                <el-form-item>
+                  <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">删除</el-button>
+
+                  <div class="setup-right">
+                    <el-button v-if="mode === 'setup'" @click="testDataSource">
+                      <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
+                      <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
+                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
+                      测试连通性
+                    </el-button>
+
+                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">保存</el-button>
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
