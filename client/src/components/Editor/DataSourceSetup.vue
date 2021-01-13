@@ -167,15 +167,18 @@
                   </el-form-item>
                   <!-- 可变区域结束 -->
 
-                  <el-form-item v-if="!data.isBuiltin">
-                    <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
+                  <el-form-item>
+                    <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">删除</el-button>
+
                     <div class="setup-right">
-                      <el-button @click="testDataSource" v-if="mode === 'setup'">
+                      <el-button @click="testDataSource" v-if="mode === 'setup' && !data.isBuiltin">
                         <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
                         <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
                         <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
-                        测试</el-button>
-                      <el-button type="primary" @click="submitData">保存</el-button>
+                        测试
+                      </el-button>
+
+                      <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">保存</el-button>
                     </div>
                   </el-form-item>
                 </template>
