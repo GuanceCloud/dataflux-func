@@ -171,7 +171,7 @@
                     <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">删除</el-button>
 
                     <div class="setup-right">
-                      <el-button @click="testDataSource" v-if="mode === 'setup' && !data.isBuiltin">
+                      <el-button @click="testDataSource" v-if="mode === 'setup'">
                         <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
                         <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
                         <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
