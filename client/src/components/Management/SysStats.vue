@@ -31,6 +31,11 @@
           <div id="cacheDBKeyUsed" class="line-chart"></div>
           <div id="cacheDBKeyCountByPrefix" class="line-chart"></div>
         </div>
+
+        <el-divider content-position="left"><h1>API</h1></el-divider>
+        <div class="chart-section">
+          <div id="matchedRouteCount" class="bar-chart"></div>
+        </div>
       </el-main>
     </el-container>
   </transition>
@@ -128,7 +133,9 @@ export default {
       chartSeries.forEach(s => {
         dataLength = Math.max(dataLength, s.data.length);
       });
-      $(chart.getDom()).height(dataLength * chartSeries.length * 25 - (10 / dataLength) + 150);
+
+      let height = dataLength * 25 * chartSeries.length + (chartSeries.length - 1) * 5 + 60 + 80
+      chart.getDom().style.height = `${height}px`;
       chart.resize();
     },
     async updateChart() {
@@ -179,14 +186,24 @@ export default {
 
         // Set Series
         chart.setOption({ series: series });
+
+        // Resize Chart
+        switch(metric) {
+          case 'matchedRouteCount':
+            this.resizeBarChart(chart);
+            break;
+        }
       };
     },
     createTitleOpt(title) {
       return {
         text     : title,
-        left     : 'center',
+        left     : 100,
         textStyle: this.T.getEchartTextStyle(),
       };
+    },
+    createCommonTooltipOpt() {
+      return { trigger: 'axis', axisPointer: { animation: false } };
     },
     createTSTooltipOpt(opt) {
       opt = opt || {};
@@ -226,9 +243,13 @@ export default {
             }
 
             tooltipHTML += '<tr>';
-            tooltipHTML += '<td>' + p.marker + '</td>';
-            tooltipHTML += '<td>' + p.seriesName + '</td>';
-            tooltipHTML += '<td>: ' + p.data[1] + unit + '</td>';
+            tooltipHTML += '<td style="font-size: 12px">' + p.marker + '</td>';
+            if (p.seriesName) {
+              tooltipHTML += '<td style="font-size: 12px">' + p.seriesName + '</td>';
+              tooltipHTML += '<td style="font-size: 12px">:</td>';
+            }
+            tooltipHTML += '<td style="font-size: 12px" align="right">' + p.data[1] + '</td>';
+            tooltipHTML += '<td style="font-size: 12px">' + unit + '</td>';
             tooltipHTML += '</tr>';
           }
           tooltipHTML += '</table>';
@@ -243,6 +264,9 @@ export default {
         containLabel: true,
       };
     },
+    createCountGridOpt() {
+      return { left: 50, right: '35%', containLabel: true };
+    },
     createTimeXAxisOpt() {
       return {
         type  : 'time',
@@ -255,6 +279,15 @@ export default {
             return this.T.getDateTimeStringCN(value, 'YYYY-MM-DD HH:mm');
           }
         }
+      };
+    },
+    createCountXAxisOpt() {
+      return {
+        type: 'value',
+        splitLine: {
+          lineStyle: this.T.getEchartSplitLineStyle(),
+        },
+        max: (value) => Math.ceil(value.max * 1.1),
       };
     },
     createPercentYAxisOpt() {
@@ -286,9 +319,21 @@ export default {
         },
         axisLabel: {
           formatter: (value, index) => {
-            return value + 'MB';
+            return value + ' MB';
           }
         }
+      };
+    },
+    createCateYAxisOpt() {
+      return {
+        type     : 'category',
+        position : 'right',
+        offset   : 50,
+        inverse  : true,
+        axisLabel: { interval: 0 },
+        splitLine: {
+          lineStyle: this.T.getEchartSplitLineStyle(),
+        },
       };
     },
     createCountYAxisOpt() {
@@ -367,7 +412,7 @@ export default {
         workerQueueLength: {
           textStyle: textStyle,
           title  : this.createTitleOpt('工作队列长度'),
-          tooltip: this.createTSTooltipOpt({ unit: [' Tasks', ' Task']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
@@ -393,7 +438,7 @@ export default {
         cacheDBKeyUsed: {
           textStyle: textStyle,
           title  : this.createTitleOpt('缓存数据库Key数量'),
-          tooltip: this.createTSTooltipOpt({ unit: [' Keys', ' Key']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
@@ -401,15 +446,24 @@ export default {
         cacheDBKeyCountByPrefix: {
           textStyle: textStyle,
           title  : this.createTitleOpt('缓存数据库Key数量（按前缀区分）'),
-          tooltip: this.createTSTooltipOpt({ unit: [' Keys', ' Key']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
+        },
+        matchedRouteCount: {
+          textStyle: textStyle,
+          title  : this.createTitleOpt('接口访问次数（按路由区分）'),
+          tooltip: this.createCommonTooltipOpt(),
+          grid   : this.createCountGridOpt(),
+          xAxis  : this.createCountXAxisOpt(),
+          yAxis  : this.createCateYAxisOpt(),
         },
       }
     },
   },
   mounted() {
+    window.vmc = this;
     setImmediate(() => {
       // 初始化Echarts
       for (let chartId in this.CHART_CONFIGS) {
@@ -440,7 +494,11 @@ export default {
   flex-wrap: wrap;
 }
 .line-chart {
-  width : 800px;
-  height: 300px;
+  width : 700px;
+  height: 350px;
+}
+.bar-chart {
+  width : 1200px;
+  height: 350px;
 }
 </style>
