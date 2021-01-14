@@ -39,7 +39,7 @@ EntityModel.prototype.getSysStats = function(callback) {
   var sysStats = {};
 
   self.locals.cacheDB.skipLog = true;
-  async.series([
+  async.parallel([
     // Get CPU/Memory usage
     function(asyncCallback) {
       var metricScaleMap = {
