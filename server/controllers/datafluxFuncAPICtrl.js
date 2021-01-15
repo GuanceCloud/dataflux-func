@@ -875,7 +875,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
           // 记录最近几次调用状态
           var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
-              'authLinkId', funcCallOptions.originId, 'date', dateStr]);
+              'authLinkId', funcCallOptions.originId]);
           async.series([
             // 最近耗时推入队列
             function(asyncCallback) {

@@ -85,7 +85,7 @@ exports.list = function(req, res, next) {
         };
 
         var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
-            'authLinkId', authLink.id, 'date', dateStr]);
+            'authLinkId', authLink.id]);
         res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
           // 报错跳过
           if (err) return eachCallback();
