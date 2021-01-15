@@ -6,10 +6,11 @@
 var async = require('async');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var toolkit = require('../utils/toolkit');
-var urlFor  = require('../utils/routeLoader').urlFor;
+var E           = require('../utils/serverError');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
+var toolkit     = require('../utils/toolkit');
+var modelHelper = require('../utils/modelHelper');
+var urlFor      = require('../utils/routeLoader').urlFor;
 
 var funcMod     = require('../models/funcMod');
 var authLinkMod = require('../models/authLinkMod');
@@ -18,8 +19,6 @@ var authLinkMod = require('../models/authLinkMod');
 
 /* Handlers */
 var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
-
-exports.delete = crudHandler.createDeleteHandler();
 
 exports.list = function(req, res, next) {
   var authLinks        = null;
@@ -132,34 +131,10 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data = req.body.data;
+  var data   = req.body.data;
+  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
 
-  // 自动记录操作界面
-  data.origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
-
-  var funcModel     = funcMod.createModel(res.locals);
-  var authLinkModel = authLinkMod.createModel(res.locals);
-
-  var addedId = null;
-
-  async.series([
-    // 检查函数
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.funcId)) return asyncCallback();
-
-      funcModel.getWithCheck(data.funcId, null, asyncCallback);
-    },
-    // 数据入库
-    function(asyncCallback) {
-      authLinkModel.add(data, function(err, _addedId) {
-        if (err) return asyncCallback(err);
-
-        addedId = _addedId;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
+  _add(res.locals, data, origin, function(err, addedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -212,5 +187,144 @@ exports.modify = function(req, res, next) {
       }),
     });
     return res.locals.sendJSON(ret);
+  });
+};
+
+exports.delete = function(req, res, next) {
+  var id = req.params.id;
+
+  _delete(res.locals, id, function(err, deletedId) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: deletedId,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.addMany = function(req, res, next) {
+  var data   = req.body.data;
+  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+
+  var addedIds = [];
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(data, function(d, eachCallback) {
+        _add(res.locals, d, origin, function(err, addedId) {
+          if (err) return eachCallback(err);
+
+          addedIds.push(addedId);
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: addedIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+exports.deleteMany = function(req, res, next) {
+  var deleteIds = [];
+
+  var authLinkModel = authLinkMod.createModel(res.locals);
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+      opt.fields = ['auln.id'];
+
+      if (toolkit.isNothing(opt.filters)) {
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+      }
+
+      authLinkModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        deleteIds = dbRes.reduce(function(acc, x) {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(deleteIds, function(id, eachCallback) {
+        _delete(res.locals, id, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: deleteIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+function _add(locals, data, origin, callback) {
+  // 自动记录操作界面
+  data.origin = origin;
+
+  var funcModel     = funcMod.createModel(locals);
+  var authLinkModel = authLinkMod.createModel(locals);
+
+  var addedId = null;
+
+  async.series([
+    // 检查函数
+    function(asyncCallback) {
+      funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
+    },
+    // 数据入库
+    function(asyncCallback) {
+      authLinkModel.add(data, function(err, _addedId) {
+        if (err) return asyncCallback(err);
+
+        addedId = _addedId;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, addedId);
+  });
+};
+
+function _delete(locals, id, callback) {
+  var authLinkModel = authLinkMod.createModel(locals);
+
+  async.series([
+    function(asyncCallback) {
+      authLinkModel.getWithCheck(id, ['auln.seq'], asyncCallback);
+    },
+    function(asyncCallback) {
+      authLinkModel.delete(id, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, id);
   });
 };

@@ -21,3 +21,11 @@ routeLoader.load(ROUTE.batchAPI.modify, [
 routeLoader.load(ROUTE.batchAPI.delete, [
   batchAPICtrl.delete,
 ]);
+
+routeLoader.load(ROUTE.batchAPI.addMany, [
+  batchAPICtrl.addMany,
+]);
+
+routeLoader.load(ROUTE.batchAPI.deleteMany, [
+  batchAPICtrl.deleteMany,
+]);

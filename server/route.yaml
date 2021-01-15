@@ -919,8 +919,8 @@ systemConfigAPI:
     query:
       id:
         $desc      : Filter by ID
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sc.id
 
   get:
@@ -982,8 +982,8 @@ systemConfigPage:
     query:
       id:
         $desc      : Filter by ID
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sc.id
 
 # Debug
@@ -1471,8 +1471,8 @@ datafluxFuncAPI:
     query:
       id:
         $desc      : 根据函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.id
       name:
         $desc      : 根据函数名过滤
@@ -1501,13 +1501,13 @@ datafluxFuncAPI:
         $searchKey : func.tagsJSON
       scriptId:
         $desc      : 根据所属脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scpt.id
       scriptSetId:
         $desc      : 根据所属脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sset.id
 
   getFuncTagList:
@@ -1537,13 +1537,13 @@ datafluxFuncAPI:
     query:
       funcId:
         $desc      : 根据函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.id
       funcName:
         $desc      : 根据函数名过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.name
       funcCategory:
         $desc      : 根据类型过滤
@@ -1557,13 +1557,13 @@ datafluxFuncAPI:
         $searchKey : func.tagsJSON
       scriptId:
         $desc      : 根据所属脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scpt.id
       scriptSetId:
         $desc      : 根据所属脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sset.id
 
   getSystemConfig:
@@ -1660,8 +1660,8 @@ scriptSetAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sset.id
 
   add:
@@ -1834,13 +1834,13 @@ scriptAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scpt.id
       scriptSetId:
         $desc      : 根据所属脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scpt.scriptSetId
 
   get:
@@ -1984,18 +1984,18 @@ funcAPI:
     query:
       id:
         $desc      : 按函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.id
       scriptSetId:
         $desc      : 按所属脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       scriptId:
         $desc      : 按所属脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       category:
         $desc      : 根据类型过滤
@@ -2036,13 +2036,13 @@ scriptLogAPI:
     query:
       id:
         $desc      : 按日志ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : slog.id
       funcId:
         $desc      : 按函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : slog.funcId
 
 # 脚本故障
@@ -2068,13 +2068,13 @@ scriptFailureAPI:
     query:
       id:
         $desc      : 按故障ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sfal.id
       funcId:
         $desc      : 按函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sfal.funcId
 
 # 脚本还原点
@@ -2098,8 +2098,8 @@ scriptRecoverPointAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : srpt.id
       type:
         $desc      : 根据类型过滤
@@ -2171,18 +2171,18 @@ scriptPublishHistoryAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scph.id
       scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scph.scriptId
       scriptPublishVersion:
         $desc      : 根据脚本版本过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : scph.scriptPublishVersion
 
 # 脚本集导出历史
@@ -2206,8 +2206,8 @@ scriptSetExportHistoryAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : sseh.id
 
 # 脚本集导入历史
@@ -2231,8 +2231,8 @@ scriptSetImportHistoryAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : ssih.id
 
 # 数据源
@@ -2259,8 +2259,8 @@ dataSourceAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : dsrc.id
       type:
         $desc      : 根据类型过滤
@@ -2603,8 +2603,8 @@ envVariableAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : evar.id
 
   add:
@@ -2725,13 +2725,13 @@ authLinkAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : auln.id
       funcId:
         $desc      : 根据函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : auln.funcId
       origin:
         $desc      : 根据来源过滤
@@ -2743,13 +2743,13 @@ authLinkAPI:
           - UI
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       func_scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       func_tags:
         $desc      : 根据执行函数标签过滤
@@ -2969,6 +2969,144 @@ authLinkAPI:
         $desc: 授权链接ID
         $type: string
 
+  addMany:
+    showInDoc    : true
+    name         : 批量添加授权链接
+    method       : post
+    url          : /api/v1/auth-links/do/add-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          id:
+            $desc      : ID（不指定自动生成）
+            $isRequired: false
+            $allowNull : true
+            $type      : string
+          funcId:
+            $desc      : 函数ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example   : {"msg": "FROM_PARAMETER"}
+          expireTime:
+            $desc      : 过期时间（ISO8601格式）
+            $allowNull : true
+            $type      : string
+            $isISO8601 : true
+            $example   : '2019-01-01T00:00:00Z'
+          throttlingJSON:
+            $desc      : 限流JSON
+            $allowNull : true
+            bySecond:
+              $desc     : 按秒限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 2
+            byMinute:
+              $desc     : 按分钟限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 5
+            byHour:
+              $desc     : 按小时限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 10
+            byDay:
+              $desc     : 按天限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 100
+            byMonth:
+              $desc     : 按月限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 1000
+            byYear:
+              $desc     : 按年限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 10000
+          origin:
+            $desc        : 来源
+            $isDeprecated: true
+            $isRequired  : false
+            $type        : enum
+            $in:
+              - API
+              - UI
+          showInDoc:
+            $desc      : 是否显示于文档
+            $isRequired: false
+            $type      : boolean
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : 批量删除授权链接
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
+    method       : get
+    url          : /api/v1/auth-links/do/delete-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.funcId
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
 # 自动触发配置
 crontabConfigAPI:
   list:
@@ -2998,13 +3136,13 @@ crontabConfigAPI:
         $type: boolean
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : cron.id
       funcId:
         $desc      : 根据函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : cron.funcId
       tags:
         $desc      : 根据自动触发配置标签过滤
@@ -3013,8 +3151,8 @@ crontabConfigAPI:
         $searchKey : cron.tagsJSON
       scope:
         $desc      : 根据范围过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : cron.scope
       origin:
         $desc      : 根据来源过滤
@@ -3026,13 +3164,13 @@ crontabConfigAPI:
           - UI
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       func_scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       func_tags:
         $desc      : 根据执行函数标签过滤
@@ -3180,6 +3318,116 @@ crontabConfigAPI:
         $desc: 自动触发配置ID
         $type: string
 
+  addMany:
+    showInDoc    : true
+    name         : 批量添加自动触发配置
+    method       : post
+    url          : /api/v1/crontab-configs/do/add-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          funcId:
+            $desc      : 函数ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example   : {"msg": "Tom"}
+          crontab:
+            $desc     : 执行频率（Crontab语法，支持到分钟级）
+            $allowNull: true
+            $type     : string
+            $example  : 0 * * * *
+          tagsJSON:
+            $desc     : 自动触发配置标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
+          scope:
+            $desc     : 范围（默认"GLOBAL"表示全局范围）
+            $allowNull: false
+            $type     : string
+            $maxLength: 255
+            $example  : my-uuid
+          expireTime:
+            $desc      : 过期时间（ISO8601格式）
+            $allowNull : true
+            $type      : string
+            $isISO8601 : true
+            $example   : '2019-01-01T00:00:00Z'
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : 批量删除自动触发配置
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
+    method       : get
+    url          : /api/v1/crontab-configs/do/delete-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.funcId
+      tags:
+        $desc      : 根据自动触发配置标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : cron.tagsJSON
+      scope:
+        $desc      : 根据范围过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.scope
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
 # 自动触发任务信息
 crontabTaskInfoAPI:
   list:
@@ -3204,28 +3452,28 @@ crontabTaskInfoAPI:
     query:
       id:
         $desc      : 按任务ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : crti.id
       crontabConfigId:
         $desc      : 按自动触发配置ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : crti.crontabConfigId
       funcId:
         $desc      : 按函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : crti.funcId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       func_scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       func_tags:
         $desc      : 根据执行函数标签过滤
@@ -3262,13 +3510,13 @@ batchAPI:
         $type: boolean
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : bat.id
       funcId:
         $desc      : 根据函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : bat.funcId
       tags:
         $desc      : 根据批处理标签过滤
@@ -3285,13 +3533,13 @@ batchAPI:
           - UI
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       func_scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       func_tags:
         $desc      : 根据执行函数标签过滤
@@ -3427,6 +3675,100 @@ batchAPI:
         $desc: 批处理ID
         $type: string
 
+  addMany:
+    showInDoc    : true
+    name         : 批量添加批处理
+    method       : post
+    url          : /api/v1/batches/do/add-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          id:
+            $desc      : ID（不指定自动生成）
+            $isRequired: false
+            $allowNull : true
+            $type      : string
+          funcId:
+            $desc      : 函数ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example  : {"msg": "FROM_PARAMETER"}
+          tagsJSON:
+            $desc     : 批处理标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
+          showInDoc:
+            $desc      : 是否显示于文档
+            $isRequired: false
+            $type      : boolean
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : 批量删除批处理
+    method       : get
+    url          : /api/v1/batches/do/delete-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.funcId
+      tags:
+        $desc      : 根据批处理标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : bat.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
 # 批处理任务信息
 batchTaskInfoAPI:
   list:
@@ -3451,28 +3793,28 @@ batchTaskInfoAPI:
     query:
       id:
         $desc      : 按任务ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : bati.id
       batchId:
         $desc      : 按批处理ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : bati.batchId
       funcId:
         $desc      : 按函数ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : bati.funcId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptSetId
       func_scriptId:
         $desc      : 根据脚本ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : func.scriptId
       func_tags:
         $desc      : 根据执行函数标签过滤
@@ -3569,33 +3911,33 @@ operationRecordAPI:
     query:
       id:
         $desc      : 根据ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.id
       userId:
         $desc      : 根据用户ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.userId
       username:
         $desc      : 根据用户ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.username
       clientId:
         $desc      : 根据客户端ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.clientId
       traceId:
         $desc      : 根据跟踪ID过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.traceId
       reqMethod:
         $desc      : 根据请求方法过滤
-        $type      : string
-        $searchType: eq
+        $type      : commaArray
+        $searchType: in
         $searchKey : oprd.reqMethod
       reqRoute:
         $desc      : 根据请求路由搜索

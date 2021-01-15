@@ -7,20 +7,20 @@ var async      = require('async');
 var sortedJSON = require('sorted-json');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var toolkit = require('../utils/toolkit');
+var E           = require('../utils/serverError');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
+var toolkit     = require('../utils/toolkit');
+var modelHelper = require('../utils/modelHelper');
 
 var funcMod            = require('../models/funcMod');
 var crontabConfigMod   = require('../models/crontabConfigMod');
 var crontabTaskInfoMod = require('../models/crontabTaskInfoMod');
 
 /* Configure */
+var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
 var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
-
-exports.delete = crudHandler.createDeleteHandler();
 
 function getConfigHash(locals, funcId, funcCallKwargsJSON, callback) {
   var funcModel = funcMod.createModel(locals);
@@ -100,74 +100,10 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data = req.body.data;
+  var data   = req.body.data;
+  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
 
-  // 自动记录操作界面
-  data.origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
-
-  var funcModel          = funcMod.createModel(res.locals);
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-
-  var configMD5 = null;
-  var addedId   = null;
-
-  async.series([
-    // 检查函数
-    function(asyncCallback) {
-      funcModel.getWithCheck(data.funcId, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        // 存在固定Crontab时，跟随固定Crontab
-        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
-          data.crontab = null;
-        }
-
-        return asyncCallback();
-      });
-    },
-    // 获取函数参数哈希
-    function(asyncCallback) {
-      getConfigHash(res.locals, data.funcId, data.funcCallKwargsJSON, function(err, _configMD5) {
-        if (err) return asyncCallback(err);
-
-        configMD5 = _configMD5;
-
-        return asyncCallback();
-      });
-    },
-    // 检查重复
-    function(asyncCallback) {
-      var scope = data.scope || 'GLOBAL';
-
-      let opt = {
-        filters: {
-          'cron.scope'    : {eq: scope},
-          'cron.configMD5': {eq: configMD5},
-        }
-      };
-      crontabConfigModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', scope)));
-        }
-
-        data.configMD5 = configMD5;
-
-        return asyncCallback(err);
-      });
-    },
-    // 数据入库
-    function(asyncCallback) {
-      crontabConfigModel.add(data, function(err, _addedId) {
-        if (err) return asyncCallback(err);
-
-        addedId = _addedId;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
+  _add(res.locals, data, origin, function(err, addedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -260,5 +196,185 @@ exports.modify = function(req, res, next) {
       id: id,
     });
     return res.locals.sendJSON(ret);
+  });
+};
+
+exports.delete = function(req, res, next) {
+  var id = req.params.id;
+
+  _delete(res.locals, id, function(err, deletedId) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: deletedId,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.addMany = function(req, res, next) {
+  var data   = req.body.data;
+  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+
+  var addedIds = [];
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(data, function(d, eachCallback) {
+        _add(res.locals, d, origin, function(err, addedId) {
+          if (err) return eachCallback(err);
+
+          addedIds.push(addedId);
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: addedIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+exports.deleteMany = function(req, res, next) {
+  var deleteIds = [];
+
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+      opt.fields = ['cron.id'];
+
+      if (toolkit.isNothing(opt.filters)) {
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+      }
+
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        deleteIds = dbRes.reduce(function(acc, x) {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(deleteIds, function(id, eachCallback) {
+        _delete(res.locals, id, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: deleteIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+function _add(locals, data, origin, callback) {
+  // 自动记录操作界面
+  data.origin = origin;
+
+  // 默认范围
+  data.scope = data.scope || GLOBAL_SCOPE;
+
+  var funcModel          = funcMod.createModel(locals);
+  var crontabConfigModel = crontabConfigMod.createModel(locals);
+
+  var addedId = null;
+
+  async.series([
+    // 检查函数
+    function(asyncCallback) {
+      funcModel.getWithCheck(data.funcId, ['func.seq'], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 存在固定Crontab时，跟随固定Crontab
+        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
+          data.crontab = null;
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 获取函数参数哈希
+    function(asyncCallback) {
+      getConfigHash(locals, data.funcId, data.funcCallKwargsJSON, function(err, configMD5) {
+        if (err) return asyncCallback(err);
+
+        data.configMD5 = configMD5;
+
+        return asyncCallback();
+      });
+    },
+    // 检查重复
+    function(asyncCallback) {
+      let opt = {
+        fields: 'cron.seq',
+        filters: {
+          'cron.scope'    : {eq: data.scope},
+          'cron.configMD5': {eq: data.configMD5},
+        }
+      };
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes.length > 0) {
+          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', data.scope)));
+        }
+
+        return asyncCallback(err);
+      });
+    },
+    // 数据入库
+    function(asyncCallback) {
+      crontabConfigModel.add(data, function(err, _addedId) {
+        if (err) return asyncCallback(err);
+
+        addedId = _addedId;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, addedId);
+  });
+};
+
+function _delete(locals, id, callback) {
+  var crontabConfigModel = crontabConfigMod.createModel(locals);
+
+  async.series([
+    function(asyncCallback) {
+      crontabConfigModel.getWithCheck(id, ['cron.seq'], asyncCallback);
+    },
+    function(asyncCallback) {
+      crontabConfigModel.delete(id, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, id);
   });
 };

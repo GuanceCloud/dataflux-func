@@ -21,3 +21,11 @@ routeLoader.load(ROUTE.authLinkAPI.modify, [
 routeLoader.load(ROUTE.authLinkAPI.delete, [
   authLinkAPICtrl.delete,
 ]);
+
+routeLoader.load(ROUTE.authLinkAPI.addMany, [
+  authLinkAPICtrl.addMany,
+]);
+
+routeLoader.load(ROUTE.authLinkAPI.deleteMany, [
+  authLinkAPICtrl.deleteMany,
+]);
