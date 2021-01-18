@@ -482,7 +482,7 @@ export default {
 
 <style scoped>
 .chart {
-  width : 100%;
+  width : 1300px;
   height: 350px;
 }
 </style>
