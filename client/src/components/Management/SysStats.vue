@@ -9,33 +9,25 @@
       </el-header>
       <el-main>
         <el-divider content-position="left"><h1>Server</h1></el-divider>
-        <div class="chart-section">
-          <div id="serverCPUPercent" class="line-chart"></div>
-          <div id="serverMemoryRSS" class="line-chart"></div>
-          <div id="serverMemoryHeapTotal" class="line-chart"></div>
-          <div id="serverMemoryHeapUsed" class="line-chart"></div>
-          <div id="serverMemoryHeapExternal" class="line-chart"></div>
-        </div>
+        <div id="serverCPUPercent" class="chart"></div>
+        <div id="serverMemoryRSS" class="chart"></div>
+        <div id="serverMemoryHeapTotal" class="chart"></div>
+        <div id="serverMemoryHeapUsed" class="chart"></div>
+        <div id="serverMemoryHeapExternal" class="chart"></div>
 
         <el-divider content-position="left"><h1>Worker</h1></el-divider>
-        <div class="chart-section">
-          <div id="workerCPUPercent" class="line-chart"></div>
-          <div id="workerMemoryPSS" class="line-chart"></div>
-          <div id="workerQueueLength" class="line-chart"></div>
-        </div>
+        <div id="workerCPUPercent" class="chart"></div>
+        <div id="workerMemoryPSS" class="chart"></div>
+        <div id="workerQueueLength" class="chart"></div>
 
         <el-divider content-position="left"><h1>Database/Cache</h1></el-divider>
-        <div class="chart-section">
-          <div id="dbDiskUsed" class="line-chart"></div>
-          <div id="cacheDBMemoryUsed" class="line-chart"></div>
-          <div id="cacheDBKeyUsed" class="line-chart"></div>
-          <div id="cacheDBKeyCountByPrefix" class="line-chart"></div>
-        </div>
+        <div id="dbDiskUsed" class="chart"></div>
+        <div id="cacheDBMemoryUsed" class="chart"></div>
+        <div id="cacheDBKeyUsed" class="chart"></div>
+        <div id="cacheDBKeyCountByPrefix" class="chart"></div>
 
         <el-divider content-position="left"><h1>API</h1></el-divider>
-        <div class="chart-section">
-          <div id="matchedRouteCount" class="bar-chart"></div>
-        </div>
+        <div id="matchedRouteCount" class="chart"></div>
       </el-main>
     </el-container>
   </transition>
@@ -489,16 +481,8 @@ export default {
 </script>
 
 <style scoped>
-.chart-section {
-  display: flex;
-  flex-wrap: wrap;
-}
-.line-chart {
-  width : 700px;
-  height: 350px;
-}
-.bar-chart {
-  width : 1200px;
+.chart {
+  width : 100%;
   height: 350px;
 }
 </style>
