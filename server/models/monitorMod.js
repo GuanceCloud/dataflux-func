@@ -28,7 +28,7 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
-var GROUP_TIME = 5 * 60;
+var GROUP_TIME = 10 * 60;
 
 /*
  * System stats data in Redis
