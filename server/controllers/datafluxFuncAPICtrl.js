@@ -1512,6 +1512,8 @@ exports.callFuncDraft = function(req, res, next) {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
       httpRequest   : _getHTTPRequestInfo(req),
+      origin        : 'debug',
+      originId      : res.locals.traceId,
     };
 
     // 启动函数执行任务

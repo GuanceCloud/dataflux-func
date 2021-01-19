@@ -827,6 +827,15 @@ export default {
         // 在线调试，无论成功失败，包含日志输出
         logMessages = apiRes.data.result.logMessages;
         if (Array.isArray(logMessages)) {
+          logMessages = logMessages.map(l => {
+            let m = l.match(/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+            if (!m) {
+              return this.encoding.htmlEncode(l);
+            } else {
+              let restL = l.slice(m[0].length);
+              return this.T.strf('<span class="text-main">{0}</span>{1}', m[0], this.encoding.htmlEncode(restL));
+            }
+          });
           logMessages = logMessages.join('\n') || null;
         }
 
@@ -863,7 +872,7 @@ export default {
         outputTitle,
         costInfo,
         '', // 空行
-        this.encoding.htmlEncode(logMessages),
+        logMessages,
         '', // 空行
         funcReturnTitle,
         stackTitle,
