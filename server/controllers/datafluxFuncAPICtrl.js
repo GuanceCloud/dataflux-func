@@ -1615,13 +1615,14 @@ exports.getFuncList = function(req, res, next) {
 };
 
 exports.getFuncTagList = function(req, res, next) {
-  var name = req.query.name;
+  var name       = req.query.name;
+  var tagPattern = req.query.tagPattern;
 
   var funcModel = funcMod.createModel(res.locals);
 
-  var opt = {
-    fileds: ['tagsJSON'],
-  };
+  var opt = res.locals.getQueryOptions();
+  opt.fileds = ['tagsJSON'];
+
   funcModel.list(opt, function(err, dbRes) {
     if (err) return next(err);
 
@@ -1637,6 +1638,12 @@ exports.getFuncTagList = function(req, res, next) {
     if (!toolkit.isNothing(name)) {
       funcTags = funcTags.filter(function(x) {
         return x.indexOf(name) >= 0;
+      });
+    }
+
+    if (!toolkit.isNothing(tagPattern)) {
+      funcTags = funcTags.filter(function(x) {
+        return toolkit.matchWildcard(x, tagPattern);
       });
     }
 

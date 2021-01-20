@@ -117,79 +117,7 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel          = funcMod.createModel(res.locals);
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-
-  var crontabConfig  = null;
-  var nextConfigMD5 = null;
-
-  async.series([
-    // 获取数据
-    function(asyncCallback) {
-      crontabConfigModel.getWithCheck(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        crontabConfig = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 检查函数
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.funcId)) return asyncCallback();
-
-      funcModel.getWithCheck(data.funcId, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        // 存在固定Crontab时，跟随固定Crontab
-        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
-          data.crontab = null;
-        }
-
-        return asyncCallback();
-      });
-    },
-    // 获取函数参数哈希
-    function(asyncCallback) {
-      var nextFuncId         = data.funcId             || crontabConfig.funcId;
-      var nextFuncKwargsJSON = data.funcCallKwargsJSON || crontabConfig.funcCallKwargsJSON;
-
-      getConfigHash(res.locals, nextFuncId, nextFuncKwargsJSON, function(err, _configMD5) {
-        if (err) return asyncCallback(err);
-
-        nextConfigMD5 = _configMD5;
-
-        return asyncCallback();
-      });
-    },
-    // 检查重复
-    function(asyncCallback) {
-      var nextScope = data.scope || crontabConfig.scope;
-
-      let opt = {
-        filters: {
-          'cron.scope'    : {eq: nextScope},
-          'cron.configMD5': {eq: nextConfigMD5},
-          'cron.id'       : {ne: id},
-        }
-      };
-      crontabConfigModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', nextScope)));
-        }
-
-        data.configMD5 = nextConfigMD5;
-
-        return asyncCallback(err);
-      });
-    },
-    // 数据入库
-    function(asyncCallback) {
-      crontabConfigModel.modify(id, data, asyncCallback);
-    },
-  ], function(err) {
+  _modify(res.locals, id, data, function(err, modifiedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -240,6 +168,54 @@ exports.addMany = function(req, res, next) {
 
       var ret = toolkit.initRet({
         ids: addedIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+exports.modifyMany = function(req, res, next) {
+  var data = req.body.data;
+
+  var modifiedIds = [];
+
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+      opt.fields = ['cron.id'];
+
+      if (toolkit.isNothing(opt.filters)) {
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+      }
+
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        modifiedIds = dbRes.reduce(function(acc, x) {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(modifiedIds, function(id, eachCallback) {
+        _modify(res.locals, id, data, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: modifiedIds,
       });
       return res.locals.sendJSON(ret);
     });
@@ -360,6 +336,90 @@ function _add(locals, data, origin, callback) {
   ], function(err) {
     if (err) return callback(err);
     return callback(null, addedId);
+  });
+};
+
+function _modify(locals, id, data, callback) {
+  var funcModel          = funcMod.createModel(locals);
+  var crontabConfigModel = crontabConfigMod.createModel(locals);
+
+  var crontabConfig = null;
+  var nextConfigMD5 = null;
+
+  async.series([
+    // 获取数据
+    function(asyncCallback) {
+      var fields = [
+        'cron.seq',
+        'cron.funcId',
+        'cron.funcCallKwargsJSON',
+        'cron.scope',
+      ]
+      crontabConfigModel.getWithCheck(id, fields, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        crontabConfig = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 检查函数
+    function(asyncCallback) {
+      if (toolkit.isNothing(data.funcId)) return asyncCallback();
+
+      funcModel.getWithCheck(data.funcId, ['func.seq', 'func.extraConfigJSON'], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 存在固定Crontab时，跟随固定Crontab
+        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
+          data.crontab = null;
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 获取函数参数哈希
+    function(asyncCallback) {
+      var nextFuncId         = data.funcId             || crontabConfig.funcId;
+      var nextFuncKwargsJSON = data.funcCallKwargsJSON || crontabConfig.funcCallKwargsJSON;
+
+      getConfigHash(locals, nextFuncId, nextFuncKwargsJSON, function(err, _configMD5) {
+        if (err) return asyncCallback(err);
+
+        nextConfigMD5 = _configMD5;
+
+        return asyncCallback();
+      });
+    },
+    // 检查重复
+    function(asyncCallback) {
+      var nextScope = data.scope || crontabConfig.scope;
+
+      let opt = {
+        filters: {
+          'cron.scope'    : {eq: nextScope},
+          'cron.configMD5': {eq: nextConfigMD5},
+          'cron.id'       : {ne: id},
+        }
+      };
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes.length > 0) {
+          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', nextScope)));
+        }
+
+        data.configMD5 = nextConfigMD5;
+
+        return asyncCallback(err);
+      });
+    },
+    function(asyncCallback) {
+      crontabConfigModel.modify(id, data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, id);
   });
 };
 

@@ -26,6 +26,10 @@ routeLoader.load(ROUTE.batchAPI.addMany, [
   batchAPICtrl.addMany,
 ]);
 
+routeLoader.load(ROUTE.batchAPI.modifyMany, [
+  batchAPICtrl.modifyMany,
+]);
+
 routeLoader.load(ROUTE.batchAPI.deleteMany, [
   batchAPICtrl.deleteMany,
 ]);

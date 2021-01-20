@@ -94,40 +94,12 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel  = funcMod.createModel(res.locals);
-  var batchModel = batchMod.createModel(res.locals);
-
-  var batch = null;
-
-  async.series([
-    // 获取数据
-    function(asyncCallback) {
-      batchModel.getWithCheck(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        batch = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 检查函数
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.funcId)) return asyncCallback();
-
-      funcModel.getWithCheck(data.funcId, null, asyncCallback);
-    },
-    // 数据入库
-    function(asyncCallback) {
-      batchModel.modify(id, data, asyncCallback);
-    },
-  ], function(err) {
+  _modify(res.locals, id, data, function(err, modifiedId, url) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id : id,
-      url: urlFor('datafluxFuncAPI.callBatchByGet', {
-        params: { id: id },
-      }),
+      url: url,
     });
     return res.locals.sendJSON(ret);
   });
@@ -174,6 +146,54 @@ exports.addMany = function(req, res, next) {
 
       var ret = toolkit.initRet({
         ids: addedIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+exports.modifyMany = function(req, res, next) {
+  var data = req.body.data;
+
+  var modifiedIds = [];
+
+  var batchModel = batchMod.createModel(res.locals);
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+      opt.fields = ['bat.id'];
+
+      if (toolkit.isNothing(opt.filters)) {
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+      }
+
+      batchModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        modifiedIds = dbRes.reduce(function(acc, x) {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(modifiedIds, function(id, eachCallback) {
+        _modify(res.locals, id, data, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: modifiedIds,
       });
       return res.locals.sendJSON(ret);
     });
@@ -253,6 +273,32 @@ function _add(locals, data, origin, callback) {
   ], function(err) {
     if (err) return callback(err);
     return callback(null, addedId);
+  });
+};
+
+function _modify(locals, id, data, callback) {
+  var funcModel  = funcMod.createModel(locals);
+  var batchModel = batchMod.createModel(locals);
+
+  async.series([
+    // 获取数据
+    function(asyncCallback) {
+      batchModel.getWithCheck(id, ['bat.seq'], asyncCallback);
+    },
+    // 检查函数
+    function(asyncCallback) {
+      if (toolkit.isNothing(data.funcId)) return asyncCallback();
+
+      funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
+    },
+    function(asyncCallback) {
+      batchModel.modify(id, data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+
+    var url = urlFor('datafluxFuncAPI.callBatchByGet', { params: { id: id } });
+    return callback(null, id, url);
   });
 };
 

@@ -26,6 +26,10 @@ routeLoader.load(ROUTE.crontabConfigAPI.addMany, [
   crontabConfigAPICtrl.addMany,
 ]);
 
+routeLoader.load(ROUTE.crontabConfigAPI.modifyMany, [
+  crontabConfigAPICtrl.modifyMany,
+]);
+
 routeLoader.load(ROUTE.crontabConfigAPI.deleteMany, [
   crontabConfigAPICtrl.deleteMany,
 ]);

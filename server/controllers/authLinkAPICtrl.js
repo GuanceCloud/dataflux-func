@@ -151,40 +151,12 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  var funcModel     = funcMod.createModel(res.locals);
-  var authLinkModel = authLinkMod.createModel(res.locals);
-
-  var authLink = null;
-
-  async.series([
-    // 获取数据
-    function(asyncCallback) {
-      authLinkModel.getWithCheck(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        authLink = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 检查函数
-    function(asyncCallback) {
-      if (toolkit.isNothing(data.funcId)) return asyncCallback();
-
-      funcModel.getWithCheck(data.funcId, null, asyncCallback);
-    },
-    // 数据入库
-    function(asyncCallback) {
-      authLinkModel.modify(id, data, asyncCallback);
-    },
-  ], function(err) {
+  _modify(res.locals, id, data, function(err, modifiedId, url) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id : id,
-      url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
-        params: { id: id },
-      }),
+      url: url,
     });
     return res.locals.sendJSON(ret);
   });
@@ -231,6 +203,54 @@ exports.addMany = function(req, res, next) {
 
       var ret = toolkit.initRet({
         ids: addedIds,
+      });
+      return res.locals.sendJSON(ret);
+    });
+  });
+};
+
+exports.modifyMany = function(req, res, next) {
+  var data = req.body.data;
+
+  var modifiedIds = [];
+
+  var authLinkModel = authLinkMod.createModel(res.locals);
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+      opt.fields = ['auln.id'];
+
+      if (toolkit.isNothing(opt.filters)) {
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+      }
+
+      authLinkModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        modifiedIds = dbRes.reduce(function(acc, x) {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    function(asyncCallback) {
+      async.eachSeries(modifiedIds, function(id, eachCallback) {
+        _modify(res.locals, id, data, eachCallback);
+      }, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet({
+        ids: modifiedIds,
       });
       return res.locals.sendJSON(ret);
     });
@@ -310,6 +330,32 @@ function _add(locals, data, origin, callback) {
   ], function(err) {
     if (err) return callback(err);
     return callback(null, addedId);
+  });
+};
+
+function _modify(locals, id, data, callback) {
+  var funcModel     = funcMod.createModel(locals);
+  var authLinkModel = authLinkMod.createModel(locals);
+
+  async.series([
+    // 获取数据
+    function(asyncCallback) {
+      authLinkModel.getWithCheck(id, ['auln.seq'], asyncCallback);
+    },
+    // 检查函数
+    function(asyncCallback) {
+      if (toolkit.isNothing(data.funcId)) return asyncCallback();
+
+      funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
+    },
+    function(asyncCallback) {
+      authLinkModel.modify(id, data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return callback(err);
+
+    var url = urlFor('datafluxFuncAPI.callAuthLinkByGet', { params: { id: id } });
+    return callback(null, id, url);
   });
 };
 

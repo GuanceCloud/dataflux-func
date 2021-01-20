@@ -148,7 +148,7 @@ exports.createRequestWhereCondition = function(routeConfig) {
       res.locals.logger.debug('[MID] IN modelHelper.requestWhereCondition');
     }
 
-    if (routeConfig.method.toLowerCase() !== 'get' || !routeConfig.query) {
+    if (!routeConfig.query) {
       return next();
     }
 

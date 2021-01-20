@@ -1107,27 +1107,12 @@ var getExt = toolkit.getExt = function getExt(fileName) {
  * @return {String}
  */
 var genRegExpByWildcard = toolkit.genRegExpByWildcard = function genRegExpByWildcard(pattern) {
-  var regExp = '';
+  var regExp = pattern.replace(/\./g, '\\.')
+                      .replace(/\|/g, '\\|')
+                      .replace(/\*\*/g, '[^\\.\\|]+')
+                      .replace(/\*/g, '[^\\.\\|]+');
 
-  var regExpParts = [];
-  var patternParts = pattern.split('.');
-  patternParts.forEach(function(step) {
-    switch (step) {
-      case '**':
-        regExpParts.push('');
-        break;
-
-      case '*':
-        regExpParts.push('[A-Za-z0-9_]+');
-        break;
-
-      default:
-        regExpParts.push(step);
-    }
-  });
-  regExp = regExpParts.join('\\.');
-
-  if (patternParts[patternParts.length - 1] === '**') {
+  if (toolkit.endsWith(pattern, '**')) {
     regExp = toolkit.strf('^{0}', regExp);
   } else {
     regExp = toolkit.strf('^{0}$', regExp);

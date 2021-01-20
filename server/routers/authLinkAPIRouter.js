@@ -26,6 +26,10 @@ routeLoader.load(ROUTE.authLinkAPI.addMany, [
   authLinkAPICtrl.addMany,
 ]);
 
+routeLoader.load(ROUTE.authLinkAPI.modifyMany, [
+  authLinkAPICtrl.modifyMany,
+]);
+
 routeLoader.load(ROUTE.authLinkAPI.deleteMany, [
   authLinkAPICtrl.deleteMany,
 ]);

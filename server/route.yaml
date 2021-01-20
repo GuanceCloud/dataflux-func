@@ -1519,8 +1519,21 @@ datafluxFuncAPI:
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_r
     query:
+      scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
       name:
         $desc: 根据标签名搜索（LIKE方式）
+        $type: string
+      tagPattern:
+        $desc: 根据标签名模式搜索（通配方式，如`key|*`）
         $type: string
 
   getAuthLinkFuncList:
@@ -3061,6 +3074,63 @@ authLinkAPI:
             $allowNull : true
             $type      : string
 
+  modifyMany:
+    showInDoc    : true
+    name         : 批量修改授权链接
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+    method       : post
+    url          : /api/v1/auth-links/do/modify-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.funcId
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
   deleteMany:
     showInDoc    : true
     name         : 批量删除授权链接
@@ -3371,6 +3441,80 @@ crontabConfigAPI:
             $desc      : 备注
             $allowNull : true
             $type      : string
+
+  modifyMany:
+    showInDoc    : true
+    name         : 批量修改自动触发配置
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+    method       : post
+    url          : /api/v1/crontab-configs/do/modify-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.funcId
+      tags:
+        $desc      : 根据自动触发配置标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : cron.tagsJSON
+      scope:
+        $desc      : 根据范围过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.scope
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        tagsJSON:
+          $desc     : 自动触发配置标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
 
   deleteMany:
     showInDoc    : true
@@ -3720,6 +3864,75 @@ batchAPI:
             $desc      : 备注
             $allowNull : true
             $type      : string
+
+  modifyMany:
+    showInDoc    : true
+    name         : 批量修改批处理
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+    method       : post
+    url          : /api/v1/batches/do/modify-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.id
+      funcId:
+        $desc      : 根据函数ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.funcId
+      tags:
+        $desc      : 根据批处理标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : bat.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.origin
+        $commaArrayIn:
+          - API
+          - UI
+      func_scriptSetId:
+        $desc      : 根据脚本集ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        tagsJSON:
+          $desc     : 批处理标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
 
   deleteMany:
     showInDoc    : true

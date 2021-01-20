@@ -622,11 +622,11 @@ exports.mount = function(app) {
       preMiddlewares.push(modelHelper.createRequestPagingCondition(c));
     }
 
-    if (c.method.toLowerCase() === 'get') {
-      if (c.query) {
-        preMiddlewares.push(modelHelper.createRequestWhereCondition(c));
-      }
+    if (c.query) {
+      preMiddlewares.push(modelHelper.createRequestWhereCondition(c));
+    }
 
+    if (c.method.toLowerCase() === 'get') {
       if (c.orderFields) {
         preMiddlewares.push(modelHelper.createRequestOrderCondition(c));
       }
