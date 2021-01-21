@@ -489,8 +489,8 @@ def dataflux_func_runner(self, *args, **kwargs):
         return result
 
     finally:
-        if script_scope and (script_scope.get('_DFF_DEBUG') or not is_succeeded):
-            # 提取输出日志（开启`_DFF_DEBUG`或函数执行失败时保留）
+        if script_scope:
+            # 提取输出日志
             log_messages = script_scope['DFF'].log_messages or None
 
         # Crontab解锁
