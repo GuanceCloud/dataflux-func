@@ -180,16 +180,16 @@ def json_copy(j):
     return json.loads(json.dumps(j))
 
 COLORS = {
-  'black'  : [30, 39],
-  'red'    : [31, 39],
-  'green'  : [32, 39],
-  'yellow' : [33, 39],
-  'blue'   : [34, 39],
-  'magenta': [35, 39],
-  'cyan'   : [36, 39],
-  'white'  : [37, 39],
-  'gray'   : [90, 39],
-  'grey'   : [90, 39],
+    'black'  : [30, 39],
+    'red'    : [31, 39],
+    'green'  : [32, 39],
+    'yellow' : [33, 39],
+    'blue'   : [34, 39],
+    'magenta': [35, 39],
+    'cyan'   : [36, 39],
+    'white'  : [37, 39],
+    'gray'   : [90, 39],
+    'grey'   : [90, 39],
 }
 
 def colored(s, name):
@@ -202,13 +202,12 @@ def colored(s, name):
     else:
         raise AttributeError("Color '{}' not supported.".format(name))
 
-
 class DataWay(object):
     def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):
         self.host       = host or 'localhost'
         self.port       = int(port or 9528)
         self.protocol   = protocol or 'http'
-        self.path       = path or '/v1/write/metrics'
+        self.path       = path or '/v1/write/metric'
         self.token      = token
         self.rp         = rp or None
         self.timeout    = timeout or 3
@@ -519,7 +518,7 @@ class DataWay(object):
 
         prepared_data = self._prepare_metric(data)
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
 
     def write_metrics(self, data):
         if not isinstance(data, (list, tuple)):
@@ -533,7 +532,7 @@ class DataWay(object):
         for d in data:
             prepared_data.append(self._prepare_metric(d))
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
 
     def write_point(self, measurement, tags=None, fields=None, timestamp=None):
         '''
@@ -546,149 +545,6 @@ class DataWay(object):
         Alias of self.write_metrics()
         '''
         return self.write_metrics(data=points)
-
-    # keyevent
-    def _prepare_keyevent(self, data):
-        assert_dict(data, name='data')
-
-        # Check Tags
-        tags = data.get('tags') or {}
-        assert_tags(tags, name='tags')
-
-        # Tags.*
-        alert_item_tags = data.get('alert_item_tags')
-        if alert_item_tags:
-            assert_tags(alert_item_tags, name='alert_item_tags')
-
-            tags.update(alert_item_tags)
-
-        # Tags.__eventId
-        event_id = data.get('event_id')
-        if event_id:
-            tags['__eventId'] = assert_str(event_id, name='event_id')
-
-        # Tags.__source
-        source = data.get('source')
-        if source:
-            tags['__source'] = assert_str(source, name='source')
-
-        # Tags.__status
-        status = data.get('status')
-        if status:
-            tags['__status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
-
-        # Tags.__ruleId
-        rule_id = data.get('rule_id')
-        if rule_id:
-            tags['__ruleId'] = assert_str(rule_id, name='rule_id')
-
-        # Tags.__ruleName
-        rule_name = data.get('rule_name')
-        if rule_name:
-            tags['__ruleName'] = assert_str(rule_name, name='rule_name')
-
-        # Tags.__type
-        type_ = data.get('type')
-        if type_:
-            tags['__type'] = assert_str(type_, name='type')
-
-        # Tags.__actionType
-        action_type = data.get('action_type')
-        if action_type:
-            tags['__actionType'] = assert_str(action_type, name='action_type')
-
-        # Check Fields
-        fields = data.get('fields') or {}
-        assert_dict(fields, name='fields')
-
-        # Fields.__title
-        fields['__title'] = assert_str(data.get('title'), name='title')
-
-        # Fields.__content
-        content = data.get('content')
-        if content:
-            fields['__content'] = assert_str(content, name='content')
-
-        # Fields.__suggestion
-        suggestion = data.get('suggestion')
-        if suggestion:
-            fields['__suggestion'] = assert_str(suggestion, name='suggestion')
-
-        # Fields.__duration
-        duration_ms = data.get('duration_ms')
-        if duration_ms:
-            assert_int(duration_ms, name='duration_ms')
-
-        duration = data.get('duration')
-        if duration:
-            assert_int(duration, name='duration')
-
-        # to ms
-        if duration:
-            duration = duration * 1000
-
-        if duration_ms or duration:
-            fields['__duration'] = (duration_ms or duration) * 1000
-
-        # Fields.__dimensions
-        dimensions = data.get('dimensions')
-        if dimensions:
-            dimensions = assert_list(data.get('dimensions'), name='dimensions')
-            dimensions = sorted([ensure_str(x) if isinstance(x, text_type) else str(x) for x in dimensions])
-            dimensions = json.dumps(dimensions, ensure_ascii=False, separators=(',', ':'))
-            fields['__dimensions'] = dimensions
-
-        prepared_data = {
-            'measurement': '__keyevent',
-            'tags'       : tags,
-            'fields'     : fields,
-            'timestamp'  : data.get('timestamp'),
-        }
-        return self._prepare_metric(prepared_data)
-
-    def write_keyevent(self, title, status, timestamp,
-        event_id=None, source=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
-        content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None,
-        tags=None, fields=None):
-        data = {
-            'title'          : title,
-            'timestamp'      : timestamp,
-            'event_id'       : event_id,
-            'source'         : source,
-            'status'         : status,
-            'rule_id'        : rule_id,
-            'rule_name'      : rule_name,
-            'type'           : type_,
-            'alert_item_tags': alert_item_tags,
-            'action_type'    : action_type,
-            'content'        : content,
-            'suggestion'     : suggestion,
-            'duration'       : duration,
-            'duration_ms'    : duration_ms,
-            'dimensions'     : dimensions,
-            'tags'           : tags,
-            'fields'         : fields,
-        }
-
-        # break obj reference
-        data = json_copy(data)
-
-        prepared_data = self._prepare_keyevent(data)
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/keyevent')
-
-    def write_keyevents(self, data):
-        if not isinstance(data, (list, tuple)):
-            e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
-            raise e
-
-        # break obj reference
-        data = json_copy(data)
-
-        prepared_data = []
-        for d in data:
-            prepared_data.append(self._prepare_keyevent(d))
-
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/keyevent')
 
 # Alias
 Dataway = DataWay

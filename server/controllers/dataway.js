@@ -1619,7 +1619,7 @@
     return v;
   }
   function _jsonReceiver(k, v) {
-    if ('object' === typeof v && v.$class === 'IntVal') {
+    if (null !== v && 'object' === typeof v && v.$class === 'IntVal') {
       return asInt(v.$value);
     }
     return v;
@@ -1629,13 +1629,38 @@
     return JSON.parse(JSON.stringify(j, _jsonReplacer), _jsonReceiver);
   }
 
+  var COLORS = {
+    'black'  : [30, 39],
+    'red'    : [31, 39],
+    'green'  : [32, 39],
+    'yellow' : [33, 39],
+    'blue'   : [34, 39],
+    'magenta': [35, 39],
+    'cyan'   : [36, 39],
+    'white'  : [37, 39],
+    'gray'   : [90, 39],
+    'grey'   : [90, 39],
+  }
+
+  function colored(s, name) {
+    if (name in COLORS) {
+        var left  = '\x1b[' + COLORS[name][0] + 'm';
+        var right = '\x1b[' + COLORS[name][1] + 'm';
+
+        return left + s + right;
+
+    } else {
+      throw new Error(strf("Color '{0}' not supported.", name));
+    }
+  }
+
   function DataWay(opt) {
     opt = opt || {};
 
     this.host      = opt.host || 'localhost';
     this.port      = parseInt(opt.port || 9528);
     this.protocol  = opt.protocol || 'http';
-    this.path      = opt.path || '/v1/write/metrics';
+    this.path      = opt.path || '/v1/write/metric';
     this.token     = opt.token;
     this.rp        = opt.rp || null;
     this.accessKey = opt.accessKey;
@@ -1925,8 +1950,14 @@
           }
 
           if (self.debug) {
-            console.log(strf('\n[Response Status Code] {0}', ret.statusCode));
-            console.log(strf('[Response Body] {0}', JSON.stringify(ret.respData)));
+            var output = strf('\n[Response Status Code] {0}\n[Response Body] {1}', ret.statusCode, JSON.stringify(ret.respData || '') || '<EMPTY>');
+
+            var color = 'green';
+            if (ret.statusCode >= 400) {
+              color = 'red';
+            }
+
+            console.log(colored(output, color));
           }
 
           if ('function' === typeof callback) return callback(null, ret);
@@ -2061,7 +2092,7 @@
     var preparedData = this._prepareMetric(data);
 
     var opt = {
-      path  : '/v1/write/metrics',
+      path  : '/v1/write/metric',
       withRP: true,
     };
     this.postLineProtocol(preparedData, opt, callback);
@@ -2083,7 +2114,7 @@
     });
 
     var opt = {
-      path  : '/v1/write/metrics',
+      path  : '/v1/write/metric',
       withRP: true,
     };
     self.postLineProtocol(preparedData, opt, callback);
@@ -2097,175 +2128,6 @@
   DataWay.prototype.writePoints = function(points, callback) {
     // Alias of this.writeMetrics()
     return this.writeMetrics(data, callback);
-  };
-
-  // keyevent
-  DataWay.prototype._prepareKeyevent = function(data) {
-    assertJSON(data, 'data');
-
-    // Check Tags
-    var tags = data.tags || {};
-    assertTags(tags, 'tags');
-
-    // Tags.*
-    var alertItemTags = data.alertItemTags;
-    if (alertItemTags) {
-      assertTags(alertItemTags, 'alertItemTags');
-
-      Object.assign(tags, alertItemTags);
-    }
-
-
-    // Tags.__eventId
-    var eventId = data.eventId;
-    if (eventId) {
-      tags.__eventId = assertStr(eventId, 'eventId');
-    }
-
-    // Tags.__source
-    var source = data.source;
-    if (source) {
-      tags.__source = assertStr(source, 'source');
-    }
-
-    // Tags.__status
-    var status = data.status;
-    if (status) {
-      tags.__status = assertEnum(data.status, 'status', KEYEVENT_STATUS);
-    }
-
-    // Tags.__ruleId
-    var ruleId = data.ruleId;
-    if (ruleId) {
-      tags.__ruleId = assertStr(ruleId, 'ruleId');
-    }
-
-    // Tags.__ruleName
-    var ruleName = data.ruleName;
-    if (ruleName) {
-      tags.__ruleName = assertStr(ruleName, 'ruleName');
-    }
-
-    // Tags.__type
-    var type = data.type;
-    if (type) {
-      tags.__type = assertStr(type, 'type');
-    }
-
-    // Tags.__actionType
-    var actionType = data.actionType;
-    if (actionType) {
-      tags.__actionType = assertStr(actionType, 'actionType');
-    }
-
-    // Check Fields
-    var fields = data.fields || {};
-    assertTags(fields, 'fields')
-
-    // Fields.__title
-    fields.__title = assertStr(data.title, 'title');
-
-    // Fields.__content
-    var content = data.content;
-    if (content) {
-      fields.__content = assertStr(content, 'content');
-    }
-
-    // Fields.__suggestion
-    var suggestion = data.suggestion;
-    if (suggestion) {
-      fields.__suggestion = assertStr(suggestion, 'suggestion');
-    }
-
-    // Fields.__duration
-    var durationMs = data.durationMs;
-    if ('number' === typeof durationMs) {
-      assertInt(durationMs, 'durationMs')
-    }
-
-    var duration = data.duration;
-    if ('number' === typeof duration) {
-      assertInt(duration, 'duration')
-    }
-
-    // to ms
-    if ('number' === typeof duration) {
-      duration = duration * 1000;
-    }
-
-    if ('number' === typeof durationMs || 'number' === typeof duration) {
-      fields.__duration = asInt((durationMs || duration) * 1000);
-    }
-
-    // Fields.__dimensions
-    var dimensions = data.dimensions;
-    if (dimensions) {
-      dimensions = assertArray(dimensions, 'dimensions');
-      dimensions = dimensions.map(function(x) {return '' + x}).sort();
-      dimensions = JSON.stringify(dimensions);
-      fields.__dimensions = dimensions;
-    }
-
-    var preparedData = {
-        measurement: '__keyevent',
-        tags       : tags,
-        fields     : fields,
-        timestamp  : data.timestamp,
-    }
-    return this._prepareMetric(preparedData);
-  };
-
-  DataWay.prototype.writeKeyevent = function(data, callback) {
-    var keyevent = {
-      title        : data.title,
-      eventId      : data.eventId,
-      source       : data.source,
-      status       : data.status,
-      ruleId       : data.ruleId,
-      ruleName     : data.ruleName,
-      type         : data.type,
-      alertItemTags: data.alertItemTags,
-      actionType   : data.actionType,
-      content      : data.content,
-      suggestion   : data.suggestion,
-      duration     : data.duration,
-      durationMs   : data.durationMs,
-      dimensions   : data.dimensions,
-      tags         : data.tags,
-      fields       : data.fields,
-      timestamp    : data.timestamp,
-    };
-
-    // break obj reference
-    keyevent = jsonCopy(keyevent);
-
-    var preparedData = this._prepareKeyevent(keyevent);
-
-    var opt = {
-      path: '/v1/write/keyevent',
-    };
-    this.postLineProtocol(preparedData, opt, callback);
-  };
-
-  DataWay.prototype.writeKeyevents = function(data, callback) {
-    var self = this;
-
-    if (!Array.isArray(data)) {
-      throw new Error('`data` should be an array');
-    }
-
-    // break obj reference
-    data = jsonCopy(data);
-
-    var preparedData = [];
-    data.forEach(function(d) {
-      preparedData.push(self._prepareKeyevent(d));
-    });
-
-    var opt = {
-      path: '/v1/write/keyevent',
-    };
-    this.postLineProtocol(preparedData, opt, callback);
   };
 
   return {
