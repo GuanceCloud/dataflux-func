@@ -467,23 +467,12 @@ def as_array_str(o):
         return ','.join(arr)
 
 def gen_reg_exp_by_wildcard(pattern):
-    reg_exp = ''
+    reg_exp = pattern.replace('.', '\\.') \
+                        .replace('|', '\\|') \
+                        .replace('**', '[^\\.\\|]+') \
+                        .replace('*', '[^\\.\\|]+')
 
-    reg_exp_parts = []
-    pattern_parts = pattern.split('.')
-    for step in pattern_parts:
-        if step == '**':
-            reg_exp_parts.append('')
-
-        elif step == '*':
-            reg_exp_parts.append('[A-Za-z0-9_]+')
-
-        else:
-            reg_exp_parts.append(step)
-
-    reg_exp = '\\.'.join(reg_exp_parts)
-
-    if pattern_parts[len(pattern_parts) - 1] == '**':
+    if pattern.endswith('**'):
         reg_exp = '^{}'.format(reg_exp)
     else:
         reg_exp = '^{}$'.format(reg_exp)
@@ -491,7 +480,7 @@ def gen_reg_exp_by_wildcard(pattern):
     return reg_exp
 
 def match_wildcard(value, pattern):
-    reg_exp = gen_reg_exp_by_wildcard(pattern)
+    reg_exp = gen_reg_exp_by_wildcard(pattern);
 
     if re.match(reg_exp, value):
         return True

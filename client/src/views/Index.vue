@@ -141,6 +141,7 @@ export default {
 
       let xAuthToken = apiRes.data.xAuthToken;
       this.$store.commit('updateXAuthToken', xAuthToken);
+      this.$store.dispatch('reloadUserProfile');
     },
     useBuiltinAuth() {
       if (this.useBuiltinAuthWish++ > 20) {

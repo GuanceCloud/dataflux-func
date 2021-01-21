@@ -246,6 +246,9 @@ input:disabled {
   background-color: #555 !important;
   border-color: #555 !important;
 }
+.el-button.el-button--primary.is-disabled {
+  border-color: #555 !important;
+}
 .el-button.el-button--primary.is-plain:not(.is-disabled) {
   color: #F60 !important;
 }

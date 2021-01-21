@@ -309,7 +309,8 @@ export default {
 
       options = options || {};
 
-      let codeDraft = this.codeMirror.getValue();
+      let prevCodeDraftMD5 = this.prevCodeDraftMD5;
+      let codeDraft        = this.codeMirror.getValue();
 
       // 保存时，自动去除所有行尾空格
       let codeDraftLines = codeDraft.split('\n').map(line => {
@@ -319,7 +320,7 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: {id: this.scriptId},
-        body  : {data: {codeDraft: codeDraft}, prevCodeDraftMD5: this.prevCodeDraftMD5},
+        body  : {data: {codeDraft: codeDraft}, prevCodeDraftMD5: prevCodeDraftMD5},
       });
 
       if (!apiRes.ok) {
