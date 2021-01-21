@@ -304,6 +304,22 @@ export default {
       return fileName;
     },
     async _saveCodeDraft(options) {
+      // 等待保存信号量，放置多重保存
+      while (this.isSavingCodeDraft) {
+        await this.T.sleep(1000);
+      }
+      this.isSavingCodeDraft = true;
+
+      let res = null;
+      try {
+        return await this._saveCodeDraftImpl(options);
+      } catch(err) {
+        // nope
+      } finally {
+        this.isSavingCodeDraft = false;
+      }
+    },
+    async _saveCodeDraftImpl(options) {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
@@ -1348,6 +1364,9 @@ export default {
 
       // 用于乐观锁
       prevCodeDraftMD5: null,
+
+      // 代码保存中标志位
+      isSavingCodeDraft: false,
 
       // DIFF信息
       diffAddedCount  : 0,

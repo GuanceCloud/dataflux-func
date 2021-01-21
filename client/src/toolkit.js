@@ -159,6 +159,14 @@ export function debounce(fn, delay) {
   };
 };
 
+export function sleep(duration) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, duration)
+  })
+};
+
 export function strf() {
   let args = Array.prototype.slice.call(arguments);
   if (0 === args.length) {
