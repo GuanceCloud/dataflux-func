@@ -36,10 +36,6 @@
             <i class="fa fa-fw fa-plus"></i>（添加脚本集）
           </el-link>
           <div v-else>
-            <el-tooltip effect="dark" :content="data.isLockedByOther ? '被其他人锁定' : '被您锁定'" placement="top" :enterable="false">
-              <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
-            </el-tooltip>
-
             <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open-o':'fa-folder-o']"></i>
             <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
             <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
@@ -60,6 +56,10 @@
         </span>
 
         <div>
+          <el-tooltip effect="dark" :content="data.isLockedByOther ? '被其他人锁定' : '被您锁定'" placement="top" :enterable="false">
+            <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
+          </el-tooltip>
+
           <el-tooltip effect="dark" content="快速查看面板" placement="top" :enterable="false">
             <span>
               <el-button v-if="data.type === 'script'"
