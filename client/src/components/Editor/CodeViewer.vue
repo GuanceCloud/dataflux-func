@@ -79,7 +79,7 @@
         </div>
 
         <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本被其他用户锁定，目前只能查看"></InfoBlock>
-        <InfoBlock v-else type="info" title="当前为查看模式，点击「开始编辑」按钮开始编辑"></InfoBlock>
+        <InfoBlock v-else type="warning" title="当前为查看模式，点击「开始编辑」按钮开始编辑"></InfoBlock>
       </el-header>
 
       <!-- 代码区 -->

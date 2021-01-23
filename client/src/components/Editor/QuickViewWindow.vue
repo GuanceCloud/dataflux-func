@@ -1,7 +1,7 @@
 <template>
   <div id="quickViewWindow"
     class="quick-view-window"
-    v-if="show && script"
+    v-show="show && script"
     :class="{'quick-view-window-no-scoll': isDragging}"
     :style="{top: showPosition.top + 'px', left: showPosition.left + 'px'}">
     <div @mousedown="startDrag" class="quick-view-header">
