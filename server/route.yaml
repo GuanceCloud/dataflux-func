@@ -3080,6 +3080,16 @@ authLinkAPI:
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |         更新后         |
+      |------------------|--------------------------|------------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { *"a": 8*, *"b": 9* } |
+      | {"a": 1, "b": 2} | { "b": 9 }`              | { "a": 1, *"b": 9* }   |
+
     method       : post
     url          : /api/v1/auth-links/do/modify-many
     response     : json
@@ -3122,6 +3132,15 @@ authLinkAPI:
     body:
       data:
         $isRequired: true
+        funcId:
+          $desc      : 函数ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example  : {"msg": "FROM_PARAMETER"}
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3448,6 +3467,16 @@ crontabConfigAPI:
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |         更新后         |
+      |------------------|--------------------------|------------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { *"a": 8*, *"b": 9* } |
+      | {"a": 1, "b": 2} | { "b": 9 }`              | { "a": 1, *"b": 9* }   |
+
     method       : post
     url          : /api/v1/crontab-configs/do/modify-many
     response     : json
@@ -3500,6 +3529,20 @@ crontabConfigAPI:
     body:
       data:
         $isRequired: true
+        funcId:
+          $desc      : 函数ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "Tom"}
+        crontab:
+          $desc     : 执行频率（Crontab语法，支持到分钟级）
+          $allowNull: true
+          $type     : string
+          $example  : 0 * * * *
         tagsJSON:
           $desc     : 自动触发配置标签（直接替换完整数组）
           $allowNull: true
@@ -3871,6 +3914,15 @@ batchAPI:
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |         更新后         |
+      |------------------|--------------------------|------------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { *"a": 8*, *"b": 9* } |
+      | {"a": 1, "b": 2} | { "b": 9 }`              | { "a": 1, *"b": 9* }   |
     method       : post
     url          : /api/v1/batches/do/modify-many
     response     : json
@@ -3918,6 +3970,15 @@ batchAPI:
     body:
       data:
         $isRequired: true
+        funcId:
+          $desc      : 函数ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "FROM_PARAMETER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true

@@ -151,7 +151,7 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  _modify(res.locals, id, data, function(err, modifiedId, url) {
+  _modify(res.locals, id, data, null, function(err, modifiedId, url) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -242,7 +242,8 @@ exports.modifyMany = function(req, res, next) {
     },
     function(asyncCallback) {
       async.eachSeries(modifiedIds, function(id, eachCallback) {
-        _modify(res.locals, id, data, eachCallback);
+        var opt = { funcCallKwargs: 'merge' };
+        _modify(res.locals, id, data, opt, eachCallback);
       }, asyncCallback);
     },
   ], function(err) {
@@ -333,14 +334,34 @@ function _add(locals, data, origin, callback) {
   });
 };
 
-function _modify(locals, id, data, callback) {
+function _modify(locals, id, data, opt, callback) {
+  opt = opt || {};
+
   var funcModel     = funcMod.createModel(locals);
   var authLinkModel = authLinkMod.createModel(locals);
+
+  var authLink = null;
 
   async.series([
     // 获取数据
     function(asyncCallback) {
-      authLinkModel.getWithCheck(id, ['auln.seq'], asyncCallback);
+      var fields = [
+        'auln.seq',
+        'auln.funcCallKwargsJSON',
+      ]
+      authLinkModel.getWithCheck(id, fields, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        authLink = dbRes;
+
+        if (opt.funcCallKwargs === 'merge' && !toolkit.isNothing(data.funcCallKwargsJSON)) {
+          // 合并funcCallKwargsJSON参数
+          var prevFuncCallKwargs = toolkit.jsonCopy(authLink.funcCallKwargsJSON);
+          data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);
+        }
+
+        return asyncCallback();
+      });
     },
     // 检查函数
     function(asyncCallback) {
