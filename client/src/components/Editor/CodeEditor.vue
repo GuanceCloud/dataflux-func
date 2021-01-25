@@ -865,7 +865,7 @@ export default {
       if (apiRes.detail) {
         // 发布失败/在线调试失败时，包含错误堆栈信息
         let stackLines = apiRes.detail.stack.split('\n').reduce((acc, x) => {
-          if (!x.trim()) return;
+          if (!x.trim()) return acc;
 
           acc.push(`<span class="code-editor-output-error-stack">${this.encoding.htmlEncode(x)}</span>`);
           return acc;
