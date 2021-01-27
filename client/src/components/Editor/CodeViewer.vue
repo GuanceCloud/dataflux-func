@@ -449,7 +449,7 @@ export default {
         },
         debug: {
           text: '调试',
-          icon: 'fa-play',
+          icon: 'fa-search',
         },
       }
     },
