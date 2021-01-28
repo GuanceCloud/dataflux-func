@@ -1,3 +1,21 @@
+<i18n locale="zh-CN" lang="yaml">
+Overview      : 总览
+About         : 关于
+Auth Link     : 授权链接
+Crontab Config: 自动触发配置
+Batch         : 批处理
+Export        : 脚本包导出
+Import        : 脚本包导入
+Recover       : 脚本库还原
+Member        : 成员管理
+Access Log    : 操作记录
+Script Log    : 脚本日志
+Script Failure: 脚本故障
+Experimental  : 实验性功能
+Access Key    : AccessKey
+System Metric : 系统指标
+</i18n>
+
 <template>
   <el-container direction="horizontal">
     <!-- 二级导航 -->
@@ -12,82 +30,82 @@
             <el-menu-item index="/management/overview">
               <span>
                 <i class="fa fa-fw fa-dashboard"></i>
-                总览
+                {{ $t('Overview') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/about">
               <span>
                 <i class="fa fa-fw fa-info-circle"></i>
-                关于
+                {{ $t('About') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/auth-link-list">
               <span>
                 <i class="fa fa-fw fa-link"></i>
-                授权链接
+                {{ $t('Auth Link') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/crontab-config-list">
               <span>
                 <i class="fa fa-fw fa-clock-o"></i>
-                自动触发配置
+                {{ $t('Crontab Config') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/batch-list">
               <span>
                 <i class="fa fa-fw fa-tasks"></i>
-                批处理
+                {{ $t('Batch') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/script-set-export-history-list">
               <span>
                 <i class="fa fa-fw fa-cloud-download"></i>
-                脚本包导出
+                {{ $t('Export') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-set-import-history-list">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
-                脚本包导入
+                {{ $t('Import') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-recover-point-list">
               <span>
                 <i class="fa fa-fw fa-history"></i>
-                脚本库还原
+                {{ $t('Recover') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/user-list" v-if="$store.getters.isSuperAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
-                成员管理
+                {{ $t('Member') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/operation-record-list">
               <span>
                 <i class="fa fa-fw fa-keyboard-o"></i>
-                操作记录
+                {{ $t('Access Log') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
-                脚本日志
+                {{ $t('Script Log') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
               <span>
                 <i class="fa fa-fw fa-bug"></i>
-                脚本故障
+                {{ $t('Script Failure') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
@@ -95,21 +113,21 @@
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
-                实验性功能
+                {{ $t('Experimental') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
               <span>
                 <i class="fa fa-fw fa-key"></i>
-                AccessKey
+                {{ $t('Access Key') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
             <el-menu-item index="/management/sys-stats" v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')">
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
-                系统指标
+                {{ $t('System Metric') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>

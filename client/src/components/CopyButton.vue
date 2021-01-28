@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Copied               : 已复制
+Click to Copy        : 点击复制
+Browser not supported: 当前浏览器不支持
+</i18n>
+
 <template>
   <div class="copy-button">
     <el-tooltip
@@ -29,17 +35,17 @@ export default {
   watch: {
   },
   methods: {
-    showCopiedTip(tipContent) {
-      this.tipContent = '已复制';
-      this.showTip    = true;
-      this.manualTip  = true;
+    showCopiedTip(tipStatus) {
+      this.tipStatus = tipStatus || 'ok';
+      this.showTip   = true;
+      this.manualTip = true;
 
       setTimeout(() => {
         this.showTip   = false;
         this.manualTip = false;
 
         setTimeout(() => {
-          this.tipContent = '点击复制';
+          this.tipStatus = tipStatus || 'ready';
         }, 500);
       }, 1000);
     },
@@ -54,11 +60,25 @@ export default {
 
     size: String,
   },
+  computed: {
+    tipContent() {
+      switch (this.tipStatus) {
+        case 'ready':
+          return this.$t('Click to Copy');
+
+        case 'ok':
+          return this.$t('Copied');
+
+        case 'error':
+          return this.$('Browser not supported');
+      }
+    }
+  },
   data() {
     return {
-      manualTip : false,
-      showTip   : false,
-      tipContent: '点击复制',
+      manualTip: false,
+      showTip  : false,
+      tipStatus: 'ready',
     }
   },
   mounted() {
@@ -73,7 +93,7 @@ export default {
       this.showCopiedTip();
     });
     clipboard.on('error', e => {
-      this.showCopiedTip('当前浏览器不支持');
+      this.showCopiedTip('error');
     });
   }
 }

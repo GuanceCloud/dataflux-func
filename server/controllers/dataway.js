@@ -1768,7 +1768,7 @@
     return headers;
   };
 
-  DataWay.prototype._prepareLineProtocol = function(points) {
+  DataWay.prototype.prepareLineProtocol = function(points) {
     var self = this;
 
     if (!Array.isArray(points)) points = [points];
@@ -1788,6 +1788,8 @@
         keyList.forEach(function(k) {
           var v = tags[k];
           if (!v) return;
+
+          v = '' + v;
 
           k = k.replace(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER);
           v = v.replace(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER);
@@ -2030,7 +2032,7 @@
     points = jsonCopy(points);
     opt    = jsonCopy(opt);
 
-    opt.body = this._prepareLineProtocol(points);
+    opt.body = this.prepareLineProtocol(points);
 
     return this._doPOST(opt, callback);
   };

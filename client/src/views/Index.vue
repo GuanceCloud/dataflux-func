@@ -1,3 +1,25 @@
+<i18n locale="zh-CN" lang="yaml">
+Please select sign in method: 请选择登录方式
+Builtin user system         : 以内置用户系统登录
+Username                    : 请输入账号
+Password                    : 请输入密码
+Captcha                     : 请输入验证码
+Sign In                     : 登录
+
+Invalid username or password                                                                 : 用户名或密码错误
+Invalid captcha                                                                              : 验证码错误或无效
+User has been disabled                                                                       : 当前用户已被禁用
+Integration sign-in func returned an unexpected value, please contact admin                  : 集成登录函数返回了未预期的结果，请联系系统管理员
+Sign in failed. Error occured in integration sign-in func, please concat admin               : 登录失败。集成登录函数抛出异常，请联系系统管理员
+Sign in failed. Integration sign-in func timeout, please concat admin                        : 登录失败，集成登录函数超时，请联系系统管理员
+Sign in failed. Integration sign-in func returned `False` or empty value, please concat admin: 登录失败，集成登录函数返回`False`或空内容，请联系系统管理员
+
+Please input username             : 请输入用户名
+Please input password             : 请输入密码
+Please input captcha              : 请输入验证码
+Captcha should be a 4-digit number: 验证码为4位数字
+</i18n>
+
 <template>
   <div @click.stop="useBuiltinAuth" class="sign-in">
     <div class="sign-in-area">
@@ -6,9 +28,9 @@
       <div class="sign-in-panel">
         <el-form ref="form" :model="form" :rules="formRules" class="sign-in-form">
           <el-form-item prop="funcId" v-if="signInFuncs">
-            <el-select v-model="form.funcId" placeholder="请选择登录方式">
+            <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
               <i slot="prefix" class="fth-man-icon fth-man-icon-integration"></i>
-              <el-option label="以内置用户系统登录" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
+              <el-option :label="$t('Builtin user system')" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
               <el-option v-for="opt in signInFuncs" :label="opt.name" :key="opt.id" :value="opt.id"></el-option>
             </el-select>
           </el-form-item>
@@ -16,7 +38,7 @@
           <el-form-item prop="username">
             <el-input tabindex="1"
               maxlength="100"
-              placeholder="请输入账号"
+              :placeholder="$t('Username')"
               v-model="form.username">
               <i slot="prefix" class="fth-man-icon fth-man-icon-account-number"></i>
             </el-input>
@@ -26,7 +48,7 @@
             <el-input tabindex="2"
               maxlength="100"
               show-password
-              placeholder="请输入密码"
+              :placeholder="$t('Password')"
               v-model="form.password">
               <i slot="prefix" class="fth-man-icon fth-man-icon-password"></i>
             </el-input>
@@ -37,7 +59,7 @@
               :maxlength="4"
               :clearable="true"
               @keyup.enter.native="submitData"
-              placeholder="请输入验证码"
+              :placeholder="$t('Captcha')"
               v-model="form.captcha">
               <i slot="prefix" class="fth-man-icon fth-man-icon-verification-code"></i>
             </el-input>
@@ -46,7 +68,7 @@
               :captcha-token="form.captchaToken"
               @click.native="refreshCaptcha(true)"></CaptchaImage>
           </el-form-item>
-            <el-button tabindex="4" type="primary" @click="submitData">登录</el-button>
+            <el-button tabindex="4" type="primary" @click="submitData">{{ $t('Sign In')}}</el-button>
           <el-form-item>
           </el-form-item>
         </el-form>
@@ -104,32 +126,32 @@ export default {
         switch(apiRes.reason) {
           /* 内置登录失败 */
           case 'EUserPassword':
-            this.respError.password = '用户名或密码错误';
+            this.respError.password = this.$t('Invalid username or password');
             break;
 
           case 'EUserCaptcha':
-            this.respError.captcha = '验证码错误或无效';
+            this.respError.captcha = this.$t('Invalid captcha');
             break;
 
           case 'EUserDisabled':
-            this.respError.captcha = '当前用户已被禁用';
+            this.respError.captcha = this.$t('User has been disabled');
             break;
 
           /* 集成登录失败 */
           case 'EFuncResultParsingFailed':
-            this.respError.captcha = '集成登录函数返回了未预期的结果，请联系系统管理员';
+            this.respError.captcha = this.$t('Integration sign-in func returned an unexpected value, please contact admin');
             break;
 
           case 'EFuncFailed.SignInFuncRaisedException':
-            this.respError.captcha = apiRes.message || '登录失败：集成登录函数抛出异常，请联系系统管理员';
+            this.respError.captcha = apiRes.message || this.$t('Sign in failed. Error occured in integration sign-in func, please concat admin');
             break;
 
           case 'EFuncFailed.SignInFuncTimeout':
-            this.respError.captcha = '登录失败：集成登录函数超时，请联系系统管理员';
+            this.respError.captcha = this.$t('Sign in failed. Integration sign-in func timeout, please concat admin');
             break;
 
           case 'EFuncFailed.SignInFuncReturnedFalseOrNothing':
-            this.respError.captcha = '登录失败：集成登录函数返回`False`或空内容，请联系系统管理员';
+            this.respError.captcha = this.$t('Sign in failed. Integration sign-in func returned `False` or empty value, please concat admin');
             break;
         }
 
@@ -167,6 +189,37 @@ export default {
     isBuiltInSignIn() {
       return this.T.isNothing(this.signInFuncs) || this.form.funcId === this.BUILTIN_SIGN_IN_FUNC_ID;
     },
+    formRules() {
+      return {
+        username: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input username'),
+            required: true,
+          },
+        ],
+        password: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input password'),
+            required: true,
+          },
+        ],
+        captcha: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input captcha'),
+            required: true,
+          },
+          {
+            trigger : 'change',
+            message : this.$t('Captcha should be a 4-digit number'),
+            length  : 4,
+            pattern : /^\d{4}$/g
+          },
+        ],
+      }
+    },
   },
   props: {
   },
@@ -183,35 +236,6 @@ export default {
         funcId      : 'builtIn', // 集成登录专用
         username    : null,
         password    : null,
-      },
-      formRules: {
-        username: [
-          {
-            trigger : 'change',
-            message : '请输入用户名',
-            required: true,
-          },
-        ],
-        password: [
-          {
-            trigger : 'change',
-            message : '请输入密码',
-            required: true,
-          },
-        ],
-        captcha: [
-          {
-            trigger : 'change',
-            message : '请输入验证码',
-            required: true,
-          },
-          {
-            trigger : 'change',
-            message : '验证码为4位数字',
-            length  : 4,
-            pattern : /^\d{4}$/g
-          },
-        ],
       },
       submitFailed: false,
     }

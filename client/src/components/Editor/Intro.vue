@@ -1,9 +1,13 @@
+<i18n locale="zh-CN" lang="yaml">
+Welcome to: 欢迎使用
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1 class="main-text">欢迎使用 <Logo type="auto" style="margin-bottom: -8px;"></Logo> 编辑器</h1>
+        <h1 class="main-text">{{ $t('Welcome to') }} <Logo type="auto" style="margin-bottom: -8px;"></Logo></h1>
       </el-header>
 
       <!-- 正文区 -->

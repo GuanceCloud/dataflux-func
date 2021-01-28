@@ -45,6 +45,14 @@ module.exports = {
           options.compilerOptions.whitespace = 'preserve';
           return options;
         })
+        .end();
+    config.module
+      .rule('i18n')
+      .resourceQuery(/blockType=i18n/)
+      .type('javascript/auto')
+      .use('i18n')
+        .loader("@intlify/vue-i18n-loader")
+        .end();
   },
   devServer: {
     sockHost: getNetworkIP(),

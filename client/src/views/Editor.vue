@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Script Set : 脚本库
+Data Source: 数据源
+Env        : 环境变量
+</i18n>
+
 <template>
   <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="20" split="vertical">
     <!-- 文件/资源导航区 -->
@@ -7,13 +13,13 @@
           <i class="icon-bg" :class="currentTabIcon"></i>
 
           <el-tabs v-model="currentTab" stretch type="border-card">
-            <el-tab-pane label="脚本库" name="aside-script">
+            <el-tab-pane :label="$t('Script Set')" name="aside-script">
               <AsideScript ref="asideScript"></AsideScript>
             </el-tab-pane>
-            <el-tab-pane label="数据源" name="aside-data-source">
+            <el-tab-pane :label="$t('Data Source')" name="aside-data-source">
               <AsideDataSource ref="asideDataSource"></AsideDataSource>
             </el-tab-pane>
-            <el-tab-pane label="环境变量" name="aside-env-variable">
+            <el-tab-pane :label="$t('ENV')" name="aside-env-variable">
               <AsideEnvVariable ref="asideEnvVariable"></AsideEnvVariable>
             </el-tab-pane>
           </el-tabs>

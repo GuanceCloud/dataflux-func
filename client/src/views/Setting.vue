@@ -1,3 +1,10 @@
+<i18n locale="zh-CN" lang="yaml">
+Cache Clear: 清除缓存
+Code Editor: 代码编辑器配置
+User Info  : 用户信息
+Password   : 修改密码
+</i18n>
+
 <template>
   <el-container direction="horizontal">
     <!-- 二级导航 -->
@@ -12,25 +19,25 @@
             <el-menu-item index="/setting/clear-cache">
               <span>
                 <i class="fa fa-fw fa-refresh"></i>
-                清除缓存
+                {{ $t('Cache Clear') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/setting/code-editor-setup">
               <span>
                 <i class="fa fa-fw fa-edit"></i>
-                代码编辑器配置
+                {{ $t('Code Editor') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/setting/profile-setup" v-if="!$store.getters.isIntegratedUser">
               <span>
                 <i class="fa fa-fw fa-user-circle"></i>
-                用户信息
+                {{ $t('User Info') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/setting/password-setup" v-if="!$store.getters.isIntegratedUser">
               <span>
                 <i class="fa fa-fw fa-lock"></i>
-                修改密码
+                {{ $t('Password') }}
               </span>
             </el-menu-item>
           </el-menu>

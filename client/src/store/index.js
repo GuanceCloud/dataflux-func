@@ -15,6 +15,7 @@ const STATE_CONFIG = {
   clientId                                 : { persist: true,  syncXTab: true  },
   userProfile                              : { persist: true,  syncXTab: true  },
   xAuthToken                               : { persist: true,  syncXTab: true  },
+  uiLocale                                 : { persist: true,  syncXTab: true  },
   uiTheme                                  : { persist: true,  syncXTab: true  },
   codeMirrorSetting                        : { persist: true,  syncXTab: true  },
   asideScript_expandedNodeMap              : { persist: true,  syncXTab: false },
@@ -50,6 +51,7 @@ const MUTATION_CONFIG = {
   setConflictedRoute                             : { persist: false },
   updateUserProfile                              : { persist: false },
   updateXAuthToken                               : { persist: true  },
+  updateUILocale                                 : { persist: true  },
   updateUITheme                                  : { persist: true  },
   updateCodeMirrorSetting                        : { persist: true  },
   updateAsideScript_expandedNodeMap              : { persist: true  },
@@ -100,6 +102,7 @@ export default new Vuex.Store({
 
     // 主要内容加载完毕标识
     isLoaded: false,
+
     // 处理中数量
     processingTaskCount     : 0,
     processingTaskUpdateTime: 0,
@@ -117,6 +120,8 @@ export default new Vuex.Store({
     // 认证令牌
     xAuthToken: null,
 
+    // UI语言
+    uiLocale: null,
     // UI主题
     uiTheme: null,
     // CodeMirror配置
@@ -226,6 +231,10 @@ export default new Vuex.Store({
       let routeKey = getRouteKey(routeInfo);
       return !!state.conflictedRouteMap[routeKey];
     },
+    uiLocale: (state, getters) => {
+      let uiLocale = state.uiLocale || window.navigator.language;
+      return uiLocale;
+    },
     uiTheme: (state, getters) => {
       let uiTheme = state.uiTheme;
       if (uiTheme !== 'dark' && uiTheme !== 'light') {
@@ -318,9 +327,13 @@ export default new Vuex.Store({
       state.xAuthToken = value || null;
     },
 
+    updateUILocale(state, value) {
+      state.uiLocale = value || null;
+    },
     updateUITheme(state, value) {
       state.uiTheme = value || null;
     },
+
     updateCodeMirrorSetting(state, value) {
       state.codeMirrorSetting = value || {
         theme: C.CODE_MIRROR_DEFAULT_THEME,

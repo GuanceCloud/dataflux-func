@@ -183,7 +183,7 @@ export default {
       dragPosition: this.T.jsonCopy(dragPosition),
       isDragging  : false,
 
-      script: null,
+      script: {},
 
       codeMirror_code     : null,
       codeMirror_codeDraft: null,

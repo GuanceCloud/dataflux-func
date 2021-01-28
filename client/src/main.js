@@ -28,6 +28,18 @@ Vue.use(ElementUI)
 import VueI18n from 'vue-i18n'
 Vue.use(VueI18n)
 
+import locales from '@/locales'
+
+const i18n = new VueI18n({
+  // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
+  locale                : store.getters.uiLocale,
+  fallbackLocale        : 'en',
+  formatFallbackMessages: true,
+  silentFallbackWarn    : true,
+  silentTranslationWarn : true,
+  messages              : locales,
+})
+
 // 时间处理
 import moment from 'moment'
 Vue.prototype.moment = moment;
@@ -114,6 +126,7 @@ window.addEventListener('storage', function (ev) {
 const vm = new Vue({
   router,
   store,
+  i18n,
   render: h => h(App)
 }).$mount('#app');
 window.vm = vm;

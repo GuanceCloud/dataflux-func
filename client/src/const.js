@@ -258,23 +258,23 @@ export const DATE_SOURCE_MAP = createMap(DATE_SOURCE);
 export const ASIDE_ITEM_TYPE =[
   {
     'key' : 'scriptSet',
-    'name': '脚本集',
+    'name': 'Script Set',
   },
   {
     'key' : 'script',
-    'name': '脚本',
+    'name': 'Script',
   },
   {
     'key' : 'func',
-    'name': '函数',
+    'name': 'Func',
   },
   {
     'key' : 'dataSource',
-    'name': '数据源',
+    'name': 'Data Source',
   },
   {
     'key' : 'envVariable',
-    'name': '环境变量',
+    'name': 'ENV',
   },
 ];
 export const ASIDE_ITEM_TYPE_MAP = createMap(ASIDE_ITEM_TYPE);

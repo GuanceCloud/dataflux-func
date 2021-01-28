@@ -1,6 +1,16 @@
+<i18n locale="zh-CN" lang="yaml">
+filter content: 过滤内容
+'(Refresh)'   : （刷新列表）
+'(Add ENV)'   : （添加数据源）
+Setup         : 配置
+'Example:'    : 示例
+Copy example  : 复制示例
+Copy {name} ID: 复制{name}ID
+</i18n>
+
 <template>
   <div>
-    <el-input placeholder="过滤内容" size="small" :clearable="true" v-model="filterText">
+    <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
       <el-button slot="prefix" type="text" size="small"></el-button>
     </el-input>
 
@@ -20,10 +30,10 @@
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
           </el-link>
           <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i>（添加环境变量）
+            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add ENV)') }}
           </el-link>
           <div v-else>
             <span>{{ node.label }}</span>
@@ -32,7 +42,7 @@
 
         <div>
           <div v-if="data.type === 'envVariable'">
-            <el-tooltip effect="dark" content="配置" placement="left" :enterable="false">
+            <el-tooltip effect="dark" :content="$t('Setup')" placement="top" :enterable="false">
               <el-button
                 type="text"
                 size="small"
@@ -49,10 +59,10 @@
               :close-delay="500">
               <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
               <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-                示例代码：
+                {{ $t('Example:') }}
                 <pre>{{ data.tip.sampleCode }}</pre>
-                <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
-                <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
+                <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
+                <br><CopyButton :title="`${$t('Copy {name} ID', { name: $t(C.ASIDE_ITEM_TYPE_MAP[data.type].name) })}`" size="mini" :content="data.id"></CopyButton>
               </div>
               <el-button slot="reference"
                 type="text"
@@ -96,7 +106,7 @@ export default {
 
       let apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', {
         query: {fields: ['id', 'title', 'description']},
-        alert: {entity: '环境变量', action: '获取', showError: true},
+        alert: {entity: this.$t('ENV'), showError: true},
       });
       if (!apiRes.ok) return;
 

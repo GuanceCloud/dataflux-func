@@ -1,6 +1,26 @@
+<i18n locale="zh-CN" lang="yaml">
+filter content                                 : 过滤内容
+'(Refresh)'                                    : （刷新列表）
+'(Add Script)'                                 : （添加脚本）
+'(Add Script Set)'                             : （添加脚本集）
+Edited                                         : 已修改
+Builtin                                        : 内置
+Locked by someone else                         : 被其他人锁定
+Locked by you                                  : 被您锁定
+Quick View Panel                               : 快速查看面板
+View                                           : 查看
+Setup                                          : 配置
+Copy example                                   : 复制示例
+Copy {name} ID                                 : 复制{name}ID
+'Example:'                                     : 示例
+Code edited but not published yet              : 代码已修改但尚未发布
+'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
+Open Quick View Panel                          : 打开快速预览面板
+</i18n>
+
 <template>
   <div>
-    <el-input placeholder="过滤内容" size="small" :clearable="true" v-model="filterText">
+    <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
       <el-button slot="prefix" type="text" size="small"></el-button>
     </el-input>
 
@@ -27,13 +47,13 @@
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
           </el-link>
           <el-link v-else-if="data.type === 'addScript'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i>（添加脚本）
+            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Script)') }}
           </el-link>
           <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i>（添加脚本集）
+            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Script Set)') }}
           </el-link>
           <div v-else>
             <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open-o':'fa-folder-o']"></i>
@@ -44,11 +64,11 @@
               <el-tag v-if="data.isCodeEdited"
                 effect="dark"
                 type="danger"
-                size="mini">已修改</el-tag>
+                size="mini">{{ $t('Edited') }}</el-tag>
               <el-tag v-if="data.isBuiltin"
                 effect="dark"
                 type="warning"
-                size="mini">内置</el-tag>
+                size="mini">{{ $t('Builtin') }}</el-tag>
               <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
               <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
             </span>
@@ -56,11 +76,11 @@
         </span>
 
         <div>
-          <el-tooltip effect="dark" :content="data.isLockedByOther ? '被其他人锁定' : '被您锁定'" placement="top" :enterable="false">
+          <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
             <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
           </el-tooltip>
 
-          <el-tooltip effect="dark" content="快速查看面板" placement="top" :enterable="false">
+          <el-tooltip effect="dark" :content="$t('Quick View Panel')" placement="top" :enterable="false">
             <span>
               <el-button v-if="data.type === 'script'"
                 type="text"
@@ -71,7 +91,7 @@
             </span>
           </el-tooltip>
 
-          <el-tooltip effect="dark" :content="data.isLockedByOther ? '查看' : '配置'" placement="top" :enterable="false">
+          <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('View') : $t('Setup')" placement="top" :enterable="false">
             <span>
               <el-button v-if="data.type === 'scriptSet'"
                 type="text"
@@ -99,13 +119,13 @@
             :close-delay="500">
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-              示例代码：
+              {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
-              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`${$t('Copy {name} ID', { name: $t(C.ASIDE_ITEM_TYPE_MAP[data.type].name) })}`" size="mini" :content="data.id"></CopyButton>
             </div>
             <div v-if="data.isCodeEdited" class="code-edited-tip">
-              <span class="text-bad">代码已修改但尚未发布<br>引用/API调用实际将运行已发布代码</span>
+              <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
             </div>
 
             <div class="aside-tree-node-quick-view" v-if="data.type === 'script'">
@@ -113,7 +133,7 @@
                 size="mini"
                 type="primary" plain
                 @click.stop="showQuickViewWindow(data.id)">
-                <i class="fa fa-fw fa-window-restore"></i> 打开快速预览面板
+                <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Quick View Panel') }}
               </el-button>
             </div>
 
@@ -196,7 +216,7 @@ export default {
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
         query: {fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
-        alert: {entity: '脚本集', showError: true},
+        alert: {entity: this.$t('Script Set'), showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -218,7 +238,7 @@ export default {
           isBuiltin    : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
-            description: d.description || `脚本集 ${d.id}`,
+            description: d.description || `${this.$t('Script Set')} ${d.id}`,
           },
           children: [],
         };
@@ -227,7 +247,7 @@ export default {
       /***** 脚本 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
         query: {fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
-        alert: {entity: '脚本', showError: true},
+        alert: {entity: this.$t('Script'), showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -255,7 +275,7 @@ export default {
           isLockedByOther: isLockedByOther,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
-            description: d.description || `脚本 ${d.id}`,
+            description: d.description || `${this.$t('Script')} ${d.id}`,
             sampleCode : `import ${d.id}`,
           },
 
@@ -271,7 +291,7 @@ export default {
       /***** 函数 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
         query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type']},
-        alert: {entity: '函数', showError: true},
+        alert: {entity: this.$t('Func'), showError: true},
       });
       if (!apiRes.ok) return;
 

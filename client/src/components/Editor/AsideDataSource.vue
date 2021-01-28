@@ -1,6 +1,19 @@
+<i18n locale="zh-CN" lang="yaml">
+filter content         : 过滤内容
+'(Refresh)'            : （刷新列表）
+'(Add Data Source)'    : （添加数据源）
+Simple Debug Panel     : 简易调试面板
+View                   : 查看
+Setup                  : 配置
+'Example:'             : 示例
+Copy example           : 复制示例
+Copy {name} ID         : 复制{name}ID
+Open Simple Debug Panel: 打开简易调试面板
+</i18n>
+
 <template>
   <div>
-    <el-input placeholder="过滤内容" size="small" :clearable="true" v-model="filterText">
+    <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
       <el-button slot="prefix" type="text" size="small"></el-button>
     </el-input>
 
@@ -20,10 +33,10 @@
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i>（刷新列表）
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
           </el-link>
           <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i>（添加数据源）
+            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Data Source)') }}
           </el-link>
           <div v-else>
             <el-tag class="aside-tree-node-tag" :type="C.DATE_SOURCE_MAP[data.dataSourceType].tagType" size="mini"><span>{{ C.DATE_SOURCE_MAP[data.dataSourceType].name }}</span></el-tag>
@@ -32,7 +45,7 @@
         </span>
 
         <div v-if="data.type === 'dataSource'">
-          <el-tooltip effect="dark" content="简易调试面板" placement="left" :enterable="false">
+          <el-tooltip effect="dark" :content="$t('Simple Debug Panel')" placement="left" :enterable="false">
             <span>
               <el-button v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported"
                 type="text"
@@ -43,7 +56,7 @@
             </span>
           </el-tooltip>
 
-          <el-tooltip effect="dark" :content="data.isBuiltin ? '查看' : '配置'" placement="top" :enterable="false">
+          <el-tooltip effect="dark" :content="data.isBuiltin ? $t('View') : $t('Setup')" placement="top" :enterable="false">
             <span>
               <el-button v-if="data.type !== 'addDataSource'"
                 type="text"
@@ -64,10 +77,10 @@
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
 
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-              示例代码：
+              {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
-              <br><CopyButton title="复制示例代码" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="`复制${C.ASIDE_ITEM_TYPE_MAP[data.type].name}ID`" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
+              <br><CopyButton :title="`${$t('Copy {name} ID', { name: $t(C.ASIDE_ITEM_TYPE_MAP[data.type].name) })}`" size="mini" :content="data.id"></CopyButton>
             </div>
 
             <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported">
@@ -75,7 +88,7 @@
                 size="mini"
                 type="primary" plain
                 @click.stop="showSimpleDebugWindow(data.dataSource)">
-                <i class="fa fa-fw fa-window-restore"></i> 打开简易调试面板
+                <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Simple Debug Panel') }}
               </el-button>
             </div>
 
@@ -125,7 +138,7 @@ export default {
 
       let apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', {
         query: {fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
-        alert: {entity: '数据源', showError: true},
+        alert: {entity: this.$t('Data Source'), showError: true},
       });
       if (!apiRes.ok) return;
 

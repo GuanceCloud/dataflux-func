@@ -1,3 +1,18 @@
+<i18n locale="zh-CN" lang="yaml">
+Code Editor  : 脚本编辑器
+Management   : 管理
+Guide        : 包学包会
+Settings     : 设置
+Sign Out     : 登出
+Not Signed In: 尚未登录
+Auth Link Doc: 授权链接文档
+Func Doc     : 函数文档
+Signed In    : 已登录
+Light Mode   : 明亮模式
+Dark Mode    : 黑暗模式
+Follow System: 跟随系统
+</i18n>
+
 <template>
   <div class="navi-content">
     <el-menu
@@ -5,6 +20,7 @@
       :router="true"
       :unique-opened="true"
       :default-active="$route.path"
+      menu-trigger="hover"
       background-color="#3c3c3c"
       text-color="#fff"
       active-text-color="#fff">
@@ -15,14 +31,14 @@
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            脚本编辑器
+            {{ $t('Code Editor') }}
           </span>
         </el-menu-item>
 
         <el-menu-item index="/management/overview">
           <span>
             <i class="fa fa-fw fa-tasks"></i>
-            管理
+            {{ $t('Management') }}
           </span>
         </el-menu-item>
       </template>
@@ -30,47 +46,63 @@
       <el-menu-item index="">
         <a href="https://t.dataflux.cn/func-user-guide" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
-          包学包会
+          {{ $t('Guide') }}
         </a>
       </el-menu-item>
 
-      <el-submenu v-if="isSignedIn" class="menu-right" index="user" popper-class="navi-content">
+      <el-submenu v-if="isSignedIn" class="menu-right" index="user" popper-class="navi-content" :show-timeout="0">
         <template slot="title">
           <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
           <i v-else class="fa fa-fw fa-user-md"></i>
           <span>{{ userProfileName }}</span>
         </template>
-        <el-menu-item index="/setting/clear-cache">设置</el-menu-item>
-        <el-menu-item @click="goToSignOut">登出</el-menu-item>
+        <el-menu-item index="/setting/clear-cache">{{ $t('Settings') }}</el-menu-item>
+        <el-menu-item @click="goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
       <el-menu-item v-else class="menu-right" index="">
         <span>
           <i class="fa fa-fw fa-user-times"></i>
-          <span>尚未登录</span>
+          <span>{{ $t('Not Signed In') }}</span>
         </span>
       </el-menu-item>
 
-      <el-submenu class="menu-right" index="theme" popper-class="navi-content">
+      <el-submenu class="menu-right menu-compact" index="ui-locale" popper-class="navi-content" :show-timeout="0">
+        <template slot="title">
+          <span class="ui-locale-short-title">{{ UI_LOCALE_MAP[uiLocale].shortTitle }}</span>
+        </template>
+        <el-menu-item v-for="(_locale, _key) in UI_LOCALE_MAP" :key="_key" @click="setUILocale(_key)">
+          <span :class="{ 'selected-option': uiLocale === _key }">
+            <span class="ui-locale-short-title">{{ _locale.shortTitle }}</span>
+            {{ _locale.title }}
+          </span>
+        </el-menu-item>
+      </el-submenu>
+
+      <el-submenu class="menu-right menu-compact" index="theme" popper-class="navi-content" :show-timeout="0">
         <template slot="title">
           <span>
-            <i class="fa fa-fw" :class="UI_THEME_ICON_MAP[uiTheme]"></i>
+            <i class="fa fa-fw" :class="UI_THEME_MAP[uiTheme].icon"></i>
           </span>
         </template>
-        <el-menu-item @click="setUITheme('light')"><i class="fa fa-fw" :class="UI_THEME_ICON_MAP['light']"></i> 明亮模式 <i v-if="uiTheme === 'light'" class="fa fa-fw fa-check-circle"></i></el-menu-item>
-        <el-menu-item @click="setUITheme('dark')"><i class="fa fa-fw" :class="UI_THEME_ICON_MAP['dark']"></i> 黑暗模式 <i v-if="uiTheme === 'dark'" class="fa fa-fw fa-check-circle"></i></el-menu-item>
-        <el-menu-item @click="setUITheme('auto')"><i class="fa fa-fw" :class="UI_THEME_ICON_MAP['auto']"></i> 自动切换 <i v-if="uiTheme === 'auto'" class="fa fa-fw fa-check-circle"></i></el-menu-item>
+        <el-menu-item v-for="(_theme, _key) in UI_THEME_MAP" :key="_key" @click="setUITheme(_key)">
+          <span :class="{ 'selected-option': uiTheme === _key }">
+            <i class="fa fa-fw" :class="_theme.icon"></i>
+            {{ _theme.title }}
+          </span>
+        </el-menu-item>
       </el-submenu>
+
       <el-menu-item class="menu-right" index="">
         <a href="/#/auth-link-func-doc" target="_blank">
           <i class="fa fa-fw fa-link"></i>
-          授权链接函数文档
+          {{ $t('Auth Link Doc') }}
         </a>
       </el-menu-item>
       <el-menu-item class="menu-right" index="">
         <a href="/#/func-doc" target="_blank">
           <i class="fa fa-fw fa-book"></i>
-          函数文档
+          {{ $t('Func Doc') }}
         </a>
       </el-menu-item>
     </el-menu>
@@ -91,13 +123,42 @@ export default {
     setUITheme(uiTheme) {
       this.$store.commit('updateUITheme', uiTheme);
     },
+    setUILocale(uiLocale) {
+      this.$store.commit('updateUILocale', uiLocale);
+      this.$root.$i18n.locale = uiLocale;
+    },
   },
   computed: {
-    UI_THEME_ICON_MAP() {
+    UI_THEME_MAP() {
       return {
-        light: 'fa-sun-o',
-        dark : 'fa-moon-o',
-        auto : 'fa-adjust',
+        light: {
+          title: this.$t('Light Mode'),
+          icon : 'fa-sun-o',
+        },
+        dark : {
+          title: this.$t('Dark Mode'),
+          icon : 'fa-moon-o',
+        },
+        auto : {
+          title: this.$t('Follow System'),
+          icon : 'fa-adjust',
+        },
+      }
+    },
+    UI_LOCALE_MAP() {
+      return {
+        'zh-CN' : {
+          title     : '简体中文',
+          shortTitle: '简',
+        },
+        // 'zh-Hant' : {
+        //   title     : '繁體中文 (WIP)',
+        //   shortTitle: '繁',
+        // },
+        'en': {
+          title     : 'English (WIP)',
+          shortTitle: 'EN',
+        },
       }
     },
     isSignedIn() {
@@ -106,12 +167,15 @@ export default {
     uiTheme() {
       return this.$store.getters.uiTheme;
     },
+    uiLocale() {
+      return this.$store.getters.uiLocale;
+    },
     userProfileName() {
       if (this.$store.state.userProfile) {
         let userProfile = this.$store.state.userProfile;
-        return userProfile.name || userProfile.username || '已登陆';
+        return userProfile.name || userProfile.username || this.$t('Signed In');
       } else {
-        return '*已登录';
+        return '*' + this.$t('Signed In');
       }
     },
   },
@@ -131,6 +195,9 @@ export default {
 </style>
 
 <style>
+.menu-compact .el-submenu__title {
+  padding-right: 0;
+}
 .navi-content .el-menu-item i,
 .navi-content .el-submenu__title i {
   margin-top: -3px;
@@ -150,5 +217,22 @@ export default {
 }
 .navi-content i.fa {
   font-size: 18px;
+}
+.navi-content .ui-locale-short-title {
+  border: 1px solid grey;
+  border-radius: 3px;
+  padding: 2px;
+  width: 18px;
+  height: 14px;
+  display: inline-block;
+  line-height: 14px;
+  text-align: center;
+  font-size: 12px;
+}
+.selected-option,
+.selected-option * {
+  color: #FF6600 !important;
+  font-weight: bold !important;
+  border-color: #FF6600 !important;
 }
 </style>
