@@ -322,6 +322,11 @@ class DataWay(object):
                     if not v:
                         continue
 
+                    if isinstance(v, bool):
+                        v = '{0}'.format(v).lower()
+                    else:
+                        v = '{0}'.format(v)
+
                     k = re.sub(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER, k)
                     v = re.sub(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER, v)
 
