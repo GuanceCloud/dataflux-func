@@ -24,6 +24,10 @@ import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
 Vue.use(ElementUI)
 
+// 国际化
+import VueI18n from 'vue-i18n'
+Vue.use(VueI18n)
+
 // 时间处理
 import moment from 'moment'
 Vue.prototype.moment = moment;

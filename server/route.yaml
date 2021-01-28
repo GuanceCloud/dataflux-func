@@ -3217,6 +3217,7 @@ crontabConfigAPI:
       - cron.id
       - cron.funcId
       - cron.funcCallKwargsJSON
+      - cron.tagsJSON
       - func.title
       - func.description
     query:
@@ -3689,6 +3690,7 @@ batchAPI:
       - bat.id
       - bat.funcId
       - bat.funcCallKwargsJSON
+      - bat.tagsJSON
       - func.title
       - func.description
     query:
