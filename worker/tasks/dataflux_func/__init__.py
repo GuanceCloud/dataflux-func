@@ -1576,6 +1576,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             return eval(expression, *args, **kwargs)
 
+        def __get_resource_file_path(file_path):
+            return os.path.join(CONFIG['RESOURCE_FILE_ROOT_PATH'], file_path)
+
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
 
@@ -1597,6 +1600,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'eval'         : __eval,           # 执行Python表达式
             'format_sql'   : format_sql,       # 格式化SQL语句
 
+            'get_resource_file_path': __get_resource_file_path, # 获取资源文件路径
+
             '__data_source_helper' : __data_source_helper,  # 数据源处理模块
             '__env_variable_helper': __env_variable_helper, # 环境变量处理模块
             '__async_helper'       : __async_helper,        # 异步处理模块
@@ -1615,6 +1620,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'FUNC' : __call_func,
             'EVAL' : __eval,
             'ASYNC': __async_helper,
+
+            'PATH': __get_resource_file_path,
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源

@@ -12,6 +12,10 @@ CONFIG_FILE_PATH: '/data/user-config.yaml'
 # 必须使用绝对路径
 EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
 
+# 资源文件根目录
+# 必须使用绝对路径
+RESOURCE_FILE_ROOT_PATH: '/data/resources'
+
 # 运行模式
 # 可选：
 #   "dev" : 开发模式
