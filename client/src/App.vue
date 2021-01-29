@@ -265,16 +265,16 @@ export default {
             break;
 
           case 'code-viewer':
-            if (e.keyCode === keyCode_1) {
-              // 1： 查看草稿
+            if (ctrlOrCmd && e.keyCode === keyCode_1) {
+              // Ctrl/Command + 1： 查看草稿
               return shortcutAction('codeViewer.showDraft');
 
-            } else if (e.keyCode === keyCode_2) {
-              // 2： 查看草稿
+            } else if (ctrlOrCmd && e.keyCode === keyCode_2) {
+              // Ctrl/Command + 2： 查看草稿
               return shortcutAction('codeViewer.showPublished');
 
-            } else if (e.keyCode === keyCode_3) {
-              // 3： 查看差异
+            } else if (ctrlOrCmd && e.keyCode === keyCode_3) {
+              // Ctrl/Command + 3： 查看差异
               return shortcutAction('codeViewer.showDiff');
 
             } else if (ctrlOrCmd && e.keyCode === keyCode_E) {

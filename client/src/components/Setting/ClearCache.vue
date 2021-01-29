@@ -1,10 +1,18 @@
+<i18n locale="zh-CN" lang="yaml">
+Clear Cache                                                         : 清除缓存
+If you got trouble with UI or Code Editor, please try to clear cache: 如果界面、代码编辑器等存在问题，可尝试清除缓存来解决
+Code Editor Setting                                                 : 代码编辑器配置
+'Including:'                                                        : 包括：
+Selected UI theme                                                   : 已选择的主题
+Font size, line height                                              : 文字大小、行距
+</i18n>
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          清除缓存
+          {{ $t('清除缓存') }}
         </h1>
       </el-header>
 
@@ -15,16 +23,16 @@
             <div class="common-form">
               <el-form ref="form" :model="form" label-width="0px">
                 <el-form-item>
-                  <InfoBlock type="info" title="如果界面、代码编辑器等存在问题，可尝试清除缓存来解决"></InfoBlock>
+                  <InfoBlock type="info" :title="$t('If you got trouble with UI or Code Editor, please try to clear cache')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
                   <el-checkbox v-model="form.clear_codeMirrorSetting">
-                    <strong>代码编辑器配置</strong>
+                    <strong>{{ $t('Code Editor Setting') }}</strong>
                   </el-checkbox>
-                  <div class="text-small form-item-tip">包括：
-                    <br/>&#12288;已选择的主题
-                    <br/>&#12288;文字大小、行距
+                  <div class="text-small form-item-tip">{{ $t('Including:') }}
+                    <br/>&#12288;{{ $t('Selected UI theme')}}
+                    <br/>&#12288;{{ $t('Font size, line height')}}
                   </div>
                 </el-form-item>
 
@@ -32,7 +40,7 @@
                   <el-checkbox v-model="form.clear_UIStatus">
                     <strong>页面状态</strong>
                   </el-checkbox>
-                  <div class="text-small form-item-tip">包括：
+                  <div class="text-small form-item-tip">{{ $t('Including:') }}
                     <br/>&#12288;编辑器侧栏中当前已展开的栏目
                     <br/>&#12288;编辑器当前拖动的的编辑器侧栏、脚本输出栏位置
                     <br/>&#12288;简易调试面板当前位置
