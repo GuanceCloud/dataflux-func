@@ -98,7 +98,7 @@
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-save"></i> <span class="hidden-md-and-down">保存草稿</span>
+                          <i class="fa fa-fw fa-save"></i> <span class="hidden-md-and-down">保存</span>
                         </el-button>
                       </el-tooltip>
 
