@@ -138,17 +138,22 @@ _API_DOC_INTRODUCTION_LIST: ''
 
 # 示例代码
 _SAMPLE_SCRIPT: |
-  @DFF.API('我的函数')
+  @DFF.API('My Func')
   def my_func(x, y):
       '''
-      我的函数
-      输入参数 x, y 均为数字类型，返回结果为两者之和
+      My Func
+
+      Parameters:
+        x {int|float} A number
+        y {int|float} Another number
+
+      return {int|float} Sum of `x` and `y`
       '''
       return x + y
 
   def test_my_func():
       '''
-      测试我的函数
+      Test My Func
       '''
       assert my_func(1, 1) == 2
       assert my_func(1.1, 1.2) == 2.3

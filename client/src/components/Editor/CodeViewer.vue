@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Script Setup: 脚本设置
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container>
@@ -7,7 +11,7 @@
           <code class="code-viewer-action-title">
             <i class="fa fa-file-code-o"></i>
             {{ data.id }}
-            <el-tooltip content="脚本设置" placement="bottom" :enterable="false">
+            <el-tooltip :content="{{ this.$t('Script Setup') }}" placement="bottom" :enterable="false">
               <el-button
                 type="text"
                 @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
@@ -181,7 +185,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
         params: {id: this.$route.params.id},
-        alert : {entity: '脚本', action: '获取', showError: true},
+        alert : {showError: true},
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -200,7 +204,7 @@ export default {
 
       // 获取关联数据
       apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-        alert: {entity: '脚本集', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

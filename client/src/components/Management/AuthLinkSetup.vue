@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Auth Link   : 添加授权链接
+Modify Auth Link: 修改授权链接
+Delete Auth Link: 删除授权链接
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -148,7 +154,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/auth-links/do/list', this.$route.params.id, {
-          alert: {entity: '授权链接', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -185,7 +191,7 @@ export default {
     async addData() {
       let opt = {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '授权链接', action: '添加', showError: true},
+        alert: {title: this.$t('Add Auth Link'), showError: true},
       };
 
       // 添加函数调用参数kwargsJSON
@@ -195,7 +201,7 @@ export default {
       } catch(err) {
         return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: this.$t('OK'),
           type: 'error',
         });
       }
@@ -218,7 +224,7 @@ export default {
       let opt = {
         params: {id: this.$route.params.id},
         body  : {data: _formData},
-        alert : {entity: '授权链接', action: '修改', showError: true},
+        alert : {title: this.$t('Modify Auth Link'), showError: true},
       };
 
       // 添加函数调用参数kwargsJSON
@@ -227,7 +233,7 @@ export default {
       } catch(err) {
         return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: this.$t('OK'),
           type: 'error',
         });
       }
@@ -246,8 +252,8 @@ export default {
       try {
         await this.$confirm('删除授权链接可能导致依赖此链接的系统无法正常工作<hr class="br">是否确认删除？', '删除授权链接', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
+          confirmButtonText: this.$t('Delete'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -257,7 +263,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
         params: {id: this.$route.params.id},
-        alert : {entity: '授权链接', action: '删除', showError: true},
+        alert : {title: this.$t('Delete Auth Link'), showError: true},
       });
       if (!apiRes.ok) return;
 

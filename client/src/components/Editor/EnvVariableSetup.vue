@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Add ENV   : 添加环境变量
+Modify ENV: 修改环境变量
+Delete ENV: 删除环境变量
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -105,7 +111,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id, {
-          alert: {entity: '环境变量', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -135,7 +141,7 @@ export default {
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/do/add', {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '环境变量', action: '添加', showError: true},
+        alert: {title: this.$t('Add ENV'), showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -152,7 +158,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/:id/do/modify', {
         params: {id: this.$route.params.id},
         body  : {data: _formData},
-        alert : {entity: '环境变量', action: '修改', showError: true, showSuccess: true},
+        alert : {title: this.$t('Modify ENV'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -163,8 +169,8 @@ export default {
       try {
         await this.$confirm('删除环境变量可能导致已经引用当前环境变量的脚本无法正常执行<hr class="br">是否确认删除？', '删除环境变量', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
+          confirmButtonText: this.$t('Delete'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -174,7 +180,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
         params: {id: this.$route.params.id},
-        alert : {entity: '环境变量', action: '删除', showError: true},
+        alert : {title: this.$t('Delete ENV'), showError: true},
       });
       if (!apiRes.ok) return;
 

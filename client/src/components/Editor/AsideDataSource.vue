@@ -80,7 +80,7 @@ Open Simple Debug Panel: 打开简易调试面板
               {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
               <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="`${$t('Copy {name} ID', { name: $t(C.ASIDE_ITEM_TYPE_MAP[data.type].name) })}`" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
             </div>
 
             <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported">
@@ -138,7 +138,7 @@ export default {
 
       let apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', {
         query: {fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
-        alert: {entity: this.$t('Data Source'), showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

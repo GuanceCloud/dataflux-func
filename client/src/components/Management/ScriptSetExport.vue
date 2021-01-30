@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Export Data: 导出数据
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -109,7 +113,7 @@ export default {
     async loadData() {
       let opt = {
         query: {fields: ['id', 'title']},
-        alert: {entity: '脚本集', showError: true},
+        alert: {showError: true},
       };
 
       // 获取关联数据
@@ -137,7 +141,7 @@ export default {
         respType: 'blob',
         packResp: true,
         body    : this.T.jsonCopy(this.form),
-        alert   : {entity: '脚本包', action: '导出', showError: true},
+        alert   : {title: this.$t('Export Data'), showError: true},
       };
 
       // 自动生成密码

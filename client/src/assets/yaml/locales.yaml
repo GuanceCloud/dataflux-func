@@ -1,0 +1,57 @@
+# 本文档主要定义全局通用，以及在非.vue文件（如：toolkit.js, const.js 等）中的翻译
+
+'zh-CN':
+  # 通用
+  Very good: 非常好
+  OK       : 了解
+  Cancel   : 取消
+
+  # 通用-操作
+  Add   : 添加
+  Modify: 修改
+  Delete: 删除
+  Save  : 保存
+  Lock  : 解锁
+  Unlock: 锁定
+  Close : 关闭
+  Clear : 清空
+
+  # 通用-操作（小写）
+  add   : 添加
+  modify: 修改
+  delete: 删除
+  save  : 保存
+  lock  : 解锁
+  unlock: 锁定
+  close : 关闭
+  clear : 清空
+
+  # 通用-业务实体
+  Script Set : 脚本集
+  Script     : 脚本
+  Func       : 函数
+  Data Source: 数据源
+  ENV        : 环境变量
+
+  # const.js - 主题名
+  'Auto: Default'             : 自动切换：默认
+  'Auto: base16'              : 自动切换：base16
+  'Auto: duotone'             : 自动切换：duotone
+  'Auto: neat/material-darker': 自动切换：neat/material-darker
+  'Auto: idea/darcula'        : 自动切换：idea/darcula
+  'Light: eclipse'            : 明亮：eclipse
+  'Light: base16-light'       : 明亮：base16-light
+  'Light: duotone-light'      : 明亮：duotone-light
+  'Light: neat'               : 明亮：neat
+  'Light: idea'               : 明亮：idea
+  'Dark: monokai'             : 黑暗：monokai
+  'Dark: base16-dark'         : 黑暗：base16-dark
+  'Dark: duotone-dark'        : 黑暗：duotone-dark
+  'Dark: material-darker'     : 黑暗：material-darker
+  'Dark: darcula'             : 黑暗：darcula
+
+  # toolkit.js - API调用提示
+  Read data                               : 读取数据
+  Operation succeeded                     : 操作成功
+  Operation failed                        : 操作失败
+  Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除

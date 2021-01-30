@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Change Password: 修改密码
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -100,7 +104,7 @@ export default {
             newPassword: _formData.newPassword,
           },
         },
-        alert : {entity: '密码', action: '修改', showSuccess: true},
+        alert : {title: this.$t('Change Password'), showSuccess: true},
       });
       if (!apiRes.ok) {
         this.refreshCaptcha();

@@ -141,7 +141,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/operation-records/do/list', {
         query: this.T.createListQuery(),
-        alert: {entity: '函数日志列表', action: '获取', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

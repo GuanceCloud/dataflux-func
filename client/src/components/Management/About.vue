@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Clear Worker Queue       : 清空工作队列
+Clear Log and Cache table: 清空日志与缓存表
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -105,9 +110,7 @@ export default {
   methods: {
     // Web镜像信息
     async _getWebVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/image-info/do/get', {
-        alert: {entity: 'Web镜像信息'},
-      });
+      let apiRes = await this.T.callAPI('/api/v1/image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -126,9 +129,7 @@ export default {
     },
     // Worker镜像信息
     async _getWorkerVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/worker-image-info/do/get', {
-        alert: {entity: 'Worker镜像信息'},
-      });
+      let apiRes = await this.T.callAPI('/api/v1/worker-image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -151,7 +152,6 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/upgrade-info', {
         query: {seq: 'latest'},
-        alert: {entity: '数据库结构版本'},
       });
       if (apiRes.ok) {
         if (this.T.isNothing(apiRes.data)) {
@@ -175,9 +175,7 @@ export default {
       this.cacheDBKeyUsedInfoTEXT    = '';
       this.workerQueueLengthInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get', {
-        alert: {entity: '系统信息'},
-      });
+      let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let _getInfo = (tsDataMap, unit, prefix) => {
           unit   = unit   || '';
@@ -252,9 +250,7 @@ export default {
     async _getNodesStats() {
       this.nodesStatsInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-stats', {
-        alert: {entity: 'Worker工作单元信息'},
-      });
+      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-stats');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
@@ -283,9 +279,7 @@ export default {
     async _getNodesActiveQueues() {
       this.nodesActiveQueuesInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-active-queues', {
-        alert: {entity: 'Worker工作单元监听队列'},
-      });
+      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-active-queues');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
@@ -333,13 +327,13 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
         body : {workerQueues: [queueName]},
-        alert: {entity: '工作队列', action: '清空', showError: true},
+        alert: {title: this.$t('Clear Worker Queue'), showError: true},
       });
       if (apiRes.ok) {
         this.$alert(`工作队列 "#${queueName}" 已被清空
             <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空工作队列', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '非常好',
+          confirmButtonText: this.$t('Very good'),
           type: 'success',
         });
       }
@@ -349,8 +343,8 @@ export default {
         await this.$confirm(`清空日志/缓存表后，以往的日志等信息将无法查询
             <hr class="br">是否确认清空日志/缓存表？`, '清空日志/缓存表', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认清空',
-          cancelButtonText: '放弃',
+          confirmButtonText: this.$t('Clear'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -359,13 +353,13 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
-        alert: {entity: '日志/缓存表', action: '清空', showError: true},
+        alert: {title: this.$t('Clear Log and Cache table'), showError: true},
       });
       if (apiRes.ok) {
         this.$alert(`日志/缓存表已被清空
             <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空日志/缓存表', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '非常好',
+          confirmButtonText: this.$t('Very good'),
           type: 'success',
         });
       }

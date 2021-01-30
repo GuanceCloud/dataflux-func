@@ -1,3 +1,10 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Data Source   : 添加数据源
+Modify Data Source: 修改数据源
+Delete Data Source: 删除数据源
+Test Data Source  : 测试数据源
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -316,7 +323,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id, {
-          alert: {entity: '数据源', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -374,7 +381,7 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/do/add', {
         body : {data: _formData},
-        alert: {entity: '数据源', action: '添加', showError: true, showSuccess: true},
+        alert: {title: this.$t('Add Data Source'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -390,7 +397,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
         params: {id: this.$route.params.id},
         body  : {data: _formData},
-        alert : {entity: '数据源', action: '修改', showError: true, showSuccess: true},
+        alert : {title: this.$t('Modify Data Source'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -401,8 +408,8 @@ export default {
       try {
         await this.$confirm('删除数据源可能导致已经引用当前数据源的脚本无法正常执行<hr class="br">是否确认删除？', '删除数据源', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
+          confirmButtonText: this.$t('Delete'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -412,7 +419,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/delete', {
         params: {id: this.$route.params.id},
-        alert : {entity: '数据源', action: '删除', showError: true},
+        alert : {title: this.$t('Delete Data Source'), showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -426,7 +433,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/test', {
         params: {id: this.$route.params.id},
-        alert : {entity: '数据源', action: '测试', showError: true},
+        alert : {title: this.$t('Test Data Source'), showError: true},
       });
       if (apiRes.ok) {
         this.testDataSourceResult = 'ok';

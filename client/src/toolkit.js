@@ -1,7 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
 import store from '@/store'
-import * as C from '@/const'
 import { MessageBox } from 'element-ui';
 
 // CodeMirror
@@ -66,6 +65,11 @@ export const MIN_UNIX_TIMESTAMP    = 0;
 export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
 export const MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
 export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
+
+// 国际化
+import app from '@/main';
+
+import C from '@/const'
 
 let handleCircular = function() {
   let cache = [];
@@ -764,8 +768,8 @@ export async function callAPI(method, pathPattern, options) {
 
     if (apiResp.status < 400) {
       if (alert.showSuccess) {
-        await MessageBox.alert(`${alert.entity}${alert.action}成功`, `${alert.action}${alert.entity}`, {
-          confirmButtonText: '非常好',
+        await MessageBox.alert(app.$t('Operation succeeded'), alert.title, {
+          confirmButtonText: app.$t('Very good'),
           type: 'success',
         });
       }
@@ -778,9 +782,9 @@ export async function callAPI(method, pathPattern, options) {
         if (alert.reasonMap && alert.reasonMap[apiResp.data.reason]) {
           message = alert.reasonMap[apiResp.data.reason];
         }
-        await MessageBox.alert(`${alert.entity}${alert.action}失败<br>${message}`, `${alert.action}${alert.entity}`, {
+        await MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: app.$t('OK'),
           type: 'error',
         });
       }
@@ -828,14 +832,13 @@ export async function callAPI_getOne(pathPattern, id, options) {
   }
 
   if (options.alert) {
-    let alert  = options.alert;
-    let entity = alert.entity || '数据';
-    let action = alert.action || '获取';
+    let alert = options.alert;
+    let title = alert.title || app.$t('Read data'); // 默认当作读取数据
 
     if (!apiRes.data && alert.alertNoData) {
       setTimeout(() => {
-        MessageBox.alert(`找不到此${entity}，该数据可能已经被删除`, `${action}${entity}`, {
-          confirmButtonText: '好',
+        MessageBox.alert(app.$t('Data not found. It may have been deleted'), alert.title, {
+          confirmButtonText: app.$t('OK'),
           type: 'error',
         });
       }, 300);
@@ -867,17 +870,16 @@ export async function callAPI_allPage(pathPattern, options) {
     if (!_apiResp.data.ok) {
       if (options.alert) {
         let alert  = options.alert;
-        let entity = alert.entity || '数据';
-        let action = alert.action || '获取';
+        let title = alert.title || app.$t('Read data'); // 默认当作读取数据
 
         if (_apiResp.status === 401 && _apiResp.data.reason === 'EUserAuth') {
           // 令牌过期等，不用弹框提示
 
         } else if (alert.showError) {
           setTimeout(() => {
-            MessageBox.alert(`${entity}${action}失败<br>${_apiResp.data.message}`, `${action}${entity}`, {
+            MessageBox.alert(`${app.$t('Operation failed')}<br>${_apiResp.data.message}`, alert.title, {
               dangerouslyUseHTMLString: true,
-              confirmButtonText: '了解',
+              confirmButtonText: app.$t('OK'),
               type: 'error',
             });
           }, 300);

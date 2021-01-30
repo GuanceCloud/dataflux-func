@@ -1,3 +1,11 @@
+<i18n locale="zh-CN" lang="yaml">
+Disable Auth Link      : 禁用授权链接
+Enable Auth Link       : 启用授权链接
+Show Auth Link in doc  : 在文档中显示授权链接
+Hide Auth Link from doc: 在文档中隐藏授权链接
+Delete Auth Link       : 删除授权链接
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -249,7 +257,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/auth-links/do/list', {
         query: _listQuery,
-        alert: {entity: '授权链接', action: '获取', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -284,7 +292,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: true}},
-            alert : {entity: '授权链接', action: '禁用', showError: true},
+            alert : {title: this.$t('Disable Auth Link'), showError: true},
           });
           break;
 
@@ -292,7 +300,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: false}},
-            alert : {entity: '授权链接', action: '启用', showError: true},
+            alert : {title: this.$t('Enable Auth Link'), showError: true},
           });
           break;
 
@@ -300,7 +308,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {showInDoc: true}},
-            alert : {entity: '授权链接', action: '于文档展示', showError: true},
+            alert : {title: this.$t('Show Auth Link in doc'), showError: true},
           });
           break;
 
@@ -308,14 +316,14 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {showInDoc: false}},
-            alert : {entity: '授权链接', action: '从文档隐藏', showError: true},
+            alert : {title: this.$t('Hide Auth Link from doc'), showError: true},
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
             params: {id: d.id},
-            alert : {entity: '授权链接', action: '删除', showError: true},
+            alert : {title: this.$t('Delete Auth Link'), showError: true},
           });
           break;
       }
@@ -351,7 +359,7 @@ export default {
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
-        alert: {entity: '函数', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

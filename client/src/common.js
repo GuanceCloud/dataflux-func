@@ -9,7 +9,7 @@ export async function getFuncList() {
   // 脚本集
   let apiRes = await T.callAPI_allPage('/api/v1/script-sets/do/list', {
     query: {fields: ['id', 'title']},
-    alert: {entity: '脚本集', showError: true},
+    alert: {showError: true},
   });
   if (!apiRes.ok) return;
 
@@ -23,7 +23,7 @@ export async function getFuncList() {
   // 脚本
   apiRes = await T.callAPI_allPage('/api/v1/scripts/do/list', {
     query: {fields: ['id', 'title', 'scriptSetId']},
-    alert: {entity: '脚本', showError: true},
+    alert: {showError: true},
   });
   if (!apiRes.ok) return;
 
@@ -42,7 +42,7 @@ export async function getFuncList() {
   // 函数
   apiRes = await T.callAPI_allPage('/api/v1/funcs/do/list', {
     query: {fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON']},
-    alert: {entity: '函数', showError: true},
+    alert: {showError: true},
   });
   if (!apiRes.ok) return;
 

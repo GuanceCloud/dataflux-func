@@ -193,7 +193,7 @@ export default {
       }
       let apiRes = await this.T.callAPI('/api/v1/func/overview', {
         query: _query,
-        alert: {entity: '总览', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

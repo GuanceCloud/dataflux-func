@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Disable Batch: 禁用批处理
+Enable Batch : 启用批处理
+Delete Batch : 删除批处理
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -184,7 +190,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/batches/do/list', {
         query: _listQuery,
-        alert: {entity: '批处理', action: '获取',  showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -219,7 +225,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: true}},
-            alert : {entity: '批处理', action: '禁用', showError: true},
+            alert : {title: this.$t('Disable Batch'), showError: true},
           });
           break;
 
@@ -227,14 +233,14 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: false}},
-            alert : {entity: '批处理', action: '启用', showError: true},
+            alert : {title: this.$t('Enable Batch'), showError: true},
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
             params: {id: d.id},
-            alert : {entity: '批处理', action: '删除', showError: true},
+            alert : {title: this.$t('Delete Batch'), showError: true},
           });
           break;
       }
@@ -282,7 +288,7 @@ export default {
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
-        alert: {entity: '函数', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

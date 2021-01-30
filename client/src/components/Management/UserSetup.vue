@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Add User   : 添加用户
+Modify User: 添加用户
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -77,7 +82,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id, {
-          alert: {entity: '成员', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -115,7 +120,7 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/users/do/add', {
         body : {data: _formData},
-        alert: {entity: '成员', action: '添加', showError: true, showSuccess: true},
+        alert: {title: this.$t('Add User'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -132,7 +137,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
         params: {id: this.$route.params.id},
         body  : {data: _formData},
-        alert : {entity: '成员', action: '修改', showError: true, showSuccess: true},
+        alert : {title: this.$t('Modify User'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 

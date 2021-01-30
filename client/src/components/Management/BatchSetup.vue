@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Batch   : 添加批处理
+Modify Batch: 修改批处理
+Delete Batch: 删除批处理
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -107,7 +113,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id, {
-          alert: {entity: '批处理', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -143,7 +149,7 @@ export default {
     async addData() {
       let opt = {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '批处理', action: '添加', showError: true}
+        alert: {title: this.$t('Add Batch'), showError: true}
       };
 
       // 添加函数调用参数kwargsJSON
@@ -153,7 +159,7 @@ export default {
       } catch(err) {
         return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: this.$t('OK'),
           type: 'error',
         });
       }
@@ -176,7 +182,7 @@ export default {
       let opt = {
         params: {id: this.$route.params.id},
         body  : {data: _formData},
-        alert : {entity: '批处理', action: '修改', showError: true}
+        alert : {title: this.$t('Modify Batch'), showError: true}
       };
 
       // 添加函数调用参数kwargsJSON
@@ -185,7 +191,7 @@ export default {
       } catch(err) {
         return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: this.$t('OK'),
           type: 'error',
         });
       }
@@ -204,8 +210,8 @@ export default {
       try {
         await this.$confirm('删除批处理后，将无法继续投递批处理任务<hr class="br">是否确认删除？', '删除批处理', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
+          confirmButtonText: this.$t('Delete'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -215,7 +221,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
         params: {id: this.$route.params.id},
-        alert : {entity: '批处理', action: '删除', showError: true},
+        alert : {title: this.$t('Delete Batch'), showError: true},
       });
       if (!apiRes.ok) return;
 

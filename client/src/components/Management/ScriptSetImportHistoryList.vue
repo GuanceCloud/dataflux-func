@@ -80,7 +80,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/script-set-import-history/do/list', {
         query: {pageSize: 50},
-        alert: {entity: '导入历史', showError: true},
+        alert: {howError: true},
       });
       if (!apiRes.ok) return;
 

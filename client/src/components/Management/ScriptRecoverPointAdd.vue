@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Create Script Lib Recover Point: 创建脚本库还原点
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -64,7 +68,7 @@ export default {
     async addData() {
       let opt = {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '脚本库还原点', action: '创建', showError: true},
+        alert: {title: this.$t('Create Script Lib Recover Point'), showError: true},
       };
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', opt);

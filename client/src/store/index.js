@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 
-import * as C from '@/const'
+import C from '@/const'
 import * as toolkit from '@/toolkit'
 
 const STATE_CONFIG = {

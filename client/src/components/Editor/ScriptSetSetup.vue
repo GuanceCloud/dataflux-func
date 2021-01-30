@@ -1,3 +1,11 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Script Set   : 添加脚本集
+Modify Script Set: 修改脚本集
+Lock Script Set  : 锁定脚本集
+Unlock Script Set: 解锁脚本集
+Delete Script Set: 删除脚本集
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -100,7 +108,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-          alert: {entity: '脚本集', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -139,7 +147,7 @@ export default {
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/add', {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '脚本集', action: '添加', showError: true, showSuccess: true},
+        alert: {title: this.$t('Add Script Set'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -157,7 +165,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
         params: {id: this.scriptSetId},
         body  : {data: _formData},
-        alert : {entity: '脚本集', action: '修改', showError: true, showSuccess: true},
+        alert : {title: this.$t('Modify Script Set'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -167,11 +175,13 @@ export default {
       return this.scriptSetId;
     },
     async lockData(isLocked) {
-      let actionTitle = isLocked ? '锁定' : '解锁';
+      let alertTitle = isLocked
+                     ? this.$t('Lock Script Set')
+                     : this.$t('Unlock Script Set');
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
         params: {id: this.scriptSetId},
         body  : {data: { isLocked: isLocked }},
-        alert : {entity: '脚本集', action: actionTitle, showError: true, showSuccess: true},
+        alert : {title: alertTitle, showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 
@@ -184,8 +194,8 @@ export default {
           <br>此外，与此脚本集关联的脚本、函数、授权链接、自动触发配置、批处理及其他历史数据也会同时删除
           <hr class="br">是否确认删除？`, '删除脚本集', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
+          confirmButtonText: this.$t('Delete'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -195,7 +205,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/script-sets/:id/do/delete', {
         params: {id: this.scriptSetId},
-        alert : {entity: '脚本集', action: '删除', showError: true},
+        alert : {title: this.$t('Delete Script Set'), showError: true},
       });
       if (!apiRes.ok) return;
 

@@ -1,10 +1,23 @@
+<i18n locale="zh-CN" lang="yaml">
+Code Editor Setup                                : 代码编辑器配置
+Setting of Code Editor only effect current brower: 代码编辑器配置仅保存在当前浏览器，更换浏览器或电脑后需要重新配置
+Theme                                            : 主题
+Font Size                                        : 文字大小
+Line Height                                      : 行高
+Reset to default                                 : 恢复默认配置
+Please input font size                           : 请输入文字大小
+Font size should be a integer between 12 and 24  : 文字大小设置范围为 12-24 px
+Please input line height                         : 请输入行高
+Line height should be a number between 1 and 2   : 行高设置范围为 1-2 倍
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          代码编辑器配置
+          {{ $t('Code Editor Setup')}}
         </h1>
       </el-header>
 
@@ -15,16 +28,16 @@
             <div>
               <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
                 <el-form-item>
-                  <InfoBlock type="info" title="代码编辑器配置仅保存在当前浏览器，更换浏览器或电脑后需要重新配置"></InfoBlock>
+                  <InfoBlock type="info" :title="$t('Setting of Code Editor only effect current brower')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="主题">
+                <el-form-item :label="$t('Theme')">
                   <el-select v-model="form.theme">
-                    <el-option v-for="t in C.CODE_MIRROR_THEME" :key="t.key" :label="t.name" :value="t.key"></el-option>
+                    <el-option v-for="t in C.CODE_MIRROR_THEME" :key="t.key" :label="$t(t.name)" :value="t.key"></el-option>
                   </el-select>
                 </el-form-item>
 
-                <el-form-item label="文字大小" prop="style.fontSize">
+                <el-form-item :label="$t('Font Size')" prop="style.fontSize">
                   <el-slider
                     :min="12"
                     :max="24"
@@ -34,7 +47,7 @@
                     v-model.number="form.style.fontSize"></el-slider>
                 </el-form-item>
 
-                <el-form-item label="行距" prop="style.lineHeight">
+                <el-form-item :label="$t('Line Height')" prop="style.lineHeight">
                   <el-slider
                     :min="1"
                     :max="2"
@@ -45,7 +58,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button @click="loadData(true)">恢复默认配置</el-button>
+                  <el-button @click="loadData(true)">{{ $t('Reset to default') }}</el-button>
                 </el-form-item>
               </el-form>
             </div>
@@ -88,7 +101,7 @@ export default {
     async loadData(useDefault) {
       if (useDefault) {
         let defaultSetting = {
-          theme: null,
+          theme: this.C.CODE_MIRROR_DEFAULT_THEME,
           style: this.T.jsonCopy(this.$store.getters.DEFAULT_STATE.codeMirrorStyle),
         };
         this.form = defaultSetting;
@@ -107,20 +120,45 @@ export default {
     },
   },
   computed: {
+    formRules() {
+      return {
+        'style.fontSize': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input font size'),
+            required: true,
+          },
+          {
+            trigger : 'change',
+            message : this.$t('Font size should be a integer between 12 and 24'),
+            type   : 'integer', min: 12, max: 24,
+          },
+        ],
+        'style.lineHeight': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input line height'),
+            required: true,
+          },
+          {
+            trigger : 'change',
+            message : this.$t('Line height should be a number between 1 and 2'),
+            type   : 'number', min: 1, max: 2,
+          },
+        ],
+      }
+    },
     codeMirrorTheme() {
       return this.T.getCodeMirrorThemeName();
     },
     codeExample() {
       return `
-# 导出函数为HTTP API接口
-@DFF.API('API名称')
+# Export Func as HTTP API
+@DFF.API('API Name')
 def hello_world():
-    # 从数据源读取数据
+    # Query data from Data Source
     db = DFF.HELPER('db')
     db.query('SELECT * FROM table LIMIT 3')
-
-    # 日志输出
-    DFF.log('Hello, world!')
 
     return 'Hello, world'`.trim();
     },
@@ -135,32 +173,6 @@ def hello_world():
           fontSize  : null,
           lineHeight: null,
         }
-      },
-      formRules: {
-        'style.fontSize': [
-          {
-            trigger : 'change',
-            message : '请输入文字大小',
-            required: true,
-          },
-          {
-            trigger : 'change',
-            message : '文字大小设置范围为 12-24 px',
-            type   : 'integer', min: 12, max: 24,
-          },
-        ],
-        'style.lineHeight': [
-          {
-            trigger : 'change',
-            message : '请输入行距',
-            required: true,
-          },
-          {
-            trigger : 'change',
-            message : '行距设置范围为 1-2 倍',
-            type   : 'number', min: 1, max: 2,
-          },
-        ],
       },
     }
   },

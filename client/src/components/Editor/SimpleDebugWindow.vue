@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Query Data Source : 查询数据源
+Browse Data Source: 浏览数据源
+</i18n>
+
 <template>
   <div id="simpleDebugWindow"
     class="simple-debug-window"
@@ -240,7 +245,6 @@ export default {
           queryStatement: queryOptions.queryStatement,
           returnType    : 'repr',
         },
-        alert: {entity: '数据源', action: '查询'},
         extraOptions: {noCountProcessing: true},
       });
 
@@ -399,7 +403,6 @@ export default {
               queryStatement: queryStatement,
               returnType    : 'json',
             },
-            alert: {entity: '数据源', action: '浏览'},
             extraOptions: {noCountProcessing: true},
           });
           if (!apiRes.ok) {

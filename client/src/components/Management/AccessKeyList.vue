@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Delete Access Key: 删除 AccessKey
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -114,7 +118,7 @@ export default {
           fields: ['id', 'userId', 'name', 'secret', 'createTime'],
           sort  : ['-seq'],
         }),
-        alert: {entity: 'AccessKey', action: '获取',  showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -131,8 +135,8 @@ export default {
           case 'delete':
             await this.$confirm(`${operationName}AccessKey 可能导致相关系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}AccessKey`,  {
               dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
+              confirmButtonText: this.$t('Delete'),
+              cancelButtonText: this.$t('Cancel'),
               type: 'warning',
             });
             break;
@@ -147,7 +151,7 @@ export default {
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/access-keys/:id/do/delete', {
             params: {id: d.id},
-            alert : {entity: 'AccessKey', action: '删除', showError: true},
+            alert : {title: this.$t('Delete Access Key'), showError: true},
           });
           break;
       }

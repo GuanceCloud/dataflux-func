@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Recover Script Lib: 还原脚本库
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -71,7 +75,7 @@ export default {
       // 只加载近100条
       let apiRes = await this.T.callAPI('/api/v1/script-recover-points/do/list', {
         query: {pageSize: 50},
-        alert: {entity: '脚本库还原点', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -104,7 +108,7 @@ export default {
         case 'recover':
           apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/:id/do/recover', {
             params: {id: d.id},
-            alert : {entity: '脚本库', action: '还原', showError: true},
+            alert : {title: this.$t('Recover Script Lib'), showError: true},
           });
           break;
       }

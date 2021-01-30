@@ -114,7 +114,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/script-failures/do/list', {
         query: this.T.createListQuery(),
-        alert: {entity: '函数故障列表', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

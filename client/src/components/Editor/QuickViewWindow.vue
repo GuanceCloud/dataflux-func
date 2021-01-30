@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Drag to place: 调整位置
+Published: 已发布
+Draft    : 草稿
+</i18n>
+
 <template>
   <div id="quickViewWindow"
     class="quick-view-window"
@@ -8,23 +14,23 @@
       <span class="quick-view-title">
         <span>{{ script.title || script.id }}</span>
       </span>
-      <el-link class="quick-view-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> 关闭</el-link>
+      <el-link class="quick-view-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
     </div>
 
     <div v-show="isDragging" class="quick-view-dragging-cover">
-      <span class="quick-view-dragging-cover-tip">调整位置...</span>
+      <span class="quick-view-dragging-cover-tip">{{ $t('Drag to place') }}</span>
     </div>
 
     <el-tabs
       tab-position="bottom"
       type="border-card"
       v-model="selectedTab">
-      <el-tab-pane label="已发布" name="code">
+      <el-tab-pane :label="$t('Published')" name="code">
         <div class="quick-view-code">
           <textarea id="quickView_code"></textarea>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="草稿" name="codeDraft">
+      <el-tab-pane :label="$t('Draft')" name="codeDraft">
         <div class="quick-view-code">
           <textarea id="quickView_codeDraft"></textarea>
         </div>
@@ -57,7 +63,7 @@ export default {
     async showWindow(scriptId) {
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
         params: {id: scriptId},
-        alert : {entity: '脚本', action: '获取', showError: true},
+        alert : {showError: true},
       });
       if (!apiRes.ok) return;
 

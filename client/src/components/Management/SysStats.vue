@@ -132,7 +132,7 @@ export default {
     },
     async updateChart() {
       let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get', {
-        alert: {entity: '系统指标', action: '获取',  showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -455,7 +455,6 @@ export default {
     },
   },
   mounted() {
-    window.vmc = this;
     setImmediate(() => {
       // 初始化Echarts
       for (let chartId in this.CHART_CONFIGS) {

@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Disable Crontab Config: 禁用自动触发配置
+Enable Crontab Config : 启用自动触发配置
+Delete Crontab Config : 删除自动触发配置
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -189,7 +195,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/crontab-configs/do/list', {
         query: _listQuery,
-        alert: {entity: '自动触发配置', action: '获取',  showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -224,7 +230,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: true}},
-            alert : {entity: '自动触发配置', action: '禁用', showError: true},
+            alert : {title: this.$t('Disable Crontab Config'), showError: true},
           });
           break;
 
@@ -232,14 +238,14 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: false}},
-            alert : {entity: '自动触发配置', action: '启用', showError: true},
+            alert : {title: this.$t('Enable Crontab Config'), showError: true},
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
             params: {id: d.id},
-            alert : {entity: '自动触发配置', action: '删除', showError: true},
+            alert : {title: this.$t('Delete Crontab Config'), showError: true},
           });
           break;
       }

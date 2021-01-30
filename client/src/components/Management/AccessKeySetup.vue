@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Access Key   : 添加 AccessKey
+Delete Access Key: 删除 AccessKey
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -68,7 +73,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id, {
-          alert: {entity: 'AccessKey', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -96,7 +101,7 @@ export default {
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/access-keys/do/add', {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: 'AccessKey', action: '添加', showError: true, showSuccess: true},
+        alert: {title: this.$t('Add Access Key'), showError: true, showSuccess: true},
       });
       if (!apiRes.ok) return;
 

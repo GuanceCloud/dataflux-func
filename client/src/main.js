@@ -3,6 +3,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
+import yaml from 'js-yaml'
+
 // 图标
 import 'font-awesome/css/font-awesome.css'
 
@@ -26,9 +28,8 @@ Vue.use(ElementUI)
 
 // 国际化
 import VueI18n from 'vue-i18n'
+import locales from '@/assets/yaml/locales.yaml'
 Vue.use(VueI18n)
-
-import locales from '@/locales'
 
 const i18n = new VueI18n({
   // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
@@ -65,7 +66,7 @@ Vue.prototype.toolkit = toolkit;
 Vue.prototype.T = toolkit;
 
 // 常量
-import * as const_ from '@/const'
+import const_ from '@/const'
 Vue.prototype.const = const_;
 Vue.prototype.C = const_;
 
@@ -123,13 +124,13 @@ window.addEventListener('storage', function (ev) {
 });
 
 // 本体
-const vm = new Vue({
+const app = new Vue({
   router,
   store,
   i18n,
   render: h => h(App)
 }).$mount('#app');
-window.vm = vm;
+window.app = app;
 
 // 全剧配置
 Vue.config.devtools = true;
@@ -138,3 +139,5 @@ Vue.config.silent = true;
 
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;
+
+export default app

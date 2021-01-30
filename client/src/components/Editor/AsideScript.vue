@@ -122,7 +122,7 @@ Open Quick View Panel                          : 打开快速预览面板
               {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
               <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="`${$t('Copy {name} ID', { name: $t(C.ASIDE_ITEM_TYPE_MAP[data.type].name) })}`" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
             </div>
             <div v-if="data.isCodeEdited" class="code-edited-tip">
               <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
@@ -216,7 +216,7 @@ export default {
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
         query: {fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
-        alert: {entity: this.$t('Script Set'), showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -247,7 +247,7 @@ export default {
       /***** 脚本 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
         query: {fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
-        alert: {entity: this.$t('Script'), showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -291,7 +291,7 @@ export default {
       /***** 函数 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
         query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type']},
-        alert: {entity: this.$t('Func'), showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

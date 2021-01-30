@@ -1,3 +1,49 @@
+<i18n locale="en" lang="yaml">
+codeLines: '{n} line | {n} lines'
+</i18n>
+
+<i18n locale="zh-CN" lang="yaml">
+Script Setup                                               : 脚本设置
+Other user are editing this Script, please wait            : 其他用户正在编辑此脚本，请稍后
+All top Func without a underbar prefix are avaliable       : 可以指定任意顶层非下划线开头的函数
+Select a Func to run                                       : 选择执行函数
+Viewport are too narrow                                    : 当前可视宽度太窄
+Writing test cases to test your Func is recommended        : 建议编写测试用例来测试您的函数
+Arguments                                                  : 参数
+'Arguments should be inputed like {"arg": value}'          : '参数以 {"参数名": 参数值} 方式填写'
+'Leave blank or {} when no argument'                       : '没有参数的不用填写，或保留 {}'
+'Arguments (JSON-formated)'                                : 参数（JSON格式）
+Run selected Func                                          : 执行指定的函数
+'Shortcut:'                                                : 快捷键：
+Run                                                        : 执行
+Save Script draft, code will NOT take effect immediately   : 保存当前脚本草稿，但代码不会立即生效
+Show code diff                                             : 查看代码差异
+Diff                                                       : 差异
+Save and publish Script, code will take effect IMMEDIATELY : 保存并发布脚本，代码将立刻生效
+Publish                                                    : 发布
+Recover code to latest published version                   : 恢复代码为上次发布的版本
+End edit                                                   : 结束编辑
+Setup Code Editor                                          : 调整编辑器显示样式
+This Script has been locked by other, editing is disabled  : 当前脚本被其他用户锁定，无法修改
+codeLines                                                  : '共 {n} 行代码'
+Script is modified but NOT published yet                   : 脚本已修改但尚未发布
+Script is published                                        : 脚本已发布
+Diff between published and previously published            : 发布前后差异
+Clear highlighted                                          : 清除高亮
+Clear output                                               : 清除输出
+Output                                                     : 脚本输出
+Func exection result or log message will be shown here     : 函数执行结果与日志信息将显示在此处
+Operating too frequently or Script is modified in other tab: 操作过于频繁，或脚本已经在其他窗口被修改。
+You can download current Script to avoid losing your stuff : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
+Script has been modified                                   : 脚本已被修改
+Download and end editing                                   : 下载并退出编辑
+Just end editing                                           : 不保存直接退出编辑
+To avoid losing current code, Script has been downloaded   : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
+Saving Script failed                                       : 保存脚本失败
+'Filename:'                                                : 文件名：
+# TODO
+</i18n>
+
 <template>
   <transition name="fade">
     <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="100" split="horizontal" v-show="$store.state.isLoaded">
@@ -9,7 +55,7 @@
               <code class="code-editor-action-title">
                 <i class="fa fa-file-code-o"></i>
                 {{ data.id }}
-                <el-tooltip content="脚本设置" placement="bottom" :enterable="false">
+                <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
                   <el-button
                     type="text"
                     @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
@@ -22,17 +68,17 @@
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-if="isConflicted">
-                  <el-link type="danger" :underline="false">其他用户正在{{ userOperationText }}当前脚本，请稍后...</el-link>
+                  <el-link type="danger" :underline="false">{{ $t('Other user are editing this Script, please wait') }}</el-link>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-tooltip content="可以指定任意顶层非下划线开头的函数" placement="left" :enterable="false">
+                  <el-tooltip :content="$t('All top Func without a underbar prefix are avaliable')" placement="left" :enterable="false">
                     <el-select
                       style="width: 200px"
                       v-model="selectedFuncId"
                       size="mini"
                       filterable
-                      placeholder="选择执行函数">
+                      :placeholder="$t('Select a Func to run')">
                       <el-option v-for="f in draftFuncs" :key="f.id" :label="f.name" :value="f.id">
                       </el-option>
                     </el-select>
@@ -43,24 +89,24 @@
                   <el-form-item class="hidden-lg-and-up">
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
-                        当前浏览器宽度比较小<br>
-                        建议编写类似 <code>test_your_func()</code> 的测试函数进行调用
+                        {{ $t('Viewport are too narrow') }}<br>
+                        {{ $t('Writing test cases to test your Func is recommended') }}
                       </div>
-                      <el-tag type="info">参数</el-tag>
+                      <el-tag type="info">{{ $t('Arguments') }}</el-tag>
                     </el-tooltip>
                   </el-form-item>
 
                   <el-form-item class="hidden-md-and-down">
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
-                        参数以 {"参数名": 参数值} 填写，如：{"arg":"value"}<br>
-                        没有参数的不用填写，或保留 {}<br>
-                        建议编写类似 <code>test_your_func()</code> 的测试函数进行调用
+                        {{ $t('Writing test cases to test your Func is recommended') }}<br>
+                        {{ $t('Arguments should be inputed like {"arg": value}') }}<br>
+                        {{ $t('Leave blank or {} when no argument') }}
                       </div>
                       <el-input
                         style="width: 200px"
                         size="mini"
-                        placeholder="参数（JSON格式）"
+                        :placeholder="$t('Arguments (JSON-formated)')"
                         v-model="funcCallKwargsJSON"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
@@ -70,8 +116,8 @@
                   <el-form-item>
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
-                        执行指定的函数<br>
-                        快捷键：<code>{{ T.getSuperKeyName() }} + B</code>
+                        {{ $t('Run selected Func') }}<br>
+                        {{ $t('Shortcut:') }}<code>{{ T.getSuperKeyName() }} + B</code>
                       </div>
                       <el-button
                         @click="callFuncDraft"
@@ -81,7 +127,7 @@
                         v-loading.fullscreen.lock="workerResultLoading"
                         element-loading-spinner="el-icon-loading"
                         :element-loading-text="workerRunningTipTitle">
-                        <i class="fa fa-fw fa-play"></i> <span class="hidden-md-and-down">执行</span>
+                        <i class="fa fa-fw fa-play"></i> <span class="hidden-md-and-down">{{ $t('Run') }}</span>
                       </el-button>
                     </el-tooltip>
                   </el-form-item>
@@ -90,45 +136,45 @@
                     <el-button-group>
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
-                          保存当前脚本草稿，但不会生效<br>
-                          快捷键：<code>{{ T.getSuperKeyName() }} + S</code>
+                          {{ $t('Save Script draft, code will NOT take effect immediately') }}<br>
+                          {{ $t('Shortcut:') }}<code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
                           @click="saveScript()"
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-save"></i> <span class="hidden-md-and-down">保存</span>
+                          <i class="fa fa-fw fa-save"></i> <span class="hidden-md-and-down">{{ $t('Save') }}</span>
                         </el-button>
                       </el-tooltip>
 
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
-                          查看代码差异
+                          {{ $t('Show code diff') }}
                         </div>
                         <el-button
                           @click="showDiff()"
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">差异</span>
+                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">{{ $t('Diff') }}</span>
                         </el-button>
                       </el-tooltip>
 
-                      <el-tooltip content="保存并发布脚本，脚本立刻生效" placement="bottom" :enterable="false">
+                      <el-tooltip :content="$t('Save and publish Script, code will take effect IMMEDIATELY')" placement="bottom" :enterable="false">
                         <el-button
                           @click="publishScript"
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-coffee"></i> <span class="hidden-md-and-down">发布</span>
+                          <i class="fa fa-fw fa-coffee"></i> <span class="hidden-md-and-down">{{ $t('Publish') }}</span>
                         </el-button>
                       </el-tooltip>
                     </el-button-group>
                   </el-form-item>
 
                   <el-form-item v-if="!isLockedByOther">
-                    <el-tooltip content="复位脚本草稿到上次发布的状态" placement="bottom" :enterable="false">
+                    <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                       <el-button
                         @click="resetScript"
                         :disalbed="!workerRunning"
@@ -139,7 +185,7 @@
                 </template>
 
                 <el-form-item>
-                  <el-tooltip :content="`退出${userOperationText}`" placement="bottom" :enterable="false">
+                  <el-tooltip :content="$t('End edit')" placement="bottom" :enterable="false">
                     <el-button
                       @click="endEdit"
                       :disalbed="!workerRunning"
@@ -149,7 +195,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-tooltip content="调整编辑器显示样式" placement="bottom" :enterable="false">
+                  <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
                     <el-button
                       @click="gotoCodeEditorSetup"
                       :disalbed="!workerRunning"
@@ -160,7 +206,7 @@
               </el-form>
             </div>
 
-            <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本被其他用户锁定，无法修改"></InfoBlock>
+            <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
           </el-header>
 
           <!-- 代码区 -->
@@ -170,40 +216,26 @@
 
           <!-- 状态栏 -->
           <div class="code-editor-status-bar" v-show="$store.state.isLoaded">
-            <el-tooltip :content="`DIFF差异：增加 ${diffAddedCount} 行，删除 ${diffRemovedCount} 行`" placement="top-end">
-              <span>
-                Diff <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>,
-              </span>
-            </el-tooltip>
-
-            <template v-if="codeLines === codeDraftLines">
-              <el-tooltip :content="`共 ${codeLines} 行代码`" placement="top-end">
-                <span>
-                  Line {{ codeLines }},
-                </span>
-              </el-tooltip>
-            </template>
-            <template v-else>
-              <el-tooltip :content="`修改前共 ${codeLines} 行代码，修改后共 ${codeDraftLines} 行代码`" placement="top-end">
-                <span>
-                  Line {{ codeLines }} <i class="fa fa-long-arrow-right"></i> <span class="text-main">{{ codeDraftLines }}</span>,
-                </span>
-              </el-tooltip>
-            </template>
+            <span>
+              Diff <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>,
+            </span>
+            <span>
+              {{ $tc('codeLines', { n: codeLines }) }}
+            </span>
 
             <template v-if="data.code !== data.codeDraft">
-              <el-tooltip content="脚本已修改但尚未发布" placement="top-end">
+              <el-tooltip :content="$t('Script is modified but NOT published yet')" placement="top-end">
                 <span class="text-main">MODIFIED</span>
               </el-tooltip>
             </template>
             <template v-else>
-              <el-tooltip content="脚本已发布" placement="top-end">
+              <el-tooltip :content="$t('Script is published')" placement="top-end">
                 <span class="text-good">CLEAR</span>
               </el-tooltip>
             </template>
           </div>
 
-          <LongTextDialog title="发布前后差异（diff）" :diffMode="true" ref="longTextDialog"></LongTextDialog>
+          <LongTextDialog :title="$t('Diff between published and previously published')" :diffMode="true" ref="longTextDialog"></LongTextDialog>
         </el-container>
       </template>
 
@@ -211,15 +243,15 @@
       <template slot="paneR">
         <div class="code-editor-output">
           <div class="code-editor-output-close">
-            <el-link type="info" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> 清除高亮</el-link>
+            <el-link type="info" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
             &#12288;
-            <el-link type="info" @click.stop="clearResult()"><i class="fa fa-trash-o"></i> 清空</el-link>
+            <el-link type="info" @click.stop="clearOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
             &#12288;
-            <el-link type="info" @click.stop="resizeVueSplitPane(100)"><i class="fa fa-times"></i> 关闭</el-link>
+            <el-link type="info" @click.stop="resizeVueSplitPane(100)"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
           </div>
           <el-tabs tab-position="left" type="border-card">
-            <el-tab-pane :label="`脚本输出${funcCallSeq > 0 ? ` #${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
-              <pre v-html.trim="textOutput || '指定函数及参数后，执行函数。\n函数执行结果等信息将显示在此处'"></pre>
+            <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
+              <pre v-html.trim="textOutput || $t('Func exection result or log message will be shown here')"></pre>
             </el-tab-pane>
 
             <!--
@@ -345,13 +377,11 @@ export default {
           // 乐观锁冲突
           case 'EBizRequestConflict.scriptDraftAlreadyChanged':
             try {
-              await this.$confirm(`操作过于频繁，或脚本已经在其他窗口被修改。实际代码可能与页面展示不同。
-                  <br><span class="text-bad">由于网络通讯需要时间，请注意不要连续密集进行保存发布等操作。也不要在多个窗口编辑同一个脚本。</span>
-                  <br>
-                  <br><span class="text-good">为避免丢失正在编辑的代码，您可以下载当前展示的代码</span>`, '脚本已被修改', {
+              await this.$confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
+                  <br><span class="text-good">${this.$t('You can download current Script to avoid losing your stuff')}</span>`, this.$t('Script has been modified'), {
                 dangerouslyUseHTMLString: true,
-                confirmButtonText: '下载并退出编辑',
-                cancelButtonText: '不保存直接退出编辑',
+                confirmButtonText: this.$t('Download and end editing'),
+                cancelButtonText: this.$t('Just end editing'),
                 type: 'error',
               });
 
@@ -369,10 +399,10 @@ export default {
             if (options.silent) break;
 
             let downloadFileName = this._downloadEditingCodeDraft(codeDraft);
-            await this.$alert(`<span class="text-good">为避免丢失正在编辑的代码，当前展示的代码已自动为您下载</span>
-                <br>文件名：<code class="text-main">${downloadFileName}</code>`, '脚本保存失败', {
+            await this.$alert(`<span class="text-good">${this.$t('To avoid losing current code, Script has been downloaded')}</span>
+                <br>${this.$t('Filename:')}<code class="text-main">${downloadFileName}</code>`, this.$t('Saving Script failed'), {
               dangerouslyUseHTMLString: true,
-              confirmButtonText: '了解',
+              confirmButtonText: this.$t('OK'),
               type: 'error',
             });
 
@@ -393,7 +423,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
         params: {id: this.scriptId},
-        alert : {entity: '脚本', action: '打开', showError: true},
+        alert : {showError: true},
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -413,7 +443,7 @@ export default {
 
       // 获取关联数据
       apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-        alert: {entity: '脚本集', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -747,7 +777,7 @@ export default {
       // 检查发布状态
       apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
         query: {fields: ['codeMD5', 'codeDraftMD5']},
-        alert: {entity: '脚本', action: '确认', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -803,7 +833,7 @@ export default {
       this.updateHighlightLineConfig('selectedFuncLine', null);
       this.updateHighlightLineConfig('errorLine', null);
     },
-    clearResult() {
+    clearOutput() {
       this.textOutput = '';
       this.chartOutput = [];
 
@@ -1316,9 +1346,6 @@ export default {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId
           || this.scriptSet.lockedByUserId && this.scriptSet.lockedByUserId !== this.$store.getters.userId;
     },
-    userOperationText() {
-      return this.isLockedByOther ? '调试' : '编辑';
-    },
     highlightedFuncId() {
       return this.$store.state.Editor_highlightedFuncId;
     },
@@ -1379,7 +1406,6 @@ export default {
     }, 100);
   },
   mounted() {
-    window.vmc = this;
     setImmediate(() => {
       // 初始化编辑器
       this.codeMirror = this.T.initCodeMirror('editor_CodeEditor');

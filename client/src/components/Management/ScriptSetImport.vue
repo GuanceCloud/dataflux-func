@@ -127,8 +127,7 @@ export default {
       bodyData.append('files', req.file);
 
       let opt = {
-        body : bodyData,
-        alert: {entity: '脚本包', action: '导入'},
+        body: bodyData,
       };
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', opt);
       if (!apiRes.ok) {
@@ -141,8 +140,7 @@ export default {
     },
     async confirmImport() {
       let opt = {
-        body : {confirmId: this.checkResult.confirmId},
-        alert: {entity: '脚本包', action: '导入'},
+        body: {confirmId: this.checkResult.confirmId},
       };
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', opt);
       if (!apiRes.ok) {

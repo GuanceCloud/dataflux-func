@@ -143,7 +143,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/batch-task-info/do/list', {
         query : this.T.createListQuery({ batchId: this.$route.params.id}),
-        alert : {entity: '批处理任务信息', action: '获取', showError: true},
+        alert : {showError: true},
       });
       if (!apiRes.ok) return;
 

@@ -112,7 +112,7 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/func-list', {
-        alert: {entity: '函数列表', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -123,7 +123,7 @@ export default {
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.id, {
-        alert: {entity: '函数', showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

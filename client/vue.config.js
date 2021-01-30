@@ -53,6 +53,14 @@ module.exports = {
       .use('i18n')
         .loader("@intlify/vue-i18n-loader")
         .end();
+    config.module.rule('yaml')
+      .test(/\.ya?ml$/)
+      .include.add(path.resolve(__dirname, './src/assets/yaml'))
+      .end()
+      .type('json')
+      .use("yaml-loader")
+        .loader("yaml-loader")
+        .end()
   },
   devServer: {
     sockHost: getNetworkIP(),

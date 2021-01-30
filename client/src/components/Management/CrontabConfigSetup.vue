@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Add Crontab Config   : 添加自动触发配置
+Modify Crontab Config: 修改自动触发配置
+Delete Crontab Config: 删除自动触发配置
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -179,7 +185,7 @@ export default {
     async loadData() {
       if (this.mode === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id, {
-          alert: {entity: '自动触发配置', showError: true},
+          alert: {showError: true},
         });
         if (!apiRes.ok) return;
 
@@ -232,7 +238,7 @@ export default {
     async addData() {
       let opt = {
         body : {data: this.T.jsonCopy(this.form)},
-        alert: {entity: '自动触发配置', action: '添加', showError: true,
+        alert: {title: this.$t('Add Crontab Config'), showError: true,
           reasonMap: {
             'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
           }
@@ -271,7 +277,7 @@ export default {
       let opt = {
         params: {id: this.$route.params.id},
         body  : {data: this.T.jsonCopy(this.form)},
-        alert : {entity: '自动触发配置', action: '修改', showError: true,
+        alert : {title: this.$t('Modify Crontab Config'), showError: true,
           reasonMap: {
             'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
           }
@@ -319,7 +325,7 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
         params: {id: this.$route.params.id},
-        alert : {entity: '自动触发配置', action: '删除', showError: true},
+        alert : {title: this.$t('Delete Crontab Config'), showError: true},
       });
       if (!apiRes.ok) return;
 

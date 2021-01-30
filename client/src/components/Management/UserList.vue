@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Disable user: 禁用用户
+Enable user : 启用用户
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -112,7 +117,7 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/users/do/list', {
         query: this.T.createListQuery({ sort: ['seq'] }),
-        alert: {entity: '成员', action: '获取',  showError: true},
+        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -146,7 +151,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: true}},
-            alert : {entity: '成员', action: '禁用', showError: true},
+            alert : {title: this.$t('Disable user'), showError: true},
           });
           break;
 
@@ -154,7 +159,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
             params: {id: d.id},
             body  : {data: {isDisabled: false}},
-            alert : {entity: '成员', action: '启用', showError: true},
+            alert : {title: this.$t('Enable user'), showError: true},
           });
           break;
       }

@@ -5,14 +5,27 @@ Code Editor Setting                                                 : 代码编�
 'Including:'                                                        : 包括：
 Selected UI theme                                                   : 已选择的主题
 Font size, line height                                              : 文字大小、行距
+'UI Status:'                                                        : 页面状态：
+Expanded items in Code Editor Aside                                 : 编辑器侧栏中当前已展开的栏目
+Position of Aside separator, output box                             : 编辑器当前拖动的的编辑器侧栏、脚本输出栏位置
+Position of Simple Debug Panel                                      : 简易调试面板当前位置
+Position of Quick View Panel                                        : 快速查看面板当前位置
+Selected Func, Highlighted line or error line                       : 编辑器当前选择的函数、高亮已选择函数所在行、高亮错误行
+Position of scroll in Management                                    : 管理界面列表当前滚动所处位置
+Config loaded from server                                           : 从服务器加载的系统配置
+Page will refresh after clearing this content                       : 清除本项目会刷新页面
+Clear                                                               : 清除
+Cache is cleared                                                    : 缓存已清除
+Page will be refreshed, and config will reload from server          : 即将刷新页面，并从服务器重新加载系统配置
 </i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ $t('清除缓存') }}
+          {{ $t('Clear Cache') }}
         </h1>
       </el-header>
 
@@ -38,27 +51,27 @@ Font size, line height                                              : 文字大�
 
                 <el-form-item>
                   <el-checkbox v-model="form.clear_UIStatus">
-                    <strong>页面状态</strong>
+                    <strong>{{ $t('UI Status:') }}</strong>
                   </el-checkbox>
                   <div class="text-small form-item-tip">{{ $t('Including:') }}
-                    <br/>&#12288;编辑器侧栏中当前已展开的栏目
-                    <br/>&#12288;编辑器当前拖动的的编辑器侧栏、脚本输出栏位置
-                    <br/>&#12288;简易调试面板当前位置
-                    <br/>&#12288;快速查看面板当前位置
-                    <br/>&#12288;编辑器当前选择的函数、高亮已选择函数所在行、高亮错误行
-                    <br/>&#12288;管理界面列表当前滚动所处位置
+                    <br/>&#12288;{{ $t('Expanded items in Code Editor Aside') }}
+                    <br/>&#12288;{{ $t('Position of Aside separator, output box') }}
+                    <br/>&#12288;{{ $t('Position of Simple Debug Panel') }}
+                    <br/>&#12288;{{ $t('Position of Quick View Panel') }}
+                    <br/>&#12288;{{ $t('Selected Func, Highlighted line or error line') }}
+                    <br/>&#12288;{{ $t('Position of scroll in Management') }}
                   </div>
                 </el-form-item>
 
                 <el-form-item>
                   <el-checkbox v-model="form.clear_systemConfig">
-                    <strong>从服务器加载的系统配置</strong>
+                    <strong>{{ $t('Config loaded from server') }}</strong>
                   </el-checkbox>
-                  <div class="text-small form-item-tip">清除本项目会刷新页面</div>
+                  <div class="text-small form-item-tip">{{ $t('Page will refresh after clearing this content') }}</div>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button tabindex="5" type="primary" @click="clearCache" class="clear-cache-button">清除</el-button>
+                  <el-button tabindex="5" type="primary" @click="clearCache" class="clear-cache-button">{{ $t('Clear') }}</el-button>
                 </el-form-item>
               </el-form>
             </div>
@@ -98,14 +111,14 @@ export default {
         this.$store.commit('updateCrontabConfigList_scrollY', null);
       }
 
-      let alertMessage = '缓存已清除';
+      let alertMessage = this.$t('Cache is cleared');
       if (this.form.clear_systemConfig) {
-        alertMessage += '<br><span class="text-bad">即将刷新页面，并从服务器重新加载系统配置</span>';
+        alertMessage += `<br><span class="text-bad">${this.$t('Page will be refreshed, and config will reload from server')}</span>`;
       }
 
-      await this.$alert(alertMessage, '清除缓存', {
+      await this.$alert(alertMessage, this.$t('Clear Cache'), {
         dangerouslyUseHTMLString: true,
-        confirmButtonText: '非常好',
+        confirmButtonText: this.$t('Very good'),
         type: 'success',
       });
 
