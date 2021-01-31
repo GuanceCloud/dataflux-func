@@ -196,8 +196,8 @@ export default {
     },
     modeName() {
       const nameMap = {
-        setup: '配置',
-        add  : '添加',
+        setup: this.$t('Setup'),
+        add  : this.$t('Add'),
       };
       return nameMap[this.mode];
     },

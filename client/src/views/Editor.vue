@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
-Script Set : 脚本库
-Data Source: 数据源
-Env        : 环境变量
+Script Set Lib: 脚本库
+Data Source   : 数据源
+Env           : 环境变量
 </i18n>
 
 <template>
@@ -13,7 +13,7 @@ Env        : 环境变量
           <i class="icon-bg" :class="currentTabIcon"></i>
 
           <el-tabs v-model="currentTab" stretch type="border-card">
-            <el-tab-pane :label="$t('Script Set')" name="aside-script">
+            <el-tab-pane :label="$t('Script Set Lib')" name="aside-script">
               <AsideScript ref="asideScript"></AsideScript>
             </el-tab-pane>
             <el-tab-pane :label="$t('Data Source')" name="aside-data-source">

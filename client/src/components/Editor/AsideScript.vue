@@ -16,6 +16,8 @@ Copy {name} ID                                 : 复制{name}ID
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
 Open Quick View Panel                          : 打开快速预览面板
+Script Set {id}                                : 脚本集 {id}
+Script {id}                                    : 脚本 {id}
 </i18n>
 
 <template>
@@ -238,7 +240,7 @@ export default {
           isBuiltin    : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
-            description: d.description || `${this.$t('Script Set')} ${d.id}`,
+            description: d.description || this.$t('Script Set {id}', { id: d.id }),
           },
           children: [],
         };
@@ -275,7 +277,7 @@ export default {
           isLockedByOther: isLockedByOther,
           searchTEXT     : `${d.title} ${d.id}`,
           tip: {
-            description: d.description || `${this.$t('Script')} ${d.id}`,
+            description: d.description || this.$t('Script {id}', { id: d.id }),
             sampleCode : `import ${d.id}`,
           },
 

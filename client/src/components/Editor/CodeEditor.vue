@@ -5,7 +5,7 @@ codeLines: '{n} line | {n} lines'
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                               : 脚本设置
 Other user are editing this Script, please wait            : 其他用户正在编辑此脚本，请稍后
-All top Func without a underbar prefix are avaliable       : 可以指定任意顶层非下划线开头的函数
+All top Func without a underscore prefix are avaliable     : 可以指定任意顶层非下划线开头的函数
 Select a Func to run                                       : 选择执行函数
 Viewport are too narrow                                    : 当前可视宽度太窄
 Writing test cases to test your Func is recommended        : 建议编写测试用例来测试您的函数
@@ -72,7 +72,7 @@ Saving Script failed                                       : 保存脚本失败
                 </el-form-item>
 
                 <el-form-item>
-                  <el-tooltip :content="$t('All top Func without a underbar prefix are avaliable')" placement="left" :enterable="false">
+                  <el-tooltip :content="$t('All top Func without a underscore prefix are avaliable')" placement="left" :enterable="false">
                     <el-select
                       style="width: 200px"
                       v-model="selectedFuncId"

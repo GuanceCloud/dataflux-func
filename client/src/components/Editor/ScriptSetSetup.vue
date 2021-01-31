@@ -1,4 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
+This Script Set is locked by someone else, modifying is disabled                             : 当前脚本已被其他人锁定，无法进行修改
+This Script Set is locked by you, modifying is disabled to others                            : 当前脚本已被您锁定，其他人无法修改
+Script Set ID will be part of the Func ID                                                    : 脚本集ID将作为函数ID的一部分
+Title                                                                                        : 标题
+Description                                                                                  : 描述
+About this Script Set                                                                        : 介绍当前脚本集的作用、功能、目的等
+Please input ID                                                                              : 请输入ID
+ID can only contains alphabets, numbers and underscore, and cannot starts with a number      : ID只能包含大小写英文、数字或下划线，且不能以数字开头
+'ID cannot contains double underscore "__", it is a separator of Script Set ID and Script ID': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标示'
+
 Add Script Set   : 添加脚本集
 Modify Script Set: 修改脚本集
 Lock Script Set  : 锁定脚本集
@@ -11,10 +21,7 @@ Delete Script Set: 删除脚本集
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}脚本集
-          <code class="text-main">{{ data.title || data.id }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -24,8 +31,8 @@ Delete Script Set: 删除脚本集
             <div class="common-form">
               <el-form ref="form" :model="form" label-width="100px" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item>
-                  <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本已被其他人锁定，无法进行修改"></InfoBlock>
-                  <InfoBlock v-else-if="data.isLocked" type="success" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
+                  <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
+                  <InfoBlock v-else-if="data.isLocked" type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -33,17 +40,17 @@ Delete Script Set: 删除脚本集
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
-                  <InfoBlock title="脚本集ID关系到实际函数调用时所使用的名称"></InfoBlock>
+                  <InfoBlock :title="$t('Script Set ID will be part of the Func ID')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="标题">
+                <el-form-item :label="$t('Title')">
                   <el-input
                     maxlength="25"
                     show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
-                <el-form-item label="描述">
+                <el-form-item :label="$t('Description')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -51,23 +58,14 @@ Delete Script Set: 删除脚本集
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock title="介绍当前脚本集的作用、功能、目的等"></InfoBlock>
+                  <InfoBlock :title="$t('About this Script Set')"></InfoBlock>
                 </el-form-item>
-
-                <!--
-                <el-form-item label="类型">
-                  <el-select v-model="data.type" :disabled="true" placeholder="请选择脚本集类型">
-                    <el-option label="用户" key="user" value="user"></el-option>
-                    <el-option label="官方" key="official" value="official"></el-option>
-                  </el-select>
-                </el-form-item>
-                -->
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? '解锁' : '锁定' }}</el-button>
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -216,15 +214,47 @@ export default {
     },
   },
   computed: {
+    formRules() {
+      return {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('ID can only contains alphabets, numbers and underscore, and cannot starts with a number'),
+            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value.indexOf('__') >= 0) {
+                return callback(new Error(this.$t('ID cannot contains double underscore "__", it is a separator of Script Set ID and Script ID')));
+              }
+              return callback();
+            },
+          },
+        ],
+      }
+    },
     mode() {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: '配置',
-        add  : '添加',
+      const _map = {
+        setup: this.$t('Modify'),
+        add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify Script Set'),
+        add  : this.$t('Add Script Set'),
+      };
+      return _map[this.mode];
     },
     scriptSetId() {
       switch(this.mode) {
@@ -247,29 +277,6 @@ export default {
         id         : null,
         title      : null,
         description: null,
-      },
-      formRules: {
-        id: [
-          {
-            trigger : 'change',
-            message : '请输入ID',
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: 'ID只能包含大小写英文、数字或下划线，且不能以数字开头',
-            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
-          },
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (value.indexOf('__') >= 0) {
-                return callback(new Error('脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标示'));
-              }
-              return callback();
-            },
-          },
-        ],
       },
     }
   },

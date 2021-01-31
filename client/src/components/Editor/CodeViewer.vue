@@ -11,7 +11,7 @@ Script Setup: 脚本设置
           <code class="code-viewer-action-title">
             <i class="fa fa-file-code-o"></i>
             {{ data.id }}
-            <el-tooltip :content="{{ this.$t('Script Setup') }}" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
               <el-button
                 type="text"
                 @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
