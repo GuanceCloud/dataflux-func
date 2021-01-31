@@ -20,7 +20,7 @@ Delete Auth Link: 删除授权链接
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>

@@ -19,7 +19,7 @@ Modify User: 添加用户
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" label-width="100px" :rules="formRules">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="登录账号" prop="username">
                   <el-input
                     maxlength="20"

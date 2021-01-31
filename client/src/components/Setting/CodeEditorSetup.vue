@@ -5,10 +5,11 @@ Theme                                            : 主题
 Font Size                                        : 文字大小
 Line Height                                      : 行高
 Reset to default                                 : 恢复默认配置
-Please input font size                           : 请输入文字大小
-Font size should be a integer between 12 and 24  : 文字大小设置范围为 12-24 px
-Please input line height                         : 请输入行高
-Line height should be a number between 1 and 2   : 行高设置范围为 1-2 倍
+
+Please input font size                         : 请输入文字大小
+Font size should be a integer between 12 and 24: 文字大小设置范围为 12-24 px
+Please input line height                       : 请输入行高
+Line height should be a number between 1 and 2 : 行高设置范围为 1-2 倍
 </i18n>
 
 <template>
@@ -26,7 +27,7 @@ Line height should be a number between 1 and 2   : 行高设置范围为 1-2 倍
         <el-row :gutter="20">
           <el-col :span="24" :lg="12" :xl="12">
             <div>
-              <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item>
                   <InfoBlock type="info" :title="$t('Setting of Code Editor only effect current brower')"></InfoBlock>
                 </el-form-item>

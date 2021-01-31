@@ -20,7 +20,7 @@ Delete Crontab Config: 删除自动触发配置
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="执行函数" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable

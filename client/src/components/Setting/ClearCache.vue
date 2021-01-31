@@ -15,8 +15,9 @@ Position of scroll in Management                                    : 管理界�
 Config loaded from server                                           : 从服务器加载的系统配置
 Page will refresh after clearing this content                       : 清除本项目会刷新页面
 Clear                                                               : 清除
-Cache is cleared                                                    : 缓存已清除
-Page will be refreshed, and config will reload from server          : 即将刷新页面，并从服务器重新加载系统配置
+
+Cache is cleared                                          : 缓存已清除
+Page will be refreshed, and config will reload from server: 即将刷新页面，并从服务器重新加载系统配置
 </i18n>
 
 <template>

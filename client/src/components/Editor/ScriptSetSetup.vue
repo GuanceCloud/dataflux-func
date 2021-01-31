@@ -1,19 +1,25 @@
 <i18n locale="zh-CN" lang="yaml">
-This Script Set is locked by someone else, modifying is disabled                             : 当前脚本已被其他人锁定，无法进行修改
-This Script Set is locked by you, modifying is disabled to others                            : 当前脚本已被您锁定，其他人无法修改
-Script Set ID will be part of the Func ID                                                    : 脚本集ID将作为函数ID的一部分
-Title                                                                                        : 标题
-Description                                                                                  : 描述
-About this Script Set                                                                        : 介绍当前脚本集的作用、功能、目的等
-Please input ID                                                                              : 请输入ID
-ID can only contains alphabets, numbers and underscore, and cannot starts with a number      : ID只能包含大小写英文、数字或下划线，且不能以数字开头
-'ID cannot contains double underscore "__", it is a separator of Script Set ID and Script ID': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标示'
+This Script Set is locked by someone else, modifying is disabled : 当前脚本已被其他人锁定，无法进行修改
+This Script Set is locked by you, modifying is disabled to others: 当前脚本已被您锁定，其他人无法修改
+Script Set ID will be part of the Func ID                        : 脚本集ID将作为函数ID的一部分
+Title                                                            : 标题
+Description                                                      : 描述
+Description about this Script Set                                : 介绍当前脚本集的作用、功能、目的等
 
 Add Script Set   : 添加脚本集
 Modify Script Set: 修改脚本集
 Lock Script Set  : 锁定脚本集
 Unlock Script Set: 解锁脚本集
 Delete Script Set: 删除脚本集
+
+Deleting Script Set may break the dependency with other scripts                       : 删除脚本集可能会破坏与其他脚本的依赖关系
+In addition, all data associated with this Script Set will be deleted at the same time: 此外，与此脚本集关联的所有数据也会同时删除
+Are you sure you want to delete the Script Set?                                       : 是否确认删除脚本集？
+
+Please input ID                                   : 请输入ID
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number                   : 不得以数字开头
+'ID cannot contains double underscore "__"'       : '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
 </i18n>
 
 <template>
@@ -29,7 +35,7 @@ Delete Script Set: 删除脚本集
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" label-width="100px" :disabled="isLockedByOther" :rules="formRules">
+              <el-form ref="form"  label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item>
                   <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
                   <InfoBlock v-else-if="data.isLocked" type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
@@ -58,7 +64,7 @@ Delete Script Set: 删除脚本集
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock :title="$t('About this Script Set')"></InfoBlock>
+                  <InfoBlock :title="$t('Description about this Script Set')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
@@ -188,9 +194,9 @@ export default {
     },
     async deleteData() {
       try {
-        await this.$confirm(`删除脚本集可能导致已经引用当前脚本集的脚本无法正常执行
-          <br>此外，与此脚本集关联的脚本、函数、授权链接、自动触发配置、批处理及其他历史数据也会同时删除
-          <hr class="br">是否确认删除？`, '删除脚本集', {
+        await this.$confirm(`${this.$t('Deleting Script Set may break the dependency with other scripts')}
+          <br>${this.$t('In addition, all data associated with this Script Set will be deleted at the same time')}
+          <hr class="br">${this.$t('Are you sure you want to delete the Script Set?')}`, this.$t('Delete Script Set'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('Delete'),
           cancelButtonText: this.$t('Cancel'),
@@ -224,14 +230,20 @@ export default {
           },
           {
             trigger: 'change',
-            message: this.$t('ID can only contains alphabets, numbers and underscore, and cannot starts with a number'),
-            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
           },
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
               if (value.indexOf('__') >= 0) {
-                return callback(new Error(this.$t('ID cannot contains double underscore "__", it is a separator of Script Set ID and Script ID')));
+                let _message = this.$t('ID cannot contains double underscore "__"');
+                return callback(new Error(_message));
               }
               return callback();
             },

@@ -16,8 +16,9 @@ Copy {name} ID                                 : 复制{name}ID
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
 Open Quick View Panel                          : 打开快速预览面板
-Script Set {id}                                : 脚本集 {id}
-Script {id}                                    : 脚本 {id}
+
+Script Set {id}: 脚本集 {id}
+Script {id}    : 脚本 {id}
 </i18n>
 
 <template>

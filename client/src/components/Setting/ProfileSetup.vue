@@ -3,8 +3,10 @@ User Info                                                                       
 You are signed in via integrated user, please change your profile in the origin system: 当前登录用户为集成登录用户，修改信息请前往原系统进行操作
 Username                                                                              : 用户名
 Show Name                                                                             : 显示名
-Please input display name                                                             : 请输入显示名
-Modify user info                                                                      : 修改用户信息
+
+Please input display name: 请输入显示名
+
+Modify user info: 修改用户信息
 </i18n>
 
 <template>
@@ -22,7 +24,7 @@ Modify user info                                                                
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
                   <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in via integrated user, please change your profile in the origin system')"></InfoBlock>
                 </el-form-item>

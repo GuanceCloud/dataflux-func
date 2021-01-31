@@ -1,9 +1,25 @@
 <i18n locale="zh-CN" lang="yaml">
+This Script Set is locked by someone else, modifying is disabled : 当前脚本已被其他人锁定，无法进行修改
+This Script Set is locked by you, modifying is disabled to others: 当前脚本已被您锁定，其他人无法修改
+Script ID will be part of the Func ID                            : 脚本集ID将作为函数ID的一部分
+Title                                                            : 标题
+Description                                                      : 描述
+Description about this Script                                    : 介绍当前脚本的作用、功能、目的等
+
 Add Script   : 添加脚本
 Modify Script: 修改脚本
 Lock Script  : 锁定脚本
 Unlock Script: 解锁脚本
 Delete Script: 删除脚本
+
+Deleting Script may break the dependency with other scripts                       : 删除脚本可能会破坏与其他脚本的依赖关系
+In addition, all data associated with this Script will be deleted at the same time: 此外，与此脚本关联的所有数据也会同时删除
+Are you sure you want to delete the Script?                                       : 是否确认删除脚本？
+
+Please input ID                                                       : 请输入ID
+Only alphabets, numbers and underscore are allowed                    : 只能包含大小写英文、数字及下划线
+Cannot not starts with a number                                       : 不得以数字开头
+'ID of Script belong to "{scriptSetId}" should starts with "{prefix}"': '脚本集 {scriptSetId} 下的脚本ID必须以 "{prefix}" 开头'
 </i18n>
 
 <template>
@@ -11,10 +27,7 @@ Delete Script: 删除脚本
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}脚本
-          <code class="text-main">{{ data.title || data.id }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -22,10 +35,10 @@ Delete Script: 删除脚本
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" label-width="100px" :disabled="isLockedByOther" :rules="formRules">
+              <el-form ref="form"  label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item>
-                  <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本已被其他人锁定，无法进行修改"></InfoBlock>
-                  <InfoBlock v-else-if="data.isLocked" type="success" title="当前脚本已被您锁定，其他人无法修改"></InfoBlock>
+                  <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
+                  <InfoBlock v-else-if="data.isLocked" type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -34,17 +47,17 @@ Delete Script: 删除脚本
                     show-word-limit
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock title="脚本ID关系到实际函数调用时所使用的名称"></InfoBlock>
+                  <InfoBlock :title="$t('Script ID will be part of the Func ID')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="标题">
+                <el-form-item :label="$t('Title')">
                   <el-input
                     maxlength="25"
                     show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
-                <el-form-item label="描述">
+                <el-form-item :label="$t('Description')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -52,14 +65,14 @@ Delete Script: 删除脚本
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock title="介绍当前脚本的作用、功能、目的等"></InfoBlock>
+                  <InfoBlock :title="$t('Description about this Script')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? '解锁' : '锁定' }}</el-button>
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -189,9 +202,9 @@ export default {
     },
     async deleteData() {
       try {
-        await this.$confirm(`删除脚本可能导致已经引用当前脚本的脚本无法正常执行
-          <br>此外，与此脚本关联的函数、授权链接、自动触发配置、批处理及其他历史数据也会同时删除
-          <hr class="br">是否确认删除？`, '删除脚本', {
+        await this.$confirm(`${this.$t('Deleting Script may break the dependency with other scripts')}
+          <br>${this.$t('In addition, all data associated with this Script will be deleted at the same time')}
+          <hr class="br">${this.$t('Are you sure you want to delete the Script?')}`, this.$t('Delete Script'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('Delete'),
           cancelButtonText: this.$t('Cancel'),
@@ -215,15 +228,54 @@ export default {
     },
   },
   computed: {
+    formRules() {
+      return {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              let prefix = `${this.scriptSetId}__`;
+              if (value.indexOf(prefix) < 0 || value === prefix) {
+                let _message = this.$t('ID of Script belong to "{scriptSetId}" should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
+      }
+    },
     mode() {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: this.$t('Setup'),
+      const _map = {
+        setup: this.$t('Modify'),
         add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify Script'),
+        add  : this.$t('Add Script'),
+      };
+      return _map[this.mode];
     },
     scriptSetId() {
       switch(this.mode) {
@@ -249,38 +301,12 @@ export default {
   props: {
   },
   data() {
-    let vmc = this;
-
     return {
       data: {},
       form: {
         id         : null,
         title      : null,
         description: null,
-      },
-      formRules: {
-        id: [
-          {
-            trigger : 'change',
-            message : '请输入ID',
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: 'ID只能包含大小写英文、数字或下划线，且不能以数字开头',
-            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
-          },
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              let prefix = `${vmc.scriptSetId}__`;
-              if (value.indexOf(prefix) < 0 || value === prefix) {
-                return callback(new Error(`脚本集 ${vmc.scriptSetId} 下的脚本ID必须为 "${prefix}" 开头`));
-              }
-              return callback();
-            },
-          },
-        ],
       },
     }
   },

@@ -1201,10 +1201,7 @@ export default {
   props: {
   },
   data() {
-    let dragPosition = this.$store.state.asideDataSource_simpleDebugWindowPosition || {
-      left  : 10,
-      bottom: 10,
-    };
+    let dragPosition = this.$store.state.asideDataSource_simpleDebugWindowPosition || { left: 10, bottom: 10 };
 
     return {
       show: false,

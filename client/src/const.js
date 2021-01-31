@@ -47,14 +47,13 @@ export default {
       {
         key           : 'influxdb',
         name          : 'InfluxDB',
-        fullName      : 'InfluxDB (HTTP)（及兼容数据库）',
+        fullName      : app.$t('InfluxDB (HTTP) (And other compatible Databases)'),
         logo          : logo_influxdb,
-        tips          : '查询DataFlux 的数据请使用「DataFlux InfluxDB」\n外部InfluxDB 才需要在此额外添加',
         tagType       : null,
         debugSupported: true,
         sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         compatibleDBs: [
-          '阿里云时序数据库InfluxDB 版',
+          app.$t('Aliyun Time Series Database for InfluxDB'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -68,7 +67,7 @@ export default {
       {
         key           : 'mysql',
         name          : 'MySQL',
-        fullName      : 'MySQL（及兼容数据库）',
+        fullName      : app.$t('MySQL (And other compatible Databases)'),
         logo          : logo_mysql,
         tagType       : 'success',
         debugSupported: true,
@@ -76,9 +75,9 @@ export default {
         compatibleDBs: [
           'MariaDB',
           'Percona Server for MySQL',
-          '阿里云PolarDB MySQL',
-          '阿里云OceanBase',
-          '阿里云分析型数据库(ADB) MySQL 版',
+          app.$t('Aliyun PolarDB for MySQL'),
+          app.$t('Aliyun OceanBase'),
+          app.$t('ADB for MySQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -135,7 +134,7 @@ export default {
       {
         key           : 'oracle',
         name          : 'Oracle',
-        fullName      : 'Oracle数据库',
+        fullName      : app.$t('Oracle Database'),
         logo          : logo_oracle,
         tagType       : 'danger',
         debugSupported: true,
@@ -169,15 +168,15 @@ export default {
       {
         key           : 'postgresql',
         name          : 'PostgreSQL',
-        fullName      : 'PostgreSQL（及兼容数据库）',
+        fullName      : app.$t('PostgreSQL (And other compatible Databases)'),
         logo          : logo_postgresql,
         tagType       : 'info',
         debugSupported: true,
         sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM some_table LIMIT 10')`,
         compatibleDBs: [
           'Greenplum Database',
-          '阿里云PolarDB MySQL',
-          '阿里云分析型数据库(ADB) PostgreSQL 版',
+          app.$t('Aliyun PolarDB for PostgreSQL'),
+          app.$t('ADB for PostgreSQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },

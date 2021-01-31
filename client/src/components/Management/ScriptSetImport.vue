@@ -13,7 +13,7 @@
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="导入脚本包" prop="upload">
                   <el-upload drag ref="upload" :class="uploadAreaBorderClass"
                     :limit="2"

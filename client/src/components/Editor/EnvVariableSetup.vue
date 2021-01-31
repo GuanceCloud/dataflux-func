@@ -20,7 +20,7 @@ Delete ENV: 删除环境变量
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="mode === 'setup'"
                     maxlength="40"

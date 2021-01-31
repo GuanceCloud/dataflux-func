@@ -3,36 +3,37 @@ codeLines: '{n} line | {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                               : 脚本设置
-Other user are editing this Script, please wait            : 其他用户正在编辑此脚本，请稍后
-All top Func without a underscore prefix are avaliable     : 可以指定任意顶层非下划线开头的函数
-Select a Func to run                                       : 选择执行函数
-Viewport are too narrow                                    : 当前可视宽度太窄
-Writing test cases to test your Func is recommended        : 建议编写测试用例来测试您的函数
-Arguments                                                  : 参数
-'Arguments should be inputed like {"arg": value}'          : '参数以 {"参数名": 参数值} 方式填写'
-'Leave blank or {} when no argument'                       : '没有参数的不用填写，或保留 {}'
-'Arguments (JSON-formated)'                                : 参数（JSON格式）
-Run selected Func                                          : 执行指定的函数
-'Shortcut:'                                                : 快捷键：
-Run                                                        : 执行
-Save Script draft, code will NOT take effect immediately   : 保存当前脚本草稿，但代码不会立即生效
-Show code diff                                             : 查看代码差异
-Diff                                                       : 差异
-Save and publish Script, code will take effect IMMEDIATELY : 保存并发布脚本，代码将立刻生效
-Publish                                                    : 发布
-Recover code to latest published version                   : 恢复代码为上次发布的版本
-End edit                                                   : 结束编辑
-Setup Code Editor                                          : 调整编辑器显示样式
-This Script has been locked by other, editing is disabled  : 当前脚本被其他用户锁定，无法修改
-codeLines                                                  : '共 {n} 行代码'
-Script is modified but NOT published yet                   : 脚本已修改但尚未发布
-Script is published                                        : 脚本已发布
-Diff between published and previously published            : 发布前后差异
-Clear highlighted                                          : 清除高亮
-Clear output                                               : 清除输出
-Output                                                     : 脚本输出
-Func exection result or log message will be shown here     : 函数执行结果与日志信息将显示在此处
+Script Setup                                              : 脚本设置
+Other user are editing this Script, please wait           : 其他用户正在编辑此脚本，请稍后
+All top Func without a underscore prefix are avaliable    : 可以指定任意顶层非下划线开头的函数
+Select a Func to run                                      : 选择执行函数
+Viewport are too narrow                                   : 当前可视宽度太窄
+Writing test cases to test your Func is recommended       : 建议编写测试用例来测试您的函数
+Arguments                                                 : 参数
+'Arguments should be inputed like {"arg": value}'         : '参数以 {"参数名": 参数值} 方式填写'
+'Leave blank or {} when no argument'                      : '没有参数的不用填写，或保留 {}'
+'Arguments (JSON-formated)'                               : 参数（JSON格式）
+Run selected Func                                         : 执行指定的函数
+'Shortcut:'                                               : 快捷键：
+Run                                                       : 执行
+Save Script draft, code will NOT take effect immediately  : 保存当前脚本草稿，但代码不会立即生效
+Show code diff                                            : 查看代码差异
+Diff                                                      : 差异
+Save and publish Script, code will take effect IMMEDIATELY: 保存并发布脚本，代码将立刻生效
+Publish                                                   : 发布
+Recover code to latest published version                  : 恢复代码为上次发布的版本
+End edit                                                  : 结束编辑
+Setup Code Editor                                         : 调整编辑器显示样式
+This Script has been locked by other, editing is disabled : 当前脚本被其他用户锁定，无法修改
+codeLines                                                 : '共 {n} 行代码'
+Script is modified but NOT published yet                  : 脚本已修改但尚未发布
+Script is published                                       : 脚本已发布
+Diff between published and previously published           : 发布前后差异
+Clear highlighted                                         : 清除高亮
+Clear output                                              : 清除输出
+Output                                                    : 脚本输出
+Func exection result or log message will be shown here    : 函数执行结果与日志信息将显示在此处
+
 Operating too frequently or Script is modified in other tab: 操作过于频繁，或脚本已经在其他窗口被修改。
 You can download current Script to avoid losing your stuff : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
 Script has been modified                                   : 脚本已被修改

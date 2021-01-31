@@ -17,7 +17,7 @@ Change Password: 修改密码
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser" label-width="100px">
+              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
                   <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" title="当前登录用户为集成登录用户，修改密码请前往原系统进行操作"></InfoBlock>
                 </el-form-item>

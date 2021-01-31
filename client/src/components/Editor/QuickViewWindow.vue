@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Drag to place: 调整位置
-Published: 已发布
-Draft    : 草稿
+Published    : 已发布
+Draft        : 草稿
 </i18n>
 
 <template>
@@ -176,10 +176,7 @@ export default {
   props: {
   },
   data() {
-    let dragPosition = this.$store.state.asideScript_quickViewWindowPosition || {
-      left  : 10,
-      bottom: 10,
-    };
+    let dragPosition = this.$store.state.asideScript_quickViewWindowPosition || { left: 10, top : 10 };
 
     return {
       show: false,

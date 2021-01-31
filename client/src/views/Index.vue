@@ -6,6 +6,11 @@ Password                    : 请输入密码
 Captcha                     : 请输入验证码
 Sign In                     : 登录
 
+Please input username             : 请输入用户名
+Please input password             : 请输入密码
+Please input captcha              : 请输入验证码
+Captcha should be a 4-digit number: 验证码为4位数字
+
 Invalid username or password                                                                 : 用户名或密码错误
 Invalid captcha                                                                              : 验证码错误或无效
 User has been disabled                                                                       : 当前用户已被禁用
@@ -13,11 +18,6 @@ Integration sign-in func returned an unexpected value, please contact admin     
 Sign in failed. Error occured in integration sign-in func, please concat admin               : 登录失败。集成登录函数抛出异常，请联系系统管理员
 Sign in failed. Integration sign-in func timeout, please concat admin                        : 登录失败，集成登录函数超时，请联系系统管理员
 Sign in failed. Integration sign-in func returned `False` or empty value, please concat admin: 登录失败，集成登录函数返回`False`或空内容，请联系系统管理员
-
-Please input username             : 请输入用户名
-Please input password             : 请输入密码
-Please input captcha              : 请输入验证码
-Captcha should be a 4-digit number: 验证码为4位数字
 </i18n>
 
 <template>

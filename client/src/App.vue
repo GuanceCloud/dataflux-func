@@ -372,7 +372,7 @@ h3 {
   text-align: right;
 }
 .common-form {
-  width: 500px;
+  width: 600px;
 }
 .common-form .form-item-tip {
   color: darkgrey !important;
@@ -533,6 +533,16 @@ content: "\25B2";
   float: right;
 }
 
+::-webkit-input-placeholder {
+  color: #ccc;
+}
+::-moz-input-placeholder {
+  color: #ccc;
+}
+::-ms-input-placeholder {
+  color: #ccc;
+}
+
 /* Element-UI 修正 */
 .el-tag + .el-tag {
   margin-left: 5px;
@@ -567,6 +577,9 @@ content: "\25B2";
 }
 .el-form-item__content .el-select {
   display: block;
+}
+.el-form-item__error {
+  font-size: 14px !important;
 }
 .el-tree-node__content {
   border: 1px solid white;

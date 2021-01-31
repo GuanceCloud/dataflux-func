@@ -114,6 +114,16 @@ i.overview-icon {
   background-color: #000 !important;
 }
 
+::-webkit-input-placeholder {
+  color: #555 !important;
+}
+::-moz-input-placeholder {
+  color: #555 !important;
+}
+::-ms-input-placeholder {
+  color: #555 !important;
+}
+
 button:disabled:not(.el-button--text),
 textarea:disabled,
 input:disabled {
