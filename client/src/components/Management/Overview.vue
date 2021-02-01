@@ -9,7 +9,7 @@ recentOperationCount: '(latest {n} operation) | (latest {n} operations)'
 Overview                      : 总览
 Data Count                    : 数据计数
 Worker Queue Info             : 队列信息
-Worker Queue                  : 队列
+Queue                         : 队列
 workerCount                   : '工作单元 {n} 个'
 taskCount                     : '请求排队 {n} 个'
 Script overview               : 脚本总览
@@ -69,7 +69,7 @@ Response                      : 响应
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
           <span class="worker-queue-name">
-            {{ $t('Worker Queue') }} # <span class="worker-queue-number">{{ i }}</span>
+            {{ $t('Queue') }} <span class="worker-queue-number">#{{ i }}</span>
             <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
             <br>{{ $tc('taskCount', workerQueue.taskCount || 0) }}
           </span>
