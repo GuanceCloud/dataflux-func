@@ -239,7 +239,7 @@ export default {
         name          : 'MQTT',
         fullName      : 'MQTT Broker (v5.0)',
         logo          : logo_mqtt,
-        tips          : '请使用支持MQTT v5.0 协议的Broker，并使用共享订阅 $share 防止接收到重复消息',
+        tips          : app.$t('A Broker with MQTTv5 support and use share subscription is recommended'),
         tagType       : 'info',
         debugSupported: false,
         sampleCode    : `helper = DFF.SRC('{0}')\nhelper.publish(topic='some_topic',  message='some_message')`,

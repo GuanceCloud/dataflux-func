@@ -35,17 +35,18 @@
   Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除
 
   # const.js - DATE_SOURCE
-  'InfluxDB (HTTP) (And other compatible Databases)': InfluxDB (HTTP)（及兼容数据库）
-  'Aliyun Time Series Database for InfluxDB'        : 阿里云时序数据库InfluxDB 版
-  'MySQL (And other compatible Databases)'          : MySQL（及兼容数据库）
-  'Aliyun PolarDB for MySQL'                        : 阿里云PolarDB MySQL
-  'Aliyun OceanBase'                                : 阿里云OceanBase
-  'ADB for MySQL'                                   : 阿里云分析型数据库(ADB) MySQL 版
-  'Oracle Database'                                 : Oracle数据库
-  'PostgreSQL (And other compatible Databases)'     : PostgreSQL（及兼容数据库）
-  'Aliyun PolarDB for PostgreSQL'                   : 阿里云PolarDB MySQL
-  'ADB for PostgreSQL'                              : 阿里云分析型数据库(ADB) PostgreSQL 版
-  'A Broker with MQTTv5 support': 请使用支持MQTTv5 协议的Broker，并使用共享订阅 $share 防止接收到重复消息
+  'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）
+  'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库InfluxDB 版
+  'MySQL (And other compatible Databases)'                                : MySQL（及兼容数据库）
+  'Aliyun PolarDB for MySQL'                                              : 阿里云PolarDB MySQL
+  'Aliyun OceanBase'                                                      : 阿里云OceanBase
+  'ADB for MySQL'                                                         : 阿里云分析型数据库(ADB) MySQL 版
+  'Oracle Database'                                                       : Oracle数据库
+  'PostgreSQL (And other compatible Databases)'                           : PostgreSQL（及兼容数据库）
+  'Aliyun PolarDB for PostgreSQL'                                         : 阿里云PolarDB MySQL
+  'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
+  'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
+
   # const.js - CODE_MIRROR_THEME
   'Auto: Default'             : 自动切换：默认
   'Auto: base16'              : 自动切换：base16

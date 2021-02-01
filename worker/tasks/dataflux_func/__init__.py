@@ -334,7 +334,11 @@ def decipher_data_source_config_fields(config):
         f_cipher = '{}Cipher'.format(f)
 
         if config.get(f_cipher):
-            config[f] = toolkit.decipher_by_aes(config[f_cipher], CONFIG['SECRET'])
+            try:
+                config[f] = toolkit.decipher_by_aes(config[f_cipher], CONFIG['SECRET'])
+            except UnicodeDecodeError as e:
+                raise Exception('Decipher by AES failed. SECRET maybe wrong or changed')
+
             config.pop(f_cipher, None)
 
     return config
