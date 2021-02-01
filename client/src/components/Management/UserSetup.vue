@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Add User   : 添加用户
-Modify User: 添加用户
+Modify User: 修改用户
 </i18n>
 
 <template>
@@ -8,10 +8,7 @@ Modify User: 添加用户
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}成员
-          <code class="text-main">{{ data.name || data.username }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.name || data.username }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -19,7 +16,7 @@ Modify User: 添加用户
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="登录账号" prop="username">
                   <el-input
                     maxlength="20"
@@ -149,11 +146,18 @@ export default {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: '修改',
-        add  : '添加',
+      const _map = {
+        setup: this.$t('Modify'),
+        add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify User'),
+        add  : this.$t('Add User'),
+      };
+      return _map[this.mode];
     },
   },
   props: {

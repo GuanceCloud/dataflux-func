@@ -1,7 +1,21 @@
 <i18n locale="zh-CN" lang="yaml">
+Title                     : 标题
+Description               : 描述
+Description about this ENV: 介绍当前环境变量的作用、功能、目的等
+Value                     : 值
+Value Type                : 值类型
+
 Add ENV   : 添加环境变量
 Modify ENV: 修改环境变量
 Delete ENV: 删除环境变量
+
+Deleting ENV may break the dependency with other scripts: 删除环境变量可能会破坏与其他脚本的依赖关系
+Are you sure you want to delete the ENV?                : 是否确认删除环境变量？
+
+Please input ID                                   : 请输入ID
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number                   : 不得以数字开头
+Please input Value                                : 请输入值
 </i18n>
 
 <template>
@@ -9,10 +23,7 @@ Delete ENV: 删除环境变量
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}环境变量
-          <code class="text-main">{{ data.title || data.id }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -20,22 +31,22 @@ Delete ENV: 删除环境变量
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="mode === 'setup'"
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
-                  <InfoBlock title="环境变量ID关系到实际函数调用时所使用的名称"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="标题">
+                <el-form-item :label="$t('Title')">
                   <el-input
                     maxlength="25"
                     show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
-                <el-form-item label="描述">
+
+                <el-form-item :label="$t('Description')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -43,10 +54,10 @@ Delete ENV: 删除环境变量
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock title="介绍当前环境变量的作用、功能、目的等"></InfoBlock>
+                  <InfoBlock :title="$t('Description about this ENV')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="值" prop="valueTEXT">
+                <el-form-item :label="$t('Value')" prop="valueTEXT">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -56,7 +67,7 @@ Delete ENV: 删除环境变量
                     v-model="form.valueTEXT"></el-input>
                 </el-form-item>
 
-                <el-form-item label="自动转换类型">
+                <el-form-item :label="$t('Value Type')">
                   <el-select v-model="form.autoTypeCasting">
                     <el-option v-for="opt in C.ENV_VARIABLE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
@@ -65,9 +76,9 @@ Delete ENV: 删除环境变量
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -167,7 +178,8 @@ export default {
     },
     async deleteData() {
       try {
-        await this.$confirm('删除环境变量可能导致已经引用当前环境变量的脚本无法正常执行<hr class="br">是否确认删除？', '删除环境变量', {
+        await this.$confirm(`${this.$t('Deleting ENV may break the dependency with other scripts')}
+          <hr class="br">${this.$t('Are you sure you want to delete the ENV?')}`, this.$t('Delete ENV'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('Delete'),
           cancelButtonText: this.$t('Cancel'),
@@ -191,15 +203,50 @@ export default {
     },
   },
   computed: {
+    formRules() {
+      return {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+        ],
+        valueTEXT: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input Value'),
+            required: true,
+          },
+        ]
+      }
+    },
     mode() {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: this.$t('Setup'),
+      const _map = {
+        setup: this.$t('Modify'),
         add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify ENV'),
+        add  : this.$t('Add ENV'),
+      };
+      return _map[this.mode];
     },
   },
   props: {
@@ -213,27 +260,6 @@ export default {
         description    : null,
         valueTEXT      : null,
         autoTypeCasting: null,
-      },
-      formRules: {
-        id: [
-          {
-            trigger : 'change',
-            message : '请输入ID',
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: 'ID只能包含大小写英文、数字或下划线，且不能以数字开头',
-            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
-          },
-        ],
-        valueTEXT: [
-          {
-            trigger : 'change',
-            message : '请输入环境变量值',
-            required: true,
-          },
-        ]
       },
     }
   },

@@ -1,16 +1,54 @@
+<i18n locale="en" lang="yaml">
+workerCount         : '{n} worker | {n} workers'
+taskCount           : '{n} task | {n} tasks'
+scriptOverviewCount : '({n} script) | ({n} scripts)'
+recentOperationCount: '(latest {n} operation) | (latest {n} operations)'
+</i18n>
+
+<i18n locale="zh-CN" lang="yaml">
+Overview                      : 总览
+Data Count                    : 数据计数
+Worker Queue Info             : 队列信息
+Worker Queue                  : 队列
+workerCount                   : '工作单元 {n} 个'
+taskCount                     : '请求排队 {n} 个'
+Script overview               : 脚本总览
+scriptOverviewCount           : '{n} 个'
+Code size                     : 代码大小
+Publish ver.                  : 发布版本
+Publish time                  : 发布时间
+Never published               : 从未发布
+System builtin                : 系统内置
+Recent operations             : 最近操作记录
+recentOperationCount          : 最近{n}条
+Time                          : 时间
+User                          : 操作者
+'User ID:'                    : 用户ID：
+'Client ID:'                  : 客户端ID：
+Operation                     : 操作
+'Data ID:'                    : 数据ID：
+MODIFY                        : 修改操作
+DELETE                        : 删除操作
+Cost                          : 耗时
+ms                            : 毫秒
+Show detail                   : 显示HTTP请求详情
+The full content is as follows: 完整内容如下
+Request                       : 请求
+Response                      : 响应
+'Pressure:'                   : 压力：
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          总览
-        </h1>
+        <h1>{{ $t('Overview') }}</h1>
       </el-header>
 
       <!-- 列表区 -->
       <el-main>
-        <el-divider content-position="left"><h1>资源计数</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Data Count') }}</h1></el-divider>
 
         <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP[d.name].icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP[d.name].icon"></i>
@@ -23,7 +61,7 @@
           </span>
         </el-card>
 
-        <el-divider content-position="left"><h1>队列信息</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
         <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
           <el-progress type="dashboard"
             :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
@@ -31,55 +69,55 @@
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
           <span class="worker-queue-name">
-            队列 # <span class="worker-queue-number">{{ i }}</span>
-            <br>工作单元：{{ workerQueue.workerCount || 0 }} 个
-            <br>请求排队：{{ workerQueue.taskCount || 0 }} 个
+            {{ $t('Worker Queue') }} # <span class="worker-queue-number">{{ i }}</span>
+            <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
+            <br>{{ $tc('taskCount', workerQueue.taskCount || 0) }}
           </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left"><h1>脚本总览（共{{ scriptOverview.length }}个）</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Script overview') }} {{ $tc('scriptOverviewCount', scriptOverview.length) }}</h1></el-divider>
 
         <el-table :data="scriptOverview" stripe style="width: 95%">
-          <el-table-column label="脚本集" sortable>
+          <el-table-column :label="$t('Script Set')" sortable>
             <template slot-scope="scope">
               <span>{{ scope.row.scriptSetTitle || scope.row.scriptSetId }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="脚本" sortable :sort-by="['title', 'id']">
+          <el-table-column :label="$t('Script')" sortable :sort-by="['title', 'id']">
             <template slot-scope="scope">
               <span>{{ scope.row.title || scope.row.id }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="函数数量" sortable sort-by="funcCount" align="right" width="120">
+          <el-table-column :label="$t('Func')" sortable sort-by="funcCount" align="right" width="120">
             <template slot-scope="scope">
               <code v-if="!scope.row.funcCount">-</code>
-              <code v-else>{{ scope.row.funcCount }} 个</code>
+              <code v-else>{{ scope.row.funcCount }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column label="代码大小" sortable sort-by="codeSize" align="right" width="120">
+          <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="120">
             <template slot-scope="scope">
               <code v-if="!scope.row.codeSize">-</code>
-              <code v-else-if="scope.row.codeSize < 1024">{{ scope.row.codeSize }} 字节</code>
+              <code v-else-if="scope.row.codeSize < 1024">{{ scope.row.codeSize }} B</code>
               <code v-else-if="scope.row.codeSize < 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024) }} KB</code>
               <code v-else-if="scope.row.codeSize < 1024 * 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024 / 1024) }} MB</code>
             </template>
           </el-table-column>
 
-          <el-table-column label="发布版本" sortable sort-by="publishVersion" align="right" width="120">
+          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="120">
             <template slot-scope="scope">
               <code v-if="!scope.row.publishVersion">-</code>
               <code v-else>v{{ `${scope.row.publishVersion}` }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column label="发布时间" sortable sort-by="latestPublishTimestamp" align="right" width="200">
+          <el-table-column :label="$t('Publish time')" sortable sort-by="latestPublishTimestamp" align="right" width="200">
             <template slot-scope="scope">
               <template v-if="!scope.row.latestPublishTime">
-                <span v-if="scope.row.publishVersion === 0" class="text-info">从未发布</span>
-                <span v-else class="text-info">系统内置</span>
+                <span v-if="scope.row.publishVersion === 0" class="text-info">{{ $t('Never published') }}</span>
+                <span v-else class="text-info">{{ $t('System builtin') }}</span>
               </template>
               <template v-else>
                 <span>{{ scope.row.latestPublishTime | datetime }}</span>
@@ -90,10 +128,10 @@
           </el-table-column>
         </el-table>
 
-        <el-divider class="overview-divider" content-position="left"><h1>最近操作记录（最近{{ latestOperations.length }}条）</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
 
         <el-table :data="latestOperations" stripe style="width: 95%">
-          <el-table-column label="时间" width="200">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -101,23 +139,23 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作者">
+          <el-table-column :label="$t('User')">
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
               <br>
 
               <template v-if="scope.row.userId">
-                <span class="text-info">ID：</span>
+                <span class="text-info">{{ $t('User ID:') }}</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
                 <br>
               </template>
 
-              <span class="text-info">客户端ID：</span>
+              <span class="text-info">{{ $t('Client ID:') }}</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
             </template>
           </el-table-column>
 
-          <el-table-column label="操作">
+          <el-table-column :label="$t('Operation')">
             <template slot-scope="scope">
               <span class="text-good" v-if="scope.row.respStatusCode >= 200 && scope.row.respStatusCode < 400">
                 <i class="fa fa-fw fa-check-circle"></i>
@@ -130,7 +168,7 @@
               <br>
 
               <template v-if="scope.row._operationEntityId">
-                <span class="text-info">ID：</span>
+                <span class="text-info">{{ $t('Data ID:') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
             </template>
@@ -140,31 +178,31 @@
             <template slot-scope="scope">
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
-                修改操作
+                {{ $t('MODIFY') }}
               </strong>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/delete')" class="text-bad">
                 <i class="fa fa-fw fa-exclamation-circle"></i>
-                删除操作
+                {{ $t('DELETE') }}
               </strong>
             </template>
           </el-table-column>
 
-          <el-table-column label="耗时" align="right" width="100">
+          <el-table-column :label="$t('Cost')" align="right" width="100">
             <template slot-scope="scope">
-              {{ scope.row.reqCost }} <span class="text-info">毫秒</span>
+              {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text" size="small">显示HTTP请求详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text" size="small">{{ $t('Show detail') }}</el-button>
             </template>
           </el-table-column>
 
         </el-table>
       </el-main>
 
-      <LongTextDialog title="完整内容如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is as follows')" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -217,7 +255,7 @@ export default {
 
       let httpInfoLines = [];
 
-      httpInfoLines.push('===== 请求 =====')
+      httpInfoLines.push(`===== ${this.$t('Request')} =====`)
 
       httpInfoLines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
 
@@ -225,7 +263,7 @@ export default {
         httpInfoLines.push(JSON.stringify(d.reqBodyJSON, null, 2));
       }
 
-      httpInfoLines.push('\n===== 响应 =====')
+      httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
 
       httpInfoLines.push(`Status Code: ${d.respStatusCode}`);
 
@@ -255,7 +293,7 @@ export default {
       return percentage;
     },
     workerQueuePressureFormat(percentage) {
-      return `压力: ${parseInt(percentage * 2)}`;
+      return `${this.$t('Pressure:')} ${parseInt(percentage * 2)}`;
     },
   },
   computed: {
@@ -325,7 +363,7 @@ export default {
   font-size: 120px;
 }
 .overview-name {
-  font-size: 40px;
+  font-size: 36px;
   display: block;
   z-index: 1;
   position: relative;

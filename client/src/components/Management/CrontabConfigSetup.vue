@@ -9,10 +9,7 @@ Delete Crontab Config: 删除自动触发配置
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}自动触发配置
-          <code class="text-main">{{ data.func_title }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.func_title }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -20,7 +17,7 @@ Delete Crontab Config: 删除自动触发配置
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="执行函数" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
@@ -400,13 +397,19 @@ export default {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: this.$t('Setup'),
+      const _map = {
+        setup: this.$t('Modify'),
         add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
     },
-    apiCustomKwargsSupport() {
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify Crontab Config'),
+        add  : this.$t('Add Crontab Config'),
+      };
+      return _map[this.mode];
+    },    apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;
 

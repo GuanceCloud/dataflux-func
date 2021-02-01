@@ -1,7 +1,11 @@
+<i18n locale="zh-CN" lang="yaml">
+Input search content: 输入搜索内容
+</i18n>
+
 <template>
   <div class="search-input">
     <el-input
-      placeholder="输入搜索内容"
+      :placeholder="$t('Input search content')"
       size="mini"
       v-model="dataFilter._fuzzySearch"
       @change="T.changePageFilter(dataFilter)">

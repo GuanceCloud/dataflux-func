@@ -19,7 +19,7 @@ Delete Access Key: 删除 AccessKey
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="名称" prop="name">
                   <el-input
                     maxlength="40"

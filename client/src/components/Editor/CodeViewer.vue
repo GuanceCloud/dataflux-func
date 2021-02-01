@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+codeLines: '{n} line | {n} lines'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Script Setup: 脚本设置
 </i18n>

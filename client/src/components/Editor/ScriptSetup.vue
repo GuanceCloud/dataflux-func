@@ -35,10 +35,12 @@ Cannot not starts with a number                                       : 不得�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
-                <el-form-item>
-                  <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
-                  <InfoBlock v-else-if="data.isLocked" type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
+              <el-form ref="form" label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
+                <el-form-item v-if="isLockedByOther">
+                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
+                </el-form-item>
+                <el-form-item v-else-if="data.isLocked">
+                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">

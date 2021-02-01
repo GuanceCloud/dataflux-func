@@ -1,8 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
-User Info                                                                             : 用户信息
-You are signed in via integrated user, please change your profile in the origin system: 当前登录用户为集成登录用户，修改信息请前往原系统进行操作
-Username                                                                              : 用户名
-Show Name                                                                             : 显示名
+User Info                                                                              : 用户信息
+You are signed in as a integrated user, please change your profile in the origin system: 当前登录用户为集成登录用户，修改信息请前往原系统进行操作
+Username                                                                               : 用户名
+Show Name                                                                              : 显示名
 
 Please input display name: 请输入显示名
 
@@ -24,9 +24,9 @@ Modify user info: 修改用户信息
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
-                  <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in via integrated user, please change your profile in the origin system')"></InfoBlock>
+                  <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in as a integrated user, please change your profile in the origin system')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Username')">

@@ -147,18 +147,26 @@ export default {
     },
     UI_LOCALE_MAP() {
       return {
-        'zh-CN' : {
-          title     : '简体中文',
-          shortTitle: '简',
-        },
-        // 'zh-Hant' : {
-        //   title     : '繁體中文 (WIP)',
-        //   shortTitle: '繁',
-        // },
         'en': {
           title     : 'English (WIP)',
           shortTitle: 'EN',
         },
+        'zh-CN' : {
+          title     : '简体中文',
+          shortTitle: '简',
+        },
+        // 'zh-HK' : {
+        //   title     : '香港繁體 (WIP)',
+        //   shortTitle: '港',
+        // },
+        // 'zh-TW' : {
+        //   title     : '臺灣正體 (WIP)',
+        //   shortTitle: '臺',
+        // },
+        // 'ja' : {
+        //   title     : '日本語 (WIP)',
+        //   shortTitle: '日',
+        // },
       }
     },
     isSignedIn() {

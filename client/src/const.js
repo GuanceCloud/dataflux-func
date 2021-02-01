@@ -296,32 +296,32 @@ export default {
     return [
       {
         key : 'string',
-        name: '字符串',
+        name: app.$t('String'),
       },
       {
         key : 'integer',
-        name: '整数',
-        tips: '将自动使用 int() 进行转换',
+        name: app.$t('Integer'),
+        tips: app.$t('Will be converted by int() automatically'),
       },
       {
         key : 'float',
-        name: '浮点数',
-        tips: '将自动使用 float() 进行转换',
+        name: app.$t('Float'),
+        tips: app.$t('Will be converted by float() automatically'),
       },
       {
         key : 'boolean',
-        name: '布尔值',
-        tips: '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值',
+        name: app.$t('Boolean'),
+        tips: app.$t('Can be "true"/"false", "yes"/"no" or "on"/"off"'),
       },
       {
         key : 'json',
         name: 'JSON',
-        tips: '将自动使用 simplejson.loads() 进行转换',
+        tips: app.$t('Will be converted by json.loads() automatically'),
       },
       {
         key : 'commaArray',
-        name: '逗号分隔数组',
-        tips: '英文逗号分隔的字符串数组，如 "apple,pie"，将转换为 ["apple", "pie"]',
+        name: app.$t('String array with comma separators'),
+        tips: app.$t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
       },
     ];
   },
@@ -334,27 +334,27 @@ export default {
     return [
       {
         key : 'bySecond',
-        name: '次/秒',
+        name: app.$t('timePerSecond'),
       },
       {
         key : 'byMinute',
-        name: '次/分钟',
+        name: app.$t('timePerMinute'),
       },
       {
         key : 'byHour',
-        name: '次/小时',
+        name: app.$t('timePerHour'),
       },
       {
         key : 'byDay',
-        name: '次/天',
+        name: app.$t('timePerDay'),
       },
       {
         key : 'byMonth',
-        name: '次/月',
+        name: app.$t('timePerMonth'),
       },
       {
         key : 'byYear',
-        name: '次/年',
+        name: app.$t('timePerYear'),
       },
     ];
   },
@@ -367,25 +367,25 @@ export default {
     return [
       {
         key    : 'queued',
-        name   : '已入队',
+        name   : app.$t('Queued'),
         tagType: 'info',
         icon   : 'el-icon-timer',
       },
       {
         key    : 'pending',
-        name   : '运行中',
+        name   : app.$t('Running'),
         tagType: '',
         icon   : 'el-icon-loading',
       },
       {
         key    : 'success',
-        name   : '已成功',
+        name   : app.$t('Succeeded'),
         tagType: 'success',
         icon   : 'el-icon-success',
       },
       {
         key    : 'failure',
-        name   : '已失败',
+        name   : app.$t('Failed'),
         tagType: 'danger',
         icon   : 'el-icon-error',
       },
@@ -400,42 +400,42 @@ export default {
     return [
       {
         key : 'scriptSet',
-        name: '脚本集',
+        name: app.$t('Script Set'),
         icon: 'fa-folder-open-o',
       },
       {
         key : 'script',
-        name: '脚本',
+        name: app.$t('Script'),
         icon: 'fa-file-code-o',
       },
       {
-        key : 'func',
-        name   : '函数',
+        key    : 'func',
+        name   : app.$t('Func'),
         tagText: 'def',
       },
       {
         key : 'dataSource',
-        name: '数据源',
+        name: app.$t('Data Source'),
         icon: 'fa-database',
       },
       {
         key : 'envVariable',
-        name: '数据源',
+        name: app.$t('ENV'),
         icon: 'fa-cogs',
       },
       {
         key : 'authLink',
-        name: '授权链接',
+        name: app.$t('Auth Link'),
         icon: 'fa-link',
       },
       {
         key : 'crontabConfig',
-        name: '自动触发配置',
+        name: app.$t('Crontab Config'),
         icon: 'fa-clock-o',
       },
       {
         key : 'batch',
-        name: '批处理',
+        name: app.$t('Batch'),
         icon: 'fa-tasks',
       },
     ];
@@ -449,22 +449,22 @@ export default {
     return [
       {
         key      : 'import',
-        name     : '脚本包导入前',
+        name     : app.$t('Before package import'),
         textClass: 'text-main',
       },
       {
         key      : 'install',
-        name     : '脚本包安装前',
+        name     : app.$t('Before package install'),
         textClass: 'text-primary',
       },
       {
         key      : 'recover',
-        name     : '脚本库还原前',
+        name     : app.$t('Before Script Set Lib recover'),
         textClass: 'text-info',
       },
       {
         key      : 'manual',
-        name     : '用户手动创建',
+        name     : app.$t('Created by user manually'),
         textClass: 'text-good',
       },
     ];
@@ -478,22 +478,22 @@ export default {
     return [
       {
         key      : 'sync',
-        name     : '同步调用',
+        name     : app.$t('Sync all'),
         textClass: 'text-main',
       },
       {
         key      : 'async',
-        name     : '异步调用',
+        name     : app.$t('Async call'),
         textClass: 'text-watch',
       },
       {
         key      : 'crontab',
-        name     : '定时运行',
+        name     : app.$t('Crontab'),
         textClass: 'text-info',
       },
       {
         key      : 'autoRun',
-        name     : '自动运行',
+        name     : app.$t('Auto run'),
         textClass: 'text-info',
       },
     ];
@@ -507,7 +507,7 @@ export default {
     return [
       {
         key : 'signIn',
-        name: '登录',
+        name: app.$t('Sign in'),
       },
     ];
   },

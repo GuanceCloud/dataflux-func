@@ -17,7 +17,7 @@ Export Data: 导出数据
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="export-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="选择脚本集" prop="scriptSetIds">
                   <el-transfer
                     :titles="['全选', '全选']"

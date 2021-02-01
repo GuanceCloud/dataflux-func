@@ -1,5 +1,14 @@
 # 本文档主要定义全局通用，以及在非.vue文件（如：toolkit.js, const.js 等）中的翻译
 
+en:
+  # const.js - AUTH_LINK_THROTTLING
+  'timePerSecond': '{n} time/second | {n} times/second'
+  'timePerMinute': '{n} time/minute | {n} times/minute'
+  'timePerHour'  : '{n} time/hour | {n} times/hour'
+  'timePerDay'   : '{n} time/day | {n} times/day'
+  'timePerMonth' : '{n} time/month | {n} times/month'
+  'timePerYear'  : '{n} time/year | {n} times/year'
+
 'zh-CN':
   # 通用
   Very good: 非常好
@@ -47,6 +56,57 @@
   'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
+  # const.js - ASIDE_ITEM_TYPE, OVERVIEW_ENTITY
+  Script Set    : 脚本集
+  Script        : 脚本
+  Func          : 函数
+  Data Source   : 数据源
+  ENV           : 环境变量
+  Auth Link     : 授权链接
+  Crontab Config: 自动触发配置
+  Batch         : 批处理
+
+  # const.js - ENV_VARIABLE
+  'String'                                                     : '字符串'
+  'Integer'                                                    : '整数'
+  'Will be converted by int() automatically'                   : '将自动使用 int() 进行转换'
+  'Float'                                                      : '浮点数'
+  'Will be converted by float() automatically'                 : '将自动使用 float() 进行转换'
+  'Boolean'                                                    : '布尔值'
+  'Can be "true"/"false", "yes"/"no" or "on"/"off"'            : '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值'
+  'Will be converted by json.loads() automatically'            : '将自动使用 json.loads() 进行转换'
+  'String array with comma separators'                         : '逗号分隔字符串数组'
+  'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
+
+  # const.js - AUTH_LINK_THROTTLING
+  'timePerSecond': '{n}次/秒'
+  'timePerMinute': '{n}次/分钟'
+  'timePerHour'  : '{n}次/小时'
+  'timePerDay'   : '{n}次/天'
+  'timePerMonth' : '{n}次/月'
+  'timePerYear'  : '{n}次/年'
+
+  # const.js - TASK_STATUS
+  Queued   : 已入队
+  Running  : 运行中
+  Succeeded: 已成功
+  Failed   : 已失败
+
+  # const.js - SCRIPT_RECOVER_POINT
+  Before package import        : 脚本包导入前
+  Before package install       : 脚本包安装前
+  Before Script Set Lib recover: 脚本库还原前
+  Created by user manually     : 用户手动创建
+
+  # const.js - FUNC_EXEC_MODE
+  Sync all  : 同步调用
+  Async call: 异步调用
+  Crontab   : 定时运行
+  Auto run  : 自动运行
+
+  # const.js - FUNC_INTEGRATION
+  Sign in: 登录
+
   # const.js - CODE_MIRROR_THEME
   'Auto: Default'             : 自动切换：默认
   'Auto: base16'              : 自动切换：base16
@@ -64,4 +124,8 @@
   'Dark: material-darker'     : 黑暗：material-darker
   'Dark: darcula'             : 黑暗：darcula
 
+'zh-HK': {}
 
+'zh-TW': {}
+
+ja: {}

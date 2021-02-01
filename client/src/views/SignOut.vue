@@ -1,10 +1,15 @@
+<i18n locale="zh-CN" lang="yaml">
+Signing out                                     : 正在登出
+If the page is not redirected, please click here: 如页面未跳转，可点击此处
+</i18n>
+
 <template>
   <div class="sign-out">
     <div class="sign-out-info">
       <Logo type="auto" class="logo" width="400px" height="70px"></Logo>
       <p>
-        正在登出...<br>
-        <small>如页面未跳转，可<a href="/">点击此处</a>进行跳转</small>
+        {{ $t('Signing out') }}<br>
+        <a class="text-main" href="/">{{ $t('If the page is not redirected, please click here') }}</a>
       </p>
     </div>
   </div>

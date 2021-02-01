@@ -17,7 +17,7 @@ Create Script Lib Recover Point: 创建脚本库还原点
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="说明" prop="note">
                   <el-input
                     type="textarea"

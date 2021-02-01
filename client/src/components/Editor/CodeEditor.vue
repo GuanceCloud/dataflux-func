@@ -1,31 +1,40 @@
 <i18n locale="en" lang="yaml">
-codeLines: '{n} line | {n} lines'
+addedLines   : 'Added {n} line | Added {n} lines'
+removedLines : ', Removed {n} Line | , Removed {n} Lines'
+codeLines    : '{n} line | {n} lines'
+codeLinesPrev: 'previously {n} line | previously {n} lines'
+codeLinesCurr: ', currently {n} line| , currently {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                              : 脚本设置
 Other user are editing this Script, please wait           : 其他用户正在编辑此脚本，请稍后
 All top Func without a underscore prefix are avaliable    : 可以指定任意顶层非下划线开头的函数
-Select a Func to run                                      : 选择执行函数
+Select Func                                               : 选择执行函数
 Viewport are too narrow                                   : 当前可视宽度太窄
 Writing test cases to test your Func is recommended       : 建议编写测试用例来测试您的函数
 Arguments                                                 : 参数
 'Arguments should be inputed like {"arg": value}'         : '参数以 {"参数名": 参数值} 方式填写'
 'Leave blank or {} when no argument'                      : '没有参数的不用填写，或保留 {}'
-'Arguments (JSON-formated)'                               : 参数（JSON格式）
+'Arguments (in JSON)'                                     : 参数（JSON格式）
 Run selected Func                                         : 执行指定的函数
 'Shortcut:'                                               : 快捷键：
 Run                                                       : 执行
 Save Script draft, code will NOT take effect immediately  : 保存当前脚本草稿，但代码不会立即生效
 Show code diff                                            : 查看代码差异
-Diff                                                      : 差异
+DIFF                                                      : 差异
 Save and publish Script, code will take effect IMMEDIATELY: 保存并发布脚本，代码将立刻生效
 Publish                                                   : 发布
 Recover code to latest published version                  : 恢复代码为上次发布的版本
 End edit                                                  : 结束编辑
 Setup Code Editor                                         : 调整编辑器显示样式
 This Script has been locked by other, editing is disabled : 当前脚本被其他用户锁定，无法修改
+'DIFF:'                                                   : '差异：'
+addedLines                                                : '新增 {n} 行'
+removedLines                                              : '，删除 {n} 行'
 codeLines                                                 : '共 {n} 行代码'
+codeLinesPrev                                             : '修改前共 {n} 行代码'
+codeLinesCurr                                             : '，修改后共 {n} 行代码'
 Script is modified but NOT published yet                  : 脚本已修改但尚未发布
 Script is published                                       : 脚本已发布
 Diff between published and previously published           : 发布前后差异
@@ -79,7 +88,7 @@ Saving Script failed                                       : 保存脚本失败
                       v-model="selectedFuncId"
                       size="mini"
                       filterable
-                      :placeholder="$t('Select a Func to run')">
+                      :placeholder="$t('Select Func')">
                       <el-option v-for="f in draftFuncs" :key="f.id" :label="f.name" :value="f.id">
                       </el-option>
                     </el-select>
@@ -107,7 +116,7 @@ Saving Script failed                                       : 保存脚本失败
                       <el-input
                         style="width: 200px"
                         size="mini"
-                        :placeholder="$t('Arguments (JSON-formated)')"
+                        :placeholder="$t('Arguments (in JSON)')"
                         v-model="funcCallKwargsJSON"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
@@ -118,7 +127,7 @@ Saving Script failed                                       : 保存脚本失败
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
                         {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut:') }}<code>{{ T.getSuperKeyName() }} + B</code>
+                        {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + B</code>
                       </div>
                       <el-button
                         @click="callFuncDraft"
@@ -138,7 +147,7 @@ Saving Script failed                                       : 保存脚本失败
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft, code will NOT take effect immediately') }}<br>
-                          {{ $t('Shortcut:') }}<code>{{ T.getSuperKeyName() }} + S</code>
+                          {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
                           @click="saveScript()"
@@ -158,7 +167,7 @@ Saving Script failed                                       : 保存脚本失败
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">{{ $t('Diff') }}</span>
+                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">{{ $t('DIFF') }}</span>
                         </el-button>
                       </el-tooltip>
 
@@ -217,14 +226,24 @@ Saving Script failed                                       : 保存脚本失败
 
           <!-- 状态栏 -->
           <div class="code-editor-status-bar" v-show="$store.state.isLoaded">
-            <span>
-              Diff <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>,
-            </span>
-            <span>
-              {{ $tc('codeLines', { n: codeLines }) }}
-            </span>
-
-            <template v-if="data.code !== data.codeDraft">
+            <el-tooltip :content="`${$t('DIFF:')} ${$tc('addedLines', diffAddedCount)}${$tc('removedLines', diffRemovedCount)}`" placement="top-end">
+              <span>
+                <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>
+              </span>
+            </el-tooltip>
+            ,
+            <template v-if="codeLines === codeDraftLines">
+              <el-tooltip :content="$tc('codeLines', codeLines)" placement="top-end">
+                <span>{{ codeLines }}</span>
+              </el-tooltip>
+            </template>
+            <template v-else>
+              <el-tooltip :content="`${$tc('codeLinesPrev', codeLines)}${$tc('codeLinesCurr', codeDraftLines)}`" placement="top-end">
+                <span>{{ codeLines }}<i class="fa fa-long-arrow-right"></i><span class="text-main">{{ codeDraftLines }}</span></span>
+              </el-tooltip>
+            </template>
+            ,
+            <template v-if="data.codeMD5 !== data.codeDraftMD5">
               <el-tooltip :content="$t('Script is modified but NOT published yet')" placement="top-end">
                 <span class="text-main">MODIFIED</span>
               </el-tooltip>
@@ -254,12 +273,6 @@ Saving Script failed                                       : 保存脚本失败
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
               <pre v-html.trim="textOutput || $t('Func exection result or log message will be shown here')"></pre>
             </el-tab-pane>
-
-            <!--
-            <el-tab-pane label="图表输出">
-              TODO
-            </el-tab-pane>
-            -->
           </el-tabs>
         </div>
       </template>
@@ -337,7 +350,7 @@ export default {
       return fileName;
     },
     async _saveCodeDraft(options) {
-      // 等待保存信号量，放置多重保存
+      // 等待保存信号量，防止多重保存
       while (this.isSavingCodeDraft) {
         await this.T.sleep(1000);
       }

@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Download as text file: 作为文本文件下载
+</i18n>
+
 <template>
   <el-dialog
     id="LongTextDialog"
@@ -5,7 +9,7 @@
     width="70%">
     <template slot="title">
       <el-link type="primary" @click="download">
-        作为文本文件下载
+        {{ $t('Download as text file') }}
         <i class="fa fa-fw fa-download"></i>
       </el-link>
     </template>

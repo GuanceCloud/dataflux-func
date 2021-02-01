@@ -9,10 +9,7 @@ Delete Batch: 删除批处理
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}批处理
-          <code class="text-main">{{ data.func_title }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.func_title }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -20,7 +17,7 @@ Delete Batch: 删除批处理
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
@@ -259,11 +256,18 @@ export default {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: this.$t('Setup'),
+      const _map = {
+        setup: this.$t('Modify'),
         add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify Batch'),
+        add  : this.$t('Add Batch'),
+      };
+      return _map[this.mode];
     },
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;

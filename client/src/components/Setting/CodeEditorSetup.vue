@@ -27,7 +27,7 @@ Line height should be a number between 1 and 2 : 行高设置范围为 1-2 倍
         <el-row :gutter="20">
           <el-col :span="24" :lg="12" :xl="12">
             <div>
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item>
                   <InfoBlock type="info" :title="$t('Setting of Code Editor only effect current brower')"></InfoBlock>
                 </el-form-item>

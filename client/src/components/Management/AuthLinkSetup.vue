@@ -1,7 +1,36 @@
+<i18n locale="en" lang="yaml">
+shortcutDays: '{n} day | {n} days'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
+Use custom ID                                                                              : 使用自定义ID
+ID is used in the calling URL                                                              : ID关系到调用时的URL
+Func                                                                                       : 执行函数
+Arguments                                                                                  : 调用参数
+'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
+'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
+The Func accepts extra arguments not listed above                                          : 本函数允许传递额外自定义的参数
+Enabled                                                                                    : 启用
+Show in doc                                                                                : 显示于文档
+Expire at                                                                                  : 有效期至
+Select expire time                                                                         : 选择有效期
+Throttling                                                                                 : 限流
+Note                                                                                       : 备注
+
 Add Auth Link   : 添加授权链接
 Modify Auth Link: 修改授权链接
 Delete Auth Link: 删除授权链接
+
+Invalid argument format                       : 调用参数格式不正确
+Are you sure you want to delete the Auth Link?: 是否确认删除授权链接？
+
+'ID must starts with "{prefix}"'                   : 'ID必须以"{prefix}"开头'
+Please select Func                                 : 请选择执行函数
+Only date-time between 1970 and 2037 are allowed   : 只能选择1970年至2037年之间的日期
+Date-time cannot earlier than 1970                 : 日期不能早于1970年
+Date-time cannot later than 2037                   : 时间不能晚于2037年
+'Please input arguments, input {} when no arugment': '请输入调用参数，无参数的直接填写 {}'
+shortcutDays                                       : '{n}天'
 </i18n>
 
 <template>
@@ -9,10 +38,7 @@ Delete Auth Link: 删除授权链接
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}授权链接
-          <code class="text-main">{{ data.func_title }}</code>
-        </h1>
+        <h1>{{ pageTitle }} <code class="text-main">{{ data.func_title }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -20,8 +46,8 @@ Delete Auth Link: 删除授权链接
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
+              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="mode === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
@@ -31,10 +57,10 @@ Delete Auth Link: 删除授权链接
                     show-word-limit
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock title="授权链接ID关系到调用时的URL"></InfoBlock>
+                  <InfoBlock :title="$t('ID is used in the calling URL')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="执行函数" prop="funcId">
+                <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     filterable
                     v-model="form.funcId"
@@ -43,15 +69,15 @@ Delete Auth Link: 删除授权链接
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
-                <el-form-item label="调用参数" prop="funcCallKwargsJSON">
+                <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
-                  <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
-                  <InfoBlock title="函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数"></InfoBlock>
+                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
+                  <InfoBlock :title="$t('When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller')"></InfoBlock>
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="启用" prop="isDisabled">
+                <el-form-item :label="$t('Enabled')" prop="isDisabled">
                   <el-switch
                     :active-value="false"
                     :inactive-value="true"
@@ -59,17 +85,17 @@ Delete Auth Link: 删除授权链接
                   </el-switch>
                 </el-form-item>
 
-                <el-form-item label="显示于文档" prop="showInDoc">
+                <el-form-item :label="$t('Show in doc')" prop="showInDoc">
                   <el-switch
                     v-model="form.showInDoc">
                   </el-switch>
                 </el-form-item>
 
-                <el-form-item label="有效期至" prop="expireTime">
+                <el-form-item :label="$t('Expire at')" prop="expireTime">
                   <el-date-picker class="expire-time-input"
                     v-model="form.expireTime"
                     type="datetime"
-                    placeholder="选择有效期"
+                    :placeholder="$t('Select expire time')"
                     align="left"
                     format="yyyy-MM-dd HH:mm"
                     :clearable="true"
@@ -78,7 +104,7 @@ Delete Auth Link: 删除授权链接
                 </el-form-item>
 
                 <template v-for="(opt, index) in C.AUTH_LINK_THROTTLING">
-                  <el-form-item :label="index === 0 ? '限流' : ''" :prop="`throttlingJSON.${opt.key}`">
+                  <el-form-item :label="index === 0 ? $t('Throttling') : ''" :prop="`throttlingJSON.${opt.key}`">
                     <el-input-number class="throttling-input"
                       :min="1"
                       :step="1"
@@ -87,11 +113,11 @@ Delete Auth Link: 删除授权链接
                     <span class="throttling-unit">{{ opt.name }} </span>
                     <el-link class="throttling-clear"
                       :underline="false"
-                      @click.stop="form.throttlingJSON[opt.key] = undefined">清除</el-link>
+                      @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
                   </el-form-item>
                 </template>
 
-                <el-form-item label="备注">
+                <el-form-item :label="$t('Note')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -99,13 +125,12 @@ Delete Auth Link: 删除授权链接
                     maxlength="200"
                     show-word-limit
                     v-model="form.note"></el-input>
-                  <InfoBlock title="介绍当前授权链接的作用、功能、目的等"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除授权链接</el-button>
+                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -199,7 +224,7 @@ export default {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
 
       } catch(err) {
-        return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
+        return this.$alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`, this.$t('Add Auth Link'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('OK'),
           type: 'error',
@@ -231,7 +256,7 @@ export default {
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
-        return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
+        return this.$alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`, this.$t('Modify Auth Link'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('OK'),
           type: 'error',
@@ -250,7 +275,7 @@ export default {
     },
     async deleteData() {
       try {
-        await this.$confirm('删除授权链接可能导致依赖此链接的系统无法正常工作<hr class="br">是否确认删除？', '删除授权链接', {
+        await this.$confirm(`${this.$t('Are you sure you want to delete the Auth Link?')}`, this.$t('Delete Auth Link'), {
           dangerouslyUseHTMLString: true,
           confirmButtonText: this.$t('Delete'),
           cancelButtonText: this.$t('Cancel'),
@@ -294,6 +319,67 @@ export default {
     },
   },
   computed: {
+    formRules() {
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no arugment');
+
+      return {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
+                return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+              }
+              return callback();
+            },
+          }
+        ],
+        funcId: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Func'),
+            required: true,
+          },
+        ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
+            validator: (rule, value, callback) => {
+              let ts = this.moment(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot later than 2037')));
+              }
+              return callback();
+            },
+          }
+        ],
+        funcCallKwargsJSON: [
+          {
+            trigger : 'change',
+            message : errorMessage_funcCallKwargsJSON,
+            required: true,
+          },
+          {
+            trigger  : 'change',
+            validator: (rule, value, callback) => {
+              try {
+                let j = JSON.parse(value);
+                if (Array.isArray(j)) {
+                  return callback(new Error(errorMessage_funcCallKwargsJSON));
+                }
+                return callback();
+
+              } catch(err) {
+                return callback(new Error(errorMessage_funcCallKwargsJSON));
+              }
+            },
+          }
+        ],
+      }
+    },
     ID_PREFIX() {
       return 'auln-';
     },
@@ -301,11 +387,18 @@ export default {
       return this.$route.name.split('-').pop();
     },
     modeName() {
-      const nameMap = {
-        setup: this.$t('Setup'),
+      const _map = {
+        setup: this.$t('Modify'),
         add  : this.$t('Add'),
       };
-      return nameMap[this.mode];
+      return _map[this.mode];
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Modify Auth Link'),
+        add  : this.$t('Add Auth Link'),
+      };
+      return _map[this.mode];
     },
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
@@ -325,7 +418,7 @@ export default {
         date.setTime(now + 3600 * 24 * days * 1000);
 
         shortcuts.push({
-          text: `${days}天`,
+          text: this.$tc('shortcutDays', days),
           onClick(picker) {
             picker.$emit('pick', date)
           }
@@ -356,64 +449,6 @@ export default {
         showInDoc         : false,
         isDisabled        : false,
         note              : null,
-      },
-      formRules: {
-        id: [
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
-                return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
-              }
-              return callback();
-            },
-          }
-        ],
-        funcId: [
-          {
-            trigger : 'change',
-            message : '请选择执行函数',
-            required: true,
-          },
-        ],
-        expireTime: [
-          {
-            trigger: 'change',
-            message  : '只能选择1970年至2037年之间的日期',
-            validator: (rule, value, callback) => {
-              let ts = this.moment(value).unix();
-              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
-                return callback(new Error('日期不能早于1970年'));
-              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
-                return callback(new Error('时间不能晚于2037年'));
-              }
-              return callback();
-            },
-          }
-        ],
-        funcCallKwargsJSON: [
-          {
-            trigger : 'change',
-            message : '请输入调用参数，无参数的直接填写 {}',
-            required: true,
-          },
-          {
-            trigger  : 'change',
-            message  : '调用参数需要以 JSON 形式填写',
-            validator: (rule, value, callback) => {
-              try {
-                let j = JSON.parse(value);
-                if (Array.isArray(j)) {
-                  return callback(new Error('调用参数需要以 JSON 形式填写，如 {"arg1": "value1"}'));
-                }
-                return callback();
-
-              } catch(err) {
-                return callback(new Error('调用参数需要以 JSON 形式填写，无参数的直接填写 {}'));
-              }
-            },
-          }
-        ],
       },
     }
   },

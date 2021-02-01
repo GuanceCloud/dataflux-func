@@ -28,8 +28,24 @@ Vue.use(ElementUI)
 
 // 国际化
 import VueI18n from 'vue-i18n'
+import ElementLocale from 'element-ui/lib/locale';
+import elementUILocale_en from 'element-ui/lib/locale/lang/en'
+import elementUILocale_zhCN from 'element-ui/lib/locale/lang/zh-CN'
+import elementUILocale_zhTW from 'element-ui/lib/locale/lang/zh-TW'
+import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
+
 import locales from '@/assets/yaml/locales.yaml'
+
+Object.assign(locales.en,       elementUILocale_en)
+Object.assign(locales['zh-CN'], elementUILocale_zhCN)
+Object.assign(locales['zh-TW'], elementUILocale_zhTW)
+Object.assign(locales['zh-HK'], elementUILocale_zhTW)
+Object.assign(locales['ja'],    elementUILocale_ja)
+
 Vue.use(VueI18n)
+
+// 参考 https://blog.csdn.net/songhsia/article/details/104800966
+ElementLocale.i18n((key, value) => i18n.t(key, value));
 
 const i18n = new VueI18n({
   // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
@@ -46,10 +62,10 @@ import moment from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
 Vue.filter('datetime', function(dataStr, pattern='YYYY-MM-DD HH:mm:ss') {
-  return moment.utc(dataStr).locale('zh_CN').utcOffset(8).format(pattern);
+  return moment.utc(dataStr).locale(store.getters.uiLocale).utcOffset(8).format(pattern);
 });
 Vue.filter('fromNow', function(dataStr) {
-  return moment.utc(dataStr).locale('zh_CN').fromNow();
+  return moment.utc(dataStr).locale(store.getters.uiLocale).fromNow();
 });
 
 // 验证

@@ -1,9 +1,13 @@
+<i18n locale="zh-CN" lang="yaml">
+Go to the Func: 前往此函数
+</i18n>
+
 <template>
   <div class="goto-func-button">
     <el-tooltip
       effect="dark"
       :enterable="false"
-      content="前往此函数"
+      :content="$t('Go to the Func')"
       :placement="tipPlacement || 'right'">
       <el-button
         :type="type || 'text'"

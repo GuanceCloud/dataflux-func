@@ -76,7 +76,7 @@ Please select handler Func                        : 请选择处理函数
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form"  label-width="120px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+              <el-form ref="form" label-width="120px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
                 <el-form-item v-if="data.isBuiltin">
                   <InfoBlock type="error" :title="$t('This is a builtin Data Source, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
@@ -200,30 +200,29 @@ Please select handler Func                        : 请选择处理函数
                     :label="$t('Topic/Handler')">
                     <InfoBlock type="info" :title="`${$t('Shared subscription can avoid duplicated message:')}\n${$t('1. $share/GROUP/TOPIC in MQTTv5')}\n${$t('2. $queue/TOPIC in EMQX')}`"></InfoBlock>
                   </el-form-item>
-                  <el-form-item v-for="(topicHandler, index) in form.configJSON.topicHandlers || []"
-                    :label="`#${index + 1}`"
-                    :key="index" v-if="hasConfigField(selectedType, 'topicHandlers')"
-                    :prop="`configJSON.topicHandlers.${index}`"
-                    :rules="formRules_topicHandler">
-                    <el-row type="flex" justify="space-between">
-                      <el-col :span="21">
-                        <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
-                      </el-col>
-                      <el-col :span="2">
-                        <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
-                      </el-col>
-                    </el-row>
-                    <el-row type="flex">
-                      <el-col :span="24">
-                        <el-cascader class="func-cascader-input" ref="funcCascader"
-                          filterable
-                          :placeholder="$t('Select handler Func')"
-                          v-model="topicHandler.funcId"
-                          :options="funcCascader"
-                          :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
-                      </el-col>
-                    </el-row>
-                  </el-form-item>
+
+                  <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
+                    <el-form-item
+                      class="topic-handler"
+                      :label="`#${index + 1}`"
+                      :key="`topic-${index}`" v-if="hasConfigField(selectedType, 'topicHandlers')"
+                      :prop="`configJSON.topicHandlers.${index}.topic`"
+                      :rules="formRules_topic">
+                      <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
+                      <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
+                    </el-form-item>
+                    <el-form-item
+                      :key="`handler-${index}`" v-if="hasConfigField(selectedType, 'topicHandlers')"
+                      :prop="`configJSON.topicHandlers.${index}.funcId`"
+                      :rules="formRules_topic">
+                      <el-cascader class="func-cascader-input" ref="funcCascader"
+                        filterable
+                        :placeholder="$t('Select handler Func')"
+                        v-model="topicHandler.funcId"
+                        :options="funcCascader"
+                        :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                    </el-form-item>
+                  </template>
                   <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')">
                     <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add handler Func') }}</el-link>
                   </el-form-item>
@@ -551,15 +550,11 @@ export default {
           },
           {
             trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (!value) return callback();
-
-              value = parseInt(value);
-              if (value < 1 || value > 65535) {
-                return callback(new Error(this.$t('Only integer between 1 and 65535 are allowed')));
-              }
-              return callback();
-            },
+            message: this.$t('Only integer between 1 and 65535 are allowed'),
+            type   : 'integer',
+            min    : 1,
+            max    : 65535,
+            trigger: 'change',
           },
         ],
         'configJSON.servers': [
@@ -633,19 +628,18 @@ export default {
         ],
       }
     },
+    formRules_topic() {
+      return {
+        trigger: 'change',
+        message : this.$t('Please input topic'),
+        required: true,
+      }
+    },
     formRules_topicHandler() {
       return {
         trigger: 'change',
-        validator: (rule, value, callback) => {
-          if (this.T.isNothing(value.topic)) {
-            return callback(new Error(this.$t('Please input topic')));
-          }
-          if (this.T.isNothing(value.funcId)) {
-            return callback(new Error(this.$t('Please select handler Func')));
-          }
-
-          return callback();
-        },
+        message : this.$t('Please input handler Func'),
+        required: true,
       }
     },
     mode() {
@@ -660,8 +654,8 @@ export default {
     },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Script'),
-        add  : this.$t('Add Script'),
+        setup: this.$t('Modify Data Source'),
+        add  : this.$t('Add Data Source'),
       };
       return _map[this.mode];
     },
@@ -700,6 +694,12 @@ export default {
 <style scoped>
 .func-cascader-input {
   width: 420px;
+}
+.topic-handler .el-input {
+  width: 420px;
+}
+.topic-handler .el-link {
+  float: right;
 }
 </style>
 <style>
