@@ -31,7 +31,8 @@ MAIN_PROCESS.cpu_percent(interval=1)
 
 CHILD_PROCESS_MAP = {} # PID -> Process
 
-HEARTBEAT_EXEC_TIMESTAMP = 0
+MONITOR_HEARTBEAT_TIMESTAMP       = 0
+MONITOR_SYS_STATS_CHECK_TIMESTAMP = 0
 
 from worker.app_init import before_app_create, after_app_created
 
@@ -76,77 +77,80 @@ def on_worker_ready(*args, **kwargs):
 
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(*args, **kwargs):
+    current_timestamp = int(time.time())
+
     global MAIN_PROCESS
     global CHILD_PROCESSES
-    global HEARTBEAT_EXEC_TIMESTAMP
-
-    # Limit run interval
-    current_timestamp = int(time.time())
-    if current_timestamp - HEARTBEAT_EXEC_TIMESTAMP < CONFIG['_MONITOR_SYS_STATS_CHECK_INTERVAL']:
-        return
-
-    HEARTBEAT_EXEC_TIMESTAMP = current_timestamp
-
-    # Get queue list
-    _Q_flag = '-Q'
+    global MONITOR_HEARTBEAT_TIMESTAMP
+    global MONITOR_SYS_STATS_CHECK_TIMESTAMP
 
     # Record worker count
-    worker_queues = []
-    if _Q_flag in sys.argv:
-        worker_queues = sys.argv[sys.argv.index(_Q_flag) + 1].split(',')
-        worker_queues = list(map(lambda x: x.split('@').pop(), worker_queues))
-        worker_queues.sort()
-    else:
-        worker_queues = [str(i) for i in range(CONFIG['_WORKER_QUEUE_COUNT'])]
+    if current_timestamp - MONITOR_HEARTBEAT_TIMESTAMP > CONFIG['_MONITOR_HEARTBEAT_INTERVAL']:
+        MONITOR_HEARTBEAT_TIMESTAMP = current_timestamp
 
-    _expires = 30
-    for q in worker_queues:
-        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', WORKER_ID, 'workerQueue', q])
-        REDIS_HELPER.setex(cache_key, _expires, 'x')
+        # Get queue list
+        _Q_flag = '-Q'
 
-        cache_pattern = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', '*', 'workerQueue', q])
-        found_workers = REDIS_HELPER.keys(cache_pattern)
+        # Record worker count
+        worker_queues = []
+        if _Q_flag in sys.argv:
+            worker_queues = sys.argv[sys.argv.index(_Q_flag) + 1].split(',')
+            worker_queues = list(map(lambda x: x.split('@').pop(), worker_queues))
+            worker_queues.sort()
+        else:
+            worker_queues = [str(i) for i in range(CONFIG['_WORKER_QUEUE_COUNT'])]
 
-        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueueCount', tags=['workerQueue', q])
-        REDIS_HELPER.setex(cache_key, _expires, len(found_workers))
+        _expires = CONFIG['_MONITOR_HEARTBEAT_INTERVAL'] * 2
+        for q in worker_queues:
+            cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', WORKER_ID, 'workerQueue', q])
+            REDIS_HELPER.setex(cache_key, _expires, 'x')
+
+            cache_pattern = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', '*', 'workerQueue', q])
+            found_workers = REDIS_HELPER.keys(cache_pattern)
+
+            cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueueCount', tags=['workerQueue', q])
+            REDIS_HELPER.setex(cache_key, _expires, len(found_workers))
 
     # Record CPU/Memory
-    if MAIN_PROCESS:
-        total_cpu_percent = MAIN_PROCESS.cpu_percent()
+    if current_timestamp - MONITOR_SYS_STATS_CHECK_TIMESTAMP > CONFIG['_MONITOR_SYS_STATS_CHECK_INTERVAL']:
+        MONITOR_SYS_STATS_CHECK_TIMESTAMP = current_timestamp
 
-        main_memory_info  = MAIN_PROCESS.memory_full_info()
-        total_memory_pss = main_memory_info.pss
+        if MAIN_PROCESS:
+            total_cpu_percent = MAIN_PROCESS.cpu_percent()
 
-        # Update child process map
-        next_child_process_map = dict([(p.pid, p) for p in MAIN_PROCESS.children()])
+            main_memory_info  = MAIN_PROCESS.memory_full_info()
+            total_memory_pss = main_memory_info.pss
 
-        prev_child_pids = set(CHILD_PROCESS_MAP.keys())
-        next_child_pids = set(next_child_process_map.keys())
+            # Update child process map
+            next_child_process_map = dict([(p.pid, p) for p in MAIN_PROCESS.children()])
 
-        exited_pids = prev_child_pids - next_child_pids
-        for pid in exited_pids:
-            CHILD_PROCESS_MAP.pop(pid, None)
+            prev_child_pids = set(CHILD_PROCESS_MAP.keys())
+            next_child_pids = set(next_child_process_map.keys())
 
-        new_pids = next_child_pids - prev_child_pids
-        for pid in new_pids:
-            new_child_process = next_child_process_map[pid]
-            new_child_process.cpu_percent(interval=1)
-            CHILD_PROCESS_MAP[pid] = new_child_process
+            exited_pids = prev_child_pids - next_child_pids
+            for pid in exited_pids:
+                CHILD_PROCESS_MAP.pop(pid, None)
 
-        # Count up
-        for p in CHILD_PROCESS_MAP.values():
-            child_cpu_percent = p.cpu_percent()
-            child_memory_info = p.memory_full_info()
+            new_pids = next_child_pids - prev_child_pids
+            for pid in new_pids:
+                new_child_process = next_child_process_map[pid]
+                new_child_process.cpu_percent(interval=1)
+                CHILD_PROCESS_MAP[pid] = new_child_process
 
-            total_cpu_percent += child_cpu_percent
-            total_memory_pss  += child_memory_info.pss
+            # Count up
+            for p in CHILD_PROCESS_MAP.values():
+                child_cpu_percent = p.cpu_percent()
+                child_memory_info = p.memory_full_info()
 
-        total_cpu_percent = round(total_cpu_percent, 2)
+                total_cpu_percent += child_cpu_percent
+                total_memory_pss  += child_memory_info.pss
 
-        hostname = socket.gethostname()
+            total_cpu_percent = round(total_cpu_percent, 2)
 
-        cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerCPUPercent', 'hostname', hostname]);
-        REDIS_HELPER.ts_add(cache_key, total_cpu_percent, timestamp=current_timestamp)
+            hostname = socket.gethostname()
 
-        cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
-        REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
+            cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerCPUPercent', 'hostname', hostname]);
+            REDIS_HELPER.ts_add(cache_key, total_cpu_percent, timestamp=current_timestamp)
+
+            cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
+            REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
