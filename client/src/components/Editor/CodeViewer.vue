@@ -3,7 +3,18 @@ codeLines: '{n} line | {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup: 脚本设置
+Script Setup                                                : 脚本设置
+'Other user are editing this Script, please wait...'        : '其他用户正在编辑此脚本，请稍后...'
+'Shortcut:'                                                 : 快捷键：
+Select Func                                                 : 选择聚焦函数
+Draft                                                       : 草稿
+Published                                                   : 已发布
+DIFF                                                        : 差异
+Download {type}                                             : 下载{type}
+Setup Code Editor                                           : 调整编辑器显示样式
+This Script has been locked by other, editing is disabled   : 当前脚本被其他用户锁定，无法修改
+Currently in view mode, click Edit button to enter edit mode: 当前为查看模式，点击「编辑」按钮进入编辑模式
+View Mode                                                   : 查看模式
 </i18n>
 
 <template>
@@ -28,7 +39,7 @@ Script Setup: 脚本设置
         <div class="code-viewer-action-right">
           <el-form :inline="true">
             <el-form-item v-if="isConflicted">
-              <el-link type="danger" :underline="false">其他用户正在{{ USER_OPERATION_META_MAP[userOperation].text }}当前脚本，请稍后...</el-link>
+              <el-link type="danger" :underline="false">{{ $t('Other user are editing this Script, please wait...') }}</el-link>
               &#12288;
               &#12288;
             </el-form-item>
@@ -36,13 +47,13 @@ Script Setup: 脚本设置
             <el-form-item v-if="!isConflicted">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
-                  快捷键：<code>{{ T.getSuperKeyName() }} + E</code>
+                  {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + E</code>
                 </div>
                 <el-button
                   @click="startEdit"
                   type="primary" plain
                   size="mini">
-                  <i class="fa fa-fw" :class="[USER_OPERATION_META_MAP[userOperation].icon]"></i> 开始{{ USER_OPERATION_META_MAP[userOperation].text }}</el-button>
+                  <i class="fa fa-fw" :class="[USER_OPERATION_META_MAP[userOperation].icon]"></i> {{ USER_OPERATION_META_MAP[userOperation].text }}</el-button>
               </el-tooltip>
             </el-form-item>
 
@@ -52,7 +63,7 @@ Script Setup: 脚本设置
                 v-model="selectedFuncId"
                 size="mini"
                 filterable
-                placeholder="选择聚焦函数">
+                :placeholder="$t('Select Func')">
                 <el-option v-for="f in draftFuncs" :key="f.id" :label="f.name" :value="f.id">
                 </el-option>
               </el-select>
@@ -63,21 +74,21 @@ Script Setup: 脚本设置
                 size="mini">
                 <el-tooltip placement="bottom" v-for="meta, k, i in SHOW_MODE_META_MAP" :key="k" :enterable="false">
                   <div slot="content">
-                    快捷键：<code>{{ i + 1 }}</code>
+                    {{ $t('Shortcut:') }} <code>{{ i + 1 }}</code>
                   </div>
                   <el-radio-button :label="k">{{ meta.text }}</el-radio-button>
                 </el-tooltip>
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item v-if="!isLockedByOther">
-              <el-tooltip content="下载" placement="bottom" :enterable="false">
-                <el-button @click="download" plain size="mini">下载{{ SHOW_MODE_META_MAP[showMode].text }}</el-button>
+            <el-form-item v-if="!isLockedByOther" class="download-form">
+              <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
+                <el-button @click="download" plain size="mini">{{ $t('Download {type}', { type: SHOW_MODE_META_MAP[showMode].text } ) }}</el-button>
               </el-tooltip>
             </el-form-item>
 
             <el-form-item>
-              <el-tooltip content="调整编辑器显示样式" placement="bottom" :enterable="false">
+              <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
                 <el-button
                   @click="gotoCodeEditorSetup"
                   plain size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
@@ -86,50 +97,15 @@ Script Setup: 脚本设置
           </el-form>
         </div>
 
-        <InfoBlock v-if="isLockedByOther" type="error" title="当前脚本被其他用户锁定，目前只能查看"></InfoBlock>
-        <InfoBlock v-else type="warning" title="当前为查看模式，点击「开始编辑」按钮开始编辑"></InfoBlock>
+        <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
+        <InfoBlock v-else type="warning" :title="$t('Currently in view mode, click Edit button to enter edit mode')"></InfoBlock>
       </el-header>
 
       <!-- 代码区 -->
       <el-main id="editorContainer_CodeViewer" :style="$store.getters.codeMirrorSetting.style">
         <textarea id="editor_CodeViewer"></textarea>
-        <h1 id="viewModeHint">查看模式</h1>
+        <h1 id="viewModeHint">{{ $t('View Mode') }}</h1>
       </el-main>
-
-      <!-- 状态栏 -->
-      <div class="code-viewer-status-bar" v-show="$store.state.isLoaded">
-        <el-tooltip :content="`DIFF差异：增加 ${diffAddedCount} 行，删除 ${diffRemovedCount} 行`" placement="top-end">
-          <span>
-            Diff <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>,
-          </span>
-        </el-tooltip>
-
-        <template v-if="codeLines === codeDraftLines">
-          <el-tooltip :content="`共 ${codeLines} 行代码`" placement="top-end">
-            <span>
-              Line {{ codeLines }},
-            </span>
-          </el-tooltip>
-        </template>
-        <template v-else>
-          <el-tooltip :content="`修改前共 ${codeLines} 行代码，修改后共 ${codeDraftLines} 行代码`" placement="top-end">
-            <span>
-              Line {{ codeLines }} <i class="fa fa-long-arrow-right"></i> <span class="text-main">{{ codeDraftLines }}</span>,
-            </span>
-          </el-tooltip>
-        </template>
-
-        <template v-if="data.codeMD5 !== data.codeDraftMD5">
-          <el-tooltip content="脚本已修改但尚未发布" placement="top-end">
-            <span class="text-main">MODIFIED</span>
-          </el-tooltip>
-        </template>
-        <template v-else>
-          <el-tooltip content="脚本已发布" placement="top-end">
-            <span class="text-good">CLEAR</span>
-          </el-tooltip>
-        </template>
-      </div>
     </el-container>
   </transition>
 </template>
@@ -452,11 +428,11 @@ export default {
     USER_OPERATION_META_MAP() {
       return {
         edit: {
-          text: '编辑',
+          text: this.$t('Edit'),
           icon: 'fa-edit',
         },
         debug: {
-          text: '调试',
+          text: this.$t('Debug'),
           icon: 'fa-search',
         },
       }
@@ -464,15 +440,15 @@ export default {
     SHOW_MODE_META_MAP() {
       return {
         draft: {
-          text     : '草稿',
+          text     : this.$t('Draft'),
           codeField: 'codeDraft',
         },
         published: {
-          text     : '已发布',
+          text     : this.$t('Published'),
           codeField: 'code',
         },
         diff: {
-          text     : '差异',
+          text     : this.$t('DIFF'),
           codeField: null,
         },
       }
@@ -629,5 +605,8 @@ export default {
 .code-viewer-status-bar span {
   font-family: Iosevka;
   font-size: 12px;
+}
+.download-form .el-form-item__content {
+  width: 150px;
 }
 </style>

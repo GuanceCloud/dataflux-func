@@ -16,26 +16,32 @@ en:
   Cancel   : 取消
 
   # 通用-操作
-  Add   : 添加
-  Setup : 配置
-  Modify: 修改
-  Delete: 删除
-  Save  : 保存
-  Lock  : 解锁
-  Unlock: 锁定
-  Close : 关闭
-  Clear : 清空
+  Add     : 添加
+  Setup   : 配置
+  Edit    : 编辑
+  Modify  : 修改
+  Delete  : 删除
+  Save    : 保存
+  Lock    : 解锁
+  Unlock  : 锁定
+  Close   : 关闭
+  Clear   : 清空
+  Debug   : 调试
+  Download: 下载
 
   # 通用-操作（小写）
-  add   : 添加
-  setup : 配置
-  modify: 修改
-  delete: 删除
-  save  : 保存
-  lock  : 解锁
-  unlock: 锁定
-  close : 关闭
-  clear : 清空
+  add     : 添加
+  setup   : 配置
+  edit    : 编辑
+  modify  : 修改
+  delete  : 删除
+  save    : 保存
+  lock    : 解锁
+  unlock  : 锁定
+  close   : 关闭
+  clear   : 清空
+  debug   : 调试
+  download: 下载
 
   # toolkit.js - API调用提示
   Read data                               : 读取数据

@@ -1,6 +1,13 @@
 <i18n locale="zh-CN" lang="yaml">
-Clear Worker Queue       : 清空工作队列
-Clear Log and Cache table: 清空日志与缓存表
+About            : 关于
+Version          : 版本号
+Release date     : 发布日期
+'Loading...'     : '加载中...'
+System report    : 系统报告
+Get System Report: 获取系统报告
+
+Clear Worker Queue : 清空工作队列
+Clear Log and Cache: 清空日志与缓存表
 </i18n>
 
 <template>
@@ -8,9 +15,7 @@ Clear Log and Cache table: 清空日志与缓存表
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          关于
-        </h1>
+        <h1>{{ $t('About') }}</h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -25,12 +30,12 @@ Clear Log and Cache table: 清空日志与缓存表
               </el-divider>
 
               <el-form label-width="120px">
-                <el-form-item label="版本号">
-                  <el-input placeholder="获取中..." :readonly="true" :value="aboutWeb.version"></el-input>
+                <el-form-item :label="$t('Version')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWeb.version"></el-input>
                 </el-form-item>
 
-                <el-form-item label="发布日期">
-                  <el-input placeholder="获取中..." :readonly="true" :value="aboutWeb.releaseDate"></el-input>
+                <el-form-item :label="$t('Release date')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWeb.releaseDate"></el-input>
                 </el-form-item>
               </el-form>
 
@@ -42,23 +47,23 @@ Clear Log and Cache table: 清空日志与缓存表
               </el-divider>
 
               <el-form label-width="120px">
-                <el-form-item label="版本号">
-                  <el-input placeholder="获取中..." :readonly="true" :value="aboutWorker.version"></el-input>
+                <el-form-item :label="$t('Version')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWorker.version"></el-input>
                 </el-form-item>
 
-                <el-form-item label="发布日期">
-                  <el-input placeholder="获取中..." :readonly="true" :value="aboutWorker.releaseDate"></el-input>
+                <el-form-item :label="$t('Release date')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWorker.releaseDate"></el-input>
                 </el-form-item>
               </el-form>
 
               <!-- 系统报告 -->
               <br>
-              <el-divider content-position="left"><h1>系统报告</h1></el-divider>
+              <el-divider content-position="left"><h1>{{ $t('System report') }}</h1></el-divider>
 
               <el-form label-width="120px">
                 <template v-if="showSystemReport">
                   <el-form-item>
-                    <el-input placeholder="获取中..."
+                    <el-input :placeholder="$t('Loading...')"
                       type="textarea"
                       autosize
                       :readonly="true"
@@ -72,12 +77,14 @@ Clear Log and Cache table: 清空日志与缓存表
                 </template>
 
                 <el-form-item>
-                  <el-button @click="getSystemReport">{{ showSystemReport ? '重新' : '' }}获取系统报告</el-button>
+                  <el-button @click="getSystemReport">{{ $t('Get System Report') }}</el-button>
+                </el-form-item>
 
-                  <el-button @click="clearLogCacheTables" v-if="dbDiskUsedInfoTEXT">清空日志/缓存表</el-button>
+                <el-form-item>
+                  <el-button @click="clearLogCacheTables" v-if="dbDiskUsedInfoTEXT">{{ $t('Clear Log and Cache') }}</el-button>
 
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
-                    <el-button>清空工作队列</el-button>
+                    <el-button>{{ $t('Clear Worker Queue') }}</el-button>
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
                     </el-dropdown-menu>
@@ -353,7 +360,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
-        alert: {title: this.$t('Clear Log and Cache table'), showError: true},
+        alert: {title: this.$t('Clear Log and Cache'), showError: true},
       });
       if (apiRes.ok) {
         this.$alert(`日志/缓存表已被清空
