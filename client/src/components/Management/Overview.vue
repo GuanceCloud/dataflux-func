@@ -51,10 +51,10 @@ Response                      : 响应
         <el-divider content-position="left"><h1>{{ $t('Data Count') }}</h1></el-divider>
 
         <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
-          <i v-if="C.OVERVIEW_ENTITY_MAP[d.name].icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP[d.name].icon"></i>
-          <i v-else-if="C.OVERVIEW_ENTITY_MAP[d.name].tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP[d.name].tagText }}</code></i>
+          <i v-if="C.OVERVIEW_ENTITY_MAP.get(d.name).icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP.get(d.name).icon"></i>
+          <i v-else-if="C.OVERVIEW_ENTITY_MAP.get(d.name).tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP.get(d.name).tagText }}</code></i>
 
-          <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP[d.name].name }}</span>
+          <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
           <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
             {{ d.count }}
             <span class="overview-count-unit">个</span>
@@ -333,7 +333,7 @@ export default {
         }
 
         this.loadData(['workerQueueInfo']);
-      }, 3000);
+      }, 30 * 1000);
     }
   },
 }

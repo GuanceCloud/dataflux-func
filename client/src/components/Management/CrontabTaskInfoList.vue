@@ -29,9 +29,9 @@
           <el-table-column label="状态" width="150">
             <template slot-scope="scope">
               <el-tag
-                v-if="C.TASK_STATUS_MAP[scope.row.status]"
-                :type="C.TASK_STATUS_MAP[scope.row.status].tagType"><i :class="C.TASK_STATUS_MAP[scope.row.status].icon"></i>
-                {{ C.TASK_STATUS_MAP[scope.row.status].name }}
+                v-if="C.TASK_STATUS_MAP.get(scope.row.status)"
+                :type="C.TASK_STATUS_MAP.get(scope.row.status).tagType"><i :class="C.TASK_STATUS_MAP.get(scope.row.status).icon"></i>
+                {{ C.TASK_STATUS_MAP.get(scope.row.status).name }}
               </el-tag>
             </template>
           </el-table-column>

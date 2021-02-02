@@ -62,7 +62,7 @@ Copy {name} ID: 复制{name}ID
                 {{ $t('Example:') }}
                 <pre>{{ data.tip.sampleCode }}</pre>
                 <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-                <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
+                <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
               </div>
               <el-button slot="reference"
                 type="text"

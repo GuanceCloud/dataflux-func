@@ -570,7 +570,7 @@ class DataFluxFuncSyncCache(BaseTask):
             # 记录任务信息
             table_name      = None
             origin_id_field = None
-            if origin == 'crontab':
+            if origin == 'crontab' or exec_mode == 'crontab':
                 table_name      = 'biz_main_crontab_task_info'
                 origin_id_field = 'crontabConfigId'
 
@@ -769,6 +769,13 @@ class DataFluxFuncAutoCleanerTask(BaseTask):
         if db_res:
             self._delete_by_seq(table, db_res[0]['seq'])
 
+    def truncate(self, table):
+        sql = '''
+            TRUNCATE ??
+            '''
+        sql_params = [table]
+        self.db.query(sql, sql_params)
+
 @app.task(name='DataFluxFunc.autoCleaner', bind=True, base=DataFluxFuncAutoCleanerTask)
 def dataflux_func_auto_cleaner(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
@@ -779,7 +786,14 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
 
     self.logger.info('DataFluxFunc AutoCleaner Task launched.')
 
-    # 清除数据
+    # 清空数据
+    if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
+        self.truncate('biz_main_script_log')
+
+    if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
+        self.truncate('biz_main_script_failure')
+
+    # 回卷数据
     table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
     for table, limit in table_limit_map.items():
         try:

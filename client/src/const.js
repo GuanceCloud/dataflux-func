@@ -12,11 +12,17 @@ const createMap = function(arrayConst) {
 const MAP_CONST = function(arrayConst) {
   this._map = createMap(arrayConst)
 };
-CONST_MAP.prototype.get = function(key) {
+MAP_CONST.prototype.get = function(key) {
   if (key in this._map) {
     return this._map[key];
   } else {
-    return {};
+    return {
+      name     : '-',
+      fullName : '-',
+      tagType  : 'info',
+      icon     : 'fa-ban',
+      textClass: 'text-bad',
+    };
   }
 };
 
@@ -36,6 +42,9 @@ import logo_nsq           from '@/assets/img/logo-nsq.png'
 import logo_mqtt          from '@/assets/img/logo-mqtt.png'
 
 export default {
+  get NOPE() {
+    return '-';
+  },
   get DATE_SOURCE() {
     return [
       {
@@ -277,24 +286,24 @@ export default {
   get ASIDE_ITEM_TYPE() {
     return [
       {
-        'key' : 'scriptSet',
-        'name': app.$t('Script Set'),
+        key : 'scriptSet',
+        name: app.$t('Script Set'),
       },
       {
-        'key' : 'script',
-        'name': app.$t('Script'),
+        key : 'script',
+        name: app.$t('Script'),
       },
       {
-        'key' : 'func',
-        'name': app.$t('Func'),
+        key : 'func',
+        name: app.$t('Func'),
       },
       {
-        'key' : 'dataSource',
-        'name': app.$t('Data Source'),
+        key : 'dataSource',
+        name: app.$t('Data Source'),
       },
       {
-        'key' : 'envVariable',
-        'name': app.$t('ENV'),
+        key : 'envVariable',
+        name: app.$t('ENV'),
       },
     ];
   },

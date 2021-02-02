@@ -62,7 +62,7 @@
                 <template v-if="!T.isNothing(scope.row.funcIntegration)">
                   <span class="text-info">&#12288;集成:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_INTEGRATION_MAP[scope.row.funcIntegration]">{{ C.FUNC_INTEGRATION_MAP[scope.row.funcIntegration].name }}</code>
+                    <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
                     <code v-else>{{ scope.row.funcIntegration }}</code>
                   </el-tag>
                 </template>

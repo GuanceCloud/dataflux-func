@@ -125,7 +125,7 @@ Script {id}    : 脚本 {id}
               {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
               <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
             </div>
             <div v-if="data.isCodeEdited" class="code-edited-tip">
               <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>

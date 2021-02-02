@@ -88,21 +88,21 @@ Please select handler Func                        : 请选择处理函数
                 </el-form-item>
                 <el-form-item :label="$t('Type')" v-else>
                   <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.DATE_SOURCE_MAP[selectedType].fullName" :value="selectedType"></el-option>
+                    <el-option :label="C.DATE_SOURCE_MAP.get(selectedType).fullName" :value="selectedType"></el-option>
                   </el-select>
                 </el-form-item>
 
                 <template v-if="selectedType">
                   <el-form-item>
-                    <el-image class="data-source-logo" :class="[`logo-${selectedType}`]" :src="C.DATE_SOURCE_MAP[selectedType].logo"></el-image>
+                    <el-image class="data-source-logo" :class="[`logo-${selectedType}`]" :src="C.DATE_SOURCE_MAP.get(selectedType).logo"></el-image>
                   </el-form-item>
 
-                  <el-form-item v-if="C.DATE_SOURCE_MAP[selectedType].tips">
-                    <InfoBlock type="info" :title="C.DATE_SOURCE_MAP[selectedType].tips"></InfoBlock>
+                  <el-form-item v-if="C.DATE_SOURCE_MAP.get(selectedType).tips">
+                    <InfoBlock type="info" :title="C.DATE_SOURCE_MAP.get(selectedType).tips"></InfoBlock>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.DATE_SOURCE_MAP[selectedType].compatibleDBs)">
-                    <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.DATE_SOURCE_MAP[selectedType].compatibleDBs" :key="db">{{ db }}</el-tag>
+                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.DATE_SOURCE_MAP.get(selectedType).compatibleDBs)">
+                    <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.DATE_SOURCE_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
                   </el-form-item>
 
                   <el-form-item label="ID" prop="id">
@@ -288,7 +288,7 @@ export default {
         this.$refs.form.clearValidate();
       }
 
-      let fieldMap = this.C.DATE_SOURCE_MAP[type].configFields;
+      let fieldMap = this.C.DATE_SOURCE_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       for (let f in fieldMap) if (fieldMap.hasOwnProperty(f)) {
@@ -302,7 +302,7 @@ export default {
       }
     },
     fillDefault(type) {
-      let fieldMap = this.C.DATE_SOURCE_MAP[type].configFields;
+      let fieldMap = this.C.DATE_SOURCE_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       let nextConfigJSON = {};
@@ -331,7 +331,7 @@ export default {
       if (!parsedURL || parsedURL.hostname == this.form.configJSON.host) return;
 
       // 没有对应支持不处理
-      let fieldMap = this.C.DATE_SOURCE_MAP[this.selectedType].configFields;
+      let fieldMap = this.C.DATE_SOURCE_MAP.get(this.selectedType).configFields;
       if (!fieldMap) return;
 
       let nextConfigJSON = this.T.jsonCopy(this.form.configJSON);
@@ -493,10 +493,10 @@ export default {
       }
     },
     hasConfigField(type, field) {
-      if (!this.C.DATE_SOURCE_MAP[type] || !this.C.DATE_SOURCE_MAP[type].configFields) {
+      if (!this.C.DATE_SOURCE_MAP.get(type) || !this.C.DATE_SOURCE_MAP.get(type).configFields) {
         return false;
       }
-      return (field in this.C.DATE_SOURCE_MAP[type].configFields);
+      return (field in this.C.DATE_SOURCE_MAP.get(type).configFields);
     },
     removeTopicHandler(index) {
       this.form.configJSON.topicHandlers.splice(index, 1);

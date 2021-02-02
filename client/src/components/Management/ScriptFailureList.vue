@@ -29,8 +29,8 @@
 
           <el-table-column label="执行方式" width="150">
             <template slot-scope="scope">
-              <span :class="C.FUNC_EXEC_MODE_MAP[scope.row.execMode].textClass">
-                {{ C.FUNC_EXEC_MODE_MAP[scope.row.execMode].name }}
+              <span :class="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).textClass">
+                {{ C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).name }}
               </span>
             </template>
           </el-table-column>

@@ -40,7 +40,7 @@ Recover Script Lib: 还原脚本库
             <el-card shadow="hover" class="recover-point-card">
               <span class="text-info">#</span>
               <span class="text-main text-large">{{ d.seq }}</span>
-              <span class="recover-point-title" :class="C.SCRIPT_RECOVER_POINT_MAP[d.type].textClass">{{ C.SCRIPT_RECOVER_POINT_MAP[d.type].name }}</span>
+              <span class="recover-point-title" :class="C.SCRIPT_RECOVER_POINT_MAP.get(d.type).textClass">{{ C.SCRIPT_RECOVER_POINT_MAP.get(d.type).name }}</span>
 
               <div class="recover-point-operation">
                 <el-button :type="d.nodeType" plain @click="quickSubmitData(d, 'recover')" size="small">还原至此状态</el-button>
