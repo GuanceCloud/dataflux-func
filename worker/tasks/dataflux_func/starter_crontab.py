@@ -98,7 +98,8 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
                 'funcCallKwargs': {},
                 'saveResult'    : False,
                 'crontab'       : crontab_expr,
-                'execMode'      : 'autoRun',
+                'origin'        : 'integration',
+                'execMode'      : 'crontab',
             }
             crontab_configs.append(c)
 
@@ -141,6 +142,9 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
 
         # 准备配置详情
         for c in crontab_configs:
+            c['origin']   = 'crontab'
+            c['execMode'] = 'crontab'
+
             func_call_kwargs_json = c.get('funcCallKwargsJSON')
             if func_call_kwargs_json:
                 c['funcCallKwargs'] = ujson.loads(func_call_kwargs_json)
@@ -160,17 +164,18 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
 
         return crontab_configs, latest_seq
 
-    def cache_task_status(self, crontab_id, task_id, func_id):
-        if not crontab_id:
+    def cache_task_status(self, task_id, crontab_config):
+        if not crontab_config:
             return
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
 
         data = {
             'taskId'   : task_id,
-            'origin'   : 'crontab',
-            'originId' : crontab_id,
-            'funcId'   : func_id,
+            'origin'   : crontab_config['origin'],
+            'originId' : crontab_config['id'],
+            'funcId'   : crontab_config['funcId'],
+            'execMode' : crontab_config['execMode'],
             'status'   : 'queued',
             'timestamp': int(time.time()),
         }
@@ -268,7 +273,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_id = gen_task_id()
 
             # 记录任务信息（入队）
-            self.cache_task_status(c['id'], task_id, func_id=c['funcId'])
+            self.cache_task_status(task_id=task_id, crontab_config=c)
 
             # 任务入队
             task_headers = {
@@ -277,10 +282,10 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_kwargs = {
                 'funcId'        : c['funcId'],
                 'funcCallKwargs': c['funcCallKwargs'],
-                'origin'        : c.get('execMode') or 'crontab',
+                'origin'        : c['origin'],
                 'originId'      : c['id'],
                 'saveResult'    : c['saveResult'],
-                'execMode'      : 'crontab',
+                'execMode'      : c['execMode'],
                 'triggerTime'   : trigger_time,
                 'crontab'       : c['crontab'],
                 'queue'         : specified_queue,

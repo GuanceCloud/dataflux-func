@@ -553,16 +553,17 @@ class DataFluxFuncSyncCache(BaseTask):
             origin_id              = cache_res['originId']
             func_id                = cache_res.get('funcId')
             script_publish_version = cache_res.get('scriptPublishVersion')
+            exec_mode              = cache_res.get('execMode')
             status                 = cache_res['status']
             log_messages           = cache_res.get('logMessages') or []
             einfo_text             = cache_res.get('einfoTEXT')   or ''
             timestamp              = cache_res.get('timestamp')
 
-            if not all([origin, origin_id, timestamp]):
+            if not all([origin, exec_mode, origin_id, timestamp]):
                 continue
 
-            if origin not in ('crontab', 'batch'):
-                continue
+            if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
+                return
 
             message_text = '\n'.join(log_messages).strip()
 
@@ -820,7 +821,7 @@ def dataflux_func_auto_run(self, *args, **kwargs):
         task_kwargs = {
             'funcId'  : f['id'],
             'origin'  : 'integration',
-            'execMode': 'auto',
+            'execMode': 'async',
             'queue'   : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
         }
 

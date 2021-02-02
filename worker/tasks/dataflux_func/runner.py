@@ -202,11 +202,11 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-    def cache_task_status(self, origin, origin_id, status, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
+    def cache_task_status(self, origin, origin_id, exec_mode, status, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
         if not all([origin, origin_id]):
             return
 
-        if origin not in ('crontab', 'batch'):
+        if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
             return
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
@@ -217,6 +217,7 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
             'originId'            : origin_id,
             'funcId'              : func_id,
             'scriptPublishVersion': script_publish_version,
+            'execMode'            : exec_mode,
             'status'              : status,
             'logMessages'         : log_messages,
             'einfoTEXT'           : einfo_text,
@@ -301,13 +302,6 @@ def dataflux_func_runner(self, *args, **kwargs):
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
 
-    # 记录任务信息（运行中）
-    self.cache_task_status(
-        origin=origin,
-        origin_id=origin_id,
-        status='pending',
-        func_id=func_id)
-
     # 顶层任务ID
     root_task_id = kwargs.get('rootTaskId') or self.request.id
 
@@ -340,6 +334,14 @@ def dataflux_func_runner(self, *args, **kwargs):
 
     target_script = None
     try:
+        # 记录任务信息（运行中）
+        self.cache_task_status(
+            origin=origin,
+            origin_id=origin_id,
+            exec_mode=exec_mode,
+            status='pending',
+            func_id=func_id)
+
         global SCRIPT_DICT_CACHE
 
         # 更新脚本缓存
@@ -516,6 +518,7 @@ def dataflux_func_runner(self, *args, **kwargs):
         self.cache_task_status(
             origin=origin,
             origin_id=origin_id,
+            exec_mode=exec_mode,
             status=end_status,
             func_id=func_id,
             script_publish_version=target_script['publishVersion'],

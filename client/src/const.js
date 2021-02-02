@@ -9,6 +9,17 @@ const createMap = function(arrayConst) {
   return map;
 }
 
+const MAP_CONST = function(arrayConst) {
+  this._map = createMap(arrayConst)
+};
+CONST_MAP.prototype.get = function(key) {
+  if (key in this._map) {
+    return this._map[key];
+  } else {
+    return {};
+  }
+};
+
 // 数据源
 import logo_df_dataway    from '@/assets/img/logo-dataflux-dataway.png'
 import logo_influxdb      from '@/assets/img/logo-influxdb.png'
@@ -259,7 +270,7 @@ export default {
     ];
   },
   get DATE_SOURCE_MAP() {
-    return createMap(this.DATE_SOURCE);
+    return new MAP_CONST(this.DATE_SOURCE);
   },
 
   // 侧边栏项目类型
@@ -288,7 +299,7 @@ export default {
     ];
   },
   get ASIDE_ITEM_TYPE_MAP() {
-    return createMap(this.ASIDE_ITEM_TYPE);
+    return new MAP_CONST(this.ASIDE_ITEM_TYPE);
   },
 
   // 环境变量
@@ -326,7 +337,7 @@ export default {
     ];
   },
   get ENV_VARIABLE_MAP() {
-    return createMap(this.ENV_VARIABLE);
+    return new MAP_CONST(this.ENV_VARIABLE);
   },
 
   // 授权链接限流
@@ -359,7 +370,7 @@ export default {
     ];
   },
   get AUTH_LINK_THROTTLING_MAP() {
-    return createMap(this.AUTH_LINK_THROTTLING);
+    return new MAP_CONST(this.AUTH_LINK_THROTTLING);
   },
 
   // 任务状态
@@ -392,7 +403,7 @@ export default {
     ];
   },
   get TASK_STATUS_MAP() {
-    return createMap(this.TASK_STATUS);
+    return new MAP_CONST(this.TASK_STATUS);
   },
 
   // 总揽业务实体
@@ -441,7 +452,7 @@ export default {
     ];
   },
   get OVERVIEW_ENTITY_MAP() {
-    return createMap(this.OVERVIEW_ENTITY);
+    return new MAP_CONST(this.OVERVIEW_ENTITY);
   },
 
   // 脚本还原点
@@ -470,7 +481,7 @@ export default {
     ];
   },
   get SCRIPT_RECOVER_POINT_MAP() {
-    return createMap(this.SCRIPT_RECOVER_POINT);
+    return new MAP_CONST(this.SCRIPT_RECOVER_POINT);
   },
 
   // 函数执行模式
@@ -491,15 +502,10 @@ export default {
         name     : app.$t('Crontab'),
         textClass: 'text-info',
       },
-      {
-        key      : 'autoRun',
-        name     : app.$t('Auto run'),
-        textClass: 'text-info',
-      },
     ];
   },
   get FUNC_EXEC_MODE_MAP() {
-    return createMap(this.FUNC_EXEC_MODE);
+    return new MAP_CONST(this.FUNC_EXEC_MODE);
   },
 
   // 函数集成
@@ -512,7 +518,7 @@ export default {
     ];
   },
   get FUNC_INTEGRATION_MAP() {
-    return createMap(this.FUNC_INTEGRATION);
+    return new MAP_CONST(this.FUNC_INTEGRATION);
   },
 
   // 编辑器主题
@@ -581,7 +587,7 @@ export default {
     ];
   },
   get CODE_MIRROR_THEME_MAP() {
-    return createMap(this.CODE_MIRROR_THEME);
+    return new MAP_CONST(this.CODE_MIRROR_THEME);
   },
   get CODE_MIRROR_DEFAULT_THEME() {
     return 'eclipse-monokai';

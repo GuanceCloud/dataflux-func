@@ -108,7 +108,6 @@ en:
   Sync all  : 同步调用
   Async call: 异步调用
   Crontab   : 定时运行
-  Auto run  : 自动运行
 
   # const.js - FUNC_INTEGRATION
   Sign in: 登录
