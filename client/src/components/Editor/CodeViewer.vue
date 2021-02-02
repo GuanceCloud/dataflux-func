@@ -74,7 +74,7 @@ View Mode                                                   : 查看模式
                 size="mini">
                 <el-tooltip placement="bottom" v-for="meta, k, i in SHOW_MODE_META_MAP" :key="k" :enterable="false">
                   <div slot="content">
-                    {{ $t('Shortcut:') }} <code>{{ i + 1 }}</code>
+                    {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>
                   </div>
                   <el-radio-button :label="k">{{ meta.text }}</el-radio-button>
                 </el-tooltip>
