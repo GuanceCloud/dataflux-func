@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content: 过滤内容
-'(Refresh)'   : （刷新列表）
-'(Add ENV)'   : （添加数据源）
+Refresh       : 刷新列表
+Add ENV       : 添加数据源
 Setup         : 配置
 'Example:'    : 示例
 Copy example  : 复制示例
@@ -30,10 +30,10 @@ Copy {name} ID: 复制{name}ID
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
           <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add ENV)') }}
+            <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
           </el-link>
           <div v-else>
             <span>{{ node.label }}</span>

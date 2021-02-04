@@ -38,15 +38,13 @@
               v-for="d in data"
               :key="d.id"
               type="primary"
-              :timestamp="`${T.toDateTime(d.createTime)}（${T.fromNow(d.createTime)}）`">
+              :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
                 <div class="history-summary">
-                  <small class="text-info">内容:</small>
-                  <p v-for="scriptSet in d.scriptSets" :key="scriptSet.id">
-                    &#12288;
-                    <el-tag>{{ scriptSet.title || scriptSet.id }}</el-tag>
-                    <el-tag size="mini" type="info" v-for="script in scriptSet.scripts" :key="script.id">{{ script.title || script.id }}</el-tag>
-                  </p>
+                  <small class="text-info">导入脚本集：:</small>
+                  <ol class="script-set-list">
+                    <li v-for="scriptSet in d.scriptSets" :key="scriptSet.id">{{ scriptSet.title || scriptSet.id }}</li>
+                  </ol>
                 </div>
 
                 <div class="history-note" v-if="d.note">
@@ -93,10 +91,6 @@ export default {
           scriptSetMap[d.id] = d;
           scriptSetMap[d.id].scripts = [];
         });
-        history.summaryJSON.scripts.forEach(d => {
-          if (!scriptSetMap[d.scriptSetId]) return;
-          scriptSetMap[d.scriptSetId].scripts.push(d);
-        });
 
         history.scriptSets = Object.values(scriptSetMap);
       });
@@ -138,7 +132,7 @@ export default {
   font-size: x-large;
 }
 .history-card {
-  width: 800px;
+  width: 620px;
 }
 .history-note {
 }
@@ -146,10 +140,9 @@ export default {
   margin: 5px 0 0 10px;
   font-weight: normal;
 }
-.history-summary {
-}
-.history-summary .el-tag+.el-tag {
-  margin-left: 5px;
+.script-set-list {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 </style>
 

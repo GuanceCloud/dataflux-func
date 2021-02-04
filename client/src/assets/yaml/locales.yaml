@@ -2,12 +2,12 @@
 
 en:
   # const.js - AUTH_LINK_THROTTLING
-  'timePerSecond': '{n} time/second | {n} times/second'
-  'timePerMinute': '{n} time/minute | {n} times/minute'
-  'timePerHour'  : '{n} time/hour | {n} times/hour'
-  'timePerDay'   : '{n} time/day | {n} times/day'
-  'timePerMonth' : '{n} time/month | {n} times/month'
-  'timePerYear'  : '{n} time/year | {n} times/year'
+  'timePerSecond': '{n} time / second | {n} times / second'
+  'timePerMinute': '{n} time / minute | {n} times / minute'
+  'timePerHour'  : '{n} time / hour | {n} times / hour'
+  'timePerDay'   : '{n} time / day | {n} times / day'
+  'timePerMonth' : '{n} time / month | {n} times / month'
+  'timePerYear'  : '{n} time / year | {n} times / year'
 
 'zh-CN':
   # 通用
@@ -85,12 +85,12 @@ en:
   'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
 
   # const.js - AUTH_LINK_THROTTLING
-  'timePerSecond': '{n}次/秒'
-  'timePerMinute': '{n}次/分钟'
-  'timePerHour'  : '{n}次/小时'
-  'timePerDay'   : '{n}次/天'
-  'timePerMonth' : '{n}次/月'
-  'timePerYear'  : '{n}次/年'
+  'timePerSecond': '{n} 次/秒'
+  'timePerMinute': '{n} 次/分钟'
+  'timePerHour'  : '{n} 次/小时'
+  'timePerDay'   : '{n} 次/天'
+  'timePerMonth' : '{n} 次/月'
+  'timePerYear'  : '{n} 次/年'
 
   # const.js - TASK_STATUS
   Queued   : 已入队
@@ -105,7 +105,7 @@ en:
   Created by user manually     : 用户手动创建
 
   # const.js - FUNC_EXEC_MODE
-  Sync all  : 同步调用
+  Sync call : 同步调用
   Async call: 异步调用
   Crontab   : 定时运行
 

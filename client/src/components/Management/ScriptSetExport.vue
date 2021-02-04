@@ -37,6 +37,15 @@ Export Data: 导出数据
                   <span v-if="isPasswordEnabled" class="text-main">&#12288;密码由系统自动生成，请注意做好记录</span>
                 </el-form-item>
 
+                <el-form-item label="导出相关数据">
+                  <div>
+                    <el-checkbox border v-model="form.includeAuthLinks" label="授权链接"></el-checkbox>
+                    <el-checkbox border v-model="form.includeCrontabConfigs" label="自动触发配置"></el-checkbox>
+                    <el-checkbox border v-model="form.includeBatches" label="批处理"></el-checkbox>
+                  </div>
+                  <span class="text-main">&#12288;导出的相关数据，在导入同时会替换指定脚本集关联的所有数据</span>
+                </el-form-item>
+
                 <el-form-item label="备注" prop="note">
                   <el-input
                     type="textarea"
@@ -203,8 +212,11 @@ export default {
       isPasswordEnabled: false,
 
       form: {
-        scriptSetIds: [],
-        note        : '',
+        scriptSetIds         : [],
+        includeAuthLinks     : false,
+        includeCrontabConfigs: false,
+        includeBatches       : false,
+        note                 : '',
       },
       formRules: {
         scriptSetIds: [
@@ -233,7 +245,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .export-form {
-  width: 600px;
+  width: 620px;
 }
 .import-token-dialog-content {
   text-align: center;
@@ -248,5 +260,10 @@ export default {
   margin-top: 15px;
   letter-spacing: 5px;
   border: 5px dashed lightgrey;
+}
+
+.el-checkbox.is-bordered {
+  margin-left : 5px !important;
+  margin-right: 0 !important;
 }
 </style>

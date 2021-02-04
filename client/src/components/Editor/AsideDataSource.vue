@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content         : 过滤内容
-'(Refresh)'            : （刷新列表）
-'(Add Data Source)'    : （添加数据源）
+Refresh                : 刷新列表
+Add Data Source        : 添加数据源
 Simple Debug Panel     : 简易调试面板
 View                   : 查看
 Setup                  : 配置
@@ -33,10 +33,10 @@ Open Simple Debug Panel: 打开简易调试面板
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
           <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Data Source)') }}
+            <i class="fa fa-fw fa-plus"></i> {{ $t('Add Data Source') }}
           </el-link>
           <div v-else>
             <el-tag class="aside-tree-node-tag" :type="C.DATE_SOURCE_MAP.get(data.dataSourceType).tagType" size="mini"><span>{{ C.DATE_SOURCE_MAP.get(data.dataSourceType).name }}</span></el-tag>

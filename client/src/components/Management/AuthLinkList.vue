@@ -87,7 +87,7 @@ Delete Auth Link       : 删除授权链接
           </el-table-column>
 
           <template v-if="!showCountCost">
-            <el-table-column label="有效期至" width="160">
+            <el-table-column label="有效期至" width="180">
               <template slot-scope="scope">
                 <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
                 <template v-else>
@@ -99,12 +99,12 @@ Delete Auth Link       : 删除授权链接
               </template>
             </el-table-column>
 
-            <el-table-column label="限流策略" width="150">
+            <el-table-column label="限流策略" width="160">
               <template slot-scope="scope">
                 <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
                 <template v-else>
                   <template v-for="opt in C.AUTH_LINK_THROTTLING">
-                    <span v-if="scope.row.throttlingJSON[opt.key]">{{ scope.row.throttlingJSON[opt.key] }} {{ opt.name }}<br></span>
+                    <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
                   </template>
                 </template>
               </template>

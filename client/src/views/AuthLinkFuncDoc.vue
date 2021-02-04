@@ -81,7 +81,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="160">
+          <el-table-column label="有效期至" width="180">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
               <template v-else>

@@ -110,7 +110,7 @@ shortcutDays                                       : '{n}天'
                       :step="1"
                       :step-strictly="true"
                       v-model="form.throttlingJSON[opt.key]"></el-input-number>
-                    <span class="throttling-unit">{{ opt.name }} </span>
+                    <span class="throttling-unit">{{ $tc(opt.name, form.throttlingJSON[opt.key], { n: '' }) }} </span>
                     <el-link class="throttling-clear"
                       :underline="false"
                       @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
@@ -458,10 +458,10 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 400px;
+  width: 500px;
 }
 .expire-time-input {
-  width: 400px;
+  width: 500px;
 }
 .throttling-input {
   width: 260px;

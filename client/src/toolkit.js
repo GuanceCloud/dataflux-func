@@ -585,20 +585,22 @@ export function compareVersion(a, b) {
   return 0;
 };
 
-export function toDateTime(dt) {
-  return moment.utc(dt).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm');
-};
-
 export function isExpired(dt) {
   return moment.utc(dt).unix() < moment().unix();
 };
 
-export function fromNow(dt) {
-  return moment.utc(dt).locale('zh_CN').fromNow();
+export function getDateTimeString(dt, pattern) {
+  let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
+  let inputTime = moment.utc(dt).locale(store.getters.uiLocale).utcOffset(utcOffset);
+
+  if (!pattern) {
+    pattern = 'YYYY-MM-DD HH:mm:ss';
+  }
+  return inputTime.format(pattern);
 };
 
-export function getDateTimeStringCN(dt, f) {
-  return moment(dt).locale('zh_CN').utcOffset('+08:00').format(f || 'YYYY-MM-DD HH:mm:ss');
+export function fromNow(dt) {
+  return moment.utc(dt).locale(store.getters.uiLocale).fromNow();
 };
 
 export function asideItemSorter(a, b) {

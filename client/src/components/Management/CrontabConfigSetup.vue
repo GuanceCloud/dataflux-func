@@ -606,7 +606,10 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 400px;
+  width: 500px;
+}
+.expire-time-input {
+  width: 500px;
 }
 .crontab-expr-parts {
   font-size: xx-large;
@@ -628,7 +631,7 @@ export default {
   color: orange;
 }
 
-.el-checkbox {
+.el-checkbox.is-bordered {
   margin-left : 5px !important;
   margin-right: 0 !important;
 }

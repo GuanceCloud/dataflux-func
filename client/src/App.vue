@@ -372,7 +372,7 @@ h3 {
   text-align: right;
 }
 .common-form {
-  width: 600px;
+  width: 620px;
 }
 .common-form .form-item-tip {
   color: darkgrey !important;

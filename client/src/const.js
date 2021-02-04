@@ -354,27 +354,27 @@ export default {
     return [
       {
         key : 'bySecond',
-        name: app.$t('timePerSecond'),
+        name: 'timePerSecond',
       },
       {
         key : 'byMinute',
-        name: app.$t('timePerMinute'),
+        name: 'timePerMinute',
       },
       {
         key : 'byHour',
-        name: app.$t('timePerHour'),
+        name: 'timePerHour',
       },
       {
         key : 'byDay',
-        name: app.$t('timePerDay'),
+        name: 'timePerDay',
       },
       {
         key : 'byMonth',
-        name: app.$t('timePerMonth'),
+        name: 'timePerMonth',
       },
       {
         key : 'byYear',
-        name: app.$t('timePerYear'),
+        name: 'timePerYear',
       },
     ];
   },
@@ -498,7 +498,7 @@ export default {
     return [
       {
         key      : 'sync',
-        name     : app.$t('Sync all'),
+        name     : app.$t('Sync call'),
         textClass: 'text-main',
       },
       {

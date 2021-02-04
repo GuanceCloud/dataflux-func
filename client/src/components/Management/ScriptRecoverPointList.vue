@@ -36,7 +36,7 @@ Recover Script Lib: 还原脚本库
             v-for="d in data"
             :key="d.id"
             type="primary"
-            :timestamp="`${T.toDateTime(d.createTime)}（${T.fromNow(d.createTime)}）`">
+            :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
             <el-card shadow="hover" class="recover-point-card">
               <span class="text-info">#</span>
               <span class="text-main text-large">{{ d.seq }}</span>
@@ -148,7 +148,7 @@ export default {
   font-size: x-large;
 }
 .recover-point-card {
-  width: 800px;
+  width: 620px;
 }
 .recover-point-note {
   padding: 10px 0 0 10px;

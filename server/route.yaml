@@ -1770,6 +1770,18 @@ scriptSetAPI:
         $allowNull : true
         $type      : string
         $maxLength : 24
+      includeAuthLinks:
+        $desc     : 是否包含关联的授权链接
+        $allowNull: true
+        $type     : boolean
+      includeCrontabConfigs:
+        $desc     : 是否包含关联的自动触发配置
+        $allowNull: true
+        $type     : boolean
+      includeBatches:
+        $desc     : 是否包含关联的批处理
+        $allowNull: true
+        $type     : boolean
       note:
         $desc      : 备注
         $isRequired: true

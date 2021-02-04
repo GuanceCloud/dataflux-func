@@ -1,8 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content                                 : 过滤内容
-'(Refresh)'                                    : （刷新列表）
-'(Add Script)'                                 : （添加脚本）
-'(Add Script Set)'                             : （添加脚本集）
+Refresh                                        : 刷新列表
+Add Script                                     : 添加脚本
+Add Script Set                                 : 添加脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
 Locked by someone else                         : 被其他人锁定
@@ -50,13 +50,10 @@ Script {id}    : 脚本 {id}
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
-          </el-link>
-          <el-link v-else-if="data.type === 'addScript'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Script)') }}
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
           <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Script Set)') }}
+            <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
           </el-link>
           <div v-else>
             <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open-o':'fa-folder-o']"></i>
@@ -81,6 +78,17 @@ Script {id}    : 脚本 {id}
         <div>
           <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
             <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
+          </el-tooltip>
+
+          <el-tooltip v-if="data.type === 'scriptSet'" effect="dark" :content="$t('Add Script')" placement="top" :enterable="false">
+            <span>
+              <el-button
+                type="text"
+                size="small"
+                @click.stop="openEntity(node, data, 'add')">
+                <i class="fa fa-fw fa-plus text-main"></i>
+              </el-button>
+            </span>
           </el-tooltip>
 
           <el-tooltip effect="dark" :content="$t('Quick View Panel')" placement="top" :enterable="false">
@@ -117,9 +125,8 @@ Script {id}    : 脚本 {id}
           <el-popover v-if="data.tip"
             placement="right-start"
             trigger="click"
-            transition="el-fade-in"
             popper-class="aside-tip"
-            :close-delay="500">
+            :value="isPopoverShown(data.id)">
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               {{ $t('Example:') }}
@@ -143,7 +150,7 @@ Script {id}    : 脚本 {id}
             <el-button slot="reference"
               type="text"
               size="small"
-              @click.stop>
+              @click.stop="showPopover(data.id)">
               <i class="fa fa-fw fa-question-circle"></i>
             </el-button>
           </el-popover>
@@ -164,6 +171,9 @@ export default {
     QuickViewWindow,
   },
   watch: {
+    $route() {
+      this.showPopoverId = null;
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
     },
@@ -183,7 +193,6 @@ export default {
     filterNode(value, data) {
       if (!value) return true;
       if (['addScriptSet', 'refresh'].indexOf(data.type) >= 0) return true;
-      if (data.type === 'addScript') return false;
 
       let targetValue = ('' + value).toLowerCase();
       let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
@@ -340,10 +349,6 @@ export default {
           d.childrenCount = d.children.filter(x => x.type === 'script').length;
         }
         d.children.sort(this.T.asideItemSorter);
-        d.children.push({
-          scriptSetId: d.id,
-          type       : 'addScript',
-        });
 
         d.children.forEach(dd => {
           if (!this.T.isNothing(dd.children)) {
@@ -408,6 +413,14 @@ export default {
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
     },
+    showPopover(id) {
+      setImmediate(() => {
+        this.showPopoverId = id;
+      })
+    },
+    isPopoverShown(id) {
+      return this.showPopoverId == id;
+    },
     expandNode(nodeKey) {
       this.$set(this.expandedNodeMap, nodeKey, true);
 
@@ -439,17 +452,16 @@ export default {
           });
           break;
 
-        // 「添加脚本」节点
-        case 'addScript':
-          this.$router.push({
-            name  : 'script-add',
-            params: {id: data.scriptSetId},
-          });
-          break;
-
         // 脚本集节点
         case 'scriptSet':
-          if (target === 'setup') {
+          if (target === 'add') {
+            // 只有点击「添加」按钮才跳转
+            this.$router.push({
+              name  : 'script-add',
+              params: {id: data.id},
+            });
+
+          } else if (target === 'setup') {
             // 只有点击「配置」按钮才跳转
             this.$router.push({
               name  : 'script-set-setup',
@@ -537,6 +549,8 @@ export default {
       // 因此需要将初始状态单独提取且防止中途修改
       expandedNodeMap        : {},
       defaultExpandedNodeKeys: [],
+
+      showPopoverId: null,
     };
   },
   created() {
