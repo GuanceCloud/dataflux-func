@@ -126,7 +126,7 @@ Script {id}    : 脚本 {id}
             placement="right-start"
             trigger="click"
             popper-class="aside-tip"
-            :value="isPopoverShown(data.id)">
+            :value="showPopoverId === data.id">
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               {{ $t('Example:') }}
@@ -417,9 +417,6 @@ export default {
       setImmediate(() => {
         this.showPopoverId = id;
       })
-    },
-    isPopoverShown(id) {
-      return this.showPopoverId == id;
     },
     expandNode(nodeKey) {
       this.$set(this.expandedNodeMap, nodeKey, true);

@@ -71,9 +71,8 @@ Open Simple Debug Panel: 打开简易调试面板
           <el-popover v-if="data.tip"
             placement="right-start"
             trigger="click"
-            transition="el-fade-in"
             popper-class="aside-tip"
-            :close-delay="500">
+            :value="showPopoverId === data.id">
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
 
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
@@ -95,7 +94,7 @@ Open Simple Debug Panel: 打开简易调试面板
             <el-button slot="reference"
               type="text"
               size="small"
-              @click.stop>
+              @click.stop="showPopover(data.id)">
               <i class="fa fa-fw fa-question-circle"></i>
             </el-button>
           </el-popover>
@@ -116,6 +115,9 @@ export default {
     SimpleDebugWindow,
   },
   watch: {
+    $route() {
+      this.showPopoverId = null;
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
     },
@@ -179,6 +181,11 @@ export default {
     showSimpleDebugWindow(dataSource) {
       this.$refs.simpleDebugWindow.showWindow(dataSource);
     },
+    showPopover(id) {
+      setImmediate(() => {
+        this.showPopoverId = id;
+      })
+    },
     openEntity(node, data, target) {
       if (target === 'setup') {
         this.$refs.tree.setCurrentKey(data.id);
@@ -218,6 +225,8 @@ export default {
       loading   : false,
       filterText: '',
       data      : [],
+
+      showPopoverId: null,
     };
   },
   created() {

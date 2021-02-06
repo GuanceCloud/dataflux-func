@@ -569,6 +569,10 @@ content: "\25B2";
 .el-message-box__status {
   top: 22px !important;
 }
+.el-notification__content {
+  text-align: start !important;
+}
+
 .el-row {
   margin-bottom: 20px;
 }

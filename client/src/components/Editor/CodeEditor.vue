@@ -51,7 +51,8 @@ Just end editing                                           : 不保存直接退�
 To avoid losing current code, Script has been downloaded   : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
 Saving Script failed                                       : 保存脚本失败
 'Filename:'                                                : 文件名：
-# TODO
+Script saved successfully             : 脚本保存成功
+You can continue with other operations: 你可以继续进行其他操作
 </i18n>
 
 <template>
@@ -539,12 +540,12 @@ export default {
         if (options.skipSaveAlert) {
           // 简易保存提示
           this.$notify({
-            title   : '脚本保存成功',
-            message : '你可以继续进行其他操作',
+            title   : this.$t('Script saved successfully'),
+            message : this.$t('You can continue with other operations'),
             type    : 'success',
             position: 'top-right',
             offset  : 20,
-            duration: 3000,
+            duration: 30000000,
             offset  : 75,
           });
 

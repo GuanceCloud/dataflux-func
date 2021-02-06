@@ -54,9 +54,8 @@ Copy {name} ID: 复制{name}ID
             <el-popover v-if="data.tip"
               placement="right-start"
               trigger="click"
-              transition="el-fade-in"
               popper-class="aside-tip"
-              :close-delay="500">
+              :value="showPopoverId === data.id">
               <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
               <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
                 {{ $t('Example:') }}
@@ -67,7 +66,7 @@ Copy {name} ID: 复制{name}ID
               <el-button slot="reference"
                 type="text"
                 size="small"
-                @click.stop>
+                @click.stop="showPopover(data.id)">
                 <i class="fa fa-fw fa-question-circle"></i>
               </el-button>
             </el-popover>
@@ -84,6 +83,9 @@ export default {
   components: {
   },
   watch: {
+    $route() {
+      this.showPopoverId = null;
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
     },
@@ -137,6 +139,11 @@ export default {
       this.loading = false;
       this.data = treeData;
     },
+    showPopover(id) {
+      setImmediate(() => {
+        this.showPopoverId = id;
+      })
+    },
     openEntity(node, data, target) {
       if (target === 'setup') {
         this.$refs.tree.setCurrentKey(data.id);
@@ -176,6 +183,8 @@ export default {
       loading   : true,
       filterText: '',
       data      : [],
+
+      showPopoverId: null,
     };
   },
   created() {

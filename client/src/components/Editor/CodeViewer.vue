@@ -15,6 +15,9 @@ Setup Code Editor                                           : 调整编辑器显
 This Script has been locked by other, editing is disabled   : 当前脚本被其他用户锁定，无法修改
 Currently in view mode, click Edit button to enter edit mode: 当前为查看模式，点击「编辑」按钮进入编辑模式
 View Mode                                                   : 查看模式
+
+Published Code  : 已发布的代码
+Saved Draft Code: 已保存的草稿代码
 </i18n>
 
 <template>
@@ -209,8 +212,8 @@ export default {
             let fileName  = `${this.scriptId}${fileTitle}`;
             let oldStr    = this.data.code      || '';
             let newStr    = this.data.codeDraft || '';
-            let oldHeader = '已发布的正式代码';
-            let newHeader = '已保存的草稿代码';
+            let oldHeader = this.$t('Published Code');
+            let newHeader = this.$t('Saved Draft Code');
             let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
             this.codeMirror.setValue(diffPatch);
