@@ -265,7 +265,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 .common-form .el-upload-dragger {
-  width: 400px;
+  width: 500px;
 }
 .el-upload-dragger.upload-area-active {
   border-color: #FF6600 !important;

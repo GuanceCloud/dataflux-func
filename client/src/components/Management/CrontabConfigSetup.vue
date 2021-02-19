@@ -47,8 +47,8 @@ Delete Crontab Config: 删除自动触发配置
                   <el-form-item label="按周重复">
                     <el-checkbox-group size="mini" v-model="formCrontab.weeks">
                       <template v-for="(item, index) in WEEKS">
-                        <el-checkbox border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                        <br v-if="WEEKS[index + 1] && WEEKS[index].expr.indexOf('*') >= 0 && WEEKS[index + 1].expr.indexOf('*') < 0" />
+                        <br v-if="item === 'sep'">
+                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -56,8 +56,8 @@ Delete Crontab Config: 删除自动触发配置
                   <el-form-item label="按月重复">
                     <el-checkbox-group size="mini" v-model="formCrontab.months">
                       <template v-for="(item, index) in MONTHS">
-                        <el-checkbox border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                        <br v-if="MONTHS[index + 1] && MONTHS[index].expr.indexOf('*') >= 0 && MONTHS[index + 1].expr.indexOf('*') < 0" />
+                        <br v-if="item === 'sep'">
+                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -65,8 +65,8 @@ Delete Crontab Config: 删除自动触发配置
                   <el-form-item label="按天重复">
                     <el-checkbox-group size="mini" v-model="formCrontab.days">
                       <template v-for="(item, index) in DAYS">
-                        <el-checkbox border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                        <br v-if="DAYS[index + 1] && DAYS[index].expr.indexOf('*') >= 0 && DAYS[index + 1].expr.indexOf('*') < 0" />
+                        <br v-if="item === 'sep'">
+                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -74,8 +74,8 @@ Delete Crontab Config: 删除自动触发配置
                   <el-form-item label="按时重复">
                     <el-checkbox-group size="mini" v-model="formCrontab.hours">
                       <template v-for="(item, index) in HOURS">
-                        <el-checkbox border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                        <br v-if="HOURS[index + 1] && HOURS[index].expr.indexOf('*') >= 0 && HOURS[index + 1].expr.indexOf('*') < 0" />
+                        <br v-if="item === 'sep'">
+                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -83,8 +83,8 @@ Delete Crontab Config: 删除自动触发配置
                   <el-form-item label="按分重复">
                     <el-checkbox-group size="mini" v-model="formCrontab.minutes">
                       <template v-for="(item, index) in MINUTES">
-                        <el-checkbox border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                        <br v-if="MINUTES[index + 1] && MINUTES[index].expr.indexOf('*') >= 0 && MINUTES[index + 1].expr.indexOf('*') < 0" />
+                        <br v-if="item === 'sep'">
+                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -379,18 +379,25 @@ export default {
 
       this.formCrontabCache = this.T.jsonCopy(this.formCrontab);
     },
-    getNumberList(fixedItems, start, end, step) {
+    getNumberList(fixedItems, start, end, step, wrapEach) {
       step = step || 1;
 
       let list = fixedItems || [];
+      let count = 0;
       for (let i = start; i <= end; i+=step) {
+        count++;
         list.push({
           expr: i.toString(),
           name: this.T.padZero(i, 2),
         });
+
+        if (count % wrapEach === 0) {
+          list.push('sep');
+        }
       }
       return list;
     },
+
   },
   computed: {
     mode() {
@@ -493,6 +500,7 @@ export default {
     };
     const WEEKS = [
       {expr: '*', name: '不限星期'},
+      'sep',
       {expr: '0', name: '日'},
       {expr: '1', name: '一'},
       {expr: '2', name: '二'},
@@ -502,20 +510,24 @@ export default {
       {expr: '6', name: '六'},
     ];
     const MONTHS = this.getNumberList([
-        {expr: '*', name: '每月'}
-      ], 1, 12);
+        {expr: '*', name: '每月'},
+        'sep',
+      ], 1, 12, 1, 6);
     const DAYS = this.getNumberList([
-        {expr: '*', name: '每天'}
-      ], 1, 31);
+        {expr: '*', name: '每天'},
+        'sep',
+      ], 1, 31, 1, 5);
     const HOURS = this.getNumberList([
-        {expr: '*', name: '每小时'}
-      ], 0, 23);
+        {expr: '*', name: '每小时'},
+        'sep',
+      ], 0, 23, 1, 6);
     const MINUTES = this.getNumberList([
         {expr: '*', name: '每分钟'},
         {expr: '*/5', name: '每5分钟'},
         {expr: '*/15', name: '每15分钟'},
         {expr: '*/30', name: '每30分钟'},
-      ], 0, 59, 5);
+        'sep',
+      ], 0, 59, 5, 6);
 
     return {
       CRONTAB_PARTS_MAP,

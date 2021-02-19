@@ -43,7 +43,7 @@ Export Data: 导出数据
                     <el-checkbox border v-model="form.includeCrontabConfigs" label="自动触发配置"></el-checkbox>
                     <el-checkbox border v-model="form.includeBatches" label="批处理"></el-checkbox>
                   </div>
-                  <span class="text-main">&#12288;导出的相关数据，在导入同时会替换指定脚本集关联的所有数据</span>
+                  <span class="text-main">&#12288;自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据</span>
                 </el-form-item>
 
                 <el-form-item label="备注" prop="note">
