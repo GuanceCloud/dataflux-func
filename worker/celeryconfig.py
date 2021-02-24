@@ -6,7 +6,7 @@ import math
 
 # 3rd-party Modules
 import psutil
-from celery.schedules import crontab
+from celery.schedules import crontab as celery_crontab
 from kombu import Queue
 
 # Project Modules
@@ -92,22 +92,21 @@ task_routes.update({
 })
 
 # Beat
-import crontab as crontab_parser
-def get_schedule_kwargs(crontab_expr):
-    c = crontab_parser.CronTab(crontab_expr)
+def create_schedule(crontab_expr):
+    splited = crontab_expr.split(' ')
     kwargs = {
-        'minute'       : c.matchers.minute.input,
-        'hour'         : c.matchers.hour.input,
-        'day_of_month' : c.matchers.day.input,
-        'month_of_year': c.matchers.month.input,
-        'day_of_week'  : c.matchers.weekday.input,
+        'minute'       : splited[0],
+        'hour'         : splited[1],
+        'day_of_month' : splited[2],
+        'month_of_year': splited[3],
+        'day_of_week'  : splited[4],
     }
-    return kwargs
+    return celery_crontab(**kwargs)
 
 # 自动触发配置启动器
 beat_schedule['run-starter-crontab'] = {
     'task'    : 'DataFluxFunc.starterCrontab',
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_STARTER']))
+    'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
 }
 
 # 强制重新加载脚本
@@ -116,30 +115,30 @@ beat_schedule['run-force-reload-scripts'] = {
     'kwargs'  : {
         'force': True,
     },
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']))
+    'schedule': create_schedule(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']),
 }
 
 # 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
     'task'    : 'DataFluxFunc.syncCache',
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_SYNC_CACHE']))
+    'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
 }
 
 # 工作队列压力恢复
 beat_schedule['run-worker-queue-pressure-recover'] = {
     'task'    : 'DataFluxFunc.workerQueuePressureRecover',
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']))
+    'schedule': create_schedule(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']),
 }
 
 # 自动清理
 beat_schedule['run-auto-cleaner'] = {
     'task'    : 'DataFluxFunc.autoCleaner',
-    'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_AUTO_CLEANER']))
+    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEANER']),
 }
 
 if CONFIG['DB_AUTO_BACKUP_ENABLED']:
     # 数据库自动备份
     beat_schedule['run-db-auto-backup'] = {
         'task'    : 'DataFluxFunc.dbAutoBackup',
-        'schedule': crontab(**get_schedule_kwargs(CONFIG['_CRONTAB_DB_AUTO_BACKUP']))
+        'schedule': create_schedule(CONFIG['_CRONTAB_DB_AUTO_BACKUP']),
     }

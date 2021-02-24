@@ -20,7 +20,7 @@ import simplejson, ujson
 import arrow
 import pylru
 import requests
-import crontab as crontab_parser
+import croniter as croniter
 import funcsigs
 
 # Project Modules
@@ -1253,9 +1253,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 固定Crontab
         if fixed_crontab is not None:
-            try:
-                parsed_crontab = crontab_parser.CronTab(fixed_crontab)
-            except Exception as e:
+            if not croniter.is_valid(fixed_crontab):
                 e = InvalidOptionException('`fixed_crontab` is not a valid crontab expression')
                 raise e
 

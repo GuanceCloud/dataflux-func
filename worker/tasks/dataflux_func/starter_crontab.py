@@ -12,7 +12,7 @@ import traceback
 
 # 3rd-party Modules
 import arrow
-import crontab as crontab_parser
+from croniter import croniter
 import six
 import ujson
 
@@ -57,14 +57,14 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
         if not crontab_expr:
             return False
 
-        try:
-            parsed_crontab = crontab_parser.CronTab(crontab_expr)
-        except Exception as e:
+        if not croniter.is_valid(crontab_expr):
             return False
-        else:
-            now = arrow.get().to('Asia/Shanghai').datetime
-            start_time = int(parsed_crontab.previous(delta=False, now=now))
-            return start_time >= trigger_time
+
+        now = arrow.get().to('Asia/Shanghai').datetime
+        crontab_iter = croniter(crontab_expr, now)
+
+        start_time = int(crontab_iter.get_prev())
+        return start_time >= trigger_time
 
     def get_integrated_func_crontab_configs(self):
         sql = '''
@@ -192,8 +192,8 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
 
     # 计算当前触发点
     now = arrow.get().to('Asia/Shanghai').datetime
-    starter_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
-    trigger_time = int(starter_crontab.previous(delta=False, now=now))
+    crontab_iter = croniter(CONFIG['_CRONTAB_STARTER'], now)
+    trigger_time = int(crontab_iter.get_prev())
     current_time = int(time.time())
 
     # 获取函数功能集成自动触发
