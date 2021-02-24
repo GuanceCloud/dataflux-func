@@ -1764,6 +1764,18 @@ scriptSetAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+      dataSourceIds:
+        $desc: 导出的数据源ID列表
+        $:
+          $desc      : 数据源ID
+          $isRequired: true
+          $type      : string
+      envVariableIds:
+        $desc: 导出的环境变量ID列表
+        $:
+          $desc      : 环境变量ID
+          $isRequired: true
+          $type      : string
       password:
         $desc      : 指定密码
         $isRequired: true

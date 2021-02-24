@@ -105,7 +105,9 @@ EntityModel.prototype.import = function(packageData, callback) {
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds = toolkit.arrayElementValues(packageData.scriptSets, 'id');
+  var scriptSetIds   = toolkit.arrayElementValues(packageData.scriptSets, 'id');
+  var dataSourceIds  = toolkit.arrayElementValues(packageData.dataSources, 'id');
+  var envVariableIds = toolkit.arrayElementValues(packageData.envVariables, 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -179,6 +181,30 @@ EntityModel.prototype.import = function(packageData, callback) {
         self.db.query(sql, sqlParams, eachCallback);
       }, asyncCallback);
     },
+    // 删除所有涉及的数据源
+    function(asyncCallback) {
+      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM biz_main_data_source');
+      sql.append('WHERE');
+      sql.append('   id IN (?)');
+
+      var sqlParams = [dataSourceIds];
+      self.db.query(sql, sqlParams, asyncCallback);
+    },
+    // 删除所有涉及的环境变量
+    function(asyncCallback) {
+      if (toolkit.isNothing(envVariableIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM biz_main_env_variable');
+      sql.append('WHERE');
+      sql.append('   id IN (?)');
+
+      var sqlParams = [envVariableIds];
+      self.db.query(sql, sqlParams, asyncCallback);
+    },
     // 插入数据
     function(asyncCallback) {
       // 预处理
@@ -197,6 +223,8 @@ EntityModel.prototype.import = function(packageData, callback) {
         { name: 'authLinks',      table: 'biz_main_auth_link' },
         { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
         { name: 'batches',        table: 'biz_main_batch' },
+        { name: 'dataSources',    table: 'biz_main_data_source' },
+        { name: 'envVariables',   table: 'biz_main_env_variable' },
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {
         var _dataSet = packageData[_rule.name];

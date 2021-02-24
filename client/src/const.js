@@ -479,7 +479,7 @@ export default {
       },
       {
         key      : 'recover',
-        name     : app.$t('Before Script Set Lib recover'),
+        name     : app.$t('Before Script Lib recover'),
         textClass: 'text-info',
       },
       {

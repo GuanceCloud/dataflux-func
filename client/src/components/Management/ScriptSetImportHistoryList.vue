@@ -4,13 +4,8 @@
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          脚本包导入/安装历史
+          脚本包导入历史
           <div class="header-control">
-            <!-- TODO -->
-            <el-button @click="openSetup(null, 'install')" type="primary" size="mini" v-if="false">
-              <i class="fa fa-fw fa-star"></i>
-              从官方脚本库安装
-            </el-button>
             <el-button @click="openSetup(null, 'import')" size="mini">
               <i class="fa fa-fw fa-cloud-upload"></i>
               导入脚本包
@@ -41,14 +36,27 @@
               :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
                 <div class="history-summary">
-                  <small class="text-info">导入脚本集：:</small>
-                  <ol class="script-set-list">
-                    <li v-for="scriptSet in d.scriptSets" :key="scriptSet.id">{{ scriptSet.title || scriptSet.id }}</li>
-                  </ol>
+                  <span class="text-info">脚本集：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.scriptSets" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
+                </div>
+
+                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.dataSources)">
+                  <span class="text-info">数据源：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.dataSources" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
+                </div>
+                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.envVariables)">
+                  <span class="text-info">环境变量：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.envVariables" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
                 </div>
 
                 <div class="history-note" v-if="d.note">
-                  <small class="text-info">备注:</small>
+                  <span class="text-info">备注:</span>
                   <pre class="text-info text-small">{{ d.note }}</pre>
                 </div>
               </el-card>
@@ -82,31 +90,12 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      let data = apiRes.data;
-
-      data.forEach(history => {
-        let scriptSetMap = {};
-
-        history.summaryJSON.scriptSets.forEach(d => {
-          scriptSetMap[d.id] = d;
-          scriptSetMap[d.id].scripts = [];
-        });
-
-        history.scriptSets = Object.values(scriptSetMap);
-      });
-
-      this.data = data;
+      this.data = apiRes.data;
 
       this.$store.commit('updateLoadStatus', true);
     },
     openSetup(d, target) {
       switch(target) {
-        case 'install':
-          this.$router.push({
-            name: 'official-script-lib',
-          })
-          break;
-
         case 'import':
           this.$router.push({
             name: 'script-set-import',
@@ -128,6 +117,9 @@ export default {
 </script>
 
 <style scoped>
+.history-summary {
+  margin-bottom: 5px;
+}
 .history-title {
   font-size: x-large;
 }
@@ -139,10 +131,6 @@ export default {
 .history-note pre {
   margin: 5px 0 0 10px;
   font-weight: normal;
-}
-.script-set-list {
-  padding-top: 5px;
-  padding-bottom: 5px;
 }
 </style>
 

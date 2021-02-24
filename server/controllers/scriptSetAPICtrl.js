@@ -21,6 +21,8 @@ var authLinkMod               = require('../models/authLinkMod');
 var crontabConfigMod          = require('../models/crontabConfigMod');
 var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
+var dataSourceMod             = require('../models/dataSourceMod');
+var envVariableMod            = require('../models/envVariableMod');
 
 /* Configure */
 var FILENAME_IN_ZIP = 'dataflux-func.json';
@@ -203,6 +205,8 @@ exports.delete = function(req, res, next) {
 
 exports.export = function(req, res, next) {
   var scriptSetIds          = req.body.scriptSetIds;
+  var dataSourceIds         = req.body.dataSourceIds;
+  var envVariableIds        = req.body.envVariableIds;
   var password              = req.body.password              || '';
   var includeAuthLinks      = req.body.includeAuthLinks      || false;
   var includeCrontabConfigs = req.body.includeCrontabConfigs || false;
@@ -221,6 +225,9 @@ exports.export = function(req, res, next) {
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   var batchModel         = batchMod.createModel(res.locals);
 
+  var dataSourceModel  = dataSourceMod.createModel(res.locals);
+  var envVariableModel = envVariableMod.createModel(res.locals);
+
   var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
 
   var packageData = {
@@ -230,9 +237,14 @@ exports.export = function(req, res, next) {
     note      : note,
   };
 
+  // 脚本集相关数据
   if (includeAuthLinks)      packageData.authLinks      = [];
   if (includeCrontabConfigs) packageData.crontabConfigs = [];
   if (includeBatches)        packageData.batches        = [];
+
+  // 数据源/环境变量
+  if (!toolkit.isNothing(dataSourceIds))  packageData.dataSources  = [];
+  if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
 
   var fileBuf = null;
   async.series([
@@ -414,6 +426,70 @@ exports.export = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         packageData.batches = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取数据源
+    function(asyncCallback) {
+      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'dsrc.id',
+          'dsrc.title',
+          'dsrc.description',
+          'dsrc.type',
+          'dsrc.configJSON',
+        ],
+        filters: {
+          'dsrc.id': {in: dataSourceIds},
+        },
+        orders: [
+          {field: 'dsrc.seq', method: 'ASC'},
+        ],
+      };
+      dataSourceModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 去除加密字段
+        dbRes.forEach(function(d) {
+          dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
+            var fCipher = toolkit.strf('{0}Cipher', f);
+            if (fCipher in d.configJSON) {
+              d.configJSON[fCipher] = '';
+            }
+          });
+        });
+
+        packageData.dataSources = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取环境变量
+    function(asyncCallback) {
+      if (toolkit.isNothing(envVariableIds)) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'evar.id',
+          'evar.title',
+          'evar.description',
+          'evar.valueTEXT',
+          'evar.autoTypeCasting',
+        ],
+        filters: {
+          'evar.id': {in: envVariableIds},
+        },
+        orders: [
+          {field: 'evar.seq', method: 'ASC'},
+        ],
+      };
+      envVariableModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        packageData.envVariables = dbRes;
 
         return asyncCallback();
       });

@@ -10,7 +10,7 @@ Recover Script Lib: 还原脚本库
         <h1>
           脚本库还原点
           <div class="header-control">
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" size="mini">
               <i class="fa fa-fw fa-camera"></i>
               创建还原点
             </el-button>

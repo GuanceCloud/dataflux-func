@@ -9,6 +9,12 @@ Export Data: 导出数据
       <el-header height="60px">
         <h1>
           {{ modeName }}脚本包
+          <div class="header-control">
+            <el-button @click="goToHistory" size="mini">
+              <i class="fa fa-fw fa-history"></i>
+              脚本包导出历史
+            </el-button>
+          </div>
         </h1>
       </el-header>
 
@@ -18,14 +24,50 @@ Export Data: 导出数据
           <el-col :span="15">
             <div class="export-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="选择脚本集" prop="scriptSetIds">
-                  <el-transfer
-                    :titles="['全选', '全选']"
-                    :props="{key: 'id'}"
-                    v-model="form.scriptSetIds"
-                    :data="scriptSets">
-                    <span slot-scope="{ option }">{{ option.title || option.id }}</span>
-                  </el-transfer>
+                <el-form-item label="脚本集" prop="scriptSetIds">
+                  <el-select v-model="form.scriptSetIds" multiple filterable placeholder="请选择">
+                    <el-option
+                      v-for="item in scriptSets"
+                      :key="item.id"
+                      :label="item.title || item.id"
+                      :value="item.id">
+                      <span class="select-item-name">{{ item.title || item.id }}</span>
+                      <code class="select-item-id">ID: {{ item.id }}</code>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item label="脚本集关联数据">
+                  <el-checkbox size="medium" border v-model="form.includeAuthLinks" label="授权链接"></el-checkbox>
+                  <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" label="自动触发配置"></el-checkbox>
+                  <el-checkbox size="medium" border v-model="form.includeBatches" label="批处理"></el-checkbox>
+                  <InfoBlock title="系统会自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item label="数据源" prop="dataSourceIds">
+                  <el-select v-model="form.dataSourceIds" multiple filterable placeholder="请选择">
+                    <el-option
+                      v-for="item in dataSources"
+                      :key="item.id"
+                      :label="item.title || item.id"
+                      :value="item.id">
+                      <span class="select-item-name">{{ item.title || item.id }}</span>
+                      <code class="select-item-id">ID: {{ item.id }}</code>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item label="环境变量" prop="envVariableIds">
+                  <el-select v-model="form.envVariableIds" multiple filterable placeholder="请选择">
+                    <el-option
+                      v-for="item in envVariables"
+                      :key="item.id"
+                      :label="item.title || item.id"
+                      :value="item.id">
+                      <span class="select-item-name">{{ item.title || item.id }}</span>
+                      <code class="select-item-id">ID: {{ item.id }}</code>
+                    </el-option>
+                  </el-select>
                 </el-form-item>
 
                 <el-form-item label="启用密码">
@@ -35,15 +77,6 @@ Export Data: 导出数据
                     v-model="isPasswordEnabled">
                   </el-switch>
                   <span v-if="isPasswordEnabled" class="text-main">&#12288;密码由系统自动生成，请注意做好记录</span>
-                </el-form-item>
-
-                <el-form-item label="导出相关数据">
-                  <div>
-                    <el-checkbox border v-model="form.includeAuthLinks" label="授权链接"></el-checkbox>
-                    <el-checkbox border v-model="form.includeCrontabConfigs" label="自动触发配置"></el-checkbox>
-                    <el-checkbox border v-model="form.includeBatches" label="批处理"></el-checkbox>
-                  </div>
-                  <span class="text-main">&#12288;自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据</span>
                 </el-form-item>
 
                 <el-form-item label="备注" prop="note">
@@ -88,9 +121,8 @@ Export Data: 导出数据
           </template>
         </span>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="goBackToList">
-            <i class="fa fa-fw fa-arrow-left"></i>
-            返回至脚本包导出历史列表
+          <el-button type="primary" @click="goToHistory">
+            {{ $t('Very good') }}
           </el-button>
         </span>
       </el-dialog>
@@ -126,10 +158,23 @@ export default {
       };
 
       // 获取关联数据
+      // 脚本集
       let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', opt);
       if (!apiRes.ok) return;
 
       this.scriptSets = apiRes.data;
+
+      // 数据源
+      apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', opt);
+      if (!apiRes.ok) return;
+
+      this.dataSources = apiRes.data;
+
+      // 环境变量
+      apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', opt);
+      if (!apiRes.ok) return;
+
+      this.envVariables = apiRes.data;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -183,9 +228,9 @@ export default {
       this.password     = password;
       this.showPassword = true;
     },
-    goBackToList() {
+    goToHistory() {
       this.$router.push({
-        name : 'script-set-export-history-list',
+        name: 'script-set-export-history-list',
       });
     },
   },
@@ -204,7 +249,9 @@ export default {
   },
   data() {
     return {
-      scriptSets: [],
+      scriptSets  : [],
+      dataSources : [],
+      envVariables: [],
 
       showPassword: false,
 
@@ -212,11 +259,13 @@ export default {
       isPasswordEnabled: false,
 
       form: {
+        note                 : '',
         scriptSetIds         : [],
         includeAuthLinks     : false,
         includeCrontabConfigs: false,
         includeBatches       : false,
-        note                 : '',
+        dataSourceIds        : [],
+        envVariableIds       : [],
       },
       formRules: {
         scriptSetIds: [
@@ -263,7 +312,15 @@ export default {
 }
 
 .el-checkbox.is-bordered {
-  margin-left : 5px !important;
-  margin-right: 0 !important;
+  margin-right : 5px !important;
+  margin-left: 0 !important;
+}
+
+.select-item-name {
+  float: left;
+}
+.select-item-id {
+  float: right;
+  padding-right: 30px;
 }
 </style>

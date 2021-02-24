@@ -372,8 +372,15 @@ input:disabled {
 .el-select-dropdown__item {
   color: #ccc !important;
 }
-.el-select-dropdown__item.hover, .el-select-dropdown__item:hover,
-.el-dropdown-menu__item:focus, .el-dropdown-menu__item:not(.is-disabled):hover {
+.el-select-dropdown__item.selected {
+  background-color: #222 !important;
+  color: #fff !important;
+}
+
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover,
+.el-dropdown-menu__item:focus,
+.el-dropdown-menu__item:not(.is-disabled):hover {
   background-color: #333 !important;
   color: #fff !important;
 }
@@ -462,7 +469,7 @@ input:disabled {
 }
 .el-tag--info {
   background-color: transparent !important;
-  border-color: #ccc !important;
+  border-color: #555 !important;
   color: #ccc !important;
 }
 

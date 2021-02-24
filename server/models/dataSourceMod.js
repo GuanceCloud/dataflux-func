@@ -99,7 +99,7 @@ function _prepareData(data) {
     CIPHER_CONFIG_FIELDS.forEach(function(f) {
       var fCipher = toolkit.strf('{0}Cipher', f);
 
-      if (data.configJSON[f]) {
+      if (f in data.configJSON) {
         data.configJSON[fCipher] = toolkit.cipherByAES(data.configJSON[f], CONFIG.SECRET);
         delete data.configJSON[f];
       }

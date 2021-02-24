@@ -363,6 +363,12 @@ def get_sha1(s):
 
     return h.hexdigest()
 
+def get_sha512(s):
+    h = hashlib.sha512()
+    h.update(six.ensure_binary(as_str(s)))
+
+    return h.hexdigest()
+
 def _pad_length(text, length):
     text = six.ensure_binary(text)
 

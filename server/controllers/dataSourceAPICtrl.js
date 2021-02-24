@@ -27,7 +27,7 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
     var f = requiredFields[i];
 
     if ('undefined' === typeof config[f]) {
-      return callback(new E('EClientBadRequest.InvalidDataSourceConfigJSON', toolkit.strf('Invalid config JSON for {0}', databaseName), {
+      return callback(new E('EClientBadRequest.InvalidDataSourceConfigJSON', 'Invalid config JSON', {
         requiredFields: requiredFields,
         optionalFields: optionalFields,
       }));
@@ -192,11 +192,6 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     return _checkDataSourceConfig(locals, 'mqtt', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
 };
-
-var HIDE_CONFIG_FIELDS = [
-  'password',
-  'secretKey',
-];
 
 /* Handlers */
 var crudHandler = exports.crudHandler = dataSourceMod.createCRUDHandler();
@@ -486,8 +481,13 @@ exports.test = function(req, res, next) {
           dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
             var fCipher = toolkit.strf('{0}Cipher', f);
 
-            if (dataSource.configJSON[fCipher]) {
-              dataSource.configJSON[f] = toolkit.decipherByAES(dataSource.configJSON[fCipher], CONFIG.SECRET);
+            if (fCipher in dataSource.configJSON) {
+              try {
+                dataSource.configJSON[f] = toolkit.decipherByAES(dataSource.configJSON[fCipher], CONFIG.SECRET);
+              } catch(err) {
+                dataSource.configJSON[f] = '';
+              }
+
               delete dataSource.configJSON[fCipher];
             }
           });
@@ -514,15 +514,16 @@ function hidePassword(req, res, ret, hookExtra, callback) {
   if (!ret.data) return callback(null, ret);
 
   toolkit.asArray(ret.data).forEach(function(d) {
-    HIDE_CONFIG_FIELDS.forEach(function(f) {
+    dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
       var fCipher = toolkit.strf('{0}Cipher', f);
 
-      if (d && d.configJSON && d.configJSON[f]) {
-        d.configJSON[f] = '';
-      }
-      if (d && d.configJSON && d.configJSON[fCipher]) {
-        d.configJSON[f] = '';
-        delete d.configJSON[fCipher];
+      if (d && d.configJSON) {
+        if (f in d.configJSON) {
+          d.configJSON[f] = '';
+        }
+        if (fCipher in d.configJSON) {
+          delete d.configJSON[fCipher];
+        }
       }
     });
   });

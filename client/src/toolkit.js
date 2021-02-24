@@ -676,6 +676,29 @@ function _getCallAPIOpt(method, pathPattern, options) {
   return axiosOpt;
 };
 
+async function _prepareAPIResp(apiResp) {
+  let respContentType = apiResp.headers['content-type'];
+
+  if ('string' === typeof respContentType && respContentType.indexOf('application/json') >= 0) {
+    let apiRespData = apiResp.data;
+
+    switch (Object.prototype.toString.call(apiRespData)) {
+      case '[object Blob]':
+        apiRespData = await apiRespData.text();
+        apiRespData = JSON.parse(apiRespData);
+        break;
+
+      case '[object String]':
+        apiRespData = JSON.parse(apiRespData);
+        break;
+    }
+
+    apiResp.data = apiRespData;
+  }
+
+  return apiResp;
+};
+
 function _logCallingAPI(axiosOpt, apiResp) {
   return;
 
@@ -722,6 +745,7 @@ async function _callAPI(axiosOpt) {
 
   try {
     let resp = await axios(axiosOpt);
+    resp = await _prepareAPIResp(resp);
     return resp;
 
   } catch (err) {
@@ -731,7 +755,8 @@ async function _callAPI(axiosOpt) {
         router.push({name: 'index'});
       }
 
-      return err.response;
+      let errResp = await _prepareAPIResp(err.response)
+      return errResp;
     }
 
     await MessageBox.alert(`与服务器通讯失败，请稍后再试
@@ -780,10 +805,13 @@ export async function callAPI(method, pathPattern, options) {
         // 令牌过期等，不用弹框提示
 
       } else if (alert.showError) {
-        let message = apiResp.data.message;
-        if (alert.reasonMap && alert.reasonMap[apiResp.data.reason]) {
-          message = alert.reasonMap[apiResp.data.reason];
+        let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
+                    ? alert.reasonMap[apiResp.data.reason]
+                    : apiResp.data.message;
+        if (apiResp.data.detail && apiResp.data.detail.message) {
+          message += `<br><small>${apiResp.data.detail.message}<small>`;
         }
+
         await MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),
@@ -879,7 +907,13 @@ export async function callAPI_allPage(pathPattern, options) {
 
         } else if (alert.showError) {
           setTimeout(() => {
-            MessageBox.alert(`${app.$t('Operation failed')}<br>${_apiResp.data.message}`, alert.title, {
+            let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
+                        ? alert.reasonMap[apiResp.data.reason]
+                        : apiResp.data.message;
+            if (apiResp.data.detail && apiResp.data.detail.message) {
+              message += `<br><small>${apiResp.data.detail.message}<small>`;
+            }
+            MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
               dangerouslyUseHTMLString: true,
               confirmButtonText: app.$t('OK'),
               type: 'error',

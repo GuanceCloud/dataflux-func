@@ -99,10 +99,10 @@ en:
   Failed   : 已失败
 
   # const.js - SCRIPT_RECOVER_POINT
-  Before package import        : 脚本包导入前
-  Before package install       : 脚本包安装前
-  Before Script Set Lib recover: 脚本库还原前
-  Created by user manually     : 用户手动创建
+  Before package import    : 脚本包导入前
+  Before package install   : 脚本包安装前
+  Before Script Lib recover: 脚本库还原前
+  Created by user manually : 用户手动创建
 
   # const.js - FUNC_EXEC_MODE
   Sync call : 同步调用

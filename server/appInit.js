@@ -257,7 +257,7 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 重置管理员账号密码
+  // 固定管理员账号密码
   if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
     async.series([
       function(asyncCallback) {
