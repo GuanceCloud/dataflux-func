@@ -40,7 +40,7 @@ buildDev:
     - tools/ossutil64 cp ${README_FILE}               ${OSS_RESOURCE_DEV_BASE_URL}/${README_FILE}               -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${README_EXTRA_FILE}         ${OSS_RESOURCE_DEV_BASE_URL}/${README_EXTRA_FILE}         -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
-    - middleware-prod
+    - middleware
 
 # SaaS预发/生产版
 #   主要用于驻云SaaS版预发/生产环境
@@ -56,7 +56,7 @@ buildPreRelease:
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
     - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
   tags:
-    - middleware-prod
+    - middleware
 
 # 公开发布版/携带版
 #   主要用于独立安装
@@ -95,7 +95,7 @@ buildWithPub:
     - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/${IMAGE_GZIP_FILE}           -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
-    - middleware-prod
+    - middleware
 
 # PaaS 预发
 buildPaaS_prev:
@@ -113,7 +113,7 @@ buildPaaS_prev:
     - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
     - docker push pubrepo.jiagouyun.com/$REPO:$TAG
   tags:
-    - middleware-prod
+    - middleware
 
 # PaaS 生产
 buildPaaS_prod:
@@ -131,4 +131,4 @@ buildPaaS_prod:
     - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
     - docker push pubrepo.jiagouyun.com/$REPO:$TAG
   tags:
-    - middleware-prod
+    - middleware
