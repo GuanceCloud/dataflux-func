@@ -212,7 +212,7 @@ exports.createAuthChecker = function(routeConfig) {
 
     // Check X-Localhost-Temp-Auth-Token
     if (req.hostname === 'localhost') {
-      var localhostTempAuthToken    = req.get(CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL);
+      var localhostTempAuthToken    = req.get(CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER);
       var localhostTempAuthTokenMap = req.app.locals.localhostTempAuthTokenMap || {};
 
       if (localhostTempAuthToken && localhostTempAuthTokenMap[localhostTempAuthToken]) {

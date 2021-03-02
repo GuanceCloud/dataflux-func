@@ -145,6 +145,8 @@ Delete Batch : 删除批处理
         description="批处理任务投递API固定为异步调用"
         :showExecModeOption="false"
         :showPostExample="true"
+        :showPostExampleFlattened="true"
+        :showPostExampleSimplified="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"
         :showGetExampleSimplified="true"></APIExampleDialog>

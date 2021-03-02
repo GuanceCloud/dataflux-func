@@ -350,7 +350,7 @@ exports.afterAppCreated = function(app, server) {
           app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
 
           var headers = {};
-          headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL] = localhostTempAuthToken;
+          headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER] = localhostTempAuthToken;
 
           var opt = {
             headers   : headers,

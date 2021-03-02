@@ -633,6 +633,9 @@ content: "\25B2";
 .el-checkbox.el-transfer-panel__item {
   margin-right: 0px !important;
 }
+.el-divider--horizontal {
+  margin-top: 50px !important;
+}
 
 /* CodeMirror 修正 */
 .CodeMirror-line * {

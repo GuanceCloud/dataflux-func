@@ -1248,28 +1248,33 @@ datafluxFuncAPI:
       在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
 
       - 标准GET
-      ```
-      GET /api/v1/al/al-xxxxx
-      ?options={"o1":"ov1","o2":"ov2"}
-      &kwargs={"k1":"kv1","k2":"vk2"}
+
+      ```http
+      GET /api/v1/al/auln-xxxxx
+      &kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
+      ?options={"opt1":"opt_value1","opt2":"opt_value2"}
       ```
 
       - 扁平格式 `flattened`
+
+      ```http
+      GET /api/v1/al/auln-xxxxx/flattened
+      ?kwargs_arg1=arg_value1
+      &kwargs_arg2=arg_value2
+      &options_opt1=opt_value1
+      &options_opt2=opt_value2
       ```
-      GET /api/v1/al/al-xxxxx/flattened
-      ?options_o1=ov1
-      &options_o2=ov2
-      &kwargs_k1=kv1
-      &kwargs_k2=vk2
-      ```
+
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
       - 简化格式 `simplified`
+
+      ```http
+      GET /api/v1/al/auln-xxxxx/simplified
+      ?arg1=arg_value1
+      &arg2=arg_value2
       ```
-      GET /api/v1/al/al-xxxxx/simplified
-      ?k1=kv1
-      &k2=vk2
-      ```
+
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
       *注意2：本格式不支持标准格式中的`options`参数*
 
@@ -1326,6 +1331,70 @@ datafluxFuncAPI:
             - sync
             - async
 
+  callAuthLinkByPostWithFormat:
+    showInDoc    : true
+    name         : 调用授权链接（POST方式，指定格式）
+    descType: markdown
+    desc: |
+      在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
+
+      - 标准POST
+
+      ```http
+      POST /api/v1/al/auln-xxxxx
+      Content-Type: application/json
+
+      {
+        "kwargs": {
+          "arg1": "arg_value1",
+          "arg2": "arg_value2"
+        },
+        "options": {
+          "opt1": "opt_value1",
+          "opt2": "opt_value2"
+        }
+      }
+      ```
+
+      - 扁平格式 `flattened`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/flattened
+      Content-Type: x-www-form-urlencoded
+
+      kwargs_arg1=arg_value1&kwargs_arg2=arg_value2&options_opt1=opt_value1&options_opt2=opt_value2
+      ```
+
+      *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
+
+      - 简化格式 `simplified`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/simplified
+      Content-Type: x-www-form-urlencoded
+
+      arg1=arg_value1&arg2=arg_value2
+
+      ```
+      *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
+      *注意2：本格式不支持标准格式中的`options`参数*
+
+    method       : post
+    url          : /api/v1/al/:id/:format
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: 授权链接ID
+        $type: string
+      format:
+        $desc: 格式
+        $type: enum
+        $in:
+          - flattened
+          - simplified
+
   callBatchByGet:
     showInDoc    : true
     name         : 调用批处理（GET方式）
@@ -1354,22 +1423,22 @@ datafluxFuncAPI:
       - 标准GET
       ```
       GET /api/v1/bat/bat-xxxxx
-      ?kwargs={"k1":"kv1","k2":"vk2"}
+      &kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
       ```
 
       - 扁平格式 `flattened`
       ```
       GET /api/v1/bat/bat-xxxxx/flattened
-      ?kwargs_k1=kv1
-      &kwargs_k2=vk2
+      ?kwargs_arg1=arg_value1
+      &kwargs_arg2=arg_value2
       ```
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
       - 简化格式 `simplified`
       ```
       GET /api/v1/bat/bat-xxxxx/simplified
-      ?k1=kv1
-      &k2=vk2
+      ?arg1=arg_value1
+      &arg2=arg_value2
       ```
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
@@ -1639,6 +1708,75 @@ datafluxFuncAPI:
     response     : json
     requireSignIn: true
     privilege    : general_w
+
+  listInstalledPythonPackages:
+    name         : 列出已安装的Python包
+    method       : get
+    url          : /api/v1/python-packages/installed
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  getPythonPackageInstallStatus:
+    name         : 获取Python包安装状态
+    method       : get
+    url          : /api/v1/python-packages/install-status
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  installPythonPackage:
+    name         : 已安装的Python包
+    method       : post
+    url          : /api/v1/python-packages/install
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      name:
+        $desc      : Python包名称
+        $isRequired: true
+        $type      : string
+        $minLength : 1
+      version:
+        $desc      : Python包版本
+        $isRequired: false
+        $type      : string
+
+  listResources:
+    name         : 列出资源文件
+    method       : get
+    url          : /api/v1/resources/dir
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      folder:
+        $desc: 文件夹
+        $type: string
+
+  downloadResources:
+    name         : 下载资源文件
+    method       : get
+    url          : /api/v1/resources
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+
+  uploadResource:
+    name         : 上传资源文件
+    method       : post
+    url          : /api/v1/resources
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    files:
+      $allowedTypes: '*/*'
 
 datafluxFuncPage:
   clientApp:

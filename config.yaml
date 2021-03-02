@@ -193,7 +193,7 @@ _WEB_AK_TIMESTAMP_MAX_DIFF : 900
 _WEB_AK_NONCE_TTL          : 86400
 
 # 本地临时认证令牌
-_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL: X-Localhost-Temp-Auth-Token
+_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER: X-Localhost-Temp-Auth-Token
 
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10

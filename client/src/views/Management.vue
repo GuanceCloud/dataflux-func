@@ -14,6 +14,7 @@ Script Failure    : 脚本故障
 Experimental      : 实验性功能
 Access Key        : AccessKey
 System Metric     : 系统指标
+PIP Tool          : PIP工具
 </i18n>
 
 <template>
@@ -128,6 +129,13 @@ System Metric     : 系统指标
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
                 {{ $t('System Metric') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/pip-tool" v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')">
+              <span>
+                <i class="fa fa-fw fa-cubes"></i>
+                {{ $t('PIP Tool') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>

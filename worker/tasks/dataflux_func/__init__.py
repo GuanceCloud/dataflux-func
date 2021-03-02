@@ -104,6 +104,10 @@ extra_import_path = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH')
 if extra_import_path:
     sys.path.append(extra_import_path)
 
+resource_path = CONFIG.get('RESOURCE_FILE_ROOT_PATH')
+if resource_path:
+    sys.path.append(resource_path)
+
 def _kwargs_hint_type_converter_str(x):
     if isinstance(x, str):
         return x

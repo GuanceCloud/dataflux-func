@@ -1,8 +1,9 @@
 'use strict';
 
 /* Builtin Modules */
-var fs   = require('fs-extra');
-var path = require('path');
+var fs           = require('fs-extra');
+var path         = require('path');
+var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var async      = require('async');
@@ -289,65 +290,64 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     origin = 'batch';
   }
 
-  var format = req.params.format;
+  var reqOpt = req.method.toLowerCase() === 'get' ? req.query : req.body;
+  var format = req.params.format || 'normal';
 
-  /*** 搜集函数参数（POST body优先） ***/
-  var funcCallKwargs = req.body.kwargs || req.query.kwargs || {};
-  if ('string' === typeof funcCallKwargs) {
-    try {
-      funcCallKwargs = JSON.parse(funcCallKwargs);
-    } catch(err) {
-      return callback(new E('EClientBadRequest', 'Invalid kwargs', {
-        error: err.toString(),
-      }));
-    }
-  }
+  /*** 搜集函数参数/执行选项 ***/
+  var funcCallKwargs  = {};
+  var funcCallOptions = {};
 
-  /*** 搜集执行选项（POST body优先） ***/
-  var funcCallOptions = req.body.options || req.query.options || {};
-  if ('string' === typeof funcCallOptions) {
-    try {
-      funcCallOptions = JSON.parse(funcCallOptions);
-
-    } catch(err) {
-      return callback(new E('EClientBadRequest', 'Invalid options', {
-        error: err.toString(),
-      }));
-    }
-  }
-
-  /*** 搜集执行选项（GET 扁平、简化形式） ***/
   switch(format) {
-    case 'flattened':
-      // 搜集扁平形式函数参数（options_*, kwargs_*）
-      var flattenedQuery = toolkit.jsonCopy(req.query || {});
-      for (var k in flattenedQuery) if (flattenedQuery.hasOwnProperty(k)) {
-        var v = flattenedQuery[k];
+    case 'normal':
+      // 普通模式：函数参数、执行选项为JSON字符串形式
+      if (!toolkit.isNothing(reqOpt.kwargs)) {
+        funcCallKwargs = reqOpt.kwargs;
+      }
+      if (!toolkit.isNothing(reqOpt.options)) {
+        funcCallOptions = reqOpt.options;
+      }
 
-        var keyParts = k.split('_');
-        if (keyParts.length > 1) {
-          var type = keyParts[0];
-          var name = keyParts.slice(1).join('_');
-          switch(type) {
-            case 'kwargs':
-              funcCallKwargs[name] = v;
-              break;
+      if ('string' === typeof funcCallKwargs) {
+        try {
+          funcCallKwargs = JSON.parse(funcCallKwargs);
+        } catch(err) {
+          return callback(new E('EClientBadRequest', 'Invalid kwargs, bad JSON format', {
+            error: err.toString(),
+          }));
+        }
+      }
 
-            case 'options':
-              funcCallOptions[name] = v;
-              break;
-          }
+      if ('string' === typeof funcCallOptions) {
+        try {
+          funcCallOptions = JSON.parse(funcCallOptions);
+        } catch(err) {
+          return callback(new E('EClientBadRequest', 'Invalid options, bad JSON format', {
+            error: err.toString(),
+          }));
         }
       }
       break;
 
-    case 'simplified':
-      // 搜集简化形式函数参数
-      var simplifiedQuery = toolkit.jsonCopy(req.query || {});
-      for (var k in simplifiedQuery) if (simplifiedQuery.hasOwnProperty(k)) {
-        var v = simplifiedQuery[k];
+    case 'flattened':
+      // 扁平形式：函数参数为「kwargs_参数名」，执行选项为「options_选项名」形式
+      var _map = {
+        kwargs : funcCallKwargs,
+        options: funcCallOptions,
+      };
+      for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {
+        var keyParts = k.split('_');
+        if (keyParts.length <= 1) continue;
 
-        funcCallKwargs[k] = v;
+        var type = keyParts[0];
+        var name = keyParts.slice(1).join('_');
+        _map[type][name] = reqOpt[k];
+      }
+      break;
+
+    case 'simplified':
+      // 简化形式：函数参数直接为参数名，不支持执行选项
+      for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {
+        funcCallKwargs[k] = reqOpt[k];
       }
       break;
   }
@@ -502,14 +502,12 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     funcCallOptions.unfold = !!funcCallOptions.unfold;
 
   } else {
-    switch(origin) {
-      case 'direct':
-        funcCallOptions.unfold = false;
-        break;
-
-      default:
-        funcCallOptions.unfold = true;
-        break;
+    // 只有直接调用且为普通模式时不拆包
+    // 其他默认都拆包
+    if (origin === 'direct' && format === 'normal') {
+      funcCallOptions.unfold = false;
+    } else {
+      funcCallOptions.unfold = true;
     }
   }
 
@@ -2011,6 +2009,197 @@ exports.clearLogCacheTables = function(req, res, next) {
 
     return res.locals.sendJSON();
   });
+};
+
+// Python包
+exports.listInstalledPythonPackages = function(req, res, next) {
+  var packageVersionMap = {};
+
+  var BUILTIN_PACKAGE_CMD = 'pip freeze';
+  var EXTRA_PACKAGE_CMD   = BUILTIN_PACKAGE_CMD + toolkit.strf(' --path {0}', CONFIG.EXTRA_PYTHON_IMPORT_PATH);
+
+  var cmds = [EXTRA_PACKAGE_CMD, BUILTIN_PACKAGE_CMD]
+  async.eachSeries(cmds, function(cmd, asyncCallback) {
+    childProcess.exec(cmd, function(err, stdout, stderr) {
+      if (err) return asyncCallback(err);
+
+      stdout.trim().split('\n').forEach(function(pkg) {
+        var parts = pkg.split('==');
+        packageVersionMap[parts[0]] = {
+          name     : parts[0],
+          version  : parts[1],
+          isBuiltin: cmd === BUILTIN_PACKAGE_CMD,
+        };
+      });
+
+      return asyncCallback();
+    });
+  }, function(err) {
+    if (err) return next(err);
+
+    var packages = Object.values(packageVersionMap);
+    packages.sort(function(a, b) {
+      if (a < b) {
+        return -1;
+      } else if (a > b) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    var ret = toolkit.initRet(packages);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.getPythonPackageInstallStatus = function(req, res, next) {
+  var cacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
+  res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+    if (err) return next(err);
+
+    var installingStatus = null;
+    if (cacheRes) {
+      installingStatus = JSON.parse(cacheRes);
+    }
+
+    var ret = toolkit.initRet(installingStatus);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.installPythonPackage = function(req, res, next) {
+  var name    = req.body.name;
+  var version = req.body.version;
+
+  // 执行命令
+  var pkg = toolkit.isNothing(version) ? name : toolkit.strf('{0}=={1}', name, version);
+  var cmd = 'pip';
+  var cmdArgs = [
+    'install', '--no-cache-dir', '--upgrade',
+    '--target', CONFIG.EXTRA_PYTHON_IMPORT_PATH,
+    '-i', 'https://mirrors.aliyun.com/pypi/simple/',
+    pkg,
+  ];
+
+  // 安装状态缓存
+  var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
+  var statusAge = 3600;
+
+  // 锁
+  var lockKey   = toolkit.getCacheKey('lock', 'installPythonPackage');
+  var lockValue = Date.now().toString();
+  var lockAge   = 900;
+
+  function createInstallStatus(status, stderr) {
+    var installStatus = {
+      pkg      : pkg,
+      status   : status,
+      message  : stderr || null,
+      timestamp: new Date(),
+    }
+    installStatus = JSON.stringify(installStatus);
+    return installStatus;
+  }
+
+  async.series([
+    // 上锁
+    function(asyncCallback) {
+      res.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          return asyncCallback(new E('EBizCondition', 'Previous installing is still running'));
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 记录安装信息
+    function(asyncCallback) {
+      var installStatus = createInstallStatus('installing');
+      res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
+    },
+    function(asyncCallback) {
+      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
+        if (err) {
+          // 安装失败
+          var installStatus = createInstallStatus('failed', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
+            if (err) return asyncCallback(err);
+
+            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
+              stderr: stderr,
+            }));
+          });
+
+        } else {
+          // 安装成功
+          var installStatus = createInstallStatus('succeeded', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
+        }
+      });
+    },
+  ], function(err) {
+    // 解锁
+    res.locals.cacheDB.unlock(lockKey, lockValue);
+
+    if (err) return next(err);
+    return res.locals.sendJSON();
+  });
+};
+
+exports.listResources = function(req, res, next) {
+  var subFolder = req.query.folder || './';
+  var absPath   = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, subFolder);
+
+  if (!absPath.endsWith('/')) {
+    absPath += '/';
+  }
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_FILE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not fetch folder out of resource folder.'))
+  }
+
+  // 检查存在性
+  if (!fs.existsSync(absPath)) {
+    return next(new E('EBizCondition', 'Folder not exists.'))
+  }
+
+  var opt = {
+    withFileTypes: true,
+  }
+  fs.readdir(absPath, opt, function(err, data) {
+    if (err) return next(err);
+
+    var resources = data.reduce(function(acc, x) {
+      var r = { name: x.name, type: null};
+      if (x.isDirectory()) {
+        r.type = 'folder';
+      } else if (x.isFile()) {
+        r.type = 'file';
+      } else if (x.isSymbolicLink()) {
+        r.type = 'slink';
+      }
+
+      if (r.type) {
+        acc.push(r);
+      }
+      return acc;
+    }, []);
+
+    var ret = toolkit.initRet(resources);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.downloadResources = function(req, res, next) {
+
+};
+
+exports.uploadResource = function(req, res, next) {
+
 };
 
 /* 允许其他模块调用 */

@@ -467,6 +467,39 @@ export function padZero(num, length, char) {
   return num;
 };
 
+export function formatQuery(query) {
+  let queryString = '';
+  if (query) {
+    let queryStringParts = [];
+    for (let k in query) if (query.hasOwnProperty(k)) {
+      let v = query[k];
+      if ('undefined' === typeof v || null === v) continue;
+
+      switch(typeof v) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+          v = v.toString();
+          break;
+
+        case 'object':
+          v = JSON.stringify(v);
+          break;
+      }
+
+      v = encodeURIComponent(v);
+
+      queryStringParts.push(`${k}=${v}`);
+    }
+
+    if (queryStringParts.length > 0) {
+      queryString = `${queryStringParts.join('&')}`;
+    }
+  }
+
+  return queryString;
+};
+
 export function formatURL(pathPattern, options) {
   options = options || {};
 
@@ -488,30 +521,9 @@ export function formatURL(pathPattern, options) {
 
   let queryString = '';
   if (options.query) {
-    let queryStringParts = [];
-    for (let k in options.query) if (options.query.hasOwnProperty(k)) {
-      let v = options.query[k];
-      if ('undefined' === typeof v || null === v) continue;
-
-      switch(typeof v) {
-        case 'string':
-        case 'number':
-        case 'boolean':
-          v = v.toString();
-          break;
-
-        case 'object':
-          v = JSON.stringify(v);
-          break;
-      }
-
-      v = encodeURIComponent(v);
-
-      queryStringParts.push(`${k}=${v}`);
-    }
-
-    if (queryStringParts.length > 0) {
-      queryString = `?${queryStringParts.join('&')}`;
+    queryString = formatQuery(options.query);
+    if (queryString) {
+      queryString = '?' + queryString;
     }
   }
 

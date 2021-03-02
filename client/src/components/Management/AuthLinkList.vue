@@ -212,6 +212,8 @@ Delete Auth Link       : 删除授权链接
       <APIExampleDialog ref="apiExampleDialog"
         description="授权链接API固定为同步调用"
         :showPostExample="true"
+        :showPostExampleFlattened="true"
+        :showPostExampleSimplified="true"
         :showGetExample="true"
         :showGetExampleFlattened="true"
         :showGetExampleSimplified="true"></APIExampleDialog>
