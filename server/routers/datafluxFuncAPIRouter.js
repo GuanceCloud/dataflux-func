@@ -114,3 +114,6 @@ routeLoader.load(ROUTE.datafluxFuncAPI.downloadResources, [
 routeLoader.load(ROUTE.datafluxFuncAPI.uploadResource, [
   datafluxFuncAPICtrl.uploadResource,
 ]);
+routeLoader.load(ROUTE.datafluxFuncAPI.operateResource, [
+  datafluxFuncAPICtrl.operateResource,
+]);

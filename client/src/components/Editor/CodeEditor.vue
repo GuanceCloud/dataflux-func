@@ -600,7 +600,7 @@ export default {
             type    : 'success',
             position: 'top-right',
             offset  : 20,
-            duration: 30000000,
+            duration: 3000,
             offset  : 75,
           });
 

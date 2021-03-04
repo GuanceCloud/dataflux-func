@@ -2195,11 +2195,133 @@ exports.listResources = function(req, res, next) {
 };
 
 exports.downloadResources = function(req, res, next) {
+  var filePath = req.query.filePath;
+  var absPath  = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, filePath);
 
 };
 
 exports.uploadResource = function(req, res, next) {
 
+};
+
+var OPERATION_MAP = {
+  zip   : 'zip',
+  unzip : 'unzip',
+  copy  : 'cp',
+  rename: 'mv',
+  move  : 'mv',
+  delete: 'rm',
+}
+function replacePathTail(originPath, newName) {
+  originPath = originPath.trim();
+
+  if (toolkit.endsWith(originPath, '/')) {
+    originPath = originPath.slice(0, -1);
+  }
+
+  var pathParts = originPath.split('/').slice(0, -1);
+  if (newName) {
+    pathParts.push(newName);
+  }
+
+  var newPath = pathParts.join('/');
+  return newPath;
+};
+
+exports.operateResource = function(req, res, next) {
+  var filePath  = req.query.filePath;
+  var operation = req.query.operation;
+
+  var absPath     = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, filePath);
+  var currentPath = replacePathTail(absPath);
+  var fileName    = filePath.split('/').pop();
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_FILE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder.'))
+  }
+
+  // 检查操作对象存在性
+  if (!fs.existsSync(absPath)) {
+    return next(new E('EBizCondition', 'File or folder not exists.'))
+  }
+
+  // 检查/准备参数
+  var cmd = OPERATION_MAP[operation];
+  var cmdArgs = null;
+
+  if (!cmd) {
+    return next(new E('EClientUnsupported', 'Unsupported resource operation(1).'))
+  }
+
+  switch(operation) {
+    case 'zip':
+      var zipFileName = fileName + '.zip';
+      if (fs.existsSync(zipFileName)) {
+        return next(new E('EBizCondition', 'Specified zip file is already exists.'))
+      }
+
+      cmdArgs = ['-r', zipFileName, fileName];
+      break;
+
+    case 'unzip':
+      cmdArgs = [fileName];
+      break;
+
+    case 'copy':
+    case 'rename':
+      var newName = req.query.operationArgument;
+      if (newName.indexOf('/') >= 0) {
+        return next(new E('EClientBadRequest', 'Please specifiy new name, not path.'))
+      }
+      if (!newName) {
+        return next(new E('EClientBadRequest', 'New name not specified.'))
+      }
+
+      var newPath = replacePathTail(absPath, newName);
+      var newFolder = replacePathTail(newPath);
+      fs.ensureDirSync(newFolder);
+
+      if (fs.existsSync(newPath)) {
+        return next(new E('EBizCondition', 'Specified new file or folder name is already exists.'))
+      }
+
+      cmdArgs = [absPath, newPath];
+      break;
+
+    case 'move':
+      var newPath = req.query.operationArgument;
+      if (!newPath) {
+        return next(new E('EClientBadRequest', 'New path not specified.'))
+      }
+
+      var newFolder = replacePathTail(newPath);
+      fs.ensureDirSync(newFolder);
+
+      if (fs.existsSync(newPath)) {
+        return next(new E('EBizCondition', 'Specified new file or folder path is already exists.'))
+      }
+
+      cmdArgs = [absPath, newPath];
+      break;
+
+    case 'delete':
+      cmdArgs = ['-rf', absPath]
+      break;
+
+    default:
+      return next(new E('EClientUnsupported', 'Unsupported resource operation(2).'))
+      break;
+  }
+
+  console.log(cmd, cmdArgs.join(' '))
+  var opt = {
+    cwd: currentPath,
+  }
+  childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
+    if (err) return next(err);
+    return res.locals.sendJSON();
+  });
 };
 
 /* 允许其他模块调用 */

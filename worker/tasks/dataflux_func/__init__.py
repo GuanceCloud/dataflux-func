@@ -103,7 +103,8 @@ CONCURRENT_RESULT_MAP = {}
 extra_import_path = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH')
 if extra_import_path:
     sys.path.append(extra_import_path)
-
+import prettytable
+print(prettytable.__version__)
 resource_path = CONFIG.get('RESOURCE_FILE_ROOT_PATH')
 if resource_path:
     sys.path.append(resource_path)
@@ -1168,7 +1169,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return _module
 
         else:
-            return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
+            return importlib.__import__(name)
+            # return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, hint=None, kwargs_hint=None,
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,

@@ -25,7 +25,7 @@ RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
         \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
     > /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y wget curl telnet unzip default-mysql-client
+    apt-get install -y wget curl telnet zip unzip default-mysql-client
 
 # Download, extract and install resources
 WORKDIR /usr/src/resource

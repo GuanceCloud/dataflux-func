@@ -209,4 +209,4 @@ exports.set = function set(key, path, value) {
  */
 exports.getAll = function getAll() {
   return FILE_CACHE;
-}
+};

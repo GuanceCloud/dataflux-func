@@ -257,48 +257,50 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 固定管理员账号密码
-  if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
-    async.series([
-      function(asyncCallback) {
-        var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
-        var lockValue = Date.now().toString();
-        var lockAge   = 30;
+  // 本功能废除
+  // 改用`python reset-admin.py`工具来重置管理员用户
+  // // 固定管理员账号密码
+  // if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
+  //   async.series([
+  //     function(asyncCallback) {
+  //       var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
+  //       var lockValue = Date.now().toString();
+  //       var lockAge   = 30;
 
-        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-          if (err) return asyncCallback(err);
+  //       app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+  //         if (err) return asyncCallback(err);
 
-          if (!cacheRes) {
-            var e = new Error('Startup process is already launched.');
-            e.isWarning = true;
-            return asyncCallback(e);
-          }
+  //         if (!cacheRes) {
+  //           var e = new Error('Startup process is already launched.');
+  //           e.isWarning = true;
+  //           return asyncCallback(e);
+  //         }
 
-          return asyncCallback();
-        });
-      },
-      function(asyncCallback) {
-        var RESET_ADMIN_ID = 'u-admin';
-        var adminPasswordHash = toolkit.getSaltedPasswordHash(
-            RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
+  //         return asyncCallback();
+  //       });
+  //     },
+  //     function(asyncCallback) {
+  //       var RESET_ADMIN_ID = 'u-admin';
+  //       var adminPasswordHash = toolkit.getSaltedPasswordHash(
+  //           RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
 
-        var sql = toolkit.createStringBuilder();
-        sql.append('UPDATE wat_main_user');
-        sql.append('SET');
-        sql.append('   username     = ?');
-        sql.append('  ,passwordHash = ?');
-        sql.append('WHERE');
-        sql.append('  id = ?')
+  //       var sql = toolkit.createStringBuilder();
+  //       sql.append('UPDATE wat_main_user');
+  //       sql.append('SET');
+  //       sql.append('   username     = ?');
+  //       sql.append('  ,passwordHash = ?');
+  //       sql.append('WHERE');
+  //       sql.append('  id = ?')
 
-        var sqlParams = [
-          process.env.RESET_ADMIN_USERNAME,
-          adminPasswordHash,
-          RESET_ADMIN_ID,
-        ];
-        app.locals.db.query(sql, sqlParams, asyncCallback);
-      },
-    ], printError);
-  }
+  //       var sqlParams = [
+  //         process.env.RESET_ADMIN_USERNAME,
+  //         adminPasswordHash,
+  //         RESET_ADMIN_ID,
+  //       ];
+  //       app.locals.db.query(sql, sqlParams, asyncCallback);
+  //     },
+  //   ], printError);
+  // }
 
   // 自动导入脚本包
   if (!CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {

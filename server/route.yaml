@@ -1726,7 +1726,7 @@ datafluxFuncAPI:
     privilege    : general_r
 
   installPythonPackage:
-    name         : 已安装的Python包
+    name         : 安装Python包
     method       : post
     url          : /api/v1/python-packages/install
     response     : json
@@ -1777,6 +1777,34 @@ datafluxFuncAPI:
     privilege    : general_w
     files:
       $allowedTypes: '*/*'
+
+  operateResource:
+    name         : 操作资源文件
+    method       : post
+    url          : /api/v1/resources/operate
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+      operation:
+        $desc    : 执行操作
+        $required: true
+        $type    : enum
+        $in:
+          - zip
+          - unzip
+          - copy
+          - rename
+          - move
+          - delete
+      operationArgument:
+        $desc    : 执行操作参数（`copy`, `rename`操作为新文件名、`move`操作为新路径）
+        $required: false
+        $type    : string
 
 datafluxFuncPage:
   clientApp:
