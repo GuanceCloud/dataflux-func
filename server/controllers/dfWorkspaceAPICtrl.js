@@ -3,8 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async   = require('async');
-var request = require('request');
+var async = require('async');
 
 /* Project Modules */
 var E       = require('../utils/serverError');

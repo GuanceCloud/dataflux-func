@@ -5,8 +5,7 @@ var fs   = require('fs-extra');
 var path = require('path');
 
 /* 3rd-party Modules */
-var yaml    = require('js-yaml');
-var request = require('request');
+var yaml = require('js-yaml');
 
 /* Project Modules */
 var toolkit = require('./toolkit');

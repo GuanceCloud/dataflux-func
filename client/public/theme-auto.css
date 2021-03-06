@@ -553,10 +553,12 @@ input:disabled {
   background-color: #222 !important;
 }
 
+.el-autocomplete-suggestion,
 .el-select-dropdown {
   background: #000 !important;
   border: solid 1px #777 !important;
 }
+.el-autocomplete-suggestion li,
 .el-select-dropdown__item {
   color: #ccc !important;
 }
@@ -565,6 +567,8 @@ input:disabled {
   color: #fff !important;
 }
 
+.el-autocomplete-suggestion li.hover,
+.el-autocomplete-suggestion li:hover,
 .el-select-dropdown__item.hover,
 .el-select-dropdown__item:hover,
 .el-dropdown-menu__item:focus,

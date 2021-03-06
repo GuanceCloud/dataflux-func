@@ -13,6 +13,11 @@ var toolkit = require('../utils/toolkit');
 exports.prepare = function(req, res, next) {
   if (res.locals.requestType !== 'api') return next();
 
+  if (!res.locals.routeConfig 
+      || (res.locals.routeConfig.privilege || '').split('_').pop() !== 'w') {
+    return next();
+  }
+
   // Query部分
   var reqQuery = null;
   try {

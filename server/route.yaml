@@ -87,6 +87,47 @@ indexAPI:
         $type: any
         $skip: true
 
+  proxy:
+    showInDoc    : true
+    name         : Proxy Request
+    method       : post
+    url          : /api/v1/do/proxy
+    response     : json
+    requireSignIn: true
+    desc: |
+      Do HTTP request via server.
+    body:
+      method:
+        $desc      : HTTP method
+        $isRequired: true
+        $type      : enum
+        $in:
+          - get
+          - post
+          - put
+          - delete
+      url:
+        $desc      : URL
+        $isRequired: true
+        $type      : string
+        $example   : https://myip.ipip.net/
+      headers:
+        $desc: Headers
+        $type: json
+        $skip: true
+      body:
+        $desc: Body
+        $type: json
+        $skip: true
+      withHeaders:
+        $desc   : Get headers from response
+        $type   : boolean
+        $example: false
+      timeout:
+        $desc   : Timeout (seconds)
+        $type   : integer
+        $example: 3
+
   testThrowError:
     name     : Test Throw Error
     method   : get
@@ -1733,15 +1774,11 @@ datafluxFuncAPI:
     requireSignIn: true
     privilege    : general_w
     body:
-      name:
-        $desc      : Python包名称
+      pkg:
+        $desc      : Python包（如：requests 或 requests==1.0.0）
         $isRequired: true
         $type      : string
         $minLength : 1
-      version:
-        $desc      : Python包版本
-        $isRequired: false
-        $type      : string
 
   listResources:
     name         : 列出资源文件

@@ -4,8 +4,9 @@
 var path = require('path');
 
 /* 3rd-party Modules */
-var fs    = require('fs-extra');
-var async = require('async');
+var fs      = require('fs-extra');
+var async   = require('async');
+var request = require('request');
 
 /* Project Modules */
 var E         = require('../utils/serverError');
@@ -85,6 +86,35 @@ exports.ping = function(req, res, next) {
 exports.echo = function(req, res, next) {
   var ret = toolkit.initRet(req.rawData.toString());
   res.locals.sendJSON(ret);
+};
+
+exports.proxy = function(req, res, next) {
+  var requestOptions = {
+    forever: true,
+    timeout: (req.body.timeout || 10) * 1000,
+    method : req.body.method,
+    url    : req.body.url,
+    headers: req.body.headers || undefined,
+    json   : true,
+    body   : req.body.body || undefined,
+  };
+  request(requestOptions, function(err, _res, _body) {
+    if (err) return next(err);
+
+    var httpResp = {
+      statusCode: _res.statusCode,
+      body      : _body,
+    };
+
+    if (req.body.withHeaders) {
+      httpResp.headers = _res.headers;
+    }
+
+    var ret = toolkit.initRet(httpResp);
+
+    // 不要输出日志
+    return res.send(ret);
+  });
 };
 
 exports.testThrowError = function(req, res, next) {

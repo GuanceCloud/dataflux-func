@@ -2069,18 +2069,7 @@ exports.getPythonPackageInstallStatus = function(req, res, next) {
 };
 
 exports.installPythonPackage = function(req, res, next) {
-  var name    = req.body.name;
-  var version = req.body.version;
-
-  // 执行命令
-  var pkg = toolkit.isNothing(version) ? name : toolkit.strf('{0}=={1}', name, version);
-  var cmd = 'pip';
-  var cmdArgs = [
-    'install', '--no-cache-dir', '--upgrade',
-    '--target', CONFIG.EXTRA_PYTHON_IMPORT_PATH,
-    '-i', 'https://mirrors.aliyun.com/pypi/simple/',
-    pkg,
-  ];
+  var pkg = req.body.pkg;
 
   // 安装状态缓存
   var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
@@ -2120,7 +2109,44 @@ exports.installPythonPackage = function(req, res, next) {
       var installStatus = createInstallStatus('installing');
       res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
     },
+    // 清空之前安装的内容
     function(asyncCallback) {
+      var _pkg = pkg.split('=')[0].replace(/-/g, '_');
+
+      var cmd = 'rm';
+      var cmdArgs = [ '-rf'];
+
+      // 读取需要删除的目录
+      fs.readdirSync(CONFIG.EXTRA_PYTHON_IMPORT_PATH).forEach(function(name) {
+        if (name === _pkg || toolkit.startsWith(name, _pkg) && toolkit.endsWith(name, '.dist-info')) {
+          cmdArgs.push(path.join(CONFIG.EXTRA_PYTHON_IMPORT_PATH, name));
+        }
+      })
+      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
+        if (err) {
+          // 安装失败
+          var installStatus = createInstallStatus('failed', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
+            if (err) return asyncCallback(err);
+
+            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
+              stderr: stderr,
+            }));
+          });
+
+        } else {
+          return asyncCallback();
+        }
+      });
+    },
+    function(asyncCallback) {
+      var cmd = 'pip';
+      var cmdArgs = [
+        'install', '--no-cache-dir', 
+        '-t', CONFIG.EXTRA_PYTHON_IMPORT_PATH,
+        '-i', 'https://mirrors.aliyun.com/pypi/simple/',
+        pkg,
+      ];
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败

@@ -7,6 +7,7 @@
 - 增加国际化支持
     - 部分内容提供英文版界面
 - 增加`reset-admin.py`脚本，用于重置admin用户密码（使用方式：`python reset-admin.py`）
+- 添加PIP工具，支持在UI界面安装Python包
 
 ### 1.0.55 ~ 1.0.56
 

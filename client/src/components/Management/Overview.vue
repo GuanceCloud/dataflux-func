@@ -106,7 +106,7 @@ Response                      : 响应
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="120">
+          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="150">
             <template slot-scope="scope">
               <code v-if="!scope.row.publishVersion">-</code>
               <code v-else>v{{ `${scope.row.publishVersion}` }}</code>

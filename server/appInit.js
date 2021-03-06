@@ -235,10 +235,8 @@ exports.afterAppCreated = function(app, server) {
 
   /********** Content for YOUR project below **********/
 
-  var path    = require('path');
-  var moment  = require('moment');
-  var request = require('request');
-  var fs      = require('fs-extra');
+  var path = require('path');
+  var fs   = require('fs-extra');
 
   var celeryHelper = require('./utils/extraHelpers/celeryHelper');
   var WATClient    = require('../sdk/wat_sdk').WATClient;
@@ -393,24 +391,28 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
   if (res.locals._operationRecord) {
     var operationRecordMod = require('./models/operationRecordMod');
 
-    var EXCLUDE_ROUTE_PATTERNS = [
-      '*', '/', '/api',
-      '/api/v1/do/ping',
-      '/api/v1/func-list',
-      '/api/v1/func-tag-list',
-      '/api/v1/auth-link-func-list',
-      '/api/v1/func-system-config',
-      '/api/v1/upgrade-info',
-      '/api/v1/self-diagnose',
-      /\/do\/get$/g,
-      /\/do\/list$/g,
-      /^\/api\/v1\/func\//g,
-      /^\/api\/v1\/al\//g,
-      /^\/api\/v1\/bat\//g,
-      /^\/api\/v1\/func-draft\//g,
-      /^\/api\/v1\/func-result\//g,
-      /^\/api\/v1\/monitor\//g,
-    ];
+    // var EXCLUDE_ROUTE_PATTERNS = [
+    //   '*', '/', '/api',
+    //   '/api/v1/do/ping',
+    //   '/api/v1/func-list',
+    //   '/api/v1/func-tag-list',
+    //   '/api/v1/auth-link-func-list',
+    //   '/api/v1/func-system-config',
+    //   '/api/v1/upgrade-info',
+    //   '/api/v1/self-diagnose',
+    //   '/api/v1/python-packages/installed',
+    //   '/api/v1/python-packages/install-status',
+    //   '/api/v1/resources/dir',
+    //   '/api/v1/resources',
+    //   /\/do\/get$/g,
+    //   /\/do\/list$/g,
+    //   /^\/api\/v1\/func\//g,
+    //   /^\/api\/v1\/al\//g,
+    //   /^\/api\/v1\/bat\//g,
+    //   /^\/api\/v1\/func-draft\//g,
+    //   /^\/api\/v1\/func-result\//g,
+    //   /^\/api\/v1\/monitor\//g,
+    // ];
 
     var shouldRecordOperation = true;
     var reqRoute = req.route.path;
@@ -421,19 +423,19 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
         && res.locals._operationRecord.reqBodyJSON.prevCodeDraftMD5) {
       shouldRecordOperation = false;
 
-    } else {
-      for (var i = 0; i < EXCLUDE_ROUTE_PATTERNS.length; i++) {
-        if ('string' === typeof EXCLUDE_ROUTE_PATTERNS[i]) {
-          if (EXCLUDE_ROUTE_PATTERNS[i] === reqRoute) {
-            shouldRecordOperation = false;
-          }
+    // } else {
+    //   for (var i = 0; i < EXCLUDE_ROUTE_PATTERNS.length; i++) {
+    //     if ('string' === typeof EXCLUDE_ROUTE_PATTERNS[i]) {
+    //       if (EXCLUDE_ROUTE_PATTERNS[i] === reqRoute) {
+    //         shouldRecordOperation = false;
+    //       }
 
-        } else {
-          if (EXCLUDE_ROUTE_PATTERNS[i].exec(reqRoute)) {
-            shouldRecordOperation = false;
-          }
-        }
-      }
+    //     } else {
+    //       if (EXCLUDE_ROUTE_PATTERNS[i].exec(reqRoute)) {
+    //         shouldRecordOperation = false;
+    //       }
+    //     }
+    //   }
     }
 
     if (shouldRecordOperation) {
