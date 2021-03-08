@@ -104,19 +104,17 @@ export default {
       let apiRes = null;
 
       // 缓存所有python包名
-      if (this.allPackages.length <= 0) {
-        apiRes = await this.T.callAPI('post', '/api/v1/do/proxy', {
-          body : { method: 'get', url: 'https://mirrors.aliyun.com/pypi/web/simple/' },
-          alert: {showError: true},
-        });
-        if (!apiRes.ok) return;
+      apiRes = await this.T.callAPI('post', '/api/v1/do/proxy', {
+        body : { method: 'get', url: 'https://mirrors.aliyun.com/pypi/web/simple/' },
+        alert: {showError: true},
+      });
+      if (!apiRes.ok) return;
 
-        this.allPackages = this.abstractPackageList(apiRes.data.body);
-        this.allPackageMap = this.allPackages.reduce((acc, x) => {
-          acc[x] = true;
-          return acc;
-        }, {});
-      }
+      this.allPackages = this.abstractPackageList(apiRes.data.body);
+      this.allPackageMap = this.allPackages.reduce((acc, x) => {
+        acc[x] = true;
+        return acc;
+      }, {});
 
       // 获取已安装的包
       apiRes = await this.T.callAPI('/api/v1/python-packages/installed', {
@@ -212,7 +210,7 @@ export default {
       if (parts[0].indexOf('=') >= 0 || (parts.length > 1 && parts[1].indexOf('=') >= 0)) {
         return false;
       }
-      
+
       let pkg = parts[0];
       let installedPackage = this.installedPackageMap[pkg];
       if (installedPackage && installedPackage.isBuiltin) {
