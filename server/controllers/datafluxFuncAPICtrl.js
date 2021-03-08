@@ -2024,6 +2024,8 @@ exports.listInstalledPythonPackages = function(req, res, next) {
       if (err) return asyncCallback(err);
 
       stdout.trim().split('\n').forEach(function(pkg) {
+        if (toolkit.isNothing(pkg)) return;
+
         var parts = pkg.split('==');
         packageVersionMap[parts[0]] = {
           name     : parts[0],
@@ -2075,11 +2077,6 @@ exports.installPythonPackage = function(req, res, next) {
   var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
   var statusAge = 3600;
 
-  // 锁
-  var lockKey   = toolkit.getCacheKey('lock', 'installPythonPackage');
-  var lockValue = Date.now().toString();
-  var lockAge   = 900;
-
   function createInstallStatus(status, stderr) {
     var installStatus = {
       pkg      : pkg,
@@ -2092,21 +2089,9 @@ exports.installPythonPackage = function(req, res, next) {
   }
 
   async.series([
-    // 上锁
-    function(asyncCallback) {
-      res.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (!cacheRes) {
-          return asyncCallback(new E('EBizCondition', 'Previous installing is still running'));
-        }
-
-        return asyncCallback();
-      });
-    },
     // 记录安装信息
     function(asyncCallback) {
-      var installStatus = createInstallStatus('installing');
+      var installStatus = createInstallStatus('RUNNING');
       res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
     },
     // 清空之前安装的内容
@@ -2125,7 +2110,7 @@ exports.installPythonPackage = function(req, res, next) {
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败
-          var installStatus = createInstallStatus('failed', stderr);
+          var installStatus = createInstallStatus('FAILURE', stderr);
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
@@ -2142,7 +2127,7 @@ exports.installPythonPackage = function(req, res, next) {
     function(asyncCallback) {
       var cmd = 'pip';
       var cmdArgs = [
-        'install', '--no-cache-dir', 
+        'install', '--no-cache-dir',
         '-t', CONFIG.EXTRA_PYTHON_IMPORT_PATH,
         '-i', 'https://mirrors.aliyun.com/pypi/simple/',
         pkg,
@@ -2150,7 +2135,7 @@ exports.installPythonPackage = function(req, res, next) {
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败
-          var installStatus = createInstallStatus('failed', stderr);
+          var installStatus = createInstallStatus('FAILURE', stderr);
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
@@ -2161,15 +2146,12 @@ exports.installPythonPackage = function(req, res, next) {
 
         } else {
           // 安装成功
-          var installStatus = createInstallStatus('succeeded', stderr);
+          var installStatus = createInstallStatus('SUCCESS', stderr);
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
         }
       });
     },
   ], function(err) {
-    // 解锁
-    res.locals.cacheDB.unlock(lockKey, lockValue);
-
     if (err) return next(err);
     return res.locals.sendJSON();
   });

@@ -1,17 +1,19 @@
 <i18n locale="zh-CN" lang="yaml">
-Loading                                    : 加载中
-PIP Tool                                   : PIP工具
-Install Package                            : 安装包
-Please input package name to install       : 请输入要安装的包
-Installed Packages                         : 已安装的包
-Package                                    : 包
-Version                                    : 版本
-Built-in                                   : 已内置
-Installed                                  : 已安装
-Exactly match                              : 完全匹配
-Install                                    : 安装
-Installing                                 : 正在安装
-Cannot reinstall a package that is built-in: 无法重复安装已内置的包
+Loading                                          : 加载中
+PIP Tool                                         : PIP工具
+Install Package                                  : 安装包
+Please input package name to install             : 请输入要安装的包
+Installed Packages                               : 已安装的包
+Package                                          : 包
+Version                                          : 版本
+Built-in                                         : 已内置
+Installed                                        : 已安装
+Exactly match                                    : 完全匹配
+Install                                          : 安装
+Installing                                       : 正在安装
+Cannot reinstall a package that is built-in      : 无法重复安装已内置的包
+Previous installing may still running            : 之前的安装似乎仍然在运行
+Are you sure you want to install the package now?: 是否确定现在就安装？
 </i18n>
 
 <template>
@@ -179,9 +181,32 @@ export default {
       callback(result);
     },
     async installPackage(pkg) {
+      // 检查当前安装状态
+      let apiRes = await this.T.callAPI('/api/v1/python-packages/install-status', {
+        alert: {showError: true}
+      });
+      if (!apiRes.ok) return;
+
+      if (apiRes.data && apiRes.data.status === 'RUNNING') {
+        // 尚处于安装中
+        try {
+          await this.$confirm(`${this.$t('Previous installing may still running')}
+            <br>${this.$t('Are you sure you want to install the package now?')}`, this.$t('Install Package'),  {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: this.$t('Install Package'),
+            cancelButtonText: this.$t('Cancel'),
+            type: 'warning',
+          });
+
+        } catch(err) {
+          return; // 取消操作
+        }
+      }
+
+      // 执行安装
       this.isInstalling = true;
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
+      apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
         body : { pkg: this.packageToInstall },
         alert: {title: this.$t('Install Package'), showError: true, showSuccess: true}
       });
