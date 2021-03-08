@@ -1,16 +1,17 @@
 <i18n locale="zh-CN" lang="yaml">
-Loading                             : 加载中
-PIP Tool                            : PIP工具
-Install Package                     : 安装包
-Please input package name to install: 请输入要安装的包
-Installed Packages                  : 已安装的包
-Package                             : 包
-Version                             : 版本
-Built-in                            : 已内置
-Installed                           : 已安装
-Exactly match                       : 完全匹配
-Install                             : 安装
-Installing                          : 正在安装
+Loading                                    : 加载中
+PIP Tool                                   : PIP工具
+Install Package                            : 安装包
+Please input package name to install       : 请输入要安装的包
+Installed Packages                         : 已安装的包
+Package                                    : 包
+Version                                    : 版本
+Built-in                                   : 已内置
+Installed                                  : 已安装
+Exactly match                              : 完全匹配
+Install                                    : 安装
+Installing                                 : 正在安装
+Cannot reinstall a package that is built-in: 无法重复安装已内置的包
 </i18n>
 
 <template>
@@ -30,7 +31,7 @@ Installing                          : 正在安装
       <el-main>
         <el-divider content-position="left"><h1>{{ $t('Install Package') }}</h1></el-divider>
 
-        <el-autocomplete :placeholder="$t('')"
+        <el-autocomplete :placeholder="$t('Please input package name to install')"
           style="width: 500px"
           v-model.trim="packageToInstall"
           :fetch-suggestions="queryPackages">
@@ -50,6 +51,14 @@ Installing                          : 正在安装
           </span>
           <span v-else>{{ $t('Install') }}</span>
         </el-button>
+        <br>
+        <el-row>
+          <el-col>
+            <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
+              {{ $t('Cannot reinstall a package that is built-in') }}
+            </span>
+          </el-col>
+        </el-row>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
