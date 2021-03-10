@@ -64,7 +64,7 @@ Are you sure you want to install the package now?: 是否确定现在就安装�
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
-        <el-table :data="installedPackages" stripe style="width: 95%">
+        <el-table class="common-table" :data="installedPackages">
           <el-table-column :label="$t('Package')" sortable sort-by="name">
             <template slot-scope="scope">
               <code>{{ scope.row.name }}</code>

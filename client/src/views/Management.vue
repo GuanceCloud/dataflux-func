@@ -15,6 +15,7 @@ Experimental      : 实验性功能
 Access Key        : AccessKey
 System Metric     : 系统指标
 PIP Tool          : PIP工具
+File Tool         : 文件工具
 </i18n>
 
 <template>
@@ -138,6 +139,13 @@ PIP Tool          : PIP工具
               <span>
                 <i class="fa fa-fw fa-cubes"></i>
                 {{ $t('PIP Tool') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/file-tool" v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')">
+              <span>
+                <i class="fa fa-fw fa-file"></i>
+                {{ $t('File Tool') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>

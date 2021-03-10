@@ -250,6 +250,11 @@ const routes = [
         name: 'pip-tool',
         component: () => import('../components/Management/PIPTool.vue'),
       },
+      {
+        path: 'file-tool',
+        name: 'file-tool',
+        component: () => import('../components/Management/FileTool.vue'),
+      },
     ],
   },
   {
