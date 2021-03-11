@@ -2181,23 +2181,33 @@ exports.listResources = function(req, res, next) {
   fs.readdir(absPath, opt, function(err, data) {
     if (err) return next(err);
 
-    var resources = data.reduce(function(acc, x) {
-      var r = { name: x.name, type: null};
+    var files = data.reduce(function(acc, x) {
+      var f = {
+        name      : x.name,
+        type      : null,
+        size      : 0,
+        createTime: null,
+        updateTime: null,
+      };
+
+      var stat = fs.statSync(path.join(absPath, x.name));
+      f.createTime = stat.birthtimeMs;
+      f.updateTime = stat.ctimeMs;
+
       if (x.isDirectory()) {
-        r.type = 'folder';
+        f.type = 'folder';
       } else if (x.isFile()) {
-        r.type = 'file';
-      } else if (x.isSymbolicLink()) {
-        r.type = 'slink';
+        f.type = 'file';
+        f.size = stat.size;
       }
 
-      if (r.type) {
-        acc.push(r);
+      if (f.type) {
+        acc.push(f);
       }
       return acc;
     }, []);
 
-    var ret = toolkit.initRet(resources);
+    var ret = toolkit.initRet(files);
     return res.locals.sendJSON(ret);
   });
 };
