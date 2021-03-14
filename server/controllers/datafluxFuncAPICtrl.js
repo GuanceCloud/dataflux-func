@@ -1697,6 +1697,11 @@ exports.getSystemConfig = function(req, res, next) {
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
 
+    _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
+    _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
+    _WEB_AUTH_HEADER     : CONFIG._WEB_AUTH_HEADER,
+    _WEB_AUTH_QUERY      : CONFIG._WEB_AUTH_QUERY,
+
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
     _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
@@ -2159,14 +2164,14 @@ exports.installPythonPackage = function(req, res, next) {
 
 exports.listResources = function(req, res, next) {
   var subFolder = req.query.folder || './';
-  var absPath   = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, subFolder);
+  var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, subFolder);
 
   if (!absPath.endsWith('/')) {
     absPath += '/';
   }
 
   // 防止访问外部文件夹
-  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_FILE_ROOT_PATH + '/')) {
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
     return next(new E('EBizCondition', 'Cannot not fetch folder out of resource folder.'))
   }
 
@@ -2185,7 +2190,7 @@ exports.listResources = function(req, res, next) {
       var f = {
         name      : x.name,
         type      : null,
-        size      : 0,
+        size      : null,
         createTime: null,
         updateTime: null,
       };
@@ -2214,8 +2219,21 @@ exports.listResources = function(req, res, next) {
 
 exports.downloadResources = function(req, res, next) {
   var filePath = req.query.filePath;
-  var absPath  = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, filePath);
+  var absPath  = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
+  var filePath = req.query.filePath;
+  var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
 
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not access file out of resource folder.'))
+  }
+
+  // 检查存在性
+  if (!fs.existsSync(absPath)) {
+    return next(new E('EBizCondition', 'File not exists.'))
+  }
+
+  return res.locals.sendLocalFile(absPath);
 };
 
 exports.uploadResource = function(req, res, next) {
@@ -2223,12 +2241,13 @@ exports.uploadResource = function(req, res, next) {
 };
 
 var OPERATION_MAP = {
-  zip   : 'zip',
-  unzip : 'unzip',
-  copy  : 'cp',
-  rename: 'mv',
-  move  : 'mv',
-  delete: 'rm',
+  newFolder: 'mkdir',
+  zip      : 'zip',
+  unzip    : 'unzip',
+  copy     : 'cp',
+  rename   : 'mv',
+  move     : 'mv',
+  delete   : 'rm',
 }
 function replacePathTail(originPath, newName) {
   originPath = originPath.trim();
@@ -2247,15 +2266,15 @@ function replacePathTail(originPath, newName) {
 };
 
 exports.operateResource = function(req, res, next) {
-  var filePath  = req.query.filePath;
-  var operation = req.query.operation;
+  var filePath  = req.body.filePath;
+  var operation = req.body.operation;
 
-  var absPath     = path.join(CONFIG.RESOURCE_FILE_ROOT_PATH, filePath);
+  var absPath     = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
   var currentPath = replacePathTail(absPath);
   var fileName    = filePath.split('/').pop();
 
   // 防止访问外部文件夹
-  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_FILE_ROOT_PATH + '/')) {
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
     return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder.'))
   }
 
@@ -2273,6 +2292,18 @@ exports.operateResource = function(req, res, next) {
   }
 
   switch(operation) {
+    case 'newFolder':
+      var newFolderName = req.query.operationArgument;
+      if (newFolderName.indexOf('/') >= 0) {
+        return next(new E('EClientBadRequest', 'Please specifiy new folder name, not path.'))
+      }
+      if (!newFolderName) {
+        return next(new E('EClientBadRequest', 'New folder name not specified.'))
+      }
+
+      cmdArgs = [newFolderName];
+      break;
+
     case 'zip':
       var zipFileName = fileName + '.zip';
       if (fs.existsSync(zipFileName)) {

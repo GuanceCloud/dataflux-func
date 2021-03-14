@@ -1796,7 +1796,7 @@ datafluxFuncAPI:
     name         : 下载资源文件
     method       : get
     url          : /api/v1/resources
-    response     : json
+    response     : blob
     requireSignIn: true
     privilege    : general_r
     query:
@@ -1822,7 +1822,7 @@ datafluxFuncAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
-    query:
+    body:
       filePath:
         $desc    : 文件路径
         $required: true
@@ -1832,6 +1832,7 @@ datafluxFuncAPI:
         $required: true
         $type    : enum
         $in:
+          - newFolder
           - zip
           - unzip
           - copy
@@ -1839,7 +1840,7 @@ datafluxFuncAPI:
           - move
           - delete
       operationArgument:
-        $desc    : 执行操作参数（`copy`, `rename`操作为新文件名、`move`操作为新路径）
+        $desc    : 执行操作参数（`folder`为新文件夹名；`copy`, `rename`操作为新文件名；`move`操作为新路径）
         $required: false
         $type    : string
 
@@ -1954,7 +1955,7 @@ scriptSetAPI:
     name         : 导出脚本集
     method       : post
     url          : /api/v1/script-sets/do/export
-    response     : json
+    response     : blob
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
     body:

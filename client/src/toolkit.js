@@ -616,41 +616,41 @@ export function fromNow(dt) {
 };
 
 export function stringSimilar(s, t, f) {
-    if (!s || !t) {
-        return 0
-    }
-    var l = s.length > t.length ? s.length : t.length
-    var n = s.length
-    var m = t.length
-    var d = []
-    f = f || 3
-    var min = function(a, b, c) {
-        return a < b ? (a < c ? a : c) : (b < c ? b : c)
-    }
-    var i, j, si, tj, cost
-    if (n === 0) return m
-    if (m === 0) return n
-    for (i = 0; i <= n; i++) {
-        d[i] = []
-        d[i][0] = i
-    }
-    for (j = 0; j <= m; j++) {
-        d[0][j] = j
-    }
-    for (i = 1; i <= n; i++) {
-        si = s.charAt(i - 1)
-        for (j = 1; j <= m; j++) {
-            tj = t.charAt(j - 1)
-            if (si === tj) {
-                cost = 0
-            } else {
-                cost = 1
-            }
-            d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
-        }
-    }
-    let res = (1 - d[n][m] / l)
-    return parseFloat(res.toFixed(f));
+  if (!s || !t) {
+      return 0
+  }
+  var l = s.length > t.length ? s.length : t.length
+  var n = s.length
+  var m = t.length
+  var d = []
+  f = f || 3
+  var min = function(a, b, c) {
+      return a < b ? (a < c ? a : c) : (b < c ? b : c)
+  }
+  var i, j, si, tj, cost
+  if (n === 0) return m
+  if (m === 0) return n
+  for (i = 0; i <= n; i++) {
+      d[i] = []
+      d[i][0] = i
+  }
+  for (j = 0; j <= m; j++) {
+      d[0][j] = j
+  }
+  for (i = 1; i <= n; i++) {
+      si = s.charAt(i - 1)
+      for (j = 1; j <= m; j++) {
+          tj = t.charAt(j - 1)
+          if (si === tj) {
+              cost = 0
+          } else {
+              cost = 1
+          }
+          d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+      }
+  }
+  let res = (1 - d[n][m] / l)
+  return parseFloat(res.toFixed(f));
 }
 
 export function asideItemSorter(a, b) {
@@ -692,14 +692,10 @@ function _getCallAPIOpt(method, pathPattern, options) {
   if (store.state.xAuthToken) {
     axiosOpt.headers = axiosOpt.headers || {};
 
-    axiosOpt.headers['X-Dff-Client-Id'] = store.getters.clientId;
-    axiosOpt.headers['X-Dff-Origin'] = 'DFF-UI';
+    axiosOpt.headers[store.getters.CONFIG('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
+    axiosOpt.headers[store.getters.CONFIG('_WEB_ORIGIN_HEADER')]    = 'DFF-UI';
 
-    let authHeaderField = 'X-Dff-Auth-Token';
-    if (store.state.systemConfig && store.state.systemConfig.ftUserAuthEnabled) {
-      // 启用FT用户认证时，改用FT认证X-Ft-Auth-Token 头
-      authHeaderField = store.state.systemConfig.ftXAuthHeader;
-    }
+    let authHeaderField = store.getters.CONFIG('_WEB_AUTH_HEADER');
     if (store.state.xAuthToken) {
       axiosOpt.headers[authHeaderField] = store.state.xAuthToken;
     }
@@ -1017,6 +1013,16 @@ export async function callAPI_allPage(pathPattern, options) {
 
   _logCallingAPI(axiosOpt, apiResp);
   return apiResp.data;
+};
+
+export function authedLink(url) {
+  let urlPath   = url.split('?')[0];
+  let nextQuery = getQuery(url);
+
+  let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
+  nextQuery[authQuery] = store.state.xAuthToken;
+
+  return formatURL(urlPath, { query: nextQuery });
 };
 
 export function isPageFiltered(ignoreCases) {

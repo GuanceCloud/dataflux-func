@@ -14,7 +14,7 @@ EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
 
 # 资源文件根目录
 # 必须使用绝对路径
-RESOURCE_FILE_ROOT_PATH: '/data/resources'
+RESOURCE_ROOT_PATH: '/data/resources'
 
 # 运行模式
 # 可选：
@@ -172,6 +172,7 @@ _WEB_SIGN_IN_PAGE          : datafluxFuncPage.clientApp
 _WEB_DASHBOARD_PAGE        : indexPage.dashboard
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
+_WEB_ORIGIN_HEADER         : X-Dff-Origin
 _WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
 _WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
 _WEB_PAGE_SIZE_COOKIE      : xDFFPageSize

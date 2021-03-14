@@ -499,6 +499,24 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(html);
   };
 
+  res.locals.sendLocalFile = function(filePath) {
+    var fileName = filePath.split('/').pop();
+    var fileType = fileName.split('.').pop();
+    res.locals.logger.debug('[WEB LOCAL FILE] `{0}`', fileName);
+
+    res.type(fileType);
+    res.attachment(fileName);
+
+    var reqCost = Date.now() - res.locals._requestStartTime;
+    recordSlowAPI(req, res, reqCost);
+    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+
+    if ('function' === typeof appInit.beforeReponse) {
+      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, fileName, 'file');
+    }
+    return res.download(filePath);
+  };
+
   res.locals.sendFile = function(file, fileType, fileName) {
     res.locals.logger.debug('[WEB FILE] `{0}` ({1} Bytes)', fileName || 'FILE', file.length);
 

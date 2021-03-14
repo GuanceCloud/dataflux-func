@@ -2,6 +2,7 @@
 File Tool  : 文件工具
 Go Top     : 返回顶层
 Go Up      : 向上
+'Path:'    : 路径：
 Folder     : 文件夹
 File       : 文件
 Name       : 名称
@@ -10,6 +11,13 @@ Create time: 创建时间
 Update time: 更新时间
 Enter      : 进入
 Download   : 下载
+More       : 更多
+Zip        : 压缩
+Unzip      : 解压
+Delete     : 删除
+
+Are you sure you want to delete the following file?: 是否确定删除此文件？
+Delete file                                        : 删除文件
 </i18n>
 
 <template>
@@ -20,7 +28,13 @@ Download   : 下载
         <h1>
           {{ $t('File Tool') }}
           &#12288;
+          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="mini">
+            <i class="fa fa-fw fa-arrow-up"></i>
+            {{ $t('Go Up') }}
+          </el-button>
+          &#12288;
           <code class="resource-navi" v-if="folder !== '/'">
+            <small>{{ $t('Path:') }}</small>
             <el-button size="small" @click="enterFolder()">
               <i class="fa fa-fw fa-home"></i>
             </el-button><template v-for="(layer, index) in folder.slice(1).split('/')">
@@ -33,14 +47,7 @@ Download   : 下载
             </template>
           </code>
           <div class="header-control">
-            <el-button @click="enterFolder()" :disabled="folder === '/'" size="mini">
-              <i class="fa fa-fw fa-home"></i>
-              {{ $t('Go Top') }}
-            </el-button>
-            <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="mini">
-              <i class="fa fa-fw fa-arrow-up"></i>
-              {{ $t('Go Up') }}
-            </el-button>
+
           </div>
         </h1>
       </el-header>
@@ -81,7 +88,7 @@ Download   : 下载
 
           <el-table-column :label="$t('Size')" sortable sort-by="size" align="right" width="120">
             <template slot-scope="scope">
-              <code v-if="!scope.row.size">-</code>
+              <code v-if="scope.row.size === null">-</code>
               <code v-else-if="scope.row.size < 1024">{{ scope.row.size }} B</code>
               <code v-else-if="scope.row.size < 1024 * 1024">{{ parseInt(scope.row.size / 1024) }} KB</code>
               <code v-else-if="scope.row.size < 1024 * 1024 * 1024">{{ parseInt(scope.row.size / 1024 / 1024) }} MB</code>
@@ -91,7 +98,26 @@ Download   : 下载
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
               <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
-              <el-button v-else-if="scope.row.type === 'file'" type="text" size="small">{{ $t('Download') }}</el-button>
+              <template v-else-if="scope.row.type === 'file'">
+                <el-link
+                  class="list-button"
+                  type="primary"
+                  :href="T.authedLink(`/api/v1/resources?filePath=${getPath(scope.row.name)}`)"
+                  :download="scope.row.name"
+                  :underline="false"
+                  target="_blank">{{ $t('Download') }}</el-link>
+              </template>
+
+              <el-dropdown @command="resourceOperation" class="list-button">
+                <el-button type="text" size="small">
+                  {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-if="scope.row.ext === 'zip'" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
+                  <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
+                  <el-dropdown-item :command="{ data: scope.row, operation: 'delete' }">{{ $t('Delete') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </template>
           </el-table-column>
         </el-table>
@@ -134,11 +160,11 @@ export default {
             break;
           case 'file':
             f.icon = 'file-o';
+            f.ext  = f.name.split('.').pop();
             break;
         }
 
-        let ext = f.name.split('.').pop();
-        switch (ext) {
+        switch (f.ext) {
           case 'zip':
           case 'rar':
           case '7z':
@@ -195,6 +221,9 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
+    getPath(name) {
+      return path.join(this.folder, name);
+    },
     enterFolder(name, isAbs) {
       if (!name) {
         this.folder = '/';
@@ -202,8 +231,55 @@ export default {
         if (isAbs) {
           this.folder = name;
         } else {
-          this.folder = path.join(this.folder, name);
+          this.folder = this.getPath(name);
         }
+      }
+    },
+    async resourceOperation(options) {
+      let name              = options.data.name;
+      let operation         = options.operation;
+      let operationArgument = options.operationArgument;
+
+      // 处理前操作
+      try {
+        switch(operation) {
+          case 'delete':
+            await this.$confirm(`${this.$t('Are you sure you want to delete the following file?')}
+                <br><code>${name}</code>`, this.$t('Delete file'),  {
+              dangerouslyUseHTMLString: true,
+              confirmButtonText: this.$t('Delete file'),
+              cancelButtonText: this.$t('Cancel'),
+              type: 'warning',
+            });
+            break;
+        }
+
+      } catch(err) {
+        return; // 取消操作
+      }
+
+      // 执行操作
+      var filePath  = this.getPath(name);
+      let apiRes = await this.T.callAPI('post', '/api/v1/resources/operate', {
+        body : { filePath: filePath, operation: operation },
+        alert: { showError: true },
+      });
+      if (!apiRes.ok) return;
+
+      // 处理后操作
+      switch(operation) {
+        case 'newFolder':
+          await this.enterFolder(operationArgument);
+          break;
+
+        case 'zip':
+        case 'unzip':
+        case 'copy':
+        case 'rename':
+        case 'move':
+        case 'delete':
+          await this.loadData();
+          break;
       }
     },
   },
