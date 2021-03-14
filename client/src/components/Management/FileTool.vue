@@ -21,13 +21,16 @@ Download   : 下载
           {{ $t('File Tool') }}
           &#12288;
           <code class="resource-navi" v-if="folder !== '/'">
-            <el-button size="small" @click="enterFolder()"><i class="fa fa-fw fa-home"></i></el-button><el-button
-              v-for="(layer, index) in folder.slice(1).split('/')"
-              :key="index"
-              size="small"
-              @click="enterFolder(folder.split('/').slice(0, index + 2).join('/'), true)">
-              <i class="fa fa-fw fa-angle-right"></i>{{ layer }}
-            </el-button>
+            <el-button size="small" @click="enterFolder()">
+              <i class="fa fa-fw fa-home"></i>
+            </el-button><template v-for="(layer, index) in folder.slice(1).split('/')">
+              <div class="path-sep"><i class="fa fa-angle-right"></i></div><el-button
+                :key="index"
+                size="small"
+                @click="enterFolder(folder.split('/').slice(0, index + 2).join('/'), true)">
+                {{ layer }}
+              </el-button>
+            </template>
           </code>
           <div class="header-control">
             <el-button @click="enterFolder()" :disabled="folder === '/'" size="mini">
@@ -220,12 +223,18 @@ export default {
 
 <style scoped>
 .resource-navi .el-button {
-  margin-left: 3px !important;
-  padding: 5px 3px !important;
+  margin-left: 0 !important;
+  padding: 5px 5px !important;
 }
 </style>
 
 <style>
+.path-sep {
+  width: 20px;
+  text-align: center;
+  display: inline-block;
+  font-size: 14px;
+}
 .resource-navi .el-button span {
   font-family: monospace !important;
 }

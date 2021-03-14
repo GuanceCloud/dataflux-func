@@ -107,8 +107,9 @@ WORKER_QUEUE_ALIAS_MAP: cpu=9
 #   以下配置请勿修改   #
 ########################
 
-# 钉钉机器人URL
-DING_TALK_ROBOT_URL: ''
+# 钉钉机器人
+DING_TALK_ROBOT_URL   : ''
+DING_TALK_ROBOT_SECRET: ''
 
 # 文件存储根目录
 FILE_STORE_ROOT_FOLDER: uploaded-files
@@ -138,25 +139,24 @@ _API_DOC_INTRODUCTION_LIST: ''
 
 # 示例代码
 _SAMPLE_SCRIPT: |
-  @DFF.API('My Func')
-  def my_func(x, y):
+  @DFF.API('Hello, world')
+  def hello_world(name=''):
       '''
-      My Func
+      A hello world function
 
       Parameters:
-        x {int|float} A number
-        y {int|float} Another number
+        name {str} name
 
-      return {int|float} Sum of `x` and `y`
+      return {str} "Hello, world! {name}"
       '''
-      return x + y
+      return f"Hello, world! {name}"
 
-  def test_my_func():
+  def test_hello_world():
       '''
-      Test My Func
+      Test hello world function
       '''
-      assert my_func(1, 1) == 2
-      assert my_func(1.1, 1.2) == 2.3
+      assert hello_world('Tom') == "Hello, world! Tom"
+      return 'OK'
 
 # MySQL一般作为常量的配置
 _MYSQL_CONNECTION_LIMIT   : 30

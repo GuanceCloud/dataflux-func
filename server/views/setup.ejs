@@ -24,13 +24,14 @@
         { name: 'ALL（全部输出）', value: 'ALL'     },
       ],
     },
-    {
-      name : '日志文件路径',
-      key  : 'LOG_FILE_PATH',
-      type : 'string',
-      input: 'text',
-      tips : '日志文件输出位置，如留空则日志不会输出到文件。',
-    },
+    // 容易误导，不展示此选项
+    // {
+    //   name : '日志文件路径',
+    //   key  : 'LOG_FILE_PATH',
+    //   type : 'string',
+    //   input: 'text',
+    //   tips : '日志文件输出的容器内地址，如留空则日志不会输出到文件。',
+    // },
     {
       name : '日志文件格式',
       key  : 'LOG_FILE_FORMAT',
@@ -57,8 +58,8 @@
       input: 'select',
       tips : '如本地存在Nginx 作为反向代理，可选择<code>仅本地访问<code>',
       options: [
-        { name: '仅本地访问（127.0.0.1）', value: '127.0.0.1' },
         { name: '公开访问（0.0.0.0）',     value: '0.0.0.0' },
+        { name: '仅本地访问（127.0.0.1）', value: '127.0.0.1' },
       ],
     },
     {
@@ -170,12 +171,20 @@
       tips    : '请在输入一遍密码',
       errorKey: 'adminUser',
     },
+    // TODO
     // {
     //   name : '钉钉机器人URL',
     //   key  : 'DING_TALK_ROBOT_URL',
     //   type : 'string',
     //   input: 'url',
-    //   tips : '需要在钉钉机器人的「安全设置」中添加「自定义关键字」<code>DataFlux</code>',
+    //   tips : '需要在钉钉机器人的「安全设置」中指定加签',
+    // },
+    // {
+    //   name : '钉钉机器人密钥',
+    //   key  : 'DING_TALK_ROBOT_SECRET',
+    //   type : 'string',
+    //   input: 'url',
+    //   tips : '钉钉机器人的「安全设置」中的密钥',
     // },
   ]
 %>

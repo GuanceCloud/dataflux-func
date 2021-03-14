@@ -79,7 +79,9 @@
         </el-col>
       </el-row>
 
-      <span v-if="!apiBody" class="text-bad">Body内容填写存在错误，正确填写后将展示示例</span>
+      <span v-if="!apiBody" class="text-bad">
+        Body内容填写存在错误，正确填写后将展示示例
+      </span>
       <div v-else>
         <template v-if="showPostExample">
           <el-divider content-position="left">POST 方式请求</el-divider>
@@ -142,7 +144,7 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link type="primary" :href="apiURLWithQueryExample" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText"></code></el-link>
-              <InfoBlock type="info" title="kwargs 参数即，上述POST方式中 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串"></InfoBlock>
+              <InfoBlock type="info" title="kwargs 参数为POST方式中对kwargs 参数进行JSON 序列化，再进行URL 编码后的字符串"></InfoBlock>
               <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))"></InfoBlock>
             </el-col>
             <el-col :span="2">
@@ -169,7 +171,7 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link type="primary" :href="apiURLWithQueryExample_simplified" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_simplified"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持options参数"></InfoBlock>
+              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持options 参数"></InfoBlock>
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiURLWithQueryExample_simplified"></CopyButton>
@@ -323,45 +325,44 @@ export default {
       let url       = '';
       let headerOpt = '';
       let dataOpt   = '';
-      if (!this.T.isNothing(this.apiBody)) {
-        switch(format) {
-          case 'normal':
-            url       =  this.apiURLExample;
-            headerOpt = `-H "Content-Type: application/json"`
-            dataOpt   = `-d '${JSON.stringify(this.apiBody)}'`
-            break;
 
-          case 'flattened':
-            url       =  `${this.apiURLExample}/${format}`;
-            headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+      switch(format) {
+        case 'normal':
+          url       =  this.apiURLExample;
+          headerOpt = `-H "Content-Type: application/json"`
+          dataOpt   = `-d '${JSON.stringify(this.apiBody)}'`
+          break;
 
-            if (this.apiBody.kwargs) {
-              for (let k in this.apiBody.kwargs) {
-                query[`kwargs_${k}`] = this.apiBody.kwargs[k];
-              }
+        case 'flattened':
+          url       =  `${this.apiURLExample}/${format}`;
+          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+
+          if (this.apiBody.kwargs) {
+            for (let k in this.apiBody.kwargs) {
+              query[`kwargs_${k}`] = this.apiBody.kwargs[k];
             }
-            if (this.apiBody.options) {
-              for (let k in this.apiBody.options) {
-                query[`options_${k}`] = this.apiBody.options[k];
-              }
+          }
+          if (this.apiBody.options) {
+            for (let k in this.apiBody.options) {
+              query[`options_${k}`] = this.apiBody.options[k];
             }
+          }
 
-            dataOpt = `-d '${this.T.formatQuery(query)}'`;
-            break;
+          dataOpt = `-d '${this.T.formatQuery(query)}'`;
+          break;
 
-          case 'simplified':
-            url       =  `${this.apiURLExample}/${format}`;
-            headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+        case 'simplified':
+          url       =  `${this.apiURLExample}/${format}`;
+          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
 
-            if (this.apiBody.kwargs) {
-              for (let k in this.apiBody.kwargs) {
-                query[k] = this.apiBody.kwargs[k];
-              }
+          if (this.apiBody.kwargs) {
+            for (let k in this.apiBody.kwargs) {
+              query[k] = this.apiBody.kwargs[k];
             }
+          }
 
-            dataOpt = `-d '${this.T.formatQuery(query)}'`;
-            break;
-        }
+          dataOpt = `-d '${this.T.formatQuery(query)}'`;
+          break;
       }
 
       let curlCmd = `curl ${headerOpt} -X POST ${dataOpt} ${url}`;
@@ -377,7 +378,7 @@ export default {
     },
 
     apiBody() {
-      if (!this.apiBodyExample) return '';
+      if (!this.apiBodyExample) return {};
 
       let apiBody = null;
       try {

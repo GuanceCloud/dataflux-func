@@ -36,8 +36,8 @@ JOIN (
     GROUP BY t1.seq) AS t3 ON t0.id = t3.id
 SET
     t0.seq = t3.count;
-ALTER TABLE biz_main_script MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL;
-ALTER TABLE biz_main_script MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT;
+ALTER TABLE biz_main_script MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL;
+ALTER TABLE biz_main_script MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 UPDATE biz_main_script_set AS t0
 JOIN (
@@ -47,8 +47,8 @@ JOIN (
     GROUP BY t1.seq) AS t3 ON t0.id = t3.id
 SET
     t0.seq = t3.count;
-ALTER TABLE biz_main_script_set MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL;
-ALTER TABLE biz_main_script_set MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT;
+ALTER TABLE biz_main_script_set MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL;
+ALTER TABLE biz_main_script_set MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 UPDATE biz_main_func AS t0
 JOIN (
@@ -58,15 +58,14 @@ JOIN (
     GROUP BY t1.seq) AS t3 ON t0.id = t3.id
 SET
     t0.seq = t3.count;
-ALTER TABLE biz_main_func MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL;
-ALTER TABLE biz_main_func MODIFY COLUMN `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT;
+ALTER TABLE biz_main_func MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL;
+ALTER TABLE biz_main_func MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 # 示例数据
-INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`)
+INSERT INTO `biz_main_auth_link` (`id`, `funcId`, `funcCallKwargsJSON`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`)
 VALUES
-    (1,X'61756C6E2D4657726B3974326777',X'64656D6F5F5F62617369632E706C7573','{\"x\": \"FROM_PARAMETER\", \"y\": \"FROM_PARAMETER\"}',NULL,'{\"bySecond\": 1}',X'5549',1,0,NULL,'2020-09-19 10:01:29','2020-09-19 10:05:58');
+    (X'61756C6E2D68656C6C6F2D776F726C64', X'64656D6F5F5F62617369632E68656C6C6F5F776F726C64', '{\"name\": \"Tom\"}', NULL, '{}', X'5549', 1, 0, NULL);
 
-INSERT INTO `biz_main_crontab_config` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `isDisabled`, `note`, `createTime`, `updateTime`)
+INSERT INTO `biz_main_crontab_config` (`id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `isDisabled`, `note`)
 VALUES
-    (1,X'63726F6E2D543646437861636A6A344C78474D4D325459346F6165',X'64656D6F5F5F62617369632E706C7573','{\"x\": 1, \"y\": 2}',X'2A202A202A202A202A',NULL,0,X'474C4F42414C',X'6233653665663761316432663135373037313063373937636565346565613833',NULL,X'5549',0,NULL,'2020-09-19 10:01:47','2020-09-19 10:01:47');
-
+    (X'63726F6E2D6E344B41665258656975765754796D686A6E53757644', X'64656D6F5F5F62617369632E68656C6C6F5F776F726C64', '{\"name\": \"Jerry\"}', X'2A2F35202A202A202A202A', NULL, 0, X'474C4F42414C', X'6137376334313436626638333332616339323565383735373564613036383131', NULL, X'5549', 0, NULL);
