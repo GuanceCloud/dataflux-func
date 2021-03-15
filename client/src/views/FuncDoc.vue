@@ -23,6 +23,7 @@
               <br>
               <el-tag type="info" size="mini"><code>def</code></el-tag>
               <code class="text-main text-small">{{ `${scope.row.id}(${T.isNothing(scope.row.kwargsJSON) ? '' : '...'})` }}</code>
+              <GotoFuncButton :funcId="scope.row.id"></GotoFuncButton>
 
               <br>
               <span class="text-info">&#12288;调用参数:</span>

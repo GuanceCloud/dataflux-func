@@ -20,7 +20,7 @@ import simplejson, ujson
 import arrow
 import pylru
 import requests
-import croniter as croniter
+from croniter import croniter
 import funcsigs
 
 # Project Modules

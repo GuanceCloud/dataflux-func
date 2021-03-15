@@ -24,6 +24,7 @@
                 <br>
                 <el-tag type="info" size="mini"><code>def</code></el-tag>
                 <code class="text-main text-small">{{ `${scope.row.funcId}(${T.isNothing(scope.row.funcKwargsJSON) ? '' : '...'})` }}</code>
+                <GotoFuncButton :funcId="scope.row.funcId"></GotoFuncButton>
 
                 <br>
                 <span class="text-info">&#12288;授权链接ID:</span>

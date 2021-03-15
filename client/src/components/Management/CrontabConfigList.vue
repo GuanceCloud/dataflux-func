@@ -53,7 +53,8 @@ Delete Crontab Config : 删除自动触发配置
 
                 <br>
                 <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code><GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
+                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
+                <GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
 
                 <br>
                 <span class="text-info">&#12288;调用参数:</span>

@@ -2,6 +2,14 @@
 # sudo apt-get install libffi-dev libatlas-base-dev
 # `fbprophet` will take serval hours for compiling stan on Raspberry Pi 4
 
+# Cloud Provider
+aliyun-python-sdk-core==2.13.31
+aliyun-python-sdk-ecs==4.23.10
+tencentcloud-sdk-python==3.0.355
+huaweicloudsdkcore==3.0.34rc0
+huaweicloudsdkecs==3.0.34rc0
+
+# Machine learning/AI
 adtk==0.6.2
 eas-prediction==0.12
 fbprophet==0.5

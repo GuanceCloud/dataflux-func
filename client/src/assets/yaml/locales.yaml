@@ -24,8 +24,8 @@ en:
   Modify  : 修改
   Delete  : 删除
   Save    : 保存
-  Lock    : 解锁
-  Unlock  : 锁定
+  Lock    : 锁定
+  Unlock  : 解锁
   Close   : 关闭
   Clear   : 清空
   Debug   : 调试
