@@ -670,6 +670,22 @@ class FuncCacheHelper(object):
         dest_key = self._get_cache_key(dest_key, dest_scope)
         return self.__task.cache_db.run('rpoplpush', key, dest_key)
 
+    def hash_set(self, key, field, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hset', key, field, value)
+
+    def hash_get(self, key, field, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hget', key, field)
+
+    def hash_delete(self, key, field, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hdel', key, field)
+
+    def hash_incr(self, key, field, step=1, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hincrby', key, field, amount=step)
+
 class FuncDataSourceHelper(object):
     AVAILABLE_CONFIG_KEYS = (
         'host',

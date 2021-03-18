@@ -271,7 +271,7 @@ fi
 # 创建logrotate配置
 blankLine
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
-    echo -e "${_INSTALL_DIR}/data/${__PROJECT_NAME}.log { \
+    echo -e "${_INSTALL_DIR}/data/logs/${__PROJECT_NAME}.log { \
 \n    missingok \
 \n    copytruncate \
 \n    compress \

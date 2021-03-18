@@ -208,7 +208,7 @@ class RedisHelper(object):
         return self.run('hmset', key, obj)
 
     def hincr(self, key, field):
-        return self.run('hincr', key, field)
+        return self.run('hincrby', key, field, amount=1)
 
     def hincrby(self, key, field, increment):
         return self.run('hincrby', key, field, amount=increment)

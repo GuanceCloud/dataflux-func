@@ -40,7 +40,7 @@ LOG_LEVEL: WARNING
 
 # 日志文件输出地址
 # 必须使用绝对路径
-LOG_FILE_PATH: '/data/dataflux-func.log'
+LOG_FILE_PATH: '/data/logs/dataflux-func.log'
 
 # 数据库自动备份
 DB_AUTO_BACKUP_ENABLED: true

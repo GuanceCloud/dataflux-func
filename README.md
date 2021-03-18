@@ -318,10 +318,10 @@ DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运
 
 默认情况下，日志文件保存位置如下：
 
-|   环境   |               文件位置              |
-|----------|-------------------------------------|
-| 容器内   | `/data/dataflux-func.log`           |
-| 宿主机内 | `{安装目录}/data/dataflux-func.log` |
+|   环境   |                 文件位置                 |
+|----------|------------------------------------------|
+| 容器内   | `/data/logs/dataflux-func.log`           |
+| 宿主机内 | `{安装目录}/data/logs/dataflux-func.log` |
 
 默认情况下，日志文件会根据logrotate配置自动回卷并压缩保存（logrotate配置文件位置为`/etc/logrotate.d/dataflux-func`）
 
