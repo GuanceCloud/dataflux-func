@@ -113,7 +113,7 @@ class RedisHelper(object):
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
-    def keys(self, pattern):
+    def keys(self, pattern='*'):
         found_keys = []
 
         COUNT_LIMIT = 1000
@@ -172,7 +172,7 @@ class RedisHelper(object):
     def expireat(self, key, timestamp):
         return self.run('expireat', key, timestamp)
 
-    def hkeys(self, key, pattern):
+    def hkeys(self, key, pattern='*'):
         found_keys = []
 
         COUNT_LIMIT = 1000
@@ -200,7 +200,9 @@ class RedisHelper(object):
         return self.run('hmget', key, fields)
 
     def hgetall(self, key):
-        return self.run('hgetall', key)
+        result = self.run('hgetall', key)
+        result = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in result.items()])
+        return result
 
     def hset(self, key, field, value):
         return self.run('hset', key, field, value)
@@ -240,6 +242,14 @@ class RedisHelper(object):
 
     def ltrim(self, key, start, stop):
         return self.run('ltrim', key, start, stop);
+
+    def rpoplpush(self, key, dest_key=None, dest_scope=None):
+        if dest_key is None:
+            dest_key = key
+        if dest_scope is None:
+            dest_scope = scope
+
+        return self.run('rpoplpush', key, dest_key)
 
     def ttl(self, key):
         return self.run('ttl', key)

@@ -644,33 +644,7 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('incr', key, amount=step)
 
-    def lpush(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lpush', key, value)
-
-    def rpush(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('rpush', key, value)
-
-    def lpop(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lpop', key)
-
-    def rpop(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('rpop', key)
-
-    def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
-        if dest_key is None:
-            dest_key = key
-        if dest_scope is None:
-            dest_scope = scope
-
-        key      = self._get_cache_key(key, scope)
-        dest_key = self._get_cache_key(dest_key, dest_scope)
-        return self.__task.cache_db.run('rpoplpush', key, dest_key)
-
-    def hash_keys(self, key, pattern, scope=None):
+    def hkeys(self, key, pattern='*', scope=None):
         key = self._get_cache_key(key, scope)
 
         found_keys = []
@@ -693,21 +667,81 @@ class FuncCacheHelper(object):
         found_keys = list(set(found_keys))
         return found_keys
 
-    def hash_set(self, key, field, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hset', key, field, value)
-
-    def hash_get(self, key, field, scope=None):
+    def hget(self, key, field, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('hget', key, field)
 
-    def hash_delete(self, key, field, scope=None):
+    def hmget(self, key, fields, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hmget', key, fields)
+
+    def hgetall(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        result = self.__task.cache_db.run('hgetall', key)
+        result = dict([(six.ensure_str(k), v) for k, v in result.items()])
+        return result
+
+    def hset(self, key, field, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hset', key, field, value)
+
+    def hsetnx(self, key, field, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hsetnx', key, field, value)
+
+    def hmset(self, key, obj, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hmset', key, obj)
+
+    def hincr(self, key, field, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hincrby', key, field, amount=1)
+
+    def hincrby(self, key, field, step=1, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hincrby', key, field, amount=step)
+
+    def hdel(self, key, field, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('hdel', key, field)
 
-    def hash_incr(self, key, field, step=1, scope=None):
+    def lpush(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hincrby', key, field, amount=step)
+        return self.__task.cache_db.run('lpush', key, value)
+
+    def rpush(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('rpush', key, value)
+
+    def lpop(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('lpop', key)
+
+    def rpop(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('rpop', key)
+
+    def llen(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('llen', key)
+
+    def lrange(self, key, start, stop, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('lrange', key, start, stop);
+
+    def ltrim(self, key, start, stop, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('ltrim', key, start, stop);
+
+    def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
+        if dest_key is None:
+            dest_key = key
+        if dest_scope is None:
+            dest_scope = scope
+
+        key      = self._get_cache_key(key, scope)
+        dest_key = self._get_cache_key(dest_key, dest_scope)
+        return self.__task.cache_db.run('rpoplpush', key, dest_key)
 
 class FuncDataSourceHelper(object):
     AVAILABLE_CONFIG_KEYS = (
