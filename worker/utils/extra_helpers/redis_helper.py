@@ -178,10 +178,14 @@ class RedisHelper(object):
         COUNT_LIMIT = 1000
         next_cursor = 0
         while True:
-            next_cursor, keys = self.run('hscan', cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
-            if isinstance(keys, list) and len(keys) > 0:
-                for k in keys:
-                    found_keys.append(six.ensure_str(k))
+            next_cursor, keys = self.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
+            if len(keys) > 0:
+                if isinstance(keys, dict):
+                    keys = list(keys.keys())
+
+                if isinstance(keys, list):
+                    for k in keys:
+                        found_keys.append(six.ensure_str(k))
 
             if next_cursor == 0:
                 break

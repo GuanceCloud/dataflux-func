@@ -670,6 +670,29 @@ class FuncCacheHelper(object):
         dest_key = self._get_cache_key(dest_key, dest_scope)
         return self.__task.cache_db.run('rpoplpush', key, dest_key)
 
+    def hash_keys(self, key, pattern, scope=None):
+        key = self._get_cache_key(key, scope)
+
+        found_keys = []
+
+        COUNT_LIMIT = 1000
+        next_cursor = 0
+        while True:
+            next_cursor, keys = self.__task.cache_db.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
+            if len(keys) > 0:
+                if isinstance(keys, dict):
+                    keys = list(keys.keys())
+
+                if isinstance(keys, list):
+                    for k in keys:
+                        found_keys.append(six.ensure_str(k))
+
+            if next_cursor == 0:
+                break
+
+        found_keys = list(set(found_keys))
+        return found_keys
+
     def hash_set(self, key, field, value, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('hset', key, field, value)
