@@ -201,7 +201,7 @@ class RedisHelper(object):
 
     def hgetall(self, key):
         result = self.run('hgetall', key)
-        result = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in result.items()])
+        result = dict([(six.ensure_str(k), v) for k, v in result.items()])
         return result
 
     def hset(self, key, field, value):

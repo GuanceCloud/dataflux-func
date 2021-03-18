@@ -130,7 +130,7 @@ fi
 
 # 创建运行环境目录并前往
 blankLine
-mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,mysql,redis}
+mkdir -p ${_INSTALL_DIR}/{data,data/extra-python-packages,data/resources,data/logs,data/sqldump,mysql,redis}
 
 # 开启MQTT 组件时，自动创建目录
 if [ ${OPT_MQTT} = "TRUE" ]; then
