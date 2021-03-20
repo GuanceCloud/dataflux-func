@@ -22,6 +22,7 @@ from worker.tasks import gen_task_id, webhook
 from worker.tasks import BaseTask
 from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
+from worker.tasks.dataflux_func import FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -119,7 +120,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
     http_request = kwargs.get('httpRequest') or {}
 
     # 函数结果、上下文、跟踪信息、错误堆栈
-    func_result  = None
+    func_resp    = None
     script_scope = None
     trace_info   = None
     error_stack  = None
@@ -171,7 +172,12 @@ def dataflux_func_debugger(self, *args, **kwargs):
 
             # 执行函数
             self.logger.info('[RUN FUNC] `{}`'.format(func_id))
-            func_result = entry_func(**func_call_kwargs)
+            func_resp = entry_func(**func_call_kwargs)
+            if not isinstance(func_resp, FuncResponse):
+                func_resp = FuncResponse(data=func_resp)
+
+            if isinstance(func_resp.data, Exception):
+                raise func_resp.data
 
     except Exception as e:
         # 函数报错只输出WARNING级别日志
@@ -196,30 +202,26 @@ def dataflux_func_debugger(self, *args, **kwargs):
             log_messages = script_scope['DFF'].log_messages or []
             result['logMessages'] = log_messages
 
-            # 【待废除】脚本输出图表
-            plot_charts = script_scope['DFF'].plot_charts or []
-            result['plotCharts'] = plot_charts
-
-        if func_name:
+        if func_name and func_resp:
             # 准备函数运行结果
             func_result_raw        = None
             func_result_repr       = None
             func_result_json_dumps = None
 
             try:
-                func_result_raw = toolkit.json_safe_copy(func_result)
+                func_result_raw = func_resp.data
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
 
             try:
-                func_result_repr = pprint.saferepr(func_result)
+                func_result_repr = pprint.saferepr(func_resp.data)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
 
             try:
-                func_result_json_dumps = toolkit.json_safe_dumps(func_result)
+                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
@@ -228,7 +230,8 @@ def dataflux_func_debugger(self, *args, **kwargs):
                 'raw'      : func_result_raw,
                 'repr'     : func_result_repr,
                 'jsonDumps': func_result_json_dumps,
-                'cost'     : time.time() - start_time,
+
+                '_responseControl': func_resp._create_response_control()
             }
 
         # 准备返回值
@@ -236,6 +239,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
             'result'   : result,
             'traceInfo': trace_info,
             'stack'    : error_stack,
+            'cost'     : time.time() - start_time,
         }
 
         # 清理资源

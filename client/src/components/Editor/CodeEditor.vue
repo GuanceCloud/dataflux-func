@@ -920,7 +920,7 @@ export default {
       if (apiRes.data) {
         // 执行耗时
         if (apiRes.ok) {
-          cost = apiRes.data.result.funcResult.cost.toFixed(3);
+          cost = apiRes.data.cost.toFixed(3);
         }
 
         // 日志输出

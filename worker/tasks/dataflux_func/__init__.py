@@ -13,6 +13,7 @@ import pprint
 import importlib
 import functools
 from concurrent.futures import ThreadPoolExecutor
+from collections import OrderedDict
 
 # 3rd-party Modules
 import six
@@ -288,7 +289,6 @@ class DFFWraper(object):
     def __init__(self, inject_funcs=None):
         self.exported_api_funcs = []
         self.log_messages       = []
-        self.plot_charts        = []
 
         self.inject_funcs = inject_funcs
 
@@ -1135,6 +1135,41 @@ class FuncConfigHelper(object):
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
+class FuncResponse(object):
+    def __init__(self, data=None, file=None, status_code=None, content_type=None, headers=None, no_304=False, delete_file=False, download_file=True):
+        self.data          = data          # 返回数据
+        self.file          = file          # 返回文件（资源目录下相对路径）
+        self.status_code   = status_code   # HTTP响应码
+        self.content_type  = content_type  # HTTP响应体类型
+        self.headers       = headers or {} # HTTP响应头
+        self.no_304        = no_304        # 是否禁用304缓存
+        self.delete_file   = delete_file   # 是否响应后删除文件文件
+        self.download_file = download_file # 是否下载文件
+
+        # 检查待下载的文件是否存在
+        if self.file:
+            self.file = self.file.lstrip('/')
+
+            abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], self.file)
+            if not os.path.isfile(abs_path):
+                e = Exception('No such file in Resource folder: {}'.format(self.file))
+                raise e
+
+    def _create_response_control(self):
+        response_control = {
+            'statusCode' : self.status_code,
+            'contentType': self.content_type,
+            'headers'    : self.headers,
+            'no304'      : self.no_304,
+        }
+
+        if self.file:
+            response_control['file']         =  self.file
+            response_control['deleteFile']   =  self.delete_file
+            response_control['downloadFile'] =  self.download_file
+
+        return response_control
+
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1220,7 +1255,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                     if parent_scope:
                         module_scope['DFF'].log_messages = parent_scope['DFF'].log_messages
-                        module_scope['DFF'].plot_charts  = parent_scope['DFF'].plot_charts
 
                         for k, v in parent_scope.items():
                             if k.startswith('_DFF_'):
@@ -1493,10 +1527,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         line = '[{}] {}'.format(message_time, message)
         safe_scope['DFF'].log_messages.append(line)
 
-    def _plot(self, safe_scope, ts_data):
-        # TODO
-        pass
-
     def _print(self, safe_scope, *args, **kwargs):
         if safe_scope.get('_DFF_DEBUG'):
             print(*args, **kwargs)
@@ -1655,8 +1685,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             return eval(expression, *args, **kwargs)
 
-        def __get_resource_path(file_path):
-            return os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file_path)
+        def __get_resource_path(file):
+            file = file.lstrip('/')
+            return os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file)
 
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
@@ -1678,6 +1709,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'call_func'    : __call_func,      # 调用函数（新Task）
             'eval'         : __eval,           # 执行Python表达式
             'format_sql'   : format_sql,       # 格式化SQL语句
+            'FuncResponse' : FuncResponse,     # 函数响应体
 
             'get_resource_file_path': __get_resource_path, # 获取资源路径
 
@@ -1701,6 +1733,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'ASYNC': __async_helper,
 
             'RSRC': __get_resource_path,
+
+            'RESP': FuncResponse,
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源

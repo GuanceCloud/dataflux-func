@@ -774,8 +774,9 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     onResultCallback = function(celeryErr, celeryRes, extraInfo) {
       /* 此处有celeryErr也不能立刻callback，需要经过统计处理后再将错误抛出 */
 
-      var isCached = false;
-      var ret      = null;
+      var isCached        = false;
+      var ret             = null;
+      var responseControl = null;
 
       async.series([
         // 结果处理
@@ -821,33 +822,17 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
             }));
           }
 
-          var result = celeryRes.retval;
-          if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
-            result = result[funcCallOptions.returnType];
-
-            if (toolkit.isNullOrUndefined(result)) {
-              result = null;
-            }
-          }
-
-          if (funcCallOptions.saveResult) {
-            var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
-
-            ret = toolkit.initRet({
-              result   : result,
-              taskId   : celeryRes.id,
-              resultURL: resultURL,
-            });
-
-          } else {
-            ret = toolkit.initRet({
-              result: result,
-            });
-          }
-
           // 缓存结果标记
-          if (celeryRes.id === 'CACHED') {
-            isCached = true
+          isCached = celeryRes.id === 'CACHED';
+
+          // 提取响应控制
+          responseControl = celeryRes.retval._responseControl;
+
+          // 准备API返回值
+          ret = toolkit.initRet({ result: celeryRes.retval });
+          if (funcCallOptions.saveResult) {
+            ret.taskId    = celeryRes.id;
+            ret.resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
           }
 
           return asyncCallback();
@@ -908,7 +893,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
         }
 
         /* 2. 最终回调 */
-        return callback(err, ret, isCached);
+        return callback(err, ret, isCached, responseControl);
       });
     };
 
@@ -1013,17 +998,85 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
   }
 };
 
-function _doAPIResponse(locals, res, ret, isCached, unfold) {
+function _doAPIResponse(locals, res, ret, options, callback) {
+  options = options || {};
+
+  var funcCallOptions = options.funcCallOptions || {};
+  var responseControl = options.responseControl || {};
+
   // 缓存标记
-  if (res && isCached) {
+  if (options.isCached) {
     res.set('X-Result-Cache', 'Cached');
   }
 
-  // 展开结果
-  if (unfold) {
-    return locals.sendRaw(ret.data.result);
+  // 响应控制（304缓存）
+  if (responseControl.no304) {
+    res.set('Last-Modified', (new Date()).toUTCString());
+  }
+
+  // 响应控制（状态码）
+  if (responseControl.statusCode) {
+    res.status(responseControl.statusCode);
+  }
+
+  // 响应控制（响应头）
+  if (responseControl.headers) {
+    res.set(responseControl.headers);
+  }
+
+  if (responseControl.file) {
+    // 响应控制（下载文件）
+    var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, responseControl.file);
+
+    fs.readFile(filePath, function(err, buffer) {
+      if (err) return callback(err);
+
+      var fileName = filePath.split('/').pop();
+      var fileType = fileName.split('.').pop();
+
+      if (!responseControl.downloadFile) {
+        // 非下载时，不指定文件名
+        fileName = null;
+      }
+
+      locals.sendFile(buffer, fileType, fileName);
+
+      if (responseControl.deleteFile) {
+        fs.remove(filePath);
+      }
+
+      return;
+    });
+
   } else {
-    return locals.sendJSON(ret);
+    // 响应控制（返回数据）
+
+    // 响应控制（返回类型Content-Type）
+    if (responseControl.contentType) {
+      res.type(responseControl.contentType);
+
+      // 当指定了响应体类型后，必须提取raw且解包
+      funcCallOptions.returnType = 'raw';
+      funcCallOptions.unfold     = true;
+    }
+
+    // 选择返回类型
+    if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
+      ret.data.result = ret.data.result[funcCallOptions.returnType];
+
+      if (toolkit.isNullOrUndefined(ret.data.result)) {
+        ret.data.result = null;
+      }
+    }
+
+    // 解包
+    if (funcCallOptions.unfold) {
+      // 需要解包时，发送数据类型不确定
+      return locals.sendRaw(ret.data.result);
+    } else {
+      // 不解包时，必然是JSON
+      return locals.sendJSON(ret);
+    }
   }
 }
 
@@ -1239,10 +1292,15 @@ exports.callFunc = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached, responseControl) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+      var _opt = {
+        isCached       : isCached,
+        funcCallOptions: funcCallOptions,
+        responseControl: responseControl,
+      }
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -1378,10 +1436,15 @@ exports.callAuthLink = function(req, res, next) {
       return next(err);
     }
 
-    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached, responseControl) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+      var _opt = {
+        isCached       : isCached,
+        funcCallOptions: funcCallOptions,
+        responseControl: responseControl,
+      }
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -1482,7 +1545,8 @@ exports.callBatch = function(req, res, next) {
     _callFuncRunner(res.locals, funcCallOptions, function(err, ret) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret);
+      var _opt = null;
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -2237,7 +2301,9 @@ exports.downloadResources = function(req, res, next) {
 };
 
 exports.uploadResource = function(req, res, next) {
-
+  console.log(req.files)
+  console.log(req.body)
+  res.locals.sendJSON({})
 };
 
 var OPERATION_MAP = {

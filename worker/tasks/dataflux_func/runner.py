@@ -26,6 +26,7 @@ from worker.tasks import BaseResultSavingTask
 from worker.tasks import BaseTask
 from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
+from worker.tasks.dataflux_func import FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -323,8 +324,8 @@ def dataflux_func_runner(self, *args, **kwargs):
     http_request = kwargs.get('httpRequest') or {}
 
     # 函数结果、上下文
-    save_result = kwargs.get('saveResult') or False
-    func_result  = None
+    save_result  = kwargs.get('saveResult') or False
+    func_resp    = None
     script_scope = None
 
     is_succeeded = False
@@ -389,7 +390,12 @@ def dataflux_func_runner(self, *args, **kwargs):
 
         # 执行函数
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
-        func_result = entry_func(**func_call_kwargs)
+        func_resp = entry_func(**func_call_kwargs)
+        if not isinstance(func_resp, FuncResponse):
+            func_resp = FuncResponse(data=func_resp)
+
+        if isinstance(func_resp.data, Exception):
+            raise func_resp.data
 
     except Exception as e:
         is_succeeded = False
@@ -432,19 +438,19 @@ def dataflux_func_runner(self, *args, **kwargs):
         func_result_json_dumps = None
 
         try:
-            func_result_raw = toolkit.json_safe_copy(func_result)
+            func_result_raw = func_resp.data
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
         try:
-            func_result_repr = pprint.saferepr(func_result)
+            func_result_repr = pprint.saferepr(func_resp.data)
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
         try:
-            func_result_json_dumps = toolkit.json_safe_dumps(func_result)
+            func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
@@ -453,6 +459,8 @@ def dataflux_func_runner(self, *args, **kwargs):
             'raw'      : func_result_raw,
             'repr'     : func_result_repr,
             'jsonDumps': func_result_json_dumps,
+
+            '_responseControl': func_resp._create_response_control()
         }
 
         # 记录函数运行结果
