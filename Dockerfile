@@ -44,14 +44,14 @@ RUN wget -q $RESOURCE_BASE_URL/$NODE_PKG && \
 # Install requirements
 WORKDIR /usr/src/base
 COPY package.json package-lock.json requirements.txt requirements-extra.txt ./
-RUN npm install --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
+RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
         pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements.txt && \
         pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements-extra.txt
 
 # Install requirements (client)
 WORKDIR /usr/src/base/client
 COPY client/package.json client/package-lock.json ./
-RUN npm install --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
+RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
 
 # Build project
 WORKDIR /usr/src/app
