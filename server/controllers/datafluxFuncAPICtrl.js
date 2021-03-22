@@ -2306,133 +2306,98 @@ exports.uploadResource = function(req, res, next) {
   res.locals.sendJSON({})
 };
 
-var OPERATION_MAP = {
-  newFolder: 'mkdir',
-  zip      : 'zip',
-  unzip    : 'unzip',
-  copy     : 'cp',
-  rename   : 'mv',
-  move     : 'mv',
-  delete   : 'rm',
-}
-function replacePathTail(originPath, newName) {
-  originPath = originPath.trim();
-
-  if (toolkit.endsWith(originPath, '/')) {
-    originPath = originPath.slice(0, -1);
-  }
-
-  var pathParts = originPath.split('/').slice(0, -1);
-  if (newName) {
-    pathParts.push(newName);
-  }
-
-  var newPath = pathParts.join('/');
-  return newPath;
-};
-
 exports.operateResource = function(req, res, next) {
-  var filePath  = req.body.filePath;
-  var operation = req.body.operation;
+  var targetPath        = req.body.targetPath;
+  var operation         = req.body.operation;
+  var operationArgument = req.body.operationArgument;
 
-  var absPath     = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
-  var currentPath = replacePathTail(absPath);
-  var fileName    = filePath.split('/').pop();
+  var targetName    = targetPath.split('/').pop();
+  var targetAbsPath = path.join(CONFIG.RESOURCE_ROOT_PATH, targetPath);
+  var currentAbsDir = toolkit.replacePathEnd(targetAbsPath);
 
   // 防止访问外部文件夹
-  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+  if (!toolkit.startsWith(targetAbsPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
     return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder.'))
   }
 
   // 检查操作对象存在性
-  if (!fs.existsSync(absPath)) {
-    return next(new E('EBizCondition', 'File or folder not exists.'))
-  }
-
-  // 检查/准备参数
-  var cmd = OPERATION_MAP[operation];
-  var cmdArgs = null;
-
-  if (!cmd) {
-    return next(new E('EClientUnsupported', 'Unsupported resource operation(1).'))
-  }
-
   switch(operation) {
-    case 'newFolder':
-      var newFolderName = req.query.operationArgument;
-      if (newFolderName.indexOf('/') >= 0) {
-        return next(new E('EClientBadRequest', 'Please specifiy new folder name, not path.'))
-      }
-      if (!newFolderName) {
-        return next(new E('EClientBadRequest', 'New folder name not specified.'))
-      }
-
-      cmdArgs = [newFolderName];
-      break;
-
     case 'zip':
-      var zipFileName = fileName + '.zip';
-      if (fs.existsSync(zipFileName)) {
-        return next(new E('EBizCondition', 'Specified zip file is already exists.'))
-      }
-
-      cmdArgs = ['-r', zipFileName, fileName];
-      break;
-
     case 'unzip':
-      cmdArgs = [fileName];
-      break;
-
-    case 'copy':
-    case 'rename':
-      var newName = req.query.operationArgument;
-      if (newName.indexOf('/') >= 0) {
-        return next(new E('EClientBadRequest', 'Please specifiy new name, not path.'))
+    case 'cp':
+    case 'mv':
+    case 'rm':
+      // 要求存在
+      if (!fs.existsSync(targetAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('File or folder not exists: {0}', targetName)));
       }
-      if (!newName) {
-        return next(new E('EClientBadRequest', 'New name not specified.'))
-      }
-
-      var newPath = replacePathTail(absPath, newName);
-      var newFolder = replacePathTail(newPath);
-      fs.ensureDirSync(newFolder);
-
-      if (fs.existsSync(newPath)) {
-        return next(new E('EBizCondition', 'Specified new file or folder name is already exists.'))
-      }
-
-      cmdArgs = [absPath, newPath];
-      break;
-
-    case 'move':
-      var newPath = req.query.operationArgument;
-      if (!newPath) {
-        return next(new E('EClientBadRequest', 'New path not specified.'))
-      }
-
-      var newFolder = replacePathTail(newPath);
-      fs.ensureDirSync(newFolder);
-
-      if (fs.existsSync(newPath)) {
-        return next(new E('EBizCondition', 'Specified new file or folder path is already exists.'))
-      }
-
-      cmdArgs = [absPath, newPath];
-      break;
-
-    case 'delete':
-      cmdArgs = ['-rf', absPath]
       break;
 
     default:
-      return next(new E('EClientUnsupported', 'Unsupported resource operation(2).'))
+      // 要求不存在
+      if (fs.existsSync(targetAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('File or folder already exists: {0}', targetName)));
+      }
       break;
   }
 
-  console.log(cmd, cmdArgs.join(' '))
-  var opt = {
-    cwd: currentPath,
+  // 检查/准备参数
+  var cmd     = operation;
+  var cmdArgs = null;
+  switch(operation) {
+    case 'mkdir':
+      cmdArgs = ['-p', targetName];
+      break;
+
+    case 'zip':
+      var zipFileName = targetName + '.zip';
+
+      var zipFileAbsPath = path.join(currentAbsDir, zipFileName);
+      if (fs.existsSync(zipFileAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('Zip file is already exists: {0}', zipFileName)));
+      }
+
+      cmdArgs = ['-r', zipFileName, targetName]; // 在当前目录执行
+      break;
+
+    case 'unzip':
+      var unzipDestName = targetName.replace(/\.zip$/g, '');
+      var unzipDestAbsPath = toolkit.replacePathEnd(targetAbsPath, unzipDestName);
+
+      if (fs.existsSync(unzipDestAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('Unzip destination is already exists: {0}', unzipDestName)));
+      }
+
+      cmdArgs = [targetName];
+      break;
+
+    case 'cp':
+    case 'mv':
+      var newName = operationArgument;
+      var newAbsPath = newName[0] === '/'
+                     ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
+                     : path.join(currentAbsDir, newName);
+
+      if (fs.existsSync(newAbsPath)) {
+        return next(new E('EBizCondition', 'Specified new file or folder name is already exists.'))
+      }
+
+      var parentAbsDir = toolkit.replacePathEnd(newAbsPath);
+      fs.ensureDirSync(parentAbsDir);
+
+      cmdArgs = [targetAbsPath, newAbsPath];
+      break;
+
+    case 'rm':
+      cmdArgs = ['-rf', targetAbsPath]
+      break;
+
+    default:
+      return next(new E('EClientUnsupported', 'Unsupported resource operation.'))
+      break;
   }
+
+  var opt = { cwd: currentAbsDir };
   childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
     if (err) return next(err);
     return res.locals.sendJSON();

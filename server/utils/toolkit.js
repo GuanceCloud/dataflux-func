@@ -1511,6 +1511,29 @@ var getExt = toolkit.getExt = function getExt(fileName) {
 };
 
 /**
+ * Replace the path end
+ *
+ * @param  {String} originPath - Origin path
+ * @param  {String} newName    - new name
+ * @return {String}
+ */
+var replacePathEnd = toolkit.replacePathEnd = function replacePathEnd(originPath, newName) {
+  originPath = originPath.trim();
+
+  if (toolkit.endsWith(originPath, '/')) {
+    originPath = originPath.slice(0, -1);
+  }
+
+  var pathParts = originPath.split('/').slice(0, -1);
+  if (newName) {
+    pathParts.push(newName);
+  }
+
+  var newPath = pathParts.join('/');
+  return newPath;
+};
+
+/**
  * Generate RexExp from wildcard.
  *
  * @param  {String} pattern

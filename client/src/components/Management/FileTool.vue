@@ -2,6 +2,7 @@
 File Tool  : 文件工具
 Go Top     : 返回顶层
 Go Up      : 向上
+New Folder : 新建文件夹
 'Path:'    : 路径：
 Folder     : 文件夹
 File       : 文件
@@ -14,10 +15,13 @@ Download   : 下载
 More       : 更多
 Zip        : 压缩
 Unzip      : 解压
+Move       : 移动
+Copy       : 复制
 Delete     : 删除
 
-Are you sure you want to delete the following file?: 是否确定删除此文件？
-Delete file                                        : 删除文件
+Please input destination path                         : 请输入目标路径
+Are you sure you want to delete the following content?: 是否确定删除此内容？
+Delete file                                           : 删除文件
 </i18n>
 
 <template>
@@ -27,11 +31,30 @@ Delete file                                        : 删除文件
       <el-header height="60px">
         <h1>
           {{ $t('File Tool') }}
+
           &#12288;
           <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="mini">
             <i class="fa fa-fw fa-arrow-up"></i>
             {{ $t('Go Up') }}
           </el-button>
+
+          <el-popover placement="top" width="240" v-model="showMkdirPopover">
+            <div class="popover-input">
+              <el-row>
+                <el-col :span="20">
+                  <el-input size="mini" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+                </el-col>
+                <el-col :span="4">
+                  <el-button size="mini" type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
+                </el-col>
+              </el-row>
+            </div>
+            <el-button slot="reference" size="mini">
+              <i class="fa fa-fw fa-plus"></i>
+              {{ $t('New Folder') }}
+            </el-button>
+          </el-popover>
+
           &#12288;
           <code class="resource-navi" v-if="folder !== '/'">
             <small>{{ $t('Path:') }}</small>
@@ -53,8 +76,10 @@ Delete file                                        : 删除文件
       </el-header>
 
       <!-- 列表区 -->
-      <el-main>
-        <el-table class="common-table" :data="files">
+      <el-main class="common-table-container">
+        <el-table
+          class="common-table" height="100%"
+          :data="files">
           <el-table-column :label="$t('Name')" sortable sort-by="name">
             <template slot-scope="scope">
               <el-button v-if="scope.row.type === 'folder'"
@@ -108,14 +133,16 @@ Delete file                                        : 删除文件
                   target="_blank">{{ $t('Download') }}</el-link>
               </template>
 
-              <el-dropdown @command="resourceOperation" class="list-button">
+              <el-dropdown @command="resourceOperationCmd" class="list-button">
                 <el-button type="text" size="small">
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item v-if="scope.row.ext === 'zip'" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
                   <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
-                  <el-dropdown-item :command="{ data: scope.row, operation: 'delete' }">{{ $t('Delete') }}</el-dropdown-item>
+                  <el-dropdown-item :command="{ data: scope.row, operation: 'cp' }">{{ $t('Copy') }}</el-dropdown-item>
+                  <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">{{ $t('Move') }}</el-dropdown-item>
+                  <el-dropdown-item :command="{ data: scope.row, operation: 'rm' }">{{ $t('Delete') }}</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </template>
@@ -235,19 +262,42 @@ export default {
         }
       }
     },
-    async resourceOperation(options) {
-      let name              = options.data.name;
-      let operation         = options.operation;
-      let operationArgument = options.operationArgument;
+    async resourceOperationCmd(options){
+      if (!options) return;
 
+      let name      = options.data.name;
+      let operation = options.operation;
+
+      return await this.resourceOperation(name, operation)
+    },
+    async resourceOperation(name, operation) {
       // 处理前操作
+      let promptRes = null;
       try {
         switch(operation) {
-          case 'delete':
-            await this.$confirm(`${this.$t('Are you sure you want to delete the following file?')}
-                <br><code>${name}</code>`, this.$t('Delete file'),  {
+          case 'cp':
+            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Copy'), {
+              inputValue: `${name} copy`,
               dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Delete file'),
+              confirmButtonText: this.$t('Copy'),
+              cancelButtonText: this.$t('Cancel'),
+            });
+            break;
+
+          case 'mv':
+            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Move'), {
+              inputValue: name,
+              dangerouslyUseHTMLString: true,
+              confirmButtonText: this.$t('Move'),
+              cancelButtonText: this.$t('Cancel'),
+            });
+            break;
+
+          case 'rm':
+            await this.$confirm(`${this.$t('Are you sure you want to delete the following content?')}
+                <br><code>${name}</code>`, this.$t('Delete'),  {
+              dangerouslyUseHTMLString: true,
+              confirmButtonText: this.$t('Delete'),
               cancelButtonText: this.$t('Cancel'),
               type: 'warning',
             });
@@ -259,25 +309,26 @@ export default {
       }
 
       // 执行操作
-      var filePath  = this.getPath(name);
       let apiRes = await this.T.callAPI('post', '/api/v1/resources/operate', {
-        body : { filePath: filePath, operation: operation },
+        body : {
+          targetPath       : this.getPath(name),
+          operation        : operation,
+          operationArgument: promptRes ? promptRes.value : undefined,
+        },
         alert: { showError: true },
       });
       if (!apiRes.ok) return;
 
       // 处理后操作
       switch(operation) {
-        case 'newFolder':
-          await this.enterFolder(operationArgument);
+        case 'mkdir':
+          this.showMkdirPopover = false;
+          this.mkdirName        = '';
+
+          await this.enterFolder(name);
           break;
 
-        case 'zip':
-        case 'unzip':
-        case 'copy':
-        case 'rename':
-        case 'move':
-        case 'delete':
+        default:
           await this.loadData();
           break;
       }
@@ -292,6 +343,9 @@ export default {
       folder: '/',
 
       files: [],
+
+      showMkdirPopover: false,
+      mkdirName       : '',
     }
   },
 }
@@ -301,6 +355,9 @@ export default {
 .resource-navi .el-button {
   margin-left: 0 !important;
   padding: 5px 5px !important;
+}
+.popover-input {
+  text-align: center;
 }
 </style>
 

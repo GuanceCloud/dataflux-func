@@ -1823,8 +1823,8 @@ datafluxFuncAPI:
     requireSignIn: true
     privilege    : general_r
     body:
-      filePath:
-        $desc    : 文件路径
+      targetPath:
+        $desc    : 操作目标路径（文件/目录）
         $required: true
         $type    : string
       operation:
@@ -1832,15 +1832,14 @@ datafluxFuncAPI:
         $required: true
         $type    : enum
         $in:
-          - newFolder
+          - mkdir
           - zip
           - unzip
-          - copy
-          - rename
-          - move
-          - delete
+          - cp
+          - mv
+          - rm
       operationArgument:
-        $desc    : 执行操作参数（`folder`为新文件夹名；`copy`, `rename`操作为新文件名；`move`操作为新路径）
+        $desc    : 执行操作参数
         $required: false
         $type    : string
 
