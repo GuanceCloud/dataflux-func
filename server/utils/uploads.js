@@ -102,10 +102,10 @@ module.exports = function(options) {
       var fileInfo = {
         fieldname   : fieldname,
         originalname: filename,
+        filename    : tmpFileName,
         encoding    : encoding,
         mimetype    : mimetype,
         size        : 0,
-        filename    : tmpFileName,
         data        : null,
       }
 
