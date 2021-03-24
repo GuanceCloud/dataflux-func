@@ -12,6 +12,7 @@ var LRU        = require('lru-cache');
 var yaml       = require('js-yaml');
 var sortedJSON = require('sorted-json');
 var request    = require('request');
+var moment     = require('moment');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -231,6 +232,24 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
 
   // 函数参数
   funcCallOptions.funcCallKwargs = funcCallKwargs;
+
+  // 文件上传参数
+  if (req.files && req.files.length > 0) {
+    funcCallOptions.funcCallKwargs.files = req.files.map(function(file) {
+      // 文件保存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
+      var timestampStr = toolkit.strf('{0}_{1}', moment.utc().format('YYYYMMDDHHmmss'), toolkit.genRandString(6));
+      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._FUNC_UPLOAD_DIR, timestampStr, file.originalname);
+      fs.outputFileSync(filePath, file.data);
+
+      return {
+        filePath    : filePath,
+        originalname: file.originalname,
+        encoding    : file.encoding,
+        mimetype    : file.mimetype,
+        size        : file.size,
+      }
+    });
+  }
 
   // 来源
   funcCallOptions.origin = origin;

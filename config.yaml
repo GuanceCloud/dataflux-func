@@ -50,7 +50,7 @@ DB_AUTO_BACKUP_LIMIT: 168
 
 # 数据库自动备份目录
 # 必须使用绝对路径
-DB_AUTO_BACKUP_DIR: '/data/sqldump/'
+DB_AUTO_BACKUP_PATH: '/data/sqldump/'
 
 # 日志输出格式
 # 可选：
@@ -112,7 +112,7 @@ DING_TALK_ROBOT_URL   : ''
 DING_TALK_ROBOT_SECRET: ''
 
 # 文件存储根目录
-FILE_STORE_ROOT_FOLDER: uploaded-files
+FILE_STORE_ROOT_DIR: uploaded-files
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
@@ -133,6 +133,9 @@ _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
 
 # 脚本包自动安装锁定时间
 _FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 300
+
+# API调用时上传文件临时目录
+_FUNC_UPLOAD_DIR: uploads
 
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''
@@ -268,6 +271,7 @@ _DBDATA_TABLE_LIMIT_MAP: >
   ,biz_main_script_set_export_history=1000
   ,biz_main_script_set_import_history=1000
   ,biz_main_script_publish_history=1000
+_UPLOAD_FILE_EXPIRES: 3600
 
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
