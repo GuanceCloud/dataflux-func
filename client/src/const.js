@@ -273,7 +273,7 @@ export default {
           user         : { default: null },
           password     : { default: null },
           clientId     : { default: null },
-          topicHandlers: { default: [{ topic: '$share/dataflux_func/#', funcId: null }] },
+          topicHandlers: { default: [{ topic: '$share/GROUP/TOPIC', funcId: null }] },
         },
       },
     ];

@@ -74,6 +74,10 @@ var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
 function _getHTTPRequestInfo(req) {
+  if (req.path === 'FAKE') {
+    return toolkit.jsonCopy(req);
+  }
+
   // 请求体
   var useragent = toolkit.jsonCopy(req.useragent);
   delete useragent.source;
@@ -130,150 +134,14 @@ function _getFuncById(locals, funcId, callback) {
   });
 };
 
-function _createFuncCallOptionsFromOptions(options, func, callback) {
-  // 注意：
-  //  本函数内所有搜集的时长类数据均为秒
-  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
-
-  func.extraConfigJSON = func.extraConfigJSON || {};
-
-  var funcCallOptions = toolkit.jsonCopy(options);
-
-  /*** 开始组装参数 ***/
-
-  // 函数ID
-  funcCallOptions.funcId = func.id;
-
-  // 函数信息（用于函数结果缓存）
-  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
-  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
-
-  // 函数参数
-  funcCallOptions.funcCallKwargs = options.funcCallKwargs;
-
-  // 来源
-  funcCallOptions.origin = 'direct';
-
-  // 来源ID
-  funcCallOptions.originId = options.originId || null;
-
-  // API超时（优先级：调用时指定 > 函数配置 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
-    funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
-
-    if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
-    }
-    if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
-    }
-
-  } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
-    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
-
-  } else {
-    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions, callback) {
+  var fakeReq = {
+    path  : 'FAKE',
+    method: 'FAKE',
+    params: { },
+    body  : {kwargs: funcCallKwargs, options: funcCallOptions },
   }
-
-  // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.timeout)) {
-    funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
-
-    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
-    }
-
-  } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
-    funcCallOptions.timeout = func.extraConfigJSON.timeout;
-
-  } else {
-    funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
-  }
-
-  // 执行模式（优先级：调用时指定 > 默认值）
-  funcCallOptions.execMode = funcCallOptions.execMode || 'sync';
-
-  // 同步调用时，函数执行超时不得大于API超时
-  //    超出时，函数执行超时自动跟随API超时
-  if (funcCallOptions.execMode === 'sync') {
-    if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
-      funcCallOptions.timeout = funcCallOptions.apiTimeout;
-    }
-  }
-
-  // 【固定】函数任务过期
-  funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
-
-  // 是否永不过期
-  if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
-    funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
-  } else {
-    funcCallOptions.neverExpire = false;
-  }
-
-  // 返回类型（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.returnType)) {
-    var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
-    if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
-    }
-
-  } else {
-    funcCallOptions.returnType = 'raw';
-  }
-
-  // 结果保存（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.saveResult)) {
-    funcCallOptions.saveResult = !!funcCallOptions.saveResult;
-  } else {
-    funcCallOptions.saveResult = false;
-  }
-
-  // 结果拆包（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.unfold)) {
-    funcCallOptions.unfold = !!funcCallOptions.unfold;
-
-  } else {
-    funcCallOptions.unfold = true;
-  }
-
-  // 预约执行
-  if (!toolkit.isNothing(funcCallOptions.eta)) {
-    if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
-    }
-  }
-
-  // 执行队列（优先级：函数配置 > 默认值）
-  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
-    var queueNumber = parseInt(func.extraConfigJSON.queue);
-    if (queueNumber < 1 || queueNumber > 9) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
-    }
-
-    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
-
-  } else {
-    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
-  }
-
-  // 触发时间
-  funcCallOptions.triggerTimeMs = Date.now();
-  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
-
-  // 结果缓存
-  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
-    if (!func.extraConfigJSON.cacheResult) {
-      funcCallOptions.cacheResult = false;
-    } else {
-      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
-    }
-  }
-
-  // HTTP请求信息
-  funcCallOptions.httpRequest = null;
-
-  return callback(null, funcCallOptions);
+  return _createFuncCallOptionsFromRequest(fakeReq, func, callback);
 };
 
 function _createFuncCallOptionsFromRequest(req, func, callback) {

@@ -3,19 +3,19 @@ codeLines: '{n} line | {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                                     : 脚本设置
-'Other user are editing this Script, please wait...'             : '其他用户正在编辑此脚本，请稍后...'
-'Shortcut:'                                                      : 快捷键：
-Select Func                                                      : 选择聚焦函数
-Draft                                                            : 草稿
-Published                                                        : 已发布
-DIFF                                                             : 差异
-Download {type}                                                  : 下载{type}
-Setup Code Editor                                                : 调整编辑器显示样式
-This is a builtin Script, code will be reset when system restarts: 这是一个内置脚本，代码会在系统重启后复位
-This Script has been locked by other, editing is disabled        : 当前脚本被其他用户锁定，无法修改
-Currently in view mode, click Edit button to enter edit mode     : 当前为查看模式，点击「编辑」按钮进入编辑模式
-View Mode                                                        : 查看模式
+Script Setup                                                         : 脚本设置
+'Other user are editing this Script, please wait...'                 : '其他用户正在编辑此脚本，请稍后...'
+'Shortcut:'                                                          : 快捷键：
+Select Func                                                          : 选择聚焦函数
+Draft                                                                : 草稿
+Published                                                            : 已发布
+DIFF                                                                 : 差异
+Download {type}                                                      : 下载{type}
+Setup Code Editor                                                    : 调整编辑器显示样式
+This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
+This Script has been locked by other, editing is disabled            : 当前脚本被其他用户锁定，无法修改
+Currently in view mode, click Edit button to enter edit mode         : 当前为查看模式，点击「编辑」按钮进入编辑模式
+View Mode                                                            : 查看模式
 
 Published Code  : 已发布的代码
 Saved Draft Code: 已保存的草稿代码
@@ -101,7 +101,7 @@ Saved Draft Code: 已保存的草稿代码
           </el-form>
         </div>
 
-        <InfoBlock v-if="scriptSet.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when system restarts')"></InfoBlock>
+        <InfoBlock v-if="scriptSet.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
         <InfoBlock v-else-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
         <InfoBlock v-else type="warning" :title="$t('Currently in view mode, click Edit button to enter edit mode')"></InfoBlock>
       </el-header>

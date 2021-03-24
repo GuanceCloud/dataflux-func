@@ -1266,7 +1266,6 @@ datafluxFuncAPI:
     url          : /api/v1/al/:id
     response     : json
     requireSignIn: false
-    privilege    : general_r
     params:
       id:
         $desc: 授权链接ID
@@ -1323,7 +1322,6 @@ datafluxFuncAPI:
     url          : /api/v1/al/:id/:format
     response     : json
     requireSignIn: false
-    privilege    : general_r
     params:
       id:
         $desc: 授权链接ID
@@ -1397,6 +1395,8 @@ datafluxFuncAPI:
       }
       ```
 
+      *注意：本格式不支持上传文件*
+
       - 扁平格式 `flattened`
 
       ```http
@@ -1407,6 +1407,7 @@ datafluxFuncAPI:
       ```
 
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
+      *注意2：当上传文件时，需要指定`Content-Type: multipart/form-data`*
 
       - 简化格式 `simplified`
 
@@ -1419,12 +1420,13 @@ datafluxFuncAPI:
       ```
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
       *注意2：本格式不支持标准格式中的`options`参数*
+      *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
+      ```
 
     method       : post
     url          : /api/v1/al/:id/:format
     response     : json
     requireSignIn: false
-    privilege    : general_r
     params:
       id:
         $desc: 授权链接ID
@@ -1435,6 +1437,11 @@ datafluxFuncAPI:
         $in:
           - flattened
           - simplified
+          - upload
+    files:
+      $limitSize: 500M
+      $allowedTypes:
+        - '*/*'
 
   callBatchByGet:
     showInDoc    : true
