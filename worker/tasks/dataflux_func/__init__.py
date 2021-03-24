@@ -101,9 +101,10 @@ CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
 
 # 添加额外import路径
-extra_import_path = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH')
-if extra_import_path:
-    sys.path.append(extra_import_path)
+python_package_install_path = os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('EXTRA_PYTHON_PACKAGE_INSTALL_DIR'))
+print(python_package_install_path)
+if python_package_install_path:
+    sys.path.append(python_package_install_path)
 
 resource_path = CONFIG.get('RESOURCE_ROOT_PATH')
 if resource_path:

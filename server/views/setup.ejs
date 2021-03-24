@@ -6,7 +6,7 @@
       type      : 'string',
       input     : 'password',
       inputAttrs: 'minlength="8" maxlength="20"',
-      tips      : '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改',
+      tips      : '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改<br><span class="text-important">多部署时必须保证各副本一致<span>',
     },
 
     {
@@ -24,14 +24,6 @@
         { name: 'ALL（全部输出）', value: 'ALL'     },
       ],
     },
-    // 容易误导，不展示此选项
-    // {
-    //   name : '日志文件路径',
-    //   key  : 'LOG_FILE_PATH',
-    //   type : 'string',
-    //   input: 'text',
-    //   tips : '日志文件输出的容器内地址，如留空则日志不会输出到文件。',
-    // },
     {
       name : '日志文件格式',
       key  : 'LOG_FILE_FORMAT',
@@ -49,7 +41,7 @@
       key  : 'WEB_BASE_URL',
       type : 'string',
       input: 'url',
-      tips : '实际访问DataFlux Func 的完整URL地址，如：<code>http://my-dataflux-func.com:1234<code>',
+      tips : '访问DataFlux Func 的访问地址，如：<br><code>http://my-dataflux-func.com:1234</code><br>留空表示跟随浏览器实际访问地址',
     },
     {
       name : '访问方式',
@@ -76,7 +68,7 @@
       key     : 'MYSQL_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : 'DataFlux Func 所连接的MySQL数据库。可以为域名或IP地址，不含端口',
+      tips    : 'DataFlux Func 所连接的MySQL数据库。可以为域名或IP地址，不含端口<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'mysql',
     },
     {
@@ -85,7 +77,7 @@
       type      : 'integer',
       input     : 'number',
       inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : '默认一般为<code>3306</code>',
+      tips      : '默认一般为<code>3306</code><br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey  : 'mysql',
     },
     {
@@ -93,7 +85,7 @@
       key     : 'MYSQL_USER',
       type    : 'string',
       input   : 'text',
-      tips    : '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限',
+      tips    : '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'mysql',
     },
     {
@@ -101,7 +93,7 @@
       key     : 'MYSQL_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '上述MySQL用户的密码',
+      tips    : '上述MySQL用户的密码<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'mysql',
     },
     {
@@ -109,7 +101,7 @@
       key     : 'MYSQL_DATABASE',
       type    : 'string',
       input   : 'text',
-      tips    : '建议为DataFlux Func 创建专用数据库<code>dataflux_func</code>，不要和其他系统混用数据库。此外，数据库默认编码应设置为<code>utf8mb4</code>',
+      tips    : '建议为DataFlux Func 创建专用数据库<code>dataflux_func</code>，不要和其他系统混用数据库。此外，数据库默认编码应设置为<code>utf8mb4</code><br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'mysql',
     },
 
@@ -118,7 +110,7 @@
       key     : 'REDIS_HOST',
       type    : 'string',
       input   : 'text',
-      tips    : 'DataFlux Func 所连接的Redis数据库。可以为域名或IP地址，不含端口',
+      tips    : 'DataFlux Func 所连接的Redis数据库。可以为域名或IP地址，不含端口<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'redis',
     },
     {
@@ -127,7 +119,7 @@
       type      : 'integer',
       input     : 'number',
       inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : '默认一般为<code>6379</code>',
+      tips      : '默认一般为<code>6379</code><br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey  : 'redis',
     },
     {
@@ -135,7 +127,7 @@
       key     : 'REDIS_PASSWORD',
       type    : 'string',
       input   : 'password',
-      tips    : '如所连接的Redis不需要密码，此项请留空',
+      tips    : '如所连接的Redis不需要密码，此项请留空<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'redis',
     },
     {
@@ -143,7 +135,7 @@
       key     : 'REDIS_DATABASE',
       type    : 'integer',
       input   : 'text',
-      tips    : '建议为DataFlux Func 指定专用的数据库，不要和其他系统混用数据库',
+      tips    : '建议为DataFlux Func 指定专用的数据库，不要和其他系统混用数据库<br><span class="text-important">全自动部署时请勿修改</span>',
       errorKey: 'redis',
     },
 
@@ -407,14 +399,12 @@
         success: function(data, textStatus, jqXHR) {
           var $redirectTip = $('#redirectTip');
           var $redirectURL = $('#redirectURL');
-          if (reqBody.config.WEB_BASE_URL) {
-            $redirectTip.show();
-            $redirectURL.attr('href', reqBody.config.WEB_BASE_URL).text(reqBody.config.WEB_BASE_URL);
-          } else {
-            $redirectTip.hide();
-          }
 
-          var nextURL = jqXHR.responseJSON.redirect;
+          var baseURL = reqBody.config.WEB_BASE_URL || location.origin;
+          $redirectTip.show();
+          $redirectURL.attr('href', baseURL).text(baseURL);
+
+          var nextURL = jqXHR.responseJSON.redirect || location.origin;
           setInterval(function() {
             $.get('/api/v1/do/ping', function() {
               setTimeout(function() { location.href = nextURL }, 3 * 1000);
@@ -471,9 +461,6 @@
         $(document).scrollTop(goToTop);
       }
     });
-
-    // 自动填充"WEB_BASE_URL"
-    $('[config-key=WEB_BASE_URL]').val(location.origin);
   });
   </script>
 </html>

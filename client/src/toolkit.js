@@ -97,6 +97,11 @@ export function _switchToBuiltinAuth() {
   store.commit('switchToBuiltinAuth');
 };
 
+export function getBaseURL() {
+  let baseURL = store.getters.CONFIG('WEB_BASE_URL') || location.origin;
+  return baseURL;
+};
+
 export function getBrowserName() {
   var userAgent = navigator.userAgent.toLowerCase();
   var isOpera = userAgent.indexOf('opera') > -1;

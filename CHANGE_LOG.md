@@ -1,6 +1,6 @@
 # Change Log
 
-### dev
+### 1.0.57
 
 - 导出脚本集功能支持同时导出授权链接、自动触发配置、批处理
 - 优化UI展示
@@ -8,6 +8,13 @@
     - 部分内容提供英文版界面
 - 增加`reset-admin.py`脚本，用于重置admin用户密码（使用方式：`python reset-admin.py`）
 - 添加PIP工具，支持在UI界面安装Python包
+- 添加文件工具，支持在UI界面浏览等基本操作
+- 添加更多`DFF.*`功能
+    - `DFF.RSRC(...)`生成资源目录下文件的绝对路径
+    - `DFF.RESP(...)`生成自定义API返回结果
+- 导出的函数API支持自定义返回格式/内容（如返回html页面、下载文件等）
+- 导出的函数API支持文件上传
+- 调整额外安装第三方Python包的存放位置（现在为`{安装目录}/data/resources/extra-python-packages`）
 
 ### 1.0.55 ~ 1.0.56
 

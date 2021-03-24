@@ -8,10 +8,6 @@ PIP_REQUIREMENTS_FILE_PATH: '/data/requirements.txt'
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
 
-# 额外Python import 路径
-# 必须使用绝对路径
-EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
-
 # 资源文件根目录
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'
@@ -64,7 +60,7 @@ LOG_CONSOLE_COLOR: true
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
-WEB_BASE_URL      : http://127.0.0.1:8088
+WEB_BASE_URL      : ''
 WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
 # Web服务器绑定IP
@@ -113,6 +109,8 @@ DING_TALK_ROBOT_SECRET: ''
 
 # 文件存储根目录
 FILE_STORE_ROOT_DIR: uploaded-files
+# 额外Python 包安装目录
+EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false

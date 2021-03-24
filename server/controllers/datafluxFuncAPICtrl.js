@@ -1969,10 +1969,13 @@ exports.clearLogCacheTables = function(req, res, next) {
 
 // Python包
 exports.listInstalledPythonPackages = function(req, res, next) {
+  // Python包安装路径
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+
   var packageVersionMap = {};
 
   var BUILTIN_PACKAGE_CMD = 'pip freeze';
-  var EXTRA_PACKAGE_CMD   = BUILTIN_PACKAGE_CMD + toolkit.strf(' --path {0}', CONFIG.EXTRA_PYTHON_IMPORT_PATH);
+  var EXTRA_PACKAGE_CMD   = BUILTIN_PACKAGE_CMD + toolkit.strf(' --path {0}', packageInstallPath);
 
   var cmds = [EXTRA_PACKAGE_CMD, BUILTIN_PACKAGE_CMD]
   async.eachSeries(cmds, function(cmd, asyncCallback) {
@@ -2027,6 +2030,9 @@ exports.getPythonPackageInstallStatus = function(req, res, next) {
 };
 
 exports.installPythonPackage = function(req, res, next) {
+  // Python包安装路径
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+
   var pkg = req.body.pkg;
 
   // 安装状态缓存
@@ -2058,9 +2064,9 @@ exports.installPythonPackage = function(req, res, next) {
       var cmdArgs = [ '-rf'];
 
       // 读取需要删除的目录
-      fs.readdirSync(CONFIG.EXTRA_PYTHON_IMPORT_PATH).forEach(function(name) {
+      fs.readdirSync(packageInstallPath).forEach(function(name) {
         if (name === _pkg || toolkit.startsWith(name, _pkg) && toolkit.endsWith(name, '.dist-info')) {
-          cmdArgs.push(path.join(CONFIG.EXTRA_PYTHON_IMPORT_PATH, name));
+          cmdArgs.push(path.join(packageInstallPath, name));
         }
       })
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
@@ -2084,7 +2090,7 @@ exports.installPythonPackage = function(req, res, next) {
       var cmd = 'pip';
       var cmdArgs = [
         'install', '--no-cache-dir',
-        '-t', CONFIG.EXTRA_PYTHON_IMPORT_PATH,
+        '-t', packageInstallPath,
         '-i', 'https://mirrors.aliyun.com/pypi/simple/',
         pkg,
       ];
