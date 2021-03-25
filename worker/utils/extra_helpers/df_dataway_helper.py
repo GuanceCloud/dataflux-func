@@ -28,7 +28,7 @@ def get_config(c):
     })
 
 class DFDataWayHelper(object):
-    def __init__(self, logger, config, token=None, rp=None, *args, **kwargs):
+    def __init__(self, logger, config, token=None, rp=None, debug=False, *args, **kwargs):
         self.logger = logger
 
         if token:
@@ -36,6 +36,9 @@ class DFDataWayHelper(object):
 
         if rp:
             config['rp'] = rp
+
+        if debug:
+            config['debug'] = True
 
         self.config = config
         self.client = DataWay(**get_config(config))
