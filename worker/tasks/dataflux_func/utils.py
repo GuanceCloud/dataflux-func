@@ -781,6 +781,9 @@ class DataFluxFuncAutoCleanerTask(BaseTask):
         limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
 
         upload_dir = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], CONFIG['_FUNC_UPLOAD_DIR'])
+        if not os.path.exists(upload_dir):
+            return
+
         with os.scandir(upload_dir) as _iter:
             for entry in _iter:
                 if entry.name < limit_timestamp:
