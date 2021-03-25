@@ -1821,6 +1821,10 @@ datafluxFuncAPI:
     privilege    : general_w
     files:
       $allowedTypes: '*/*'
+    body:
+      folder:
+        $desc: 文件夹
+        $type: string
 
   operateResource:
     name         : 操作资源文件
@@ -2097,7 +2101,7 @@ scriptAPI:
     url          : /api/v1/scripts/:id/do/get
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_w
+    privilege    : general_r
     params:
       id:
         $desc: 脚本ID

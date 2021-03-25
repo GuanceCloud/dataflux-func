@@ -12,6 +12,7 @@ Create time: 创建时间
 Update time: 更新时间
 Enter      : 进入
 Download   : 下载
+Upload     : 上传
 More       : 更多
 Zip        : 压缩
 Unzip      : 解压
@@ -54,6 +55,20 @@ Delete file                                           : 删除文件
               {{ $t('New Folder') }}
             </el-button>
           </el-popover>
+
+<el-upload ref="upload"
+  :limit="2"
+  :multiple="false"
+  :auto-upload="false"
+  :show-file-list="false"
+  :http-request="handleUpload"
+  :on-change="onUploadFileChange"
+  action="">
+  <el-button size="mini">
+    <i class="fa fa-fw fa-cloud-upload"></i>
+    {{ $t('Upload') }}
+  </el-button>
+</el-upload>
 
           &#12288;
           <code class="resource-navi" v-if="folder !== '/'">

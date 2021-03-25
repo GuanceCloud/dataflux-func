@@ -46,7 +46,7 @@
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -215,10 +215,11 @@ export default {
     onUploadFileChange(file, fileList) {
       if (fileList.length > 1) fileList.splice(0, 1);
 
-      if (fileList.length > 0) {
-        this.showFilePreview(fileList[0].name);
-      } else {
+      this.disableUpload = (fileList.length <= 0);
+      if (this.disableUpload) {
         this.initFilePreview();
+      } else {
+        this.showFilePreview(fileList[0].name);
       }
     },
     goToHistory() {
@@ -248,7 +249,8 @@ export default {
       uploadAreaIconClass  : ['fa-cloud-upload'],
       uploadAreaIconText   : `将文件拖到此处，或<em>点击上传</em>`,
 
-      showConfirm: false,
+      disableUpload: true,
+      showConfirm  : false,
 
       checkResult: {},
 
@@ -261,6 +263,9 @@ export default {
   },
   created() {
     this.$store.commit('updateLoadStatus', true);
+  },
+  mounted() {
+    window.vmc = this;
   },
 }
 </script>

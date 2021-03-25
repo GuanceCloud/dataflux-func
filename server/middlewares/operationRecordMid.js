@@ -6,23 +6,30 @@
 var async = require('async');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var toolkit = require('../utils/toolkit');
+var E             = require('../utils/serverError');
+var yamlResources = require('../utils/yamlResources');
+var toolkit       = require('../utils/toolkit');
+
+var ROUTE  = yamlResources.get('ROUTE');
+var CONFIG = yamlResources.get('CONFIG');
 
 exports.prepare = function(req, res, next) {
-  if (res.locals.requestType !== 'api') return next();
-
-  if (!res.locals.routeConfig 
-      || (res.locals.routeConfig.privilege || '').split('_').pop() !== 'w') {
-    return next();
-  }
-
   // Query部分
   var reqQuery = null;
   try {
     if (!toolkit.isNothing(req.query)) {
       reqQuery = toolkit.jsonCopy(req.query);
+    }
+
+  } catch(err) {
+    res.locals.logger.logError(err);
+  }
+
+  // Params部分
+  var reqParams = null;
+  try {
+    if (!toolkit.isNothing(req.query)) {
+      reqParams = toolkit.jsonCopy(req.query);
     }
 
   } catch(err) {
@@ -62,7 +69,9 @@ exports.prepare = function(req, res, next) {
     clientId       : res.locals.clientId  || null,
     traceId        : res.locals.traceId   || null,
     reqMethod      : req.method,
+    reqRoute       : null,
     reqQueryJSON   : reqQuery,
+    reqParamsJSON  : null,
     reqBodyJSON    : reqBody,
     reqFileInfoJSON: reqFileInfo,
   };

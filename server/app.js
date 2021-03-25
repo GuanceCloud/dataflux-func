@@ -158,6 +158,8 @@ function startApplication() {
   // gzip
   app.use(require('compression')());
 
+  app.use(require('./middlewares/operationRecordMid').prepare);
+
   // Load routes
   require('./routers/indexAPIRouter');
   require('./routers/indexPageRouter');
@@ -183,7 +185,6 @@ function startApplication() {
   require('./routers/debugAPIRouter');
 
   /***** DataFlux Func *****/
-  app.use(require('./middlewares/operationRecordMid').prepare);
 
   require('./routers/datafluxFuncAPIRouter');
   require('./routers/datafluxFuncPageRouter');

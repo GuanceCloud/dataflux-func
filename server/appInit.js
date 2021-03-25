@@ -14,7 +14,21 @@ var yamlResources = require('./utils/yamlResources');
 var modelHelper   = require('./utils/modelHelper');
 var toolkit       = require('./utils/toolkit');
 
+var ROUTE  = yamlResources.get('ROUTE');
 var CONFIG = yamlResources.get('CONFIG');
+
+var API_FOR_W = {};
+for (var moduleName in ROUTE) {
+  if (!toolkit.endsWith(moduleName, 'API')) continue;
+
+  for (var apiName in ROUTE[moduleName]) {
+    var api = ROUTE[moduleName][apiName];
+
+    if (!api.privilege || !toolkit.endsWith(api.privilege, '_w')) continue;
+
+    API_FOR_W[api.url] = api.method.toUpperCase();
+  }
+}
 
 exports.convertJSONResponse = function(ret) {
   // Will disabled by `"X-Wat-Disable-Json-Response-Converting"` Header
@@ -255,51 +269,6 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 本功能废除
-  // 改用`python reset-admin.py`工具来重置管理员用户
-  // // 固定管理员账号密码
-  // if (process.env.RESET_ADMIN_USERNAME && process.env.RESET_ADMIN_PASSWORD) {
-  //   async.series([
-  //     function(asyncCallback) {
-  //       var lockKey   = toolkit.getCacheKey('lock', 'resetAdminPassword');
-  //       var lockValue = Date.now().toString();
-  //       var lockAge   = 30;
-
-  //       app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-  //         if (err) return asyncCallback(err);
-
-  //         if (!cacheRes) {
-  //           var e = new Error('Startup process is already launched.');
-  //           e.isWarning = true;
-  //           return asyncCallback(e);
-  //         }
-
-  //         return asyncCallback();
-  //       });
-  //     },
-  //     function(asyncCallback) {
-  //       var RESET_ADMIN_ID = 'u-admin';
-  //       var adminPasswordHash = toolkit.getSaltedPasswordHash(
-  //           RESET_ADMIN_ID, process.env.RESET_ADMIN_PASSWORD, CONFIG.SECRET);
-
-  //       var sql = toolkit.createStringBuilder();
-  //       sql.append('UPDATE wat_main_user');
-  //       sql.append('SET');
-  //       sql.append('   username     = ?');
-  //       sql.append('  ,passwordHash = ?');
-  //       sql.append('WHERE');
-  //       sql.append('  id = ?')
-
-  //       var sqlParams = [
-  //         process.env.RESET_ADMIN_USERNAME,
-  //         adminPasswordHash,
-  //         RESET_ADMIN_ID,
-  //       ];
-  //       app.locals.db.query(sql, sqlParams, asyncCallback);
-  //     },
-  //   ], printError);
-  // }
-
   // 自动导入脚本包
   if (!CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
     async.series([
@@ -388,71 +357,37 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
   /********** Content for YOUR project below **********/
 
   // 操作记录
-  if (res.locals._operationRecord) {
-    var operationRecordMod = require('./models/operationRecordMod');
+  var reqRoute              = req.route.path;
+  var operationRecord       = res.locals._operationRecord;
+  var shouldRecordOperation = true;
+  if (!operationRecord) {
+    // 未经过操作记录中间件
+    shouldRecordOperation = false;
 
-    // var EXCLUDE_ROUTE_PATTERNS = [
-    //   '*', '/', '/api',
-    //   '/api/v1/do/ping',
-    //   '/api/v1/func-list',
-    //   '/api/v1/func-tag-list',
-    //   '/api/v1/auth-link-func-list',
-    //   '/api/v1/func-system-config',
-    //   '/api/v1/upgrade-info',
-    //   '/api/v1/self-diagnose',
-    //   '/api/v1/python-packages/installed',
-    //   '/api/v1/python-packages/install-status',
-    //   '/api/v1/resources/dir',
-    //   '/api/v1/resources',
-    //   /\/do\/get$/g,
-    //   /\/do\/list$/g,
-    //   /^\/api\/v1\/func\//g,
-    //   /^\/api\/v1\/al\//g,
-    //   /^\/api\/v1\/bat\//g,
-    //   /^\/api\/v1\/func-draft\//g,
-    //   /^\/api\/v1\/func-result\//g,
-    //   /^\/api\/v1\/monitor\//g,
-    // ];
+  } else if (API_FOR_W[reqRoute] !== req.method.toUpperCase()) {
+    // 非写操作接口跳过
+    shouldRecordOperation = false;
 
-    var shouldRecordOperation = true;
-    var reqRoute = req.route.path;
-
+  } else if (reqRoute === ROUTE.scriptAPI.modify.url
+      && operationRecord.reqBodyJSON.data.codeDraft
+      && operationRecord.reqBodyJSON.prevCodeDraftMD5) {
     // 【特殊处理】由于脚本自动保存可能产生大量日志，因此忽略
-    if (reqRoute === '/api/v1/scripts/:id/do/modify'
-        && res.locals._operationRecord.reqBodyJSON.data.codeDraft
-        && res.locals._operationRecord.reqBodyJSON.prevCodeDraftMD5) {
-      shouldRecordOperation = false;
+    shouldRecordOperation = false;
+  }
 
-    // } else {
-    //   for (var i = 0; i < EXCLUDE_ROUTE_PATTERNS.length; i++) {
-    //     if ('string' === typeof EXCLUDE_ROUTE_PATTERNS[i]) {
-    //       if (EXCLUDE_ROUTE_PATTERNS[i] === reqRoute) {
-    //         shouldRecordOperation = false;
-    //       }
-
-    //     } else {
-    //       if (EXCLUDE_ROUTE_PATTERNS[i].exec(reqRoute)) {
-    //         shouldRecordOperation = false;
-    //       }
-    //     }
-    //   }
+  if (shouldRecordOperation) {
+    var reqParams = null;
+    if (!toolkit.isNothing(req.params)) {
+      reqParams = toolkit.jsonCopy(req.params);
     }
 
-    if (shouldRecordOperation) {
-      var reqParams = null;
-      if (!toolkit.isNothing(req.params)) {
-        reqParams = toolkit.jsonCopy(req.params);
-      }
+    operationRecord.reqRoute      = reqRoute;
+    operationRecord.reqParamsJSON = reqParams;
+    operationRecord.reqCost       = reqCost;
 
-      res.locals._operationRecord.reqRoute      = reqRoute;
-      res.locals._operationRecord.reqParamsJSON = reqParams;
-      res.locals._operationRecord.reqCost       = reqCost;
+    operationRecord.respStatusCode = statusCode || 200;
+    operationRecord.respBodyJSON   = respType === 'json' ? toolkit.jsonCopy(respContent) : null;
 
-      res.locals._operationRecord.respStatusCode = statusCode || 200;
-      res.locals._operationRecord.respBodyJSON   = respType === 'json' ? toolkit.jsonCopy(respContent) : null;
-
-      var operationRecordModel = operationRecordMod.createModel(res.locals);
-      operationRecordModel.add(res.locals._operationRecord);
-    }
+    require('./models/operationRecordMod').createModel(res.locals).add(operationRecord);
   }
 };

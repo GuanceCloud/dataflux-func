@@ -80,21 +80,16 @@ function _getHTTPRequestInfo(req) {
   }
 
   // 请求体
-  var useragent = toolkit.jsonCopy(req.useragent);
-  delete useragent.source;
-
   var httpRequest = {
-    method     : req.method.toUpperCase(),
-    originalUrl: req.originalUrl,
-    url        : path.join(req.baseUrl, req.path),
-    headers    : req.headers,
-    cookies    : req.cookies,
-    hostname   : req.hostname,
-    ip         : req.ip,
-    ips        : req.ips,
-    protocol   : req.protocol,
-    xhr        : req.xhr,
-    useragent  : useragent,
+    method       : req.method.toUpperCase(),
+    originalUrl  : req.originalUrl,
+    url          : path.join(req.baseUrl, req.path),
+    headers      : req.headers,
+    hostname     : req.hostname,
+    ip           : req.ip,
+    ips          : req.ips,
+    protocol     : req.protocol,
+    xhr          : req.xhr,
   };
   return httpRequest;
 }
@@ -2194,9 +2189,14 @@ exports.downloadResources = function(req, res, next) {
 };
 
 exports.uploadResource = function(req, res, next) {
-  console.log(req.files)
-  console.log(req.body)
-  res.locals.sendJSON({})
+  var file   = req.files[0];
+  var folder = req.body.folder || '.';
+
+  var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, file.originalname);
+  fs.outputFileSync(filePath, file);
+
+  var ret = toolkit.initRet({ filePath: filePath });
+  res.locals.sendJSON(ret);
 };
 
 exports.operateResource = function(req, res, next) {
