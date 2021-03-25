@@ -213,7 +213,7 @@ class DataWay(object):
         self.timeout    = timeout or 3
         self.access_key = access_key
         self.secret_key = secret_key
-        self.debug      = debug or False
+        self.debug      = debug or True
         self.dry_run    = dry_run or False
 
         if self.debug:
