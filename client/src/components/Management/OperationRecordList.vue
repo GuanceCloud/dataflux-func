@@ -111,7 +111,7 @@
         </el-pagination>
       </el-footer>
 
-      <LongTextDialog title="完整内容如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="完整内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>

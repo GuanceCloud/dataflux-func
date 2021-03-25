@@ -40,7 +40,11 @@ exports.prepare = function(req, res, next) {
   var reqBody = null;
   try {
     if (!toolkit.isNothing(req.body)) {
-      reqBody = toolkit.jsonCopy(req.body);
+      if (Buffer.isBuffer(req.body)) {
+        reqBody = JSON.stringify(toolkit.strf('<Buffer, size={0}>', req.body.length));
+      } else {
+        reqBody = toolkit.jsonCopy(req.body);
+      }
     }
 
   } catch(err) {

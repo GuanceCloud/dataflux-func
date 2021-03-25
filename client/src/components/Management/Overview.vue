@@ -202,7 +202,7 @@ Response                      : 响应
         </el-table>
       </el-main>
 
-      <LongTextDialog :title="$t('The full content is as follows')" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is as follows')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>

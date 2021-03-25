@@ -88,7 +88,7 @@ Delete Auth Link       : 删除授权链接
           </el-table-column>
 
           <template v-if="!showCountCost">
-            <el-table-column label="有效期至" width="180">
+            <el-table-column label="有效期至" width="200">
               <template slot-scope="scope">
                 <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
                 <template v-else>
@@ -100,7 +100,7 @@ Delete Auth Link       : 删除授权链接
               </template>
             </el-table-column>
 
-            <el-table-column label="限流策略" width="160">
+            <el-table-column label="限流策略" width="200">
               <template slot-scope="scope">
                 <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
                 <template v-else>
@@ -111,7 +111,7 @@ Delete Auth Link       : 删除授权链接
               </template>
             </el-table-column>
 
-            <el-table-column label="状态" width="120">
+            <el-table-column label="状态" width="200">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
                 <span v-else class="text-good">已启用</span>
@@ -121,7 +121,7 @@ Delete Auth Link       : 删除授权链接
               </template>
             </el-table-column>
 
-            <el-table-column label="备注" width="150">
+            <el-table-column label="备注" width="200">
               <template slot-scope="scope">
                 <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
                 <span v-else class="text-info">{{ '<无备注>' }}</span>
@@ -130,7 +130,7 @@ Delete Auth Link       : 删除授权链接
           </template>
 
           <template v-else>
-            <el-table-column label="近日调用" width="240">
+            <el-table-column label="近日调用" width="200">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
                   <code>{{ ['今天', '昨天', '前天'][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>

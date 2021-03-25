@@ -2171,9 +2171,11 @@ exports.listResources = function(req, res, next) {
 
 exports.downloadResources = function(req, res, next) {
   var filePath = req.query.filePath;
+  var preview  = req.query.preview;
+
+  var fileName = filePath.split('/').pop();
+  var fileType = fileName.split('.').pop();
   var absPath  = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
-  var filePath = req.query.filePath;
-  var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
 
   // 防止访问外部文件夹
   if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
@@ -2185,7 +2187,17 @@ exports.downloadResources = function(req, res, next) {
     return next(new E('EBizCondition', 'File not exists.'))
   }
 
-  return res.locals.sendLocalFile(absPath);
+  if (preview) {
+    fs.readFile(absPath, function(err, data) {
+      if (err) return next(err)
+
+      res.type(fileType);
+      return res.send(data);
+    });
+
+  } else {
+    return res.locals.sendLocalFile(absPath);
+  }
 };
 
 exports.uploadResource = function(req, res, next) {
@@ -2193,9 +2205,9 @@ exports.uploadResource = function(req, res, next) {
   var folder = req.body.folder || '.';
 
   var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, file.originalname);
-  fs.outputFileSync(filePath, file);
+  fs.outputFileSync(filePath, file.data);
 
-  var ret = toolkit.initRet({ filePath: filePath });
+  var ret = toolkit.initRet();
   res.locals.sendJSON(ret);
 };
 

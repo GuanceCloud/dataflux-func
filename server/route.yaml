@@ -1811,6 +1811,10 @@ datafluxFuncAPI:
         $desc    : 文件路径
         $required: true
         $type    : string
+      preview:
+        $desc    : 预览模式
+        $required: false
+        $type    : boolean
 
   uploadResource:
     name         : 上传资源文件

@@ -95,7 +95,7 @@ Delete Crontab Config : 删除自动触发配置
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="180">
+          <el-table-column label="有效期至" width="200">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
               <template v-else>
@@ -107,14 +107,14 @@ Delete Crontab Config : 删除自动触发配置
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="100">
+          <el-table-column label="状态" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
               <span v-else class="text-good">已启用</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="150">
+          <el-table-column label="备注" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
               <span v-else class="text-info">{{ '<无备注>' }}</span>

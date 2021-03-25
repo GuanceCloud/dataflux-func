@@ -12,6 +12,7 @@ Create time: 创建时间
 Update time: 更新时间
 Enter      : 进入
 Download   : 下载
+Preview    : 预览
 Upload     : 上传
 More       : 更多
 Zip        : 压缩
@@ -57,12 +58,12 @@ Delete file                                           : 删除文件
           </el-popover>
 
 <el-upload ref="upload"
+  class="upload-button"
   :limit="2"
   :multiple="false"
-  :auto-upload="false"
+  :auto-upload="true"
   :show-file-list="false"
   :http-request="handleUpload"
-  :on-change="onUploadFileChange"
   action="">
   <el-button size="mini">
     <i class="fa fa-fw fa-cloud-upload"></i>
@@ -139,6 +140,13 @@ Delete file                                           : 删除文件
             <template slot-scope="scope">
               <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
               <template v-else-if="scope.row.type === 'file'">
+                <el-link
+                  v-if="previewExtMap[scope.row.ext]"
+                  class="list-button"
+                  type="primary"
+                  :href="T.authedLink(`/api/v1/resources?preview=true&filePath=${getPath(scope.row.name)}`)"
+                  :underline="false"
+                  target="_blank">{{ $t('Preview') }}</el-link>
                 <el-link
                   class="list-button"
                   type="primary"
@@ -348,8 +356,36 @@ export default {
           break;
       }
     },
+    async handleUpload(req) {
+      let bodyData = new FormData();
+      bodyData.append('folder', this.folder);
+      bodyData.append('files', req.file);
+
+      let opt = {
+        body: bodyData,
+      };
+      let apiRes = await this.T.callAPI('post', '/api/v1/resources', {
+        body : bodyData,
+        alert: {title: this.$t('Upload'), showError: true},
+      });
+
+      await this.loadData();
+    },
   },
   computed: {
+    previewExtMap() {
+      return {
+        jpg : true,
+        jpeg: true,
+        png : true,
+        bmp : true,
+        gif : true,
+        mp4 : true,
+        pdf : true,
+        txt : true,
+        md  : true,
+      }
+    }
   },
   props: {
   },
@@ -373,6 +409,9 @@ export default {
 }
 .popover-input {
   text-align: center;
+}
+.upload-button {
+  display: inline-block;
 }
 </style>
 
