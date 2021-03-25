@@ -93,7 +93,7 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
                 continue
 
             c = {
-                'id'            : 'cron-INTEGRATION',
+                'id'            : 'cron-AUTORUN-{}'.format(f['id']),
                 'funcId'        : f['id'],
                 'funcCallKwargs': {},
                 'saveResult'    : False,
