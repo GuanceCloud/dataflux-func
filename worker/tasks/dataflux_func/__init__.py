@@ -1529,8 +1529,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         safe_scope['DFF'].log_messages.append(line)
 
     def _print(self, safe_scope, *args, **kwargs):
-        if safe_scope.get('_DFF_DEBUG'):
-            print(*args, **kwargs)
+        print(*args, **kwargs)
 
         try:
             value_list = []
