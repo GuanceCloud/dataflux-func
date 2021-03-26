@@ -1154,27 +1154,28 @@ class BaseFuncResponse(object):
 
     def _create_response_control(self):
         response_control = {
-            'statusCode' : self.status_code,
-            'contentType': self.content_type,
-            'headers'    : self.headers,
-            'allow304'   : self.allow_304,
+            'statusCode'  : self.status_code,
+            'contentType' : self.content_type,
+            'headers'     : self.headers,
+            'allow304'    : self.allow_304,
+            'downloadFile': self.download_file,
         }
 
         if self.file_path:
-            response_control['filePath']       =  self.file_path
-            response_control['autoDeleteFile'] =  self.auto_delete_file
-            response_control['downloadFile']   =  self.download_file
+            response_control['filePath']       = self.file_path
+            response_control['autoDeleteFile'] = self.auto_delete_file
 
         return response_control
 
 class FuncResponse(BaseFuncResponse):
-    def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False):
+    def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False, download=False):
         kwargs = {
-            'data'        : data,
-            'status_code' : status_code,
-            'content_type': content_type,
-            'headers'     : headers,
-            'allow_304'   : allow_304,
+            'data'         : data,
+            'status_code'  : status_code,
+            'content_type' : content_type,
+            'headers'      : headers,
+            'allow_304'    : allow_304,
+            'download_file': download,
         }
         super(FuncResponse, self).__init__(**kwargs)
 

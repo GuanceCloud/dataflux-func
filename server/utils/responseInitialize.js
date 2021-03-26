@@ -517,20 +517,18 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.download(filePath);
   };
 
-  res.locals.sendFile = function(file, fileType, fileName) {
+  res.locals.sendFile = function(file, fileName, fileType) {
     res.locals.logger.debug('[WEB FILE] `{0}` ({1} Bytes)', fileName || 'FILE', file.length);
+
+    if (!fileType && fileName.indexOf('.') >= 0) {
+      fileType = fileName.split('.').pop();
+    }
 
     if (fileType) {
       res.type(fileType);
     }
 
-    if (fileName) {
-      if (fileName.slice(-fileType.length - 1) !== '.' + fileType) {
-        fileName = toolkit.strf('{0}.{1}', fileName, fileType);
-      }
-
-      res.attachment(fileName);
-    }
+    res.attachment(fileName);
 
     var reqCost = Date.now() - res.locals._requestStartTime;
     recordSlowAPI(req, res, reqCost);
@@ -598,7 +596,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = toolkit.convertJSON(ret.data, req.query.export, req.query.charset);
       if (ret === null) return next(new E('EBizBadData', 'Export failed.'));
 
-      return res.locals.sendFile(ret, req.query.export);
+      var fileName = toolkit.strf('{0}.{1}', req.path.split('/').pop(), req.query.export);
+      return res.locals.sendFile(ret, fileName);
 
     } else {
       return res.locals.sendJSON(ret);

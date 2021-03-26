@@ -541,7 +541,7 @@ exports.export = function(req, res, next) {
     ];
     var fileName = fileNameParts.join('-') + CONFIG._FUNC_PKG_EXPORT_EXT;
 
-    return res.locals.sendFile(fileBuf, CONFIG._FUNC_PKG_EXPORT_EXT, fileName);
+    return res.locals.sendFile(fileBuf, fileName);
   });
 };
 
