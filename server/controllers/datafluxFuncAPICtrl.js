@@ -913,14 +913,20 @@ function _doAPIResponse(locals, res, ret, options, callback) {
     fs.readFile(filePath, function(err, buffer) {
       if (err) return callback(err);
 
-      var fileName = filePath.split('/').pop();
-      var fileType = fileName.split('.').pop();
-
+      var fileName = null;
       if (!responseControl.downloadFile) {
         // 非下载时，不指定文件名
-        fileName = null;
+
+      } else if (responseControl.downloadFile === true) {
+        // 默认与源文件名相同
+        fileName = filePath.split('/').pop();
+
+      } else {
+        // 指定其他值，则作为下载名
+        fileName = responseControl.downloadFile;
       }
 
+      var fileType = fileName.split('.').pop();
       locals.sendFile(buffer, fileType, fileName);
 
       if (responseControl.autoDeleteFile) {
