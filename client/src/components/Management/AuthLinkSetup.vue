@@ -10,7 +10,6 @@ Arguments                                                                       
 'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
 'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
 The Func accepts extra arguments not listed above                                          : 本函数允许传递额外自定义的参数
-Enabled                                                                                    : 启用
 Show in doc                                                                                : 显示于文档
 Expire at                                                                                  : 有效期至
 Select expire time                                                                         : 选择有效期
@@ -75,14 +74,6 @@ shortcutDays                                       : '{n}天'
                   <InfoBlock :title="$t('When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
-                </el-form-item>
-
-                <el-form-item :label="$t('Enabled')" prop="isDisabled">
-                  <el-switch
-                    :active-value="false"
-                    :inactive-value="true"
-                    v-model="form.isDisabled">
-                  </el-switch>
                 </el-form-item>
 
                 <el-form-item :label="$t('Show in doc')" prop="showInDoc">
@@ -447,7 +438,6 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
-        isDisabled        : false,
         note              : null,
       },
     }

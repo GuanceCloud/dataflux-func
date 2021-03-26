@@ -26,7 +26,7 @@ from worker.tasks import BaseResultSavingTask
 from worker.tasks import BaseTask
 from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
-from worker.tasks.dataflux_func import FuncResponse
+from worker.tasks.dataflux_func import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -391,8 +391,8 @@ def dataflux_func_runner(self, *args, **kwargs):
         # 执行函数
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
         func_resp = entry_func(**func_call_kwargs)
-        if not isinstance(func_resp, FuncResponse):
-            func_resp = FuncResponse(data=func_resp)
+        if not isinstance(func_resp, BaseFuncResponse):
+            func_resp = FuncResponse(func_resp)
 
         if isinstance(func_resp.data, Exception):
             raise func_resp.data
@@ -437,23 +437,24 @@ def dataflux_func_runner(self, *args, **kwargs):
         func_result_repr       = None
         func_result_json_dumps = None
 
-        try:
-            func_result_raw = func_resp.data
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        if func_resp.data:
+            try:
+                func_result_raw = func_resp.data
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
-        try:
-            func_result_repr = pprint.saferepr(func_resp.data)
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+            try:
+                func_result_repr = pprint.saferepr(func_resp.data)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
-        try:
-            func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+            try:
+                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
         result = {
             'raw'      : func_result_raw,

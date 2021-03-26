@@ -888,11 +888,11 @@ function _doAPIResponse(locals, res, ret, options, callback) {
 
   // 缓存标记
   if (options.isCached) {
-    res.set('X-Result-Cache', 'Cached');
+    res.set('X-Dataflux-Func-Cache', 'Cached');
   }
 
   // 响应控制（304缓存）
-  if (responseControl.no304) {
+  if (!responseControl.allow304) {
     res.set('Last-Modified', (new Date()).toUTCString());
   }
 
@@ -906,9 +906,9 @@ function _doAPIResponse(locals, res, ret, options, callback) {
     res.set(responseControl.headers);
   }
 
-  if (responseControl.file) {
+  if (responseControl.filePath) {
     // 响应控制（下载文件）
-    var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, responseControl.file);
+    var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, responseControl.filePath.replace(/^\/+/, ''));
 
     fs.readFile(filePath, function(err, buffer) {
       if (err) return callback(err);
@@ -923,7 +923,7 @@ function _doAPIResponse(locals, res, ret, options, callback) {
 
       locals.sendFile(buffer, fileType, fileName);
 
-      if (responseControl.deleteFile) {
+      if (responseControl.autoDeleteFile) {
         fs.remove(filePath);
       }
 

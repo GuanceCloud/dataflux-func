@@ -1,5 +1,12 @@
 # Change Log
 
+### 1.0.59
+
+- `DFF.RESP(...)`分拆为2个函数：
+    - 返回数据：`DFF.RSEP(data, status_code=None, content_type=None, headers=None, allow_304=False)`
+    - 返回文件：`DFF.RESP_FILE(file_path, status_code=None, headers=None, allow_304=False, auto_delete=False, download=True)`
+- 其他细节优化
+
 ### 1.0.58
 
 - 优化「文件工具」

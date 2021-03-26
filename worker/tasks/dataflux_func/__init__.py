@@ -342,6 +342,10 @@ def decipher_data_source_config_fields(config):
 
     return config
 
+def get_resource_path(p):
+    abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], p.lstrip('/'))
+    return abs_path
+
 class ScriptCacherMixin(object):
     def get_scripts(self, script_ids=None):
         # 【注意】
@@ -1130,24 +1134,22 @@ class FuncConfigHelper(object):
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
-class FuncResponse(object):
-    def __init__(self, data=None, file=None, status_code=None, content_type=None, headers=None, no_304=False, delete_file=False, download_file=True):
-        self.data          = data          # 返回数据
-        self.file          = file          # 返回文件（资源目录下相对路径）
-        self.status_code   = status_code   # HTTP响应码
-        self.content_type  = content_type  # HTTP响应体类型
-        self.headers       = headers or {} # HTTP响应头
-        self.no_304        = no_304        # 是否禁用304缓存
-        self.delete_file   = delete_file   # 是否响应后删除文件文件
-        self.download_file = download_file # 是否下载文件
+class BaseFuncResponse(object):
+    def __init__(self, data=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
+        self.data             = data             # 返回数据
+        self.file_path        = file_path        # 返回文件（资源目录下相对路径）
+        self.status_code      = status_code      # HTTP响应码
+        self.content_type     = content_type     # HTTP响应体类型
+        self.headers          = headers or {}    # HTTP响应头
+        self.allow_304        = allow_304        # 是否允许304缓存
+        self.auto_delete_file = auto_delete_file # 是否响应后自动删除文件文件
+        self.download_file    = download_file    # 是否下载文件
 
         # 检查待下载的文件是否存在
-        if self.file:
-            self.file = self.file.lstrip('/')
-
-            abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], self.file)
+        if self.file_path:
+            abs_path = get_resource_path(self.file_path)
             if not os.path.isfile(abs_path):
-                e = Exception('No such file in Resource folder: {}'.format(self.file))
+                e = Exception('No such file in Resource folder: {}'.format(self.file_path))
                 raise e
 
     def _create_response_control(self):
@@ -1155,15 +1157,38 @@ class FuncResponse(object):
             'statusCode' : self.status_code,
             'contentType': self.content_type,
             'headers'    : self.headers,
-            'no304'      : self.no_304,
+            'allow304'   : self.allow_304,
         }
 
-        if self.file:
-            response_control['file']         =  self.file
-            response_control['deleteFile']   =  self.delete_file
-            response_control['downloadFile'] =  self.download_file
+        if self.file_path:
+            response_control['filePath']       =  self.file_path
+            response_control['autoDeleteFile'] =  self.auto_delete_file
+            response_control['downloadFile']   =  self.download_file
 
         return response_control
+
+class FuncResponse(BaseFuncResponse):
+    def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False):
+        kwargs = {
+            'data'        : data,
+            'status_code' : status_code,
+            'content_type': content_type,
+            'headers'     : headers,
+            'allow_304'   : allow_304,
+        }
+        super(FuncResponse, self).__init__(**kwargs)
+
+class FuncResponseFile(BaseFuncResponse):
+    def __init__(self, file_path, status_code=None, headers=None, allow_304=False, auto_delete=False, download=True):
+        kwargs = {
+            'file_path'       : file_path,
+            'status_code'     : status_code,
+            'headers'         : headers,
+            'allow_304'       : allow_304,
+            'auto_delete_file': auto_delete,
+            'download_file'   : download,
+        }
+        super(FuncResponseFile, self).__init__(**kwargs)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):
@@ -1680,10 +1705,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             return eval(expression, *args, **kwargs)
 
-        def __get_resource_path(file):
-            file = file.lstrip('/')
-            return os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file)
-
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
 
@@ -1698,15 +1719,16 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return __data_source_helper.list()
 
         safe_scope['DFF'] = DFFWraper(inject_funcs={
-            'export_as_api': __export_as_api,  # 导出为API
-            'log'          : __log,            # 输出日志
-            'plot'         : __plot,           # 输出图表
-            'call_func'    : __call_func,      # 调用函数（新Task）
-            'eval'         : __eval,           # 执行Python表达式
-            'format_sql'   : format_sql,       # 格式化SQL语句
-            'FuncResponse' : FuncResponse,     # 函数响应体
+            'export_as_api'   : __export_as_api,  # 导出为API
+            'log'             : __log,            # 输出日志
+            'plot'            : __plot,           # 输出图表
+            'call_func'       : __call_func,      # 调用函数（新Task）
+            'eval'            : __eval,           # 执行Python表达式
+            'format_sql'      : format_sql,       # 格式化SQL语句
+            'FuncResponse'    : FuncResponse,     # 函数响应体
+            'FuncResponseFile': FuncResponseFile, # 函数响应体（返回文件）
 
-            'get_resource_file_path': __get_resource_path, # 获取资源路径
+            'get_resource_path': get_resource_path, # 获取资源路径
 
             '__data_source_helper' : __data_source_helper,  # 数据源处理模块
             '__env_variable_helper': __env_variable_helper, # 环境变量处理模块
@@ -1727,9 +1749,10 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'EVAL' : __eval,
             'ASYNC': __async_helper,
 
-            'RSRC': __get_resource_path,
+            'RSRC': get_resource_path,
 
-            'RESP': FuncResponse,
+            'RESP'     : FuncResponse,
+            'RESP_FILE': FuncResponseFile,
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
