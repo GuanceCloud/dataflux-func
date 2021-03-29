@@ -14,29 +14,23 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 ## 目录
 
-<!-- MarkdownTOC -->
+<!-- MarkdownTOC autolink="false" levels="1,2,3" -->
 
-- [1. 系统及环境要求](#1-%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
-    - [1.1 系统要求](#11-%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
-    - [1.2 软件准备](#12-%E8%BD%AF%E4%BB%B6%E5%87%86%E5%A4%87)
-- [2. 使用「携带版」离线部署【推荐】](#2-%E4%BD%BF%E7%94%A8%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E3%80%90%E6%8E%A8%E8%8D%90%E3%80%91)
-    - [2.1 一键命令下载「携带版」](#21-%E4%B8%80%E9%94%AE%E5%91%BD%E4%BB%A4%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
-    - [2.2 手工下载「携带版」](#22-%E6%89%8B%E5%B7%A5%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
-    - [2.3 使用自动部署脚本执行部署](#23-%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E6%89%A7%E8%A1%8C%E9%83%A8%E7%BD%B2)
-- [3. 使用一键安装命令在线安装](#3-%E4%BD%BF%E7%94%A8%E4%B8%80%E9%94%AE%E5%AE%89%E8%A3%85%E5%91%BD%E4%BB%A4%E5%9C%A8%E7%BA%BF%E5%AE%89%E8%A3%85)
-- [4. 安装选项](#4-%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-    - [4.1 「携带版」指定安装选项](#41-%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-    - [4.2 在线安装版指定安装选项](#42-%E5%9C%A8%E7%BA%BF%E5%AE%89%E8%A3%85%E7%89%88%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-    - [4.3 可用安装选项](#43-%E5%8F%AF%E7%94%A8%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-        - [4.3.1 `--mini`：安装迷你版](#431---mini%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%B7%E4%BD%A0%E7%89%88)
-        - [4.3.2 `--install-dir {安装目录}`：指定安装目录](#432---install-dir-%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95%EF%BC%9A%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95)
-        - [4.3.3 `--no-mysql`：禁用内置MySQL](#433---no-mysql%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEmysql)
-        - [4.3.4 `--no-redis`：禁用内置Redis](#434---no-redis%EF%BC%9A%E7%A6%81%E7%94%A8%E5%86%85%E7%BD%AEredis)
-        - [4.3.5 `--mqtt`：启用内置MQTT Broker](#435---mqtt%EF%BC%9A%E5%90%AF%E7%94%A8%E5%86%85%E7%BD%AEmqtt-broker)
-- [X. 项目介绍](#x-%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
-    - [X.1 主要功能](#x1-%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
-    - [X.2 支持的数据源](#x2-%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90)
-    - [X.3 相关链接](#x3-%E7%9B%B8%E5%85%B3%E9%93%BE%E6%8E%A5)
+- 1. 系统及环境要求
+    - 1.1 系统要求
+    - 1.2 软件准备
+- 2. 使用「携带版」离线部署
+    - 2.1 一键命令下载「携带版」
+    - 2.2 手工下载「携带版」
+    - 2.3 使用自动部署脚本执行部署
+- 3. 安装选项
+    - 3.1 「携带版」指定安装选项
+    - 3.2 在线安装版指定安装选项
+    - 3.3 可用安装选项
+- X. 项目介绍
+    - X.1 主要功能
+    - X.2 支持的数据源
+    - X.3 相关链接
 
 <!-- /MarkdownTOC -->
 
@@ -60,7 +54,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 本系统基于Docker Stack部署，因此要求操作系统可以正常使用Docker 和Docker Stack
 
-携带版安装脚本本身已经自带了Docker 的安装包并会在部署时自动安装。
+安装脚本本身已经自带了Docker 的安装包并会在部署时自动安装。
 用户也可以自行安装Docker 并初始化Docker Swarm，然后运行部署脚本，
 部署脚本在发现Docker 已经安装后会自动跳过这部分处理。
 
@@ -74,11 +68,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 
 
-
-
-## 2. 使用「携带版」离线部署【推荐】
-
-*本方式为推荐部署方式*
+## 2. 使用「携带版」离线部署
 
 DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入无公网环境安装的「携带版」。
 
@@ -151,48 +141,11 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 
 
 
-## 3. 使用一键安装命令在线安装
-
-*由于涉及私有镜像库等事宜，本方式不做为首推方案*
-
-DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运行。
-
-*注意：需要事先登录驻云官方镜像库*
-
-运行以下命令，即可自动下载配置脚本并最终启动整个DataFlux Func：
-
-```shell
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)"
-```
-
-使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
-
-- 运行MySQL、Redis、DataFlux Func（包含Server，Worker，Beat）
-- 自动创建并将所有数据保存于`/usr/local/dataflux-func/`目录下（包括MySQL数据、Redis数据、DataFlux Func 配置、日志等文件）
-- 随机生成MySQL `root`用户密码、系统Secret，并保存于DataFlux Func 配置文件中
-- Redis不设密码
-- MySQL、Redis 不提供外部访问
-
-执行完成后，可以使用浏览器访问`http://localhost:8088`进行初始化操作界面。
-
-*注意：如果运行环境性能较差，应当使用`docker ps`命令确认所有组件成功启动后，方可访问（见以下列表）*
-
-1. `dataflux-func_mysql`
-2. `dataflux-func_redis`
-3. `dataflux-func_server`
-4. `dataflux-func_worker-0`
-5. `dataflux-func_worker-1-6`
-6. `dataflux-func_worker-7`
-7. `dataflux-func_worker-8-9`
-8. `dataflux-func_beat`
-
-
-
-## 4. 安装选项
+## 3. 安装选项
 
 自动安装脚本支持一些安装选项，用于适应不同的安装需求
 
-### 4.1 「携带版」指定安装选项
+### 3.1 「携带版」指定安装选项
 
 安装「携带版」时，只需要在自动部署命令后添加`--{参数}[ 参数配置（如有）]`，即可指定安装选项
 
@@ -201,7 +154,7 @@ DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运
 /bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc --mqtt
 ```
 
-### 4.2 在线安装版指定安装选项
+### 3.2 在线安装版指定安装选项
 
 使用一键安装命令在线安装时，只需要在自动部署命令后添加`-- --{参数}[ 参数配置（如有）]`，即可指定安装选项
 
@@ -212,11 +165,11 @@ DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运
 
 *注意：参数前确实有`--`，表示参数传递给需要执行的脚本，此处不是笔误*
 
-### 4.3 可用安装选项
+### 3.3 可用安装选项
 
 具体参数详情见下文
 
-#### 4.3.1 `--mini`：安装迷你版
+#### `--mini`：安装迷你版
 
 针对低配置环境下，需要节约资源时的安装模式。
 
@@ -230,23 +183,23 @@ DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运
     - 内存容量 >= 2GB
 - 如不使用内置的MySQL、Redis，系统要求可以进一步降低
 
-#### 4.3.2 `--install-dir {安装目录}`：指定安装目录
+#### `--install-dir {安装目录}`：指定安装目录
 
 需要安装到与默认路径`/usr/local/dataflux-func`不同的路径下时，可指定此参数
 
-#### 4.3.3 `--no-mysql`：禁用内置MySQL
+#### `--no-mysql`：禁用内置MySQL
 
 需要使用已有的MySQL数据库时，可指定此参数，禁止在本机启动MySQL。
 
 *注意：启用此选项后，需要在安装完成后的配置页面指定正确的MySQL连接信息*
 
-#### 4.3.4 `--no-redis`：禁用内置Redis
+#### `--no-redis`：禁用内置Redis
 
 需要使用已有的Redis数据库时，可指定此参数，禁止在本机启动Redis。
 
 *注意：启用此选项后，需要在安装完成后的配置页面指定正确的Redis连接信息*
 
-#### 4.3.5 `--mqtt`：启用内置MQTT Broker
+#### `--mqtt`：启用内置MQTT Broker
 
 需要安装后，同时在本机启动MQTT Broker时，可指定此选项。
 
@@ -289,5 +242,3 @@ DataFlux Func 提供了一键安装脚本，可以在数分钟内完成部署运
 
 - [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
 - [DataFlux 官方网站](https://dataflux.cn/)
-- [DataFlux Func 开发手册](development-guide.md)
-- [DataFlux Func 维护手册](maintenance-guide.md)
