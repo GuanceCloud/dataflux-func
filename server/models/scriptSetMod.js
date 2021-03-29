@@ -105,9 +105,12 @@ EntityModel.prototype.import = function(packageData, callback) {
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds   = toolkit.arrayElementValues(packageData.scriptSets, 'id');
-  var dataSourceIds  = toolkit.arrayElementValues(packageData.dataSources, 'id');
-  var envVariableIds = toolkit.arrayElementValues(packageData.envVariables, 'id');
+  var scriptSetIds     = toolkit.arrayElementValues(packageData.scriptSets      || [], 'id');
+  var authLinkIds      = toolkit.arrayElementValues(packageData.authLinks       || [], 'id');
+  var crontabConfigIds = toolkit.arrayElementValues(packageData.crontabConfigs  || [], 'id');
+  var batchIds         = toolkit.arrayElementValues(packageData.batches         || [], 'id');
+  var dataSourceIds    = toolkit.arrayElementValues(packageData.dataSources     || [], 'id');
+  var envVariableIds   = toolkit.arrayElementValues(packageData.envVariables    || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -121,34 +124,6 @@ EntityModel.prototype.import = function(packageData, callback) {
         note: '系统：导入脚本包前自动创建的还原点',
       };
       scriptRecoverPointModel.add(_data, asyncCallback);
-    },
-    // 删除相关数据（授权链接/自动触发配置/批处理）
-    // 注意：此处必须先删除「授权链接/自动触发配置/批处理」，后删除「脚本集/脚本/函数」
-    //  如果顺序调换，会导致无法正常找到需要删除的授权链接等数据
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('DELETE main');
-      sql.append('FROM ?? AS main');
-      sql.append('JOIN biz_main_func AS func');
-      sql.append('  ON main.funcId = func.id');
-      sql.append('WHERE');
-      sql.append('  func.scriptSetId IN (?)');
-
-      // 删除规则
-      var _rules = [
-        { name: 'authLinks',      table: 'biz_main_auth_link' },
-        { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
-        { name: 'batches',        table: 'biz_main_batch' },
-      ];
-      async.eachSeries(_rules, function(_rule, eachCallback) {
-        if (!packageData[_rule.name]) return eachCallback();
-
-        var sqlParams = [_rule.table, scriptSetIds];
-
-        self.db.query(sql, sqlParams, eachCallback);
-      }, asyncCallback);
     },
     // 删除所有涉及的脚本集
     function(asyncCallback) {
@@ -180,6 +155,42 @@ EntityModel.prototype.import = function(packageData, callback) {
 
         self.db.query(sql, sqlParams, eachCallback);
       }, asyncCallback);
+    },
+    // 删除所有涉及的授权链接
+    function(asyncCallback) {
+      if (toolkit.isNothing(authLinkIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM biz_main_auth_link');
+      sql.append('WHERE');
+      sql.append('   id IN (?)');
+
+      var sqlParams = [authLinkIds];
+      self.db.query(sql, sqlParams, asyncCallback);
+    },
+    // 删除所有涉及的自动触发配置
+    function(asyncCallback) {
+      if (toolkit.isNothing(crontabConfigIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM biz_main_crontab_config');
+      sql.append('WHERE');
+      sql.append('   id IN (?)');
+
+      var sqlParams = [crontabConfigIds];
+      self.db.query(sql, sqlParams, asyncCallback);
+    },
+    // 删除所有涉及的批处理
+    function(asyncCallback) {
+      if (toolkit.isNothing(batchIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('DELETE FROM biz_main_batch');
+      sql.append('WHERE');
+      sql.append('   id IN (?)');
+
+      var sqlParams = [batchIds];
+      self.db.query(sql, sqlParams, asyncCallback);
     },
     // 删除所有涉及的数据源
     function(asyncCallback) {

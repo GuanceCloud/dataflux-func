@@ -574,7 +574,7 @@ exports.import = function(req, res, next) {
 
       } catch(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password.'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(1).'));
       }
 
       return asyncCallback();
@@ -587,7 +587,10 @@ exports.import = function(req, res, next) {
         return JSZip.loadAsync(zipBuf);
 
       })(function(err, z) {
-        if (err) return asyncCallback(err);
+        if (err) {
+          res.locals.logger.logError(err);
+          return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(2).'));
+        }
 
         async.asyncify(function() {
           return z.file(FILENAME_IN_ZIP).async('string');
