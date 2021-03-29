@@ -73,7 +73,6 @@ __MQTT_SAMPLE_PASSWORD=`openssl rand -hex 8`
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
-__README_FILE=README.md
 __MOSQUITTO_CONFIG_FILE=mosquitto/config/mosquitto.conf
 __MOSQUITTO_PASSWD_FILE=mosquitto/passwd
 
@@ -140,22 +139,20 @@ fi
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
 
-# 下载docker stack 示例文件和README 文件
+# 下载docker stack 示例文件
 blankLine
-for file in ${__DOCKER_STACK_EXAMPLE_FILE} ${__README_FILE}; do
-    log "Downloading file ${file}"
+log "Downloading docker stack example file"
 
-    if [ `command -v wget` ]; then
-        wget ${__RESOURCE_BASE_URL}/${file} -O ${file}
+if [ `command -v wget` ]; then
+    wget ${__RESOURCE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE} -O ${__DOCKER_STACK_EXAMPLE_FILE}
 
-    elif [ `command -v curl` ]; then
-        curl -o ${file} ${__RESOURCE_BASE_URL}/${file}
+elif [ `command -v curl` ]; then
+    curl -o ${__DOCKER_STACK_EXAMPLE_FILE} ${__RESOURCE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE}
 
-    else
-        echo 'No `curl` or `wget`, abort.'
-        exit 1
-    fi
-done
+else
+    echo 'No `curl` or `wget`, abort.'
+    exit 1
+fi
 
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 blankLine

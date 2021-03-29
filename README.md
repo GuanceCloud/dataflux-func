@@ -240,7 +240,8 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 
 ### X.3 相关链接
 
-- [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
 - [DataFlux 官方网站](https://dataflux.cn/)
-- [DataFlux 维护手册](https://function.dataflux.cn/#/read?q=docs%2Fmaintenance-guide.md)
-- [DataFlux 开发手册](https://function.dataflux.cn/#/read?q=docs%2Fdevelopment-guide.md)
+- [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
+- [DataFlux 用户手册](https://t.dataflux.cn/func-user-guide)
+- [DataFlux 维护手册](https://t.dataflux.cn/func-dev-guide)
+- [DataFlux 开发手册](https://t.dataflux.cn/func-maint-guide)
