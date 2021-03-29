@@ -67,16 +67,7 @@ WORKER_LOGGER = LogHelper()
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
 REDIS_HELPER.skip_log = True
 
-@signals.worker_ready.connect
-def on_worker_ready(*args, **kwargs):
-    after_app_created(app)
-
-    print('Celery logging disabled')
-    print('Celery is running (Press CTRL+C to quit)')
-    print('Have fun!')
-
-@signals.heartbeat_sent.connect
-def on_heartbeat_sent(*args, **kwargs):
+def heartbeat():
     current_timestamp = int(time.time())
 
     global MAIN_PROCESS
@@ -154,3 +145,17 @@ def on_heartbeat_sent(*args, **kwargs):
 
             cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
             REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
+
+@signals.worker_ready.connect
+def on_worker_ready(*args, **kwargs):
+    after_app_created(app)
+
+    print('Celery logging disabled')
+    print('Celery is running (Press CTRL+C to quit)')
+    print('Have fun!')
+
+@signals.heartbeat_sent.connect
+def on_heartbeat_sent(*args, **kwargs):
+    heartbeat()
+
+heartbeat()

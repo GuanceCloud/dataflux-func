@@ -246,6 +246,7 @@ exports.afterAppCreated = function(app, server) {
 
   // Start interval
   setInterval(recordSysStats, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
+  recordSysStats();
 
   /********** Content for YOUR project below **********/
 
