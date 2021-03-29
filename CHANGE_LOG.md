@@ -1,6 +1,10 @@
 # Change Log
 
-### 1.0.59
+### 1.1.0
+
+- 发布稳定版
+
+### 1.0.59 ~ 1.0.60
 
 - `DFF.RESP(...)`分拆为2个函数：
     - 返回数据：`DFF.RSEP(data, status_code=None, content_type=None, headers=None, allow_304=False)`
