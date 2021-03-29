@@ -4,7 +4,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 
 > `DataFlux Func` 读作`data flux function`，系统内有时会缩写为`DFF`。
 
-前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组建，目前已成为可独立运行的系统。
+前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组件，目前已成为可独立运行的系统。
 
 本系统主要分为2个部分：
 
@@ -27,10 +27,10 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
     - 3.1 「携带版」指定安装选项
     - 3.2 在线安装版指定安装选项
     - 3.3 可用安装选项
-- X. 项目介绍
-    - X.1 主要功能
-    - X.2 支持的数据源
-    - X.3 相关链接
+- 4. 项目介绍
+    - 4.1 主要功能
+    - 4.2 支持的数据源
+    - 4.3 相关链接
 
 <!-- /MarkdownTOC -->
 
@@ -205,9 +205,9 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 *注意：内置的MQTT Broker 为`eclipse-mosquitto`，并会自动生成对应的数据源*
 
 
-## X. 项目介绍
+## 4. 项目介绍
 
-### X.1 主要功能
+### 4.1 主要功能
 
 - 脚本管理：支持草稿，脚本集，导入导出等
 - Web端简易编辑器：基于CodeMirror，支持代码高亮、函数快速跳转定位、直接指定函数运行等
@@ -219,7 +219,7 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 - 脚本导入导出：方便备份、批量部署
 - 其他...
 
-### X.2 支持的数据源
+### 4.2 支持的数据源
 
 |            数据源            |                                    所用第三方库                                   |                                                             兼容数据库                                                              |
 |------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
@@ -237,10 +237,10 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 | NSQ (Lookupd, HTTP方式)      | [requests](https://pypi.org/project/requests/)                                    |                                                                                                                                     |
 | MQTT                         | [paho-mqtt](https://pypi.org/project/paho-mqtt/)                                  |                                                                                                                                     |
 
-### X.3 相关链接
+### 4.3 相关链接
 
 - [DataFlux 官方网站](https://dataflux.cn/)
 - [DataFlux Func 宣传小册子](https://t.dataflux.cn/func-intro)
 - [DataFlux 用户手册](https://t.dataflux.cn/func-user-guide)
-- [DataFlux 维护手册](https://t.dataflux.cn/func-dev-guide)
-- [DataFlux 开发手册](https://t.dataflux.cn/func-maint-guide)
+- [DataFlux 维护手册](https://t.dataflux.cn/func-maint-guide)
+- [DataFlux 开发手册](https://t.dataflux.cn/func-dev-guide)
