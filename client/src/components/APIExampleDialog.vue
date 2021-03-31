@@ -101,25 +101,6 @@
           </el-row>
         </template>
 
-        <template v-if="showPostExampleFlattened">
-          <el-divider content-position="left">POST 方式请求（扁平形式）</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-input
-                type="textarea"
-                readonly
-                autosize
-                resize="none"
-                :value="apiCallByCurlExample_flattened">
-              </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample_flattened"></CopyButton>
-            </el-col>
-          </el-row>
-        </template>
-
         <template v-if="showPostExampleSimplified">
           <el-divider content-position="left">POST 方式请求（简化形式）</el-divider>
           <el-row :gutter="20">
@@ -139,6 +120,25 @@
           </el-row>
         </template>
 
+        <template v-if="showPostExampleFlattened">
+          <el-divider content-position="left">POST 方式请求（扁平形式）</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="22">
+              <el-input
+                type="textarea"
+                readonly
+                autosize
+                resize="none"
+                :value="apiCallByCurlExample_flattened">
+              </el-input>
+              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
+            </el-col>
+            <el-col :span="2">
+              <CopyButton :content="apiCallByCurlExample_flattened"></CopyButton>
+            </el-col>
+          </el-row>
+        </template>
+
         <template v-if="showGetExample">
           <el-divider content-position="left">GET 方式请求</el-divider>
           <el-row :gutter="20">
@@ -153,19 +153,6 @@
           </el-row>
         </template>
 
-        <template v-if="showGetExampleFlattened">
-          <el-divider content-position="left">GET 方式请求（扁平形式）</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample_flattened" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_flattened"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample_flattened"></CopyButton>
-            </el-col>
-          </el-row>
-        </template>
-
         <template v-if="showGetExampleSimplified">
           <el-divider content-position="left">GET 方式请求（简化形式）</el-divider>
           <el-row :gutter="20">
@@ -175,6 +162,19 @@
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiURLWithQueryExample_simplified"></CopyButton>
+            </el-col>
+          </el-row>
+        </template>
+
+        <template v-if="showGetExampleFlattened">
+          <el-divider content-position="left">GET 方式请求（扁平形式）</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="22">
+              <el-link type="primary" :href="apiURLWithQueryExample_flattened" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_flattened"></code></el-link>
+              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
+            </el-col>
+            <el-col :span="2">
+              <CopyButton :content="apiURLWithQueryExample_flattened"></CopyButton>
             </el-col>
           </el-row>
         </template>
@@ -287,6 +287,15 @@ export default {
           url = this.T.formatURL(this.apiURLExample, {query: query});
           break;
 
+        case 'simplified':
+          if (this.apiBody.kwargs) {
+            for (let k in this.apiBody.kwargs) {
+              query[k] = this.apiBody.kwargs[k];
+            }
+          }
+          url = this.T.formatURL(`${this.apiURLExample}/simplified`, {query: query});
+          break;
+
         case 'flattened':
           if (this.apiBody.kwargs) {
             for (let k in this.apiBody.kwargs) {
@@ -299,15 +308,6 @@ export default {
             }
           }
           url = this.T.formatURL(`${this.apiURLExample}/flattened`, {query: query});
-          break;
-
-        case 'simplified':
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              query[k] = this.apiBody.kwargs[k];
-            }
-          }
-          url = this.T.formatURL(`${this.apiURLExample}/simplified`, {query: query});
           break;
       }
 
@@ -333,6 +333,19 @@ export default {
           dataOpt   = `-d '${JSON.stringify(this.apiBody)}'`
           break;
 
+        case 'simplified':
+          url       =  `${this.apiURLExample}/${format}`;
+          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+
+          if (this.apiBody.kwargs) {
+            for (let k in this.apiBody.kwargs) {
+              query[k] = this.apiBody.kwargs[k];
+            }
+          }
+
+          dataOpt = `-d '${this.T.formatQuery(query)}'`;
+          break;
+
         case 'flattened':
           url       =  `${this.apiURLExample}/${format}`;
           headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
@@ -345,19 +358,6 @@ export default {
           if (this.apiBody.options) {
             for (let k in this.apiBody.options) {
               query[`options_${k}`] = this.apiBody.options[k];
-            }
-          }
-
-          dataOpt = `-d '${this.T.formatQuery(query)}'`;
-          break;
-
-        case 'simplified':
-          url       =  `${this.apiURLExample}/${format}`;
-          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
-
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              query[k] = this.apiBody.kwargs[k];
             }
           }
 
@@ -401,21 +401,21 @@ export default {
     apiURLWithQueryExampleText() {
       return this.getAPIURLWithQueryExample('normal', true);
     },
-    apiURLWithQueryExampleText_flattened() {
-      return this.getAPIURLWithQueryExample('flattened', true);
-    },
     apiURLWithQueryExampleText_simplified() {
       return this.getAPIURLWithQueryExample('simplified', true);
+    },
+    apiURLWithQueryExampleText_flattened() {
+      return this.getAPIURLWithQueryExample('flattened', true);
     },
 
     apiCallByCurlExample() {
       return this.getAPICallByCurlExample('normal');
     },
-    apiCallByCurlExample_flattened() {
-      return this.getAPICallByCurlExample('flattened');
-    },
     apiCallByCurlExample_simplified() {
       return this.getAPICallByCurlExample('simplified');
+    },
+    apiCallByCurlExample_flattened() {
+      return this.getAPICallByCurlExample('flattened');
     },
   },
   props: {
@@ -444,11 +444,11 @@ export default {
       type: Boolean,
       default: true,
     },
-    showGetExampleFlattened: {
+    showGetExampleSimplified: {
       type: Boolean,
       default: false,
     },
-    showGetExampleSimplified: {
+    showGetExampleFlattened: {
       type: Boolean,
       default: false,
     },
@@ -456,11 +456,11 @@ export default {
       type: Boolean,
       default: true,
     },
-    showPostExampleFlattened: {
+    showPostExampleSimplified: {
       type: Boolean,
       default: false,
     },
-    showPostExampleSimplified: {
+    showPostExampleFlattened: {
       type: Boolean,
       default: false,
     },

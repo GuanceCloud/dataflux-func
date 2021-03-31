@@ -30,9 +30,7 @@ export default {
         this.$store.dispatch('updateUserProfile');
 
         // Socket.io 登录
-        if (this.$store.getters.authType) {
-          this.socketIO.emit(this.$store.getters.authType, this.$store.state.xAuthToken);
-        }
+        this.socketIO.emit('auth', this.$store.state.xAuthToken);
 
         // 跳转
         if (this.$route.name === 'index') {
@@ -72,8 +70,8 @@ export default {
         this.$notify.closeAll();
       }
 
-      let routeName = null;
-      let checkOnly = false;
+      let routeName = null; // 路径名
+      let checkOnly = null; // 是否仅做检查，不记录在线状态
       switch (this.$route.name) {
         case 'code-viewer':
           // 代码查看页面仅检查代码编辑页面是否锁定
@@ -88,10 +86,11 @@ export default {
           break;
       }
       let checkRouteInfo = JSON.stringify({
-        name    : routeName,
-        query   : this.$route.query,
-        params  : this.$route.params,
-        checkOnly: checkOnly,
+        routeName  : routeName,
+        routeQuery : this.$route.query,
+        routeParams: this.$route.params,
+        checkOnly  : checkOnly,
+        instanceId : window.instanceId,
       });
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
         if (this.$store.getters.CONFIG('MODE') === 'dev') {
@@ -102,19 +101,16 @@ export default {
         // 无冲突信息无需任何处理
         if (!resData || !resData.data) return;
 
-        // `conflictInfo`中计数不包括当前用户本身
-        let totalUserCount = 0;
-        if (resData && resData.data && resData.data.conflictInfo) {
-          totalUserCount = resData.data.conflictInfo.total || 0;
-        }
+        let isConflicted = resData.data.isConflict;
 
-        let isConflicted = !resData.data.isCurrentUser && !resData.data.isFree;
+        // 记录路径冲突状态
         this.$store.commit('setConflictedRoute', {
           routeInfo   : this.$route,
           isConflicted: isConflicted,
         });
 
-        if (totalUserCount > 0 && showNotice) {
+        // 展示提示信息
+        if (isConflicted && showNotice) {
           switch(this.$route.name) {
             case 'code-viewer':
             case 'code-editor':
@@ -124,8 +120,8 @@ export default {
             default:
               this.$notify({
                 dangerouslyUseHTMLString: true,
-                title   : '有其他用户也在本页面操作',
-                message : `本系统<span class="text-bad">不支持多人同时编辑</span>。<br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`,
+                title   : '有其他用户或窗口也在本页面操作',
+                message : `本系统<span class="text-bad">不支持多人或多窗口同时编辑</span>。<br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`,
                 type    : 'warning',
                 position: 'top-right',
                 offset  : 20,
@@ -151,7 +147,7 @@ export default {
       }
     },
     isSignedIn() {
-      return !!this.$store.state.xAuthToken;
+      return this.$store.getters.isSignedIn;
     },
   },
   props: {
@@ -174,8 +170,8 @@ export default {
       }
 
       // SocketIO 连接/认证
-      if (this.$store.getters.authType) {
-        this.socketIO.emit(this.$store.getters.authType, this.$store.state.xAuthToken);
+      if (this.isSignedIn) {
+        this.socketIO.emit('auth', this.$store.state.xAuthToken);
       }
     }
     const handleDisconnect = () => {
@@ -188,9 +184,6 @@ export default {
       }, 1000)
     }
     const handleAuth = () => {
-      if (this.$store.getters.authType && this.$store.getters.CONFIG('MODE') === 'dev') {
-        console.info(`Socket.io ${this.$store.getters.authType.toUpperCase()}`);
-      }
       this.$store.commit('updateSocketIOStatus', true);
     }
     const handleError = err => {
@@ -224,7 +217,7 @@ export default {
       setInterval(() => {
         connectSocketIO()
         this.reportAndCheckClientConflict();
-      }, 3 * 1000);
+      }, 1 * 1000);
     });
 
     setImmediate(() => {

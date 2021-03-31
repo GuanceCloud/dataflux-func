@@ -198,24 +198,23 @@ module.exports = function(app, server) {
               break;
 
             case 'reportAndCheckClientConflict':
-              switch(data.name) {
+              switch(data.routeName) {
                 case 'code-editor':
-                  conflictSource = {name: data.name, params: 'id'};
-                  break;
-
                 case 'data-source-setup':
-                  conflictSource = {name: data.name, params: 'id'};
-                  break;
-
                 case 'env-variable-setup':
-                  conflictSource = {name: data.name, params: 'id'};
+                  conflictSource = [
+                    'routeName',      data.routeName,
+                    'routeParams.id', data.routeParams.id,
+                  ]
                   break;
 
                 case 'script-set-import-history-list':
                 case 'script-set-import':
                 case 'script-recover-point-list':
                 case 'script-recover-point-add':
-                  conflictSource = {name: data.name};
+                  conflictSource = [
+                    'routeName', data.routeName,
+                  ]
                   break;
               }
               break;
@@ -230,146 +229,27 @@ module.exports = function(app, server) {
         function(asyncCallback) {
           if (!conflictSource) return asyncCallback();
 
-          var routeTags = [];
-
-          if (conflictSource.name) {
-            routeTags.push('routeName', conflictSource.name);
-          }
-
-          if (conflictSource.params) {
-            toolkit.asArray(conflictSource.params).forEach(function(p) {
-              routeTags.push('routeParams.' + p, '' + data.params[p]);
-            });
-          }
-
-          var routeCheckTags = toolkit.jsonCopy(routeTags);
-          routeCheckTags.push('userType', '*', 'userId', '*');
-
-          var routeCacheTags = toolkit.jsonCopy(routeTags);
-          var routeUserInfo = null;
-          if (xAuthTokenObj.authType === 'builtin.byXAuthToken') {
-            routeUserInfo = { userType: 'builtinUser', userId: xAuthTokenObj.uid };
-          } else if (xAuthTokenObj.authType === 'FT.byAdmin') {
-            routeUserInfo = { userType: 'ftUser', userId: xAuthTokenObj.un };
-          } else {
-            routeUserInfo = { userType: 'unknowUser', userId: 'x' };
-          }
-          routeCacheTags.push('userType', routeUserInfo.userType, 'userId', routeUserInfo.userId);
-
-          var routeCacheKey     = toolkit.getCacheKey('cache', 'clientConflict', routeCacheTags);
-          var routeUserCacheKey = toolkit.getCacheKey('cache', 'clientConflict', routeTags);
+          var cacheKey = toolkit.getCacheKey('cache', 'instanceConflict', conflictSource);
           async.series([
-            // 记录当前用户停留页面
             function(innerCallback) {
               if (data.checkOnly) return innerCallback();
 
-              app.locals.cacheDB.setex(routeCacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, 'x', innerCallback);
+              app.locals.cacheDB.setexnx(cacheKey, CONFIG._INSTANCE_CONFLICT_EXPIRES, data.instanceId, innerCallback);
             },
-            // 查询所有用户停留页面，检查冲突
             function(innerCallback) {
-              var routeCheckPattern = toolkit.getCacheKey('cache', 'clientConflict', routeCheckTags);
-              app.locals.cacheDB.keys(routeCheckPattern, function(err, cacheRes) {
+              app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
                 if (err) return innerCallback(err);
-
-                var conflictInfo = {
-                  builtinUser: 0,
-                  ftUser     : 0,
-                  unknowUser : 0,
-                  total      : 0,
-                };
-                var ftUsers = [];
-
-                cacheRes.forEach(function(key) {
-                  var parsedKey = toolkit.parseCacheKey(key);
-                  if (!parsedKey.tags || !parsedKey.tags.userType) return;
-
-                  // `conflictInfo`中计数不包括当前用户本身
-                  if (parsedKey.tags.userType === routeUserInfo.userType && parsedKey.tags.userId === routeUserInfo.userId) return;
-
-                  conflictInfo[parsedKey.tags.userType] += 1;
-                  conflictInfo.total += 1;
-
-                  if (parsedKey.tags.userType === 'ftUser') {
-                    ftUsers.push(parsedKey.tags.userId);
-                  }
-                });
 
                 retData = {
-                  isCurrentUser: null,
-                  isFree       : (conflictInfo.total <= 0),
-                  conflictInfo : conflictInfo,
-                  ftUsers      : ftUsers,
+                  instanceId: cacheRes,
+                  isConflict: cacheRes && data.instanceId !== cacheRes,
+                }
+
+                if (data.instanceId === cacheRes && !data.checkOnly) {
+                  app.locals.cacheDB.expire(cacheKey, CONFIG._INSTANCE_CONFLICT_EXPIRES);
                 }
 
                 return innerCallback();
-              });
-            },
-            // 仅判断是否为当前用户
-            function(innerCallback) {
-              if (!data.checkOnly) return innerCallback();
-
-              // 获取当前占用页面的用户信息
-              app.locals.cacheDB.get(routeUserCacheKey, function(err, cacheRes) {
-                if (err) return innerCallback(err);
-
-                if (!cacheRes) {
-                  // 无法获取占用页面的用户信息
-                  retData.isCurrentUser = false;
-                  return innerCallback();
-                }
-
-                var lastRouteUserInfo = JSON.parse(cacheRes);
-                if (lastRouteUserInfo.userType === routeUserInfo.userType && lastRouteUserInfo.userId === routeUserInfo.userId) {
-                  // 占用此页面用户为当前用户
-                  retData.isCurrentUser = true;
-                } else {
-                  // 页面被其他用户占用
-                  retData.isCurrentUser = false;
-                }
-
-                return innerCallback();
-              });
-            },
-            // 标记并判断是否为当前用户
-            function(innerCallback) {
-              if (data.checkOnly) return innerCallback();
-
-              // 尝试设置页面占用
-              app.locals.cacheDB.setexnx(routeUserCacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, JSON.stringify(routeUserInfo), function(err, cacheRes) {
-                if (err) return innerCallback(err);
-
-                if (cacheRes) {
-                  // 当前用户为唯一一个占用此页面的用户
-                  retData.isCurrentUser = true;
-                  return innerCallback();
-                }
-
-                // 非此页面唯一用户
-                app.locals.cacheDB.get(routeUserCacheKey, function(err, cacheRes) {
-                  if (err) return innerCallback(err);
-
-                  if (!cacheRes) {
-                    // 无法获取占用页面的用户信息
-                    retData.isCurrentUser = false;
-                    return innerCallback();
-                  }
-
-                  var lastRouteUserInfo = JSON.parse(cacheRes);
-                  if (lastRouteUserInfo.userType === routeUserInfo.userType && lastRouteUserInfo.userId === routeUserInfo.userId) {
-                    // 占用此页面用户为当前用户
-                    retData.isCurrentUser = true;
-                  } else {
-                    // 页面被其他用户占用
-                    retData.isCurrentUser = false;
-                  }
-
-                  if (retData.isCurrentUser) {
-                    // 刷新占用页面时间
-                    app.locals.cacheDB.setex(routeUserCacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, JSON.stringify(routeUserInfo), innerCallback);
-                  } else {
-                    return innerCallback();
-                  }
-                });
               });
             },
           ], asyncCallback);

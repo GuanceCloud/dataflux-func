@@ -4,7 +4,7 @@ codeLines: '{n} line | {n} lines'
 
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                                         : 脚本设置
-'Other user are editing this Script, please wait...'                 : '其他用户正在编辑此脚本，请稍后...'
+'Other user or window are editing this Script, please wait...'       : '其他用户或窗口正在编辑此脚本，请稍后...'
 'Shortcut:'                                                          : 快捷键：
 Select Func                                                          : 选择聚焦函数
 Draft                                                                : 草稿
@@ -43,7 +43,7 @@ Saved Draft Code: 已保存的草稿代码
         <div class="code-viewer-action-right">
           <el-form :inline="true">
             <el-form-item v-if="isConflicted">
-              <el-link type="danger" :underline="false">{{ $t('Other user are editing this Script, please wait...') }}</el-link>
+              <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
               &#12288;
               &#12288;
             </el-form-item>

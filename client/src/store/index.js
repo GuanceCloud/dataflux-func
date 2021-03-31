@@ -203,13 +203,13 @@ export default new Vuex.Store({
       if (!state.userProfile) return null;
       return state.userProfile.id || null;
     },
-    authType: state => {
+    isSignedIn: state => {
       if (!state.xAuthToken) return false;
       if (!state.userProfile || !state.userProfile.roles) {
         return false;
       }
 
-      return state.userProfile.roles.indexOf('ftUser') >= 0 ? 'ftAuth' : 'auth';
+      return true;
     },
     isIntegratedUser: state => {
       if (!state.userProfile || !state.userProfile.roles) {

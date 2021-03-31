@@ -9,7 +9,7 @@ seconds      : '{n} second | {n} seconds'
 
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                                         : 脚本设置
-'Other user are editing this Script, please wait...'                 : '其他用户正在编辑此脚本，请稍后...'
+'Other user or window are editing this Script, please wait...'       : '其他用户或窗口正在编辑此脚本，请稍后...'
 All top Func without a underscore prefix are avaliable               : 可以指定任意顶层非下划线开头的函数
 Select Func                                                          : 选择执行函数
 Viewport are too narrow                                              : 当前可视宽度太窄
@@ -135,7 +135,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-if="isConflicted">
-                  <el-link type="danger" :underline="false">{{ $t('Other user are editing this Script, please wait...') }}</el-link>
+                  <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
                 </el-form-item>
 
                 <el-form-item>
@@ -1392,7 +1392,7 @@ export default {
       return this.$store.state.Editor_highlightedFuncId;
     },
     isSignedIn() {
-      return !!this.$store.state.xAuthToken;
+      return this.$store.getters.isSignedIn;
     },
     splitPanePercent() {
       return this.$store.state.codeEditor_splitPanePercent || this.$store.getters.DEFAULT_STATE.codeEditor_splitPanePercent;

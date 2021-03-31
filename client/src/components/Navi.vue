@@ -170,7 +170,7 @@ export default {
       }
     },
     isSignedIn() {
-      return !!this.$store.state.xAuthToken;
+      return this.$store.getters.isSignedIn;
     },
     uiTheme() {
       return this.$store.getters.uiTheme;

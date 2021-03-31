@@ -1291,8 +1291,8 @@ datafluxFuncAPI:
 
       ```http
       GET /api/v1/al/auln-xxxxx
-      &kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
-      ?options={"opt1":"opt_value1","opt2":"opt_value2"}
+      ?kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
+      &options={"opt1":"opt_value1","opt2":"opt_value2"}
       ```
 
       - 扁平格式 `flattened`
@@ -1416,12 +1416,11 @@ datafluxFuncAPI:
       Content-Type: x-www-form-urlencoded
 
       arg1=arg_value1&arg2=arg_value2
-
       ```
+
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
       *注意2：本格式不支持标准格式中的`options`参数*
       *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
-      ```
 
     method       : post
     url          : /api/v1/al/:id/:format
