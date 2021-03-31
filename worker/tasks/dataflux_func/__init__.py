@@ -1301,7 +1301,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, hint=None, kwargs_hint=None,
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
         integration=None, integration_config=None,
-        is_hidden=False, is_disabled=False):
+        is_hidden=False):
         ### 参数检查/预处理 ###
         extra_config = {}
 
@@ -1458,20 +1458,19 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                         if hint_field in arg_hint:
                             f_kwargs[arg_key][hint_field] = arg_hint[hint_field]
 
-            if not is_disabled:
-                safe_scope['DFF'].exported_api_funcs.append({
-                    'name'       : f_name,
-                    'title'      : title,
-                    'description': f_doc,
-                    'definition' : f_def,
-                    'extraConfig': extra_config or None,
-                    'category'   : category or 'general',
-                    'tags'       : tags,
-                    'args'       : f_args,
-                    'kwargs'     : f_kwargs,
-                    'integration': integration,
-                    'defOrder'   : len(safe_scope['DFF'].exported_api_funcs),
-                })
+            safe_scope['DFF'].exported_api_funcs.append({
+                'name'       : f_name,
+                'title'      : title,
+                'description': f_doc,
+                'definition' : f_def,
+                'extraConfig': extra_config or None,
+                'category'   : category or 'general',
+                'tags'       : tags,
+                'args'       : f_args,
+                'kwargs'     : f_kwargs,
+                'integration': integration,
+                'defOrder'   : len(safe_scope['DFF'].exported_api_funcs),
+            })
 
             @functools.wraps(F)
             def dff_api_F(*args, **kwargs):
@@ -1680,8 +1679,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 name, globals, locals, fromlist, level, safe_scope)
 
         # 注入方便函数
-        def __export_as_api(title=None, category=None, tags=None, **extra_config):
-            return self._export_as_api(safe_scope, title, category, tags, **extra_config)
+        def __export_as_api(title=None, **extra_config):
+            return self._export_as_api(safe_scope, title, **extra_config)
 
         def __get_data_source_helper(data_source_id, **helper_kwargs):
             return self._get_data_source_helper(data_source_id, **helper_kwargs)

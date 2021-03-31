@@ -555,7 +555,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(text);
   };
 
-  res.locals.sendRaw = function(raw) {
+  res.locals.sendRaw = function(raw, contentType) {
     var rawDump = raw;
     switch(typeof raw) {
       case 'number':
@@ -567,7 +567,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
       case 'object':
         try {
-          rawDump = JSON.stringify(raw);
+          rawDump = Buffer.isBuffer(raw)
+                  ? '<Buffer>'
+                  : JSON.stringify(raw);
         } catch(err) {
           rawDump = '' + raw;
         }
@@ -587,6 +589,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, raw, 'raw');
     }
+
+    if (contentType) {
+      res.type(contentType);
+    }
+
     return res.send(raw);
   };
 
