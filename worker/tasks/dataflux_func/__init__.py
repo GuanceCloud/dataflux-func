@@ -101,8 +101,13 @@ CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
 
 # 添加额外import路径
-sys.path.append(os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('EXTRA_PYTHON_PACKAGE_INSTALL_DIR')))
-sys.path.append(CONFIG.get('RESOURCE_ROOT_PATH'))
+extra_import_paths = [
+    CONFIG.get('RESOURCE_ROOT_PATH'),
+    os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('EXTRA_PYTHON_PACKAGE_INSTALL_DIR')),
+]
+for p in extra_import_paths:
+    os.makedirs(p, exist_ok=True)
+    sys.path.append(p)
 
 def _kwargs_hint_type_converter_str(x):
     if isinstance(x, str):

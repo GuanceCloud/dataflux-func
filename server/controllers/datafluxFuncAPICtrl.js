@@ -2039,6 +2039,7 @@ exports.getPythonPackageInstallStatus = function(req, res, next) {
 exports.installPythonPackage = function(req, res, next) {
   // Python包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+  fs.ensureDirSync(packageInstallPath);
 
   var pkg = req.body.pkg;
 
