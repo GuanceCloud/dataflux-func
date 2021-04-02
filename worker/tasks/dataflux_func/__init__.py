@@ -643,7 +643,7 @@ class FuncCacheHelper(object):
 
     def getset(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        res self.__task.cache_db.run('getset', key, value)
+        res = self.__task.cache_db.run('getset', key, value)
         return self._convert_result(res)
 
     def expire(self, key, expires, scope=None):
