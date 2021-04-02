@@ -347,8 +347,8 @@ def decipher_data_source_config_fields(config):
 
     return config
 
-def get_resource_path(p):
-    abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], p.lstrip('/'))
+def get_resource_path(file_path):
+    abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file_path.lstrip('/'))
     return abs_path
 
 class ScriptCacherMixin(object):
@@ -624,17 +624,27 @@ class FuncCacheHelper(object):
         key = toolkit.get_cache_key('funcCache', scope, tags=['key', key])
         return key
 
+    def _convert_result(self, result):
+        if result is None:
+            return None
+        elif isinstance(result, (bool, int, float)):
+            return result
+        else:
+            return six.ensure_str(result)
+
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
 
     def get(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('get', key)
+        res = self.__task.cache_db.run('get', key)
+        return self._convert_result(res)
 
     def getset(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('getset', key, value)
+        res self.__task.cache_db.run('getset', key, value)
+        return self._convert_result(res)
 
     def expire(self, key, expires, scope=None):
         key = self._get_cache_key(key, scope)
@@ -646,7 +656,8 @@ class FuncCacheHelper(object):
 
     def incr(self, key, step=1, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('incr', key, amount=step)
+        res = self.__task.cache_db.run('incr', key, amount=step)
+        return self._convert_result(res)
 
     def hkeys(self, key, pattern='*', scope=None):
         key = self._get_cache_key(key, scope)
@@ -671,37 +682,34 @@ class FuncCacheHelper(object):
         found_keys = list(set(found_keys))
         return found_keys
 
-    def hget(self, key, field, scope=None):
+    def hget(self, key, field=None, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hget', key, field)
+        if field is None:
+            res = self.__task.cache_db.run('hgetall', key)
+            res = dict([(six.ensure_str(k), v) for k, v in res.items()])
+            return res
 
-    def hmget(self, key, fields, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hmget', key, fields)
+        elif isinstance(field, (list, tuple)):
+            res = self.__task.cache_db.run('hmget', key)
+            res = dict(zip(field, [six.ensure_str(x) for x in res]))
+            return res
 
-    def hgetall(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        result = self.__task.cache_db.run('hgetall', key)
-        result = dict([(six.ensure_str(k), v) for k, v in result.items()])
-        return result
+        else:
+            res = self.__task.cache_db.run('hget', key, field)
+            return self._convert_result(res)
 
-    def hset(self, key, field, value, scope=None):
+    def hset(self, key, field, value, scope=None, not_exists=False):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hset', key, field, value)
-
-    def hsetnx(self, key, field, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hsetnx', key, field, value)
+        if not_exists:
+            return self.__task.cache_db.run('hsetnx', key, field, value)
+        else:
+            return self.__task.cache_db.run('hset', key, field, value)
 
     def hmset(self, key, obj, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('hmset', key, obj)
 
-    def hincr(self, key, field, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hincrby', key, field, amount=1)
-
-    def hincrby(self, key, field, step=1, scope=None):
+    def hincr(self, key, field, step=1, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('hincrby', key, field, amount=step)
 
@@ -719,19 +727,22 @@ class FuncCacheHelper(object):
 
     def lpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lpop', key)
+        res = self.__task.cache_db.run('lpop', key)
+        return self._convert_result(res)
 
     def rpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('rpop', key)
+        res = self.__task.cache_db.run('rpop', key)
+        return self._convert_result(res)
 
     def llen(self, key, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('llen', key)
 
-    def lrange(self, key, start, stop, scope=None):
+    def lrange(self, key, start=0, stop=-1, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lrange', key, start, stop);
+        res = self.__task.cache_db.run('lrange', key, start, stop);
+        return [self._convert_result(x) for x in res]
 
     def ltrim(self, key, start, stop, scope=None):
         key = self._get_cache_key(key, scope)
@@ -745,7 +756,8 @@ class FuncCacheHelper(object):
 
         key      = self._get_cache_key(key, scope)
         dest_key = self._get_cache_key(dest_key, dest_scope)
-        return self.__task.cache_db.run('rpoplpush', key, dest_key)
+        res = self.__task.cache_db.run('rpoplpush', key, dest_key)
+        return self._convert_result(res)
 
 class FuncDataSourceHelper(object):
     AVAILABLE_CONFIG_KEYS = (
@@ -1696,9 +1708,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         def __log(message):
             return self._log(safe_scope, message)
 
-        def __plot(ts_data):
-            return self._log(safe_scope, ts_data)
-
         def __print(*args, **kwargs):
             return self._print(safe_scope, *args, **kwargs)
 
@@ -1724,40 +1733,22 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return __data_source_helper.list()
 
         safe_scope['DFF'] = DFFWraper(inject_funcs={
-            'export_as_api'   : __export_as_api,  # 导出为API
-            'log'             : __log,            # 输出日志
-            'plot'            : __plot,           # 输出图表
-            'call_func'       : __call_func,      # 调用函数（新Task）
-            'eval'            : __eval,           # 执行Python表达式
-            'format_sql'      : format_sql,       # 格式化SQL语句
-            'FuncResponse'    : FuncResponse,     # 函数响应体
-            'FuncResponseFile': FuncResponseFile, # 函数响应体（返回文件）
+            'log' : __log,  # 输出日志
+            'eval': __eval, # 执行Python表达式
 
-            'get_resource_path': get_resource_path, # 获取资源路径
-
-            '__data_source_helper' : __data_source_helper,  # 数据源处理模块
-            '__env_variable_helper': __env_variable_helper, # 环境变量处理模块
-            '__async_helper'       : __async_helper,        # 异步处理模块
-            '__store_helper'       : __store_helper,        # 存储处理模块
-            '__cache_helper'       : __cache_helper,        # 缓存处理模块
-            '__config_helper'      : __config_helper,       # 配置处理模块
-
-            # 别名
-            'API'   : __export_as_api,
-            'SRC'   : __data_source_helper,
-            'ENV'   : __env_variable_helper,
-            'STORE' : __store_helper,
-            'CACHE' : __cache_helper,
-            'CONFIG': __config_helper,
-
-            'FUNC' : __call_func,
-            'EVAL' : __eval,
-            'ASYNC': __async_helper,
-
-            'RSRC': get_resource_path,
-
-            'RESP'     : FuncResponse,
-            'RESP_FILE': FuncResponseFile,
+            'API'      : __export_as_api,       # 导出为API
+            'SRC'      : __data_source_helper,  # 数据源处理模块
+            'ENV'      : __env_variable_helper, # 环境变量处理模块
+            'STORE'    : __store_helper,        # 存储处理模块
+            'CACHE'    : __cache_helper,        # 缓存处理模块
+            'CONFIG'   : __config_helper,       # 配置处理模块
+            'SQL'      : format_sql,            # 格式化SQL语句
+            'FUNC'     : __call_func,           # 调用函数（新Task）
+            'EVAL'     : __eval,                # 执行Python表达式
+            'ASYNC'    : __async_helper,        # 异步处理模块
+            'RSRC'     : get_resource_path,     # 获取资源路径
+            'RESP'     : FuncResponse,          # 函数响应体
+            'RESP_FILE': FuncResponseFile,      # 函数响应体（返回文件）
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
