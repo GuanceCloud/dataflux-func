@@ -1730,7 +1730,7 @@ datafluxFuncAPI:
         $example   : '1234'
       signIn:
         funcId:
-          $desc      : 登录函数ID
+          $desc      : 函数ID
           $isRequired: true
           $type      : string
           $maxLength : 256
@@ -1747,6 +1747,33 @@ datafluxFuncAPI:
           $type      : string
           $maxLength : 100
           $example   : 'Abc123'
+
+  integratedFileServerRoot:
+    name         : 集成文件服务（根目录）
+    method       : get
+    url          : /api/v1/func/integration/file-server/:funcId
+    response     : any
+    requireSignIn: false
+    params:
+      funcId:
+        $desc      : 函数ID
+        $isRequired: true
+        $type      : string
+        $maxLength : 256
+        $example   : demo_test.mysite
+  integratedFileServer:
+    name         : 集成文件服务
+    method       : get
+    url          : /api/v1/func/integration/file-server/:funcId/*
+    response     : any
+    requireSignIn: false
+    params:
+      funcId:
+        $desc      : 函数ID
+        $isRequired: true
+        $type      : string
+        $maxLength : 256
+        $example   : demo_test.mysite
 
   clearLogCacheTables:
     name         : 清空日志/缓存表

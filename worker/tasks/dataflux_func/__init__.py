@@ -56,6 +56,14 @@ FIX_INTEGRATION_KEY_MAP = {
     #       onLaunch : True/False，是否启动后运行
     #       onPublish: True/False，是否发布后运行
     'autoRun': 'autoRun',
+
+    # 文件服务器
+    # 集成为文件服务器
+    # 函数必须为`def func()`形式（即无参数形式）
+    #   配置项：
+    #       default : 默认返回文件
+    #       rootPath: 资源目录下的根路径
+    'fileServer': 'fileServer',
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {

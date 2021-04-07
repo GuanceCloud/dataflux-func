@@ -18,6 +18,7 @@ var moment     = require('moment');
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var CONST   = require('../utils/yamlResources').get('CONST');
+var ROUTE   = require('../utils/yamlResources').get('ROUTE');
 var toolkit = require('../utils/toolkit');
 var urlFor  = require('../utils/routeLoader').urlFor;
 var auth    = require('../utils/auth');
@@ -1949,6 +1950,35 @@ exports.integratedAuthMid = function(req, res, next) {
     delete req.query[queryField];
 
     return next();
+  });
+};
+
+exports.integratedFileServer = function(req, res, next) {
+  var funcId = req.params.funcId;
+
+  _getFuncById(res.locals, funcId, function(err, _func) {
+    if (err) return next(err);
+
+    if (_func.integration !== 'fileServer') {
+      return next(new E('EClientBadRequest', 'This Func is not a integrated file server func.'));
+    }
+
+    var integrationConfig = {}
+    try { integrationConfig = _func.extraConfigJSON.integrationConfig || {} } catch(_) {}
+
+    var rootPath   = integrationConfig.rootPath || '.';
+    var staticPath = req.params[0] || integrationConfig.default || 'index.html';
+
+    if (!req.params[0]) {
+      // 自动跳转
+      var nextPath = path.join(req.path, staticPath);
+      return res.redirect(nextPath);
+
+    } else {
+      // 提供文件
+      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, rootPath, staticPath);
+      res.sendFile(filePath);
+    }
   });
 };
 

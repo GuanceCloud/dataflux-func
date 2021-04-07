@@ -87,6 +87,13 @@ routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
 routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
   datafluxFuncAPICtrl.integratedSignIn,
 ]);
+// 集成文件服务
+routeLoader.load(ROUTE.datafluxFuncAPI.integratedFileServerRoot, [
+  datafluxFuncAPICtrl.integratedFileServer,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.integratedFileServer, [
+  datafluxFuncAPICtrl.integratedFileServer,
+]);
 
 // 清空日志/缓存表
 routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
