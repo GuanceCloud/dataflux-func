@@ -98,7 +98,9 @@ Browse Data Source: 浏览数据源
               </el-button>
               <div class="simple-debug-copy-content" v-if="latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].ok">
                 <CopyButton tipPlacement="bottom" title="查询语句" :content="latestQueryOptionsMap[dataSource.id].queryStatement"></CopyButton>
+                &nbsp;
                 <CopyButton tipPlacement="bottom" title="代码" :content="latestQueryOptionsMap[dataSource.id].queryCode"></CopyButton>
+                &nbsp;
                 <CopyButton tipPlacement="bottom" title="结果" :content="latestQueryResultMap[dataSource.id].data"></CopyButton>
               </div>
             </el-form-item>

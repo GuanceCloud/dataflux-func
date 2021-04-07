@@ -68,28 +68,38 @@ Open Simple Debug Panel: 打开简易调试面板
             </span>
           </el-tooltip>
 
-          <el-popover v-if="data.tip"
+          <el-popover v-if="data.id"
             placement="right-start"
             trigger="click"
             popper-class="aside-tip"
             :value="showPopoverId === data.id">
-            <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
-
-            <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-              {{ $t('Example:') }}
-              <pre>{{ data.tip.sampleCode }}</pre>
-              <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
+            <div class="aside-tree-node-description">
+              <code>{{ data.title || data.id }}</code>
+              <pre v-if="data.description">{{ data.description }}</pre>
             </div>
 
-            <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported">
-              <el-button
-                size="mini"
-                type="primary" plain
-                @click.stop="showSimpleDebugWindow(data.dataSource)">
-                <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Simple Debug Panel') }}
-              </el-button>
-            </div>
+            <template v-if="data.sampleCode">
+              <div class="aside-tree-node-sample-code">
+                {{ $t('Example:') }}
+                <pre>{{ data.sampleCode }}</pre>
+              </div>
+            </template>
+
+            <br><CopyButton
+              font-size="12px"
+              :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
+              :content="data.id"></CopyButton>
+            <br><CopyButton v-if="data.sampleCode"
+              font-size="12px"
+              :title="$t('Copy example')"
+              :content="data.sampleCode"></CopyButton>
+            <br><el-button v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported"
+              class="aside-tree-node-simple-debug"
+              type="text"
+              size="small"
+              @click.stop="showSimpleDebugWindow(data.dataSource)">
+              <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Simple Debug Panel') }}
+            </el-button>
 
             <el-button slot="reference"
               type="text"
@@ -163,10 +173,10 @@ export default {
           dataSourceType: d.type,
           isBuiltin     : d.isBuiltin,
           searchTEXT    : `${d.title} ${d.type} ${d.id}`,
-          tip: {
-            description: d.description,
-            sampleCode : sampleCode,
-          },
+
+          title      : d.title,
+          description: d.description,
+          sampleCode : sampleCode,
 
           dataSource: d,
         });
@@ -237,6 +247,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.aside-tree-node-tag {
+  width: 75px;
+  text-align: center;
+}
 .aside-tree-node {
   flex: 1;
   display: flex;
@@ -250,33 +264,21 @@ export default {
 .aside-tree-node i.fa {
   font-size: 14px;
 }
-.aside-tree-node-tag {
-  width: 75px;
-  text-align: center;
-}
-pre.aside-tree-node-description {
-  padding: 0;
+.aside-tip pre {
+  padding: 0 0 0 10px;
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
+}
+.aside-tree-node-description {
+
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
   color: grey;
   text-align: left;
 }
-.aside-tree-node-sample-code pre {
-  padding: 10px 0 0 15px;
-  margin: 0;
-  font-size: 12px;
-  color: black;
-}
-.aside-tree-node-sample-code .copy-button {
-  padding-left: 10px
-}
 .aside-tree-node-simple-debug {
-  padding-top: 10px;
-  color: grey;
-  text-align: left;
+  margin-left: 5px;
 }
 .builtin {
   color: orangered;

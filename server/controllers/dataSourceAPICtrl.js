@@ -481,7 +481,7 @@ exports.test = function(req, res, next) {
           dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
             var fCipher = toolkit.strf('{0}Cipher', f);
 
-            if (fCipher in dataSource.configJSON) {
+            if (dataSource.configJSON[fCipher]) {
               try {
                 dataSource.configJSON[f] = toolkit.decipherByAES(dataSource.configJSON[fCipher], CONFIG.SECRET);
               } catch(err) {

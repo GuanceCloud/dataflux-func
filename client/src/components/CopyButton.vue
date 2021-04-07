@@ -18,7 +18,7 @@ Browser not supported: 当前浏览器不支持
         :type="type || 'text'"
         :size="size || 'mini'"
         :data-clipboard-text="content">
-        <span style="font-size: 14px">
+        <span :style="{ 'font-size': fontSize || '14px' }">
           <i class="fa fa-clipboard"></i>
           {{ title }}
         </span>
@@ -58,7 +58,8 @@ export default {
     content     : String,
     tipPlacement: String,
 
-    size: String,
+    size    : String,
+    fontSize: String,
   },
   computed: {
     tipContent() {
