@@ -61,8 +61,8 @@ FIX_INTEGRATION_KEY_MAP = {
     # 集成为文件服务器
     # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
-    #       default : 默认返回文件
-    #       rootPath: 资源目录下的根路径
+    #       default: 默认返回文件
+    #       root   : 资源目录下的根路径
     'fileServer': 'fileServer',
 }
 

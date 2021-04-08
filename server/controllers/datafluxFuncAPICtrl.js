@@ -1966,7 +1966,7 @@ exports.integratedFileServer = function(req, res, next) {
     var integrationConfig = {}
     try { integrationConfig = _func.extraConfigJSON.integrationConfig || {} } catch(_) {}
 
-    var rootPath   = integrationConfig.rootPath || '.';
+    var root       = integrationConfig.root || '.';
     var staticPath = req.params[0] || integrationConfig.default || 'index.html';
 
     if (!req.params[0]) {
@@ -1976,7 +1976,7 @@ exports.integratedFileServer = function(req, res, next) {
 
     } else {
       // 提供文件
-      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, rootPath, staticPath);
+      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, root, staticPath);
       res.sendFile(filePath);
     }
   });
