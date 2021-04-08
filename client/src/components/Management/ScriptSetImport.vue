@@ -5,6 +5,12 @@
       <el-header height="60px">
         <h1>
           {{ modeName }}脚本包
+          <div class="header-control">
+            <el-button @click="goToHistory" size="mini">
+              <i class="fa fa-fw fa-history"></i>
+              脚本包导入历史
+            </el-button>
+          </div>
         </h1>
       </el-header>
 
@@ -40,7 +46,7 @@
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -54,21 +60,21 @@
       <el-dialog
         title="即将导入脚本包"
         :visible.sync="showConfirm"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false"
-        :show-close="false"
+        :close-on-click-modal="true"
+        :close-on-press-escape="true"
+        :show-close="true"
         width="750px">
         <span class="import-token-dialog-content">
           <template v-if="checkResult && checkResult.diff">
             <template v-if="!T.isNothing(checkResult.diff.add)">
               <span class="text-good">新增脚本集：</span>
-              <el-tag type="success" v-for="d in checkResult.diff.add" :key="d.id">{{ d.title || d.id }}</el-tag>
+              <el-tag size="medium" type="success" v-for="d in checkResult.diff.add" :key="d.id">{{ d.title || d.id }}</el-tag>
               <hr class="br">
             </template>
 
             <template v-if="!T.isNothing(checkResult.diff.replace)">
               <span class="text-watch">替换脚本集：</span>
-              <el-tag type="warning" v-for="d in checkResult.diff.replace" :key="d.id">{{ d.title || d.id }}</el-tag>
+              <el-tag size="medium" type="warning" v-for="d in checkResult.diff.replace" :key="d.id">{{ d.title || d.id }}</el-tag>
               <InfoBlock type="warning" title="被替换的脚本集下所有脚本文件会被完整替换为新版本，新版本中不存在的脚本文件会被删除"></InfoBlock>
               <hr class="br">
             </template>
@@ -81,10 +87,7 @@
           </template>
         </span>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="goBackToList">
-            <i class="fa fa-fw fa-arrow-left"></i>
-            返回至脚本包导入历史列表
-          </el-button>
+          <el-button @click="showConfirm = false">取消</el-button>
           <el-button type="primary" @click="confirmImport">
             确认导入
           </el-button>
@@ -147,12 +150,7 @@ export default {
         return this.alertOnError(apiRes);
       }
 
-      this.goBackToList();
-    },
-    goBackToList() {
-      this.$router.push({
-        name: 'script-set-import-history-list',
-      });
+      this.goToHistory();
     },
     alertOnError(apiRes) {
       if (apiRes.ok) return;
@@ -217,11 +215,17 @@ export default {
     onUploadFileChange(file, fileList) {
       if (fileList.length > 1) fileList.splice(0, 1);
 
-      if (fileList.length > 0) {
-        this.showFilePreview(fileList[0].name);
-      } else {
+      this.disableUpload = (fileList.length <= 0);
+      if (this.disableUpload) {
         this.initFilePreview();
+      } else {
+        this.showFilePreview(fileList[0].name);
       }
+    },
+    goToHistory() {
+      this.$router.push({
+        name: 'script-set-import-history-list',
+      });
     },
   },
   computed: {
@@ -245,7 +249,8 @@ export default {
       uploadAreaIconClass  : ['fa-cloud-upload'],
       uploadAreaIconText   : `将文件拖到此处，或<em>点击上传</em>`,
 
-      showConfirm: false,
+      disableUpload: true,
+      showConfirm  : false,
 
       checkResult: {},
 
@@ -259,13 +264,16 @@ export default {
   created() {
     this.$store.commit('updateLoadStatus', true);
   },
+  mounted() {
+    window.vmc = this;
+  },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 .common-form .el-upload-dragger {
-  width: 400px;
+  width: 500px;
 }
 .el-upload-dragger.upload-area-active {
   border-color: #FF6600 !important;

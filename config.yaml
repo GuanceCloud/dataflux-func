@@ -8,13 +8,9 @@ PIP_REQUIREMENTS_FILE_PATH: '/data/requirements.txt'
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
 
-# 额外Python import 路径
-# 必须使用绝对路径
-EXTRA_PYTHON_IMPORT_PATH: '/data/extra-python-packages'
-
 # 资源文件根目录
 # 必须使用绝对路径
-RESOURCE_FILE_ROOT_PATH: '/data/resources'
+RESOURCE_ROOT_PATH: '/data/resources'
 
 # 运行模式
 # 可选：
@@ -40,7 +36,7 @@ LOG_LEVEL: WARNING
 
 # 日志文件输出地址
 # 必须使用绝对路径
-LOG_FILE_PATH: '/data/dataflux-func.log'
+LOG_FILE_PATH: '/data/logs/dataflux-func.log'
 
 # 数据库自动备份
 DB_AUTO_BACKUP_ENABLED: true
@@ -50,7 +46,7 @@ DB_AUTO_BACKUP_LIMIT: 168
 
 # 数据库自动备份目录
 # 必须使用绝对路径
-DB_AUTO_BACKUP_DIR: '/data/sqldump/'
+DB_AUTO_BACKUP_PATH: '/data/sqldump/'
 
 # 日志输出格式
 # 可选：
@@ -64,7 +60,7 @@ LOG_CONSOLE_COLOR: true
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
-WEB_BASE_URL      : http://127.0.0.1:8088
+WEB_BASE_URL      : ''
 WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
 # Web服务器绑定IP
@@ -107,17 +103,20 @@ WORKER_QUEUE_ALIAS_MAP: cpu=9
 #   以下配置请勿修改   #
 ########################
 
-# 钉钉机器人URL
-DING_TALK_ROBOT_URL: ''
+# 钉钉机器人
+DING_TALK_ROBOT_URL   : ''
+DING_TALK_ROBOT_SECRET: ''
 
 # 文件存储根目录
-FILE_STORE_ROOT_FOLDER: uploaded-files
+FILE_STORE_ROOT_DIR: uploaded-files
+# 额外Python 包安装目录
+EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
 
-# 客户端冲突过期时间
-_CLIENT_CONFLICT_EXPIRES: 5
+# 客户端实例冲突过期时间
+_INSTANCE_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
 _FUNC_PKG_EXPORT_FILENAME: dataflux-func
@@ -133,30 +132,32 @@ _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
 # 脚本包自动安装锁定时间
 _FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 300
 
+# API调用时上传文件临时目录
+_FUNC_UPLOAD_DIR: uploads
+
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''
 
 # 示例代码
 _SAMPLE_SCRIPT: |
-  @DFF.API('My Func')
-  def my_func(x, y):
+  @DFF.API('Hello, world')
+  def hello_world(name=''):
       '''
-      My Func
+      A hello world function
 
       Parameters:
-        x {int|float} A number
-        y {int|float} Another number
+        name {str} name
 
-      return {int|float} Sum of `x` and `y`
+      return {str} "Hello, world! {name}"
       '''
-      return x + y
+      return f"Hello, world! {name}"
 
-  def test_my_func():
+  def test_hello_world():
       '''
-      Test My Func
+      Test hello world function
       '''
-      assert my_func(1, 1) == 2
-      assert my_func(1.1, 1.2) == 2.3
+      assert hello_world('Tom') == "Hello, world! Tom"
+      return 'OK'
 
 # MySQL一般作为常量的配置
 _MYSQL_CONNECTION_LIMIT   : 30
@@ -172,6 +173,7 @@ _WEB_SIGN_IN_PAGE          : datafluxFuncPage.clientApp
 _WEB_DASHBOARD_PAGE        : indexPage.dashboard
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
+_WEB_ORIGIN_HEADER         : X-Dff-Origin
 _WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
 _WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
 _WEB_PAGE_SIZE_COOKIE      : xDFFPageSize
@@ -193,7 +195,7 @@ _WEB_AK_TIMESTAMP_MAX_DIFF : 900
 _WEB_AK_NONCE_TTL          : 86400
 
 # 本地临时认证令牌
-_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADERL: X-Localhost-Temp-Auth-Token
+_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER: X-Localhost-Temp-Auth-Token
 
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10
@@ -204,6 +206,7 @@ _WORKER_MAX_TASKS_PER_CHILD: 3000
 _WORKER_RESULT_EXPIRES     : 3600
 
 # 监控模块一般作为常量的配置
+_MONITOR_HEARTBEAT_INTERVAL      : 30
 _MONITOR_SYS_STATS_CHECK_INTERVAL: 300
 _MONITOR_WORKER_QUEUE_LIST       : 0,1,2,3,4,5,6,7,8,9
 _MONITOR_MATCHED_ROUTE_EXPIRES   : 86400
@@ -266,6 +269,7 @@ _DBDATA_TABLE_LIMIT_MAP: >
   ,biz_main_script_set_export_history=1000
   ,biz_main_script_set_import_history=1000
   ,biz_main_script_publish_history=1000
+_UPLOAD_FILE_EXPIRES: 3600
 
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-

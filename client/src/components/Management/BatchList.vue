@@ -53,7 +53,8 @@ Delete Batch : 删除批处理
 
                 <br>
                 <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code><GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
+                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
+                <GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
 
                 <br>
                 <span class="text-info">&#12288;调用参数:</span>
@@ -88,14 +89,14 @@ Delete Batch : 删除批处理
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="100">
+          <el-table-column label="状态" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
               <span v-else class="text-good">已启用</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="150">
+          <el-table-column label="备注" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
               <span v-else class="text-info">{{ '<无备注>' }}</span>
@@ -145,8 +146,8 @@ Delete Batch : 删除批处理
         description="批处理任务投递API固定为异步调用"
         :showExecModeOption="false"
         :showPostExample="true"
+        :showPostExampleSimplified="true"
         :showGetExample="true"
-        :showGetExampleFlattened="true"
         :showGetExampleSimplified="true"></APIExampleDialog>
     </el-container>
   </transition>
@@ -296,7 +297,7 @@ export default {
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/bat/:id', {
-        baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
+        baseURL: this.T.getBaseURL(),
         params : {id: d.id},
       });
 

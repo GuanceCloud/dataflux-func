@@ -9,6 +9,23 @@ const createMap = function(arrayConst) {
   return map;
 }
 
+const MAP_CONST = function(arrayConst) {
+  this._map = createMap(arrayConst)
+};
+MAP_CONST.prototype.get = function(key) {
+  if (key in this._map) {
+    return this._map[key];
+  } else {
+    return {
+      name     : '-',
+      fullName : '-',
+      tagType  : 'info',
+      icon     : 'fa-ban',
+      textClass: 'text-bad',
+    };
+  }
+};
+
 // 数据源
 import logo_df_dataway    from '@/assets/img/logo-dataflux-dataway.png'
 import logo_influxdb      from '@/assets/img/logo-influxdb.png'
@@ -25,6 +42,9 @@ import logo_nsq           from '@/assets/img/logo-nsq.png'
 import logo_mqtt          from '@/assets/img/logo-mqtt.png'
 
 export default {
+  get NOPE() {
+    return '-';
+  },
   get DATE_SOURCE() {
     return [
       {
@@ -253,42 +273,42 @@ export default {
           user         : { default: null },
           password     : { default: null },
           clientId     : { default: null },
-          topicHandlers: { default: [{ topic: '$share/dataflux_func/#', funcId: null }] },
+          topicHandlers: { default: [{ topic: '$share/GROUP/TOPIC', funcId: null }] },
         },
       },
     ];
   },
   get DATE_SOURCE_MAP() {
-    return createMap(this.DATE_SOURCE);
+    return new MAP_CONST(this.DATE_SOURCE);
   },
 
   // 侧边栏项目类型
   get ASIDE_ITEM_TYPE() {
     return [
       {
-        'key' : 'scriptSet',
-        'name': app.$t('Script Set'),
+        key : 'scriptSet',
+        name: app.$t('Script Set'),
       },
       {
-        'key' : 'script',
-        'name': app.$t('Script'),
+        key : 'script',
+        name: app.$t('Script'),
       },
       {
-        'key' : 'func',
-        'name': app.$t('Func'),
+        key : 'func',
+        name: app.$t('Func'),
       },
       {
-        'key' : 'dataSource',
-        'name': app.$t('Data Source'),
+        key : 'dataSource',
+        name: app.$t('Data Source'),
       },
       {
-        'key' : 'envVariable',
-        'name': app.$t('ENV'),
+        key : 'envVariable',
+        name: app.$t('ENV'),
       },
     ];
   },
   get ASIDE_ITEM_TYPE_MAP() {
-    return createMap(this.ASIDE_ITEM_TYPE);
+    return new MAP_CONST(this.ASIDE_ITEM_TYPE);
   },
 
   // 环境变量
@@ -326,7 +346,7 @@ export default {
     ];
   },
   get ENV_VARIABLE_MAP() {
-    return createMap(this.ENV_VARIABLE);
+    return new MAP_CONST(this.ENV_VARIABLE);
   },
 
   // 授权链接限流
@@ -334,32 +354,32 @@ export default {
     return [
       {
         key : 'bySecond',
-        name: app.$t('timePerSecond'),
+        name: 'timePerSecond',
       },
       {
         key : 'byMinute',
-        name: app.$t('timePerMinute'),
+        name: 'timePerMinute',
       },
       {
         key : 'byHour',
-        name: app.$t('timePerHour'),
+        name: 'timePerHour',
       },
       {
         key : 'byDay',
-        name: app.$t('timePerDay'),
+        name: 'timePerDay',
       },
       {
         key : 'byMonth',
-        name: app.$t('timePerMonth'),
+        name: 'timePerMonth',
       },
       {
         key : 'byYear',
-        name: app.$t('timePerYear'),
+        name: 'timePerYear',
       },
     ];
   },
   get AUTH_LINK_THROTTLING_MAP() {
-    return createMap(this.AUTH_LINK_THROTTLING);
+    return new MAP_CONST(this.AUTH_LINK_THROTTLING);
   },
 
   // 任务状态
@@ -392,7 +412,7 @@ export default {
     ];
   },
   get TASK_STATUS_MAP() {
-    return createMap(this.TASK_STATUS);
+    return new MAP_CONST(this.TASK_STATUS);
   },
 
   // 总揽业务实体
@@ -441,7 +461,7 @@ export default {
     ];
   },
   get OVERVIEW_ENTITY_MAP() {
-    return createMap(this.OVERVIEW_ENTITY);
+    return new MAP_CONST(this.OVERVIEW_ENTITY);
   },
 
   // 脚本还原点
@@ -459,7 +479,7 @@ export default {
       },
       {
         key      : 'recover',
-        name     : app.$t('Before Script Set Lib recover'),
+        name     : app.$t('Before Script Lib recover'),
         textClass: 'text-info',
       },
       {
@@ -470,7 +490,7 @@ export default {
     ];
   },
   get SCRIPT_RECOVER_POINT_MAP() {
-    return createMap(this.SCRIPT_RECOVER_POINT);
+    return new MAP_CONST(this.SCRIPT_RECOVER_POINT);
   },
 
   // 函数执行模式
@@ -478,7 +498,7 @@ export default {
     return [
       {
         key      : 'sync',
-        name     : app.$t('Sync all'),
+        name     : app.$t('Sync call'),
         textClass: 'text-main',
       },
       {
@@ -491,15 +511,10 @@ export default {
         name     : app.$t('Crontab'),
         textClass: 'text-info',
       },
-      {
-        key      : 'autoRun',
-        name     : app.$t('Auto run'),
-        textClass: 'text-info',
-      },
     ];
   },
   get FUNC_EXEC_MODE_MAP() {
-    return createMap(this.FUNC_EXEC_MODE);
+    return new MAP_CONST(this.FUNC_EXEC_MODE);
   },
 
   // 函数集成
@@ -512,7 +527,7 @@ export default {
     ];
   },
   get FUNC_INTEGRATION_MAP() {
-    return createMap(this.FUNC_INTEGRATION);
+    return new MAP_CONST(this.FUNC_INTEGRATION);
   },
 
   // 编辑器主题
@@ -581,7 +596,7 @@ export default {
     ];
   },
   get CODE_MIRROR_THEME_MAP() {
-    return createMap(this.CODE_MIRROR_THEME);
+    return new MAP_CONST(this.CODE_MIRROR_THEME);
   },
   get CODE_MIRROR_DEFAULT_THEME() {
     return 'eclipse-monokai';

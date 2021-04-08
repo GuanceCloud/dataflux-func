@@ -25,8 +25,6 @@ var GET_FIELDS = [
   'updateTime',
 ];
 
-var SUPER_ADMIN_USER_ID = 'u-admin';
-
 /* Handlers */
 var crudHandler = exports.crudHandler = userMod.createCRUDHandler();
 
@@ -61,10 +59,6 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
 
-  if (id === SUPER_ADMIN_USER_ID) {
-    return next(new E('EBizCondition.adminUserCannotBeModified', 'Origin Admin user cannot been modified directly.'));
-  }
-
   // Do business check
   var userModel = userMod.createModel(res.locals);
 
@@ -79,6 +73,10 @@ exports.modify = function(req, res, next) {
 
     if (dbRes.length > 0 && id !== dbRes[0].id) {
       return next(new E('EClientDuplicated.username', 'This username is used by others.'));
+    }
+
+    if (dbRes[0].roles.indexOf('sa') >= 0) {
+      return next(new E('EBizCondition.adminUserCannotBeModified', 'Origin Admin user cannot been modified directly.'));
     }
 
     // If disabled, delete xAuthToken

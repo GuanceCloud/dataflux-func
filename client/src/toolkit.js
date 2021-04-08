@@ -97,6 +97,11 @@ export function _switchToBuiltinAuth() {
   store.commit('switchToBuiltinAuth');
 };
 
+export function getBaseURL() {
+  let baseURL = store.getters.CONFIG('WEB_BASE_URL') || location.origin;
+  return baseURL;
+};
+
 export function getBrowserName() {
   var userAgent = navigator.userAgent.toLowerCase();
   var isOpera = userAgent.indexOf('opera') > -1;
@@ -467,6 +472,39 @@ export function padZero(num, length, char) {
   return num;
 };
 
+export function formatQuery(query) {
+  let queryString = '';
+  if (query) {
+    let queryStringParts = [];
+    for (let k in query) if (query.hasOwnProperty(k)) {
+      let v = query[k];
+      if ('undefined' === typeof v || null === v) continue;
+
+      switch(typeof v) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+          v = v.toString();
+          break;
+
+        case 'object':
+          v = JSON.stringify(v);
+          break;
+      }
+
+      v = encodeURIComponent(v);
+
+      queryStringParts.push(`${k}=${v}`);
+    }
+
+    if (queryStringParts.length > 0) {
+      queryString = `${queryStringParts.join('&')}`;
+    }
+  }
+
+  return queryString;
+};
+
 export function formatURL(pathPattern, options) {
   options = options || {};
 
@@ -488,30 +526,9 @@ export function formatURL(pathPattern, options) {
 
   let queryString = '';
   if (options.query) {
-    let queryStringParts = [];
-    for (let k in options.query) if (options.query.hasOwnProperty(k)) {
-      let v = options.query[k];
-      if ('undefined' === typeof v || null === v) continue;
-
-      switch(typeof v) {
-        case 'string':
-        case 'number':
-        case 'boolean':
-          v = v.toString();
-          break;
-
-        case 'object':
-          v = JSON.stringify(v);
-          break;
-      }
-
-      v = encodeURIComponent(v);
-
-      queryStringParts.push(`${k}=${v}`);
-    }
-
-    if (queryStringParts.length > 0) {
-      queryString = `?${queryStringParts.join('&')}`;
+    queryString = formatQuery(options.query);
+    if (queryString) {
+      queryString = '?' + queryString;
     }
   }
 
@@ -585,21 +602,61 @@ export function compareVersion(a, b) {
   return 0;
 };
 
-export function toDateTime(dt) {
-  return moment.utc(dt).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm');
-};
-
 export function isExpired(dt) {
   return moment.utc(dt).unix() < moment().unix();
 };
 
-export function fromNow(dt) {
-  return moment.utc(dt).locale('zh_CN').fromNow();
+export function getDateTimeString(dt, pattern) {
+  let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
+  let inputTime = moment.utc(dt).locale(store.getters.uiLocale).utcOffset(utcOffset);
+
+  if (!pattern) {
+    pattern = 'YYYY-MM-DD HH:mm:ss';
+  }
+  return inputTime.format(pattern);
 };
 
-export function getDateTimeStringCN(dt, f) {
-  return moment(dt).locale('zh_CN').utcOffset('+08:00').format(f || 'YYYY-MM-DD HH:mm:ss');
+export function fromNow(dt) {
+  return moment.utc(dt).locale(store.getters.uiLocale).fromNow();
 };
+
+export function stringSimilar(s, t, f) {
+  if (!s || !t) {
+      return 0
+  }
+  var l = s.length > t.length ? s.length : t.length
+  var n = s.length
+  var m = t.length
+  var d = []
+  f = f || 3
+  var min = function(a, b, c) {
+      return a < b ? (a < c ? a : c) : (b < c ? b : c)
+  }
+  var i, j, si, tj, cost
+  if (n === 0) return m
+  if (m === 0) return n
+  for (i = 0; i <= n; i++) {
+      d[i] = []
+      d[i][0] = i
+  }
+  for (j = 0; j <= m; j++) {
+      d[0][j] = j
+  }
+  for (i = 1; i <= n; i++) {
+      si = s.charAt(i - 1)
+      for (j = 1; j <= m; j++) {
+          tj = t.charAt(j - 1)
+          if (si === tj) {
+              cost = 0
+          } else {
+              cost = 1
+          }
+          d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+      }
+  }
+  let res = (1 - d[n][m] / l)
+  return parseFloat(res.toFixed(f));
+}
 
 export function asideItemSorter(a, b) {
   return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
@@ -640,14 +697,10 @@ function _getCallAPIOpt(method, pathPattern, options) {
   if (store.state.xAuthToken) {
     axiosOpt.headers = axiosOpt.headers || {};
 
-    axiosOpt.headers['X-Dff-Client-Id'] = store.getters.clientId;
-    axiosOpt.headers['X-Dff-Origin'] = 'DFF-UI';
+    axiosOpt.headers[store.getters.CONFIG('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
+    axiosOpt.headers[store.getters.CONFIG('_WEB_ORIGIN_HEADER')]    = 'DFF-UI';
 
-    let authHeaderField = 'X-Dff-Auth-Token';
-    if (store.state.systemConfig && store.state.systemConfig.ftUserAuthEnabled) {
-      // 启用FT用户认证时，改用FT认证X-Ft-Auth-Token 头
-      authHeaderField = store.state.systemConfig.ftXAuthHeader;
-    }
+    let authHeaderField = store.getters.CONFIG('_WEB_AUTH_HEADER');
     if (store.state.xAuthToken) {
       axiosOpt.headers[authHeaderField] = store.state.xAuthToken;
     }
@@ -672,6 +725,29 @@ function _getCallAPIOpt(method, pathPattern, options) {
   }
 
   return axiosOpt;
+};
+
+async function _prepareAPIResp(apiResp) {
+  let respContentType = apiResp.headers['content-type'];
+
+  if ('string' === typeof respContentType && respContentType.indexOf('application/json') >= 0) {
+    let apiRespData = apiResp.data;
+
+    switch (Object.prototype.toString.call(apiRespData)) {
+      case '[object Blob]':
+        apiRespData = await apiRespData.text();
+        apiRespData = JSON.parse(apiRespData);
+        break;
+
+      case '[object String]':
+        apiRespData = JSON.parse(apiRespData);
+        break;
+    }
+
+    apiResp.data = apiRespData;
+  }
+
+  return apiResp;
 };
 
 function _logCallingAPI(axiosOpt, apiResp) {
@@ -720,6 +796,7 @@ async function _callAPI(axiosOpt) {
 
   try {
     let resp = await axios(axiosOpt);
+    resp = await _prepareAPIResp(resp);
     return resp;
 
   } catch (err) {
@@ -729,7 +806,8 @@ async function _callAPI(axiosOpt) {
         router.push({name: 'index'});
       }
 
-      return err.response;
+      let errResp = await _prepareAPIResp(err.response)
+      return errResp;
     }
 
     await MessageBox.alert(`与服务器通讯失败，请稍后再试
@@ -778,10 +856,13 @@ export async function callAPI(method, pathPattern, options) {
         // 令牌过期等，不用弹框提示
 
       } else if (alert.showError) {
-        let message = apiResp.data.message;
-        if (alert.reasonMap && alert.reasonMap[apiResp.data.reason]) {
-          message = alert.reasonMap[apiResp.data.reason];
+        let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
+                    ? alert.reasonMap[apiResp.data.reason]
+                    : apiResp.data.message;
+        if (apiResp.data.detail && apiResp.data.detail.message) {
+          message += `<br><small>${apiResp.data.detail.message}<small>`;
         }
+
         await MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),
@@ -877,7 +958,13 @@ export async function callAPI_allPage(pathPattern, options) {
 
         } else if (alert.showError) {
           setTimeout(() => {
-            MessageBox.alert(`${app.$t('Operation failed')}<br>${_apiResp.data.message}`, alert.title, {
+            let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
+                        ? alert.reasonMap[apiResp.data.reason]
+                        : apiResp.data.message;
+            if (apiResp.data.detail && apiResp.data.detail.message) {
+              message += `<br><small>${apiResp.data.detail.message}<small>`;
+            }
+            MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
               dangerouslyUseHTMLString: true,
               confirmButtonText: app.$t('OK'),
               type: 'error',
@@ -931,6 +1018,16 @@ export async function callAPI_allPage(pathPattern, options) {
 
   _logCallingAPI(axiosOpt, apiResp);
   return apiResp.data;
+};
+
+export function authedLink(url) {
+  let urlPath   = url.split('?')[0];
+  let nextQuery = getQuery(url);
+
+  let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
+  nextQuery[authQuery] = store.state.xAuthToken;
+
+  return formatURL(urlPath, { query: nextQuery });
 };
 
 export function isPageFiltered(ignoreCases) {

@@ -499,20 +499,36 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(html);
   };
 
-  res.locals.sendFile = function(file, fileType, fileName) {
+  res.locals.sendLocalFile = function(filePath) {
+    var fileName = filePath.split('/').pop();
+    var fileType = fileName.split('.').pop();
+    res.locals.logger.debug('[WEB LOCAL FILE] `{0}`', fileName);
+
+    res.type(fileType);
+    res.attachment(fileName);
+
+    var reqCost = Date.now() - res.locals._requestStartTime;
+    recordSlowAPI(req, res, reqCost);
+    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+
+    if ('function' === typeof appInit.beforeReponse) {
+      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, fileName, 'file');
+    }
+    return res.download(filePath);
+  };
+
+  res.locals.sendFile = function(file, fileName, fileType) {
     res.locals.logger.debug('[WEB FILE] `{0}` ({1} Bytes)', fileName || 'FILE', file.length);
+
+    if (!fileType && fileName.indexOf('.') >= 0) {
+      fileType = fileName.split('.').pop();
+    }
 
     if (fileType) {
       res.type(fileType);
     }
 
-    if (fileName) {
-      if (fileName.slice(-fileType.length - 1) !== '.' + fileType) {
-        fileName = toolkit.strf('{0}.{1}', fileName, fileType);
-      }
-
-      res.attachment(fileName);
-    }
+    res.attachment(fileName);
 
     var reqCost = Date.now() - res.locals._requestStartTime;
     recordSlowAPI(req, res, reqCost);
@@ -539,7 +555,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(text);
   };
 
-  res.locals.sendRaw = function(raw) {
+  res.locals.sendRaw = function(raw, contentType) {
     var rawDump = raw;
     switch(typeof raw) {
       case 'number':
@@ -551,7 +567,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
       case 'object':
         try {
-          rawDump = JSON.stringify(raw);
+          rawDump = Buffer.isBuffer(raw)
+                  ? '<Buffer>'
+                  : JSON.stringify(raw);
         } catch(err) {
           rawDump = '' + raw;
         }
@@ -571,6 +589,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, raw, 'raw');
     }
+
+    if (contentType) {
+      res.type(contentType);
+    }
+
     return res.send(raw);
   };
 
@@ -580,7 +603,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = toolkit.convertJSON(ret.data, req.query.export, req.query.charset);
       if (ret === null) return next(new E('EBizBadData', 'Export failed.'));
 
-      return res.locals.sendFile(ret, req.query.export);
+      var fileName = toolkit.strf('{0}.{1}', req.path.split('/').pop(), req.query.export);
+      return res.locals.sendFile(ret, fileName);
 
     } else {
       return res.locals.sendJSON(ret);

@@ -219,7 +219,7 @@ export default {
             }
           });
 
-          let tooltipHTML = this.T.getDateTimeStringCN(params[0].data[0]);
+          let tooltipHTML = this.T.getDateTimeString(params[0].data[0]);
           tooltipHTML += '<br>';
           tooltipHTML += '<table>';
           for (let i = 0; i < sortedParams.length; i++) {
@@ -268,7 +268,7 @@ export default {
         },
         axisLabel: {
           formatter: (value, index) => {
-            return this.T.getDateTimeStringCN(value, 'YYYY-MM-DD HH:mm');
+            return this.T.getDateTimeString(value, 'YYYY-MM-DD HH:mm');
           }
         }
       };

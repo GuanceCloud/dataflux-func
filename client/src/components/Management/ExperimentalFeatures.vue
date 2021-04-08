@@ -69,6 +69,32 @@
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统指标」进入模块
                   </div>
                 </el-form-item>
+
+                <el-form-item prop="PipTool">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启PIP工具模块"
+                    v-model="form.PipTool">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于安装脚本所需的额外第三方Python包（PIP）。
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「PIP工具」进入模块
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="FileTool">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启文件工具模块"
+                    v-model="form.FileTool">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于在服务器端处理/保存文件。
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件工具」进入模块
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -122,6 +148,8 @@ export default {
         ScriptFailure: false,
         AccessKey    : false,
         SysStat      : false,
+        PipTool      : false,
+        FileTool     : false,
       },
     }
   },

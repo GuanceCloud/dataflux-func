@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content         : 过滤内容
-'(Refresh)'            : （刷新列表）
-'(Add Data Source)'    : （添加数据源）
+Refresh                : 刷新列表
+Add Data Source        : 添加数据源
 Simple Debug Panel     : 简易调试面板
 View                   : 查看
 Setup                  : 配置
@@ -33,13 +33,13 @@ Open Simple Debug Panel: 打开简易调试面板
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
           <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add Data Source)') }}
+            <i class="fa fa-fw fa-plus"></i> {{ $t('Add Data Source') }}
           </el-link>
           <div v-else>
-            <el-tag class="aside-tree-node-tag" :type="C.DATE_SOURCE_MAP[data.dataSourceType].tagType" size="mini"><span>{{ C.DATE_SOURCE_MAP[data.dataSourceType].name }}</span></el-tag>
+            <el-tag class="aside-tree-node-tag" :type="C.DATE_SOURCE_MAP.get(data.dataSourceType).tagType" size="mini"><span>{{ C.DATE_SOURCE_MAP.get(data.dataSourceType).name }}</span></el-tag>
             <span :class="{builtin: data.isBuiltin}">{{ node.label }}</span>
           </div>
         </span>
@@ -47,7 +47,7 @@ Open Simple Debug Panel: 打开简易调试面板
         <div v-if="data.type === 'dataSource'">
           <el-tooltip effect="dark" :content="$t('Simple Debug Panel')" placement="left" :enterable="false">
             <span>
-              <el-button v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported"
+              <el-button v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported"
                 type="text"
                 size="small"
                 @click.stop="showSimpleDebugWindow(data.dataSource)">
@@ -71,19 +71,18 @@ Open Simple Debug Panel: 打开简易调试面板
           <el-popover v-if="data.tip"
             placement="right-start"
             trigger="click"
-            transition="el-fade-in"
             popper-class="aside-tip"
-            :close-delay="500">
+            :value="showPopoverId === data.id">
             <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
 
             <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
               {{ $t('Example:') }}
               <pre>{{ data.tip.sampleCode }}</pre>
               <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
+              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
             </div>
 
-            <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP[data.dataSourceType].debugSupported">
+            <div class="aside-tree-node-simple-debug" v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported">
               <el-button
                 size="mini"
                 type="primary" plain
@@ -95,7 +94,7 @@ Open Simple Debug Panel: 打开简易调试面板
             <el-button slot="reference"
               type="text"
               size="small"
-              @click.stop>
+              @click.stop="showPopover(data.id)">
               <i class="fa fa-fw fa-question-circle"></i>
             </el-button>
           </el-popover>
@@ -116,6 +115,9 @@ export default {
     SimpleDebugWindow,
   },
   watch: {
+    $route() {
+      this.showPopoverId = null;
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
     },
@@ -151,7 +153,7 @@ export default {
         d.description = this.T.limitLines(d.description, 10);
 
         // 示例代码
-        let sampleCode = this.T.strf(this.C.DATE_SOURCE_MAP[d.type].sampleCode, d.id);
+        let sampleCode = this.T.strf(this.C.DATE_SOURCE_MAP.get(d.type).sampleCode, d.id);
 
         // 创建节点数据
         treeData.push({
@@ -178,6 +180,11 @@ export default {
     },
     showSimpleDebugWindow(dataSource) {
       this.$refs.simpleDebugWindow.showWindow(dataSource);
+    },
+    showPopover(id) {
+      setImmediate(() => {
+        this.showPopoverId = id;
+      })
     },
     openEntity(node, data, target) {
       if (target === 'setup') {
@@ -218,6 +225,8 @@ export default {
       loading   : false,
       filterText: '',
       data      : [],
+
+      showPopoverId: null,
     };
   },
   created() {

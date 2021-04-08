@@ -27,12 +27,13 @@ routeLoader.load(ROUTE.datafluxFuncAPI.callFunc, [
 routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByGet, [
   datafluxFuncAPICtrl.callAuthLink,
 ]);
-
 routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByGetWithFormat, [
   datafluxFuncAPICtrl.callAuthLink,
 ]);
-
 routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByPost, [
+  datafluxFuncAPICtrl.callAuthLink,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByPostWithFormat, [
   datafluxFuncAPICtrl.callAuthLink,
 ]);
 
@@ -40,11 +41,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByPost, [
 routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByGet, [
   datafluxFuncAPICtrl.callBatch,
 ]);
-
 routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByGetWithFormat, [
   datafluxFuncAPICtrl.callBatch,
 ]);
-
 routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByPost, [
   datafluxFuncAPICtrl.callBatch,
 ]);
@@ -92,4 +91,29 @@ routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
 // 清空日志/缓存表
 routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
   datafluxFuncAPICtrl.clearLogCacheTables,
+]);
+
+// Python包
+routeLoader.load(ROUTE.datafluxFuncAPI.listInstalledPythonPackages, [
+  datafluxFuncAPICtrl.listInstalledPythonPackages,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.getPythonPackageInstallStatus, [
+  datafluxFuncAPICtrl.getPythonPackageInstallStatus,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.installPythonPackage, [
+  datafluxFuncAPICtrl.installPythonPackage,
+]);
+
+// 资源文件
+routeLoader.load(ROUTE.datafluxFuncAPI.listResources, [
+  datafluxFuncAPICtrl.listResources,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.downloadResources, [
+  datafluxFuncAPICtrl.downloadResources,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.uploadResource, [
+  datafluxFuncAPICtrl.uploadResource,
+]);
+routeLoader.load(ROUTE.datafluxFuncAPI.operateResource, [
+  datafluxFuncAPICtrl.operateResource,
 ]);

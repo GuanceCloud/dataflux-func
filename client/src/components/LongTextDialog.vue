@@ -8,7 +8,7 @@ Download as text file: 作为文本文件下载
     :visible.sync="show"
     width="70%">
     <template slot="title">
-      <el-link type="primary" @click="download">
+      <el-link type="primary" v-if="showDownload" @click="download">
         {{ $t('Download as text file') }}
         <i class="fa fa-fw fa-download"></i>
       </el-link>
@@ -66,6 +66,7 @@ export default {
   props: {
     title: String,
     diffMode: Boolean,
+    showDownload: Boolean,
   },
   data() {
     return {

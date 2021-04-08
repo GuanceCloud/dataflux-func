@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Code Editor  : 脚本编辑器
 Management   : 管理
-Guide        : 包学包会
+Guide        : 手册
 Settings     : 设置
 Sign Out     : 登出
 Not Signed In: 尚未登录
@@ -44,7 +44,7 @@ Follow System: 跟随系统
       </template>
 
       <el-menu-item index="">
-        <a href="https://t.dataflux.cn/func-user-guide" target="_blank">
+        <a href="https://function.dataflux.cn/" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
           {{ $t('Guide') }}
         </a>
@@ -170,7 +170,7 @@ export default {
       }
     },
     isSignedIn() {
-      return !!this.$store.state.xAuthToken;
+      return this.$store.getters.isSignedIn;
     },
     uiTheme() {
       return this.$store.getters.uiTheme;

@@ -4,54 +4,111 @@ removedLines : ', Removed {n} Line | , Removed {n} Lines'
 codeLines    : '{n} line | {n} lines'
 codeLinesPrev: 'previously {n} line | previously {n} lines'
 codeLinesCurr: ', currently {n} line| , currently {n} lines'
+seconds      : '{n} second | {n} seconds'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                              : 脚本设置
-'Other user are editing this Script, please wait...'      : '其他用户正在编辑此脚本，请稍后...'
-All top Func without a underscore prefix are avaliable    : 可以指定任意顶层非下划线开头的函数
-Select Func                                               : 选择执行函数
-Viewport are too narrow                                   : 当前可视宽度太窄
-Writing test cases to test your Func is recommended       : 建议编写测试用例来测试您的函数
-Arguments                                                 : 参数
-'Arguments should be inputed like {"arg": value}'         : '参数以 {"参数名": 参数值} 方式填写'
-'Leave blank or {} when no argument'                      : '没有参数的不用填写，或保留 {}'
-'Arguments (in JSON)'                                     : 参数（JSON格式）
-Run selected Func                                         : 执行指定的函数
-'Shortcut:'                                               : 快捷键：
-Run                                                       : 执行
-Save Script draft, code will NOT take effect immediately  : 保存当前脚本草稿，但代码不会立即生效
-Show code diff                                            : 查看代码差异
-DIFF                                                      : 差异
-Save and publish Script, code will take effect IMMEDIATELY: 保存并发布脚本，代码将立刻生效
-Publish                                                   : 发布
-Recover code to latest published version                  : 恢复代码为上次发布的版本
-End edit                                                  : 结束编辑
-Setup Code Editor                                         : 调整编辑器显示样式
-This Script has been locked by other, editing is disabled : 当前脚本被其他用户锁定，无法修改
-'DIFF:'                                                   : '差异：'
-addedLines                                                : '新增 {n} 行'
-removedLines                                              : '，删除 {n} 行'
-codeLines                                                 : '共 {n} 行代码'
-codeLinesPrev                                             : '修改前共 {n} 行代码'
-codeLinesCurr                                             : '，修改后共 {n} 行代码'
-Script is modified but NOT published yet                  : 脚本已修改但尚未发布
-Script is published                                       : 脚本已发布
-Diff between published and previously published           : 发布前后差异
-Clear highlighted                                         : 清除高亮
-Clear output                                              : 清除输出
-Output                                                    : 脚本输出
-Func exection result or log message will be shown here    : 函数执行结果与日志信息将显示在此处
+Script Setup                                                         : 脚本设置
+'Other user or window are editing this Script, please wait...'       : '其他用户或窗口正在编辑此脚本，请稍后...'
+All top Func without a underscore prefix are avaliable               : 可以指定任意顶层非下划线开头的函数
+Select Func                                                          : 选择执行函数
+Viewport are too narrow                                              : 当前可视宽度太窄
+Writing test cases to test your Func is recommended                  : 建议编写测试用例来测试您的函数
+Arguments                                                            : 参数
+'Arguments should be inputed like {"arg": value}'                    : '参数以 {"参数名": 参数值} 方式填写'
+'Leave blank or {} when no argument'                                 : '没有参数的不用填写，或保留 {}'
+'Arguments (JSON format)'                                            : 参数（JSON格式）
+Run selected Func                                                    : 执行指定的函数
+'Shortcut:'                                                          : 快捷键：
+Run                                                                  : 执行
+Save Script draft, code will NOT take effect immediately             : 保存当前脚本草稿，但代码不会立即生效
+Show code diff                                                       : 查看代码差异
+DIFF                                                                 : 差异
+Save and publish Script, code will take effect IMMEDIATELY           : 保存并发布脚本，代码将立刻生效
+Publish                                                              : 发布
+Recover code to latest published version                             : 恢复代码为上次发布的版本
+End edit                                                             : 结束编辑
+Setup Code Editor                                                    : 调整编辑器显示样式
+This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
+This Script has been locked by other, editing is disabled            : 当前脚本被其他用户锁定，无法修改
+'DIFF:'                                                              : '差异：'
+addedLines                                                           : '新增 {n} 行'
+removedLines                                                         : '，删除 {n} 行'
+codeLines                                                            : '共 {n} 行代码'
+codeLinesPrev                                                        : '修改前共 {n} 行代码'
+codeLinesCurr                                                        : '，修改后共 {n} 行代码'
+Script is modified but NOT published yet                             : 脚本已修改但尚未发布
+Script is published                                                  : 脚本已发布
+Diff between published and previously published                      : 发布前后差异
+Clear highlighted                                                    : 清除高亮
+Clear output                                                         : 清除输出
+Output                                                               : 脚本输出
+Func exection result or log message will be shown here               : 函数执行结果与日志信息将显示在此处
 
-Operating too frequently or Script is modified in other tab: 操作过于频繁，或脚本已经在其他窗口被修改。
-You can download current Script to avoid losing your stuff : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
-Script has been modified                                   : 脚本已被修改
-Download and end editing                                   : 下载并退出编辑
-Just end editing                                           : 不保存直接退出编辑
-To avoid losing current code, Script has been downloaded   : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
-Saving Script failed                                       : 保存脚本失败
-'Filename:'                                                : 文件名：
-# TODO
+Operating too frequently or Script is modified in other tab                            : 操作过于频繁，或脚本已经在其他窗口被修改。
+You can download current Script to avoid losing your stuff                             : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
+Script has been modified                                                               : 脚本已被修改
+Download and end editing                                                               : 下载并退出编辑
+Just end editing                                                                       : 不保存直接退出编辑
+To avoid losing current code, Script has been downloaded                               : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
+Saving Script failed                                                                   : 保存脚本失败
+'Filename:'                                                                            : 文件名：
+Script saved successfully                                                              : 脚本保存成功
+You can continue with other operations                                                 : 你可以继续进行其他操作
+Script Draft runs only in Code Editor,                                                 : 已保存的内容只能编辑器内执行，
+it will take effect after being published                                              : 只有发布之后才会对外生效
+You can also use shortcut {html} to save                                               : 您也可以使用快捷键{html}来保存
+Save Script                                                                            : 保存脚本
+Published Code                                                                         : 已发布的代码
+Saved Draft Code                                                                       : 已保存的草稿代码
+Script will take effect after been published immediately,                              : 发布后新的脚本将立即生效，
+Funcs with {html} decorator will be available to be accessed                           : 被{html}装饰的函数可被访问
+Are you sure you want to publish the Script?                                           : 是否确认发布？
+Publish Script                                                                         : 发布脚本
+'Publish Script:'                                                                      : 发布脚本：
+Script published successfully                                                          : 脚本发布成功
+New Script is in effect now                                                            : 新脚本已经生效
+Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
+Are you sure you want to reset the Script?                                             : 是否确认复位？
+Reset Script                                                                           : 复位脚本
+The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
+Check input                                                                            : 输入检查
+seconds                                                                                : '{n}秒'
+'Executed Func:'                                                                       : 执行函数：
+This Script is not published, it will take effect after the Script is published        : 当前脚本尚未发布，脚本只有发布后才会生效
+Do you want to publish the Script now?                                                 : 是否现在发布？
+Script not published                                                                   : 脚本未发布
+Publish Now                                                                            : 立即发布
+Skip Publishing                                                                        : 跳过发布
+'Run Time:'                                                                            : 耗时：
+It took too much time for running, may not be suitable for synchronous calling scenario: 耗时较长，可能不适合需要响应速度较高的场景
+'Func Return Value:'                                                                   : 函数返回值：
+'Stack:'                                                                               : 错误堆栈：
+
+Publish Failed                                                                                                                     : 发布失败
+Script Error                                                                                                                       : 脚本错误
+Waiting Timeout                                                                                                                    : 等待超时
+Duplicated Func names                                                                                                              : 函数名重复
+Script publishing failed. Please check your code                                                                                   : 脚本发布失败，请检查代码是否存在错误
+Script executing failed. Please check your code                                                                                    : 脚本执行失败，请检查代码是否存在错误
+Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue               : 脚本发布时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
+Script executing failed. Script executing module may crashed, please contact the administrator to report this issue                : 脚本执行时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
+Detail information is shown in the output box bellow                                                                               : 详细信息可在下方输出窗口中查看
+Script publishing timeout, please make sure that no time-consuming code in global scope                                            : 脚本发布预检查超时，请注意不要再全局范围内编写耗时代码
+If this issue persists, please contact the administrator to report this issue                                                      : 如果问题持续出现，请联系管理员排查问题
+Waiting Func response timeout                                                                                                      : 等待函数响应超时
+There is a {seconds} time limit when calling Funcs in Code Editor                                                                  : 在编辑器中运行函数时，最多允许执行{seconds}，超时会自动中断执行
+It is not recommended for synchronous calling Funcs that response slowly                                                           : 正式使用时应注意响应过慢的函数不适合同步方式调用
+Can not parse return value                                                                                                         : 函数返回值无法解析
+Func returned a value that can not been parsed as JSON. Please check your code                                                     : 函数返回了无法使用 JSON 表示的数据，请检查代码
+'In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).'                                           : 一般来说，Python 常用基本类型都能正常解析，如 list、dict、int、float、str、bool、None 等。
+Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning: 但一些数学库可能返回复杂的数字对象，如 numpy.NaN。这些数字对象需要在函数返回前处理成 Python 的基本类型
+Duplicated names of Funcs decorated by @DFF.API(...)                                                                               : 被@DFF.API(...)装饰的函数存在重名
+Please check the code and try again                                                                                                : 请检查代码，修改后再试一次
+
+Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.  : 脚本发布中，正常几秒就能完成。如长时间无响应请尝试刷新页面
+Func is running. If it is not responding for a long time, please try refreshing.                                                : 函数执行中，长时间无响应后再尝试刷新页面
+Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing. : 函数执行中，执行最多等待 {seconds}，长时间无响应后再尝试刷新页面
 </i18n>
 
 <template>
@@ -78,7 +135,7 @@ Saving Script failed                                       : 保存脚本失败
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-if="isConflicted">
-                  <el-link type="danger" :underline="false">{{ $t('Other user are editing this Script, please wait...') }}</el-link>
+                  <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
                 </el-form-item>
 
                 <el-form-item>
@@ -116,7 +173,7 @@ Saving Script failed                                       : 保存脚本失败
                       <el-input
                         style="width: 200px"
                         size="mini"
-                        :placeholder="$t('Arguments (in JSON)')"
+                        :placeholder="$t('Arguments (JSON format)')"
                         v-model="funcCallKwargsJSON"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
@@ -216,7 +273,8 @@ Saving Script failed                                       : 保存脚本失败
               </el-form>
             </div>
 
-            <InfoBlock v-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
+            <InfoBlock v-if="scriptSet.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
+            <InfoBlock v-else-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
           </el-header>
 
           <!-- 代码区 -->
@@ -265,13 +323,13 @@ Saving Script failed                                       : 保存脚本失败
           <div class="code-editor-output-close">
             <el-link type="info" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
             &#12288;
-            <el-link type="info" @click.stop="clearOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
+            <el-link type="info" @click.stop="clearScriptOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
             &#12288;
             <el-link type="info" @click.stop="resizeVueSplitPane(100)"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
           </div>
           <el-tabs tab-position="left" type="border-card">
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
-              <pre v-html.trim="textOutput || $t('Func exection result or log message will be shown here')"></pre>
+              <pre v-html.trim="this.scriptOutputText || $t('Func exection result or log message will be shown here')"></pre>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -539,8 +597,8 @@ export default {
         if (options.skipSaveAlert) {
           // 简易保存提示
           this.$notify({
-            title   : '脚本保存成功',
-            message : '你可以继续进行其他操作',
+            title   : this.$t('Script saved successfully'),
+            message : this.$t('You can continue with other operations'),
             type    : 'success',
             position: 'top-right',
             offset  : 20,
@@ -550,12 +608,12 @@ export default {
 
         } else {
           // 完整保存提示
-          this.$alert(`脚本保存成功，你可以继续进行其他操作
-              <hr class="br">已保存的内容只能编辑器内执行，
-              <span class="text-main">只有发布之后才会对外生效</span>
-              <hr class="br"><small>您也可以使用快捷键 <kbd>${this.T.getSuperKeyName()}</kbd> + <kbd>s</kbd> 保存</small>`, '保存脚本', {
+          this.$alert(`${this.$t('Script saved successfully')}
+              <hr class="br">${this.$t('Script Draft runs only in Code Editor,')}
+              <span class="text-main"> ${this.$t('it will take effect after being published')}</span>
+              <hr class="br"><small>${this.$t('You can also use shortcut {html} to save', { html: `<kbd>${this.T.getSuperKeyName()}</kbd> + <kbd>s</kbd>` })}`, this.$t('Save Script'), {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '非常好',
+            confirmButtonText: this.$t('Very good'),
             type: 'success',
           });
         }
@@ -566,8 +624,8 @@ export default {
       let fileName  = `${this.scriptId}${fileTitle}`;
       let oldStr    = this.data.code      || '';
       let newStr    = this.data.codeDraft || '';
-      let oldHeader = '已发布的正式代码';
-      let newHeader = '已保存的草稿代码';
+      let oldHeader = this.$t('Published Code');
+      let newHeader = this.$t('Saved Draft Code');
       let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
       let createTimeStr = this.moment().utcOffset(8).format('YYYYMMDD_HHmmss');
@@ -583,12 +641,12 @@ export default {
       this.updateHighlightLineConfig('errorLine', null);
 
       try {
-        await this.$confirm(`发布后新的脚本将立即生效，
-            <br>DataFlux其他组件也立即可以调用被<code class="text-main">@DFF.API()</code>装饰的函数
-            <hr class="br">是否确认发布？`, '发布脚本', {
+        await this.$confirm(`${this.$t('Script will take effect after been published immediately,')}
+            <br>${this.$t('Funcs with {html} decorator will be available to be accessed', { html: '<code class="text-main">@DFF.API()</code>'})}
+            <hr class="br">${this.$t('Are you sure you want to publish the Script?')}`, this.$t('Publish Script'), {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认发布',
-          cancelButtonText: '放弃',
+          confirmButtonText: this.$t('Publish Script'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -602,7 +660,7 @@ export default {
 
       // 脚本发布中
       this.workerRunning         = true;
-      this.workerRunningTipTitle = '脚本发布中，正常几秒就能完成，如长时间无响应请尝试刷新页面';
+      this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
       let delayedLoadingT = setTimeout(() => {
         this.workerResultLoading = true;
       }, 200);
@@ -610,7 +668,7 @@ export default {
       // 发布
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
         params: {id: this.scriptId},
-        body  : {force: true, data: {note: '通过脚本编辑器发布'}},
+        body  : {force: true, data: {note: 'Published by Code Editor'}},
       });
 
       clearTimeout(delayedLoadingT);
@@ -619,7 +677,7 @@ export default {
 
       if (!apiRes.ok) {
         // 输出结果
-        this.outputResult(`发布脚本：${this.scriptId}`, apiRes);
+        this.outputResult('publish', this.scriptId, apiRes);
         this.alertOnEScript(apiRes, true);
         return;
       }
@@ -628,14 +686,10 @@ export default {
       this._refreshAside();
 
       // 弹框提示
-      this.$alert(`脚本发布成功，新脚本已经生效
-          <hr class="br">您可以：
-          <br>1. 前往<a class="text-main" href="/#/management/auth-link-list">
-              <i class="fa fa-fw fa-link"></i> 授权链接&#12288;</a> 管理页面配置需要公开的API
-          <br>2. 前往<a class="text-main" href="/#/management/script-set-export">
-              <i class="fa fa-fw fa-cloud-download"></i> 导出脚本集</a> 页面导出并发行脚本包`, '发布脚本', {
+      this.$alert(`${this.$t('Script published successfully')}
+          <hr class="br">${this.$t('New Script is in effect now')}`, this.$t('Publish Script'), {
         dangerouslyUseHTMLString: true,
-        confirmButtonText: '非常好',
+        confirmButtonText: this.$t('Very good'),
         type: 'success',
       });
     },
@@ -644,12 +698,11 @@ export default {
       if (!this.codeMirror) return;
 
       try {
-        await this.$confirm(`复位脚本草稿到<code class="text-main">上次发布时</code>的状态，已修改的草稿内容将丢失
-            <br>本操作仅影响脚本草稿，<code class="text-good">不影响已发布的内容</code>
-            <hr class="br">是否确认复位？`, '复位脚本草稿', {
+        await this.$confirm(`${this.$t('Reset draft to the last published version, changes not published will lost')}
+            <hr class="br">${this.$t('Are you sure you want to reset the Script?')}`, this.$t('Reset Script'), {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认复位',
-          cancelButtonText: '放弃',
+          confirmButtonText: this.$t('Reset Script'),
+          cancelButtonText: this.$t('Cancel'),
           type: 'warning',
         });
 
@@ -684,9 +737,9 @@ export default {
       try {
         funcCallKwargs = JSON.parse(this.funcCallKwargsJSON || '{}');
       } catch(err) {
-        this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
+        this.$alert(`${this.$t('The parameter is not a valid JSON')}<br>${err.toString()}`, this.$t('Check input'), {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: this.$t('OK'),
           type: 'error',
         });
         return;
@@ -694,9 +747,9 @@ export default {
 
       // 函数运行中
       const updateCountDownTipTitle = (countDown) => {
-        let tipTitle = `函数执行中，长时间无响应后再尝试刷新页面`;
+        let tipTitle = this.$t('Func is running. If it is not responding for a long time, please try refreshing.');
         if (countDown > 0) {
-          tipTitle = `函数执行中，调试最多等待 ${countDown} 秒，长时间无响应后再尝试刷新页面`;
+          tipTitle = this.$t('Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing.', { seconds: this.$tc('seconds', countDown) });
         }
         this.workerRunningTipTitle = tipTitle;
       }
@@ -759,9 +812,7 @@ export default {
         argParts.push(`${k}=${v}`);
       }
       let argStr = argParts.join(', ');
-
-      let outputTitle = `执行函数：${this.selectedFuncId}(${argStr})`;
-      this.outputResult(outputTitle, apiRes);
+      this.outputResult('execute', `${this.selectedFuncId}(${argStr})`, apiRes);
 
       // 标记运行的函数
       if (apiRes.ok) {
@@ -796,18 +847,20 @@ export default {
       if (!apiRes.ok) return;
 
       if (apiRes.data.codeMD5 !== apiRes.data.codeDraftMD5) {
+        // 此处代码与`methods.publishScript(...)`略有重复
+        // 但暂不作修改
         try {
-          await this.$confirm(`当前编辑的脚本尚未发布，脚本目前仍然以上次发布时的状态运行
-              <hr class="br">是否需要发布？`, '脚本未发布', {
+          await this.$confirm(`${this.$t('This Script is not published, it will take effect after the Script is published')}
+              <hr class="br">${this.$t('Do you want to publish the Script now?')}`, this.$t('Script not published'), {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '立即发布',
-            cancelButtonText: '暂不发布',
+            confirmButtonText: this.$t('Publish Now'),
+            cancelButtonText: this.$t('Skip Publishing'),
             type: 'warning',
           });
 
           // 脚本发布中
           this.workerRunning         = true;
-          this.workerRunningTipTitle = '脚本发布中，正常数秒就能完成，如长时间无响应请尝试刷新页面';
+          this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
           let delayedLoadingT = setTimeout(() => {
             this.workerResultLoading = true;
           }, 500);
@@ -815,7 +868,7 @@ export default {
           // 发布
           let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
             params: {id: this.scriptId},
-            body  : {force: true, data: {note: '通过脚本编辑器发布'}},
+            body  : {force: true, data: {note: 'Published by Code Editor'}},
           });
 
           clearTimeout(delayedLoadingT);
@@ -824,7 +877,7 @@ export default {
 
           if (!apiRes.ok) {
             // 输出结果
-            this.outputResult(`发布脚本：${this.scriptId}`, apiRes);
+            this.outputResult('publish', this.scriptId, apiRes);
             this.alertOnEScript(apiRes, true);
             return;
           }
@@ -847,45 +900,34 @@ export default {
       this.updateHighlightLineConfig('selectedFuncLine', null);
       this.updateHighlightLineConfig('errorLine', null);
     },
-    clearOutput() {
-      this.textOutput = '';
-      this.chartOutput = [];
+    clearScriptOutput() {
+      this.scriptOutput = [];
 
       this.clearHighlight();
     },
-    outputResult(outputTitle, apiRes) {
+    outputResult(type, name, apiRes) {
       if (!apiRes.ok && apiRes.reason !== 'EScriptPreCheck') {
         // 预检查失败不执行
         return;
       }
 
-      // 限制输出总量
-      let _lines = this.textOutput.split('\n');
-      if (_lines.length > this.TEXT_OUTPUT_LIMIT) {
-        this.textOutput = _lines.slice(-1 * this.TEXT_OUTPUT_LIMIT).join('\n');
-      }
-
-      // 分割线
       this.funcCallSeq++;
-      let outputDivider = `\n<span class="code-editor-output-info">#<span class="code-editor-output-seq">${this.funcCallSeq}</span> ${'-'.repeat(20)}</span>`;
 
-      // 标题
-      outputTitle = `<span class="code-editor-output-info">${outputTitle}</span>`;
-
-      let costInfo    = null; // 执行耗时
+      let cost        = null; // 执行耗时
       let logMessages = null; // 日志输出
       let funcOutput  = null; // 函数输出
       let stackInfo   = null; // 错误堆栈
 
+      // 执行耗时，日志输出，函数输出
       if (apiRes.data) {
+        // 执行耗时
         if (apiRes.ok) {
-          costInfo = `<span class="code-editor-output-info">耗时：${apiRes.data.result.funcResult.cost.toFixed(3)} 秒</span>`;
-          if (apiRes.data.result.funcResult.cost > 3) {
-            costInfo += `，<span class="text-watch">耗时较长，可能不适合需要响应速度较高的场景</span>`;
-          }
+          cost = apiRes.data.cost.toFixed(3);
         }
 
+        // 日志输出
         // 在线调试，无论成功失败，包含日志输出
+        // 【此处进行预处理，避免在computed中反复计算】
         logMessages = apiRes.data.result.logMessages;
         if (Array.isArray(logMessages)) {
           logMessages = logMessages.map(l => {
@@ -900,14 +942,19 @@ export default {
           logMessages = logMessages.join('\n') || null;
         }
 
+        // 函数输出
         // 在线调试成功时，包含函数输出
         if (apiRes.ok) {
           funcOutput = apiRes.data.result.funcResult.repr || null;
+          funcOutput = this.encoding.htmlEncode(funcOutput);
         }
       }
 
+      // 错误堆栈
       if (apiRes.detail) {
+        // 错误堆栈
         // 发布失败/在线调试失败时，包含错误堆栈信息
+        // 【此处进行预处理，避免在computed中反复计算】
         let stackLines = apiRes.detail.stack.split('\n').reduce((acc, x) => {
           if (!x.trim()) return acc;
 
@@ -917,36 +964,17 @@ export default {
         stackInfo = stackLines.join('\n');
       }
 
-      // 函数返回/堆栈信息标题
-      let funcReturnTitle = null;
-      let stackTitle      = null;
-      if (apiRes.ok) {
-        funcReturnTitle = `<span class="code-editor-output-info">函数返回值：</span>`;
-      } else {
-        stackTitle = `<span class="code-editor-output-info">错误堆栈：</span>`
-      }
+      let output = {
+        seq        : this.funcCallSeq,
+        type       : type,
+        name       : name,
+        cost       : cost,
+        logMessages: logMessages,
+        funcOutput : funcOutput,
+        stackInfo  : stackInfo,
+      };
+      this.scriptOutput.push(output);
 
-      let nextTextOutput = [
-        this.textOutput,
-        '', // 空行
-        outputDivider,
-        outputTitle,
-        costInfo,
-        '', // 空行
-        logMessages,
-        '', // 空行
-        funcReturnTitle,
-        stackTitle,
-        this.encoding.htmlEncode(funcOutput),
-        stackInfo,
-      ];
-      let nextChartOutput = []; // TODO
-
-      // 过滤空白内容
-      nextTextOutput = nextTextOutput.filter(x => 'string' === typeof x).join('\n').trimStart();
-
-      this.textOutput  = nextTextOutput;
-      this.chartOutput = nextChartOutput;
       this.openVueSplitPane();
 
       // 输出框滚动到最底部
@@ -1125,75 +1153,75 @@ export default {
       let message = null;
       switch(apiRes.reason) {
         case 'EScriptPreCheck':
-          title   = isPublish ? '发布失败' : '脚本错误';
-          message = isPublish ? `脚本发布预检查失败，请检查代码是否存在错误
-                                    <br>详细堆栈信息可在下方输出窗口中查看`
-                              : `脚本执行失败，请检查代码是否存在错误
-                                    <br>详细堆栈信息可在下方输出窗口中查看`;
+          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
+          message = isPublish ? `${this.$t('Script publishing failed. Please check your code')}
+                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
+                              : `${this.$t('Script executing failed. Please check your code')}
+                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
           this.$alert(message, title, {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
+            confirmButtonText: this.$t('OK'),
             type: 'error',
           });
           break;
 
         case 'EAPITimeout':
         case 'EFuncTimeout':
-          title   = isPublish ? '发布失败' : '等待超时';
-          message = isPublish ? `脚本发布预检查超时，请注意不要再全局范围内编写耗时代码。
-                                    <br>如果问题持续出现，可能是因为后端脚本执行模块未响应，请联系管理员排查问题`
-                              : `等待函数响应超时
+          title   = isPublish ? this.$t('Publish Failed') : this.$t('Waiting Timeout');
+          message = isPublish ? `${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
+                                    <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`
+                              : `${this.$t('Waiting Func response timeout')}
                                     <span class="text-main">
-                                    <br>在编辑器中运行函数时，最长允许等待${this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')}秒，
-                                    <br>正式使用时应注意响应过慢的函数不适合同步方式调用</small>
+                                    <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                                    <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
                                     </span>`;
           this.$alert(message, title, {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
+            confirmButtonText: this.$t('OK'),
             type: 'error',
           });
           break;
 
         case 'EFuncFailed':
-          title   = isPublish ? '发布失败' : '脚本错误';
-          message = isPublish ? `脚本发布失败，后端脚本执行模块可能存在问题，请联系管理员排查问题
-                                    <br>详细堆栈信息可在下方输出窗口中查看`
-                              : `脚本执行发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
-                                    <br>详细堆栈信息可在下方输出窗口中查看`;
+          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
+          message = isPublish ? `${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
+                              : `${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
           this.$alert(message, title, {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
+            confirmButtonText: this.$t('OK'),
             type: 'error',
           });
           break;
 
         case 'EFuncResultParsingFailed':
-          title   = '函数返回值无法解析';
-          message = `函数返回了无法使用 Javascript 解析的数据，请检查函数返回值中是否包含了复杂数据。
-                        <br>一般来说，Python 常用基本类型都能正常解析，如 list、dict、int、float、str、bool、None 等，
-                        但一些数学库可能返回复杂的数字对象，如 numpy.NaN，
-                        这些数字对象需要在函数返回前处理成 Python 的基本类型。
-                        <br>如果不确定，可以使用类似 Python 内置的 type()、repr() 等函数帮助判断。`;
+          title   = this.$t('Can not parse return value');
+          message = `${this.$t('Func returned a value that can not been parsed as JSON. Please check your code')}
+                        <br>${this.$t('In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).')}
+                        ${this.$t('Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning')}`;
           this.$alert(message, title, {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
+            confirmButtonText: this.$t('OK'),
             type: 'error',
           });
           break;
 
         case 'EClientDuplicated':
-          title = '函数名重复';
-          message = `被@DFF.API(...)装饰的函数存在重名
-                      <br>请检查代码，修改后再试一次`
+          title = this.$t('Duplicated Func names');
+          message = `${this.$t('Duplicated names of Funcs decorated by @DFF.API(...)')}
+                      <br>${this.$t('Please check the code and try again')}`
           this.$alert(message, title, {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
+            confirmButtonText: this.$t('OK'),
             type: 'error',
           });
           break;
       }
 
-      if (this.textOutput) this.openVueSplitPane();
+      if (this.scriptOutput.length > 0) {
+        this.openVueSplitPane();
+      }
     },
     _clearLineHighlight(line) {
       try {
@@ -1364,7 +1392,7 @@ export default {
       return this.$store.state.Editor_highlightedFuncId;
     },
     isSignedIn() {
-      return !!this.$store.state.xAuthToken;
+      return this.$store.getters.isSignedIn;
     },
     splitPanePercent() {
       return this.$store.state.codeEditor_splitPanePercent || this.$store.getters.DEFAULT_STATE.codeEditor_splitPanePercent;
@@ -1374,6 +1402,79 @@ export default {
     },
     codeDraftLines() {
       return (this.data.codeDraft || '').split('\n').length;
+    },
+    scriptOutputText() {
+      let sections = [];
+      this.scriptOutput.forEach(o => {
+        // 分割线
+        let divider = `<span class="code-editor-output-info">#<span class="code-editor-output-seq">${o.seq}</span> ${'-'.repeat(20)}</span>`;
+
+        // 标题
+        let titleLabel = '';
+        switch(o.type) {
+          case 'publish':
+            titleLabel = this.$t('Publish Script:');
+            break;
+
+          case 'execute':
+            titleLabel = this.$t('Executed Func:');
+            break;
+        }
+        let title = `<span class="code-editor-output-info">${titleLabel} ${o.name}</span>`;
+
+        // 执行耗时
+        let costInfo = '';
+        if (o.cost) {
+          costInfo = `<span class="code-editor-output-info">${this.$t('Run Time:')} ${this.$tc('seconds', o.cost)}</span>`;
+          if (o.cost > 3) {
+            costInfo += `<br><span class="text-watch">${this.$t('It took too much time for running, may not be suitable for synchronous calling scenario')}</span>`;
+          }
+        }
+
+        // 日志输出
+        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
+        let logMessages = o.logMessages;
+
+        // 函数输出
+        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
+        let funcOutput = o.funcOutput;
+        let funcOutputTitle = null;
+        if (funcOutput) {
+          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value:')}</span>`;
+        }
+
+        // 错误堆栈
+        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
+        let stackInfo = o.stackInfo;
+        let stackInfoTitle = null;
+        if (stackInfo) {
+          stackInfoTitle = `<span class="code-editor-output-info">${this.$t('Stack:')}</span>`
+        }
+
+        let section = [
+          divider,
+          title,
+          costInfo,    '',
+          logMessages, '',
+          funcOutputTitle, funcOutput,
+          stackInfoTitle, stackInfo,
+        ];
+
+        // 过滤空白内容
+        section = section.filter(x => 'string' === typeof x).join('\n').trimStart();
+
+        sections.push(section);
+      });
+
+      let sectionText = sections.join('\n\n');
+
+      // 限制输出总量
+      let lines = sectionText.split('\n');
+      if (lines.length > this.TEXT_OUTPUT_LIMIT) {
+        sectionText = lines.slice(-1 * this.TEXT_OUTPUT_LIMIT).join('\n');
+      }
+
+      return sectionText;
     },
   },
   props: {
@@ -1400,8 +1501,8 @@ export default {
       workerRunningTipTitle: '',
       workerResultLoading  : false,
 
-      textOutput : '',
-      chartOutput: [],
+      // 文本输出
+      scriptOutput: [],
 
       // 用于乐观锁
       prevCodeDraftMD5: null,

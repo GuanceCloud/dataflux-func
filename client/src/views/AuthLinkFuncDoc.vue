@@ -24,6 +24,7 @@
                 <br>
                 <el-tag type="info" size="mini"><code>def</code></el-tag>
                 <code class="text-main text-small">{{ `${scope.row.funcId}(${T.isNothing(scope.row.funcKwargsJSON) ? '' : '...'})` }}</code>
+                <GotoFuncButton :funcId="scope.row.funcId"></GotoFuncButton>
 
                 <br>
                 <span class="text-info">&#12288;授权链接ID:</span>
@@ -62,7 +63,7 @@
                 <template v-if="!T.isNothing(scope.row.funcIntegration)">
                   <span class="text-info">&#12288;集成:</span>
                   <el-tag size="mini">
-                    <code v-if="C.FUNC_INTEGRATION_MAP[scope.row.funcIntegration]">{{ C.FUNC_INTEGRATION_MAP[scope.row.funcIntegration].name }}</code>
+                    <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
                     <code v-else>{{ scope.row.funcIntegration }}</code>
                   </el-tag>
                 </template>
@@ -81,7 +82,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="160">
+          <el-table-column label="有效期至" width="180">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
               <template v-else>
@@ -124,8 +125,8 @@
       <APIExampleDialog ref="apiExampleDialog"
         description="授权链接API固定为同步调用"
         :showPostExample="true"
+        :showPostExampleSimplified="true"
         :showGetExample="true"
-        :showGetExampleFlattened="true"
         :showGetExampleSimplified="true"></APIExampleDialog>
     </el-container>
   </transition>
@@ -169,7 +170,7 @@ export default {
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
-        baseURL: this.$store.getters.CONFIG('WEB_BASE_URL'),
+        baseURL: this.T.getBaseURL(),
         params : {id: d.id},
       });
 

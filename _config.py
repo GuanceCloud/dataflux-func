@@ -8,7 +8,7 @@ from worker.utils import yaml_resources
 
 CONFIG = yaml_resources.get('CONFIG')
 
-def get_options_by_command_line():
+def get_options_from_command_line():
     arg_parser = argparse.ArgumentParser(description='DataFlux Func Config Helper')
 
     # 配置键名
@@ -26,6 +26,6 @@ def main(options):
     print(str(value or ''))
 
 if __name__ == '__main__':
-    options = get_options_by_command_line()
+    options = get_options_from_command_line()
 
     main(options)

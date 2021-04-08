@@ -71,8 +71,8 @@ Please input Value                                : 请输入值
                   <el-select v-model="form.autoTypeCasting">
                     <el-option v-for="opt in C.ENV_VARIABLE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
-                  <InfoBlock v-if="C.ENV_VARIABLE_MAP[form.autoTypeCasting]"
-                    :title="C.ENV_VARIABLE_MAP[form.autoTypeCasting].tips"></InfoBlock>
+                  <InfoBlock v-if="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting)"
+                    :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>

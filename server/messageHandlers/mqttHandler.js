@@ -81,7 +81,7 @@ module.exports = function(app, server) {
       // 判断处理函数（可以有多个）
       var funcIds = topicHandlers.reduce(function(acc, x) {
         var matchTopic = x.topic.trim();
-        var funcId   = x.funcId.trim();
+        var funcId     = x.funcId.trim();
 
         // MQTTv5 共享订阅
         if (toolkit.startsWith(matchTopic, '$share/')) {
@@ -165,16 +165,10 @@ module.exports = function(app, server) {
             async.series([
               // 生成函数调用配置
               function(innerCallback) {
-                var options = {
-                  funcId: funcId,
-                  funcCallKwargs: {
-                    topic  : topic,
-                    message: message,
-                    packet : packet,
-                  },
-                  originId: topic,
-                };
-                datafluxFuncAPICtrl.createFuncCallOptionsFromOptions(options, funcMap[funcId], function(err, _funcCallOptions) {
+                var _func    = funcMap[funcId];
+                var _kwargs  = { topic: topic, message: message, packet: packet };
+                var _options = { originId: topic, unfold: true };
+                datafluxFuncAPICtrl.createFuncCallOptionsFromOptions(_func, _kwargs, _options, function(err, _funcCallOptions) {
                   if (err) return innerCallback(err);
 
                   funcCallOptions = _funcCallOptions;

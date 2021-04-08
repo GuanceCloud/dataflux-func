@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content: 过滤内容
-'(Refresh)'   : （刷新列表）
-'(Add ENV)'   : （添加数据源）
+Refresh       : 刷新列表
+Add ENV       : 添加数据源
 Setup         : 配置
 'Example:'    : 示例
 Copy example  : 复制示例
@@ -30,10 +30,10 @@ Copy {name} ID: 复制{name}ID
 
         <span>
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('(Refresh)') }}
+            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
           <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('(Add ENV)') }}
+            <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
           </el-link>
           <div v-else>
             <span>{{ node.label }}</span>
@@ -54,20 +54,19 @@ Copy {name} ID: 复制{name}ID
             <el-popover v-if="data.tip"
               placement="right-start"
               trigger="click"
-              transition="el-fade-in"
               popper-class="aside-tip"
-              :close-delay="500">
+              :value="showPopoverId === data.id">
               <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
               <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
                 {{ $t('Example:') }}
                 <pre>{{ data.tip.sampleCode }}</pre>
                 <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-                <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP[data.type].name })" size="mini" :content="data.id"></CopyButton>
+                <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
               </div>
               <el-button slot="reference"
                 type="text"
                 size="small"
-                @click.stop>
+                @click.stop="showPopover(data.id)">
                 <i class="fa fa-fw fa-question-circle"></i>
               </el-button>
             </el-popover>
@@ -84,6 +83,9 @@ export default {
   components: {
   },
   watch: {
+    $route() {
+      this.showPopoverId = null;
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
     },
@@ -137,6 +139,11 @@ export default {
       this.loading = false;
       this.data = treeData;
     },
+    showPopover(id) {
+      setImmediate(() => {
+        this.showPopoverId = id;
+      })
+    },
     openEntity(node, data, target) {
       if (target === 'setup') {
         this.$refs.tree.setCurrentKey(data.id);
@@ -176,6 +183,8 @@ export default {
       loading   : true,
       filterText: '',
       data      : [],
+
+      showPopoverId: null,
     };
   },
   created() {

@@ -13,6 +13,7 @@ import pprint
 import importlib
 import functools
 from concurrent.futures import ThreadPoolExecutor
+from collections import OrderedDict
 
 # 3rd-party Modules
 import six
@@ -20,7 +21,7 @@ import simplejson, ujson
 import arrow
 import pylru
 import requests
-import crontab as crontab_parser
+from croniter import croniter
 import funcsigs
 
 # Project Modules
@@ -100,9 +101,13 @@ CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
 
 # 添加额外import路径
-extra_import_path = CONFIG.get('EXTRA_PYTHON_IMPORT_PATH')
-if extra_import_path:
-    sys.path.append(extra_import_path)
+extra_import_paths = [
+    CONFIG.get('RESOURCE_ROOT_PATH'),
+    os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('EXTRA_PYTHON_PACKAGE_INSTALL_DIR')),
+]
+for p in extra_import_paths:
+    os.makedirs(p, exist_ok=True)
+    sys.path.append(p)
 
 def _kwargs_hint_type_converter_str(x):
     if isinstance(x, str):
@@ -284,7 +289,6 @@ class DFFWraper(object):
     def __init__(self, inject_funcs=None):
         self.exported_api_funcs = []
         self.log_messages       = []
-        self.plot_charts        = []
 
         self.inject_funcs = inject_funcs
 
@@ -342,6 +346,10 @@ def decipher_data_source_config_fields(config):
             config.pop(f_cipher, None)
 
     return config
+
+def get_resource_path(file_path):
+    abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file_path.lstrip('/'))
+    return abs_path
 
 class ScriptCacherMixin(object):
     def get_scripts(self, script_ids=None):
@@ -616,17 +624,27 @@ class FuncCacheHelper(object):
         key = toolkit.get_cache_key('funcCache', scope, tags=['key', key])
         return key
 
+    def _convert_result(self, result):
+        if result is None:
+            return None
+        elif isinstance(result, (bool, int, float)):
+            return result
+        else:
+            return six.ensure_str(result)
+
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
 
     def get(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('get', key)
+        res = self.__task.cache_db.run('get', key)
+        return self._convert_result(res)
 
     def getset(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('getset', key, value)
+        res = self.__task.cache_db.run('getset', key, value)
+        return self._convert_result(res)
 
     def expire(self, key, expires, scope=None):
         key = self._get_cache_key(key, scope)
@@ -638,7 +656,66 @@ class FuncCacheHelper(object):
 
     def incr(self, key, step=1, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('incr', key, amount=step)
+        res = self.__task.cache_db.run('incr', key, amount=step)
+        return self._convert_result(res)
+
+    def hkeys(self, key, pattern='*', scope=None):
+        key = self._get_cache_key(key, scope)
+
+        found_keys = []
+
+        COUNT_LIMIT = 1000
+        next_cursor = 0
+        while True:
+            next_cursor, keys = self.__task.cache_db.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
+            if len(keys) > 0:
+                if isinstance(keys, dict):
+                    keys = list(keys.keys())
+
+                if isinstance(keys, list):
+                    for k in keys:
+                        found_keys.append(six.ensure_str(k))
+
+            if next_cursor == 0:
+                break
+
+        found_keys = list(set(found_keys))
+        return found_keys
+
+    def hget(self, key, field=None, scope=None):
+        key = self._get_cache_key(key, scope)
+        if field is None:
+            res = self.__task.cache_db.run('hgetall', key)
+            res = dict([(six.ensure_str(k), v) for k, v in res.items()])
+            return res
+
+        elif isinstance(field, (list, tuple)):
+            res = self.__task.cache_db.run('hmget', key)
+            res = dict(zip(field, [six.ensure_str(x) for x in res]))
+            return res
+
+        else:
+            res = self.__task.cache_db.run('hget', key, field)
+            return self._convert_result(res)
+
+    def hset(self, key, field, value, scope=None, not_exists=False):
+        key = self._get_cache_key(key, scope)
+        if not_exists:
+            return self.__task.cache_db.run('hsetnx', key, field, value)
+        else:
+            return self.__task.cache_db.run('hset', key, field, value)
+
+    def hmset(self, key, obj, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hmset', key, obj)
+
+    def hincr(self, key, field, step=1, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hincrby', key, field, amount=step)
+
+    def hdel(self, key, field, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('hdel', key, field)
 
     def lpush(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
@@ -650,11 +727,26 @@ class FuncCacheHelper(object):
 
     def lpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lpop', key)
+        res = self.__task.cache_db.run('lpop', key)
+        return self._convert_result(res)
 
     def rpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('rpop', key)
+        res = self.__task.cache_db.run('rpop', key)
+        return self._convert_result(res)
+
+    def llen(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('llen', key)
+
+    def lrange(self, key, start=0, stop=-1, scope=None):
+        key = self._get_cache_key(key, scope)
+        res = self.__task.cache_db.run('lrange', key, start, stop);
+        return [self._convert_result(x) for x in res]
+
+    def ltrim(self, key, start, stop, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run('ltrim', key, start, stop);
 
     def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
         if dest_key is None:
@@ -664,7 +756,8 @@ class FuncCacheHelper(object):
 
         key      = self._get_cache_key(key, scope)
         dest_key = self._get_cache_key(dest_key, dest_scope)
-        return self.__task.cache_db.run('rpoplpush', key, dest_key)
+        res = self.__task.cache_db.run('rpoplpush', key, dest_key)
+        return self._convert_result(res)
 
 class FuncDataSourceHelper(object):
     AVAILABLE_CONFIG_KEYS = (
@@ -1058,6 +1151,63 @@ class FuncConfigHelper(object):
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
+class BaseFuncResponse(object):
+    def __init__(self, data=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
+        self.data             = data             # 返回数据
+        self.file_path        = file_path        # 返回文件（资源目录下相对路径）
+        self.status_code      = status_code      # HTTP响应码
+        self.content_type     = content_type     # HTTP响应体类型
+        self.headers          = headers or {}    # HTTP响应头
+        self.allow_304        = allow_304        # 是否允许304缓存
+        self.auto_delete_file = auto_delete_file # 是否响应后自动删除文件文件
+        self.download_file    = download_file    # 是否下载文件
+
+        # 检查待下载的文件是否存在
+        if self.file_path:
+            abs_path = get_resource_path(self.file_path)
+            if not os.path.isfile(abs_path):
+                e = Exception('No such file in Resource folder: {}'.format(self.file_path))
+                raise e
+
+    def _create_response_control(self):
+        response_control = {
+            'statusCode'  : self.status_code,
+            'contentType' : self.content_type,
+            'headers'     : self.headers,
+            'allow304'    : self.allow_304,
+            'downloadFile': self.download_file,
+        }
+
+        if self.file_path:
+            response_control['filePath']       = self.file_path
+            response_control['autoDeleteFile'] = self.auto_delete_file
+
+        return response_control
+
+class FuncResponse(BaseFuncResponse):
+    def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False, download=False):
+        kwargs = {
+            'data'         : data,
+            'status_code'  : status_code,
+            'content_type' : content_type,
+            'headers'      : headers,
+            'allow_304'    : allow_304,
+            'download_file': download,
+        }
+        super(FuncResponse, self).__init__(**kwargs)
+
+class FuncResponseFile(BaseFuncResponse):
+    def __init__(self, file_path, status_code=None, headers=None, allow_304=False, auto_delete=False, download=True):
+        kwargs = {
+            'file_path'       : file_path,
+            'status_code'     : status_code,
+            'headers'         : headers,
+            'allow_304'       : allow_304,
+            'auto_delete_file': auto_delete,
+            'download_file'   : download,
+        }
+        super(FuncResponseFile, self).__init__(**kwargs)
+
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1143,7 +1293,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                     if parent_scope:
                         module_scope['DFF'].log_messages = parent_scope['DFF'].log_messages
-                        module_scope['DFF'].plot_charts  = parent_scope['DFF'].plot_charts
 
                         for k, v in parent_scope.items():
                             if k.startswith('_DFF_'):
@@ -1169,7 +1318,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _export_as_api(self, safe_scope, title=None, category=None, tags=None, hint=None, kwargs_hint=None,
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
         integration=None, integration_config=None,
-        is_hidden=False, is_disabled=False):
+        is_hidden=False):
         ### 参数检查/预处理 ###
         extra_config = {}
 
@@ -1253,9 +1402,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 固定Crontab
         if fixed_crontab is not None:
-            try:
-                parsed_crontab = crontab_parser.CronTab(fixed_crontab)
-            except Exception as e:
+            if not croniter.is_valid(fixed_crontab):
                 e = InvalidOptionException('`fixed_crontab` is not a valid crontab expression')
                 raise e
 
@@ -1328,20 +1475,19 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                         if hint_field in arg_hint:
                             f_kwargs[arg_key][hint_field] = arg_hint[hint_field]
 
-            if not is_disabled:
-                safe_scope['DFF'].exported_api_funcs.append({
-                    'name'       : f_name,
-                    'title'      : title,
-                    'description': f_doc,
-                    'definition' : f_def,
-                    'extraConfig': extra_config or None,
-                    'category'   : category or 'general',
-                    'tags'       : tags,
-                    'args'       : f_args,
-                    'kwargs'     : f_kwargs,
-                    'integration': integration,
-                    'defOrder'   : len(safe_scope['DFF'].exported_api_funcs),
-                })
+            safe_scope['DFF'].exported_api_funcs.append({
+                'name'       : f_name,
+                'title'      : title,
+                'description': f_doc,
+                'definition' : f_def,
+                'extraConfig': extra_config or None,
+                'category'   : category or 'general',
+                'tags'       : tags,
+                'args'       : f_args,
+                'kwargs'     : f_kwargs,
+                'integration': integration,
+                'defOrder'   : len(safe_scope['DFF'].exported_api_funcs),
+            })
 
             @functools.wraps(F)
             def dff_api_F(*args, **kwargs):
@@ -1417,10 +1563,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         message_time = arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
         line = '[{}] {}'.format(message_time, message)
         safe_scope['DFF'].log_messages.append(line)
-
-    def _plot(self, safe_scope, ts_data):
-        # TODO
-        pass
 
     def _print(self, safe_scope, *args, **kwargs):
         if safe_scope.get('_DFF_DEBUG'):
@@ -1554,8 +1696,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 name, globals, locals, fromlist, level, safe_scope)
 
         # 注入方便函数
-        def __export_as_api(title=None, category=None, tags=None, **extra_config):
-            return self._export_as_api(safe_scope, title, category, tags, **extra_config)
+        def __export_as_api(title=None, **extra_config):
+            return self._export_as_api(safe_scope, title, **extra_config)
 
         def __get_data_source_helper(data_source_id, **helper_kwargs):
             return self._get_data_source_helper(data_source_id, **helper_kwargs)
@@ -1565,9 +1707,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         def __log(message):
             return self._log(safe_scope, message)
-
-        def __plot(ts_data):
-            return self._log(safe_scope, ts_data)
 
         def __print(*args, **kwargs):
             return self._print(safe_scope, *args, **kwargs)
@@ -1579,9 +1718,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             jailbreak_check(expression)
 
             return eval(expression, *args, **kwargs)
-
-        def __get_resource_file_path(file_path):
-            return os.path.join(CONFIG['RESOURCE_FILE_ROOT_PATH'], file_path)
 
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
@@ -1597,35 +1733,22 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return __data_source_helper.list()
 
         safe_scope['DFF'] = DFFWraper(inject_funcs={
-            'export_as_api': __export_as_api,  # 导出为API
-            'log'          : __log,            # 输出日志
-            'plot'         : __plot,           # 输出图表
-            'call_func'    : __call_func,      # 调用函数（新Task）
-            'eval'         : __eval,           # 执行Python表达式
-            'format_sql'   : format_sql,       # 格式化SQL语句
+            'log' : __log,  # 输出日志
+            'eval': __eval, # 执行Python表达式
 
-            'get_resource_file_path': __get_resource_file_path, # 获取资源文件路径
-
-            '__data_source_helper' : __data_source_helper,  # 数据源处理模块
-            '__env_variable_helper': __env_variable_helper, # 环境变量处理模块
-            '__async_helper'       : __async_helper,        # 异步处理模块
-            '__store_helper'       : __store_helper,        # 存储处理模块
-            '__cache_helper'       : __cache_helper,        # 缓存处理模块
-            '__config_helper'      : __config_helper,       # 配置处理模块
-
-            # 别名
-            'API'   : __export_as_api,
-            'SRC'   : __data_source_helper,
-            'ENV'   : __env_variable_helper,
-            'STORE' : __store_helper,
-            'CACHE' : __cache_helper,
-            'CONFIG': __config_helper,
-
-            'FUNC' : __call_func,
-            'EVAL' : __eval,
-            'ASYNC': __async_helper,
-
-            'PATH': __get_resource_file_path,
+            'API'      : __export_as_api,       # 导出为API
+            'SRC'      : __data_source_helper,  # 数据源处理模块
+            'ENV'      : __env_variable_helper, # 环境变量处理模块
+            'STORE'    : __store_helper,        # 存储处理模块
+            'CACHE'    : __cache_helper,        # 缓存处理模块
+            'CONFIG'   : __config_helper,       # 配置处理模块
+            'SQL'      : format_sql,            # 格式化SQL语句
+            'FUNC'     : __call_func,           # 调用函数（新Task）
+            'EVAL'     : __eval,                # 执行Python表达式
+            'ASYNC'    : __async_helper,        # 异步处理模块
+            'RSRC'     : get_resource_path,     # 获取资源路径
+            'RESP'     : FuncResponse,          # 函数响应体
+            'RESP_FILE': FuncResponseFile,      # 函数响应体（返回文件）
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源

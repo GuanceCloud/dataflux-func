@@ -13,10 +13,6 @@ var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
 /* Configure */
-var UPLOAD_TEMP_FOLDER = path.join(__dirname, '../.upload-tmp');
-
-fs.ensureDirSync(UPLOAD_TEMP_FOLDER);
-
 module.exports = function(options) {
   var limitSize = options.$limitSize || '5M';
   var limitByteSize = parseFloat(limitSize);
@@ -106,13 +102,11 @@ module.exports = function(options) {
       var fileInfo = {
         fieldname   : fieldname,
         originalname: filename,
+        filename    : tmpFileName,
         encoding    : encoding,
         mimetype    : mimetype,
         size        : 0,
-        destination : UPLOAD_TEMP_FOLDER,
-        filename    : tmpFileName,
-        path        : path.join(UPLOAD_TEMP_FOLDER, tmpFileName),
-        data  : null,
+        data        : null,
       }
 
       file.on('error', function(err) {

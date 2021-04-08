@@ -9,6 +9,12 @@ Create Script Lib Recover Point: 创建脚本库还原点
       <el-header height="60px">
         <h1>
           {{ modeName }}脚本库还原点
+          <div class="header-control">
+            <el-button @click="goToHistory" size="mini">
+              <i class="fa fa-fw fa-history"></i>
+              脚本库还原点
+            </el-button>
+          </div>
         </h1>
       </el-header>
 
@@ -74,6 +80,9 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', opt);
       if (!apiRes.ok) return;
 
+      this.goToHistory();
+    },
+    goToHistory() {
       this.$router.push({
         name: 'script-recover-point-list',
       });

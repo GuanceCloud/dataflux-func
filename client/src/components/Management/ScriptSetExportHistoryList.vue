@@ -33,19 +33,30 @@
               v-for="d in data"
               :key="d.id"
               type="primary"
-              :timestamp="`${T.toDateTime(d.createTime)}（${T.fromNow(d.createTime)}）`">
+              :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
                 <div class="history-summary">
-                  <small class="text-info">内容:</small>
-                  <p v-for="scriptSet in d.scriptSets" :key="scriptSet.id">
-                    &#12288;
-                    <el-tag>{{ scriptSet.title || scriptSet.id }}</el-tag>
-                    <el-tag size="mini" type="info" v-for="script in scriptSet.scripts" :key="script.id">{{ script.title || script.id }}</el-tag>
-                  </p>
+                  <span class="text-info">脚本集：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.scriptSets" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
+                </div>
+
+                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.dataSources)">
+                  <span class="text-info">数据源：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.dataSources" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
+                </div>
+                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.envVariables)">
+                  <span class="text-info">环境变量：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.envVariables" :key="item.id">
+                    <code>{{ item.title || item.id }}</code>
+                  </el-tag>
                 </div>
 
                 <div class="history-note" v-if="d.note">
-                  <small class="text-info">备注:</small>
+                  <span class="text-info">备注:</span>
                   <pre class="text-info text-small">{{ d.note }}</pre>
                 </div>
               </el-card>
@@ -79,24 +90,7 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      let data = apiRes.data;
-
-      data.forEach(history => {
-        let scriptSetMap = {};
-
-        history.summaryJSON.scriptSets.forEach(d => {
-          scriptSetMap[d.id] = d;
-          scriptSetMap[d.id].scripts = [];
-        });
-        history.summaryJSON.scripts.forEach(d => {
-          if (!scriptSetMap[d.scriptSetId]) return;
-          scriptSetMap[d.scriptSetId].scripts.push(d);
-        });
-
-        history.scriptSets = Object.values(scriptSetMap);
-      });
-
-      this.data = data;
+      this.data = apiRes.data;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -123,22 +117,20 @@ export default {
 </script>
 
 <style scoped>
+.history-summary {
+  margin-bottom: 5px;
+}
 .history-title {
   font-size: x-large;
 }
 .history-card {
-  width: 800px;
+  width: 620px;
 }
 .history-note {
 }
 .history-note pre {
   margin: 5px 0 0 10px;
   font-weight: normal;
-}
-.history-summary {
-}
-.history-summary .el-tag+.el-tag {
-  margin-left: 5px;
 }
 </style>
 

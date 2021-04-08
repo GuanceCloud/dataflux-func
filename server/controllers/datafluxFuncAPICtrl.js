@@ -1,8 +1,9 @@
 'use strict';
 
 /* Builtin Modules */
-var fs   = require('fs-extra');
-var path = require('path');
+var fs           = require('fs-extra');
+var path         = require('path');
+var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var async      = require('async');
@@ -11,6 +12,7 @@ var LRU        = require('lru-cache');
 var yaml       = require('js-yaml');
 var sortedJSON = require('sorted-json');
 var request    = require('request');
+var moment     = require('moment');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -73,22 +75,21 @@ var WORKER_SYSTEM_CONFIG = null;
 
 /* Handlers */
 function _getHTTPRequestInfo(req) {
-  // 请求体
-  var useragent = toolkit.jsonCopy(req.useragent);
-  delete useragent.source;
+  if (req.path === 'FAKE') {
+    return toolkit.jsonCopy(req);
+  }
 
+  // 请求体
   var httpRequest = {
-    method     : req.method.toUpperCase(),
-    originalUrl: req.originalUrl,
-    url        : path.join(req.baseUrl, req.path),
-    headers    : req.headers,
-    cookies    : req.cookies,
-    hostname   : req.hostname,
-    ip         : req.ip,
-    ips        : req.ips,
-    protocol   : req.protocol,
-    xhr        : req.xhr,
-    useragent  : useragent,
+    method       : req.method.toUpperCase(),
+    originalUrl  : req.originalUrl,
+    url          : path.join(req.baseUrl, req.path),
+    headers      : req.headers,
+    hostname     : req.hostname,
+    ip           : req.ip,
+    ips          : req.ips,
+    protocol     : req.protocol,
+    xhr          : req.xhr,
   };
   return httpRequest;
 }
@@ -129,150 +130,14 @@ function _getFuncById(locals, funcId, callback) {
   });
 };
 
-function _createFuncCallOptionsFromOptions(options, func, callback) {
-  // 注意：
-  //  本函数内所有搜集的时长类数据均为秒
-  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
-
-  func.extraConfigJSON = func.extraConfigJSON || {};
-
-  var funcCallOptions = toolkit.jsonCopy(options);
-
-  /*** 开始组装参数 ***/
-
-  // 函数ID
-  funcCallOptions.funcId = func.id;
-
-  // 函数信息（用于函数结果缓存）
-  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
-  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
-
-  // 函数参数
-  funcCallOptions.funcCallKwargs = options.funcCallKwargs;
-
-  // 来源
-  funcCallOptions.origin = 'direct';
-
-  // 来源ID
-  funcCallOptions.originId = options.originId || null;
-
-  // API超时（优先级：调用时指定 > 函数配置 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
-    funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
-
-    if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
-    }
-    if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
-    }
-
-  } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
-    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
-
-  } else {
-    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions, callback) {
+  var fakeReq = {
+    path  : 'FAKE',
+    method: 'FAKE',
+    params: { },
+    body  : {kwargs: funcCallKwargs, options: funcCallOptions },
   }
-
-  // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.timeout)) {
-    funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
-
-    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
-    }
-
-  } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
-    funcCallOptions.timeout = func.extraConfigJSON.timeout;
-
-  } else {
-    funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
-  }
-
-  // 执行模式（优先级：调用时指定 > 默认值）
-  funcCallOptions.execMode = funcCallOptions.execMode || 'sync';
-
-  // 同步调用时，函数执行超时不得大于API超时
-  //    超出时，函数执行超时自动跟随API超时
-  if (funcCallOptions.execMode === 'sync') {
-    if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
-      funcCallOptions.timeout = funcCallOptions.apiTimeout;
-    }
-  }
-
-  // 【固定】函数任务过期
-  funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
-
-  // 是否永不过期
-  if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
-    funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
-  } else {
-    funcCallOptions.neverExpire = false;
-  }
-
-  // 返回类型（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.returnType)) {
-    var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
-    if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
-    }
-
-  } else {
-    funcCallOptions.returnType = 'raw';
-  }
-
-  // 结果保存（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.saveResult)) {
-    funcCallOptions.saveResult = !!funcCallOptions.saveResult;
-  } else {
-    funcCallOptions.saveResult = false;
-  }
-
-  // 结果拆包（优先级：调用时指定 > 默认值）
-  if (!toolkit.isNothing(funcCallOptions.unfold)) {
-    funcCallOptions.unfold = !!funcCallOptions.unfold;
-
-  } else {
-    funcCallOptions.unfold = true;
-  }
-
-  // 预约执行
-  if (!toolkit.isNothing(funcCallOptions.eta)) {
-    if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
-    }
-  }
-
-  // 执行队列（优先级：函数配置 > 默认值）
-  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
-    var queueNumber = parseInt(func.extraConfigJSON.queue);
-    if (queueNumber < 1 || queueNumber > 9) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
-    }
-
-    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
-
-  } else {
-    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
-  }
-
-  // 触发时间
-  funcCallOptions.triggerTimeMs = Date.now();
-  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
-
-  // 结果缓存
-  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
-    if (!func.extraConfigJSON.cacheResult) {
-      funcCallOptions.cacheResult = false;
-    } else {
-      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
-    }
-  }
-
-  // HTTP请求信息
-  funcCallOptions.httpRequest = null;
-
-  return callback(null, funcCallOptions);
+  return _createFuncCallOptionsFromRequest(fakeReq, func, callback);
 };
 
 function _createFuncCallOptionsFromRequest(req, func, callback) {
@@ -289,65 +154,64 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     origin = 'batch';
   }
 
-  var format = req.params.format;
+  var reqOpt = req.method.toLowerCase() === 'get' ? req.query : req.body;
+  var format = req.params.format || 'normal';
 
-  /*** 搜集函数参数（POST body优先） ***/
-  var funcCallKwargs = req.body.kwargs || req.query.kwargs || {};
-  if ('string' === typeof funcCallKwargs) {
-    try {
-      funcCallKwargs = JSON.parse(funcCallKwargs);
-    } catch(err) {
-      return callback(new E('EClientBadRequest', 'Invalid kwargs', {
-        error: err.toString(),
-      }));
-    }
-  }
+  /*** 搜集函数参数/执行选项 ***/
+  var funcCallKwargs  = {};
+  var funcCallOptions = {};
 
-  /*** 搜集执行选项（POST body优先） ***/
-  var funcCallOptions = req.body.options || req.query.options || {};
-  if ('string' === typeof funcCallOptions) {
-    try {
-      funcCallOptions = JSON.parse(funcCallOptions);
-
-    } catch(err) {
-      return callback(new E('EClientBadRequest', 'Invalid options', {
-        error: err.toString(),
-      }));
-    }
-  }
-
-  /*** 搜集执行选项（GET 扁平、简化形式） ***/
   switch(format) {
-    case 'flattened':
-      // 搜集扁平形式函数参数（options_*, kwargs_*）
-      var flattenedQuery = toolkit.jsonCopy(req.query || {});
-      for (var k in flattenedQuery) if (flattenedQuery.hasOwnProperty(k)) {
-        var v = flattenedQuery[k];
+    case 'normal':
+      // 普通模式：函数参数、执行选项为JSON字符串形式
+      if (!toolkit.isNothing(reqOpt.kwargs)) {
+        funcCallKwargs = reqOpt.kwargs;
+      }
+      if (!toolkit.isNothing(reqOpt.options)) {
+        funcCallOptions = reqOpt.options;
+      }
 
-        var keyParts = k.split('_');
-        if (keyParts.length > 1) {
-          var type = keyParts[0];
-          var name = keyParts.slice(1).join('_');
-          switch(type) {
-            case 'kwargs':
-              funcCallKwargs[name] = v;
-              break;
+      if ('string' === typeof funcCallKwargs) {
+        try {
+          funcCallKwargs = JSON.parse(funcCallKwargs);
+        } catch(err) {
+          return callback(new E('EClientBadRequest', 'Invalid kwargs, bad JSON format', {
+            error: err.toString(),
+          }));
+        }
+      }
 
-            case 'options':
-              funcCallOptions[name] = v;
-              break;
-          }
+      if ('string' === typeof funcCallOptions) {
+        try {
+          funcCallOptions = JSON.parse(funcCallOptions);
+        } catch(err) {
+          return callback(new E('EClientBadRequest', 'Invalid options, bad JSON format', {
+            error: err.toString(),
+          }));
         }
       }
       break;
 
-    case 'simplified':
-      // 搜集简化形式函数参数
-      var simplifiedQuery = toolkit.jsonCopy(req.query || {});
-      for (var k in simplifiedQuery) if (simplifiedQuery.hasOwnProperty(k)) {
-        var v = simplifiedQuery[k];
+    case 'flattened':
+      // 扁平形式：函数参数为「kwargs_参数名」，执行选项为「options_选项名」形式
+      var _map = {
+        kwargs : funcCallKwargs,
+        options: funcCallOptions,
+      };
+      for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {
+        var keyParts = k.split('_');
+        if (keyParts.length <= 1) continue;
 
-        funcCallKwargs[k] = v;
+        var type = keyParts[0];
+        var name = keyParts.slice(1).join('_');
+        _map[type][name] = reqOpt[k];
+      }
+      break;
+
+    case 'simplified':
+      // 简化形式：函数参数直接为参数名，不支持执行选项
+      for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {
+        funcCallKwargs[k] = reqOpt[k];
       }
       break;
   }
@@ -363,6 +227,24 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
 
   // 函数参数
   funcCallOptions.funcCallKwargs = funcCallKwargs;
+
+  // 文件上传参数
+  if (req.files && req.files.length > 0) {
+    funcCallOptions.funcCallKwargs.files = req.files.map(function(file) {
+      // 文件保存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
+      var timestampStr = toolkit.strf('{0}_{1}', moment.utc().format('YYYYMMDDHHmmss'), toolkit.genRandString(6));
+      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._FUNC_UPLOAD_DIR, timestampStr, file.originalname);
+      fs.outputFileSync(filePath, file.data);
+
+      return {
+        filePath    : filePath,
+        originalname: file.originalname,
+        encoding    : file.encoding,
+        mimetype    : file.mimetype,
+        size        : file.size,
+      }
+    });
+  }
 
   // 来源
   funcCallOptions.origin = origin;
@@ -502,14 +384,12 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     funcCallOptions.unfold = !!funcCallOptions.unfold;
 
   } else {
-    switch(origin) {
-      case 'direct':
-        funcCallOptions.unfold = false;
-        break;
-
-      default:
-        funcCallOptions.unfold = true;
-        break;
+    // 只有直接调用且为普通模式时不拆包
+    // 其他默认都拆包
+    if (origin === 'direct' && format === 'normal') {
+      funcCallOptions.unfold = false;
+    } else {
+      funcCallOptions.unfold = true;
     }
   }
 
@@ -776,8 +656,9 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     onResultCallback = function(celeryErr, celeryRes, extraInfo) {
       /* 此处有celeryErr也不能立刻callback，需要经过统计处理后再将错误抛出 */
 
-      var isCached = false;
-      var ret      = null;
+      var isCached        = false;
+      var ret             = null;
+      var responseControl = null;
 
       async.series([
         // 结果处理
@@ -823,33 +704,17 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
             }));
           }
 
-          var result = celeryRes.retval;
-          if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
-            result = result[funcCallOptions.returnType];
-
-            if (toolkit.isNullOrUndefined(result)) {
-              result = null;
-            }
-          }
-
-          if (funcCallOptions.saveResult) {
-            var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
-
-            ret = toolkit.initRet({
-              result   : result,
-              taskId   : celeryRes.id,
-              resultURL: resultURL,
-            });
-
-          } else {
-            ret = toolkit.initRet({
-              result: result,
-            });
-          }
-
           // 缓存结果标记
-          if (celeryRes.id === 'CACHED') {
-            isCached = true
+          isCached = celeryRes.id === 'CACHED';
+
+          // 提取响应控制
+          responseControl = celeryRes.retval._responseControl;
+
+          // 准备API返回值
+          ret = toolkit.initRet({ result: celeryRes.retval });
+          if (funcCallOptions.saveResult) {
+            ret.taskId    = celeryRes.id;
+            ret.resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
           }
 
           return asyncCallback();
@@ -910,7 +775,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
         }
 
         /* 2. 最终回调 */
-        return callback(err, ret, isCached);
+        return callback(err, ret, isCached, responseControl);
       });
     };
 
@@ -1015,17 +880,97 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
   }
 };
 
-function _doAPIResponse(locals, res, ret, isCached, unfold) {
+function _doAPIResponse(locals, res, ret, options, callback) {
+  options = options || {};
+
+  var funcCallOptions = options.funcCallOptions || {};
+  var responseControl = options.responseControl || {};
+
   // 缓存标记
-  if (res && isCached) {
-    res.set('X-Result-Cache', 'Cached');
+  if (options.isCached) {
+    res.set('X-Dataflux-Func-Cache', 'Cached');
   }
 
-  // 展开结果
-  if (unfold) {
-    return locals.sendRaw(ret.data.result);
+  // 响应控制（304缓存）
+  if (!responseControl.allow304) {
+    res.set('Last-Modified', (new Date()).toUTCString());
+  }
+
+  // 响应控制（状态码）
+  if (responseControl.statusCode) {
+    res.status(responseControl.statusCode);
+  }
+
+  // 响应控制（响应头）
+  if (responseControl.headers) {
+    res.set(responseControl.headers);
+  }
+
+  if (responseControl.filePath) {
+    // 响应控制（下载文件）
+    var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, responseControl.filePath.replace(/^\/+/, ''));
+
+    fs.readFile(filePath, function(err, buffer) {
+      if (err) return callback(err);
+
+      // 默认与源文件名相同
+      var fileName = filePath.split('/').pop();
+      if (responseControl.downloadFile && responseControl.downloadFile !== true) {
+        // 指定其他值，则作为下载名
+        fileName = responseControl.downloadFile;
+      }
+
+      if (responseControl.downloadFile === false) {
+        // 非下载模式
+        locals.sendRaw(buffer, fileName);
+      } else {
+        // 下载模式
+        locals.sendFile(buffer, fileName);
+      }
+
+      if (responseControl.autoDeleteFile) {
+        fs.remove(filePath);
+      }
+
+      return;
+    });
+
   } else {
-    return locals.sendJSON(ret);
+    // 响应控制（返回数据）
+
+    if (responseControl.downloadFile) {
+      // 作为文件下载
+      var file     = ret.data.result.raw;
+      var fileName = responseControl.downloadFile;
+      return locals.sendFile(file, fileName);
+
+    } else {
+      // 作为数据返回
+
+      // 响应控制（返回类型Content-Type）
+      if (responseControl.contentType) {
+        res.type(responseControl.contentType);
+
+        // 当指定了响应体类型后，必须提取raw且解包
+        funcCallOptions.returnType = 'raw';
+        funcCallOptions.unfold     = true;
+      }
+
+      // 选择返回类型
+      if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
+        ret.data.result = ret.data.result[funcCallOptions.returnType] || null;
+      }
+
+      // 解包
+      if (funcCallOptions.unfold) {
+        // 需要解包时，发送数据类型不确定
+        return locals.sendRaw(ret.data.result);
+
+      } else {
+        // 不解包时，必然是JSON
+        return locals.sendJSON(ret);
+      }
+    }
   }
 }
 
@@ -1241,10 +1186,15 @@ exports.callFunc = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached, responseControl) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+      var _opt = {
+        isCached       : isCached,
+        funcCallOptions: funcCallOptions,
+        responseControl: responseControl,
+      }
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -1380,10 +1330,15 @@ exports.callAuthLink = function(req, res, next) {
       return next(err);
     }
 
-    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached) {
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached, responseControl) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret, isCached, funcCallOptions.unfold);
+      var _opt = {
+        isCached       : isCached,
+        funcCallOptions: funcCallOptions,
+        responseControl: responseControl,
+      }
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -1484,7 +1439,8 @@ exports.callBatch = function(req, res, next) {
     _callFuncRunner(res.locals, funcCallOptions, function(err, ret) {
       if (err) return next(err);
 
-      return _doAPIResponse(res.locals, res, ret);
+      var _opt = null;
+      return _doAPIResponse(res.locals, res, ret, _opt, next);
     });
   });
 };
@@ -1698,6 +1654,11 @@ exports.getSystemConfig = function(req, res, next) {
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
+
+    _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
+    _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
+    _WEB_AUTH_HEADER     : CONFIG._WEB_AUTH_HEADER,
+    _WEB_AUTH_QUERY      : CONFIG._WEB_AUTH_QUERY,
 
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
@@ -2009,6 +1970,354 @@ exports.clearLogCacheTables = function(req, res, next) {
   res.locals.db.query(sql, null, function(err) {
     if (err) return next(err);
 
+    return res.locals.sendJSON();
+  });
+};
+
+// Python包
+exports.listInstalledPythonPackages = function(req, res, next) {
+  // Python包安装路径
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+
+  var packageVersionMap = {};
+
+  var BUILTIN_PACKAGE_CMD = 'pip freeze';
+  var EXTRA_PACKAGE_CMD   = BUILTIN_PACKAGE_CMD + toolkit.strf(' --path {0}', packageInstallPath);
+
+  var cmds = [EXTRA_PACKAGE_CMD, BUILTIN_PACKAGE_CMD]
+  async.eachSeries(cmds, function(cmd, asyncCallback) {
+    childProcess.exec(cmd, function(err, stdout, stderr) {
+      if (err) return asyncCallback(err);
+
+      stdout.trim().split('\n').forEach(function(pkg) {
+        if (toolkit.isNothing(pkg)) return;
+
+        var parts = pkg.split('==');
+        packageVersionMap[parts[0]] = {
+          name     : parts[0],
+          version  : parts[1],
+          isBuiltin: cmd === BUILTIN_PACKAGE_CMD,
+        };
+      });
+
+      return asyncCallback();
+    });
+  }, function(err) {
+    if (err) return next(err);
+
+    var packages = Object.values(packageVersionMap);
+    packages.sort(function(a, b) {
+      if (a < b) {
+        return -1;
+      } else if (a > b) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    var ret = toolkit.initRet(packages);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.getPythonPackageInstallStatus = function(req, res, next) {
+  var cacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
+  res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+    if (err) return next(err);
+
+    var installingStatus = null;
+    if (cacheRes) {
+      installingStatus = JSON.parse(cacheRes);
+    }
+
+    var ret = toolkit.initRet(installingStatus);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.installPythonPackage = function(req, res, next) {
+  // Python包安装路径
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+  fs.ensureDirSync(packageInstallPath);
+
+  var pkg = req.body.pkg;
+
+  // 安装状态缓存
+  var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
+  var statusAge = 3600;
+
+  function createInstallStatus(status, stderr) {
+    var installStatus = {
+      pkg      : pkg,
+      status   : status,
+      message  : stderr || null,
+      timestamp: new Date(),
+    }
+    installStatus = JSON.stringify(installStatus);
+    return installStatus;
+  }
+
+  async.series([
+    // 记录安装信息
+    function(asyncCallback) {
+      var installStatus = createInstallStatus('RUNNING');
+      res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
+    },
+    // 清空之前安装的内容
+    function(asyncCallback) {
+      var _pkg = pkg.split('=')[0].replace(/-/g, '_');
+
+      var cmd = 'rm';
+      var cmdArgs = [ '-rf'];
+
+      // 读取需要删除的目录
+      fs.readdirSync(packageInstallPath).forEach(function(name) {
+        if (name === _pkg || toolkit.startsWith(name, _pkg) && toolkit.endsWith(name, '.dist-info')) {
+          cmdArgs.push(path.join(packageInstallPath, name));
+        }
+      })
+      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
+        if (err) {
+          // 安装失败
+          var installStatus = createInstallStatus('FAILURE', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
+            if (err) return asyncCallback(err);
+
+            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
+              stderr: stderr,
+            }));
+          });
+
+        } else {
+          return asyncCallback();
+        }
+      });
+    },
+    function(asyncCallback) {
+      var cmd = 'pip';
+      var cmdArgs = [
+        'install', '--no-cache-dir',
+        '-t', packageInstallPath,
+        '-i', 'https://mirrors.aliyun.com/pypi/simple/',
+        pkg,
+      ];
+      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
+        if (err) {
+          // 安装失败
+          var installStatus = createInstallStatus('FAILURE', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
+            if (err) return asyncCallback(err);
+
+            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
+              stderr: stderr,
+            }));
+          });
+
+        } else {
+          // 安装成功
+          var installStatus = createInstallStatus('SUCCESS', stderr);
+          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
+        }
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+    return res.locals.sendJSON();
+  });
+};
+
+exports.listResources = function(req, res, next) {
+  var subFolder = req.query.folder || './';
+  var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, subFolder);
+
+  if (!absPath.endsWith('/')) {
+    absPath += '/';
+  }
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not fetch folder out of resource folder.'))
+  }
+
+  // 检查存在性
+  if (!fs.existsSync(absPath)) {
+    return next(new E('EBizCondition', 'Folder not exists.'))
+  }
+
+  var opt = {
+    withFileTypes: true,
+  }
+  fs.readdir(absPath, opt, function(err, data) {
+    if (err) return next(err);
+
+    var files = data.reduce(function(acc, x) {
+      var f = {
+        name      : x.name,
+        type      : null,
+        size      : null,
+        createTime: null,
+        updateTime: null,
+      };
+
+      var stat = fs.statSync(path.join(absPath, x.name));
+      f.createTime = stat.birthtimeMs;
+      f.updateTime = stat.ctimeMs;
+
+      if (x.isDirectory()) {
+        f.type = 'folder';
+      } else if (x.isFile()) {
+        f.type = 'file';
+        f.size = stat.size;
+      }
+
+      if (f.type) {
+        acc.push(f);
+      }
+      return acc;
+    }, []);
+
+    var ret = toolkit.initRet(files);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.downloadResources = function(req, res, next) {
+  var filePath = req.query.filePath;
+  var preview  = req.query.preview;
+
+  var fileName = filePath.split('/').pop();
+  var fileType = fileName.split('.').pop();
+  var absPath  = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not access file out of resource folder.'))
+  }
+
+  // 检查存在性
+  if (!fs.existsSync(absPath)) {
+    return next(new E('EBizCondition', 'File not exists.'))
+  }
+
+  if (preview) {
+    fs.readFile(absPath, function(err, data) {
+      if (err) return next(err)
+
+      res.type(fileType);
+      return res.send(data);
+    });
+
+  } else {
+    return res.locals.sendLocalFile(absPath);
+  }
+};
+
+exports.uploadResource = function(req, res, next) {
+  var file   = req.files[0];
+  var folder = req.body.folder || '.';
+
+  var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, file.originalname);
+  fs.outputFileSync(filePath, file.data);
+
+  var ret = toolkit.initRet();
+  res.locals.sendJSON(ret);
+};
+
+exports.operateResource = function(req, res, next) {
+  var targetPath        = req.body.targetPath;
+  var operation         = req.body.operation;
+  var operationArgument = req.body.operationArgument;
+
+  var targetName    = targetPath.split('/').pop();
+  var targetAbsPath = path.join(CONFIG.RESOURCE_ROOT_PATH, targetPath);
+  var currentAbsDir = toolkit.replacePathEnd(targetAbsPath);
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(targetAbsPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder.'))
+  }
+
+  // 检查操作对象存在性
+  switch(operation) {
+    case 'zip':
+    case 'unzip':
+    case 'cp':
+    case 'mv':
+    case 'rm':
+      // 要求存在
+      if (!fs.existsSync(targetAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('File or folder not exists: {0}', targetName)));
+      }
+      break;
+
+    default:
+      // 要求不存在
+      if (fs.existsSync(targetAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('File or folder already exists: {0}', targetName)));
+      }
+      break;
+  }
+
+  // 检查/准备参数
+  var cmd     = operation;
+  var cmdArgs = null;
+  switch(operation) {
+    case 'mkdir':
+      cmdArgs = ['-p', targetName];
+      break;
+
+    case 'zip':
+      var zipFileName = targetName + '.zip';
+
+      var zipFileAbsPath = path.join(currentAbsDir, zipFileName);
+      if (fs.existsSync(zipFileAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('Zip file is already exists: {0}', zipFileName)));
+      }
+
+      cmdArgs = ['-r', zipFileName, targetName]; // 在当前目录执行
+      break;
+
+    case 'unzip':
+      var unzipDestName = targetName.replace(/\.zip$/g, '');
+      var unzipDestAbsPath = toolkit.replacePathEnd(targetAbsPath, unzipDestName);
+
+      if (fs.existsSync(unzipDestAbsPath)) {
+        return next(new E('EBizCondition', toolkit.strf('Unzip destination is already exists: {0}', unzipDestName)));
+      }
+
+      cmdArgs = [targetName];
+      break;
+
+    case 'cp':
+    case 'mv':
+      var newName = operationArgument;
+      var newAbsPath = newName[0] === '/'
+                     ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
+                     : path.join(currentAbsDir, newName);
+
+      if (fs.existsSync(newAbsPath)) {
+        return next(new E('EBizCondition', 'Specified new file or folder name is already exists.'))
+      }
+
+      var parentAbsDir = toolkit.replacePathEnd(newAbsPath);
+      fs.ensureDirSync(parentAbsDir);
+
+      cmdArgs = [targetAbsPath, newAbsPath];
+      break;
+
+    case 'rm':
+      cmdArgs = ['-rf', targetAbsPath]
+      break;
+
+    default:
+      return next(new E('EClientUnsupported', 'Unsupported resource operation.'))
+      break;
+  }
+
+  var opt = { cwd: currentAbsDir };
+  childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
+    if (err) return next(err);
     return res.locals.sendJSON();
   });
 };

@@ -23,6 +23,7 @@
               <br>
               <el-tag type="info" size="mini"><code>def</code></el-tag>
               <code class="text-main text-small">{{ `${scope.row.id}(${T.isNothing(scope.row.kwargsJSON) ? '' : '...'})` }}</code>
+              <GotoFuncButton :funcId="scope.row.id"></GotoFuncButton>
 
               <br>
               <span class="text-info">&#12288;调用参数:</span>
@@ -54,7 +55,7 @@
                 <template v-if="!T.isNothing(scope.row.integration)">
                   <span class="text-info">&#12288;集成:</span>
                   <el-tag size="mini" type="success">
-                    <code v-if="C.FUNC_INTEGRATION_MAP[scope.row.integration]">{{ C.FUNC_INTEGRATION_MAP[scope.row.integration].name }}</code>
+                    <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.integration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.integration).name }}</code>
                     <code v-else>{{ scope.row.integration }}</code>
                   </el-tag>
                 </template>

@@ -12,7 +12,10 @@ ARG ORACLE_CLIENT_PKG="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"
 USER root
 
 # Default data folder
-RUN mkdir -p /data
+RUN mkdir -p /data/extra-python-packages && \
+    mkdir -p /data/resources && \
+    mkdir -p /data/logs && \
+    mkdir -p /data/sqldump
 
 # Swith apt source to Aliyun
 RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
@@ -25,7 +28,7 @@ RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
         \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
     > /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y wget curl telnet unzip default-mysql-client
+    apt-get install -y wget curl telnet zip unzip default-mysql-client
 
 # Download, extract and install resources
 WORKDIR /usr/src/resource
@@ -41,14 +44,14 @@ RUN wget -q $RESOURCE_BASE_URL/$NODE_PKG && \
 # Install requirements
 WORKDIR /usr/src/base
 COPY package.json package-lock.json requirements.txt requirements-extra.txt ./
-RUN npm install --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
+RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
         pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements.txt && \
         pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements-extra.txt
 
 # Install requirements (client)
 WORKDIR /usr/src/base/client
 COPY client/package.json client/package-lock.json ./
-RUN npm install --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
+RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
 
 # Build project
 WORKDIR /usr/src/app

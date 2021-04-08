@@ -10,7 +10,6 @@ Arguments                                                                       
 'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
 'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
 The Func accepts extra arguments not listed above                                          : 本函数允许传递额外自定义的参数
-Enabled                                                                                    : 启用
 Show in doc                                                                                : 显示于文档
 Expire at                                                                                  : 有效期至
 Select expire time                                                                         : 选择有效期
@@ -77,14 +76,6 @@ shortcutDays                                       : '{n}天'
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item :label="$t('Enabled')" prop="isDisabled">
-                  <el-switch
-                    :active-value="false"
-                    :inactive-value="true"
-                    v-model="form.isDisabled">
-                  </el-switch>
-                </el-form-item>
-
                 <el-form-item :label="$t('Show in doc')" prop="showInDoc">
                   <el-switch
                     v-model="form.showInDoc">
@@ -110,7 +101,7 @@ shortcutDays                                       : '{n}天'
                       :step="1"
                       :step-strictly="true"
                       v-model="form.throttlingJSON[opt.key]"></el-input-number>
-                    <span class="throttling-unit">{{ opt.name }} </span>
+                    <span class="throttling-unit">{{ $tc(opt.name, form.throttlingJSON[opt.key], { n: '' }) }} </span>
                     <el-link class="throttling-clear"
                       :underline="false"
                       @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
@@ -447,7 +438,6 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
-        isDisabled        : false,
         note              : null,
       },
     }
@@ -458,10 +448,10 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 400px;
+  width: 500px;
 }
 .expire-time-input {
-  width: 400px;
+  width: 500px;
 }
 .throttling-input {
   width: 260px;

@@ -245,6 +245,16 @@ const routes = [
         name: 'sys-stats',
         component: () => import('../components/Management/SysStats.vue'),
       },
+      {
+        path: 'pip-tool',
+        name: 'pip-tool',
+        component: () => import('../components/Management/PIPTool.vue'),
+      },
+      {
+        path: 'file-tool',
+        name: 'file-tool',
+        component: () => import('../components/Management/FileTool.vue'),
+      },
     ],
   },
   {

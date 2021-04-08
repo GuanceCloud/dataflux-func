@@ -113,7 +113,7 @@ class RedisHelper(object):
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
-    def keys(self, pattern):
+    def keys(self, pattern='*'):
         found_keys = []
 
         COUNT_LIMIT = 1000
@@ -172,16 +172,20 @@ class RedisHelper(object):
     def expireat(self, key, timestamp):
         return self.run('expireat', key, timestamp)
 
-    def hkeys(self, key, pattern):
+    def hkeys(self, key, pattern='*'):
         found_keys = []
 
         COUNT_LIMIT = 1000
         next_cursor = 0
         while True:
-            next_cursor, keys = self.run('hscan', cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
-            if isinstance(keys, list) and len(keys) > 0:
-                for k in keys:
-                    found_keys.append(six.ensure_str(k))
+            next_cursor, keys = self.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
+            if len(keys) > 0:
+                if isinstance(keys, dict):
+                    keys = list(keys.keys())
+
+                if isinstance(keys, list):
+                    for k in keys:
+                        found_keys.append(six.ensure_str(k))
 
             if next_cursor == 0:
                 break
@@ -196,7 +200,9 @@ class RedisHelper(object):
         return self.run('hmget', key, fields)
 
     def hgetall(self, key):
-        return self.run('hgetall', key)
+        result = self.run('hgetall', key)
+        result = dict([(six.ensure_str(k), v) for k, v in result.items()])
+        return result
 
     def hset(self, key, field, value):
         return self.run('hset', key, field, value)
@@ -208,7 +214,7 @@ class RedisHelper(object):
         return self.run('hmset', key, obj)
 
     def hincr(self, key, field):
-        return self.run('hincr', key, field)
+        return self.run('hincrby', key, field, amount=1)
 
     def hincrby(self, key, field, increment):
         return self.run('hincrby', key, field, amount=increment)
@@ -236,6 +242,14 @@ class RedisHelper(object):
 
     def ltrim(self, key, start, stop):
         return self.run('ltrim', key, start, stop);
+
+    def rpoplpush(self, key, dest_key=None, dest_scope=None):
+        if dest_key is None:
+            dest_key = key
+        if dest_scope is None:
+            dest_scope = scope
+
+        return self.run('rpoplpush', key, dest_key)
 
     def ttl(self, key):
         return self.run('ttl', key)

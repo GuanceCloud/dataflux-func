@@ -28,7 +28,7 @@ exports.getSysStats = function(req, res, next) {
     });
 
     // No log for monitor data;
-    res.send(ret);
+    return res.send(ret);
   });
 };
 

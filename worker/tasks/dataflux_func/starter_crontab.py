@@ -12,7 +12,7 @@ import traceback
 
 # 3rd-party Modules
 import arrow
-import crontab as crontab_parser
+from croniter import croniter
 import six
 import ujson
 
@@ -57,14 +57,14 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
         if not crontab_expr:
             return False
 
-        try:
-            parsed_crontab = crontab_parser.CronTab(crontab_expr)
-        except Exception as e:
+        if not croniter.is_valid(crontab_expr):
             return False
-        else:
-            now = arrow.get().to('Asia/Shanghai').datetime
-            start_time = int(parsed_crontab.previous(delta=False, now=now))
-            return start_time >= trigger_time
+
+        now = arrow.get().to('Asia/Shanghai').datetime
+        crontab_iter = croniter(crontab_expr, now)
+
+        start_time = int(crontab_iter.get_prev())
+        return start_time >= trigger_time
 
     def get_integrated_func_crontab_configs(self):
         sql = '''
@@ -93,12 +93,13 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
                 continue
 
             c = {
-                'id'            : 'cron-INTEGRATION',
+                'id'            : 'cron-AUTORUN-{}'.format(f['id']),
                 'funcId'        : f['id'],
                 'funcCallKwargs': {},
                 'saveResult'    : False,
                 'crontab'       : crontab_expr,
-                'execMode'      : 'autoRun',
+                'origin'        : 'integration',
+                'execMode'      : 'crontab',
             }
             crontab_configs.append(c)
 
@@ -141,6 +142,9 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
 
         # 准备配置详情
         for c in crontab_configs:
+            c['origin']   = 'crontab'
+            c['execMode'] = 'crontab'
+
             func_call_kwargs_json = c.get('funcCallKwargsJSON')
             if func_call_kwargs_json:
                 c['funcCallKwargs'] = ujson.loads(func_call_kwargs_json)
@@ -160,17 +164,18 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
 
         return crontab_configs, latest_seq
 
-    def cache_task_status(self, crontab_id, task_id, func_id):
-        if not crontab_id:
+    def cache_task_status(self, task_id, crontab_config):
+        if not crontab_config:
             return
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
 
         data = {
             'taskId'   : task_id,
-            'origin'   : 'crontab',
-            'originId' : crontab_id,
-            'funcId'   : func_id,
+            'origin'   : crontab_config['origin'],
+            'originId' : crontab_config['id'],
+            'funcId'   : crontab_config['funcId'],
+            'execMode' : crontab_config['execMode'],
             'status'   : 'queued',
             'timestamp': int(time.time()),
         }
@@ -187,8 +192,8 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
 
     # 计算当前触发点
     now = arrow.get().to('Asia/Shanghai').datetime
-    starter_crontab = crontab_parser.CronTab(CONFIG['_CRONTAB_STARTER'])
-    trigger_time = int(starter_crontab.previous(delta=False, now=now))
+    crontab_iter = croniter(CONFIG['_CRONTAB_STARTER'], now)
+    trigger_time = int(crontab_iter.get_prev())
     current_time = int(time.time())
 
     # 获取函数功能集成自动触发
@@ -268,7 +273,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_id = gen_task_id()
 
             # 记录任务信息（入队）
-            self.cache_task_status(c['id'], task_id, func_id=c['funcId'])
+            self.cache_task_status(task_id=task_id, crontab_config=c)
 
             # 任务入队
             task_headers = {
@@ -277,10 +282,10 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
             task_kwargs = {
                 'funcId'        : c['funcId'],
                 'funcCallKwargs': c['funcCallKwargs'],
-                'origin'        : c.get('execMode') or 'crontab',
+                'origin'        : c['origin'],
                 'originId'      : c['id'],
                 'saveResult'    : c['saveResult'],
-                'execMode'      : 'crontab',
+                'execMode'      : c['execMode'],
                 'triggerTime'   : trigger_time,
                 'crontab'       : c['crontab'],
                 'queue'         : specified_queue,

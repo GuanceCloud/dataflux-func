@@ -51,10 +51,10 @@ Response                      : 响应
         <el-divider content-position="left"><h1>{{ $t('Data Count') }}</h1></el-divider>
 
         <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
-          <i v-if="C.OVERVIEW_ENTITY_MAP[d.name].icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP[d.name].icon"></i>
-          <i v-else-if="C.OVERVIEW_ENTITY_MAP[d.name].tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP[d.name].tagText }}</code></i>
+          <i v-if="C.OVERVIEW_ENTITY_MAP.get(d.name).icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP.get(d.name).icon"></i>
+          <i v-else-if="C.OVERVIEW_ENTITY_MAP.get(d.name).tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP.get(d.name).tagText }}</code></i>
 
-          <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP[d.name].name }}</span>
+          <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
           <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
             {{ d.count }}
             <span class="overview-count-unit">个</span>
@@ -106,7 +106,7 @@ Response                      : 响应
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="120">
+          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="150">
             <template slot-scope="scope">
               <code v-if="!scope.row.publishVersion">-</code>
               <code v-else>v{{ `${scope.row.publishVersion}` }}</code>
@@ -202,7 +202,7 @@ Response                      : 响应
         </el-table>
       </el-main>
 
-      <LongTextDialog :title="$t('The full content is as follows')" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is as follows')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -224,14 +224,17 @@ export default {
     },
   },
   methods: {
-    async loadData(sections) {
+    async loadData(sections, options) {
+      options = options || {};
+      if (options.showError !== false) options.showError = true;
+
       let _query = null;
       if (!this.T.isNothing(sections)) {
         _query = { sections: sections.join(',') };
       }
       let apiRes = await this.T.callAPI('/api/v1/func/overview', {
         query: _query,
-        alert: {showError: true},
+        alert: {showError: options.showError},
       });
       if (!apiRes.ok) return;
 
@@ -332,8 +335,8 @@ export default {
           this.overviewInterval = null;
         }
 
-        this.loadData(['workerQueueInfo']);
-      }, 3000);
+        this.loadData(['workerQueueInfo'], { showError: false });
+      }, 30 * 1000);
     }
   },
 }

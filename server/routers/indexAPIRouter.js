@@ -39,6 +39,10 @@ routeLoader.load(ROUTE.indexAPI.echo, [
   indexAPICtrl.echo,
 ]);
 
+routeLoader.load(ROUTE.indexAPI.proxy, [
+  indexAPICtrl.proxy,
+]);
+
 routeLoader.load(ROUTE.indexAPI.testThrowError, [
   indexAPICtrl.testThrowError,
 ]);

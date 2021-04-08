@@ -1,19 +1,21 @@
 <i18n locale="zh-CN" lang="yaml">
-Overview      : 总览
-About         : 关于
-Auth Link     : 授权链接
-Crontab Config: 自动触发配置
-Batch         : 批处理
-Export        : 脚本包导出
-Import        : 脚本包导入
-Recover       : 脚本库还原
-Member        : 成员管理
-Access Log    : 操作记录
-Script Log    : 脚本日志
-Script Failure: 脚本故障
-Experimental  : 实验性功能
-Access Key    : AccessKey
-System Metric : 系统指标
+Overview          : 总览
+About             : 关于
+Auth Link         : 授权链接
+Crontab Config    : 自动触发配置
+Batch             : 批处理
+Export Script Sets: 脚本包导出
+Import Script Sets: 脚本包导入
+Recover Script Lib: 脚本库还原
+Member            : 成员管理
+Access Log        : 操作记录
+Script Log        : 脚本日志
+Script Failure    : 脚本故障
+Experimental      : 实验性功能
+Access Key        : AccessKey
+System Metric     : 系统指标
+PIP Tool          : PIP工具
+File Tool         : 文件工具
 </i18n>
 
 <template>
@@ -62,22 +64,22 @@ System Metric : 系统指标
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-set-export-history-list">
+            <el-menu-item index="/management/script-set-export">
               <span>
                 <i class="fa fa-fw fa-cloud-download"></i>
-                {{ $t('Export') }}
+                {{ $t('Export Script Sets') }}
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-set-import-history-list">
+            <el-menu-item index="/management/script-set-import">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
-                {{ $t('Import') }}
+                {{ $t('Import Script Sets') }}
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-recover-point-list">
+            <el-menu-item index="/management/script-recover-point-add">
               <span>
                 <i class="fa fa-fw fa-history"></i>
-                {{ $t('Recover') }}
+                {{ $t('Recover Script Lib') }}
               </span>
             </el-menu-item>
 
@@ -110,6 +112,8 @@ System Metric : 系统指标
               </span>
             </el-menu-item>
 
+            <br>
+            
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
@@ -128,6 +132,20 @@ System Metric : 系统指标
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
                 {{ $t('System Metric') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/pip-tool" v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')">
+              <span>
+                <i class="fa fa-fw fa-cubes"></i>
+                {{ $t('PIP Tool') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/file-tool" v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')">
+              <span>
+                <i class="fa fa-fw fa-file"></i>
+                {{ $t('File Tool') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>

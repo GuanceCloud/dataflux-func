@@ -426,6 +426,10 @@ class DataWay(object):
         method = 'GET'
         path   = path or self.path
 
+        query = query or {}
+        if self.token:
+            query['token'] = self.token
+
         _auth_headers = self._prepare_auth_headers(method=method)
 
         headers = headers or {}

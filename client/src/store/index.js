@@ -189,9 +189,6 @@ export default new Vuex.Store({
       }
       return defaultValue || null;
     },
-    SUPER_ADMIN_USER_ID: state => {
-      return 'u-admin';
-    },
     isProcessing: state => {
       return state.processingTaskCount > 0 && (Date.now() - state.processingTaskUpdateTime) > 3000;
     },
@@ -206,13 +203,13 @@ export default new Vuex.Store({
       if (!state.userProfile) return null;
       return state.userProfile.id || null;
     },
-    authType: state => {
+    isSignedIn: state => {
       if (!state.xAuthToken) return false;
       if (!state.userProfile || !state.userProfile.roles) {
         return false;
       }
 
-      return state.userProfile.roles.indexOf('ftUser') >= 0 ? 'ftAuth' : 'auth';
+      return true;
     },
     isIntegratedUser: state => {
       if (!state.userProfile || !state.userProfile.roles) {
@@ -222,7 +219,7 @@ export default new Vuex.Store({
       return !!state.userProfile.isIntegratedUser;
     },
     isSuperAdmin: (state, getters) => {
-      return !!(state.userProfile && state.userProfile.roles.indexOf('sa') >= 0 && state.userProfile.id === getters.SUPER_ADMIN_USER_ID);
+      return !!(state.userProfile && state.userProfile.roles.indexOf('sa') >= 0);
     },
     isSocketIOReady: state => {
       return state.isSocketIOAuthed && state.xAuthToken;

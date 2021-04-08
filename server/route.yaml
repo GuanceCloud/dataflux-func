@@ -87,6 +87,47 @@ indexAPI:
         $type: any
         $skip: true
 
+  proxy:
+    showInDoc    : true
+    name         : Proxy Request
+    method       : post
+    url          : /api/v1/do/proxy
+    response     : json
+    requireSignIn: true
+    desc: |
+      Do HTTP request via server.
+    body:
+      method:
+        $desc      : HTTP method
+        $isRequired: true
+        $type      : enum
+        $in:
+          - get
+          - post
+          - put
+          - delete
+      url:
+        $desc      : URL
+        $isRequired: true
+        $type      : string
+        $example   : https://myip.ipip.net/
+      headers:
+        $desc: Headers
+        $type: json
+        $skip: true
+      body:
+        $desc: Body
+        $type: json
+        $skip: true
+      withHeaders:
+        $desc   : Get headers from response
+        $type   : boolean
+        $example: false
+      timeout:
+        $desc   : Timeout (seconds)
+        $type   : integer
+        $example: 3
+
   testThrowError:
     name     : Test Throw Error
     method   : get
@@ -1225,7 +1266,6 @@ datafluxFuncAPI:
     url          : /api/v1/al/:id
     response     : json
     requireSignIn: false
-    privilege    : general_r
     params:
       id:
         $desc: 授权链接ID
@@ -1248,28 +1288,33 @@ datafluxFuncAPI:
       在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
 
       - 标准GET
-      ```
-      GET /api/v1/al/al-xxxxx
-      ?options={"o1":"ov1","o2":"ov2"}
-      &kwargs={"k1":"kv1","k2":"vk2"}
+
+      ```http
+      GET /api/v1/al/auln-xxxxx
+      ?kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
+      &options={"opt1":"opt_value1","opt2":"opt_value2"}
       ```
 
       - 扁平格式 `flattened`
+
+      ```http
+      GET /api/v1/al/auln-xxxxx/flattened
+      ?kwargs_arg1=arg_value1
+      &kwargs_arg2=arg_value2
+      &options_opt1=opt_value1
+      &options_opt2=opt_value2
       ```
-      GET /api/v1/al/al-xxxxx/flattened
-      ?options_o1=ov1
-      &options_o2=ov2
-      &kwargs_k1=kv1
-      &kwargs_k2=vk2
-      ```
+
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
       - 简化格式 `simplified`
+
+      ```http
+      GET /api/v1/al/auln-xxxxx/simplified
+      ?arg1=arg_value1
+      &arg2=arg_value2
       ```
-      GET /api/v1/al/al-xxxxx/simplified
-      ?k1=kv1
-      &k2=vk2
-      ```
+
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
       *注意2：本格式不支持标准格式中的`options`参数*
 
@@ -1277,7 +1322,6 @@ datafluxFuncAPI:
     url          : /api/v1/al/:id/:format
     response     : json
     requireSignIn: false
-    privilege    : general_r
     params:
       id:
         $desc: 授权链接ID
@@ -1326,6 +1370,78 @@ datafluxFuncAPI:
             - sync
             - async
 
+  callAuthLinkByPostWithFormat:
+    showInDoc    : true
+    name         : 调用授权链接（POST方式，指定格式）
+    descType: markdown
+    desc: |
+      在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
+
+      - 标准POST
+
+      ```http
+      POST /api/v1/al/auln-xxxxx
+      Content-Type: application/json
+
+      {
+        "kwargs": {
+          "arg1": "arg_value1",
+          "arg2": "arg_value2"
+        },
+        "options": {
+          "opt1": "opt_value1",
+          "opt2": "opt_value2"
+        }
+      }
+      ```
+
+      *注意：本格式不支持上传文件*
+
+      - 扁平格式 `flattened`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/flattened
+      Content-Type: x-www-form-urlencoded
+
+      kwargs_arg1=arg_value1&kwargs_arg2=arg_value2&options_opt1=opt_value1&options_opt2=opt_value2
+      ```
+
+      *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
+      *注意2：当上传文件时，需要指定`Content-Type: multipart/form-data`*
+
+      - 简化格式 `simplified`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/simplified
+      Content-Type: x-www-form-urlencoded
+
+      arg1=arg_value1&arg2=arg_value2
+      ```
+
+      *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
+      *注意2：本格式不支持标准格式中的`options`参数*
+      *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
+
+    method       : post
+    url          : /api/v1/al/:id/:format
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 授权链接ID
+        $type: string
+      format:
+        $desc: 格式
+        $type: enum
+        $in:
+          - flattened
+          - simplified
+          - upload
+    files:
+      $limitSize: 500M
+      $allowedTypes:
+        - '*/*'
+
   callBatchByGet:
     showInDoc    : true
     name         : 调用批处理（GET方式）
@@ -1354,22 +1470,22 @@ datafluxFuncAPI:
       - 标准GET
       ```
       GET /api/v1/bat/bat-xxxxx
-      ?kwargs={"k1":"kv1","k2":"vk2"}
+      &kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
       ```
 
       - 扁平格式 `flattened`
       ```
       GET /api/v1/bat/bat-xxxxx/flattened
-      ?kwargs_k1=kv1
-      &kwargs_k2=vk2
+      ?kwargs_arg1=arg_value1
+      &kwargs_arg2=arg_value2
       ```
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
       - 简化格式 `simplified`
       ```
       GET /api/v1/bat/bat-xxxxx/simplified
-      ?k1=kv1
-      &k2=vk2
+      ?arg1=arg_value1
+      &arg2=arg_value2
       ```
       *注意：本格式所有参数值都以字符串传递，函数需要自行转换格式*
 
@@ -1640,6 +1756,107 @@ datafluxFuncAPI:
     requireSignIn: true
     privilege    : general_w
 
+  listInstalledPythonPackages:
+    name         : 列出已安装的Python包
+    method       : get
+    url          : /api/v1/python-packages/installed
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  getPythonPackageInstallStatus:
+    name         : 获取Python包安装状态
+    method       : get
+    url          : /api/v1/python-packages/install-status
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  installPythonPackage:
+    name         : 安装Python包
+    method       : post
+    url          : /api/v1/python-packages/install
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      pkg:
+        $desc      : Python包（如：requests 或 requests==1.0.0）
+        $isRequired: true
+        $type      : string
+        $minLength : 1
+
+  listResources:
+    name         : 列出资源文件
+    method       : get
+    url          : /api/v1/resources/dir
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      folder:
+        $desc: 文件夹
+        $type: string
+
+  downloadResources:
+    name         : 下载资源文件
+    method       : get
+    url          : /api/v1/resources
+    response     : blob
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+      preview:
+        $desc    : 预览模式
+        $required: false
+        $type    : boolean
+
+  uploadResource:
+    name         : 上传资源文件
+    method       : post
+    url          : /api/v1/resources
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    files:
+      $allowedTypes: '*/*'
+    body:
+      folder:
+        $desc: 文件夹
+        $type: string
+
+  operateResource:
+    name         : 操作资源文件
+    method       : post
+    url          : /api/v1/resources/operate
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    body:
+      targetPath:
+        $desc    : 操作目标路径（文件/目录）
+        $required: true
+        $type    : string
+      operation:
+        $desc    : 执行操作
+        $required: true
+        $type    : enum
+        $in:
+          - mkdir
+          - zip
+          - unzip
+          - cp
+          - mv
+          - rm
+      operationArgument:
+        $desc    : 执行操作参数
+        $required: false
+        $type    : string
+
 datafluxFuncPage:
   clientApp:
     showInDoc    : true
@@ -1751,7 +1968,7 @@ scriptSetAPI:
     name         : 导出脚本集
     method       : post
     url          : /api/v1/script-sets/do/export
-    response     : json
+    response     : blob
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
     body:
@@ -1764,12 +1981,36 @@ scriptSetAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+      dataSourceIds:
+        $desc: 导出的数据源ID列表
+        $:
+          $desc      : 数据源ID
+          $isRequired: true
+          $type      : string
+      envVariableIds:
+        $desc: 导出的环境变量ID列表
+        $:
+          $desc      : 环境变量ID
+          $isRequired: true
+          $type      : string
       password:
         $desc      : 指定密码
         $isRequired: true
         $allowNull : true
         $type      : string
         $maxLength : 24
+      includeAuthLinks:
+        $desc     : 是否包含关联的授权链接
+        $allowNull: true
+        $type     : boolean
+      includeCrontabConfigs:
+        $desc     : 是否包含关联的自动触发配置
+        $allowNull: true
+        $type     : boolean
+      includeBatches:
+        $desc     : 是否包含关联的批处理
+        $allowNull: true
+        $type     : boolean
       note:
         $desc      : 备注
         $isRequired: true
@@ -1863,7 +2104,7 @@ scriptAPI:
     url          : /api/v1/scripts/:id/do/get
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_w
+    privilege    : general_r
     params:
       id:
         $desc: 脚本ID

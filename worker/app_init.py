@@ -41,6 +41,6 @@ def after_app_created(celery_app):
     from worker.tasks.dataflux_func import dataflux_func_reload_scripts, dataflux_func_auto_cleaner, dataflux_func_auto_run
 
     # 启动时自动执行
-    dataflux_func_reload_scripts.apply_async(kwargs={'sleepDelay': 10, 'isOnLaunch': True, 'force': True})
-    dataflux_func_auto_cleaner.apply_async(kwargs={'sleepDelay': 30})
-    dataflux_func_auto_run.apply_async(kwargs={'sleepDelay': 10})
+    dataflux_func_reload_scripts.apply_async(kwargs={'isOnLaunch': True, 'force': True}, countdown=10)
+    dataflux_func_auto_run.apply_async(countdown=10)
+    dataflux_func_auto_cleaner.apply_async(countdown=30)

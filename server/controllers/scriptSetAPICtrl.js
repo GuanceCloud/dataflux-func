@@ -17,7 +17,12 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
 var funcMod                   = require('../models/funcMod');
+var authLinkMod               = require('../models/authLinkMod');
+var crontabConfigMod          = require('../models/crontabConfigMod');
+var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
+var dataSourceMod             = require('../models/dataSourceMod');
+var envVariableMod            = require('../models/envVariableMod');
 
 /* Configure */
 var FILENAME_IN_ZIP = 'dataflux-func.json';
@@ -199,25 +204,47 @@ exports.delete = function(req, res, next) {
  */
 
 exports.export = function(req, res, next) {
-  var scriptSetIds = req.body.scriptSetIds;
-  var password     = req.body.password || '';
-  var note         = req.body.note;
+  var scriptSetIds          = req.body.scriptSetIds;
+  var dataSourceIds         = req.body.dataSourceIds;
+  var envVariableIds        = req.body.envVariableIds;
+  var password              = req.body.password              || '';
+  var includeAuthLinks      = req.body.includeAuthLinks      || false;
+  var includeCrontabConfigs = req.body.includeCrontabConfigs || false;
+  var includeBatches        = req.body.includeBatches        || false;
+  var note                  = req.body.note;
 
   if (toolkit.isNothing(password)) {
     password = '';
   }
 
-  var scriptSetModel              = scriptSetMod.createModel(res.locals);
-  var scriptModel                 = scriptMod.createModel(res.locals);
-  var funcModel                   = funcMod.createModel(res.locals);
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
+  var scriptModel    = scriptMod.createModel(res.locals);
+  var funcModel      = funcMod.createModel(res.locals);
+
+  var authLinkModel      = authLinkMod.createModel(res.locals);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var batchModel         = batchMod.createModel(res.locals);
+
+  var dataSourceModel  = dataSourceMod.createModel(res.locals);
+  var envVariableModel = envVariableMod.createModel(res.locals);
+
   var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
 
-  var scriptData = {
-    scriptSets: null,
-    scripts   : null,
-    funcs     : null,
+  var packageData = {
+    scriptSets: [],
+    scripts   : [],
+    funcs     : [],
     note      : note,
   };
+
+  // 脚本集相关数据
+  if (includeAuthLinks)      packageData.authLinks      = [];
+  if (includeCrontabConfigs) packageData.crontabConfigs = [];
+  if (includeBatches)        packageData.batches        = [];
+
+  // 数据源/环境变量
+  if (!toolkit.isNothing(dataSourceIds))  packageData.dataSources  = [];
+  if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
 
   var fileBuf = null;
   async.series([
@@ -239,7 +266,7 @@ exports.export = function(req, res, next) {
       scriptSetModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        scriptData.scriptSets = dbRes;
+        packageData.scriptSets = dbRes;
 
         return asyncCallback();
       });
@@ -266,7 +293,7 @@ exports.export = function(req, res, next) {
       scriptModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        scriptData.scripts = dbRes;
+        packageData.scripts = dbRes;
 
         return asyncCallback();
       });
@@ -303,7 +330,166 @@ exports.export = function(req, res, next) {
       funcModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        scriptData.funcs = dbRes;
+        packageData.funcs = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取授权链接
+    function(asyncCallback) {
+      if (!includeAuthLinks) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'auln.id',
+          'auln.funcId',
+          'auln.funcCallKwargsJSON',
+          'auln.expireTime',
+          'auln.throttlingJSON',
+          'auln.origin',
+          'auln.showInDoc',
+          'auln.isDisabled',
+          'auln.note',
+        ],
+        filters: {
+          'sset.id': {in: scriptSetIds},
+        },
+        orders: [
+          {field: 'auln.seq', method: 'ASC'},
+        ],
+      };
+      authLinkModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        packageData.authLinks = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取自动触发配置
+    function(asyncCallback) {
+      if (!includeCrontabConfigs) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'cron.id',
+          'cron.funcId',
+          'cron.funcCallKwargsJSON',
+          'cron.crontab',
+          'cron.tagsJSON',
+          'cron.saveResult',
+          'cron.scope',
+          'cron.configMD5',
+          'cron.expireTime',
+          'cron.origin',
+          'cron.isDisabled',
+          'cron.note',
+        ],
+        filters: {
+          'sset.id': {in: scriptSetIds},
+        },
+        orders: [
+          {field: 'cron.seq', method: 'ASC'},
+        ],
+      };
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        packageData.crontabConfigs = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取批处理
+    function(asyncCallback) {
+      if (!includeBatches) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'bat.id',
+          'bat.funcId',
+          'bat.funcCallKwargsJSON',
+          'bat.tagsJSON',
+          'bat.origin',
+          'bat.showInDoc',
+          'bat.isDisabled',
+          'bat.note',
+        ],
+        filters: {
+          'sset.id': {in: scriptSetIds},
+        },
+        orders: [
+          {field: 'bat.seq', method: 'ASC'},
+        ],
+      };
+      batchModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        packageData.batches = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取数据源
+    function(asyncCallback) {
+      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'dsrc.id',
+          'dsrc.title',
+          'dsrc.description',
+          'dsrc.type',
+          'dsrc.configJSON',
+        ],
+        filters: {
+          'dsrc.id': {in: dataSourceIds},
+        },
+        orders: [
+          {field: 'dsrc.seq', method: 'ASC'},
+        ],
+      };
+      dataSourceModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 去除加密字段
+        dbRes.forEach(function(d) {
+          dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
+            var fCipher = toolkit.strf('{0}Cipher', f);
+            if (fCipher in d.configJSON) {
+              d.configJSON[fCipher] = '';
+            }
+          });
+        });
+
+        packageData.dataSources = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取环境变量
+    function(asyncCallback) {
+      if (toolkit.isNothing(envVariableIds)) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'evar.id',
+          'evar.title',
+          'evar.description',
+          'evar.valueTEXT',
+          'evar.autoTypeCasting',
+        ],
+        filters: {
+          'evar.id': {in: envVariableIds},
+        },
+        orders: [
+          {field: 'evar.seq', method: 'ASC'},
+        ],
+      };
+      envVariableModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        packageData.envVariables = dbRes;
 
         return asyncCallback();
       });
@@ -311,7 +497,7 @@ exports.export = function(req, res, next) {
     // 创建压缩包
     function(asyncCallback) {
       var z = new JSZip();
-      z.file(FILENAME_IN_ZIP, JSON.stringify(scriptData));
+      z.file(FILENAME_IN_ZIP, JSON.stringify(packageData));
 
       async.asyncify(function() {
         return z.generateAsync({
@@ -334,7 +520,7 @@ exports.export = function(req, res, next) {
     // 记录导出历史
     function(asyncCallback) {
       // 生成摘要
-      var summary = toolkit.jsonCopy(scriptData);
+      var summary = toolkit.jsonCopy(packageData);
       summary.scripts.forEach(function(d) {
         delete d.code; // 摘要中不含代码
       });
@@ -355,7 +541,7 @@ exports.export = function(req, res, next) {
     ];
     var fileName = fileNameParts.join('-') + CONFIG._FUNC_PKG_EXPORT_EXT;
 
-    return res.locals.sendFile(fileBuf, CONFIG._FUNC_PKG_EXPORT_EXT, fileName);
+    return res.locals.sendFile(fileBuf, fileName);
   });
 };
 
@@ -368,8 +554,8 @@ exports.import = function(req, res, next) {
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
-  var fileBuf    = null;
-  var scriptData = null;
+  var fileBuf     = null;
+  var packageData = null;
 
   var confirmId = toolkit.genDataId('import');
   var summary   = null;
@@ -388,7 +574,7 @@ exports.import = function(req, res, next) {
 
       } catch(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password.'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(1).'));
       }
 
       return asyncCallback();
@@ -401,7 +587,10 @@ exports.import = function(req, res, next) {
         return JSZip.loadAsync(zipBuf);
 
       })(function(err, z) {
-        if (err) return asyncCallback(err);
+        if (err) {
+          res.locals.logger.logError(err);
+          return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(2).'));
+        }
 
         async.asyncify(function() {
           return z.file(FILENAME_IN_ZIP).async('string');
@@ -409,10 +598,10 @@ exports.import = function(req, res, next) {
         })(function(err, zipData) {
           if (err) return asyncCallback(err);
 
-          scriptData = JSON.parse(zipData);
+          packageData = JSON.parse(zipData);
 
           // 生成摘要
-          summary = toolkit.jsonCopy(scriptData);
+          summary = toolkit.jsonCopy(packageData);
           summary.scripts.forEach(function(d) {
             delete d.code; // 摘要中不含代码
           });
@@ -430,11 +619,11 @@ exports.import = function(req, res, next) {
       if (checkOnly) {
         // 仅检查时，数据暂存Redis，不进行实际导入操作
         var cacheKey = toolkit.getCacheKey('stage', 'importScriptSet', ['confirmId', confirmId]);
-        var scriptDataTEXT = JSON.stringify(scriptData);
-        return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, scriptDataTEXT, asyncCallback);
+        var packageDataTEXT = JSON.stringify(packageData);
+        return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, packageDataTEXT, asyncCallback);
 
       } else {
-        return scriptSetModel.import(scriptData, asyncCallback);
+        return scriptSetModel.import(packageData, asyncCallback);
       }
     },
     // 获取脚本集并计算差异（添加、替换）
@@ -489,7 +678,7 @@ exports.import = function(req, res, next) {
 exports.confirmImport = function(req, res, next) {
   var confirmId = req.body.confirmId;
 
-  var scriptData = null;
+  var packageData = null;
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -506,14 +695,14 @@ exports.confirmImport = function(req, res, next) {
           return asyncCallback(new E('EBizCondition.ConfirmingImportTimeout', 'Confirming import timeout.'));
         }
 
-        scriptData = JSON.parse(cacheRes);
+        packageData = JSON.parse(cacheRes);
 
         return asyncCallback();
       });
     },
     // 执行导入
     function(asyncCallback) {
-      scriptSetModel.import(scriptData, asyncCallback);
+      scriptSetModel.import(packageData, asyncCallback);
     },
     // 发送更新脚本缓存任务（强制）
     function(asyncCallback) {

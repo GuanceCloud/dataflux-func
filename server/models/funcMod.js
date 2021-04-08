@@ -77,6 +77,10 @@ EntityModel.prototype.list = function(options, callback) {
 
     // [兼容] 补全`argsJSON`,`kwargsJSON`
     dbRes.forEach(function(d) {
+      // 无函数定义不需要补全
+      if (!d.description) return;
+
+      // 已存在不需要补全
       if (d.argsJSON && d.kwargsJSON) return;
 
       var parsedFuncArgs = parseFuncArgs(d.definition);

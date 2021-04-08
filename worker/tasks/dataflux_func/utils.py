@@ -13,6 +13,7 @@ import traceback
 import pprint
 import os
 import subprocess
+import shutil
 
 # 3rd-party Modules
 import six
@@ -553,23 +554,24 @@ class DataFluxFuncSyncCache(BaseTask):
             origin_id              = cache_res['originId']
             func_id                = cache_res.get('funcId')
             script_publish_version = cache_res.get('scriptPublishVersion')
+            exec_mode              = cache_res.get('execMode')
             status                 = cache_res['status']
             log_messages           = cache_res.get('logMessages') or []
             einfo_text             = cache_res.get('einfoTEXT')   or ''
             timestamp              = cache_res.get('timestamp')
 
-            if not all([origin, origin_id, timestamp]):
+            if not all([origin, exec_mode, origin_id, timestamp]):
                 continue
 
-            if origin not in ('crontab', 'batch'):
-                continue
+            if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
+                return
 
             message_text = '\n'.join(log_messages).strip()
 
             # 记录任务信息
             table_name      = None
             origin_id_field = None
-            if origin == 'crontab':
+            if origin == 'crontab' or exec_mode == 'crontab':
                 table_name      = 'biz_main_crontab_task_info'
                 origin_id_field = 'crontabConfigId'
 
@@ -768,6 +770,25 @@ class DataFluxFuncAutoCleanerTask(BaseTask):
         if db_res:
             self._delete_by_seq(table, db_res[0]['seq'])
 
+    def clear_table(self, table):
+        sql = '''
+            TRUNCATE ??
+            '''
+        sql_params = [table]
+        self.db.query(sql, sql_params)
+
+    def clear_upload_file_by_expires(self, expires):
+        limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
+
+        upload_dir = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], CONFIG['_FUNC_UPLOAD_DIR'])
+        if not os.path.exists(upload_dir):
+            return
+
+        with os.scandir(upload_dir) as _iter:
+            for entry in _iter:
+                if entry.name < limit_timestamp:
+                    shutil.rmtree(entry.path)
+
 @app.task(name='DataFluxFunc.autoCleaner', bind=True, base=DataFluxFuncAutoCleanerTask)
 def dataflux_func_auto_cleaner(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
@@ -778,7 +799,14 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
 
     self.logger.info('DataFluxFunc AutoCleaner Task launched.')
 
-    # 清除数据
+    # 清空数据库数据
+    if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
+        self.clear_table('biz_main_script_log')
+
+    if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
+        self.clear_table('biz_main_script_failure')
+
+    # 回卷数据库数据
     table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
     for table, limit in table_limit_map.items():
         try:
@@ -786,6 +814,10 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
+
+    # 回卷上传文件目录
+    upload_file_expires = CONFIG['_UPLOAD_FILE_EXPIRES']
+    self.clear_upload_file_by_expires(expires=upload_file_expires)
 
 # DataFluxFunc.autoRun
 class DataFluxFuncAutoRunTask(BaseTask):
@@ -820,7 +852,7 @@ def dataflux_func_auto_run(self, *args, **kwargs):
         task_kwargs = {
             'funcId'  : f['id'],
             'origin'  : 'integration',
-            'execMode': 'auto',
+            'execMode': 'async',
             'queue'   : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
         }
 
@@ -918,7 +950,7 @@ def dataflux_func_worker_queue_pressure_recover(self, *args, **kwargs):
 # DataFluxFunc.dbAutoBackup
 class DataFluxFuncDBAutoBackupTask(BaseTask):
     def run_sqldump(self, tables, with_data, file_name):
-        dump_file_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
         if not os.path.exists(dump_file_dir):
             os.makedirs(dump_file_dir)
 
@@ -948,7 +980,7 @@ class DataFluxFuncDBAutoBackupTask(BaseTask):
         subprocess.Popen(cmd_line, shell=True).wait()
 
     def limit_sqldump(self):
-        dump_file_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
         if not os.path.exists(dump_file_dir):
             return
 

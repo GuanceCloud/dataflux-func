@@ -26,7 +26,7 @@ class FileSystemHelper(object):
             self.config = config
         else:
             self.config = {
-                'rootFolder': CONFIG['FILE_STORE_ROOT_FOLDER'],
+                'rootFolder': CONFIG['FILE_STORE_ROOT_DIR'],
             }
 
         self.root_folder = os.path.join(basedir, '../../..', self.config['rootFolder'])

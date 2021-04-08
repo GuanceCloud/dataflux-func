@@ -26,6 +26,7 @@ from worker.tasks import BaseResultSavingTask
 from worker.tasks import BaseTask
 from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.dataflux_func import ScriptBaseTask
+from worker.tasks.dataflux_func import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -202,11 +203,11 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-    def cache_task_status(self, origin, origin_id, status, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
+    def cache_task_status(self, origin, origin_id, exec_mode, status, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
         if not all([origin, origin_id]):
             return
 
-        if origin not in ('crontab', 'batch'):
+        if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
             return
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
@@ -217,6 +218,7 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
             'originId'            : origin_id,
             'funcId'              : func_id,
             'scriptPublishVersion': script_publish_version,
+            'execMode'            : exec_mode,
             'status'              : status,
             'logMessages'         : log_messages,
             'einfoTEXT'           : einfo_text,
@@ -301,13 +303,6 @@ def dataflux_func_runner(self, *args, **kwargs):
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
 
-    # 记录任务信息（运行中）
-    self.cache_task_status(
-        origin=origin,
-        origin_id=origin_id,
-        status='pending',
-        func_id=func_id)
-
     # 顶层任务ID
     root_task_id = kwargs.get('rootTaskId') or self.request.id
 
@@ -329,8 +324,8 @@ def dataflux_func_runner(self, *args, **kwargs):
     http_request = kwargs.get('httpRequest') or {}
 
     # 函数结果、上下文
-    save_result = kwargs.get('saveResult') or False
-    func_result  = None
+    save_result  = kwargs.get('saveResult') or False
+    func_resp    = None
     script_scope = None
 
     is_succeeded = False
@@ -340,6 +335,14 @@ def dataflux_func_runner(self, *args, **kwargs):
 
     target_script = None
     try:
+        # 记录任务信息（运行中）
+        self.cache_task_status(
+            origin=origin,
+            origin_id=origin_id,
+            exec_mode=exec_mode,
+            status='pending',
+            func_id=func_id)
+
         global SCRIPT_DICT_CACHE
 
         # 更新脚本缓存
@@ -387,7 +390,12 @@ def dataflux_func_runner(self, *args, **kwargs):
 
         # 执行函数
         self.logger.info('[RUN FUNC] `{}`'.format(func_id))
-        func_result = entry_func(**func_call_kwargs)
+        func_resp = entry_func(**func_call_kwargs)
+        if not isinstance(func_resp, BaseFuncResponse):
+            func_resp = FuncResponse(func_resp)
+
+        if isinstance(func_resp.data, Exception):
+            raise func_resp.data
 
     except Exception as e:
         is_succeeded = False
@@ -429,28 +437,31 @@ def dataflux_func_runner(self, *args, **kwargs):
         func_result_repr       = None
         func_result_json_dumps = None
 
-        try:
-            func_result_raw = toolkit.json_safe_copy(func_result)
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        if func_resp.data:
+            try:
+                func_result_raw = func_resp.data
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
-        try:
-            func_result_repr = pprint.saferepr(func_result)
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+            try:
+                func_result_repr = pprint.saferepr(func_resp.data)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
-        try:
-            func_result_json_dumps = toolkit.json_safe_dumps(func_result)
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+            try:
+                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
         result = {
             'raw'      : func_result_raw,
             'repr'     : func_result_repr,
             'jsonDumps': func_result_json_dumps,
+
+            '_responseControl': func_resp._create_response_control()
         }
 
         # 记录函数运行结果
@@ -516,6 +527,7 @@ def dataflux_func_runner(self, *args, **kwargs):
         self.cache_task_status(
             origin=origin,
             origin_id=origin_id,
+            exec_mode=exec_mode,
             status=end_status,
             func_id=func_id,
             script_publish_version=target_script['publishVersion'],

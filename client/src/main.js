@@ -5,6 +5,16 @@ import store from './store'
 
 import yaml from 'js-yaml'
 
+// 公共函数
+import * as toolkit from '@/toolkit'
+Vue.prototype.toolkit = toolkit;
+Vue.prototype.T = toolkit;
+
+// 常量
+import const_ from '@/const'
+Vue.prototype.const = const_;
+Vue.prototype.C = const_;
+
 // 图标
 import 'font-awesome/css/font-awesome.css'
 
@@ -24,7 +34,10 @@ Vue.component('split-pane', splitPane);
 // import '@/theme/element-#FF6600/index.css'
 import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
+ElementUI.Tooltip.props.transition.default = false;
+ElementUI.Popover.props.transition.default = false;
 Vue.use(ElementUI)
+window.ElementUI = ElementUI
 
 // 国际化
 import VueI18n from 'vue-i18n'
@@ -61,11 +74,11 @@ const i18n = new VueI18n({
 import moment from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
-Vue.filter('datetime', function(dataStr, pattern='YYYY-MM-DD HH:mm:ss') {
-  return moment.utc(dataStr).locale(store.getters.uiLocale).utcOffset(8).format(pattern);
+Vue.filter('datetime', function(dt, pattern) {
+  return toolkit.getDateTimeString(dt, pattern);
 });
-Vue.filter('fromNow', function(dataStr) {
-  return moment.utc(dataStr).locale(store.getters.uiLocale).fromNow();
+Vue.filter('fromNow', function(dt) {
+  return toolkit.fromNow(dt);
 });
 
 // 验证
@@ -75,16 +88,6 @@ Vue.prototype.validator = validator;
 // 剪贴板
 import clipboard from 'clipboard';
 Vue.prototype.clipboard = clipboard;
-
-// 公共函数
-import * as toolkit from '@/toolkit'
-Vue.prototype.toolkit = toolkit;
-Vue.prototype.T = toolkit;
-
-// 常量
-import const_ from '@/const'
-Vue.prototype.const = const_;
-Vue.prototype.C = const_;
 
 // 其他
 import * as encoding from '@/encoding'
@@ -155,5 +158,7 @@ Vue.config.silent = true;
 
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;
+
+window.instanceId = toolkit.genRandString();
 
 export default app
