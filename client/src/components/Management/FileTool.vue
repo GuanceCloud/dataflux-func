@@ -144,13 +144,13 @@ Delete file                                           : 删除文件
                   v-if="previewExtMap[scope.row.ext]"
                   class="list-button"
                   type="primary"
-                  :href="T.authedLink(`/api/v1/resources?preview=true&filePath=${getPath(scope.row.name)}`)"
+                  :href="scope.row.previewURL"
                   :underline="false"
                   target="_blank">{{ $t('Preview') }}</el-link>
                 <el-link
                   class="list-button"
                   type="primary"
-                  :href="T.authedLink(`/api/v1/resources?filePath=${getPath(scope.row.name)}`)"
+                  :href="scope.row.downloadURL"
                   :download="scope.row.name"
                   :underline="false"
                   target="_blank">{{ $t('Download') }}</el-link>
@@ -208,9 +208,21 @@ export default {
           case 'folder':
             f.icon = 'folder-o';
             break;
+
           case 'file':
             f.icon = 'file-o';
             f.ext  = f.name.split('.').pop();
+
+            f.previewURL = this.T.formatURL(`/api/v1/resources`, {
+              baseURL: true,
+              auth   : true,
+              query  : { preview: true, filePath: this.getPath(f.name) },
+            });
+            f.downloadURL = this.T.formatURL(`/api/v1/resources`, {
+              baseURL: true,
+              auth   : true,
+              query  : { filePath: this.getPath(f.name) },
+            });
             break;
         }
 

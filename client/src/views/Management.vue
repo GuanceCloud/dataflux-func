@@ -16,6 +16,7 @@ Access Key        : AccessKey
 System Metric     : 系统指标
 PIP Tool          : PIP工具
 File Tool         : 文件工具
+File Service       : 文件服务
 </i18n>
 
 <template>
@@ -113,7 +114,7 @@ File Tool         : 文件工具
             </el-menu-item>
 
             <br>
-            
+
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
@@ -121,32 +122,34 @@ File Tool         : 文件工具
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
+            <el-menu-item class="experimental-feature" index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
               <span>
                 <i class="fa fa-fw fa-key"></i>
                 {{ $t('Access Key') }}
-                <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/sys-stats" v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')">
+            <el-menu-item class="experimental-feature" index="/management/sys-stats" v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')">
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
                 {{ $t('System Metric') }}
-                <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/pip-tool" v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')">
+            <el-menu-item class="experimental-feature" index="/management/pip-tool" v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')">
               <span>
                 <i class="fa fa-fw fa-cubes"></i>
                 {{ $t('PIP Tool') }}
-                <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/file-tool" v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')">
+            <el-menu-item class="experimental-feature" index="/management/file-tool" v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')">
               <span>
                 <i class="fa fa-fw fa-file"></i>
                 {{ $t('File Tool') }}
-                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item class="experimental-feature" index="/management/file-service-list" v-if="$store.getters.isExperimentalFeatureEnabled('FileService')">
+              <span>
+                <i class="fa fa-fw fa-folder-open"></i>
+                {{ $t('File Service') }}
               </span>
             </el-menu-item>
           </el-menu>
@@ -188,5 +191,8 @@ export default {
 }
 .aside-content {
   height: 100%;
+}
+.experimental-feature {
+  margin-left: 10px;
 }
 </style>

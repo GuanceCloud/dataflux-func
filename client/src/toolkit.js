@@ -518,10 +518,17 @@ export function formatURL(pathPattern, options) {
 
   let baseURL = options.baseURL || '';
   if (baseURL === true) {
-    baseURL = process.env.VUE_APP_SERVER_BASE_URL;
+    // baseURL = process.env.VUE_APP_SERVER_BASE_URL;
+    baseURL = getBaseURL();
   }
   if (baseURL && baseURL.slice(-1) === '/') {
     baseURL = baseURL.slice(0, -1);
+  }
+
+  if (options.auth) {
+    options.query = options.query || {};
+    let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
+    options.query[authQuery] = store.state.xAuthToken;
   }
 
   let queryString = '';
@@ -1020,17 +1027,9 @@ export async function callAPI_allPage(pathPattern, options) {
   return apiResp.data;
 };
 
-export function authedLink(url) {
-  let urlPath   = url.split('?')[0];
-  let nextQuery = getQuery(url);
+export function isPageFiltered(options) {
+  options = options || {};
 
-  let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
-  nextQuery[authQuery] = store.state.xAuthToken;
-
-  return formatURL(urlPath, { query: nextQuery });
-};
-
-export function isPageFiltered(ignoreCases) {
   let filter = router.currentRoute.query.filter;
 
   let listQuery = {};
@@ -1042,13 +1041,13 @@ export function isPageFiltered(ignoreCases) {
     }
   }
 
-  ignoreCases = asArray(ignoreCases) || [];
-  ignoreCases.push({ k: 'pageNumber', v: 1});
-  ignoreCases.forEach(ignoreCase => {
-    if (listQuery[ignoreCase.k] === ignoreCase.v) {
-      delete listQuery[ignoreCase.k];
+  options.ignore = options.ignore || {};
+  options.ignore.pageNumber = 1;
+  for (let k in options.ignore) {
+    if (listQuery[k] === options.ignore[k]) {
+      delete listQuery[k];
     }
-  });
+  }
 
   return !isNothing(listQuery);
 };

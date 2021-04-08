@@ -1,9 +1,16 @@
 <i18n locale="zh-CN" lang="yaml">
+Auth Link              : 授权链接
+New Auth Link          : 新建授权链接
+Normal                 : 常规
+Statistic              : 统计信息
+Show hidden            : 显示隐藏项
 Disable Auth Link      : 禁用授权链接
 Enable Auth Link       : 启用授权链接
 Show Auth Link in doc  : 在文档中显示授权链接
 Hide Auth Link from doc: 在文档中隐藏授权链接
 Delete Auth Link       : 删除授权链接
+
+Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 </i18n>
 
 <template>
@@ -12,23 +19,23 @@ Delete Auth Link       : 删除授权链接
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          授权链接
+          {{ $t('Auth Link') }}
           <div class="header-control">
-            <el-switch v-model="showCountCost" inactive-text="常规" active-text="统计信息"></el-switch>
+            <el-switch v-model="showCountCost" :inactive-text="$t('Normal')" :active-text="$t('Statistic')"></el-switch>
             &#12288;
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
-            <el-tooltip content="勾选后展示由其他系统自动创建的内容" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
                 size="mini"
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">显示隐藏项</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
-              新建授权链接
+              {{ $t('New Auth Link') }}
             </el-button>
           </div>
         </h1>
@@ -37,7 +44,7 @@ Delete Auth Link       : 删除授权链接
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ k: 'origin', v: 'API,UI'})">当前过滤条件无匹配数据</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
           <h1 class="no-data-title" v-else>从未创建过任何授权链接</h1>
 
           <p class="no-data-tip">
@@ -82,8 +89,10 @@ Delete Auth Link       : 删除授权链接
                 <div class="text-bad">函数已不存在</div>
               </template>
 
-              <span class="text-info">&#12288;授权链接ID:</span>
-              <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+              <div>
+                <span class="text-info">&#12288;授权链接ID:</span>
+                <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+              </div>
             </template>
           </el-table-column>
 
@@ -124,7 +133,6 @@ Delete Auth Link       : 删除授权链接
             <el-table-column label="备注" width="200">
               <template slot-scope="scope">
                 <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
-                <span v-else class="text-info">{{ '<无备注>' }}</span>
               </template>
             </el-table-column>
           </template>
@@ -368,7 +376,7 @@ export default {
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
-        baseURL: this.T.getBaseURL(),
+        baseURL: true,
         params : {id: d.id},
       });
 

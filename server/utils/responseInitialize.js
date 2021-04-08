@@ -514,6 +514,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, fileName, 'file');
     }
+    console.log(filePath)
     return res.download(filePath);
   };
 

@@ -32,6 +32,7 @@ const STATE_CONFIG = {
   AuthLinkList_scrollY                     : { persist: false, syncXTab: false },
   CrontabConfigList_scrollY                : { persist: false, syncXTab: false },
   BatchList_scrollY                        : { persist: false, syncXTab: false },
+  FileServiceList_scrollY                  : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
   scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
   dataSourceListSyncTime                   : { persist: true,  syncXTab: true  },
@@ -68,6 +69,7 @@ const MUTATION_CONFIG = {
   updateAuthLinkList_scrollY                     : { persist: false },
   updateCrontabConfigList_scrollY                : { persist: false },
   updateBatchList_scrollY                        : { persist: false },
+  updateFileServiceList_scrollY                  : { persist: false },
   updateScriptListSyncTime                       : { persist: false },
   updateDataSourceListSyncTime                   : { persist: false },
   updateEnvVariableListSyncTime                  : { persist: false },
@@ -153,6 +155,7 @@ export default new Vuex.Store({
     AuthLinkList_scrollY     : 0,
     CrontabConfigList_scrollY: 0,
     BatchList_scrollY        : 0,
+    FileServiceList_scrollY  : 0,
 
     // 列表同步时间
     scriptListSyncTime     : null,
@@ -396,6 +399,9 @@ export default new Vuex.Store({
     },
     updateBatchList_scrollY(state, value) {
       state.BatchList_scrollY = value || 0;
+    },
+    updateFileServiceList_scrollY(state, value) {
+      state.FileServiceList_scrollY = value || 0;
     },
 
     updateScriptListSyncTime(state, name) {

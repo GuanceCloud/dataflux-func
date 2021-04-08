@@ -1,7 +1,12 @@
 <i18n locale="zh-CN" lang="yaml">
+Crontab Config        : 自动触发配置
+New Crontab Config    : 新建自动触发配置
+Show hidden           : 显示隐藏项
 Disable Crontab Config: 禁用自动触发配置
 Enable Crontab Config : 启用自动触发配置
 Delete Crontab Config : 删除自动触发配置
+
+Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 </i18n>
 
 <template>
@@ -10,21 +15,21 @@ Delete Crontab Config : 删除自动触发配置
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          自动触发配置
+          {{ $t('Crontab Config') }}
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
-            <el-tooltip content="勾选后展示由其他系统自动创建的内容" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
                 size="mini"
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">显示隐藏项</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
-              新建自动触发配置
+              {{ $t('New Crontab Config') }}
             </el-button>
           </div>
         </h1>
@@ -33,7 +38,7 @@ Delete Crontab Config : 删除自动触发配置
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ k: 'origin', v: 'API,UI'})">当前过滤条件无匹配数据</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
           <h1 class="no-data-title" v-else>从未创建过任何自动触发配置</h1>
 
           <p class="no-data-tip">
@@ -77,10 +82,10 @@ Delete Crontab Config : 删除自动触发配置
                 <div class="text-bad">函数已不存在</div>
               </template>
 
-              <template v-if="!T.isNothing(scope.row.tagsJSON)">
+              <div v-if="!T.isNothing(scope.row.tagsJSON)">
                 <span class="text-info">&#12288;自动触发配置标签:</span>
                 <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
-              </template>
+              </div>
             </template>
           </el-table-column>
 
@@ -117,7 +122,6 @@ Delete Crontab Config : 删除自动触发配置
           <el-table-column label="备注" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
-              <span v-else class="text-info">{{ '<无备注>' }}</span>
             </template>
           </el-table-column>
 

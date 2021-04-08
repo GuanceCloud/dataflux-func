@@ -90,6 +90,9 @@ EntityModel.prototype.list = function(options, callback) {
           let key = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
           var api = ROUTE_META_MAP[key];
 
+          // 已删除的接口忽略
+          if (!api) return;
+
           d._operationDescribe = api.name || '未知操作';
 
           if (!d.username) {

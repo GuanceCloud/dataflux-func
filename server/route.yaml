@@ -1748,33 +1748,6 @@ datafluxFuncAPI:
           $maxLength : 100
           $example   : 'Abc123'
 
-  integratedFileServerRoot:
-    name         : 集成文件服务（根目录）
-    method       : get
-    url          : /api/v1/func/integration/file-server/:funcId
-    response     : any
-    requireSignIn: false
-    params:
-      funcId:
-        $desc      : 函数ID
-        $isRequired: true
-        $type      : string
-        $maxLength : 256
-        $example   : demo_test.mysite
-  integratedFileServer:
-    name         : 集成文件服务
-    method       : get
-    url          : /api/v1/func/integration/file-server/:funcId/*
-    response     : any
-    requireSignIn: false
-    params:
-      funcId:
-        $desc      : 函数ID
-        $isRequired: true
-        $type      : string
-        $maxLength : 256
-        $example   : demo_test.mysite
-
   clearLogCacheTables:
     name         : 清空日志/缓存表
     method       : post
@@ -1824,6 +1797,12 @@ datafluxFuncAPI:
       folder:
         $desc: 文件夹
         $type: string
+      type:
+        $desc: 根据类型过滤
+        $type: commaArray
+        $commaArrayIn:
+          - folder
+          - file
 
   downloadResources:
     name         : 下载资源文件
@@ -1883,6 +1862,17 @@ datafluxFuncAPI:
         $desc    : 执行操作参数
         $required: false
         $type    : string
+
+  fileService:
+    name         : 文件服务
+    method       : get
+    url          : /api/v1/fs/:id/*
+    response     : any
+    requireSignIn: false
+    params:
+      id:
+        $desc: 文件服务ID
+        $type: string
 
 datafluxFuncPage:
   clientApp:
@@ -4513,3 +4503,108 @@ operationRecordAPI:
         $type      : string
         $searchType: like
         $searchKey : oprd.respBodyJSON
+
+# 文件服务
+fileServiceAPI:
+  list:
+    showInDoc    : true
+    name         : 列出文件服务
+    method       : get
+    url          : /api/v1/file-services/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : false
+    fieldPicking : true
+    fieldKicking : true
+    orderFields:
+      seq       : fsvc.seq
+      id        : fsvc.id
+      root      : fsvc.root
+      createTime: fsvc.createTime
+      updateTime: fsvc.updateTime
+    fuzzySearch:
+      - fsvc.id
+      - fsvc.root
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : fsvc.id
+      root:
+        $desc      : 根据根目录查询
+        $type      : string
+        $searchType: like
+        $searchKey : fsvc.root
+
+  add:
+    showInDoc    : true
+    name         : 添加文件服务
+    method       : post
+    url          : /api/v1/file-services/do/add
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
+        root:
+          $desc      : 根目录
+          $isRequired: true
+          $type      : string
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : 修改文件服务
+    method       : post
+    url          : /api/v1/file-services/:id/do/modify
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 文件服务ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        root:
+          $desc      : 根目录
+          $isRequired: false
+          $type      : string
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : 删除文件服务
+    method       : get
+    url          : /api/v1/file-services/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 文件服务ID
+        $type: string

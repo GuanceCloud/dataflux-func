@@ -33,6 +33,7 @@ var crontabConfigMod           = require('../models/crontabConfigMod');
 var batchMod                   = require('../models/batchMod');
 var dataProcessorTaskResultMod = require('../models/dataProcessorTaskResultMod');
 var operationRecordMod         = require('../models/operationRecordMod');
+var fileServiceMod             = require('../models/fileServiceMod');
 
 var funcAPICtrl = require('./funcAPICtrl');
 
@@ -1953,35 +1954,6 @@ exports.integratedAuthMid = function(req, res, next) {
   });
 };
 
-exports.integratedFileServer = function(req, res, next) {
-  var funcId = req.params.funcId;
-
-  _getFuncById(res.locals, funcId, function(err, _func) {
-    if (err) return next(err);
-
-    if (_func.integration !== 'fileServer') {
-      return next(new E('EClientBadRequest', 'This Func is not a integrated file server func.'));
-    }
-
-    var integrationConfig = {}
-    try { integrationConfig = _func.extraConfigJSON.integrationConfig || {} } catch(_) {}
-
-    var root       = integrationConfig.root || '.';
-    var staticPath = req.params[0] || integrationConfig.default || 'index.html';
-
-    if (!req.params[0]) {
-      // 自动跳转
-      var nextPath = path.join(req.path, staticPath);
-      return res.redirect(nextPath);
-
-    } else {
-      // 提供文件
-      var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, root, staticPath);
-      res.sendFile(filePath);
-    }
-  });
-};
-
 // 清空日志/缓存表
 exports.clearLogCacheTables = function(req, res, next) {
   var logTables = [
@@ -2159,6 +2131,8 @@ exports.installPythonPackage = function(req, res, next) {
 
 exports.listResources = function(req, res, next) {
   var subFolder = req.query.folder || './';
+  var type      = req.query.type;
+
   var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, subFolder);
 
   if (!absPath.endsWith('/')) {
@@ -2201,7 +2175,9 @@ exports.listResources = function(req, res, next) {
         f.size = stat.size;
       }
 
-      if (f.type) {
+      if (!f.type) return acc;
+
+      if (toolkit.isNothing(type) || type.indexOf(f.type) >= 0) {
         acc.push(f);
       }
       return acc;
@@ -2229,7 +2205,7 @@ exports.downloadResources = function(req, res, next) {
   if (!fs.existsSync(absPath)) {
     return next(new E('EBizCondition', 'File not exists.'))
   }
-
+  console.log(absPath)
   if (preview) {
     fs.readFile(absPath, function(err, data) {
       if (err) return next(err)
@@ -2349,6 +2325,22 @@ exports.operateResource = function(req, res, next) {
   childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
     if (err) return next(err);
     return res.locals.sendJSON();
+  });
+};
+
+// 文件服务
+exports.fileService = function(req, res, next) {
+  var id = req.params.id;
+
+  var fileServiceModel = fileServiceMod.createModel(res.locals);
+  fileServiceModel.getWithCheck(id, null, function(err, dbRes) {
+    if (err) return next(err);
+
+    var root        = dbRes.root    || '.';
+    var fileRelPath = req.params[0] || 'index.html';
+
+    var fileAbsPath = path.join(CONFIG.RESOURCE_ROOT_PATH, root, fileRelPath);
+    res.sendFile(fileAbsPath);
   });
 };
 

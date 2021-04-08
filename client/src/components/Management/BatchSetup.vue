@@ -366,7 +366,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 400px;
+  width: 500px;
 }
 
 .el-checkbox {

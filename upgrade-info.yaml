@@ -2,3 +2,18 @@ upgradeInfo:
   - seq: 0
     database: |-
       SELECT 'Base DB';
+
+  - seq: 1
+    database: |-
+      -- 新增文件服务功能
+      CREATE TABLE `biz_main_file_service` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `root` text DEFAULT NULL COMMENT '根目录',
+        `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',
+        `note` text COMMENT '备注',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件服务';

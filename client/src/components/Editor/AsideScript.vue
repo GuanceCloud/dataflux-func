@@ -437,7 +437,7 @@ export default {
           let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 100;
           $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
         }
-      }, 1000);
+      }, 500);
     },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);

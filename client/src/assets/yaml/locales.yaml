@@ -26,6 +26,7 @@ en:
   Save    : 保存
   Lock    : 锁定
   Unlock  : 解锁
+  Open    : 打开
   Close   : 关闭
   Clear   : 清空
   Debug   : 调试
@@ -40,6 +41,7 @@ en:
   save    : 保存
   lock    : 解锁
   unlock  : 锁定
+  open    : 打开
   close   : 关闭
   clear   : 清空
   debug   : 调试

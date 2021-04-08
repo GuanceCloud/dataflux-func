@@ -170,7 +170,7 @@ export default {
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
-        baseURL: this.T.getBaseURL(),
+        baseURL: true,
         params : {id: d.id},
       });
 

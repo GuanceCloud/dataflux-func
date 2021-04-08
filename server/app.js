@@ -216,6 +216,8 @@ function startApplication() {
 
   require('./routers/operationRecordAPIRouter');
 
+  require('./routers/fileServiceAPIRouter');
+
   routeLoader.mount(app);
 
   // Route Docs
