@@ -13,6 +13,7 @@ var yaml       = require('js-yaml');
 var sortedJSON = require('sorted-json');
 var request    = require('request');
 var moment     = require('moment');
+var byteSize   = require('byte-size');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -1977,6 +1978,64 @@ exports.clearLogCacheTables = function(req, res, next) {
 };
 
 // Python包
+exports.listAvailablePythonPackages = function(req, res, next) {
+  var cacheKey = toolkit.getCacheKey('cache', 'availablePythonPackage');
+
+  var allPackages = null;
+  async.series([
+    // 优先从缓存中读取
+    function(asyncCallback) {
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          allPackages = JSON.parse(cacheRes);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 从阿里云获取
+    function(asyncCallback) {
+      if (allPackages) return asyncCallback();
+
+      var requestOptions = {
+        forever: true,
+        timeout: 3 * 1000,
+        method : 'GET',
+        url    : 'https://mirrors.aliyun.com/pypi/web/simple/',
+      };
+      request(requestOptions, function(err, _res, _body) {
+        if (err) return asyncCallback(err);
+
+        // 提取所有包名
+        var PREFIX_S = '<a href="';
+        var START_S  = '/">';
+        var END_S    = '</a>';
+
+        allPackages = [];
+        _body.split('\n').forEach(line => {
+          if (line.trim().indexOf(PREFIX_S) !== 0) return;
+
+          var start = line.indexOf(START_S) + START_S.length;
+          var end   = line.indexOf(END_S);
+          var pkg   = line.slice(start, end);
+
+          allPackages.push(pkg);
+        });
+
+        // 加入缓存
+        res.locals.cacheDB.setex(cacheKey, CONFIG._PIP_LIST_EXPIRES, JSON.stringify(allPackages), asyncCallback);
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(allPackages);
+    return res.send(ret); // 不要输出日志
+  });
+};
+
 exports.listInstalledPythonPackages = function(req, res, next) {
   // Python包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
@@ -2330,17 +2389,98 @@ exports.operateResource = function(req, res, next) {
 
 // 文件服务
 exports.fileService = function(req, res, next) {
-  var id = req.params.id;
+  var id      = req.params.id;
+  var relPath = '/' + req.params[0];
 
   var fileServiceModel = fileServiceMod.createModel(res.locals);
   fileServiceModel.getWithCheck(id, null, function(err, dbRes) {
     if (err) return next(err);
 
-    var root        = dbRes.root    || '.';
-    var fileRelPath = req.params[0] || 'index.html';
+    if (dbRes.isDisabled) {
+        return next(new E('EBizCondition.FileServiceDisabled', 'This File Service is disabled.'))
+    }
 
-    var fileAbsPath = path.join(CONFIG.RESOURCE_ROOT_PATH, root, fileRelPath);
-    res.sendFile(fileAbsPath);
+    var absPath = path.join(CONFIG.RESOURCE_ROOT_PATH, (dbRes.root || '.'), relPath);
+
+    // 根据目标分别做不同处理
+    fs.lstat(absPath, function(err, stats) {
+      if (err) {
+        // 内容不存在
+        var pageData = {
+          id     : id,
+          relPath: relPath,
+          error  : err.code === 'ENOENT' ? 'Not Found' : err.toString(),
+        }
+        return res.locals.render('file-service', pageData);
+      }
+
+      if (stats.isDirectory()) {
+        // 访问目录：返回HTML页面，提示下层
+        var opt = {
+          withFileTypes: true,
+        };
+        return fs.readdir(absPath, opt, function(err, data) {
+          if (err) return next(err);
+
+          // 搜集下层文件信息
+          var files = data.reduce(function(acc, x) {
+            var f = {
+              name      : x.name,
+              type      : null,
+              size      : null,
+              createTime: null,
+              updateTime: null,
+            };
+
+            var stat = fs.statSync(path.join(absPath, x.name));
+            f.createTime = moment(stat.birthtimeMs).utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss');
+            f.updateTime = moment(stat.ctimeMs).utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss');
+
+            if (x.isDirectory()) {
+              f.type = 'folder';
+              f.name += '/';
+
+            } else if (x.isFile()) {
+              f.type = 'file';
+              f.size = byteSize(stat.size);
+            }
+
+            if (!f.type) return acc;
+
+            acc.push(f);
+            return acc;
+          }, []);
+
+          // 上层目录
+          if (relPath !== '/') {
+            files.unshift({
+              name: '../',
+              type: 'folder',
+            });
+          }
+
+          var pageData = {
+            id     : id,
+            files  : files,
+            relPath: relPath,
+          };
+          return res.locals.render('file-service', pageData);
+        });
+
+      } else if (stats.isFile()) {
+        // 访问文件：发送文件
+        return res.sendFile(absPath);
+
+      } else {
+        // 访问其他：返回HTML页面，提示不支持
+        var pageData = {
+          id     : id,
+          relPath: relPath,
+          error  : 'Not Supported',
+        }
+        return res.locals.render('file-service', pageData);
+      }
+    });
   });
 };
 

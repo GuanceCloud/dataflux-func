@@ -129,26 +129,21 @@ Delete file                                           : 删除文件
 
           <el-table-column :label="$t('Size')" sortable sort-by="size" align="right" width="120">
             <template slot-scope="scope">
-              <code v-if="scope.row.size === null">-</code>
-              <code v-else-if="scope.row.size < 1024">{{ scope.row.size }} B</code>
-              <code v-else-if="scope.row.size < 1024 * 1024">{{ parseInt(scope.row.size / 1024) }} KB</code>
-              <code v-else-if="scope.row.size < 1024 * 1024 * 1024">{{ parseInt(scope.row.size / 1024 / 1024) }} MB</code>
+              <code v-if="scope.row.size">{{ scope.row.sizeHuman }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
               <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
                   v-if="previewExtMap[scope.row.ext]"
-                  class="list-button"
                   type="primary"
                   :href="scope.row.previewURL"
                   :underline="false"
                   target="_blank">{{ $t('Preview') }}</el-link>
                 <el-link
-                  class="list-button"
                   type="primary"
                   :href="scope.row.downloadURL"
                   :download="scope.row.name"
@@ -156,7 +151,7 @@ Delete file                                           : 删除文件
                   target="_blank">{{ $t('Download') }}</el-link>
               </template>
 
-              <el-dropdown @command="resourceOperationCmd" class="list-button">
+              <el-dropdown @command="resourceOperationCmd">
                 <el-button type="text" size="small">
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
@@ -177,6 +172,7 @@ Delete file                                           : 删除文件
 </template>
 
 <script>
+import byteSize from 'byte-size'
 import * as path from '@/path'
 
 export default {
@@ -212,6 +208,10 @@ export default {
           case 'file':
             f.icon = 'file-o';
             f.ext  = f.name.split('.').pop();
+
+            if (f.size) {
+              f.sizeHuman = byteSize(f.size);
+            }
 
             f.previewURL = this.T.formatURL(`/api/v1/resources`, {
               baseURL: true,

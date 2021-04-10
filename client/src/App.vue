@@ -537,14 +537,19 @@ content: "\25B2";
 }
 
 /* Element-UI 修正 */
-.list-button .el-link--inner {
+.fix-list-button .el-button {
+  border: none;
+}
+.fix-list-button .el-link {
   font-size: 12px;
   line-height: 1;
   display: inline;
   margin-left: 10px;
-  margin-right: 2px;
 }
-.el-dropdown.list-button {
+.fix-list-button .el-link + .el-button {
+  margin-left: 10px;
+}
+.fix-list-button .el-dropdown {
   margin-left: 10px;
 }
 .el-tag + .el-tag {

@@ -63,12 +63,11 @@ Delete File Service : 删除文件服务
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
               <el-link
-                class="list-button"
                 type="primary"
-                :href="`/api/v1/fs/${scope.row.id}/`"
+                :href="scope.row.openURL"
                 :underline="false"
                 target="_blank">{{ $t('Open') }}</el-link>
 
@@ -121,6 +120,14 @@ export default {
         alert: {showError: true},
       });
       if (!apiRes.ok) return;
+
+      // 补齐打开路径
+      apiRes.data.forEach(d => {
+        d.openURL = this.T.formatURL('/api/v1/fs/:id/', {
+          baseURL: true,
+          params: { id: d.id }
+        });
+      });
 
       this.data = apiRes.data;
       this.dataPageInfo = apiRes.pageInfo;

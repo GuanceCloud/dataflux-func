@@ -106,13 +106,12 @@ export default {
       let apiRes = null;
 
       // 缓存所有python包名
-      apiRes = await this.T.callAPI('post', '/api/v1/do/proxy', {
-        body : { method: 'get', url: 'https://mirrors.aliyun.com/pypi/web/simple/' },
+      apiRes = await this.T.callAPI('/api/v1/python-packages/available', {
         alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
-      this.allPackages = this.abstractPackageList(apiRes.data.body);
+      this.allPackages = apiRes.data;
       this.allPackageMap = this.allPackages.reduce((acc, x) => {
         acc[x] = true;
         return acc;
@@ -131,24 +130,6 @@ export default {
       }, {});
 
       this.$store.commit('updateLoadStatus', true);
-    },
-    abstractPackageList(pypiHTML) {
-      const PREFIX_S = '<a href="';
-      const START_S  = '/">';
-      const END_S    = '</a>';
-
-      let allPackages = [];
-      pypiHTML.split('\n').forEach(line => {
-        if (line.trim().indexOf(PREFIX_S) !== 0) return;
-
-        let start = line.indexOf(START_S) + START_S.length;
-        let end   = line.indexOf(END_S);
-        let pkg   = line.slice(start, end);
-
-        allPackages.push(pkg);
-      });
-
-      return allPackages;
     },
     queryPackages(query, callback) {
       let result = [];

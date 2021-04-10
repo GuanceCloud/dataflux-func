@@ -1756,6 +1756,14 @@ datafluxFuncAPI:
     requireSignIn: true
     privilege    : general_w
 
+  listAvailablePythonPackages:
+    name         : 列出可用的的Python包
+    method       : get
+    url          : /api/v1/python-packages/available
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
   listInstalledPythonPackages:
     name         : 列出已安装的Python包
     method       : get

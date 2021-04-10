@@ -99,10 +99,7 @@ Response                      : 响应
 
           <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="120">
             <template slot-scope="scope">
-              <code v-if="!scope.row.codeSize">-</code>
-              <code v-else-if="scope.row.codeSize < 1024">{{ scope.row.codeSize }} B</code>
-              <code v-else-if="scope.row.codeSize < 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024) }} KB</code>
-              <code v-else-if="scope.row.codeSize < 1024 * 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024 / 1024) }} MB</code>
+              <code v-if="scope.row.codeSize">{{ scope.row.codeSizeHuman }}</code>
             </template>
           </el-table-column>
 
@@ -208,6 +205,7 @@ Response                      : 响应
 </template>
 
 <script>
+import byteSize from 'byte-size'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
@@ -250,6 +248,12 @@ export default {
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
       });
+
+      this.scriptOverview.forEach(d => {
+        if (d.codeSize) {
+          d.codeSizeHuman = byteSize(d.codeSize);
+        }
+      })
 
       this.$store.commit('updateLoadStatus', true);
     },

@@ -94,6 +94,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
 ]);
 
 // Python包
+routeLoader.load(ROUTE.datafluxFuncAPI.listAvailablePythonPackages, [
+  datafluxFuncAPICtrl.listAvailablePythonPackages,
+]);
 routeLoader.load(ROUTE.datafluxFuncAPI.listInstalledPythonPackages, [
   datafluxFuncAPICtrl.listInstalledPythonPackages,
 ]);
