@@ -188,7 +188,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = ['cron.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       crontabConfigModel.list(opt, function(err, dbRes) {
@@ -235,7 +235,7 @@ exports.deleteMany = function(req, res, next) {
       opt.fields = ['cron.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       crontabConfigModel.list(opt, function(err, dbRes) {
@@ -318,7 +318,7 @@ function _add(locals, data, origin, callback) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', data.scope)));
+          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', 'Duplicated Crontab config in scope', { scope: data.scope }));
         }
 
         return asyncCallback(err);
@@ -415,7 +415,7 @@ function _modify(locals, id, data, opt, callback) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', toolkit.strf('Duplicated Crontab config in scope: `{0}`.', nextScope)));
+          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', 'Duplicated Crontab config in scope', { scope: nextScope }));
         }
 
         data.configMD5 = nextConfigMD5;

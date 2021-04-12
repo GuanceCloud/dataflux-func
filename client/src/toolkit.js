@@ -614,6 +614,8 @@ export function isExpired(dt) {
 };
 
 export function getDateTimeString(dt, pattern) {
+  dt = dt || new Date();
+
   let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
   let inputTime = moment.utc(dt).locale(store.getters.uiLocale).utcOffset(utcOffset);
 
@@ -865,7 +867,7 @@ export async function callAPI(method, pathPattern, options) {
       } else if (alert.showError) {
         let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
                     ? alert.reasonMap[apiResp.data.reason]
-                    : apiResp.data.message;
+                    : app.$t(apiResp.data.message);
         if (apiResp.data.detail && apiResp.data.detail.message) {
           message += `<br><small>${apiResp.data.detail.message}<small>`;
         }
@@ -967,7 +969,7 @@ export async function callAPI_allPage(pathPattern, options) {
           setTimeout(() => {
             let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
                         ? alert.reasonMap[apiResp.data.reason]
-                        : apiResp.data.message;
+                        : app.$t(apiResp.data.message);
             if (apiResp.data.detail && apiResp.data.detail.message) {
               message += `<br><small>${apiResp.data.detail.message}<small>`;
             }

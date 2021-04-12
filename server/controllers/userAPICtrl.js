@@ -46,7 +46,7 @@ exports.add = function(req, res, next) {
     if (err) return next(err);
 
     if (dbRes.length > 0) {
-      return next(new E('EClientDuplicated.username', 'This username is already existed.'));
+      return next(new E('EClientDuplicated.username', 'This username is already existed'));
     }
 
     // Call the builtin handler
@@ -72,11 +72,11 @@ exports.modify = function(req, res, next) {
     if (err) return next(err);
 
     if (dbRes.length > 0 && id !== dbRes[0].id) {
-      return next(new E('EClientDuplicated.username', 'This username is used by others.'));
+      return next(new E('EClientDuplicated.username', 'This username is used by others'));
     }
 
     if (dbRes[0].roles.indexOf('sa') >= 0) {
-      return next(new E('EBizCondition.adminUserCannotBeModified', 'Origin Admin user cannot been modified directly.'));
+      return next(new E('EBizCondition.adminUserCannotBeModified', 'Origin Admin user cannot been modified directly'));
     }
 
     // If disabled, delete xAuthToken

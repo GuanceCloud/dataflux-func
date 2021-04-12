@@ -111,6 +111,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.installPythonPackage, [
 routeLoader.load(ROUTE.datafluxFuncAPI.listResources, [
   datafluxFuncAPICtrl.listResources,
 ]);
+routeLoader.load(ROUTE.datafluxFuncAPI.getResources, [
+  datafluxFuncAPICtrl.getResources,
+]);
 routeLoader.load(ROUTE.datafluxFuncAPI.downloadResources, [
   datafluxFuncAPICtrl.downloadResources,
 ]);

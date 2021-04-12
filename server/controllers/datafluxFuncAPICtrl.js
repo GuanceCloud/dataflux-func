@@ -119,9 +119,7 @@ function _getFuncById(locals, funcId, callback) {
 
     dbRes = dbRes[0];
     if (!dbRes) {
-      return callback(new E('EClientNotFound', toolkit.strf('No such function: `{0}`', funcId), {
-        funcId: funcId,
-      }));
+      return callback(new E('EClientNotFound', 'No such function', { funcId: funcId }));
     }
 
     func = dbRes;
@@ -265,10 +263,10 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
 
     if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MIN_API_TIMEOUT)));
+      return callback(new E('EClientBadRequest', 'Invalid options: apiTimeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
     }
     if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `apiTimeout` should be greater than or equal to `{0}`', CONFIG._FUNC_TASK_MAX_API_TIMEOUT)));
+      return callback(new E('EClientBadRequest', 'Invalid options: apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
     }
 
   } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
@@ -282,8 +280,11 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   if (!toolkit.isNothing(funcCallOptions.timeout)) {
     funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
 
-    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT || funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options: `timeout` should be between `{0}` and `{1}`', CONFIG._FUNC_TASK_MIN_TIMEOUT, CONFIG._FUNC_TASK_MAX_TIMEOUT)));
+    if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT) {
+      return callback(new E('EClientBadRequest', 'Invalid options: timeout is too small', { min: CONFIG._FUNC_TASK_MIN_TIMEOUT }));
+    }
+    if (funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
+      return callback(new E('EClientBadRequest', 'Invalid options: timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
     }
 
   } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
@@ -306,21 +307,21 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
     switch(origin) {
       case 'authLink':
         if (funcCallOptions.execMode !== 'sync') {
-          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `sync`', origin)));
+          return callback(new E('EClientBadRequest', 'Invalid options: execMode of Auth Linke func call task should be "sync"'));
         }
         break;
 
       case 'crontab':
       case 'batch':
         if (funcCallOptions.execMode !== 'async') {
-          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` of `{0}` func call task should be `async`', origin)));
+          return callback(new E('EClientBadRequest', 'Invalid options: execMode of Crontab or Batch func call task should be "async"'));
         }
         break;
 
       default:
         var _EXEC_MODES = ['sync', 'async'];
         if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
-          return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`execMode` should be one of `{0}`', _EXEC_MODES.join(','))));
+          return callback(new E('EClientBadRequest', 'Invalid options: invalid execMode', { allowed: _EXEC_MODES }));
         }
         break;
     }
@@ -368,7 +369,7 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   if (!toolkit.isNothing(funcCallOptions.returnType)) {
     var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
     if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
-      return callback(new E('EClientBadRequest', toolkit.strf('Invalid options：`returnType` should be one of `{0}`', _RETURN_TYPES.join(','))));
+      return callback(new E('EClientBadRequest', 'Invalid options: invalid returnType', { allowed: _RETURN_TYPES }));
     }
 
   } else {
@@ -399,7 +400,7 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   // 预约执行
   if (!toolkit.isNothing(funcCallOptions.eta)) {
     if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`eta` should be a valid datetime value'));
+      return callback(new E('EClientBadRequest', 'Invalid options: eta should be a valid datetime value'));
     }
   }
 
@@ -407,7 +408,7 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
     var queueNumber = parseInt(func.extraConfigJSON.queue);
     if (queueNumber < 1 || queueNumber > 9) {
-      return callback(new E('EClientBadRequest', 'Invalid options：`queue` should be a integer between 1 and 9'));
+      return callback(new E('EClientBadRequest', 'Invalid options: queue should be an integer between 1 and 9'));
     }
 
     funcCallOptions.queue = '' + func.extraConfigJSON.queue;
@@ -444,7 +445,7 @@ function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format)
     // 检查固定参数是否存在非法传递
     if (v !== 'FROM_PARAMETER') {
       if (k in mergedFuncCallKwargs && mergedFuncCallKwargs[k] !== v) {
-        throw new E('EClientBadRequest', 'Found disallowed function kwargs field', {
+        throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
           kwargsField: k,
           kwargsValue: mergedFuncCallKwargs[k],
         });
@@ -531,7 +532,7 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
         // 计算任务丢弃率（过压 / 最大可承受压力 * 100%）
         denyPercent = workerQueueOverPressure / workerQueueMaxPressure;
         if (CONFIG._WORKER_LIMIT_PRESSURE_ENABLED && Math.random() < denyPercent) {
-          return asyncCallback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue.', {
+          return asyncCallback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue', {
             funcPressure          : funcPressure,
             workerQueue           : funcCallOptions.queue,
             workerQueuePressure   : workerQueuePressure,
@@ -673,7 +674,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
           // 无法通过JSON.parse解析
           if ('string' === typeof celeryRes) {
-            return asyncCallback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.', {
+            return asyncCallback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON', {
               etype: celeryRes.result && celeryRes.result.exc_type,
             }));
           }
@@ -684,7 +685,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
             if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
               // 超时错误
-              return asyncCallback(new E('EFuncTimeout', 'Calling Function timeout.', {
+              return asyncCallback(new E('EFuncTimeout', 'Calling Function timeout', {
                 id       : celeryRes.id,
                 etype    : celeryRes.result && celeryRes.result.exc_type,
                 einfoTEXT: einfoTEXT,
@@ -692,7 +693,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
             } else {
               // 其他错误
-              return asyncCallback(new E('EFuncFailed', 'Calling Function failed.', {
+              return asyncCallback(new E('EFuncFailed', 'Calling Function failed', {
                 id       : celeryRes.id,
                 etype    : celeryRes.result && celeryRes.result.exc_type,
                 einfoTEXT: einfoTEXT,
@@ -701,7 +702,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
           } else if (extraInfo.status === 'TIMEOUT') {
             // API等待超时
-            return asyncCallback(new E('EAPITimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
+            return asyncCallback(new E('EAPITimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later', {
               id   : extraInfo.id,
               etype: celeryRes.result && celeryRes.result.exc_type,
             }));
@@ -1221,7 +1222,7 @@ exports.callAuthLink = function(req, res, next) {
 
       if (authLink === null) {
         // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
+        return asyncCallback(new E('EClientNotFound', 'No such Auth Link', { id: id }));
 
       } else if (authLink) {
         // 已查询确定存在
@@ -1236,7 +1237,7 @@ exports.callAuthLink = function(req, res, next) {
         if (!dbRes) {
           // 查询不存在，缓存为`null`
           AUTH_LINK_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Auth Link', {id: id}));
+          return asyncCallback(new E('EClientNotFound', 'No such Auth Link', { id: id }));
         }
 
         authLink = dbRes;
@@ -1249,12 +1250,12 @@ exports.callAuthLink = function(req, res, next) {
     function(asyncCallback) {
       // 是否已禁用
       if (authLink.isDisabled) {
-        return asyncCallback(new E('EBizCondition.AuthLinkDisabled', 'This Auth Link is disabled.'))
+        return asyncCallback(new E('EBizCondition.AuthLinkDisabled', 'This Auth Link is disabled'))
       }
 
       // 是否已过期
       if (authLink.expireTime && new Date(authLink.expireTime) < new Date()) {
-        return asyncCallback(new E('EBizCondition.AuthLinkExpired', 'This Auth Link is already expired.'))
+        return asyncCallback(new E('EBizCondition.AuthLinkExpired', 'This Auth Link is already expired'))
       }
 
       // 是否限流
@@ -1277,7 +1278,7 @@ exports.callAuthLink = function(req, res, next) {
           if (currentCount > limit) {
             // 触发限流
             var waitSeconds = parseInt((ruleSep + 1) * THROTTLING_RULE_EXPIRES_MAP[rule] - Date.now() / 1000) + 1;
-            return eachCallback(new E('EBizCondition.AuthLinkThrottling', 'Maximum sending rate exceeded.', {
+            return eachCallback(new E('EBizCondition.AuthLinkThrottling', 'Maximum sending rate exceeded', {
               rule        : rule,
               limit       : limit,
               currentCount: currentCount,
@@ -1365,7 +1366,7 @@ exports.callBatch = function(req, res, next) {
 
       if (batch === null) {
         // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
+        return asyncCallback(new E('EClientNotFound', 'No such Batch', { id: id }));
 
       } else if (batch) {
         // 已查询确定存在
@@ -1380,7 +1381,7 @@ exports.callBatch = function(req, res, next) {
         if (!dbRes) {
           // 查询不存在，缓存为`null`
           BATCH_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Batch', {id: id}));
+          return asyncCallback(new E('EClientNotFound', 'No such Batch', { id: id }));
         }
 
         batch = dbRes;
@@ -1393,7 +1394,7 @@ exports.callBatch = function(req, res, next) {
     function(asyncCallback) {
       // 是否已禁用
       if (batch.isDisabled) {
-        return asyncCallback(new E('EBizCondition.BatchDisabled', 'This Batch is disabled.'))
+        return asyncCallback(new E('EBizCondition.BatchDisabled', 'This Batch is disabled'))
       }
 
       return asyncCallback();
@@ -1484,21 +1485,21 @@ exports.callFuncDraft = function(req, res, next) {
 
       // 无法通过JSON.parse解析
       if ('string' === typeof celeryRes) {
-        return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+        return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON'));
       }
 
       // 失败/超时
       if (celeryRes.status === 'FAILURE') {
         // 注意：由于预检查任务本身永远不会失败
         // 代码流程如果进入此处，必然是引擎内部故障
-        return next(new E('EFuncFailed', 'Calling Function failed.', {
+        return next(new E('EFuncFailed', 'Calling Function failed', {
           id   : celeryRes.id,
           etype: celeryRes.result && celeryRes.result.exc_type,
           stack: celeryRes.einfoTEXT,
         }));
 
       } else if (extraInfo.status === 'TIMEOUT') {
-        return next(new E('EFuncTimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later.', {
+        return next(new E('EFuncTimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later', {
           id: extraInfo.id,
         }));
       }
@@ -1761,7 +1762,7 @@ exports.integratedSignIn = function(req, res, next) {
 
     // 无法通过JSON.parse解析
     if ('string' === typeof celeryRes) {
-      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON.'));
+      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON'));
     }
 
     // 函数失败/超时
@@ -1771,14 +1772,14 @@ exports.integratedSignIn = function(req, res, next) {
       return next(new E('EFuncFailed.SignInFuncRaisedException', errorMessage));
 
     } else if (extraInfo.status === 'TIMEOUT') {
-      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout.'));
+      return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout'));
     }
 
     // 函数返回False或没有实际意义内容
     var funcRetval = null;
     try { funcRetval = celeryRes.retval.raw } catch(_) {}
     if (toolkit.isNothing(funcRetval) || funcRetval === false) {
-      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned `False` or nothing.'));
+      return next(new E('EFuncFailed.SignInFuncReturnedFalseOrNothing', 'Sign-in function returned False or nothing'));
     }
 
     // 登录成功
@@ -1890,7 +1891,7 @@ exports.integratedAuthMid = function(req, res, next) {
     function(asyncCallback) {
       auth.verifyXAuthToken(xAuthToken, function(err, obj) {
         if (err) {
-          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token.');
+          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -1909,7 +1910,7 @@ exports.integratedAuthMid = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired.');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -2145,8 +2146,9 @@ exports.installPythonPackage = function(req, res, next) {
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
-            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
-              stderr: stderr,
+            return asyncCallback(new E('ESys', 'Install Python package failed', {
+              package: pkg,
+              stderr : stderr,
             }));
           });
 
@@ -2170,8 +2172,9 @@ exports.installPythonPackage = function(req, res, next) {
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
-            return asyncCallback(new E('ESys', toolkit.strf('Install Python package failed: {0}', pkg), {
-              stderr: stderr,
+            return asyncCallback(new E('ESys', 'Install Python package failed', {
+              package: pkg,
+              stderr : stderr,
             }));
           });
 
@@ -2200,12 +2203,12 @@ exports.listResources = function(req, res, next) {
 
   // 防止访问外部文件夹
   if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
-    return next(new E('EBizCondition', 'Cannot not fetch folder out of resource folder.'))
+    return next(new E('EBizCondition', 'Cannot not fetch folder out of resource folder'))
   }
 
   // 检查存在性
   if (!fs.existsSync(absPath)) {
-    return next(new E('EBizCondition', 'Folder not exists.'))
+    return next(new E('EBizCondition', 'Folder not exists'))
   }
 
   var opt = {
@@ -2247,6 +2250,26 @@ exports.listResources = function(req, res, next) {
   });
 };
 
+exports.getResources = function(req, res, next) {
+  var filePath = req.query.filePath;
+
+  var absPath = path.join(CONFIG.RESOURCE_ROOT_PATH, filePath);
+
+  // 防止访问外部文件夹
+  if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
+    return next(new E('EBizCondition', 'Cannot not access file out of resource folder'))
+  }
+
+  var stat = null;
+
+  if (fs.existsSync(absPath)) {
+    stat = fs.statSync(absPath);
+  }
+
+  var ret = toolkit.initRet(stat);
+  return res.locals.sendJSON(ret);
+};
+
 exports.downloadResources = function(req, res, next) {
   var filePath = req.query.filePath;
   var preview  = req.query.preview;
@@ -2257,14 +2280,14 @@ exports.downloadResources = function(req, res, next) {
 
   // 防止访问外部文件夹
   if (!toolkit.startsWith(absPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
-    return next(new E('EBizCondition', 'Cannot not access file out of resource folder.'))
+    return next(new E('EBizCondition', 'Cannot not access file out of resource folder'))
   }
 
   // 检查存在性
   if (!fs.existsSync(absPath)) {
-    return next(new E('EBizCondition', 'File not exists.'))
+    return next(new E('EBizCondition', 'File not exists'))
   }
-  console.log(absPath)
+
   if (preview) {
     fs.readFile(absPath, function(err, data) {
       if (err) return next(err)
@@ -2281,8 +2304,10 @@ exports.downloadResources = function(req, res, next) {
 exports.uploadResource = function(req, res, next) {
   var file   = req.files[0];
   var folder = req.body.folder || '.';
+  var rename = req.body.rename || null;
 
-  var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, file.originalname);
+  var fileSaveName = rename || file.originalname;
+  var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, fileSaveName);
   fs.outputFileSync(filePath, file.data);
 
   var ret = toolkit.initRet();
@@ -2300,7 +2325,7 @@ exports.operateResource = function(req, res, next) {
 
   // 防止访问外部文件夹
   if (!toolkit.startsWith(targetAbsPath, CONFIG.RESOURCE_ROOT_PATH + '/')) {
-    return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder.'))
+    return next(new E('EBizCondition', 'Cannot not operate file or folder out of resource folder'))
   }
 
   // 检查操作对象存在性
@@ -2312,14 +2337,14 @@ exports.operateResource = function(req, res, next) {
     case 'rm':
       // 要求存在
       if (!fs.existsSync(targetAbsPath)) {
-        return next(new E('EBizCondition', toolkit.strf('File or folder not exists: {0}', targetName)));
+        return next(new E('EBizCondition', 'File or folder not existed', { name: targetName }));
       }
       break;
 
     default:
       // 要求不存在
       if (fs.existsSync(targetAbsPath)) {
-        return next(new E('EBizCondition', toolkit.strf('File or folder already exists: {0}', targetName)));
+        return next(new E('EBizCondition', 'File or folder already existed', { name: targetName }));
       }
       break;
   }
@@ -2337,7 +2362,7 @@ exports.operateResource = function(req, res, next) {
 
       var zipFileAbsPath = path.join(currentAbsDir, zipFileName);
       if (fs.existsSync(zipFileAbsPath)) {
-        return next(new E('EBizCondition', toolkit.strf('Zip file is already exists: {0}', zipFileName)));
+        return next(new E('EBizCondition', 'Zip file already existed', { name: zipFileName }));
       }
 
       cmdArgs = ['-r', zipFileName, targetName]; // 在当前目录执行
@@ -2348,7 +2373,7 @@ exports.operateResource = function(req, res, next) {
       var unzipDestAbsPath = toolkit.replacePathEnd(targetAbsPath, unzipDestName);
 
       if (fs.existsSync(unzipDestAbsPath)) {
-        return next(new E('EBizCondition', toolkit.strf('Unzip destination is already exists: {0}', unzipDestName)));
+        return next(new E('EBizCondition', 'Unzip destination already existed', { name: unzipDestName }));
       }
 
       cmdArgs = [targetName];
@@ -2362,7 +2387,7 @@ exports.operateResource = function(req, res, next) {
                      : path.join(currentAbsDir, newName);
 
       if (fs.existsSync(newAbsPath)) {
-        return next(new E('EBizCondition', 'Specified new file or folder name is already exists.'))
+        return next(new E('EBizCondition', 'Specified new file or folder name already existed'));
       }
 
       var parentAbsDir = toolkit.replacePathEnd(newAbsPath);
@@ -2372,11 +2397,11 @@ exports.operateResource = function(req, res, next) {
       break;
 
     case 'rm':
-      cmdArgs = ['-rf', targetAbsPath]
+      cmdArgs = ['-rf', targetAbsPath];
       break;
 
     default:
-      return next(new E('EClientUnsupported', 'Unsupported resource operation.'))
+      return next(new E('EClientUnsupported', 'Unsupported resource operation'));
       break;
   }
 
@@ -2397,7 +2422,7 @@ exports.fileService = function(req, res, next) {
     if (err) return next(err);
 
     if (dbRes.isDisabled) {
-        return next(new E('EBizCondition.FileServiceDisabled', 'This File Service is disabled.'))
+        return next(new E('EBizCondition.FileServiceDisabled', 'This File Service is disabled'))
     }
 
     var absPath = path.join(CONFIG.RESOURCE_ROOT_PATH, (dbRes.root || '.'), relPath);

@@ -90,7 +90,7 @@ module.exports = function(options) {
                         || options.$allowedTypes.indexOf('*/*') >= 0
                         || options.$allowedTypes.indexOf(mimetype) >= 0;
       if (!isAcceptable) {
-        reqUploadError = new E('EClientBadRequest', 'File type not allowed.', {
+        reqUploadError = new E('EClientBadRequest', 'File type not allowed', {
           filename      : filename,
           mimetype      : mimetype,
           acceptableType: options.$allowedTypes,
@@ -122,7 +122,7 @@ module.exports = function(options) {
 
       file.on('end', function() {
         if (fileInfo.size > limitByteSize) {
-          reqUploadError = new E('EClientBadRequest', 'File too large', {
+          reqUploadError = new E('EClientBadRequest', 'File is too large', {
             filename : filename,
             size     : fileInfo.size,
             limitSize: limitByteSize,

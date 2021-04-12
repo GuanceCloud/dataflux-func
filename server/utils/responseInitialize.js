@@ -602,7 +602,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     // Return data, Auto detect `export` and `charset` option.
     if (req.query.export) {
       ret = toolkit.convertJSON(ret.data, req.query.export, req.query.charset);
-      if (ret === null) return next(new E('EBizBadData', 'Export failed.'));
+      if (ret === null) return next(new E('EBizBadData', 'Export failed'));
 
       var fileName = toolkit.strf('{0}.{1}', req.path.split('/').pop(), req.query.export);
       return res.locals.sendFile(ret, fileName);

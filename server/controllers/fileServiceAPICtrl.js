@@ -41,7 +41,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedScriptID', 'ID of file service already exists.'));
+          return asyncCallback(new E('EBizCondition.DuplicatedScriptID', 'ID of file service already exists'));
         }
 
         return asyncCallback();

@@ -27,9 +27,7 @@ exports.set = function(req, res, next) {
   var value = req.body.data.value;
 
   if (!CONST.displayText.systemConfig_id[id]) {
-    return next(new E('EClientUnsupported', toolkit.strf('Unsupproted system config.'),{
-      id: id,
-    }));
+    return next(new E('EClientUnsupported', 'Unsupproted system config', { id: id }));
   }
 
   var systemConfigModel = systemConfigMod.createModel(res.locals);

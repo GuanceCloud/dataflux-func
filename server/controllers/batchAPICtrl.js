@@ -166,7 +166,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = ['bat.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       batchModel.list(opt, function(err, dbRes) {
@@ -213,7 +213,7 @@ exports.deleteMany = function(req, res, next) {
       opt.fields = ['bat.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       batchModel.list(opt, function(err, dbRes) {

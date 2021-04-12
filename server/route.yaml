@@ -1812,6 +1812,19 @@ datafluxFuncAPI:
           - folder
           - file
 
+  getResources:
+    name         : 获取资源文件信息
+    method       : get
+    url          : /api/v1/resources/get
+    response     : blob
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+
   downloadResources:
     name         : 下载资源文件
     method       : get
@@ -1841,6 +1854,9 @@ datafluxFuncAPI:
     body:
       folder:
         $desc: 文件夹
+        $type: string
+      rename:
+        $desc: 文件重命名
         $type: string
 
   operateResource:
