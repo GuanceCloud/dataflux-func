@@ -93,7 +93,8 @@ export default {
         instanceId : window.instanceId,
       });
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
-        if (this.$store.getters.CONFIG('MODE') === 'dev') {
+        if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
+          this.prevReportAndCheckClientConflictResData = resData;
           console.log(`Socket.io[socketio.reportAndCheckClientConflict.ack] ${resData}`);
         }
         resData = JSON.parse(resData);
@@ -155,6 +156,8 @@ export default {
   data() {
     return {
       fullscreenLoading: false,
+
+      prevReportAndCheckClientConflictResData: null,
     }
   },
   created() {

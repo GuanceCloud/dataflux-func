@@ -57,6 +57,9 @@ import moment from 'moment'
 // DIFF
 import { diffTrimmedLines } from 'diff'
 
+// Useragent
+import Bowser from "bowser"
+
 // DataFlux Func hint
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
@@ -131,8 +134,8 @@ export function getTableScrollY() {
   return el.scrollTop;
 }
 
-export function isChrome() {
-  return navigator.userAgent.indexOf('Chrome') >= 0;
+export function getBrowser() {
+  return Bowser.getParser(window.navigator.userAgent).getBrowserName();
 }
 
 export function isMac() {
@@ -784,7 +787,7 @@ function _logCallingAPI(axiosOpt, apiResp) {
 
     // 输出完整API返回数据
     console.info('        Data', respData);
-    if (respData.data && Array.isArray(respData.data) && isChrome() && 'function' === typeof console.table) {
+    if (respData.data && Array.isArray(respData.data) && getBrowser() === 'Chrome' && 'function' === typeof console.table) {
       console.table(respData.data);
     }
 

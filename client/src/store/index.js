@@ -233,6 +233,13 @@ export default new Vuex.Store({
     },
     uiLocale: (state, getters) => {
       let uiLocale = state.uiLocale || window.navigator.language;
+
+      let uiLocaleParts = uiLocale.split('-');
+      if (uiLocaleParts.length > 1) {
+        uiLocaleParts[1] = uiLocaleParts[1].toUpperCase();
+      }
+      uiLocale = uiLocaleParts.join('-');
+
       return uiLocale;
     },
     uiTheme: (state, getters) => {

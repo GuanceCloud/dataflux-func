@@ -11,14 +11,14 @@ Installed                                        : 已安装
 Exactly match                                    : 完全匹配
 Install                                          : 安装
 Installing                                       : 正在安装
-Cannot reinstall a package that is built-in      : 无法重复安装已内置的包
+Cannot reinstall a packages built-in             : 无法重复安装已内置的包
 Previous installing may still running            : 之前的安装似乎仍然在运行
 Are you sure you want to install the package now?: 是否确定现在就安装？
 </i18n>
 
 <template>
   <transition name="fade">
-    <h1 class="loading" v-if="allPackages.length <= 0 || installedPackages.length <= 0">
+    <h1 class="loading" v-if="installedPackages.length <= 0">
       <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
       {{ $t('Loading') }}
     </h1>
@@ -42,7 +42,7 @@ Are you sure you want to install the package now?: 是否确定现在就安装�
             <span class="package-option-info">
               <span v-if="item.isBuiltin">{{ $t('Built-in') }} {{ item.version }}</span>
               <span v-else-if="item.isInstalled">{{ $t('Installed') }} {{ item.version }}</span>
-              <span v-else-if="item.similar === 1">{{ $t('Exactly match') }}</span>
+              <span v-else-if="item.value === packageToInstall">{{ $t('Exactly match') }}</span>
             </span>
           </template>
         </el-autocomplete>
@@ -53,14 +53,11 @@ Are you sure you want to install the package now?: 是否确定现在就安装�
           </span>
           <span v-else>{{ $t('Install') }}</span>
         </el-button>
-        <br>
-        <el-row>
-          <el-col>
-            <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
-              {{ $t('Cannot reinstall a package that is built-in') }}
-            </span>
-          </el-col>
-        </el-row>
+
+        <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
+          &#12288;
+          {{ $t('Cannot reinstall a packages built-in') }}
+        </span>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
@@ -103,22 +100,7 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = null;
-
-      // 缓存所有python包名
-      apiRes = await this.T.callAPI('/api/v1/python-packages/available', {
-        alert: {showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      this.allPackages = apiRes.data;
-      this.allPackageMap = this.allPackages.reduce((acc, x) => {
-        acc[x] = true;
-        return acc;
-      }, {});
-
-      // 获取已安装的包
-      apiRes = await this.T.callAPI('/api/v1/python-packages/installed', {
+      let apiRes = await this.T.callAPI('/api/v1/python-packages/installed', {
         alert: {showError: true},
       });
       if (!apiRes.ok) return;
@@ -131,33 +113,37 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    queryPackages(query, callback) {
+    async queryPackages(query, callback) {
       let result = [];
       if (!this.T.isNothing(query)) {
         query = query.toLowerCase().split('=')[0];
 
-        let matched = this.allPackages.reduce((acc, x) => {
-          let pkg = {
-            value  : x,
-            similar: this.T.stringSimilar(query, x.toLowerCase()),
-          }
-
-          let installed = this.installedPackageMap[x];
-          if (installed) {
-            pkg.isInstalled = true;
-            pkg.version     = installed.version;
-            pkg.isBuiltin   = installed.isBuiltin;
-          }
-
-          acc.push(pkg);
-          return acc;
-
-        }, []).sort((a, b) => {
-          return b.similar - a.similar;
+        let apiRes = await this.T.callAPI('/api/v1/python-packages/query', {
+          query: { query: query },
+          alert: { showError: true },
         });
+        if (!apiRes.ok) return;
 
-        result = matched.slice(0, 20);
+        apiRes.data.forEach(x => {
+          let pkg = {
+            value: x,
+          }
+
+          let installedPkg = this.installedPackageMap[x];
+          if (installedPkg) {
+            pkg.isInstalled = true;
+            pkg.version     = installedPkg.version;
+            pkg.isBuiltin   = installedPkg.isBuiltin;
+          }
+
+          result.push(pkg);
+        })
       }
+
+      this.queriedPackageMap = result.reduce((acc, x) => {
+        acc[x.value] = true;
+        return acc;
+      }, {});
 
       callback(result);
     },
@@ -189,7 +175,7 @@ export default {
 
       apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
         body : { pkg: this.packageToInstall },
-        alert: {title: this.$t('Install Package'), showError: true, showSuccess: true}
+        alert: { title: this.$t('Install Package'), showError: true, showSuccess: true }
       });
 
       this.isInstalling = false;
@@ -222,7 +208,7 @@ export default {
       if (installedPackage && installedPackage.isBuiltin) {
         return false;
       }
-      if (!this.allPackageMap[pkg]) {
+      if (!this.queriedPackageMap[this.packageToInstall]) {
         return false;
       }
       return true;
@@ -234,9 +220,7 @@ export default {
     return {
       packageToInstall: '',
 
-      allPackages  : [],
-      allPackageMap: {},
-
+      queriedPackageMap  : {},
       installedPackages  : [],
       installedPackageMap: {},
 

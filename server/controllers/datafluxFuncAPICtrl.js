@@ -1979,7 +1979,10 @@ exports.clearLogCacheTables = function(req, res, next) {
 };
 
 // Python包
-exports.listAvailablePythonPackages = function(req, res, next) {
+exports.queryPythonPackages = function(req, res, next) {
+  var query = req.query.query;
+  var limit = req.query.limit || 20;
+
   var cacheKey = toolkit.getCacheKey('cache', 'availablePythonPackage');
 
   var allPackages = null;
@@ -2032,8 +2035,32 @@ exports.listAvailablePythonPackages = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(allPackages);
-    return res.send(ret); // 不要输出日志
+    var matchedPackages = [];
+    if (!query) {
+      matchedPackages = allPackages;
+
+    } else {
+      matchedPackages = allPackages.reduce(function(acc, x) {
+        let item = {
+          name   : x,
+          similar: toolkit.stringSimilar(query, x.toLowerCase()),
+        }
+
+        acc.push(item);
+        return acc;
+      }, [])
+      .sort(function(a, b) {
+        return b.similar - a.similar;
+      })
+      .map(function(x) {
+        return x.name;
+      });
+    }
+
+    matchedPackages = matchedPackages.slice(0, limit)
+
+    var ret = toolkit.initRet(matchedPackages);
+    return res.locals.sendJSON(ret);
   });
 };
 
