@@ -63,15 +63,15 @@ Response                      : 响应
 
         <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
         <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
-          <el-progress type="dashboard"
+          <el-progress type="dashboard" width="100"
             :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
             :format="workerQueuePressureFormat"
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
-          <span class="worker-queue-name">
-            {{ $t('Queue') }} <span class="worker-queue-number">#{{ i }}</span>
+          <span class="worker-queue-info">
+            <span class="worker-queue-number">#{{ i }}</span> {{ $t('Queue') }}
             <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', workerQueue.taskCount || 0) }}
+            <br>{{ $tc('taskCount', T.numberPlus(workerQueue.taskCount)) }}
           </span>
         </el-card>
 
@@ -395,8 +395,8 @@ export default {
   color: grey;
 }
 .worker-queue-card {
-  width: 330px;
-  height: 150px;
+  width: 260px;
+  height: 130px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -404,13 +404,14 @@ export default {
 .worker-queue-card .progressbar {
   display: inline-block;
 }
-.worker-queue-name {
+.worker-queue-info {
   font-size: 14px;
   position: absolute;
-  bottom: 30px;
-  left: 165px;
+  top: 25px;
+  right: 15px;
+  text-align: right;
 }
-.worker-queue-name .worker-queue-number {
+.worker-queue-info .worker-queue-number {
   font-size: 30px;
 }
 </style>

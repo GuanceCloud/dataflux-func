@@ -70,7 +70,7 @@ Script {id}    : 脚本 {id}
                 type="warning"
                 size="mini">{{ $t('Builtin') }}</el-tag>
               <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
-              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
+              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount}})</span>
             </span>
           </div>
         </span>
@@ -620,8 +620,6 @@ export default {
   padding-bottom: 5px;
 }
 .child-nodes-count {
-  font-family: monospace;
-  font-style: italic;
   font-size: 12px;
 }
 </style>

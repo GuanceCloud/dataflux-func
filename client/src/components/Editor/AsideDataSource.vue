@@ -251,6 +251,9 @@ export default {
   width: 75px;
   text-align: center;
 }
+.aside-tree-node-tag * {
+  font-family: Arial;
+}
 .aside-tree-node {
   flex: 1;
   display: flex;

@@ -105,17 +105,6 @@ export function getBaseURL() {
   return baseURL;
 };
 
-export function getBrowserName() {
-  var userAgent = navigator.userAgent.toLowerCase();
-  var isOpera = userAgent.indexOf('opera') > -1;
-  if (isOpera) return 'opera';
-  else if (userAgent.indexOf('firefox') > -1) return 'firefox';
-  else if (userAgent.indexOf('chrome') > -1)  return 'chrome';
-  else if (userAgent.indexOf('safari') > -1)  return 'safari';
-  else if (userAgent.indexOf('compatible') > -1 && userAgent.indexOf('msie') > -1 && !isOpera) return 'internet-explorer';
-  return null;
-};
-
 export function autoScrollTable(y) {
   if (y && vm.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
     // 滚动到指定高度
@@ -136,6 +125,9 @@ export function getTableScrollY() {
 
 export function getBrowser() {
   return Bowser.getParser(window.navigator.userAgent).getBrowserName();
+}
+export function getEngine() {
+  return Bowser.getParser(window.navigator.userAgent).getEngineName();
 }
 
 export function isMac() {
@@ -336,6 +328,17 @@ export function limitLines(text, lineLimit, columnLimit) {
   }
 
   return lines.join('\n');
+};
+
+export function numberPlus(n, limit) {
+  n     = n || 0;
+  limit = limit || 999;
+
+  if (n > limit) {
+    return `${limit}+`;
+  } else {
+    return n;
+  }
 };
 
 export function jsonFind(j, path, safe) {

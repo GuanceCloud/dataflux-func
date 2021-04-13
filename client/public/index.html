@@ -28,7 +28,7 @@
       if (uiTheme !== 'dark' && uiTheme !== 'light') uiTheme = 'auto';
 
       var $uiThemeLink = document.getElementById('uiTheme');
-      var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme);
+      var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme) + '?' + Date.now();
       $uiThemeLink.setAttribute('href', cssHref);
     })();
   </script>

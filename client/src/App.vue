@@ -50,7 +50,7 @@ export default {
     },
     '$store.getters.uiTheme': function(val) {
       let $uiThemeLink = document.getElementById('uiTheme');
-      let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
+      let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val) + '?' + Date.now();
       $uiThemeLink.setAttribute('href', cssHref);
     },
     $route: {
@@ -292,13 +292,13 @@ export default {
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
-  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-family: Iosevka,"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
 }
 a {
   text-decoration: none;
 }
 input, textarea, code, pre, pre * {
-  font-family: monospace !important;
+  font-family: Iosevka !important;
 }
 html, body {
   height: 100%;
@@ -507,7 +507,7 @@ kbd {
   color: grey;
   padding: 8px 2px;
   top: 50%;
-  left: -2px;
+  left: 0px;
   border-bottom-right-radius: 5px;
   border-top-right-radius: 5px;
   transform: scale(.7, 1);
@@ -689,5 +689,20 @@ content: "\25B2";
 
 .error-input-shake {
   animation: error-input-shake .65s ease-out 0.2s;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+  background: none;
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-thumb:vertical {
+  background-image: linear-gradient(to top, rgb(255, 102, 0, 0), rgb(255, 102, 0) 40%, rgb(255, 102, 0) 60%, rgb(255, 102, 0, 0));
+}
+::-webkit-scrollbar-track {
+  background: none;
 }
 </style>
