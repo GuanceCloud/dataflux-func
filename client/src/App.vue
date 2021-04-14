@@ -50,7 +50,7 @@ export default {
     },
     '$store.getters.uiTheme': function(val) {
       let $uiThemeLink = document.getElementById('uiTheme');
-      let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val) + '?' + Date.now();
+      let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
     },
     $route: {

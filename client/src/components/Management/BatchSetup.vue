@@ -45,7 +45,7 @@ Delete Batch: 删除批处理
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
                   <InfoBlock title="函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数"></InfoBlock>
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="备注">

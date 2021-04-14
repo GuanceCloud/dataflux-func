@@ -184,7 +184,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
             </el-table-column>
           </template>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="280">
             <template slot-scope="scope">
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text" size="small">API调用示例</el-button>
 

@@ -31,7 +31,7 @@ Delete Crontab Config: 删除自动触发配置
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
