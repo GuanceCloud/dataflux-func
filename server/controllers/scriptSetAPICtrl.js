@@ -379,7 +379,6 @@ exports.export = function(req, res, next) {
           'cron.tagsJSON',
           'cron.saveResult',
           'cron.scope',
-          'cron.configMD5',
           'cron.expireTime',
           'cron.origin',
           'cron.isDisabled',

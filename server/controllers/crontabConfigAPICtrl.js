@@ -22,31 +22,6 @@ var GLOBAL_SCOPE = 'GLOBAL';
 /* Handlers */
 var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
 
-function getConfigHash(locals, funcId, funcCallKwargsJSON, callback) {
-  var funcModel = funcMod.createModel(locals);
-  funcModel.getWithCheck(funcId, ['id', 'category'], function(err, dbRes) {
-    if (err) return callback(err);
-
-    var func = dbRes;
-
-    // 规整化函数调用参数
-    funcCallKwargsJSON = funcCallKwargsJSON || {};
-    if ('string' === typeof funcCallKwargsJSON) {
-      funcCallKwargsJSON = JSON.parse(funcCallKwargsJSON);
-    }
-
-    funcCallKwargsJSON = toolkit.jsonCopy(funcCallKwargsJSON);
-
-    var funcKwargsDump = sortedJSON.sortify(funcCallKwargsJSON, {
-          stringify: true,
-          sortArray: false });
-    var strToMD5  = [funcId, funcKwargsDump].join('-');
-    var configMD5 = toolkit.getMD5(strToMD5);
-
-    return callback(null, configMD5);
-  });
-};
-
 exports.list = function(req, res, next) {
   var crontabConfigs        = null;
   var crontabConfigPageInfo = null;
@@ -295,35 +270,6 @@ function _add(locals, data, origin, callback) {
         return asyncCallback();
       });
     },
-    // 获取函数参数哈希
-    function(asyncCallback) {
-      getConfigHash(locals, data.funcId, data.funcCallKwargsJSON, function(err, configMD5) {
-        if (err) return asyncCallback(err);
-
-        data.configMD5 = configMD5;
-
-        return asyncCallback();
-      });
-    },
-    // 检查重复
-    function(asyncCallback) {
-      let opt = {
-        fields: 'cron.seq',
-        filters: {
-          'cron.scope'    : {eq: data.scope},
-          'cron.configMD5': {eq: data.configMD5},
-        }
-      };
-      crontabConfigModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', 'Duplicated Crontab config in scope', { scope: data.scope }));
-        }
-
-        return asyncCallback(err);
-      });
-    },
     // 数据入库
     function(asyncCallback) {
       crontabConfigModel.add(data, function(err, _addedId) {
@@ -385,42 +331,6 @@ function _modify(locals, id, data, opt, callback) {
         }
 
         return asyncCallback();
-      });
-    },
-    // 获取函数参数哈希
-    function(asyncCallback) {
-      var nextFuncId         = data.funcId             || crontabConfig.funcId;
-      var nextFuncKwargsJSON = data.funcCallKwargsJSON || crontabConfig.funcCallKwargsJSON;
-
-      getConfigHash(locals, nextFuncId, nextFuncKwargsJSON, function(err, _configMD5) {
-        if (err) return asyncCallback(err);
-
-        nextConfigMD5 = _configMD5;
-
-        return asyncCallback();
-      });
-    },
-    // 检查重复
-    function(asyncCallback) {
-      var nextScope = data.scope || crontabConfig.scope;
-
-      let opt = {
-        filters: {
-          'cron.scope'    : {eq: nextScope},
-          'cron.configMD5': {eq: nextConfigMD5},
-          'cron.id'       : {ne: id},
-        }
-      };
-      crontabConfigModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedCrontabConfig', 'Duplicated Crontab config in scope', { scope: nextScope }));
-        }
-
-        data.configMD5 = nextConfigMD5;
-
-        return asyncCallback(err);
       });
     },
     function(asyncCallback) {
