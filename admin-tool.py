@@ -179,7 +179,10 @@ def get_options_by_command_line():
             | DataFlux Func Admin Tool |
             +--------------------------+
             This tool should run in the Docker container:
-                $ docker exec -it <Container> python /usr/src/app/admin-tool.py -h
+                $ docker exec {DataFlux Func Container ID} sh -c 'exec python admin-tool.py --help'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_admin'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_db_upgrade_seq'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py clear_redis'
         '''))
 
     # 执行操作
