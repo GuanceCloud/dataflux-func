@@ -11,6 +11,13 @@
 - 优化UI展示
 - 解决部分浏览器兼容问题
 - 自动触发配置不再限制重复的配置
+- 优化管理员工具，目前支持：
+
+|                     命令                    |        用途        |
+|---------------------------------------------|--------------------|
+| `python admin-tool.py reset_admin`          | 重置管理员账号     |
+| `python admin-tool.py reset_db_upgrade_seq` | 重置数据库更新序号 |
+| `python admin-tool.py clear_redis`          | 清空Redis          |
 
 ### 1.0.59 ~ 1.0.60
 
