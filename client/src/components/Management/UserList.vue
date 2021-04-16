@@ -56,7 +56,7 @@ Enable user : 启用用户
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <span v-if="$store.getters.isSuperAdmin" class="text-bad">系统管理员</span>
+              <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">系统管理员</span>
               <template v-else>
                 <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
                 <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
