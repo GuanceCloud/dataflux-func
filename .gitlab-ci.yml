@@ -13,6 +13,7 @@ variables:
   IMAGE_GZIP_FILE          : dataflux-func.tar.gz
   DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
+  VERSION_FILE             : version
 
   # 用于buildSaaS, buildPaaS_prod, buildPaaS_prod
   REPOSITORY  : dataflux-func
@@ -47,6 +48,7 @@ release:
     - /^\d+\.\d+\.\d+rc\d+$/ # 如：1.2.3rc4
   script:
     - python echo-image-info.py > image-info.json
+    - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
     - V_MAJOR=${V_PARTS[0]}
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
@@ -73,6 +75,7 @@ release:
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/${IMAGE_GZIP_FILE}           -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}              ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - middleware
 
