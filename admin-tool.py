@@ -179,7 +179,7 @@ def get_options_by_command_line():
             | DataFlux Func Admin Tool |
             +--------------------------+
             This tool should run in the Docker container:
-                $ docker exec -it <Container> "python /usr/src/app/admin-tool.py -h"
+                $ docker exec -it <Container> python /usr/src/app/admin-tool.py -h
         '''))
 
     # 执行操作
