@@ -308,37 +308,49 @@
           </p>
 
           <hr>
+          <div class="checkbox">
+            <label>
+              <input id="setupConfigsToggle" type="checkbox">
+              显示自定义配置
+              <br><small>默认安装后，系统管理员用户名和密码都是<code>admin</code></small>
+            </label>
+          </div>
 
-          <%_ CONFIG_LIST.forEach(function(c) { _%>
-            <div class="form-group">
-              <label><%= c.name %><code><%= c.key %></code></label>
-              <%_ if (c.input === 'select') { _%>
-                <select
-                  class="form-control"
-                  config-key="<%= c.key %>"
-                  config-type="<%= c.type %>"
-                  config-tips="<%= c.tips %>"
-                  error-key="<%= c.errorKey %>">
-                  <%_ c.options.forEach(function(opt) { _%>
-                    <option value="<%= opt.value %>" <%= CONFIG[c.key] === opt.value ? 'selected' : '' %>><%= opt.name %></option>
-                  <%_ }) _%>
-                </select>
-              <%_ } else { _%>
-                <input
-                  type="<%= c.input %>"
-                  <%- c.inputAttrs || '' %>
-                  class="form-control"
-                  config-key="<%= c.key %>"
-                  config-type="<%= c.type %>"
-                  config-tips="<%= c.tips %>"
-                  error-key="<%= c.errorKey %>"
-                  value="<%= CONFIG[c.key] === null ? '' : CONFIG[c.key] %>">
-              <%_ } _%>
-            </div>
-          <%_ }) _%>
+          <div id="setupConfigs" class="collapse">
+            <br>
+            <p class="text-important">如果没有特殊需求，没有必要修改以下参数</p>
+            <br>
+            <%_ CONFIG_LIST.forEach(function(c) { _%>
+              <div class="form-group">
+                <label><%= c.name %></label>
+                <code class="pull-right"><%= c.key %></code>
+                <%_ if (c.input === 'select') { _%>
+                  <select
+                    class="form-control"
+                    config-key="<%= c.key %>"
+                    config-type="<%= c.type %>"
+                    config-tips="<%= c.tips %>"
+                    error-key="<%= c.errorKey %>">
+                    <%_ c.options.forEach(function(opt) { _%>
+                      <option value="<%= opt.value %>" <%= CONFIG[c.key] === opt.value ? 'selected' : '' %>><%= opt.name %></option>
+                    <%_ }) _%>
+                  </select>
+                <%_ } else { _%>
+                  <input
+                    type="<%= c.input %>"
+                    <%- c.inputAttrs || '' %>
+                    class="form-control"
+                    config-key="<%= c.key %>"
+                    config-type="<%= c.type %>"
+                    config-tips="<%= c.tips %>"
+                    error-key="<%= c.errorKey %>"
+                    value="<%= CONFIG[c.key] === null ? '' : CONFIG[c.key] %>">
+                <%_ } _%>
+              </div>
+            <%_ }) _%>
+          </div>
 
           <hr>
-
           <div class="text-right">
             <button id="setup" class="btn btn-primary">保存配置并初始化数据库</button>
           </div>
@@ -433,6 +445,12 @@
     }
 
     $(document).on('click', '#setup', setup);
+
+    $(document).on('change', '#setupConfigsToggle', function() {
+      var $this = $(this);
+      $('#setupConfigs').collapse($this.prop('checked') ? 'show' : 'hide');
+    });
+
     $(document).on('mouseover', '[config-key]', function() {
       var $this = $(this);
 
@@ -450,6 +468,7 @@
         });
       }
     });
+
     $errorModal.on('hidden.bs.modal', function() {
       var $statusBad = $('[error-key].bad-config');
 
