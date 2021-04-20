@@ -321,7 +321,7 @@ function startApplication() {
           url   : req.originalUrl,
         }
         if (!toolkit.isNothing(req.body)) {
-          errorRet.reqDump.body = req.body;
+          errorRet.reqDump.body = JSON.parse(toolkit.jsonDumps(req.body));
         }
         return res.locals.sendJSON(errorRet);
         break;
@@ -365,7 +365,6 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
-  require('./messageHandlers/mqttHandler')(app, server);
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,

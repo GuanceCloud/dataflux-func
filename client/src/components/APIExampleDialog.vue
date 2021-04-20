@@ -62,7 +62,7 @@
           <CopyButton :content="apiURLExample"></CopyButton>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row :gutter="20" v-if="apiBodyExample">
         <el-col :span="22">
           <el-input
             type="textarea"
@@ -73,6 +73,7 @@
           <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
           <InfoBlock v-if="apiBodyExample && apiBodyExample.indexOf('FROM_PARAMETER') >= 0" type="info" title="&quot;FROM_PARAMETER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
           <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+          <InfoBlock v-if="apiFileUploadSupport" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
         </el-col>
         <el-col :span="2">
           <CopyButton :content="apiBodyExample"></CopyButton>
@@ -134,7 +135,9 @@
                 resize="none"
                 :value="apiCallByCurlExample_simplified">
               </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数。支持 multipart/form-data 类型文件上传"></InfoBlock>
+              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数。额外支持文件上传"></InfoBlock>
+              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
+              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiCallByCurlExample_simplified"></CopyButton>
@@ -172,7 +175,9 @@
                 resize="none"
                 :value="apiCallByCurlExample_flattened">
               </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串。支持 multipart/form-data 类型文件上传"></InfoBlock>
+              <InfoBlock type="info" title="此方式参数值只支持字符串。额外支持文件上传"></InfoBlock>
+              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
+              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiCallByCurlExample_flattened"></CopyButton>
@@ -239,8 +244,11 @@ export default {
       fillOptions('timeout',    this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'));
       fillOptions('apiTimeout', this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'));
 
+      let nextAPIFileUploadSupport   = false;
       let nextAPICustomKwargsSupport = false;
       if (!this.T.isNothing(funcKwargs)) {
+        nextAPIFileUploadSupport = funcKwargs['funcKwargs'] = 'FROM_PARAMETER';
+
         for (let k in funcKwargs) {
           if (k.indexOf('**') < 0) continue;
 
@@ -267,9 +275,15 @@ export default {
         nextAPIBodyExample.options = nextCallOptions;
       }
 
+      this.apiFileUploadSupport   = nextAPIFileUploadSupport;
       this.apiCustomKwargsSupport = nextAPICustomKwargsSupport;
       this.apiURLExample          = apiURLExample;
-      this.apiBodyExample         = JSON.stringify(nextAPIBodyExample, null, 2);
+
+      this.apiBodyExample = '';
+      try { delete nextAPIBodyExample.kwargs.files } catch(_) {}
+      if (!this.T.isNothing(nextAPIBodyExample)) {
+        this.apiBodyExample = JSON.stringify(nextAPIBodyExample, null, 2);
+      }
 
       this.show = true;
     },
@@ -284,13 +298,17 @@ export default {
       let query = {};
       switch(format) {
         case 'normal':
-          query = this.apiBody;
+          query = this.T.jsonCopy(this.apiBody);
+          try { delete query.kwargs.files } catch(_) {}
+
           url = this.T.formatURL(this.apiURLExample, {query: query});
           break;
 
         case 'simplified':
           if (this.apiBody.kwargs) {
             for (let k in this.apiBody.kwargs) {
+              if (k === 'files') continue;
+
               query[k] = this.apiBody.kwargs[k];
             }
           }
@@ -300,6 +318,8 @@ export default {
         case 'flattened':
           if (this.apiBody.kwargs) {
             for (let k in this.apiBody.kwargs) {
+              if (k === 'files') continue;
+
               query[`kwargs_${k}`] = this.apiBody.kwargs[k];
             }
           }
@@ -321,56 +341,79 @@ export default {
       }
       return url;
     },
-    getAPICallByCurlExample(format) {
+    getAPICallByCurlPostExample(format) {
       if (!this.apiBody) return null;
 
       format = format || 'normal';
 
-      let query     = {};
       let url       = '';
       let headerOpt = '';
       let dataOpt   = '';
 
       switch(format) {
         case 'normal':
-          url       =  this.apiURLExample;
-          headerOpt = `-H "Content-Type: application/json"`
-          dataOpt   = `-d '${JSON.stringify(this.apiBody)}'`
+          url = this.apiURLExample;
+
+          if (!this.T.isNothing(this.apiBody)) {
+            headerOpt = `-H "Content-Type: application/json"`
+
+            let body = this.T.jsonCopy(this.apiBody);
+            try { delete body.kwargs.files } catch(_) {}
+            dataOpt = `-d '${JSON.stringify(body)}'`
+          }
+
           break;
 
         case 'simplified':
-          url       =  `${this.apiURLExample}/${format}`;
-          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+          url = `${this.apiURLExample}/${format}`;
 
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              query[k] = this.apiBody.kwargs[k];
+          if (!this.T.isNothing(this.apiBody.kwargs)) {
+            // headerOpt = `-H "Content-Type: multipart/form-data"`
+
+            if (this.apiBody.kwargs) {
+              for (let k in this.apiBody.kwargs) {
+                if (k === 'files') continue;
+                dataOpt += ` -F ${k}=${this.apiBody.kwargs[k]}`;
+              }
+
+              if (this.apiFileUploadSupport) {
+                dataOpt += ` -F files=@FILE_TO_UPLOAD`;
+              }
             }
           }
-
-          dataOpt = `-d '${this.T.formatQuery(query)}'`;
           break;
 
         case 'flattened':
-          url       =  `${this.apiURLExample}/${format}`;
-          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`
+          url = `${this.apiURLExample}/${format}`;
 
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              query[`kwargs_${k}`] = this.apiBody.kwargs[k];
+          if (!this.T.isNothing(this.apiBody.kwargs) && !this.T.isNothing(this.apiBody.options)) {
+            // headerOpt = `-H "Content-Type: multipart/form-data"`
+
+            if (this.apiBody.kwargs) {
+              for (let k in this.apiBody.kwargs) {
+                if (k === 'files') continue;
+                dataOpt += ` -F kwargs_${k}=${this.apiBody.kwargs[k]}`;
+              }
+
+              if (this.apiFileUploadSupport) {
+                dataOpt += ` -F kwargs_files=@FILE_TO_UPLOAD`;
+              }
+            }
+
+            if (this.apiBody.options) {
+              for (let k in this.apiBody.options) {
+                dataOpt += ` -F options_${k}=${this.apiBody.options[k]}`;
+              }
             }
           }
-          if (this.apiBody.options) {
-            for (let k in this.apiBody.options) {
-              query[`options_${k}`] = this.apiBody.options[k];
-            }
-          }
-
-          dataOpt = `-d '${this.T.formatQuery(query)}'`;
           break;
       }
 
-      let curlCmd = `curl ${headerOpt} -X POST ${dataOpt} ${url}`;
+      let curlCmd = 'curl -X POST';
+      if (headerOpt) curlCmd += ` ${headerOpt}`;
+      if (dataOpt)   curlCmd += ` ${dataOpt}`;
+      if (url)       curlCmd += ` ${url}`;
+
       return curlCmd;
     },
   },
@@ -389,6 +432,7 @@ export default {
       try {
         apiBody = JSON.parse(this.apiBodyExample);
       } catch(err) {
+        // 无法解析JSON
         return null;
       }
 
@@ -414,13 +458,13 @@ export default {
     },
 
     apiCallByCurlExample() {
-      return this.getAPICallByCurlExample('normal');
+      return this.getAPICallByCurlPostExample('normal');
     },
     apiCallByCurlExample_simplified() {
-      return this.getAPICallByCurlExample('simplified');
+      return this.getAPICallByCurlPostExample('simplified');
     },
     apiCallByCurlExample_flattened() {
-      return this.getAPICallByCurlExample('flattened');
+      return this.getAPICallByCurlPostExample('flattened');
     },
   },
   props: {
@@ -474,6 +518,7 @@ export default {
     return {
       show: false,
 
+      apiFileUploadSupport  : false,
       apiCustomKwargsSupport: false,
       apiURLExample         : null,
       apiBodyExample        : null,

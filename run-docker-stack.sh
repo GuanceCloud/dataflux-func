@@ -16,7 +16,6 @@ OPT_INSTALL_DIR=DEFAULT
 OPT_IMAGE=DEFAULT
 OPT_NO_MYSQL=FALSE
 OPT_NO_REDIS=FALSE
-OPT_MQTT=FALSE
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -50,11 +49,6 @@ while [ $# -ge 1 ]; do
             shift
             ;;
 
-        '--mqtt' )
-            OPT_MQTT=TRUE
-            shift
-            ;;
-
         * )
             shift
             ;;
@@ -65,10 +59,6 @@ done
 __PREV_DIR=${PWD}
 __SERVER_SECRET=`openssl rand -hex 8`
 __MYSQL_PASSWORD=`openssl rand -hex 8`
-__MQTT_USERNAME=dataflux_func
-__MQTT_PASSWORD=`openssl rand -hex 8`
-__MQTT_SAMPLE_USERNAME=mqttclient
-__MQTT_SAMPLE_PASSWORD=`openssl rand -hex 8`
 
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
@@ -78,7 +68,6 @@ __MOSQUITTO_PASSWD_FILE=mosquitto/passwd
 
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-__MQTT_IMAGE=pubrepo.jiagouyun.com/dataflux-func/eclipse-mosquitto:2.0.3
 
 __PROJECT_NAME=dataflux-func
 __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource
@@ -121,20 +110,9 @@ if [ ${OPT_NO_REDIS} = "FALSE" ]; then
     docker pull ${__REDIS_IMAGE}
 fi
 
-# 开启MQTT 组件时，需要拉取镜像
-if [ ${OPT_MQTT} = "TRUE" ]; then
-    log "Pulling image: ${__MQTT_IMAGE}"
-    docker pull ${__MQTT_IMAGE}
-fi
-
 # 创建运行环境目录并前往
 blankLine
 mkdir -p ${_INSTALL_DIR}/{data,data/resources/extra-python-packages,data/logs,data/sqldump,mysql,redis}
-
-# 开启MQTT 组件时，自动创建目录
-if [ ${OPT_MQTT} = "TRUE" ]; then
-    mkdir -p ${_INSTALL_DIR}/{mosquitto,mosquitto/config}
-fi
 
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
@@ -157,12 +135,6 @@ fi
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 blankLine
 if [ ! -f ${__CONFIG_FILE} ]; then
-    # 开启MQTT 组件时，需要自动添加MQTT 的主机地址
-    mqttHost=null
-    if [ ${OPT_MQTT} = "TRUE" ]; then
-        mqttHost=mqtt
-    fi
-
     echo -e "# Pre-generated config: \
 \nSECRET          : ${__SERVER_SECRET} \
 \nMYSQL_HOST      : mysql \
@@ -185,8 +157,6 @@ log "  ${_INSTALL_DIR}/${__CONFIG_FILE}"
 blankLine
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     cp ${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_FILE}
-
-    __SERVER_ARGV=""
 
     # 创建配置文件并使用随机密钥/密码
     if [ ${OPT_MINI} = "TRUE" ]; then
@@ -211,23 +181,12 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
             ${__DOCKER_STACK_FILE}
     fi
 
-    if [ ${OPT_MQTT} = "FALSE" ]; then
-        # 未开启MQTT 组件时，去除MQTT 配置部分
-        sed -i "/# MQTT START/,/# MQTT END/d" \
-            ${__DOCKER_STACK_FILE}
-    else
-        # 开启MQTT 组件时，附带启动参数，自动添加数据源
-        __SERVER_ARGV="${__SERVER_ARGV} --mqtt ${__MQTT_USERNAME}:${__MQTT_PASSWORD}"
-    fi
-
     sed -i \
         -e "s#<MYSQL_PASSWORD>#${__MYSQL_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
-        -e "s#<MQTT_IMAGE>#${__MQTT_IMAGE}#g" \
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
-        -e "s#<SERVER_ARGV>#${__SERVER_ARGV}#g" \
         ${__DOCKER_STACK_FILE}
 
     log "New docker stack file with random secret/password created:"
@@ -236,34 +195,6 @@ else
     log "Docker stack file already exists:"
 fi
 log "  ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
-
-# 创建mosquitto 配置/密码文件
-blankLine
-if [ ${OPT_MQTT} = "TRUE" ]; then
-    if [ ! -f ${__MOSQUITTO_CONFIG_FILE} ]; then
-        echo -e "allow_anonymous false \
-\npassword_file /mosquitto/passwd \
-\nlistener 1883" \
-> ${__MOSQUITTO_CONFIG_FILE}
-        log "New mosquitto config file created:"
-    else
-        log "Mosquitto config file already exists:"
-    fi
-    log "  ${_INSTALL_DIR}/${__MOSQUITTO_CONFIG_FILE}"
-
-    if [ ! -f ${__MOSQUITTO_PASSWD_FILE} ]; then
-        echo -e "${__MQTT_USERNAME}:${__MQTT_PASSWORD} \
-\n${__MQTT_SAMPLE_USERNAME}:${__MQTT_SAMPLE_PASSWORD}" \
-> ${__MOSQUITTO_PASSWD_FILE}
-
-        docker run --rm -v ${_INSTALL_DIR}/mosquitto:/mosquitto ${__MQTT_IMAGE} mosquitto_passwd -U /mosquitto/passwd
-
-        log "New mosquitto passwd file created:"
-    else
-        log "Mosquitto passwd file already exists:"
-    fi
-    log "  ${_INSTALL_DIR}/${__MOSQUITTO_PASSWD_FILE}"
-fi
 
 # 创建logrotate配置
 blankLine
@@ -318,18 +249,6 @@ if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
 fi
 if [ ${OPT_NO_REDIS} = "TRUE" ]; then
     log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
-fi
-if [ ${OPT_MQTT} = "TRUE" ]; then
-    blankLine
-    log "Builtin MQTT is deployed."
-    log "    Sample client username/password is ${__MQTT_SAMPLE_USERNAME}/${__MQTT_SAMPLE_PASSWORD}"
-    log "To subcribe message:"
-    log "    $ mosquitto_sub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t testack"
-    log "To publish message:"
-    log "    $ mosquitto_pub -h 127.0.0.1 -u ${__MQTT_SAMPLE_USERNAME} -P ${__MQTT_SAMPLE_PASSWORD} -t test -m 'hello'"
-    log "To add more MQTT client users:"
-    log "    $ docker exec `docker ps -q -f label=mqtt` mosquitto_passwd -b ${_INSTALL_DIR}/mosquitto/passwd username password"
-    log "    $ docker kill `docker ps -q -f label=mqtt` -s HUP"
 fi
 
 blankLine

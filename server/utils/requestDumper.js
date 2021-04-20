@@ -47,9 +47,8 @@ exports.dumpRequestFrom = function(req, res, next) {
 
 exports.dumpRequestBody = function(req, res, next) {
   var dumpList = [
-    toolkit.strf('{0}=`{1}`', 'body',  JSON.stringify(req.body)),
+    toolkit.strf('{0}=`{1}`', 'body', toolkit.jsonDumps(req.body)),
   ];
-
 
   if (req.files) {
     req.files.forEach(function(f) {

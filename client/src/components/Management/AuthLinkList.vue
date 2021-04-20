@@ -176,7 +176,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
                   <template v-for="opt, k in RUNNING_STATUS_MAP">
                     <template v-if="scope.row.recentRunningStatus[k]">
                       <code>{{ opt.title }}:</code>
-                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code>%<br>
+                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code> %<br>
                     </template>
                   </template>
                 </template>

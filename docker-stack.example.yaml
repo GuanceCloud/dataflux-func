@@ -10,9 +10,8 @@
 #
 # 3. 如不需要内置MySQL 组件，请删除MYSQL相关的内容块
 # 4. 如不需要内置Redis 组件，请删除REDIS相关的内容块
-# 5. 如不需要内置MQTT组件，请删除MQTT 相关的内容块
-# 6. 如使用默认方式安装，请删除WORKER MINI 相关的内容块
-# 7. 如使用mini 方式安装，请删除WORKER DEFAULT 相关的内容块
+# 5. 如使用默认方式安装，请删除WORKER MINI 相关的内容块
+# 6. 如使用mini 方式安装，请删除WORKER DEFAULT 相关的内容块
 
 version: '3.1'
 
@@ -42,19 +41,6 @@ services:
     volumes:
       - "<INSTALL_DIR>/redis:/data"
   # REDIS END
-
-  # MQTT START
-  mqtt:
-    image: <MQTT_IMAGE>
-    labels:
-      - mqtt
-    networks:
-      - datafluxfunc
-    ports:
-      - "1883:1883"
-    volumes:
-      - "<INSTALL_DIR>/mosquitto:/mosquitto"
-  # MQTT END
 
   # WORKER DEFAULT START
   worker-0:
@@ -137,7 +123,7 @@ services:
       - default
     ports:
       - "8088:8088"
-    command: ./run-server.sh <SERVER_ARGV>
+    command: ./run-server.sh
 
 networks:
   default:

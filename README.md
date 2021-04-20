@@ -20,6 +20,7 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [1. 系统及环境要求](#1-%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
     - [1.1 系统要求](#11-%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
     - [1.2 软件准备](#12-%E8%BD%AF%E4%BB%B6%E5%87%86%E5%A4%87)
+    - [1.3 浏览器兼容性](#13-%E6%B5%8F%E8%A7%88%E5%99%A8%E5%85%BC%E5%AE%B9%E6%80%A7)
 - [2. 使用「携带版」离线部署](#2-%E4%BD%BF%E7%94%A8%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2)
     - [2.1 一键命令下载「携带版」](#21-%E4%B8%80%E9%94%AE%E5%91%BD%E4%BB%A4%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
     - [2.2 手工下载「携带版」](#22-%E6%89%8B%E5%B7%A5%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
@@ -69,6 +70,24 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - 存在多网卡的建议用户自行安装Docker 并初始化Docker Swarm
 - Docker Swarm 指定网卡的初始化命令为：`docker swarm init --advertise-addr={网卡名}`
 - 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
+
+### 1.3 浏览器兼容性
+
+本系统为Web应用，部分浏览器可能存在兼容问题无法使用
+
+|                 浏览器                  | 是否兼容 |
+|-----------------------------------------|----------|
+| Chrome                                  | 兼容     |
+| Safari                                  | 兼容     |
+| Firefox                                 | 兼容     |
+| Microsoft Edge(webkit)                  | 兼容     |
+| Opera                                   | 兼容     |
+| 遨游浏览器                              | 兼容     |
+| 搜狗浏览器                              | 兼容     |
+| QQ 浏览器                               | 兼容     |
+| 360极速浏览器（极速模式，即Chrome模式） | 兼容     |
+| 360极速浏览器（兼容模式，即IE模式）     | *不兼容* |
+| Internet Explorer                       | *不兼容* |
 
 
 
@@ -153,8 +172,8 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 安装「携带版」时，只需要在自动部署命令后添加`--{参数}[ 参数配置（如有）]`，即可指定安装选项
 
 ```shell
-# 示例：指定安装目录，同时开启MQTT组件（mosquitto）
-/bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc --mqtt
+# 示例：指定安装目录
+/bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc
 ```
 
 ### 3.2 在线安装版指定安装选项
@@ -162,8 +181,8 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 使用一键安装命令在线安装时，只需要在自动部署命令后添加`-- --{参数}[ 参数配置（如有）]`，即可指定安装选项
 
 ```shell
-# 示例：指定安装目录，同时开启MQTT组件（mosquitto）
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --mqtt
+# 示例：指定安装目录
+/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc
 ```
 
 *注意：参数前确实有`--`，表示参数传递给需要执行的脚本，此处不是笔误*
@@ -201,12 +220,6 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 需要使用已有的Redis数据库时，可指定此参数，禁止在本机启动Redis。
 
 *注意：启用此选项后，需要在安装完成后的配置页面指定正确的Redis连接信息*
-
-#### `--mqtt`：启用内置MQTT Broker
-
-需要安装后，同时在本机启动MQTT Broker时，可指定此选项。
-
-*注意：内置的MQTT Broker 为`eclipse-mosquitto`，并会自动生成对应的数据源*
 
 
 

@@ -13,6 +13,8 @@ var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
 /* Configure */
+var MULTIPART_BOUNDARY_RE = /^multipart\/form-data.\s?boundary=['"]?(.*?)['"]?$/i;
+
 module.exports = function(options) {
   var limitSize = options.$limitSize || '5M';
   var limitByteSize = parseFloat(limitSize);
@@ -42,8 +44,6 @@ module.exports = function(options) {
     }
   }
 
-  var re = /^multipart\/form-data.\s?boundary=['"]?(.*?)['"]?$/i;
-
   return function(req, res, next) {
     req.body  = {};
     req.files = [];
@@ -61,9 +61,15 @@ module.exports = function(options) {
     }
 
     var contentType = req.get('Content-Type');
-    var match = re.exec(contentType);
-    if (match && match.length === 2) {
-        req.headers['content-type'] = 'multipart/form-data; boundary="' + match[1] + '"';
+    if (!contentType) {
+      // 补全Content-Type
+      req.headers['content-type'] = 'application/json';
+
+    } else {
+      var match = MULTIPART_BOUNDARY_RE.exec(contentType);
+      if (match && match.length === 2) {
+          req.headers['content-type'] = 'multipart/form-data; boundary="' + match[1] + '"';
+      }
     }
 
     // Parse by busboy

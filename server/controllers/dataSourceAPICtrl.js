@@ -538,12 +538,5 @@ function updateDataSourceRefreshTimestamp(locals, dataSource, callback) {
       var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestamp', tags);
       locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
     },
-    function(asyncCallback) {
-      if (dataSource.type !== 'mqtt') return asyncCallback();
-
-      var tags    = ['id', dataSource.id];
-      var cacheKey = toolkit.getCacheKey('cache', 'mqttRefreshTimestamp', tags);
-      locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
-    },
   ], callback);
 };

@@ -10,7 +10,6 @@ var express    = require('express');
 var bodyParser = require('body-parser');
 var async      = require('async');
 var yaml       = require('js-yaml');
-var minimist   = require('minimist');
 
 /* Project Modules */
 var toolkit = require('./utils/toolkit');
@@ -21,8 +20,6 @@ var yamlResources = require('./utils/yamlResources');
 var CONFIG       = null;
 var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
-
-var ARGV = minimist(process.argv.slice(2));
 
 var INSTALL_CHECK_INTERVAL            = 3 * 1000;
 var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
@@ -73,6 +70,7 @@ function runSetup() {
     检测发现安装完毕后自动退出
    */
   function setupChecker() {
+    // 每次都需要重新加载配置文件，检查是否已安装
     yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config) {
       if (err) {
         console.log(err);
@@ -89,9 +87,11 @@ function runSetup() {
       console.log('Other process finished setup.');
 
       if (setupCheckerT) clearInterval(setupCheckerT);
+
+      // 退出安装程序，执行后一个程序
       return process.exit(0);
     });
-  }
+  };
   var setupCheckerT = setInterval(setupChecker, INSTALL_CHECK_INTERVAL);
 
   // Express
@@ -195,32 +195,6 @@ function runSetup() {
         var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
         dbHelper.query(sql, sqlParams, function(err, data) {
           if (err) configErrors['mysqlInit'] = '初始化系统配置项失败：' + err.toString();
-
-          return asyncCallback();
-        });
-      },
-      // Add builtin MQTT
-      function(asyncCallback) {
-        if (!ARGV.mqtt) return asyncCallback();
-
-        var userPassword = ARGV.mqtt.split(':');
-        var configJSON = JSON.stringify({
-          host          : 'mqtt',
-          port          : 1883,
-          user          : userPassword[0],
-          passwordCipher: toolkit.cipherByAES(userPassword[1], config.SECRET),
-          topicHandlers : [ { topic: '$share/g/test', funcId: 'demo__mqtt.mqtt_message' } ],
-        });
-
-        var sql = 'INSERT INTO `biz_main_data_source` SET ?';
-        var sqlParams = {
-          id        : 'mqtt',
-          title     : 'Mosquitto',
-          type      : 'mqtt',
-          configJSON: configJSON,
-        };
-        dbHelper.query(sql, sqlParams, function(err) {
-          if (err) configErrors['mysqlInit'] = '自动添加内置数据源失败：' + err.toString();
 
           return asyncCallback();
         });
