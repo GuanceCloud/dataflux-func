@@ -97,7 +97,7 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
         error: err.toString(),
       }));
     }
@@ -114,7 +114,7 @@ EntityModel.prototype.modify = function(id, data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
         error: err.toString(),
       }));
     }
@@ -145,7 +145,7 @@ function _prepareData(data) {
       // 检查CronTab语法
       cronParser.parseExpression(data.crontab);
     } catch(err) {
-      throw new E('EClientBadRequest.InvalidCronTabExpression', 'Invalid CronTab expression.', {
+      throw new E('EClientBadRequest.InvalidCronTabExpression', 'Invalid CronTab expression', {
         crontab: data.crontab,
       });
     }

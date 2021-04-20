@@ -25,7 +25,7 @@ Welcome to: 欢迎使用
           <p>
             我们编写了详细的操作使用手册《DataFlux Func 包学包会》<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" href="https://t.dataflux.cn/func-user-guide" target="_blank">立即阅读《DataFlux Func 包学包会》（文档大小约5MB）</el-link>
+            <el-link type="primary" href="https://t.dataflux.cn/func-user-guide" target="_blank">立即阅读《DataFlux Func 包学包会》（文档大小约3.5MB）</el-link>
           </p>
           </template>
 

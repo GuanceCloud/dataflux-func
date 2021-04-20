@@ -13,6 +13,9 @@ var logHelper = require('../logHelper');
 var LUA_UNLOCK_KEY_KEY_NUMBER = 1;
 var LUA_UNLOCK_KEY = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
+/* Configure */
+var LIMIT_ARGS_DUMP = 500;
+
 function retryStrategy(options) {
   if (options.error) {
     console.error(options.error.toString());
@@ -103,11 +106,12 @@ RedisHelper.prototype.run = function() {
   var command = args.shift();
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} {2}',
-      '[REDIS]',
-      command.toUpperCase(),
-      (typeof args[args.length  - 1] === 'function' ? args.slice(0, -1) : args).join(' ')
-    );
+    var argsStr = (typeof args[args.length  - 1] === 'function' ? args.slice(0, -1) : args).join(' ');
+    if (argsStr.length > LIMIT_ARGS_DUMP) {
+      argsStr = argsStr.slice(0, LIMIT_ARGS_DUMP - 3) + '...';
+    }
+
+    this.logger.debug('{0} {1} {2}', '[REDIS]', command.toUpperCase(), argsStr);
   }
 
   return this.client[command].apply(this.client, args);

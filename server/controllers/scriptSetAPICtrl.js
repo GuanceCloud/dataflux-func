@@ -99,7 +99,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedScriptSetID', 'ID of script set already exists.'));
+          return asyncCallback(new E('EBizCondition.DuplicatedScriptSetID', 'ID of script set already exists'));
         }
 
         return asyncCallback();
@@ -132,7 +132,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptSetNotAllowed', 'This script set is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptSetNotAllowed', 'This script set is locked by other user'));
         }
 
         return asyncCallback();
@@ -172,7 +172,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptSetNotAllowed', 'This script set is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptSetNotAllowed', 'This script set is locked by other user'));
         }
 
         return asyncCallback();
@@ -379,7 +379,6 @@ exports.export = function(req, res, next) {
           'cron.tagsJSON',
           'cron.saveResult',
           'cron.scope',
-          'cron.configMD5',
           'cron.expireTime',
           'cron.origin',
           'cron.isDisabled',
@@ -574,7 +573,7 @@ exports.import = function(req, res, next) {
 
       } catch(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(1).'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
       }
 
       return asyncCallback();
@@ -589,7 +588,7 @@ exports.import = function(req, res, next) {
       })(function(err, z) {
         if (err) {
           res.locals.logger.logError(err);
-          return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password(2).'));
+          return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
         }
 
         async.asyncify(function() {
@@ -692,7 +691,7 @@ exports.confirmImport = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          return asyncCallback(new E('EBizCondition.ConfirmingImportTimeout', 'Confirming import timeout.'));
+          return asyncCallback(new E('EBizCondition.ConfirmingImportTimeout', 'Confirming import timeout'));
         }
 
         packageData = JSON.parse(cacheRes);

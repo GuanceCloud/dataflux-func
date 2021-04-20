@@ -235,7 +235,7 @@ exports.createAuthChecker = function(routeConfig) {
 
     // Stop un-signed-in user
     if (!res.locals.user.isSignedIn) {
-      return next(new E('EUserAuth', 'User not signed in.'));
+      return next(new E('EUserAuth', 'User not signed in'));
     }
 
     // Stop unsupported auth type
@@ -287,7 +287,7 @@ exports.createPrivilegeChecker = function(routeConfig) {
       }
     }
 
-    return next(new E('EUserPrivilege', 'Privilege is not satisfied.', {
+    return next(new E('EUserPrivilege', 'Privilege is not satisfied', {
       requiredPrivileges: requiredPrivileges,
     }));
   };

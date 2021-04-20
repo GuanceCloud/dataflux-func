@@ -148,6 +148,7 @@ displayText:
     EBizCondition.DuplicatedEnvVariableID             : 环境变量ID重复
     EBizCondition.DuplicatedScriptID                  : 脚本ID重复
     EBizCondition.DuplicatedScriptSetID               : 脚本集ID重复
+    EBizCondition.FileServiceDisabled                 : 文件服务已禁用
     EBizCondition.InvalidPassword                     : 导入令牌不正确
     EBizCondition.ModifyingBuiltinDataSourceNotAllowed: 不允许修改内置数据源
     EBizCondition.ModifyingScriptNotAllowed           : 不允许修改脚本

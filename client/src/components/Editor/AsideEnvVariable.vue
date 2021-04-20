@@ -51,18 +51,32 @@ Copy {name} ID: 复制{name}ID
               </el-button>
             </el-tooltip>
 
-            <el-popover v-if="data.tip"
+            <el-popover v-if="data.id"
               placement="right-start"
               trigger="click"
               popper-class="aside-tip"
               :value="showPopoverId === data.id">
-              <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
-              <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-                {{ $t('Example:') }}
-                <pre>{{ data.tip.sampleCode }}</pre>
-                <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-                <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
+              <div class="aside-tree-node-description">
+                <code>{{ data.title || data.id }}</code>
+                <pre v-if="data.description">{{ data.description }}</pre>
               </div>
+
+              <template v-if="data.sampleCode">
+                <div class="aside-tree-node-sample-code">
+                  {{ $t('Example:') }}
+                  <pre>{{ data.sampleCode }}</pre>
+                </div>
+              </template>
+
+              <br><CopyButton
+                font-size="12px"
+                :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
+                :content="data.id"></CopyButton>
+              <br><CopyButton v-if="data.sampleCode"
+                font-size="12px"
+                :title="$t('Copy example')"
+                :content="data.sampleCode"></CopyButton>
+
               <el-button slot="reference"
                 type="text"
                 size="small"
@@ -120,16 +134,19 @@ export default {
         // 缩减描述行数
         d.description = this.T.limitLines(d.description);
 
-        // 提取环境变量
+        // 示例代码
+        let sampleCode = `${d.id} = DFF.ENV('${d.id}')`
+
+        // 创建数据节点
         treeData.push({
           id        : d.id,
           label     : d.title || d.id,
           type      : 'envVariable',
           searchTEXT: `${d.title} ${d.id}`,
-          tip: {
-            description: d.description,
-            sampleCode : `DFF.ENV('${d.id}')`,
-          },
+
+          title      : d.title,
+          description: d.description,
+          sampleCode : sampleCode,
         });
       });
       treeData.sort(this.T.asideItemSorter);
@@ -208,19 +225,17 @@ export default {
 .aside-tree-node i.fa {
   font-size: 14px;
 }
-pre.aside-tree-node-description {
-  padding: 0;
+.aside-tip pre {
+  padding: 0 0 0 10px;
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
+}
+.aside-tree-node-description {
+
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
   color: grey;
-}
-.aside-tree-node-sample-code pre {
-  padding: 0 0 0 10px;
-  margin: 0;
-  font-size: 12px;
-  color: black;
+  text-align: left;
 }
 </style>

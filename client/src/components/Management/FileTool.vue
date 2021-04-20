@@ -21,9 +21,11 @@ Move       : 移动
 Copy       : 复制
 Delete     : 删除
 
-Please input destination path                         : 请输入目标路径
-Are you sure you want to delete the following content?: 是否确定删除此内容？
-Delete file                                           : 删除文件
+Please input destination path                                                        : 请输入目标路径
+'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
+Are you sure you want to delete the following content?                               : 是否确定删除此内容？
+Delete file                                                                          : 删除文件
+File already existed                                                                 : 文件已经存在
 </i18n>
 
 <template>
@@ -57,19 +59,20 @@ Delete file                                           : 删除文件
             </el-button>
           </el-popover>
 
-<el-upload ref="upload"
-  class="upload-button"
-  :limit="2"
-  :multiple="false"
-  :auto-upload="true"
-  :show-file-list="false"
-  :http-request="handleUpload"
-  action="">
-  <el-button size="mini">
-    <i class="fa fa-fw fa-cloud-upload"></i>
-    {{ $t('Upload') }}
-  </el-button>
-</el-upload>
+          <el-upload ref="upload"
+            class="upload-button"
+            :limit="2"
+            :multiple="false"
+            :auto-upload="true"
+            :show-file-list="false"
+            :http-request="handleUpload"
+            :on-change="onUploadFileChange"
+            action="">
+            <el-button size="mini">
+              <i class="fa fa-fw fa-cloud-upload"></i>
+              {{ $t('Upload') }}
+            </el-button>
+          </el-upload>
 
           &#12288;
           <code class="resource-navi" v-if="folder !== '/'">
@@ -129,34 +132,29 @@ Delete file                                           : 删除文件
 
           <el-table-column :label="$t('Size')" sortable sort-by="size" align="right" width="120">
             <template slot-scope="scope">
-              <code v-if="scope.row.size === null">-</code>
-              <code v-else-if="scope.row.size < 1024">{{ scope.row.size }} B</code>
-              <code v-else-if="scope.row.size < 1024 * 1024">{{ parseInt(scope.row.size / 1024) }} KB</code>
-              <code v-else-if="scope.row.size < 1024 * 1024 * 1024">{{ parseInt(scope.row.size / 1024 / 1024) }} MB</code>
+              <code v-if="scope.row.size">{{ scope.row.sizeHuman }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
               <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
                   v-if="previewExtMap[scope.row.ext]"
-                  class="list-button"
                   type="primary"
-                  :href="T.authedLink(`/api/v1/resources?preview=true&filePath=${getPath(scope.row.name)}`)"
+                  :href="scope.row.previewURL"
                   :underline="false"
                   target="_blank">{{ $t('Preview') }}</el-link>
                 <el-link
-                  class="list-button"
                   type="primary"
-                  :href="T.authedLink(`/api/v1/resources?filePath=${getPath(scope.row.name)}`)"
+                  :href="scope.row.downloadURL"
                   :download="scope.row.name"
                   :underline="false"
                   target="_blank">{{ $t('Download') }}</el-link>
               </template>
 
-              <el-dropdown @command="resourceOperationCmd" class="list-button">
+              <el-dropdown @command="resourceOperationCmd">
                 <el-button type="text" size="small">
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
@@ -177,6 +175,7 @@ Delete file                                           : 删除文件
 </template>
 
 <script>
+import byteSize from 'byte-size'
 import * as path from '@/path'
 
 export default {
@@ -203,14 +202,33 @@ export default {
       if (!apiRes.ok) return;
 
       let files = apiRes.data;
+      let fileNameMap = {};
       files.forEach(f => {
+        fileNameMap[f.name] = true;
+
         switch (f.type) {
           case 'folder':
             f.icon = 'folder-o';
             break;
+
           case 'file':
             f.icon = 'file-o';
             f.ext  = f.name.split('.').pop();
+
+            if (f.size) {
+              f.sizeHuman = byteSize(f.size);
+            }
+
+            f.previewURL = this.T.formatURL(`/api/v1/resources`, {
+              baseURL: true,
+              auth   : true,
+              query  : { preview: true, filePath: this.getPath(f.name) },
+            });
+            f.downloadURL = this.T.formatURL(`/api/v1/resources`, {
+              baseURL: true,
+              auth   : true,
+              query  : { filePath: this.getPath(f.name) },
+            });
             break;
         }
 
@@ -267,7 +285,15 @@ export default {
         }
       });
 
-      this.files = files;
+      // 默认排序
+      files.sort(function(a, b) {
+        if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+        if (a.name !== b.name) return a.name < b.name ? -1 : 1;
+        return 0;
+      });
+
+      this.files       = files;
+      this.fileNameMap = fileNameMap;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -300,19 +326,21 @@ export default {
         switch(operation) {
           case 'cp':
             promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Copy'), {
-              inputValue: `${name} copy`,
+              inputValue              : name,
               dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Copy'),
-              cancelButtonText: this.$t('Cancel'),
+              closeOnClickModal       : false,
+              confirmButtonText       : this.$t('Copy'),
+              cancelButtonText        : this.$t('Cancel'),
             });
             break;
 
           case 'mv':
             promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Move'), {
-              inputValue: name,
+              inputValue              : `./${name}`,
               dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Move'),
-              cancelButtonText: this.$t('Cancel'),
+              closeOnClickModal       : false,
+              confirmButtonText       : this.$t('Move'),
+              cancelButtonText        : this.$t('Cancel'),
             });
             break;
 
@@ -340,7 +368,7 @@ export default {
         },
         alert: { showError: true },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes.ok) return this.loadData();
 
       // 处理后操作
       switch(operation) {
@@ -357,9 +385,50 @@ export default {
       }
     },
     async handleUpload(req) {
+      var filename = req.file.name;
+      var rename   = null;
+
+      if (this.fileNameMap[filename]) {
+        // 文件已存在
+        let promptRes = null;
+        try {
+          // 自动重命名为`xxx-2.ext`
+          let _defaultRename = filename;
+          let _m = filename.match(/-(\d+)\.[^.]+$/);
+          let _dateStr = this.T.getDateTimeString(null, 'YYYYMMDD_HHmmss');
+          if (!_m) {
+            _defaultRename = filename.replace(/(\.[^.]+)$/, `-${_dateStr}$1`);
+          } else {
+            _defaultRename = filename.replace(/-\d+(\.[^.]+)$/, `-${_dateStr}$1`);
+          }
+
+          promptRes = await this.$prompt(this.$t('File <code class="text-main">{name}</code> already existed, please input a new name', { name: filename }), this.$t('Upload'), {
+            customClass             : 'uploadRename',
+            inputValue              : _defaultRename,
+            dangerouslyUseHTMLString: true,
+            closeOnClickModal       : false,
+            confirmButtonText       : this.$t('Upload'),
+            cancelButtonText        : this.$t('Cancel'),
+            inputValidator: value => {
+              if (this.fileNameMap[value]) {
+                return this.$t('File already existed');
+              }
+            }
+          });
+        } catch(err) {
+          this.$refs.upload.clearFiles();
+          return; // 取消操作
+        }
+
+        rename = promptRes.value;
+      }
+
       let bodyData = new FormData();
-      bodyData.append('folder', this.folder);
       bodyData.append('files', req.file);
+      bodyData.append('folder', this.folder);
+      if (rename) {
+        bodyData.append('rename', rename);
+      }
 
       let opt = {
         body: bodyData,
@@ -370,6 +439,11 @@ export default {
       });
 
       await this.loadData();
+
+      this.$refs.upload.clearFiles();
+    },
+    onUploadFileChange(file, fileList) {
+      if (fileList.length > 1) fileList.splice(0, 1);
     },
   },
   computed: {
@@ -393,12 +467,16 @@ export default {
     return {
       folder: '/',
 
-      files: [],
+      files      : [],
+      fileNameMap: {},
 
       showMkdirPopover: false,
       mkdirName       : '',
     }
   },
+  mounted() {
+    window.vmc = this;
+  }
 }
 </script>
 

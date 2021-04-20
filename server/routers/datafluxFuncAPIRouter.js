@@ -94,6 +94,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
 ]);
 
 // Python包
+routeLoader.load(ROUTE.datafluxFuncAPI.queryPythonPackages, [
+  datafluxFuncAPICtrl.queryPythonPackages,
+]);
 routeLoader.load(ROUTE.datafluxFuncAPI.listInstalledPythonPackages, [
   datafluxFuncAPICtrl.listInstalledPythonPackages,
 ]);
@@ -108,6 +111,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.installPythonPackage, [
 routeLoader.load(ROUTE.datafluxFuncAPI.listResources, [
   datafluxFuncAPICtrl.listResources,
 ]);
+routeLoader.load(ROUTE.datafluxFuncAPI.getResources, [
+  datafluxFuncAPICtrl.getResources,
+]);
 routeLoader.load(ROUTE.datafluxFuncAPI.downloadResources, [
   datafluxFuncAPICtrl.downloadResources,
 ]);
@@ -116,4 +122,9 @@ routeLoader.load(ROUTE.datafluxFuncAPI.uploadResource, [
 ]);
 routeLoader.load(ROUTE.datafluxFuncAPI.operateResource, [
   datafluxFuncAPICtrl.operateResource,
+]);
+
+// 文件服务
+routeLoader.load(ROUTE.datafluxFuncAPI.fileService, [
+  datafluxFuncAPICtrl.fileService,
 ]);

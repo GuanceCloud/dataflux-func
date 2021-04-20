@@ -69,7 +69,7 @@ exports.createRequestValidator = function(routeConfig) {
 
       ret = checker.check(req.query, checkQueryConfig);
       if (!ret.isValid) {
-        return next(new E('EClientBadRequest', 'Invalid query', {
+        return next(new E('EClientBadRequest', 'Invalid request query', {
           message: ret.message,
         }));
       }
@@ -98,7 +98,7 @@ exports.createRequestValidator = function(routeConfig) {
 
       ret = checker.check(req.body, routeConfig.body);
       if (!ret.isValid) {
-        return next(new E('EClientBadRequest', 'Invalid body', {
+        return next(new E('EClientBadRequest', 'Invalid request body', {
           message: ret.message,
         }));
       }

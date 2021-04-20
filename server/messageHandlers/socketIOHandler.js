@@ -36,7 +36,7 @@ module.exports = function(app, server) {
 
       // Socket.io 客户端发送`auth`事件时，进行认证
       if (!xAuthToken) {
-        return next(new E('EClientBadRequest', 'X-Auth-Token not sent.').forSocketIO());
+        return next(new E('EClientBadRequest', 'X-Auth-Token not sent').forSocketIO());
       }
 
       var xAuthTokenObj = null;
@@ -46,7 +46,7 @@ module.exports = function(app, server) {
           auth.verifyXAuthToken(xAuthToken, function(err, obj) {
             // 检查JWT 签名
             if (err || !obj) {
-              return asyncCallback(new E('EAuthToken', 'Invalid Auth Token.').forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Invalid Auth Token').forSocketIO());
             };
 
             xAuthTokenObj = obj;
@@ -61,12 +61,12 @@ module.exports = function(app, server) {
           var cacheKey = auth.getCacheKey(xAuthTokenObj);
           app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
             if (err) {
-              return asyncCallback(new E('ESysCache', 'Read cache error.').forSocketIO());
+              return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
               // 本Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired.').forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
             }
 
             // 使用 Socket.IO 认证令牌不会触发刷新
@@ -118,7 +118,7 @@ module.exports = function(app, server) {
       var xAuthTokenObj = AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
       if (!xAuthTokenObj) {
         // 未登录则抛错
-        return next(new E('ESocketIOAuth', 'Client not send X-Auth-Token yet.').forSocketIO());
+        return next(new E('ESocketIOAuth', 'Client not send X-Auth-Token yet').forSocketIO());
       }
 
       async.series([
@@ -133,17 +133,17 @@ module.exports = function(app, server) {
               break;
 
             default:
-              return asyncCallback(new E('EAuthToken', toolkit.strf('Unknow auth type `{0}`.', xAuthTokenObj.authType)).forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Unknow auth type', { authType: xAuthTokenObj.authType }).forSocketIO());
           }
 
           app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
             if (err) {
-              return asyncCallback(new E('ESysCache', 'Read cache error.').forSocketIO());
+              return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
               // 本Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired.').forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
             }
 
             // 使用 Socket.IO 认证令牌不会触发刷新
@@ -162,7 +162,7 @@ module.exports = function(app, server) {
       // Socket.io 处理之前，验证Token
       var xAuthTokenObj = AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
       if (!xAuthTokenObj) {
-        return next(new E('ESocketIOAuth', 'Socket.io connection gone.').forSocketIO());
+        return next(new E('ESocketIOAuth', 'Socket.io connection gone').forSocketIO());
       }
 
       var event       = packet[0];
@@ -175,7 +175,7 @@ module.exports = function(app, server) {
       // 为避免混淆，Socket.io的事件必须以`socketio`开头
       var eventParts = event.split('.');
       if (eventParts[0] !== 'socketio') {
-        return next(new E('ESocketIOEvent', 'Event of Socket.io must match pattern `socketio.*`').forSocketIO(ackId));
+        return next(new E('ESocketIOEvent', 'Event of Socket.io must match pattern "socketio.*"').forSocketIO(ackId));
       }
 
       // 为统一处理，Socket.io的数据必须为JSON字符串

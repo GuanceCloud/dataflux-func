@@ -8,6 +8,8 @@ Get System Report: 获取系统报告
 
 Clear Worker Queue : 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
+
+'You are using {browser} (engine: {engine})': 您正在使用 {browser}（{engine}）
 </i18n>
 
 <template>
@@ -23,6 +25,9 @@ Clear Log and Cache: 清空日志与缓存表
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="about-form">
+              <p class="text-main browser-detect">{{ $t('You are using {browser} (engine: {engine})', { browser: T.getBrowser(), engine: T.getEngine() }) }}</p>
+              <br>
+
               <!-- DataFlux Func Server -->
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
@@ -422,6 +427,11 @@ export default {
 </script>
 
 <style scoped>
+.browser-detect {
+  position: relative;
+  left: 45px;
+  top: -20px;
+}
 .about-form {
   width: 600px;
 }

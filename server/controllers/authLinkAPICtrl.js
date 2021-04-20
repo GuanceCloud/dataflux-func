@@ -223,7 +223,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = ['auln.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       authLinkModel.list(opt, function(err, dbRes) {
@@ -270,7 +270,7 @@ exports.deleteMany = function(req, res, next) {
       opt.fields = ['auln.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified.'));
+        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
       }
 
       authLinkModel.list(opt, function(err, dbRes) {

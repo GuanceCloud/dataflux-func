@@ -66,7 +66,7 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
         error: err.toString(),
       }));
     }
@@ -83,7 +83,7 @@ EntityModel.prototype.modify = function(id, data, callback) {
     if (err instanceof E) {
       return callback(err);
     } else {
-      return callback(new E('EClientBadRequest', 'Invalid request post data.', {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
         error: err.toString(),
       }));
     }
@@ -99,7 +99,7 @@ function _prepareData(data) {
     CIPHER_CONFIG_FIELDS.forEach(function(f) {
       var fCipher = toolkit.strf('{0}Cipher', f);
 
-      if (f in data.configJSON) {
+      if (data.configJSON[f]) {
         data.configJSON[fCipher] = toolkit.cipherByAES(data.configJSON[f], CONFIG.SECRET);
         delete data.configJSON[f];
       }

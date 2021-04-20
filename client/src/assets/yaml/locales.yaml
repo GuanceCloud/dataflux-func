@@ -26,6 +26,7 @@ en:
   Save    : 保存
   Lock    : 锁定
   Unlock  : 解锁
+  Open    : 打开
   Close   : 关闭
   Clear   : 清空
   Debug   : 调试
@@ -40,6 +41,7 @@ en:
   save    : 保存
   lock    : 解锁
   unlock  : 锁定
+  open    : 打开
   close   : 关闭
   clear   : 清空
   debug   : 调试
@@ -130,6 +132,23 @@ en:
   'Dark: duotone-dark'        : 黑暗：duotone-dark
   'Dark: material-darker'     : 黑暗：material-darker
   'Dark: darcula'             : 黑暗：darcula
+
+  # serverError
+  A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题
+
+  Invalid request query    : 请求中的Query参数不正确
+  Invalid request body     : 请求中的Body参数不正确
+  Invalid request post data: 提交数据不正确
+
+  Cannot not access file out of resource folder           : 无法访问资源目录以外的文件
+  Cannot not fetch folder out of resource folder          : 无法访问资源目录以外的目录
+  Cannot not operate file or folder out of resource folder: 无法操作资源目录以外的文件或目录
+  File or folder not existed                              : 文件或目录不存在
+  File or folder already existed                          : 文件或目录已经存在
+  Zip file already existed                                : ZIP文件已经存在
+  Unzip destination already existed                       : 解压ZIP文件的目标目录已经存在
+  Specified new file or folder name already existed       : 指定的名称已经存在
+  Unsupported resource operation                          : 不支持的资源操作
 
 'zh-HK': {}
 

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/statics/libs/font-awesome/css/font-awesome.min.css">
+  </head>
+  <body>
+    <style>
+      * { font-family: monospace; }
+      table { font-size: 16px; }
+      td,th { padding: 5px 20px; }
+      th { border-bottom: 1px dashed grey; }
+      .rel-path { color: grey }
+      .error { color: red; }
+    </style>
+
+    <% if (!pageData.error) { %>
+      <h1>Index: <small class="rel-path"><%= pageData.relPath %></small></h1>
+    <% } else { %>
+      <h1 class="error"><%= pageData.error %></h1>
+      <a href="/api/v1/fs/<%= pageData.id %>/">Back to root<a>
+    <% } %>
+
+    <% if (pageData.files) { %>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Create</th>
+          <th>Update</th>
+        </tr>
+      </thread>
+      <tbody>
+        <% pageData.files.forEach(function(f) { %>
+        <tr>
+          <td>
+            <i class="fa fa-fw <%= f.type === 'folder' ? 'fa-folder-open-o':'fa-file-text-o' %>">
+          </td>
+          <td>
+            <a href="/api/v1/fs/<%= pageData.id %><%= pageData.relPath %><%= f.name %>">
+              <%= f.name %>
+            <a>
+          </td>
+          <td><%= f.size || '' %></td>
+          <td><%= f.createTime || '' %></td>
+          <td><%= f.updateTime || '' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </body>
+</html>

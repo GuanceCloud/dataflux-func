@@ -90,6 +90,9 @@ EntityModel.prototype.list = function(options, callback) {
           let key = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
           var api = ROUTE_META_MAP[key];
 
+          // 已删除的接口忽略
+          if (!api) return;
+
           d._operationDescribe = api.name || '未知操作';
 
           if (!d.username) {
@@ -125,7 +128,7 @@ EntityModel.prototype.add = function(data, callback) {
     if (err instanceof E) {
       return callback && callback(err);
     } else {
-      return callback && callback(new E('EClientBadRequest', 'Invalid request post data.'));
+      return callback && callback(new E('EClientBadRequest', 'Invalid request post data'));
     }
   }
 
@@ -133,11 +136,11 @@ EntityModel.prototype.add = function(data, callback) {
 };
 
 EntityModel.prototype.modify = function(id, data, callback) {
-  return callback(new E('EClientUnsupported', 'Official Script Lib backup cannot be modified'));
+  return callback(new E('EClientUnsupported', 'Operation Record cannot be modified'));
 };
 
 EntityModel.prototype.delete = function(id, callback) {
-  return callback(new E('EClientUnsupported', 'Official Script Lib backup cannot be deleted'));
+  return callback(new E('EClientUnsupported', 'Operation Record cannot be deleted'));
 };
 
 function _maskSecret(o) {

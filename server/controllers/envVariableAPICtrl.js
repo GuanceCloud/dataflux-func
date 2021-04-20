@@ -39,7 +39,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedEnvVariableID', 'ID of ENV Variable already exists.'));
+          return asyncCallback(new E('EBizCondition.DuplicatedEnvVariableID', 'ID of ENV Variable already exists'));
         }
 
         return asyncCallback();

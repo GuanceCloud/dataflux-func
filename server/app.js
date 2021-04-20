@@ -134,7 +134,7 @@ function startApplication() {
 
     if (res.locals.isBodyParsing) {
       res.locals.isBodyParsing = false;
-      return next(new E('EClientBadRequest', 'Invalid request body.', {
+      return next(new E('EClientBadRequest', 'Invalid request body', {
         body       : req.rawData.toString(),
         contentType: req.get('content-type'),
       }));
@@ -216,6 +216,8 @@ function startApplication() {
 
   require('./routers/operationRecordAPIRouter');
 
+  require('./routers/fileServiceAPIRouter');
+
   routeLoader.mount(app);
 
   // Route Docs
@@ -240,7 +242,7 @@ function startApplication() {
       res.locals.logger.debug('[MID] IN app.404Error');
     }
 
-    return next(new E('EClientNotFound', 'No such router. Please make sure that the METHOD is correct and no spelling missing in the URL.', {
+    return next(new E('EClientNotFound', 'No such router. Please make sure that the METHOD is correct and no spelling missing in the URL', {
       method: req.method,
       url   : req.originalUrl,
       links : {doc: '/doc'},
@@ -268,7 +270,7 @@ function startApplication() {
         data = originError.stack;
       }
 
-      err = new E('ESys', 'A System error occured. Please report this response to the administrator.', data, originError);
+      err = new E('ESys', 'A System error occured. Please report this response to the administrator', data, originError);
     }
 
     // Set status code

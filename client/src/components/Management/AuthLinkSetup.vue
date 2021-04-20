@@ -9,7 +9,7 @@ Func                                                                            
 Arguments                                                                                  : 调用参数
 'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
 'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
-The Func accepts extra arguments not listed above                                          : 本函数允许传递额外自定义的参数
+The Func accepts extra arguments not listed above                                          : 本函数允许传递额外的自定义函数参数
 Show in doc                                                                                : 显示于文档
 Expire at                                                                                  : 有效期至
 Select expire time                                                                         : 选择有效期

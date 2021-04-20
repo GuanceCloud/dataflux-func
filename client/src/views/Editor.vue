@@ -176,6 +176,6 @@ export default {
   box-shadow: none;
 }
 .aside-tip {
-  padding: 20px !important;
+  padding: 12px !important;
 }
 </style>

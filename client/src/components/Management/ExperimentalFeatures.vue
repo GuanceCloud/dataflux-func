@@ -52,7 +52,7 @@
                     v-model="form.AccessKey">
                   </el-switch>
                   <div class="text-small form-item-tip">
-                    用于管理允许外部系统调用本平台接口的认证信息。
+                    用于管理允许外部系统调用本平台接口的认证信息
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「AccessKey」进入模块
                   </div>
                 </el-form-item>
@@ -65,7 +65,7 @@
                     v-model="form.SysStat">
                   </el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看本系统的一些运行指标信息。
+                    用于查看本系统的一些运行指标信息
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统指标」进入模块
                   </div>
                 </el-form-item>
@@ -78,7 +78,7 @@
                     v-model="form.PipTool">
                   </el-switch>
                   <div class="text-small form-item-tip">
-                    用于安装脚本所需的额外第三方Python包（PIP）。
+                    用于安装脚本所需的额外第三方Python包（PIP）
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「PIP工具」进入模块
                   </div>
                 </el-form-item>
@@ -91,8 +91,21 @@
                     v-model="form.FileTool">
                   </el-switch>
                   <div class="text-small form-item-tip">
-                    用于在服务器端处理/保存文件。
+                    用于在服务器端处理/保存文件
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件工具」进入模块
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="FileService">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启文件服务模块"
+                    v-model="form.FileService">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于将资源目录提供为文件服务的功能
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件服务」进入模块
                   </div>
                 </el-form-item>
               </el-form>
@@ -150,6 +163,7 @@ export default {
         SysStat      : false,
         PipTool      : false,
         FileTool     : false,
+        FileService  : false,
       },
     }
   },

@@ -70,7 +70,7 @@ Script {id}    : 脚本 {id}
                 type="warning"
                 size="mini">{{ $t('Builtin') }}</el-tag>
               <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
-              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount }})</span>
+              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount}})</span>
             </span>
           </div>
         </span>
@@ -122,30 +122,45 @@ Script {id}    : 脚本 {id}
             </span>
           </el-tooltip>
 
-          <el-popover v-if="data.tip"
+          <el-popover v-if="data.id"
             placement="right-start"
             trigger="click"
             popper-class="aside-tip"
             :value="showPopoverId === data.id">
-            <pre class="aside-tree-node-description">{{ data.tip.description }}</pre>
-            <div v-if="data.tip.sampleCode" class="aside-tree-node-sample-code">
-              {{ $t('Example:') }}
-              <pre>{{ data.tip.sampleCode }}</pre>
-              <br><CopyButton :title="$t('Copy example')" size="mini" :content="data.tip.sampleCode"></CopyButton>
-              <br><CopyButton :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })" size="mini" :content="data.id"></CopyButton>
-            </div>
-            <div v-if="data.isCodeEdited" class="code-edited-tip">
-              <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
+
+            <div class="aside-tree-node-description">
+              <code>{{ data.title || data.id }}</code>
+              <pre v-if="data.description">{{ data.description }}</pre>
             </div>
 
-            <div class="aside-tree-node-quick-view" v-if="data.type === 'script'">
-              <el-button
-                size="mini"
-                type="primary" plain
-                @click.stop="showQuickViewWindow(data.id)">
-                <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Quick View Panel') }}
-              </el-button>
-            </div>
+            <template v-if="data.sampleCode">
+              <div class="aside-tree-node-sample-code">
+                {{ $t('Example:') }}
+                <pre>{{ data.sampleCode }}</pre>
+              </div>
+            </template>
+
+            <br><CopyButton
+              font-size="12px"
+              :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
+              :content="data.id"></CopyButton>
+            <br><CopyButton v-if="data.sampleCode"
+              font-size="12px"
+              :title="$t('Copy example')"
+              :content="data.sampleCode"></CopyButton>
+            <br><el-button v-if="data.type === 'script'"
+              class="aside-tree-node-quick-view"
+              type="text"
+              size="small"
+              @click.stop="showQuickViewWindow(data.id)">
+              <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Quick View Panel') }}
+            </el-button>
+
+            <template v-if="data.isCodeEdited">
+              <div class="code-edited-tip">
+                <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
+              </div>
+            </template>
 
             <el-button slot="reference"
               type="text"
@@ -247,11 +262,12 @@ export default {
           type           : 'scriptSet',
           isLocked       : d.isLocked,
           isLockedByOther: isLockedByOther,
-          isBuiltin    : d.isBuiltin,
+          isBuiltin      : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
-          tip: {
-            description: d.description || this.$t('Script Set {id}', { id: d.id }),
-          },
+
+          title      : d.title,
+          description: d.description,
+
           children: [],
         };
       });
@@ -273,10 +289,16 @@ export default {
         // 缩减描述行数
         d.description = this.T.limitLines(d.description, 10);
 
-        // 创建节点数据
+        // 状态
         let isCodeEdited = d.codeMD5 !== d.codeDraftMD5;
         let isLockedByOther = d.lockedByUserId && d.lockedByUserId !== this.$store.getters.userId
                             || d.sset_lockedByUserId && d.sset_lockedByUserId !== this.$store.getters.userId;
+
+        // 示例代码
+        let shortScriptId = d.id.split('__').slice(1).join('__');
+        let sampleCode = `import ${d.id} as ${shortScriptId}`;
+
+        // 创建节点数据
         scriptMap[d.id] = {
           id             : d.id,
           scriptSetId    : d.scriptSetId,
@@ -286,10 +308,10 @@ export default {
           isCodeEdited   : isCodeEdited,
           isLockedByOther: isLockedByOther,
           searchTEXT     : `${d.title} ${d.id}`,
-          tip: {
-            description: d.description || this.$t('Script {id}', { id: d.id }),
-            sampleCode : `import ${d.id}`,
-          },
+
+          title      : d.title,
+          description: d.description,
+          sampleCode : sampleCode,
 
           children: [],
         };
@@ -302,7 +324,7 @@ export default {
 
       /***** 函数 *****/
       apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type']},
+        query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON']},
         alert: {showError: true},
       });
       if (!apiRes.ok) return;
@@ -317,6 +339,10 @@ export default {
         // 缩减描述行数
         d.description = this.T.limitLines(d.description, 10);
 
+        // 示例代码
+        let shortScriptId = d.scriptId.split('__').slice(1).join('__');
+        let sampleCode = `import ${d.scriptId} as ${shortScriptId}\n${shortScriptId}.${d.definition}`;
+
         // 创建节点数据
         funcMap[d.id] = {
           id         : d.id,
@@ -326,12 +352,15 @@ export default {
           type       : 'func',
           definition : d.definition,
           searchTEXT: `${d.title} ${d.id}`,
-          tip: {
-            description: d.description,
-            sampleCode : `import ${d.scriptId}\n${d.id}(...)`,
-          },
+
+          title      : d.title,
+          description: d.description,
+          sampleCode : sampleCode,
 
           disabled: !this.$store.state.codeEditor_isCodeLoaded,
+
+          integration    : d.integration,
+          extraConfigJSON: d.extraConfigJSON,
         };
 
         // 插入上一层节点"children"
@@ -408,7 +437,7 @@ export default {
           let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 100;
           $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
         }
-      }, 1000);
+      }, 500);
     },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
@@ -570,28 +599,20 @@ export default {
 .aside-tree-node i.fa {
   font-size: 14px;
 }
-pre.aside-tree-node-description {
-  padding: 0;
+.aside-tip pre {
+  padding: 0 0 0 10px;
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
+}
+.aside-tree-node-description {
+
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
   color: grey;
 }
-.aside-tree-node-sample-code pre {
-  padding: 0 0 0 10px;
-  margin: 0;
-  font-size: 12px;
-  color: black;
-}
-.aside-tree-node-sample-code .copy-button {
-  padding-left: 10px
-}
 .aside-tree-node-quick-view {
-  padding-top: 10px;
-  color: grey;
-  text-align: left;
+  margin-left: 5px;
 }
 .code-edited-tip {
   font-size: 12px;
@@ -599,8 +620,6 @@ pre.aside-tree-node-description {
   padding-bottom: 5px;
 }
 .child-nodes-count {
-  font-family: monospace;
-  font-style: italic;
   font-size: 12px;
 }
 </style>

@@ -44,7 +44,7 @@ Follow System: 跟随系统
       </template>
 
       <el-menu-item index="">
-        <a href="https://function.dataflux.cn/" target="_blank">
+        <a href="https://function.dataflux.cn/#/read?q=development-guide.md" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
           {{ $t('Guide') }}
         </a>

@@ -63,15 +63,15 @@ Response                      : 响应
 
         <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
         <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
-          <el-progress type="dashboard"
+          <el-progress type="dashboard" width="100"
             :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
             :format="workerQueuePressureFormat"
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
 
-          <span class="worker-queue-name">
-            {{ $t('Queue') }} <span class="worker-queue-number">#{{ i }}</span>
+          <span class="worker-queue-info">
+            <span class="worker-queue-number">#{{ i }}</span> {{ $t('Queue') }}
             <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', workerQueue.taskCount || 0) }}
+            <br>{{ $tc('taskCount', T.numberPlus(workerQueue.taskCount)) }}
           </span>
         </el-card>
 
@@ -99,10 +99,7 @@ Response                      : 响应
 
           <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="120">
             <template slot-scope="scope">
-              <code v-if="!scope.row.codeSize">-</code>
-              <code v-else-if="scope.row.codeSize < 1024">{{ scope.row.codeSize }} B</code>
-              <code v-else-if="scope.row.codeSize < 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024) }} KB</code>
-              <code v-else-if="scope.row.codeSize < 1024 * 1024 * 1024">{{ parseInt(scope.row.codeSize / 1024 / 1024) }} MB</code>
+              <code v-if="scope.row.codeSize">{{ scope.row.codeSizeHuman }}</code>
             </template>
           </el-table-column>
 
@@ -208,6 +205,7 @@ Response                      : 响应
 </template>
 
 <script>
+import byteSize from 'byte-size'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
@@ -250,6 +248,12 @@ export default {
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
       });
+
+      this.scriptOverview.forEach(d => {
+        if (d.codeSize) {
+          d.codeSizeHuman = byteSize(d.codeSize);
+        }
+      })
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -391,8 +395,8 @@ export default {
   color: grey;
 }
 .worker-queue-card {
-  width: 330px;
-  height: 150px;
+  width: 260px;
+  height: 130px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -400,13 +404,14 @@ export default {
 .worker-queue-card .progressbar {
   display: inline-block;
 }
-.worker-queue-name {
+.worker-queue-info {
   font-size: 14px;
   position: absolute;
-  bottom: 30px;
-  left: 165px;
+  top: 25px;
+  right: 15px;
+  text-align: right;
 }
-.worker-queue-name .worker-queue-number {
+.worker-queue-info .worker-queue-number {
   font-size: 30px;
 }
 </style>

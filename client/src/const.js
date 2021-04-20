@@ -54,7 +54,7 @@ export default {
         logo          : logo_df_dataway,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `helper = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = helper.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
+        sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
           port     : { default: 9528, isRequired: true },
@@ -71,7 +71,7 @@ export default {
         logo          : logo_influxdb,
         tagType       : null,
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM "some_measurement" LIMIT 10')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         compatibleDBs: [
           app.$t('Aliyun Time Series Database for InfluxDB'),
         ],
@@ -91,7 +91,7 @@ export default {
         logo          : logo_mysql,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM \`some_table\` LIMIT 10')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT * FROM \`some_table\` LIMIT 10')`,
         compatibleDBs: [
           'MariaDB',
           'Percona Server for MySQL',
@@ -115,7 +115,7 @@ export default {
         logo          : logo_redis,
         tagType       : 'danger',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', 'some_key')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('GET', 'some_key')`,
         configFields: {
           host    : { default: null, isRequired: true },
           port    : { default: 6379 },
@@ -130,7 +130,7 @@ export default {
         logo          : logo_memcached,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET', 'some_key')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('GET', 'some_key')`,
         configFields: {
           servers: { default: null, isRequired: true },
         },
@@ -142,7 +142,7 @@ export default {
         logo          : logo_clickhouse,
         tagType       : 'warning',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM some_table LIMIT 10')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT * FROM some_table LIMIT 10')`,
         configFields: {
           host    : { default: null, isRequired: true },
           port    : { default: 9000 },
@@ -158,7 +158,7 @@ export default {
         logo          : logo_oracle,
         tagType       : 'danger',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10')`,
         configFields: {
           host    : { default: null, isRequired: true },
           port    : { default: 1521 },
@@ -175,7 +175,7 @@ export default {
         logo          : logo_sqlserver,
         tagType       : 'info',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT TOP 10 * FROM some_table')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT TOP 10 * FROM some_table')`,
         configFields: {
           host    : { default: null, isRequired: true },
           port    : { default: 1433 },
@@ -192,7 +192,7 @@ export default {
         logo          : logo_postgresql,
         tagType       : 'info',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('SELECT * FROM some_table LIMIT 10')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('SELECT * FROM some_table LIMIT 10')`,
         compatibleDBs: [
           'Greenplum Database',
           app.$t('Aliyun PolarDB for PostgreSQL'),
@@ -214,7 +214,7 @@ export default {
         logo          : logo_mongodb,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query()`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query()`,
         configFields: {
           host      : { default: null, isRequired: true },
           port      : { default: 27017 },
@@ -230,7 +230,7 @@ export default {
         logo          : logo_elasticsearch,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `helper = DFF.SRC('{0}')\ndb_res = helper.query('GET /_search?q=field:value')`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('GET /_search?q=field:value')`,
         configFields: {
           host    : { default: null, isRequired: true },
           port    : { default: 9200 },
@@ -246,7 +246,7 @@ export default {
         logo          : logo_nsq,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `helper = DFF.SRC('{0}')\helper.publish(topic='some_topic', message='some_message')`,
+        sampleCode    : `src = DFF.SRC('{0}')\nsrc.publish(topic='some_topic', message='some_message')`,
         configFields: {
           host    : { default: null },
           port    : { default: 4161 },
@@ -262,7 +262,7 @@ export default {
         tips          : app.$t('A Broker with MQTTv5 support and use share subscription is recommended'),
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `helper = DFF.SRC('{0}')\nhelper.publish(topic='some_topic',  message='some_message')`,
+        sampleCode    : `src = DFF.SRC('{0}')\nsrc.publish(topic='some_topic',  message='some_message')`,
         compatibleDBs: [
           'Mosquitto 2.0+',
           'EMQX',

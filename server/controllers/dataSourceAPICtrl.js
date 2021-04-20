@@ -49,12 +49,12 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
 
     var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
     if (celeryRes.status === 'FAILURE') {
-      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', toolkit.strf('Connecting to DataSource failed. {0}', errorMessage), {
+      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource failed', {
         etype: celeryRes.result && celeryRes.result.exc_type,
         error: errorMessage,
       }));
     } else if (extraInfo.status === 'TIMEOUT') {
-      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout.', {
+      return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout', {
         etype: celeryRes.result && celeryRes.result.exc_type,
       }));
     }
@@ -203,7 +203,7 @@ exports.add = function(req, res, next) {
   var data = req.body.data;
 
   if (toolkit.startsWith(data.id, RESERVED_REF_NAME)) {
-    return next(new E('EBizCondition.ReservedDataSourceIDPrefix', 'Cannot use a ID of reserved prefix.'));
+    return next(new E('EBizCondition.ReservedDataSourceIDPrefix', 'Cannot use a ID of reserved prefix'));
   }
 
   var dataSourceModel = dataSourceMod.createModel(res.locals);
@@ -224,7 +224,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedDataSourceID', 'ID of data source already exists.'));
+          return asyncCallback(new E('EBizCondition.DuplicatedDataSourceID', 'ID of data source already exists'));
         }
 
         return asyncCallback();
@@ -276,7 +276,7 @@ exports.modify = function(req, res, next) {
 
         dataSource = dbRes;
         if (dataSource.isBuiltin) {
-          return asyncCallback(new E('EBizCondition.ModifyingBuiltinDataSourceNotAllowed', 'Modifying builtin data source is not allowed, please edit the config instead.'));
+          return asyncCallback(new E('EBizCondition.ModifyingBuiltinDataSourceNotAllowed', 'Modifying builtin data source is not allowed, please edit the config instead'));
         }
 
         return asyncCallback();
@@ -321,7 +321,7 @@ exports.delete = function(req, res, next) {
 
         dataSource = dbRes;
         if (dataSource.isBuiltin) {
-          return asyncCallback(new E('EBizCondition.DeletingBuiltinDataSourceNotAllowed', 'Deleting builtin data source is not allowed.'));
+          return asyncCallback(new E('EBizCondition.DeletingBuiltinDataSourceNotAllowed', 'Deleting builtin data source is not allowed'));
         }
 
         return asyncCallback();
@@ -437,13 +437,13 @@ exports.query = function(req, res, next) {
 
         var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
         if (celeryRes.status === 'FAILURE') {
-          return asyncCallback(new E('EClientBadRequest.QueryFailed', toolkit.strf('Query failed. {0}', errorMessage),  {
+          return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed',  {
             etype: celeryRes.result && celeryRes.result.exc_type,
             error: errorMessage,
           }));
 
         } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EClientBadRequest.QueryTimeout', 'Query timeout.', {
+          return asyncCallback(new E('EClientBadRequest.QueryTimeout', 'Query timeout', {
             etype: celeryRes.result && celeryRes.result.exc_type,
           }));
         }
@@ -481,7 +481,7 @@ exports.test = function(req, res, next) {
           dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
             var fCipher = toolkit.strf('{0}Cipher', f);
 
-            if (fCipher in dataSource.configJSON) {
+            if (dataSource.configJSON[fCipher]) {
               try {
                 dataSource.configJSON[f] = toolkit.decipherByAES(dataSource.configJSON[fCipher], CONFIG.SECRET);
               } catch(err) {

@@ -416,10 +416,8 @@ Model.prototype.checkDuplicationError = function(err) {
   if (err.code === self.db.uniqueKeyErrorCode) {
     var m = (err.sqlMessage || '').match(self.db.uniqueKeyErrorRegExp);
     if (m) {
-      var key     = m[1];
-      var message = toolkit.strf('Duplicated data for {0}', self.uniqueKeyMap[key] || key);
-      var detail  = {key: key};
-      return new E('EClientDuplicated', message, detail);
+      var key = m[1];
+      return new E('EClientDuplicated', 'Duplicated data Key', { key: self.uniqueKeyMap[key] || key });
     }
   }
 
@@ -457,10 +455,10 @@ Model.prototype._list = Model.prototype.list = function(options, callback) {
   options.extra   = options.extra   || {};
 
   if (!self.tableName) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for a Model without a table name.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for a Model without a table name'));
   }
   if (!self.viewName && options.useView === true) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for a Model without a view name.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for a Model without a view name'));
   }
 
   if (!self.ignoreUserLimit && self.userIdLimitField_select) {
@@ -809,8 +807,9 @@ Model.prototype.__getWithCheck = function(method, id, options, callback) {
     if (err) return callback(err);
 
     if (!dbRes) {
-      return callback(new E('EClientNotFound', toolkit.strf('No such {0}.', self.displayName), {
-        id: id
+      return callback(new E('EClientNotFound', 'No such data', {
+        entity: self.displayName,
+        id    : id,
       }));
     }
 
@@ -831,7 +830,7 @@ Model.prototype._add = Model.prototype.add = function(data, callback) {
   var self = this;
 
   if (!self.tableName) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database'));
   }
 
   if (!data.id) {
@@ -895,7 +894,7 @@ Model.prototype._modify = Model.prototype.modify = function(id, data, callback) 
   var self = this;
 
   if (!self.tableName) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database'));
   }
 
   var updateDate = data;
@@ -957,7 +956,7 @@ Model.prototype._partialSet = Model.prototype.partialSet = function(id, data, ca
 
 
   if (!self.tableName) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database'));
   }
 
   var isIdExisted = false;
@@ -1019,7 +1018,7 @@ Model.prototype._delete = Model.prototype.delete = function(id, callback) {
   var self = this;
 
   if (!self.tableName) {
-    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database.'));
+    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database'));
   }
 
   var sql = toolkit.strf('DELETE FROM {0} WHERE id = ?', self.tableName);

@@ -46,7 +46,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          return asyncCallback(new E('EBizCondition.DuplicatedScriptID', 'ID of script already exists.'));
+          return asyncCallback(new E('EBizCondition.DuplicatedScriptID', 'ID of script already exists'));
         }
 
         return asyncCallback();
@@ -59,7 +59,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.AddingScriptNotAllowed', 'This script set is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.AddingScriptNotAllowed', 'This script set is locked by other user'));
         }
 
         return asyncCallback();
@@ -99,7 +99,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script set is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script set is locked by other user'));
         }
 
         return asyncCallback();
@@ -111,7 +111,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script is locked by other user'));
         }
 
         if (prevCodeDraftMD5 && prevCodeDraftMD5 !== dbRes.codeDraftMD5) {
@@ -168,7 +168,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script set is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script set is locked by other user'));
         }
 
         return asyncCallback();
@@ -180,7 +180,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script is locked by other user.'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script is locked by other user'));
         }
 
         script = dbRes;
@@ -232,7 +232,7 @@ exports.publish = function(req, res, next) {
 
         // 没有修改的脚本不允许发布
         if (!force && (dbRes.codeMD5 === dbRes.codeDraftMD5 || dbRes.code === dbRes.codeDraft)) {
-          return asyncCallback(new E('EBizCondition.ScriptNotEdited', 'Script not edited.'))
+          return asyncCallback(new E('EBizCondition.ScriptNotEdited', 'Script not edited'))
         }
 
         script = dbRes;
@@ -270,7 +270,7 @@ exports.publish = function(req, res, next) {
         if (celeryRes.status === 'FAILURE') {
           if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
             // 超时错误
-            return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code.', {
+            return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code', {
               id   : celeryRes.id,
               etype: celeryRes.result && celeryRes.result.exc_type,
               stack: celeryRes.einfoTEXT,
@@ -278,7 +278,7 @@ exports.publish = function(req, res, next) {
 
           } else {
             // 其他错误
-            return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code with the detailed information.', {
+            return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code with the detailed information', {
               id   : celeryRes.id,
               etype: celeryRes.result && celeryRes.result.exc_type,
               stack: celeryRes.einfoTEXT,
@@ -286,13 +286,13 @@ exports.publish = function(req, res, next) {
           }
 
         } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code.', {
+          return asyncCallback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code', {
             id   : extraInfo.id,
             etype: celeryRes.result && celeryRes.result.exc_type,
           }));
 
         } else if (celeryRes.retval.stack) {
-          return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code.', {
+          return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code', {
             id       : extraInfo.id,
             etype    : celeryRes.result && celeryRes.result.exc_type,
             stack    : celeryRes.retval.stack,
@@ -310,7 +310,7 @@ exports.publish = function(req, res, next) {
           if (!funcNameMap[name]) {
             funcNameMap[name] = true;
           } else {
-            return asyncCallback(new E('EClientDuplicated', 'Found duplicated func names in script.', {
+            return asyncCallback(new E('EClientDuplicated', 'Found duplicated func names in script', {
               funcName: name,
             }));
           }

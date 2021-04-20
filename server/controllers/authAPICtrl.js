@@ -28,7 +28,7 @@ exports.signIn = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (!dbRes) {
-          return asyncCallback(new E('EUserPassword', 'Invalid username or password.'));
+          return asyncCallback(new E('EUserPassword', 'Invalid username or password'));
         }
 
         // Prepare to check
@@ -38,14 +38,14 @@ exports.signIn = function(req, res, next) {
             dbUser.id, password, CONFIG.SECRET);
 
         if (dbUser.isDisabled) {
-          return asyncCallback(new E('EUserDisabled', 'Current user has been disabled.'));
+          return asyncCallback(new E('EUserDisabled', 'Current user has been disabled'));
         }
 
         if (dbUser.passwordHash !== passwordHash) {
           res.locals.logger.debug('Computed password hash: {0}', passwordHash);
           res.locals.logger.debug('Expected password hash: {0}', dbUser.passwordHash);
 
-          return asyncCallback(new E('EUserPassword', 'Invalid username or password.'));
+          return asyncCallback(new E('EUserPassword', 'Invalid username or password'));
         }
 
         delete dbUser.passwordHash;
@@ -121,11 +121,11 @@ exports.changePassword = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (!dbRes) {
-          return asyncCallback(new E('EBizBadData', 'Current user does not exists.'));
+          return asyncCallback(new E('EBizBadData', 'Current user does not exists'));
         }
 
         if (oldPasswordHash !== dbRes.passwordHash) {
-          return asyncCallback(new E('EUserPassword', 'Invalid old password.'));
+          return asyncCallback(new E('EUserPassword', 'Invalid old password'));
         }
 
         return asyncCallback();

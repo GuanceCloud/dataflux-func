@@ -26,7 +26,7 @@ exports.createGetCaptchaHandler = function createGetCaptchaHandler(category) {
     var captchaToken = req.query.captchaToken;
 
     if (toolkit.isNullOrWhiteSpace(captchaToken)) {
-      return next(new E('EClientBadRequest', 'Invalid captcha token.', {
+      return next(new E('EClientBadRequest', 'Invalid captcha token', {
         captchaCategory: captchaCategory,
         captchaToken   : captchaToken,
       }));
@@ -44,7 +44,7 @@ exports.createGetCaptchaHandler = function createGetCaptchaHandler(category) {
           if (err) return asyncCallback(err);
 
           if (cacheRes) {
-            return asyncCallback(new E('EUserCaptcha', 'This captcha token is already used.', {
+            return asyncCallback(new E('EUserCaptcha', 'This captcha token is already used', {
               captchaCategory: captchaCategory,
               captchaToken   : captchaToken,
             }));

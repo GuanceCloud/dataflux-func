@@ -73,7 +73,7 @@ exports.workerImageInfo = function(req, res, next) {
       return res.locals.sendJSON(ret);
 
     } else {
-      return next(new E('ESysAsyncTaskFailed', 'Worker no response.'));
+      return next(new E('ESysAsyncTaskFailed', 'Worker no response'));
     }
   });
 };

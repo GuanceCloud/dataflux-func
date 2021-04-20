@@ -19,9 +19,9 @@ variables:
   PROJECT     : dataflux-func
   FUNC_PKG_URL: https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
 
-# SaaS开发
+# 开发版发布
 #   主要用于驻云SaaS版开发
-buildDev:
+dev:
   stage: build
   only:
     - dev
@@ -38,29 +38,13 @@ buildDev:
   tags:
     - middleware
 
-# SaaS预发/生产版
-#   主要用于驻云SaaS版预发/生产环境
-buildPreRelease:
-  stage: build
-  only:
-    - /^pre_\d+_\d+$/     # 如：pre_20190101_01
-    - /^release_\d+_\d+$/ # 如：release_20190101_01
-  script:
-    - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} .
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
-    - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
-  tags:
-    - middleware
-
-# 公开发布版/携带版
-#   主要用于独立安装
-buildWithPub:
+# 正式发布
+#   版本号自动拆分推送为 "x", "x.y", "x.y.z", "latest"
+release:
   stage: build
   only:
     - /^\d+\.\d+\.\d+$/      # 如：1.2.3
-    - /^\d+\.\d+\.\d+rc\d+$/ # 如：1.2.3rc1
+    - /^\d+\.\d+\.\d+rc\d+$/ # 如：1.2.3rc4
   script:
     - python echo-image-info.py > image-info.json
     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
@@ -89,6 +73,22 @@ buildWithPub:
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/${IMAGE_GZIP_FILE}           -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+  tags:
+    - middleware
+
+# DataFlux同捆发布
+#   主要用于驻云SaaS版预发/生产环境
+DataFluxBundle:
+  stage: build
+  only:
+    - /^pre_\d+_\d+$/     # 如：pre_20190101_01
+    - /^release_\d+_\d+$/ # 如：release_20190101_01
+  script:
+    - python echo-image-info.py > image-info.json
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg # 下载内置库
+    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} .
+    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
+    - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
   tags:
     - middleware
 

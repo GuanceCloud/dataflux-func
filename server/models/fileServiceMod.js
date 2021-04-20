@@ -3,7 +3,8 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
+var async   = require('async');
+var shortid = require('shortid');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -13,17 +14,18 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'user',
-  entityName : 'user',
-  tableName  : 'wat_main_user',
-  alias      : 'u',
+  displayName: 'file service',
+  entityName : 'fileService',
+  tableName  : 'biz_main_file_service',
+  alias      : 'fsvc',
 
   objectFields: {
-    markers         : 'commaArray',
-    roles           : 'commaArray',
-    customPrivileges: 'commaArray',
-    isDisabled      : 'boolean',
+    isDisabled: 'boolean',
   },
+
+  defaultOrders: [
+    {field: 'fsvc.seq', method: 'DESC'},
+  ],
 };
 
 exports.createCRUDHandler = function() {
@@ -36,24 +38,18 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
+EntityModel.prototype.genDataId = function() {
+  return toolkit.strf('{0}-{1}', this.alias, shortid.generate());
+};
+
 EntityModel.prototype.list = function(options, callback) {
   options = options || {};
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   u.seq');
-  sql.append('  ,u.id');
-  sql.append('  ,u.username');
-  sql.append('  ,u.name');
-  sql.append('  ,u.mobile');
-  sql.append('  ,u.markers');
-  sql.append('  ,u.roles');
-  sql.append('  ,u.customPrivileges');
-  sql.append('  ,u.isDisabled');
-  sql.append('  ,u.createTime');
-  sql.append('  ,u.updateTime');
+  sql.append('   fsvc.*');
 
-  sql.append('FROM wat_main_user AS u');
+  sql.append('FROM biz_main_file_service AS fsvc');
 
   options.baseSQL = sql.toString();
 
@@ -74,13 +70,6 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
-  data.id = this.genDataId();
-
-  // Create passwordHash
-  data.passwordHash = toolkit.getSaltedPasswordHash(
-      data.id, data.password, CONFIG.SECRET);
-  delete data.password;
-
   return this._add(data, callback);
 };
 
@@ -98,29 +87,19 @@ EntityModel.prototype.modify = function(id, data, callback) {
     }
   }
 
-  if (!toolkit.isNothing(data.password)) {
-    // Get new password hash when changing password
-    data.passwordHash = toolkit.getSaltedPasswordHash(
-        id, data.password, CONFIG.SECRET);
-    delete data.password;
-  }
-
   return this._modify(id, data, callback);
 };
 
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if (Array.isArray(data.markers)) {
-    data.markers = data.markers.join(',');
-  }
-
-  if (Array.isArray(data.roles)) {
-    data.roles = data.roles.join(',');
-  }
-
-  if (Array.isArray(data.customPrivileges)) {
-    data.customPrivileges = data.customPrivileges.join(',');
+  if ('root' in data) {
+    if (toolkit.startsWith(data.root, '/')) {
+      data.root = data.root.slice(1);
+    }
+    if (!toolkit.endsWith(data.root, '/')) {
+      data.root = data.root + '/';
+    }
   }
 
   return data;

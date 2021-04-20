@@ -72,7 +72,7 @@
           </el-input>
           <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
           <InfoBlock v-if="apiBodyExample && apiBodyExample.indexOf('FROM_PARAMETER') >= 0" type="info" title="&quot;FROM_PARAMETER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
-          <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外自定义的参数"></InfoBlock>
+          <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
         </el-col>
         <el-col :span="2">
           <CopyButton :content="apiBodyExample"></CopyButton>
@@ -83,26 +83,48 @@
         Body内容填写存在错误，正确填写后将展示示例
       </span>
       <div v-else>
-        <template v-if="showPostExample">
-          <el-divider content-position="left">POST 方式请求</el-divider>
+        <template v-if="showGetExampleSimplified">
+          <el-divider content-position="left">GET 简化形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
-              <el-input
-                type="textarea"
-                readonly
-                autosize
-                resize="none"
-                :value="apiCallByCurlExample">
-              </el-input>
+              <el-link type="primary" :href="apiURLWithQueryExample_simplified" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_simplified"></code></el-link>
+              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample"></CopyButton>
+              <CopyButton :content="apiURLWithQueryExample_simplified"></CopyButton>
+            </el-col>
+          </el-row>
+        </template>
+
+        <template v-if="showGetExample">
+          <el-divider content-position="left">GET 标准形式请求</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="22">
+              <el-link type="primary" :href="apiURLWithQueryExample" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText"></code></el-link>
+              <InfoBlock type="info" title="kwargs 参数为 POST 方式中对 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串"></InfoBlock>
+              <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))"></InfoBlock>
+            </el-col>
+            <el-col :span="2">
+              <CopyButton :content="apiURLWithQueryExample"></CopyButton>
+            </el-col>
+          </el-row>
+        </template>
+
+        <template v-if="showGetExampleFlattened">
+          <el-divider content-position="left">GET 扁平形式请求</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="22">
+              <el-link type="primary" :href="apiURLWithQueryExample_flattened" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_flattened"></code></el-link>
+              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
+            </el-col>
+            <el-col :span="2">
+              <CopyButton :content="apiURLWithQueryExample_flattened"></CopyButton>
             </el-col>
           </el-row>
         </template>
 
         <template v-if="showPostExampleSimplified">
-          <el-divider content-position="left">POST 方式请求（简化形式）</el-divider>
+          <el-divider content-position="left">POST 简化形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input
@@ -112,7 +134,7 @@
                 resize="none"
                 :value="apiCallByCurlExample_simplified">
               </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持options参数"></InfoBlock>
+              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数。支持 multipart/form-data 类型文件上传"></InfoBlock>
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiCallByCurlExample_simplified"></CopyButton>
@@ -120,8 +142,27 @@
           </el-row>
         </template>
 
+        <template v-if="showPostExample">
+          <el-divider content-position="left">POST 标准形式请求</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="22">
+              <el-input
+                type="textarea"
+                readonly
+                autosize
+                resize="none"
+                :value="apiCallByCurlExample">
+              </el-input>
+              <InfoBlock type="info" title="此方式不支持文件上传"></InfoBlock>
+            </el-col>
+            <el-col :span="2">
+              <CopyButton :content="apiCallByCurlExample"></CopyButton>
+            </el-col>
+          </el-row>
+        </template>
+
         <template v-if="showPostExampleFlattened">
-          <el-divider content-position="left">POST 方式请求（扁平形式）</el-divider>
+          <el-divider content-position="left">POST 扁平形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input
@@ -131,50 +172,10 @@
                 resize="none"
                 :value="apiCallByCurlExample_flattened">
               </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
+              <InfoBlock type="info" title="此方式参数值只支持字符串。支持 multipart/form-data 类型文件上传"></InfoBlock>
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiCallByCurlExample_flattened"></CopyButton>
-            </el-col>
-          </el-row>
-        </template>
-
-        <template v-if="showGetExample">
-          <el-divider content-position="left">GET 方式请求</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText"></code></el-link>
-              <InfoBlock type="info" title="kwargs 参数为POST方式中对kwargs 参数进行JSON 序列化，再进行URL 编码后的字符串"></InfoBlock>
-              <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))"></InfoBlock>
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample"></CopyButton>
-            </el-col>
-          </el-row>
-        </template>
-
-        <template v-if="showGetExampleSimplified">
-          <el-divider content-position="left">GET 方式请求（简化形式）</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample_simplified" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_simplified"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持options 参数"></InfoBlock>
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample_simplified"></CopyButton>
-            </el-col>
-          </el-row>
-        </template>
-
-        <template v-if="showGetExampleFlattened">
-          <el-divider content-position="left">GET 方式请求（扁平形式）</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample_flattened" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_flattened"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample_flattened"></CopyButton>
             </el-col>
           </el-row>
         </template>
@@ -273,7 +274,7 @@ export default {
       this.show = true;
     },
 
-    getAPIURLWithQueryExample(format, asText) {
+    getAPIURLWithQueryExample(format, asText, decodeURL) {
       if (!this.apiBody) return null;
 
       format = format || 'normal';
@@ -313,6 +314,10 @@ export default {
 
       if (asText) {
         url = this.prettyURLForHTML(url);
+      }
+
+      if (decodeURL) {
+        url = decodeURIComponent(url);
       }
       return url;
     },
@@ -399,13 +404,13 @@ export default {
       return this.getAPIURLWithQueryExample('simplified');
     },
     apiURLWithQueryExampleText() {
-      return this.getAPIURLWithQueryExample('normal', true);
+      return this.getAPIURLWithQueryExample('normal', true, true);
     },
     apiURLWithQueryExampleText_simplified() {
-      return this.getAPIURLWithQueryExample('simplified', true);
+      return this.getAPIURLWithQueryExample('simplified', true, true);
     },
     apiURLWithQueryExampleText_flattened() {
-      return this.getAPIURLWithQueryExample('flattened', true);
+      return this.getAPIURLWithQueryExample('flattened', true, true);
     },
 
     apiCallByCurlExample() {

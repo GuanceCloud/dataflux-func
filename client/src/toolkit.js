@@ -57,6 +57,9 @@ import moment from 'moment'
 // DIFF
 import { diffTrimmedLines } from 'diff'
 
+// Useragent
+import Bowser from "bowser"
+
 // DataFlux Func hint
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
@@ -102,17 +105,6 @@ export function getBaseURL() {
   return baseURL;
 };
 
-export function getBrowserName() {
-  var userAgent = navigator.userAgent.toLowerCase();
-  var isOpera = userAgent.indexOf('opera') > -1;
-  if (isOpera) return 'opera';
-  else if (userAgent.indexOf('firefox') > -1) return 'firefox';
-  else if (userAgent.indexOf('chrome') > -1)  return 'chrome';
-  else if (userAgent.indexOf('safari') > -1)  return 'safari';
-  else if (userAgent.indexOf('compatible') > -1 && userAgent.indexOf('msie') > -1 && !isOpera) return 'internet-explorer';
-  return null;
-};
-
 export function autoScrollTable(y) {
   if (y && vm.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
     // 滚动到指定高度
@@ -131,8 +123,11 @@ export function getTableScrollY() {
   return el.scrollTop;
 }
 
-export function isChrome() {
-  return navigator.userAgent.indexOf('Chrome') >= 0;
+export function getBrowser() {
+  return Bowser.getParser(window.navigator.userAgent).getBrowserName();
+}
+export function getEngine() {
+  return Bowser.getParser(window.navigator.userAgent).getEngineName();
 }
 
 export function isMac() {
@@ -335,6 +330,17 @@ export function limitLines(text, lineLimit, columnLimit) {
   return lines.join('\n');
 };
 
+export function numberPlus(n, limit) {
+  n     = n || 0;
+  limit = limit || 999;
+
+  if (n > limit) {
+    return `${limit}+`;
+  } else {
+    return n;
+  }
+};
+
 export function jsonFind(j, path, safe) {
   if (j === null || 'undefined' === typeof j) {
     if (safe) {
@@ -518,10 +524,17 @@ export function formatURL(pathPattern, options) {
 
   let baseURL = options.baseURL || '';
   if (baseURL === true) {
-    baseURL = process.env.VUE_APP_SERVER_BASE_URL;
+    // baseURL = process.env.VUE_APP_SERVER_BASE_URL;
+    baseURL = getBaseURL();
   }
   if (baseURL && baseURL.slice(-1) === '/') {
     baseURL = baseURL.slice(0, -1);
+  }
+
+  if (options.auth) {
+    options.query = options.query || {};
+    let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
+    options.query[authQuery] = store.state.xAuthToken;
   }
 
   let queryString = '';
@@ -607,6 +620,8 @@ export function isExpired(dt) {
 };
 
 export function getDateTimeString(dt, pattern) {
+  dt = dt || new Date();
+
   let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
   let inputTime = moment.utc(dt).locale(store.getters.uiLocale).utcOffset(utcOffset);
 
@@ -775,7 +790,7 @@ function _logCallingAPI(axiosOpt, apiResp) {
 
     // 输出完整API返回数据
     console.info('        Data', respData);
-    if (respData.data && Array.isArray(respData.data) && isChrome() && 'function' === typeof console.table) {
+    if (respData.data && Array.isArray(respData.data) && getBrowser() === 'Chrome' && 'function' === typeof console.table) {
       console.table(respData.data);
     }
 
@@ -858,7 +873,7 @@ export async function callAPI(method, pathPattern, options) {
       } else if (alert.showError) {
         let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
                     ? alert.reasonMap[apiResp.data.reason]
-                    : apiResp.data.message;
+                    : app.$t(apiResp.data.message);
         if (apiResp.data.detail && apiResp.data.detail.message) {
           message += `<br><small>${apiResp.data.detail.message}<small>`;
         }
@@ -960,7 +975,7 @@ export async function callAPI_allPage(pathPattern, options) {
           setTimeout(() => {
             let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
                         ? alert.reasonMap[apiResp.data.reason]
-                        : apiResp.data.message;
+                        : app.$t(apiResp.data.message);
             if (apiResp.data.detail && apiResp.data.detail.message) {
               message += `<br><small>${apiResp.data.detail.message}<small>`;
             }
@@ -1020,17 +1035,9 @@ export async function callAPI_allPage(pathPattern, options) {
   return apiResp.data;
 };
 
-export function authedLink(url) {
-  let urlPath   = url.split('?')[0];
-  let nextQuery = getQuery(url);
+export function isPageFiltered(options) {
+  options = options || {};
 
-  let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
-  nextQuery[authQuery] = store.state.xAuthToken;
-
-  return formatURL(urlPath, { query: nextQuery });
-};
-
-export function isPageFiltered(ignoreCases) {
   let filter = router.currentRoute.query.filter;
 
   let listQuery = {};
@@ -1042,13 +1049,13 @@ export function isPageFiltered(ignoreCases) {
     }
   }
 
-  ignoreCases = asArray(ignoreCases) || [];
-  ignoreCases.push({ k: 'pageNumber', v: 1});
-  ignoreCases.forEach(ignoreCase => {
-    if (listQuery[ignoreCase.k] === ignoreCase.v) {
-      delete listQuery[ignoreCase.k];
+  options.ignore = options.ignore || {};
+  options.ignore.pageNumber = 1;
+  for (let k in options.ignore) {
+    if (listQuery[k] === options.ignore[k]) {
+      delete listQuery[k];
     }
-  });
+  }
 
   return !isNothing(listQuery);
 };

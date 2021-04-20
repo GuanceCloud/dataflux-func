@@ -71,7 +71,7 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
     function(asyncCallback) {
       auth.verifyXAuthToken(xAuthToken, function(err, obj) {
         if (err) {
-          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token.');
+          res.locals.reqAuthError = new E('EUserAuth', 'Invalid x-auth-token');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -87,7 +87,7 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired.');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -107,7 +107,7 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
         dbUser = cacheRes;
 
         if (!dbUser) {
-          res.locals.reqAuthError = new E('EUserAuth', 'User is not existed.');
+          res.locals.reqAuthError = new E('EUserAuth', 'User is not existed');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -179,18 +179,18 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
 
   // Check AK
   if (!akNonce) {
-    res.locals.reqAuthError = new E('EUserAuth', 'Access Key nonce is missing.');
+    res.locals.reqAuthError = new E('EUserAuth', 'Access Key nonce is missing');
     return next(res.locals.reqAuthError);
   }
 
   if (!akTimestamp) {
-    res.locals.reqAuthError = new E('EUserAuth', 'Access Key timestamp is missing.');
+    res.locals.reqAuthError = new E('EUserAuth', 'Access Key timestamp is missing');
     return next(res.locals.reqAuthError);
   }
 
   var serverTimestamp = parseInt(Date.now() / 1000);
   if (Math.abs(akTimestamp - serverTimestamp) > CONFIG._WEB_AK_TIMESTAMP_MAX_DIFF) {
-    res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key timestamp.');
+    res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key timestamp');
     return next(res.locals.reqAuthError);
   }
 
@@ -211,7 +211,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key nonce.');
+          res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key nonce');
           return asyncCallback(res.locals.reqAuthError);
         }
 
@@ -272,7 +272,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
         dbUser = dbRes;
 
         if (dbUser.isDisabled) {
-          res.locals.reqAuthError = new E('EUserDisabled', 'Current user has been disabled.')
+          res.locals.reqAuthError = new E('EUserDisabled', 'Current user has been disabled')
           return asyncCallback(res.locals.reqAuthError);
         }
 

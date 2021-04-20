@@ -93,7 +93,8 @@ export default {
         instanceId : window.instanceId,
       });
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
-        if (this.$store.getters.CONFIG('MODE') === 'dev') {
+        if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
+          this.prevReportAndCheckClientConflictResData = resData;
           console.log(`Socket.io[socketio.reportAndCheckClientConflict.ack] ${resData}`);
         }
         resData = JSON.parse(resData);
@@ -155,6 +156,8 @@ export default {
   data() {
     return {
       fullscreenLoading: false,
+
+      prevReportAndCheckClientConflictResData: null,
     }
   },
   created() {
@@ -289,13 +292,13 @@ export default {
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
-  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-family: Iosevka,"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
 }
 a {
   text-decoration: none;
 }
 input, textarea, code, pre, pre * {
-  font-family: monospace !important;
+  font-family: Iosevka !important;
 }
 html, body {
   height: 100%;
@@ -504,7 +507,7 @@ kbd {
   color: grey;
   padding: 8px 2px;
   top: 50%;
-  left: -2px;
+  left: 0px;
   border-bottom-right-radius: 5px;
   border-top-right-radius: 5px;
   transform: scale(.7, 1);
@@ -537,14 +540,19 @@ content: "\25B2";
 }
 
 /* Element-UI 修正 */
-.list-button .el-link--inner {
+.fix-list-button .el-button {
+  border: none;
+}
+.fix-list-button .el-link {
   font-size: 12px;
   line-height: 1;
   display: inline;
   margin-left: 10px;
-  margin-right: 2px;
 }
-.el-dropdown.list-button {
+.fix-list-button .el-link + .el-button {
+  margin-left: 10px;
+}
+.fix-list-button .el-dropdown {
   margin-left: 10px;
 }
 .el-tag + .el-tag {
@@ -681,5 +689,20 @@ content: "\25B2";
 
 .error-input-shake {
   animation: error-input-shake .65s ease-out 0.2s;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+  background: none;
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-thumb:vertical {
+  background-image: linear-gradient(to top, rgb(255, 102, 0, 0), rgb(255, 102, 0) 40%, rgb(255, 102, 0) 60%, rgb(255, 102, 0, 0));
+}
+::-webkit-scrollbar-track {
+  background: none;
 }
 </style>

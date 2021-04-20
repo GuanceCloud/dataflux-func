@@ -255,6 +255,21 @@ const routes = [
         name: 'file-tool',
         component: () => import('../components/Management/FileTool.vue'),
       },
+      {
+        path: 'file-service-list',
+        name: 'file-service-list',
+        component: () => import('../components/Management/FileServiceList.vue'),
+      },
+      {
+        path: 'file-service-add',
+        name: 'file-service-add',
+        component: () => import('../components/Management/FileServiceSetup.vue'),
+      },
+      {
+        path: 'file-service/:id/setup',
+        name: 'file-service-setup',
+        component: () => import('../components/Management/FileServiceSetup.vue'),
+      },
     ],
   },
   {

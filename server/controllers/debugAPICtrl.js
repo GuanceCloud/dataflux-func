@@ -46,14 +46,14 @@ exports.putTask = function(req, res, next) {
         extraInfo = extraInfo || {};
 
         if (celeryRes.status === 'FAILURE') {
-          return next(new E('ESysAsyncTaskFailed', 'Async task failed.', {
+          return next(new E('ESysAsyncTaskFailed', 'Async task failed', {
             id   : celeryRes.id,
             etype: celeryRes.result && celeryRes.result.exc_type,
             stack: celeryRes.einfoTEXT,
           }));
 
         } else if (extraInfo.status === 'TIMEOUT') {
-          return next(new E('ESysAsyncTaskTimeout', 'Wait async task result timeout, but task is still running. Use task ID to fetch result later.', {
+          return next(new E('ESysAsyncTaskTimeout', 'Wait async task result timeout, but task is still running. Use task ID to fetch result later', {
             id   : extraInfo.id,
             etype: celeryRes.result && celeryRes.result.exc_type,
           }));
