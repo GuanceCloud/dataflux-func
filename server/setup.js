@@ -42,6 +42,8 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   var upgradeInfoPath = path.join(__dirname, '../upgrade-info.yaml')
   UPGRADE_INFO = yaml.load(fs.readFileSync(upgradeInfoPath)).upgradeInfo;
 
+  var callback = null;
+
   if (CONFIG._DISABLE_SETUP) {
     console.log('Installation disabled, skip.');
     return process.exit(0);
@@ -50,13 +52,15 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   if (!CONFIG._IS_INSTALLED) {
     // New setup
     console.log('Start setup guide...')
-    runSetup();
+    callback = runSetup;
 
   } else {
     // Upgrade
     console.log('Start upgrade process...')
-    checkAndRunUpgrade();
+    callback = checkAndRunUpgrade;
   }
+
+  require('./appInit').beforeAppCreate(callback);
 });
 
 function runSetup() {

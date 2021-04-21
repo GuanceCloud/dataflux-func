@@ -13,7 +13,7 @@ var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
 /* compatibility */
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host    : c.host,
     port    : c.port,

@@ -9,4 +9,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run server
-node --expose-gc server/listener.js
+node --expose-gc server/sub.js

@@ -9,7 +9,7 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host    : c.host,
     port    : c.port,

@@ -1,14 +1,15 @@
 'use strict';
 
 /* 3rd-part Modules */
-var mqtt = require('mqtt');
+var mqtt         = require('mqtt');
+var mqttWildcard = require('mqtt-wildcard');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host           : c.host,
     port           : c.port,
@@ -24,27 +25,17 @@ var getConfig = function(c) {
 
 /**
  * @constructor
- * @param  {Object}          [logger=null]
- * @param  {Object}          [config=null]
- * @param  {String|String[]} [topics=null]
+ * @param  {Object} [logger=null]
+ * @param  {Object} [config=null]
  * @return {Object} - MQTT Helper
  */
-var MQTTHelper = function(logger, config, topics) {
+var MQTTHelper = function(logger, config) {
   var self = this;
 
   self.logger = logger || logHelper.createHelper();
 
   self.config = toolkit.noNullOrWhiteSpace(config);
   self.client = mqtt.connect(getConfig(self.config));
-
-  self.topics = topics;
-  self.handlers  = [];
-
-  self.client.on('connect', function() {
-    self.logger.debug('[MQTT] Connected');
-
-    self.sub(self.topics);
-  });
 
   self.client.on('offline', function() {
     self.client.reconnect();
@@ -79,65 +70,44 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
  * @param  {Function}        callback
  * @return {undefined}
  */
-MQTTHelper.prototype.sub = function(topics, options, callback) {
-  callback = toolkit.ensureFn(callback);
-
+MQTTHelper.prototype.sub = function(topic, handler, callback) {
   var self = this;
 
-  var topics = toolkit.asArray(topics);
-  topics = topics.map(function(t) {
-    return t.trim();
-  });
-  topics = topics.filter(function(t) {
-    return !toolkit.isNothing(t);
-  });
+  if (!this.skipLog) {
+    self.logger && self.logger.debug('{0} {1} [{2}]',
+      '[MQTT]',
+      'SUB',
+      topic
+    );
+  }
 
-  if (toolkit.isNothing(topics)) return callback();
+  var matchTopic = topic.trim();
 
-  self.topics = toolkit.noDuplication(self.topics.concat(topics));
+  // MQTTv5 共享订阅
+  if (toolkit.startsWith(matchTopic, '$share/')) {
+    matchTopic = matchTopic.replace(/^\$share\/\w+\//, '');
+  }
+  // EMQX 共享订阅
+  if (toolkit.startsWith(matchTopic, '$queue/')) {
+    matchTopic = matchTopic.replace(/^\$queue\//, '');
+  }
 
-  options = options || {};
-  options.qos = options.qos || 0;
+  self.client.subscribe(topic, function(err) {
+    if (err) return callback && callback(err);
 
-  self.logger.debug(`[MQTT] Subscribe topics ${topics.join(', ')} on Qos=${options.qos}`);
+    self.client.on('message', function(_topic, _message, _packet) {
+      if (!mqttWildcard(_topic, matchTopic)) return;
 
-  self.client.subscribe(topics, options, function(err, granted) {
-    if (err) {
-      self.logger.logError(err);
-      return callback(err);
-    }
+      if (!self.skipLog) {
+        self.logger && self.logger.debug('{0} [{1}] -> `{2}`',
+          '[MQTT]',
+          _topic,
+          _message
+        );
+      }
 
-    granted.forEach(function(g) {
-      self.logger.info(`[MQTT] Subscribed topic ${g.topic} on Qos=${g.qos}`);
+      return handler(_topic, _message, _packet);
     });
-
-    return callback();
-  });
-};
-
-/**
- * Handle message
- * @param  {Function} handler
- * @return {undefined}
- */
-MQTTHelper.prototype.handle = function(handler) {
-  var self = this;
-
-  if ('function' !== typeof handler) {
-    return self.logger.error(`[MQTT] Handler is not a function, got ${typeof handler}`);
-  }
-  if (self.handlers.indexOf(handler) >= 0) {
-    return self.logger.debug(`[MQTT] Already added handler, skip...`);
-  }
-
-  self.logger.debug(`[MQTT] Add handler`);
-
-  self.handlers.push(handler);
-
-  self.client.on('message', function(topic, message, packet) {
-    self.logger.debug(`[MQTT] Received message from ${topic}`);
-
-    return handler(topic, message, packet);
   });
 };
 

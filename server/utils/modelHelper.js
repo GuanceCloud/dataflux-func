@@ -386,8 +386,8 @@ var Model = function(locals, options) {
   self.objectFields = toolkit.jsonCopy(options.objectFields || {});
 
   // DB
-  self.db             = locals.db;
-  self.uniqueKeyMap   = options.uniqueKeyMap || {};
+  self.db           = locals.db;
+  self.uniqueKeyMap = options.uniqueKeyMap || {};
 
   // Cache DB
   self.cacheDB = locals.cacheDB;

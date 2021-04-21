@@ -30,7 +30,7 @@ var jsonFieldCompatible = function(field) {
   return jsonField;
 };
 
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host           : c.host,
     port           : c.port,

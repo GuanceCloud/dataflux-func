@@ -117,10 +117,11 @@ export default {
         debugSupported: true,
         sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('GET', 'some_key')`,
         configFields: {
-          host    : { default: null, isRequired: true },
-          port    : { default: 6379 },
-          database: { default: '0', isRequired: true },
-          password: { default: null },
+          host         : { default: null, isRequired: true },
+          port         : { default: 6379 },
+          database     : { default: '0', isRequired: true },
+          password     : { default: null },
+          topicHandlers: { default: [{ topic: 'TOPIC', funcId: null }] },
         },
       },
       {

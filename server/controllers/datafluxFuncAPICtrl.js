@@ -36,10 +36,9 @@ var dataProcessorTaskResultMod = require('../models/dataProcessorTaskResultMod')
 var operationRecordMod         = require('../models/operationRecordMod');
 var fileServiceMod             = require('../models/fileServiceMod');
 
-var funcAPICtrl = require('./funcAPICtrl');
-
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
-var dataway = require('./dataway');
+var funcAPICtrl  = require('./funcAPICtrl');
+var dataway      = require('./dataway');
 
 var AUTH_LINK_PREFIX = authLinkMod.TABLE_OPTIONS.alias + '-';
 var BATCH_PREFIX     = batchMod.TABLE_OPTIONS.alias    + '-';
@@ -2537,5 +2536,6 @@ exports.fileService = function(req, res, next) {
 };
 
 /* 允许其他模块调用 */
+exports.getFuncById                      = _getFuncById;
 exports.createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
 exports.callFuncRunner                   = _callFuncRunner;

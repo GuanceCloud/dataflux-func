@@ -1,8 +1,9 @@
 'use strict';
 
 /* 3rd-party Modules */
-var redis = require('redis');
-var async = require('async');
+var redis      = require('redis');
+var async      = require('async');
+var micromatch = require('micromatch');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
@@ -28,7 +29,7 @@ function retryStrategy(options) {
   return Math.min(options.attempt * 100, 3000);
 }
 
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host    : c.host,
     port    : c.port,
@@ -58,9 +59,9 @@ var RedisHelper = function(logger, config) {
   if (config) {
     this.config = toolkit.noNullOrWhiteSpace(config);
 
-    this.config.tsMaxAge         = config.tsMaxAge    || 3600 * 24;
-    this.config.tsMaxPeriod      = config.tsMaxPeriod || 3600 * 24 * 3;
-    this.config.tsMaxLength      = config.tsMaxLength || 60 * 24 * 3;
+    this.config.tsMaxAge       = config.tsMaxAge    || 3600 * 24;
+    this.config.tsMaxPeriod    = config.tsMaxPeriod || 3600 * 24 * 3;
+    this.config.tsMaxLength    = config.tsMaxLength || 60 * 24 * 3;
     this.config.retry_strategy = retryStrategy;
 
     this.client = redis.createClient(getConfig(this.config));
@@ -544,18 +545,18 @@ RedisHelper.prototype.sub = function(topic, handler, callback) {
   self.subClient.psubscribe(topic, function(err) {
     if (err) return callback && callback(err);
 
-    self.subClient.on('pmessage', function(_pattern, _topic, _message) {
-      if (_pattern !== topic) return;
+    self.subClient.on('pmessage', function(_pattern, _channel, _message) {
+      if (!micromatch.isMatch(_channel, topic)) return;
 
       if (!self.skipLog) {
         self.logger && self.logger.debug('{0} [{1}] -> `{2}`',
           '[REDIS]',
-          _topic,
+          _channel,
           _message
         );
       }
 
-      handler(_topic, _message);
+      handler(_channel, _message);
 
       return callback && callback();
     });
@@ -867,6 +868,17 @@ RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
     if (err) return asyncCallback(err);
     return callback(err, tsDataMap);
   });
+};
+
+RedisHelper.prototype.end = function() {
+  if (this.client) {
+    this.client.end(true);
+    this.client = null;
+  }
+  if (this.subClient) {
+    this.subClient.end(true);
+    this.subClient = null;
+  }
 };
 
 exports.RedisHelper = RedisHelper;

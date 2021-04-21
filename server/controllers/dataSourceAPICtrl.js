@@ -101,7 +101,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     config.database = config.database || 0;
 
     var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'password'];
+    var OPTIONAL_FIELDS = ['port', 'password', 'topicHandlers'];
 
     return _checkDataSourceConfig(locals, 'redis', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
