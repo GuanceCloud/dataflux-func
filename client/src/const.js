@@ -121,7 +121,7 @@ export default {
           port         : { default: 6379 },
           database     : { default: '0', isRequired: true },
           password     : { default: null },
-          topicHandlers: { default: [{ topic: 'TOPIC', funcId: null }] },
+          topicHandlers: { default: [] },
         },
       },
       {

@@ -871,6 +871,8 @@ RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
 };
 
 RedisHelper.prototype.end = function() {
+  this.logger.info(`[REDIS] End`);
+
   if (this.client) {
     this.client.end(true);
     this.client = null;

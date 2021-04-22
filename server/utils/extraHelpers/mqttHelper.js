@@ -64,10 +64,10 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
 /**
  * Subscribe from topic
  *
- * @param  {String|String[]} topics
- * @param  {Object}          options
- * @param  {Integer}         [options.qos=0]
- * @param  {Function}        callback
+ * @param  {String}   topic
+ * @param  {Object}   options
+ * @param  {Integer}  [options.qos=0]
+ * @param  {Function} callback
  * @return {undefined}
  */
 MQTTHelper.prototype.sub = function(topic, handler, callback) {
@@ -114,55 +114,20 @@ MQTTHelper.prototype.sub = function(topic, handler, callback) {
 /**
  * Unsubscribe from topic
  *
- * @param  {String|String[]} topics
- * @param  {Function}        callback
+ * @param  {String}   topic
+ * @param  {Function} callback
  * @return {undefined}
  */
-MQTTHelper.prototype.unsub = function(topics, callback) {
-  callback = toolkit.ensureFn(callback);
+MQTTHelper.prototype.unsub = function(topic, callback) {
+  if (!this.skipLog) {
+    this.logger && this.logger.debug('{0} {1} `{2}` -> <MESSAGE>',
+      '[MQTT]',
+      'UNSUB',
+      topic
+    );
+  }
 
-  var self = this;
-
-  var topics = toolkit.asArray(topics);
-  topics = topics.map(function(t) {
-    return t.trim();
-  });
-  topics = topics.filter(function(t) {
-    return !toolkit.isNothing(t);
-  });
-
-  if (toolkit.isNothing(topics)) return callback();
-
-  var topicStr = topic.join(',');
-  self.logger.info(`[MQTT] Unsubscribe topic ${topicStr}`);
-
-  topics.forEach(function(t) {
-    var index = self.topics.indexOf(t);
-    if (index >= 0) {
-      self.topics.splice(index, 1);
-    }
-  });
-
-  self.client.unsubscribe(topics, callback);
-};
-
-/**
- * Unsubscribe all topics
- *
- * @param  {Function}  callback
- * @return {undefined}
- */
-MQTTHelper.prototype.unsubAll = function(callback) {
-  callback = toolkit.ensureFn(callback);
-
-  if (toolkit.isNothing(this.topics)) return callback();
-
-  var topicStr = this.topics.join(',');
-  this.logger.info(`[MQTT] Unsubscribe ALL topic ${topicStr}`);
-
-  this.topics = [];
-
-  this.client.unsubscribe(this.topics, callback);
+  this.client.unsubscribe(topic, callback);
 };
 
 /**
@@ -171,13 +136,9 @@ MQTTHelper.prototype.unsubAll = function(callback) {
  * @return {Undefined}
  */
 MQTTHelper.prototype.end = function(callback) {
-  var self = this;
+  this.logger.info(`[MQTT] End`);
 
-  self.logger.info(`[MQTT] End`);
-
-  self.client.unsubscribe(self.topics, function() {
-    self.client.end(false, callback);
-  });
+  this.client.end(true, callback);
 };
 
 exports.MQTTHelper = MQTTHelper;

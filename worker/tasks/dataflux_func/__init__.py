@@ -798,12 +798,12 @@ class FuncDataSourceHelper(object):
         # 判断是否需要刷新数据源
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-        refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or 0)
 
         if refresh_time > local_time:
-            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    refresh_time, local_time, refresh_time - local_time))
+            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
+                    data_source_id, helper_target_key, refresh_time, local_time, refresh_time - local_time))
 
             DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
             DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
@@ -855,8 +855,8 @@ class FuncDataSourceHelper(object):
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-        self.__task.cache_db.set(cache_key, int(time.time() * 1000))
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        self.__task.cache_db.hset(cache_key, data_source_id, int(time.time() * 1000))
 
     def list(self):
         sql = '''
