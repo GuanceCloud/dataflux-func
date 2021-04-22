@@ -108,6 +108,10 @@ function createSubscriber(dataSourceId) {
               },
               // 生成函数调用配置
               function(asyncCallback) {
+                topic   = topic.toString();
+                message =
+                .toString();
+
                 var _kwargs  = { topic: topic, message: message, packet: packet };
                 var _options = { originId: topic, unfold: true };
                 datafluxFuncAPICtrl.createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
