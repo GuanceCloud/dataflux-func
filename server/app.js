@@ -378,5 +378,8 @@ function startApplication() {
 
     // Non-request code here...
     require('./appInit').afterAppCreated(app, server);
+
+    // Sub client
+    require('./sub').runListener(app);
   });
 }

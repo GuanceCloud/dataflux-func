@@ -125,17 +125,6 @@ services:
       - "8088:8088"
     command: ./run-server.sh
 
-  sub:
-    image: <DATAFLUX_FUNC_IMAGE>
-    labels:
-      - sub
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    networks:
-      - datafluxfunc
-      - default
-    command: ./run-sub.sh
-
 networks:
   default:
     external:

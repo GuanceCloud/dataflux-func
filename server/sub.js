@@ -7,49 +7,28 @@ var path = require('path');
 var async = require('async');
 
 /* Project Modules */
-var toolkit = require('./utils/toolkit');
+var E           = require('./utils/serverError');
+var CONFIG      = require('./utils/yamlResources').get('CONFIG');
+var toolkit     = require('./utils/toolkit');
+var logHelper   = require('./utils/logHelper');
+var mysqlHelper = require('./utils/extraHelpers/mysqlHelper');
+var redisHelper = require('./utils/extraHelpers/redisHelper');
+var mqttHelper  = require('./utils/extraHelpers/mqttHelper');
 
-/* Load YAML resources */
-var yamlResources = require('./utils/yamlResources');
-var CONFIG = null;
+var dataSourceMod       = require('./models/dataSourceMod');
+var datafluxFuncAPICtrl = require('./controllers/datafluxFuncAPICtrl');
 
+/* Configure */
 var DATA_SOURCE_CHECK_INTERVAL = 3 * 1000;
+var SUB_CLIENT_LOCK_EXPIRES    = 30;
 
 var CLIENT_MAP         = {};
 var CLIENT_REFRESH_MAP = {};
 
-// Things should load AFTER config is loaded.
-var logHelper   = null;
-var mysqlHelper = null;
-var redisHelper = null;
-
-var dataSourceMod       = null;
-var datafluxFuncAPICtrl = null;
-
-var DATA_SOURCE_HELPER_MAP = null;
-
-// Load extra YAML resources
-yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config, _userConfig) {
-  if (err) throw err;
-
-  CONFIG = _config;
-
-  logHelper   = require('./utils/logHelper');
-  mysqlHelper = require('./utils/extraHelpers/mysqlHelper');
-  redisHelper = require('./utils/extraHelpers/redisHelper');
-
-  dataSourceMod       = require('./models/dataSourceMod');
-  datafluxFuncAPICtrl = require('./controllers/datafluxFuncAPICtrl');
-
-  DATA_SOURCE_HELPER_MAP = {
-    redis: require('./utils/extraHelpers/redisHelper'),
-    mqtt : require('./utils/extraHelpers/mqttHelper'),
-  };
-
-  console.log('Start subscriber...');
-
-  require('./appInit').beforeAppCreate(runListener);
-});
+var DATA_SOURCE_HELPER_MAP = {
+  redis: redisHelper,
+  mqtt : mqttHelper,
+};
 
 function createMessageHandler(locals, handlerFuncId) {
   return function(topic, message, packet) {
@@ -95,22 +74,15 @@ function createMessageHandler(locals, handlerFuncId) {
       },
     ], function(err) {
       if (err) return locals.logger.logError(err);
-      locals.logger.debug(toolkit.strf('TOPIC: {0} -> FUNC: {1}', topic, func.id));
+      locals.logger.debug('TOPIC: `{0}` -> FUNC: `{1}`', topic, func.id);
     });
   }
 };
 
-function runListener() {
-  // 初始化locals
-  var locals = toolkit.createFakeLocals();
-
-  locals.logger = logHelper.createHelper();
-
-  locals.db = mysqlHelper.createHelper();
-  locals.db.skipLog = true;
-
-  locals.cacheDB = redisHelper.createHelper();
-  locals.cacheDB.skipLog = true;
+exports.runListener = function runListener(app) {
+  var lockKey   = toolkit.getCacheKey('lock', 'subClient');
+  var lockValue = toolkit.genRandString();
+  app.locals.logger.info('Start subscriber... Lock: `{0}`', lockValue);
 
   // 定期检查
   function dataSourceChecker() {
@@ -118,9 +90,26 @@ function runListener() {
     var dataSourceMap  = {};
     var refreshTimeMap = {};
     async.series([
+      // 上锁
+      function(asyncCallback) {
+        app.locals.cacheDB.lock(lockKey, lockValue, SUB_CLIENT_LOCK_EXPIRES, function() {
+          // 无法上锁可能为：
+          //  1. 其他进程已经上锁
+          //  2. 本进程已经上锁
+          // 因此此处忽略上错失败错误
+          return asyncCallback();
+        });
+      },
+      // 续租锁
+      function(asyncCallback) {
+        app.locals.cacheDB.extendLockTime(lockKey, lockValue, SUB_CLIENT_LOCK_EXPIRES, function(err) {
+          // 成功续租锁，则锁一定为本进程所获得，进入下一步
+          if (!err) return asyncCallback();
+        });
+      },
       // 获取数据源列表
       function(asyncCallback) {
-        var dataSourceModel = dataSourceMod.createModel(locals);
+        var dataSourceModel = dataSourceMod.createModel(app.locals);
 
         var opt = {
           fields: ['dsrc.id', 'dsrc.type', 'dsrc.configJSON'],
@@ -141,7 +130,7 @@ function runListener() {
       // 获取数据源刷新时间
       function(asyncCallback) {
         var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestampMap');
-        locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+        app.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
           for (var dataSourceId in cacheRes) {
@@ -168,15 +157,15 @@ function runListener() {
           var refreshTime = refreshTimeMap[dataSourceId]     || 0;
 
           if (refreshTime > localTime) {
-            locals.logger.debug(toolkit.strf('CLIENT refreshed: `{0}` remote=`{1}`, local=`{2}`, diff=`{3}`',
-                dataSourceId, refreshTime, localTime, refreshTime - localTime));
+            app.locals.logger.debug('CLIENT refreshed: `{0}` remote=`{1}`, local=`{2}`, diff=`{3}`',
+                dataSourceId, refreshTime, localTime, refreshTime - localTime);
 
             if (CLIENT_MAP[dataSourceId]) {
               CLIENT_MAP[dataSourceId].end();
               delete CLIENT_MAP[dataSourceId];
               delete CLIENT_REFRESH_MAP[dataSourceId];
 
-              locals.logger.debug(toolkit.strf('CLIENT removed: `{0}`', dataSourceId));
+              app.locals.logger.debug('CLIENT removed: `{0}`', dataSourceId);
             }
           }
 
@@ -186,24 +175,24 @@ function runListener() {
           }
 
           // 生成客户端
-          client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(locals.logger, d.configJSON);
+          client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(app.locals.logger, d.configJSON);
 
           // 订阅主题
           d.configJSON.topicHandlers.forEach(function(th) {
-            client.sub(th.topic, createMessageHandler(locals, th.funcId));
+            client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
           });
 
           // 加入新客户端
           CLIENT_MAP[d.id]         = client;
           CLIENT_REFRESH_MAP[d.id] = refreshTimeMap[d.id] || 0;
 
-          locals.logger.debug(toolkit.strf('CLIENT created: `{0}`', dataSourceId));
+          app.locals.logger.debug('CLIENT created: `{0}`', dataSourceId);
           return eachCallback();
 
         }, asyncCallback);
       },
     ], function(err) {
-      if (err) return locals.logger.logError(err);
+      if (err) return app.locals.logger.logError(err);
     });
   };
   var dataSourceChecker = setInterval(dataSourceChecker, DATA_SOURCE_CHECK_INTERVAL);
