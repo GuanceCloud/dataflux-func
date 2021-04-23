@@ -17,3 +17,10 @@ upgradeInfo:
         PRIMARY KEY (`seq`),
         UNIQUE KEY `ID` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件服务';
+
+  - seq: 2
+    database: |-
+      -- 添加授权链接标签功能
+      ALTER TABLE `biz_main_auth_link`
+        ADD COLUMN `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON'
+        AFTER `funcCallKwargsJSON`;

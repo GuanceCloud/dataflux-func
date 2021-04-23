@@ -405,10 +405,10 @@ export default {
   display: inline-block;
 }
 .worker-queue-info {
-  font-size: 14px;
+  font-size: 12px;
   position: absolute;
   top: 25px;
-  right: 15px;
+  right: 20px;
   text-align: right;
 }
 .worker-queue-info .worker-queue-number {
