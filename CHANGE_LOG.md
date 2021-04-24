@@ -1,6 +1,6 @@
 # Change Log
 
-### 1.1.0rc1 ~ 1.1.0rc16
+### 1.1.0rc1 ~ 1.1.0rc17
 
 - 发布稳定预备版
 - 导入/导出附带的授权链接、自动触发配置、批处理仅替换具有相同ID的数据
@@ -18,6 +18,11 @@
 | `python admin-tool.py reset_admin`          | 重置管理员账号     |
 | `python admin-tool.py reset_db_upgrade_seq` | 重置数据库更新序号 |
 | `python admin-tool.py clear_redis`          | 清空Redis          |
+
+- 重构订阅处理，提高更强扩展订阅功能。目前支持订阅：
+    - MQTT
+    - Redis
+- UI界面支持为授权链接、自动触发配置和批处理添加/删除标签
 
 ### 1.0.59 ~ 1.0.60
 

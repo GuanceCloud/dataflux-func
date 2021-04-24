@@ -1224,7 +1224,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         f_argspec = None
         f_args    = None
-        f_kwargs  = {}
+        f_kwargs  = OrderedDict()
         if six.PY3:
             f_argspec = inspect.getfullargspec(F)
         else:

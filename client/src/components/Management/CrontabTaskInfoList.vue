@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Search Crontab task(log, error), Func(ID, title, description): 搜索批处理任务（日志、错误），函数（ID、标题、描述）
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -6,7 +10,10 @@
         <h1>
           近期自动触发任务信息
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Crontab task(log, error), Func(ID, title, description)')">
+            </FuzzySearchInput>
           </div>
         </h1>
       </el-header>

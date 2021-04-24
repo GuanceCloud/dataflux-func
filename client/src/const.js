@@ -274,7 +274,7 @@ export default {
           user         : { default: null },
           password     : { default: null },
           clientId     : { default: null },
-          topicHandlers: { default: [{ topic: '$share/GROUP/TOPIC', funcId: null }] },
+          topicHandlers: { default: [{ topic: 'TOPIC', funcId: null }] },
         },
       },
     ];

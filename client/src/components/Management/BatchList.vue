@@ -6,7 +6,8 @@ Disable Batch: 禁用批处理
 Enable Batch : 启用批处理
 Delete Batch : 删除批处理
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索批处理（ID、标签、备注），函数（ID、参数、标题、描述、标签）
+Check to show the contents created by outside systems                   : 勾选后展示由其他系统自动创建的内容
 </i18n>
 
 <template>
@@ -17,7 +18,11 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
         <h1>
           {{ $t('Batch') }}
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
+            </FuzzySearchInput>
+
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
@@ -53,43 +58,20 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 
           <el-table-column label="执行函数">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
-
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-                <GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
-
-                <br>
-                <span class="text-info">&#12288;调用参数:</span>
-                <div class="func-kwargs-area">
-                  <span v-if="T.isNothing(scope.row.funcCallKwargsJSON)" class="text-info">无参数</span>
-                  <template v-else>
-                    <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.funcCallKwargsJSON">
-                      <code class="func-kwargs-name">{{ name }}</code>
-                      <code class="func-kwargs-equal">=</code>
-                      <code class="func-kwargs-value" v-if="value === 'FROM_PARAMETER'">调用方指定</code>
-                      <el-tooltip placement="top" v-else>
-                        <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
-                        <code class="func-kwargs-value">固定值</code>
-                      </el-tooltip>
-                      <span v-if="index < T.jsonLength(scope.row.funcCallKwargsJSON) - 1">,&nbsp;</span>
-                    </div>
-                  </template>
-                </div>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-              </template>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :name="scope.row.func_name"
+                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
                 <span class="text-info">&#12288;批处理ID:</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON)">
+                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
                   <br>
-                  <span class="text-info">&#12288;批处理标签:</span>
+                  <span class="text-info">&#12288;标签:</span>
+                  <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
               </div>
@@ -162,12 +144,14 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 <script>
 import FuzzySearchInput from '@/components/FuzzySearchInput'
 import APIExampleDialog from '@/components/APIExampleDialog'
+import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'BatchList',
   components: {
     FuzzySearchInput,
     APIExampleDialog,
+    FuncInfo,
   },
   watch: {
     $route: {
@@ -352,27 +336,6 @@ export default {
 </script>
 
 <style scoped>
-.func-title {
-  font-size: 16px;
-}
-.func-kwargs-area {
-  padding-left: 25px;
-}
-.func-kwargs-block {
-  display: inline-block;
-}
-.func-kwargs-name {
-  font-style: italic;
-  color: #ff6600;
-  font-weight: bold;
-}
-.func-kwargs-equal {
-  color: red;
-}
-pre.func-kwargs-value {
-  padding: 0;
-  margin: 0;
-}
 </style>
 
 <style>

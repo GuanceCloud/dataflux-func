@@ -1,6 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Disable user: 禁用用户
 Enable user : 启用用户
+
+Search User(ID, username, name): 搜索用户（ID、用户名、名称）
 </i18n>
 
 <template>
@@ -11,7 +13,11 @@ Enable user : 启用用户
         <h1>
           成员列表
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search User(ID, username, name)')">
+            </FuzzySearchInput>
+
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
               新建成员

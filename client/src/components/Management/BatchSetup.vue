@@ -1,4 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
+Tags   : 标签
+Add Tag: 添加标签
+
 Add Batch   : 添加批处理
 Modify Batch: 修改批处理
 Delete Batch: 删除批处理
@@ -46,6 +49,18 @@ Delete Batch: 删除批处理
                   <InfoBlock title="函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Tags')" prop="tagsJSON">
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-input v-if="showAddTag" ref="newTag"
+                    v-model="newTag"
+                    size="mini"
+                    @keyup.enter.native="addTag"
+                    @blur="addTag"></el-input>
+                  <el-button v-else
+                    type="text"
+                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
                 <el-form-item label="备注">
@@ -119,6 +134,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
+        nextForm.tagsJSON           = nextForm.tagsJSON || [];
         this.form = nextForm;
       }
 
@@ -247,6 +263,23 @@ export default {
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
     },
+    removeTag(tag) {
+      this.form.tagsJSON.splice(this.form.tagsJSON.indexOf(tag), 1);
+    },
+    openAddTagInput() {
+      this.showAddTag = true;
+      this.$nextTick(_ => {
+        this.$refs.newTag.$refs.input.focus();
+      });
+    },
+    addTag() {
+      let newTag = this.newTag;
+      if (newTag) {
+        this.form.tagsJSON.push(newTag);
+      }
+      this.showAddTag = false;
+      this.newTag     = '';
+    },
   },
   computed: {
     ID_PREFIX() {
@@ -308,11 +341,14 @@ export default {
       funcCascader: [],
 
       useCustomId: false,
+      showAddTag : false,
+      newTag     : '',
 
       form: {
         id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
+        tagsJSON          : [],
         note              : null,
       },
       formRules: {

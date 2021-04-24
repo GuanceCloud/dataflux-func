@@ -196,9 +196,7 @@ Please select handler Func                        : 请选择处理函数
                       v-model="form.configJSON.clientId"></el-input>
                   </el-form-item>
 
-                  <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers') && selectedType === 'mqtt'"
-                    :label="$t('Topic/Handler')">
-                    <InfoBlock type="info" :title="`${$t('Shared subscription can avoid duplicated message:')}\n${$t('1. $share/GROUP/TOPIC in MQTTv5')}\n${$t('2. $queue/TOPIC in EMQX')}`"></InfoBlock>
+                  <el-form-item :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
                   </el-form-item>
 
                   <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">

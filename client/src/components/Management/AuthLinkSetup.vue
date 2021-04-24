@@ -7,6 +7,8 @@ Use custom ID                                                                   
 ID is used in the calling URL                                                              : ID关系到调用时的URL
 Func                                                                                       : 执行函数
 Arguments                                                                                  : 调用参数
+Tags                                                                                       : 标签
+Add Tag                                                                                    : 添加标签
 'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
 'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
 The Func accepts extra arguments not listed above                                          : 本函数允许传递额外的自定义函数参数
@@ -74,6 +76,18 @@ shortcutDays                                       : '{n}天'
                   <InfoBlock :title="$t('When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Tags')" prop="tagsJSON">
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-input v-if="showAddTag" ref="newTag"
+                    v-model="newTag"
+                    size="mini"
+                    @keyup.enter.native="addTag"
+                    @blur="addTag"></el-input>
+                  <el-button v-else
+                    type="text"
+                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
                 <el-form-item :label="$t('Show in doc')" prop="showInDoc">
@@ -179,7 +193,8 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.throttlingJSON = nextForm.throttlingJSON || {};
+        nextForm.tagsJSON           = nextForm.tagsJSON || [];
+        nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
         this.form = nextForm;
       }
 
@@ -308,6 +323,23 @@ export default {
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
     },
+    removeTag(tag) {
+      this.form.tagsJSON.splice(this.form.tagsJSON.indexOf(tag), 1);
+    },
+    openAddTagInput() {
+      this.showAddTag = true;
+      this.$nextTick(_ => {
+        this.$refs.newTag.$refs.input.focus();
+      });
+    },
+    addTag() {
+      let newTag = this.newTag;
+      if (newTag) {
+        this.form.tagsJSON.push(newTag);
+      }
+      this.showAddTag = false;
+      this.newTag     = '';
+    },
   },
   computed: {
     formRules() {
@@ -430,11 +462,14 @@ export default {
       funcCascader: [],
 
       useCustomId: false,
+      showAddTag : false,
+      newTag     : '',
 
       form: {
         id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
+        tagsJSON          : [],
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,

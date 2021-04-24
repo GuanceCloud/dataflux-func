@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+
+Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作记录，用户（ID、用户名），客户端ID，跟踪ID
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -6,7 +11,10 @@
         <h1>
           近期操作记录
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Operation Record, User(ID, username), Client ID, Trace ID')">
+            </FuzzySearchInput>
           </div>
         </h1>
       </el-header>

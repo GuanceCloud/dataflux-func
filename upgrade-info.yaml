@@ -24,3 +24,16 @@ upgradeInfo:
       ALTER TABLE `biz_main_auth_link`
         ADD COLUMN `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON'
         AFTER `funcCallKwargsJSON`;
+
+      -- KwargsJSON字段改为TEXT，保证入库出库时JSON字段顺序一致性
+      ALTER TABLE biz_main_func
+        MODIFY COLUMN `kwargsJSON` TEXT DEFAULT NULL COMMENT '命名参数JSON';
+
+      ALTER TABLE biz_main_auth_link
+        MODIFY COLUMN `funcCallKwargsJSON` TEXT NOT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+      ALTER TABLE biz_main_crontab_config
+        MODIFY COLUMN `funcCallKwargsJSON` TEXT NOT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+      ALTER TABLE biz_main_batch
+        MODIFY COLUMN `funcCallKwargsJSON` TEXT NOT NULL COMMENT '函数调用参数JSON (kwargs)';

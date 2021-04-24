@@ -333,6 +333,7 @@ userAPI:
       username: u.username
       name    : u.name
     fuzzySearch:
+      - u.id
       - u.username
       - u.name
       - u.mobile
@@ -3026,6 +3027,7 @@ authLinkAPI:
       - auln.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       id:
         $desc      : 根据ID过滤
@@ -3555,6 +3557,7 @@ crontabConfigAPI:
       - cron.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       _withTaskInfoCount:
         $desc: 是否附带任务信息计数
@@ -4029,6 +4032,7 @@ batchAPI:
       - bat.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       _withTaskInfoCount:
         $desc: 是否附带任务信息计数

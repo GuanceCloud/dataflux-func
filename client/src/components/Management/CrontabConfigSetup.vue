@@ -1,4 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
+Tags   : 标签
+Add Tag: 添加标签
+
 Add Crontab Config   : 添加自动触发配置
 Modify Crontab Config: 修改自动触发配置
 Delete Crontab Config: 删除自动触发配置
@@ -32,6 +35,18 @@ Delete Crontab Config: 删除自动触发配置
                   <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Tags')" prop="tagsJSON">
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-input v-if="showAddTag" ref="newTag"
+                    v-model="newTag"
+                    size="mini"
+                    @keyup.enter.native="addTag"
+                    @blur="addTag"></el-input>
+                  <el-button v-else
+                    type="text"
+                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -191,6 +206,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
+        nextForm.tagsJSON           = nextForm.tagsJSON || [];
         this.form = nextForm;
 
         if (this.data.crontab) {
@@ -351,6 +367,23 @@ export default {
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
     },
+    removeTag(tag) {
+      this.form.tagsJSON.splice(this.form.tagsJSON.indexOf(tag), 1);
+    },
+    openAddTagInput() {
+      this.showAddTag = true;
+      this.$nextTick(_ => {
+        this.$refs.newTag.$refs.input.focus();
+      });
+    },
+    addTag() {
+      let newTag = this.newTag;
+      if (newTag) {
+        this.form.tagsJSON.push(newTag);
+      }
+      this.showAddTag = false;
+      this.newTag     = '';
+    },
     autoFixCrontab() {
       let sortFunc = (a, b) => {
         return parseInt(a) - parseInt(b);
@@ -397,7 +430,6 @@ export default {
       }
       return list;
     },
-
   },
   computed: {
     mode() {
@@ -541,9 +573,13 @@ export default {
       funcMap     : {},
       funcCascader: [],
 
+      showAddTag : false,
+      newTag     : '',
+
       form: {
         funcId            : null,
         funcCallKwargsJSON: null,
+        tagsJSON          : [],
         expireTime        : null,
         note              : null,
         // crontab 单独处理
