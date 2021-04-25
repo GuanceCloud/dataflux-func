@@ -105,6 +105,15 @@ exports.runListener = function runListener(app) {
         app.locals.cacheDB.extendLockTime(lockKey, lockValue, SUB_CLIENT_LOCK_EXPIRES, function(err) {
           // 成功续租锁，则锁一定为本进程所获得，进入下一步
           if (!err) return asyncCallback();
+
+          // 锁为其他进程获得，安全起见，清理本进程内的所有客户端
+          for (var dataSourceId in CLIENT_MAP) {
+            var _client = CLIENT_MAP[dataSourceId];
+            if (_client) _client.end();
+          }
+
+          CLIENT_MAP         = {};
+          CLIENT_REFRESH_MAP = {};
         });
       },
       // 获取数据源列表
