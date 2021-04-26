@@ -20,6 +20,7 @@ var yamlResources = require('./utils/yamlResources');
 var CONFIG       = null;
 var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
+var IMAGE_INFO   = require('../image-info.json');
 
 var INSTALL_CHECK_INTERVAL            = 3 * 1000;
 var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
@@ -117,7 +118,7 @@ function runSetup() {
     defaultConfig['ADMIN_PASSWORD']        = 'admin';
     defaultConfig['ADMIN_PASSWORD_REPEAT'] = 'admin';
 
-    res.render('setup', { CONFIG: defaultConfig });
+    res.render('setup', { CONFIG: defaultConfig, IMAGE_INFO: IMAGE_INFO });
   });
 
   // Setup handler
