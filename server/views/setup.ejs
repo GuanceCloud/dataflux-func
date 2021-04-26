@@ -449,6 +449,7 @@
     $(document).on('change', '#setupConfigsToggle', function() {
       var $this = $(this);
       $('#setupConfigs').collapse($this.prop('checked') ? 'show' : 'hide');
+      $tipsPanel.hide();
     });
 
     $(document).on('mouseover', '[config-key]', function() {
