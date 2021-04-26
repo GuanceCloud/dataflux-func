@@ -4439,11 +4439,11 @@ batchTaskInfoAPI:
         $searchKey : func.tagsJSON
 
 # 函数调用任务结果
-dataProcessorTaskResultAPI:
+datafluxFuncTaskResultAPI:
   list:
     name         : 列出函数调用任务结果
     method       : get
-    url          : /api/v1/data-processor-task-results/do/list
+    url          : /api/v1/dataflux-func-task-results/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -4451,32 +4451,32 @@ dataProcessorTaskResultAPI:
     fieldPicking : true
     fieldKicking : true
     orderFields:
-      seq: dptr.seq
+      seq: dftr.seq
     fuzzySearch:
-      - dptr.id
-      - dptr.origin
-      - dptr.kwargsJSON->>$.funcId
+      - dftr.id
+      - dftr.origin
+      - dftr.kwargsJSON->>$.funcId
     query:
       id:
         $desc      : 按任务ID过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.id
+        $searchKey : dftr.id
       origin:
         $desc      : 按任务来源过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.origin
+        $searchKey : dftr.origin
       funcId:
         $desc      : 按函数过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.kwargsJSON->>$.funcId
+        $searchKey : dftr.kwargsJSON->>$.funcId
       execMode:
         $desc      : 按执行模式过滤
         $type      : enum
         $searchType: eq
-        $searchKey : dptr.kwargsJSON->>$.execMode
+        $searchKey : dftr.kwargsJSON->>$.execMode
         $in:
           - sync
           - async
@@ -4485,7 +4485,7 @@ dataProcessorTaskResultAPI:
   get:
     name         : 获取函数调用任务结果
     method       : get
-    url          : /api/v1/data-processor-task-results/:id/do/get
+    url          : /api/v1/dataflux-func-task-results/:id/do/get
     response     : json
     requireSignIn: true
     privilege    : general_r

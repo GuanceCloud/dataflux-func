@@ -212,7 +212,7 @@ function startApplication() {
   require('./routers/crontabTaskInfoAPIRouter');
   require('./routers/batchTaskInfoAPIRouter');
 
-  require('./routers/dataProcessorTaskResultAPIRouter');
+  require('./routers/datafluxFuncTaskResultAPIRouter');
 
   require('./routers/operationRecordAPIRouter');
 

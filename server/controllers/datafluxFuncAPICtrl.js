@@ -24,17 +24,17 @@ var toolkit = require('../utils/toolkit');
 var urlFor  = require('../utils/routeLoader').urlFor;
 var auth    = require('../utils/auth');
 
-var scriptSetMod               = require('../models/scriptSetMod');
-var scriptMod                  = require('../models/scriptMod');
-var funcMod                    = require('../models/funcMod');
-var dataSourceMod              = require('../models/dataSourceMod');
-var envVariableMod             = require('../models/envVariableMod');
-var authLinkMod                = require('../models/authLinkMod');
-var crontabConfigMod           = require('../models/crontabConfigMod');
-var batchMod                   = require('../models/batchMod');
-var dataProcessorTaskResultMod = require('../models/dataProcessorTaskResultMod');
-var operationRecordMod         = require('../models/operationRecordMod');
-var fileServiceMod             = require('../models/fileServiceMod');
+var scriptSetMod              = require('../models/scriptSetMod');
+var scriptMod                 = require('../models/scriptMod');
+var funcMod                   = require('../models/funcMod');
+var dataSourceMod             = require('../models/dataSourceMod');
+var envVariableMod            = require('../models/envVariableMod');
+var authLinkMod               = require('../models/authLinkMod');
+var crontabConfigMod          = require('../models/crontabConfigMod');
+var batchMod                  = require('../models/batchMod');
+var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
+var operationRecordMod        = require('../models/operationRecordMod');
+var fileServiceMod            = require('../models/fileServiceMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -1541,8 +1541,8 @@ exports.getFuncResult = function(req, res, next) {
   var returnType = req.query.returnType || 'raw';
   var unfold     = req.query.unfold;
 
-  var dataProcessorTaskResultModel = dataProcessorTaskResultMod.createModel(res.locals);
-  dataProcessorTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
+  var datafluxFuncTaskResultModel = datafluxFuncTaskResultMod.createModel(res.locals);
+  datafluxFuncTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
     if (err) return next(err);
 
     var result = dbRes.retvalJSON || null;
