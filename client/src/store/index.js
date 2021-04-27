@@ -227,7 +227,7 @@ export default new Vuex.Store({
     isSocketIOReady: state => {
       return state.isSocketIOAuthed && state.xAuthToken;
     },
-    getConflictedRoute: state => routeInfo => {
+    getConflictRoute: state => routeInfo => {
       let routeKey = getRouteKey(routeInfo);
       return !!state.conflictedRouteMap[routeKey];
     },
@@ -318,7 +318,7 @@ export default new Vuex.Store({
       let routeKey = getRouteKey(payload.routeInfo);
 
       let nextConflictedRouteMap = toolkit.jsonCopy(state.conflictedRouteMap);
-      if (payload.isConflicted) {
+      if (payload.isConflict) {
         nextConflictedRouteMap[routeKey] = true;
       } else {
         delete nextConflictedRouteMap[routeKey];

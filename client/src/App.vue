@@ -85,12 +85,13 @@ export default {
           checkOnly = false;
           break;
       }
+
       let checkRouteInfo = JSON.stringify({
         routeName  : routeName,
         routeQuery : this.$route.query,
         routeParams: this.$route.params,
         checkOnly  : checkOnly,
-        instanceId : window.instanceId,
+        conflictId : window.conflictId,
       });
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
         if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
@@ -102,16 +103,16 @@ export default {
         // 无冲突信息无需任何处理
         if (!resData || !resData.data) return;
 
-        let isConflicted = resData.data.isConflict;
+        let isConflict = resData.data.isConflict;
 
         // 记录路径冲突状态
         this.$store.commit('setConflictedRoute', {
-          routeInfo   : this.$route,
-          isConflicted: isConflicted,
+          routeInfo : this.$route,
+          isConflict: isConflict,
         });
 
         // 展示提示信息
-        if (isConflicted && showNotice) {
+        if (isConflict && showNotice) {
           switch(this.$route.name) {
             case 'code-viewer':
             case 'code-editor':

@@ -115,8 +115,8 @@ EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
 
-# 客户端实例冲突过期时间
-_INSTANCE_CONFLICT_EXPIRES: 5
+# 客户端冲突过期时间
+_CLIENT_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
 _FUNC_PKG_EXPORT_FILENAME: dataflux-func

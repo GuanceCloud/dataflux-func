@@ -42,13 +42,13 @@ Saved Draft Code: 已保存的草稿代码
         </div>
         <div class="code-viewer-action-right">
           <el-form :inline="true">
-            <el-form-item v-if="isConflicted">
+            <el-form-item v-if="isConflict">
               <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
               &#12288;
               &#12288;
             </el-form-item>
 
-            <el-form-item v-if="!isConflicted">
+            <el-form-item v-if="!isConflict">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
                   {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + E</code>
@@ -159,7 +159,7 @@ export default {
           break;
 
         case 'codeViewer.enterEditor':
-          if (!this.isConflicted) {
+          if (!this.isConflict) {
             this.startEdit();
           }
           break;
@@ -467,8 +467,8 @@ export default {
     scriptSetId() {
       return this.scriptId.split('__')[0];
     },
-    isConflicted() {
-      return this.$store.getters.getConflictedRoute(this.$route);
+    isConflict() {
+      return this.$store.getters.getConflictRoute(this.$route);
     },
     isLockedByOther() {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId

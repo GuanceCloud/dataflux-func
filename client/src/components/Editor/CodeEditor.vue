@@ -134,7 +134,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
             </div>
             <div class="code-editor-action-right">
               <el-form :inline="true">
-                <el-form-item v-if="isConflicted">
+                <el-form-item v-if="isConflict">
                   <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
                 </el-form-item>
 
@@ -152,7 +152,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                   </el-tooltip>
                 </el-form-item>
 
-                <template v-if="!isConflicted">
+                <template v-if="!isConflict">
                   <el-form-item class="hidden-lg-and-up">
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
@@ -359,7 +359,7 @@ export default {
         this.isNewLoaded = true;
       }
     },
-    isConflicted: {
+    isConflict: {
       immediate: true,
       handler(val) {
         this.T.setCodeMirrorReadOnly(this.codeMirror, val);
@@ -540,7 +540,7 @@ export default {
         this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
 
         // 锁定编辑器
-        if (this.isConflicted || this.isLockedByOther) {
+        if (this.isConflict || this.isLockedByOther) {
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }
 
@@ -1381,8 +1381,8 @@ export default {
     scriptSetId() {
       return this.scriptId.split('__')[0];
     },
-    isConflicted() {
-      return this.$store.getters.getConflictedRoute(this.$route);
+    isConflict() {
+      return this.$store.getters.getConflictRoute(this.$route);
     },
     isLockedByOther() {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId
