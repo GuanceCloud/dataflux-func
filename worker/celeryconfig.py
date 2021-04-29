@@ -112,9 +112,7 @@ beat_schedule['run-starter-crontab'] = {
 # 强制重新加载脚本
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'DataFluxFunc.reloadScripts',
-    'kwargs'  : {
-        'force': True,
-    },
+    'kwargs'  : { 'force': True },
     'schedule': create_schedule(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']),
 }
 

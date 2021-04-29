@@ -60,7 +60,7 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
         if not croniter.is_valid(crontab_expr):
             return False
 
-        now = arrow.get().to('Asia/Shanghai').datetime
+        now = arrow.get(trigger_time + 1).to('Asia/Shanghai').datetime
         crontab_iter = croniter(crontab_expr, now)
 
         start_time = int(crontab_iter.get_prev())
