@@ -3,6 +3,7 @@ Loading                                          : 加载中
 PIP Tool                                         : PIP工具
 Install Package                                  : 安装包
 Please input package name to install             : 请输入要安装的包
+'Current PyPi repository:'                       : 当前 PyPi 仓库
 Installed Packages                               : 已安装的包
 Package                                          : 包
 Version                                          : 版本
@@ -58,6 +59,8 @@ Are you sure you want to install the package now?: 是否确定现在就安装�
           &#12288;
           {{ $t('Cannot reinstall a packages built-in') }}
         </span>
+
+        <p class="text-info text-small">{{ `${$t('Current PyPi repository:')} ${$store.getters.CONFIG('PYPI_MIRROR') || $t('Official')}` }}</p>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 

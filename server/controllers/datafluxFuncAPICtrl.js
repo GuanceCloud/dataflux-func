@@ -1657,6 +1657,7 @@ exports.getSystemConfig = function(req, res, next) {
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
+    PYPI_MIRROR       : CONFIG.PYPI_MIRROR,
 
     _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
     _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
@@ -1998,7 +1999,7 @@ exports.queryPythonPackages = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 从阿里云获取
+    // 从网络获取
     function(asyncCallback) {
       if (allPackages) return asyncCallback();
 
@@ -2006,7 +2007,7 @@ exports.queryPythonPackages = function(req, res, next) {
         forever: true,
         timeout: 3 * 1000,
         method : 'GET',
-        url    : 'https://mirrors.aliyun.com/pypi/web/simple/',
+        url    : CONFIG.PYPI_MIRROR,
       };
       request(requestOptions, function(err, _res, _body) {
         if (err) return asyncCallback(err);
@@ -2039,7 +2040,16 @@ exports.queryPythonPackages = function(req, res, next) {
       matchedPackages = allPackages;
 
     } else {
-      matchedPackages = allPackages.reduce(function(acc, x) {
+      matchedPackages = allPackages
+      // 只返回包含子内容的
+      .reduce(function(acc, x) {
+        if (x.indexOf(query) >= 0) {
+          acc.push(x);
+        }
+        return acc;
+      }, [])
+      // 分别计算相似度
+      .reduce(function(acc, x) {
         let item = {
           name   : x,
           similar: toolkit.stringSimilar(query, x.toLowerCase()),
@@ -2048,15 +2058,17 @@ exports.queryPythonPackages = function(req, res, next) {
         acc.push(item);
         return acc;
       }, [])
+      // 根据相似度排序
       .sort(function(a, b) {
         return b.similar - a.similar;
       })
+      // 提取名称
       .map(function(x) {
         return x.name;
-      });
+      })
+      // 取TOP20
+      .slice(0, limit);
     }
-
-    matchedPackages = matchedPackages.slice(0, limit)
 
     var ret = toolkit.initRet(matchedPackages);
     return res.locals.sendJSON(ret);
@@ -2185,12 +2197,15 @@ exports.installPythonPackage = function(req, res, next) {
     },
     function(asyncCallback) {
       var cmd = 'pip';
-      var cmdArgs = [
-        'install', '--no-cache-dir',
-        '-t', packageInstallPath,
-        '-i', 'https://mirrors.aliyun.com/pypi/simple/',
-        pkg,
-      ];
+      var cmdArgs = [ 'install', '--no-cache-dir', '-t', packageInstallPath ];
+
+      // 启用镜像源
+      if (!toolkit.isNothing(CONFIG.PYPI_MIRROR)) {
+        cmdArgs.push('-i', CONFIG.PYPI_MIRROR);
+      }
+
+      cmdArgs.push(pkg);
+
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败

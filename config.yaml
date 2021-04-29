@@ -111,6 +111,8 @@ DING_TALK_ROBOT_SECRET: ''
 FILE_STORE_ROOT_DIR: uploaded-files
 # 额外Python 包安装目录
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
+# PyPi镜像
+PYPI_MIRROR: https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
@@ -280,7 +282,7 @@ _LRU_FUNC_CACHE_MAX           : 1000
 _LRU_FUNC_CACHE_MAX_AGE       : 15
 _LRU_FUNC_RESULT_CACHE_MAX    : 2000
 _LRU_FUNC_RESULT_CACHE_MAX_AGE: 2000
-_PIP_LIST_EXPIRES             : 86400
+_PIP_LIST_EXPIRES             : 300
 
 # 保留脚本错误信息（开启后可能会产生巨量日志）
 _INTERNAL_KEEP_SCRIPT_FAILURE: false

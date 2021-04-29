@@ -16,6 +16,7 @@ export async function getFuncList() {
   apiRes.data.forEach(d => {
     scriptSetMap[d.id] = {
       label   : d.title || d.id,
+      value   : d.id,
       children: [],
     };
   });
@@ -30,6 +31,7 @@ export async function getFuncList() {
   apiRes.data.forEach(d => {
     scriptMap[d.id] = {
       label   : d.title || d.id,
+      value   : d.id,
       children: [],
     };
 

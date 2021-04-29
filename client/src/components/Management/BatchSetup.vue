@@ -244,13 +244,9 @@ export default {
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
-      let selectedNodes = this.$refs.funcCascader.getCheckedNodes(true);
-      if (selectedNodes.length <= 0) return;
-
-      let node = selectedNodes[0];
-
       // 自动填充调用参数
-      let parameters = node.data.argsJSON || Object.keys(node.data.kwargsJSON);
+      let parameters = this.funcMap[funcId].argsJSON
+                    || Object.keys(this.funcMap[funcId].kwargsJSON);
 
       let example = {};
       parameters.forEach(p => {

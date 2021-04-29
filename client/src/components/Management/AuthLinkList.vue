@@ -1,8 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Auth Link              : 授权链接
 New Auth Link          : 新建授权链接
-Normal                 : 常规
-Statistic              : 统计信息
+Info                   : 信息
+Recent Response        : 响应
 Show hidden            : 显示隐藏项
 Disable Auth Link      : 禁用授权链接
 Enable Auth Link       : 启用授权链接
@@ -22,7 +22,7 @@ Check to show the contents created by outside systems                       : �
         <h1>
           {{ $t('Auth Link') }}
           <div class="header-control">
-            <el-switch v-model="showCountCost" :inactive-text="$t('Normal')" :active-text="$t('Statistic')"></el-switch>
+            <el-switch v-model="showCountCost" :inactive-text="$t('Info')" :active-text="$t('Recent Response')"></el-switch>
             &#12288;
 
             <FuzzySearchInput
@@ -86,7 +86,7 @@ Check to show the contents created by outside systems                       : �
           </el-table-column>
 
           <template v-if="!showCountCost">
-            <el-table-column label="有效期至" width="200">
+            <el-table-column label="有效期至" width="150">
               <template slot-scope="scope">
                 <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
                 <template v-else>
@@ -98,7 +98,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="限流策略" width="200">
+            <el-table-column label="限流策略" width="150">
               <template slot-scope="scope">
                 <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
                 <template v-else>
@@ -109,7 +109,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="状态" width="200">
+            <el-table-column label="状态" width="150">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
                 <span v-else class="text-good">已启用</span>
@@ -119,7 +119,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="备注" width="200">
+            <el-table-column label="备注" width="150">
               <template slot-scope="scope">
                 <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
               </template>
@@ -127,7 +127,7 @@ Check to show the contents created by outside systems                       : �
           </template>
 
           <template v-else>
-            <el-table-column label="近日调用" width="200">
+            <el-table-column label="近日调用" width="150">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
                   <code>{{ ['今天', '昨天', '前天'][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>
@@ -135,7 +135,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应速度" width="200">
+            <el-table-column label="响应速度" width="150">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
@@ -147,7 +147,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应速度分布" width="200">
+            <el-table-column label="分布" width="150">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
@@ -158,7 +158,7 @@ Check to show the contents created by outside systems                       : �
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应状态分布" width="200">
+            <el-table-column label="执行结果" width="150">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">暂无信息</span>
                 <template v-else>
@@ -461,10 +461,11 @@ export default {
 <style scoped>
 code.count-cost-value {
   display: inline-block;
-  width: 60px;
+  width: 40px;
   text-align: right;
   border-bottom: 1px solid grey;
   line-height: 14px;
+  font-size: 12px;
 }
 </style>
 
