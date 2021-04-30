@@ -72,7 +72,7 @@ Check to show the contents created by outside systems                           
             </template>
           </el-table-column>
 
-          <el-table-column label="Crontab" width="150">
+          <el-table-column label="Crontab" width="160">
             <template slot-scope="scope">
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code>{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
@@ -83,7 +83,7 @@ Check to show the contents created by outside systems                           
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="150">
+          <el-table-column label="有效期至" width="160">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
               <template v-else>
@@ -95,14 +95,14 @@ Check to show the contents created by outside systems                           
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="150">
+          <el-table-column label="状态" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
               <span v-else class="text-good">已启用</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="150">
+          <el-table-column label="备注" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
