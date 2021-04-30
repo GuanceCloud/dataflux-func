@@ -78,14 +78,14 @@ Check to show the contents created by outside systems                   : 勾选
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="160">
+          <el-table-column label="状态" width="100">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
               <span v-else class="text-good">已启用</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="160">
+          <el-table-column label="备注" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
