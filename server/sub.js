@@ -130,6 +130,7 @@ exports.runListener = function runListener(app) {
           if (err) return asyncCallback(err);
 
           dbRes.forEach(function(d) {
+            d.configJSON = d.configJSON || {};
             dataSourceMap[d.id] = d;
           });
 
@@ -187,7 +188,7 @@ exports.runListener = function runListener(app) {
           client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(app.locals.logger, d.configJSON);
 
           // 订阅主题
-          if (!toolkit.isNothing(d.configJSON)) {
+          if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
             d.configJSON.topicHandlers.forEach(function(th) {
               client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
             });
