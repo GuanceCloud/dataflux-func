@@ -37,6 +37,10 @@ var MQTTHelper = function(logger, config) {
   self.config = toolkit.noNullOrWhiteSpace(config);
   self.client = mqtt.connect(getConfig(self.config));
 
+  self.client.on('error', function(err) {
+    self.logger.error('[MQTT] Error: `{0}`', err.toString());
+  });
+
   self.client.on('offline', function() {
     self.client.reconnect();
   });
@@ -56,7 +60,7 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
   options = options || {};
   options.qos = options.qos || 0;
 
-  this.logger.debug(`[MQTT] Publish message to ${topic}`);
+  this.logger.debug('[MQTT] Pub -> `{0}`', topic);
 
   return this.client.publish(topic, message, options, callback);
 };
@@ -74,11 +78,7 @@ MQTTHelper.prototype.sub = function(topic, handler, callback) {
   var self = this;
 
   if (!this.skipLog) {
-    self.logger && self.logger.debug('{0} {1} [{2}]',
-      '[MQTT]',
-      'SUB',
-      topic
-    );
+    self.logger.debug('[MQTT] Sub `{0}`', topic);
   }
 
   var matchTopic = topic.trim();
@@ -99,11 +99,7 @@ MQTTHelper.prototype.sub = function(topic, handler, callback) {
       if (!mqttWildcard(_topic, matchTopic)) return;
 
       if (!self.skipLog) {
-        self.logger && self.logger.debug('{0} [{1}] -> `{2}`',
-          '[MQTT]',
-          _topic,
-          _message
-        );
+        self.logger.debug('[MQTT] Receive <- `{0}`', _topic);
       }
 
       return handler(_topic, _message, _packet);
@@ -120,11 +116,7 @@ MQTTHelper.prototype.sub = function(topic, handler, callback) {
  */
 MQTTHelper.prototype.unsub = function(topic, callback) {
   if (!this.skipLog) {
-    this.logger && this.logger.debug('{0} {1} `{2}` -> <MESSAGE>',
-      '[MQTT]',
-      'UNSUB',
-      topic
-    );
+    this.logger.debug('[MQTT] Unsub `{0}`', topic);
   }
 
   this.client.unsubscribe(topic, callback);

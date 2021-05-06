@@ -17,24 +17,14 @@ var LUA_UNLOCK_KEY = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis
 /* Configure */
 var LIMIT_ARGS_DUMP = 500;
 
-function retryStrategy(options) {
-  if (options.error) {
-    console.error(options.error.toString());
-
-    if (options.error.code === 'ECONNREFUSED') {
-        return new Error('The Redis refused the connection');
-    }
-  }
-
-  return Math.min(options.attempt * 100, 3000);
-}
-
-function getConfig(c) {
+function getConfig(c, retryStrategy) {
   return {
     host    : c.host,
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
+
+    retry_strategy: retryStrategy,
   };
 };
 
@@ -50,21 +40,33 @@ var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
  * @return {Object} - Redis Helper
  */
 var RedisHelper = function(logger, config) {
-  this.logger = logger || logHelper.createHelper();
+  var self = this;
 
-  this.isDryRun = false;
-  this.skipLog  = false;
-  this.checkedKeyMap = {};
+  self.logger = logger || logHelper.createHelper();
+
+  self.isDryRun = false;
+  self.skipLog  = false;
+  self.checkedKeyMap = {};
+
+  self.retryStrategy = function(options) {
+    self.logger.warning('[REDIS] Reconnect...');
+    return Math.min(options.attempt * 100, 3000);
+  };
 
   if (config) {
-    this.config = toolkit.noNullOrWhiteSpace(config);
+    self.config = toolkit.noNullOrWhiteSpace(config);
 
-    this.config.tsMaxAge       = config.tsMaxAge    || 3600 * 24;
-    this.config.tsMaxPeriod    = config.tsMaxPeriod || 3600 * 24 * 3;
-    this.config.tsMaxLength    = config.tsMaxLength || 60 * 24 * 3;
-    this.config.retry_strategy = retryStrategy;
+    self.config.tsMaxAge    = config.tsMaxAge    || 3600 * 24;
+    self.config.tsMaxPeriod = config.tsMaxPeriod || 3600 * 24 * 3;
+    self.config.tsMaxLength = config.tsMaxLength || 60 * 24 * 3;
 
-    this.client = redis.createClient(getConfig(this.config));
+    self.client = redis.createClient(getConfig(self.config, self.retryStrategy));
+
+    // Error handling
+    self.client.on('error', function(err) {
+      self.logger.error('[REDIS] Error: `{0}`', err.toString());
+      self.logger.error('[REDIS] Error: `{0}`', err.toString());
+    });
 
   } else {
     if (!CLIENT) {
@@ -75,24 +77,23 @@ var RedisHelper = function(logger, config) {
         password: CONFIG.REDIS_PASSWORD,
       });
 
-      CLIENT_CONFIG.tsMaxAge       = CONFIG.REDIS_TS_MAX_AGE;
-      CLIENT_CONFIG.tsMaxPeriod    = CONFIG.REDIS_TS_MAX_PERIOD;
-      CLIENT_CONFIG.tsMaxLength    = CONFIG.REDIS_TS_MAX_LENGTH;
-      CLIENT_CONFIG.retry_strategy = retryStrategy;
+      CLIENT_CONFIG.tsMaxAge    = CONFIG.REDIS_TS_MAX_AGE;
+      CLIENT_CONFIG.tsMaxPeriod = CONFIG.REDIS_TS_MAX_PERIOD;
+      CLIENT_CONFIG.tsMaxLength = CONFIG.REDIS_TS_MAX_LENGTH;
 
-      CLIENT = redis.createClient(getConfig(CLIENT_CONFIG));
+      CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
 
       // Error handling
-      CLIENT.on('error', function (err) {
-        DEFAULT_LOGGER.error(err);
+      CLIENT.on('error', function(err) {
+        DEFAULT_LOGGER.error('[REDIS] Error: `{0}`', err.toString());
       });
     }
 
-    this.config = CLIENT_CONFIG;
-    this.client = CLIENT;
+    self.config = CLIENT_CONFIG;
+    self.client = CLIENT;
   }
 
-  this.subClient = null;
+  self.subClient = null;
 };
 
 /**
@@ -112,7 +113,7 @@ RedisHelper.prototype.run = function() {
       argsStr = argsStr.slice(0, LIMIT_ARGS_DUMP - 3) + '...';
     }
 
-    this.logger.debug('{0} {1} {2}', '[REDIS]', command.toUpperCase(), argsStr);
+    this.logger.debug('[REDIS] Run `{0}` <- `{1}`', command.toUpperCase(), argsStr);
   }
 
   return this.client[command].apply(this.client, args);
@@ -364,11 +365,7 @@ RedisHelper.prototype.getByPattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} <- {2}',
-      '[REDIS]',
-      '<GET BY PATTEN>',
-      pattern
-    );
+    this.logger.debug('[REDIS] GET by pattern `{0}`', pattern);
   }
 
   self.keys(pattern, function(err, keys) {
@@ -406,11 +403,7 @@ RedisHelper.prototype.delByPattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} <- {2}',
-      '[REDIS]',
-      '<DEL BY PATTEN>',
-      pattern
-    );
+    this.logger.debug('[REDIS] DEL by pattern `{0}`', pattern);
   }
 
   self.keys(pattern, function(err, keys) {
@@ -440,12 +433,7 @@ RedisHelper.prototype.hgetByPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} <- {2}',
-      '[REDIS]',
-      '<HGET BY PATTEN>',
-      key,
-      pattern
-    );
+    this.logger.debug('[REDIS] HGET by pattern `{0}`.`{1}`', key, pattern);
   }
 
   self.hkeys(key, pattern, function(err, fields) {
@@ -472,12 +460,7 @@ RedisHelper.prototype.hdelByPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} <- {2}',
-      '[REDIS]',
-      '<HDEL BY PATTEN>',
-      key,
-      pattern
-    );
+    this.logger.debug('[REDIS] HDEL by pattern `{0}`.`{1}`', key, pattern);
   }
 
   self.hkeys(key, pattern, function(err, fields) {
@@ -508,12 +491,7 @@ RedisHelper.prototype.pub = function(topic, message, options, callback) {
   options = options || {};
 
   if (!this.skipLog) {
-    this.logger.debug('{0} {1} [{2}] <- `{3}`',
-      '[REDIS]',
-      'PUB',
-      topic,
-      message.toString()
-    );
+    this.logger.debug('[REDIS] Pub -> `{0}`', topic);
   }
 
   return this.client.publish(topic, message, callback);
@@ -531,15 +509,14 @@ RedisHelper.prototype.sub = function(topic, handler, callback) {
   var self = this;
 
   if (!this.skipLog) {
-    self.logger && self.logger.debug('{0} {1} [{2}]',
-      '[REDIS]',
-      'SUB',
-      topic
-    );
+    self.logger.debug('[REDIS] Sub `{0}`', topic);
   }
 
   if (!self.subClient) {
     self.subClient = self.client.duplicate();
+    self.subClient.on('error', function(err) {
+      self.logger.error('[REDIS] Error: `{0}`', err.toString());
+    });
   }
 
   self.subClient.psubscribe(topic, function(err) {
@@ -549,11 +526,7 @@ RedisHelper.prototype.sub = function(topic, handler, callback) {
       if (!micromatch.isMatch(_channel, topic)) return;
 
       if (!self.skipLog) {
-        self.logger && self.logger.debug('{0} [{1}] -> `{2}`',
-          '[REDIS]',
-          _channel,
-          _message
-        );
+        self.logger.debug('[REDIS] Receive <- `{0}`', _channel);
       }
 
       handler(_channel, _message);
@@ -572,11 +545,7 @@ RedisHelper.prototype.sub = function(topic, handler, callback) {
  */
 RedisHelper.prototype.unsub = function(topic, callback) {
   if (!this.skipLog) {
-    this.logger && this.logger.debug('{0} {1} `{2}` -> <MESSAGE>',
-      '[REDIS]',
-      'UNSUB',
-      topic
-    );
+    this.logger && this.logger.debug('[REDIS] Unsub `{0}`', topic);
   }
 
   return this.subClient.punsubscribe(topic, callback);
@@ -640,7 +609,7 @@ RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
  */
 RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
   if (!this.skipLog) {
-    this.logger.debug('[REDIS TS] ADD {0}', key);
+    this.logger.debug('[REDIS] TS Add `{0}`', key);
   }
 
   var self = this;
@@ -715,7 +684,7 @@ RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
  */
 RedisHelper.prototype.tsGet = function(key, options, callback) {
   if (!this.skipLog) {
-    this.logger.debug('[REDIS TS] GET {0}', key);
+    this.logger.debug('[REDIS] TS Get `{0}`', key);
   }
 
   var self = this;

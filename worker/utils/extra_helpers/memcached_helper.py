@@ -49,10 +49,11 @@ class MemcachedHelper(object):
         command      = args[0]
         command_args = args[1:]
 
-        self.logger.debug('[MEMCACHED QUERY] {} <- `{}`'.format(
-            args[0].upper(),
-            ', '.join([json.dumps(x) for x in args[1:]])
-        ))
+        args_dumps = ', '.join([json.dumps(x) for x in command_args])
+        if len(args_dumps) > LIMIT_ARGS_DUMP:
+            args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
+
+        self.logger.debug('[MEMCACHED] Query `{}` <- `{}`'.format(command.upper(), args_dumps))
 
         return getattr(self.client, command.lower())(*command_args)
 
@@ -64,7 +65,7 @@ class MemcachedHelper(object):
         if len(args_dumps) > LIMIT_ARGS_DUMP:
             args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
-        self.logger.debug('[MEMCACHED RUN] {} <- `{}`'.format(command.upper(), args_dumps))
+        self.logger.debug('[MEMCACHED] Run `{}` <- `{}`'.format(command.upper(), args_dumps))
 
         return getattr(self.client, command.lower())(*command_args, **kwargs)
 

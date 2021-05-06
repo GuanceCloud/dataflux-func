@@ -10,17 +10,16 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-function retryStrategy(options) {
-  if (options.error) {
-    console.error(options.error.toString());
+function getConfig(c, retryStrategy) {
+  return {
+    host    : c.host,
+    port    : c.port,
+    db      : c.db || c.database || 0,
+    password: c.password || undefined,
 
-    if (options.error.code === 'ECONNREFUSED') {
-        return new Error('The Redis refused the connection');
-    }
-  }
-
-  return Math.min(options.attempt * 100, 3000);
-}
+    retry_strategy: retryStrategy,
+  };
+};
 
 /* Singleton Client */
 var CLIENT_CONFIG = null;
@@ -35,14 +34,27 @@ var PUB_CLIENT    = null;
  * @return {Object} - SocketIO Helper
  */
 var SocketIOServerHelper = function(server, logger, config) {
-  this.logger = logger || logHelper.createHelper();
+  var self = this;
+
+  self.logger = logger || logHelper.createHelper();
+
+  self.retryStrategy = function(options) {
+    self.logger.warning('[SOCKET IO] Reconnect...');
+    return Math.min(options.attempt * 100, 3000);
+  };
 
   if (config) {
-    this.config = toolkit.noNullOrWhiteSpace(config);
-    this.config.retry_strategy = retryStrategy;
+    self.config = toolkit.noNullOrWhiteSpace(config);
 
-    this.subClient = redis.createClient(this.config);
-    this.pubClient = redis.createClient(this.config);
+    self.subClient = redis.createClient(getConfig(self.config, self.retryStrategy));
+    self.pubClient = redis.createClient(getConfig(self.config, self.retryStrategy));
+
+    self.subClient.on('error', function(err) {
+      self.logger.error('[SOCKET IO] Error: `{0}` (in SubClient)', err.toString());
+    });
+    self.pubClient.on('error', function(err) {
+      self.logger.error('[SOCKET IO] Error: `{0}` (in PubClient)', err.toString());
+    });
 
   } else {
     if (!SUB_CLIENT || !PUB_CLIENT) {
@@ -52,23 +64,30 @@ var SocketIOServerHelper = function(server, logger, config) {
         db      : CONFIG.REDIS_DATABASE,
         password: CONFIG.REDIS_PASSWORD,
       });
-      CLIENT_CONFIG.retry_strategy = retryStrategy;
 
-      SUB_CLIENT = redis.createClient(CLIENT_CONFIG);
-      PUB_CLIENT = redis.createClient(CLIENT_CONFIG);
+      SUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
+      PUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy))
+
+      // Error handling
+      SUB_CLIENT.on('error', function(err) {
+        DEFAULT_LOGGER.error('[SOCKET IO] Error: `{0}` (in SubClient)', err.toString());
+      });
+      PUB_CLIENT.on('error', function(err) {
+        DEFAULT_LOGGER.error('[SOCKET IO] Error: `{0}` (in PubClient)', err.toString());
+      });
     }
 
-    this.config = CLIENT_CONFIG;
-    this.subClient = SUB_CLIENT;
-    this.pubClient = PUB_CLIENT;
+    self.config = CLIENT_CONFIG;
+    self.subClient = SUB_CLIENT;
+    self.pubClient = PUB_CLIENT;
   }
 
-  this.server = socketIO(server);
-  this.adapter = redisAdapter({
-    pubClient: this.pubClient,
-    subClient: this.subClient,
+  self.server = socketIO(server);
+  self.adapter = redisAdapter({
+    pubClient: self.pubClient,
+    subClient: self.subClient,
   });
-  this.server.adapter(this.adapter);
+  self.server.adapter(self.adapter);
 };
 
 exports.SocketIOServerHelper = SocketIOServerHelper;

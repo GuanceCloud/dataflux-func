@@ -62,7 +62,7 @@ class SQLServerHelper(object):
 
     def start_trans(self):
         if not self.skip_log:
-            self.logger.debug('[SQLSERVER TRANS] START')
+            self.logger.debug('[SQLSERVER] Trans START')
 
         conn = self.client.connection()
         cur  = conn.cursor()
@@ -79,7 +79,7 @@ class SQLServerHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[SQLSERVER TRANS] COMMIT')
+            self.logger.debug('[SQLSERVER] Trans COMMIT')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -94,7 +94,7 @@ class SQLServerHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[SQLSERVER TRANS] ROLLBACK')
+            self.logger.debug('[SQLSERVER] Trans ROLLBACK')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -108,7 +108,7 @@ class SQLServerHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[SQLSERVER TRANS] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[SQLSERVER] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -126,7 +126,7 @@ class SQLServerHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[SQLSERVER] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[SQLSERVER] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         conn = None
         cur  = None

@@ -371,33 +371,21 @@ MySQLHelper.prototype.query = function(sql, sqlParams, callback) {
   sql = self.format(sql.toString(), sqlParams).trim();
 
   if (!self.transConn) {
+    if (!self.skipLog) {
+      self.logger.debug('[MYSQL] Query `{0}`', sql.replace(/\s+/g, ' '));
+    }
+
     // Single Query
     if (!self.isDryRun || sql.trim().indexOf('SELECT') === 0) {
-      if (!self.skipLog) {
-        self.logger.debug('{0} {1}',
-          '[MYSQL SINGLE]',
-          sql.replace(/\s+/g, ' ')
-        );
-      }
       return self.client.query(sql, null, callback);
-
     } else {
-      if (!self.skipLog) {
-        self.logger.debug('{0} {1}',
-          '[MYSQL DRYRUN]',
-          sql.replace(/\s+/g, ' ')
-        );
-      }
       return callback();
     }
 
   } else {
     // Transaction Query
     if (!self.skipLog) {
-      self.logger.debug('{0} {1}',
-        '[MYSQL TRANS]',
-        sql.replace(/\s+/g, ' ')
-      );
+      self.logger.debug('[MYSQL] Trans Query `{0}`', sql.replace(/\s+/g, ' '));
     }
 
     return self.transConn.query(sql, null, callback);
@@ -418,9 +406,7 @@ MySQLHelper.prototype.startTrans = function(callback) {
     self.transConnRing++;
 
     if (!self.skipLog) {
-      self.logger.debug('{0} {1} {2} -> {3} - Enter by START',
-        '[MYSQL TRANS]',
-        'RING',
+      self.logger.debug('[MYSQL] Enter ring {0} -> {1} (by START)',
         self.transConnRing - 1,
         self.transConnRing
       );
@@ -443,10 +429,7 @@ MySQLHelper.prototype.startTrans = function(callback) {
         self.transConnRing++;
 
         if (!self.skipLog) {
-          self.logger.debug('{0} {1}',
-            '[MYSQL TRANS]',
-            'START'
-          );
+          self.logger.debug('[MYSQL] Trans START');
         }
 
         return callback();
@@ -469,10 +452,7 @@ MySQLHelper.prototype.commit = function(callback) {
 
   if (!self.transConn) {
     if (!self.skipLog) {
-      self.logger.warning('{0} {1}',
-        '[MYSQL TRANS]',
-        'COMMIT - Transaction not started, skip.'
-      );
+      self.logger.warning('[MYSQL] Trans COMMIT (Transaction not started, skip)');
     }
     return callback();
 
@@ -485,10 +465,7 @@ MySQLHelper.prototype.commit = function(callback) {
         self.transConn = null;
 
         if (!self.skipLog) {
-          self.logger.debug('{0} {1}',
-            '[MYSQL TRANS]',
-            'COMMIT'
-          );
+          self.logger.debug('[MYSQL] Trans COMMIT');
         }
 
         return callback(err);
@@ -496,9 +473,7 @@ MySQLHelper.prototype.commit = function(callback) {
 
     } else {
       if (!self.skipLog) {
-        self.logger.debug('{0} {1} {2} <- {3} - Leave by COMMIT',
-          '[MYSQL TRANS]',
-          'RING',
+        self.logger.debug('[MYSQL] Leave ring {0} <- {1} (by COMMIT)',
           self.transConnRing,
           self.transConnRing + 1
         );
@@ -521,10 +496,7 @@ MySQLHelper.prototype.rollback = function(callback) {
 
   if (!self.transConn) {
     if (!self.skipLog) {
-      self.logger.warning('{0} {1}',
-        '[MYSQL TRANS]',
-        'ROLLBACK - Transaction not started, skip.'
-      );
+      self.logger.warning('[MYSQL] Trans ROLLBACK (Transaction not started, skip)');
     }
     return callback();
 
@@ -537,10 +509,7 @@ MySQLHelper.prototype.rollback = function(callback) {
         self.transConn = null;
 
         if (!self.skipLog) {
-          self.logger.debug('{0} {1}',
-            '[MYSQL TRANS]',
-            'ROLLBACK'
-          );
+          self.logger.debug('[MYSQL] Trans ROLLBACK');
         }
 
         return callback();
@@ -548,9 +517,7 @@ MySQLHelper.prototype.rollback = function(callback) {
 
     } else {
       if (!self.skipLog) {
-        self.logger.debug('{0} {1} {2} <- {3} - Leave by ROLLBACK',
-          '[MYSQL TRANS]',
-          'RING',
+        self.logger.debug('[MYSQL] Leave ring {0} <- {1} (by ROLLBACK)',
           self.transConnRing,
           self.transConnRing + 1
         );

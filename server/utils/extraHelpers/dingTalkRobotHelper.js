@@ -46,8 +46,7 @@ dingTalkHelper.prototype.call = function(message, callback) {
     body   : message,
   };
 
-  self.logger && self.logger.debug('{0} <{1}> <- {2}',
-    '[DINGTALKROBOT]',
+  self.logger && self.logger.debug('[DINGTALK ROBOT] Call <{0}> <- `{1}`',
     message.msgtype || 'UNKNOW',
     JSON.stringify(message)
   );
@@ -55,10 +54,7 @@ dingTalkHelper.prototype.call = function(message, callback) {
   request(requestOptions, function(err, res, body) {
     // Request Fails
     if (err) {
-      self.logger && self.logger.error('{0} {1}',
-        '[DINGTALKROBOT ERR]',
-        err
-      );
+      self.logger && self.logger.error('[DINGTALK ROBOT] Error: `{0}`', err.toString());
       return callback && callback(err);
     }
 

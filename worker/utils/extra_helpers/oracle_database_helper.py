@@ -65,7 +65,7 @@ class OracleDatabaseHelper(object):
 
     def start_trans(self):
         if not self.skip_log:
-            self.logger.debug('[ORACLE TRANS] START')
+            self.logger.debug('[ORACLE] Trans START')
 
         conn = self.client.connection()
         cur  = conn.cursor()
@@ -82,7 +82,7 @@ class OracleDatabaseHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[ORACLE TRANS] COMMIT')
+            self.logger.debug('[ORACLE] Trans COMMIT')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -97,7 +97,7 @@ class OracleDatabaseHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[ORACLE TRANS] ROLLBACK')
+            self.logger.debug('[ORACLE] Trans ROLLBACK')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -111,7 +111,7 @@ class OracleDatabaseHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[ORACLE TRANS] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[ORACLE] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -129,7 +129,7 @@ class OracleDatabaseHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[ORACLE] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[ORACLE] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         conn = None
         cur  = None

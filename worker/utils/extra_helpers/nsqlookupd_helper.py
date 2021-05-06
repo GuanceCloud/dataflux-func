@@ -98,7 +98,7 @@ class NSQLookupHelper(object):
                     next_nsq_nodes.append('{}:{}'.format(broadcast_address, http_port))
 
             if next_nsq_nodes:
-                self.logger.debug('[NSQLOOKUP] NSQ nodes updated.')
+                self.logger.debug('[NSQLOOKUP] Update nodes')
                 self.nsq_nodes = next_nsq_nodes
 
         finally:
@@ -135,10 +135,7 @@ class NSQLookupHelper(object):
         message = six.ensure_binary(message)
         timeout = timeout or self.config['timeout']
 
-        message_dump = six.ensure_str(message)
-        if len(message_dump) > LIMIT_MESSAGE_DUMP:
-            message_dump = message_dump[0:LIMIT_MESSAGE_DUMP-3] + '...'
-        self.logger.debug('[NSQLOOKUP] PUB `{}`'.format(message_dump))
+        self.logger.debug('[NSQLOOKUP] Pub -> `{}`'.format(topic))
 
         r = requests.post(url, params=query, data=message, timeout=timeout)
         r.raise_for_status()
