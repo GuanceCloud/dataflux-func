@@ -187,9 +187,11 @@ exports.runListener = function runListener(app) {
           client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(app.locals.logger, d.configJSON);
 
           // 订阅主题
-          d.configJSON.topicHandlers.forEach(function(th) {
-            client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
-          });
+          if (!toolkit.isNothing(d.configJSON)) {
+            d.configJSON.topicHandlers.forEach(function(th) {
+              client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
+            });
+          }
 
           // 加入新客户端
           CLIENT_MAP[d.id]         = client;
