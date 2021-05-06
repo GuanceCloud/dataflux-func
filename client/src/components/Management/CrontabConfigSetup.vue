@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+parameterHint: 'When value is "FROM_PARAMETER" means the argument can be assigned by the caller'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Tags   : 标签
 Add Tag: 添加标签
@@ -5,6 +9,8 @@ Add Tag: 添加标签
 Add Crontab Config   : 添加自动触发配置
 Modify Crontab Config: 修改自动触发配置
 Delete Crontab Config: 删除自动触发配置
+
+parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用方指定本参数'
 </i18n>
 
 <template>
@@ -32,7 +38,8 @@ Delete Crontab Config: 删除自动触发配置
 
                 <el-form-item label="调用参数" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
-                  <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
+                  <InfoBlock title="JSON格式的参数（**kwargs）"></InfoBlock>
+                  <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
                 </el-form-item>

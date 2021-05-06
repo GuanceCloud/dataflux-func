@@ -80,19 +80,28 @@
         </el-col>
       </el-row>
 
-      <span v-if="!apiBody" class="text-bad">
-        Body内容填写存在错误，正确填写后将展示示例
-      </span>
-      <div v-else>
+      <template v-if="!apiBody">
+        <span class="text-bad">Body内容填写存在错误，正确填写后将展示示例</span>
+      </template>
+      <template v-else>
         <template v-if="showGetExampleSimplified">
           <el-divider content-position="left">GET 简化形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample_simplified" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_simplified"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
+              <el-link v-if="stringParametersOnly"
+                type="primary"
+                :href="apiURLWithQueryExample_simplified"
+                target="_blank"
+                class="api-url-with-query">
+                <code v-html="apiURLWithQueryExampleText_simplified"></code>
+              </el-link>
+              <InfoBlock
+                :type="stringParametersOnly ? 'info' : 'error'"
+                title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample_simplified"></CopyButton>
+              <CopyButton v-if="stringParametersOnly"
+                :content="apiURLWithQueryExample_simplified"></CopyButton>
             </el-col>
           </el-row>
         </template>
@@ -115,11 +124,20 @@
           <el-divider content-position="left">GET 扁平形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample_flattened" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText_flattened"></code></el-link>
-              <InfoBlock type="info" title="此方式参数值只支持字符串"></InfoBlock>
+              <el-link v-if="stringParametersOnly"
+                type="primary"
+                :href="apiURLWithQueryExample_flattened"
+                target="_blank"
+                class="api-url-with-query">
+                <code v-html="apiURLWithQueryExampleText_flattened"></code>
+              </el-link>
+              <InfoBlock
+                :type="stringParametersOnly ? 'info' : 'error'"
+                title="此方式参数值只支持字符串"></InfoBlock>
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample_flattened"></CopyButton>
+              <CopyButton v-if="stringParametersOnly"
+                :content="apiURLWithQueryExample_flattened"></CopyButton>
             </el-col>
           </el-row>
         </template>
@@ -128,19 +146,21 @@
           <el-divider content-position="left">POST 简化形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
-              <el-input
+              <el-input v-if="stringParametersOnly"
                 type="textarea"
                 readonly
                 autosize
                 resize="none"
-                :value="apiCallByCurlExample_simplified">
-              </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串，且不支持 options 参数。额外支持文件上传"></InfoBlock>
+                :value="apiCallByCurlExample_simplified"></el-input>
+              <InfoBlock
+                :type="stringParametersOnly ? 'info' : 'error'"
+                title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
               <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
               <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample_simplified"></CopyButton>
+              <CopyButton v-if="stringParametersOnly"
+                :content="apiCallByCurlExample_simplified"></CopyButton>
             </el-col>
           </el-row>
         </template>
@@ -169,22 +189,26 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input
+                v-if="stringParametersOnly"
                 type="textarea"
                 readonly
                 autosize
                 resize="none"
                 :value="apiCallByCurlExample_flattened">
               </el-input>
-              <InfoBlock type="info" title="此方式参数值只支持字符串。额外支持文件上传"></InfoBlock>
+              <InfoBlock
+                :type="stringParametersOnly ? 'info' : 'error'"
+                title="此方式参数值只支持字符串"></InfoBlock>
               <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
               <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample_flattened"></CopyButton>
+              <CopyButton v-if="stringParametersOnly"
+                :content="apiCallByCurlExample_flattened"></CopyButton>
             </el-col>
           </el-row>
         </template>
-      </div>
+      </template>
     </span>
   </el-dialog>
 </template>
@@ -465,6 +489,17 @@ export default {
     },
     apiCallByCurlExample_flattened() {
       return this.getAPICallByCurlPostExample('flattened');
+    },
+
+    stringParametersOnly() {
+      if (!this.apiBody) return false;
+
+      let kwargs = this.apiBody.kwargs || {};
+      for (let k in kwargs) {
+        if ('string' !== typeof kwargs[k]) return false;
+      }
+
+      return true;
     },
   },
   props: {
