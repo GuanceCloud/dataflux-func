@@ -131,7 +131,11 @@ exports.runListener = function runListener(app) {
 
           dbRes.forEach(function(d) {
             d.configJSON = d.configJSON || {};
-            dataSourceMap[d.id] = d;
+
+            if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
+              // 仅搜集配置了主题处理函数的数据源
+              dataSourceMap[d.id] = d;
+            }
           });
 
           return asyncCallback();
@@ -158,6 +162,8 @@ exports.runListener = function runListener(app) {
             CLIENT_MAP[dataSourceId].end();
             delete CLIENT_MAP[dataSourceId];
             delete CLIENT_REFRESH_MAP[dataSourceId];
+
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
           }
         }
 
@@ -167,15 +173,15 @@ exports.runListener = function runListener(app) {
           var refreshTime = refreshTimeMap[dataSourceId]     || 0;
 
           if (refreshTime !== localTime) {
-            app.locals.logger.debug('[SUB] Client refreshed: `{0}@{1}` remote=`{2}`, local=`{3}`, diff=`{4}`',
-                dataSourceId, (d.configJSON.host || 'UNKNOW'), refreshTime, localTime, refreshTime - localTime);
+            app.locals.logger.debug('[SUB] Client refreshed: `{0}` remote=`{1}`, local=`{2}`, diff=`{3}`',
+                dataSourceId, refreshTime, localTime, refreshTime - localTime);
 
             if (CLIENT_MAP[dataSourceId]) {
               CLIENT_MAP[dataSourceId].end();
               delete CLIENT_MAP[dataSourceId];
               delete CLIENT_REFRESH_MAP[dataSourceId];
 
-              app.locals.logger.debug('[SUB] Client removed: `{0}@{1}`', dataSourceId, (d.configJSON.host || 'UNKNOW'));
+              app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
             }
           }
 
@@ -188,7 +194,7 @@ exports.runListener = function runListener(app) {
           try {
             client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(app.locals.logger, d.configJSON);
           } catch(err) {
-            app.locals.logger.warning('[SUB] Client creating Error: `{0}@{1}`, reason: {2}', dataSourceId, (d.configJSON.host || 'UNKNOW'), err.toString());
+            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', dataSourceId, err.toString());
             return eachCallback();
           }
 
@@ -203,7 +209,7 @@ exports.runListener = function runListener(app) {
           CLIENT_MAP[d.id]         = client;
           CLIENT_REFRESH_MAP[d.id] = refreshTimeMap[d.id] || 0;
 
-          app.locals.logger.debug('[SUB] Client created: `{0}@{1}`', dataSourceId, (d.configJSON.host || 'UNKNOW'));
+          app.locals.logger.debug('[SUB] Client created: `{0}`', dataSourceId);
           return eachCallback();
 
         }, asyncCallback);
