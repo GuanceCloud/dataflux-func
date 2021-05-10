@@ -27,7 +27,6 @@ MAP_CONST.prototype.get = function(key) {
 };
 
 // 数据源
-import logo_df_dataway    from '@/assets/img/logo-dataflux-dataway.png'
 import logo_influxdb      from '@/assets/img/logo-influxdb.png'
 import logo_mysql         from '@/assets/img/logo-mysql.png'
 import logo_memcached     from '@/assets/img/logo-memcached.png'
@@ -51,7 +50,7 @@ export default {
         key           : 'df_dataway',
         name          : 'DataWay',
         fullName      : 'DataFlux DataWay (HTTP)',
-        logo          : logo_df_dataway,
+        logo          : null,
         tagType       : 'info',
         debugSupported: false,
         sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
@@ -62,6 +61,20 @@ export default {
           token    : { default: null },
           accessKey: { default: null },
           secretKey: { default: null },
+        },
+      },
+      {
+        key           : 'df_datakit',
+        name          : 'DataKit',
+        fullName      : 'DataFlux DataKit (HTTP)',
+        logo          : null,
+        tagType       : 'info',
+        debugSupported: false,
+        sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
+        configFields: {
+          host     : { default: null, isRequired: true },
+          port     : { default: 9529, isRequired: true },
+          protocol : { default: 'http' },
         },
       },
       {

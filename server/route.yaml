@@ -2572,6 +2572,7 @@ dataSourceAPI:
         $searchKey : dsrc.type
         $commaArrayIn:
           - df_dataway
+          - df_datakit
           - influxdb
           - mysql
           - redis
@@ -2583,6 +2584,7 @@ dataSourceAPI:
           - mongodb
           - elasticsearch
           - nsq
+          - mqtt
 
   add:
     showInDoc    : true
@@ -2614,6 +2616,7 @@ dataSourceAPI:
           $type      : enum
           $in:
             - df_dataway
+            - df_datakit
             - influxdb
             - mysql
             - redis
@@ -2829,6 +2832,7 @@ dataSourceAPI:
       |   数据源类型    |                   查询语句示例                  |
       |-----------------|-------------------------------------------------|
       | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
+      | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
       | `influx`        | `"SELECT * FROM some_measurement LIMIT 10"`     |
       | `mysql`         | `"SELECT * FROM some_table LIMIT 10"`           |
       | `redis`         | `"GET some_key"`                                |
@@ -2840,6 +2844,7 @@ dataSourceAPI:
       | `mongodb`       | 使用封装方法操作，不适用SQL语句                 |
       | `elasticsearch` | `"GET /_search?q=field:value"`                  |
       | `nsq`           | 使用封装方法操作，不适用SQL语句                 |
+      | `mqtt`          | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
     url          : /api/v1/data-sources/:id/do/query

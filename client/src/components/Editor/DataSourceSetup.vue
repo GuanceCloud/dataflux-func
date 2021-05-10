@@ -92,9 +92,13 @@ Please select handler Func                        : 请选择处理函数
                   </el-select>
                 </el-form-item>
 
-                <template v-if="selectedType">
+                <template v-if="selectedType && C.DATE_SOURCE_MAP.get(selectedType).logo">
                   <el-form-item>
-                    <el-image class="data-source-logo" :class="[`logo-${selectedType}`]" :src="C.DATE_SOURCE_MAP.get(selectedType).logo"></el-image>
+                    <el-image
+                      class="data-source-logo"
+                      :class="[`logo-${selectedType}`]"
+                      :src="C.DATE_SOURCE_MAP.get(selectedType).logo">
+                    </el-image>
                   </el-form-item>
 
                   <el-form-item v-if="C.DATE_SOURCE_MAP.get(selectedType).tips">
@@ -704,8 +708,9 @@ export default {
 .data-source-logo img {
   width: auto;
 }
-.data-source-logo.logo-dataflux-dataway {
-  height: 60px !important;
+.data-source-logo.logo-df_dataway {
+}
+.data-source-logo.logo-df_datakit {
 }
 .data-source-logo.logo-influxdb {
   height: 70px !important;
