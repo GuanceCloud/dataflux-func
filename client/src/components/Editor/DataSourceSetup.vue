@@ -92,8 +92,8 @@ Please select handler Func                        : 请选择处理函数
                   </el-select>
                 </el-form-item>
 
-                <template v-if="selectedType && C.DATE_SOURCE_MAP.get(selectedType).logo">
-                  <el-form-item>
+                <template v-if="selectedType">
+                  <el-form-item v-if="C.DATE_SOURCE_MAP.get(selectedType).logo">
                     <el-image
                       class="data-source-logo"
                       :class="[`logo-${selectedType}`]"
