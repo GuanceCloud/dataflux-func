@@ -71,7 +71,7 @@
             v-model="apiBodyExample">
           </el-input>
           <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
-          <InfoBlock v-if="apiBodyExample && apiBodyExample.indexOf('FROM_PARAMETER') >= 0" type="info" title="&quot;FROM_PARAMETER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
+          <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
           <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
           <InfoBlock v-if="apiFileUploadSupport" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
         </el-col>
@@ -271,7 +271,7 @@ export default {
       let nextAPIFileUploadSupport   = false;
       let nextAPICustomKwargsSupport = false;
       if (!this.T.isNothing(funcKwargs)) {
-        nextAPIFileUploadSupport = funcKwargs['funcKwargs'] = 'FROM_PARAMETER';
+        nextAPIFileUploadSupport = this.common.isFuncArgumentPlaceholder(funcKwargs['funcKwargs']);
 
         for (let k in funcKwargs) {
           if (k.indexOf('**') < 0) continue;

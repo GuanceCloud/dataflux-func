@@ -159,7 +159,7 @@ export default {
 
       let funcCallKwargsJSON = {};
       for (let k in d.funcCallKwargsJSON) if (d.funcCallKwargsJSON.hasOwnProperty(k)) {
-        if (d.funcCallKwargsJSON[k] === 'FROM_PARAMETER') {
+        if (this.common.isFuncArgumentPlaceholder(d.funcCallKwargsJSON[k])) {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }

@@ -1,5 +1,5 @@
 <i18n locale="en" lang="yaml">
-parameterHint: 'When value is "FROM_PARAMETER" means the argument can be assigned by the caller'
+parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -10,7 +10,7 @@ Add Batch   : 添加批处理
 Modify Batch: 修改批处理
 Delete Batch: 删除批处理
 
-parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用时指定本参数'
+parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 </i18n>
 
 <template>
@@ -49,7 +49,7 @@ parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用时指定
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
-                <el-form-item label="调用参数" prop="funcCallKwargsJSON">
+                <el-form-item label="参数指定" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock title="JSON格式的参数（**kwargs）"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
@@ -259,7 +259,7 @@ export default {
         if (p.indexOf('**') === 0) {
           // 暂定：不展示**kwargs参数
         } else {
-          example[p] = 'FROM_PARAMETER';
+          example[p] = 'INPUT_BY_CALLER';
         }
       });
 

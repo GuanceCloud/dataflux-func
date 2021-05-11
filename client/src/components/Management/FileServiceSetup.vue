@@ -205,7 +205,7 @@ export default {
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no arugment');
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
 
       return {
         id: [

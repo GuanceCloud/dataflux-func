@@ -365,8 +365,9 @@ h3 {
   bottom: 0;
 }
 .paging-area {
-  height: 45px;
+  height: 50px !important;
   text-align: right;
+  padding: 10px 20px !important;
 }
 .common-form {
   width: 620px;
@@ -394,6 +395,7 @@ h3 {
   scroll-behavior: smooth;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .text-main {
@@ -546,9 +548,9 @@ content: "\25B2";
 }
 .fix-list-button .el-link {
   font-size: 12px;
-  line-height: 1;
-  display: inline;
   margin-left: 10px;
+  position: relative;
+  top: -1px;
 }
 .fix-list-button .el-link + .el-button {
   margin-left: 10px;

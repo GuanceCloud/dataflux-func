@@ -130,6 +130,13 @@ function _getFuncById(locals, funcId, callback) {
   });
 };
 
+function _isFuncArgumentPlaceholder(v) {
+  for (var i = 0; i < CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST.length; i++) {
+    if (CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST[i] === v) return true;
+  }
+  return false;
+};
+
 function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions, callback) {
   var fakeReq = {
     path  : 'FAKE',
@@ -438,21 +445,23 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
   // 合并请求参数
   var mergedFuncCallKwargs = toolkit.jsonCopy(inputedFuncCallKwargs);
+
   for (var k in baseFuncCallKwargs) if (baseFuncCallKwargs.hasOwnProperty(k)) {
     var v = baseFuncCallKwargs[k];
 
-    // 检查固定参数是否存在非法传递
-    if (v !== 'FROM_PARAMETER') {
-      if (k in mergedFuncCallKwargs && mergedFuncCallKwargs[k] !== v) {
-        throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
-          kwargsField: k,
-          kwargsValue: mergedFuncCallKwargs[k],
-        });
-      }
+    // 参数占位符，不作处理
+    if (_isFuncArgumentPlaceholder(v)) continue;
 
-      // 填入固定参数
-      mergedFuncCallKwargs[k] = v;
+    // 已经指定了固定参数值的，不允许额外传递
+    if (k in mergedFuncCallKwargs) {
+      throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
+        kwargsField: k,
+        kwargsValue: mergedFuncCallKwargs[k],
+      });
     }
+
+    // 填入固定参数
+    mergedFuncCallKwargs[k] = v;
   }
 
   return mergedFuncCallKwargs;
@@ -1667,6 +1676,8 @@ exports.getSystemConfig = function(req, res, next) {
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
     _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
+
+    _FUNC_ARGUMENT_PLACEHOLDER_LIST: CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST,
 
     _FUNC_TASK_DEBUG_TIMEOUT      : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
     _FUNC_TASK_DEFAULT_TIMEOUT    : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,

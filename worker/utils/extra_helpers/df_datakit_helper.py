@@ -23,7 +23,7 @@ def get_config(c):
         'debug'   : c.get('debug', False),
     })
 
-class DFDataWayHelper(object):
+class DFDataKitHelper(object):
     def __init__(self, logger, config, *args, **kwargs):
         self.logger = logger
 

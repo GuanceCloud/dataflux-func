@@ -225,6 +225,8 @@ _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
 # 函数任务模块一般作为常量的配置
+_FUNC_ARGUMENT_PLACEHOLDER_LIST: INPUT_BY_CALLER,FROM_PARAMETER
+
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
 _FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'

@@ -3088,7 +3088,7 @@ authLinkAPI:
           "funcCallKwargsJSON": {
             "arg1": "hello, world.",
             "arg2": null,
-            "arg3": "FROM_PARAMETER"
+            "arg3": "INPUT_BY_CALLER"
           },
           ...
         }
@@ -3123,7 +3123,7 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: true
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 授权链接标签（直接替换完整数组）
           $allowNull: true
@@ -3220,7 +3220,7 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 授权链接标签（直接替换完整数组）
           $allowNull: true
@@ -3324,7 +3324,7 @@ authLinkAPI:
             $desc      : 函数调用参数JSON (kwargs)
             $isRequired: true
             $type      : json
-            $example   : {"msg": "FROM_PARAMETER"}
+            $example   : {"msg": "INPUT_BY_CALLER"}
           tagsJSON:
             $desc     : 授权链接标签（直接替换完整数组）
             $allowNull: true
@@ -3469,7 +3469,7 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 授权链接标签（直接替换完整数组）
           $allowNull: true
@@ -4096,7 +4096,7 @@ batchAPI:
           "funcCallKwargsJSON": {
             "arg1": "hello, world.",
             "arg2": null,
-            "arg3": "FROM_PARAMETER"
+            "arg3": "INPUT_BY_CALLER"
           },
           ...
         }
@@ -4131,7 +4131,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: true
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true
@@ -4175,7 +4175,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true
@@ -4234,7 +4234,7 @@ batchAPI:
             $desc      : 函数调用参数JSON (kwargs)
             $isRequired: true
             $type      : json
-            $example  : {"msg": "FROM_PARAMETER"}
+            $example  : {"msg": "INPUT_BY_CALLER"}
           tagsJSON:
             $desc     : 批处理标签（直接替换完整数组）
             $allowNull: true
@@ -4325,7 +4325,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true

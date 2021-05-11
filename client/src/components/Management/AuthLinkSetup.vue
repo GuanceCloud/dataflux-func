@@ -1,5 +1,5 @@
 <i18n locale="en" lang="yaml">
-parameterHint: 'When value is "FROM_PARAMETER" means the argument can be assigned by the caller'
+parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 shortcutDays : '{n} day | {n} days'
 </i18n>
 
@@ -7,7 +7,7 @@ shortcutDays : '{n} day | {n} days'
 Use custom ID                                    : 使用自定义ID
 ID is used in the calling URL                    : ID关系到调用时的URL
 Func                                             : 执行函数
-Arguments                                        : 参数
+Arguments                                        : 参数指定
 Tags                                             : 标签
 Add Tag                                          : 添加标签
 'JSON formated arguments (**kwargs)'             : 'JSON格式的参数（**kwargs）'
@@ -30,9 +30,9 @@ Please select Func                                 : 请选择执行函数
 Only date-time between 1970 and 2037 are allowed   : 只能选择1970年至2037年之间的日期
 Date-time cannot earlier than 1970                 : 日期不能早于1970年
 Date-time cannot later than 2037                   : 时间不能晚于2037年
-'Please input arguments, input {} when no arugment': '请输入参数，无参数时填写 {}'
+'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
 
-parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用时指定本参数'
+parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 shortcutDays : '{n}天'
 </i18n>
 
@@ -315,7 +315,7 @@ export default {
         if (p.indexOf('**') === 0) {
           // 暂定：不展示**kwargs参数
         } else {
-          example[p] = 'FROM_PARAMETER';
+          example[p] = 'INPUT_BY_CALLER';
         }
       });
 
@@ -341,7 +341,7 @@ export default {
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no arugment');
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
 
       return {
         id: [
