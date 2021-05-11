@@ -12,7 +12,7 @@ Func not exists: 函数不存在
       <code class="text-main text-small">{{ id }}(</code>
       <div class="func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
         <code class="func-kwargs-name">{{ name }}</code>
-        <code class="func-kwargs-value" v-if="value === 'FROM_PARAMETER'">调用方指定</code>
+        <code class="func-kwargs-value" v-if="value === 'FROM_PARAMETER'">调用时指定</code>
         <el-tooltip placement="top" v-else>
           <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
           <code class="func-kwargs-value">固定值</code>

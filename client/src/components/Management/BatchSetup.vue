@@ -10,7 +10,7 @@ Add Batch   : 添加批处理
 Modify Batch: 修改批处理
 Delete Batch: 删除批处理
 
-parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用方指定本参数'
+parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用时指定本参数'
 </i18n>
 
 <template>

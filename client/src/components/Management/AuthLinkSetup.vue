@@ -32,7 +32,7 @@ Date-time cannot earlier than 1970                 : 日期不能早于1970年
 Date-time cannot later than 2037                   : 时间不能晚于2037年
 'Please input arguments, input {} when no arugment': '请输入参数，无参数时填写 {}'
 
-parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用方指定本参数'
+parameterHint: '函数值指定为"FROM_PARAMETER"时表示允许调用时指定本参数'
 shortcutDays : '{n}天'
 </i18n>
 
