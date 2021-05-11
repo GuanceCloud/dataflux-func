@@ -11,7 +11,6 @@ var request    = require('request');
 var LRU        = require('lru-cache');
 var yaml       = require('js-yaml');
 var sortedJSON = require('sorted-json');
-var request    = require('request');
 var moment     = require('moment');
 var byteSize   = require('byte-size');
 
