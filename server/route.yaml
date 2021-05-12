@@ -1873,7 +1873,7 @@ datafluxFuncAPI:
     url          : /api/v1/resources/operate
     response     : json
     requireSignIn: true
-    privilege    : general_r
+    privilege    : general_w
     body:
       targetPath:
         $desc    : 操作目标路径（文件/目录）
@@ -3825,7 +3825,7 @@ crontabConfigAPI:
     url          : /api/v1/crontab-configs/do/modify-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
+    privilege    : general_w
     query:
       id:
         $desc      : 根据ID过滤
@@ -3913,7 +3913,7 @@ crontabConfigAPI:
     url          : /api/v1/crontab-configs/do/delete-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
+    privilege    : general_w
     query:
       id:
         $desc      : 根据ID过滤

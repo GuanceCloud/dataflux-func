@@ -570,12 +570,18 @@ content: "\25B2";
 .el-loading-text {
   font-size: 18px;
 }
-.el-popover {
+.el-tooltip__popper {
   z-index: 3000 !important;
+}
+.el-popover {
+  z-index: 3001 !important;
+}
+.el-notification {
+  z-index: 3001 !important;
 }
 .el-message {
   top: 40px !important;
-  z-index: 3000 !important;
+  z-index: 3001 !important;
 }
 .el-message-box {
   width: 520px !important;
@@ -616,9 +622,6 @@ content: "\25B2";
 [captcha] .el-input-group__prepend {
   padding-left: 0;
   padding-right: 0;
-}
-.el-tooltip__popper {
-  z-index: 9999 !important;
 }
 .el-form .el-transfer-panel__item {
   /*https://github.com/ElemeFE/element/issues/18228*/

@@ -31,14 +31,14 @@ Follow System: 跟随系统
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            {{ $t('Code Editor') }}
+            <span class="hidden-sm-and-down">{{ $t('Code Editor') }}</span>
           </span>
         </el-menu-item>
 
         <el-menu-item index="/management/overview">
           <span>
             <i class="fa fa-fw fa-tasks"></i>
-            {{ $t('Management') }}
+            <span class="hidden-md-and-down">{{ $t('Management') }}</span>
           </span>
         </el-menu-item>
       </template>
@@ -46,15 +46,17 @@ Follow System: 跟随系统
       <el-menu-item index="">
         <a href="https://function.dataflux.cn/#/doc-index" target="_blank">
           <i class="fa fa-fw fa-question-circle-o"></i>
-          {{ $t('Guide') }}
+          <span class="hidden-md-and-down">{{ $t('Guide') }}</span>
         </a>
       </el-menu-item>
 
       <el-submenu v-if="isSignedIn" class="menu-right" index="user" popper-class="navi-content" :show-timeout="0">
         <template slot="title">
-          <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
-          <i v-else class="fa fa-fw fa-user-md"></i>
-          <span>{{ userProfileName }}</span>
+          <span>
+            <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
+            <i v-else class="fa fa-fw fa-user-md"></i>
+            <span class="hidden-md-and-down">{{ userProfileName }}</span>
+          </span>
         </template>
         <el-menu-item index="/setting/clear-cache">{{ $t('Settings') }}</el-menu-item>
         <el-menu-item @click="goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
@@ -63,7 +65,7 @@ Follow System: 跟随系统
       <el-menu-item v-else class="menu-right" index="">
         <span>
           <i class="fa fa-fw fa-user-times"></i>
-          <span>{{ $t('Not Signed In') }}</span>
+          <span class="hidden-md-and-down">{{ $t('Not Signed In') }}</span>
         </span>
       </el-menu-item>
 
@@ -96,13 +98,13 @@ Follow System: 跟随系统
       <el-menu-item class="menu-right" index="">
         <a href="/#/auth-link-func-doc" target="_blank">
           <i class="fa fa-fw fa-link"></i>
-          {{ $t('Auth Link Doc') }}
+          <span class="hidden-sm-and-down">{{ $t('Auth Link Doc') }}</span>
         </a>
       </el-menu-item>
       <el-menu-item class="menu-right" index="">
         <a href="/#/func-doc" target="_blank">
           <i class="fa fa-fw fa-book"></i>
-          {{ $t('Func Doc') }}
+          <span class="hidden-sm-and-down">{{ $t('Func Doc') }}</span>
         </a>
       </el-menu-item>
     </el-menu>
@@ -208,7 +210,6 @@ export default {
 }
 .navi-content .el-menu-item i,
 .navi-content .el-submenu__title i {
-  margin-top: -3px;
 }
 .navi-content .el-menu.el-menu--horizontal {
   border-bottom: none !important;
@@ -216,7 +217,9 @@ export default {
 .navi-content .el-menu>.el-menu-item,
 .navi-content .el-menu>.el-submenu .el-submenu__title {
   height: 30px !important;
-  line-height: 30px !important;
+  line-height: 1 !important;
+  display: flex;
+  align-items: center;
 }
 .navi-content .el-menu>.el-menu-item.is-active,
 .navi-content .el-menu>.el-submenu.is-active,
