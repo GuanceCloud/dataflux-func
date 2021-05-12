@@ -19,7 +19,6 @@ def get_config(c):
         'host'    : c.get('host'),
         'port'    : c.get('port'),
         'protocol': c.get('protocol'),
-        'path'    : c.get('path'),
         'debug'   : c.get('debug', False),
     })
 
@@ -34,7 +33,7 @@ class DFDataKitHelper(object):
         pass
 
     def check(self):
-        url = '{0}://{1}:{2}/'.format(
+        url = '{0}://{1}:{2}/v1/ping'.format(
             self.config.get('protocol', 'http'),
             self.config.get('host'),
             self.config.get('port'))

@@ -203,11 +203,10 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, timeout=None, debug=False, dry_run=False):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False):
         self.host       = host or 'localhost'
         self.port       = int(port or 9529)
         self.protocol   = protocol or 'http'
-        self.path       = path or '/v1/write/metric'
         self.timeout    = timeout or 3
         self.debug      = debug or False
         self.dry_run    = dry_run or False
@@ -223,14 +222,6 @@ class DataKit(object):
             if splited_url.scheme:
                 self.protocol = splited_url.scheme
 
-            if splited_url.path:
-                self.path = splited_url.path
-
-            if splited_url.query:
-                parsed_query = parse_qs(splited_url.query)
-                if 'token' in parsed_query:
-                    self.token = parsed_query['token'][0]
-
             if splited_url.netloc:
                 host_port_parts = splited_url.netloc.split(':')
                 if len(host_port_parts) >= 1:
@@ -242,46 +233,6 @@ class DataKit(object):
 
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
-
-    def _get_body_md5(self, body=None):
-        h = md5()
-        h.update(ensure_binary(body or ''))
-
-        md5_res = h.digest()
-        md5_res = base64.standard_b64encode(md5_res).decode()
-
-        return md5_res
-
-    def _get_sign(self, str_to_sign):
-        h = hmac.new(ensure_binary(self.secret_key), ensure_binary(str_to_sign), sha1)
-
-        sign = h.digest()
-        sign = base64.standard_b64encode(sign).decode()
-
-        return sign
-
-    def _prepare_auth_headers(self, method, content_type=None, body=None):
-        body         = body         or ''
-        content_type = content_type or ''
-
-        headers = {}
-        if not self.access_key or not self.secret_key:
-            return headers
-
-        body_md5 = self._get_body_md5(body)
-        date_str = formatdate(timeval=None, localtime=False, usegmt=True)
-        str_to_sign = '\n'.join([method, body_md5, self.CONTENT_TYPE, date_str])
-
-        sign = self._get_sign(str_to_sign)
-
-        if self.debug:
-            print('\n[String to sign] {0}'.format(json.dumps(str_to_sign)))
-            print('[Signature] {0}'.format(json.dumps(sign)))
-
-        headers['Date']          = date_str
-        headers['Authorization'] = 'DWAY {0}:{1}'.format(self.access_key, sign)
-
-        return headers
 
     @classmethod
     def convert_to_ns(self, timestamp=None):
@@ -420,33 +371,13 @@ class DataKit(object):
 
     def _do_get(self, path, query=None, headers=None):
         method = 'GET'
-        path   = path or self.path
-
-        query = query or {}
-        if self.token:
-            query['token'] = self.token
-
-        _auth_headers = self._prepare_auth_headers(method=method)
-
-        headers = headers or {}
-        headers.update(_auth_headers)
 
         return self._do_request(method=method, path=path, query=query, headers=headers)
 
-    def _do_post(self, path, body, content_type, query=None, headers=None, with_rp=False):
+    def _do_post(self, path, body, content_type, query=None, headers=None):
         method = 'POST'
-        path   = path or self.path
-
-        query = query or {}
-        if self.token:
-            query['token'] = self.token
-        if with_rp and self.rp:
-            query['rp'] = self.rp
-
-        _auth_headers = self._prepare_auth_headers(method=method, content_type=content_type, body=body)
 
         headers = headers or {}
-        headers.update(_auth_headers)
         headers['Content-Type'] = content_type
 
         return self._do_request(method=method, path=path, query=query, body=body, headers=headers)
@@ -455,7 +386,7 @@ class DataKit(object):
     def get(self, path, query=None, headers=None):
         return self._do_get(path=path, query=query, headers=headers)
 
-    def post_line_protocol(self, points, path=None, query=None, headers=None, with_rp=False):
+    def post_line_protocol(self, points, path=None, query=None, headers=None):
         content_type = 'text/plain'
 
         # break obj reference
@@ -467,9 +398,9 @@ class DataKit(object):
 
         body = self.prepare_line_protocol(points)
 
-        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
 
-    def post_json(self, json_obj, path, query=None, headers=None, with_rp=False):
+    def post_json(self, json_obj, path, query=None, headers=None):
         content_type = 'application/json'
 
         # break obj reference
@@ -483,10 +414,10 @@ class DataKit(object):
         if isinstance(body, (dict, list, tuple)):
             body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
-        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
 
     # High-Level API
-    def _prepare_metric(self, data):
+    def _prepare_data(self, data):
         assert_dict(data, name='data')
 
         measurement = assert_str(data.get('measurement'), name='measurement')
@@ -510,7 +441,7 @@ class DataKit(object):
         }
         return prepared_data
 
-    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
+    def _write(self, path, measurement, tags=None, fields=None, timestamp=None):
         data = {
             'measurement': measurement,
             'tags'       : tags,
@@ -521,35 +452,19 @@ class DataKit(object):
         # break obj reference
         data = json_copy(data)
 
-        prepared_data = self._prepare_metric(data)
+        prepared_data = self._prepare_data(data)
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
+        return self.post_line_protocol(points=prepared_data, path=path)
 
-    def write_metrics(self, data):
-        if not isinstance(data, (list, tuple)):
-            e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
-            raise e
-
+    def _write_many(self, path, data):
         # break obj reference
         data = json_copy(data)
 
         prepared_data = []
         for d in data:
-            prepared_data.append(self._prepare_metric(d))
+            prepared_data.append(self._prepare_data(d))
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
-
-    def write_point(self, measurement, tags=None, fields=None, timestamp=None):
-        '''
-        Alias of self.write_metric()
-        '''
-        return self.write_metric(measurement=measurement, tags=tags, fields=fields, timestamp=timestamp)
-
-    def write_points(self, points):
-        '''
-        Alias of self.write_metrics()
-        '''
-        return self.write_metrics(data=points)
+        return self.post_line_protocol(points=prepared_data, path=path)
 
 # Alias
 Datakit = DataKit
