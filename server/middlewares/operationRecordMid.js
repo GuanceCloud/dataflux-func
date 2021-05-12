@@ -71,6 +71,7 @@ exports.prepare = function(req, res, next) {
     userId         : res.locals.user.id   || null,
     username       : res.locals.user.name || null,
     clientId       : res.locals.clientId  || null,
+    clientIPsJSON  : toolkit.isNothing(req.ips) ? [req.ip] : req.ips,
     traceId        : res.locals.traceId   || null,
     reqMethod      : req.method,
     reqRoute       : null,

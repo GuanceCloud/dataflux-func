@@ -203,13 +203,14 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False):
-        self.host       = host or 'localhost'
-        self.port       = int(port or 9529)
-        self.protocol   = protocol or 'http'
-        self.timeout    = timeout or 3
-        self.debug      = debug or False
-        self.dry_run    = dry_run or False
+    def __init__(self, url=None, host=None, port=None, protocol=None, source=None, timeout=None, debug=False, dry_run=False):
+        self.host     = host or 'localhost'
+        self.port     = int(port or 9529)
+        self.protocol = protocol or 'http'
+        self.source   = source or 'datakit_python_sdk'
+        self.timeout  = timeout or 3
+        self.debug    = debug or False
+        self.dry_run  = dry_run or False
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -454,7 +455,8 @@ class DataKit(object):
 
         prepared_data = self._prepare_data(data)
 
-        return self.post_line_protocol(points=prepared_data, path=path)
+        query = { 'input': self.source }
+        return self.post_line_protocol(points=prepared_data, path=path, query=query)
 
     def _write_many(self, path, data):
         # break obj reference
@@ -464,7 +466,26 @@ class DataKit(object):
         for d in data:
             prepared_data.append(self._prepare_data(d))
 
-        return self.post_line_protocol(points=prepared_data, path=path)
+        query = { 'input': self.source }
+        return self.post_line_protocol(points=prepared_data, path=path, query=query)
+
+    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
+        return self._write('/v1/write/metric', measurement, tags=None, fields=None, timestamp=None)
+
+    def write_metric_many(data):
+        return self._write_many('/v1/write/metric', data)
+
+    def write_logging(self, measurement, tags=None, fields=None, timestamp=None):
+        return self._write('/v1/write/logging', measurement, tags=None, fields=None, timestamp=None)
+
+    def write_logging_many(data):
+        return self._write_many('/v1/write/logging', data)
+
+    def write_rum(self, measurement, tags=None, fields=None, timestamp=None):
+        return self._write('/v1/write/rum', measurement, tags=None, fields=None, timestamp=None)
+
+    def write_rum_many(data):
+        return self._write_many('/v1/write/rum', data)
 
 # Alias
 Datakit = DataKit

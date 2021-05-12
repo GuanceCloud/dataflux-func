@@ -2655,6 +2655,10 @@ dataSourceAPI:
             $in:
               - http
               - https
+          source:
+            $desc     : 源
+            $allowNull: true
+            $type     : string
           database:
             $desc     : 数据库
             $allowNull: true
@@ -2756,6 +2760,10 @@ dataSourceAPI:
             $in:
               - http
               - https
+          source:
+            $desc     : 源
+            $allowNull: true
+            $type     : string
           database:
             $desc     : 数据库
             $allowNull: true

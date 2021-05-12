@@ -22,9 +22,11 @@ System builtin                : 系统内置
 Recent operations             : 最近操作记录
 recentOperationCount          : 最近{n}条
 Time                          : 时间
-User                          : 操作者
-'User ID:'                    : 用户ID：
+Client                        : 客户端
 'Client ID:'                  : 客户端ID：
+'IP Address:'                 : IP地址：
+User                          : 用户
+'User ID:'                    : 用户ID：
 Operation                     : 操作
 'Data ID:'                    : 数据ID：
 MODIFY                        : 修改操作
@@ -136,6 +138,17 @@ Response                      : 响应
             </template>
           </el-table-column>
 
+          <el-table-column :label="$t('Client')">
+            <template slot-scope="scope">
+              <span class="text-info">{{ $t('Client ID:') }}</span>
+              <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
+              <br>
+
+              <span class="text-info">{{ $t('IP Address:') }}</span>
+              <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+            </template>
+          </el-table-column>
+
           <el-table-column :label="$t('User')">
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
@@ -146,9 +159,6 @@ Response                      : 响应
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
                 <br>
               </template>
-
-              <span class="text-info">{{ $t('Client ID:') }}</span>
-              <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
             </template>
           </el-table-column>
 

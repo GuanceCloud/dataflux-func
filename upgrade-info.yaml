@@ -40,3 +40,10 @@ upgradeInfo:
 
       ALTER TABLE biz_main_batch
         MODIFY COLUMN `funcCallKwargsJSON` TEXT NOT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+  - seq: 3
+    database: |-
+      -- 操作记录增加客户端IP
+      ALTER TABLE `biz_main_operation_record`
+        ADD COLUMN `clientIPsJSON` json DEFAULT NULL COMMENT '客户端IP JSON'
+        AFTER `clientId`;

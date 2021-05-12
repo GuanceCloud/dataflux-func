@@ -69,7 +69,7 @@ exports.dumpUserInformation = function(req, res, next) {
     );
 
   } else {
-    res.locals.logger.info('{0} {1}({2})/{3}({4})',
+    res.locals.logger.info('{0} {1}({2})',
       '[REQUEST USER]',
       res.locals.user.name,
       res.locals.user.id,

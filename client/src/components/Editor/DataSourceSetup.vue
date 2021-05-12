@@ -15,6 +15,8 @@ Servers                                                                         
 'Servers to connect (e.g. host1:80,host2:81)'                                     : 连接地址列表，如：host1:80,host2:81
 Protocol                                                                          : 协议
 Please select connection protocol                                                 : 请选择协议
+Source                                                                            : 源
+Source of data                                                                    : 数据来源
 Database                                                                          : 数据库
 Database to connect                                                               : 连接数据库
 User                                                                              : 用户
@@ -52,6 +54,7 @@ Only integer between 1 and 65535 are allowed      : 主机端口范围为 1-6553
 Please input servers                              : 请输入服务器列表
 Please select HTTP protocol                       : 请选择HTTP协议
 Only HTTP and HTTPS are allowed                   : 协议只能为HTTP或HTTPS
+Please input source                               : 请输入数据源名称
 Please input database                             : 请输入数据库名
 Please input user                                 : 请输入用户名
 Please input password                             : 请输入密码
@@ -157,6 +160,11 @@ Please select handler Func                        : 请选择处理函数
                       <el-option label="HTTP" key="http" value="http"></el-option>
                       <el-option label="HTTPS" key="https" value="https"></el-option>
                     </el-select>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
+                    <el-input :placeholder="$t('Source of data')"
+                      v-model="form.configJSON.source"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Database')" v-if="hasConfigField(selectedType, 'database')" prop="configJSON.database">
@@ -577,6 +585,13 @@ export default {
             message: this.$t('Only HTTP and HTTPS are allowed'),
             type   : 'enum',
             enum   : ['http', 'https'],
+          },
+        ],
+        'configJSON.source': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input source'),
+            required: false,
           },
         ],
         'configJSON.database': [

@@ -20,6 +20,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   alias      : 'oprd',
 
   objectFields: {
+    clientIPsJSON  : 'json',
     reqQueryJSON   : 'json',
     reqParamsJSON  : 'json',
     reqBodyJSON    : 'json',
@@ -167,6 +168,9 @@ function _prepareData(data) {
 
   data = _maskSecret(data);
 
+  if (data.clientIPsJSON && 'object' === typeof data.clientIPsJSON) {
+    data.clientIPsJSON = JSON.stringify(data.clientIPsJSON);
+  }
   if (data.reqQueryJSON && 'object' === typeof data.reqQueryJSON) {
     data.reqQueryJSON = JSON.stringify(data.reqQueryJSON);
   }

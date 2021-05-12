@@ -80,7 +80,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     config.protocol = config.protocol || 'http';
 
     var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['protocol'];
+    var OPTIONAL_FIELDS = ['protocol', 'source'];
 
     return _checkDataSourceConfig(locals, 'df_datakit', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },

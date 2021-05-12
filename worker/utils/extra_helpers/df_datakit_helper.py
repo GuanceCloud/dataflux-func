@@ -19,12 +19,16 @@ def get_config(c):
         'host'    : c.get('host'),
         'port'    : c.get('port'),
         'protocol': c.get('protocol'),
+        'source'  : c.get('source'),
         'debug'   : c.get('debug', False),
     })
 
 class DFDataKitHelper(object):
-    def __init__(self, logger, config, *args, **kwargs):
+    def __init__(self, logger, config, source=None, *args, **kwargs):
         self.logger = logger
+
+        if source:
+            config['source'] = source
 
         self.config = config
         self.client = DataKit(**get_config(config))
