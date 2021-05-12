@@ -276,7 +276,7 @@ function startApplication() {
     // Set status code
     err.status = parseInt(err.status || 500);
     res.status(err.status);
-    res.locals._responseStatus = err.status;
+    res.locals.responseStatus = err.status;
 
     if (err.status < 599) {
       // Print error

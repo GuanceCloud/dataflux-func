@@ -85,6 +85,7 @@ var getRetSample = function(ret) {
  * Prepare basic client information.
  *
  * @return {String} res.locals.traceId
+ * @return {String} res.locals.requestTime
  * @return {String} res.locals.requestType
  * @return {String} res.locals.clientId
  * @return {String} res.locals.clientAccept
@@ -94,9 +95,6 @@ var getRetSample = function(ret) {
  * @return {String} res.locals.clientTimeZone
  */
 router.all('*', function basicClientInformation(req, res, next) {
-  // Set request time (start)
-  res.locals._requestStartTime = Date.now();
-
   // traceId
   var upstreamTraceId = req.get(CONFIG._WEB_TRACE_ID_HEADER);
   if (upstreamTraceId) {
@@ -109,6 +107,9 @@ router.all('*', function basicClientInformation(req, res, next) {
 
   res.locals.traceIdShort = toolkit.getFirstPart(res.locals.traceId);
   res.set(CONFIG._WEB_TRACE_ID_HEADER, res.locals.traceId);
+
+  // requestTime
+  res.locals.requestTime = new Date();
 
   // requestType
   switch(req.originalUrl.split('/')[1]) {
@@ -218,6 +219,26 @@ function recordSlowAPI(req, res, reqCost) {
  * Warp response functions
  */
 router.all('*', function warpResponseFunctions(req, res, next) {
+  function _appendReqInfo() {
+    // 请求附带信息
+    var now = new Date();
+    var reqCost = now.getTime() - res.locals.requestTime.getTime();
+    recordSlowAPI(req, res, reqCost);
+
+    var reqInfo = {
+      traceId : res.locals.traceId,
+      reqTime : res.locals.requestTime.toISOString(),
+      respTime: now.toISOString(),
+      reqCost : reqCost,
+    };
+    res.set(CONFIG._WEB_TRACE_ID_HEADER,      reqInfo.traceId);
+    res.set(CONFIG._WEB_REQUEST_TIME_HEADER,  reqInfo.reqTime);
+    res.set(CONFIG._WEB_RESPONSE_TIME_HEADER, reqInfo.respTime);
+    res.set(CONFIG._WEB_REQUEST_COST_HEADER,  reqInfo.reqCost);
+
+    return reqInfo;
+  }
+
   res.locals.getQueryOptions = function getQueryOptions() {
     var opt = {
       filters: res.locals.filters || {},
@@ -340,14 +361,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       }
     }
 
+    // 请求附带信息
+    var reqInfo = _appendReqInfo();
+    Object.assign(ret, reqInfo);
+
     // Return JSON data
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
-
-    ret.traceId = res.locals.traceId;
-    ret.reqCost = reqCost;
-
     res.type('json');
 
     // Convert response JSON data before sending (except on builtin pages).
@@ -358,7 +376,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     res.locals.logger.debug('[WEB JSON] `{0}`', getRetSample(ret));
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, ret, 'json');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, ret, 'json');
     }
     return res.send(ret);
   };
@@ -369,12 +387,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       nextURL
     );
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+    // 请求附带信息
+    var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, 301, null, 'redirect');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, 301, null, 'redirect');
     }
     return res.redirect(nextURL);
   };
@@ -458,15 +475,16 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
       res.locals.logger.debug('[WEB RENDER HTML] `{0}`', view);
 
-      var reqCost = Date.now() - res.locals._requestStartTime;
-      recordSlowAPI(req, res, reqCost);
-      res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
-
-      html += toolkit.strf('<input id="watTraceId" type="hidden" value="{0}" />', res.locals.traceId);
-      html += toolkit.strf('<input id="watReqCost" type="hidden" value="{0}" />', reqCost);
-
-      html += toolkit.strf('<!-- TraceID: {0} -->'  , res.locals.traceId);
-      html += toolkit.strf('<!-- ReqCost: {0}ms -->', reqCost);
+      // 请求附带信息
+      var reqInfo = _appendReqInfo();
+      html += toolkit.strf('<input id="watTraceId" type="hidden" value="{0}" />',  reqInfo.traceId);
+      html += toolkit.strf('<input id="watReqTime" type="hidden" value="{0}" />' , reqInfo.reqTime);
+      html += toolkit.strf('<input id="watRespTime" type="hidden" value="{0}" />', reqInfo.respTime);
+      html += toolkit.strf('<input id="watReqCost" type="hidden" value="{0}" />',  reqInfo.reqCost);
+      html += toolkit.strf('<!-- TraceID: {0} -->'  , reqInfo.traceId);
+      html += toolkit.strf('<!-- ReqTime: {0} -->'  , reqInfo.reqTime);
+      html += toolkit.strf('<!-- RespTime: {0} -->' , reqInfo.respTime);
+      html += toolkit.strf('<!-- ReqCost: {0}ms -->', reqInfo.reqCost);
 
       if (options.isStatic && renderMD5) {
         STATIC_RENDER_LRU.set(renderMD5, html);
@@ -475,7 +493,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       res.type('html');
 
       if ('function' === typeof appInit.beforeReponse) {
-        appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, html, 'html');
+        appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, html, 'html');
       }
       return res.send(html);
     });
@@ -484,17 +502,17 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   res.locals.sendHTML = function(html) {
     res.locals.logger.debug('[WEB HTML] `{0}`', req.originalUrl);
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
-
-    html += toolkit.strf('<!-- TraceID: {0} -->'  , res.locals.traceId);
-    html += toolkit.strf('<!-- ReqCost: {0}ms -->', reqCost);
+    // 请求附带信息
+    var reqInfo = _appendReqInfo();
+    html += toolkit.strf('<!-- TraceID: {0} -->'  , reqInfo.traceId);
+    html += toolkit.strf('<!-- ReqTime: {0} -->'  , reqInfo.reqTime);
+    html += toolkit.strf('<!-- RespTime: {0} -->' , reqInfo.respTime);
+    html += toolkit.strf('<!-- ReqCost: {0}ms -->', reqInfo.reqCost);
 
     res.type('html');
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, html, 'html');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, html, 'html');
     }
     return res.send(html);
   };
@@ -507,14 +525,12 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     res.type(fileType);
     res.attachment(fileName);
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+    // 请求附带信息
+    var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, fileName, 'file');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, fileName, 'file');
     }
-    console.log(filePath)
     return res.download(filePath);
   };
 
@@ -531,12 +547,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
     res.attachment(fileName);
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+    // 请求附带信息
+    var reqInfo = appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, file, 'file');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, file, 'file');
     }
     return res.send(file);
   };
@@ -544,14 +559,13 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   res.locals.sendText = function(text) {
     res.locals.logger.debug('[WEB TEXT] `{0}`', JSON.stringify(text));
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+    // 请求附带信息
+    var reqInfo = appendReqInfo();
 
     res.type('text');
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, text, 'text');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, text, 'text');
     }
     return res.send(text);
   };
@@ -583,12 +597,11 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
     res.locals.logger.debug('[WEB RAW] `{0}`', rawDump);
 
-    var reqCost = Date.now() - res.locals._requestStartTime;
-    recordSlowAPI(req, res, reqCost);
-    res.set(CONFIG._WEB_REQUEST_COST_HEADER, reqCost + 'ms');
+    // 请求附带信息
+    var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqCost, res.locals._responseStatus, raw, 'raw');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, raw, 'raw');
     }
 
     if (contentType) {

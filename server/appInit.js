@@ -434,7 +434,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
 
   // 操作记录
   var reqRoute              = req.route.path;
-  var operationRecord       = res.locals._operationRecord;
+  var operationRecord       = res.locals.operationRecord;
   var shouldRecordOperation = true;
   if (!operationRecord) {
     // 未经过操作记录中间件

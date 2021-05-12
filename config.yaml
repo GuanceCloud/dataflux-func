@@ -180,6 +180,8 @@ _WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
 _WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
 _WEB_PAGE_SIZE_COOKIE      : xDFFPageSize
 _WEB_TRACE_ID_HEADER       : X-Trace-Id
+_WEB_REQUEST_TIME_HEADER   : X-Request-Time
+_WEB_RESPONSE_TIME_HEADER  : X-Response-Time
 _WEB_REQUEST_COST_HEADER   : X-Request-Cost
 _WEB_AUTH_HEADER           : X-Dff-Auth-Token
 _WEB_AUTH_QUERY            : xDFFAuthToken

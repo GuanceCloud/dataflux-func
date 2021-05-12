@@ -67,7 +67,7 @@ exports.prepare = function(req, res, next) {
     res.locals.logger.logError(err);
   }
 
-  res.locals._operationRecord = {
+  res.locals.operationRecord = {
     userId         : res.locals.user.id   || null,
     username       : res.locals.user.name || null,
     clientId       : res.locals.clientId  || null,
