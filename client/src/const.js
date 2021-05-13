@@ -53,7 +53,7 @@ export default {
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
+        sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(measurement='some_measurement', tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
           port     : { default: 9528, isRequired: true },
@@ -70,7 +70,7 @@ export default {
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.write_metric(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
+        sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.write_metric(measurement='some_measurement',tags={'name': 'Tom'},fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
           port     : { default: 9529, isRequired: true },

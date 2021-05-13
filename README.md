@@ -62,12 +62,12 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 用户也可以自行安装Docker 并初始化Docker Swarm，然后运行部署脚本，
 部署脚本在发现Docker 已经安装后会自动跳过这部分处理。
 
-- Docker Swarm 初始化命令为：`docker swarm init`
+- Docker Swarm 初始化命令为：`sudo docker swarm init`
 
 如果本机存在多个网卡，需要在上述初始化命令中指定网卡
 
 - 存在多网卡的建议用户自行安装Docker 并初始化Docker Swarm
-- Docker Swarm 指定网卡的初始化命令为：`docker swarm init --advertise-addr={网卡名}`
+- Docker Swarm 指定网卡的初始化命令为：`sudo docker swarm init --advertise-addr={网卡名}`
 - 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
 
 ### 1.3 浏览器兼容性
@@ -119,10 +119,9 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 2. [Docker 服务配置文件： docker.service](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker.service)
 3. [MySQL 镜像： mysql.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/mysql.tar.gz)
 4. [Redis 镜像： redis.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/redis.tar.gz)
-5. [Mosquitto 镜像： eclipse-mosquitto.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/eclipse-mosquitto.tar.gz)
-6. [DataFluxFunc 镜像： dataflux-func.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/dataflux-func.tar.gz)
-7. [Docker Stack 配置文件：docker-stack.example.yaml](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker-stack.example.yaml)
-8. [DataFluxFunc 部署脚本：run-portable.sh](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/run-portable.sh)
+5. [DataFluxFunc 镜像： dataflux-func.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/dataflux-func.tar.gz)
+6. [Docker Stack 配置文件：docker-stack.example.yaml](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker-stack.example.yaml)
+7. [DataFluxFunc 部署脚本：run-portable.sh](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/run-portable.sh)
 
 手工下载所有文件后，放入新建的`dataflux-func-portable`目录下即可。
 
@@ -136,7 +135,7 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 运行以下命令，即可自动配置并最终启动整个DataFlux Func：
 
 ```shell
-/bin/bash run-portable.sh
+sudo /bin/bash run-portable.sh
 ```
 
 如果服务器存在多个网卡，上述命令可能会由于Docker Swarm 询问绑定网卡而中断，如：
@@ -150,10 +149,10 @@ Error response from daemon: could not choose an IP address to advertise since th
 ```shell
 # 使用 ifconfig 命令查看网卡
 # 假设需要绑定的网卡名为ens33
-docker swarm init --advertise-addr=ens33
+sudo docker swarm init --advertise-addr=ens33
 
 # 重新执行
-/bin/bash run-portable.sh
+sudo /bin/bash run-portable.sh
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
@@ -189,7 +188,7 @@ docker swarm init --advertise-addr=ens33
 
 ```shell
 # 示例：指定安装目录
-/bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc
+sudo /bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc
 ```
 
 ### 3.2 可用安装选项
