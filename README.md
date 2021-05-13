@@ -139,6 +139,23 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 /bin/bash run-portable.sh
 ```
 
+如果服务器存在多个网卡，上述命令可能会由于Docker Swarm 询问绑定网卡而中断，如：
+
+```shell
+Error response from daemon: could not choose an IP address to advertise since this system has multiple addresses on different interfaces (172.16.35.129 on ens33 and 172.16.219.129 on ens34) - specify one with --advertise-addr
+```
+
+此时，手工初始化Docker Swarm 初始化命令后，重新运行脚本即可：
+
+```shell
+# 使用 ifconfig 命令查看网卡
+# 假设需要绑定的网卡名为ens33
+docker swarm init --advertise-addr=ens33
+
+# 重新执行
+/bin/bash run-portable.sh
+```
+
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
 
 - 运行MySQL、Redis、DataFlux Func（包含Server，Worker，Beat）

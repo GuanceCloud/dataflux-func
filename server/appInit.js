@@ -372,7 +372,7 @@ exports.afterAppCreated = function(app, server) {
       async.eachSeries(fetchIPs, function(ip, eachCallback) {
         if (localDataKitIP) return eachCallback();
 
-        var url = toolkit.strf('http://{0}:{1}/', ip, LOCAL_DATAKIT_PORT);
+        var url = toolkit.strf('http://{0}:{1}/v1/ping', ip, LOCAL_DATAKIT_PORT);
         var requestOptions = {
           method : 'get',
           url    : url,
