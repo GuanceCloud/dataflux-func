@@ -414,6 +414,7 @@ exports.afterAppCreated = function(app, server) {
             host    : localDataKitIP,
             port    : LOCAL_DATAKIT_PORT,
             protocol: 'http',
+            source  : 'dataflux_func',
           }
         }
         if (dbRes.length <= 0) {
