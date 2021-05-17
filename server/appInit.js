@@ -358,7 +358,7 @@ exports.afterAppCreated = function(app, server) {
   var dataSourceModel = require('./models/dataSourceMod').createModel(app.locals);
 
   var LOCAL_DATAKIT_ID    = 'datakit';
-  var LOCAL_DATAKIT_TITLE = 'DataFlux DataKit';
+  var LOCAL_DATAKIT_TITLE = '本地DataKit';
   var LOCAL_DATAKIT_PORT  = 9529;
 
   var localDataKitIP = null;

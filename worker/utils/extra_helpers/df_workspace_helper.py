@@ -9,7 +9,7 @@ import requests
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers.df_datakit import DataKit
+from worker.utils.extra_helpers.df_workspace import Workspace
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -19,25 +19,28 @@ def get_config(c):
         'host'    : c.get('host'),
         'port'    : c.get('port'),
         'protocol': c.get('protocol'),
-        'source'  : c.get('source'),
+        'token'   : c.get('token'),
         'debug'   : c.get('debug', False),
     })
 
-class DFDataKitHelper(object):
-    def __init__(self, logger, config, source=None, *args, **kwargs):
+class DFWorkspaceHelper(object):
+    def __init__(self, logger, config, token=None, *args, **kwargs):
         self.logger = logger
 
-        if source:
-            config['source'] = source
+        if token:
+            config['token'] = token
 
         self.config = config
-        self.client = DataKit(**get_config(config))
+        self.client = Workspace(**get_config(config))
 
     def __del__(self):
         pass
 
     def check(self):
-        url = '{0}://{1}:{2}/v1/ping'.format(
+        # TODO
+        return True
+
+        url = '{0}://{1}:{2}/'.format(
             self.config.get('protocol', 'http'),
             self.config.get('host'),
             self.config.get('port'))

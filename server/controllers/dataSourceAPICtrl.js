@@ -64,6 +64,16 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
 }
 
 var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
+  df_workspace: function(locals, config, callback) {
+    // 默认值
+    config.port     = config.port     || 9527;
+    config.protocol = config.protocol || 'http';
+
+    var REQUIRED_FIELDS = ['host', 'port', 'token'];
+    var OPTIONAL_FIELDS = ['protocol'];
+
+    return _checkDataSourceConfig(locals, 'df_workspace', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
   df_dataway: function(locals, config, callback) {
     // 默认值
     config.port     = config.port     || 9528;
