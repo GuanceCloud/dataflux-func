@@ -472,19 +472,19 @@ class DataKit(object):
     def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
         return self._write('/v1/write/metric', measurement, tags, fields, timestamp)
 
-    def write_metric_many(data):
+    def write_metric_many(self, data):
         return self._write_many('/v1/write/metric', data)
 
     def write_logging(self, measurement, tags=None, fields=None, timestamp=None):
         return self._write('/v1/write/logging', measurement, tags, fields, timestamp)
 
-    def write_logging_many(data):
+    def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
 
     def write_rum(self, measurement, tags=None, fields=None, timestamp=None):
         return self._write('/v1/write/rum', measurement, tags, fields, timestamp)
 
-    def write_rum_many(data):
+    def write_rum_many(self, data):
         return self._write_many('/v1/write/rum', data)
 
 # Alias

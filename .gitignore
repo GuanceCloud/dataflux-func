@@ -95,3 +95,4 @@ client/dist
 # Other
 docker-stack.yaml
 func-pkg/dataflux.func-pkg
+client/report.*.json
