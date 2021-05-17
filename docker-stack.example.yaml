@@ -53,6 +53,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      DFF__WORKER_CONCURRENCY: '2'
     command: ./run-worker-by-queue.sh 0
 
   worker-1-6:
@@ -75,6 +77,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      DFF__WORKER_CONCURRENCY: '2'
     command: ./run-worker-by-queue.sh 7
 
   worker-8-9:
