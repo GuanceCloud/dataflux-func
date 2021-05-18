@@ -1,6 +1,21 @@
 #!/bin/bash
 set -e
 
+# 本脚本参考了docker官方文档，以及以下文章
+#   https://www.cnblogs.com/helf/p/12889955.html
+
+function stopPrevStack {
+    docker stack remove "$1"
+
+    isRunning=1
+    while [ $isRunning -ne 0 ]; do
+      echo 'Waiting...'
+      sleep 3
+
+      isRunning=`docker ps | grep "$1_" | wc -l`
+    done
+}
+
 function blankLine {
     echo ''
 }
@@ -63,8 +78,6 @@ __MYSQL_PASSWORD=`openssl rand -hex 8`
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
-__MOSQUITTO_CONFIG_FILE=mosquitto/config/mosquitto.conf
-__MOSQUITTO_PASSWD_FILE=mosquitto/passwd
 
 __MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 __REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
@@ -92,6 +105,9 @@ fi
 log "Project name: ${__PROJECT_NAME}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Image       : ${_DATAFLUX_FUNC_IMAGE}"
+
+# 关闭之前的Stack
+stopPrevStack ${__PROJECT_NAME}
 
 # 拉取必要镜像
 blankLine
@@ -226,10 +242,6 @@ docker ps
 # 返回之前目录
 cd ${__PREV_DIR}
 
-# 获取本机IP信息
-DOCKER_ADDRESS_LINE=(`docker info | grep 'Node Address'`)
-THIS_IP=${DOCKER_ADDRESS_LINE[-1]}
-
 # 提示信息
 blankLine
 if [ ${OPT_DEV} = "TRUE" ]; then
@@ -252,6 +264,8 @@ if [ ${OPT_NO_REDIS} = "TRUE" ]; then
 fi
 
 blankLine
+log "Installed dir:"
+log "    ${_INSTALL_DIR}"
 log "To shutdown:"
 log "    $ docker stack remove ${__PROJECT_NAME}"
 log "To start:"
@@ -262,4 +276,4 @@ log "    $ rm -rf ${_INSTALL_DIR}"
 log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 
 blankLine
-log "Now open http://127.0.0.1:8088/ or http://${THIS_IP}:8088/ and have fun!"
+log "Now open http://<IP or Hostname>:8088/ and have fun!"
