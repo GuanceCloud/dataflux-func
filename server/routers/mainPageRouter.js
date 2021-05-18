@@ -6,6 +6,6 @@ var routeLoader = require('../utils/routeLoader');
 
 var mainPageCtrl = require('../controllers/mainPageCtrl');
 
-routeLoader.load(ROUTE.datafluxFuncPage.clientApp, [
+routeLoader.load(ROUTE.mainPage.clientApp, [
   mainPageCtrl.clientApp,
 ]);

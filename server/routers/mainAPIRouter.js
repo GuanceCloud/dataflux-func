@@ -9,122 +9,122 @@ var captcha     = require('../utils/captcha');
 var mainAPICtrl = require('../controllers/mainAPICtrl');
 
 // 总览
-routeLoader.load(ROUTE.datafluxFuncAPI.overview, [
+routeLoader.load(ROUTE.mainAPI.overview, [
   mainAPICtrl.overview,
 ]);
 
 // 函数
-routeLoader.load(ROUTE.datafluxFuncAPI.describeFunc, [
+routeLoader.load(ROUTE.mainAPI.describeFunc, [
   mainAPICtrl.describeFunc,
 ]);
 
 // 直接调用函数
-routeLoader.load(ROUTE.datafluxFuncAPI.callFunc, [
+routeLoader.load(ROUTE.mainAPI.callFunc, [
   mainAPICtrl.callFunc,
 ]);
 
 // 通过授权链接调用函数
-routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByGet, [
+routeLoader.load(ROUTE.mainAPI.callAuthLinkByGet, [
   mainAPICtrl.callAuthLink,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByGetWithFormat, [
+routeLoader.load(ROUTE.mainAPI.callAuthLinkByGetWithFormat, [
   mainAPICtrl.callAuthLink,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByPost, [
+routeLoader.load(ROUTE.mainAPI.callAuthLinkByPost, [
   mainAPICtrl.callAuthLink,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.callAuthLinkByPostWithFormat, [
+routeLoader.load(ROUTE.mainAPI.callAuthLinkByPostWithFormat, [
   mainAPICtrl.callAuthLink,
 ]);
 
 // 通过批处理调用
-routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByGet, [
+routeLoader.load(ROUTE.mainAPI.callBatchByGet, [
   mainAPICtrl.callBatch,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByGetWithFormat, [
+routeLoader.load(ROUTE.mainAPI.callBatchByGetWithFormat, [
   mainAPICtrl.callBatch,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.callBatchByPost, [
+routeLoader.load(ROUTE.mainAPI.callBatchByPost, [
   mainAPICtrl.callBatch,
 ]);
 
 // 调用函数草稿
-routeLoader.load(ROUTE.datafluxFuncAPI.callFuncDraft, [
+routeLoader.load(ROUTE.mainAPI.callFuncDraft, [
   mainAPICtrl.callFuncDraft,
 ]);
 
 // 获取函数结果
-routeLoader.load(ROUTE.datafluxFuncAPI.getFuncResult, [
+routeLoader.load(ROUTE.mainAPI.getFuncResult, [
   mainAPICtrl.getFuncResult,
 ]);
 
 // 获取函数文档（JSON文档）
-routeLoader.load(ROUTE.datafluxFuncAPI.getFuncList, [
+routeLoader.load(ROUTE.mainAPI.getFuncList, [
   mainAPICtrl.getFuncList,
 ]);
 
 // 获取函数Tag列表
-routeLoader.load(ROUTE.datafluxFuncAPI.getFuncTagList, [
+routeLoader.load(ROUTE.mainAPI.getFuncTagList, [
   mainAPICtrl.getFuncTagList,
 ]);
 
 // 获取授权链接函数文档（JSON文档）
-routeLoader.load(ROUTE.datafluxFuncAPI.getAuthLinkFuncList, [
+routeLoader.load(ROUTE.mainAPI.getAuthLinkFuncList, [
   mainAPICtrl.getAuthLinkFuncList,
 ]);
 
 // 获取系统配置
-routeLoader.load(ROUTE.datafluxFuncAPI.getSystemConfig, [
+routeLoader.load(ROUTE.mainAPI.getSystemConfig, [
   mainAPICtrl.getSystemConfig,
 ]);
 
 // 获取升级信息
-routeLoader.load(ROUTE.datafluxFuncAPI.getUpgradeInfo, [
+routeLoader.load(ROUTE.mainAPI.getUpgradeInfo, [
   mainAPICtrl.getUpgradeInfo,
 ]);
 
 // 集成登录
-routeLoader.load(ROUTE.datafluxFuncAPI.integratedSignIn, [
+routeLoader.load(ROUTE.mainAPI.integratedSignIn, [
   mainAPICtrl.integratedSignIn,
 ]);
 
 // 清空日志/缓存表
-routeLoader.load(ROUTE.datafluxFuncAPI.clearLogCacheTables, [
+routeLoader.load(ROUTE.mainAPI.clearLogCacheTables, [
   mainAPICtrl.clearLogCacheTables,
 ]);
 
 // Python包
-routeLoader.load(ROUTE.datafluxFuncAPI.queryPythonPackages, [
+routeLoader.load(ROUTE.mainAPI.queryPythonPackages, [
   mainAPICtrl.queryPythonPackages,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.listInstalledPythonPackages, [
+routeLoader.load(ROUTE.mainAPI.listInstalledPythonPackages, [
   mainAPICtrl.listInstalledPythonPackages,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.getPythonPackageInstallStatus, [
+routeLoader.load(ROUTE.mainAPI.getPythonPackageInstallStatus, [
   mainAPICtrl.getPythonPackageInstallStatus,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.installPythonPackage, [
+routeLoader.load(ROUTE.mainAPI.installPythonPackage, [
   mainAPICtrl.installPythonPackage,
 ]);
 
 // 资源文件
-routeLoader.load(ROUTE.datafluxFuncAPI.listResources, [
+routeLoader.load(ROUTE.mainAPI.listResources, [
   mainAPICtrl.listResources,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.getResources, [
+routeLoader.load(ROUTE.mainAPI.getResources, [
   mainAPICtrl.getResources,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.downloadResources, [
+routeLoader.load(ROUTE.mainAPI.downloadResources, [
   mainAPICtrl.downloadResources,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.uploadResource, [
+routeLoader.load(ROUTE.mainAPI.uploadResource, [
   mainAPICtrl.uploadResource,
 ]);
-routeLoader.load(ROUTE.datafluxFuncAPI.operateResource, [
+routeLoader.load(ROUTE.mainAPI.operateResource, [
   mainAPICtrl.operateResource,
 ]);
 
 // 文件服务
-routeLoader.load(ROUTE.datafluxFuncAPI.fileService, [
+routeLoader.load(ROUTE.mainAPI.fileService, [
   mainAPICtrl.fileService,
 ]);

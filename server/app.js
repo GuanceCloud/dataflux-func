@@ -186,8 +186,8 @@ function startApplication() {
 
   /***** DataFlux Func *****/
 
-  require('./routers/datafluxFuncAPIRouter');
-  require('./routers/datafluxFuncPageRouter');
+  require('./routers/mainAPIRouter');
+  require('./routers/mainPageRouter.js');
 
   require('./routers/scriptSetAPIRouter');
   require('./routers/scriptAPIRouter');

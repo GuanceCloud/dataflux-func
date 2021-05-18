@@ -82,7 +82,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('datafluxFuncAPI.callBatchByGet', {
+      url: urlFor('mainAPI.callBatchByGet', {
         params: { id: addedId },
       }),
     });
@@ -319,7 +319,7 @@ function _modify(locals, id, data, opt, callback) {
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('datafluxFuncAPI.callBatchByGet', { params: { id: id } });
+    var url = urlFor('mainAPI.callBatchByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };

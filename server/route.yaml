@@ -1101,8 +1101,8 @@ debugAPI:
             $type   : any
             $example: {"extraKey": "extraValue"}
 
-# DataFlux Func
-datafluxFuncAPI:
+# 主要接口
+mainAPI:
   overview:
     showInDoc    : true
     name         : 获取总览
@@ -1898,7 +1898,7 @@ datafluxFuncAPI:
         $desc: 文件服务ID
         $type: string
 
-datafluxFuncPage:
+mainPage:
   clientApp:
     showInDoc    : true
     name         : 客户端应用

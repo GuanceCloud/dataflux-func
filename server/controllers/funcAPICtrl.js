@@ -53,7 +53,7 @@ exports.list = function(req, res, next) {
             }
 
             funcs.push({
-              url: urlFor('datafluxFuncAPI.callFunc', {
+              url: urlFor('mainAPI.callFunc', {
                 params: { id: d.id },
               }),
 

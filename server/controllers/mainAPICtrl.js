@@ -725,7 +725,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           ret = toolkit.initRet({ result: celeryRes.retval });
           if (funcCallOptions.saveResult) {
             ret.taskId    = celeryRes.id;
-            ret.resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
+            ret.resultURL = urlFor('mainAPI.getFuncResult', {query: {taskId: celeryRes.id}});
           }
 
           return asyncCallback();
@@ -858,7 +858,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       var ret = null;
 
       if (funcCallOptions.saveResult) {
-        var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: taskId}});
+        var resultURL = urlFor('mainAPI.getFuncResult', {query: {taskId: taskId}});
 
         ret = toolkit.initRet({
           taskId   : taskId,
@@ -1632,7 +1632,7 @@ exports.getAuthLinkFuncList = function(req, res, next) {
     var funcList = [];
     dbRes.forEach(function(d) {
       funcList.push({
-        url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
+        url: urlFor('mainAPI.callAuthLinkByGet', {
           params: { id: d.id },
         }),
 

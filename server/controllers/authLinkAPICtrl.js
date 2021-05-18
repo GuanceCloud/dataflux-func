@@ -139,7 +139,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
+      url: urlFor('mainAPI.callAuthLinkByGet', {
         params: { id: addedId },
       }),
     });
@@ -376,7 +376,7 @@ function _modify(locals, id, data, opt, callback) {
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('datafluxFuncAPI.callAuthLinkByGet', { params: { id: id } });
+    var url = urlFor('mainAPI.callAuthLinkByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };
