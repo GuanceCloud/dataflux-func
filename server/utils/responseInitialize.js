@@ -548,7 +548,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     res.attachment(fileName);
 
     // 请求附带信息
-    var reqInfo = appendReqInfo();
+    var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, file, 'file');
@@ -560,7 +560,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     res.locals.logger.debug('[WEB TEXT] `{0}`', JSON.stringify(text));
 
     // 请求附带信息
-    var reqInfo = appendReqInfo();
+    var reqInfo = _appendReqInfo();
 
     res.type('text');
 
