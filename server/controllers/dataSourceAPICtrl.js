@@ -9,7 +9,6 @@ var splitargs = require('splitargs');
 /* Project Modules */
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var CONST   = require('../utils/yamlResources').get('CONST');
 var toolkit = require('../utils/toolkit');
 
 var dataSourceMod = require('../models/dataSourceMod');
@@ -20,8 +19,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var RESERVED_REF_NAME = 'dataflux_';
 
 function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFields, callback) {
-  var databaseName = CONST.displayText.dataSource_type[type];
-
   // 检查字段
   for (var i = 0; i < requiredFields.length; i++) {
     var f = requiredFields[i];

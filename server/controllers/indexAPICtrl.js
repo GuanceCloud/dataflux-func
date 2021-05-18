@@ -11,7 +11,6 @@ var request = require('request');
 /* Project Modules */
 var E         = require('../utils/serverError');
 var CONFIG    = require('../utils/yamlResources').get('CONFIG');
-var CONST     = require('../utils/yamlResources').get('CONST');
 var ROUTE     = require('../utils/yamlResources').get('ROUTE');
 var toolkit   = require('../utils/toolkit');
 var translate = require('../utils/translate');
@@ -21,15 +20,6 @@ var userMod = require('../models/userMod');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
-var serverConst = toolkit.jsonCopy(CONST.displayText);
-delete serverConst.MODULE_FIELD;
-for (var moduleField in serverConst) if (serverConst.hasOwnProperty(moduleField)) {
-  var moduleFieldConsts = serverConst[moduleField];
-  for (var k in moduleFieldConsts) if (moduleFieldConsts.hasOwnProperty(k)) {
-    moduleFieldConsts[k] = translate(moduleFieldConsts[k]);
-  }
-};
-
 var IMAGE_INFO        = require('../../image-info.json');
 var WORKER_IMAGE_INFO = null;
 
@@ -41,11 +31,6 @@ exports.index = function(req, res, next) {
 
 exports.clientConfig = function(req, res, next) {
   var ret = toolkit.initRet(res.locals.clientConfig);
-  res.locals.sendJSON(ret);
-};
-
-exports.serverConst = function(req, res, next) {
-  var ret = toolkit.initRet(serverConst);
   res.locals.sendJSON(ret);
 };
 

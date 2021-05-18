@@ -135,16 +135,16 @@ var limitedText = toolkit.limitedText = function(text, maxLength) {
   text      = text      || '';
   maxLength = maxLength || 30;
 
-  var displayText = text;
-  while (displayText.replace(/[\u0391-\uFFE5]/g, 'xx').length > maxLength) {
-    displayText = displayText.slice(0, -1);
+  var nextText = text;
+  while (nextText.replace(/[\u0391-\uFFE5]/g, 'xx').length > maxLength) {
+    nextText = nextText.slice(0, -1);
   }
 
-  if (displayText !== text) {
-    displayText += '...';
+  if (nextText !== text) {
+    nextText += '...';
   }
 
-  return displayText;
+  return nextText;
 };
 
 /**

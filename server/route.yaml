@@ -16,14 +16,6 @@ indexAPI:
     desc: |
       Client config.
 
-  serverConst:
-    name     : Server const
-    method   : get
-    url      : /api/v1/server-const/do/get
-    response : json
-    desc: |
-      Server const.
-
   imageInfo:
     name    : Image information
     method  : get
