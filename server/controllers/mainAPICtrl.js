@@ -1887,7 +1887,7 @@ exports.integratedAuthMid = function(req, res, next) {
   if (!xAuthToken) return next();
 
   if (CONFIG.MODE === 'dev') {
-    res.locals.logger.debug('[MID] IN mainFuncAPICtrl.integratedAuthMid');
+    res.locals.logger.debug('[MID] IN mainAPICtrl.integratedAuthMid');
   }
 
   res.locals.user = auth.createUserHandler();

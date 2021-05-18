@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 var auth    = require('../utils/auth');
 
 var socketIOServerHelper = require('../utils/extraHelpers/socketIOServerHelper');
-var mainFuncAPICtrl = require('../controllers/mainFuncAPICtrl');
+var mainAPICtrl = require('../controllers/mainAPICtrl');
 
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
 

@@ -170,8 +170,8 @@ _MYSQL_CHARSET            : utf8mb4
 _MYSQL_TIMEZONE           : ''
 
 # WEB模块一般作为常量的配置
-_WEB_INDEX_PAGE            : datafluxFuncPage.clientApp
-_WEB_SIGN_IN_PAGE          : datafluxFuncPage.clientApp
+_WEB_INDEX_PAGE            : mainPage.clientApp
+_WEB_SIGN_IN_PAGE          : mainPage.clientApp
 _WEB_DASHBOARD_PAGE        : indexPage.dashboard
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id

@@ -16,7 +16,7 @@ var redisHelper = require('./utils/extraHelpers/redisHelper');
 var mqttHelper  = require('./utils/extraHelpers/mqttHelper');
 
 var dataSourceMod       = require('./models/dataSourceMod');
-var mainFuncAPICtrl = require('./controllers/mainFuncAPICtrl');
+var mainAPICtrl = require('./controllers/mainAPICtrl');
 
 /* Configure */
 var DATA_SOURCE_CHECK_INTERVAL = 3 * 1000;
@@ -39,7 +39,7 @@ function createMessageHandler(locals, handlerFuncId) {
     async.series([
       // 获取函数信息
       function(asyncCallback) {
-        mainFuncAPICtrl.getFuncById(locals, handlerFuncId, function(err, _func) {
+        mainAPICtrl.getFuncById(locals, handlerFuncId, function(err, _func) {
           if (err) return asyncCallback(err);
 
           func = _func;
@@ -54,7 +54,7 @@ function createMessageHandler(locals, handlerFuncId) {
 
         var _kwargs  = { topic: topic, message: message, packet: packet };
         var _options = { originId: topic, unfold: true };
-        mainFuncAPICtrl.createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
+        mainAPICtrl.createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -64,7 +64,7 @@ function createMessageHandler(locals, handlerFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        mainFuncAPICtrl.callFuncRunner(locals, funcCallOptions, function(err) {
+        mainAPICtrl.callFuncRunner(locals, funcCallOptions, function(err) {
           if (err) return asyncCallback(err);
 
           /* 不需要对返回值进行任何处理 */

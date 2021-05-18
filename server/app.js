@@ -144,7 +144,7 @@ function startApplication() {
   });
 
   // 集成登录认证
-  app.use(require('./controllers/mainFuncAPICtrl').integratedAuthMid);
+  app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
 
   // Auth
   app.use(require('./middlewares/builtinAuthMid').byXAuthToken);
