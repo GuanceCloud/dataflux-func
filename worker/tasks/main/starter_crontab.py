@@ -2,7 +2,7 @@
 
 '''
 定时处理任务启动器
-主要根据自动触发配置加载任务，然后启动runner
+主要根据自动触发配置加载任务，然后启动func_runner
 '''
 
 # Builtin Modules
@@ -23,7 +23,7 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main.runner import runner
+from worker.tasks.main.func_runner import func_runner
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -183,7 +183,7 @@ class StarterCrontabTask(BaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-@app.task(name='Main.starterCrontab', bind=True, base=StarterCrontabTask)
+@app.task(name='Main.StarterCrontab', bind=True, base=StarterCrontabTask)
 def starter_crontab(self, *args, **kwargs):
     self.logger.info('Crontab Starter Task launched.')
 
@@ -292,7 +292,7 @@ def starter_crontab(self, *args, **kwargs):
                 'lockKey'       : lock_key,
                 'lockValue'     : lock_value,
             }
-            runner.apply_async(
+            func_runner.apply_async(
                     task_id=task_id,
                     kwargs=task_kwargs,
                     headers=task_headers,

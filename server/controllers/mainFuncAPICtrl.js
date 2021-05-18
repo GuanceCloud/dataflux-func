@@ -615,7 +615,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     var celery = celeryHelper.createHelper(locals.logger);
 
     // 任务名
-    var name = 'Main.runner';
+    var name = 'Main.FuncRunner';
 
     // 生成Celery任务的kwargs, options
     var taskOptions = {
@@ -1474,7 +1474,7 @@ exports.callFuncDraft = function(req, res, next) {
     if (err) return next(err);
 
     // 函数调用参数
-    var name = 'Main.debugger';
+    var name = 'Main.FuncDebugger';
     var kwargs = {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
@@ -1757,7 +1757,7 @@ exports.integratedSignIn = function(req, res, next) {
   var password = req.body.signIn.password;
 
   // 函数调用参数
-  var name = 'Main.runner';
+  var name = 'Main.FuncRunner';
   var kwargs = {
     funcId        : funcId,
     funcCallKwargs: { username: username, password: password },

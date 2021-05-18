@@ -1056,7 +1056,7 @@ debugAPI:
           $desc      : Task name
           $isRequired: true
           $type      : string
-          $example   : example.echo.success
+          $example   : Example.Echo.Success
         args:
           $desc: List arguments (*args)
           $:

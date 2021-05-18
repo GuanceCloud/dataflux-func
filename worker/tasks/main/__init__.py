@@ -1658,8 +1658,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcChain'      : func_chain,
         }
 
-        from worker.tasks.main.runner import runner
-        runner.apply_async(
+        from worker.tasks.main.func_runner import func_runner
+        func_runner.apply_async(
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
@@ -1949,8 +1949,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         return '\n'.join(lines)
 
-from worker.tasks.main.debugger        import debugger
-from worker.tasks.main.runner          import runner
+from worker.tasks.main.func_debugger   import func_debugger
+from worker.tasks.main.func_runner     import func_runner
 from worker.tasks.main.starter_crontab import starter_crontab
 
 from worker.tasks.main.utils import reload_scripts

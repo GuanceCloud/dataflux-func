@@ -33,13 +33,13 @@ from worker.utils.extra_helpers import InfluxDBHelper
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main import runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
+from worker.tasks.main import func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
 
 CONFIG = yaml_resources.get('CONFIG')
 
 SCRIPT_MAP = {}
 
-# Main.reloadScripts
+# Main.ReloadScripts
 class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     '''
     脚本重新载入任务
@@ -159,7 +159,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
                 for k in self.cache_db.client.scan_iter(cache_key):
                     self.cache_db.delete(six.ensure_str(k))
 
-@app.task(name='Main.reloadScripts', bind=True, base=ReloadScriptsTask)
+@app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
 def reload_scripts(self, *args, **kwargs):
     is_startup = kwargs.get('isOnLaunch') or False
     force      = kwargs.get('force')     or False
@@ -201,7 +201,7 @@ def reload_scripts(self, *args, **kwargs):
 
         self.cache_db.set(cache_key, str(latest_publish_timestamp))
 
-# Main.syncCache
+# Main.SyncCache
 class SyncCache(BaseTask):
     def sync_script_running_info(self):
         data = []
@@ -691,7 +691,7 @@ class SyncCache(BaseTask):
 
             self.db.query(sql, sql_params)
 
-@app.task(name='Main.syncCache', bind=True, base=SyncCache)
+@app.task(name='Main.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'syncCache')
     lock_value = toolkit.gen_uuid()
@@ -729,7 +729,7 @@ def sync_cache(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-# Main.autoCleaner
+# Main.AutoCleaner
 class AutoCleanerTask(BaseTask):
     def _delete_by_seq(self, table, seq):
         sql = '''
@@ -789,7 +789,7 @@ class AutoCleanerTask(BaseTask):
                 if entry.name < limit_timestamp:
                     shutil.rmtree(entry.path)
 
-@app.task(name='Main.autoCleaner', bind=True, base=AutoCleanerTask)
+@app.task(name='Main.AutoCleaner', bind=True, base=AutoCleanerTask)
 def auto_cleaner(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
     lock_value = toolkit.gen_uuid()
@@ -819,7 +819,7 @@ def auto_cleaner(self, *args, **kwargs):
     upload_file_expires = CONFIG['_UPLOAD_FILE_EXPIRES']
     self.clear_upload_file_by_expires(expires=upload_file_expires)
 
-# Main.autoRun
+# Main.AutoRun
 class AutoRunTask(BaseTask):
     def get_integrated_auto_run_funcs(self):
         sql = '''
@@ -832,7 +832,7 @@ class AutoRunTask(BaseTask):
             '''
         return self.db.query(sql)
 
-@app.task(name='Main.autoRun', bind=True, base=AutoRunTask)
+@app.task(name='Main.AutoRun', bind=True, base=AutoRunTask)
 def auto_run(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoRun')
     lock_value = toolkit.gen_uuid()
@@ -859,10 +859,10 @@ def auto_run(self, *args, **kwargs):
         # 自动运行总是使用默认队列
         queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_QUEUE'])
 
-        runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
+        func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
 
-# Main.dataSourceChecker
-@app.task(name='Main.dataSourceChecker', bind=True, base=BaseTask)
+# Main.DataSourceChecker
+@app.task(name='Main.DataSourceChecker', bind=True, base=BaseTask)
 def data_source_checker(self, *args, **kwargs):
     self.logger.info('DataSource Checker Task launched.')
 
@@ -879,8 +879,8 @@ def data_source_checker(self, *args, **kwargs):
 
     data_source_helper.check()
 
-# Main.dataSourceDebugger
-@app.task(name='Main.dataSourceDebugger', bind=True, base=BaseTask)
+# Main.DataSourceDebugger
+@app.task(name='Main.DataSourceDebugger', bind=True, base=BaseTask)
 def data_source_debugger(self, *args, **kwargs):
     self.logger.info('DataSource Debugger Task launched.')
 
@@ -933,8 +933,8 @@ def data_source_debugger(self, *args, **kwargs):
         ret = db_res
     return ret
 
-# Main.workerQueuePressureRecover
-@app.task(name='Main.workerQueuePressureRecover', bind=True, base=BaseTask)
+# Main.WorkerQueuePressureRecover
+@app.task(name='Main.WorkerQueuePressureRecover', bind=True, base=BaseTask)
 def worker_queue_pressure_recover(self, *args, **kwargs):
     self.logger.info('Worker Queue Pressure Recover Task launched.')
 
@@ -947,7 +947,7 @@ def worker_queue_pressure_recover(self, *args, **kwargs):
             self.cache_db.run('set', cache_key, 0)
 
 
-# Main.dbAutoBackup
+# Main.DBAutoBackup
 class DBAutoBackupTask(BaseTask):
     def run_sqldump(self, tables, with_data, file_name):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
@@ -996,7 +996,7 @@ class DBAutoBackupTask(BaseTask):
                 file_path = os.path.join(dump_file_dir, file_name)
                 os.remove(file_path)
 
-@app.task(name='Main.dbAutoBackup', bind=True, base=DBAutoBackupTask)
+@app.task(name='Main.DBAutoBackup', bind=True, base=DBAutoBackupTask)
 def db_auto_backup(self, *args, **kwargs):
     self.logger.info('DB Auto Backup Task launched.')
 

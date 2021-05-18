@@ -26,7 +26,7 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class Debugger(ScriptBaseTask):
+class FuncDebugger(ScriptBaseTask):
     def get_script_dict_for_debugger(self, script_id):
         user_scripts = []
 
@@ -81,10 +81,10 @@ class Debugger(ScriptBaseTask):
 
         return script_dict
 
-@app.task(name='Main.debugger', bind=True, base=Debugger,
+@app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger,
     soft_time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'],
     time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
-def debugger(self, *args, **kwargs):
+def func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
     func_call_kwargs = kwargs.get('funcCallKwargs') or {}

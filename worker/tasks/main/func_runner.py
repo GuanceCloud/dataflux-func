@@ -34,7 +34,7 @@ SCRIPTS_CACHE_MD5       = None
 SCRIPTS_CACHE_TIMESTAMP = 0
 SCRIPT_DICT_CACHE       = None
 
-@app.task(name='Main.runner.result', bind=True, base=BaseResultSavingTask, ignore_result=True)
+@app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
     options = kwargs or {}
 
@@ -62,7 +62,7 @@ def result_saving_task(self, task_id, name, origin, start_time, end_time, args, 
     sql_params = (task_id, name, origin, start_time, end_time, args_json, kwargs_json, retval_json, status, einfo_text)
     self.db.query(sql, sql_params)
 
-class RunnerTask(ScriptBaseTask):
+class FuncRunnerTask(ScriptBaseTask):
     '''
     由于绝大部分的调用都直接返回给前端，
     因此只要保存失败案例即可。
@@ -284,10 +284,10 @@ class RunnerTask(ScriptBaseTask):
                 queue, current_worker_queue_pressure, abs(func_pressure),
                 int(current_worker_queue_pressure / worker_queue_max_pressure * 100)))
 
-@app.task(name='Main.runner', bind=True, base=RunnerTask, ignore_result=True,
+@app.task(name='Main.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True,
     soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
     time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
-def runner(self, *args, **kwargs):
+def func_runner(self, *args, **kwargs):
     # 执行函数、参数
     func_id              = kwargs.get('funcId')
     func_call_kwargs     = kwargs.get('funcCallKwargs') or {}
