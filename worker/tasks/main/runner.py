@@ -24,9 +24,9 @@ from worker.tasks import BaseResultSavingTask
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
-from worker.tasks.dataflux_func import ScriptBaseTask
-from worker.tasks.dataflux_func import BaseFuncResponse, FuncResponse
+from worker.tasks.main import DataFluxFuncBaseException, NotFoundException, NotFoundException
+from worker.tasks.main import ScriptBaseTask
+from worker.tasks.main import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -34,7 +34,7 @@ SCRIPTS_CACHE_MD5       = None
 SCRIPTS_CACHE_TIMESTAMP = 0
 SCRIPT_DICT_CACHE       = None
 
-@app.task(name='DataFluxFunc.runner.result', bind=True, base=BaseResultSavingTask, ignore_result=True)
+@app.task(name='Main.runner.result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
     options = kwargs or {}
 
@@ -62,7 +62,7 @@ def result_saving_task(self, task_id, name, origin, start_time, end_time, args, 
     sql_params = (task_id, name, origin, start_time, end_time, args_json, kwargs_json, retval_json, status, einfo_text)
     self.db.query(sql, sql_params)
 
-class DataFluxFuncRunnerTask(ScriptBaseTask):
+class RunnerTask(ScriptBaseTask):
     '''
     由于绝大部分的调用都直接返回给前端，
     因此只要保存失败案例即可。
@@ -74,14 +74,14 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
     def update_script_dict_cache(self):
         '''
         更新脚本字典缓存
-        与 DataFluxFuncReloadScriptsTask 配合完成高速脚本加载处理
+        与 ReloadScriptsTask 配合完成高速脚本加载处理
         具体如下：
             1. 从本地内存中获取缓存时间，未超时直接结束
             2. 从Redis检查当前脚本缓存MD5值
             2.1. 如未改变，则延长缓存时间并结束
             2.2. 如已改变，则从Redis中获取脚本缓存数据
             3. 如Redis中无脚本缓存数据，则直接从数据库中获取数据
-              （正常不会发生，DataFluxFuncReloadScriptsTask 会定时更新Redis缓存）
+              （正常不会发生，ReloadScriptsTask 会定时更新Redis缓存）
         '''
         global SCRIPTS_CACHE_MD5
         global SCRIPTS_CACHE_TIMESTAMP
@@ -284,10 +284,10 @@ class DataFluxFuncRunnerTask(ScriptBaseTask):
                 queue, current_worker_queue_pressure, abs(func_pressure),
                 int(current_worker_queue_pressure / worker_queue_max_pressure * 100)))
 
-@app.task(name='DataFluxFunc.runner', bind=True, base=DataFluxFuncRunnerTask, ignore_result=True,
+@app.task(name='Main.runner', bind=True, base=RunnerTask, ignore_result=True,
     soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
     time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
-def dataflux_func_runner(self, *args, **kwargs):
+def runner(self, *args, **kwargs):
     # 执行函数、参数
     func_id              = kwargs.get('funcId')
     func_call_kwargs     = kwargs.get('funcCallKwargs') or {}
@@ -297,7 +297,7 @@ def dataflux_func_runner(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('DataFluxFunc Runner Task launched: `{}`'.format(func_id))
+    self.logger.info('Runner Task launched: `{}`'.format(func_id))
 
     # 来源
     origin    = kwargs.get('origin')

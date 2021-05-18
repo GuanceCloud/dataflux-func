@@ -261,7 +261,7 @@ exports.publish = function(req, res, next) {
         queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
         resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
       }
-      celery.putTask('DataFluxFunc.debugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
+      celery.putTask('Main.debugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
         if (err) return asyncCallback(err);
 
         celeryRes = celeryRes || {};
@@ -346,7 +346,7 @@ exports.publish = function(req, res, next) {
     },
     // 发送更新脚本缓存任务
     function(asyncCallback) {
-      celery.putTask('DataFluxFunc.reloadScripts', null, null, null, null, asyncCallback);
+      celery.putTask('Main.reloadScripts', null, null, null, null, asyncCallback);
     },
   ], function(err) {
     transScope.end(err, function(scopeErr) {
@@ -362,7 +362,7 @@ exports.publish = function(req, res, next) {
       // 发布成功后
       // 1. 重新加载脚本
       // 2. 运行发布后自动运行的函数
-      celery.putTask('DataFluxFunc.reloadScripts', null, null, null, null, function(err) {
+      celery.putTask('Main.reloadScripts', null, null, null, null, function(err) {
         if (err) return;
 
         nextExportedAPIFuncs.forEach(function(func) {
@@ -384,7 +384,7 @@ exports.publish = function(req, res, next) {
           var taskOptions = {
             queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
-          celery.putTask('DataFluxFunc.runner', null, kwargs, taskOptions);
+          celery.putTask('Main.runner', null, kwargs, taskOptions);
         });
       });
     });

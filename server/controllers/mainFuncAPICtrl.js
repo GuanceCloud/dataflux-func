@@ -615,7 +615,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     var celery = celeryHelper.createHelper(locals.logger);
 
     // 任务名
-    var name = 'DataFluxFunc.runner';
+    var name = 'Main.runner';
 
     // 生成Celery任务的kwargs, options
     var taskOptions = {
@@ -1474,7 +1474,7 @@ exports.callFuncDraft = function(req, res, next) {
     if (err) return next(err);
 
     // 函数调用参数
-    var name = 'DataFluxFunc.debugger';
+    var name = 'Main.debugger';
     var kwargs = {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
@@ -1757,7 +1757,7 @@ exports.integratedSignIn = function(req, res, next) {
   var password = req.body.signIn.password;
 
   // 函数调用参数
-  var name = 'DataFluxFunc.runner';
+  var name = 'Main.runner';
   var kwargs = {
     funcId        : funcId,
     funcCallKwargs: { username: username, password: password },
@@ -1887,7 +1887,7 @@ exports.integratedAuthMid = function(req, res, next) {
   if (!xAuthToken) return next();
 
   if (CONFIG.MODE === 'dev') {
-    res.locals.logger.debug('[MID] IN datafluxFuncAPICtrl.integratedAuthMid');
+    res.locals.logger.debug('[MID] IN mainFuncAPICtrl.integratedAuthMid');
   }
 
   res.locals.user = auth.createUserHandler();

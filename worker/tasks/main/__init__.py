@@ -357,11 +357,11 @@ class ScriptCacherMixin(object):
     def get_scripts(self, script_ids=None):
         # 【注意】
         # 加载脚本处理存在两处
-        #   1. DataFluxFuncReloadScriptsTask.force_reload_script()
+        #   1. ReloadScriptsTask.force_reload_script()
         #       强制加载所有脚本，并缓存到Redis
-        #   2. DataFluxFuncReloadScriptsTask.reload_script()
+        #   2. ReloadScriptsTask.reload_script()
         #       按需加载已变更的脚本，并缓存到Redis
-        #   3. DataFluxFuncRunnerTask.update_script_dict_cache()
+        #   3. RunnerTask.update_script_dict_cache()
         #       缓存击穿时加载所需脚本，并缓存到内存
 
         # 获取脚本数据
@@ -1658,8 +1658,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcChain'      : func_chain,
         }
 
-        from worker.tasks.dataflux_func.runner import dataflux_func_runner
-        dataflux_func_runner.apply_async(
+        from worker.tasks.main.runner import runner
+        runner.apply_async(
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
@@ -1949,15 +1949,15 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         return '\n'.join(lines)
 
-from worker.tasks.dataflux_func.debugger        import dataflux_func_debugger
-from worker.tasks.dataflux_func.runner          import dataflux_func_runner
-from worker.tasks.dataflux_func.starter_crontab import dataflux_func_starter_crontab
+from worker.tasks.main.debugger        import debugger
+from worker.tasks.main.runner          import runner
+from worker.tasks.main.starter_crontab import starter_crontab
 
-from worker.tasks.dataflux_func.utils import dataflux_func_reload_scripts
-from worker.tasks.dataflux_func.utils import dataflux_func_sync_cache
-from worker.tasks.dataflux_func.utils import dataflux_func_auto_cleaner
-from worker.tasks.dataflux_func.utils import dataflux_func_auto_run
-from worker.tasks.dataflux_func.utils import dataflux_func_data_source_checker
-from worker.tasks.dataflux_func.utils import dataflux_func_data_source_debugger
-from worker.tasks.dataflux_func.utils import dataflux_func_worker_queue_pressure_recover
-from worker.tasks.dataflux_func.utils import dataflux_func_db_auto_backup
+from worker.tasks.main.utils import reload_scripts
+from worker.tasks.main.utils import sync_cache
+from worker.tasks.main.utils import auto_cleaner
+from worker.tasks.main.utils import auto_run
+from worker.tasks.main.utils import data_source_checker
+from worker.tasks.main.utils import data_source_debugger
+from worker.tasks.main.utils import worker_queue_pressure_recover
+from worker.tasks.main.utils import db_auto_backup

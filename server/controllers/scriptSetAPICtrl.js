@@ -659,7 +659,7 @@ exports.import = function(req, res, next) {
     // 发送更新脚本缓存任务（强制）
     function(asyncCallback) {
       var taskKwargs = { force: true };
-      celery.putTask('DataFluxFunc.reloadScripts', null, taskKwargs, null, asyncCallback);
+      celery.putTask('Main.reloadScripts', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -706,7 +706,7 @@ exports.confirmImport = function(req, res, next) {
     // 发送更新脚本缓存任务（强制）
     function(asyncCallback) {
       var taskKwargs = { force: true };
-      celery.putTask('DataFluxFunc.reloadScripts', null, taskKwargs, null, asyncCallback);
+      celery.putTask('Main.reloadScripts', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

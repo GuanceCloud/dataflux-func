@@ -4,8 +4,8 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var datafluxFuncPageCtrl = require('../controllers/datafluxFuncPageCtrl');
+var mainFuncPageCtrl = require('../controllers/mainFuncPageCtrl');
 
 routeLoader.load(ROUTE.datafluxFuncPage.clientApp, [
-  datafluxFuncPageCtrl.clientApp,
+  mainFuncPageCtrl.clientApp,
 ]);

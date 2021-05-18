@@ -41,7 +41,7 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
     type  : type,
     config: config,
   };
-  celery.putTask('DataFluxFunc.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
+  celery.putTask('Main.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
     if (err) return callback(err);
 
     celeryRes = celeryRes || {};
@@ -449,7 +449,7 @@ exports.query = function(req, res, next) {
       // 执行命令
       var celery = celeryHelper.createHelper(res.locals.logger);
 
-      celery.putTask('DataFluxFunc.dataSourceDebugger', null, taskKwargs, null, null, function(err, celeryRes, extraInfo) {
+      celery.putTask('Main.dataSourceDebugger', null, taskKwargs, null, null, function(err, celeryRes, extraInfo) {
         if (err) return asyncCallback(err);
 
         celeryRes = celeryRes || {};

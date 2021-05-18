@@ -2,7 +2,7 @@
 
 '''
 杂项任务
-包含各类清理类任务、DataFluxFuncAutoCleanerTask各类数据定时同步任务、数据源检查/调试任务等
+包含各类清理类任务、AutoCleanerTask各类数据定时同步任务、数据源检查/调试任务等
 '''
 
 # Builtin Modules
@@ -28,22 +28,22 @@ from six.moves.urllib_parse import urlsplit
 from worker import app
 from worker.utils import toolkit, yaml_resources
 from worker.tasks import gen_task_id, webhook
-from worker.tasks.dataflux_func import gen_script_failure_id, gen_script_log_id, gen_data_source_id, decipher_data_source_config_fields
+from worker.tasks.main import gen_script_failure_id, gen_script_log_id, gen_data_source_id, decipher_data_source_config_fields
 from worker.utils.extra_helpers import InfluxDBHelper
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import dataflux_func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
+from worker.tasks.main import runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
 
 CONFIG = yaml_resources.get('CONFIG')
 
 SCRIPT_MAP = {}
 
-# DataFluxFunc.reloadScripts
-class DataFluxFuncReloadScriptsTask(BaseTask, ScriptCacherMixin):
+# Main.reloadScripts
+class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     '''
     脚本重新载入任务
-    与 DataFluxFuncRunnerTask.update_script_dict_cache 配合完成高速脚本加载处理
+    与 RunnerTask.update_script_dict_cache 配合完成高速脚本加载处理
     具体如下：
         1. 由于只有当用户「发布」脚本后，才需要重新加载，
            因此以 biz_main_func 表的最大 updateTime 作为是否需要重新读取数据库的标准
@@ -159,8 +159,8 @@ class DataFluxFuncReloadScriptsTask(BaseTask, ScriptCacherMixin):
                 for k in self.cache_db.client.scan_iter(cache_key):
                     self.cache_db.delete(six.ensure_str(k))
 
-@app.task(name='DataFluxFunc.reloadScripts', bind=True, base=DataFluxFuncReloadScriptsTask)
-def dataflux_func_reload_scripts(self, *args, **kwargs):
+@app.task(name='Main.reloadScripts', bind=True, base=ReloadScriptsTask)
+def reload_scripts(self, *args, **kwargs):
     is_startup = kwargs.get('isOnLaunch') or False
     force      = kwargs.get('force')     or False
 
@@ -169,10 +169,10 @@ def dataflux_func_reload_scripts(self, *args, **kwargs):
         lock_key   = toolkit.get_cache_key('lock', 'reloadScripts')
         lock_value = toolkit.gen_uuid()
         if not self.cache_db.lock(lock_key, lock_value, 10):
-            self.logger.warning('DataFluxFunc ReloadScriptDict Task already launched.')
+            self.logger.warning('ReloadScriptDict Task already launched.')
             return
 
-    self.logger.info('DataFluxFunc ReloadScriptDict Task launched.')
+    self.logger.info('ReloadScriptDict Task launched.')
 
     cache_key = toolkit.get_cache_key('fixedCache', 'prevDBUpdateTimestamp')
 
@@ -201,8 +201,8 @@ def dataflux_func_reload_scripts(self, *args, **kwargs):
 
         self.cache_db.set(cache_key, str(latest_publish_timestamp))
 
-# DataFluxFunc.syncCache
-class DataFluxFuncSyncCache(BaseTask):
+# Main.syncCache
+class SyncCache(BaseTask):
     def sync_script_running_info(self):
         data = []
 
@@ -691,15 +691,15 @@ class DataFluxFuncSyncCache(BaseTask):
 
             self.db.query(sql, sql_params)
 
-@app.task(name='DataFluxFunc.syncCache', bind=True, base=DataFluxFuncSyncCache)
-def dataflux_func_sync_cache(self, *args, **kwargs):
+@app.task(name='Main.syncCache', bind=True, base=SyncCache)
+def sync_cache(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'syncCache')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('DataFluxFunc SyncCache Task already launched.')
+        self.logger.warning('SyncCache Task already launched.')
         return
 
-    self.logger.info('DataFluxFunc SyncCache Task launched.')
+    self.logger.info('SyncCache Task launched.')
 
     # 脚本运行信息刷入数据库
     try:
@@ -729,8 +729,8 @@ def dataflux_func_sync_cache(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-# DataFluxFunc.autoCleaner
-class DataFluxFuncAutoCleanerTask(BaseTask):
+# Main.autoCleaner
+class AutoCleanerTask(BaseTask):
     def _delete_by_seq(self, table, seq):
         sql = '''
             DELETE FROM ??
@@ -789,15 +789,15 @@ class DataFluxFuncAutoCleanerTask(BaseTask):
                 if entry.name < limit_timestamp:
                     shutil.rmtree(entry.path)
 
-@app.task(name='DataFluxFunc.autoCleaner', bind=True, base=DataFluxFuncAutoCleanerTask)
-def dataflux_func_auto_cleaner(self, *args, **kwargs):
+@app.task(name='Main.autoCleaner', bind=True, base=AutoCleanerTask)
+def auto_cleaner(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('DataFluxFunc AutoCleaner Task already launched.')
+        self.logger.warning('AutoCleaner Task already launched.')
         return
 
-    self.logger.info('DataFluxFunc AutoCleaner Task launched.')
+    self.logger.info('AutoCleaner Task launched.')
 
     # 清空数据库数据
     if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
@@ -819,8 +819,8 @@ def dataflux_func_auto_cleaner(self, *args, **kwargs):
     upload_file_expires = CONFIG['_UPLOAD_FILE_EXPIRES']
     self.clear_upload_file_by_expires(expires=upload_file_expires)
 
-# DataFluxFunc.autoRun
-class DataFluxFuncAutoRunTask(BaseTask):
+# Main.autoRun
+class AutoRunTask(BaseTask):
     def get_integrated_auto_run_funcs(self):
         sql = '''
             SELECT
@@ -832,15 +832,15 @@ class DataFluxFuncAutoRunTask(BaseTask):
             '''
         return self.db.query(sql)
 
-@app.task(name='DataFluxFunc.autoRun', bind=True, base=DataFluxFuncAutoRunTask)
-def dataflux_func_auto_run(self, *args, **kwargs):
+@app.task(name='Main.autoRun', bind=True, base=AutoRunTask)
+def auto_run(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoRun')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('DataFluxFunc AutoRun Task already launched.')
+        self.logger.warning('AutoRun Task already launched.')
         return
 
-    self.logger.info('DataFluxFunc AutoRun Task launched.')
+    self.logger.info('AutoRun Task launched.')
 
     # 获取函数功能集成自动运行函数
     integrated_auto_run_funcs = self.get_integrated_auto_run_funcs()
@@ -859,12 +859,12 @@ def dataflux_func_auto_run(self, *args, **kwargs):
         # 自动运行总是使用默认队列
         queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_QUEUE'])
 
-        dataflux_func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
+        runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
 
-# DataFluxFunc.dataSourceChecker
-@app.task(name='DataFluxFunc.dataSourceChecker', bind=True, base=BaseTask)
-def dataflux_func_data_source_checker(self, *args, **kwargs):
-    self.logger.info('DataFluxFunc DataSource Checker Task launched.')
+# Main.dataSourceChecker
+@app.task(name='Main.dataSourceChecker', bind=True, base=BaseTask)
+def data_source_checker(self, *args, **kwargs):
+    self.logger.info('DataSource Checker Task launched.')
 
     data_source_type   = kwargs.get('type')
     data_source_config = kwargs.get('config')
@@ -879,10 +879,10 @@ def dataflux_func_data_source_checker(self, *args, **kwargs):
 
     data_source_helper.check()
 
-# DataFluxFunc.dataSourceDebugger
-@app.task(name='DataFluxFunc.dataSourceDebugger', bind=True, base=BaseTask)
-def dataflux_func_data_source_debugger(self, *args, **kwargs):
-    self.logger.info('DataFluxFunc DataSource Debugger Task launched.')
+# Main.dataSourceDebugger
+@app.task(name='Main.dataSourceDebugger', bind=True, base=BaseTask)
+def data_source_debugger(self, *args, **kwargs):
+    self.logger.info('DataSource Debugger Task launched.')
 
     data_source_id = kwargs.get('id')
     command        = kwargs.get('command')
@@ -933,10 +933,10 @@ def dataflux_func_data_source_debugger(self, *args, **kwargs):
         ret = db_res
     return ret
 
-# DataFluxFunc.workerQueuePressureRecover
-@app.task(name='DataFluxFunc.workerQueuePressureRecover', bind=True, base=BaseTask)
-def dataflux_func_worker_queue_pressure_recover(self, *args, **kwargs):
-    self.logger.info('DataFluxFunc Worker Queue Pressure Recover Task launched.')
+# Main.workerQueuePressureRecover
+@app.task(name='Main.workerQueuePressureRecover', bind=True, base=BaseTask)
+def worker_queue_pressure_recover(self, *args, **kwargs):
+    self.logger.info('Worker Queue Pressure Recover Task launched.')
 
     for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
         queue_key = toolkit.get_worker_queue(i)
@@ -947,8 +947,8 @@ def dataflux_func_worker_queue_pressure_recover(self, *args, **kwargs):
             self.cache_db.run('set', cache_key, 0)
 
 
-# DataFluxFunc.dbAutoBackup
-class DataFluxFuncDBAutoBackupTask(BaseTask):
+# Main.dbAutoBackup
+class DBAutoBackupTask(BaseTask):
     def run_sqldump(self, tables, with_data, file_name):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
         if not os.path.exists(dump_file_dir):
@@ -996,9 +996,9 @@ class DataFluxFuncDBAutoBackupTask(BaseTask):
                 file_path = os.path.join(dump_file_dir, file_name)
                 os.remove(file_path)
 
-@app.task(name='DataFluxFunc.dbAutoBackup', bind=True, base=DataFluxFuncDBAutoBackupTask)
-def dataflux_func_db_auto_backup(self, *args, **kwargs):
-    self.logger.info('DataFluxFunc DB Auto Backup Task launched.')
+@app.task(name='Main.dbAutoBackup', bind=True, base=DBAutoBackupTask)
+def db_auto_backup(self, *args, **kwargs):
+    self.logger.info('DB Auto Backup Task launched.')
 
     # 准备备份
     date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')

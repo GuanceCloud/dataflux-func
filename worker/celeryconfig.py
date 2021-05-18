@@ -82,11 +82,11 @@ for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
     task_queues.append(create_queue(q))
 
 # Task
-imports.append('worker.tasks.dataflux_func')
+imports.append('worker.tasks.main')
 
 # Route
 task_routes.update({
-    'DataFluxFunc.*': {
+    'Main.*': {
         'queue': toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
     },
 })
@@ -105,38 +105,38 @@ def create_schedule(crontab_expr):
 
 # 自动触发配置启动器
 beat_schedule['run-starter-crontab'] = {
-    'task'    : 'DataFluxFunc.starterCrontab',
+    'task'    : 'Main.starterCrontab',
     'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
 }
 
 # 强制重新加载脚本
 beat_schedule['run-force-reload-scripts'] = {
-    'task'    : 'DataFluxFunc.reloadScripts',
+    'task'    : 'Main.reloadScripts',
     'kwargs'  : { 'force': True },
     'schedule': create_schedule(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']),
 }
 
 # 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
-    'task'    : 'DataFluxFunc.syncCache',
+    'task'    : 'Main.syncCache',
     'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
 }
 
 # 工作队列压力恢复
 beat_schedule['run-worker-queue-pressure-recover'] = {
-    'task'    : 'DataFluxFunc.workerQueuePressureRecover',
+    'task'    : 'Main.workerQueuePressureRecover',
     'schedule': create_schedule(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']),
 }
 
 # 自动清理
 beat_schedule['run-auto-cleaner'] = {
-    'task'    : 'DataFluxFunc.autoCleaner',
+    'task'    : 'Main.autoCleaner',
     'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEANER']),
 }
 
 if CONFIG['DB_AUTO_BACKUP_ENABLED']:
     # 数据库自动备份
     beat_schedule['run-db-auto-backup'] = {
-        'task'    : 'DataFluxFunc.dbAutoBackup',
+        'task'    : 'Main.dbAutoBackup',
         'schedule': create_schedule(CONFIG['_CRONTAB_DB_AUTO_BACKUP']),
     }
