@@ -641,8 +641,8 @@ router.all('*', require('./requestDumper').dumpRequestFrom);
 router.all('*', function functionalComponents(req, res, next) {
   var reqLogger = res.locals.logger;
 
-  res.locals.db = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
-  res.locals.cacheDB = require('./extraHelpers/redisHelper').createHelper(reqLogger);
+  res.locals.db          = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
+  res.locals.cacheDB     = require('./extraHelpers/redisHelper').createHelper(reqLogger);
   res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
 
   if (CONFIG.MODE === 'prod') {

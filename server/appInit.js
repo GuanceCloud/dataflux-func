@@ -116,12 +116,12 @@ exports.beforeAppCreate = function(callback) {
     });
   };
 
-  /********** Content for YOUR project below **********/
-
   async.series([
     loadDatabaseTimezone,
   ], function(err) {
     if (err) throw err;
+
+    /********** Content for YOUR project below **********/
 
     return callback();
   });
