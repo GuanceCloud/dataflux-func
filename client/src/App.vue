@@ -27,7 +27,7 @@ export default {
     isSignedIn(val) {
       if (val) {
         // 登录后
-        this.$store.dispatch('updateUserProfile');
+        this.$store.dispatch('reloadUserProfile');
 
         // Socket.io 登录
         this.socketIO.emit('auth', this.$store.state.xAuthToken);
@@ -636,10 +636,6 @@ content: "\25B2";
 }
 .el-menu-item * {
   vertical-align: none;
-}
-.el-menu-item {
-  height: 47px !important;
-  line-height: 47px !important;
 }
 .switch-tips {
   padding-left: 10px;

@@ -96,7 +96,7 @@ export default {
       if (!apiRes.ok) return;
 
       await this.loadData();
-      this.$store.dispatch('updateUserProfile');
+      this.$store.dispatch('reloadUserProfile');
     },
   },
   computed: {
