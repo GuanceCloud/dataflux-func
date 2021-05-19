@@ -58,7 +58,7 @@ Follow System: 跟随系统
             <span class="hidden-md-and-down">{{ userProfileName }}</span>
           </span>
         </template>
-        <el-menu-item index="/setting/clear-cache">{{ $t('Settings') }}</el-menu-item>
+        <el-menu-item index="/setting/code-editor-setup">{{ $t('Settings') }}</el-menu-item>
         <el-menu-item @click="goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
