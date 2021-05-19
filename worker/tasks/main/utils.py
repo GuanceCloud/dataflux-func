@@ -962,8 +962,8 @@ class DBAutoBackupTask(BaseTask):
 
         sqldump_args = [
             'mysqldump',
-            f"--host={CONFIG['MYSQL_HOST']}",
-            f"--port={CONFIG['MYSQL_PORT']}",
+            f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}",
+            f"--port={CONFIG['MYSQL_PORT'] or 3306}",
             f"--user={CONFIG['MYSQL_USER']}",
             f"--password={CONFIG['MYSQL_PASSWORD']}",
             '--databases', CONFIG['MYSQL_DATABASE'],
