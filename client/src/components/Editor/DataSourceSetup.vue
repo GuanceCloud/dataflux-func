@@ -209,6 +209,7 @@ Please select handler Func                        : 请选择处理函数
                   </el-form-item>
 
                   <el-form-item :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
+                    <el-divider></el-divider>
                   </el-form-item>
 
                   <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
