@@ -446,7 +446,7 @@ export default {
     return new MAP_CONST(this.TASK_STATUS);
   },
 
-  // 总揽业务实体
+  // 总览业务实体
   get OVERVIEW_ENTITY() {
     return [
       {

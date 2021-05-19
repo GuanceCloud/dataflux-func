@@ -51,17 +51,17 @@ const routes = [
         component: () => import('../components/Editor/ScriptSetSetup.vue'),
       },
       {
-        path: 'script-set/:id/setup',
+        path: 'script-set-setup/:id',
         name: 'script-set-setup',
         component: () => import('../components/Editor/ScriptSetSetup.vue'),
       },
       {
-        path: 'script-set/:id/add-script',
+        path: 'script-add/:id',
         name: 'script-add',
         component: () => import('../components/Editor/ScriptSetup.vue'),
       },
       {
-        path: 'script/:id/setup',
+        path: 'script-setup/:id',
         name: 'script-setup',
         component: () => import('../components/Editor/ScriptSetup.vue'),
       },
@@ -71,7 +71,7 @@ const routes = [
         component: () => import('../components/Editor/DataSourceSetup.vue'),
       },
       {
-        path: 'data-source/:id/setup',
+        path: 'data-source-setup/:id',
         name: 'data-source-setup',
         component: () => import('../components/Editor/DataSourceSetup.vue'),
       },
@@ -81,7 +81,7 @@ const routes = [
         component: () => import('../components/Editor/EnvVariableSetup.vue'),
       },
       {
-        path: 'env-variable/:id/setup',
+        path: 'env-variable-setup/:id',
         name: 'env-variable-setup',
         component: () => import('../components/Editor/EnvVariableSetup.vue'),
       },
@@ -113,7 +113,7 @@ const routes = [
         component: () => import('../components/Management/AuthLinkSetup.vue'),
       },
       {
-        path: 'auth-link/:id/setup',
+        path: 'auth-link-setup/:id',
         name: 'auth-link-setup',
         component: () => import('../components/Management/AuthLinkSetup.vue'),
       },
@@ -129,12 +129,12 @@ const routes = [
         component: () => import('../components/Management/CrontabConfigSetup.vue'),
       },
       {
-        path: 'crontab-config/:id/setup',
+        path: 'crontab-config-setup/:id',
         name: 'crontab-config-setup',
         component: () => import('../components/Management/CrontabConfigSetup.vue'),
       },
       {
-        path: 'crontab/:id/task-info-list',
+        path: 'crontab-task-info-list/:id',
         name: 'crontab-task-info-list',
         component: () => import('../components/Management/CrontabTaskInfoList.vue'),
       },
@@ -150,12 +150,12 @@ const routes = [
         component: () => import('../components/Management/BatchSetup.vue'),
       },
       {
-        path: 'batch/:id/setup',
+        path: 'batch-setup/:id',
         name: 'batch-setup',
         component: () => import('../components/Management/BatchSetup.vue'),
       },
       {
-        path: 'batch/:id/task-info-list',
+        path: 'batch-task-info-list/:id',
         name: 'batch-task-info-list',
         component: () => import('../components/Management/BatchTaskInfoList.vue'),
       },
@@ -203,7 +203,7 @@ const routes = [
         component: () => import('../components/Management/UserSetup.vue'),
       },
       {
-        path: 'user/:id/setup',
+        path: 'user-setup/:id',
         name: 'user-setup',
         component: () => import('../components/Management/UserSetup.vue'),
       },
@@ -266,7 +266,7 @@ const routes = [
         component: () => import('../components/Management/FileServiceSetup.vue'),
       },
       {
-        path: 'file-service/:id/setup',
+        path: 'file-service-setup/:id',
         name: 'file-service-setup',
         component: () => import('../components/Management/FileServiceSetup.vue'),
       },
