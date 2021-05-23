@@ -8,13 +8,17 @@ Description about this Script                                    : 介绍当前�
 
 Add Script   : 添加脚本
 Modify Script: 修改脚本
-Lock Script  : 锁定脚本
-Unlock Script: 解锁脚本
 Delete Script: 删除脚本
 
 Deleting Script may break the dependency with other scripts                       : 删除脚本可能会破坏与其他脚本的依赖关系
 In addition, all data associated with this Script will be deleted at the same time: 此外，与此脚本关联的所有数据也会同时删除
 Are you sure you want to delete the Script?                                       : 是否确认删除脚本？
+
+Script created : 脚本已创建
+Script saved   : 脚本已保存
+Script locked  : 脚本已上锁
+Script unlocked: 脚本已解锁
+Script deleted : 脚本已删除
 
 Please input ID                                                       : 请输入ID
 Only alphabets, numbers and underscore are allowed                    : 只能包含大小写英文、数字及下划线
@@ -117,9 +121,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -155,19 +157,17 @@ export default {
       }
     },
     async addData() {
-      let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Script'), showError: true},
-      }
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Script created') },
+      });
       if (!apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
 
       this.$router.push({
         name  : 'code-editor',
-        params: {id: apiRes.data.id},
+        params: { id: apiRes.data.id },
       });
 
       return apiRes.data.id;
@@ -177,9 +177,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: _formData},
-        alert: {title: this.$t('Modify Script'), showError: true, showSuccess: true},
+        params: { id: this.scriptId },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Script saved') },
       });
       if (!apiRes.ok) return;
 
@@ -189,13 +189,13 @@ export default {
       return this.scriptId;
     },
     async lockData(isLocked) {
-      let alertTitle = isLocked
-                      ? this.$t('Lock Script')
-                      : this.$t('Unlock Script');
+      let okMessage = isLocked
+                    ? this.$t('Script locked')
+                    : this.$t('Script unlocked');
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: { isLocked: isLocked }},
-        alert : {title: alertTitle, showError: true, showSuccess: true},
+        params: { id: this.scriptId },
+        body  : { data: { isLocked: isLocked } },
+        alert : { okMessage: okMessage },
       });
       if (!apiRes.ok) return;
 
@@ -218,8 +218,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/delete', {
-        params: {id: this.scriptId},
-        alert : {title: this.$t('Delete Script'), showError: true},
+        params: { id: this.scriptId },
+        alert : { okMessage: this.$t('Script deleted') },
       });
       if (!apiRes.ok) return;
 

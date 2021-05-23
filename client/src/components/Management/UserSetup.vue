@@ -1,6 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
 Add User   : 添加用户
 Modify User: 修改用户
+
+User created: 用户已创建
+User saved  : 用户已保存
 </i18n>
 
 <template>
@@ -78,9 +81,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -116,8 +117,8 @@ export default {
       _formData.roles = ['user'];
 
       let apiRes = await this.T.callAPI('post', '/api/v1/users/do/add', {
-        body : {data: _formData},
-        alert: {title: this.$t('Add User'), showError: true, showSuccess: true},
+        body : { data: _formData },
+        alert: { okMessage: this.$t('User created') },
       });
       if (!apiRes.ok) return;
 
@@ -132,9 +133,9 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify User'), showError: true, showSuccess: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('User saved') },
       });
       if (!apiRes.ok) return;
 

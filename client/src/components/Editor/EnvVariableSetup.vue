@@ -11,6 +11,9 @@ Delete ENV: 删除环境变量
 
 Deleting ENV may break the dependency with other scripts: 删除环境变量可能会破坏与其他脚本的依赖关系
 Are you sure you want to delete the ENV?                : 是否确认删除环境变量？
+ENV Variable created                                    : 环境变量已创建
+ENV Variable saved                                      : 环境变量已保存
+ENV Variable deleted                                    : 环境变量已删除
 
 Please input ID                                   : 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -121,9 +124,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -151,8 +152,8 @@ export default {
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/do/add', {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add ENV'), showError: true},
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('ENV Variable created') },
       });
       if (!apiRes.ok) return;
 
@@ -167,9 +168,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/:id/do/modify', {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify ENV'), showError: true, showSuccess: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('ENV Variable saved') },
       });
       if (!apiRes.ok) return;
 
@@ -191,8 +192,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete ENV'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('ENV Variable deleted') },
       });
       if (!apiRes.ok) return;
 

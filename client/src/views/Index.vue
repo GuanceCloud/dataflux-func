@@ -119,7 +119,10 @@ export default {
         signInBody.signIn.funcId = _formData.funcId;
       }
 
-      let apiRes = await this.T.callAPI('post', signInURL, { body: signInBody })
+      let apiRes = await this.T.callAPI('post', signInURL, {
+        body : signInBody,
+        alert: { muteError: true },
+      });
       if (!apiRes.ok) {
         this.refreshCaptcha();
 

@@ -147,9 +147,8 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/crontab-task-info/do/list', {
-        query : this.T.createListQuery({ crontabConfigId: this.$route.params.id}),
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/crontab-task-info/do/list', {
+        query : this.T.createListQuery({ crontabConfigId: this.$route.params.id }),
       });
       if (!apiRes.ok) return;
 

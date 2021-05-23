@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Disable user: 禁用用户
-Enable user : 启用用户
+User disabled: 用户已禁用
+User enabled : 用户已启用
 
 Search User(ID, username, name): 搜索用户（ID、用户名、名称）
 </i18n>
@@ -120,9 +120,8 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/users/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/users/do/list', {
         query: this.T.createListQuery({ sort: ['seq'] }),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -154,17 +153,17 @@ export default {
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable user'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('User disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable user'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('User enabled') },
           });
           break;
       }

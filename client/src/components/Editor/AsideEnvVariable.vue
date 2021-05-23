@@ -120,9 +120,8 @@ export default {
     async loadData() {
       this.loading = true;
 
-      let apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', {
-        query: {fields: ['id', 'title', 'description']},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', {
+        query: { fields: ['id', 'title', 'description'] },
       });
       if (!apiRes.ok) return;
 

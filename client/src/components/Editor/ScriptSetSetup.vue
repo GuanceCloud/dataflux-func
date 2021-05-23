@@ -8,13 +8,17 @@ Description about this Script Set                                : 介绍当前�
 
 Add Script Set   : 添加脚本集
 Modify Script Set: 修改脚本集
-Lock Script Set  : 锁定脚本集
-Unlock Script Set: 解锁脚本集
 Delete Script Set: 删除脚本集
 
 Deleting Script Set may break the dependency with other scripts                       : 删除脚本集可能会破坏与其他脚本的依赖关系
 In addition, all data associated with this Script Set will be deleted at the same time: 此外，与此脚本集关联的所有数据也会同时删除
 Are you sure you want to delete the Script Set?                                       : 是否确认删除脚本集？
+
+Script Set created : 脚本集已创建
+Script Set saved   : 脚本集已保存
+Script Set locked  : 脚本集已上锁
+Script Set unlocked: 脚本集已解锁
+Script Set deleted : 脚本集已删除
 
 Please input ID                                   : 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -113,9 +117,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -152,8 +154,8 @@ export default {
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/add', {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Script Set'), showError: true, showSuccess: true},
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Script Set created') },
       });
       if (!apiRes.ok) return;
 
@@ -169,9 +171,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
-        params: {id: this.scriptSetId},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify Script Set'), showError: true, showSuccess: true},
+        params: { id: this.scriptSetId },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Script Set saved') },
       });
       if (!apiRes.ok) return;
 
@@ -181,13 +183,13 @@ export default {
       return this.scriptSetId;
     },
     async lockData(isLocked) {
-      let alertTitle = isLocked
-                     ? this.$t('Lock Script Set')
-                     : this.$t('Unlock Script Set');
+      let okMessage = isLocked
+                    ? this.$t('Script Set locked')
+                    : this.$t('Script Set unlocked');
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
-        params: {id: this.scriptSetId},
-        body  : {data: { isLocked: isLocked }},
-        alert : {title: alertTitle, showError: true, showSuccess: true},
+        params: { id: this.scriptSetId },
+        body  : { data: { isLocked: isLocked } },
+        alert : { okMessage: okMessage },
       });
       if (!apiRes.ok) return;
 
@@ -210,8 +212,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/script-sets/:id/do/delete', {
-        params: {id: this.scriptSetId},
-        alert : {title: this.$t('Delete Script Set'), showError: true},
+        params: { id: this.scriptSetId },
+        alert : { okMessage: this.$t('Script Set deleted') },
       });
       if (!apiRes.ok) return;
 

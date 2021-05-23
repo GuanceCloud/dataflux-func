@@ -9,6 +9,10 @@ Add File Service   : 添加文件服务
 Modify File Service: 修改文件服务
 Delete File Service: 删除文件服务
 
+File Service created: 文件服务已创建
+File Service saved  : 文件服务已保存
+File Service deleted: 文件服务已删除
+
 Are you sure you want to delete the File Service?: 是否确认删除文件服务？
 
 'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
@@ -109,9 +113,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -142,12 +144,10 @@ export default {
       }
     },
     async addData() {
-      let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add File Service'), showError: true},
-      };
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/file-services/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/file-services/do/add', {
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('File Service created') },
+      });
       if (!apiRes.ok) return;
 
       this.$store.commit('updateFileServiceList_scrollY', null);
@@ -162,13 +162,11 @@ export default {
       let _formData = this.T.jsonCopy(this.form);
       delete _formData.id;
 
-      let opt = {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify File Service'), showError: true},
-      };
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('File Service saved') },
+      });
       if (!apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -192,8 +190,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/file-services/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete File Service'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('File Service deleted') },
       });
       if (!apiRes.ok) return;
 
@@ -269,10 +267,9 @@ export default {
         multiple     : false,
         checkStrictly: true,
         lazy         : true,
-        lazyLoad     : async (node, resolve) => {
-          let apiRes = await this.T.callAPI('/api/v1/resources/dir', {
-            query: {folder: node.value, type: 'folder'},
-            alert: {showError: true},
+        lazyLoad: async (node, resolve) => {
+          let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
+            query: { folder: node.value, type: 'folder' },
           });
           if (!apiRes.ok) return;
 

@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+Data imported: 数据已导入
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -129,10 +133,9 @@ export default {
       bodyData.append('checkOnly', true);
       bodyData.append('files', req.file);
 
-      let opt = {
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
         body: bodyData,
-      };
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', opt);
+      });
       if (!apiRes.ok) {
         return this.alertOnError(apiRes);
       }
@@ -142,10 +145,10 @@ export default {
       this.checkResult = apiRes.data;
     },
     async confirmImport() {
-      let opt = {
-        body: {confirmId: this.checkResult.confirmId},
-      };
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', {
+        body : { confirmId: this.checkResult.confirmId },
+        alert: { okMessage: this.$t('Data imported') },
+      });
       if (!apiRes.ok) {
         return this.alertOnError(apiRes);
       }

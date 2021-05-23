@@ -1,0 +1,49 @@
+Searching 5 files for "--advertise-addr" (case sensitive)
+
+/Users/pastgift/git-pastgift/zhuyun/middlewares/dataflux-func-portable/run-portable.sh:
+  107      # 注意：
+  108      #    如果本机存在多个网卡，需要在初始化命令中指定网卡，如：
+  109:     #       `docker swarm init --advertise-addr=ens33`
+  110      #    本机网卡列表可以通过`ifconfig`或者`ip addr`查询
+  111      #    如果脚本运行因多网卡中断，可手工初始化Docker swarm 后重新运行脚本
+
+1 match in 1 file
+
+
+Searching 5 files for "init" (case sensitive)
+
+/Users/pastgift/git-pastgift/zhuyun/middlewares/dataflux-func-portable/docker.service:
+   14  # Having non-zero Limit*s causes performance problems due to accounting overhead
+   15  # in the kernel. We recommend using cgroups to do container-local accounting.
+   16: LimitNOFILE=infinity
+   17: LimitNPROC=infinity
+   18: LimitCORE=infinity
+   19  # Uncomment TasksMax if your systemd version supports it.
+   20  # Only systemd 226 and above support this version.
+   21: #TasksMax=infinity
+   22  TimeoutStartSec=0
+   23  # set delegate yes so that systemd does not reset the cgroups of docker containers
+
+/Users/pastgift/git-pastgift/zhuyun/middlewares/dataflux-func-portable/run-portable.sh:
+  107      # 注意：
+  108      #    如果本机存在多个网卡，需要在初始化命令中指定网卡，如：
+  109:     #       `docker swarm init --advertise-addr=ens33`
+  110      #    本机网卡列表可以通过`ifconfig`或者`ip addr`查询
+  111      #    如果脚本运行因多网卡中断，可手工初始化Docker swarm 后重新运行脚本
+  112:     docker swarm init
+  113  fi
+  114  
+
+6 matches across 2 files
+
+
+Searching 5 files for "swarm init" (case sensitive)
+
+/Users/pastgift/git-pastgift/zhuyun/middlewares/dataflux-func-portable/run-portable.sh:
+  105  
+  106      # 准备docker swarm
+  107:     docker swarm init --advertise-addr=127.0.0.1
+  108  fi
+  109  
+
+1 match in 1 file

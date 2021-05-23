@@ -70,6 +70,8 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - Docker Swarm 指定网卡的初始化命令为：`sudo docker swarm init --advertise-addr={网卡名}`
 - 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
 
+*注意：自动安装脚本在进行`docker swarm init`时，`--advertise-addr`参数会指定为`127.0.0.1`*
+
 ### 1.3 浏览器兼容性
 
 本系统为Web应用，部分浏览器可能存在兼容问题无法使用
@@ -135,23 +137,6 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 运行以下命令，即可自动配置并最终启动整个DataFlux Func：
 
 ```shell
-sudo /bin/bash run-portable.sh
-```
-
-如果服务器存在多个网卡，上述命令可能会由于Docker Swarm 询问绑定网卡而中断，如：
-
-```shell
-Error response from daemon: could not choose an IP address to advertise since this system has multiple addresses on different interfaces (172.16.35.129 on ens33 and 172.16.219.129 on ens34) - specify one with --advertise-addr
-```
-
-此时，手工初始化Docker Swarm 初始化命令后，重新运行脚本即可：
-
-```shell
-# 使用 ifconfig 命令查看网卡
-# 假设需要绑定的网卡名为ens33
-sudo docker swarm init --advertise-addr=ens33
-
-# 重新执行
 sudo /bin/bash run-portable.sh
 ```
 

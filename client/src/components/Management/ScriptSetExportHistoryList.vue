@@ -84,9 +84,8 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/script-set-export-history/do/list', {
-        query: {pageSize: 50},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/script-set-export-history/do/list', {
+        query: { pageSize: 50 },
       });
       if (!apiRes.ok) return;
 

@@ -13,9 +13,10 @@ en:
   # 通用
   Very good: 非常好
   OK       : 了解
+  Confirm  : 确定
   Cancel   : 取消
   'Yes'    : 是
-  'No'     : 是
+  'No'     : 否
   Default  : 默认
   Official : 官方
 

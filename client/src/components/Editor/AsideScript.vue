@@ -241,9 +241,8 @@ export default {
       let pushedFuncMap   = {};
 
       /***** 脚本集 *****/
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
+        query: { fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin'] },
       });
       if (!apiRes.ok) return;
 
@@ -273,9 +272,8 @@ export default {
       });
 
       /***** 脚本 *****/
-      apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
-        alert: {showError: true},
+      apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
+        query: { fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId'] },
       });
       if (!apiRes.ok) return;
 
@@ -323,9 +321,8 @@ export default {
       });
 
       /***** 函数 *****/
-      apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON']},
-        alert: {showError: true},
+      apiRes = await this.T.callAPI_getAll('/api/v1/funcs/do/list', {
+        query: { fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON'] },
       });
       if (!apiRes.ok) return;
 

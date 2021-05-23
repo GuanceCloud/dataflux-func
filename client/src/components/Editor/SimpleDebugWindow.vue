@@ -241,8 +241,8 @@ export default {
       this.isQuerying = true;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-        params: {id: this.dataSource.id},
-        body  : {
+        params: { id: this.dataSource.id },
+        body: {
           database      : queryOptions.database,
           queryStatement: queryOptions.queryStatement,
           returnType    : 'repr',
@@ -399,8 +399,8 @@ export default {
 
           // 查询数据
           apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-            params: {id: this.dataSource.id},
-            body  : {
+            params: { id: this.dataSource.id },
+            body: {
               database      : this.dataSource.configJSON.database,
               queryStatement: queryStatement,
               returnType    : 'json',
@@ -624,7 +624,7 @@ export default {
         // api
         case 'api':
           // 查询数据
-          apiRes = await this.T.callAPI('get', browserConfig.api, {
+          apiRes = await this.T.callAPI_get(browserConfig.api, {
             extraOptions: {noCountProcessing: true},
           });
           if (!apiRes.ok) {

@@ -1,13 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
-Batch        : 批处理
-New Batch    : 新建批处理
-Show hidden  : 显示隐藏项
-Disable Batch: 禁用批处理
-Enable Batch : 启用批处理
-Delete Batch : 删除批处理
+Batch    : 批处理
+New Batch: 新建批处理
+Show all : 显示全部
 
 Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索批处理（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems                   : 勾选后展示由其他系统自动创建的内容
+
+Batch disabled: 批处理已禁用
+Batch enabled: 批处理已启用
+Batch deleted: 批处理已删除
 </i18n>
 
 <template>
@@ -30,7 +31,7 @@ Check to show the contents created by outside systems                   : 勾选
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
@@ -178,9 +179,8 @@ export default {
         _listQuery.origin = 'UI';
       }
 
-      let apiRes = await this.T.callAPI('/api/v1/batches/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/batches/do/list', {
         query: _listQuery,
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -213,24 +213,24 @@ export default {
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable Batch'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('Batch disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable Batch'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('Batch enabled') },
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete Batch'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Batch deleted') },
           });
           break;
       }
@@ -277,9 +277,7 @@ export default {
     },
     async showAPI(d) {
       // 获取函数详情
-      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
-        alert: {showError: true},
-      });
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;

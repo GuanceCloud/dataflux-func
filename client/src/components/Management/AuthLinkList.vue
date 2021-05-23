@@ -3,12 +3,15 @@ Auth Link              : 授权链接
 New Auth Link          : 新建授权链接
 Info                   : 信息
 Recent Response        : 响应
-Show hidden            : 显示隐藏项
-Disable Auth Link      : 禁用授权链接
-Enable Auth Link       : 启用授权链接
+Show all               : 显示全部
 Show Auth Link in doc  : 在文档中显示授权链接
 Hide Auth Link from doc: 在文档中隐藏授权链接
-Delete Auth Link       : 删除授权链接
+
+Auth Link disabled: 授权链接已禁用
+Auth Link enabled : 授权链接已启用
+Auth Link showed  : 授权链接已显示
+Auth Link hide    : 授权链接已隐藏
+Auth Link deleted : 授权链接已删除
 
 Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索授权链接（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems                       : 勾选后展示由其他系统自动创建的内容
@@ -37,7 +40,7 @@ Check to show the contents created by outside systems                       : �
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
@@ -254,9 +257,8 @@ export default {
         _listQuery.origin = 'UI';
       }
 
-      let apiRes = await this.T.callAPI('/api/v1/auth-links/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/auth-links/do/list', {
         query: _listQuery,
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -289,40 +291,40 @@ export default {
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable Auth Link'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('Auth Link disabled')},
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable Auth Link'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('Auth Link enabled')},
           });
           break;
 
         case 'show':
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {showInDoc: true}},
-            alert : {title: this.$t('Show Auth Link in doc'), showError: true},
+            params: { id: d.id },
+            body  : { data: { showInDoc: true } },
+            alert : { okMessage: this.$t('Auth Link showed')},
           });
           break;
 
         case 'hide':
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {showInDoc: false}},
-            alert : {title: this.$t('Hide Auth Link from doc'), showError: true},
+            params: { id: d.id },
+            body  : { data: { showInDoc: false } },
+            alert : { okMessage: this.$t('Auth Link hide')},
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete Auth Link'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Auth Link deleted')},
           });
           break;
       }
@@ -357,9 +359,7 @@ export default {
     },
     async showAPI(d) {
       // 获取函数详情
-      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
-        alert: {showError: true},
-      });
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;

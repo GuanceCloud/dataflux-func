@@ -1,6 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Add Access Key   : 添加 AccessKey
 Delete Access Key: 删除 AccessKey
+
+Access Key created: AccessKey 已创建
 </i18n>
 
 <template>
@@ -72,9 +74,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -100,8 +100,8 @@ export default {
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/access-keys/do/add', {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Access Key'), showError: true, showSuccess: true},
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Access Key created') },
       });
       if (!apiRes.ok) return;
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import router from '@/router'
 import store from '@/store'
-import { MessageBox } from 'element-ui';
+import { MessageBox, Notification } from 'element-ui';
 
 // CodeMirror
 import CodeMirror from 'codemirror/lib/codemirror'
@@ -677,7 +677,62 @@ export function asideItemSorter(a, b) {
   return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
 };
 
-function _getCallAPIOpt(method, pathPattern, options) {
+export async function confirm(message) {
+  try {
+    // 简单提示，不需要区分标题和内容
+    await MessageBox.confirm(message, {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText       : app.$t('Confirm'),
+      cancelButtonText        : app.$t('Cancel'),
+      type                    : 'warning',
+    });
+
+    // 确认操作
+    return true;
+
+  } catch(err) {
+    // 取消操作
+    return false;
+  }
+};
+
+export async function alert(message, type) {
+  type = type || 'error';
+
+  let confirmButtonText = null;
+  switch(type) {
+    case 'success':
+      confirmButtonText = app.$t('Very good');
+      break;
+
+    default:
+      confirmButtonText = app.$t('OK');
+      break;
+  }
+
+  // 简单提示，不需要区分标题和内容
+  return await MessageBox.alert(message, {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText       : confirmButtonText,
+    type                    : type,
+  });
+}
+
+export async function notify(message, type) {
+  type = type || 'success';
+
+  // 简单提示，不需要区分标题和内容
+  Notification({
+    title   : message,
+    message : null,
+    type    : type,
+    position: 'top-right',
+    duration: 3000,
+    offset  : 75,
+  });
+};
+
+function _createAxiosOpt(method, pathPattern, options) {
   options = options || {};
 
   let url = formatURL(pathPattern, {
@@ -742,11 +797,11 @@ function _getCallAPIOpt(method, pathPattern, options) {
   return axiosOpt;
 };
 
-async function _prepareAPIResp(apiResp) {
-  let respContentType = apiResp.headers['content-type'];
+async function _prepareAxiosRes(axiosRes) {
+  let respContentType = axiosRes.headers['content-type'];
 
   if ('string' === typeof respContentType && respContentType.indexOf('application/json') >= 0) {
-    let apiRespData = apiResp.data;
+    let apiRespData = axiosRes.data;
 
     switch (Object.prototype.toString.call(apiRespData)) {
       case '[object Blob]':
@@ -759,13 +814,14 @@ async function _prepareAPIResp(apiResp) {
         break;
     }
 
-    apiResp.data = apiRespData;
+    axiosRes.data = apiRespData;
   }
 
-  return apiResp;
+  return axiosRes;
 };
 
-function _logCallingAPI(axiosOpt, apiResp) {
+function _logAxios(axiosOpt, axiosRes) {
+  // 不对请求输出日志
   return;
 
   // 仅开发模式输出
@@ -780,13 +836,13 @@ function _logCallingAPI(axiosOpt, apiResp) {
       console.info('    Body', axiosOpt.data);
     }
 
-    let respColor = apiResp.status < 400 ? 'cyan' : 'red';
-    let respData  = apiResp.data;
-    let respContentType = apiResp.headers['content-type'];
+    let respColor = axiosRes.status < 400 ? 'cyan' : 'red';
+    let respData  = axiosRes.data;
+    let respContentType = axiosRes.headers['content-type'];
     if (!respContentType || 'string' === typeof respContentType && respContentType.indexOf('application/json') < 0) {
       respData = {raw: respData};
     }
-    console.info(`%c    [Resp]: ${apiResp.status} ${apiResp.statusText}`, `color:${respColor}`);
+    console.info(`%c    [Resp]: ${axiosRes.status} ${axiosRes.statusText}`, `color:${respColor}`);
 
     // 输出完整API返回数据
     console.info('        Data', respData);
@@ -795,11 +851,11 @@ function _logCallingAPI(axiosOpt, apiResp) {
     }
 
   } catch(err) {
-    console.error('Log Calling API:', err)
+    console.error('Log API Calling:', err)
   }
 };
 
-async function _callAPI(axiosOpt) {
+async function _doAxios(axiosOpt) {
   let isNoCount = false;
   if (axiosOpt.extraOptions && axiosOpt.extraOptions.noCountProcessing) {
     isNoCount = true;
@@ -810,30 +866,34 @@ async function _callAPI(axiosOpt) {
   }
 
   try {
-    let resp = await axios(axiosOpt);
-    resp = await _prepareAPIResp(resp);
-    return resp;
+    let axiosRes = await axios(axiosOpt);
+    axiosRes = await _prepareAxiosRes(axiosRes);
+    return axiosRes;
 
   } catch (err) {
     if (err.response) {
+      // 服务端存在错误响应
       if (err.response.status === 401 && err.response.data.reason === 'EUserAuth') {
+        // 认证失败时，自动清除Token，并跳回首页
         store.commit('updateXAuthToken', null);
-        router.push({name: 'index'});
+        return router.push({name: 'index'});
       }
 
-      let errResp = await _prepareAPIResp(err.response)
+      let errResp = await _prepareAxiosRes(err.response)
       return errResp;
+
+    } else {
+      // 通讯失败，服务端没有响应
+      await MessageBox.alert(`与服务器通讯失败，请稍后再试
+          <br>如果问题持续出现，请联系管理员，检查服务器状态
+          <br>${err.toString()}`, `与服务器通讯失败`, {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '了解',
+        type: 'error',
+      });
+
+      throw err;
     }
-
-    await MessageBox.alert(`与服务器通讯失败，请稍后再试
-        <br>如果问题持续出现，请联系管理员，检查服务器状态
-        <br>${err.toString()}`, `与服务器通讯失败`, {
-      dangerouslyUseHTMLString: true,
-      confirmButtonText: '了解',
-      type: 'error',
-    });
-
-    throw err;
 
   } finally {
     if (!isNoCount){
@@ -843,6 +903,7 @@ async function _callAPI(axiosOpt) {
 };
 
 export async function callAPI(method, pathPattern, options) {
+  /* 请求 */
   if (method[0] === '/') {
     options     = pathPattern;
     pathPattern = method;
@@ -851,34 +912,49 @@ export async function callAPI(method, pathPattern, options) {
 
   options = options || {};
 
-  const axiosOpt = _getCallAPIOpt(method, pathPattern, options);
-  let apiResp = await _callAPI(axiosOpt);
+  const axiosOpt = _createAxiosOpt(method, pathPattern, options);
+  let axiosRes = await _doAxios(axiosOpt);
 
-  _logCallingAPI(axiosOpt, apiResp);
+  _logAxios(axiosOpt, axiosRes);
 
-  if (options.alert) {
-    let alert = options.alert;
-
-    if (apiResp.status < 400) {
-      if (alert.showSuccess) {
-        await MessageBox.alert(app.$t('Operation succeeded'), alert.title, {
-          confirmButtonText: app.$t('Very good'),
-          type: 'success',
+  /* 提示 */
+  let alert = options.alert || {};
+  if (axiosRes.status < 400) {
+    // 成功提示
+    if (alert.okMessage) {
+      setImmediate(() => {
+        Notification({
+          title   : alert.okMessage,
+          message : null, // 简单提示，不需要区分标题和内容
+          type    : 'success',
+          position: 'top-right',
+          duration: 3000,
+          offset  : 75,
         });
-      }
-    } else {
-      if (apiResp.status === 401 && apiResp.data.reason === 'EUserAuth') {
-        // 令牌过期等，不用弹框提示
+      });
+    }
 
-      } else if (alert.showError) {
-        let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
-                    ? alert.reasonMap[apiResp.data.reason]
-                    : app.$t(apiResp.data.message);
-        if (apiResp.data.detail && apiResp.data.detail.message) {
-          message += `<br><small>${apiResp.data.detail.message}<small>`;
+  } else {
+    // 失败提示
+    if (axiosRes.status === 401 && axiosRes.data.reason === 'EUserAuth') {
+      // 【特殊处理】令牌过期等，不用弹框提示
+
+    } else {
+      // 其他错误正常提示
+
+      if (!alert.muteError) {
+        // 自动根据错误信息生成消息
+        let message = alert.reasonMap && alert.reasonMap[axiosRes.data.reason]
+                    ? alert.reasonMap[axiosRes.data.reason]
+                    : app.$t(axiosRes.data.message);
+
+        // 进一步添加小字详细信息
+        if (axiosRes.data.detail && axiosRes.data.detail.message) {
+          message += `<br><small>${axiosRes.data.detail.message}<small>`;
         }
 
-        await MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
+        await MessageBox.alert(message, // 简单提示，不需要区分标题和内容
+        {
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),
           type: 'error',
@@ -887,140 +963,131 @@ export async function callAPI(method, pathPattern, options) {
     }
   }
 
-  if (apiResp.status < 400) {
-    if (options.packResp) {
-      // 返回二进制数据则重新组装返回JSON
-      return {
-        ok     : true,
-        error  : apiResp.status,
-        message: '',
-        data   : apiResp.data,
-        extra: {
-          contentType: apiResp.headers['content-type'],
-        }
-      };
+  let apiRes = axiosRes.data;
 
-    } else {
-      return apiResp.data;
-    }
-
-  } else {
-    if (options.throwError) {
-      throw apiResp;
-    }
-
-    return apiResp.data;
+  // 【特殊处理】返回二进制数据则重新组装返回JSON
+  if (options.packResp && axiosRes.status < 400) {
+    apiRes = {
+      ok     : true,
+      error  : axiosRes.status,
+      message: '',
+      data   : axiosRes.data,
+      extra: {
+        contentType: axiosRes.headers['content-type'],
+      }
+    };
   }
+
+  return apiRes;
+};
+
+export async function callAPI_get(pathPattern, options) {
+  if (endsWith(pathPattern, '/do/delete')) {
+    throw Error(`toolkit.callAPI_get(...) can not be used for ~/do/delete APIs, got pathPattern: ${pathPattern}`)
+  }
+
+  return await callAPI('get', pathPattern, options);
 };
 
 export async function callAPI_getOne(pathPattern, id, options) {
+  if (!endsWith(pathPattern, '/do/list')) {
+    throw Error(`toolkit.callAPI_getOne(...) can only be used for ~/do/list APIs, got pathPattern: ${pathPattern}`)
+  }
+
+  /* 请求 */
   options = options || {};
+  options.query = options.query || {}
+  options.query.id = id;
+  let apiRes = await callAPI('get', pathPattern, options);
 
-  let opt = {
-    query: {
-      id: id,
-    }
-  };
-  let apiRes = await callAPI('get', pathPattern, opt, options);
-
+  // 取第一条
   if (Array.isArray(apiRes.data)) {
     apiRes.data = apiRes.data[0];
   }
 
+  /* 提示 */
   if (options.alert) {
     let alert = options.alert;
-    let title = alert.title || app.$t('Read data'); // 默认当作读取数据
 
-    if (!apiRes.data && alert.alertNoData) {
-      setTimeout(() => {
-        MessageBox.alert(app.$t('Data not found. It may have been deleted'), alert.title, {
-          confirmButtonText: app.$t('OK'),
-          type: 'error',
-        });
-      }, 300);
+    if (isNothing(apiRes.data)) {
+      // 无数据提示
+      if (!alert.muteError) {
+        setTimeout(() => {
+          let message = app.$t('Data not found. It may have been deleted')
+          MessageBox.alert(message, // 简单提示，不需要区分标题和内容
+          {
+            confirmButtonText: app.$t('OK'),
+            type: 'error',
+          });
+        }, 300);
+      }
     }
   }
 
   return apiRes;
 };
 
-export async function callAPI_allPage(pathPattern, options) {
+export async function callAPI_getAll(pathPattern, options) {
+  if (!endsWith(pathPattern, '/do/list')) {
+    throw Error(`toolkit.callAPI_getAll(...) can only be used for ~/do/list APIs, got pathPattern: ${pathPattern}`)
+  }
+
+  /* 请求 */
   options = options || {};
 
-  let axiosOpt = _getCallAPIOpt('get', pathPattern, options);
-  let apiResp = null;
+  let axiosOpt = _createAxiosOpt('get', pathPattern, options);
+  let pagingOpt = { pageSize: 100 };
 
-  let pagingOpt = {
-    pageSize: 100,
-  };
-
+  let apiRes   = null;
+  let isFailed = false;
   while (true) {
     // 注入分页选项
     axiosOpt        = axiosOpt        || {};
     axiosOpt.params = axiosOpt.params || {};
     Object.assign(axiosOpt.params, pagingOpt)
 
-    let _apiResp = await _callAPI(axiosOpt);
+    let axiosRes = await _doAxios(axiosOpt);
 
-    // 失败：抛出/返回当前Response
-    if (!_apiResp.data.ok) {
-      if (options.alert) {
-        let alert  = options.alert;
-        let title = alert.title || app.$t('Read data'); // 默认当作读取数据
+    if (axiosRes.data.ok) {
+      // 成功继续翻页
+      if (!apiRes) {
+        // 第一页
+        apiRes = axiosRes.data;
 
-        if (_apiResp.status === 401 && _apiResp.data.reason === 'EUserAuth') {
-          // 令牌过期等，不用弹框提示
-
-        } else if (alert.showError) {
-          setTimeout(() => {
-            let message = alert.reasonMap && alert.reasonMap[apiResp.data.reason]
-                        ? alert.reasonMap[apiResp.data.reason]
-                        : app.$t(apiResp.data.message);
-            if (apiResp.data.detail && apiResp.data.detail.message) {
-              message += `<br><small>${apiResp.data.detail.message}<small>`;
-            }
-            MessageBox.alert(`${app.$t('Operation failed')}<br>${message}`, alert.title, {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: app.$t('OK'),
-              type: 'error',
-            });
-          }, 300);
-        }
+      } else {
+        // 后续页
+        apiRes.data = apiRes.data.concat(axiosRes.data.data);
       }
 
-      if (options.throwError) {
-        throw _apiResp;
-      }
-
-      return _apiResp.data;
-    }
-
-    if (!apiResp) {
-      // 第一页
-      apiResp = _apiResp;
+      _logAxios(axiosOpt, axiosRes);
 
     } else {
-      // 后续页面
-      apiResp.data.data = apiResp.data.data.concat(_apiResp.data.data);
+      // 失败中断
+      apiRes = axiosRes.data;
+      isFailed = true;
+
+      _logAxios(axiosOpt, axiosRes);
+
+      break;
     }
 
     // 没有更多数据/不支持翻页/非列表/未知分页类型：结束循环
-    if (!_apiResp.data.pageInfo
-        || !Array.isArray(_apiResp.data.data)
-        || _apiResp.data.pageInfo.count < _apiResp.data.pageInfo.pageSize
-        || ['simple', 'normal', 'marker'].indexOf(_apiResp.data.pageInfo.pagingStyle) < 0) {
+    if (!axiosRes.data.pageInfo
+        || !Array.isArray(axiosRes.data.data)
+        || axiosRes.data.pageInfo.count < axiosRes.data.pageInfo.pageSize
+        || ['simple', 'normal', 'marker'].indexOf(axiosRes.data.pageInfo.pagingStyle) < 0) {
       break;
     }
 
     // 下一页数据
-    switch (_apiResp.data.pageInfo.pagingStyle) {
+    switch (axiosRes.data.pageInfo.pagingStyle) {
       case 'simple':
       case 'normal':
-        pagingOpt.pageNumber = (_apiResp.data.pageInfo.pageNumber || 1) + 1;
+        pagingOpt.pageNumber = (axiosRes.data.pageInfo.pageNumber || 1) + 1;
         break;
 
       case 'marker':
-        pagingOpt.pageNumber = (_apiResp.data.pageInfo.pageNumber || 1) + 1;
+        pagingOpt.pageNumber = (axiosRes.data.pageInfo.pageNumber || 1) + 1;
         break;
 
       default:
@@ -1029,10 +1096,43 @@ export async function callAPI_allPage(pathPattern, options) {
     }
   }
 
-  delete apiResp.data.pageInfo;
+  /* 提示 */
+  let alert = options.alert || {};
+  if (isFailed) {
+    // 请求失败
+    if (axiosRes.status === 401 && axiosRes.data.reason === 'EUserAuth') {
+      // 【特殊处理】令牌过期等，不用弹框提示
 
-  _logCallingAPI(axiosOpt, apiResp);
-  return apiResp.data;
+    } else {
+      // 其他错误正常提示
+
+      if (!alert.muteError) {
+        setTimeout(() => {
+          // 自动根据错误信息生成消息
+          let message = alert.reasonMap && alert.reasonMap[axiosRes.data.reason]
+                      ? alert.reasonMap[axiosRes.data.reason]
+                      : app.$t(axiosRes.data.message);
+
+          // 进一步添加小字详细信息
+          if (axiosRes.data.detail && axiosRes.data.detail.message) {
+            message += `<br><small>${axiosRes.data.detail.message}<small>`;
+          }
+
+          MessageBox.alert(message, // 简单提示，不需要区分标题和内容
+          {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: app.$t('OK'),
+            type: 'error',
+          });
+        }, 300);
+      }
+    }
+  }
+
+  // 获取全部数据时移除分页信息
+  try { delete apiRes.pageInfo } catch(_) {};
+
+  return apiRes;
 };
 
 export function isPageFiltered(options) {

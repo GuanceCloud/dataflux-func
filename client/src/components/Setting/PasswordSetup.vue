@@ -10,6 +10,8 @@ Please confirm new password                                                     
 Captcha                                                                                 : 验证码
 Please input captcha                                                                    : 请输入验证码
 
+Password changed: 密码已修改
+
 Invalid old password                                             : 旧密码错误
 User not found                                                   : 当前用户不存在
 Invalid captcha                                                  : 验证码错误或无效
@@ -118,7 +120,7 @@ export default {
             newPassword: _formData.newPassword,
           },
         },
-        alert : {title: this.$t('Change Password'), showSuccess: true},
+        alert: { okMessage: this.$t('Password changed') },
       });
       if (!apiRes.ok) {
         this.refreshCaptcha();

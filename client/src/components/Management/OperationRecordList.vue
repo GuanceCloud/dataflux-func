@@ -154,9 +154,8 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/operation-records/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/operation-records/do/list', {
         query: this.T.createListQuery(),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 

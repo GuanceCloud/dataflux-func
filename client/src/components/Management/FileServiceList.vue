@@ -1,9 +1,10 @@
 <i18n locale="zh-CN" lang="yaml">
-File Service        : 文件服务
-New File Service    : 新建文件服务
-Disable File Service: 禁用文件服务
-Enable File Service : 启用文件服务
-Delete File Service : 删除文件服务
+File Service    : 文件服务
+New File Service: 新建文件服务
+
+File Service disabled: 文件服务已禁用
+File Service enabled : 文件服务已启用
+File Service deleted : 文件服务已删除
 
 Search File Service(ID, root): 搜索文件服务（ID、根目录）
 </i18n>
@@ -121,9 +122,8 @@ export default {
     },
     async loadData() {
       // 默认过滤条件
-      let apiRes = await this.T.callAPI('/api/v1/file-services/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/file-services/do/list', {
         query: this.T.createListQuery(),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -164,24 +164,24 @@ export default {
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable File Service'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('File Service disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable File Service'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('File Service enabled') },
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/file-services/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete File Service'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('File Service deleted') },
           });
           break;
       }

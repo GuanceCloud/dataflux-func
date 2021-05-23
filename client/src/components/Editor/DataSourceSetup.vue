@@ -43,6 +43,9 @@ Test Data Source  : 测试数据源
 
 Deleting Data Source may break the dependency with other scripts: 删除数据源可能会破坏与其他脚本的依赖关系
 Are you sure you want to delete the Data Source?                : 是否确认删除数据源？
+Data Source created                                             : 数据源已创建
+Data Source saved                                               : 数据源已保存
+Data Source deleted                                             : 数据源已删除
 
 Please input ID                                   : 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -383,9 +386,7 @@ export default {
     },
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -441,8 +442,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/do/add', {
-        body : {data: _formData},
-        alert: {title: this.$t('Add Data Source'), showError: true, showSuccess: true},
+        body : { data: _formData },
+        alert: { okMessage: this.$t('Data Source created') },
       });
       if (!apiRes.ok) return;
 
@@ -456,9 +457,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify Data Source'), showError: true, showSuccess: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Data Source saved') },
       });
       if (!apiRes.ok) return;
 
@@ -480,8 +481,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Data Source'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Data Source deleted') },
       });
       if (!apiRes.ok) return;
 
@@ -493,9 +494,8 @@ export default {
     async testDataSource() {
       this.testDataSourceResult = 'running';
 
-      let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/test', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Test Data Source'), showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/data-sources/:id/do/test', {
+        params: { id: this.$route.params.id },
       });
       if (apiRes.ok) {
         this.testDataSourceResult = 'ok';

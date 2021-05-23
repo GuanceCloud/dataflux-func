@@ -122,7 +122,7 @@ export default {
   methods: {
     // Web镜像信息
     async _getWebVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/image-info/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -141,7 +141,7 @@ export default {
     },
     // Worker镜像信息
     async _getWorkerVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/worker-image-info/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/worker-image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -162,7 +162,7 @@ export default {
     async _getDBSchemaVersion() {
       this.dbVersionInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/upgrade-info', {
+      let apiRes = await this.T.callAPI_get('/api/v1/upgrade-info', {
         query: {seq: 'latest'},
       });
       if (apiRes.ok) {
@@ -187,7 +187,7 @@ export default {
       this.cacheDBKeyUsedInfoTEXT    = '';
       this.workerQueueLengthInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let _getInfo = (tsDataMap, unit, prefix) => {
           unit   = unit   || '';
@@ -262,7 +262,7 @@ export default {
     async _getNodesStats() {
       this.nodesStatsInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-stats');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-stats');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
@@ -291,7 +291,7 @@ export default {
     async _getNodesActiveQueues() {
       this.nodesActiveQueuesInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-active-queues');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-active-queues');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {

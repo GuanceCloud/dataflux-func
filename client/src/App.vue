@@ -66,10 +66,6 @@ export default {
     reportAndCheckClientConflict(showNotice) {
       if (!this.$store.getters.isSocketIOReady) return;
 
-      if (showNotice) {
-        this.$notify.closeAll();
-      }
-
       let routeName = null; // 路径名
       let checkOnly = null; // 是否仅做检查，不记录在线状态
       switch (this.$route.name) {

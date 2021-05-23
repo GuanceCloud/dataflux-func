@@ -1,10 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Crontab Config        : 自动触发配置
-New Crontab Config    : 新建自动触发配置
-Show hidden           : 显示隐藏项
-Disable Crontab Config: 禁用自动触发配置
-Enable Crontab Config : 启用自动触发配置
-Delete Crontab Config : 删除自动触发配置
+Crontab Config    : 自动触发配置
+New Crontab Config: 新建自动触发配置
+Show all          : 显示全部
+
+Crontab Config disabled: 自动触发配置已禁用
+Crontab Config enabled : 自动触发配置已启用
+Crontab Config deleted : 自动触发配置已删除
 
 Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索自动触发配置（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems                            : 勾选后展示由其他系统自动创建的内容
@@ -30,7 +31,7 @@ Check to show the contents created by outside systems                           
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
@@ -182,9 +183,8 @@ export default {
         _listQuery.origin = 'UI';
       }
 
-      let apiRes = await this.T.callAPI('/api/v1/crontab-configs/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/crontab-configs/do/list', {
         query: _listQuery,
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -217,24 +217,24 @@ export default {
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable Crontab Config'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('Crontab Config disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable Crontab Config'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('Crontab Config enabled') },
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete Crontab Config'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Crontab Config deleted') },
           });
           break;
       }

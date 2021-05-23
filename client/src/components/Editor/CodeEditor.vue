@@ -62,8 +62,8 @@ Funcs with {html} decorator will be available to be accessed                    
 Are you sure you want to publish the Script?                                           : 是否确认发布？
 Publish Script                                                                         : 发布脚本
 'Publish Script:'                                                                      : 发布脚本：
-Script published successfully                                                          : 脚本发布成功
-New Script is in effect now                                                            : 新脚本已经生效
+Script saved                                                                           : 脚本已保存
+Script published, new Script is in effect now                                          : 脚本发布成功，新脚本已经生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
 Are you sure you want to reset the Script?                                             : 是否确认复位？
 Reset Script                                                                           : 复位脚本
@@ -403,7 +403,7 @@ export default {
 
       return fileName;
     },
-    async _saveCodeDraft() {
+    async _saveCodeDraft(options) {
       // 等待保存信号量，防止多重保存
       while (this.isSavingCodeDraft) {
         await this.T.sleep(1000);
@@ -412,14 +412,16 @@ export default {
 
       let res = null;
       try {
-        return await this._saveCodeDraftImpl();
+        return await this._saveCodeDraftImpl(options);
       } catch(err) {
         // nope
       } finally {
         this.isSavingCodeDraft = false;
       }
     },
-    async _saveCodeDraftImpl() {
+    async _saveCodeDraftImpl(options) {
+      options = options || {};
+
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
@@ -433,8 +435,9 @@ export default {
       codeDraft = codeDraftLines.join('\n');
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: {codeDraft: codeDraft}, prevCodeDraftMD5: prevCodeDraftMD5},
+        params: { id: this.scriptId },
+        body  : { data: {codeDraft: codeDraft }, prevCodeDraftMD5: prevCodeDraftMD5 },
+        alert : { okMessage: options.mute ? null : this.$t('Script saved'), muteError: !!options.mute },
       });
 
       if (!apiRes.ok) {
@@ -457,7 +460,7 @@ export default {
               // 取消操作
             }
 
-            this.endEdit({ skipPublishCheck: true });
+            this.endEdit();
 
             break;
 
@@ -495,9 +498,8 @@ export default {
       options = options || {};
       options.codeField = options.codeField || 'codeDraft';
 
-      let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
-        params: {id: this.scriptId},
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
+        params: { id: this.scriptId }
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -516,9 +518,7 @@ export default {
       this.diffRemovedCount = diffInfo.removedCount;
 
       // 获取关联数据
-      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-        alert: {showError: true},
-      });
+      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
       if (!apiRes.ok) return;
 
       this.scriptSet = apiRes.data;
@@ -568,7 +568,7 @@ export default {
             if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) return;
 
             // 自动保存为静默保存
-            this._saveCodeDraft({silent: true});
+            this._saveCodeDraft({ mute: true });
           }, 1000));
         }
 
@@ -583,18 +583,7 @@ export default {
       if (!this.codeMirror) return;
 
       // 保存
-      let apiRes = await this._saveCodeDraft();
-      if (apiRes && apiRes.ok) {
-        // 保存成功后，提示
-        this.$notify({
-          title   : this.$t('Script saved successfully'),
-          message : this.$t('You can continue with other operations'),
-          type    : 'success',
-          position: 'top-right',
-          duration: 3000,
-          offset  : 75,
-        });
-      }
+      await this._saveCodeDraft();
     },
     showDiff() {
       let fileTitle = this.data.title ? ` (${this.data.title})` : '';
@@ -632,7 +621,7 @@ export default {
       }
 
       // 保存
-      let apiRes = await this._saveCodeDraft();
+      let apiRes = await this._saveCodeDraft({ mute: true });
       if (!apiRes || !apiRes.ok) return;
 
       // 脚本发布中
@@ -644,8 +633,9 @@ export default {
 
       // 发布
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
-        params: {id: this.scriptId},
-        body  : {force: true, data: {note: 'Published by Code Editor'}},
+        params: { id: this.scriptId },
+        body  : { force: true, data: {note: 'Published by Code Editor'} },
+        alert : { okMessage: this.$t('Script published, new Script is in effect now') },
       });
 
       clearTimeout(delayedLoadingT);
@@ -661,16 +651,6 @@ export default {
 
       // 刷新侧边栏
       this._refreshAside();
-
-      // 弹框提示
-      this.$notify({
-        title   : this.$t('Script published successfully'),
-        message : this.$t('New Script is in effect now'),
-        type    : 'success',
-        position: 'top-right',
-        duration: 3000,
-        offset  : 75,
-      });
     },
     async resetScript() {
       if (this.isLockedByOther) return;
@@ -692,6 +672,16 @@ export default {
       this.updateHighlightLineConfig('errorLine', null);
 
       await this.loadData({codeField: 'code'});
+
+      // 弹框提示
+      this.$notify({
+        title   : this.$t('Script has been reset'),
+        message : this.$t('Script is reset to previous published version now'),
+        type    : 'success',
+        position: 'top-right',
+        duration: 3000,
+        offset  : 75,
+      });
     },
     gotoCodeEditorSetup() {
       this.$router.push({
@@ -708,7 +698,7 @@ export default {
       // 保存
       if (!this.isLockedByOther) {
         // 仅限可编辑时
-        let apiRes = await this._saveCodeDraft();
+        let apiRes = await this._saveCodeDraft({ mute: true });
         if (!apiRes || !apiRes.ok) return;
       }
 
@@ -758,11 +748,10 @@ export default {
       let apiRes = null;
       try {
         apiRes = await this.T.callAPI('post', '/api/v1/func-draft/:funcId', {
-          params: {
-            funcId: this.selectedFuncId,
-          },
-          body: {kwargs: funcCallKwargs},
-          extraOptions: {noCountProcessing: true},
+          params      : { funcId: this.selectedFuncId },
+          body        : { kwargs: funcCallKwargs },
+          alert       : { muteError: true },
+          extraOptions: { noCountProcessing: true },
         });
 
       } catch(err) {
@@ -805,75 +794,6 @@ export default {
         // 只在预检查以外的情况下才弹框
         this.alertOnEScript(apiRes);
       }
-    },
-    async leavingConfirm() {
-      if (this.isLockedByOther) return true;
-      if (!this.codeMirror) return true;
-
-      // 清除所有高亮
-      this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
-
-      // 保存
-      let apiRes = await this._saveCodeDraft();
-      if (!apiRes || !apiRes.ok) return;
-
-      // 检查发布状态
-      apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-        query: {fields: ['codeMD5', 'codeDraftMD5']},
-        alert: {showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      // if (apiRes.data.codeMD5 !== apiRes.data.codeDraftMD5) {
-      //   // 此处代码与`methods.publishScript(...)`略有重复
-      //   // 但暂不作修改
-      //   try {
-      //     await this.$confirm(`${this.$t('This Script is not published, it will take effect after the Script is published')}
-      //         <hr class="br">${this.$t('Do you want to publish the Script now?')}`, this.$t('Script not published'), {
-      //       dangerouslyUseHTMLString: true,
-      //       confirmButtonText: this.$t('Publish Now'),
-      //       cancelButtonText: this.$t('Skip Publishing'),
-      //       type: 'warning',
-      //     });
-
-      //     // 脚本发布中
-      //     this.workerRunning         = true;
-      //     this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
-      //     let delayedLoadingT = setTimeout(() => {
-      //       this.workerResultLoading = true;
-      //     }, 500);
-
-      //     // 发布
-      //     let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
-      //       params: {id: this.scriptId},
-      //       body  : {force: true, data: {note: 'Published by Code Editor'}},
-      //     });
-
-      //     clearTimeout(delayedLoadingT);
-      //     this.workerRunning       = false;
-      //     this.workerResultLoading = false;
-
-      //     if (!apiRes.ok) {
-      //       // 输出结果
-      //       this.outputResult('publish', this.scriptId, apiRes);
-      //       this.alertOnEScript(apiRes, true);
-      //       return;
-      //     }
-
-      //     this.data.code = this.data.codeDraft;
-
-      //     // 更新函数列表
-      //     this.updateFuncList();
-      //     // 更新左侧列表
-      //     this.$store.commit('updateScriptListSyncTime');
-
-      //   } catch(err) {
-      //     // 无操作
-      //   }
-      // }
-
-      return true;
     },
     clearHighlight() {
       this.updateHighlightLineConfig('selectedFuncLine', null);
@@ -1063,10 +983,6 @@ export default {
         name  : 'code-viewer',
         params: {id: this.scriptId},
       };
-
-      if (options.skipPublishCheck) {
-        toRoute.query = { skipPublishCheck: true };
-      }
 
       this.$router.push(toRoute);
     },
@@ -1370,9 +1286,6 @@ export default {
     highlightedFuncId() {
       return this.$store.state.Editor_highlightedFuncId;
     },
-    isSignedIn() {
-      return this.$store.getters.isSignedIn;
-    },
     splitPanePercent() {
       return this.$store.state.codeEditor_splitPanePercent || this.$store.getters.DEFAULT_STATE.codeEditor_splitPanePercent;
     },
@@ -1507,20 +1420,18 @@ export default {
     });
   },
   async beforeRouteLeave(to, from, next) {
-    if (!this.isSignedIn) return next();
-    if (to.query.skipPublishCheck) return next();
+    // 清除所有高亮
+    this.updateHighlightLineConfig('selectedFuncLine', null);
+    this.updateHighlightLineConfig('errorLine', null);
 
-    try {
-      let isAllowed = await this.leavingConfirm();
-      if (!isAllowed) {
-        return next(false);
-      }
+    if (this.isLockedByOther) return next();
+    if (!this.codeMirror)     return next();
 
-    } catch(err) {
-      console.error(err);
+    // 保存
+    let apiRes = await this._saveCodeDraft({ mute: true });
+    if (apiRes && apiRes.ok) {
+      return next();
     }
-
-    next();
   },
 }
 </script>

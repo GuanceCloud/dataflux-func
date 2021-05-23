@@ -148,9 +148,8 @@ export default {
     async loadData() {
       this.loading = true;
 
-      let apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', {
-        query: {fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', {
+        query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin'] },
       });
       if (!apiRes.ok) return;
 

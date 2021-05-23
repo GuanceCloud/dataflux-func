@@ -112,7 +112,7 @@ FILE_STORE_ROOT_DIR: uploaded-files
 # 额外Python 包安装目录
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 # PyPi镜像
-PYPI_MIRROR: https://pypi.tuna.tsinghua.edu.cn/simple
+PYPI_MIRROR: '' # https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false

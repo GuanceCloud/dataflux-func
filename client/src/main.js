@@ -37,7 +37,7 @@ import ElementUI from 'element-ui'
 ElementUI.Tooltip.props.transition.default = false;
 ElementUI.Popover.props.transition.default = false;
 Vue.use(ElementUI)
-window.ElementUI = ElementUI
+window.ElementUI = ElementUI;
 
 // 国际化
 import VueI18n from 'vue-i18n'
@@ -149,7 +149,9 @@ const app = new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
+  computed: {
+  },
 }).$mount('#app');
 window.app = app;
 

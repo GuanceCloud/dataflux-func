@@ -6,7 +6,7 @@ var path = require('path');
 /* 3rd-party Modules */
 var async     = require('async');
 var fs        = require('fs-extra');
-var mysql     = require('mysql');
+var mysql     = require('mysql2');
 var sqlstring = require('sqlstring');
 
 /* Project Modules */

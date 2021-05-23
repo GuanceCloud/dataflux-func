@@ -234,15 +234,14 @@ export default {
   methods: {
     async loadData(sections, options) {
       options = options || {};
-      if (options.showError !== false) options.showError = true;
 
       let _query = null;
       if (!this.T.isNothing(sections)) {
         _query = { sections: sections.join(',') };
       }
-      let apiRes = await this.T.callAPI('/api/v1/func/overview', {
+      let apiRes = await this.T.callAPI_get('/api/v1/func/overview', {
         query: _query,
-        alert: {showError: options.showError},
+        alert: { muteError: options.mute },
       });
       if (!apiRes.ok) return;
 
@@ -349,7 +348,7 @@ export default {
           this.overviewInterval = null;
         }
 
-        this.loadData(['workerQueueInfo'], { showError: false });
+        this.loadData(['workerQueueInfo'], { mute: true });
       }, 30 * 1000);
     }
   },

@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Create Script Lib Recover Point: 创建脚本库还原点
+
+Script Lib Recover Point created: 脚本库还原点已创建
 </i18n>
 
 <template>
@@ -72,12 +74,10 @@ export default {
       }
     },
     async addData() {
-      let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Create Script Lib Recover Point'), showError: true},
-      };
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', {
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Script Lib Recover Point created') },
+      });
       if (!apiRes.ok) return;
 
       this.goToHistory();

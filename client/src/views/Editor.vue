@@ -6,7 +6,7 @@ Env        : 环境变量
 
 <template>
   <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="20" split="vertical">
-    <!-- 文件/资源导航区 -->
+    <!-- 边栏导航区 -->
     <template slot="paneL">
       <div class="aside">
         <div class="aside-content">
@@ -36,7 +36,7 @@ Env        : 环境变量
 
 <script>
 // @ is an alias to /src
-// 文件/资源导航区
+// 边栏导航区
 import AsideScript      from '@/components/Editor/AsideScript'
 import AsideDataSource  from '@/components/Editor/AsideDataSource'
 import AsideEnvVariable from '@/components/Editor/AsideEnvVariable'
@@ -44,7 +44,7 @@ import AsideEnvVariable from '@/components/Editor/AsideEnvVariable'
 export default {
   name: 'Editor',
   components: {
-    // 文件/资源导航区
+    // 边栏导航区
     AsideScript,
     AsideDataSource,
     AsideEnvVariable,

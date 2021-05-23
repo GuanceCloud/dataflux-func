@@ -8,7 +8,10 @@ Add Tag: 添加标签
 
 Add Batch   : 添加批处理
 Modify Batch: 修改批处理
-Delete Batch: 删除批处理
+
+Batch created: 批处理已创建
+Batch saved  : 批处理已保存
+Batch deleted: 批处理已删除
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 </i18n>
@@ -130,9 +133,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -167,8 +168,8 @@ export default {
     },
     async addData() {
       let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Batch'), showError: true}
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Batch created') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -199,9 +200,9 @@ export default {
       delete _formData.id;
 
       let opt = {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify Batch'), showError: true}
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Batch saved') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -239,8 +240,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Batch'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Batch deleted') },
       });
       if (!apiRes.ok) return;
 

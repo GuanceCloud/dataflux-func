@@ -118,12 +118,11 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/access-keys/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/access-keys/do/list', {
         query: this.T.createListQuery({
           fields: ['id', 'userId', 'name', 'secret', 'createTime'],
           sort  : ['-seq'],
         }),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -155,8 +154,8 @@ export default {
       switch(operation) {
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/access-keys/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete Access Key'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Access Key deleted') },
           });
           break;
       }

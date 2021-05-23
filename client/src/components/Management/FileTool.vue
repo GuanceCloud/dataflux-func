@@ -21,6 +21,8 @@ Move       : 移动
 Copy       : 复制
 Delete     : 删除
 
+File uploaded: 文件已上传
+
 Please input destination path                                                        : 请输入目标路径
 'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
 Are you sure you want to delete the following content?                               : 是否确定删除此内容？
@@ -195,9 +197,8 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/resources/dir', {
-        query: {folder: this.folder},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
+        query: { folder: this.folder },
       });
       if (!apiRes.ok) return;
 
@@ -366,7 +367,6 @@ export default {
           operation        : operation,
           operationArgument: promptRes ? promptRes.value : undefined,
         },
-        alert: { showError: true },
       });
       if (!apiRes.ok) return this.loadData();
 
@@ -430,12 +430,9 @@ export default {
         bodyData.append('rename', rename);
       }
 
-      let opt = {
-        body: bodyData,
-      };
       let apiRes = await this.T.callAPI('post', '/api/v1/resources', {
         body : bodyData,
-        alert: {title: this.$t('Upload'), showError: true},
+        alert: { okMessage: this.$t('File uploaded') },
       });
 
       await this.loadData();

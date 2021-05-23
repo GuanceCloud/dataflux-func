@@ -61,9 +61,8 @@ export default {
   },
   methods: {
     async showWindow(scriptId) {
-      let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
-        params: {id: scriptId},
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
+        params: { id: scriptId },
       });
       if (!apiRes.ok) return;
 

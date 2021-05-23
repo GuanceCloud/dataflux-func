@@ -8,7 +8,10 @@ Add Tag: 添加标签
 
 Add Crontab Config   : 添加自动触发配置
 Modify Crontab Config: 修改自动触发配置
-Delete Crontab Config: 删除自动触发配置
+
+Crontab Config created: 自动触发配置已创建
+Crontab Config saved  : 自动触发配置已保存
+Crontab Config deleted: 自动触发配置已删除
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 </i18n>
@@ -203,9 +206,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -257,12 +258,8 @@ export default {
     },
     async addData() {
       let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Crontab Config'), showError: true,
-          reasonMap: {
-            'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
-          }
-        }
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Crontab Config created') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -295,13 +292,9 @@ export default {
     },
     async modifyData() {
       let opt = {
-        params: {id: this.$route.params.id},
-        body  : {data: this.T.jsonCopy(this.form)},
-        alert : {title: this.$t('Modify Crontab Config'), showError: true,
-          reasonMap: {
-            'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
-          }
-        }
+        params: { id: this.$route.params.id },
+        body  : { data: this.T.jsonCopy(this.form) },
+        alert : { okMessage: this.$t('Crontab Config saved') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -344,8 +337,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Crontab Config'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Crontab Config deleted') },
       });
       if (!apiRes.ok) return;
 

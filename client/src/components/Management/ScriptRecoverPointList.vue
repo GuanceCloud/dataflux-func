@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Recover Script Lib: 还原脚本库
+
+Script Lib recovered: 脚本库已还原
 </i18n>
 
 <template>
@@ -72,10 +74,9 @@ export default {
   },
   methods: {
     async loadData(pageNumber) {
-      // 只加载近100条
-      let apiRes = await this.T.callAPI('/api/v1/script-recover-points/do/list', {
-        query: {pageSize: 50},
-        alert: {showError: true},
+      // 只加载近若干条
+      let apiRes = await this.T.callAPI_get('/api/v1/script-recover-points/do/list', {
+        query: { pageSize: 50 },
       });
       if (!apiRes.ok) return;
 
@@ -107,8 +108,8 @@ export default {
       switch(operation) {
         case 'recover':
           apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/:id/do/recover', {
-            params: {id: d.id},
-            alert : {title: this.$t('Recover Script Lib'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Script Lib recovered') },
           });
           break;
       }

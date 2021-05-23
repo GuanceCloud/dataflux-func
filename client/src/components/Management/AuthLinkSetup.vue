@@ -25,6 +25,10 @@ Delete Auth Link: 删除授权链接
 Invalid argument format                       : 参数格式不正确
 Are you sure you want to delete the Auth Link?: 是否确认删除授权链接？
 
+Auth Link created: 授权链接已创建
+Auth Link saved  : 授权链接已保存
+Auth Link deleted: 授权链接已删除
+
 'ID must starts with "{prefix}"'                   : 'ID必须以"{prefix}"开头'
 Please select Func                                 : 请选择执行函数
 Only date-time between 1970 and 2037 are allowed   : 只能选择1970年至2037年之间的日期
@@ -185,9 +189,7 @@ export default {
   methods: {
     async loadData() {
       if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/auth-links/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+        let apiRes = await this.T.callAPI_getOne('/api/v1/auth-links/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -223,8 +225,8 @@ export default {
     },
     async addData() {
       let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Auth Link'), showError: true},
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Auth Link created') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -255,9 +257,9 @@ export default {
       delete _formData.id;
 
       let opt = {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify Auth Link'), showError: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Auth Link saved') },
       };
 
       // 添加函数调用参数kwargsJSON
@@ -295,8 +297,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Auth Link'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Auth Link deleted') },
       });
       if (!apiRes.ok) return;
 

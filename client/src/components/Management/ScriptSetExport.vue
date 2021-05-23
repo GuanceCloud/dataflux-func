@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Export Data: 导出数据
+Data exported: 数据已导出
 </i18n>
 
 <template>
@@ -153,25 +153,24 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: {fields: ['id', 'title']},
-        alert: {showError: true},
+        query: { fields: ['id', 'title'] },
       };
 
       // 获取关联数据
       // 脚本集
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', opt);
+      let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', opt);
       if (!apiRes.ok) return;
 
       this.scriptSets = apiRes.data;
 
       // 数据源
-      apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', opt);
+      apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', opt);
       if (!apiRes.ok) return;
 
       this.dataSources = apiRes.data;
 
       // 环境变量
-      apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', opt);
+      apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', opt);
       if (!apiRes.ok) return;
 
       this.envVariables = apiRes.data;
@@ -195,7 +194,7 @@ export default {
         respType: 'blob',
         packResp: true,
         body    : this.T.jsonCopy(this.form),
-        alert   : {title: this.$t('Export Data'), showError: true},
+        alert   : { okMessage: this.$t('Data exported') },
       };
 
       // 自动生成密码
