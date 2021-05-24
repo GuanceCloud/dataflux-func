@@ -13,7 +13,7 @@ var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
 /* compatibility */
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host    : c.host,
     port    : c.port,
@@ -50,7 +50,7 @@ InfluxDBHelper.prototype.writePoint = function(measurement, tags, fields, callba
   var self = this;
   callback = toolkit.ensureFn(callback);
 
-  self.logger.debug(toolkit.strf('[INFLUXDB] Write: measurement=`{0}`', measurement));
+  self.logger.debug('[INFLUXDB] Write `{0}`', measurement);
 
   var points = [{
     measurement: measurement,
@@ -81,7 +81,7 @@ InfluxDBHelper.prototype.writePoints = function(points, callback) {
 
   points = toolkit.asArray(points);
 
-  self.logger.debug(toolkit.strf('[INFLUXDB] Write: {0} points', points.length));
+  self.logger.debug('[INFLUXDB] Write many ({0} points)', points.length);
 
   self.client.writePoints(points)
   .then(function() {
@@ -114,10 +114,7 @@ InfluxDBHelper.prototype.query = function(sql, sqlParams, callback) {
 
   sql = self.format(sql.toString(), sqlParams).trim();
 
-  self.logger.debug('{0} {1}',
-    '[INFLUXDB]',
-    sql.replace(/\s+/g, ' ')
-  );
+  self.logger.debug('[INFLUXDB] Query `{0}`', sql.replace(/\s+/g, ' '));
 
   self.client.query(sql)
   .then(function(dbRes) {

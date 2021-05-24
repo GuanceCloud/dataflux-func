@@ -6,7 +6,8 @@ Disable Crontab Config: 禁用自动触发配置
 Enable Crontab Config : 启用自动触发配置
 Delete Crontab Config : 删除自动触发配置
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索自动触发配置（ID、标签、备注），函数（ID、参数、标题、描述、标签）
+Check to show the contents created by outside systems                            : 勾选后展示由其他系统自动创建的内容
 </i18n>
 
 <template>
@@ -17,7 +18,11 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
         <h1>
           {{ $t('Crontab Config') }}
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
+            </FuzzySearchInput>
+
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
@@ -53,43 +58,21 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 
           <el-table-column label="执行函数">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :name="scope.row.func_name"
+                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-                <GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
-
-                <br>
-                <span class="text-info">&#12288;调用参数:</span>
-                <div class="func-kwargs-area">
-                  <span v-if="T.isNothing(scope.row.funcCallKwargsJSON)" class="text-info">无参数</span>
-                  <template v-else>
-                    <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.funcCallKwargsJSON">
-                      <code class="func-kwargs-name">{{ name }}</code>
-                      <code class="func-kwargs-equal">=</code>
-                      <el-tooltip placement="top">
-                        <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
-                        <code class="func-kwargs-value">固定值</code>
-                      </el-tooltip>
-                      <span v-if="index < T.jsonLength(scope.row.funcCallKwargsJSON) - 1">,&nbsp;</span>
-                    </div>
-                  </template>
-                </div>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-              </template>
-
-              <div v-if="!T.isNothing(scope.row.tagsJSON)">
-                <span class="text-info">&#12288;自动触发配置标签:</span>
+              <div v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
+                <span class="text-info">&#12288;标签:</span>
+                <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
                 <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
               </div>
             </template>
           </el-table-column>
 
-          <el-table-column label="Crontab" width="200">
+          <el-table-column label="Crontab" width="160">
             <template slot-scope="scope">
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code>{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
@@ -100,7 +83,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="200">
+          <el-table-column label="有效期至" width="160">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
               <template v-else>
@@ -112,14 +95,14 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="200">
+          <el-table-column label="状态" width="100">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
               <span v-else class="text-good">已启用</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="200">
+          <el-table-column label="备注" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
@@ -146,8 +129,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)"
-        class="paging-area" height="45px">
+      <el-footer v-if="!T.isNothing(data)" class="paging-area">
         <el-pagination
           background
           @size-change="T.changePageSize"
@@ -166,11 +148,13 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 
 <script>
 import FuzzySearchInput from '@/components/FuzzySearchInput'
+import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'CrontabConfigList',
   components: {
     FuzzySearchInput,
+    FuncInfo,
   },
   watch: {
     $route: {
@@ -330,27 +314,6 @@ export default {
 </script>
 
 <style scoped>
-.func-title {
-  font-size: 16px;
-}
-.func-kwargs-area {
-  padding-left: 25px;
-}
-.func-kwargs-block {
-  display: inline-block;
-}
-.func-kwargs-name {
-  font-style: italic;
-  color: #ff6600;
-  font-weight: bold;
-}
-.func-kwargs-equal {
-  color: red;
-}
-pre.func-kwargs-value {
-  padding: 0;
-  margin: 0;
-}
 </style>
 
 <style>

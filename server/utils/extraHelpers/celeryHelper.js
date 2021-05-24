@@ -9,7 +9,7 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-var getConfig = function(c) {
+function getConfig(c) {
   return {
     host    : c.host,
     port    : c.port,
@@ -86,9 +86,7 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
     }
   }
 
-  this.logger.debug('{0} {1} {2} <- {3}({4}, {5}) OPTIONS: {6}',
-    '[CELERY]',
-    'PUT TASK',
+  this.logger.debug('[CELERY] Put task `{0}` <- `{1}({2}, {3})` options: `{4}`',
     taskOptions.queue,
     name,
     JSON.stringify(args),
@@ -120,11 +118,7 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
  * @return {undefined}
  */
 CeleryHelper.prototype.getResult = function(taskId, callback) {
-  this.logger.debug('{0} {1} {2}',
-    '[CELERY]',
-    'GET RESULT',
-    '@' + taskId
-  );
+  this.logger.debug('[CELERY] Get result: `{0}`', taskId);
 
   return this.client.getResult(taskId, callback);
 };
@@ -145,10 +139,7 @@ CeleryHelper.prototype.onResult = function(taskId, callback) {
 CeleryHelper.prototype.listQueues = function(callback) {
   var queuePattern = toolkit.getWorkerQueue('*');
 
-  this.logger.debug('{0} {1}',
-    '[CELERY]',
-    'LIST QUEUES'
-  );
+  this.logger.debug('[CELERY] List queues');
   return this.client.broker.keys(queuePattern, callback);
 };
 
@@ -166,11 +157,7 @@ CeleryHelper.prototype.listQueued = function(queue, callback) {
     }
   }
 
-  this.logger.debug('{0} {1} {2}',
-    '[CELERY]',
-    'LIST QUEUED',
-    queue
-  );
+  this.logger.debug('[CELERY] List queued `{0}`', queue);
   return this.client.listQueued(queue, callback);
 };
 
@@ -179,10 +166,7 @@ CeleryHelper.prototype.listQueued = function(queue, callback) {
  * @return {undefined}
  */
 CeleryHelper.prototype.listScheduled = function(callback) {
-  this.logger.debug('{0} {1}',
-    '[CELERY]',
-    'LIST SCHEDULED'
-  );
+  this.logger.debug('[CELERY] List scheduled');
   return this.client.listScheduled(callback);
 };
 
@@ -191,10 +175,7 @@ CeleryHelper.prototype.listScheduled = function(callback) {
  * @return {undefined}
  */
 CeleryHelper.prototype.listRecent = function(callback) {
-  this.logger.debug('{0} {1}',
-    '[CELERY]',
-    'LIST RECENT'
-  );
+  this.logger.debug('[CELERY] List recent');
   return this.client.listRecent(callback);
 };
 

@@ -20,14 +20,14 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 - [1. 系统及环境要求](#1-%E7%B3%BB%E7%BB%9F%E5%8F%8A%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82)
     - [1.1 系统要求](#11-%E7%B3%BB%E7%BB%9F%E8%A6%81%E6%B1%82)
     - [1.2 软件准备](#12-%E8%BD%AF%E4%BB%B6%E5%87%86%E5%A4%87)
+    - [1.3 浏览器兼容性](#13-%E6%B5%8F%E8%A7%88%E5%99%A8%E5%85%BC%E5%AE%B9%E6%80%A7)
 - [2. 使用「携带版」离线部署](#2-%E4%BD%BF%E7%94%A8%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2)
     - [2.1 一键命令下载「携带版」](#21-%E4%B8%80%E9%94%AE%E5%91%BD%E4%BB%A4%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
     - [2.2 手工下载「携带版」](#22-%E6%89%8B%E5%B7%A5%E4%B8%8B%E8%BD%BD%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D)
     - [2.3 使用自动部署脚本执行部署](#23-%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%E6%89%A7%E8%A1%8C%E9%83%A8%E7%BD%B2)
 - [3. 安装选项](#3-%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
     - [3.1 「携带版」指定安装选项](#31-%E3%80%8C%E6%90%BA%E5%B8%A6%E7%89%88%E3%80%8D%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-    - [3.2 在线安装版指定安装选项](#32-%E5%9C%A8%E7%BA%BF%E5%AE%89%E8%A3%85%E7%89%88%E6%8C%87%E5%AE%9A%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
-    - [3.3 可用安装选项](#33-%E5%8F%AF%E7%94%A8%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
+    - [3.2 可用安装选项](#32-%E5%8F%AF%E7%94%A8%E5%AE%89%E8%A3%85%E9%80%89%E9%A1%B9)
 - [4. 项目介绍](#4-%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D)
     - [4.1 主要功能](#41-%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD)
     - [4.2 支持的数据源](#42-%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90)
@@ -62,13 +62,31 @@ DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及
 用户也可以自行安装Docker 并初始化Docker Swarm，然后运行部署脚本，
 部署脚本在发现Docker 已经安装后会自动跳过这部分处理。
 
-- Docker Swarm 初始化命令为：`docker swarm init`
+- Docker Swarm 初始化命令为：`sudo docker swarm init`
 
 如果本机存在多个网卡，需要在上述初始化命令中指定网卡
 
 - 存在多网卡的建议用户自行安装Docker 并初始化Docker Swarm
-- Docker Swarm 指定网卡的初始化命令为：`docker swarm init --advertise-addr={网卡名}`
+- Docker Swarm 指定网卡的初始化命令为：`sudo docker swarm init --advertise-addr={网卡名}`
 - 本机网卡列表可以通过`ifconfig`或者`ip addr`查询
+
+### 1.3 浏览器兼容性
+
+本系统为Web应用，部分浏览器可能存在兼容问题无法使用
+
+|                 浏览器                  | 是否兼容 |
+|-----------------------------------------|----------|
+| Chrome                                  | 兼容     |
+| Safari                                  | 兼容     |
+| Firefox                                 | 兼容     |
+| Microsoft Edge(webkit)                  | 兼容     |
+| Opera                                   | 兼容     |
+| 遨游浏览器                              | 兼容     |
+| 搜狗浏览器                              | 兼容     |
+| QQ 浏览器                               | 兼容     |
+| 360极速浏览器（极速模式，即Chrome模式） | 兼容     |
+| 360极速浏览器（兼容模式，即IE模式）     | *不兼容* |
+| Internet Explorer                       | *不兼容* |
 
 
 
@@ -101,10 +119,9 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 2. [Docker 服务配置文件： docker.service](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker.service)
 3. [MySQL 镜像： mysql.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/mysql.tar.gz)
 4. [Redis 镜像： redis.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/redis.tar.gz)
-5. [Mosquitto 镜像： eclipse-mosquitto.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/eclipse-mosquitto.tar.gz)
-6. [DataFluxFunc 镜像： dataflux-func.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/dataflux-func.tar.gz)
-7. [Docker Stack 配置文件：docker-stack.example.yaml](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker-stack.example.yaml)
-8. [DataFluxFunc 部署脚本：run-portable.sh](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/run-portable.sh)
+5. [DataFluxFunc 镜像： dataflux-func.tar.gz](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/dataflux-func.tar.gz)
+6. [Docker Stack 配置文件：docker-stack.example.yaml](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/docker-stack.example.yaml)
+7. [DataFluxFunc 部署脚本：run-portable.sh](https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/portable/run-portable.sh)
 
 手工下载所有文件后，放入新建的`dataflux-func-portable`目录下即可。
 
@@ -118,7 +135,24 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 运行以下命令，即可自动配置并最终启动整个DataFlux Func：
 
 ```shell
-/bin/bash run-portable.sh
+sudo /bin/bash run-portable.sh
+```
+
+如果服务器存在多个网卡，上述命令可能会由于Docker Swarm 询问绑定网卡而中断，如：
+
+```shell
+Error response from daemon: could not choose an IP address to advertise since this system has multiple addresses on different interfaces (172.16.35.129 on ens33 and 172.16.219.129 on ens34) - specify one with --advertise-addr
+```
+
+此时，手工初始化Docker Swarm 初始化命令后，重新运行脚本即可：
+
+```shell
+# 使用 ifconfig 命令查看网卡
+# 假设需要绑定的网卡名为ens33
+sudo docker swarm init --advertise-addr=ens33
+
+# 重新执行
+sudo /bin/bash run-portable.sh
 ```
 
 使用自动部署脚本可以实现几分钟内快速部署运行，自动配置的内容如下：
@@ -153,22 +187,11 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 安装「携带版」时，只需要在自动部署命令后添加`--{参数}[ 参数配置（如有）]`，即可指定安装选项
 
 ```shell
-# 示例：指定安装目录，同时开启MQTT组件（mosquitto）
-/bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc --mqtt
+# 示例：指定安装目录
+sudo /bin/bash run-portable.sh --install-dir /home/dev/datafluxfunc
 ```
 
-### 3.2 在线安装版指定安装选项
-
-使用一键安装命令在线安装时，只需要在自动部署命令后添加`-- --{参数}[ 参数配置（如有）]`，即可指定安装选项
-
-```shell
-# 示例：指定安装目录，同时开启MQTT组件（mosquitto）
-/bin/bash -c "$(curl -fsSL https://t.dataflux.cn/func-docker-stack-run)" -- --install-dir /home/dev/datafluxfunc --mqtt
-```
-
-*注意：参数前确实有`--`，表示参数传递给需要执行的脚本，此处不是笔误*
-
-### 3.3 可用安装选项
+### 3.2 可用安装选项
 
 具体参数详情见下文
 
@@ -201,12 +224,6 @@ DataFlux Func 支持将所需资源下载后，通过U盘等移动设备带入�
 需要使用已有的Redis数据库时，可指定此参数，禁止在本机启动Redis。
 
 *注意：启用此选项后，需要在安装完成后的配置页面指定正确的Redis连接信息*
-
-#### `--mqtt`：启用内置MQTT Broker
-
-需要安装后，同时在本机启动MQTT Broker时，可指定此选项。
-
-*注意：内置的MQTT Broker 为`eclipse-mosquitto`，并会自动生成对应的数据源*
 
 
 

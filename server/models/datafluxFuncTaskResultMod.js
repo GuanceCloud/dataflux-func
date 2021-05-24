@@ -13,10 +13,10 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'data processor task result',
-  entityName : 'dataProcessorTaskResult',
-  tableName  : 'biz_main_task_result_data_processor',
-  alias      : 'dptr',
+  displayName: 'Dataflux Func task result',
+  entityName : 'datafluxFuncTaskResult',
+  tableName  : 'biz_main_task_result_dataflux_func',
+  alias      : 'dftr',
 
   objectFields: {
     argsJSON  : 'json',

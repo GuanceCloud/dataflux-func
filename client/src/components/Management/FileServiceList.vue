@@ -4,6 +4,8 @@ New File Service    : 新建文件服务
 Disable File Service: 禁用文件服务
 Enable File Service : 启用文件服务
 Delete File Service : 删除文件服务
+
+Search File Service(ID, root): 搜索文件服务（ID、根目录）
 </i18n>
 
 <template>
@@ -14,7 +16,11 @@ Delete File Service : 删除文件服务
         <h1>
           {{ $t('File Service') }}
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search File Service(ID, root)')">
+            </FuzzySearchInput>
+
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
               {{ $t('New File Service') }}

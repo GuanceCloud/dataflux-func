@@ -2,7 +2,7 @@
 
 '''
 定时处理任务启动器
-主要根据自动触发配置加载任务，然后启动runner
+主要根据自动触发配置加载任务，然后启动func_runner
 '''
 
 # Builtin Modules
@@ -23,11 +23,11 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func.runner import dataflux_func_runner
+from worker.tasks.main.func_runner import func_runner
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class DataFluxFuncStarterCrontabTask(BaseTask):
+class StarterCrontabTask(BaseTask):
     # Crontab过滤器 - 向前筛选
     def crontab_config_filter(self, trigger_time, crontab_config):
         '''
@@ -60,7 +60,7 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
         if not croniter.is_valid(crontab_expr):
             return False
 
-        now = arrow.get().to('Asia/Shanghai').datetime
+        now = arrow.get(trigger_time + 1).to('Asia/Shanghai').datetime
         crontab_iter = croniter(crontab_expr, now)
 
         start_time = int(crontab_iter.get_prev())
@@ -183,9 +183,9 @@ class DataFluxFuncStarterCrontabTask(BaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-@app.task(name='DataFluxFunc.starterCrontab', bind=True, base=DataFluxFuncStarterCrontabTask)
-def dataflux_func_starter_crontab(self, *args, **kwargs):
-    self.logger.info('DataFluxFunc Crontab Starter Task launched.')
+@app.task(name='Main.StarterCrontab', bind=True, base=StarterCrontabTask)
+def starter_crontab(self, *args, **kwargs):
+    self.logger.info('Crontab Starter Task launched.')
 
     # 注：需要等待1秒，确保不会在整点运行，导致跳回上一触发点
     time.sleep(1)
@@ -292,7 +292,7 @@ def dataflux_func_starter_crontab(self, *args, **kwargs):
                 'lockKey'       : lock_key,
                 'lockValue'     : lock_value,
             }
-            dataflux_func_runner.apply_async(
+            func_runner.apply_async(
                     task_id=task_id,
                     kwargs=task_kwargs,
                     headers=task_headers,

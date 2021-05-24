@@ -9,7 +9,6 @@ var splitargs = require('splitargs');
 /* Project Modules */
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var CONST   = require('../utils/yamlResources').get('CONST');
 var toolkit = require('../utils/toolkit');
 
 var dataSourceMod = require('../models/dataSourceMod');
@@ -20,8 +19,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var RESERVED_REF_NAME = 'dataflux_';
 
 function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFields, callback) {
-  var databaseName = CONST.displayText.dataSource_type[type];
-
   // 检查字段
   for (var i = 0; i < requiredFields.length; i++) {
     var f = requiredFields[i];
@@ -41,7 +38,7 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
     type  : type,
     config: config,
   };
-  celery.putTask('DataFluxFunc.dataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
+  celery.putTask('Main.DataSourceChecker', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
     if (err) return callback(err);
 
     celeryRes = celeryRes || {};
@@ -64,6 +61,16 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
 }
 
 var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
+  df_workspace: function(locals, config, callback) {
+    // 默认值
+    config.port     = config.port     || 9527;
+    config.protocol = config.protocol || 'http';
+
+    var REQUIRED_FIELDS = ['host', 'port', 'token'];
+    var OPTIONAL_FIELDS = ['protocol'];
+
+    return _checkDataSourceConfig(locals, 'df_workspace', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
   df_dataway: function(locals, config, callback) {
     // 默认值
     config.port     = config.port     || 9528;
@@ -73,6 +80,16 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     var OPTIONAL_FIELDS = ['protocol', 'token', 'accessKey', 'secretKey'];
 
     return _checkDataSourceConfig(locals, 'df_dataway', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  df_datakit: function(locals, config, callback) {
+    // 默认值
+    config.port     = config.port     || 9529;
+    config.protocol = config.protocol || 'http';
+
+    var REQUIRED_FIELDS = ['host', 'port'];
+    var OPTIONAL_FIELDS = ['protocol', 'source'];
+
+    return _checkDataSourceConfig(locals, 'df_datakit', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
   influxdb: function(locals, config, callback) {
     // 默认值
@@ -101,7 +118,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     config.database = config.database || 0;
 
     var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'password'];
+    var OPTIONAL_FIELDS = ['port', 'password', 'topicHandlers'];
 
     return _checkDataSourceConfig(locals, 'redis', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
@@ -429,7 +446,7 @@ exports.query = function(req, res, next) {
       // 执行命令
       var celery = celeryHelper.createHelper(res.locals.logger);
 
-      celery.putTask('DataFluxFunc.dataSourceDebugger', null, taskKwargs, null, null, function(err, celeryRes, extraInfo) {
+      celery.putTask('Main.DataSourceDebugger', null, taskKwargs, null, null, function(err, celeryRes, extraInfo) {
         if (err) return asyncCallback(err);
 
         celeryRes = celeryRes || {};
@@ -534,16 +551,8 @@ function hidePassword(req, res, ret, hookExtra, callback) {
 function updateDataSourceRefreshTimestamp(locals, dataSource, callback) {
   async.series([
     function(asyncCallback) {
-      var tags    = ['id', dataSource.id];
-      var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestamp', tags);
-      locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
-    },
-    function(asyncCallback) {
-      if (dataSource.type !== 'mqtt') return asyncCallback();
-
-      var tags    = ['id', dataSource.id];
-      var cacheKey = toolkit.getCacheKey('cache', 'mqttRefreshTimestamp', tags);
-      locals.cacheDB.set(cacheKey, Date.now(), asyncCallback);
+      var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestampMap');
+      locals.cacheDB.hset(cacheKey, dataSource.id, Date.now(), asyncCallback);
     },
   ], callback);
 };

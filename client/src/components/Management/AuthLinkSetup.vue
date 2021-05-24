@@ -1,26 +1,28 @@
 <i18n locale="en" lang="yaml">
-shortcutDays: '{n} day | {n} days'
+parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+shortcutDays : '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Use custom ID                                                                              : 使用自定义ID
-ID is used in the calling URL                                                              : ID关系到调用时的URL
-Func                                                                                       : 执行函数
-Arguments                                                                                  : 调用参数
-'JSON formated arguments (**kwargs)'                                                       : 'JSON格式的函数参数（**kwargs）'
-'When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller': '函数参数指定为&quot;FROM_PARAMETER&quot;表示允许调用者传递本参数'
-The Func accepts extra arguments not listed above                                          : 本函数允许传递额外的自定义函数参数
-Show in doc                                                                                : 显示于文档
-Expire at                                                                                  : 有效期至
-Select expire time                                                                         : 选择有效期
-Throttling                                                                                 : 限流
-Note                                                                                       : 备注
+Use custom ID                                    : 使用自定义ID
+ID is used in the calling URL                    : ID关系到调用时的URL
+Func                                             : 执行函数
+Arguments                                        : 参数指定
+Tags                                             : 标签
+Add Tag                                          : 添加标签
+'JSON formated arguments (**kwargs)'             : 'JSON格式的参数（**kwargs）'
+The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
+Show in doc                                      : 显示于文档
+Expire at                                        : 有效期至
+Select expire time                               : 选择有效期
+Throttling                                       : 限流
+Note                                             : 备注
 
 Add Auth Link   : 添加授权链接
 Modify Auth Link: 修改授权链接
 Delete Auth Link: 删除授权链接
 
-Invalid argument format                       : 调用参数格式不正确
+Invalid argument format                       : 参数格式不正确
 Are you sure you want to delete the Auth Link?: 是否确认删除授权链接？
 
 'ID must starts with "{prefix}"'                   : 'ID必须以"{prefix}"开头'
@@ -28,8 +30,10 @@ Please select Func                                 : 请选择执行函数
 Only date-time between 1970 and 2037 are allowed   : 只能选择1970年至2037年之间的日期
 Date-time cannot earlier than 1970                 : 日期不能早于1970年
 Date-time cannot later than 2037                   : 时间不能晚于2037年
-'Please input arguments, input {} when no arugment': '请输入调用参数，无参数的直接填写 {}'
-shortcutDays                                       : '{n}天'
+'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+
+parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+shortcutDays : '{n}天'
 </i18n>
 
 <template>
@@ -71,9 +75,21 @@ shortcutDays                                       : '{n}天'
                 <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
-                  <InfoBlock :title="$t('When value is &quot;FROM_PARAMETER&quot; means the argument can be assigned by the caller')"></InfoBlock>
+                  <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Tags')" prop="tagsJSON">
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-input v-if="showAddTag" ref="newTag"
+                    v-model="newTag"
+                    size="mini"
+                    @keyup.enter.native="addTag"
+                    @blur="addTag"></el-input>
+                  <el-button v-else
+                    type="text"
+                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
                 <el-form-item :label="$t('Show in doc')" prop="showInDoc">
@@ -179,7 +195,8 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.throttlingJSON = nextForm.throttlingJSON || {};
+        nextForm.tagsJSON           = nextForm.tagsJSON || [];
+        nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
         this.form = nextForm;
       }
 
@@ -289,29 +306,42 @@ export default {
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
-      let selectedNodes = this.$refs.funcCascader.getCheckedNodes(true);
-      if (selectedNodes.length <= 0) return;
-
-      let node = selectedNodes[0];
-
       // 自动填充调用参数
-      let parameters = node.data.argsJSON || Object.keys(node.data.kwargsJSON);
+      let parameters = this.funcMap[funcId].argsJSON
+                    || Object.keys(this.funcMap[funcId].kwargsJSON);
 
       let example = {};
       parameters.forEach(p => {
         if (p.indexOf('**') === 0) {
           // 暂定：不展示**kwargs参数
         } else {
-          example[p] = 'FROM_PARAMETER';
+          example[p] = 'INPUT_BY_CALLER';
         }
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
     },
+    removeTag(tag) {
+      this.form.tagsJSON.splice(this.form.tagsJSON.indexOf(tag), 1);
+    },
+    openAddTagInput() {
+      this.showAddTag = true;
+      this.$nextTick(_ => {
+        this.$refs.newTag.$refs.input.focus();
+      });
+    },
+    addTag() {
+      let newTag = this.newTag;
+      if (newTag) {
+        this.form.tagsJSON.push(newTag);
+      }
+      this.showAddTag = false;
+      this.newTag     = '';
+    },
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no arugment');
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
 
       return {
         id: [
@@ -430,11 +460,14 @@ export default {
       funcCascader: [],
 
       useCustomId: false,
+      showAddTag : false,
+      newTag     : '',
 
       form: {
         id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
+        tagsJSON          : [],
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,

@@ -30,7 +30,7 @@ from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper
-from worker.utils.extra_helpers import DFDataWayHelper
+from worker.utils.extra_helpers import DFDataWayHelper, DFDataKitHelper, DFWorkspaceHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -59,7 +59,9 @@ FIX_INTEGRATION_KEY_MAP = {
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
+    'df_workspace' : DFWorkspaceHelper,
     'df_dataway'   : DFDataWayHelper,
+    'df_datakit'   : DFDataKitHelper,
     'influxdb'     : InfluxDBHelper,
     'mysql'        : MySQLHelper,
     'redis'        : RedisHelper,
@@ -355,11 +357,11 @@ class ScriptCacherMixin(object):
     def get_scripts(self, script_ids=None):
         # 【注意】
         # 加载脚本处理存在两处
-        #   1. DataFluxFuncReloadScriptsTask.force_reload_script()
+        #   1. ReloadScriptsTask.force_reload_script()
         #       强制加载所有脚本，并缓存到Redis
-        #   2. DataFluxFuncReloadScriptsTask.reload_script()
+        #   2. ReloadScriptsTask.reload_script()
         #       按需加载已变更的脚本，并缓存到Redis
-        #   3. DataFluxFuncRunnerTask.update_script_dict_cache()
+        #   3. RunnerTask.update_script_dict_cache()
         #       缓存击穿时加载所需脚本，并缓存到内存
 
         # 获取脚本数据
@@ -798,12 +800,12 @@ class FuncDataSourceHelper(object):
         # 判断是否需要刷新数据源
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-        refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or 0)
 
         if refresh_time > local_time:
-            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    refresh_time, local_time, refresh_time - local_time))
+            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
+                    data_source_id, helper_target_key, refresh_time, local_time, refresh_time - local_time))
 
             DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
             DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
@@ -855,8 +857,8 @@ class FuncDataSourceHelper(object):
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestamp', tags=['id', data_source_id])
-        self.__task.cache_db.set(cache_key, int(time.time() * 1000))
+        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        self.__task.cache_db.hset(cache_key, data_source_id, int(time.time() * 1000))
 
     def list(self):
         sql = '''
@@ -1224,7 +1226,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         f_argspec = None
         f_args    = None
-        f_kwargs  = {}
+        f_kwargs  = OrderedDict()
         if six.PY3:
             f_argspec = inspect.getfullargspec(F)
         else:
@@ -1656,8 +1658,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcChain'      : func_chain,
         }
 
-        from worker.tasks.dataflux_func.runner import dataflux_func_runner
-        dataflux_func_runner.apply_async(
+        from worker.tasks.main.func_runner import func_runner
+        func_runner.apply_async(
             task_id=gen_task_id(),
             kwargs=task_kwargs,
             headers=task_headers,
@@ -1947,15 +1949,15 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         return '\n'.join(lines)
 
-from worker.tasks.dataflux_func.debugger        import dataflux_func_debugger
-from worker.tasks.dataflux_func.runner          import dataflux_func_runner
-from worker.tasks.dataflux_func.starter_crontab import dataflux_func_starter_crontab
+from worker.tasks.main.func_debugger   import func_debugger
+from worker.tasks.main.func_runner     import func_runner
+from worker.tasks.main.starter_crontab import starter_crontab
 
-from worker.tasks.dataflux_func.utils import dataflux_func_reload_scripts
-from worker.tasks.dataflux_func.utils import dataflux_func_sync_cache
-from worker.tasks.dataflux_func.utils import dataflux_func_auto_cleaner
-from worker.tasks.dataflux_func.utils import dataflux_func_auto_run
-from worker.tasks.dataflux_func.utils import dataflux_func_data_source_checker
-from worker.tasks.dataflux_func.utils import dataflux_func_data_source_debugger
-from worker.tasks.dataflux_func.utils import dataflux_func_worker_queue_pressure_recover
-from worker.tasks.dataflux_func.utils import dataflux_func_db_auto_backup
+from worker.tasks.main.utils import reload_scripts
+from worker.tasks.main.utils import sync_cache
+from worker.tasks.main.utils import auto_cleaner
+from worker.tasks.main.utils import auto_run
+from worker.tasks.main.utils import data_source_checker
+from worker.tasks.main.utils import data_source_debugger
+from worker.tasks.main.utils import worker_queue_pressure_recover
+from worker.tasks.main.utils import db_auto_backup

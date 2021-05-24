@@ -16,6 +16,7 @@ var async     = require('async');
 var shortUUID = require('short-uuid');
 var moment    = require('moment');
 var Base64    = require('js-base64').Base64;
+var byteSize  = require('byte-size');
 
 var shortUUIDTranslator = shortUUID('23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
 
@@ -134,16 +135,16 @@ var limitedText = toolkit.limitedText = function(text, maxLength) {
   text      = text      || '';
   maxLength = maxLength || 30;
 
-  var displayText = text;
-  while (displayText.replace(/[\u0391-\uFFE5]/g, 'xx').length > maxLength) {
-    displayText = displayText.slice(0, -1);
+  var nextText = text;
+  while (nextText.replace(/[\u0391-\uFFE5]/g, 'xx').length > maxLength) {
+    nextText = nextText.slice(0, -1);
   }
 
-  if (displayText !== text) {
-    displayText += '...';
+  if (nextText !== text) {
+    nextText += '...';
   }
 
-  return displayText;
+  return nextText;
 };
 
 /**
@@ -476,20 +477,28 @@ var jsonKick = toolkit.jsonKick = function jsonKick(j, keys) {
 };
 
 /**
- * Create a JSON loaded version
+ * Dump JSON as string
  * @param  {Object} j
- * @return {Object}
+ * @return string
  */
-var createJSONLoadedVersion = toolkit.createJSONLoadedVersion = function createJSONLoadedVersion(j) {
-  var jsonLoaded = toolkit.jsonCopy(j);
-  for (var k in jsonLoaded) if (jsonLoaded.hasOwnProperty(k)) {
-    if (k.slice('JSON'.length * -1) !== 'JSON' && k.slice('JSON_cache'.length * -1) !== 'JSON_cache') continue;
-    if ('string' !== typeof jsonLoaded[k]) continue;
+var jsonDumps = toolkit.jsonDumps = function jsonDumps(j, indent) {
+  function replacer(k, v) {
+    if ('function' === typeof v) {
+      return toolkit.strf('<function {0}(...)>', v.name);
 
-    jsonLoaded[k] = JSON.parse(jsonLoaded[k]);
+    } else if (Buffer.isBuffer(v)) {
+      return toolkit.strf('<Buffer size:{0}>', byteSize(v.length));
+
+    } else {
+      return v;
+    }
   }
 
-  return jsonLoaded;
+  if (Buffer.isBuffer(j)) {
+    return JSON.stringify(replacer(null, j));
+  } else {
+    return JSON.stringify(j, replacer, indent);
+  }
 };
 
 /**

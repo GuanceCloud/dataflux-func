@@ -111,12 +111,14 @@ DING_TALK_ROBOT_SECRET: ''
 FILE_STORE_ROOT_DIR: uploaded-files
 # 额外Python 包安装目录
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
+# PyPi镜像
+PYPI_MIRROR: https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
 
-# 客户端实例冲突过期时间
-_INSTANCE_CONFLICT_EXPIRES: 5
+# 客户端冲突过期时间
+_CLIENT_CONFLICT_EXPIRES: 5
 
 # 函数包导出文件名
 _FUNC_PKG_EXPORT_FILENAME: dataflux-func
@@ -168,8 +170,8 @@ _MYSQL_CHARSET            : utf8mb4
 _MYSQL_TIMEZONE           : ''
 
 # WEB模块一般作为常量的配置
-_WEB_INDEX_PAGE            : datafluxFuncPage.clientApp
-_WEB_SIGN_IN_PAGE          : datafluxFuncPage.clientApp
+_WEB_INDEX_PAGE            : mainPage.clientApp
+_WEB_SIGN_IN_PAGE          : mainPage.clientApp
 _WEB_DASHBOARD_PAGE        : indexPage.dashboard
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
@@ -178,6 +180,8 @@ _WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
 _WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
 _WEB_PAGE_SIZE_COOKIE      : xDFFPageSize
 _WEB_TRACE_ID_HEADER       : X-Trace-Id
+_WEB_REQUEST_TIME_HEADER   : X-Request-Time
+_WEB_RESPONSE_TIME_HEADER  : X-Response-Time
 _WEB_REQUEST_COST_HEADER   : X-Request-Cost
 _WEB_AUTH_HEADER           : X-Dff-Auth-Token
 _WEB_AUTH_QUERY            : xDFFAuthToken
@@ -223,6 +227,8 @@ _CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
 
 
 # 函数任务模块一般作为常量的配置
+_FUNC_ARGUMENT_PLACEHOLDER_LIST: INPUT_BY_CALLER,FROM_PARAMETER
+
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
 _FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
@@ -280,8 +286,7 @@ _LRU_FUNC_CACHE_MAX           : 1000
 _LRU_FUNC_CACHE_MAX_AGE       : 15
 _LRU_FUNC_RESULT_CACHE_MAX    : 2000
 _LRU_FUNC_RESULT_CACHE_MAX_AGE: 2000
-_MQTT_BROKER_REFRESH_INTERVAL : 3
-_PIP_LIST_EXPIRES             : 86400
+_PIP_LIST_EXPIRES             : 300
 
 # 保留脚本错误信息（开启后可能会产生巨量日志）
 _INTERNAL_KEEP_SCRIPT_FAILURE: false

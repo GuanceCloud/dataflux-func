@@ -87,7 +87,7 @@ class MySQLHelper(object):
 
     def start_trans(self):
         if not self.skip_log:
-            self.logger.debug('[MYSQL TRANS] START')
+            self.logger.debug('[MYSQL] Trans START')
 
         conn = self.client.connection()
         cur  = conn.cursor()
@@ -104,7 +104,7 @@ class MySQLHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[MYSQL TRANS] COMMIT')
+            self.logger.debug('[MYSQL] Trans COMMIT')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -119,7 +119,7 @@ class MySQLHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[MYSQL TRANS] ROLLBACK')
+            self.logger.debug('[MYSQL] Trans ROLLBACK')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -133,7 +133,7 @@ class MySQLHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[MYSQL TRANS] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[MYSQL] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -150,7 +150,7 @@ class MySQLHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[MYSQL] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[MYSQL] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         conn = None
         cur  = None

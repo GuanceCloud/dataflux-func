@@ -16,14 +16,6 @@ indexAPI:
     desc: |
       Client config.
 
-  serverConst:
-    name     : Server const
-    method   : get
-    url      : /api/v1/server-const/do/get
-    response : json
-    desc: |
-      Server const.
-
   imageInfo:
     name    : Image information
     method  : get
@@ -333,6 +325,7 @@ userAPI:
       username: u.username
       name    : u.name
     fuzzySearch:
+      - u.id
       - u.username
       - u.name
       - u.mobile
@@ -1055,7 +1048,7 @@ debugAPI:
           $desc      : Task name
           $isRequired: true
           $type      : string
-          $example   : example.echo.success
+          $example   : Example.Echo.Success
         args:
           $desc: List arguments (*args)
           $:
@@ -1108,8 +1101,8 @@ debugAPI:
             $type   : any
             $example: {"extraKey": "extraValue"}
 
-# DataFlux Func
-datafluxFuncAPI:
+# 主要接口
+mainAPI:
   overview:
     showInDoc    : true
     name         : 获取总览
@@ -1872,7 +1865,7 @@ datafluxFuncAPI:
     url          : /api/v1/resources/operate
     response     : json
     requireSignIn: true
-    privilege    : general_r
+    privilege    : general_w
     body:
       targetPath:
         $desc    : 操作目标路径（文件/目录）
@@ -1905,7 +1898,7 @@ datafluxFuncAPI:
         $desc: 文件服务ID
         $type: string
 
-datafluxFuncPage:
+mainPage:
   clientApp:
     showInDoc    : true
     name         : 客户端应用
@@ -2570,7 +2563,9 @@ dataSourceAPI:
         $searchType: in
         $searchKey : dsrc.type
         $commaArrayIn:
+          - df_workspace
           - df_dataway
+          - df_datakit
           - influxdb
           - mysql
           - redis
@@ -2582,6 +2577,7 @@ dataSourceAPI:
           - mongodb
           - elasticsearch
           - nsq
+          - mqtt
 
   add:
     showInDoc    : true
@@ -2612,7 +2608,9 @@ dataSourceAPI:
           $isRequired: true
           $type      : enum
           $in:
+            - df_workspace
             - df_dataway
+            - df_datakit
             - influxdb
             - mysql
             - redis
@@ -2651,6 +2649,10 @@ dataSourceAPI:
             $in:
               - http
               - https
+          source:
+            $desc     : 源
+            $allowNull: true
+            $type     : string
           database:
             $desc     : 数据库
             $allowNull: true
@@ -2752,6 +2754,10 @@ dataSourceAPI:
             $in:
               - http
               - https
+          source:
+            $desc     : 源
+            $allowNull: true
+            $type     : string
           database:
             $desc     : 数据库
             $allowNull: true
@@ -2827,7 +2833,9 @@ dataSourceAPI:
 
       |   数据源类型    |                   查询语句示例                  |
       |-----------------|-------------------------------------------------|
+      | `df_workspace`  | 使用封装方法操作，不适用SQL语句                 |
       | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
+      | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
       | `influx`        | `"SELECT * FROM some_measurement LIMIT 10"`     |
       | `mysql`         | `"SELECT * FROM some_table LIMIT 10"`           |
       | `redis`         | `"GET some_key"`                                |
@@ -2839,6 +2847,7 @@ dataSourceAPI:
       | `mongodb`       | 使用封装方法操作，不适用SQL语句                 |
       | `elasticsearch` | `"GET /_search?q=field:value"`                  |
       | `nsq`           | 使用封装方法操作，不适用SQL语句                 |
+      | `mqtt`          | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
     url          : /api/v1/data-sources/:id/do/query
@@ -3022,8 +3031,11 @@ authLinkAPI:
       - auln.id
       - auln.funcId
       - auln.funcCallKwargsJSON
+      - auln.tagsJSON
+      - auln.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       id:
         $desc      : 根据ID过滤
@@ -3035,6 +3047,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.funcId
+      tags:
+        $desc      : 根据授权链接标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : auln.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
@@ -3074,7 +3091,7 @@ authLinkAPI:
           "funcCallKwargsJSON": {
             "arg1": "hello, world.",
             "arg2": null,
-            "arg3": "FROM_PARAMETER"
+            "arg3": "INPUT_BY_CALLER"
           },
           ...
         }
@@ -3083,10 +3100,10 @@ authLinkAPI:
 
       则表示：
 
-      - `"arg1"`参数：*不允许*调用方指定，调用时自动指定参数值为`"hello, world."`
-      - `"arg2"`参数：*不允许*调用方指定，调用时自动指定参数值为`null`
-      - `"arg3"`参数：允许调用方指定，调用时参数为调用方指定值
-      - `"arg4"`参数：*不允许*调用方指定，调用时也不传递此参数
+      - `"arg1"`参数：*不允许*调用时指定，调用时自动指定参数值为`"hello, world."`
+      - `"arg2"`参数：*不允许*调用时指定，调用时自动指定参数值为`null`
+      - `"arg3"`参数：允许调用时指定
+      - `"arg4"`参数：*不允许*调用时指定，调用时也不传递此参数
 
     method       : post
     url          : /api/v1/auth-links/do/add
@@ -3109,7 +3126,14 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: true
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 授权链接标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -3199,7 +3223,14 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 授权链接标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -3296,7 +3327,14 @@ authLinkAPI:
             $desc      : 函数调用参数JSON (kwargs)
             $isRequired: true
             $type      : json
-            $example   : {"msg": "FROM_PARAMETER"}
+            $example   : {"msg": "INPUT_BY_CALLER"}
+          tagsJSON:
+            $desc     : 授权链接标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
           expireTime:
             $desc      : 过期时间（ISO8601格式）
             $allowNull : true
@@ -3395,6 +3433,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.funcId
+      tags:
+        $desc      : 根据授权链接标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : auln.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
@@ -3429,7 +3472,14 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 授权链接标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3461,6 +3511,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.funcId
+      tags:
+        $desc      : 根据授权链接标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : auln.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
@@ -3507,8 +3562,10 @@ crontabConfigAPI:
       - cron.funcId
       - cron.funcCallKwargsJSON
       - cron.tagsJSON
+      - cron.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       _withTaskInfoCount:
         $desc: 是否附带任务信息计数
@@ -3771,7 +3828,7 @@ crontabConfigAPI:
     url          : /api/v1/crontab-configs/do/modify-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
+    privilege    : general_w
     query:
       id:
         $desc      : 根据ID过滤
@@ -3859,7 +3916,7 @@ crontabConfigAPI:
     url          : /api/v1/crontab-configs/do/delete-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
+    privilege    : general_w
     query:
       id:
         $desc      : 根据ID过滤
@@ -3980,8 +4037,10 @@ batchAPI:
       - bat.funcId
       - bat.funcCallKwargsJSON
       - bat.tagsJSON
+      - bat.note
       - func.title
       - func.description
+      - func.tagsJSON
     query:
       _withTaskInfoCount:
         $desc: 是否附带任务信息计数
@@ -4040,7 +4099,7 @@ batchAPI:
           "funcCallKwargsJSON": {
             "arg1": "hello, world.",
             "arg2": null,
-            "arg3": "FROM_PARAMETER"
+            "arg3": "INPUT_BY_CALLER"
           },
           ...
         }
@@ -4049,10 +4108,10 @@ batchAPI:
 
       则表示：
 
-      - `"arg1"`参数：*不允许*调用方指定，调用时自动指定参数值为`"hello, world."`
-      - `"arg2"`参数：*不允许*调用方指定，调用时自动指定参数值为`null`
-      - `"arg3"`参数：允许调用方指定，调用时参数为调用方指定值
-      - `"arg4"`参数：*不允许*调用方指定，调用时也不传递此参数
+      - `"arg1"`参数：*不允许*调用时指定，调用时自动指定参数值为`"hello, world."`
+      - `"arg2"`参数：*不允许*调用时指定，调用时自动指定参数值为`null`
+      - `"arg3"`参数：允许调用时指定
+      - `"arg4"`参数：*不允许*调用时指定，调用时也不传递此参数
 
     method       : post
     url          : /api/v1/batches/do/add
@@ -4075,7 +4134,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: true
           $type      : json
-          $example  : {"msg": "FROM_PARAMETER"}
+          $example  : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true
@@ -4119,7 +4178,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true
@@ -4178,7 +4237,7 @@ batchAPI:
             $desc      : 函数调用参数JSON (kwargs)
             $isRequired: true
             $type      : json
-            $example  : {"msg": "FROM_PARAMETER"}
+            $example  : {"msg": "INPUT_BY_CALLER"}
           tagsJSON:
             $desc     : 批处理标签（直接替换完整数组）
             $allowNull: true
@@ -4269,7 +4328,7 @@ batchAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example   : {"msg": "FROM_PARAMETER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 批处理标签（直接替换完整数组）
           $allowNull: true
@@ -4388,11 +4447,11 @@ batchTaskInfoAPI:
         $searchKey : func.tagsJSON
 
 # 函数调用任务结果
-dataProcessorTaskResultAPI:
+datafluxFuncTaskResultAPI:
   list:
     name         : 列出函数调用任务结果
     method       : get
-    url          : /api/v1/data-processor-task-results/do/list
+    url          : /api/v1/dataflux-func-task-results/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -4400,32 +4459,32 @@ dataProcessorTaskResultAPI:
     fieldPicking : true
     fieldKicking : true
     orderFields:
-      seq: dptr.seq
+      seq: dftr.seq
     fuzzySearch:
-      - dptr.id
-      - dptr.origin
-      - dptr.kwargsJSON->>$.funcId
+      - dftr.id
+      - dftr.origin
+      - dftr.kwargsJSON->>$.funcId
     query:
       id:
         $desc      : 按任务ID过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.id
+        $searchKey : dftr.id
       origin:
         $desc      : 按任务来源过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.origin
+        $searchKey : dftr.origin
       funcId:
         $desc      : 按函数过滤
         $type      : string
         $searchType: like
-        $searchKey : dptr.kwargsJSON->>$.funcId
+        $searchKey : dftr.kwargsJSON->>$.funcId
       execMode:
         $desc      : 按执行模式过滤
         $type      : enum
         $searchType: eq
-        $searchKey : dptr.kwargsJSON->>$.execMode
+        $searchKey : dftr.kwargsJSON->>$.execMode
         $in:
           - sync
           - async
@@ -4434,7 +4493,7 @@ dataProcessorTaskResultAPI:
   get:
     name         : 获取函数调用任务结果
     method       : get
-    url          : /api/v1/data-processor-task-results/:id/do/get
+    url          : /api/v1/dataflux-func-task-results/:id/do/get
     response     : json
     requireSignIn: true
     privilege    : general_r

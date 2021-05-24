@@ -1,6 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Disable user: 禁用用户
 Enable user : 启用用户
+
+Search User(ID, username, name): 搜索用户（ID、用户名、名称）
 </i18n>
 
 <template>
@@ -11,7 +13,11 @@ Enable user : 启用用户
         <h1>
           成员列表
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search User(ID, username, name)')">
+            </FuzzySearchInput>
+
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
               新建成员
@@ -56,7 +62,7 @@ Enable user : 启用用户
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <span v-if="$store.getters.isSuperAdmin" class="text-bad">系统管理员</span>
+              <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">系统管理员</span>
               <template v-else>
                 <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
                 <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
@@ -69,8 +75,7 @@ Enable user : 启用用户
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)"
-        class="paging-area" height="45px">
+      <el-footer v-if="!T.isNothing(data)" class="paging-area">
         <el-pagination
           background
           @size-change="T.changePageSize"

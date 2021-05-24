@@ -116,12 +116,12 @@ exports.beforeAppCreate = function(callback) {
     });
   };
 
-  /********** Content for YOUR project below **********/
-
   async.series([
     loadDatabaseTimezone,
   ], function(err) {
     if (err) throw err;
+
+    /********** Content for YOUR project below **********/
 
     return callback();
   });
@@ -352,6 +352,82 @@ exports.afterAppCreated = function(app, server) {
       },
     ], printError);
   }
+
+  // 自动添加本地DataKit数据源
+  var request = require('request');
+  var dataSourceModel = require('./models/dataSourceMod').createModel(app.locals);
+
+  var LOCAL_DATAKIT_ID    = 'datakit';
+  var LOCAL_DATAKIT_TITLE = '本地DataKit';
+  var LOCAL_DATAKIT_PORT  = 9529;
+
+  var localDataKitIP = null;
+  async.series([
+    // 检查DataKit所在IP
+    function(asyncCallback) {
+      var fetchIPs = [
+        '172.17.0.1', // Docker宿主机本地
+        '127.0.0.1',  // 本机本地
+      ];
+      async.eachSeries(fetchIPs, function(ip, eachCallback) {
+        if (localDataKitIP) return eachCallback();
+
+        var url = toolkit.strf('http://{0}:{1}/v1/ping', ip, LOCAL_DATAKIT_PORT);
+        var requestOptions = {
+          method : 'get',
+          url    : url,
+          timeout: 3 * 1000,
+        };
+        request(requestOptions, function(err, res, body) {
+          if (!err && res.statusCode === 200) {
+            app.locals.logger.info('Check local DataKit: `{0}`... OK', url);
+
+            localDataKitIP = ip;
+
+          } else {
+            app.locals.logger.info('Check local DataKit: `{0}`... Fail: {1}', url, err);
+          }
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+    // 添加DataKit数据源
+    function(asyncCallback) {
+      if (!localDataKitIP) return asyncCallback();
+
+      app.locals.logger.info('Auto add local DataKit: `{0}`', localDataKitIP);
+
+      var opt = {
+        filters: {
+          id: { eq: LOCAL_DATAKIT_ID }
+        }
+      }
+      dataSourceModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        var datakit = {
+          id   : LOCAL_DATAKIT_ID,
+          title: LOCAL_DATAKIT_TITLE,
+          type : 'df_datakit',
+          configJSON: {
+            host    : localDataKitIP,
+            port    : LOCAL_DATAKIT_PORT,
+            protocol: 'http',
+            source  : 'dataflux_func',
+          }
+        }
+        if (dbRes.length <= 0) {
+          // 不存在，则添加
+          dataSourceModel.add(datakit, asyncCallback);
+
+        } else {
+          // 存在，则更新
+          dataSourceModel.modify(datakit.id, datakit, asyncCallback);
+        }
+      })
+    },
+  ])
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
@@ -359,7 +435,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
 
   // 操作记录
   var reqRoute              = req.route.path;
-  var operationRecord       = res.locals._operationRecord;
+  var operationRecord       = res.locals.operationRecord;
   var shouldRecordOperation = true;
   if (!operationRecord) {
     // 未经过操作记录中间件

@@ -99,13 +99,15 @@ Vue.prototype.common = common;
 Vue.config.productionTip = false
 
 // 常用业务组件
-import Logo           from '@/components/Logo'
-import InfoBlock      from '@/components/InfoBlock'
-import CopyButton     from '@/components/CopyButton'
-import GotoFuncButton from '@/components/GotoFuncButton'
+import Logo       from '@/components/Logo'
+import InfoBlock  from '@/components/InfoBlock'
+import CopyButton from '@/components/CopyButton'
 Vue.component('Logo', Logo);
 Vue.component('InfoBlock', InfoBlock);
 Vue.component('CopyButton', CopyButton);
+
+// 项目业务组件
+import GotoFuncButton from '@/components/GotoFuncButton'
 Vue.component('GotoFuncButton', GotoFuncButton);
 
 // 全局异常处理
@@ -159,6 +161,6 @@ Vue.config.silent = true;
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;
 
-window.instanceId = toolkit.genRandString();
+window.conflictId = toolkit.genRandString();
 
 export default app

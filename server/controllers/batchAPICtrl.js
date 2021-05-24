@@ -82,7 +82,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('datafluxFuncAPI.callBatchByGet', {
+      url: urlFor('mainAPI.callBatchByGet', {
         params: { id: addedId },
       }),
     });
@@ -186,7 +186,8 @@ exports.modifyMany = function(req, res, next) {
     function(asyncCallback) {
       async.eachSeries(modifiedIds, function(id, eachCallback) {
         var opt = { funcCallKwargs: 'merge' };
-        _modify(res.locals, id, data, opt, eachCallback);
+        var _data = toolkit.jsonCopy(data);
+        _modify(res.locals, id, _data, opt, eachCallback);
       }, asyncCallback);
     },
   ], function(err) {
@@ -318,7 +319,7 @@ function _modify(locals, id, data, opt, callback) {
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('datafluxFuncAPI.callBatchByGet', { params: { id: id } });
+    var url = urlFor('mainAPI.callBatchByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };

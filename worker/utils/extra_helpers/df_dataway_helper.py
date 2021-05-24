@@ -9,7 +9,7 @@ import requests
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers.dataway import DataWay
+from worker.utils.extra_helpers.df_dataway import DataWay
 
 CONFIG = yaml_resources.get('CONFIG')
 

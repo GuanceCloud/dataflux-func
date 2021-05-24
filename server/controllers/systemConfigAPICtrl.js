@@ -8,7 +8,6 @@ var async = require('async');
 /* Project Modules */
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var CONST   = require('../utils/yamlResources').get('CONST');
 var toolkit = require('../utils/toolkit');
 
 var systemConfigMod = require('../models/systemConfigMod');
@@ -25,10 +24,6 @@ exports.delete = crudHandler.createDeleteHandler();
 exports.set = function(req, res, next) {
   var id   = req.params.id;
   var value = req.body.data.value;
-
-  if (!CONST.displayText.systemConfig_id[id]) {
-    return next(new E('EClientUnsupported', 'Unsupproted system config', { id: id }));
-  }
 
   var systemConfigModel = systemConfigMod.createModel(res.locals);
 

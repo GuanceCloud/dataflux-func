@@ -10,12 +10,12 @@ var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
-var dataProcessorTaskResultMod = require('../models/dataProcessorTaskResultMod');
+var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
 
 /* Configure */
 
 /* Handlers */
-var crudHandler = exports.crudHandler = dataProcessorTaskResultMod.createCRUDHandler();
+var crudHandler = exports.crudHandler = datafluxFuncTaskResultMod.createCRUDHandler();
 
 exports.list = crudHandler.createListHandler();
 exports.get  = crudHandler.createGetHandler();

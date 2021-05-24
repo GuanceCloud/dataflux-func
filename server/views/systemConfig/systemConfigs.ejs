@@ -1,12 +1,5 @@
 <%
   var data = pageData.data || [];
-
-  var systemConfigIds = toolkit.jsonKeys(CONST.displayText.systemConfig_id).sort();
-
-  var systemConfigMap = {};
-  data.forEach(function(d) {
-    systemConfigMap[d.id] = d.value;
-  });
 %>
 
 <% include ../_utils/header %>
@@ -33,27 +26,24 @@
             <% components.tableFilterHintRow() %>
             <tr>
               <th><%= __('ID') %></th>
-              <th><%= __('Name') %></th>
               <th style="width: 340px;"><%= __('Value') %></th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            <% systemConfigIds.forEach(function(systemConfigId, index) { %>
-            <% var systemConfigValue = systemConfigMap[systemConfigId] || null %>
+            <% data.forEach(function(d, index) { %>
             <tr>
-              <td><code><%= systemConfigId %></code></td>
-              <td><%= __(CONST.displayText.systemConfig_id[systemConfigId]) %></td>
+              <td><code><%= d.id %></code></td>
               <td>
                 <div class="form-inline">
                   <div class="input-group">
-                    <input type="text" class="form-control" wat-data-key="body.data.value" wat-data-for="<%= toolkit.getMD5('set-' + systemConfigId) %>" value="<%= systemConfigValue %>">
+                    <input type="text" class="form-control" wat-data-key="body.data.value" wat-data-for="<%= toolkit.getMD5('set-' + d.id) %>" value="<%= d.value %>">
                     <span class="input-group-btn">
                       <%
                         currentUser.can('systemConfig_w') &&
                         components.tableModifyButton('systemConfigAPI.set', {
-                          for   : toolkit.getMD5('set-' + systemConfigId),
-                          params: {id: systemConfigId},
+                          for   : toolkit.getMD5('set-' + d.id),
+                          params: {id: d.id},
                           title : __('Set'),
                           style : 'primary',
                           icon  : null,
@@ -68,8 +58,8 @@
                 <%
                   currentUser.can('systemConfig_w') &&
                   components.tableDeleteButton('systemConfigAPI.delete', {
-                    params     : {id: systemConfigId},
-                    confirmData: systemConfigId,
+                    params     : {id: d.id},
+                    confirmData: d.id,
                     style      : 'danger',
                     size       : 'md',
                   });

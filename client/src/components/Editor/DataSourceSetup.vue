@@ -15,6 +15,8 @@ Servers                                                                         
 'Servers to connect (e.g. host1:80,host2:81)'                                     : 连接地址列表，如：host1:80,host2:81
 Protocol                                                                          : 协议
 Please select connection protocol                                                 : 请选择协议
+Source                                                                            : 源
+Source of data                                                                    : 数据来源
 Database                                                                          : 数据库
 Database to connect                                                               : 连接数据库
 User                                                                              : 用户
@@ -52,6 +54,7 @@ Only integer between 1 and 65535 are allowed      : 主机端口范围为 1-6553
 Please input servers                              : 请输入服务器列表
 Please select HTTP protocol                       : 请选择HTTP协议
 Only HTTP and HTTPS are allowed                   : 协议只能为HTTP或HTTPS
+Please input source                               : 请输入数据源名称
 Please input database                             : 请输入数据库名
 Please input user                                 : 请输入用户名
 Please input password                             : 请输入密码
@@ -93,8 +96,12 @@ Please select handler Func                        : 请选择处理函数
                 </el-form-item>
 
                 <template v-if="selectedType">
-                  <el-form-item>
-                    <el-image class="data-source-logo" :class="[`logo-${selectedType}`]" :src="C.DATE_SOURCE_MAP.get(selectedType).logo"></el-image>
+                  <el-form-item v-if="C.DATE_SOURCE_MAP.get(selectedType).logo">
+                    <el-image
+                      class="data-source-logo"
+                      :class="[`logo-${selectedType}`]"
+                      :src="C.DATE_SOURCE_MAP.get(selectedType).logo">
+                    </el-image>
                   </el-form-item>
 
                   <el-form-item v-if="C.DATE_SOURCE_MAP.get(selectedType).tips">
@@ -155,6 +162,11 @@ Please select handler Func                        : 请选择处理函数
                     </el-select>
                   </el-form-item>
 
+                  <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
+                    <el-input :placeholder="$t('Source of data')"
+                      v-model="form.configJSON.source"></el-input>
+                  </el-form-item>
+
                   <el-form-item :label="$t('Database')" v-if="hasConfigField(selectedType, 'database')" prop="configJSON.database">
                     <el-input :placeholder="$t('Database to connect')"
                       v-model="form.configJSON.database"></el-input>
@@ -196,9 +208,8 @@ Please select handler Func                        : 请选择处理函数
                       v-model="form.configJSON.clientId"></el-input>
                   </el-form-item>
 
-                  <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers') && selectedType === 'mqtt'"
-                    :label="$t('Topic/Handler')">
-                    <InfoBlock type="info" :title="`${$t('Shared subscription can avoid duplicated message:')}\n${$t('1. $share/GROUP/TOPIC in MQTTv5')}\n${$t('2. $queue/TOPIC in EMQX')}`"></InfoBlock>
+                  <el-form-item :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
+                    <el-divider></el-divider>
                   </el-form-item>
 
                   <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
@@ -577,6 +588,13 @@ export default {
             enum   : ['http', 'https'],
           },
         ],
+        'configJSON.source': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input source'),
+            required: false,
+          },
+        ],
         'configJSON.database': [
           {
             trigger : 'change',
@@ -706,8 +724,9 @@ export default {
 .data-source-logo img {
   width: auto;
 }
-.data-source-logo.logo-dataflux-dataway {
-  height: 60px !important;
+.data-source-logo.logo-df_dataway {
+}
+.data-source-logo.logo-df_datakit {
 }
 .data-source-logo.logo-influxdb {
   height: 70px !important;

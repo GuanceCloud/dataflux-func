@@ -78,11 +78,10 @@ else:
 
 PROJECT_ROOT = os.path.join(sys.path[0], '../server')
 
-SERVER_TRANSLATE_ROOT          = os.path.join(PROJECT_ROOT, 'translates')
-SERVER_EXTRA_TRANSLATE_KEYS    = os.path.join(PROJECT_ROOT, 'translates/extra-translate-keys.yaml')
-SERVER_PRIVILEGE_KEYS          = os.path.join(PROJECT_ROOT, 'privilege.yaml')
-SERVER_CONST_DISPLAY_TEXT_KEYS = os.path.join(PROJECT_ROOT, 'const.yaml')
-SERVER_TEMPLATE_ROOT           = os.path.join(PROJECT_ROOT, 'views')
+SERVER_TRANSLATE_ROOT       = os.path.join(PROJECT_ROOT, 'translates')
+SERVER_EXTRA_TRANSLATE_KEYS = os.path.join(PROJECT_ROOT, 'translates/extra-translate-keys.yaml')
+SERVER_PRIVILEGE_KEYS       = os.path.join(PROJECT_ROOT, 'privilege.yaml')
+SERVER_TEMPLATE_ROOT        = os.path.join(PROJECT_ROOT, 'views')
 
 # TRANSLATE_SYNTAX_PATTEN = re.compile("""__\((\'|\")(.*?)(\'|\")(\)|\,)""")
 # TRANSLATE_SYNTAX_PATTEN = re.compile("""(__\(\'(.*?)\'(\)|\,))|(__\(\"(.*?)\"(\)|\,))""")
@@ -160,24 +159,6 @@ def get_privilege_keys():
                 textMap[info.get('desc')] = None
 
     print('\n[Privilege Keys]')
-    print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '')) for k, v in textMap.items()]))
-    return textMap
-
-def get_const_display_text_keys():
-    """
-    Get extra translate keys
-    """
-    textMap = {}
-    with open(SERVER_CONST_DISPLAY_TEXT_KEYS, 'r', **FILE_OPEN_KWARGS) as _f:
-        file_data = _f.read()
-        file_json = yaml.load(file_data)
-
-        # Get CONST display texts
-        for const_set, const_dict in file_json.get('displayText', {}).items():
-            for k, displayText in const_dict.items():
-                textMap[displayText] = None
-
-    print('\n[CONST Display Text Keys]')
     print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '')) for k, v in textMap.items()]))
     return textMap
 
@@ -275,7 +256,6 @@ def main():
     all_texts = {}
     all_texts.update(get_extra_translate_keys())
     all_texts.update(get_privilege_keys())
-    all_texts.update(get_const_display_text_keys())
 
     for p in get_all_template_paths():
         all_texts.update(get_text_map(p))

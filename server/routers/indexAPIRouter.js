@@ -15,10 +15,6 @@ routeLoader.load(ROUTE.indexAPI.clientConfig, [
   indexAPICtrl.clientConfig,
 ]);
 
-routeLoader.load(ROUTE.indexAPI.serverConst, [
-  indexAPICtrl.serverConst,
-]);
-
 routeLoader.load(ROUTE.indexAPI.imageInfo, [
   indexAPICtrl.imageInfo,
 ]);

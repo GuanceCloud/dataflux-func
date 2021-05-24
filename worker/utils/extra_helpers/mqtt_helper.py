@@ -70,7 +70,7 @@ class MQTTHelper(object):
             if rc == 0:
                 break
 
-            self.logger.warning('[MQTT] Try to reconnect to broker')
+            self.logger.warning('[MQTT] Reconnect...')
             self.client.reconnect()
 
         else:

@@ -61,7 +61,7 @@ class PostgreSQLHelper(object):
 
     def start_trans(self):
         if not self.skip_log:
-            self.logger.debug('[POSTGRESQL TRANS] START')
+            self.logger.debug('[POSTGRESQL] Trans START')
 
         conn = self.client.connection()
         cur  = conn.cursor()
@@ -78,7 +78,7 @@ class PostgreSQLHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[POSTGRESQL TRANS] COMMIT')
+            self.logger.debug('[POSTGRESQL] Trans COMMIT')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -93,7 +93,7 @@ class PostgreSQLHelper(object):
             return
 
         if not self.skip_log:
-            self.logger.debug('[POSTGRESQL TRANS] ROLLBACK')
+            self.logger.debug('[POSTGRESQL] Trans ROLLBACK')
 
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
@@ -107,7 +107,7 @@ class PostgreSQLHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[POSTGRESQL TRANS] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[POSTGRESQL] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -125,7 +125,7 @@ class PostgreSQLHelper(object):
         formatted_sql = format_sql(sql, sql_params)
 
         if not self.skip_log:
-            self.logger.debug('[POSTGRESQL] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+            self.logger.debug('[POSTGRESQL] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         conn = None
         cur  = None

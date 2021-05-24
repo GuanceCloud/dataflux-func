@@ -18,6 +18,12 @@
 
           <el-table-column label="函数">
             <template slot-scope="scope">
+              <FuncInfo
+                :id="scope.row.id"
+                :title="scope.row.title"
+                :name="scope.row.name"
+                :kwargsJSON="scope.row.kwargsJSON"></FuncInfo>
+
               <strong class="func-title">{{ scope.row.title || scope.row.name }}</strong>
 
               <br>
@@ -26,7 +32,7 @@
               <GotoFuncButton :funcId="scope.row.id"></GotoFuncButton>
 
               <br>
-              <span class="text-info">&#12288;调用参数:</span>
+              <span class="text-info">&#12288;参数列表:</span>
               <div class="func-kwargs-area">
                 <span v-if="T.isNothing(scope.row.kwargsJSON)" class="text-info">无参数</span>
                 <template v-else>

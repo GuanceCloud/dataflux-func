@@ -27,7 +27,6 @@ MAP_CONST.prototype.get = function(key) {
 };
 
 // 数据源
-import logo_df_dataway    from '@/assets/img/logo-dataflux-dataway.png'
 import logo_influxdb      from '@/assets/img/logo-influxdb.png'
 import logo_mysql         from '@/assets/img/logo-mysql.png'
 import logo_memcached     from '@/assets/img/logo-memcached.png'
@@ -47,14 +46,30 @@ export default {
   },
   get DATE_SOURCE() {
     return [
+      // TODO: 尚未实装
+      // {
+      //   key           : 'df_workspace',
+      //   name          : 'Worksapce',
+      //   fullName      : 'DataFlux Workspace (HTTP)',
+      //   logo          : null,
+      //   tagType       : 'info',
+      //   debugSupported: false,
+      //   sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.query('M::some_measurement:(value)')`,
+      //   configFields: {
+      //     host    : { default: null, isRequired: true },
+      //     port    : { default: 9527, isRequired: true },
+      //     protocol: { default: 'http' },
+      //     token   : { default: null, isRequired: true },
+      //   },
+      // },
       {
         key           : 'df_dataway',
         name          : 'DataWay',
         fullName      : 'DataFlux DataWay (HTTP)',
-        logo          : logo_df_dataway,
+        logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(\n    measurement='some_measurement',\n    tags={'name': 'Tom'},\n    fields={'value': 10})`,
+        sampleCode    : `src = DFF.SRC('{0}', token='DATAWAY_TOKEN')\ndw_res = src.write_point(measurement='some_measurement', tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
           port     : { default: 9528, isRequired: true },
@@ -62,6 +77,21 @@ export default {
           token    : { default: null },
           accessKey: { default: null },
           secretKey: { default: null },
+        },
+      },
+      {
+        key           : 'df_datakit',
+        name          : 'DataKit',
+        fullName      : 'DataFlux DataKit (HTTP)',
+        logo          : null,
+        tagType       : 'info',
+        debugSupported: false,
+        sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.write_metric(measurement='some_measurement',tags={'name': 'Tom'},fields={'value': 10})`,
+        configFields: {
+          host     : { default: null, isRequired: true },
+          port     : { default: 9529, isRequired: true },
+          protocol : { default: 'http' },
+          source   : { default: 'dataflux_func' },
         },
       },
       {
@@ -117,10 +147,11 @@ export default {
         debugSupported: true,
         sampleCode    : `src = DFF.SRC('{0}')\ndb_res = src.query('GET', 'some_key')`,
         configFields: {
-          host    : { default: null, isRequired: true },
-          port    : { default: 6379 },
-          database: { default: '0', isRequired: true },
-          password: { default: null },
+          host         : { default: null, isRequired: true },
+          port         : { default: 6379 },
+          database     : { default: '0', isRequired: true },
+          password     : { default: null },
+          topicHandlers: { default: [] },
         },
       },
       {
@@ -273,7 +304,7 @@ export default {
           user         : { default: null },
           password     : { default: null },
           clientId     : { default: null },
-          topicHandlers: { default: [{ topic: '$share/GROUP/TOPIC', funcId: null }] },
+          topicHandlers: { default: [{ topic: 'TOPIC', funcId: null }] },
         },
       },
     ];
@@ -415,7 +446,7 @@ export default {
     return new MAP_CONST(this.TASK_STATUS);
   },
 
-  // 总揽业务实体
+  // 总览业务实体
   get OVERVIEW_ENTITY() {
     return [
       {

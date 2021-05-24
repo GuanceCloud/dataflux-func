@@ -1,7 +1,16 @@
+<i18n locale="en" lang="yaml">
+parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
+Tags   : 标签
+Add Tag: 添加标签
+
 Add Crontab Config   : 添加自动触发配置
 Modify Crontab Config: 修改自动触发配置
 Delete Crontab Config: 删除自动触发配置
+
+parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 </i18n>
 
 <template>
@@ -27,11 +36,24 @@ Delete Crontab Config: 删除自动触发配置
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
-                <el-form-item label="调用参数" prop="funcCallKwargsJSON">
+                <el-form-item label="参数指定" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
-                  <InfoBlock title="JSON格式的函数参数（作为 **kwargs 传入）"></InfoBlock>
+                  <InfoBlock title="JSON格式的参数（**kwargs）"></InfoBlock>
+                  <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Tags')" prop="tagsJSON">
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-input v-if="showAddTag" ref="newTag"
+                    v-model="newTag"
+                    size="mini"
+                    @keyup.enter.native="addTag"
+                    @blur="addTag"></el-input>
+                  <el-button v-else
+                    type="text"
+                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -191,6 +213,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
+        nextForm.tagsJSON           = nextForm.tagsJSON || [];
         this.form = nextForm;
 
         if (this.data.crontab) {
@@ -332,13 +355,9 @@ export default {
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
-      let selectedNodes = this.$refs.funcCascader.getCheckedNodes(true);
-      if (selectedNodes.length <= 0) return;
-
-      let node = selectedNodes[0];
-
       // 自动填充调用参数
-      let parameters = node.data.argsJSON || Object.keys(node.data.kwargsJSON);
+      let parameters = this.funcMap[funcId].argsJSON
+                    || Object.keys(this.funcMap[funcId].kwargsJSON);
 
       let example = {};
       parameters.forEach(p => {
@@ -350,6 +369,23 @@ export default {
       });
 
       this.form.funcCallKwargsJSON = JSON.stringify(example, null, 2);
+    },
+    removeTag(tag) {
+      this.form.tagsJSON.splice(this.form.tagsJSON.indexOf(tag), 1);
+    },
+    openAddTagInput() {
+      this.showAddTag = true;
+      this.$nextTick(_ => {
+        this.$refs.newTag.$refs.input.focus();
+      });
+    },
+    addTag() {
+      let newTag = this.newTag;
+      if (newTag) {
+        this.form.tagsJSON.push(newTag);
+      }
+      this.showAddTag = false;
+      this.newTag     = '';
     },
     autoFixCrontab() {
       let sortFunc = (a, b) => {
@@ -397,7 +433,6 @@ export default {
       }
       return list;
     },
-
   },
   computed: {
     mode() {
@@ -541,9 +576,13 @@ export default {
       funcMap     : {},
       funcCascader: [],
 
+      showAddTag : false,
+      newTag     : '',
+
       form: {
         funcId            : null,
         funcCallKwargsJSON: null,
+        tagsJSON          : [],
         expireTime        : null,
         note              : null,
         // crontab 单独处理

@@ -23,6 +23,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     funcCallKwargsJSON  : 'json',
+    tagsJSON            : 'json',
     throttlingJSON      : 'json',
     showInDoc           : 'boolean',
     isDisabled          : 'boolean',
@@ -159,6 +160,12 @@ function _prepareData(data) {
     } else {
       data.funcCallKwargsJSON = '{}';
     }
+  }
+
+  if (data.tagsJSON && 'object' === typeof data.tagsJSON) {
+    data.tagsJSON = toolkit.noDuplication(data.tagsJSON);
+    data.tagsJSON.sort();
+    data.tagsJSON = JSON.stringify(data.tagsJSON);
   }
 
   if (data.expireTime) {

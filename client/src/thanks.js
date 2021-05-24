@@ -9,7 +9,7 @@ let THANKS_LIST = [
     desc: '提出了整个idea，并设计了@DFF.API的核心使用方式',
   },
   {
-    name: '路宏鸣',
+    name: '陆宏鸣',
     desc: '初期提供了大量技术实现方面的帮助',
   },
   {

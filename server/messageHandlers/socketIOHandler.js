@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 var auth    = require('../utils/auth');
 
 var socketIOServerHelper = require('../utils/extraHelpers/socketIOServerHelper');
-var datafluxFuncAPICtrl = require('../controllers/datafluxFuncAPICtrl');
+var mainAPICtrl = require('../controllers/mainAPICtrl');
 
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
 
@@ -229,24 +229,24 @@ module.exports = function(app, server) {
         function(asyncCallback) {
           if (!conflictSource) return asyncCallback();
 
-          var cacheKey = toolkit.getCacheKey('cache', 'instanceConflict', conflictSource);
+          var cacheKey = toolkit.getCacheKey('cache', 'clientConflict', conflictSource);
           async.series([
             function(innerCallback) {
               if (data.checkOnly) return innerCallback();
 
-              app.locals.cacheDB.setexnx(cacheKey, CONFIG._INSTANCE_CONFLICT_EXPIRES, data.instanceId, innerCallback);
+              app.locals.cacheDB.setexnx(cacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, data.conflictId, innerCallback);
             },
             function(innerCallback) {
               app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
                 if (err) return innerCallback(err);
 
                 retData = {
-                  instanceId: cacheRes,
-                  isConflict: cacheRes && data.instanceId !== cacheRes,
+                  conflictId: cacheRes,
+                  isConflict: cacheRes && data.conflictId !== cacheRes,
                 }
 
-                if (data.instanceId === cacheRes && !data.checkOnly) {
-                  app.locals.cacheDB.expire(cacheKey, CONFIG._INSTANCE_CONFLICT_EXPIRES);
+                if (data.conflictId === cacheRes && !data.checkOnly) {
+                  app.locals.cacheDB.expire(cacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES);
                 }
 
                 return innerCallback();

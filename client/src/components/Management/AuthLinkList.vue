@@ -1,8 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Auth Link              : 授权链接
 New Auth Link          : 新建授权链接
-Normal                 : 常规
-Statistic              : 统计信息
+Info                   : 信息
+Recent Response        : 响应
 Show hidden            : 显示隐藏项
 Disable Auth Link      : 禁用授权链接
 Enable Auth Link       : 启用授权链接
@@ -10,7 +10,8 @@ Show Auth Link in doc  : 在文档中显示授权链接
 Hide Auth Link from doc: 在文档中隐藏授权链接
 Delete Auth Link       : 删除授权链接
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索授权链接（ID、标签、备注），函数（ID、参数、标题、描述、标签）
+Check to show the contents created by outside systems                       : 勾选后展示由其他系统自动创建的内容
 </i18n>
 
 <template>
@@ -21,9 +22,14 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
         <h1>
           {{ $t('Auth Link') }}
           <div class="header-control">
-            <el-switch v-model="showCountCost" :inactive-text="$t('Normal')" :active-text="$t('Statistic')"></el-switch>
+            <el-switch v-model="showCountCost" :inactive-text="$t('Info')" :active-text="$t('Recent Response')"></el-switch>
             &#12288;
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
+            </FuzzySearchInput>
+
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
@@ -59,45 +65,28 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 
           <el-table-column label="函数">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
-
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-                <GotoFuncButton :funcId="scope.row.func_id"></GotoFuncButton>
-
-                <br>
-                <span class="text-info">&#12288;调用参数:</span>
-                <div class="func-kwargs-area">
-                  <span v-if="T.isNothing(scope.row.funcCallKwargsJSON)" class="text-info">无参数</span>
-                  <template v-else>
-                    <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.funcCallKwargsJSON">
-                      <code class="func-kwargs-name">{{ name }}</code>
-                      <code class="func-kwargs-equal">=</code>
-                      <code class="func-kwargs-value" v-if="value === 'FROM_PARAMETER'">调用方指定</code>
-                      <el-tooltip placement="top" v-else>
-                        <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
-                        <code class="func-kwargs-value">固定值</code>
-                      </el-tooltip>
-                      <span v-if="index < T.jsonLength(scope.row.funcCallKwargsJSON) - 1">,&nbsp;</span>
-                    </div>
-                  </template>
-                </div>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-              </template>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :name="scope.row.func_name"
+                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
                 <span class="text-info">&#12288;授权链接ID:</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+
+                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
+                  <br>
+                  <span class="text-info">&#12288;标签:</span>
+                  <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
+                  <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
+                </template>
               </div>
             </template>
           </el-table-column>
 
           <template v-if="!showCountCost">
-            <el-table-column label="有效期至" width="200">
+            <el-table-column label="有效期至" width="160">
               <template slot-scope="scope">
                 <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
                 <template v-else>
@@ -109,7 +98,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="限流策略" width="200">
+            <el-table-column label="限流策略" width="160">
               <template slot-scope="scope">
                 <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
                 <template v-else>
@@ -120,7 +109,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="状态" width="200">
+            <el-table-column label="状态" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
                 <span v-else class="text-good">已启用</span>
@@ -130,7 +119,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="备注" width="200">
+            <el-table-column label="备注" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
               </template>
@@ -138,7 +127,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
           </template>
 
           <template v-else>
-            <el-table-column label="近日调用" width="200">
+            <el-table-column label="近日调用" width="160">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
                   <code>{{ ['今天', '昨天', '前天'][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> 次<br>
@@ -146,7 +135,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应速度" width="200">
+            <el-table-column label="响应速度" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
@@ -158,7 +147,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应速度分布" width="200">
+            <el-table-column label="分布" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">暂无信息</span>
                 <template v-else>
@@ -169,14 +158,14 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
               </template>
             </el-table-column>
 
-            <el-table-column label="近期响应状态分布" width="200">
+            <el-table-column label="执行结果" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">暂无信息</span>
                 <template v-else>
                   <template v-for="opt, k in RUNNING_STATUS_MAP">
                     <template v-if="scope.row.recentRunningStatus[k]">
                       <code>{{ opt.title }}:</code>
-                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code>%<br>
+                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code> %<br>
                     </template>
                   </template>
                 </template>
@@ -203,8 +192,7 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)"
-        class="paging-area" height="45px">
+      <el-footer v-if="!T.isNothing(data)" class="paging-area">
         <el-pagination
           background
           @size-change="T.changePageSize"
@@ -231,12 +219,14 @@ Check to show the contents created by outside systems: 勾选后展示由其他�
 <script>
 import FuzzySearchInput from '@/components/FuzzySearchInput'
 import APIExampleDialog from '@/components/APIExampleDialog'
+import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'AuthLinkList',
   components: {
     FuzzySearchInput,
     APIExampleDialog,
+    FuncInfo,
   },
   watch: {
     $route: {
@@ -382,7 +372,7 @@ export default {
 
       let funcCallKwargsJSON = {};
       for (let k in d.funcCallKwargsJSON) if (d.funcCallKwargsJSON.hasOwnProperty(k)) {
-        if (d.funcCallKwargsJSON[k] === 'FROM_PARAMETER') {
+        if (this.common.isFuncArgumentPlaceholder(d.funcCallKwargsJSON[k])) {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
@@ -468,33 +458,13 @@ export default {
 </script>
 
 <style scoped>
-.func-title {
-  font-size: 16px;
-}
-.func-kwargs-area {
-  padding-left: 25px;
-}
-.func-kwargs-block {
-  display: inline-block;
-}
-.func-kwargs-name {
-  font-style: italic;
-  color: #ff6600;
-  font-weight: bold;
-}
-.func-kwargs-equal {
-  color: red;
-}
-pre.func-kwargs-value {
-  padding: 0;
-  margin: 0;
-}
 code.count-cost-value {
   display: inline-block;
-  width: 60px;
+  width: 40px;
   text-align: right;
   border-bottom: 1px solid grey;
   line-height: 14px;
+  font-size: 12px;
 }
 </style>
 

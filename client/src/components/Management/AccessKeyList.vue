@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Delete Access Key: 删除 AccessKey
+
+Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
 </i18n>
 
 <template>
@@ -10,7 +12,11 @@ Delete Access Key: 删除 AccessKey
         <h1>
           AccessKey 列表
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search AccessKey(ID, name)')">
+            </FuzzySearchInput>
+
             <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
               <i class="fa fa-fw fa-plus"></i>
               新建AccessKey
@@ -74,8 +80,7 @@ Delete Access Key: 删除 AccessKey
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)"
-        class="paging-area" height="45px">
+      <el-footer v-if="!T.isNothing(data)" class="paging-area">
         <el-pagination
           background
           @size-change="T.changePageSize"

@@ -183,7 +183,8 @@ exports.modifyMany = function(req, res, next) {
     function(asyncCallback) {
       async.eachSeries(modifiedIds, function(id, eachCallback) {
         var opt = { funcCallKwargs: 'merge' };
-        _modify(res.locals, id, data, opt, eachCallback);
+        var _data = toolkit.jsonCopy(data);
+        _modify(res.locals, id, _data, opt, eachCallback);
       }, asyncCallback);
     },
   ], function(err) {

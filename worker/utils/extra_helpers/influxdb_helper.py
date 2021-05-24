@@ -57,11 +57,11 @@ class InfluxDBHelper(object):
             raise Exception(str(e))
 
     def switch_database(self, database):
-        self.logger.debug('[INFLUXDB] Switch DB: Database=`{}`'.format(database))
+        self.logger.debug('[INFLUXDB] Switch DB `{}`'.format(database))
         self.client.switch_database(database)
 
     def write_point(self, measurement, fields, tags=None, timestamp=None, database=None):
-        self.logger.debug('[INFLUXDB] Write: measurement=`{}`'.format(measurement))
+        self.logger.debug('[INFLUXDB] Write `{}`'.format(measurement))
 
         point = {
             'measurement': measurement,
@@ -90,7 +90,7 @@ class InfluxDBHelper(object):
         if not points:
             return
 
-        self.logger.debug('[INFLUXDB] Write: {} points'.format(len(points)))
+        self.logger.debug('[INFLUXDB] Write may ({} points)'.format(len(points)))
 
         try:
             db_res = self.client.write_points(points, database=database)
@@ -118,7 +118,7 @@ class InfluxDBHelper(object):
 
         formatted_query = formatted_query.strip()
 
-        self.logger.debug('[INFLUXDB] {}'.format(re.sub('\s+', ' ', formatted_query, flags=re.M)))
+        self.logger.debug('[INFLUXDB] Query {}'.format(re.sub('\s+', ' ', formatted_query, flags=re.M)))
 
         try:
             db_res = self.client.query(sql, bind_params=bind_params, database=database)
@@ -146,7 +146,7 @@ class InfluxDBHelper(object):
     def query2(self, sql, sql_params=None, database=None, dict_output=False):
         formatted_sql = format_sql(sql, sql_params)
 
-        self.logger.debug('[INFLUXDB] {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+        self.logger.debug('[INFLUXDB] Query2 {}'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
 
         try:
             db_res = self.client.query(formatted_sql,database=database)

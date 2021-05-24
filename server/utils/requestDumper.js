@@ -47,9 +47,8 @@ exports.dumpRequestFrom = function(req, res, next) {
 
 exports.dumpRequestBody = function(req, res, next) {
   var dumpList = [
-    toolkit.strf('{0}=`{1}`', 'body',  JSON.stringify(req.body)),
+    toolkit.strf('{0}=`{1}`', 'body', toolkit.jsonDumps(req.body)),
   ];
-
 
   if (req.files) {
     req.files.forEach(function(f) {
@@ -70,7 +69,7 @@ exports.dumpUserInformation = function(req, res, next) {
     );
 
   } else {
-    res.locals.logger.info('{0} {1}({2})/{3}({4})',
+    res.locals.logger.info('{0} {1}({2})',
       '[REQUEST USER]',
       res.locals.user.name,
       res.locals.user.id,

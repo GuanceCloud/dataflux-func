@@ -144,7 +144,7 @@ function startApplication() {
   });
 
   // 集成登录认证
-  app.use(require('./controllers/datafluxFuncAPICtrl').integratedAuthMid);
+  app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
 
   // Auth
   app.use(require('./middlewares/builtinAuthMid').byXAuthToken);
@@ -186,8 +186,8 @@ function startApplication() {
 
   /***** DataFlux Func *****/
 
-  require('./routers/datafluxFuncAPIRouter');
-  require('./routers/datafluxFuncPageRouter');
+  require('./routers/mainAPIRouter');
+  require('./routers/mainPageRouter.js');
 
   require('./routers/scriptSetAPIRouter');
   require('./routers/scriptAPIRouter');
@@ -212,7 +212,7 @@ function startApplication() {
   require('./routers/crontabTaskInfoAPIRouter');
   require('./routers/batchTaskInfoAPIRouter');
 
-  require('./routers/dataProcessorTaskResultAPIRouter');
+  require('./routers/datafluxFuncTaskResultAPIRouter');
 
   require('./routers/operationRecordAPIRouter');
 
@@ -276,7 +276,7 @@ function startApplication() {
     // Set status code
     err.status = parseInt(err.status || 500);
     res.status(err.status);
-    res.locals._responseStatus = err.status;
+    res.locals.responseStatus = err.status;
 
     if (err.status < 599) {
       // Print error
@@ -321,7 +321,7 @@ function startApplication() {
           url   : req.originalUrl,
         }
         if (!toolkit.isNothing(req.body)) {
-          errorRet.reqDump.body = req.body;
+          errorRet.reqDump.body = JSON.parse(toolkit.jsonDumps(req.body));
         }
         return res.locals.sendJSON(errorRet);
         break;
@@ -365,7 +365,6 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
-  require('./messageHandlers/mqttHandler')(app, server);
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,
@@ -379,5 +378,8 @@ function startApplication() {
 
     // Non-request code here...
     require('./appInit').afterAppCreated(app, server);
+
+    // Sub client
+    require('./sub').runListener(app);
   });
 }

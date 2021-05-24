@@ -1,4 +1,7 @@
+import store from './store'
 import * as T from '@/toolkit'
+
+let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
 export async function getFuncList() {
   // 获取关联数据
@@ -16,6 +19,7 @@ export async function getFuncList() {
   apiRes.data.forEach(d => {
     scriptSetMap[d.id] = {
       label   : d.title || d.id,
+      value   : d.id,
       children: [],
     };
   });
@@ -30,6 +34,7 @@ export async function getFuncList() {
   apiRes.data.forEach(d => {
     scriptMap[d.id] = {
       label   : d.title || d.id,
+      value   : d.id,
       children: [],
     };
 
@@ -67,4 +72,18 @@ export async function getFuncList() {
   }
 
   return result;
+}
+
+export function isFuncArgumentPlaceholder(v) {
+  for (let i = 0; i < FUNC_ARGUMENT_PLACEHOLDERS.length; i++) {
+    if (v === FUNC_ARGUMENT_PLACEHOLDERS[i]) return true;
+  }
+  return false;
+}
+
+export function containsFuncArgumentPlaceholder(s) {
+  for (let i = 0; i < FUNC_ARGUMENT_PLACEHOLDERS.length; i++) {
+    if (s.indexOf(FUNC_ARGUMENT_PLACEHOLDERS[i]) >= 0) return true;
+  }
+  return false;
 }

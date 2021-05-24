@@ -16,12 +16,6 @@ Password   : 修改密码
             :router="true"
             :unique-opened="true"
             :default-active="$route.path">
-            <el-menu-item index="/setting/clear-cache">
-              <span>
-                <i class="fa fa-fw fa-refresh"></i>
-                {{ $t('Cache Clear') }}
-              </span>
-            </el-menu-item>
             <el-menu-item index="/setting/code-editor-setup">
               <span>
                 <i class="fa fa-fw fa-edit"></i>
@@ -38,6 +32,12 @@ Password   : 修改密码
               <span>
                 <i class="fa fa-fw fa-lock"></i>
                 {{ $t('Password') }}
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/setting/clear-cache">
+              <span>
+                <i class="fa fa-fw fa-refresh"></i>
+                {{ $t('Cache Clear') }}
               </span>
             </el-menu-item>
           </el-menu>

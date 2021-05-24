@@ -11,7 +11,6 @@ var request    = require('request');
 var LRU        = require('lru-cache');
 var yaml       = require('js-yaml');
 var sortedJSON = require('sorted-json');
-var request    = require('request');
 var moment     = require('moment');
 var byteSize   = require('byte-size');
 
@@ -24,22 +23,21 @@ var toolkit = require('../utils/toolkit');
 var urlFor  = require('../utils/routeLoader').urlFor;
 var auth    = require('../utils/auth');
 
-var scriptSetMod               = require('../models/scriptSetMod');
-var scriptMod                  = require('../models/scriptMod');
-var funcMod                    = require('../models/funcMod');
-var dataSourceMod              = require('../models/dataSourceMod');
-var envVariableMod             = require('../models/envVariableMod');
-var authLinkMod                = require('../models/authLinkMod');
-var crontabConfigMod           = require('../models/crontabConfigMod');
-var batchMod                   = require('../models/batchMod');
-var dataProcessorTaskResultMod = require('../models/dataProcessorTaskResultMod');
-var operationRecordMod         = require('../models/operationRecordMod');
-var fileServiceMod             = require('../models/fileServiceMod');
-
-var funcAPICtrl = require('./funcAPICtrl');
+var scriptSetMod              = require('../models/scriptSetMod');
+var scriptMod                 = require('../models/scriptMod');
+var funcMod                   = require('../models/funcMod');
+var dataSourceMod             = require('../models/dataSourceMod');
+var envVariableMod            = require('../models/envVariableMod');
+var authLinkMod               = require('../models/authLinkMod');
+var crontabConfigMod          = require('../models/crontabConfigMod');
+var batchMod                  = require('../models/batchMod');
+var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
+var operationRecordMod        = require('../models/operationRecordMod');
+var fileServiceMod            = require('../models/fileServiceMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
-var dataway = require('./dataway');
+var funcAPICtrl  = require('./funcAPICtrl');
+var dataway      = require('./dataway');
 
 var AUTH_LINK_PREFIX = authLinkMod.TABLE_OPTIONS.alias + '-';
 var BATCH_PREFIX     = batchMod.TABLE_OPTIONS.alias    + '-';
@@ -129,6 +127,13 @@ function _getFuncById(locals, funcId, callback) {
 
     return callback(null, func);
   });
+};
+
+function _isFuncArgumentPlaceholder(v) {
+  for (var i = 0; i < CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST.length; i++) {
+    if (CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST[i] === v) return true;
+  }
+  return false;
 };
 
 function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions, callback) {
@@ -439,21 +444,23 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
   // 合并请求参数
   var mergedFuncCallKwargs = toolkit.jsonCopy(inputedFuncCallKwargs);
+
   for (var k in baseFuncCallKwargs) if (baseFuncCallKwargs.hasOwnProperty(k)) {
     var v = baseFuncCallKwargs[k];
 
-    // 检查固定参数是否存在非法传递
-    if (v !== 'FROM_PARAMETER') {
-      if (k in mergedFuncCallKwargs && mergedFuncCallKwargs[k] !== v) {
-        throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
-          kwargsField: k,
-          kwargsValue: mergedFuncCallKwargs[k],
-        });
-      }
+    // 参数占位符，不作处理
+    if (_isFuncArgumentPlaceholder(v)) continue;
 
-      // 填入固定参数
-      mergedFuncCallKwargs[k] = v;
+    // 已经指定了固定参数值的，不允许额外传递
+    if (k in mergedFuncCallKwargs) {
+      throw new E('EClientBadRequest', 'Found unexpected function kwargs field', {
+        kwargsField: k,
+        kwargsValue: mergedFuncCallKwargs[k],
+      });
     }
+
+    // 填入固定参数
+    mergedFuncCallKwargs[k] = v;
   }
 
   return mergedFuncCallKwargs;
@@ -608,7 +615,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     var celery = celeryHelper.createHelper(locals.logger);
 
     // 任务名
-    var name = 'DataFluxFunc.runner';
+    var name = 'Main.FuncRunner';
 
     // 生成Celery任务的kwargs, options
     var taskOptions = {
@@ -718,7 +725,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           ret = toolkit.initRet({ result: celeryRes.retval });
           if (funcCallOptions.saveResult) {
             ret.taskId    = celeryRes.id;
-            ret.resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: celeryRes.id}});
+            ret.resultURL = urlFor('mainAPI.getFuncResult', {query: {taskId: celeryRes.id}});
           }
 
           return asyncCallback();
@@ -851,7 +858,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       var ret = null;
 
       if (funcCallOptions.saveResult) {
-        var resultURL = urlFor('datafluxFuncAPI.getFuncResult', {query: {taskId: taskId}});
+        var resultURL = urlFor('mainAPI.getFuncResult', {query: {taskId: taskId}});
 
         ret = toolkit.initRet({
           taskId   : taskId,
@@ -1467,7 +1474,7 @@ exports.callFuncDraft = function(req, res, next) {
     if (err) return next(err);
 
     // 函数调用参数
-    var name = 'DataFluxFunc.debugger';
+    var name = 'Main.FuncDebugger';
     var kwargs = {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
@@ -1542,8 +1549,8 @@ exports.getFuncResult = function(req, res, next) {
   var returnType = req.query.returnType || 'raw';
   var unfold     = req.query.unfold;
 
-  var dataProcessorTaskResultModel = dataProcessorTaskResultMod.createModel(res.locals);
-  dataProcessorTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
+  var datafluxFuncTaskResultModel = datafluxFuncTaskResultMod.createModel(res.locals);
+  datafluxFuncTaskResultModel.getWithCheck(taskId, null, function(err, dbRes) {
     if (err) return next(err);
 
     var result = dbRes.retvalJSON || null;
@@ -1625,7 +1632,7 @@ exports.getAuthLinkFuncList = function(req, res, next) {
     var funcList = [];
     dbRes.forEach(function(d) {
       funcList.push({
-        url: urlFor('datafluxFuncAPI.callAuthLinkByGet', {
+        url: urlFor('mainAPI.callAuthLinkByGet', {
           params: { id: d.id },
         }),
 
@@ -1658,6 +1665,7 @@ exports.getSystemConfig = function(req, res, next) {
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
+    PYPI_MIRROR       : CONFIG.PYPI_MIRROR,
 
     _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
     _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
@@ -1667,6 +1675,8 @@ exports.getSystemConfig = function(req, res, next) {
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
     _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
+
+    _FUNC_ARGUMENT_PLACEHOLDER_LIST: CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST,
 
     _FUNC_TASK_DEBUG_TIMEOUT      : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
     _FUNC_TASK_DEFAULT_TIMEOUT    : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,
@@ -1747,7 +1757,7 @@ exports.integratedSignIn = function(req, res, next) {
   var password = req.body.signIn.password;
 
   // 函数调用参数
-  var name = 'DataFluxFunc.runner';
+  var name = 'Main.FuncRunner';
   var kwargs = {
     funcId        : funcId,
     funcCallKwargs: { username: username, password: password },
@@ -1877,7 +1887,7 @@ exports.integratedAuthMid = function(req, res, next) {
   if (!xAuthToken) return next();
 
   if (CONFIG.MODE === 'dev') {
-    res.locals.logger.debug('[MID] IN datafluxFuncAPICtrl.integratedAuthMid');
+    res.locals.logger.debug('[MID] IN mainAPICtrl.integratedAuthMid');
   }
 
   res.locals.user = auth.createUserHandler();
@@ -1999,7 +2009,7 @@ exports.queryPythonPackages = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 从阿里云获取
+    // 从网络获取
     function(asyncCallback) {
       if (allPackages) return asyncCallback();
 
@@ -2007,7 +2017,7 @@ exports.queryPythonPackages = function(req, res, next) {
         forever: true,
         timeout: 3 * 1000,
         method : 'GET',
-        url    : 'https://mirrors.aliyun.com/pypi/web/simple/',
+        url    : CONFIG.PYPI_MIRROR,
       };
       request(requestOptions, function(err, _res, _body) {
         if (err) return asyncCallback(err);
@@ -2040,7 +2050,16 @@ exports.queryPythonPackages = function(req, res, next) {
       matchedPackages = allPackages;
 
     } else {
-      matchedPackages = allPackages.reduce(function(acc, x) {
+      matchedPackages = allPackages
+      // 只返回包含子内容的
+      .reduce(function(acc, x) {
+        if (x.indexOf(query) >= 0) {
+          acc.push(x);
+        }
+        return acc;
+      }, [])
+      // 分别计算相似度
+      .reduce(function(acc, x) {
         let item = {
           name   : x,
           similar: toolkit.stringSimilar(query, x.toLowerCase()),
@@ -2049,15 +2068,17 @@ exports.queryPythonPackages = function(req, res, next) {
         acc.push(item);
         return acc;
       }, [])
+      // 根据相似度排序
       .sort(function(a, b) {
         return b.similar - a.similar;
       })
+      // 提取名称
       .map(function(x) {
         return x.name;
-      });
+      })
+      // 取TOP20
+      .slice(0, limit);
     }
-
-    matchedPackages = matchedPackages.slice(0, limit)
 
     var ret = toolkit.initRet(matchedPackages);
     return res.locals.sendJSON(ret);
@@ -2186,12 +2207,15 @@ exports.installPythonPackage = function(req, res, next) {
     },
     function(asyncCallback) {
       var cmd = 'pip';
-      var cmdArgs = [
-        'install', '--no-cache-dir',
-        '-t', packageInstallPath,
-        '-i', 'https://mirrors.aliyun.com/pypi/simple/',
-        pkg,
-      ];
+      var cmdArgs = [ 'install', '--no-cache-dir', '-t', packageInstallPath ];
+
+      // 启用镜像源
+      if (!toolkit.isNothing(CONFIG.PYPI_MIRROR)) {
+        cmdArgs.push('-i', CONFIG.PYPI_MIRROR);
+      }
+
+      cmdArgs.push(pkg);
+
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败
@@ -2537,5 +2561,6 @@ exports.fileService = function(req, res, next) {
 };
 
 /* 允许其他模块调用 */
+exports.getFuncById                      = _getFuncById;
 exports.createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
 exports.callFuncRunner                   = _callFuncRunner;

@@ -700,121 +700,6 @@ export default {
         this.$set(node.data, 'itemCount', itemCount);
       }
 
-      var commonSorter = (a, b) => {
-        if (a.isTitle) return -1;
-        if (b.isTitle) return 1;
-
-        if (a.value < b.value) {
-          return -1;
-        } else if (a.value === b.value) {
-          return 0;
-        } else {
-          return 1;
-        }
-      };
-      var builtinDFWorkspaceSorter = (a, b) => {
-        if (a.isTitle) return -1;
-        if (b.isTitle) return 1;
-
-        if (!a.database) return 1;
-        if (!b.database) return -1;
-
-        if (a.database.indexOf('internal_') >= 0 && b.database.indexOf('internal_') < 0) return -1;
-        if (b.database.indexOf('internal_') >= 0 && a.database.indexOf('internal_') < 0) return 1;
-
-        if (a.dbTag && !b.dbTag) return -1;
-        if (b.dbTag && !a.dbTag) return 1;
-
-        if (a.dfWorkspace < b.dfWorkspace) {
-          return -1;
-        } else if (a.dfWorkspace === b.dfWorkspace) {
-          return 0;
-        } else {
-          return 1;
-        }
-      };
-
-      /* 特殊处理 */
-      // 对于内建InfluxDB，展示成工作空间名
-      // 且多个工作空间可能同时指向同一个数据库，需要分别展示
-      if (this.dataSource.type === 'influxdb' && browserConfig.ref === 'database') {
-        if (this.dataSource.isBuiltin) {
-          if (subNodeData[0].label === '数据库') {
-            subNodeData[0].label = '工作空间/数据库';
-          }
-
-          // 添加数据库标签指示
-          let additionalSubNodeData = [];
-          subNodeData.forEach(d => {
-            if (d.isTitle) return;
-
-            if (d.value && d.value.indexOf('internal_') >= 0) {
-              // 系统库
-              d.dbTag = { type: 'danger', title: '内部'};
-
-              d.dfWorkspace = null;
-              d.database    = d.value;
-
-            } else {
-              // 业务库
-              let dfWorkspace = this.dfWorkspacesDBMap[d.value];
-              if (dfWorkspace) {
-                if (Array.isArray(dfWorkspace)) {
-                  // 多个工作空间对应同一个数据库
-                  d.label = dfWorkspace[0].wsName;
-                  d.dbTag = { type: 'info', title: '工作空间' };
-
-                  d.dfWorkspace = dfWorkspace[0].wsName;
-                  d.database    = dfWorkspace[0].db;
-
-                  dfWorkspace.forEach((_dfWorkspace, index) => {
-                    if (index === 0) return;
-
-                    let _d = this.T.jsonCopy(d);
-                    _d.label = dfWorkspace[index].wsName;
-
-                    _d.dfWorkspace = dfWorkspace[index].wsName;
-                    _d.database    = dfWorkspace[index].db;
-
-                    additionalSubNodeData.push(_d);
-                  });
-
-                } else {
-                  d.label = dfWorkspace.wsName;
-                  d.dbTag = { type: 'info', title: '工作空间' };
-
-                  d.dfWorkspace = dfWorkspace.wsName;
-                  d.database    = dfWorkspace.db;
-                }
-              }
-            }
-          });
-          subNodeData = subNodeData.concat(additionalSubNodeData);
-
-          // 排序：内部 -> 工作空间 -> 其他
-          subNodeData.sort(builtinDFWorkspaceSorter);
-
-        } else {
-          subNodeData.sort(commonSorter);
-        }
-      }
-
-      if (this.dataSource.type === 'df_dataway' && browserConfig.ref === 'token' && this.dataSource.isBuiltin) {
-        subNodeData.forEach(d => {
-          if (d.isTitle) return;
-
-          if (d.database && d.database.indexOf('internal_') >= 0) {
-            // 系统库
-            d.dbTag = { type: 'danger', title: '内部'};
-          } else {
-            // 业务库
-            d.dbTag = { type: 'info', title: '工作空间' };
-          }
-        });
-
-        subNodeData.sort(builtinDFWorkspaceSorter);
-      }
-
       return resolve(subNodeData);
     },
     updateCodeExample(node) {
@@ -884,7 +769,8 @@ export default {
             defaultExample: 'SHOW MEASUREMENTS',
             ref           : 'database',
             sub: {
-              type: 'static',
+              title: '数据项',
+              type : 'static',
               data: [
                 {
                   value         : '指标',
@@ -1225,9 +1111,6 @@ export default {
       },
       browserCascaderExampleCode : '',
       browserCascaderErrorMessage: '',
-
-      dfWorkspaces     : [],
-      dfWorkspacesDBMap: {},
     }
   },
   mounted() {

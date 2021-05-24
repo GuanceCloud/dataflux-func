@@ -20,13 +20,13 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.dataflux_func import DataFluxFuncBaseException, NotFoundException, NotFoundException
-from worker.tasks.dataflux_func import ScriptBaseTask
-from worker.tasks.dataflux_func import BaseFuncResponse, FuncResponse
+from worker.tasks.main import DataFluxFuncBaseException, NotFoundException, NotFoundException
+from worker.tasks.main import ScriptBaseTask
+from worker.tasks.main import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class DataFluxFuncDebugger(ScriptBaseTask):
+class FuncDebugger(ScriptBaseTask):
     def get_script_dict_for_debugger(self, script_id):
         user_scripts = []
 
@@ -81,10 +81,10 @@ class DataFluxFuncDebugger(ScriptBaseTask):
 
         return script_dict
 
-@app.task(name='DataFluxFunc.debugger', bind=True, base=DataFluxFuncDebugger,
+@app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger,
     soft_time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'],
     time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
-def dataflux_func_debugger(self, *args, **kwargs):
+def func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
     func_call_kwargs = kwargs.get('funcCallKwargs') or {}
@@ -93,7 +93,7 @@ def dataflux_func_debugger(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('DataFluxFunc Debugger Task launched: `{}`'.format(func_id))
+    self.logger.info('Debugger Task launched: `{}`'.format(func_id))
 
     # 来源
     origin    = kwargs.get('origin')

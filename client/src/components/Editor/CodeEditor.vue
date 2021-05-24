@@ -55,10 +55,6 @@ Saving Script failed                                                            
 'Filename:'                                                                            : 文件名：
 Script saved successfully                                                              : 脚本保存成功
 You can continue with other operations                                                 : 你可以继续进行其他操作
-Script Draft runs only in Code Editor,                                                 : 已保存的内容只能编辑器内执行，
-it will take effect after being published                                              : 只有发布之后才会对外生效
-You can also use shortcut {html} to save                                               : 您也可以使用快捷键{html}来保存
-Save Script                                                                            : 保存脚本
 Published Code                                                                         : 已发布的代码
 Saved Draft Code                                                                       : 已保存的草稿代码
 Script will take effect after been published immediately,                              : 发布后新的脚本将立即生效，
@@ -134,7 +130,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
             </div>
             <div class="code-editor-action-right">
               <el-form :inline="true">
-                <el-form-item v-if="isConflicted">
+                <el-form-item v-show="isConflict">
                   <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
                 </el-form-item>
 
@@ -152,7 +148,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                   </el-tooltip>
                 </el-form-item>
 
-                <template v-if="!isConflicted">
+                <template v-if="!isConflict">
                   <el-form-item class="hidden-lg-and-up">
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
@@ -359,7 +355,7 @@ export default {
         this.isNewLoaded = true;
       }
     },
-    isConflicted: {
+    isConflict: {
       immediate: true,
       handler(val) {
         this.T.setCodeMirrorReadOnly(this.codeMirror, val);
@@ -384,7 +380,7 @@ export default {
     '$store.state.shortcutAction'(val) {
       switch(val.action) {
         case 'codeEditor.save':
-          this.saveScript({skipSaveAlert: true});
+          this.saveScript();
           break;
 
         case 'codeEditor.run':
@@ -407,7 +403,7 @@ export default {
 
       return fileName;
     },
-    async _saveCodeDraft(options) {
+    async _saveCodeDraft() {
       // 等待保存信号量，防止多重保存
       while (this.isSavingCodeDraft) {
         await this.T.sleep(1000);
@@ -416,18 +412,16 @@ export default {
 
       let res = null;
       try {
-        return await this._saveCodeDraftImpl(options);
+        return await this._saveCodeDraftImpl();
       } catch(err) {
         // nope
       } finally {
         this.isSavingCodeDraft = false;
       }
     },
-    async _saveCodeDraftImpl(options) {
+    async _saveCodeDraftImpl() {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
-
-      options = options || {};
 
       let prevCodeDraftMD5 = this.prevCodeDraftMD5;
       let codeDraft        = this.codeMirror.getValue();
@@ -444,7 +438,7 @@ export default {
       });
 
       if (!apiRes.ok) {
-        // 详细处理错误
+        // 保存失败，详细处理错误
         switch(apiRes.reason) {
           // 乐观锁冲突
           case 'EBizRequestConflict.scriptDraftAlreadyChanged':
@@ -468,8 +462,6 @@ export default {
             break;
 
           default:
-            if (options.silent) break;
-
             let downloadFileName = this._downloadEditingCodeDraft(codeDraft);
             await this.$alert(`<span class="text-good">${this.$t('To avoid losing current code, Script has been downloaded')}</span>
                 <br>${this.$t('Filename:')}<code class="text-main">${downloadFileName}</code>`, this.$t('Saving Script failed'), {
@@ -482,9 +474,19 @@ export default {
         }
 
       } else {
+        // 保存成功
+
         // 更新页面状态
         this.data.codeDraft = codeDraft;
         this.prevCodeDraftMD5 = apiRes.data.codeDraftMD5;
+
+        // 刷新侧边栏
+        this._refreshAside();
+
+        // 更新状态栏数据
+        let diffInfo = this.T.getDiffInfo(this.data.code, codeDraft);
+        this.diffAddedCount   = diffInfo.addedCount;
+        this.diffRemovedCount = diffInfo.removedCount;
       }
 
       return apiRes;
@@ -540,17 +542,33 @@ export default {
         this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
 
         // 锁定编辑器
-        if (this.isConflicted || this.isLockedByOther) {
+        if (this.isConflict || this.isLockedByOther) {
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }
 
         // 自动保存
         if (!this.isLockedByOther) {
           this.codeMirror.on('change', this.T.debounce((editor, change) => {
+            if (this.isLockedByOther) return;
+            if (!this.codeMirror) return;
+
             if (this.isNewLoaded) {
               this.isNewLoaded = false;
             }
-            this.saveScript({isAutoSave: true});
+
+            let codeDraft = this.codeMirror.getValue();
+
+            /* 自动保存时，检查变化行数，变化过大的不自动保存 */
+            // 代码被清空时，不自动保存
+            if (!codeDraft.trim()) return;
+
+            // 一次性修改超过30行，或30%的，跳过自动保存
+            let draftDiffInfo = this.T.getDiffInfo(this.data.codeDraft, codeDraft);
+            let changedCount = Math.max(draftDiffInfo.addedCount, draftDiffInfo.removedCount);
+            if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) return;
+
+            // 自动保存为静默保存
+            this._saveCodeDraft({silent: true});
           }, 1000));
         }
 
@@ -560,63 +578,22 @@ export default {
       // 默认隐藏
       this.closeVueSplitPane();
     },
-    async saveScript(options) {
+    async saveScript() {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
-      options = options || {};
-      let codeDraft = this.codeMirror.getValue();
-
-      // 自动保存时，检查变化行数，变化过大的不自动保存
-      if (options.isAutoSave) {
-        // 代码被清空时，不自动保存
-        if (!codeDraft.trim()) return;
-
-        // 一次性修改超过30行，或30%的，跳过自动保存
-        let draftDiffInfo = this.T.getDiffInfo(this.data.codeDraft, codeDraft);
-        let changedCount = Math.max(draftDiffInfo.addedCount, draftDiffInfo.removedCount);
-        if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) {
-          return;
-        }
-      }
-
       // 保存
-      let apiRes = await this._saveCodeDraft({silent: true});
-      if (!apiRes.ok) return;
-
-      // 刷新侧边栏
-      this._refreshAside();
-
-      // 更新状态栏数据
-      let diffInfo = this.T.getDiffInfo(this.data.code, codeDraft);
-      this.diffAddedCount   = diffInfo.addedCount;
-      this.diffRemovedCount = diffInfo.removedCount;
-
-     // 提示
-      if (!options.isAutoSave) {
-        if (options.skipSaveAlert) {
-          // 简易保存提示
-          this.$notify({
-            title   : this.$t('Script saved successfully'),
-            message : this.$t('You can continue with other operations'),
-            type    : 'success',
-            position: 'top-right',
-            offset  : 20,
-            duration: 3000,
-            offset  : 75,
-          });
-
-        } else {
-          // 完整保存提示
-          this.$alert(`${this.$t('Script saved successfully')}
-              <hr class="br">${this.$t('Script Draft runs only in Code Editor,')}
-              <span class="text-main"> ${this.$t('it will take effect after being published')}</span>
-              <hr class="br"><small>${this.$t('You can also use shortcut {html} to save', { html: `<kbd>${this.T.getSuperKeyName()}</kbd> + <kbd>s</kbd>` })}`, this.$t('Save Script'), {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('Very good'),
-            type: 'success',
-          });
-        }
+      let apiRes = await this._saveCodeDraft();
+      if (apiRes && apiRes.ok) {
+        // 保存成功后，提示
+        this.$notify({
+          title   : this.$t('Script saved successfully'),
+          message : this.$t('You can continue with other operations'),
+          type    : 'success',
+          position: 'top-right',
+          duration: 3000,
+          offset  : 75,
+        });
       }
     },
     showDiff() {
@@ -656,7 +633,7 @@ export default {
 
       // 保存
       let apiRes = await this._saveCodeDraft();
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // 脚本发布中
       this.workerRunning         = true;
@@ -686,11 +663,13 @@ export default {
       this._refreshAside();
 
       // 弹框提示
-      this.$alert(`${this.$t('Script published successfully')}
-          <hr class="br">${this.$t('New Script is in effect now')}`, this.$t('Publish Script'), {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: this.$t('Very good'),
-        type: 'success',
+      this.$notify({
+        title   : this.$t('Script published successfully'),
+        message : this.$t('New Script is in effect now'),
+        type    : 'success',
+        position: 'top-right',
+        duration: 3000,
+        offset  : 75,
       });
     },
     async resetScript() {
@@ -730,7 +709,7 @@ export default {
       if (!this.isLockedByOther) {
         // 仅限可编辑时
         let apiRes = await this._saveCodeDraft();
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
       }
 
       let funcCallKwargs = null;
@@ -837,7 +816,7 @@ export default {
 
       // 保存
       let apiRes = await this._saveCodeDraft();
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // 检查发布状态
       apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
@@ -846,53 +825,53 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      if (apiRes.data.codeMD5 !== apiRes.data.codeDraftMD5) {
-        // 此处代码与`methods.publishScript(...)`略有重复
-        // 但暂不作修改
-        try {
-          await this.$confirm(`${this.$t('This Script is not published, it will take effect after the Script is published')}
-              <hr class="br">${this.$t('Do you want to publish the Script now?')}`, this.$t('Script not published'), {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('Publish Now'),
-            cancelButtonText: this.$t('Skip Publishing'),
-            type: 'warning',
-          });
+      // if (apiRes.data.codeMD5 !== apiRes.data.codeDraftMD5) {
+      //   // 此处代码与`methods.publishScript(...)`略有重复
+      //   // 但暂不作修改
+      //   try {
+      //     await this.$confirm(`${this.$t('This Script is not published, it will take effect after the Script is published')}
+      //         <hr class="br">${this.$t('Do you want to publish the Script now?')}`, this.$t('Script not published'), {
+      //       dangerouslyUseHTMLString: true,
+      //       confirmButtonText: this.$t('Publish Now'),
+      //       cancelButtonText: this.$t('Skip Publishing'),
+      //       type: 'warning',
+      //     });
 
-          // 脚本发布中
-          this.workerRunning         = true;
-          this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
-          let delayedLoadingT = setTimeout(() => {
-            this.workerResultLoading = true;
-          }, 500);
+      //     // 脚本发布中
+      //     this.workerRunning         = true;
+      //     this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
+      //     let delayedLoadingT = setTimeout(() => {
+      //       this.workerResultLoading = true;
+      //     }, 500);
 
-          // 发布
-          let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
-            params: {id: this.scriptId},
-            body  : {force: true, data: {note: 'Published by Code Editor'}},
-          });
+      //     // 发布
+      //     let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
+      //       params: {id: this.scriptId},
+      //       body  : {force: true, data: {note: 'Published by Code Editor'}},
+      //     });
 
-          clearTimeout(delayedLoadingT);
-          this.workerRunning       = false;
-          this.workerResultLoading = false;
+      //     clearTimeout(delayedLoadingT);
+      //     this.workerRunning       = false;
+      //     this.workerResultLoading = false;
 
-          if (!apiRes.ok) {
-            // 输出结果
-            this.outputResult('publish', this.scriptId, apiRes);
-            this.alertOnEScript(apiRes, true);
-            return;
-          }
+      //     if (!apiRes.ok) {
+      //       // 输出结果
+      //       this.outputResult('publish', this.scriptId, apiRes);
+      //       this.alertOnEScript(apiRes, true);
+      //       return;
+      //     }
 
-          this.data.code = this.data.codeDraft;
+      //     this.data.code = this.data.codeDraft;
 
-          // 更新函数列表
-          this.updateFuncList();
-          // 更新左侧列表
-          this.$store.commit('updateScriptListSyncTime');
+      //     // 更新函数列表
+      //     this.updateFuncList();
+      //     // 更新左侧列表
+      //     this.$store.commit('updateScriptListSyncTime');
 
-        } catch(err) {
-          // 无操作
-        }
-      }
+      //   } catch(err) {
+      //     // 无操作
+      //   }
+      // }
 
       return true;
     },
@@ -1381,8 +1360,8 @@ export default {
     scriptSetId() {
       return this.scriptId.split('__')[0];
     },
-    isConflicted() {
-      return this.$store.getters.getConflictedRoute(this.$route);
+    isConflict() {
+      return this.$store.getters.getConflictRoute(this.$route);
     },
     isLockedByOther() {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId

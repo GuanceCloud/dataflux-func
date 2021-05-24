@@ -9,7 +9,7 @@ from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask
 from worker.utils import toolkit
 
-@app.task(name='example.result', bind=True, base=BaseResultSavingTask)
+@app.task(name='Example.Result', bind=True, base=BaseResultSavingTask)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
     options = kwargs or {}
 
@@ -45,7 +45,7 @@ class BizTask(BaseTask):
     _success_result_saving_task = result_saving_task
     _failure_result_saving_task = result_saving_task
 
-@app.task(name='example.echo.success', bind=True, base=BizTask)
+@app.task(name='Example.Echo.Success', bind=True, base=BizTask)
 def echo_success(self, *args, **kwargs):
     '''
     Example success task
@@ -61,7 +61,7 @@ def echo_success(self, *args, **kwargs):
     }
     return retval
 
-@app.task(name='example.echo.failure', bind=True, base=BizTask)
+@app.task(name='Example.Echo.Failure', bind=True, base=BizTask)
 def echo_failure(self, *args, **kwargs):
     '''
     Example failure task

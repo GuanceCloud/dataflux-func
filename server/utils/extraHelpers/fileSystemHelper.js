@@ -52,9 +52,7 @@ FileSystemHelper.prototype.upload = function(uploadPath, buffer, callback) {
 
   uploadPath = path.join(this.rootFolder, uploadPath);
   fs.outputFile(uploadPath, buffer, function(err) {
-    self.logger.debug(toolkit.strf('[FS] Upload `{0}`, Length: {1}',
-          uploadPath,
-          buffer ? buffer.length : 0));
+    self.logger.debug('[FS] Upload `{0}`, Length: {1}', uploadPath, (buffer ? buffer.length : 0));
     return callback(err);
   });
 };
@@ -71,10 +69,7 @@ FileSystemHelper.prototype.download = function(uploadPath, callback) {
 
   uploadPath = path.join(this.rootFolder, uploadPath);
   fs.readFile(uploadPath, function(err, buffer) {
-    self.logger.debug(toolkit.strf('[FS] Download `{0}`, Length: {1}',
-        uploadPath,
-        buffer ? buffer.length : 0));
-
+    self.logger.debug('[FS] Download `{0}`, Length: {1}', uploadPath, (buffer ? buffer.length : 0));
     return callback(err, buffer);
   });
 };
@@ -102,12 +97,12 @@ FileSystemHelper.prototype.delete = function(uploadPath, callback) {
 
   uploadPath = path.join(this.rootFolder, uploadPath);
 
-  self.logger.debug(toolkit.strf('[FS] Delete `{0}`', uploadPath));
+  self.logger.debug('[FS] Delete `{0}`', uploadPath);
 
   if (self.isDryRun) return callback();
 
   fs.remove(uploadPath, function(err) {
-    self.logger.debug(toolkit.strf('[FS] Deleted `{0}`', uploadPath));
+    self.logger.debug('[FS] Deleted `{0}`', uploadPath);
     return callback(err);
   });
 };
@@ -124,13 +119,13 @@ FileSystemHelper.prototype.deleteFolder = function(folderPath, callback) {
 
   folderPath = path.join(this.rootFolder, folderPath, './');
 
-  self.logger.debug(toolkit.strf('[FS] Delete folder `{0}`', folderPath));
+  self.logger.debug('[FS] Delete folder `{0}`', folderPath);
 
   return callback();
   if (self.isDryRun) return callback();
 
   fs.remove(folderPath, function(err) {
-    self.logger.debug(toolkit.strf('[FS] Deleted folder `{0}`', folderPath));
+    self.logger.debug('[FS] Deleted folder `{0}`', folderPath);
     return callback(err);
   });
 };

@@ -639,10 +639,6 @@ def main(options):
     conn = get_client(client_configs)
     cur = conn.cursor()
 
-    # 还原（仅限开发用）
-    # with open('/Users/pastgift/Desktop/ft_data_processor_2020-11-02.sql') as _f:
-    #     cur.execute(_f.read());
-
     # 执行迁移
     try:
         print(colored('[STAGE] Move old tables', 'green'))

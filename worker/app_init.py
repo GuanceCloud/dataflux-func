@@ -38,9 +38,9 @@ def before_app_create():
     toolkit.get_worker_queue = get_worker_queue
 
 def after_app_created(celery_app):
-    from worker.tasks.dataflux_func import dataflux_func_reload_scripts, dataflux_func_auto_cleaner, dataflux_func_auto_run
+    from worker.tasks.main import reload_scripts, auto_cleaner, auto_run
 
     # 启动时自动执行
-    dataflux_func_reload_scripts.apply_async(kwargs={'isOnLaunch': True, 'force': True}, countdown=10)
-    dataflux_func_auto_run.apply_async(countdown=10)
-    dataflux_func_auto_cleaner.apply_async(countdown=30)
+    reload_scripts.apply_async(kwargs={'isOnLaunch': True, 'force': True}, countdown=10)
+    auto_run.apply_async(countdown=10)
+    auto_cleaner.apply_async(countdown=30)

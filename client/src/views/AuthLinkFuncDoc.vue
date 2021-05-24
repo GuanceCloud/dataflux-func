@@ -18,61 +18,42 @@
 
           <el-table-column label="函数">
             <template slot-scope="scope">
-              <template v-if="scope.row.funcId">
-                <strong class="func-title">{{ scope.row.funcTitle || scope.row.funcName }}</strong>
+              <FuncInfo
+                :id="scope.row.funcId"
+                :title="scope.row.funcTitle"
+                :name="scope.row.funcName"
+                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.funcId}(${T.isNothing(scope.row.funcKwargsJSON) ? '' : '...'})` }}</code>
-                <GotoFuncButton :funcId="scope.row.funcId"></GotoFuncButton>
-
-                <br>
+              <div>
                 <span class="text-info">&#12288;授权链接ID:</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-              </template>
 
-              <br>
-              <span class="text-info">&#12288;调用参数:</span>
-              <div class="func-kwargs-area">
-                <span v-if="T.isNothing(scope.row.funcCallKwargsJSON)" class="text-info">无参数</span>
-                <template v-else>
-                  <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.funcCallKwargsJSON">
-                    <code class="func-kwargs-name">{{ name }}</code>
-                    <code class="func-kwargs-equal">=</code>
-                    <code class="func-kwargs-value" v-if="value === 'FROM_PARAMETER'">调用方指定</code>
-                    <el-tooltip placement="top" v-else>
-                      <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
-                      <code class="func-kwargs-value">固定值</code>
-                    </el-tooltip>
-                    <span v-if="index < T.jsonLength(scope.row.funcCallKwargsJSON) - 1">,&nbsp;</span>
-                  </div>
-                </template>
-              </div>
-
-              <template v-if="!T.isNothing(scope.row.funcCategory) || !T.isNothing(scope.row.funcIntegration) || !T.isNothing(scope.row.funcTagsJSON)">
-                <template v-if="!T.isNothing(scope.row.funcCategory)">
-                  <span class="text-info">&#12288;分类:</span>
-                  <el-tag size="mini">
-                    <code>{{ scope.row.funcCategory }}</code>
-                  </el-tag>
-                </template>
-
-                <template v-if="!T.isNothing(scope.row.funcIntegration)">
-                  <span class="text-info">&#12288;集成:</span>
-                  <el-tag size="mini">
-                    <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
-                    <code v-else>{{ scope.row.funcIntegration }}</code>
-                  </el-tag>
-                </template>
-
-                <template v-if="!T.isNothing(scope.row.funcTagsJSON)">
+                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.funcTagsJSON)">
+                  <br>
                   <span class="text-info">&#12288;标签:</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.funcTagsJSON" :key="t">{{ t }}</el-tag>
+                  <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
-              </template>
+
+                <template v-if="!T.isNothing(scope.row.funcCategory) || !T.isNothing(scope.row.funcIntegration) || !T.isNothing(scope.row.funcTagsJSON)">
+                  <br>
+
+                  <template v-if="!T.isNothing(scope.row.funcCategory)">
+                    <span class="text-info">&#12288;分类:</span>
+                    <el-tag size="mini">
+                      <code>{{ scope.row.funcCategory }}</code>
+                    </el-tag>
+                  </template>
+
+                  <template v-if="!T.isNothing(scope.row.funcIntegration)">
+                    <span class="text-info">&#12288;集成:</span>
+                    <el-tag size="mini">
+                      <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
+                      <code v-else>{{ scope.row.funcIntegration }}</code>
+                    </el-tag>
+                  </template>
+                </template>
+              </div>
             </template>
           </el-table-column>
 
@@ -134,11 +115,13 @@
 
 <script>
 import APIExampleDialog from '@/components/APIExampleDialog'
+import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'AuthLinkFuncDoc',
   components: {
     APIExampleDialog,
+    FuncInfo,
   },
   watch: {
     $route: {
@@ -176,7 +159,7 @@ export default {
 
       let funcCallKwargsJSON = {};
       for (let k in d.funcCallKwargsJSON) if (d.funcCallKwargsJSON.hasOwnProperty(k)) {
-        if (d.funcCallKwargsJSON[k] === 'FROM_PARAMETER') {
+        if (this.common.isFuncArgumentPlaceholder(d.funcCallKwargsJSON[k])) {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
@@ -205,27 +188,6 @@ export default {
 .title-tip {
   font-size: 14px;
   float: right;
-}
-.func-title {
-  font-size: 16px;
-}
-.func-kwargs-area {
-  padding-left: 25px;
-}
-.func-kwargs-block {
-  display: inline-block;
-}
-.func-kwargs-name {
-  font-style: italic;
-  color: #ff6600;
-  font-weight: bold;
-}
-.func-kwargs-equal {
-  color: red;
-}
-pre.func-kwargs-value {
-  padding: 0;
-  margin: 0;
 }
 </style>
 

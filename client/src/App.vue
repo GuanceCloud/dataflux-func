@@ -27,7 +27,7 @@ export default {
     isSignedIn(val) {
       if (val) {
         // 登录后
-        this.$store.dispatch('updateUserProfile');
+        this.$store.dispatch('reloadUserProfile');
 
         // Socket.io 登录
         this.socketIO.emit('auth', this.$store.state.xAuthToken);
@@ -85,12 +85,13 @@ export default {
           checkOnly = false;
           break;
       }
+
       let checkRouteInfo = JSON.stringify({
         routeName  : routeName,
         routeQuery : this.$route.query,
         routeParams: this.$route.params,
         checkOnly  : checkOnly,
-        instanceId : window.instanceId,
+        conflictId : window.conflictId,
       });
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
         if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
@@ -102,16 +103,16 @@ export default {
         // 无冲突信息无需任何处理
         if (!resData || !resData.data) return;
 
-        let isConflicted = resData.data.isConflict;
+        let isConflict = resData.data.isConflict;
 
         // 记录路径冲突状态
         this.$store.commit('setConflictedRoute', {
-          routeInfo   : this.$route,
-          isConflicted: isConflicted,
+          routeInfo : this.$route,
+          isConflict: isConflict,
         });
 
         // 展示提示信息
-        if (isConflicted && showNotice) {
+        if (isConflict && showNotice) {
           switch(this.$route.name) {
             case 'code-viewer':
             case 'code-editor':
@@ -364,8 +365,9 @@ h3 {
   bottom: 0;
 }
 .paging-area {
-  height: 45px;
+  height: 50px !important;
   text-align: right;
+  padding: 10px 20px !important;
 }
 .common-form {
   width: 620px;
@@ -393,6 +395,7 @@ h3 {
   scroll-behavior: smooth;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .text-main {
@@ -545,9 +548,9 @@ content: "\25B2";
 }
 .fix-list-button .el-link {
   font-size: 12px;
-  line-height: 1;
-  display: inline;
   margin-left: 10px;
+  position: relative;
+  top: -1px;
 }
 .fix-list-button .el-link + .el-button {
   margin-left: 10px;
@@ -567,12 +570,18 @@ content: "\25B2";
 .el-loading-text {
   font-size: 18px;
 }
-.el-popover {
+.el-tooltip__popper {
   z-index: 3000 !important;
+}
+.el-popover {
+  z-index: 3001 !important;
+}
+.el-notification {
+  z-index: 3001 !important;
 }
 .el-message {
   top: 40px !important;
-  z-index: 3000 !important;
+  z-index: 3001 !important;
 }
 .el-message-box {
   width: 520px !important;
@@ -614,9 +623,6 @@ content: "\25B2";
   padding-left: 0;
   padding-right: 0;
 }
-.el-tooltip__popper {
-  z-index: 9999 !important;
-}
 .el-form .el-transfer-panel__item {
   /*https://github.com/ElemeFE/element/issues/18228*/
   margin-left: 0;
@@ -630,10 +636,6 @@ content: "\25B2";
 }
 .el-menu-item * {
   vertical-align: none;
-}
-.el-menu-item {
-  height: 47px !important;
-  line-height: 47px !important;
 }
 .switch-tips {
   padding-left: 10px;

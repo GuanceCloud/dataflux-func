@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+
+Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作记录，用户（ID、用户名），客户端ID，跟踪ID
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
@@ -6,7 +11,10 @@
         <h1>
           近期操作记录
           <div class="header-control">
-            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Operation Record, User(ID, username), Client ID, Trace ID')">
+            </FuzzySearchInput>
           </div>
         </h1>
       </el-header>
@@ -34,19 +42,27 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作者">
+          <el-table-column label="客户端">
+            <template slot-scope="scope">
+              <span class="text-info">客户端ID：</span>
+              <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
+              <br>
+
+              <span class="text-info">IP地址：</span>
+              <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="用户">
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
               <br>
 
               <template v-if="scope.row.userId">
-                <span class="text-info">ID：</span>
+                <span class="text-info">用户ID：</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
                 <br>
               </template>
-
-              <span class="text-info">客户端ID：</span>
-              <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
             </template>
           </el-table-column>
 
@@ -96,8 +112,7 @@
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)"
-        class="paging-area" height="45px">
+      <el-footer v-if="!T.isNothing(data)" class="paging-area">
         <el-pagination
           background
           @size-change="T.changePageSize"

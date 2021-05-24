@@ -21,7 +21,7 @@ from worker.utils.wat_sdk import WATClient
 
 CONFIG = yaml_resources.get('CONFIG')
 
-@app.task(name='webhook.onEvent', bind=True, base=BaseTask)
+@app.task(name='Webhook.OnEvent', bind=True, base=BaseTask)
 def on_event(self, *args, **kwargs):
     self.logger.info('Webhook onEvent Task started.')
 
@@ -95,7 +95,7 @@ def on_event(self, *args, **kwargs):
 
             do_http_request.apply_async(task_id=gen_task_id(), kwargs=task_kwargs, headers=task_headers)
 
-@app.task(name='webhook.doHTTPRequest', bind=True, base=BaseTask,
+@app.task(name='Webhook.DoHTTPRequest', bind=True, base=BaseTask,
         autoretry_for=(Exception,), retry_backoff=True, retry_backoff_max=3600, max_retries=3)
 def do_http_request(self, *args, **kwargs):
     self.logger.info('Webhook doHTTPRequest Task started.')

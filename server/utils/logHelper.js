@@ -265,6 +265,9 @@ LoggerHelper.prototype._log = function() {
 
   var nowMs = Date.now();
   var now   = parseInt(nowMs / 1000);
+  var reqTimeMs = this.locals.requestTime
+                ? this.locals.requestTime.getTime()
+                : nowMs;
 
   var message      = toolkit.strf.apply(null, args);
   var fixedMessage = message.replace(/%([sdj%])/g, '%%$1'); // Fix winston 2.4.2
@@ -284,10 +287,10 @@ LoggerHelper.prototype._log = function() {
       clientId          : this.locals.clientId,
       traceId           : this.locals.traceId,
       traceIdShort      : this.locals.traceIdShort,
-      diffTime          : nowMs - (this._prevLogTime || this.locals._requestStartTime),
-      costTime          : nowMs - this.locals._requestStartTime,
-      userId            : (this.locals.user && this.locals.user.id)           || null,
-      username          : (this.locals.user && this.locals.user.username)     || null,
+      diffTime          : nowMs - (this._prevLogTime || reqTimeMs),
+      costTime          : nowMs - reqTimeMs,
+      userId            : (this.locals.user && this.locals.user.id)       || null,
+      username          : (this.locals.user && this.locals.user.username) || null,
     }
   };
 

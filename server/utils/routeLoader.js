@@ -693,12 +693,6 @@ exports.createDoc = function() {
     return res.locals.render('_doc/apiDoc', pageData);
   });
 
-  router.get('/enum-const-reference', function(req, res, next) {
-    return res.locals.render('_doc/enumConstReference', {
-      docPageTitle: 'ENUM/CONST Reference',
-    });
-  });
-
   router.get('/change-log', function(req, res, next) {
     var filePath = path.join(__dirname, '../../CHANGE_LOG.md');
     var sections = loadMarkdownDocument(filePath);

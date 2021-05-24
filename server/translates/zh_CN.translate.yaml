@@ -15,9 +15,6 @@ API Documents                                     : API 文档
 API Request                                       : API 请求
 API Result                                        : API 返回结果
 API Route                                         : API 路由
-API__authLink_origin                              : null
-API__batch_origin                                 : null
-API__crontabConfig_origin                         : null
 About                                             : 关于
 Access Key add, delete, etc.                      : Access Key 添加、删除等
 Access Key list, view, etc.                       : Access Key 列表、详情等
@@ -55,7 +52,6 @@ Cannot find the content,                          : 无法找到此内容
 Change Log                                        : 变更日志
 Change Password                                   : 修改密码
 Clear ALL                                         : 清空全部
-Clickhouse__dataSource_type                       : null
 Client Config                                     : 客户端配置
 Client ID                                         : 客户端ID
 Client IP                                         : 客户端IP
@@ -69,17 +65,13 @@ Copyright                                         : 版权所有
 Cost                                              : 耗费
 Create Time                                       : 创建时间
 Create User                                       : 创建用户
-Crontab表达式不正确                               : null
-Crontab触发__execMode                             : null
 Current User                                      : 当前用户
 Current/Max Thread Count                          : 当前/最大线程数量
 Custom Privileges                                 : 自定义权限
 Custom User                                       : 自定义用户
 DB Disk Used                                      : 数据库磁盘用量
 DISABLED                                          : 已禁用
-DISPLAY TEXT                                      : 【显示文字】
 Dashboard                                         : 仪表台
-DataFlux DataWay__dataSource_type                 : null
 Database                                          : 数据库
 Debug                                             : DEBUG
 Delete                                            : 删除
@@ -91,8 +83,6 @@ Dict Parameters                                   : 字典参数
 Disable                                           : 禁用
 Disabled                                          : 已禁用
 Documents                                         : 文档
-ENUM/CONST                                        : 枚举/常量
-ENUM/CONST Reference                              : 枚举/常量参考
 Edit                                              : 编辑
 Enable                                            : 启用
 End Time                                          : 结束时间
@@ -102,7 +92,6 @@ Enter your new password                           : 输入您的新密码
 Enter your old password                           : 输入您的旧密码
 Enter your password                               : 输入您的密码
 Enter your username                               : 输入您的用户名
-Example Config__systemConfig_id                   : 示例配置
 Expand All                                        : 展开所有
 Expire Time                                       : 过期时间
 Export                                            : 导出
@@ -131,7 +120,7 @@ HTTP Headers                                      : HTTP头
 Help                                              : 帮助
 Host                                              : 主机
 ID                                                : ID
-InfluxDB__dataSource_type                         : null
+Index                                             : null
 Information                                       : 信息
 Input to Search...                                : 输入关键字进行搜索
 It Depends                                        : 视情况而定
@@ -150,13 +139,9 @@ Main Task Stats                                   : 主要任务状态
 Main/Internal/Result/TOTAL Task Count             : 主要/内部/结果/总任务数量
 Management                                        : 管理
 Matched Route Count (Today)                       : 匹配路由计数（今日）
-Memcached__dataSource_type                        : null
-Microsoft SQL Server__dataSource_type             : null
 Mobile                                            : 手机号
 Monitor                                           : 监控
-MySQL__dataSource_type                            : null
 NORMAL                                            : 正常
-NSQ__dataSource_type                              : null
 Name                                              : 名称
 Name__user                                        : 姓名
 New Access Key                                    : 新 Access Key
@@ -181,7 +166,6 @@ OS Type                                           : 操作系统类型
 Old Password                                      : 旧密码
 Old password is invalid.                          : 旧密码不正确
 Optional                                          : 可选
-Oracle数据库__dataSource_type                     : null
 Order field                                       : 排序字段
 Order method                                      : 排序方式
 Origin                                            : 来源
@@ -201,7 +185,6 @@ Please check the URL or contact the administrator to report the information belo
 Please contact the administrator to report the error with the information above.: 请联系管理员并告知上述信息。
 Please read the README.md to get more information.: 请阅读 README.md 文件来获取更多信息。
 Please select...                                  : 请选择...
-PostgreSQL__dataSource_type                       : null
 Pre-fetch Task Count                              : 预加载任务数量
 Profile                                           : 个人信息
 Project Name__projectInfo                         : DataFlux Func
@@ -210,7 +193,6 @@ Query                                             : Query参数
 Queue                                             : 队列
 Readonly user                                     : 只读用户
 Recent Tasks (most recent to oldest)              : 最近任务（从最近到最早）
-Redis__dataSource_type                            : null
 Request                                           : 请求
 Request Type                                      : 请求类型
 Require Sign In                                   : 需要登录
@@ -279,12 +261,8 @@ Total {0} Records                                 : 共{0}条记录
 Trace ID                                          : 跟踪ID
 Trace Short ID                                    : 跟踪短ID
 Type                                              : 类型
-UI__authLink_origin                               : null
-UI__batch_origin                                  : null
-UI__crontabConfig_origin                          : null
 Unlimited                                         : 无限制
 Up Time                                           : 启动时间
-Upload                                            : 上传
 Use Change Password page to change your password  : 请在修改密码页面修改您的密码
 Use Dry Run Mode                                  : 使用演习模式
 User                                              : 用户
@@ -325,7 +303,6 @@ builtin.byXAuthToken                              : 内建XAuthToken认证
 commaArrayIn__APIDoc_directiveName                : 包含以下元素的逗号分隔数组
 contains__APIDoc_searchType                       : 包含（like）
 copied                                            : 已复制
-elasticsearch__dataSource_type                    : null
 eq__APIDoc_searchType                             : '等于（=）'
 eqornull__APIDoc_searchType                       : 等于或为NULL
 eqwithnull__APIDoc_searchType                     : '等于（=，传递`_NULL`表示`IS NULL`）'
@@ -364,7 +341,6 @@ maxLength__APIDoc_directiveName                   : 最大长度为
 maxValue__APIDoc_directiveName                    : 最大值为
 minLength__APIDoc_directiveName                   : 最小长度为
 minValue__APIDoc_directiveName                    : 最小值为
-mongoDB__dataSource_type                          : null
 ms                                                : 毫秒
 ne__APIDoc_searchType                             : 不等于
 neornull__APIDoc_searchType                       : 不等于或为空
@@ -386,80 +362,3 @@ suflike__APIDoc_searchType                        : 满足后缀（LIKE '%value'
 this data                                         : 此数据
 user-list__export                                 : 用户列表
 value                                             : 值
-一般__func_category                               : null
-不允许作为官方脚本导出                            : null
-不允许修改内置数据源                              : null
-不允许修改官方脚本                                : null
-不允许修改官方脚本集                              : null
-不允许修改脚本                                    : null
-不允许修改脚本集                                  : null
-不允许删除内置数据源                              : null
-不允许删除官方脚本                                : null
-不允许删除官方脚本集                              : null
-不允许删除脚本                                    : null
-不允许删除脚本集                                  : null
-不允许发布官方脚本                                : null
-不允许导出官方脚本                                : null
-不允许添加官方脚本                                : null
-不允许添加官方脚本集                              : null
-不允许添加脚本                                    : null
-内置批处理（关键事件处理）__func_category         : null
-内置批处理（指标处理）__func_category             : null
-内置批处理（日志处理）__func_category             : null
-内置批处理（通用）__func_category                 : null
-内置查询__func_category                           : null
-内置检测__func_category                           : null
-内置采集__func_category                           : null
-动作__func_category                               : null
-同步__execMode                                    : null
-命令__func_category                               : null
-官方__scriptSet_type                              : null
-官方脚本库需要指定的用户                          : null
-导入__scriptRecoverPoint_type                     : null
-导入令牌不正确                                    : null
-导入时未找到对应脚本                              : null
-导入时未找到对应脚本集                            : null
-导出方式与验证方式不匹配                          : null
-导出用户脚本时必须指定导入令牌                    : null
-已安装的官方脚本版本号__systemConfig_id           : null
-异步__execMode                                    : null
-手动__scriptRecoverPoint_type                     : null
-批处理__execMode                                  : null
-批处理已禁用                                      : null
-批处理（指标处理）__func_category                 : null
-批处理（日志处理）__func_category                 : null
-批处理（通用）__func_category                     : null
-授权链接已禁用                                    : null
-授权链接已超额                                    : null
-授权链接已过期                                    : null
-数据源ID重复                                      : null
-数据源引用名重复                                  : null
-数据源配置JSON不正确                              : null
-查询__func_category                               : null
-查询失败                                          : null
-查询超时                                          : null
-检测__func_category                               : null
-环境变量ID重复                                    : null
-环境变量引用名重复                                : null
-用户__scriptSet_type                              : null
-登录__func_integration                            : null
-确认导入超时                                      : null
-脚本ID重复                                        : null
-脚本中不存在此函数                                : null
-脚本修改需要指定的用户                            : null
-脚本并无修改                                      : null
-脚本引用名重复                                    : null
-脚本执行超时                                      : null
-脚本草稿已修改                                    : null
-脚本集ID重复                                      : null
-脚本集修改需要指定的用户                          : null
-脚本集导入需要指定的用户                          : null
-脚本集引用名重复                                  : null
-脚本预检查失败                                    : null
-自动触发__execMode                                : null
-自动触发配置重复                                  : null
-自定义数据源引用名不得以 df_ 开头                 : null
-转换__func_category                               : null
-还原__scriptRecoverPoint_type                     : null
-连接到数据源失败                                  : null
-预测__func_category                               : null

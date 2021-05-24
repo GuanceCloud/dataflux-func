@@ -16,6 +16,8 @@ en:
   Cancel   : 取消
   'Yes'    : 是
   'No'     : 是
+  Default  : 默认
+  Official : 官方
 
   # 通用-操作
   Add     : 添加

@@ -91,12 +91,15 @@ class RedisHelper(object):
             raise Exception(str(e))
 
     def query(self, *args, **options):
+        command      = args[0]
+        command_args = args[1:]
+
         if not self.skip_log:
-            self.logger.debug('[REDIS QUERY] {} <- `{}` ({})'.format(
-                args[0].upper(),
-                ', '.join([json.dumps(x) for x in args[1:]]),
-                json.dumps(options)
-            ))
+            args_dumps = ', '.join([json.dumps(x) for x in command_args])
+            if len(args_dumps) > LIMIT_ARGS_DUMP:
+                args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
+
+            self.logger.debug('[REDIS] Query `{}` <- `{}` ({})'.format(command.upper(), args_dumps, json.dumps(options)))
 
         return self.client.execute_command(*args, **options);
 
@@ -109,7 +112,7 @@ class RedisHelper(object):
             if len(args_dumps) > LIMIT_ARGS_DUMP:
                 args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
-            self.logger.debug('[REDIS RUN] {} <- `{}`'.format(command.upper(), args_dumps))
+            self.logger.debug('[REDIS] Run `{}` <- `{}`'.format(command.upper(), args_dumps))
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
@@ -279,7 +282,7 @@ class RedisHelper(object):
 
     def ts_add(self, key, value, timestamp=None):
         if not self.skip_log:
-            self.logger.debug('[REDIS TS] ADD {}'.format(key))
+            self.logger.debug('[REDIS] TS Add `{}`'.format(key))
 
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
@@ -305,7 +308,7 @@ class RedisHelper(object):
 
     def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None):
         if not self.skip_log:
-            self.logger.debug('[REDIS TS] GET {}'.format(key))
+            self.logger.debug('[REDIS] TS Get `{}`'.format(key))
 
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
