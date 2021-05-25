@@ -85,8 +85,7 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/script-set-import-history/do/list', {
-        query: { pageSize: 50 },
-        alert: { howError: true },
+        query: { pageSize: 50 }
       });
       if (!apiRes.ok) return;
 

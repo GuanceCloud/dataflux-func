@@ -46,12 +46,9 @@ Output                                                               : 脚本输
 Func exection result or log message will be shown here               : 函数执行结果与日志信息将显示在此处
 
 Operating too frequently or Script is modified in other tab                            : 操作过于频繁，或脚本已经在其他窗口被修改。
-You can download current Script to avoid losing your stuff                             : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
-Script has been modified                                                               : 脚本已被修改
-Download and end editing                                                               : 下载并退出编辑
-Just end editing                                                                       : 不保存直接退出编辑
-To avoid losing current code, Script has been downloaded                               : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
+Do you want to download current editing Script?                                        : 是否下载当前正在编辑的脚本？
 Saving Script failed                                                                   : 保存脚本失败
+Current editing Script has been downloaded                                             : 当前正在编辑的脚本已经下载
 'Filename:'                                                                            : 文件名：
 Script saved successfully                                                              : 脚本保存成功
 You can continue with other operations                                                 : 你可以继续进行其他操作
@@ -66,6 +63,7 @@ Script saved                                                                    
 Script published, new Script is in effect now                                          : 脚本发布成功，新脚本已经生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
 Are you sure you want to reset the Script?                                             : 是否确认复位？
+Script has been reset to previous version                                              : 脚本已经复位到上一个版本
 Reset Script                                                                           : 复位脚本
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
 Check input                                                                            : 输入检查
@@ -437,7 +435,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: { id: this.scriptId },
         body  : { data: {codeDraft: codeDraft }, prevCodeDraftMD5: prevCodeDraftMD5 },
-        alert : { okMessage: options.mute ? null : this.$t('Script saved'), muteError: !!options.mute },
+        alert : { okMessage: options.mute ? null : this.$t('Script saved'), muteError: true }, // 错误信息在下方特殊处理
       });
 
       if (!apiRes.ok) {
@@ -445,19 +443,10 @@ export default {
         switch(apiRes.reason) {
           // 乐观锁冲突
           case 'EBizRequestConflict.scriptDraftAlreadyChanged':
-            try {
-              await this.$confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
-                  <br><span class="text-good">${this.$t('You can download current Script to avoid losing your stuff')}</span>`, this.$t('Script has been modified'), {
-                dangerouslyUseHTMLString: true,
-                confirmButtonText: this.$t('Download and end editing'),
-                cancelButtonText: this.$t('Just end editing'),
-                type: 'error',
-              });
+            if (await this.T.confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
+                <br><span class="text-main">${this.$t('Do you want to download current editing Script?')}</span>`), 'error') {
 
               this._downloadEditingCodeDraft(codeDraft);
-
-            } catch(err) {
-              // 取消操作
             }
 
             this.endEdit();
@@ -465,13 +454,10 @@ export default {
             break;
 
           default:
-            let downloadFileName = this._downloadEditingCodeDraft(codeDraft);
-            await this.$alert(`<span class="text-good">${this.$t('To avoid losing current code, Script has been downloaded')}</span>
-                <br>${this.$t('Filename:')}<code class="text-main">${downloadFileName}</code>`, this.$t('Saving Script failed'), {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('OK'),
-              type: 'error',
-            });
+            this.T.alert(`${this.$t('Saving Script failed')}</span>
+                <br><span class="text-good">${this.$t('Current editing Script has been downloaded')}</span>`);
+
+            this._downloadEditingCodeDraft(codeDraft);
 
             break;
         }
@@ -674,14 +660,7 @@ export default {
       await this.loadData({codeField: 'code'});
 
       // 弹框提示
-      this.$notify({
-        title   : this.$t('Script has been reset'),
-        message : this.$t('Script is reset to previous published version now'),
-        type    : 'success',
-        position: 'top-right',
-        duration: 3000,
-        offset  : 75,
-      });
+      this.T.notify(this.$t('Script has been reset to previous version'));
     },
     gotoCodeEditorSetup() {
       this.$router.push({

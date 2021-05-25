@@ -682,8 +682,8 @@ export async function confirm(message) {
     // 简单提示，不需要区分标题和内容
     await MessageBox.confirm(message, {
       dangerouslyUseHTMLString: true,
-      confirmButtonText       : app.$t('Confirm'),
-      cancelButtonText        : app.$t('Cancel'),
+      confirmButtonText       : app.$t('Yes'),
+      cancelButtonText        : app.$t('No'),
       type                    : 'warning',
     });
 
@@ -723,12 +723,13 @@ export async function notify(message, type) {
 
   // 简单提示，不需要区分标题和内容
   Notification({
-    title   : message,
-    message : null,
-    type    : type,
-    position: 'top-right',
-    duration: 3000,
-    offset  : 75,
+    title                   : null,
+    message                 : message,
+    dangerouslyUseHTMLString: true,
+    type                    : type,
+    position                : 'top-right',
+    duration                : 3000,
+    offset                  : 75,
   });
 };
 
@@ -886,7 +887,7 @@ async function _doAxios(axiosOpt) {
       // 通讯失败，服务端没有响应
       await MessageBox.alert(`与服务器通讯失败，请稍后再试
           <br>如果问题持续出现，请联系管理员，检查服务器状态
-          <br>${err.toString()}`, `与服务器通讯失败`, {
+          <br>${err.toString()}`, {
         dangerouslyUseHTMLString: true,
         confirmButtonText: '了解',
         type: 'error',
@@ -924,12 +925,13 @@ export async function callAPI(method, pathPattern, options) {
     if (alert.okMessage) {
       setImmediate(() => {
         Notification({
-          title   : alert.okMessage,
-          message : null, // 简单提示，不需要区分标题和内容
-          type    : 'success',
-          position: 'top-right',
-          duration: 3000,
-          offset  : 75,
+          title                   : null, // 简单提示，不需要区分标题和内容
+          message                 : alert.okMessage,
+          dangerouslyUseHTMLString: true,
+          type                    : 'success',
+          position                : 'top-right',
+          duration                : 3000,
+          offset                  : 75,
         });
       });
     }

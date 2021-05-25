@@ -131,9 +131,7 @@ export default {
       chart.resize();
     },
     async updateChart() {
-      let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get', {
-        alert: { showError: true },
-      });
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
       if (!apiRes.ok) return;
 
       let hostname = apiRes.data.hostname;

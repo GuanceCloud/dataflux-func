@@ -2023,20 +2023,11 @@ exports.queryPythonPackages = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         // 提取所有包名
-        var PREFIX_S = '<a href="';
-        var START_S  = '/">';
-        var END_S    = '</a>';
-
         allPackages = [];
-        _body.split('\n').forEach(line => {
-          if (line.trim().indexOf(PREFIX_S) !== 0) return;
-
-          var start = line.indexOf(START_S) + START_S.length;
-          var end   = line.indexOf(END_S);
-          var pkg   = line.slice(start, end);
-
-          allPackages.push(pkg);
-        });
+        var PKG_RE = /<a href=".+">(.+)<\/a>/g;
+        for (var pkg of _body.matchAll(PKG_RE)) {
+          allPackages.push(pkg[1].trim());
+        }
 
         // 加入缓存
         res.locals.cacheDB.setex(cacheKey, CONFIG._PIP_LIST_EXPIRES, JSON.stringify(allPackages), asyncCallback);

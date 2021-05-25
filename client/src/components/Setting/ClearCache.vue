@@ -112,19 +112,18 @@ export default {
         this.$store.commit('updateCrontabConfigList_scrollY', null);
       }
 
-      let alertMessage = this.$t('Cache is cleared');
+      let _message = this.$t('Cache is cleared');
       if (this.form.clear_systemConfig) {
-        alertMessage += `<br><span class="text-bad">${this.$t('Page will be refreshed, and config will reload from server')}</span>`;
+        _message += `<br><span class="text-bad">${this.$t('Page will be refreshed, and config will reload from server')}</span>`;
       }
 
-      await this.$alert(alertMessage, this.$t('Clear Cache'), {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: this.$t('Very good'),
-        type: 'success',
-      });
+      this.T.notify(_message);
 
       if (this.form.clear_systemConfig) {
-        location.reload();
+        // 延迟3秒，保证提示能够正常展示
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
       }
     },
   },

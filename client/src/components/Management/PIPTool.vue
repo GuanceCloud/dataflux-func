@@ -189,13 +189,12 @@ export default {
   },
   computed: {
     isInstallable() {
+      // 检查空内容
       if (this.T.isNothing(this.packageToInstall)) {
         return false;
       }
-      if (!this.packageToInstall.split('').pop().match(/\w/)) {
-        return false;
-      }
 
+      // 指定版本时，检查格式
       let parts = this.packageToInstall.split('==');
       if (parts.length > 2) {
         return false;
@@ -204,14 +203,13 @@ export default {
         return false;
       }
 
+      // 检查重复安装已内置的包
       let pkg = parts[0];
       let installedPackage = this.installedPackageMap[pkg];
       if (installedPackage && installedPackage.isBuiltin) {
         return false;
       }
-      if (!this.queriedPackageMap[this.packageToInstall]) {
-        return false;
-      }
+
       return true;
     },
   },

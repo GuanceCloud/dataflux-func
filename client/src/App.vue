@@ -116,15 +116,8 @@ export default {
               break;
 
             default:
-              this.$notify({
-                dangerouslyUseHTMLString: true,
-                title   : '有其他用户或窗口也在本页面操作',
-                message : `本系统<span class="text-bad">不支持多人或多窗口同时编辑</span>。<br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`,
-                type    : 'warning',
-                position: 'top-right',
-                offset  : 20,
-                duration: 0,
-              });
+              this.T.notify(`<span class="text-bad">本系统不支持多人或多窗口同时编辑</span>。
+                <br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`);
               break;
           }
         }
@@ -574,6 +567,10 @@ content: "\25B2";
 }
 .el-notification {
   z-index: 3001 !important;
+  align-items: center !important;
+}
+.el-notification__content {
+  margin-top: 0 !important;
 }
 .el-message {
   top: 40px !important;

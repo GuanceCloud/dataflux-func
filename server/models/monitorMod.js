@@ -422,7 +422,7 @@ EntityModel.prototype.pingNodes = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task   = 'internal.ping';
+  var task   = 'Internal.Ping';
   var args   = null;
   var kwargs = null;
   celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
@@ -455,7 +455,7 @@ EntityModel.prototype.getNodesStats = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task   = 'internal.stats';
+  var task   = 'Internal.Stats';
   var args   = null;
   var kwargs = null;
   celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
@@ -486,7 +486,7 @@ EntityModel.prototype.getNodesActiveQueues = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task   = 'internal.activeQueues';
+  var task   = 'Internal.ActiveQueues';
   var args   = null;
   var kwargs = null;
   celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
@@ -521,7 +521,7 @@ EntityModel.prototype.getNodesReport = function(callback) {
 
   var celery = celeryHelper.createHelper(self.logger);
 
-  var task   = 'internal.report';
+  var task   = 'Internal.Report';
   var args   = null;
   var kwargs = null;
   celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {

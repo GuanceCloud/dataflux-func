@@ -247,7 +247,7 @@ export default {
           queryStatement: queryOptions.queryStatement,
           returnType    : 'repr',
         },
-        extraOptions: {noCountProcessing: true},
+        extraOptions: { noCountProcessing: true },
       });
 
       let result = {
@@ -405,7 +405,7 @@ export default {
               queryStatement: queryStatement,
               returnType    : 'json',
             },
-            extraOptions: {noCountProcessing: true},
+            extraOptions: { noCountProcessing: true },
           });
           if (!apiRes.ok) {
             if (node.root) {
@@ -625,7 +625,7 @@ export default {
         case 'api':
           // 查询数据
           apiRes = await this.T.callAPI_get(browserConfig.api, {
-            extraOptions: {noCountProcessing: true},
+            extraOptions: { noCountProcessing: true },
           });
           if (!apiRes.ok) {
             if (node.root) {

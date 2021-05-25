@@ -45,7 +45,6 @@ export async function getFuncList() {
   // 函数
   apiRes = await T.callAPI_getAll('/api/v1/funcs/do/list', {
     query: { fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON'] },
-    alert: { showError: true },
   });
   if (!apiRes.ok) return;
 

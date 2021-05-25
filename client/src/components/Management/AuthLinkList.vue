@@ -293,7 +293,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { isDisabled: true } },
-            alert : { okMessage: this.$t('Auth Link disabled')},
+            alert : { okMessage: this.$t('Auth Link disabled') },
           });
           break;
 
@@ -301,7 +301,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { isDisabled: false } },
-            alert : { okMessage: this.$t('Auth Link enabled')},
+            alert : { okMessage: this.$t('Auth Link enabled') },
           });
           break;
 
@@ -309,7 +309,7 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { showInDoc: true } },
-            alert : { okMessage: this.$t('Auth Link showed')},
+            alert : { okMessage: this.$t('Auth Link showed') },
           });
           break;
 
@@ -317,14 +317,14 @@ export default {
           apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { showInDoc: false } },
-            alert : { okMessage: this.$t('Auth Link hide')},
+            alert : { okMessage: this.$t('Auth Link hide') },
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
             params: { id: d.id },
-            alert : { okMessage: this.$t('Auth Link deleted')},
+            alert : { okMessage: this.$t('Auth Link deleted') },
           });
           break;
       }

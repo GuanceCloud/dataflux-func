@@ -120,8 +120,8 @@ export default {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/access-keys/do/list', {
         query: this.T.createListQuery({
-          fields: ['id', 'userId', 'name', 'secret', 'createTime'],
-          sort  : ['-seq'],
+          fields: [ 'id', 'userId', 'name', 'secret', 'createTime' ],
+          sort  : [ '-seq' ],
         }),
       });
       if (!apiRes.ok) return;
