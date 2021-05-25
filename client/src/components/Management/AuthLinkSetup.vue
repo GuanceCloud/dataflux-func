@@ -4,37 +4,36 @@ shortcutDays : '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Use custom ID                                    : 使用自定义ID
-ID is used in the calling URL                    : ID关系到调用时的URL
-Func                                             : 执行函数
-Arguments                                        : 参数指定
-Tags                                             : 标签
-Add Tag                                          : 添加标签
-'JSON formated arguments (**kwargs)'             : 'JSON格式的参数（**kwargs）'
+Add Auth Link  : 添加授权链接
+Setup Auth Link: 配置授权链接
+
+Use custom ID: 使用自定义ID
+Func         : 执行函数
+Arguments    : 参数指定
+Tags         : 标签
+Add Tag      : 添加标签
+Show in doc  : 显示于文档
+Expires      : 有效期
+Limiting     : 限流
+Note         : 备注
+
+ID will be a part of the calling URL: ID关系到调用时的URL
+'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
-Show in doc                                      : 显示于文档
-Expire at                                        : 有效期至
-Select expire time                               : 选择有效期
-Throttling                                       : 限流
-Note                                             : 备注
 
-Add Auth Link   : 添加授权链接
-Modify Auth Link: 修改授权链接
-Delete Auth Link: 删除授权链接
-
-Invalid argument format                       : 参数格式不正确
-Are you sure you want to delete the Auth Link?: 是否确认删除授权链接？
+'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+Please select Func: 请选择执行函数
+'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
+Date-time cannot earlier than 1970: 日期不能早于1970年
+Date-time cannot later than 2037: 时间不能晚于2037年
 
 Auth Link created: 授权链接已创建
 Auth Link saved  : 授权链接已保存
 Auth Link deleted: 授权链接已删除
 
-'ID must starts with "{prefix}"'                   : 'ID必须以"{prefix}"开头'
-Please select Func                                 : 请选择执行函数
-Only date-time between 1970 and 2037 are allowed   : 只能选择1970年至2037年之间的日期
-Date-time cannot earlier than 1970                 : 日期不能早于1970年
-Date-time cannot later than 2037                   : 时间不能晚于2037年
-'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
+Invalid argument format: 参数格式不正确
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 shortcutDays : '{n}天'
@@ -64,7 +63,7 @@ shortcutDays : '{n}天'
                     show-word-limit
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock :title="$t('ID is used in the calling URL')"></InfoBlock>
+                  <InfoBlock :title="$t('ID will be a part of the calling URL')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Func')" prop="funcId">
@@ -102,11 +101,10 @@ shortcutDays : '{n}天'
                   </el-switch>
                 </el-form-item>
 
-                <el-form-item :label="$t('Expire at')" prop="expireTime">
+                <el-form-item :label="$t('Expires')" prop="expireTime">
                   <el-date-picker class="expire-time-input"
                     v-model="form.expireTime"
                     type="datetime"
-                    :placeholder="$t('Select expire time')"
                     align="left"
                     format="yyyy-MM-dd HH:mm"
                     :clearable="true"
@@ -115,7 +113,7 @@ shortcutDays : '{n}天'
                 </el-form-item>
 
                 <template v-for="(opt, index) in C.AUTH_LINK_THROTTLING">
-                  <el-form-item :label="index === 0 ? $t('Throttling') : ''" :prop="`throttlingJSON.${opt.key}`">
+                  <el-form-item :label="index === 0 ? $t('Limiting') : ''" :prop="`throttlingJSON.${opt.key}`">
                     <el-input-number class="throttling-input"
                       :min="1"
                       :step="1"
@@ -141,7 +139,7 @@ shortcutDays : '{n}天'
                 <el-form-item>
                   <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -391,16 +389,9 @@ export default {
     mode() {
       return this.$route.name.split('-').pop();
     },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Auth Link'),
+        setup: this.$t('Setup Auth Link'),
         add  : this.$t('Add Auth Link'),
       };
       return _map[this.mode];

@@ -22,9 +22,9 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
               :searchTip="$t('Search File Service(ID, root)')">
             </FuzzySearchInput>
 
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              {{ $t('New File Service') }}
+              {{ $t('New') }}
             </el-button>
           </div>
         </h1>
@@ -78,12 +78,12 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
                 :underline="false"
                 target="_blank">{{ $t('Open') }}</el-link>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">启用</el-button>
+              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">禁用</el-button>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
+              <el-button @click="openSetup(scope.row, 'setup')" type="text">编辑</el-button>
 
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -94,12 +94,9 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
-
 export default {
   name: 'FileServiceList',
   components: {
-    FuzzySearchInput,
   },
   watch: {
     $route: {
@@ -136,7 +133,7 @@ export default {
       });
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -220,10 +217,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

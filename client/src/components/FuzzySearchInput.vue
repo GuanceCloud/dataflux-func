@@ -12,7 +12,7 @@ Input search content: 输入搜索内容
     <div class="search-input">
       <el-input
         :placeholder="$t('Input search content')"
-        size="mini"
+        size="small"
         v-model="dataFilter._fuzzySearch"
         @change="T.changePageFilter(dataFilter)">
         <i slot="prefix"

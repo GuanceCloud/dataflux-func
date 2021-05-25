@@ -13,7 +13,7 @@ File Service created: 文件服务已创建
 File Service saved  : 文件服务已保存
 File Service deleted: 文件服务已删除
 
-Are you sure you want to delete the File Service?: 是否确认删除文件服务？
+Are you sure you want to delete the File Service?: 是否确认删除此文件服务？
 
 'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
 Please select Func              : 请选择根目录

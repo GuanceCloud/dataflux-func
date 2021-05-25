@@ -12,7 +12,7 @@ Script Lib recovered: 脚本库已还原
         <h1>
           脚本库还原点
           <div class="header-control">
-            <el-button @click="openSetup(null, 'add')" size="mini">
+            <el-button @click="openSetup(null, 'add')" size="small">
               <i class="fa fa-fw fa-camera"></i>
               创建还原点
             </el-button>

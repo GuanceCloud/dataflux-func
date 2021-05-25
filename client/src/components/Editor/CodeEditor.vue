@@ -56,13 +56,13 @@ Published Code                                                                  
 Saved Draft Code                                                                       : 已保存的草稿代码
 Script will take effect after been published immediately,                              : 发布后新的脚本将立即生效，
 Funcs with {html} decorator will be available to be accessed                           : 被{html}装饰的函数可被访问
-Are you sure you want to publish the Script?                                           : 是否确认发布？
+Are you sure you want to publish the Script?                                           : 是否确认发布此脚本？
 Publish Script                                                                         : 发布脚本
 'Publish Script:'                                                                      : 发布脚本：
 Script saved                                                                           : 脚本已保存
 Script published, new Script is in effect now                                          : 脚本发布成功，新脚本已经生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
-Are you sure you want to reset the Script?                                             : 是否确认复位？
+Are you sure you want to reset the Script?                                             : 是否确认复位此脚本？
 Script has been reset to previous version                                              : 脚本已经复位到上一个版本
 Reset Script                                                                           : 复位脚本
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
@@ -1000,69 +1000,48 @@ export default {
       let message = null;
       switch(apiRes.reason) {
         case 'EScriptPreCheck':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
-          message = isPublish ? `${this.$t('Script publishing failed. Please check your code')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
-                              : `${this.$t('Script executing failed. Please check your code')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing failed. Please check your code')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          } else {
+            this.T.alert(`${this.$t('Script executing failed. Please check your code')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          }
           break;
 
         case 'EAPITimeout':
         case 'EFuncTimeout':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Waiting Timeout');
-          message = isPublish ? `${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
-                                    <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`
-                              : `${this.$t('Waiting Func response timeout')}
-                                    <span class="text-main">
-                                    <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
-                                    <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
-                                    </span>`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
+                <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`);
+          } else {
+            this.T.alert(`${this.$t('Waiting Func response timeout')}
+                <span class="text-main">
+                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                  <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
+                </span>`);
+          }
           break;
 
         case 'EFuncFailed':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
-          message = isPublish ? `${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
-                              : `${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          } else {
+            this.T.alert(`${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          }
           break;
 
         case 'EFuncResultParsingFailed':
-          title   = this.$t('Can not parse return value');
-          message = `${this.$t('Func returned a value that can not been parsed as JSON. Please check your code')}
-                        <br>${this.$t('In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).')}
-                        ${this.$t('Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          this.T.alert(`${this.$t('Func returned a value that can not been parsed as JSON. Please check your code')}
+                <br>${this.$t('In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).')}
+                <br>${this.$t('Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning')}`);
           break;
 
         case 'EClientDuplicated':
-          title = this.$t('Duplicated Func names');
-          message = `${this.$t('Duplicated names of Funcs decorated by @DFF.API(...)')}
-                      <br>${this.$t('Please check the code and try again')}`
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          this.T.alert(`${this.$t('Duplicated names of Funcs decorated by @DFF.API(...)')}
+                <br>${this.$t('Please check the code and try again')}`);
           break;
       }
 

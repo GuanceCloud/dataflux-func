@@ -6,7 +6,7 @@
         <h1>
           脚本包导出历史
           <div class="header-control">
-            <el-button @click="openSetup(null, 'export')" size="mini">
+            <el-button @click="openSetup(null, 'export')" size="small">
               <i class="fa fa-fw fa-cloud-download"></i>
               导出脚本包
             </el-button>

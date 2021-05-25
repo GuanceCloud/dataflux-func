@@ -10,7 +10,7 @@ Data exported: 数据已导出
         <h1>
           {{ modeName }}脚本包
           <div class="header-control">
-            <el-button @click="goToHistory" size="mini">
+            <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本包导出历史
             </el-button>

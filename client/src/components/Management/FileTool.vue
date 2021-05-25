@@ -39,7 +39,7 @@ File already existed                                                            
           {{ $t('File Tool') }}
 
           &#12288;
-          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="mini">
+          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="small">
             <i class="fa fa-fw fa-arrow-up"></i>
             {{ $t('Go Up') }}
           </el-button>
@@ -48,14 +48,14 @@ File already existed                                                            
             <div class="popover-input">
               <el-row>
                 <el-col :span="20">
-                  <el-input size="mini" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+                  <el-input size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
                 </el-col>
                 <el-col :span="4">
-                  <el-button size="mini" type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
+                  <el-button size="small" type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
                 </el-col>
               </el-row>
             </div>
-            <el-button slot="reference" size="mini">
+            <el-button slot="reference" size="small">
               <i class="fa fa-fw fa-plus"></i>
               {{ $t('New Folder') }}
             </el-button>
@@ -70,7 +70,7 @@ File already existed                                                            
             :http-request="handleUpload"
             :on-change="onUploadFileChange"
             action="">
-            <el-button size="mini">
+            <el-button size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>
               {{ $t('Upload') }}
             </el-button>
@@ -140,7 +140,7 @@ File already existed                                                            
 
           <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
+              <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text">{{ $t('Enter') }}</el-button>
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
                   v-if="previewExtMap[scope.row.ext]"
@@ -157,7 +157,7 @@ File already existed                                                            
               </template>
 
               <el-dropdown @command="resourceOperationCmd">
-                <el-button type="text" size="small">
+                <el-button type="text">
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">

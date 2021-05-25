@@ -6,7 +6,7 @@
         <h1>
           脚本包导入历史
           <div class="header-control">
-            <el-button @click="openSetup(null, 'import')" size="mini">
+            <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>
               导入脚本包
             </el-button>

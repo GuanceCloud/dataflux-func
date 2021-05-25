@@ -12,7 +12,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
         <h1>
           {{ modeName }}脚本库还原点
           <div class="header-control">
-            <el-button @click="goToHistory" size="mini">
+            <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本库还原点
             </el-button>

@@ -34,6 +34,7 @@ var batchMod                  = require('../models/batchMod');
 var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
 var operationRecordMod        = require('../models/operationRecordMod');
 var fileServiceMod            = require('../models/fileServiceMod');
+var userMod                   = require('../models/userMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -1003,6 +1004,8 @@ exports.overview = function(req, res, next) {
   var authLinkModel      = authLinkMod.createModel(res.locals);
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   var batchModel         = batchMod.createModel(res.locals);
+  var fileServiceModel   = fileServiceMod.createModel(res.locals);
+  var userModel          = userMod.createModel(res.locals);
 
   var overviewParts = [
     { name : 'scriptSet',     model: scriptSetModel},
@@ -1013,6 +1016,8 @@ exports.overview = function(req, res, next) {
     { name : 'authLink',      model: authLinkModel},
     { name : 'crontabConfig', model: crontabConfigModel},
     { name : 'batch',         model: batchModel},
+    { name : 'fileService',   model: fileServiceModel},
+    { name : 'user',          model: userModel},
   ];
 
   var overview = {

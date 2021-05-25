@@ -105,26 +105,14 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text" size="small">显示HTTP请求详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">显示HTTP请求详情</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
 
       <LongTextDialog title="完整内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
@@ -132,13 +120,11 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'OperationRecordList',
   components: {
-    FuzzySearchInput,
     LongTextDialog,
   },
   watch: {
@@ -161,7 +147,7 @@ export default {
 
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
       this.$store.commit('updateLoadStatus', true);
     },
     showDetail(d) {
@@ -197,10 +183,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

@@ -99,12 +99,18 @@ Vue.prototype.common = common;
 Vue.config.productionTip = false
 
 // 常用业务组件
-import Logo       from '@/components/Logo'
-import InfoBlock  from '@/components/InfoBlock'
-import CopyButton from '@/components/CopyButton'
+import Logo             from '@/components/Logo'
+import InfoBlock        from '@/components/InfoBlock'
+import CopyButton       from '@/components/CopyButton'
+import FuncInfo         from '@/components/FuncInfo'
+import FuzzySearchInput from '@/components/FuzzySearchInput'
+import Pager            from '@/components/Pager'
 Vue.component('Logo', Logo);
 Vue.component('InfoBlock', InfoBlock);
 Vue.component('CopyButton', CopyButton);
+Vue.component('FuncInfo', FuncInfo);
+Vue.component('FuzzySearchInput', FuzzySearchInput);
+Vue.component('Pager', Pager);
 
 // 项目业务组件
 import GotoFuncButton from '@/components/GotoFuncButton'

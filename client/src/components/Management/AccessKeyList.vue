@@ -17,9 +17,9 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
               :searchTip="$t('Search AccessKey(ID, name)')">
             </FuzzySearchInput>
 
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              新建AccessKey
+              {{ $t('New') }}
             </el-button>
           </div>
         </h1>
@@ -55,7 +55,7 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
           <el-table-column label="AccessKey Secret">
             <template slot-scope="scope">
               <template v-if="!showSecretMap[scope.row.id]">
-                <el-button @click="showSecret(scope.row)" type="text" size="small">显示</el-button>
+                <el-button @click="showSecret(scope.row)" type="text">显示</el-button>
               </template>
               <template v-else>
                 <code class="text-code text-small">{{ scope.row.secret }}</code><CopyButton :content="scope.row.secret"></CopyButton>
@@ -73,37 +73,22 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
     </el-container>
   </transition>
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
-
 export default {
   name: 'AccessKeyList',
   components: {
-    FuzzySearchInput,
   },
   watch: {
     $route: {
@@ -127,7 +112,7 @@ export default {
       if (!apiRes.ok) return;
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -181,16 +166,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
-      dataPageInfo: {
-        totalCount: 0,
-        pageCount : 0,
-        pageSize  : 20,
-        pageNumber: 1,
-      },
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

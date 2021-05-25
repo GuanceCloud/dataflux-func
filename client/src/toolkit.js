@@ -739,7 +739,7 @@ export async function notify(message, type) {
     type                    : type,
     position                : 'top-right',
     duration                : 3000,
-    offset                  : 75,
+    offset                  : 80,
   });
 };
 
@@ -1188,6 +1188,15 @@ export function createListQuery(nextListQuery) {
 
   listQuery = noNullOrWhiteSpace(listQuery);
   return listQuery;
+};
+
+export function createPageInfo() {
+  return {
+    totalCount: 0,
+    pageCount : 0,
+    pageSize  : 20,
+    pageNumber: 1,
+  };
 };
 
 export function createPageFilter(listQuery) {

@@ -1,4 +1,5 @@
 <i18n locale="en" lang="yaml">
+overviewCountUnit   : ''
 workerCount         : '{n} worker | {n} workers'
 taskCount           : '{n} task | {n} tasks'
 scriptOverviewCount : '({n} script) | ({n} scripts)'
@@ -10,6 +11,7 @@ Overview                      : 总览
 Data Count                    : 数据计数
 Worker Queue Info             : 队列信息
 Queue                         : 队列
+overviewCountUnit             : 个
 workerCount                   : '工作单元 {n} 个'
 taskCount                     : '请求排队 {n} 个'
 Script overview               : 脚本总览
@@ -59,7 +61,7 @@ Response                      : 响应
           <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
           <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
             {{ d.count }}
-            <span class="overview-count-unit">个</span>
+            <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
           </span>
         </el-card>
 
@@ -79,7 +81,7 @@ Response                      : 响应
 
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Script overview') }} {{ $tc('scriptOverviewCount', scriptOverview.length) }}</h1></el-divider>
 
-        <el-table :data="scriptOverview" stripe style="width: 95%">
+        <el-table :data="scriptOverview" stripe>
           <el-table-column :label="$t('Script Set')" sortable>
             <template slot-scope="scope">
               <span>{{ scope.row.scriptSetTitle || scope.row.scriptSetId }}</span>
@@ -129,7 +131,7 @@ Response                      : 响应
 
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
 
-        <el-table :data="latestOperations" stripe style="width: 95%">
+        <el-table :data="latestOperations" stripe>
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
@@ -202,7 +204,7 @@ Response                      : 响应
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text" size="small">{{ $t('Show detail') }}</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
             </template>
           </el-table-column>
 

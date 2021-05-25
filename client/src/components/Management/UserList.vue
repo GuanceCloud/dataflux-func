@@ -18,9 +18,9 @@ Search User(ID, username, name): 搜索用户（ID、用户名、名称）
               :searchTip="$t('Search User(ID, username, name)')">
             </FuzzySearchInput>
 
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              新建成员
+              {{ $t('New') }}
             </el-button>
           </div>
         </h1>
@@ -64,10 +64,10 @@ Search User(ID, username, name): 搜索用户（ID、用户名、名称）
             <template slot-scope="scope">
               <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">系统管理员</span>
               <template v-else>
-                <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-                <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+                <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">启用</el-button>
+                <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">禁用</el-button>
 
-                <el-button @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
+                <el-button @click="openSetup(scope.row, 'setup')" type="text">编辑</el-button>
               </template>
             </template>
           </el-table-column>
@@ -75,30 +75,15 @@ Search User(ID, username, name): 搜索用户（ID、用户名、名称）
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
     </el-container>
   </transition>
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
-
 export default {
   name: 'UserList',
   components: {
-    FuzzySearchInput,
   },
   watch: {
     $route: {
@@ -126,7 +111,7 @@ export default {
       if (!apiRes.ok) return;
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -198,16 +183,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
-      dataPageInfo: {
-        totalCount: 0,
-        pageCount : 0,
-        pageSize  : 20,
-        pageNumber: 1,
-      },
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 filter content: 过滤内容
 Refresh       : 刷新列表
-Add ENV       : 添加数据源
+Add ENV       : 添加环境变量
 Setup         : 配置
 'Example:'    : 示例
 Copy example  : 复制示例
@@ -11,7 +11,7 @@ Copy {name} ID: 复制{name}ID
 <template>
   <div>
     <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
-      <el-button slot="prefix" type="text" size="small"></el-button>
+      <el-button slot="prefix" type="text"></el-button>
     </el-input>
 
     <el-tree
@@ -45,7 +45,6 @@ Copy {name} ID: 复制{name}ID
             <el-tooltip effect="dark" :content="$t('Setup')" placement="top" :enterable="false">
               <el-button
                 type="text"
-                size="small"
                 @click.stop="openEntity(node, data, 'setup')">
                 <i class="fa fa-fw fa-wrench text-info"></i>
               </el-button>
@@ -69,17 +68,14 @@ Copy {name} ID: 复制{name}ID
               </template>
 
               <br><CopyButton
-                font-size="12px"
                 :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
                 :content="data.id"></CopyButton>
               <br><CopyButton v-if="data.sampleCode"
-                font-size="12px"
                 :title="$t('Copy example')"
                 :content="data.sampleCode"></CopyButton>
 
               <el-button slot="reference"
                 type="text"
-                size="small"
                 @click.stop="showPopover(data.id)">
                 <i class="fa fa-fw fa-question-circle"></i>
               </el-button>
@@ -227,7 +223,7 @@ export default {
 .aside-tip pre {
   padding: 0 0 0 10px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 .aside-tree-node-description {
 

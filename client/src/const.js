@@ -489,6 +489,16 @@ export default {
         name: app.$t('Batch'),
         icon: 'fa-tasks',
       },
+      {
+        key : 'fileService',
+        name: app.$t('File Service'),
+        icon: 'fa-folder-open',
+      },
+      {
+        key : 'user',
+        name: app.$t('User'),
+        icon: 'fa-users',
+      },
     ];
   },
   get OVERVIEW_ENTITY_MAP() {

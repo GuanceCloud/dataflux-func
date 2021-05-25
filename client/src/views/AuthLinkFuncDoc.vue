@@ -97,7 +97,7 @@
 
           <el-table-column align="right" width="100">
             <template slot-scope="scope">
-              <el-button @click="showAPI(scope.row)" type="text" size="small">API调用示例</el-button>
+              <el-button @click="showAPI(scope.row)" type="text">API调用示例</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -115,13 +115,11 @@
 
 <script>
 import APIExampleDialog from '@/components/APIExampleDialog'
-import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'AuthLinkFuncDoc',
   components: {
     APIExampleDialog,
-    FuncInfo,
   },
   watch: {
     $route: {

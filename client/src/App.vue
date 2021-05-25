@@ -353,11 +353,6 @@ h3 {
   right: 0;
   bottom: 0;
 }
-.paging-area {
-  height: 50px !important;
-  text-align: right;
-  padding: 10px 20px !important;
-}
 .common-form {
   width: 620px;
 }
@@ -389,25 +384,20 @@ h3 {
 
 .text-main {
   color: #FF6600;
-  font-weight: bold;
   text-shadow: #ffa5004d 0 0 10px;
 }
 .text-info {
   color: darkgrey;
-  font-weight: bold;
 }
 .text-watch {
   color: orange;
-  font-weight: bold;
   text-shadow: #ffc58e 0 0 10px;
 }
 .text-good {
   color: green;
-  font-weight: bold;
 }
 .text-bad {
   color: red;
-  font-weight: bold;
 }
 .text-code {
   padding: 1px 3px;
@@ -465,7 +455,6 @@ kbd {
 }
 .no-data-area .no-data-title {
   color: darkgrey !important;
-  font-weight: bold;
   font-size: x-large
 }
 .no-data-area .no-data-tip {
@@ -505,7 +494,7 @@ kbd {
   transform: scale(.7, 1);
 }
 .splitter-pane-resizer.horizontal:after {
-content: "\25B2";
+  content: "\25B2";
   font-size: 12px;
   display: block;
   position: absolute;
@@ -536,7 +525,7 @@ content: "\25B2";
   border: none;
 }
 .fix-list-button .el-link {
-  font-size: 12px;
+  font-size: 14px;
   margin-left: 10px;
   position: relative;
   top: -1px;
@@ -546,6 +535,10 @@ content: "\25B2";
 }
 .fix-list-button .el-dropdown {
   margin-left: 10px;
+}
+
+.el-tag {
+  font-size: 14px !important;
 }
 .el-tag + .el-tag {
   margin-left: 5px;

@@ -26,7 +26,11 @@ en:
   Edit    : 编辑
   Modify  : 修改
   Delete  : 删除
+  Enable  : 启用
+  Disable : 禁用
   Save    : 保存
+  Hide    : 隐藏
+  Show    : 显示
   Lock    : 锁定
   Unlock  : 解锁
   Open    : 打开
@@ -35,13 +39,33 @@ en:
   Debug   : 调试
   Download: 下载
 
+  # 通用-操作结果
+  Added   : 已添加
+  Edited  : 已编辑
+  Modified: 已修改
+  Deleted : 已删除
+  Enabled : 已启用
+  Disabled: 已禁用
+  Saved   : 已保存
+  Hidden  : 已隐藏
+  Shown   : 已显示
+  Locked  : 已锁定
+  Unlockel: 已解锁
+  Opened  : 已打开
+  Closed  : 已关闭
+  Cleared : 已清空
+
   # 通用-操作（小写）
   add     : 添加
   setup   : 配置
   edit    : 编辑
   modify  : 修改
   delete  : 删除
+  enable  : 启用
+  disable : 禁用
   save    : 保存
+  hide    : 隐藏
+  show    : 显示
   lock    : 解锁
   unlock  : 锁定
   open    : 打开
@@ -49,6 +73,35 @@ en:
   clear   : 清空
   debug   : 调试
   download: 下载
+
+  # 通用-操作结果（小写）
+  added   : 已添加
+  edited  : 已编辑
+  modified: 已修改
+  deleted : 已删除
+  enabled : 已启用
+  disabled: 已禁用
+  saved   : 已保存
+  hidden  : 已隐藏
+  shown   : 已显示
+  locked  : 已锁定
+  unlockel: 已解锁
+  opened  : 已打开
+  closed  : 已关闭
+  cleared : 已清空
+
+  # 通用表格-操作区
+  Show all: 显示全部
+  New     : 新建
+
+  # 通用表格-数据
+  No matched data found: 当前过滤条件无匹配数据
+
+  # 通用表格-表头/标题等
+  Tags       : 标签
+  Status     : 状态
+  Note       : 备注
+  API Example: API调用示例
 
   # toolkit.js - API调用提示
   Read data                               : 读取数据
@@ -69,7 +122,7 @@ en:
   'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
-  # const.js - ASIDE_ITEM_TYPE, OVERVIEW_ENTITY
+  # 业务实体/const.js - ASIDE_ITEM_TYPE, OVERVIEW_ENTITY
   Script Set    : 脚本集
   Script        : 脚本
   Func          : 函数
@@ -78,6 +131,19 @@ en:
   Auth Link     : 授权链接
   Crontab Config: 自动触发配置
   Batch         : 批处理
+  File Service  : 文件服务
+  User          : 用户
+
+  Script Set ID    : 脚本集ID
+  Script ID        : 脚本ID
+  Func ID          : 函数ID
+  Data Source ID   : 数据源ID
+  ENV ID           : 环境变量ID
+  Auth Link ID     : 授权链接ID
+  Crontab Config ID: 自动触发配置ID
+  Batch ID         : 批处理ID
+  File Service ID  : 文件服务ID
+  User ID          : 用户ID
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'

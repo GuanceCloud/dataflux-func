@@ -1,18 +1,16 @@
 <i18n locale="zh-CN" lang="yaml">
-This Script Set is locked by someone else, modifying is disabled : 当前脚本已被其他人锁定，无法进行修改
-This Script Set is locked by you, modifying is disabled to others: 当前脚本已被您锁定，其他人无法修改
-Script Set ID will be part of the Func ID                        : 脚本集ID将作为函数ID的一部分
-Title                                                            : 标题
-Description                                                      : 描述
-Description about this Script Set                                : 介绍当前脚本集的作用、功能、目的等
+Add Script Set  : 添加脚本集
+Setup Script Set: 配置脚本集
 
-Add Script Set   : 添加脚本集
-Modify Script Set: 修改脚本集
-Delete Script Set: 删除脚本集
+Title      : 标题
+Description: 描述
 
-Deleting Script Set may break the dependency with other scripts                       : 删除脚本集可能会破坏与其他脚本的依赖关系
-In addition, all data associated with this Script Set will be deleted at the same time: 此外，与此脚本集关联的所有数据也会同时删除
-Are you sure you want to delete the Script Set?                                       : 是否确认删除脚本集？
+Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
+
+Please input ID: 请输入ID
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number: 不得以数字开头
+'ID cannot contains double underscore "__"': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
 
 Script Set created : 脚本集已创建
 Script Set saved   : 脚本集已保存
@@ -20,10 +18,10 @@ Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script Set deleted : 脚本集已删除
 
-Please input ID                                   : 请输入ID
-Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number                   : 不得以数字开头
-'ID cannot contains double underscore "__"'       : '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
+Are you sure you want to delete the Script Set?: 是否确认删除此脚本集？
+
+This Script Set is locked by someone else, setup is disabled: 当前脚本已被其他人锁定，无法更改配置
+This Script Set is locked by you, setup is disabled to others: 当前脚本已被您锁定，其他人无法更改配置
 </i18n>
 
 <template>
@@ -41,10 +39,10 @@ Cannot not starts with a number                   : 不得以数字开头
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item v-if="isLockedByOther">
-                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
+                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, setup is disabled')"></InfoBlock>
                 </el-form-item>
                 <el-form-item v-else-if="data.isLocked">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
+                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, setup is disabled to others')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -52,7 +50,7 @@ Cannot not starts with a number                   : 不得以数字开头
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
-                  <InfoBlock :title="$t('Script Set ID will be part of the Func ID')"></InfoBlock>
+                  <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
@@ -70,14 +68,13 @@ Cannot not starts with a number                   : 不得以数字开头
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock :title="$t('Description about this Script Set')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
                   <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -246,16 +243,9 @@ export default {
     mode() {
       return this.$route.name.split('-').pop();
     },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Script Set'),
+        setup: this.$t('Setup Script Set'),
         add  : this.$t('Add Script Set'),
       };
       return _map[this.mode];
