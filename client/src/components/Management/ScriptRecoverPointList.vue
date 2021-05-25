@@ -87,21 +87,11 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'recover':
-            await this.$confirm(`执行恢复后，脚本集、脚本、函数等数据将完整恢复到还原点创建时刻的状态且<span class="text-bad">立即生效</span>
-                <hr class="br">是否确认恢复？`, '恢复脚本',  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: '确认恢复',
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'recover':
+          if (!await this.T.confirm(`执行恢复后，脚本集、脚本、函数等数据将完整恢复到还原点创建时刻的状态且立即生效
+                <hr class="br">是否确认恢复？`)) return;
+          break;
       }
 
       let apiRes = null;

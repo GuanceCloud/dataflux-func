@@ -160,39 +160,18 @@ export default {
 
       switch(apiRes.reason) {
         case 'EBizCondition.InvalidPassword':
-          this.$alert(`导入令牌错误<br>
-              请尽可能使用复制黏贴的方式填写导入令牌，以避免错填容易混淆的字母数字`, `导入令牌错误`, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
-            type: 'error',
-          });
-          break;
-
-        case 'EBizCondition.InvalidOfficialSignature':
-          this.$alert(`导入的官方脚本包签名错误<br>
-              脚本包可能在复制过程中损坏或遭他人修改，请联系发行方重新提供脚本包`, `官方脚本包签名错误`, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
-            type: 'error',
-          });
+          this.T.alert(`导入令牌错误<br>
+              请使用复制粘贴的方式填写导入令牌，避免错填容易混淆的字母数字`);
           break;
 
         case 'EBizCondition.ConfirmingImportTimeout':
-          this.$alert(`脚本包导入确认超时<br>
-              脚本包导入后长时间未确认，请重新尝试导入`, `脚本包导入确认超时`, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
-            type: 'error',
-          });
+          this.T.alert(`脚本包导入确认超时<br>
+              脚本包导入后长时间未确认，请重新尝试导入`);
           break;
 
         default:
-          this.$alert(`脚本包导入时发生意外错误<br>
-              请尝试重新导入，如果问题一直出现，请联系脚本包发行方`, `脚本包导入时发生意外错误`, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: '了解',
-            type: 'error',
-          });
+          this.T.alert(`脚本包导入时发生意外错误<br>
+              请尝试重新导入，如果问题一直出现，请联系脚本包发行方`);
           break;
       }
 

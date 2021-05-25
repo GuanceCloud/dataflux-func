@@ -178,18 +178,7 @@ export default {
       this.$store.commit('updateEnvVariableListSyncTime');
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Deleting ENV may break the dependency with other scripts')}
-          <hr class="br">${this.$t('Are you sure you want to delete the ENV?')}`, this.$t('Delete ENV'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the ENV?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
         params: { id: this.$route.params.id },

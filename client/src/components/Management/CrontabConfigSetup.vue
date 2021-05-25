@@ -14,6 +14,8 @@ Crontab Config saved  : 自动触发配置已保存
 Crontab Config deleted: 自动触发配置已删除
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+
+Invalid argument format: 参数格式不正确
 </i18n>
 
 <template>
@@ -265,13 +267,8 @@ export default {
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
-
       } catch(err) {
-        return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       if (!this.fixedCrontabExpr) {
@@ -301,11 +298,7 @@ export default {
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
-        return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       if (!this.fixedCrontabExpr) {
@@ -324,17 +317,7 @@ export default {
       });
     },
     async deleteData() {
-      try {
-        await this.$confirm('删除自动触发配置后，函数将不会自动执行<hr class="br">是否确认删除？', '删除自动触发配置', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(`是否确认删除此自动触发配置？`)) return;
 
       let apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
         params: { id: this.$route.params.id },

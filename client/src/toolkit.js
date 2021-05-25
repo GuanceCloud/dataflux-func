@@ -677,25 +677,6 @@ export function asideItemSorter(a, b) {
   return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
 };
 
-export async function confirm(message) {
-  try {
-    // 简单提示，不需要区分标题和内容
-    await MessageBox.confirm(message, {
-      dangerouslyUseHTMLString: true,
-      confirmButtonText       : app.$t('Yes'),
-      cancelButtonText        : app.$t('No'),
-      type                    : 'warning',
-    });
-
-    // 确认操作
-    return true;
-
-  } catch(err) {
-    // 取消操作
-    return false;
-  }
-};
-
 export async function alert(message, type) {
   type = type || 'error';
 
@@ -716,7 +697,36 @@ export async function alert(message, type) {
     confirmButtonText       : confirmButtonText,
     type                    : type,
   });
-}
+};
+
+export async function confirm(message) {
+  try {
+    // 简单提示，不需要区分标题和内容
+    await MessageBox.confirm(message, {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText       : app.$t('Yes'),
+      cancelButtonText        : app.$t('No'),
+      type                    : 'warning',
+    });
+
+    // 确认操作
+    return true;
+
+  } catch(err) {
+    // 取消操作
+    return false;
+  }
+};
+
+export async function prompt(message, defaultValue) {
+  return await this.$prompt(message, {
+    inputValue              : defaultValue,
+    dangerouslyUseHTMLString: true,
+    closeOnClickModal       : false,
+    confirmButtonText       : app.$t('OK'),
+    cancelButtonText        : app.$t('Cancel'),
+  });
+};
 
 export async function notify(message, type) {
   type = type || 'success';

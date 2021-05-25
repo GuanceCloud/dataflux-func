@@ -323,41 +323,18 @@ export default {
     async resourceOperation(name, operation) {
       // 处理前操作
       let promptRes = null;
-      try {
-        switch(operation) {
-          case 'cp':
-            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Copy'), {
-              inputValue              : name,
-              dangerouslyUseHTMLString: true,
-              closeOnClickModal       : false,
-              confirmButtonText       : this.$t('Copy'),
-              cancelButtonText        : this.$t('Cancel'),
-            });
-            break;
+      switch(operation) {
+        case 'cp':
+          promptRes = await this.T.prompt(this.$t('Please input destination path'), name);
+          break;
 
-          case 'mv':
-            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Move'), {
-              inputValue              : `./${name}`,
-              dangerouslyUseHTMLString: true,
-              closeOnClickModal       : false,
-              confirmButtonText       : this.$t('Move'),
-              cancelButtonText        : this.$t('Cancel'),
-            });
-            break;
+        case 'mv':
+          promptRes = await this.T.prompt(this.$t('Please input destination path'), `./${name}`);
+          break;
 
-          case 'rm':
-            await this.$confirm(`${this.$t('Are you sure you want to delete the following content?')}
-                <br><code>${name}</code>`, this.$t('Delete'),  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Delete'),
-              cancelButtonText: this.$t('Cancel'),
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+        case 'rm':
+          await this.T.confirm(this.$t('Are you sure you want to delete the following content?'));
+          break;
       }
 
       // 执行操作
@@ -402,6 +379,7 @@ export default {
             _defaultRename = filename.replace(/-\d+(\.[^.]+)$/, `-${_dateStr}$1`);
           }
 
+          // 【特殊处理】此处输入框需要检查文件重复
           promptRes = await this.$prompt(this.$t('File <code class="text-main">{name}</code> already existed, please input a new name', { name: filename }), this.$t('Upload'), {
             customClass             : 'uploadRename',
             inputValue              : _defaultRename,

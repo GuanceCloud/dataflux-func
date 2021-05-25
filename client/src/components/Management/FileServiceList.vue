@@ -143,21 +143,14 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'delete':
-          case 'disable':
-            await this.$confirm(`${operationName}文件服务可能导致依赖此文件服务的系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}文件服务`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
+      switch(operation) {
+        case 'delete':
+          if (!await this.T.confirm(`是否确认删除此文件服务？`)) return;
+          break;
 
-      } catch(err) {
-        return; // 取消操作
+        case 'disable':
+          if (!await this.T.confirm(`是否确认禁用此文件服务？`)) return;
+          break;
       }
 
       let apiRes = null;

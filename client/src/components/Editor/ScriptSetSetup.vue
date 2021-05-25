@@ -197,19 +197,7 @@ export default {
       this.$store.commit('updateScriptListSyncTime');
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Deleting Script Set may break the dependency with other scripts')}
-          <br>${this.$t('In addition, all data associated with this Script Set will be deleted at the same time')}
-          <hr class="br">${this.$t('Are you sure you want to delete the Script Set?')}`, this.$t('Delete Script Set'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Set?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/script-sets/:id/do/delete', {
         params: { id: this.scriptSetId },

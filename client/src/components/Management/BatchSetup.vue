@@ -14,6 +14,8 @@ Batch saved  : 批处理已保存
 Batch deleted: 批处理已删除
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+
+Invalid argument format: 参数格式不正确
 </i18n>
 
 <template>
@@ -175,13 +177,8 @@ export default {
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
-
       } catch(err) {
-        return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/batches/do/add', opt);
@@ -209,11 +206,7 @@ export default {
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
-        return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', opt);
@@ -227,17 +220,7 @@ export default {
       });
     },
     async deleteData() {
-      try {
-        await this.$confirm('删除批处理后，将无法继续投递批处理任务<hr class="br">是否确认删除？', '删除批处理', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(`是否确认删除此批处理？`)) return;
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
         params: { id: this.$route.params.id },

@@ -66,6 +66,7 @@ Are you sure you want to reset the Script?                                      
 Script has been reset to previous version                                              : 脚本已经复位到上一个版本
 Reset Script                                                                           : 复位脚本
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
+Invalid argument format                                                                : 参数格式不正确
 Check input                                                                            : 输入检查
 seconds                                                                                : '{n}秒'
 'Executed Func:'                                                                       : 执行函数：
@@ -592,19 +593,7 @@ export default {
       this.updateHighlightLineConfig('selectedFuncLine', null);
       this.updateHighlightLineConfig('errorLine', null);
 
-      try {
-        await this.$confirm(`${this.$t('Script will take effect after been published immediately,')}
-            <br>${this.$t('Funcs with {html} decorator will be available to be accessed', { html: '<code class="text-main">@DFF.API()</code>'})}
-            <hr class="br">${this.$t('Are you sure you want to publish the Script?')}`, this.$t('Publish Script'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Publish Script'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to publish the Script?'))) return;
 
       // 保存
       let apiRes = await this._saveCodeDraft({ mute: true });
@@ -642,18 +631,7 @@ export default {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
-      try {
-        await this.$confirm(`${this.$t('Reset draft to the last published version, changes not published will lost')}
-            <hr class="br">${this.$t('Are you sure you want to reset the Script?')}`, this.$t('Reset Script'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Reset Script'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
 
       this.updateHighlightLineConfig('errorLine', null);
 
@@ -685,12 +663,7 @@ export default {
       try {
         funcCallKwargs = JSON.parse(this.funcCallKwargsJSON || '{}');
       } catch(err) {
-        this.$alert(`${this.$t('The parameter is not a valid JSON')}<br>${err.toString()}`, this.$t('Check input'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
-        return;
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       // 函数运行中

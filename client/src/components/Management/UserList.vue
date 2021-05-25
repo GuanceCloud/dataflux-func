@@ -133,20 +133,10 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'disable':
-            await this.$confirm(`${operationName}成员会导致此成员无法继续使用系统<hr class="br">是否确认${operationName}？`, `${operationName}成员`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'disable':
+          if (!await this.T.confirm(`是否确认删除此成员？`)) return;
+          break;
       }
 
       let apiRes = null;

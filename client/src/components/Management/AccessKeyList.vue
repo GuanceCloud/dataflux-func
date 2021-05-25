@@ -134,20 +134,10 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'delete':
-            await this.$confirm(`${operationName}AccessKey 可能导致相关系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}AccessKey`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Delete'),
-              cancelButtonText: this.$t('Cancel'),
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'delete':
+          if (!await this.T.confirm(`是否确认删除此AccessKey？`)) return;
+          break;
       }
 
       let apiRes = null;

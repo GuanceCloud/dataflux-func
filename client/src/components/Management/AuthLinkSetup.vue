@@ -232,13 +232,8 @@ export default {
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
-
       } catch(err) {
-        return this.$alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`, this.$t('Add Auth Link'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/auth-links/do/add', opt);
@@ -265,12 +260,9 @@ export default {
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
+
       } catch(err) {
-        return this.$alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`, this.$t('Modify Auth Link'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', opt);
@@ -284,17 +276,7 @@ export default {
       });
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Are you sure you want to delete the Auth Link?')}`, this.$t('Delete Auth Link'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Auth Link?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
         params: { id: this.$route.params.id },

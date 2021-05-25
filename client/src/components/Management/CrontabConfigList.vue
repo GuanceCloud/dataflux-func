@@ -196,21 +196,14 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'delete':
-          case 'disable':
-            await this.$confirm(`${operationName}自动触发配置可能导致依赖此自动触发函数的系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}自动触发配置`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
+      switch(operation) {
+        case 'delete':
+          if (!await this.T.confirm(`是否确认删除此批处理？`)) return;
+          break;
 
-      } catch(err) {
-        return; // 取消操作
+        case 'disable':
+          if (!await this.T.confirm(`是否确认禁用此批处理？`)) return;
+          break;
       }
 
       let apiRes = null;

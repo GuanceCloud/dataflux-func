@@ -157,18 +157,8 @@ export default {
 
       if (apiRes.data && apiRes.data.status === 'RUNNING') {
         // 尚处于安装中
-        try {
-          await this.$confirm(`${this.$t('Previous installing may still running')}
-            <br>${this.$t('Are you sure you want to install the package now?')}`, this.$t('Install Package'),  {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('Install Package'),
-            cancelButtonText: this.$t('Cancel'),
-            type: 'warning',
-          });
-
-        } catch(err) {
-          return; // 取消操作
-        }
+        if (!await this.T.confirm(`${this.$t('Previous installing may still running')}
+              <hr class="br">${this.$t('Are you sure you want to install the package now?')}`)) return;
       }
 
       // 执行安装

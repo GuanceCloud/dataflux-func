@@ -327,8 +327,7 @@ export default {
       this._getNodesActiveQueues();
     },
     async clearWorkerQueue(queueName) {
-      if (!await this.T.confirm(`清空队列后，所有未执行的任务都将丢失
-            <hr class="br">是否确认清空队列 "#${queueName}" ？`)) return;
+      if (!await this.T.confirm(`是否确认清空队列 "#${queueName}" ？`)) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
         body : { workerQueues: [queueName] },
@@ -337,8 +336,7 @@ export default {
       });
     },
     async clearLogCacheTables() {
-      if (!await this.T.confirm(`清空日志/缓存表后，以往的日志等信息将无法查询
-            <hr class="br">是否确认清空日志/缓存表？`)) return;
+      if (!await this.T.confirm(`是否确认清空日志/缓存表？`)) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
         alert: { okMessage: `日志/缓存表已被清空

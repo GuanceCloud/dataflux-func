@@ -177,17 +177,7 @@ export default {
       });
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Are you sure you want to delete the File Service?')}`, this.$t('Delete File Service'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the File Service?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/file-services/:id/do/delete', {
         params: { id: this.$route.params.id },
