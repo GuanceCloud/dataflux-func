@@ -7,7 +7,7 @@ Batch             : 批处理
 Export Script Sets: 脚本包导出
 Import Script Sets: 脚本包导入
 Recover Script Lib: 脚本库还原
-Member            : 成员管理
+User              : 成员管理
 Access Log        : 操作记录
 Script Log        : 脚本日志
 Script Failure    : 脚本故障
@@ -87,7 +87,7 @@ File Service       : 文件服务
             <el-menu-item index="/management/user-list" v-if="$store.getters.isSuperAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
-                {{ $t('Member') }}
+                {{ $t('User') }}
               </span>
             </el-menu-item>
 

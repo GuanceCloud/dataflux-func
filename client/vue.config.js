@@ -70,30 +70,38 @@ module.exports = {
     dll: {
       cacheFilePath: path.resolve(__dirname, './public'),
       entry: {
-        'framework': [
+        codemirror: [ 'codemirror' ],
+        echarts   : [ 'echarts' ],
+        vue: [
+          '@intlify/vue-i18n-loader',
           'element-ui',
           'vue',
+          'vue-i18n',
           'vue-router',
           'vue-splitpane',
           'vuex',
           'vuex-persistedstate',
         ],
-        'codemirror': [
-          'codemirror',
-        ],
-        'lib': [
-          'core-js',
+        lib1: [
           'axios',
+          'core-js',
           'socket.io-client',
+          'validator',
+        ],
+        lib2: [
+          'js-base64',
+          'js-yaml',
           'clipboard',
-          'diff',
           'file-saver',
           'highlight.js',
-          'js-base64',
-          'json-stringify-pretty-compact',
           'moment',
+        ],
+        lib3: [
+          'bowser',
+          'byte-size',
+          'diff',
+          'json-stringify-pretty-compact',
           'splitargs',
-          'validator',
         ],
       }
     }

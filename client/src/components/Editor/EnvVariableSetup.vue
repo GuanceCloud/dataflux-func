@@ -34,7 +34,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
-                  <el-input :disabled="mode === 'setup'"
+                  <el-input :disabled="T.pageMode() === 'setup'"
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
@@ -76,7 +76,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -103,7 +103,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -120,7 +120,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -140,7 +140,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -218,15 +218,12 @@ export default {
         ]
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup ENV'),
         add  : this.$t('Add ENV'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
   },
   props: {

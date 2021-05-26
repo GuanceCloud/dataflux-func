@@ -1,8 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
+Username     : 登录账号
+Administrator: 系统管理员
+
 User disabled: 用户已禁用
 User enabled : 用户已启用
 
 Search User(ID, username, name): 搜索用户（ID、用户名、名称）
+No User has ever been added: 从未添加过任何用户
+
+Are you sure you want to disable the User?: 是否确认禁用此用户？
 </i18n>
 
 <template>
@@ -11,7 +17,7 @@ Search User(ID, username, name): 搜索用户（ID、用户名、名称）
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          成员列表
+          {{ $t('Users') }}
           <div class="header-control">
             <FuzzySearchInput
               :dataFilter="dataFilter"
@@ -29,45 +35,45 @@ Search User(ID, username, name): 搜索用户（ID、用户名、名称）
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未创建过任何成员</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No User has ever been added') }}</h1>
 
           <p class="no-data-tip">
             添加成员，允许其他用户使用本平台
           </p>
         </div>
-        <el-table v-else
+        <el-table
           class="common-table" height="100%"
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="登录账号">
+          <el-table-column :label="$t('Username')">
             <template slot-scope="scope">
               <code class="text-code text-small">{{ scope.row.username }}</code><CopyButton :content="scope.row.username"></CopyButton>
             </template>
           </el-table-column>
 
-          <el-table-column label="姓名">
+          <el-table-column :label="$t('Name')">
             <template slot-scope="scope">
               <span>{{ scope.row.name }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="100">
+          <el-table-column :label="$t('Status')" width="100">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
+              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
+              <span v-else class="text-good">{{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">系统管理员</span>
+              <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">{{ $t('Administrator') }}</span>
               <template v-else>
-                <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">启用</el-button>
-                <el-button v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">禁用</el-button>
+                <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
+                <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
-                <el-button @click="openSetup(scope.row, 'setup')" type="text">编辑</el-button>
+                <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
               </template>
             </template>
           </el-table-column>
@@ -116,11 +122,9 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
       switch(operation) {
         case 'disable':
-          if (!await this.T.confirm(`是否确认删除此成员？`)) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to disable the User?'))) return;
           break;
       }
 
@@ -173,12 +177,6 @@ export default {
     },
   },
   computed: {
-    OP_NAME_MAP() {
-      return {
-        disable: '禁用',
-        enable : '启用',
-      };
-    },
   },
   props: {
   },
@@ -199,9 +197,6 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
-
 <style>
-
 </style>

@@ -449,9 +449,6 @@ export default {
       mkdirName       : '',
     }
   },
-  mounted() {
-    window.vmc = this;
-  }
 }
 </script>
 

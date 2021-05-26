@@ -2,7 +2,7 @@
 Info           : 信息
 Recent Response: 响应
 Expires        : 有效期
-Permanent      : 永久有效
+Never          : 长期有效
 Limiting       : 限流
 No limit       : 无限制
 Shown in doc   : 在文档中显示
@@ -75,7 +75,7 @@ Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链�
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else>{{ $t('No Auth Link has ever been added') }}</h1 >
+          <h1 class="no-data-title" v-else>{{ $t('No Auth Link has ever been added') }}</h1>
 
           <p class="no-data-tip">
             出于安全性考虑，函数默认只能从内部网络访问
@@ -112,7 +112,7 @@ Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链�
           <template v-if="!showCountCost">
             <el-table-column :label="$t('Expires')" width="160">
               <template slot-scope="scope">
-                <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Permanent') }}</span>
+                <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
                 <template v-else>
                   <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'">{{ scope.row.expireTime | datetime }}</span>
                   <br>

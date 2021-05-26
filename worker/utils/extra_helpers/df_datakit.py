@@ -481,11 +481,12 @@ class DataKit(object):
     def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
 
-    def write_rum(self, measurement, tags=None, fields=None, timestamp=None):
-        return self._write('/v1/write/rum', measurement, tags, fields, timestamp)
+    # 暂不提供
+    # def write_rum(self, measurement, tags=None, fields=None, timestamp=None):
+    #     return self._write('/v1/write/rum', measurement, tags, fields, timestamp)
 
-    def write_rum_many(self, data):
-        return self._write_many('/v1/write/rum', data)
+    # def write_rum_many(self, data):
+    #     return self._write_many('/v1/write/rum', data)
 
 # Alias
 Datakit = DataKit

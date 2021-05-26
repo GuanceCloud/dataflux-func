@@ -1,9 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
-Fixed    : 固定
-Not Set  : 未配置
-Expires  : 有效期
-Permanent: 永久有效
-Tasks    : 任务
+Fixed  : 固定
+Not Set: 未配置
+Expires: 有效期
+Never  : 长期有效
+Tasks  : 任务
 
 Crontab Config disabled: 自动触发配置已禁用
 Crontab Config enabled : 自动触发配置已启用
@@ -96,7 +96,7 @@ Are you sure you want to disable the Crontab Config?: 是否确认禁用此自�
 
           <el-table-column :label="$t('Expires')" width="160">
             <template slot-scope="scope">
-              <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Permanent') }}</span>
+              <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
               <template v-else>
                 <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
                 >{{ scope.row.expireTime | datetime }}</span>

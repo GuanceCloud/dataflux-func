@@ -1,22 +1,20 @@
 <i18n locale="zh-CN" lang="yaml">
+Add File Service  : 添加文件服务
+Setup File Service: 配置文件服务
+
 Use custom ID               : 使用自定义ID
 ID is used in the access URL: ID关系到访问时的URL
 Root                        : 根目录
-Please select               : 请选择
 Note                        : 备注
 
-Add File Service   : 添加文件服务
-Modify File Service: 修改文件服务
-Delete File Service: 删除文件服务
+'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+Please select root              : 请选择根目录
 
 File Service created: 文件服务已创建
 File Service saved  : 文件服务已保存
 File Service deleted: 文件服务已删除
 
 Are you sure you want to delete the File Service?: 是否确认删除此文件服务？
-
-'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
-Please select Func              : 请选择根目录
 </i18n>
 
 <template>
@@ -33,12 +31,12 @@ Please select Func              : 请选择根目录
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="mode === 'add'">
+                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="mode === 'add'">
-                  <el-input :disabled="mode === 'setup'"
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
+                  <el-input
                     maxlength="50"
                     show-word-limit
                     v-model="form.id">
@@ -48,6 +46,7 @@ Please select Func              : 请选择根目录
 
                 <el-form-item :label="$t('Root')" prop="root">
                   <el-cascader class="root-cascader-input" ref="rootCascader"
+                    placeholder="--"
                     separator=""
                     v-model="form.root"
                     :props="rootCascaderProps"></el-cascader>
@@ -64,9 +63,9 @@ Please select Func              : 请选择根目录
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -91,7 +90,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -112,7 +111,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -136,7 +135,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -155,7 +154,7 @@ export default {
 
       this.$router.push({
         name : 'file-service-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
@@ -173,7 +172,7 @@ export default {
 
       this.$router.push({
         name : 'file-service-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async deleteData() {
@@ -187,14 +186,12 @@ export default {
 
       this.$router.push({
         name : 'file-service-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
-
       return {
         id: [
           {
@@ -219,22 +216,12 @@ export default {
     ID_PREFIX() {
       return 'fsvc-';
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify File Service'),
+        setup: this.$t('Setup File Service'),
         add  : this.$t('Add File Service'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
   },
   props: {

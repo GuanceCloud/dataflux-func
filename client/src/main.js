@@ -156,8 +156,6 @@ const app = new Vue({
   store,
   i18n,
   render: h => h(App),
-  computed: {
-  },
 }).$mount('#app');
 window.app = app;
 

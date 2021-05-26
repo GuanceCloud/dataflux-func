@@ -1,8 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Add Access Key   : 添加 AccessKey
-Delete Access Key: 删除 AccessKey
+Add Access Key: 添加 Access Key
 
-Access Key created: AccessKey 已创建
+'Auto generate...': 自动生成...
+
+Please input name: 请输入名称
+
+Access Key created: Access Key 已创建
 </i18n>
 
 <template>
@@ -10,10 +13,7 @@ Access Key created: AccessKey 已创建
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }} AccessKey
-          <code class="text-main">{{ data.name }}</code>
-        </h1>
+        <h1>{{ $t('Add Access Key') }}</h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -22,7 +22,7 @@ Access Key created: AccessKey 已创建
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="名称" prop="name">
+                <el-form-item :label="$t('Name')" prop="name">
                   <el-input
                     maxlength="40"
                     show-word-limit
@@ -30,15 +30,17 @@ Access Key created: AccessKey 已创建
                 </el-form-item>
 
                 <el-form-item label="ID">
-                  <el-input value="创建后自动生成..." :disabled="true"></el-input>
+                  <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
                 </el-form-item>
 
                 <el-form-item label="Secret">
-                  <el-input value="创建后自动生成..." :disabled="true"></el-input>
+                  <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button type="primary" @click="submitData">保存</el-button>
+                  <div class="setup-right">
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                  </div>
                 </el-form-item>
               </el-form>
             </div>
@@ -62,7 +64,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -73,7 +75,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -93,7 +95,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
       }
@@ -106,19 +108,22 @@ export default {
       if (!apiRes.ok) return;
 
       this.$router.push({
-        name: 'access-key-list',
+        name : 'access-key-list',
+        query: this.T.getPrevQuery(),
       });
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const nameMap = {
-        add: '添加',
-      };
-      return nameMap[this.mode];
+    formRules() {
+      return {
+        name: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input name'),
+            required: true,
+          }
+        ],
+      }
     },
   },
   props: {
@@ -128,15 +133,6 @@ export default {
       data: {},
       form: {
         name: null,
-      },
-      formRules: {
-        name: [
-          {
-            trigger : 'change',
-            message : '请输入AccessKey 名称',
-            required: true,
-          }
-        ],
       },
     }
   },

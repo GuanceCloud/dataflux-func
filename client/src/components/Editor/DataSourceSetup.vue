@@ -76,7 +76,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   <InfoBlock type="error" :title="$t('This is a builtin Data Source, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item :label="$t('Type')" prop="type" v-if="mode === 'add'">
+                <el-form-item :label="$t('Type')" prop="type" v-if="T.pageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in C.DATE_SOURCE" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
@@ -105,7 +105,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   </el-form-item>
 
                   <el-form-item label="ID" prop="id">
-                    <el-input :disabled="mode === 'setup'"
+                    <el-input :disabled="T.pageMode() === 'setup'"
                       maxlength="40"
                       show-word-limit
                       v-model="form.id"></el-input>
@@ -174,7 +174,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && mode === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
+                    <InfoBlock v-if="!data.isBuiltin && T.pageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
@@ -221,6 +221,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                       :prop="`configJSON.topicHandlers.${index}.funcId`"
                       :rules="formRules_topic">
                       <el-cascader class="func-cascader-input" ref="funcCascader"
+                        placeholder="--"
                         filterable
                         :placeholder="$t('Handler Func')"
                         v-model="topicHandler.funcId"
@@ -239,10 +240,10 @@ This is a builtin Data Source, please contact the admin to change the config: �
               <!-- 此处特殊处理：要始终保证可以测试数据源 -->
               <el-form  label-width="120px">
                 <el-form-item>
-                  <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="testDataSource">
+                    <el-button v-if="T.pageMode() === 'setup'" @click="testDataSource">
                       <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
                       <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
                       <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
@@ -274,7 +275,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.configJSON = {};
@@ -376,7 +377,7 @@ export default {
       this.form.configJSON = nextConfigJSON;
     },
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -406,7 +407,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -640,18 +641,15 @@ export default {
         required: true,
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Data Source'),
         add  : this.$t('Add Data Source'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     selectedType() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.form.type;
 

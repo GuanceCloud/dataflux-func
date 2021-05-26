@@ -46,7 +46,7 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
-                  <el-input :disabled="mode === 'setup'"
+                  <el-input :disabled="T.pageMode() === 'setup'"
                     maxlength="80"
                     show-word-limit
                     v-model="form.id">
@@ -72,9 +72,9 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <el-button v-if="T.pageMode() === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
@@ -100,7 +100,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -117,7 +117,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
         if (!apiRes.ok) return;
 
@@ -138,7 +138,7 @@ export default {
       }
 
       let dataId = null;
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           dataId = await this.addData();
           break;
@@ -247,18 +247,15 @@ export default {
         ],
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Script'),
         add  : this.$t('Add Script'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     scriptSetId() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.$route.params.id;
         case 'setup':
@@ -266,7 +263,7 @@ export default {
       }
     },
     scriptId() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.form.id;
         case 'setup':

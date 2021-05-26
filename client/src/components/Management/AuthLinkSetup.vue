@@ -53,12 +53,12 @@ shortcutDays : '{n}天'
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="mode === 'add'">
+                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="mode === 'add'">
-                  <el-input :disabled="mode === 'setup'"
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
+                  <el-input
                     maxlength="50"
                     show-word-limit
                     v-model="form.id">
@@ -68,6 +68,7 @@ shortcutDays : '{n}天'
 
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    placeholder="--"
                     filterable
                     v-model="form.funcId"
                     :options="funcCascader"
@@ -137,7 +138,7 @@ shortcutDays : '{n}天'
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -164,7 +165,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.throttlingJSON = {};
@@ -186,7 +187,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/auth-links/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -214,7 +215,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -242,7 +243,7 @@ export default {
 
       this.$router.push({
         name : 'auth-link-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
@@ -270,7 +271,7 @@ export default {
 
       this.$router.push({
         name : 'auth-link-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async deleteData() {
@@ -284,7 +285,7 @@ export default {
 
       this.$router.push({
         name : 'auth-link-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
@@ -315,6 +316,9 @@ export default {
     addTag() {
       let newTag = this.newTag;
       if (newTag) {
+        if (!Array.isArray(this.form.tagsJSON)) {
+          this.$set(this.form, 'tagsJSON', []);
+        }
         this.form.tagsJSON.push(newTag);
       }
       this.showAddTag = false;
@@ -386,15 +390,12 @@ export default {
     ID_PREFIX() {
       return 'auln-';
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Auth Link'),
         add  : this.$t('Add Auth Link'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;

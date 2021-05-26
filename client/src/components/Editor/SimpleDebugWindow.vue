@@ -40,6 +40,7 @@ Browse Data Source: 浏览数据源
           <el-form v-else>
             <el-form-item>
               <el-cascader-panel class="simple-debug-browser-cascader" ref="browserCascader"
+                placeholder="--"
                 size="mini"
                 :props="browserCascaderProps">
                 <div slot-scope="{ node, data }" @click="updateCodeExample(node)" class="simple-debug-browser-cascader-item">

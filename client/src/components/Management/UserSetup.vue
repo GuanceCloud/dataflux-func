@@ -1,9 +1,19 @@
 <i18n locale="zh-CN" lang="yaml">
-Add User   : 添加用户
-Modify User: 修改用户
+Add User  : 添加用户
+Setup User: 配置用户
+
+Username: 登录账号
+Password: 密码
+
+Leave blank when not changing: 不修改时请留空
 
 User created: 用户已创建
 User saved  : 用户已保存
+
+Please input username: 请输入登录账号
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Please input name: 请输入名称
+Please input password: 请输入密码
 </i18n>
 
 <template>
@@ -20,29 +30,31 @@ User saved  : 用户已保存
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="登录账号" prop="username">
+                <el-form-item :label="$t('Username')" prop="username">
                   <el-input
                     maxlength="20"
                     show-word-limit
                     v-model="form.username"></el-input>
                 </el-form-item>
 
-                <el-form-item label="姓名" prop="name">
+                <el-form-item :label="$t('Name')" prop="name">
                   <el-input
                     maxlength="40"
                     show-word-limit
                     v-model="form.name"></el-input>
                 </el-form-item>
 
-                <el-form-item label="密码" prop="password">
-                  <el-input placeholder="不修改时请留空"
+                <el-form-item :label="$t('Password')" prop="password">
+                  <el-input :placeholder="$t('Leave blank when not changing')"
                     maxlength="100"
                     show-password
                     v-model="form.password"></el-input>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button type="primary" @click="submitData">保存</el-button>
+                  <div class="setup-right">
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                  </div>
                 </el-form-item>
               </el-form>
             </div>
@@ -66,7 +78,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -80,7 +92,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -91,7 +103,7 @@ export default {
         this.form = nextForm;
       }
 
-      if (this.mode === 'add') {
+      if (this.T.pageMode() === 'add') {
         // 添加用户时，密码必填
         this.formRules['password'][0].required = true;
       }
@@ -105,7 +117,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -123,7 +135,8 @@ export default {
       if (!apiRes.ok) return;
 
       this.$router.push({
-        name: 'user-list',
+        name : 'user-list',
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
@@ -139,26 +152,49 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      await this.loadData();
+      this.$router.push({
+        name : 'user-list',
+        query: this.T.getPrevQuery(),
+      });
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
+    formRules() {
+      return {
+        username: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input username'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          }
+        ],
+        name: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input name'),
+            required: true,
+          }
+        ],
+        password: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input password'),
+            required: false,
+          }
+        ],
+      }
     },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify User'),
+        setup: this.$t('Setup User'),
         add  : this.$t('Add User'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
   },
   props: {
@@ -170,34 +206,6 @@ export default {
         username: null,
         name    : null,
         password: null,
-      },
-      formRules: {
-        username: [
-          {
-            trigger : 'change',
-            message : '请输入登录账号',
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: '引用名只能包含大小写英文、数字或下划线，且不能以数字开头',
-            pattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/g,
-          }
-        ],
-        name: [
-          {
-            trigger : 'change',
-            message : '请输入名称',
-            required: true,
-          }
-        ],
-        password: [
-          {
-            trigger : 'change',
-            message : '请输入密码',
-            required: false,
-          }
-        ],
       },
     }
   },

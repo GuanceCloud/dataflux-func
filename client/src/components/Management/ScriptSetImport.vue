@@ -116,7 +116,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'import':
           return await this.$refs.upload.submit();
       }
@@ -211,14 +211,11 @@ export default {
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     modeName() {
       const nameMap = {
         import: '导入',
       };
-      return nameMap[this.mode];
+      return nameMap[this.T.pageMode()];
     },
   },
   props: {
@@ -245,9 +242,6 @@ export default {
   },
   created() {
     this.$store.commit('updateLoadStatus', true);
-  },
-  mounted() {
-    window.vmc = this;
   },
 }
 </script>

@@ -1,12 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
-File Service    : 文件服务
-New File Service: 新建文件服务
+Root: 根目录
 
 File Service disabled: 文件服务已禁用
 File Service enabled : 文件服务已启用
 File Service deleted : 文件服务已删除
 
 Search File Service(ID, root): 搜索文件服务（ID、根目录）
+No File Service has ever been added: 从未添加过任何文件服务
+
+Are you sure you want to disable the Auth Link?: 是否确认禁用此文件服务？
 </i18n>
 
 <template>
@@ -33,8 +35,8 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未创建过任何文件服务</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No File Service has ever been added') }}</h1>
 
           <p class="no-data-tip">
             出于安全性考虑，资源目录文件默认不对外提供
@@ -46,25 +48,25 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="文件服务">
+          <el-table-column :label="$t('Root')">
             <template slot-scope="scope">
               <code class="file-service-title">{{ scope.row.root }}</code>
 
               <div>
-                <span class="text-info">&#12288;文件服务ID:</span>
+                <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
               </div>
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="200">
+          <el-table-column :label="$t('Status')" width="160">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
+              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
+              <span v-else class="text-good">{{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="200">
+          <el-table-column :label="$t('Note')" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
@@ -78,12 +80,10 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
                 :underline="false"
                 target="_blank">{{ $t('Open') }}</el-link>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">启用</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">禁用</el-button>
+              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
+              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text">编辑</el-button>
-
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">删除</el-button>
+              <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -138,15 +138,9 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
       switch(operation) {
-        case 'delete':
-          if (!await this.T.confirm(`是否确认删除此文件服务？`)) return;
-          break;
-
         case 'disable':
-          if (!await this.T.confirm(`是否确认禁用此文件服务？`)) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to disable the Auth Link?'))) return;
           break;
       }
 
@@ -206,13 +200,6 @@ export default {
     },
   },
   computed: {
-    OP_NAME_MAP() {
-      return {
-        disable: '禁用',
-        enable : '启用',
-        delete : '删除',
-      };
-    },
   },
   props: {
   },

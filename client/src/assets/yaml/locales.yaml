@@ -98,9 +98,12 @@ en:
   No matched data found: 当前过滤条件无匹配数据
 
   # 通用表格-表头/标题等
+  Name       : 名称
   Tags       : 标签
   Status     : 状态
   Note       : 备注
+  Create Time: 创建时间
+  Update Time: 更新时间
   API Example: API调用示例
 
   # toolkit.js - API调用提示

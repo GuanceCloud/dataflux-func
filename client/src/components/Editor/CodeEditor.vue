@@ -518,6 +518,7 @@ export default {
           this.codeMirror.setValue('');
           this.codeMirror.setValue(this.data[options.codeField] || this.data.code || '');
           this.codeMirror.refresh();
+          this.codeMirror.focus();
         }
 
         // 更新函数列表

@@ -3,19 +3,32 @@ parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Tags   : 标签
-Add Tag: 添加标签
+Add Batch  : 添加批处理
+Setup Batch: 修改批处理
 
-Add Batch   : 添加批处理
-Modify Batch: 修改批处理
+Use custom ID: 使用自定义ID
+Func         : 执行函数
+Arguments    : 参数指定
+Tags         : 标签
+Add Tag      : 添加标签
+Note         : 备注
+
+ID will be a part of the calling URL: ID关系到调用时的URL
+'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
+The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
+
+'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+Please select Func: 请选择执行函数
+'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
 
 Batch created: 批处理已创建
 Batch saved  : 批处理已保存
 Batch deleted: 批处理已删除
 
-parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
-
+Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 Invalid argument format: 参数格式不正确
+
+parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 </i18n>
 
 <template>
@@ -32,21 +45,22 @@ Invalid argument format: 参数格式不正确
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="使用自定义ID" prop="useCustomId" v-if="mode === 'add'">
+                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="mode === 'add'">
-                  <el-input :disabled="mode === 'setup'"
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
+                  <el-input
                     maxlength="50"
                     show-word-limit
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock title="批处理ID关系到调用时的URL"></InfoBlock>
+                  <InfoBlock :title="$t('ID will be a part of the calling URL')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="执行函数" prop="funcId">
+                <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    placeholder="--"
                     filterable
                     v-model="form.funcId"
                     :options="funcCascader"
@@ -54,12 +68,12 @@ Invalid argument format: 参数格式不正确
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
-                <el-form-item label="参数指定" prop="funcCallKwargsJSON">
+                <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
-                  <InfoBlock title="JSON格式的参数（**kwargs）"></InfoBlock>
+                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
@@ -74,7 +88,7 @@ Invalid argument format: 参数格式不正确
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
-                <el-form-item label="备注">
+                <el-form-item :label="$t('Note')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -82,13 +96,12 @@ Invalid argument format: 参数格式不正确
                     maxlength="200"
                     show-word-limit
                     v-model="form.note"></el-input>
-                  <InfoBlock title="介绍当前批处理的作用、功能、目的等"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除批处理</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -113,7 +126,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -134,7 +147,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -161,7 +174,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -189,7 +202,7 @@ export default {
 
       this.$router.push({
         name: 'batch-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
@@ -216,7 +229,7 @@ export default {
 
       this.$router.push({
         name: 'batch-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async deleteData() {
@@ -230,7 +243,7 @@ export default {
 
       this.$router.push({
         name: 'batch-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
@@ -261,6 +274,9 @@ export default {
     addTag() {
       let newTag = this.newTag;
       if (newTag) {
+        if (!Array.isArray(this.form.tagsJSON)) {
+          this.$set(this.form, 'tagsJSON', []);
+        }
         this.form.tagsJSON.push(newTag);
       }
       this.showAddTag = false;
@@ -271,22 +287,12 @@ export default {
     ID_PREFIX() {
       return 'bat-';
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Batch'),
+        setup: this.$t('Setup Batch'),
         add  : this.$t('Add Batch'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;

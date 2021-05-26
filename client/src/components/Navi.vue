@@ -174,12 +174,6 @@ export default {
     isSignedIn() {
       return this.$store.getters.isSignedIn;
     },
-    uiTheme() {
-      return this.$store.getters.uiTheme;
-    },
-    uiLocale() {
-      return this.$store.getters.uiLocale;
-    },
     userProfileName() {
       if (this.$store.state.userProfile) {
         let userProfile = this.$store.state.userProfile;
@@ -187,6 +181,12 @@ export default {
       } else {
         return '*' + this.$t('Signed In');
       }
+    },
+    uiTheme() {
+      return this.$store.getters.uiTheme;
+    },
+    uiLocale() {
+      return this.$store.getters.uiLocale;
     },
   },
   props: {

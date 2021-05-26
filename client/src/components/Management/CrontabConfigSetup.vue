@@ -72,6 +72,7 @@ shortcutDays : '{n}天'
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    placeholder="--"
                     filterable
                     v-model="form.funcId"
                     :options="funcCascader"
@@ -193,7 +194,7 @@ shortcutDays : '{n}天'
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -220,7 +221,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             const defaultFormCrontab = {
               weeks  : ['*'],
@@ -243,7 +244,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
+      if (this.T.pageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -287,7 +288,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -320,7 +321,7 @@ export default {
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
@@ -349,7 +350,7 @@ export default {
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async deleteData() {
@@ -363,7 +364,7 @@ export default {
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
@@ -394,6 +395,9 @@ export default {
     addTag() {
       let newTag = this.newTag;
       if (newTag) {
+        if (!Array.isArray(this.form.tagsJSON)) {
+          this.$set(this.form, 'tagsJSON', []);
+        }
         this.form.tagsJSON.push(newTag);
       }
       this.showAddTag = false;
@@ -497,15 +501,12 @@ export default {
         ],
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Crontab Config'),
         add  : this.$t('Add Crontab Config'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },    apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;

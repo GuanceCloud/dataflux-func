@@ -1,7 +1,10 @@
 <i18n locale="zh-CN" lang="yaml">
 Delete Access Key: 删除 AccessKey
 
-Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
+Search Access Key(ID, name): 搜索Access Key（ID、名称）
+No Access Key has ever been added: 从未添加过任何授权链接
+
+Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey？
 </i18n>
 
 <template>
@@ -10,11 +13,11 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          AccessKey 列表
+          Access Key
           <div class="header-control">
             <FuzzySearchInput
               :dataFilter="dataFilter"
-              :searchTip="$t('Search AccessKey(ID, name)')">
+              :searchTip="$t('Search Access Key(ID, name)')">
             </FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
@@ -28,11 +31,11 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未创建过任何AccessKey</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No Access Key has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            添加AccessKey，允许外部系统调用本平台的接口进行管理
+            添加Access Key，允许外部系统调用本平台的接口进行管理
           </p>
         </div>
         <el-table v-else
@@ -40,22 +43,22 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="名称">
+          <el-table-column :label="$t('Name')">
             <template slot-scope="scope">
               <span>{{ scope.row.name }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="AccessKey ID">
+          <el-table-column label="Access Key ID">
             <template slot-scope="scope">
               <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
             </template>
           </el-table-column>
 
-          <el-table-column label="AccessKey Secret">
+          <el-table-column label="Access Key Secret">
             <template slot-scope="scope">
               <template v-if="!showSecretMap[scope.row.id]">
-                <el-button @click="showSecret(scope.row)" type="text">显示</el-button>
+                <el-button @click="showSecret(scope.row)" type="text">{{ $t('Show') }}</el-button>
               </template>
               <template v-else>
                 <code class="text-code text-small">{{ scope.row.secret }}</code><CopyButton :content="scope.row.secret"></CopyButton>
@@ -63,7 +66,7 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
             </template>
           </el-table-column>
 
-          <el-table-column label="创建时间" width="200">
+          <el-table-column :label="$t('Create Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -73,7 +76,7 @@ Search AccessKey(ID, name): 搜索AccessKey（ID、名称）
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">删除</el-button>
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -117,11 +120,9 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
       switch(operation) {
         case 'delete':
-          if (!await this.T.confirm(`是否确认删除此AccessKey？`)) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Access Key?'))) return;
           break;
       }
 
@@ -157,11 +158,6 @@ export default {
     },
   },
   computed: {
-    OP_NAME_MAP() {
-      return {
-        delete : '删除',
-      };
-    },
   },
   props: {
   },
@@ -184,9 +180,7 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
 
 <style>
-
 </style>

@@ -1263,6 +1263,10 @@ export function unpackRouteQuery(collectedRouteQuery) {
   return JSON.parse(fromBase64(collectedRouteQuery));
 };
 
+export function getPrevQuery() {
+  return unpackRouteQuery(router.currentRoute.query.prevRouteQuery);
+};
+
 export function initCodeMirror(id) {
   let cm = CodeMirror.fromTextArea(document.getElementById(id), {
     autoRefresh : true,
@@ -1398,4 +1402,10 @@ export function getEchartSplitLineStyle() {
   };
   let color = colorMap[store.getters.uiColorSchema];
   return { color: color };
+};
+
+/*** 简化代码 ***/
+
+export function pageMode() {
+  return router.currentRoute.name.split('-').pop();
 };

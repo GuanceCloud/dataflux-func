@@ -68,7 +68,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
       }
@@ -89,14 +89,11 @@ export default {
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     modeName() {
       const nameMap = {
         add: '创建',
       };
-      return nameMap[this.mode];
+      return nameMap[this.T.pageMode()];
     },
   },
   props: {

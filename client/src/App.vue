@@ -48,7 +48,7 @@ export default {
         }
       }
     },
-    '$store.getters.uiTheme': function(val) {
+    uiTheme(val) {
       let $uiThemeLink = document.getElementById('uiTheme');
       let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
@@ -139,6 +139,9 @@ export default {
     },
     isSignedIn() {
       return this.$store.getters.isSignedIn;
+    },
+    uiTheme() {
+      return this.$store.getters.uiTheme;
     },
   },
   props: {
@@ -425,11 +428,8 @@ h3 {
 tr.hl-row {
   background-image: linear-gradient(to right, #FFF, #ffefe4);
 }
-tr.hl-row:hover {
-  background-image: linear-gradient(to right, #ffefe4, #ffefe4);
-}
-tr.hl-row:hover td {
-  background-color: #ffefe4 !important;
+.el-table--enable-row-hover .el-table__body tr.hl-row:hover>td {
+  background-color: #ffefe4;
 }
 hr.br {
   border: none;
@@ -528,7 +528,7 @@ kbd {
   font-size: 14px;
   margin-left: 10px;
   position: relative;
-  top: -1px;
+  top: -2px;
 }
 .fix-list-button .el-link + .el-button {
   margin-left: 10px;
