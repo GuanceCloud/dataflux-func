@@ -301,9 +301,9 @@
             <span class="text-important">如果您没有使用「自动部署脚本」，选择自行部署，请确保您已经准备了如下准备工作：</span>
             <ul>
               <li>MySQL 5.7 或以上版本</li>
-              <li>MySQL中存在编码格式为<code>utf8mb4</code>的数据库</li>
-              <li>MySQL中存在具有操作上述数据库的用户</li>
-              <li>MySQL开启<code>innodb_large_prefix</code>参数</li>
+              <li>MySQL中存在空数据库，且编码格式为<code>utf8mb4</code></li>
+              <li>MySQL中存在可远程登录的用户，且有权限操作上述空数据库（包含CREATE权限）</li>
+              <li>MySQL 5.7 未关闭<code>innodb_large_prefix</code>选项<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix">（官方文档）</a></li>
               <li>Redis 4.0 或以上版本，<span class="text-important">但不支持集群部署的Redis</span></li>
             </ul>
           </p>
