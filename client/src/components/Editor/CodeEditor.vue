@@ -582,7 +582,7 @@ export default {
       let newHeader = this.$t('Saved Draft Code');
       let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
-      let createTimeStr = this.moment().utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M().utcOffset(8).format('YYYYMMDD_HHmmss');
       let diffName = `${this.data.id}.diff.${createTimeStr}`;
       this.$refs.longTextDialog.update(diffPatch, diffName);
     },

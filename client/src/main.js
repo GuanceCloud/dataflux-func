@@ -49,13 +49,13 @@ import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
 
 import locales from '@/assets/yaml/locales.yaml'
 
-Object.assign(locales.en,       elementUILocale_en)
-Object.assign(locales['zh-CN'], elementUILocale_zhCN)
-Object.assign(locales['zh-TW'], elementUILocale_zhTW)
-Object.assign(locales['zh-HK'], elementUILocale_zhTW)
-Object.assign(locales['ja'],    elementUILocale_ja)
+Object.assign(locales.en,       elementUILocale_en);
+Object.assign(locales['zh-CN'], elementUILocale_zhCN);
+Object.assign(locales['zh-TW'], elementUILocale_zhTW);
+Object.assign(locales['zh-HK'], elementUILocale_zhTW);
+Object.assign(locales['ja'],    elementUILocale_ja);
 
-Vue.use(VueI18n)
+Vue.use(VueI18n);
 
 // 参考 https://blog.csdn.net/songhsia/article/details/104800966
 ElementLocale.i18n((key, value) => i18n.t(key, value));
@@ -68,7 +68,7 @@ const i18n = new VueI18n({
   silentFallbackWarn    : true,
   silentTranslationWarn : true,
   messages              : locales,
-})
+});
 
 // 时间处理
 import moment from 'moment'

@@ -40,9 +40,7 @@ function getConfig(c) {
     charset        : c.charset,
     timezone       : c.timezone,
     connectionLimit: CONFIG._MYSQL_CONNECTION_LIMIT,
-    acquireTimeout : CONFIG._MYSQL_ACQUIRE_TIMEOUT,
     connectTimeout : CONFIG._MYSQL_CONNECT_TIMEOUT,
-    timeout        : CONFIG._MYSQL_TIMEOUT,
 
     multipleStatements: true,
   };

@@ -1,219 +1,3 @@
-<%
-  var CONFIG_LIST = [
-    {
-      name      : '加密密钥',
-      key       : 'SECRET',
-      type      : 'string',
-      input     : 'password',
-      inputAttrs: 'minlength="8" maxlength="20"',
-      tips      : '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改<br><span class="text-important">多部署时必须保证各副本一致<span>',
-    },
-
-    {
-      name : '日志等级',
-      key  : 'LOG_LEVEL',
-      type : 'string',
-      input: 'select',
-      tips : '建议设置为<code>WARNING</code>级别',
-      options: [
-        { name: 'NONE（不输出）',  value: 'NONE'    },
-        { name: 'ERROR',           value: 'ERROR'   },
-        { name: 'WARNING',         value: 'WARNING' },
-        { name: 'INFO',            value: 'INFO'    },
-        { name: 'DEBUG',           value: 'DEBUG'   },
-        { name: 'ALL（全部输出）', value: 'ALL'     },
-      ],
-    },
-    {
-      name : '日志文件格式',
-      key  : 'LOG_FILE_FORMAT',
-      type : 'string',
-      input: 'select',
-      tips : '如有日志相关分析系统，可选择<code>JSON</code>方便处理。否则指定为<code>TEXT</code>即可',
-      options: [
-        { name: 'TEXT', value: 'text' },
-        { name: 'JSON', value: 'json' },
-      ],
-    },
-
-    {
-      name : 'WEB访问URL',
-      key  : 'WEB_BASE_URL',
-      type : 'string',
-      input: 'url',
-      tips : '访问DataFlux Func 的访问地址，如：<br><code>http://my-dataflux-func.com:1234</code><br>留空表示跟随浏览器实际访问地址',
-    },
-    {
-      name : '访问方式',
-      key  : 'WEB_BIND',
-      type : 'string',
-      input: 'select',
-      tips : '如本地存在Nginx 作为反向代理，可选择<code>仅本地访问<code>',
-      options: [
-        { name: '公开访问（0.0.0.0）',     value: '0.0.0.0' },
-        { name: '仅本地访问（127.0.0.1）', value: '127.0.0.1' },
-      ],
-    },
-    {
-      name      : '绑定端口',
-      key       : 'WEB_PORT',
-      type      : 'integer',
-      input     : 'number',
-      inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : 'HTTP默认端口为<code>80</code>，HTTPS默认端口为<code>443</code>。配置时应确保端口没有被其他应用程序占用。',
-    },
-
-    {
-      name    : 'MySQL主机',
-      key     : 'MYSQL_HOST',
-      type    : 'string',
-      input   : 'text',
-      tips    : 'DataFlux Func 所连接的MySQL数据库。可以为域名或IP地址，不含端口<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'mysql',
-    },
-    {
-      name      : 'MySQL端口',
-      key       : 'MYSQL_PORT',
-      type      : 'integer',
-      input     : 'number',
-      inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : '默认一般为<code>3306</code><br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey  : 'mysql',
-    },
-    {
-      name    : 'MySQL用户',
-      key     : 'MYSQL_USER',
-      type    : 'string',
-      input   : 'text',
-      tips    : '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'mysql',
-    },
-    {
-      name    : 'MySQL密码',
-      key     : 'MYSQL_PASSWORD',
-      type    : 'string',
-      input   : 'password',
-      tips    : '上述MySQL用户的密码<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'mysql',
-    },
-    {
-      name    : 'MySQL数据库',
-      key     : 'MYSQL_DATABASE',
-      type    : 'string',
-      input   : 'text',
-      tips    : '建议为DataFlux Func 创建专用数据库<code>dataflux_func</code>，不要和其他系统混用数据库。此外，数据库默认编码应设置为<code>utf8mb4</code><br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'mysql',
-    },
-
-    {
-      name    : 'Redis主机',
-      key     : 'REDIS_HOST',
-      type    : 'string',
-      input   : 'text',
-      tips    : 'DataFlux Func 所连接的Redis数据库。可以为域名或IP地址，不含端口<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'redis',
-    },
-    {
-      name      : 'Redis端口',
-      key       : 'REDIS_PORT',
-      type      : 'integer',
-      input     : 'number',
-      inputAttrs: 'min="1" max="65535" step="1"',
-      tips      : '默认一般为<code>6379</code><br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey  : 'redis',
-    },
-    {
-      name    : 'Redis密码',
-      key     : 'REDIS_PASSWORD',
-      type    : 'string',
-      input   : 'password',
-      tips    : '如所连接的Redis不需要密码，此项请留空<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'redis',
-    },
-    {
-      name    : 'Redis数据库',
-      key     : 'REDIS_DATABASE',
-      type    : 'integer',
-      input   : 'text',
-      tips    : '建议为DataFlux Func 指定专用的数据库，不要和其他系统混用数据库<br><span class="text-important">全自动部署时请勿修改</span>',
-      errorKey: 'redis',
-    },
-
-    {
-      name    : '管理员用户',
-      key     : 'ADMIN_USERNAME',
-      type    : 'string',
-      input   : 'text',
-      tips    : '为系统配置一个初始管理员用户',
-      errorKey: 'adminUser',
-    },
-    {
-      name    : '管理员密码（默认为 admin)',
-      key     : 'ADMIN_PASSWORD',
-      type    : 'string',
-      input   : 'password',
-      tips    : '合适的密码可以保护您的数据安全',
-      errorKey: 'adminUser',
-    },
-    {
-      name    : '重复管理员密码',
-      key     : 'ADMIN_PASSWORD_REPEAT',
-      type    : 'string',
-      input   : 'password',
-      tips    : '请在输入一遍密码',
-      errorKey: 'adminUser',
-    },
-    // TODO
-    // {
-    //   name : '钉钉机器人URL',
-    //   key  : 'DING_TALK_ROBOT_URL',
-    //   type : 'string',
-    //   input: 'url',
-    //   tips : '需要在钉钉机器人的「安全设置」中指定加签',
-    // },
-    // {
-    //   name : '钉钉机器人密钥',
-    //   key  : 'DING_TALK_ROBOT_SECRET',
-    //   type : 'string',
-    //   input: 'url',
-    //   tips : '钉钉机器人的「安全设置」中的密钥',
-    // },
-  ]
-%>
-
-<div class="modal fade" id="runningModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">安装DataFlux Func</h4>
-      </div>
-      <div class="modal-body text-center">
-        <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-muted"></i>
-        <p style="padding-top: 20px">正在处理，请稍后...</p>
-        <span id="redirectTip" style="display: none">如长时间未跳转，可尝试立即点击前往 <a id="redirectURL" href="#"></a></span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-        <h4 class="modal-title">安装DataFlux Func 失败</h4>
-      </div>
-      <div class="modal-body text-center">
-        <p class="text-left text-danger">安装过程中存在以下问题：</p>
-        <p id="errorTEXT" class="text-left" style="padding-top: 20px"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -230,258 +14,813 @@
     <!-- <meta name="viewport" content="width=980" /> -->
     <meta name="viewport" content="width=1440" />
 
-    <link rel="stylesheet" href="/statics/libs/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/statics/libs/font-awesome/css/font-awesome.min.css">
-
-    <title>DataFlux Func 初始安装</title>
-
-    <style type="text/css">
-      html {
-        scroll-behavior: smooth;
-      }
-      body {
-        padding-top: 30px;
-        padding-bottom: 100px;
-      }
-      #logo {
-        width: 300px;
-        display: block;
-        margin: auto;
-        text-align: right;
-      }
-      #logo img {
-        width: 100%;
-      }
-      #logo span {
-        font-weight: bold;
-        font-style: italic;
-        font-size: 16px;
-      }
-      #setupPanel {
-        width: 600px;
-        margin: auto;
-      }
-      .form-group {
-        margin-bottom: 25px;
-      }
-      #tipsPanel {
-        width: 300px;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-        display: none;
-      }
-      .text-important {
-        color: red;
-        font-weight: bold;
-      }
-      .bad-config {
-        color: red;
-        border: 1px solid red;
-      }
-    </style>
+    <link rel="stylesheet" href="/statics/libs/element-ui/css/element-ui.min.css">
+    <script src="/statics/libs/vue/vue.min.js"></script>
+    <script src="/statics/libs/vue-i18n/vue-i18n.min.js"></script>
+    <script src="/statics/libs/element-ui/js/element-ui.min.js"></script>
+    <script src="/statics/libs/axios/axios.min.js"></script>
+    <title>DataFlux Func</title>
   </head>
+  <style>
+    * {
+      font-size: 14px;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      padding-top: 30px;
+      padding-bottom: 100px;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid #eee;
+      margin: 20px 0;
+    }
+    a,
+    a:active,
+    a:hover,
+    a:focus,
+    a:visited {
+      color          : #ff6600;
+      cursor         : pointer;
+      text-decoration: none !important;
+    }
+    strong {
+      color: red;
+    }
+    code {
+      font-family: monospace;
+      padding: 0 3px;
+      margin: 0 3px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #eee;
+    }
+    #setupPanel {
+      width: 600px;
+      margin: auto;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 15px;
+      box-shadow: 1px 1px 3px #ccc;
+    }
+    #setupPanelHeader {
+      width: 300px;
+      display: block;
+      margin: auto;
+      text-align: right;
+    }
+    #setupPanelHeader img {
+      width: 100%;
+    }
+    #setupPanelHeader span {
+      font-weight: bold;
+      font-style: italic;
+      font-size: 16px;
+    }
+    #setupPanelFooter {
+      text-align: right;
+    }
+    #language {
+      text-align: right;
+    }
+    #setupConfigArea .el-select {
+      display: block;
+    }
+    #setupProcess {
+      text-align: center;
+    }
+    #setupProcessIcon {
+      font-size: 60px;
+      color: darkgray
+    }
+    #setupProcessIconCog {
+      top: 40px;
+      left: 40px;
+      color: #FF6600;
+      font-size: 80px;
+    }
+    .setup-process-tip {
+      padding-top: 20px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #ff6600;
+    }
+    .custom-config-tip {
+      text-align: center;
+    }
+    .config-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+    .config-info * {
+      font-size: 16px;
+    }
+    .popover-tips {
+      background: #f5f5f5;
+      border-color: #ccc;
+      width: 320px;
+      word-break: keep-all;
+      text-align: left;
+    }
+    .bad-config input {
+      color: red;
+      border-color: red;
+      border-left-width: 5px;
+    }
+    .el-message-box {
+      width: 600px;
+    }
+  </style>
   <body>
-    <div class="container">
-      <div id="setupPanel" class="panel panel-default">
-        <div class="panel-body">
-          <div id="logo">
+    <div id="app">
+      <el-container>
+        <div id="setupPanel">
+          <!-- 头部 -->
+          <div id="setupPanelHeader">
             <img src="/statics/img/logo-dataflux-func.png">
-            <span>初始安装</span>
-            <br><span>版本：<%= IMAGE_INFO.CI_COMMIT_REF_NAME %></span>
+            <span>{{ $t('Newly Setup') }}</span>
+            <br><span>{{ $t('Version:') }} <%= IMAGE_INFO.CI_COMMIT_REF_NAME %></span>
           </div>
 
+          <!-- 语言选择 -->
           <hr>
+          <div id="language">
+            <span>Language:</span>
+            <el-select v-model="locale" size="mini">
+              <el-option label="简体中文" value="zh-CN"></el-option>
+              <el-option label="English" value="en"></el-option>
+            </el-select>
+          </div>
 
+          <!-- 提示语 -->
           <p>
-            DataFlux Func 在运行之前需要一些基本的配置。
+            {{ $t('Some basic setup should be done before DataFlux Func starts up.') }}
             <br>
             <br>
-            <span class="text-important">如果您没有使用「自动部署脚本」，选择自行部署，请确保您已经准备了如下准备工作：</span>
+            <strong>{{ $t('If you are deploying manually, please ensure that the following conditions are met:') }}</strong>
             <ul>
-              <li>MySQL 5.7 或以上版本</li>
-              <li>MySQL中存在空数据库，且编码格式为<code>utf8mb4</code></li>
-              <li>MySQL中存在可远程登录的用户，且有权限操作上述空数据库（包含CREATE权限）</li>
-              <li>MySQL 5.7 未关闭<code>innodb_large_prefix</code>选项<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix">（官方文档）</a></li>
-              <li>Redis 4.0 或以上版本，<span class="text-important">但不支持集群部署的Redis</span></li>
+              <li>{{ $t('MySQL 5.7 or above') }}</li>
+              <li v-html="$t('Empty database exists in MySQL and the database encoding is <code>utf8mb4</code>')"></li>
+              <li>{{ $t('There is a user in MySQL who can log in remotely and has permission to the empty database (including CREATE permission)') }}</li>
+              <li>
+                <span v-html="$t('Keep the option <code>innodb_large_prefix</code> <strong>ON</strong> in MySQL 5.7')"></span>
+                <br>
+                <a target="_blank" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix">{{ $t('(Official MySQL 5.7 doc)') }}</a>
+              </li>
+              <li v-html="$t('Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode')"></li>
             </ul>
           </p>
 
+          <!-- 自定义选项 -->
           <hr>
-          <div class="checkbox">
-            <label>
-              <input id="setupConfigsToggle" type="checkbox">
-              显示自定义配置
-              <br><small>默认安装后，系统管理员用户名和密码都是<code>admin</code>，系统安装完成后也可以修改</small>
-            </label>
+          <div id="setupConfigArea">
+            <el-checkbox v-model="showCustomConfig">{{ $t('Show custom configs') }}</el-checkbox>
+
+            <p v-if="!showCustomConfig"
+              class="custom-config-tip"
+              v-html="$t('The default administrator username and password are <code>admin</code>, which can be changed after installation.')">
+            </p>
+
+            <template v-else>
+              <p class="custom-config-tip"><strong>{{ $t('Unless necessary, just use the default configuration') }}</strong></p>
+
+              <!-- 加密密钥 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Secret') }}</span>
+                    <code>SECRET</code>
+                  </div>
+                  <el-input v-model="userConfigs.SECRET" show-password :minlength="8" :maxlength="20"></el-input>
+                </div>
+                <p>
+                  <span v-html="$t('A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once installed')"></span>
+                  <br><strong>{{ $t('Make sure to use the same Secret in multiple deployments') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- 日志等级 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Log level') }}</span>
+                    <code>LOG_LEVEL</code>
+                  </div>
+                  <el-select v-model="userConfigs.LOG_LEVEL">
+                    <el-option :label="$t('NONE (no log)')" value="NONE"></el-option>
+                    <el-option label="ERROR" value="ERROR"></el-option>
+                    <el-option label="WARNING" value="WARNING"></el-option>
+                    <el-option label="INFO" value="INFO"></el-option>
+                    <el-option label="DEBUG" value="DEBUG"></el-option>
+                    <el-option :label="$t('ALL (all logs)')" value="ALL"></el-option>
+                  </el-select>
+                </div>
+                <p>
+                  <span v-html="$t('<code>WARNING</code> level is recommended')"></span>
+                </p>
+              </el-popover>
+
+              <!-- 日志文件格式 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Log file format') }}</span>
+                    <code>LOG_FILE_FORMAT</code>
+                  </div>
+                  <el-select v-model="userConfigs.LOG_FILE_FORMAT">
+                    <el-option label="TEXT" value="text"></el-option>
+                    <el-option label="JSON" value="json"></el-option>
+                  </el-select>
+                </div>
+                <p>
+                  <span v-html="$t('If you are using a log analysis system, choose <code>JSON</code> for convenience')"></span>
+                  <br><span v-html="$t('Otherwise, just choose <code>TEXT</code>')"></span>
+                </p>
+              </el-popover>
+
+              <!-- WEB访问URL -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Website URL') }}</span>
+                    <code>WEB_BASE_URL</code>
+                  </div>
+                  <el-input v-model="userConfigs.WEB_BASE_URL"></el-input>
+                </div>
+                <p>
+                  {{ $t('Full address to access DataFlux Func, e.g.') }}
+                  <br><code>http://my-dataflux-func.com:1234</code>
+                  <br>{{ $t('Leave blank to follow the browser address') }}
+                </p>
+              </el-popover>
+
+              <!-- MySQL主机 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('MySQL host') }}</span>
+                    <code>MYSQL_HOST</code>
+                  </div>
+                  <el-input
+                    ref="MYSQL_HOST"
+                    :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
+                    v-model="userConfigs.MYSQL_HOST"></el-input>
+                </div>
+                <p>
+                  {{ $t('MySQL host to connect. Can be a domain name or IP address, no port included') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- MySQL端口 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('MySQL port') }}</span>
+                    <code>MYSQL_PORT</code>
+                  </div>
+                  <el-input
+                    ref="MYSQL_PORT"
+                    :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
+                    v-model.number="userConfigs.MYSQL_PORT" type="number" min="1" max="65535" step="1"></el-input>
+                </div>
+                <p>
+                  <span v-html="$t('Typically <code>{port}</code>', { port: 6379 })"></span>
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- MySQL用户 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('MySQL user') }}</span>
+                    <code>MYSQL_USER</code>
+                  </div>
+                  <el-input
+                    ref="MYSQL_USER"
+                    :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
+                    v-model="userConfigs.MYSQL_USER"></el-input>
+                </div>
+                <p>
+                  {{ $t('Since database must be initialized, ensure that the user has full privileges to operate the database') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- MySQL密码 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('MySQL password') }}</span>
+                    <code>MYSQL_PASSWORD</code>
+                  </div>
+                  <el-input
+                    ref="MYSQL_PASSWORD"
+                    :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
+                    v-model="userConfigs.MYSQL_PASSWORD" show-password></el-input>
+                </div>
+                <p>
+                  {{ $t('Password for the MySQL user') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- MySQL数据库 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('MySQL database') }}</span>
+                    <code>MYSQL_DATABASE</code>
+                  </div>
+                  <el-input
+                    ref="MYSQL_DATABASE"
+                    :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
+                    v-model="userConfigs.MYSQL_DATABASE"></el-input>
+                </div>
+                <p>
+                  <span v-html="$t('Do not mix the database with other systems, and the default encoding should be <code>utf8mb4</code>')"></span>
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- Redis主机 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Redis host') }}</span>
+                    <code>REDIS_HOST</code>
+                  </div>
+                  <el-input
+                    ref="REDIS_HOST"
+                    :class="{ 'bad-config': setupErrorKeyStatus.redis }"
+                    v-model="userConfigs.REDIS_HOST"></el-input>
+                </div>
+                <p>
+                  {{ $t('Redis host to connect. Can be a domain name or IP address, no port included') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- Redis端口 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Redis port') }}</span>
+                    <code>REDIS_PORT</code>
+                  </div>
+                  <el-input
+                    ref="REDIS_PORT"
+                    :class="{ 'bad-config': setupErrorKeyStatus.redis }"
+                    v-model.number="userConfigs.REDIS_PORT" type="number" min="1" max="65535" step="1"></el-input>
+                </div>
+                <p>
+                  <span v-html="$t('Typically <code>{port}</code>', { port: 6379 })"></span>
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- Redis密码 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Redis password') }}</span>
+                    <code>REDIS_PASSWORD</code>
+                  </div>
+                  <el-input
+                    ref="REDIS_PASSWORD"
+                    :class="{ 'bad-config': setupErrorKeyStatus.redis }"
+                    v-model="userConfigs.REDIS_PASSWORD" show-password></el-input>
+                </div>
+                <p>
+                  {{ $t('Password for the Redis, leave blank when no password') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- Redis数据库 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Redis database') }}</span>
+                    <code>REDIS_DATABASE</code>
+                  </div>
+                  <el-input
+                    ref="REDIS_DATABASE"
+                    :class="{ 'bad-config': setupErrorKeyStatus.redis }"
+                    v-model.number="userConfigs.REDIS_DATABASE" type="number" min="0" step="1"></el-input>
+                </div>
+                <p>
+                  {{ $t('Do not mix the database with other systems') }}
+                  <br><strong>{{ $t('Do not modify if you are using automatic deploying script') }}</strong>
+                </p>
+              </el-popover>
+
+              <!-- 管理员用户 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <strong>{{ $t('Administrator username') }}</strong>
+                    <code>ADMIN_USERNAME</code>
+                  </div>
+                  <el-input
+                    ref="ADMIN_USERNAME"
+                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
+                    v-model="userConfigs.ADMIN_USERNAME"></el-input>
+                </div>
+                <p>
+                  {{ $t('Create an initial administrator user for the system') }}
+                </p>
+              </el-popover>
+
+              <!-- 管理员密码（默认为 admin) -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <strong>{{ $t('Administrator password (default is admin)') }}</strong>
+                    <code>ADMIN_PASSWORD</code>
+                  </div>
+                  <el-input
+                    ref="ADMIN_PASSWORD"
+                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
+                    v-model="userConfigs.ADMIN_PASSWORD" show-password></el-input>
+                </div>
+                <p>
+                  {{ $t('A strong password can protect your data security') }}
+                </p>
+              </el-popover>
+
+              <!-- 重复管理员密码 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <strong>{{ $t('Repeat administrator password') }}</strong>
+                    <code>ADMIN_PASSWORD_REPEAT</code>
+                  </div>
+                  <el-input
+                    ref="ADMIN_PASSWORD_REPEAT"
+                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
+                    v-model="userConfigs.ADMIN_PASSWORD_REPEAT" show-password></el-input>
+                </div>
+                <p>
+                  {{ $t('Enter the administrator password again') }}
+                </p>
+              </el-popover>
+            </template>
           </div>
 
-          <div id="setupConfigs" class="collapse">
-            <br>
-            <p class="text-important">如果没有特殊需求，没有必要修改以下参数</p>
-            <br>
-            <%_ CONFIG_LIST.forEach(function(c) { _%>
-              <div class="form-group">
-                <label><%= c.name %></label>
-                <code class="pull-right"><%= c.key %></code>
-                <%_ if (c.input === 'select') { _%>
-                  <select
-                    class="form-control"
-                    config-key="<%= c.key %>"
-                    config-type="<%= c.type %>"
-                    config-tips="<%= c.tips %>"
-                    error-key="<%= c.errorKey %>">
-                    <%_ c.options.forEach(function(opt) { _%>
-                      <option value="<%= opt.value %>" <%= CONFIG[c.key] === opt.value ? 'selected' : '' %>><%= opt.name %></option>
-                    <%_ }) _%>
-                  </select>
-                <%_ } else { _%>
-                  <input
-                    type="<%= c.input %>"
-                    <%- c.inputAttrs || '' %>
-                    class="form-control"
-                    config-key="<%= c.key %>"
-                    config-type="<%= c.type %>"
-                    config-tips="<%= c.tips %>"
-                    error-key="<%= c.errorKey %>"
-                    value="<%= CONFIG[c.key] === null ? '' : CONFIG[c.key] %>">
-                <%_ } _%>
-              </div>
-            <%_ }) _%>
-          </div>
-
+          <!-- 底部 -->
           <hr>
-          <div class="text-right">
-            <button id="setup" class="btn btn-primary">保存配置并初始化数据库</button>
+          <div id="setupPanelFooter">
+            <el-button type="primary" @click="setup">{{ $t('Save and init DB') }}</el-button>
           </div>
         </div>
-      </div>
-    </div>
+        <el-dialog
+          :title="$t('Setup DataFlux Func')"
+          :visible.sync="showSetupProcess"
+          :close-on-click-modal="false"
+          :close-on-press-escape="false"
+          :show-close="false"
+          width="30%">
+          <div id="setupProcess">
+            <!-- <i class="fa fa-cog fa-spin fa-4x fa-fw text-muted"></i> -->
+            <span id="setupProcessIcon" class="fa-stack">
+              <i class="fa fa-fw fa-database fa-stack-2x"></i>
+              <i id="setupProcessIconCog" class="fa fa-fw fa-cog fa-spin fa-stack-1x"></i>
+            </span>
 
-    <div id="tipsPanel" class="panel panel-default">
-      <div class="panel-body text-info">
-        <i class="fa fa-info-circle"></i>
-        <span id="tipsPanelContent">选中配置项以显示提示</span>
-      </div>
+            <template v-if="showLongTimeWaitTip">
+              <p class="setup-process-tip">{{ $t('Finishing soon...') }}</p>
+              <p>
+                {{ $t('If there is no response for a long time, you can try to click the link') }}
+                <br><a :href="redirectURL">{{ redirectURL }}</a>
+              </p>
+            </template>
+            <template v-else>
+              <p class="setup-process-tip">{{ $t('Processing, please wait...') }}</p>
+            </template>
+          </div>
+        </el-dialog>
+      </el-container>
     </div>
   </body>
-
-  <script src="/statics/libs/jquery/jquery.min.js"></script>
-  <script src="/statics/libs/bootstrap/js/bootstrap.min.js"></script>
   <script>
-  $(function() {
-    var $tipsPanel        = $('#tipsPanel');
-    var $tipsPanelContent = $('#tipsPanelContent');
-    var $runningModal     = $('#runningModal');
-    var $errorModal       = $('#errorModal');
-    var $errorTEXT        = $('#errorTEXT');
+    // 多语言
+    const messages = {
+      'zh-CN': {
+        'OK': '好',
 
-    function setup() {
-      var reqBody = {
-        config: {},
+        'Setup DataFlux Func': '安装DataFlux Func',
+        'Processing, please wait...': '正在处理，请稍后...',
+        'Finishing soon...': '即将完成...',
+        'If there is no response for a long time, you can try to click the link': '如长时间无响应，可尝试点击链接',
+        'Error occured during initializing DB': '初始化数据库时发生错误',
+
+        'Connecting to MySQL failed': '连接MySQL失败',
+        'Unexpected error with MySQL': 'MySQL抛出未预期的错误',
+        'MySQL 5.7 or above is required': 'MySQL版本必须为5.7及以上',
+        'MySQL system variable `innodb_large_prefix` should be ON': 'MySQL系统参数`innodb_large_prefix`必须设置为ON',
+        'Connecting to Redis failed': '连接Redis失败',
+        'Access Redis failed': '访问Redis失败',
+        'Redis 4.0 or above is required': 'Redis版本必须为4.0及以上',
+        'Unexpected error with Redis': 'Redis抛出未预期的错误',
+        'Initializing MySQL database failed': '初始化MySQL数据库失败',
+        'Initializing system configs failed': '初始化系统配置失败',
+        'Administrator username or password is not inputed': '管理员用户名或密码未填写',
+        'Repeated administrator password not match': '两次输入的管理员密码不匹配',
+        'Setup administrator password failed': '设置管理员密码失败',
+
+        'Newly Setup': '初始安装',
+        'Version:'   : '版本：',
+
+        'Some basic setup should be done before DataFlux Func starts up.': 'DataFlux Func 在运行之前需要一些基本的配置。',
+        'If you are deploying manually, please ensure that the following conditions are met:': '如果您通过手工方式部署，请确保满足如下条件：',
+        'MySQL 5.7 or above': 'MySQL 5.7 或以上版本',
+        'Empty database exists in MySQL and the database encoding is <code>utf8mb4</code>': 'MySQL中存在空数据库，且编码格式为<code>utf8mb4</code>',
+        'There is a user in MySQL who can log in remotely and has permission to the empty database (including CREATE permission)': 'MySQL中存在可远程登录的用户，且有权限操作上述空数据库（包含CREATE权限）',
+        'Keep the option <code>innodb_large_prefix</code> <strong>ON</strong> in MySQL 5.7': 'MySQL 5.7 <code>innodb_large_prefix</code>选项保持<strong>打开（ON）</strong>',
+        '(Official MySQL 5.7 doc)': '（MySQL 5.7 官方文档）',
+        'Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode': 'Redis 4.0 或以上版本，且<strong>不是</strong>Redis集群',
+
+        'Show custom configs': '显示自定义配置',
+        'The default administrator username and password are <code>admin</code>, which can be changed after installation.': '系统管理员用户名和密码默认都是<code>admin</code>，安装完成后也可以修改',
+        'Unless necessary, just use the default configuration': '除非必要，使用默认配置即可',
+
+        'Do not modify if you are using automatic deploying script': '全自动部署时请勿修改',
+        'Typically <code>{port}</code>': '一般为<code>{port}</code>',
+
+        'Secret': '加密密钥',
+        'A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once installed': '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改',
+        'Make sure to use the same Secret in multiple deployments': '多份部署时必须使用相同的值',
+
+        'Log level'     : '日志等级',
+        'NONE (no log)' : 'NONE（不输出）',
+        'ALL (all logs)': 'ALL（全部输出）',
+        '<code>WARNING</code> level is recommended': '建议设置为<code>WARNING</code>级别',
+
+        'Log file format': '日志文件格式',
+        'If you are using a log analysis system, choose <code>JSON</code> for convenience': '如有日志相关分析系统，可选择<code>JSON</code>方便处理',
+        'Otherwise, just choose <code>TEXT</code>': '否则指定为<code>TEXT</code>即可',
+
+        'Website URL': '网站访问URL',
+        'Full address to access DataFlux Func, e.g.': '访问DataFlux Func 的访问完整地址，如：',
+        'Leave blank to follow the browser address': '留空表示跟随浏览器访问地址',
+
+        'MySQL host': 'MySQL主机',
+        'MySQL host to connect. Can be a domain name or IP address, no port included': 'DataFlux Func 所连接的MySQL数据库，可以为域名或IP地址，不含端口',
+
+        'MySQL port': 'MySQL端口',
+
+        'MySQL user': 'MySQL用户',
+        'Since database must be initialized, ensure that the user has full privileges to operate the database': '由于需要进行数据库初始化操作，请确保此用户具有操作对应库的完整权限',
+
+        'MySQL password': 'MySQL密码',
+        'Password for the MySQL user': 'MySQL用户密码',
+
+        'MySQL database': 'MySQL数据库',
+        'Do not mix the database with other systems, and the default encoding should be <code>utf8mb4</code>': '请勿和其他系统混用数据库，且默认编码应设置为<code>utf8mb4</code>',
+
+        'Redis host': 'Redis主机',
+        'Redis host to connect. Can be a domain name or IP address, no port included': 'DataFlux Func 所连接的Redis数据库，可以为域名或IP地址，不含端口',
+
+        'Redis port': 'Redis端口',
+
+        'Redis password': 'Redis密码',
+        'Password for the Redis, leave blank when no password': 'Redis访问密码，没有密码请留空',
+
+        'Redis database': 'Redis数据库',
+        'Do not mix the database with other systems': '请勿和其他系统混用数据库',
+
+        'Administrator username': '管理员用户名',
+        'Create an initial administrator user for the system': '为系统配置一个初始管理员用户',
+
+        'Administrator password (default is admin)': '管理员密码（默认为 admin)',
+        'A strong password can protect your data security': '复杂的密码可以保护您的数据安全',
+
+        'Repeat administrator password': '重复管理员密码',
+        'Enter the administrator password again': '请再输入一遍管理员密码',
+
+        'Save and init DB': '保存并初始化数据库',
       }
+    };
+    const i18n = new VueI18n({
+      locale                : 'zh-CN',
+      fallbackLocale        : 'en',
+      formatFallbackMessages: true,
+      silentFallbackWarn    : true,
+      silentTranslationWarn : true,
+      messages,
+    });
 
-      // Collect config
-      $('[config-key]').each(function() {
-        var $this = $(this);
-        var key   = $this.attr('config-key');
-        var type  = $this.attr('config-type');
-        var value = $this.val().trim();
-
-        if (value.length <= 0) return;
-
-        switch(type) {
-          case 'integer':
-            value = parseInt(value);
-            break;
-        }
-
-        reqBody.config[key] = value;
-      });
-
-      $runningModal.modal('show');
-
-      // Send
-      var reqOpt = {
-        method     : 'post',
-        url        : '/setup',
-        data       : JSON.stringify(reqBody),
-        contentType: 'application/json',
-        dataType   : 'json',
-        success: function(data, textStatus, jqXHR) {
-          var $redirectTip = $('#redirectTip');
-          var $redirectURL = $('#redirectURL');
-
-          var baseURL = reqBody.config.WEB_BASE_URL || location.origin;
-          $redirectTip.show();
-          $redirectURL.attr('href', baseURL).text(baseURL);
-
-          var nextURL = jqXHR.responseJSON.redirect || location.origin;
-          setInterval(function() {
-            $.get('/api/v1/do/ping', function() {
-              setTimeout(function() { location.href = nextURL }, 3 * 1000);
-            });
-          }, 1 * 1000);
+    // Vue应用
+    const app = new Vue({
+      i18n,
+      watch: {
+        locale(val) {
+          this.$i18n.locale = val;
         },
-        error: function(jqXHR, textStatus) {
-          $runningModal.modal('hide');
+      },
+      methods: {
+        async setup() {
+          this.showSetupProcess = true;
 
-          $('[error-key]').removeClass('bad-config');
-
-          var errorTEXT = [];
-          for (var k in jqXHR.responseJSON.configErrors) {
-            $('[error-key=' + k + ']').addClass('bad-config');
-
-            errorTEXT.push('<code>' + k + '</code>' + ': ' + jqXHR.responseJSON.configErrors[k]);
+          // 清空错误
+          for (var k in this.setupErrorKeyStatus) {
+            this.setupErrorKeyStatus[k] = false;
           }
-          errorTEXT = errorTEXT.join('<hr>');
 
-          $errorTEXT.html(errorTEXT);
-          $errorModal.modal('show');
+          // 发送安装请求
+          let postData = {
+            config: JSON.parse(JSON.stringify(this.userConfigs)),
+          };
+          try {
+            let axiosRes = await axios.post('/setup', postData);
+            this.setupRedirectURL = axiosRes.data.redirectURL;
+
+          } catch(err) {
+            // 错误提示
+            let setupErrors = err.response.data.setupErrors;
+            let setupErrorMessages = Object.values(setupErrors).map(setupError => {
+              let _title = this.$t(setupError.title) || '';
+              let _error = setupError.error || '';
+
+              var parts = [];
+              if (_title) parts.push(_title);
+              if (_error) parts.push(_error);
+
+              return parts.join(': ');
+            });
+            let setupErrorMessageHTML = `<ul>${setupErrorMessages.map(m => `<li><strong>${m}</strong></li>`).join('')}</ul>`;
+
+            await this.$alert(setupErrorMessageHTML, this.$t('Error occured during initializing DB'), {
+              dangerouslyUseHTMLString: true,
+              confirmButtonText: this.$t('OK'),
+            });
+
+            // 滚动到第一个错误项目
+            this.showSetupProcess = false;
+
+            let minOffsetTop = null;
+            for (let ref in this.inputRefKeyMap) {
+              let setupErrorKey = this.inputRefKeyMap[ref];
+
+              if (setupErrorKey in setupErrors) {
+                this.setupErrorKeyStatus[setupErrorKey] = true;
+
+                let elOffsetTop = app.$refs[ref].$el.offsetTop;
+                if (minOffsetTop === null || elOffsetTop < minOffsetTop) {
+                  minOffsetTop = elOffsetTop;
+                }
+              }
+            }
+
+            window.scrollTo(0, minOffsetTop - 100);
+            return;
+          }
+
+          // 轮询ping接口，直至完成
+          let pingT = setInterval(async () => {
+            this.showLongTimeWaitTip = true;
+
+            let axiosRes = null;
+            try { axiosRes = await axios.get('/api/v1/do/ping') } catch(err) { return; }
+
+            // 成功，立即跳转
+            clearInterval(pingT);
+            setTimeout(() => {
+              location.href = this.redirectURL;
+            }, 3 * 1000);
+          }, 1 * 1000);
+        }
+      },
+      computed: {
+        redirectURL() {
+          return this.setupRedirectURL || this.userConfigs.WEB_BASE_URL || location.origin;
         },
+        inputRefKeyMap() {
+          return {
+            MYSQL_HOST           : 'mysql',
+            MYSQL_PORT           : 'mysql',
+            MYSQL_USER           : 'mysql',
+            MYSQL_PASSWORD       : 'mysql',
+            MYSQL_DATABASE       : 'mysql',
+            REDIS_HOST           : 'redis',
+            REDIS_PORT           : 'redis',
+            REDIS_PASSWORD       : 'redis',
+            REDIS_DATABASE       : 'redis',
+            ADMIN_USERNAME       : 'adminUser',
+            ADMIN_PASSWORD       : 'adminUser',
+            ADMIN_PASSWORD_REPEAT: 'adminUser',
+          }
+        },
+      },
+      data() {
+        let currentConfig = <%- JSON.stringify(CONFIG) %>;
 
-      }
-      $.ajax(reqOpt);
-    }
+        return {
+          locale             : 'zh-CN',
+          showCustomConfig   : false,
+          showSetupProcess   : false,
+          showLongTimeWaitTip: false,
 
-    $(document).on('click', '#setup', setup);
+          setupRedirectURL: null,
 
-    $(document).on('change', '#setupConfigsToggle', function() {
-      var $this = $(this);
-      $('#setupConfigs').collapse($this.prop('checked') ? 'show' : 'hide');
-      $tipsPanel.hide();
-    });
+          setupErrorKeyStatus: {
+            mysql    : false,
+            redis    : false,
+            adminUser: false,
+          },
 
-    $(document).on('mouseover', '[config-key]', function() {
-      var $this = $(this);
-
-      var configTips = $this.attr('config-tips');
-      if (!configTips) {
-        $tipsPanel.hide();
-
-      } else {
-        var offset = $this.offset();
-        offset.left += $this.outerWidth(true) + 5;
-
-        $tipsPanelContent.html(configTips);
-        $tipsPanel.animate(offset, 100, function() {
-          $tipsPanel.show();
-        });
-      }
-    });
-
-    $errorModal.on('hidden.bs.modal', function() {
-      var $statusBad = $('[error-key].bad-config');
-
-      var $firstBadEl = $statusBad[0];
-      if ($firstBadEl) {
-        var goToTop = $firstBadEl.offsetTop - (window.innerHeight / 4);
-        if (goToTop < 0) goToTop = 0;
-
-        $(document).scrollTop(goToTop);
-      }
-    });
-  });
+          userConfigs: {
+            SECRET               : currentConfig.SECRET,
+            LOG_LEVEL            : currentConfig.LOG_LEVEL,
+            LOG_FILE_FORMAT      : currentConfig.LOG_FILE_FORMAT,
+            WEB_BASE_URL         : currentConfig.WEB_BASE_URL,
+            MYSQL_HOST           : currentConfig.MYSQL_HOST,
+            MYSQL_PORT           : currentConfig.MYSQL_PORT,
+            MYSQL_USER           : currentConfig.MYSQL_USER,
+            MYSQL_PASSWORD       : currentConfig.MYSQL_PASSWORD,
+            MYSQL_DATABASE       : currentConfig.MYSQL_DATABASE,
+            REDIS_HOST           : currentConfig.REDIS_HOST,
+            REDIS_PORT           : currentConfig.REDIS_PORT,
+            REDIS_PASSWORD       : currentConfig.REDIS_PASSWORD,
+            REDIS_DATABASE       : currentConfig.REDIS_DATABASE,
+            ADMIN_USERNAME       : currentConfig.ADMIN_USERNAME,
+            ADMIN_PASSWORD       : currentConfig.ADMIN_PASSWORD,
+            ADMIN_PASSWORD_REPEAT: currentConfig.ADMIN_PASSWORD_REPEAT,
+          }
+        }
+      },
+    }).$mount('#app');
+    window.app = app;
   </script>
 </html>

@@ -353,7 +353,7 @@ export default {
             trigger: 'change',
             message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
             validator: (rule, value, callback) => {
-              let ts = this.moment(value).unix();
+              let ts = this.M(value).unix();
               if (ts < this.T.MIN_UNIX_TIMESTAMP) {
                 return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
               } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {

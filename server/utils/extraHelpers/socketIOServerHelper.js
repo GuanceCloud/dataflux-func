@@ -11,14 +11,18 @@ var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
 function getConfig(c, retryStrategy) {
-  return {
+  var c = {
     host    : c.host,
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
-
-    retry_strategy: retryStrategy,
   };
+
+  if (retryStrategy) {
+    c.retry_strategy = retryStrategy;
+  }
+
+  return c;
 };
 
 /* Singleton Client */
@@ -44,16 +48,28 @@ var SocketIOServerHelper = function(server, logger, config) {
   };
 
   if (config) {
+    var _retryStrategy = config.disableRetry
+                       ? null
+                       : self.retryStrategy;
+
     self.config = toolkit.noNullOrWhiteSpace(config);
 
-    self.subClient = redis.createClient(getConfig(self.config, self.retryStrategy));
-    self.pubClient = redis.createClient(getConfig(self.config, self.retryStrategy));
+    self.subClient = redis.createClient(getConfig(self.config, _retryStrategy));
+    self.pubClient = redis.createClient(getConfig(self.config, _retryStrategy));
 
     self.subClient.on('error', function(err) {
       self.logger.error('[SOCKET IO] Error: `{0}` (in SubClient)', err.toString());
+
+      if ('function' === typeof config.errorCallback) {
+        config.errorCallback(err);
+      }
     });
     self.pubClient.on('error', function(err) {
       self.logger.error('[SOCKET IO] Error: `{0}` (in PubClient)', err.toString());
+
+      if ('function' === typeof config.errorCallback) {
+        config.errorCallback(err);
+      }
     });
 
   } else {
@@ -66,7 +82,7 @@ var SocketIOServerHelper = function(server, logger, config) {
       });
 
       SUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
-      PUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy))
+      PUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
 
       // Error handling
       SUB_CLIENT.on('error', function(err) {

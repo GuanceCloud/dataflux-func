@@ -291,7 +291,7 @@ export default {
 
       let httpInfoTEXT = httpInfoLines.join('\n');
 
-      let createTimeStr = this.moment(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },

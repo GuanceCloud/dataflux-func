@@ -34,17 +34,13 @@ export default {
 
         // 跳转
         if (this.$route.name === 'index') {
-          this.$router.push({
-            name: 'intro',
-          });
+          this.$router.push({ name: 'intro' });
         }
 
       } else {
         // 登出后
         if (this.$route.name !== 'sign-out') {
-          this.$router.push({
-            name: 'index',
-          });
+          this.$router.push({ name: 'index' });
         }
       }
     },

@@ -320,11 +320,18 @@ const router = new VueRouter({
   routes,
 });
 
+const noAuthRoutes = [
+  'index',
+  'func-doc',
+  'auth-link-func-doc',
+  'dream',
+];
+
 router.beforeEach((to, from, next) => {
   store.commit('updateLoadStatus', false);
 
   // 登录跳转
-  if (!store.state.xAuthToken && to.name !== 'index') {
+  if (!store.state.xAuthToken && noAuthRoutes.indexOf(to.name) < 0) {
     return next({name: 'index'});
   }
   if (store.state.xAuthToken && to.name === 'index') {

@@ -162,12 +162,10 @@ _SAMPLE_SCRIPT: |
       return 'OK'
 
 # MySQL一般作为常量的配置
-_MYSQL_CONNECTION_LIMIT   : 30
-_MYSQL_ACQUIRE_TIMEOUT    : 60000
-_MYSQL_CONNECT_TIMEOUT    : 60000
-_MYSQL_TIMEOUT            : 60000
-_MYSQL_CHARSET            : utf8mb4
-_MYSQL_TIMEZONE           : ''
+_MYSQL_CONNECTION_LIMIT: 30
+_MYSQL_CONNECT_TIMEOUT : 60000
+_MYSQL_CHARSET         : utf8mb4
+_MYSQL_TIMEZONE        : ''
 
 # WEB模块一般作为常量的配置
 _WEB_INDEX_PAGE            : mainPage.clientApp
