@@ -488,5 +488,55 @@ class DataKit(object):
     # def write_rum_many(self, data):
     #     return self._write_many('/v1/write/rum', data)
 
+    def query(self, dql, raw=False, dict_output=True, **kwargs):
+        q = { 'query': dql }
+
+        for k, v in kwargs.items():
+            if v is not None:
+                q[k] = v
+
+        json_obj = {
+            'queries'     : [ q ],
+            'echo_explain': bool(echo_explain),
+        }
+        status_code, dql_res = self.post_json(json_obj, '/v1/query/raw')
+
+        # 返回原始返回值
+        if raw:
+            return status_code, dql_res
+
+        # 解开包装
+        dql_series = dql_res['content'][0]['series'] or []
+        unpacked_dql_res = {
+            'statement_id': 0,
+            'series'      : dql_series,
+        }
+
+        # 转换为字典格式
+        if dict_output:
+            dicted_series_list = []
+            for series in dql_series:
+                dicted_series = []
+
+                values  = series['values']
+                columns = series['columns']
+                tags    = series.get('tags') or {}
+                for row in values:
+                    d = dict(zip(columns, row))
+
+                    # 转换为字典后，可能某个字段名就叫`tags`，为避免冲突，属性`tags`自动加下划线
+                    tags_field = 'tags'
+                    while tags_field in d:
+                        tags_field = '_' + tags_field
+                    d[tags_field] = tags
+
+                    dicted_series.append(d)
+
+                dicted_series_list.append(dicted_series)
+
+            unpacked_dql_res['series'] = dicted_series_list
+
+        return status_code, unpacked_dql_res
+
 # Alias
 Datakit = DataKit

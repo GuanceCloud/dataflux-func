@@ -1431,9 +1431,8 @@ mainAPI:
           - simplified
           - upload
     files:
-      $limitSize: 500M
-      $allowedTypes:
-        - '*/*'
+      $limitSize   : 500M
+      $allowedTypes: '*/*'
 
   callBatchByGet:
     showInDoc    : true
@@ -1850,6 +1849,7 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
     files:
+      $limitSize   : 500M
       $allowedTypes: '*/*'
     body:
       folder:
@@ -2066,7 +2066,7 @@ scriptSetAPI:
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
     files:
-      $limitSize   : 10M
+      $limitSize   : 100M
       $allowedTypes: 'application/octet-stream'
     body:
       password:
