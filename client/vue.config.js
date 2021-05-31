@@ -1,6 +1,6 @@
-const os   = require('os');
-const fs   = require('fs');
-const path = require('path');
+const os     = require('os');
+const fs     = require('fs');
+const path   = require('path');
 const cssmin = require('cssmin');
 
 const IS_PROD = process.env.NODE_ENV == 'production';
@@ -51,14 +51,14 @@ module.exports = {
       .resourceQuery(/blockType=i18n/)
       .type('javascript/auto')
       .use('i18n')
-        .loader("@intlify/vue-i18n-loader")
+        .loader('@intlify/vue-i18n-loader')
         .end();
     config.module.rule('yaml')
       .test(/\.ya?ml$/)
       .include.add(path.resolve(__dirname, './src/assets/yaml'))
       .end()
       .type('json')
-      .use("yaml-loader")
+      .use('yaml-loader')
         .loader("yaml-loader")
         .end()
   },
@@ -100,7 +100,6 @@ module.exports = {
           'bowser',
           'byte-size',
           'diff',
-          'json-stringify-pretty-compact',
           'splitargs',
         ],
       }
