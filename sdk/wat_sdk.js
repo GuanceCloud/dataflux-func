@@ -78,32 +78,19 @@ var WATClient = function(options) {
     }
   }
 
-  this.akSignVersion = options.akSignVersion || 'v1';
-
   this.headerFields = {
-      akSignVersion: 'X-Wat-Ak-Sign-Version',
-      akId         : 'X-Wat-Ak-Id',
-      akTimestamp  : 'X-Wat-Ak-Timestamp',
-      akNonce      : 'X-Wat-Ak-Nonce',
-      akSign       : 'X-Wat-Ak-Sign',
-      traceId      : 'X-Trace-Id',
+      akId       : 'X-Wat-Ak-Id',
+      akTimestamp: 'X-Wat-Ak-Timestamp',
+      akNonce    : 'X-Wat-Ak-Nonce',
+      akSign     : 'X-Wat-Ak-Sign',
+      traceId    : 'X-Trace-Id',
   }
   if (options.headerFields) {
     Object.assign(this.headerFields, options.headerFields);
   }
 };
 
-WATClient.prototype.getBodyMD5 = function(body) {
-  body = body || '';
-
-  var c = crypto.createHash('md5');
-  c.update(body);
-
-  var hash = c.digest('hex');
-  return hash;
-};
-
-WATClient.prototype.getSign = function(method, path, timestamp, nonce, body) {
+WATClient.prototype.getSign = function(method, path, timestamp, nonce) {
   if (!timestamp) {
     timestamp = parseInt(Date.now() / 1000).toString();
   }
@@ -112,34 +99,11 @@ WATClient.prototype.getSign = function(method, path, timestamp, nonce, body) {
     nonce = Math.random().toString();
   }
 
-  var stringToSign = null;
-  switch (this.akSignVersion) {
-    case 'v2':
-      stringToSign = [
-        this.akSignVersion,
-        timestamp,
-        nonce,
-        method.toUpperCase(),
-        path,
-        this.getBodyMD5(body),
-      ].join('&');
-      break;
-
-    case 'v1':
-    default:
-      stringToSign = [
-        timestamp,
-        nonce,
-        method.toUpperCase(),
-        path
-      ].join('&');
-      break;
-  }
+  var stringToSign = [ timestamp, nonce, method.toUpperCase(), path ].join('&');
 
   if (this.debug) {
-    console.log(strf('{0} {1} {2}',
+    console.log(strf('{0} {1}',
       colored('[String to Sign]'),
-      colored(this.akSignVersion, 'cyan'),
       stringToSign));
   }
 
@@ -150,34 +114,33 @@ WATClient.prototype.getSign = function(method, path, timestamp, nonce, body) {
   return sign;
 };
 
-WATClient.prototype.verifySign = function(sign, method, path, timestamp, nonce, body) {
-  var expectedSign = this.getSign(method, path, timestamp, nonce, body);
+WATClient.prototype.verifySign = function(sign, method, path, timestamp, nonce) {
+  var expectedSign = this.getSign(method, path, timestamp, nonce);
 
   return (sign === expectedSign);
 };
 
-WATClient.prototype.getAuthHeader = function(method, path, body) {
+WATClient.prototype.getAuthHeader = function(method, path) {
   var timestamp = parseInt(Date.now() / 1000).toString();
   var nonce     = Math.random().toString();
 
-  var sign = this.getSign(method, path, timestamp, nonce, body);
+  var sign = this.getSign(method, path, timestamp, nonce);
 
   var authHeader = {}
-  authHeader[this.headerFields.akSignVersion] = this.akSignVersion;
-  authHeader[this.headerFields.akId]          = this.akId;
-  authHeader[this.headerFields.akTimestamp]   = timestamp;
-  authHeader[this.headerFields.akNonce]       = nonce;
-  authHeader[this.headerFields.akSign]        = sign;
+  authHeader[this.headerFields.akId]        = this.akId;
+  authHeader[this.headerFields.akTimestamp] = timestamp;
+  authHeader[this.headerFields.akNonce]     = nonce;
+  authHeader[this.headerFields.akSign]      = sign;
 
   return authHeader;
 };
 
-WATClient.prototype.verifyAuthHeader = function(headers, method, path, body) {
+WATClient.prototype.verifyAuthHeader = function(headers, method, path) {
   var timestamp = headers[this.headerFields.akTimestamp.toLowerCase()] || '';
   var nonce     = headers[this.headerFields.akNonce.toLowerCase()]     || '';
   var sign      = headers[this.headerFields.akSign.toLowerCase()]      || '';
 
-  return this.verifySign(sign, method, path, timestamp, nonce, body);
+  return this.verifySign(sign, method, path, timestamp, nonce);
 };
 
 WATClient.prototype.run = function(options, callback) {
@@ -219,7 +182,7 @@ WATClient.prototype.run = function(options, callback) {
   }
 
   if (this.akId && this.akSecret) {
-    var authHeader = this.getAuthHeader(method, path, body);
+    var authHeader = this.getAuthHeader(method, path);
     Object.assign(headers, authHeader);
   }
 
@@ -338,7 +301,7 @@ WATClient.prototype.upload = function(options, callback) {
   }
 
   if (this.akId && this.akSecret) {
-    var authHeader = this.getAuthHeader(method, path, formData.getBuffer());
+    var authHeader = this.getAuthHeader(method, path);
     Object.assign(headers, authHeader);
   }
 
@@ -428,13 +391,12 @@ WATClient.prototype.delete = function(options, callback) {
 exports.WATClient = WATClient;
 
 if (require.main === module) {
-  function testSuit(akSignVersion, callback) {
+  function testSuit(name, callback) {
     var clientOpt = {
-      akId         : 'ak-7Qf3KXH8QZOrW8Tf',
-      akSecret     : 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3',
-      host         : 'ubuntu16-dev-big.vm',
-      port         : 80,
-      akSignVersion: akSignVersion,
+      akId    : 'ak-7Qf3KXH8QZOrW8Tf',
+      akSecret: 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3',
+      host    : 'ubuntu18-dev.vm',
+      port    : 80,
     };
     var c = new WATClient(clientOpt);
     c.debug = true;
@@ -442,7 +404,7 @@ if (require.main === module) {
     // 1. GET Request Test
     var opt1 = {
       path   : '/api/v1/do/ping',
-      traceId: 'TEST-NODE-001-' + akSignVersion,
+      traceId: 'TEST-NODE-001',
     };
     c.get(opt1, function(err, respData, respStatusCode) {
 
@@ -458,7 +420,7 @@ if (require.main === module) {
             'boolean': true,
           }
         },
-        traceId: 'TEST-NODE-002-' + akSignVersion,
+        traceId: 'TEST-NODE-002',
       };
       c.post(opt2, function(err, respData, respStatusCode) {
 
@@ -472,7 +434,7 @@ if (require.main === module) {
           fields    : {
             'note': 'This is a Chinese README. 这是一份中文使用说明。'
           },
-          traceId: 'TEST-NODE-003-' + akSignVersion,
+          traceId: 'TEST-NODE-003',
         };
         c.upload(opt3, function(err, respData, respStatusCode) {
 
@@ -482,9 +444,7 @@ if (require.main === module) {
     });
   };
 
-  testSuit('v2', function() {
-    testSuit('v1', function() {
-      testSuit(null);
-    });
+  testSuit('test', function() {
+    testSuit(null);
   });
 };

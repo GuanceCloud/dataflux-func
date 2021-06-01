@@ -149,7 +149,19 @@ function disablePageCache(req, res, next) {
   res.set('Pragma', 'no-cache');
 
   return next();
-}
+};
+
+function fixReqData(req, res, next) {
+  // 转换请求数据为 plain JSON
+  if ('function' !== typeof req.query.hasOwnProperty) {
+    try { req.query = toolkit.jsonCopy(req.query) } catch(_) { }
+  }
+  if ('function' !== typeof req.body.hasOwnProperty) {
+    try { req.body = toolkit.jsonCopy(req.body) } catch(_) { }
+  }
+
+  return next();
+};
 
 /**
  * Return full URL for module.handler.
@@ -609,6 +621,8 @@ exports.mount = function(app) {
     if (c.files) {
       preMiddlewares.push(uploads(c.files));
     }
+
+    preMiddlewares.push(fixReqData);
 
     if (c.body && CONFIG.MODE === 'dev') {
       preMiddlewares.push(requestDumper.dumpRequestBody);

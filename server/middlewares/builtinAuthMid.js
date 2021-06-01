@@ -237,7 +237,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
             akSign       : CONFIG._WEB_AK_SIGN_HEADER,
           }
         });
-        var isValidSign = watClient.verifyAuthHeader(req.headers, req.method, req.originalUrl, req.rawData);
+        var isValidSign = watClient.verifyAuthHeader(req.headers, req.method, req.originalUrl);
 
         if (!isValidSign) {
           res.locals.logger.debug('AK Sign Version : {0}', akSignVersion);

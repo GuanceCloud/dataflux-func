@@ -299,7 +299,7 @@ export default new Vuex.Store({
       } else {
         setImmediate(() => {
           state.isLoaded = true;
-        })
+        });
       }
     },
     startProcessing(state) {

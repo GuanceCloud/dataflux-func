@@ -217,7 +217,6 @@ Response                      : 响应
 </template>
 
 <script>
-import byteSize from 'byte-size'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
@@ -262,7 +261,7 @@ export default {
 
       this.scriptOverview.forEach(d => {
         if (d.codeSize) {
-          d.codeSizeHuman = byteSize(d.codeSize);
+          d.codeSizeHuman = this.T.byteSizeHuman(d.codeSize);
         }
       })
 

@@ -1934,13 +1934,6 @@ var isWeChatBrowser = toolkit.isWeChatBrowser = function isWeChatBrowser(req) {
 };
 
 /**
- * Add `rawData` to req in `body-parser.verify()`
- */
-var addRawData = toolkit.addRawData = function addRawData(req, res, buffer, encoding) {
-  req.rawData = buffer;
-}
-
-/**
  * Run compare operation.
  *
  * @param  {*}       value
@@ -2132,6 +2125,38 @@ var toTransmissionRateUnitString = toolkit.toTransmissionRateUnitString = functi
  */
 var toTransmissionRateUnitStringInByte = toolkit.toTransmissionRateUnitStringInByte = function toTransmissionRateUnitStringInByte(value, fromUnit, toUnit, digits) {
   return toValueUnitString(TRANSMISSION_RATE_UNITS_IN_BYTE, TRANSMISSION_RATE_RADIX_IN_BYTE, value, fromUnit, toUnit, digits)
+};
+
+/**
+ * Convert volumn string to byte size
+ * @param  {String} s
+ * @return {Integer}
+ */
+var toBytes = toolkit.toBytes = function toBytes(s) {
+  var byteSize = parseInt(s);
+
+  var m = `${s}`.match(/(k|kb|m|mb|g|gb)$/gi);
+  if (m) {
+    var unit = m[0].toLowerCase();
+    switch(unit) {
+      case 'k':
+      case 'kb':
+        byteSize *= 1024;
+        break;
+
+      case 'm':
+      case 'mb':
+        byteSize *= 1024 * 1024;
+        break;
+
+      case 'g':
+      case 'gb':
+        byteSize *= 1024 * 1024 * 1024;
+        break;
+    }
+  }
+
+  return byteSize;
 };
 
 var asNumberArr = toolkit.asNumberArr = function asNumberArr(arr) {

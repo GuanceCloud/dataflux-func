@@ -238,10 +238,10 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   // 文件上传参数
   if (req.files && req.files.length > 0) {
     funcCallOptions.funcCallKwargs.files = req.files.map(function(file) {
-      // 文件保存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
+      // 文件转存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
       var timestampStr = toolkit.strf('{0}_{1}', moment.utc().format('YYYYMMDDHHmmss'), toolkit.genRandString(6));
       var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._FUNC_UPLOAD_DIR, timestampStr, file.originalname);
-      fs.outputFileSync(filePath, file.data);
+      fs.moveSync(file.path, filePath, { overwrite: true });
 
       return {
         filePath    : filePath,
@@ -1693,6 +1693,8 @@ exports.getSystemConfig = function(req, res, next) {
 
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
+
+    _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.mainAPI.uploadResource.files.$limitSize),
   };
 
   var funcModel = funcMod.createModel(res.locals);
@@ -2355,7 +2357,7 @@ exports.uploadResource = function(req, res, next) {
 
   var fileSaveName = rename || file.originalname;
   var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, fileSaveName);
-  fs.outputFileSync(filePath, file.data);
+  fs.moveSync(file.path, filePath, { overwrite: true });
 
   var ret = toolkit.initRet();
   res.locals.sendJSON(ret);

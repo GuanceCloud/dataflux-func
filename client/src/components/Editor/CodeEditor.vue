@@ -110,7 +110,10 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
   <transition name="fade">
     <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="100" split="horizontal" v-show="$store.state.isLoaded">
       <template slot="paneL">
-        <el-container>
+        <el-container
+          v-loading.fullscreen.lock="fullScreenLoading"
+          element-loading-spinner="el-icon-loading"
+          :element-loading-text="workerRunningTipTitle">
           <!-- 操作区 -->
           <el-header class="code-editor" style="height: unset !important">
             <div class="code-editor-action-left">
@@ -185,10 +188,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         @click="callFuncDraft"
                         type="primary" plain
                         size="mini"
-                        :disabled="(selectedFuncId ? false : true) && !workerRunning"
-                        v-loading.fullscreen.lock="workerResultLoading"
-                        element-loading-spinner="el-icon-loading"
-                        :element-loading-text="workerRunningTipTitle">
+                        :disabled="(selectedFuncId ? false : true) && !workerRunning">
                         <i class="fa fa-fw fa-play"></i> <span class="hidden-md-and-down">{{ $t('Run') }}</span>
                       </el-button>
                     </el-tooltip>
@@ -600,11 +600,11 @@ export default {
       let apiRes = await this._saveCodeDraft({ mute: true });
       if (!apiRes || !apiRes.ok) return;
 
-      // 脚本发布中
+      // 脚本发布处理中
       this.workerRunning         = true;
       this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
       let delayedLoadingT = setTimeout(() => {
-        this.workerResultLoading = true;
+        this.fullScreenLoading = true;
       }, 200);
 
       // 发布
@@ -614,9 +614,10 @@ export default {
         alert : { okMessage: this.$t('Script published, new Script is in effect now') },
       });
 
+      // 脚本发布处理结束
       clearTimeout(delayedLoadingT);
-      this.workerRunning       = false;
-      this.workerResultLoading = false;
+      this.fullScreenLoading = false;
+      this.workerRunning     = false;
 
       if (!apiRes.ok) {
         // 输出结果
@@ -695,7 +696,7 @@ export default {
       }, 1000);
 
       let delayedLoadingT = setTimeout(() => {
-        this.workerResultLoading = true;
+        this.fullScreenLoading = true;
       }, 500);
 
       let apiRes = null;
@@ -712,8 +713,8 @@ export default {
 
       } finally {
         clearTimeout(delayedLoadingT);
-        this.workerRunning       = false;
-        this.workerResultLoading = false;
+        this.fullScreenLoading = false;
+        this.workerRunning     = false;
       }
 
       // 输出结果
@@ -1321,9 +1322,9 @@ export default {
       funcCallSeq       : 0,
 
       countDownTimer       : null,
+      fullScreenLoading    : false,
       workerRunning        : false,
       workerRunningTipTitle: '',
-      workerResultLoading  : false,
 
       // 文本输出
       scriptOutput: [],

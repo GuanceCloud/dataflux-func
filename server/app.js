@@ -122,25 +122,18 @@ function startApplication() {
     return next();
   });
 
-  app.use(bodyParser.urlencoded({limit: '50mb', extended: true, verify: toolkit.addRawData}));
-  app.use(bodyParser.json({limit: '50mb', verify: toolkit.addRawData}));
-  app.use(bodyParser.text({limit: '50mb', verify: toolkit.addRawData}));
-  app.use(bodyParser.raw({limit: '50mb', type: '*/*', verify: toolkit.addRawData}));
+  app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+  app.use(bodyParser.json({limit: '50mb'}));
+  app.use(bodyParser.text({limit: '50mb'}));
 
-  app.use(function(bodyParserErr, req, res, next) {
-    if ('undefined' === typeof req.rawData) {
-      req.rawData = '';
+  app.use(function(err, req, res, next) {
+    if (err && res.locals.isBodyParsing) {
+      // 解析错误时返回固定错误信息
+      err = new E('EClientBadRequest', 'Invalid request body');
     }
 
-    if (res.locals.isBodyParsing) {
-      res.locals.isBodyParsing = false;
-      return next(new E('EClientBadRequest', 'Invalid request body', {
-        body       : req.rawData.toString(),
-        contentType: req.get('content-type'),
-      }));
-    }
-
-    return next(bodyParserErr);
+    res.locals.isBodyParsing = false;
+    return next(err);
   });
 
   // 集成登录认证

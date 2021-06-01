@@ -329,7 +329,7 @@ h3 {
   background-repeat: repeat;
 }
 .fade-enter-active {
-  transition: opacity .15s;
+  transition: opacity .25s;
 }
 .fade-enter {
   opacity: 0;

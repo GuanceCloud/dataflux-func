@@ -38,22 +38,15 @@ en:
   Clear   : 清空
   Debug   : 调试
   Download: 下载
-
-  # 通用-操作结果
-  Added   : 已添加
-  Edited  : 已编辑
-  Modified: 已修改
-  Deleted : 已删除
-  Enabled : 已启用
-  Disabled: 已禁用
-  Saved   : 已保存
-  Hidden  : 已隐藏
-  Shown   : 已显示
-  Locked  : 已锁定
-  Unlockel: 已解锁
-  Opened  : 已打开
-  Closed  : 已关闭
-  Cleared : 已清空
+  Upload  : 上传
+  Preview : 预览
+  Refresh : 刷新
+  Enter   : 进入
+  Move    : 移动
+  Copy    : 复制
+  Zip     : 压缩
+  Unzip   : 解压
+  More    : 更多
 
   # 通用-操作（小写）
   add     : 添加
@@ -73,6 +66,31 @@ en:
   clear   : 清空
   debug   : 调试
   download: 下载
+  upload  : 上传
+  preview : 预览
+  refresh : 刷新
+  enter   : 进入
+  move    : 移动
+  copy    : 复制
+  zip     : 压缩
+  unzip   : 解压
+  more    : 更多
+
+  # 通用-操作结果
+  Added   : 已添加
+  Edited  : 已编辑
+  Modified: 已修改
+  Deleted : 已删除
+  Enabled : 已启用
+  Disabled: 已禁用
+  Saved   : 已保存
+  Hidden  : 已隐藏
+  Shown   : 已显示
+  Locked  : 已锁定
+  Unlockel: 已解锁
+  Opened  : 已打开
+  Closed  : 已关闭
+  Cleared : 已清空
 
   # 通用-操作结果（小写）
   added   : 已添加
@@ -102,6 +120,9 @@ en:
   Tags       : 标签
   Status     : 状态
   Note       : 备注
+  Folder     : 文件夹
+  File       : 文件
+  Size       : 大小
   Create Time: 创建时间
   Update Time: 更新时间
   API Example: API调用示例

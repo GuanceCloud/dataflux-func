@@ -328,6 +328,8 @@ const noAuthRoutes = [
 ];
 
 router.beforeEach((to, from, next) => {
+  // 切换路径时，已加载标记置为false，等待加载完再显示
+  // 防止屏幕不和谐闪烁
   store.commit('updateLoadStatus', false);
 
   // 登录跳转

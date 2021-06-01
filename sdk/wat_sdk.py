@@ -102,7 +102,7 @@ def colored(s, color=None):
     return color + '{}\033[0m'.format(s)
 
 class WATClient(object):
-    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, ak_sign_version=None, header_fields=None, debug=False):
+    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, header_fields=None, debug=False):
         self.debug = debug
 
         self.ak_id     = ak_id
@@ -125,50 +125,24 @@ class WATClient(object):
             else:
                 self.port = 80
 
-        self.ak_sign_version = ak_sign_version or 'v1'
-
         self.header_fields = {
-            'akSignVersion': 'X-Wat-Ak-Sign-Version',
-            'akId'         : 'X-Wat-Ak-Id',
-            'akTimestamp'  : 'X-Wat-Ak-Timestamp',
-            'akNonce'      : 'X-Wat-Ak-Nonce',
-            'akSign'       : 'X-Wat-Ak-Sign',
-            'traceId'      : 'X-Trace-Id',
+            'akId'       : 'X-Wat-Ak-Id',
+            'akTimestamp': 'X-Wat-Ak-Timestamp',
+            'akNonce'    : 'X-Wat-Ak-Nonce',
+            'akSign'     : 'X-Wat-Ak-Sign',
+            'traceId'    : 'X-Trace-Id',
         }
         if header_fields:
             self.header_fields.update(header_fields)
 
-    def get_body_md5(self, body=None):
-        body = body or ''
-
-        h = md5()
-        h.update(ensure_binary(body))
-
-        return ensure_str(h.hexdigest())
-
-    def get_sign(self, method, path, timestamp, nonce, body=None):
+    def get_sign(self, method, path, timestamp, nonce):
         if timestamp is None:
             timestamp = str(int(time.time()))
 
         if nonce is None:
             nonce = str(uuid.uuid4().hex)
 
-        string_to_sign = None
-        if self.ak_sign_version == 'v2':
-            string_to_sign = '&'.join([
-                self.ak_sign_version,
-                timestamp,
-                nonce,
-                method.upper(),
-                path,
-                self.get_body_md5(body)])
-
-        else:
-            string_to_sign = '&'.join([
-                timestamp,
-                nonce,
-                method.upper(),
-                path])
+        string_to_sign = '&'.join([ timestamp, nonce, method.upper(), path])
 
         if self.debug:
             print('{} {} {}'.format(
@@ -186,32 +160,31 @@ class WATClient(object):
 
         return sign
 
-    def verify_sign(self, sign, method, path, timestamp, nonce, body=None):
-        expected_sign = self.get_sign(method, path, timestamp, nonce, body=body)
+    def verify_sign(self, sign, method, path, timestamp, nonce):
+        expected_sign = self.get_sign(method, path, timestamp, nonce)
 
         return (sign == expected_sign)
 
-    def get_auth_header(self, method, path, body=None):
+    def get_auth_header(self, method, path):
         timestamp = str(int(time.time()))
         nonce     = uuid.uuid4().hex
 
-        sign = self.get_sign(method, path, timestamp, nonce, body=body)
+        sign = self.get_sign(method, path, timestamp, nonce)
 
         auth_headers = {
-            self.header_fields['akSignVersion']: self.ak_sign_version,
-            self.header_fields['akId']         : self.ak_id,
-            self.header_fields['akTimestamp']  : timestamp,
-            self.header_fields['akNonce']      : nonce,
-            self.header_fields['akSign']       : sign,
+            self.header_fields['akId']       : self.ak_id,
+            self.header_fields['akTimestamp']: timestamp,
+            self.header_fields['akNonce']    : nonce,
+            self.header_fields['akSign']     : sign,
         }
         return auth_headers
 
-    def verify_auth_header(self, headers, method, path, body=None):
+    def verify_auth_header(self, headers, method, path):
         timestamp = headers.get(self.header_fields['akTimestamp'], '')
         nonce     = headers.get(self.header_fields['akNonce'], '')
         sign      = headers.get(self.header_fields['akSign'], '')
 
-        return self.verify_sign(sign, method, path, timestamp, nonce, body=body)
+        return self.verify_sign(sign, method, path, timestamp, nonce)
 
     def run(self, method, path, query=None, body=None, headers=None, trace_id=None):
         # Prepare method/query/body
@@ -239,7 +212,7 @@ class WATClient(object):
             headers[self.header_fields['traceId']] = trace_id
 
         if self.ak_id and self.ak_secret:
-            auth_headers = self.get_auth_header(method, path, body=body)
+            auth_headers = self.get_auth_header(method, path)
             headers.update(auth_headers)
 
         # Do HTTP/HTTPS
@@ -315,7 +288,7 @@ class WATClient(object):
             headers[self.header_fields['traceId']] = trace_id
 
         if self.ak_id and self.ak_secret:
-            auth_headers = self.get_auth_header(method, path, prepared_req.body)
+            auth_headers = self.get_auth_header(method, path)
             headers.update(auth_headers)
 
         prepared_req.headers.update(headers)
@@ -354,39 +327,37 @@ class WATClient(object):
         return self.run('DELETE', path, query, None, headers, trace_id=trace_id)
 
 if __name__ == '__main__':
-    for ak_sign_version in ('v2', 'v1', None):
-        c = WATClient('ak-7Qf3KXH8QZOrW8Tf', 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3',
-                host='ubuntu16-dev-big.vm:80', ak_sign_version=ak_sign_version)
-        c.debug = True
+    c = WATClient('ak-7Qf3KXH8QZOrW8Tf', 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3', host='ubuntu18-dev.vm:80')
+    c.debug = True
 
-        # 1. GET Request Test
-        status_code, resp = c.get('/api/v1/do/ping',
-                trace_id='TEST-PY{}-001-{}'.format(sys.version_info[0], ak_sign_version))
+    # 1. GET Request Test
+    status_code, resp = c.get('/api/v1/do/ping',
+            trace_id='TEST-PY{}-001'.format(sys.version_info[0]))
 
-        # 2. POST Request Test
-        body = {
-            'echo': {
-                'int'    : 1,
-                'str'    : 'Hello World',
-                'unicode': u'你好，世界！',
-                'none'   : None,
-                'boolean': True,
-            }
+    # 2. POST Request Test
+    body = {
+        'echo': {
+            'int'    : 1,
+            'str'    : 'Hello World',
+            'unicode': u'你好，世界！',
+            'none'   : None,
+            'boolean': True,
+        }
+    }
+
+    status_code, resp = c.post('/api/v1/do/echo',
+            body=body,
+            trace_id='TEST-PY{}-002'.format(sys.version_info[0]))
+
+    # 3. UPLOAD Request Test
+    if not UPLOAD_DISABLED:
+        with open('使用说明_SDK.md', 'rb') as _f:
+            file_buffer = _f.read()
+
+        fields = {
+            'note': 'This is a Chinese README. 这是一份中文使用说明。'
         }
 
-        status_code, resp = c.post('/api/v1/do/echo',
-                body=body,
-                trace_id='TEST-PY{}-002-{}'.format(sys.version_info[0], ak_sign_version))
-
-        # 3. UPLOAD Request Test
-        if not UPLOAD_DISABLED:
-            with open('使用说明_SDK.md', 'rb') as _f:
-                file_buffer = _f.read()
-
-            fields = {
-                'note': 'This is a Chinese README. 这是一份中文使用说明。'
-            }
-
-            status_code, resp = c.upload('/api/v1/files/do/upload',
-                file_buffer=file_buffer, filename='使用说明_SDK.md', fields=fields,
-                trace_id='TEST-PY{}-031-{}'.format(sys.version_info[0], ak_sign_version))
+        status_code, resp = c.upload('/api/v1/files/do/upload',
+            file_buffer=file_buffer, filename='使用说明_SDK.md', fields=fields,
+            trace_id='TEST-PY{}-003'.format(sys.version_info[0]))

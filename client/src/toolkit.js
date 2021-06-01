@@ -60,6 +60,9 @@ import { diffTrimmedLines } from 'diff'
 // Useragent
 import Bowser from "bowser"
 
+// 字节大小
+import byteSize from 'byte-size'
+
 // DataFlux Func hint
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
@@ -148,18 +151,34 @@ export function getShiftKeyName() {
 }
 
 export function debounce(fn, delay) {
-  let delays = delay || 500;
-  let timer;
+  delay = delay || 500;
+  let T;
+
   return function() {
     let self = this;
     let args = arguments;
-    if (timer) {
-      clearTimeout(timer);
-    }
-    timer = setTimeout(function() {
-      timer = null;
+
+    if (T) clearTimeout(T);
+    T = setTimeout(function() {
+      T = null;
       fn.apply(self, args);
-    }, delays);
+    }, delay);
+  };
+};
+
+export function throttle(fn, interval) {
+  interval = interval || 1000;
+  let last = 0;
+
+  return function () {
+    let self = this;
+    let args = arguments;
+    let now = Date.now();
+    // 根据当前时间和上次执行时间的差值判断是否频繁
+    if (now - last >= interval) {
+      last = now;
+      fn.apply(self, args);
+    }
   };
 };
 
@@ -187,6 +206,10 @@ export function strf() {
   return pattern.replace(/\{(\d+)\}/g, function replaceFunc(m, i) {
     return args[i] + '';
   });
+};
+
+export function byteSizeHuman(s) {
+  return byteSize(s, { units: 'iec' });
 };
 
 export function getBase64(str, uriSafe) {
@@ -693,6 +716,7 @@ export async function alert(message, type) {
 
   // 简单提示，不需要区分标题和内容
   return await MessageBox.alert(message, {
+    showClose: false,
     dangerouslyUseHTMLString: true,
     confirmButtonText       : confirmButtonText,
     type                    : type,
@@ -772,6 +796,10 @@ function _createAxiosOpt(method, pathPattern, options) {
   }
   if (options.respType) {
     axiosOpt.responseType = options.respType;
+  }
+
+  if (options.onUploadProgress) {
+    axiosOpt.onUploadProgress = options.onUploadProgress;
   }
 
   // 注入认证信息
@@ -898,6 +926,7 @@ async function _doAxios(axiosOpt) {
       await MessageBox.alert(`与服务器通讯失败，请稍后再试
           <br>如果问题持续出现，请联系管理员，检查服务器状态
           <br>${err.toString()}`, {
+        showClose: false,
         dangerouslyUseHTMLString: true,
         confirmButtonText: '了解',
         type: 'error',
@@ -965,8 +994,9 @@ export async function callAPI(method, pathPattern, options) {
           message += `<br><small>${axiosRes.data.detail.message}<small>`;
         }
 
-        await MessageBox.alert(message, // 简单提示，不需要区分标题和内容
-        {
+        // 简单提示，不需要区分标题和内容
+        await MessageBox.alert(message, {
+          showClose: false,
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),
           type: 'error',
@@ -1026,8 +1056,9 @@ export async function callAPI_getOne(pathPattern, id, options) {
       if (!alert.muteError) {
         setTimeout(() => {
           let message = app.$t('Data not found. It may have been deleted')
-          MessageBox.alert(message, // 简单提示，不需要区分标题和内容
-          {
+          // 简单提示，不需要区分标题和内容
+          MessageBox.alert(message, {
+            showClose: false,
             confirmButtonText: app.$t('OK'),
             type: 'error',
           });
@@ -1130,8 +1161,9 @@ export async function callAPI_getAll(pathPattern, options) {
             message += `<br><small>${axiosRes.data.detail.message}<small>`;
           }
 
-          MessageBox.alert(message, // 简单提示，不需要区分标题和内容
-          {
+          // 简单提示，不需要区分标题和内容
+          MessageBox.alert(message, {
+            showClose: false,
             dangerouslyUseHTMLString: true,
             confirmButtonText: app.$t('OK'),
             type: 'error',
