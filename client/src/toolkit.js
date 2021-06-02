@@ -728,8 +728,8 @@ export async function confirm(message) {
     // 简单提示，不需要区分标题和内容
     await MessageBox.confirm(message, {
       dangerouslyUseHTMLString: true,
-      confirmButtonText       : app.$t('Yes'),
-      cancelButtonText        : app.$t('No'),
+      confirmButtonText       : app.$t('Confirm'),
+      cancelButtonText        : app.$t('Cancel'),
       type                    : 'warning',
     });
 
@@ -743,13 +743,19 @@ export async function confirm(message) {
 };
 
 export async function prompt(message, defaultValue) {
-  return await this.$prompt(message, {
-    inputValue              : defaultValue,
-    dangerouslyUseHTMLString: true,
-    closeOnClickModal       : false,
-    confirmButtonText       : app.$t('OK'),
-    cancelButtonText        : app.$t('Cancel'),
-  });
+  try {
+    return await MessageBox.prompt(message, {
+      inputValue              : defaultValue,
+      dangerouslyUseHTMLString: true,
+      closeOnClickModal       : false,
+      confirmButtonText       : app.$t('Confirm'),
+      cancelButtonText        : app.$t('Cancel'),
+    });
+
+  } catch(err) {
+    // 取消操作
+    return null;
+  }
 };
 
 export async function notify(message, type) {

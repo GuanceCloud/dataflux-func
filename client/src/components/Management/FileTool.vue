@@ -330,14 +330,16 @@ export default {
       switch(operation) {
         case 'cp':
           promptRes = await this.T.prompt(this.$t('Please input destination path'), name);
+          if (!promptRes) return;
           break;
 
         case 'mv':
           promptRes = await this.T.prompt(this.$t('Please input destination path'), `./${name}`);
+          if (!promptRes) return;
           break;
 
         case 'rm':
-          await this.T.confirm(this.$t('Are you sure you want to delete the following content?'));
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the following content?'))) return;
           break;
       }
 

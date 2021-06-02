@@ -12,6 +12,10 @@ CONFIG_FILE_PATH: '/data/user-config.yaml'
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'
 
+# 文件上传临时目录
+# 必须使用绝对路径
+UPLOAD_TMP_ROOT_PATH: '/tmp/uploads'
+
 # 运行模式
 # 可选：
 #   "dev" : 开发模式

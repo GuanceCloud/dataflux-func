@@ -777,7 +777,22 @@ class AutoCleanerTask(BaseTask):
         sql_params = [table]
         self.db.query(sql, sql_params)
 
-    def clear_upload_file_by_expires(self, expires):
+    def clear_upload_temp_file(self):
+        expires = CONFIG['_UPLOAD_FILE_EXPIRES']
+        limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
+
+        upload_dir = CONFIG['UPLOAD_TMP_ROOT_PATH']
+        if not os.path.exists(upload_dir):
+            return
+
+        for folder_path, _, file_names in os.walk(upload_dir):
+            for file_name in file_names:
+                if file_name < limit_timestamp:
+                    file_path = os.path.join(folder_path, file_name)
+                    os.remove(file_path)
+
+    def clear_func_upload_file(self):
+        expires = CONFIG['_UPLOAD_FILE_EXPIRES']
         limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
 
         upload_dir = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], CONFIG['_FUNC_UPLOAD_DIR'])
@@ -815,9 +830,11 @@ def auto_cleaner(self, *args, **kwargs):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-    # 回卷上传文件目录
-    upload_file_expires = CONFIG['_UPLOAD_FILE_EXPIRES']
-    self.clear_upload_file_by_expires(expires=upload_file_expires)
+    # 清理上传临时目录
+    self.clear_upload_temp_file()
+
+    # 清理上传文件目录
+    self.clear_func_upload_file()
 
 # Main.AutoRun
 class AutoRunTask(BaseTask):
