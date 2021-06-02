@@ -2105,7 +2105,7 @@ exports.installPythonPackage = function(req, res, next) {
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
-            return asyncCallback(new E('ESys', 'Install Python package failed', {
+            return asyncCallback(new E('ESys', 'Preparing Python package failed', {
               package: pkg,
               stderr : stderr,
             }));
@@ -2137,6 +2137,7 @@ exports.installPythonPackage = function(req, res, next) {
             return asyncCallback(new E('ESys', 'Install Python package failed', {
               package: pkg,
               stderr : stderr,
+              message: stderr.split('\n')[0],
             }));
           });
 
