@@ -95,9 +95,6 @@ routeLoader.load(ROUTE.mainAPI.clearLogCacheTables, [
 ]);
 
 // Python包
-routeLoader.load(ROUTE.mainAPI.queryPythonPackages, [
-  mainAPICtrl.queryPythonPackages,
-]);
 routeLoader.load(ROUTE.mainAPI.listInstalledPythonPackages, [
   mainAPICtrl.listInstalledPythonPackages,
 ]);

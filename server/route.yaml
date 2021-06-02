@@ -1748,21 +1748,6 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
 
-  queryPythonPackages:
-    name         : 查询可用的的Python包
-    method       : get
-    url          : /api/v1/python-packages/query
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      query:
-        $desc: 包名
-        $type: string
-      limit:
-        $desc: 返回记录数量
-        $type: int
-
   listInstalledPythonPackages:
     name         : 列出已安装的Python包
     method       : get
