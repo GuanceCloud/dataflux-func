@@ -314,6 +314,11 @@ const routes = [
     name: 'dream',
     component: () => import('../views/Dream.vue'),
   },
+  {
+    path: '/blueprint',
+    name: 'blueprint',
+    component: () => import('../views/Blueprint.vue'),
+  },
 ];
 
 const router = new VueRouter({

@@ -29,7 +29,7 @@ Env        : 环境变量
 
     <!-- 编辑器 -->
     <template slot="paneR">
-      <router-view ref="mainArea" />
+      <router-view />
     </template>
   </split-pane>
 </template>

@@ -280,7 +280,7 @@ _DBDATA_TABLE_LIMIT_MAP: >
 _UPLOAD_FILE_EXPIRES: 3600
 
 # 数据库自动备份
-_DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
+_DB_AUTO_BACKUP_PREFIX dataflux-func-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
 
 # 其他（内部控制）
