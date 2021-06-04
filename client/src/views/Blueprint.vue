@@ -6,6 +6,8 @@
         :graph-menu="graphMenu"
         :node-menu="nodeMenu"
         :link-menu="linkMenu"
+        :enter-intercept="enterIntercept"
+        :output-intercept="outputIntercept"
         :node-list="data.dataJSON.nodeList"
         :link-list="data.dataJSON.linkList">
         <template v-slot:node="{meta}">
@@ -104,8 +106,58 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
+    genNode(type, title, x, y) {
+      // 节点数据骨架
+      let node = {
+        id        : '' + Math.random(),
+        width     : this.nodeWidth,
+        height    : this.nodeHeight,
+        coordinate: [x, y],
+        meta: {
+          type : type,
+          title: title,
+        }
+      }
+
+      // 补充额外信息
+      switch(type) {
+        // 函数节点
+        case 'func':
+          node.meta.fundId = null;
+          break;
+
+        // 代码节点
+        case 'code':
+          node.meta.code = null;
+          break;
+
+        // 结束节点
+        case 'end':
+          break;
+      }
+
+      return node;
+    },
+    enterIntercept(formNode, toNode, graph) {
+      console.log('IN enterIntercept')
+      return true;
+    },
+    outputIntercept(node, graph) {
+      console.log('IN outputIntercept')
+      return true;
+    },
   },
   computed: {
+    nodeWidth()  { return 150; }
+    nodeHeight() { return 80;  }
+    nodeTemplates() {
+      return [
+        {
+          label: this.$t('Func Node'),
+
+        }
+      ]
+    },
     graphMenu() {
       return [
         [
