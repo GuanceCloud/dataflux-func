@@ -53,12 +53,12 @@
         return Object.assign({
           hover: '#FF0000',
           color: '#666666',
-          textColor: '#666666',
+          textColor: '#FF6600',
           textHover: '#FF0000',
           font: '14px Arial',
           dotted: false,
           lineDash: [4, 4],
-          background: 'rgba(255,255,255,0.6)'
+          background: 'rgba(255,255,255,0.5)'
         }, this.linkBaseStyle)
       },
       inPath: {

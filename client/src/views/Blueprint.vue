@@ -8,22 +8,21 @@
         :link-menu="linkMenu"
         :enter-intercept="enterIntercept"
         :output-intercept="outputIntercept"
+        :link-base-style="linkBaseStyle"
+        :link-desc="linkDesc"
         :node-list="data.dataJSON.nodeList"
         :link-list="data.dataJSON.linkList">
         <template v-slot:node="{meta}">
           <el-card class="node-card" shadow="hover">
             <div class="node-type">
-              <template v-if="meta.type === 'code'">
-                <span>{{ $t('Code') }}</span>
+              <template v-if="meta.type === 'nope'">
+                <span>{{ $t('Nope') }}</span>
               </template>
               <template v-if="meta.type === 'func'">
                 <span>{{ $t('Func') }}</span>
               </template>
-              <template v-if="meta.type === 'switch'">
-                <span>{{ $t('Switch') }}</span>
-              </template>
-              <template v-if="meta.type === 'end'">
-                <span>{{ $t('End') }}</span>
+              <template v-if="meta.type === 'code'">
+                <span>{{ $t('Code') }}</span>
               </template>
             </div>
 
@@ -44,46 +43,6 @@
  */
 import SuperFlow from '@/components/SuperFlow'
 
-const nodeWidth  = 150;
-const nodeHeight = 80;
-
-const demoData = {
-  id: 'blpt-001',
-  dataJSON: {
-    nodeList: [
-      {
-        id        : 'node-1',
-        width     : nodeWidth,
-        height    : nodeHeight,
-        coordinate: [50, 100],
-        meta: {
-          type : 'switch',
-          title: '开始',
-        }
-      },
-      {
-        id        : 'node-2',
-        width     : nodeWidth,
-        height    : nodeHeight,
-        coordinate: [500, 250],
-        meta: {
-          type : 'func',
-          title: '处理数据',
-        }
-      },
-    ],
-    linkList: [
-      {
-        id     : 'link-1',
-        startId: 'node-1',
-        endId  : 'node-2',
-        startAt: [nodeWidth, nodeHeight / 2],
-        endAt  : [0, nodeHeight / 2],
-        meta   : null,
-      },
-    ],
-  }
-}
 export default {
   name: 'Blueprint',
   components: {
@@ -98,45 +57,94 @@ export default {
     },
   },
   methods: {
+    genDemoData() {
+      let node1 = this.createNode('func', '来自函数库函数的节点', { x: 50, y: 100 });
+      let node2 = this.createNode('code', '直接编写代码的节点', { x: 500, y: 200 });
+      let node3 = this.createNode('nope', '无处理', { x: 1000, y: 150 });
+      let link1 = this.createLink('nope', null, {
+        startNode: node1, startAt: 'right',
+        endNode  : node2, endAt  : 'left',
+      });
+      let link2 = this.createLink('code', '存在数据时', {
+        startNode: node2, startAt: 'right',
+        endNode  : node3, endAt  : 'left',
+      });
+
+      let demoData = {
+        id: this.T.genDataId('blpt'),
+        dataJSON: {
+          nodeList: [ node1, node2, node3 ],
+          linkList: [ link1, link2 ],
+        }
+      };
+
+      return demoData;
+    },
     async loadData() {
       let apiRes = await this.T.callAPI('/api/v1/do/ping')
       if (!apiRes.ok) return;
 
-      this.data = demoData;
+      this.data = this.genDemoData();
 
       this.$store.commit('updateLoadStatus', true);
     },
-    genNode(type, title, x, y) {
-      // 节点数据骨架
+    createNode(type, title, options) {
+      options = options || {};
+
+      let meta = {
+        type  : type,  // 无处理=nope, 函数=func, 代码=code
+        title : title, // 展示文字
+        funcId: null,  // 函数ID
+        code  : null,  // 代码正文（必须包含`def main(prev_ret, **kwargs)` 函数）
+        kwargs: null,  // 传参（JSON格式）
+      };
+      Object.assign(meta, options.meta);
+
       let node = {
-        id        : '' + Math.random(),
-        width     : this.nodeWidth,
-        height    : this.nodeHeight,
-        coordinate: [x, y],
-        meta: {
-          type : type,
-          title: title,
+        id        : this.T.genDataId('node'),
+        width     : this.NODE_WIDTH,
+        height    : this.NODE_HEIGHT,
+        coordinate: [options.x || 30, options.y || 30],
+        meta      : meta,
+      };
+
+      return node;
+    },
+    createLink(type, title, options) {
+      options = options || {};
+
+      let meta = {
+        type  : type,  // 无处理=nope, 函数=func, 代码=code
+        title : title, // 展示文字
+        funcId: null,  // 函数ID
+        code  : null,  // 代码正文（必须包含`def main(prev_ret, **kwargs)` 函数）
+        kwargs: null,  // 传参（JSON格式）
+      }
+      Object.assign(meta, options.meta);
+
+      function _getLinkNodePosition(node, position) {
+        switch(position) {
+          case 'left':
+            return [ 0, node.height / 2 ];
+          case 'right':
+            return [ node.width, node.height / 2 ];
+          case 'top':
+            return [ node.width / 2, 0 ];
+          case 'bottom':
+            return [ node.width / 2, node.height];
         }
       }
 
-      // 补充额外信息
-      switch(type) {
-        // 函数节点
-        case 'func':
-          node.meta.fundId = null;
-          break;
+      let link = {
+        id     : this.T.genDataId('link'),
+        startId: options.startNode.id,
+        endId  : options.endNode.id,
+        startAt: _getLinkNodePosition(options.startNode, options.startAt),
+        endAt  : _getLinkNodePosition(options.endNode, options.endAt),
+        meta   : meta,
+      };
 
-        // 代码节点
-        case 'code':
-          node.meta.code = null;
-          break;
-
-        // 结束节点
-        case 'end':
-          break;
-      }
-
-      return node;
+      return link;
     },
     enterIntercept(formNode, toNode, graph) {
       console.log('IN enterIntercept')
@@ -146,15 +154,26 @@ export default {
       console.log('IN outputIntercept')
       return true;
     },
+    linkDesc(link) {
+      if (!link.meta) return '';
+
+      switch(link.meta.type) {
+        case 'nope':
+          return '';
+
+        case 'func':
+        case 'code':
+          return link.meta.title || this.$('if returns True');
+      }
+    }
   },
   computed: {
-    nodeWidth()  { return 150; }
-    nodeHeight() { return 80;  }
+    NODE_WIDTH : () => 180,
+    NODE_HEIGHT: () => 80,
     nodeTemplates() {
       return [
         {
           label: this.$t('Func Node'),
-
         }
       ]
     },
@@ -203,11 +222,46 @@ export default {
       ]
     },
     nodeMenu() {
-      return []
+      return [
+        [
+          {
+            label: this.$t('Delete'),
+            disable: false,
+            selected(node, coordinate) {
+              node.remove();
+            }
+          }
+        ],
+      ];
     },
     linkMenu() {
-      return []
+      return [
+        [
+          {
+            label: this.$t('Delete'),
+            disable: false,
+            selected: (link, coordinate) => {
+              link.remove();
+            }
+          }
+        ],
+      ];
     },
+    linkBaseStyle() {
+      let uiColorSchema = this.$store.getters.uiColorSchema;
+
+      switch(uiColorSchema) {
+        case 'light':
+          return {
+            background: 'white',
+          }
+
+        case 'dark':
+          return {
+            background: '#222222',
+          }
+      }
+    }
   },
   props: {
   },
@@ -244,7 +298,7 @@ export default {
 .node-card .node-title {
   text-align: center;
   font-size: 14px;
-  padding: 10px;
+  padding: 10px 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
