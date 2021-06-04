@@ -20,8 +20,8 @@
               <template v-if="meta.type === 'switch'">
                 <span>{{ $t('Switch') }}</span>
               </template>
-              <template v-if="meta.type === 'return'">
-                <span>{{ $t('Return') }}</span>
+              <template v-if="meta.type === 'end'">
+                <span>{{ $t('End') }}</span>
               </template>
             </div>
 
