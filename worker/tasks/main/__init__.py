@@ -305,19 +305,19 @@ def gen_script_failure_id():
     '''
     生成脚本故障ID
     '''
-    return toolkit.gen_short_data_id('sfal')
+    return toolkit.gen_data_id('sfal')
 
 def gen_script_log_id():
     '''
     生成脚本日志ID
     '''
-    return toolkit.gen_short_data_id('slog')
+    return toolkit.gen_data_id('slog')
 
 def gen_data_source_id():
     '''
     生成数据源ID
     '''
-    return toolkit.gen_short_data_id('dsrc')
+    return toolkit.gen_data_id('dsrc')
 
 def compute_func_store_id(key, scope):
     '''
@@ -325,10 +325,8 @@ def compute_func_store_id(key, scope):
     '''
     str_to_md5 = '-'.join([key, scope])
 
-    long_id = 'fnst-' + toolkit.get_md5(str_to_md5)
-    short_id = toolkit.to_short_data_id(long_id)
-
-    return short_id
+    store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
+    return store_id
 
 def decipher_data_source_config_fields(config):
     '''
@@ -440,7 +438,7 @@ class FuncAsyncHelper(object):
             CONCURRENT_POOL = ThreadPoolExecutor(pool_size)
             CONCURRENT_RESULT_MAP.clear()
 
-        key = key or toolkit.gen_short_data_id('async')
+        key = key or toolkit.gen_data_id('async')
         self.__task.logger.debug('[ASYNC POOL] Submit Key=`{0}`'.format(key))
 
         if key in CONCURRENT_RESULT_MAP:

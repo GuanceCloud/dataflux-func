@@ -12,13 +12,10 @@ var uuid      = require('uuid');
 var iconv     = require('iconv-lite');
 var babyparse = require('babyparse');
 var async     = require('async');
-var async     = require('async');
-var shortUUID = require('short-uuid');
+var nanoid    = require('nanoid').customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 var moment    = require('moment');
 var Base64    = require('js-base64').Base64;
 var byteSize  = require('byte-size');
-
-var shortUUIDTranslator = shortUUID('23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
 
 var toolkit = exports;
 
@@ -187,15 +184,6 @@ var genUUID = toolkit.genUUID = function genUUID() {
 };
 
 /**
- * Generate a short UUID.
- *
- * @return {String}
- */
-var genShortUUID = toolkit.genShortUUID = function genShortUUID() {
-  return shortUUIDTranslator.fromUUID(uuid.v4()).split('').reverse().join('');
-};
-
-/**
  * Generate a new data ID with prefix.
  *
  * @param  {String} prefix - Data ID prefix
@@ -203,42 +191,7 @@ var genShortUUID = toolkit.genShortUUID = function genShortUUID() {
  */
 var genDataId = toolkit.genDataId = function genDataId(prefix) {
   prefix = prefix || 'data';
-  return prefix + '-' + uuid.v4();
-};
-
-/**
- * Generate a new short data ID with prefix.
- *
- * @param  {String} prefix - Data ID prefix
- * @return {String}        - New data ID
- */
-var genShortDataId = toolkit.genShortDataId = function genShortDataId(prefix) {
-  prefix = prefix || 'data';
-  return prefix + '-' + shortUUIDTranslator.fromUUID(uuid.v4()).split('').reverse().join('');
-};
-
-/**
- * Convert `<prefix>-<UUID>` to `<prefix>-<Short UUID>`
- * @param  {String}  dataId
- * @return {String}
- */
-var toShortDataId = toolkit.toShortDataId = function toShortDataId(dataId) {
-  var parts = dataId.split('-');
-  var shortDataId = parts[0] + '-' + shortUUIDTranslator.fromUUID(parts.slice(1).join('-')).split('').reverse().join('');
-
-  return shortDataId;
-};
-
-/**
- * Convert `<prefix>-<Short UUID>` to `<prefix>-<UUID>`
- * @param  {String} shortDataId
- * @return {String}
- */
-var fromShortDataId = toolkit.fromShortDataId = function fromShortDataId(shortDataId) {
-  var parts = shortDataId.split('-');
-  var dataId = parts[0] + '-' + shortUUIDTranslator.toUUID(parts[1].split('').reverse().join(''));
-
-  return dataId
+  return prefix + '-' + nanoid();
 };
 
 /**
@@ -921,18 +874,6 @@ var getHash = toolkit.getHash = function getHash(str, algorithm) {
  * @return {String}     - MD5 result
  */
 var getMD5 = toolkit.getMD5 = function getMD5(str) { return getHash(str, 'md5'); };
-
-/**
- * Get short MD5 (Use short UUID).
- *
- * @param  {String} str - Target string
- * @return {String}     - Short MD5 result
- */
-var getShortMD5 = toolkit.getShortMD5 = function(str) {
-  var md5 = toolkit.getMD5(str);
-  var shortMD5 = shortUUIDTranslator.fromUUID(md5);
-  return shortMD5
-};
 
 /**
  * Get SHA1.

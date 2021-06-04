@@ -48,6 +48,10 @@ import 'codemirror/theme/eclipse.css'
 import 'codemirror/theme/idea.css'
 import 'codemirror/theme/darcula.css'
 
+// ID
+import { customAlphabet } from 'nanoid'
+const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)
+
 // Base64
 import { Base64 } from 'js-base64'
 
@@ -206,6 +210,11 @@ export function strf() {
   return pattern.replace(/\{(\d+)\}/g, function replaceFunc(m, i) {
     return args[i] + '';
   });
+};
+
+export function genDataId(prefix) {
+  prefix = prefix || 'data';
+  return prefix + '-' + nanoid();
 };
 
 export function byteSizeHuman(s) {

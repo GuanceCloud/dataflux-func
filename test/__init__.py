@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urlencode, quote
 import pytest
 import requests
 import simplejson as json
-import shortuuid
+import nanoid
 
 class AssertDesc(object):
     @classmethod
@@ -110,4 +110,4 @@ def gen_rand_string(length=None, chars=None):
 
 def gen_data_id(prefix=None):
     prefix = prefix or 'data'
-    return prefix + '-' + str(shortuuid.encode(uuid.uuid4()))
+    return prefix + '-' + nanoid.generate('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)

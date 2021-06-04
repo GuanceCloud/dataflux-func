@@ -24,13 +24,11 @@ import six
 import simplejson, ujson
 import arrow
 from dateutil import parser as dateutil_parser
-import shortuuid
+import nanoid
 try:
     from Cryptodome.Cipher import AES
 except ImportError:
     from Crypto.Cipher import AES
-
-shortuuid.set_alphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
@@ -51,28 +49,9 @@ def get_attr(obj, attr, default=None):
 def gen_uuid():
     return str(uuid.uuid4())
 
-def gen_short_uuid():
-    return str(shortuuid.encode(uuid.uuid4()))
-
 def gen_data_id(prefix=None):
     prefix = prefix or 'data'
-    return prefix + '-' + str(uuid.uuid4())
-
-def gen_short_data_id(prefix=None):
-    prefix = prefix or 'data'
-    return prefix + '-' + str(shortuuid.encode(uuid.uuid4()))
-
-def to_short_data_id(data_id):
-    parts = data_id.split('-')
-    short_data_id = parts[0] + '-' + str(shortuuid.encode(uuid.UUID(''.join(parts[1:]))))
-
-    return short_data_id
-
-def from_short_data_id(short_data_id):
-    parts = short_data_id.split('-')
-    data_id = parts[0] + '-' + str(shortuuid.decode(parts[1]))
-
-    return data_id
+    return prefix + '-' + nanoid.generate('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)
 
 def gen_time_serial_seq(d=None, rand_length=4):
     if not d:
