@@ -3,8 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async   = require('async');
-var shortid = require('shortid');
+var async = require('async');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -46,10 +45,6 @@ exports.createModel = function(locals) {
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
-
-EntityModel.prototype.genDataId = function() {
-  return toolkit.strf('{0}-{1}', this.alias, shortid.generate());
-};
 
 EntityModel.prototype.list = function(options, callback) {
   options = options || {};

@@ -430,7 +430,7 @@ Model.prototype.checkDuplicationError = function(err) {
  * @return {String}
  */
 Model.prototype.genDataId = function() {
-  return toolkit.genShortDataId(this.alias);
+  return toolkit.genDataId(this.alias);
 };
 
 /**

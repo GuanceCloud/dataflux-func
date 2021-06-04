@@ -620,7 +620,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
     // 生成Celery任务的kwargs, options
     var taskOptions = {
-      id               : toolkit.genShortDataId('task'),
+      id               : toolkit.genDataId('task'),
       queue            : funcCallOptions.queue,
       resultWaitTimeout: funcCallOptions.apiTimeout * 1000,
       softTimeLimit    : funcCallOptions.timeout,
@@ -1834,7 +1834,7 @@ exports.integratedSignIn = function(req, res, next) {
     }
 
     // 避免与内置系统用户ID冲突
-    userId = toolkit.strf('igu_{0}-{1}', toolkit.getShortMD5(funcId), userId);
+    userId = toolkit.strf('igu_{0}-{1}', toolkit.getMD5(funcId), userId);
 
     // 发行登录令牌
     var authTokenObj = auth.genXAuthTokenObj(userId);
