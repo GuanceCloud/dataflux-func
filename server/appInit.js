@@ -5,7 +5,7 @@ var os = require('os');
 
 /* 3rd-party Modules */
 var async = require('async');
-var mysql = require('mysql');
+var mysql = require('mysql2');
 
 /* Project Modules */
 var g             = require('./utils/g');

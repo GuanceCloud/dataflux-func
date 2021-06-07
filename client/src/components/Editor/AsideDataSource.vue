@@ -14,7 +14,7 @@ Open Simple Debug Panel: 打开简易调试面板
 <template>
   <div>
     <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
-      <el-button slot="prefix" type="text" size="small"></el-button>
+      <el-button slot="prefix" type="text"></el-button>
     </el-input>
 
     <el-tree
@@ -49,7 +49,6 @@ Open Simple Debug Panel: 打开简易调试面板
             <span>
               <el-button v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported"
                 type="text"
-                size="small"
                 @click.stop="showSimpleDebugWindow(data.dataSource)">
                 <i class="fa fa-fw fa-window-restore text-info"></i>
               </el-button>
@@ -60,7 +59,6 @@ Open Simple Debug Panel: 打开简易调试面板
             <span>
               <el-button v-if="data.type !== 'addDataSource'"
                 type="text"
-                size="small"
                 @click.stop="openEntity(node, data, 'setup')">
                 <i v-if="data.isBuiltin" class="fa fa-fw fa-search text-info"></i>
                 <i v-else class="fa fa-fw fa-wrench text-info"></i>
@@ -86,24 +84,20 @@ Open Simple Debug Panel: 打开简易调试面板
             </template>
 
             <br><CopyButton
-              font-size="12px"
               :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
               :content="data.id"></CopyButton>
             <br><CopyButton v-if="data.sampleCode"
-              font-size="12px"
               :title="$t('Copy example')"
               :content="data.sampleCode"></CopyButton>
             <br><el-button v-if="C.DATE_SOURCE_MAP.get(data.dataSourceType).debugSupported"
               class="aside-tree-node-simple-debug"
               type="text"
-              size="small"
               @click.stop="showSimpleDebugWindow(data.dataSource)">
               <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Simple Debug Panel') }}
             </el-button>
 
             <el-button slot="reference"
               type="text"
-              size="small"
               @click.stop="showPopover(data.id)">
               <i class="fa fa-fw fa-question-circle"></i>
             </el-button>
@@ -148,9 +142,8 @@ export default {
     async loadData() {
       this.loading = true;
 
-      let apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', {
-        query: {fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin']},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', {
+        query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin'] },
       });
       if (!apiRes.ok) return;
 
@@ -270,7 +263,7 @@ export default {
 .aside-tip pre {
   padding: 0 0 0 10px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 .aside-tree-node-description {
 

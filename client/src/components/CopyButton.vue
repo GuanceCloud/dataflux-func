@@ -19,8 +19,7 @@ Browser not supported: 当前浏览器不支持
         :size="size || 'mini'"
         :data-clipboard-text="content">
         <span :style="{ 'font-size': fontSize || '14px' }">
-          <i class="fa fa-clipboard"></i>
-          {{ title }}
+          <i class="fa fa-fw fa-clipboard"></i> {{ title }}
         </span>
       </el-button>
     </el-tooltip>

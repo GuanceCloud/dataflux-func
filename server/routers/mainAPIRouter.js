@@ -6,7 +6,8 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var routeLoader = require('../utils/routeLoader');
 var captcha     = require('../utils/captcha');
 
-var mainAPICtrl = require('../controllers/mainAPICtrl');
+var operationRecordMid = require('../middlewares/operationRecordMid');
+var mainAPICtrl        = require('../controllers/mainAPICtrl');
 
 // 总览
 routeLoader.load(ROUTE.mainAPI.overview, [
@@ -94,9 +95,6 @@ routeLoader.load(ROUTE.mainAPI.clearLogCacheTables, [
 ]);
 
 // Python包
-routeLoader.load(ROUTE.mainAPI.queryPythonPackages, [
-  mainAPICtrl.queryPythonPackages,
-]);
 routeLoader.load(ROUTE.mainAPI.listInstalledPythonPackages, [
   mainAPICtrl.listInstalledPythonPackages,
 ]);
@@ -118,6 +116,7 @@ routeLoader.load(ROUTE.mainAPI.downloadResources, [
   mainAPICtrl.downloadResources,
 ]);
 routeLoader.load(ROUTE.mainAPI.uploadResource, [
+  operationRecordMid.prepare,
   mainAPICtrl.uploadResource,
 ]);
 routeLoader.load(ROUTE.mainAPI.operateResource, [

@@ -62,26 +62,14 @@
           <el-table-column label="日志内容">
             <template slot-scope="scope">
               <pre class="text-data">{{ scope.row.messageSample }}</pre>
-              <el-button @click="showDetail(scope.row)" type="text" size="small">显示日志详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">显示日志详情</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
 
       <LongTextDialog title="完整日志输出如下" ref="longTextDialog"></LongTextDialog>
     </el-container>
@@ -89,13 +77,11 @@
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'ScriptLogList',
   components: {
-    FuzzySearchInput,
     LongTextDialog,
   },
   watch: {
@@ -111,9 +97,8 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/script-logs/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/script-logs/do/list', {
         query: this.T.createListQuery(),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -123,13 +108,13 @@ export default {
       });
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
       this.$store.commit('updateLoadStatus', true);
     },
     showDetail(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      let createTimeStr = this.moment(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
       let fileName = `${d.funcId}.log.${createTimeStr}`;
       this.$refs.longTextDialog.update(d.messageTEXT, fileName);
     },
@@ -139,10 +124,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

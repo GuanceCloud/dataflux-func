@@ -18,14 +18,18 @@ var LUA_UNLOCK_KEY = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis
 var LIMIT_ARGS_DUMP = 500;
 
 function getConfig(c, retryStrategy) {
-  return {
+  var c = {
     host    : c.host,
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
-
-    retry_strategy: retryStrategy,
   };
+
+  if (retryStrategy) {
+    c.retry_strategy = retryStrategy;
+  }
+
+  return c;
 };
 
 /* Singleton Client */
@@ -54,18 +58,25 @@ var RedisHelper = function(logger, config) {
   };
 
   if (config) {
+    var _retryStrategy = config.disableRetry
+                       ? null
+                       : self.retryStrategy;
+
     self.config = toolkit.noNullOrWhiteSpace(config);
 
     self.config.tsMaxAge    = config.tsMaxAge    || 3600 * 24;
     self.config.tsMaxPeriod = config.tsMaxPeriod || 3600 * 24 * 3;
     self.config.tsMaxLength = config.tsMaxLength || 60 * 24 * 3;
 
-    self.client = redis.createClient(getConfig(self.config, self.retryStrategy));
+    self.client = redis.createClient(getConfig(self.config, _retryStrategy));
 
     // Error handling
     self.client.on('error', function(err) {
       self.logger.error('[REDIS] Error: `{0}`', err.toString());
-      self.logger.error('[REDIS] Error: `{0}`', err.toString());
+
+      if ('function' === typeof config.errorCallback) {
+        config.errorCallback(err);
+      }
     });
 
   } else {

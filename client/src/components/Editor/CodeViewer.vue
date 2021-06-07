@@ -168,9 +168,8 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
-        params: {id: this.$route.params.id},
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
+        params: { id: this.$route.params.id }
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -188,9 +187,7 @@ export default {
       this.diffRemovedCount = diffInfo.removedCount;
 
       // 获取关联数据
-      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-        alert: {showError: true},
-      });
+      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
       if (!apiRes.ok) return;
 
       this.scriptSet = apiRes.data;

@@ -24,7 +24,7 @@ Script {id}    : 脚本 {id}
 <template>
   <div>
     <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
-      <el-button slot="prefix" type="text" size="small"></el-button>
+      <el-button slot="prefix" type="text"></el-button>
     </el-input>
 
     <el-tree
@@ -84,7 +84,6 @@ Script {id}    : 脚本 {id}
             <span>
               <el-button
                 type="text"
-                size="small"
                 @click.stop="openEntity(node, data, 'add')">
                 <i class="fa fa-fw fa-plus text-main"></i>
               </el-button>
@@ -95,7 +94,6 @@ Script {id}    : 脚本 {id}
             <span>
               <el-button v-if="data.type === 'script'"
                 type="text"
-                size="small"
                 @click.stop="showQuickViewWindow(data.id)">
                 <i class="fa fa-fw fa-window-restore text-info"></i>
               </el-button>
@@ -106,7 +104,6 @@ Script {id}    : 脚本 {id}
             <span>
               <el-button v-if="data.type === 'scriptSet'"
                 type="text"
-                size="small"
                 @click.stop="openEntity(node, data, 'setup')">
                 <i v-if="data.isLockedByOther" class="fa fa-fw fa-search text-info"></i>
                 <i v-else class="fa fa-fw fa-wrench text-info"></i>
@@ -114,7 +111,6 @@ Script {id}    : 脚本 {id}
 
               <el-button v-if="data.type === 'script'"
                 type="text"
-                size="small"
                 @click.stop="openEntity(node, data, 'setup')">
                 <i v-if="data.isLockedByOther" class="fa fa-fw fa-search text-info"></i>
                 <i v-else class="fa fa-fw fa-wrench text-info"></i>
@@ -141,17 +137,14 @@ Script {id}    : 脚本 {id}
             </template>
 
             <br><CopyButton
-              font-size="12px"
               :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
               :content="data.id"></CopyButton>
             <br><CopyButton v-if="data.sampleCode"
-              font-size="12px"
               :title="$t('Copy example')"
               :content="data.sampleCode"></CopyButton>
             <br><el-button v-if="data.type === 'script'"
               class="aside-tree-node-quick-view"
               type="text"
-              size="small"
               @click.stop="showQuickViewWindow(data.id)">
               <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Quick View Panel') }}
             </el-button>
@@ -164,7 +157,6 @@ Script {id}    : 脚本 {id}
 
             <el-button slot="reference"
               type="text"
-              size="small"
               @click.stop="showPopover(data.id)">
               <i class="fa fa-fw fa-question-circle"></i>
             </el-button>
@@ -241,9 +233,8 @@ export default {
       let pushedFuncMap   = {};
 
       /***** 脚本集 *****/
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', {
-        query: {fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin']},
-        alert: {showError: true},
+      let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
+        query: { fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin'] },
       });
       if (!apiRes.ok) return;
 
@@ -273,9 +264,8 @@ export default {
       });
 
       /***** 脚本 *****/
-      apiRes = await this.T.callAPI_allPage('/api/v1/scripts/do/list', {
-        query: {fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId']},
-        alert: {showError: true},
+      apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
+        query: { fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId'] },
       });
       if (!apiRes.ok) return;
 
@@ -323,9 +313,8 @@ export default {
       });
 
       /***** 函数 *****/
-      apiRes = await this.T.callAPI_allPage('/api/v1/funcs/do/list', {
-        query: {fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON']},
-        alert: {showError: true},
+      apiRes = await this.T.callAPI_getAll('/api/v1/funcs/do/list', {
+        query: { fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON'] },
       });
       if (!apiRes.ok) return;
 
@@ -602,7 +591,7 @@ export default {
 .aside-tip pre {
   padding: 0 0 0 10px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 .aside-tree-node-description {
 
@@ -615,11 +604,11 @@ export default {
   margin-left: 5px;
 }
 .code-edited-tip {
-  font-size: 12px;
+  font-size: 14px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
 .child-nodes-count {
-  font-size: 12px;
+  font-size: 14px;
 }
 </style>

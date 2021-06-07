@@ -46,12 +46,9 @@ Output                                                               : 脚本输
 Func exection result or log message will be shown here               : 函数执行结果与日志信息将显示在此处
 
 Operating too frequently or Script is modified in other tab                            : 操作过于频繁，或脚本已经在其他窗口被修改。
-You can download current Script to avoid losing your stuff                             : 为避免丢失正在编辑的代码，您可以下载当前展示的代码
-Script has been modified                                                               : 脚本已被修改
-Download and end editing                                                               : 下载并退出编辑
-Just end editing                                                                       : 不保存直接退出编辑
-To avoid losing current code, Script has been downloaded                               : 为避免丢失正在编辑的代码，当前展示的代码已自动为您下载
+Do you want to download current editing Script?                                        : 是否下载当前正在编辑的脚本？
 Saving Script failed                                                                   : 保存脚本失败
+Current editing Script has been downloaded                                             : 当前正在编辑的脚本已经下载
 'Filename:'                                                                            : 文件名：
 Script saved successfully                                                              : 脚本保存成功
 You can continue with other operations                                                 : 你可以继续进行其他操作
@@ -59,15 +56,17 @@ Published Code                                                                  
 Saved Draft Code                                                                       : 已保存的草稿代码
 Script will take effect after been published immediately,                              : 发布后新的脚本将立即生效，
 Funcs with {html} decorator will be available to be accessed                           : 被{html}装饰的函数可被访问
-Are you sure you want to publish the Script?                                           : 是否确认发布？
+Are you sure you want to publish the Script?                                           : 是否确认发布此脚本？
 Publish Script                                                                         : 发布脚本
 'Publish Script:'                                                                      : 发布脚本：
-Script published successfully                                                          : 脚本发布成功
-New Script is in effect now                                                            : 新脚本已经生效
+Script saved                                                                           : 脚本已保存
+Script published, new Script is in effect now                                          : 脚本发布成功，新脚本已经生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
-Are you sure you want to reset the Script?                                             : 是否确认复位？
+Are you sure you want to reset the Script?                                             : 是否确认复位此脚本？
+Script has been reset to previous version                                              : 脚本已经复位到上一个版本
 Reset Script                                                                           : 复位脚本
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
+Invalid argument format                                                                : 参数格式不正确
 Check input                                                                            : 输入检查
 seconds                                                                                : '{n}秒'
 'Executed Func:'                                                                       : 执行函数：
@@ -111,7 +110,10 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
   <transition name="fade">
     <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="100" split="horizontal" v-show="$store.state.isLoaded">
       <template slot="paneL">
-        <el-container>
+        <el-container
+          v-loading.fullscreen.lock="fullScreenLoading"
+          element-loading-spinner="el-icon-loading"
+          :element-loading-text="workerRunningTipTitle">
           <!-- 操作区 -->
           <el-header class="code-editor" style="height: unset !important">
             <div class="code-editor-action-left">
@@ -186,10 +188,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         @click="callFuncDraft"
                         type="primary" plain
                         size="mini"
-                        :disabled="(selectedFuncId ? false : true) && !workerRunning"
-                        v-loading.fullscreen.lock="workerResultLoading"
-                        element-loading-spinner="el-icon-loading"
-                        :element-loading-text="workerRunningTipTitle">
+                        :disabled="(selectedFuncId ? false : true) && !workerRunning">
                         <i class="fa fa-fw fa-play"></i> <span class="hidden-md-and-down">{{ $t('Run') }}</span>
                       </el-button>
                     </el-tooltip>
@@ -403,7 +402,7 @@ export default {
 
       return fileName;
     },
-    async _saveCodeDraft() {
+    async _saveCodeDraft(options) {
       // 等待保存信号量，防止多重保存
       while (this.isSavingCodeDraft) {
         await this.T.sleep(1000);
@@ -412,14 +411,16 @@ export default {
 
       let res = null;
       try {
-        return await this._saveCodeDraftImpl();
+        return await this._saveCodeDraftImpl(options);
       } catch(err) {
         // nope
       } finally {
         this.isSavingCodeDraft = false;
       }
     },
-    async _saveCodeDraftImpl() {
+    async _saveCodeDraftImpl(options) {
+      options = options || {};
+
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
@@ -433,8 +434,9 @@ export default {
       codeDraft = codeDraftLines.join('\n');
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: {codeDraft: codeDraft}, prevCodeDraftMD5: prevCodeDraftMD5},
+        params: { id: this.scriptId },
+        body  : { data: {codeDraft: codeDraft }, prevCodeDraftMD5: prevCodeDraftMD5 },
+        alert : { okMessage: options.mute ? null : this.$t('Script saved'), muteError: true }, // 错误信息在下方特殊处理
       });
 
       if (!apiRes.ok) {
@@ -442,33 +444,21 @@ export default {
         switch(apiRes.reason) {
           // 乐观锁冲突
           case 'EBizRequestConflict.scriptDraftAlreadyChanged':
-            try {
-              await this.$confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
-                  <br><span class="text-good">${this.$t('You can download current Script to avoid losing your stuff')}</span>`, this.$t('Script has been modified'), {
-                dangerouslyUseHTMLString: true,
-                confirmButtonText: this.$t('Download and end editing'),
-                cancelButtonText: this.$t('Just end editing'),
-                type: 'error',
-              });
+            if (await this.T.confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
+                <br><span class="text-main">${this.$t('Do you want to download current editing Script?')}</span>`), 'error') {
 
               this._downloadEditingCodeDraft(codeDraft);
-
-            } catch(err) {
-              // 取消操作
             }
 
-            this.endEdit({ skipPublishCheck: true });
+            this.endEdit();
 
             break;
 
           default:
-            let downloadFileName = this._downloadEditingCodeDraft(codeDraft);
-            await this.$alert(`<span class="text-good">${this.$t('To avoid losing current code, Script has been downloaded')}</span>
-                <br>${this.$t('Filename:')}<code class="text-main">${downloadFileName}</code>`, this.$t('Saving Script failed'), {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('OK'),
-              type: 'error',
-            });
+            this.T.alert(`${this.$t('Saving Script failed')}</span>
+                <br><span class="text-good">${this.$t('Current editing Script has been downloaded')}</span>`);
+
+            this._downloadEditingCodeDraft(codeDraft);
 
             break;
         }
@@ -495,9 +485,8 @@ export default {
       options = options || {};
       options.codeField = options.codeField || 'codeDraft';
 
-      let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/get', {
-        params: {id: this.scriptId},
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
+        params: { id: this.scriptId }
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -516,9 +505,7 @@ export default {
       this.diffRemovedCount = diffInfo.removedCount;
 
       // 获取关联数据
-      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId, {
-        alert: {showError: true},
-      });
+      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
       if (!apiRes.ok) return;
 
       this.scriptSet = apiRes.data;
@@ -531,6 +518,7 @@ export default {
           this.codeMirror.setValue('');
           this.codeMirror.setValue(this.data[options.codeField] || this.data.code || '');
           this.codeMirror.refresh();
+          this.codeMirror.focus();
         }
 
         // 更新函数列表
@@ -568,7 +556,7 @@ export default {
             if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) return;
 
             // 自动保存为静默保存
-            this._saveCodeDraft({silent: true});
+            this._saveCodeDraft({ mute: true });
           }, 1000));
         }
 
@@ -583,18 +571,7 @@ export default {
       if (!this.codeMirror) return;
 
       // 保存
-      let apiRes = await this._saveCodeDraft();
-      if (apiRes && apiRes.ok) {
-        // 保存成功后，提示
-        this.$notify({
-          title   : this.$t('Script saved successfully'),
-          message : this.$t('You can continue with other operations'),
-          type    : 'success',
-          position: 'top-right',
-          duration: 3000,
-          offset  : 75,
-        });
-      }
+      await this._saveCodeDraft();
     },
     showDiff() {
       let fileTitle = this.data.title ? ` (${this.data.title})` : '';
@@ -605,7 +582,7 @@ export default {
       let newHeader = this.$t('Saved Draft Code');
       let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
-      let createTimeStr = this.moment().utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M().utcOffset(8).format('YYYYMMDD_HHmmss');
       let diffName = `${this.data.id}.diff.${createTimeStr}`;
       this.$refs.longTextDialog.update(diffPatch, diffName);
     },
@@ -617,40 +594,30 @@ export default {
       this.updateHighlightLineConfig('selectedFuncLine', null);
       this.updateHighlightLineConfig('errorLine', null);
 
-      try {
-        await this.$confirm(`${this.$t('Script will take effect after been published immediately,')}
-            <br>${this.$t('Funcs with {html} decorator will be available to be accessed', { html: '<code class="text-main">@DFF.API()</code>'})}
-            <hr class="br">${this.$t('Are you sure you want to publish the Script?')}`, this.$t('Publish Script'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Publish Script'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to publish the Script?'))) return;
 
       // 保存
-      let apiRes = await this._saveCodeDraft();
+      let apiRes = await this._saveCodeDraft({ mute: true });
       if (!apiRes || !apiRes.ok) return;
 
-      // 脚本发布中
+      // 脚本发布处理中
       this.workerRunning         = true;
       this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
       let delayedLoadingT = setTimeout(() => {
-        this.workerResultLoading = true;
+        this.fullScreenLoading = true;
       }, 200);
 
       // 发布
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
-        params: {id: this.scriptId},
-        body  : {force: true, data: {note: 'Published by Code Editor'}},
+        params: { id: this.scriptId },
+        body  : { force: true, data: {note: 'Published by Code Editor'} },
+        alert : { okMessage: this.$t('Script published, new Script is in effect now') },
       });
 
+      // 脚本发布处理结束
       clearTimeout(delayedLoadingT);
-      this.workerRunning       = false;
-      this.workerResultLoading = false;
+      this.fullScreenLoading = false;
+      this.workerRunning     = false;
 
       if (!apiRes.ok) {
         // 输出结果
@@ -661,37 +628,19 @@ export default {
 
       // 刷新侧边栏
       this._refreshAside();
-
-      // 弹框提示
-      this.$notify({
-        title   : this.$t('Script published successfully'),
-        message : this.$t('New Script is in effect now'),
-        type    : 'success',
-        position: 'top-right',
-        duration: 3000,
-        offset  : 75,
-      });
     },
     async resetScript() {
       if (this.isLockedByOther) return;
       if (!this.codeMirror) return;
 
-      try {
-        await this.$confirm(`${this.$t('Reset draft to the last published version, changes not published will lost')}
-            <hr class="br">${this.$t('Are you sure you want to reset the Script?')}`, this.$t('Reset Script'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Reset Script'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
 
       this.updateHighlightLineConfig('errorLine', null);
 
       await this.loadData({codeField: 'code'});
+
+      // 弹框提示
+      this.T.notify(this.$t('Script has been reset to previous version'));
     },
     gotoCodeEditorSetup() {
       this.$router.push({
@@ -708,7 +657,7 @@ export default {
       // 保存
       if (!this.isLockedByOther) {
         // 仅限可编辑时
-        let apiRes = await this._saveCodeDraft();
+        let apiRes = await this._saveCodeDraft({ mute: true });
         if (!apiRes || !apiRes.ok) return;
       }
 
@@ -716,12 +665,7 @@ export default {
       try {
         funcCallKwargs = JSON.parse(this.funcCallKwargsJSON || '{}');
       } catch(err) {
-        this.$alert(`${this.$t('The parameter is not a valid JSON')}<br>${err.toString()}`, this.$t('Check input'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('OK'),
-          type: 'error',
-        });
-        return;
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       // 函数运行中
@@ -752,17 +696,16 @@ export default {
       }, 1000);
 
       let delayedLoadingT = setTimeout(() => {
-        this.workerResultLoading = true;
+        this.fullScreenLoading = true;
       }, 500);
 
       let apiRes = null;
       try {
         apiRes = await this.T.callAPI('post', '/api/v1/func-draft/:funcId', {
-          params: {
-            funcId: this.selectedFuncId,
-          },
-          body: {kwargs: funcCallKwargs},
-          extraOptions: {noCountProcessing: true},
+          params      : { funcId: this.selectedFuncId },
+          body        : { kwargs: funcCallKwargs },
+          alert       : { muteError: true },
+          extraOptions: { noCountProcessing: true },
         });
 
       } catch(err) {
@@ -770,8 +713,8 @@ export default {
 
       } finally {
         clearTimeout(delayedLoadingT);
-        this.workerRunning       = false;
-        this.workerResultLoading = false;
+        this.fullScreenLoading = false;
+        this.workerRunning     = false;
       }
 
       // 输出结果
@@ -805,75 +748,6 @@ export default {
         // 只在预检查以外的情况下才弹框
         this.alertOnEScript(apiRes);
       }
-    },
-    async leavingConfirm() {
-      if (this.isLockedByOther) return true;
-      if (!this.codeMirror) return true;
-
-      // 清除所有高亮
-      this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
-
-      // 保存
-      let apiRes = await this._saveCodeDraft();
-      if (!apiRes || !apiRes.ok) return;
-
-      // 检查发布状态
-      apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-        query: {fields: ['codeMD5', 'codeDraftMD5']},
-        alert: {showError: true},
-      });
-      if (!apiRes.ok) return;
-
-      // if (apiRes.data.codeMD5 !== apiRes.data.codeDraftMD5) {
-      //   // 此处代码与`methods.publishScript(...)`略有重复
-      //   // 但暂不作修改
-      //   try {
-      //     await this.$confirm(`${this.$t('This Script is not published, it will take effect after the Script is published')}
-      //         <hr class="br">${this.$t('Do you want to publish the Script now?')}`, this.$t('Script not published'), {
-      //       dangerouslyUseHTMLString: true,
-      //       confirmButtonText: this.$t('Publish Now'),
-      //       cancelButtonText: this.$t('Skip Publishing'),
-      //       type: 'warning',
-      //     });
-
-      //     // 脚本发布中
-      //     this.workerRunning         = true;
-      //     this.workerRunningTipTitle = this.$t('Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.');
-      //     let delayedLoadingT = setTimeout(() => {
-      //       this.workerResultLoading = true;
-      //     }, 500);
-
-      //     // 发布
-      //     let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
-      //       params: {id: this.scriptId},
-      //       body  : {force: true, data: {note: 'Published by Code Editor'}},
-      //     });
-
-      //     clearTimeout(delayedLoadingT);
-      //     this.workerRunning       = false;
-      //     this.workerResultLoading = false;
-
-      //     if (!apiRes.ok) {
-      //       // 输出结果
-      //       this.outputResult('publish', this.scriptId, apiRes);
-      //       this.alertOnEScript(apiRes, true);
-      //       return;
-      //     }
-
-      //     this.data.code = this.data.codeDraft;
-
-      //     // 更新函数列表
-      //     this.updateFuncList();
-      //     // 更新左侧列表
-      //     this.$store.commit('updateScriptListSyncTime');
-
-      //   } catch(err) {
-      //     // 无操作
-      //   }
-      // }
-
-      return true;
     },
     clearHighlight() {
       this.updateHighlightLineConfig('selectedFuncLine', null);
@@ -1064,10 +938,6 @@ export default {
         params: {id: this.scriptId},
       };
 
-      if (options.skipPublishCheck) {
-        toRoute.query = { skipPublishCheck: true };
-      }
-
       this.$router.push(toRoute);
     },
     resizeVueSplitPane(percent) {
@@ -1132,69 +1002,48 @@ export default {
       let message = null;
       switch(apiRes.reason) {
         case 'EScriptPreCheck':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
-          message = isPublish ? `${this.$t('Script publishing failed. Please check your code')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
-                              : `${this.$t('Script executing failed. Please check your code')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing failed. Please check your code')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          } else {
+            this.T.alert(`${this.$t('Script executing failed. Please check your code')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          }
           break;
 
         case 'EAPITimeout':
         case 'EFuncTimeout':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Waiting Timeout');
-          message = isPublish ? `${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
-                                    <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`
-                              : `${this.$t('Waiting Func response timeout')}
-                                    <span class="text-main">
-                                    <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
-                                    <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
-                                    </span>`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
+                <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`);
+          } else {
+            this.T.alert(`${this.$t('Waiting Func response timeout')}
+                <span class="text-main">
+                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                  <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
+                </span>`);
+          }
           break;
 
         case 'EFuncFailed':
-          title   = isPublish ? this.$t('Publish Failed') : this.$t('Script Error');
-          message = isPublish ? `${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`
-                              : `${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                                    <br>${this.$t('Detail information is shown in the output box bellow')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          if (isPublish) {
+            this.T.alert(`${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          } else {
+            this.T.alert(`${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
+                <br>${this.$t('Detail information is shown in the output box bellow')}`);
+          }
           break;
 
         case 'EFuncResultParsingFailed':
-          title   = this.$t('Can not parse return value');
-          message = `${this.$t('Func returned a value that can not been parsed as JSON. Please check your code')}
-                        <br>${this.$t('In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).')}
-                        ${this.$t('Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning')}`;
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          this.T.alert(`${this.$t('Func returned a value that can not been parsed as JSON. Please check your code')}
+                <br>${this.$t('In general, common used types are safe (e.g. list, dict, int, float, str, bool, None).')}
+                <br>${this.$t('Some math lib may return complicated values, like numpy.NaN. These values should be converted to common used types before returning')}`);
           break;
 
         case 'EClientDuplicated':
-          title = this.$t('Duplicated Func names');
-          message = `${this.$t('Duplicated names of Funcs decorated by @DFF.API(...)')}
-                      <br>${this.$t('Please check the code and try again')}`
-          this.$alert(message, title, {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: this.$t('OK'),
-            type: 'error',
-          });
+          this.T.alert(`${this.$t('Duplicated names of Funcs decorated by @DFF.API(...)')}
+                <br>${this.$t('Please check the code and try again')}`);
           break;
       }
 
@@ -1370,9 +1219,6 @@ export default {
     highlightedFuncId() {
       return this.$store.state.Editor_highlightedFuncId;
     },
-    isSignedIn() {
-      return this.$store.getters.isSignedIn;
-    },
     splitPanePercent() {
       return this.$store.state.codeEditor_splitPanePercent || this.$store.getters.DEFAULT_STATE.codeEditor_splitPanePercent;
     },
@@ -1476,9 +1322,9 @@ export default {
       funcCallSeq       : 0,
 
       countDownTimer       : null,
+      fullScreenLoading    : false,
       workerRunning        : false,
       workerRunningTipTitle: '',
-      workerResultLoading  : false,
 
       // 文本输出
       scriptOutput: [],
@@ -1507,20 +1353,18 @@ export default {
     });
   },
   async beforeRouteLeave(to, from, next) {
-    if (!this.isSignedIn) return next();
-    if (to.query.skipPublishCheck) return next();
+    // 清除所有高亮
+    this.updateHighlightLineConfig('selectedFuncLine', null);
+    this.updateHighlightLineConfig('errorLine', null);
 
-    try {
-      let isAllowed = await this.leavingConfirm();
-      if (!isAllowed) {
-        return next(false);
-      }
+    if (this.isLockedByOther) return next();
+    if (!this.codeMirror)     return next();
 
-    } catch(err) {
-      console.error(err);
+    // 保存
+    let apiRes = await this._saveCodeDraft({ mute: true });
+    if (apiRes && apiRes.ok) {
+      return next();
     }
-
-    next();
   },
 }
 </script>

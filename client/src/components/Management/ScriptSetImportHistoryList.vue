@@ -6,7 +6,7 @@
         <h1>
           脚本包导入历史
           <div class="header-control">
-            <el-button @click="openSetup(null, 'import')" size="mini">
+            <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>
               导入脚本包
             </el-button>
@@ -84,9 +84,8 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/script-set-import-history/do/list', {
-        query: {pageSize: 50},
-        alert: {howError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/script-set-import-history/do/list', {
+        query: { pageSize: 50 }
       });
       if (!apiRes.ok) return;
 

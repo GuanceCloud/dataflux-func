@@ -12,6 +12,10 @@ CONFIG_FILE_PATH: '/data/user-config.yaml'
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'
 
+# 文件上传临时目录
+# 必须使用绝对路径
+UPLOAD_TMP_ROOT_PATH: '/tmp/uploads'
+
 # 运行模式
 # 可选：
 #   "dev" : 开发模式
@@ -132,7 +136,7 @@ _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
 _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
 
 # 脚本包自动安装锁定时间
-_FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 300
+_FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 60
 
 # API调用时上传文件临时目录
 _FUNC_UPLOAD_DIR: uploads
@@ -162,12 +166,10 @@ _SAMPLE_SCRIPT: |
       return 'OK'
 
 # MySQL一般作为常量的配置
-_MYSQL_CONNECTION_LIMIT   : 30
-_MYSQL_ACQUIRE_TIMEOUT    : 60000
-_MYSQL_CONNECT_TIMEOUT    : 60000
-_MYSQL_TIMEOUT            : 60000
-_MYSQL_CHARSET            : utf8mb4
-_MYSQL_TIMEZONE           : ''
+_MYSQL_CONNECTION_LIMIT: 30
+_MYSQL_CONNECT_TIMEOUT : 60000
+_MYSQL_CHARSET         : utf8mb4
+_MYSQL_TIMEZONE        : ''
 
 # WEB模块一般作为常量的配置
 _WEB_INDEX_PAGE            : mainPage.clientApp

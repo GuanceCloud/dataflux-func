@@ -69,17 +69,10 @@ Search Batch task(log, error), Func(ID, title, description): 搜索批处理任�
 
           <el-table-column label="函数">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
-
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-                <br>
-              </template>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :name="scope.row.func_name"></FuncInfo>
             </template>
           </el-table-column>
 
@@ -87,37 +80,23 @@ Search Batch task(log, error), Func(ID, title, description): 搜索批处理任�
             <template slot-scope="scope">
               <template v-if="scope.row.logMessageSample">
                 <pre class="text-data">{{ scope.row.logMessageSample }}</pre>
-                <el-button @click="showDetail(scope.row, 'logMessageTEXT')" type="text" size="small">显示日志详情</el-button>
+                <el-button @click="showDetail(scope.row, 'logMessageTEXT')" type="text">显示日志详情</el-button>
               </template>
-              <span v-else class="text-info">{{ '<无日志>' }}</span>
             </template>
           </el-table-column>
           <el-table-column label="故障内容">
             <template slot-scope="scope">
               <template v-if="scope.row.einfoSample">
-                <pre class="text-data">{{ scope.row.einfoSample || '<无>' }}</pre>
-                <el-button @click="showDetail(scope.row, 'einfoTEXT')" type="text" size="small">显示故障详情</el-button>
+                <pre class="text-data">{{ scope.row.einfoSample }}</pre>
+                <el-button @click="showDetail(scope.row, 'einfoTEXT')" type="text">显示故障详情</el-button>
               </template>
-              <span v-else class="text-info">{{ '<无故障>' }}</span>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
 
       <LongTextDialog title="完整内容如下" ref="longTextDialog"></LongTextDialog>
     </el-container>
@@ -125,13 +104,11 @@ Search Batch task(log, error), Func(ID, title, description): 搜索批处理任�
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'BatchTaskInfoList',
   components: {
-    FuzzySearchInput,
     LongTextDialog,
   },
   watch: {
@@ -147,9 +124,8 @@ export default {
       return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
     },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/batch-task-info/do/list', {
-        query : this.T.createListQuery({ batchId: this.$route.params.id}),
-        alert : {showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/batch-task-info/do/list', {
+        query : this.T.createListQuery({ batchId: this.$route.params.id }),
       });
       if (!apiRes.ok) return;
 
@@ -160,14 +136,14 @@ export default {
       });
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
     showDetail(d, field) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      let createTimeStr = this.moment(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
       let fileName = `${d.funcId}.${field}.${createTimeStr}`;
       this.$refs.longTextDialog.update(d[field], fileName);
     },
@@ -177,10 +153,12 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

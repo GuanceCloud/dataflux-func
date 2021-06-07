@@ -1,21 +1,22 @@
 <i18n locale="zh-CN" lang="yaml">
-Title                     : 标题
-Description               : 描述
-Description about this ENV: 介绍当前环境变量的作用、功能、目的等
-Value                     : 值
-Value Type                : 值类型
+Add ENV  : 添加环境变量
+Setup ENV: 配置环境变量
 
-Add ENV   : 添加环境变量
-Modify ENV: 修改环境变量
-Delete ENV: 删除环境变量
+Title      : 标题
+Description: 描述
+Value      : 值
+Value Type : 值类型
 
-Deleting ENV may break the dependency with other scripts: 删除环境变量可能会破坏与其他脚本的依赖关系
-Are you sure you want to delete the ENV?                : 是否确认删除环境变量？
-
-Please input ID                                   : 请输入ID
+Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number                   : 不得以数字开头
-Please input Value                                : 请输入值
+Cannot not starts with a number: 不得以数字开头
+Please input Value: 请输入值
+
+ENV Variable created: 环境变量已创建
+ENV Variable saved  : 环境变量已保存
+ENV Variable deleted: 环境变量已删除
+
+Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
 </i18n>
 
 <template>
@@ -33,7 +34,7 @@ Please input Value                                : 请输入值
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
-                  <el-input :disabled="mode === 'setup'"
+                  <el-input :disabled="T.pageMode() === 'setup'"
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
@@ -54,7 +55,6 @@ Please input Value                                : 请输入值
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock :title="$t('Description about this ENV')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Value')" prop="valueTEXT">
@@ -76,9 +76,9 @@ Please input Value                                : 请输入值
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -103,7 +103,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -120,10 +120,8 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+      if (this.T.pageMode() === 'setup') {
+        let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -142,7 +140,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -151,8 +149,8 @@ export default {
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/do/add', {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add ENV'), showError: true},
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('ENV Variable created') },
       });
       if (!apiRes.ok) return;
 
@@ -167,9 +165,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/:id/do/modify', {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify ENV'), showError: true, showSuccess: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('ENV Variable saved') },
       });
       if (!apiRes.ok) return;
 
@@ -177,22 +175,11 @@ export default {
       this.$store.commit('updateEnvVariableListSyncTime');
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Deleting ENV may break the dependency with other scripts')}
-          <hr class="br">${this.$t('Are you sure you want to delete the ENV?')}`, this.$t('Delete ENV'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the ENV?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete ENV'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('ENV Variable deleted') },
       });
       if (!apiRes.ok) return;
 
@@ -231,22 +218,12 @@ export default {
         ]
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify ENV'),
+        setup: this.$t('Setup ENV'),
         add  : this.$t('Add ENV'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
   },
   props: {

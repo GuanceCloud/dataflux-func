@@ -1,16 +1,59 @@
 <i18n locale="en" lang="yaml">
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+shortcutDays : '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Tags   : 标签
-Add Tag: 添加标签
+Add Crontab Config  : 添加自动触发配置
+Setup Crontab Config: 配置自动触发配置
 
-Add Crontab Config   : 添加自动触发配置
-Modify Crontab Config: 修改自动触发配置
-Delete Crontab Config: 删除自动触发配置
+Func     : 执行函数
+Arguments: 参数指定
+Tags     : 标签
+Add Tag  : 添加标签
+Weekdays : 按周重复
+Months   : 按月重复
+Days     : 按天重复
+Hours    : 按小时重复
+Minutes  : 按分钟重复
+Expires  : 有效期
+Note     : 备注
+
+'(Fixed Crontab)': （固定Crontab）
+Every weekday    : 不限星期
+SUN              : 周日
+MON              : 周一
+TUE              : 周二
+WED              : 周三
+THU              : 周四
+FRI              : 周五
+SAT              : 周六
+Every month      : 每月
+Every day        : 每天
+Every hour       : 每小时
+Every minute     : 每分钟
+Every 5 minutes  : 每5分钟
+Every 15 minutes : 每15分钟
+Every 30 minutes : 每30分钟
+
+'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
+The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
+
+Please select Func: 请选择执行函数
+'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
+Date-time cannot earlier than 1970: 日期不能早于1970年
+Date-time cannot later than 2037: 时间不能晚于2037年
+
+Crontab Config created: 自动触发配置已创建
+Crontab Config saved  : 自动触发配置已保存
+Crontab Config deleted: 自动触发配置已删除
+
+Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
+Invalid argument format: 参数格式不正确
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+shortcutDays : '{n}天'
 </i18n>
 
 <template>
@@ -27,8 +70,9 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item label="执行函数" prop="funcId">
+                <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    placeholder="--"
                     filterable
                     v-model="form.funcId"
                     :options="funcCascader"
@@ -36,12 +80,12 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
-                <el-form-item label="参数指定" prop="funcCallKwargsJSON">
+                <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
                   <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
-                  <InfoBlock title="JSON格式的参数（**kwargs）"></InfoBlock>
+                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
@@ -66,8 +110,8 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     <code class="crontab-expr-parts crontab-expr-parts-weeks">{{ formCrontabExprParts.weeks }}</code>
                   </el-form-item>
 
-                  <el-form-item label="按周重复">
-                    <el-checkbox-group size="mini" v-model="formCrontab.weeks">
+                  <el-form-item :label="$t('Weekdays')">
+                    <el-checkbox-group v-model="formCrontab.weeks">
                       <template v-for="(item, index) in WEEKS">
                         <br v-if="item === 'sep'">
                         <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
@@ -75,8 +119,8 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     </el-checkbox-group>
                   </el-form-item>
 
-                  <el-form-item label="按月重复">
-                    <el-checkbox-group size="mini" v-model="formCrontab.months">
+                  <el-form-item :label="$t('Months')">
+                    <el-checkbox-group v-model="formCrontab.months">
                       <template v-for="(item, index) in MONTHS">
                         <br v-if="item === 'sep'">
                         <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
@@ -84,8 +128,8 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     </el-checkbox-group>
                   </el-form-item>
 
-                  <el-form-item label="按天重复">
-                    <el-checkbox-group size="mini" v-model="formCrontab.days">
+                  <el-form-item :label="$t('Days')">
+                    <el-checkbox-group v-model="formCrontab.days">
                       <template v-for="(item, index) in DAYS">
                         <br v-if="item === 'sep'">
                         <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
@@ -93,8 +137,8 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     </el-checkbox-group>
                   </el-form-item>
 
-                  <el-form-item label="按时重复">
-                    <el-checkbox-group size="mini" v-model="formCrontab.hours">
+                  <el-form-item :label="$t('Hours')">
+                    <el-checkbox-group v-model="formCrontab.hours">
                       <template v-for="(item, index) in HOURS">
                         <br v-if="item === 'sep'">
                         <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
@@ -102,8 +146,8 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     </el-checkbox-group>
                   </el-form-item>
 
-                  <el-form-item label="按分重复">
-                    <el-checkbox-group size="mini" v-model="formCrontab.minutes">
+                  <el-form-item :label="$t('Minutes')">
+                    <el-checkbox-group v-model="formCrontab.minutes">
                       <template v-for="(item, index) in MINUTES">
                         <br v-if="item === 'sep'">
                         <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
@@ -128,11 +172,10 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                 </el-form-item>
                 <!-- Crontab配置结束 -->
 
-                <el-form-item label="有效期至" prop="expireTime">
+                <el-form-item :label="$t('Expires')" prop="expireTime">
                   <el-date-picker class="expire-time-input"
                     v-model="form.expireTime"
                     type="datetime"
-                    placeholder="选择有效期"
                     align="left"
                     format="yyyy-MM-dd HH:mm"
                     :clearable="true"
@@ -140,7 +183,7 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                   </el-date-picker>
                 </el-form-item>
 
-                <el-form-item label="备注">
+                <el-form-item :label="$t('Note')">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -148,13 +191,12 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     maxlength="200"
                     show-word-limit
                     v-model="form.note"></el-input>
-                  <InfoBlock title="介绍当前自动触发配置的作用、功能、目的等"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">删除自动触发配置</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">保存</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -179,7 +221,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             const defaultFormCrontab = {
               weeks  : ['*'],
@@ -202,10 +244,8 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+      if (this.T.pageMode() === 'setup') {
+        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -233,7 +273,7 @@ export default {
         let f = funcList.map[funcId];
         f.isFixedCrontab = !!(f.extraConfigJSON && f.extraConfigJSON.fixedCrontab);
         if (f.isFixedCrontab) {
-          f.label += ' (固定Crontab)';
+          f.label += ' ' + this.$t('(Fixed Crontab)');
         }
       }
 
@@ -248,7 +288,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -257,24 +297,15 @@ export default {
     },
     async addData() {
       let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Crontab Config'), showError: true,
-          reasonMap: {
-            'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
-          }
-        }
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Crontab Config created') },
       };
 
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
-
       } catch(err) {
-        return this.$alert(`调用参数格式不正确<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       if (!this.fixedCrontabExpr) {
@@ -290,29 +321,21 @@ export default {
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async modifyData() {
       let opt = {
-        params: {id: this.$route.params.id},
-        body  : {data: this.T.jsonCopy(this.form)},
-        alert : {title: this.$t('Modify Crontab Config'), showError: true,
-          reasonMap: {
-            'EBizCondition.DuplicatedCrontabConfig': '已存在执行函数和执行参数完全相同的自动触发配置<br>注意请勿重复添加',
-          }
-        }
+        params: { id: this.$route.params.id },
+        body  : { data: this.T.jsonCopy(this.form) },
+        alert : { okMessage: this.$t('Crontab Config saved') },
       };
 
       // 添加函数调用参数kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
-        return this.$alert(`调用参数不是正确的JSON格式<br>${err.toString()}`, `输入检查`, {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
-          type: 'error',
-        });
+        return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
       if (!this.fixedCrontabExpr) {
@@ -327,31 +350,21 @@ export default {
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     async deleteData() {
-      try {
-        await this.$confirm('删除自动触发配置后，函数将不会自动执行<hr class="br">是否确认删除？', '删除自动触发配置', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Crontab Config?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Crontab Config'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Crontab Config deleted') },
       });
       if (!apiRes.ok) return;
 
       this.$router.push({
         name: 'crontab-config-list',
-        query: this.T.unpackRouteQuery(this.$route.query.prevRouteQuery),
+        query: this.T.getPrevQuery(),
       });
     },
     autoFillFuncCallKwargsJSON(funcId) {
@@ -382,6 +395,9 @@ export default {
     addTag() {
       let newTag = this.newTag;
       if (newTag) {
+        if (!Array.isArray(this.form.tagsJSON)) {
+          this.$set(this.form, 'tagsJSON', []);
+        }
         this.form.tagsJSON.push(newTag);
       }
       this.showAddTag = false;
@@ -435,22 +451,62 @@ export default {
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
+    formRules() {
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
+
+      return {
+        funcId: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Func'),
+            required: true,
+          },
+        ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
+            validator: (rule, value, callback) => {
+              let ts = this.M(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot later than 2037')));
+              }
+              return callback();
+            },
+          }
+        ],
+        funcCallKwargsJSON: [
+          {
+            trigger : 'change',
+            message : errorMessage_funcCallKwargsJSON,
+            required: true,
+          },
+          {
+            trigger  : 'change',
+            validator: (rule, value, callback) => {
+              try {
+                let j = JSON.parse(value);
+                if (Array.isArray(j)) {
+                  return callback(new Error(errorMessage_funcCallKwargsJSON));
+                }
+                return callback();
+
+              } catch(err) {
+                return callback(new Error(errorMessage_funcCallKwargsJSON));
+              }
+            },
+          }
+        ],
+      }
     },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Crontab Config'),
+        setup: this.$t('Setup Crontab Config'),
         add  : this.$t('Add Crontab Config'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },    apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;
@@ -511,7 +567,7 @@ export default {
         date.setTime(now + 3600 * 24 * days * 1000);
 
         shortcuts.push({
-          text: `${days}天`,
+          text: this.$tc('shortcutDays', days),
           onClick(picker) {
             picker.$emit('pick', date)
           }
@@ -534,33 +590,35 @@ export default {
       4: 'weeks',
     };
     const WEEKS = [
-      {expr: '*', name: '不限星期'},
+      {expr: '*', name: this.$t('Every weekday')},
       'sep',
-      {expr: '0', name: '日'},
-      {expr: '1', name: '一'},
-      {expr: '2', name: '二'},
-      {expr: '3', name: '三'},
-      {expr: '4', name: '四'},
-      {expr: '5', name: '五'},
-      {expr: '6', name: '六'},
+      {expr: '1', name: this.$t('MON')},
+      {expr: '2', name: this.$t('TUE')},
+      {expr: '3', name: this.$t('WED')},
+      {expr: '4', name: this.$t('THU')},
+      {expr: '5', name: this.$t('FRI')},
+      'sep',
+      {expr: '6', name: this.$t('SAT')},
+      {expr: '0', name: this.$t('SUN')},
     ];
     const MONTHS = this.getNumberList([
-        {expr: '*', name: '每月'},
+        {expr: '*', name: this.$t('Every month')},
         'sep',
       ], 1, 12, 1, 6);
     const DAYS = this.getNumberList([
-        {expr: '*', name: '每天'},
+        {expr: '*', name: this.$t('Every day')},
         'sep',
       ], 1, 31, 1, 5);
     const HOURS = this.getNumberList([
-        {expr: '*', name: '每小时'},
+        {expr: '*', name: this.$t('Every hour')},
         'sep',
       ], 0, 23, 1, 6);
     const MINUTES = this.getNumberList([
-        {expr: '*', name: '每分钟'},
-        {expr: '*/5', name: '每5分钟'},
-        {expr: '*/15', name: '每15分钟'},
-        {expr: '*/30', name: '每30分钟'},
+        {expr: '*', name: this.$t('Every minute')},
+        'sep',
+        {expr: '*/5', name: this.$t('Every 5 minutes')},
+        {expr: '*/15', name: this.$t('Every 15 minutes')},
+        {expr: '*/30', name: this.$t('Every 30 minutes')},
         'sep',
       ], 0, 59, 5, 6);
 
@@ -586,53 +644,6 @@ export default {
         expireTime        : null,
         note              : null,
         // crontab 单独处理
-      },
-      formRules: {
-        funcId: [
-          {
-            trigger : 'change',
-            message : '请选择执行函数',
-            required: true,
-          },
-        ],
-        expireTime: [
-          {
-            trigger: 'change',
-            message  : '只能选择1970年至2037年之间的日期',
-            validator: (rule, value, callback) => {
-              let ts = this.moment(value).unix();
-              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
-                return callback(new Error('日期不能早于1970年'));
-              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
-                return callback(new Error('时间不能晚于2037年'));
-              }
-              return callback();
-            },
-          }
-        ],
-        funcCallKwargsJSON: [
-          {
-            trigger : 'change',
-            message : '请输入调用参数，无参数的直接填写 {}',
-            required: true,
-          },
-          {
-            trigger  : 'change',
-            message  : '调用参数需要以 JSON 形式填写',
-            validator: (rule, value, callback) => {
-              try {
-                let j = JSON.parse(value);
-                if (Array.isArray(j)) {
-                  return callback(new Error('调用参数需要以 JSON 形式填写，如 {"arg1": "value1"}'));
-                }
-                return callback();
-
-              } catch(err) {
-                return callback(new Error('调用参数需要以 JSON 形式填写，无参数的直接填写 {}'));
-              }
-            },
-          }
-        ],
       },
 
       formCrontabCache: {

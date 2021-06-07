@@ -299,7 +299,7 @@ export default new Vuex.Store({
       } else {
         setImmediate(() => {
           state.isLoaded = true;
-        })
+        });
       }
     },
     startProcessing(state) {
@@ -450,7 +450,7 @@ export default new Vuex.Store({
   },
   actions: {
     async reloadSystemConfig({ commit }) {
-      let apiRes = await toolkit.callAPI('/api/v1/func-system-config');
+      let apiRes = await toolkit.callAPI_get('/api/v1/func-system-config');
       if (!apiRes.ok) return;
 
       commit('updateSystemConfig', apiRes.data);
@@ -458,13 +458,13 @@ export default new Vuex.Store({
     async reloadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;
 
-      let apiRes = await toolkit.callAPI('/api/v1/auth/profile/do/get');
+      let apiRes = await toolkit.callAPI_get('/api/v1/auth/profile/do/get');
       if (!apiRes.ok) return;
 
       commit('updateUserProfile', apiRes.data);
     },
     async signOut({ commit }) {
-      await toolkit.callAPI('/api/v1/auth/do/sign-out');
+      await toolkit.callAPI_get('/api/v1/auth/do/sign-out');
 
       commit('updateSocketIOStatus', false);
       commit('updateXAuthToken', null);

@@ -28,7 +28,7 @@ export default {
       if (this.captchaCategory) {
         query.captchaCategory =  this.captchaCategory;
       }
-      let apiRes = await this.T.callAPI(this.captchaUrl, {
+      let apiRes = await this.T.callAPI_get(this.captchaUrl, {
         respType: 'text',
         query   : query,
       });

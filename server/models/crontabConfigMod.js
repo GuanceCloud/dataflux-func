@@ -29,7 +29,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   },
 
   defaultOrders: [
-    {field: 'cron.seq', method: 'ASC'},
+    {field: 'cron.seq', method: 'DESC'},
   ],
 };
 

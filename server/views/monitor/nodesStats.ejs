@@ -59,10 +59,10 @@
                 var totalCount       = 0;
                 for (var task in d.total) if (d.total.hasOwnProperty(task)) {
                   var count = d.total[task];
-                  if (toolkit.matchWildcard(task, 'internal.**')) {
+                  if (toolkit.matchWildcard(task, 'Internal.**')) {
                     internalCount       += count;
                     globalInternalCount += count;
-                  } else if (toolkit.matchWildcard(task, '*.result')) {
+                  } else if (toolkit.matchWildcard(task, '*.Result')) {
                     resultCount       += count;
                     globalResultCount += count;
                   } else {

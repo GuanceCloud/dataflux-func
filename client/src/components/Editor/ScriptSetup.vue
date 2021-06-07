@@ -1,25 +1,27 @@
 <i18n locale="zh-CN" lang="yaml">
-This Script Set is locked by someone else, modifying is disabled : 当前脚本已被其他人锁定，无法进行修改
-This Script Set is locked by you, modifying is disabled to others: 当前脚本已被您锁定，其他人无法修改
-Script ID will be part of the Func ID                            : 脚本集ID将作为函数ID的一部分
-Title                                                            : 标题
-Description                                                      : 描述
-Description about this Script                                    : 介绍当前脚本的作用、功能、目的等
+Add Script  : 添加脚本
+Setup Script: 配置脚本
 
-Add Script   : 添加脚本
-Modify Script: 修改脚本
-Lock Script  : 锁定脚本
-Unlock Script: 解锁脚本
-Delete Script: 删除脚本
+Title      : 标题
+Description: 描述
 
-Deleting Script may break the dependency with other scripts                       : 删除脚本可能会破坏与其他脚本的依赖关系
-In addition, all data associated with this Script will be deleted at the same time: 此外，与此脚本关联的所有数据也会同时删除
-Are you sure you want to delete the Script?                                       : 是否确认删除脚本？
+Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
 
-Please input ID                                                       : 请输入ID
-Only alphabets, numbers and underscore are allowed                    : 只能包含大小写英文、数字及下划线
-Cannot not starts with a number                                       : 不得以数字开头
+Please input ID: 请输入ID
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number: 不得以数字开头
 'ID of Script belong to "{scriptSetId}" should starts with "{prefix}"': '脚本集 {scriptSetId} 下的脚本ID必须以 "{prefix}" 开头'
+
+Script created : 脚本已创建
+Script saved   : 脚本已保存
+Script locked  : 脚本已上锁
+Script unlocked: 脚本已解锁
+Script deleted : 脚本已删除
+
+Are you sure you want to delete the Script?: 是否确认删除此脚本？
+
+This Script Set is locked by someone else, setup is disabled : 当前脚本已被其他人锁定，无法更改配置
+This Script Set is locked by you, setup is disabled to others: 当前脚本已被您锁定，其他人无法更改配置
 </i18n>
 
 <template>
@@ -37,19 +39,19 @@ Cannot not starts with a number                                       : 不得�
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
                 <el-form-item v-if="isLockedByOther">
-                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, modifying is disabled')"></InfoBlock>
+                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, setup is disabled')"></InfoBlock>
                 </el-form-item>
                 <el-form-item v-else-if="data.isLocked">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, modifying is disabled to others')"></InfoBlock>
+                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, setup is disabled to others')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
-                  <el-input :disabled="mode === 'setup'"
+                  <el-input :disabled="T.pageMode() === 'setup'"
                     maxlength="80"
                     show-word-limit
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock :title="$t('Script ID will be part of the Func ID')"></InfoBlock>
+                  <InfoBlock :title="$t('Script ID will be a part of the Func ID')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
@@ -67,14 +69,13 @@ Cannot not starts with a number                                       : 不得�
                     maxlength="200"
                     show-word-limit
                     v-model="form.description"></el-input>
-                  <InfoBlock :title="$t('Description about this Script')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="mode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button v-if="T.pageMode() === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -99,7 +100,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -116,10 +117,8 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
-          alert: {showError: true},
-        });
+      if (this.T.pageMode() === 'setup') {
+        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -139,7 +138,7 @@ export default {
       }
 
       let dataId = null;
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           dataId = await this.addData();
           break;
@@ -155,19 +154,17 @@ export default {
       }
     },
     async addData() {
-      let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Add Script'), showError: true},
-      }
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Script created') },
+      });
       if (!apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
 
       this.$router.push({
         name  : 'code-editor',
-        params: {id: apiRes.data.id},
+        params: { id: apiRes.data.id },
       });
 
       return apiRes.data.id;
@@ -177,9 +174,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: _formData},
-        alert: {title: this.$t('Modify Script'), showError: true, showSuccess: true},
+        params: { id: this.scriptId },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Script saved') },
       });
       if (!apiRes.ok) return;
 
@@ -189,13 +186,13 @@ export default {
       return this.scriptId;
     },
     async lockData(isLocked) {
-      let alertTitle = isLocked
-                      ? this.$t('Lock Script')
-                      : this.$t('Unlock Script');
+      let okMessage = isLocked
+                    ? this.$t('Script locked')
+                    : this.$t('Script unlocked');
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
-        params: {id: this.scriptId},
-        body  : {data: { isLocked: isLocked }},
-        alert : {title: alertTitle, showError: true, showSuccess: true},
+        params: { id: this.scriptId },
+        body  : { data: { isLocked: isLocked } },
+        alert : { okMessage: okMessage },
       });
       if (!apiRes.ok) return;
 
@@ -203,23 +200,11 @@ export default {
       this.$store.commit('updateScriptListSyncTime');
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Deleting Script may break the dependency with other scripts')}
-          <br>${this.$t('In addition, all data associated with this Script will be deleted at the same time')}
-          <hr class="br">${this.$t('Are you sure you want to delete the Script?')}`, this.$t('Delete Script'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/delete', {
-        params: {id: this.scriptId},
-        alert : {title: this.$t('Delete Script'), showError: true},
+        params: { id: this.scriptId },
+        alert : { okMessage: this.$t('Script deleted') },
       });
       if (!apiRes.ok) return;
 
@@ -262,25 +247,15 @@ export default {
         ],
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Script'),
+        setup: this.$t('Setup Script'),
         add  : this.$t('Add Script'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     scriptSetId() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.$route.params.id;
         case 'setup':
@@ -288,7 +263,7 @@ export default {
       }
     },
     scriptId() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.form.id;
         case 'setup':

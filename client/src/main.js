@@ -37,7 +37,7 @@ import ElementUI from 'element-ui'
 ElementUI.Tooltip.props.transition.default = false;
 ElementUI.Popover.props.transition.default = false;
 Vue.use(ElementUI)
-window.ElementUI = ElementUI
+window.ElementUI = ElementUI;
 
 // 国际化
 import VueI18n from 'vue-i18n'
@@ -49,13 +49,13 @@ import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
 
 import locales from '@/assets/yaml/locales.yaml'
 
-Object.assign(locales.en,       elementUILocale_en)
-Object.assign(locales['zh-CN'], elementUILocale_zhCN)
-Object.assign(locales['zh-TW'], elementUILocale_zhTW)
-Object.assign(locales['zh-HK'], elementUILocale_zhTW)
-Object.assign(locales['ja'],    elementUILocale_ja)
+Object.assign(locales.en,       elementUILocale_en);
+Object.assign(locales['zh-CN'], elementUILocale_zhCN);
+Object.assign(locales['zh-TW'], elementUILocale_zhTW);
+Object.assign(locales['zh-HK'], elementUILocale_zhTW);
+Object.assign(locales['ja'],    elementUILocale_ja);
 
-Vue.use(VueI18n)
+Vue.use(VueI18n);
 
 // 参考 https://blog.csdn.net/songhsia/article/details/104800966
 ElementLocale.i18n((key, value) => i18n.t(key, value));
@@ -68,7 +68,7 @@ const i18n = new VueI18n({
   silentFallbackWarn    : true,
   silentTranslationWarn : true,
   messages              : locales,
-})
+});
 
 // 时间处理
 import moment from 'moment'
@@ -99,12 +99,18 @@ Vue.prototype.common = common;
 Vue.config.productionTip = false
 
 // 常用业务组件
-import Logo       from '@/components/Logo'
-import InfoBlock  from '@/components/InfoBlock'
-import CopyButton from '@/components/CopyButton'
+import Logo             from '@/components/Logo'
+import InfoBlock        from '@/components/InfoBlock'
+import CopyButton       from '@/components/CopyButton'
+import FuncInfo         from '@/components/FuncInfo'
+import FuzzySearchInput from '@/components/FuzzySearchInput'
+import Pager            from '@/components/Pager'
 Vue.component('Logo', Logo);
 Vue.component('InfoBlock', InfoBlock);
 Vue.component('CopyButton', CopyButton);
+Vue.component('FuncInfo', FuncInfo);
+Vue.component('FuzzySearchInput', FuzzySearchInput);
+Vue.component('Pager', Pager);
 
 // 项目业务组件
 import GotoFuncButton from '@/components/GotoFuncButton'
@@ -149,7 +155,7 @@ const app = new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app');
 window.app = app;
 

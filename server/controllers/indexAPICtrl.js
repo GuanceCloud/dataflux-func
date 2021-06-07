@@ -46,7 +46,7 @@ exports.workerImageInfo = function(req, res, next) {
   }
 
   var celery = celeryHelper.createHelper(res.locals.logger);
-  celery.putTask('internal.getImageInfo', null, null, null, null, function(err, celeryRes) {
+  celery.putTask('Internal.GetImageInfo', null, null, null, null, function(err, celeryRes) {
     if (err) return next(err);
 
     celeryRes = celeryRes || {};
@@ -69,7 +69,7 @@ exports.ping = function(req, res, next) {
 };
 
 exports.echo = function(req, res, next) {
-  var ret = toolkit.initRet(req.rawData.toString());
+  var ret = toolkit.initRet(req.body);
   res.locals.sendJSON(ret);
 };
 

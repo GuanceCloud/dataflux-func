@@ -1431,9 +1431,8 @@ mainAPI:
           - simplified
           - upload
     files:
-      $limitSize: 500M
-      $allowedTypes:
-        - '*/*'
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
 
   callBatchByGet:
     showInDoc    : true
@@ -1749,21 +1748,6 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
 
-  queryPythonPackages:
-    name         : 查询可用的的Python包
-    method       : get
-    url          : /api/v1/python-packages/query
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      query:
-        $desc: 包名
-        $type: string
-      limit:
-        $desc: 返回记录数量
-        $type: int
-
   listInstalledPythonPackages:
     name         : 列出已安装的Python包
     method       : get
@@ -1850,6 +1834,7 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
     files:
+      $limitSize   : 10GB
       $allowedTypes: '*/*'
     body:
       folder:
@@ -2066,7 +2051,7 @@ scriptSetAPI:
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
     files:
-      $limitSize   : 10M
+      $limitSize   : 200M
       $allowedTypes: 'application/octet-stream'
     body:
       password:

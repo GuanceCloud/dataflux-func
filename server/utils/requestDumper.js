@@ -52,7 +52,7 @@ exports.dumpRequestBody = function(req, res, next) {
 
   if (req.files) {
     req.files.forEach(function(f) {
-      dumpList.push(toolkit.strf('{0}=`{1} {2} Bytes`', 'file', f.originalname, f.size));
+      dumpList.push(toolkit.strf('file=`{0}`, size={1} Bytes', f.originalname, f.size));
     });
   }
 

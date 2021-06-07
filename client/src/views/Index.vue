@@ -119,7 +119,10 @@ export default {
         signInBody.signIn.funcId = _formData.funcId;
       }
 
-      let apiRes = await this.T.callAPI('post', signInURL, { body: signInBody })
+      let apiRes = await this.T.callAPI('post', signInURL, {
+        body : signInBody,
+        alert: { muteError: true }, // 登录失败直接在页面展示，无需弹框
+      });
       if (!apiRes.ok) {
         this.refreshCaptcha();
 

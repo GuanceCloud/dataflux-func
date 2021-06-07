@@ -1,78 +1,80 @@
 <i18n locale="zh-CN" lang="yaml">
-File Tool  : 文件工具
-Go Top     : 返回顶层
-Go Up      : 向上
-New Folder : 新建文件夹
-'Path:'    : 路径：
-Folder     : 文件夹
-File       : 文件
-Name       : 名称
-Size       : 大小
-Create time: 创建时间
-Update time: 更新时间
-Enter      : 进入
-Download   : 下载
-Preview    : 预览
-Upload     : 上传
-More       : 更多
-Zip        : 压缩
-Unzip      : 解压
-Move       : 移动
-Copy       : 复制
-Delete     : 删除
+File Tool         : 文件工具
+Go Top            : 返回顶层
+Go Up             : 向上
+'File size limit:': '文件大小限制：'
+'Path:'           : 路径：
+Create time       : 创建时间
+Update time       : 更新时间
+
+File uploaded: 文件已上传
 
 Please input destination path                                                        : 请输入目标路径
 'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
 Are you sure you want to delete the following content?                               : 是否确定删除此内容？
 Delete file                                                                          : 删除文件
 File already existed                                                                 : 文件已经存在
+
+'File too large (size limit: {size})': '文件过大（大小限制：{size}）'
+'Uploading {filename}'               : '正在上传 {filename}'
+'Processing...'                      : '正在处理...'
 </i18n>
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-if="$store.state.isLoaded"
+      v-loading.fullscreen.lock="fullScreenLoading"
+      element-loading-spinner="el-icon-loading"
+      :element-loading-text="progressTip || $t('Processing...')">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
           {{ $t('File Tool') }}
 
           &#12288;
-          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="mini">
+          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="small">
             <i class="fa fa-fw fa-arrow-up"></i>
             {{ $t('Go Up') }}
           </el-button>
+          <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
+            <i class="fa fa-fw fa-refresh"></i>
+            {{ $t('Refresh') }}
+          </el-button>
 
-          <el-popover placement="top" width="240" v-model="showMkdirPopover">
+          &#12288;
+          <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
             <div class="popover-input">
               <el-row>
                 <el-col :span="20">
-                  <el-input size="mini" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+                  <el-input size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
                 </el-col>
                 <el-col :span="4">
-                  <el-button size="mini" type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
+                  <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
                 </el-col>
               </el-row>
             </div>
-            <el-button slot="reference" size="mini">
+            <el-button slot="reference" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              {{ $t('New Folder') }}
+              {{ $t('Folder') }}
             </el-button>
           </el-popover>
 
-          <el-upload ref="upload"
-            class="upload-button"
-            :limit="2"
-            :multiple="false"
-            :auto-upload="true"
-            :show-file-list="false"
-            :http-request="handleUpload"
-            :on-change="onUploadFileChange"
-            action="">
-            <el-button size="mini">
-              <i class="fa fa-fw fa-cloud-upload"></i>
-              {{ $t('Upload') }}
-            </el-button>
-          </el-upload>
+          <el-tooltip :content="`${$t('File size limit:')} ${T.byteSizeHuman($store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT'))}`" placement="bottom">
+            <el-upload ref="upload"
+              class="upload-button"
+              :limit="2"
+              :multiple="false"
+              :auto-upload="true"
+              :show-file-list="false"
+              :http-request="handleUpload"
+              :on-change="onUploadFileChange"
+              action="">
+              <el-button size="small">
+                <i class="fa fa-fw fa-cloud-upload"></i>
+                {{ $t('Upload') }}
+              </el-button>
+            </el-upload>
+          </el-tooltip>
 
           &#12288;
           <code class="resource-navi" v-if="folder !== '/'">
@@ -138,7 +140,7 @@ File already existed                                                            
 
           <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text" size="small">{{ $t('Enter') }}</el-button>
+              <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text">{{ $t('Enter') }}</el-button>
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
                   v-if="previewExtMap[scope.row.ext]"
@@ -155,7 +157,7 @@ File already existed                                                            
               </template>
 
               <el-dropdown @command="resourceOperationCmd">
-                <el-button type="text" size="small">
+                <el-button type="text">
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
@@ -175,7 +177,6 @@ File already existed                                                            
 </template>
 
 <script>
-import byteSize from 'byte-size'
 import * as path from '@/path'
 
 export default {
@@ -194,10 +195,14 @@ export default {
     },
   },
   methods: {
-    async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/resources/dir', {
-        query: {folder: this.folder},
-        alert: {showError: true},
+    async loadData(options) {
+      options = options || {};
+      if (options.isRefresh) {
+        this.$store.commit('updateLoadStatus', false);
+      };
+
+      let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
+        query: { folder: this.folder },
       });
       if (!apiRes.ok) return;
 
@@ -216,7 +221,7 @@ export default {
             f.ext  = f.name.split('.').pop();
 
             if (f.size) {
-              f.sizeHuman = byteSize(f.size);
+              f.sizeHuman = this.T.byteSizeHuman(f.size);
             }
 
             f.previewURL = this.T.formatURL(`/api/v1/resources`, {
@@ -322,42 +327,26 @@ export default {
     async resourceOperation(name, operation) {
       // 处理前操作
       let promptRes = null;
-      try {
-        switch(operation) {
-          case 'cp':
-            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Copy'), {
-              inputValue              : name,
-              dangerouslyUseHTMLString: true,
-              closeOnClickModal       : false,
-              confirmButtonText       : this.$t('Copy'),
-              cancelButtonText        : this.$t('Cancel'),
-            });
-            break;
+      switch(operation) {
+        case 'cp':
+          promptRes = await this.T.prompt(this.$t('Please input destination path'), name);
+          if (!promptRes) return;
+          break;
 
-          case 'mv':
-            promptRes = await this.$prompt(this.$t('Please input destination path'), this.$t('Move'), {
-              inputValue              : `./${name}`,
-              dangerouslyUseHTMLString: true,
-              closeOnClickModal       : false,
-              confirmButtonText       : this.$t('Move'),
-              cancelButtonText        : this.$t('Cancel'),
-            });
-            break;
+        case 'mv':
+          promptRes = await this.T.prompt(this.$t('Please input destination path'), `./${name}`);
+          if (!promptRes) return;
+          break;
 
-          case 'rm':
-            await this.$confirm(`${this.$t('Are you sure you want to delete the following content?')}
-                <br><code>${name}</code>`, this.$t('Delete'),  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: this.$t('Delete'),
-              cancelButtonText: this.$t('Cancel'),
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+        case 'rm':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the following content?'))) return;
+          break;
       }
+
+      // 操作处理中
+      let delayedLoadingT = setTimeout(() => {
+        this.fullScreenLoading = true;
+      }, 200);
 
       // 执行操作
       let apiRes = await this.T.callAPI('post', '/api/v1/resources/operate', {
@@ -366,8 +355,12 @@ export default {
           operation        : operation,
           operationArgument: promptRes ? promptRes.value : undefined,
         },
-        alert: { showError: true },
       });
+
+      // 操作处理结束
+      clearTimeout(delayedLoadingT);
+      this.fullScreenLoading = false;
+
       if (!apiRes.ok) return this.loadData();
 
       // 处理后操作
@@ -385,6 +378,13 @@ export default {
       }
     },
     async handleUpload(req) {
+      // 检查文件大小
+      let fileSizeLimit = this.$store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT');
+      if (req.file.size > fileSizeLimit) {
+        let sizeStr = this.T.byteSizeHuman(fileSizeLimit);
+        return await this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));
+      }
+
       var filename = req.file.name;
       var rename   = null;
 
@@ -402,6 +402,7 @@ export default {
             _defaultRename = filename.replace(/-\d+(\.[^.]+)$/, `-${_dateStr}$1`);
           }
 
+          // 【特殊处理】此处输入框需要检查文件重复
           promptRes = await this.$prompt(this.$t('File <code class="text-main">{name}</code> already existed, please input a new name', { name: filename }), this.$t('Upload'), {
             customClass             : 'uploadRename',
             inputValue              : _defaultRename,
@@ -430,13 +431,39 @@ export default {
         bodyData.append('rename', rename);
       }
 
-      let opt = {
-        body: bodyData,
-      };
+      // 操作处理中
+      let delayedLoadingT = setTimeout(() => {
+        this.fullScreenLoading = true;
+      }, 200);
+
+      // 执行上传
+      let prevProgressTimestamp = null;
+      let prevProgressLoaded    = null;
+      let _updateProgressTipFunc = this.T.throttle((progressTip) => {
+        this.progressTip = progressTip;
+      }, 500);
       let apiRes = await this.T.callAPI('post', '/api/v1/resources', {
         body : bodyData,
-        alert: {title: this.$t('Upload'), showError: true},
+        alert: { okMessage: this.$t('File uploaded') },
+        onUploadProgress: (event) => {
+          let progressTip = `${this.$t('Uploading {filename}', { filename: rename || filename })}`;
+          if (prevProgressTimestamp && prevProgressLoaded) {
+            let percent = (event.loaded / event.total * 100).toFixed(2);
+            let speed = (event.loaded - prevProgressLoaded) / (event.timeStamp - prevProgressTimestamp) * 1000;
+            progressTip += ` (${percent}%, ${this.T.byteSizeHuman(event.loaded)}/${this.T.byteSizeHuman(event.total)}, ${this.T.byteSizeHuman(speed)}/s)`;
+          }
+
+          prevProgressTimestamp = event.timeStamp;
+          prevProgressLoaded    = event.loaded;
+
+          _updateProgressTipFunc(progressTip);
+        }
       });
+
+      // 操作处理结束
+      clearTimeout(delayedLoadingT);
+      this.fullScreenLoading = false;
+      this.progressTip       = '';
 
       await this.loadData();
 
@@ -472,11 +499,11 @@ export default {
 
       showMkdirPopover: false,
       mkdirName       : '',
+
+      fullScreenLoading: false,
+      progressTip      : '',
     }
   },
-  mounted() {
-    window.vmc = this;
-  }
 }
 </script>
 
@@ -490,6 +517,9 @@ export default {
 }
 .upload-button {
   display: inline-block;
+}
+.compact-button {
+  margin-left: 0 !important;
 }
 </style>
 

@@ -9,6 +9,9 @@ Get System Report: 获取系统报告
 Clear Worker Queue : 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
 
+Worker Queue cleared : 工作队列已清空
+Log and Cache cleared: 日志与缓存表已清空
+
 'You are using {browser} (engine: {engine})': 您正在使用 {browser}（{engine}）
 </i18n>
 
@@ -122,7 +125,7 @@ export default {
   methods: {
     // Web镜像信息
     async _getWebVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/image-info/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -141,7 +144,7 @@ export default {
     },
     // Worker镜像信息
     async _getWorkerVersion() {
-      let apiRes = await this.T.callAPI('/api/v1/worker-image-info/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/worker-image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
@@ -160,20 +163,20 @@ export default {
     },
     // 数据库结构版本
     async _getDBSchemaVersion() {
-      this.dbVersionInfoTEXT = '';
+      this.dbSchemaVersionInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/upgrade-info', {
-        query: {seq: 'latest'},
+      let apiRes = await this.T.callAPI_get('/api/v1/upgrade-info', {
+        query: { seq: 'latest' },
       });
       if (apiRes.ok) {
         if (this.T.isNothing(apiRes.data)) {
-          this.dbVersionInfoTEXT = `seq = 0`;
+          this.dbSchemaVersionInfoTEXT = `seq = 0`;
         } else {
-          this.dbVersionInfoTEXT = `seq = ${apiRes.data[0].seq}`;
+          this.dbSchemaVersionInfoTEXT = `seq = ${apiRes.data[0].seq}`;
         }
 
       } else {
-        this.dbVersionInfoTEXT = this.NO_INFO_TEXT;
+        this.dbSchemaVersionInfoTEXT = this.NO_INFO_TEXT;
       }
     },
     // 系统信息
@@ -187,7 +190,7 @@ export default {
       this.cacheDBKeyUsedInfoTEXT    = '';
       this.workerQueueLengthInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/sys-stats/do/get');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let _getInfo = (tsDataMap, unit, prefix) => {
           unit   = unit   || '';
@@ -262,7 +265,7 @@ export default {
     async _getNodesStats() {
       this.nodesStatsInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-stats');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-stats');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
@@ -291,7 +294,7 @@ export default {
     async _getNodesActiveQueues() {
       this.nodesActiveQueuesInfoTEXT = '';
 
-      let apiRes = await this.T.callAPI('/api/v1/monitor/nodes/do/get-active-queues');
+      let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-active-queues');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
@@ -324,57 +327,21 @@ export default {
       this._getNodesActiveQueues();
     },
     async clearWorkerQueue(queueName) {
-      try {
-        await this.$confirm(`清空队列后，所有未执行的任务都将丢失
-            <hr class="br">是否确认清空队列 "#${queueName}" ？`, '清空队列', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '确认清空',
-          cancelButtonText: '放弃',
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(`是否确认清空队列 "#${queueName}" ？`)) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
-        body : {workerQueues: [queueName]},
-        alert: {title: this.$t('Clear Worker Queue'), showError: true},
+        body : { workerQueues: [queueName] },
+        alert: { okMessage: `工作队列 "#${queueName}" 已被清空
+            <br><small>请注意系统报告内数据可能存在延迟<small>` },
       });
-      if (apiRes.ok) {
-        this.$alert(`工作队列 "#${queueName}" 已被清空
-            <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空工作队列', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Very good'),
-          type: 'success',
-        });
-      }
     },
     async clearLogCacheTables() {
-      try {
-        await this.$confirm(`清空日志/缓存表后，以往的日志等信息将无法查询
-            <hr class="br">是否确认清空日志/缓存表？`, '清空日志/缓存表', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Clear'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(`是否确认清空日志/缓存表？`)) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
-        alert: {title: this.$t('Clear Log and Cache'), showError: true},
+        alert: { okMessage: `日志/缓存表已被清空
+            <br><small>请注意系统报告内数据可能存在延迟<small>` },
       });
-      if (apiRes.ok) {
-        this.$alert(`日志/缓存表已被清空
-            <br><small>请注意系统报告内数据可能存在延迟<small>`, '清空日志/缓存表', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Very good'),
-          type: 'success',
-        });
-      }
     },
   },
   computed: {
@@ -383,7 +350,7 @@ export default {
     },
     systemReportTEXT() {
       return [
-          '[数据库结构版本]',     this.dbVersionInfoTEXT,
+          '[数据库结构版本]',     this.dbSchemaVersionInfoTEXT,
         '\n[Web服务CPU使用率]',   this.serverCPUPercentInfoTEXT,
         '\n[Web服务内存使用量]',  this.serverMemoryRSSInfoTEXT,
         '\n[Worker CPU使用率]',   this.workerCPUPercentInfoTEXT,
@@ -407,7 +374,7 @@ export default {
 
       showSystemReport: false,
 
-      dbVersionInfoTEXT        : '',
+      dbSchemaVersionInfoTEXT  : '',
       dbDiskUsedInfoTEXT       : '',
       cacheDBNumberInfoTEXT    : '',
       cacheDBKeyUsedInfoTEXT   : '',

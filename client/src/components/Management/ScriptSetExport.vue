@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Export Data: 导出数据
+Data exported: 数据已导出
 </i18n>
 
 <template>
@@ -10,7 +10,7 @@ Export Data: 导出数据
         <h1>
           {{ modeName }}脚本包
           <div class="header-control">
-            <el-button @click="goToHistory" size="mini">
+            <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本包导出历史
             </el-button>
@@ -143,7 +143,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'export':
             break;
         }
@@ -153,25 +153,24 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: {fields: ['id', 'title']},
-        alert: {showError: true},
+        query: { fields: ['id', 'title'] },
       };
 
       // 获取关联数据
       // 脚本集
-      let apiRes = await this.T.callAPI_allPage('/api/v1/script-sets/do/list', opt);
+      let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', opt);
       if (!apiRes.ok) return;
 
       this.scriptSets = apiRes.data;
 
       // 数据源
-      apiRes = await this.T.callAPI_allPage('/api/v1/data-sources/do/list', opt);
+      apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', opt);
       if (!apiRes.ok) return;
 
       this.dataSources = apiRes.data;
 
       // 环境变量
-      apiRes = await this.T.callAPI_allPage('/api/v1/env-variables/do/list', opt);
+      apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', opt);
       if (!apiRes.ok) return;
 
       this.envVariables = apiRes.data;
@@ -185,7 +184,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'export':
           return await this.exportData();
       }
@@ -195,7 +194,7 @@ export default {
         respType: 'blob',
         packResp: true,
         body    : this.T.jsonCopy(this.form),
-        alert   : {title: this.$t('Export Data'), showError: true},
+        alert   : { okMessage: this.$t('Data exported') },
       };
 
       // 自动生成密码
@@ -235,14 +234,11 @@ export default {
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     modeName() {
       const nameMap = {
         export: '导出',
       };
-      return nameMap[this.mode];
+      return nameMap[this.T.pageMode()];
     },
   },
   props: {

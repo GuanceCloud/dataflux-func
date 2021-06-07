@@ -40,6 +40,7 @@ Browse Data Source: 浏览数据源
           <el-form v-else>
             <el-form-item>
               <el-cascader-panel class="simple-debug-browser-cascader" ref="browserCascader"
+                placeholder="--"
                 size="mini"
                 :props="browserCascaderProps">
                 <div slot-scope="{ node, data }" @click="updateCodeExample(node)" class="simple-debug-browser-cascader-item">
@@ -241,13 +242,13 @@ export default {
       this.isQuerying = true;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-        params: {id: this.dataSource.id},
-        body  : {
+        params: { id: this.dataSource.id },
+        body: {
           database      : queryOptions.database,
           queryStatement: queryOptions.queryStatement,
           returnType    : 'repr',
         },
-        extraOptions: {noCountProcessing: true},
+        extraOptions: { noCountProcessing: true },
       });
 
       let result = {
@@ -399,13 +400,13 @@ export default {
 
           // 查询数据
           apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-            params: {id: this.dataSource.id},
-            body  : {
+            params: { id: this.dataSource.id },
+            body: {
               database      : this.dataSource.configJSON.database,
               queryStatement: queryStatement,
               returnType    : 'json',
             },
-            extraOptions: {noCountProcessing: true},
+            extraOptions: { noCountProcessing: true },
           });
           if (!apiRes.ok) {
             if (node.root) {
@@ -624,8 +625,8 @@ export default {
         // api
         case 'api':
           // 查询数据
-          apiRes = await this.T.callAPI('get', browserConfig.api, {
-            extraOptions: {noCountProcessing: true},
+          apiRes = await this.T.callAPI_get(browserConfig.api, {
+            extraOptions: { noCountProcessing: true },
           });
           if (!apiRes.ok) {
             if (node.root) {

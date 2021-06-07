@@ -10,7 +10,7 @@ Func Doc     : 函数文档
 Signed In    : 已登录
 Light Mode   : 明亮模式
 Dark Mode    : 黑暗模式
-Follow System: 跟随系统
+Auto         : 自动
 </i18n>
 
 <template>
@@ -142,7 +142,7 @@ export default {
           icon : 'fa-moon-o',
         },
         auto : {
-          title: this.$t('Follow System'),
+          title: this.$t('Auto'),
           icon : 'fa-adjust',
         },
       }
@@ -174,12 +174,6 @@ export default {
     isSignedIn() {
       return this.$store.getters.isSignedIn;
     },
-    uiTheme() {
-      return this.$store.getters.uiTheme;
-    },
-    uiLocale() {
-      return this.$store.getters.uiLocale;
-    },
     userProfileName() {
       if (this.$store.state.userProfile) {
         let userProfile = this.$store.state.userProfile;
@@ -187,6 +181,12 @@ export default {
       } else {
         return '*' + this.$t('Signed In');
       }
+    },
+    uiTheme() {
+      return this.$store.getters.uiTheme;
+    },
+    uiLocale() {
+      return this.$store.getters.uiLocale;
     },
   },
   props: {

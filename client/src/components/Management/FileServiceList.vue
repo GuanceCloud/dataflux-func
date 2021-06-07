@@ -1,11 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
-File Service        : 文件服务
-New File Service    : 新建文件服务
-Disable File Service: 禁用文件服务
-Enable File Service : 启用文件服务
-Delete File Service : 删除文件服务
+Root: 根目录
+
+File Service disabled: 文件服务已禁用
+File Service enabled : 文件服务已启用
+File Service deleted : 文件服务已删除
 
 Search File Service(ID, root): 搜索文件服务（ID、根目录）
+No File Service has ever been added: 从未添加过任何文件服务
+
+Are you sure you want to disable the Auth Link?: 是否确认禁用此文件服务？
 </i18n>
 
 <template>
@@ -21,9 +24,9 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
               :searchTip="$t('Search File Service(ID, root)')">
             </FuzzySearchInput>
 
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              {{ $t('New File Service') }}
+              {{ $t('New') }}
             </el-button>
           </div>
         </h1>
@@ -32,8 +35,8 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未创建过任何文件服务</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No File Service has ever been added') }}</h1>
 
           <p class="no-data-tip">
             出于安全性考虑，资源目录文件默认不对外提供
@@ -45,25 +48,25 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="文件服务">
+          <el-table-column :label="$t('Root')">
             <template slot-scope="scope">
               <code class="file-service-title">{{ scope.row.root }}</code>
 
               <div>
-                <span class="text-info">&#12288;文件服务ID:</span>
+                <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
               </div>
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="200">
+          <el-table-column :label="$t('Status')" width="160">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
+              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
+              <span v-else class="text-good">{{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="200">
+          <el-table-column :label="$t('Note')" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
@@ -77,12 +80,10 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
                 :underline="false"
                 target="_blank">{{ $t('Open') }}</el-link>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
+              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
-
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
+              <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -93,12 +94,9 @@ Search File Service(ID, root): 搜索文件服务（ID、根目录）
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
-
 export default {
   name: 'FileServiceList',
   components: {
-    FuzzySearchInput,
   },
   watch: {
     $route: {
@@ -121,9 +119,8 @@ export default {
     },
     async loadData() {
       // 默认过滤条件
-      let apiRes = await this.T.callAPI('/api/v1/file-services/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/file-services/do/list', {
         query: this.T.createListQuery(),
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
@@ -136,52 +133,39 @@ export default {
       });
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
-      try {
-        switch(operation) {
-          case 'delete':
-          case 'disable':
-            await this.$confirm(`${operationName}文件服务可能导致依赖此文件服务的系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}文件服务`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'disable':
+          if (!await this.T.confirm(this.$t('Are you sure you want to disable the Auth Link?'))) return;
+          break;
       }
 
       let apiRes = null;
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable File Service'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('File Service disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable File Service'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('File Service enabled') },
           });
           break;
 
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/file-services/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete File Service'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('File Service deleted') },
           });
           break;
       }
@@ -216,21 +200,16 @@ export default {
     },
   },
   computed: {
-    OP_NAME_MAP() {
-      return {
-        disable: '禁用',
-        enable : '启用',
-        delete : '删除',
-      };
-    },
   },
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

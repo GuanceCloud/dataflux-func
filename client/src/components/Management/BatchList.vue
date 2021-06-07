@@ -1,13 +1,15 @@
 <i18n locale="zh-CN" lang="yaml">
-Batch        : 批处理
-New Batch    : 新建批处理
-Show hidden  : 显示隐藏项
-Disable Batch: 禁用批处理
-Enable Batch : 启用批处理
-Delete Batch : 删除批处理
+Tasks: 任务
+
+Batch disabled: 批处理已禁用
+Batch enabled : 批处理已启用
 
 Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索批处理（ID、标签、备注），函数（ID、参数、标题、描述、标签）
-Check to show the contents created by outside systems                   : 勾选后展示由其他系统自动创建的内容
+Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+No Batch has ever been added: 从未添加过任何批处理
+Batch only supports asynchronous calling: 批处理只支持异步调用
+
+Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
 </i18n>
 
 <template>
@@ -26,15 +28,15 @@ Check to show the contents created by outside systems                   : 勾选
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
-                size="mini"
+                size="small"
                 v-model="dataFilter.origin"
                 true-label="API,UI"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">{{ $t('Show hidden') }}</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
-            <el-button @click="openSetup(null, 'add')" type="primary" size="mini">
+            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
-              {{ $t('New Batch') }}
+              {{ $t('New') }}
             </el-button>
           </div>
         </h1>
@@ -44,7 +46,7 @@ Check to show the contents created by outside systems                   : 勾选
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未创建过任何批处理</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No Batch has ever been added') }}</h1>
 
           <p class="no-data-tip">
             使用批处理，可以让执行长耗时函数
@@ -65,12 +67,12 @@ Check to show the contents created by outside systems                   : 勾选
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
-                <span class="text-info">&#12288;批处理ID:</span>
+                <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
                 <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
                   <br>
-                  <span class="text-info">&#12288;标签:</span>
+                  <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
@@ -78,14 +80,14 @@ Check to show the contents created by outside systems                   : 勾选
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="100">
+          <el-table-column :label="$t('Status')" width="100">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
+              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
+              <span v-else class="text-good">{{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="备注" width="120">
+          <el-table-column :label="$t('Note')" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
@@ -93,44 +95,28 @@ Check to show the contents created by outside systems                   : 勾选
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text" size="small">任务投递示例</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
 
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
-                size="small"
                 :disabled="!scope.row.taskInfoCount"
-                >任务信息<code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
+                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
               </el-button>
 
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text" size="small">启用</el-button>
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text" size="small">禁用</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text" size="small">编辑</el-button>
-
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text" size="small">删除</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <!-- 翻页区 -->
-      <el-footer v-if="!T.isNothing(data)" class="paging-area">
-        <el-pagination
-          background
-          @size-change="T.changePageSize"
-          @current-change="T.goToPageNumber"
-          layout="total, sizes, prev, pager, next, jumper"
-          :page-sizes="[10, 20, 50, 100]"
-          :current-page="dataPageInfo.pageNumber"
-          :page-size="dataPageInfo.pageSize"
-          :page-count="dataPageInfo.pageCount"
-          :total="dataPageInfo.totalCount">
-        </el-pagination>
-      </el-footer>
+      <Pager :pageInfo="pageInfo"></Pager>
 
       <APIExampleDialog ref="apiExampleDialog"
-        title="任务投递示例"
-        description="批处理任务投递API固定为异步调用"
+        :description="$t('Batch only supports asynchronous calling')"
         :showExecModeOption="false"
         :showPostExample="true"
         :showPostExampleSimplified="true"
@@ -141,16 +127,12 @@ Check to show the contents created by outside systems                   : 勾选
 </template>
 
 <script>
-import FuzzySearchInput from '@/components/FuzzySearchInput'
 import APIExampleDialog from '@/components/APIExampleDialog'
-import FuncInfo from '@/components/FuncInfo'
 
 export default {
   name: 'BatchList',
   components: {
-    FuzzySearchInput,
     APIExampleDialog,
-    FuncInfo,
   },
   watch: {
     $route: {
@@ -178,59 +160,38 @@ export default {
         _listQuery.origin = 'UI';
       }
 
-      let apiRes = await this.T.callAPI('/api/v1/batches/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/batches/do/list', {
         query: _listQuery,
-        alert: {showError: true},
       });
       if (!apiRes.ok) return;
 
       this.data = apiRes.data;
-      this.dataPageInfo = apiRes.pageInfo;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
-      try {
-        switch(operation) {
-          case 'delete':
-          case 'disable':
-            await this.$confirm(`${operationName}批处理可能导致依赖此批处理的系统无法正常工作<hr class="br">是否确认${operationName}？`, `${operationName}批处理`,  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: `确认${operationName}`,
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'disable':
+          if (!await this.T.confirm(this.$t('Are you sure you want to disable the Batch?'))) return;
+          break;
       }
 
       let apiRes = null;
       switch(operation) {
         case 'disable':
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: true}},
-            alert : {title: this.$t('Disable Batch'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: true } },
+            alert : { okMessage: this.$t('Batch disabled') },
           });
           break;
 
         case 'enable':
           apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', {
-            params: {id: d.id},
-            body  : {data: {isDisabled: false}},
-            alert : {title: this.$t('Enable Batch'), showError: true},
-          });
-          break;
-
-        case 'delete':
-          apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
-            params: {id: d.id},
-            alert : {title: this.$t('Delete Batch'), showError: true},
+            params: { id: d.id },
+            body  : { data: { isDisabled: false } },
+            alert : { okMessage: this.$t('Batch enabled') },
           });
           break;
       }
@@ -277,9 +238,7 @@ export default {
     },
     async showAPI(d) {
       // 获取函数详情
-      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId, {
-        alert: {showError: true},
-      });
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
@@ -303,27 +262,16 @@ export default {
     },
   },
   computed: {
-    OP_NAME_MAP() {
-      return {
-        disable: '禁用',
-        enable : '启用',
-        delete : '删除',
-      };
-    },
   },
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
-      dataPageInfo: {
-        totalCount: 0,
-        pageCount : 0,
-        pageSize  : 20,
-        pageNumber: 1,
-      },
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

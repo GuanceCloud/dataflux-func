@@ -10,9 +10,8 @@ export async function getFuncList() {
   let funcMap      = {};
 
   // 脚本集
-  let apiRes = await T.callAPI_allPage('/api/v1/script-sets/do/list', {
-    query: {fields: ['id', 'title']},
-    alert: {showError: true},
+  let apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
+    query: { fields: ['id', 'title'] },
   });
   if (!apiRes.ok) return;
 
@@ -25,9 +24,8 @@ export async function getFuncList() {
   });
 
   // 脚本
-  apiRes = await T.callAPI_allPage('/api/v1/scripts/do/list', {
-    query: {fields: ['id', 'title', 'scriptSetId']},
-    alert: {showError: true},
+  apiRes = await T.callAPI_getAll('/api/v1/scripts/do/list', {
+    query: { fields: ['id', 'title', 'scriptSetId'] },
   });
   if (!apiRes.ok) return;
 
@@ -45,9 +43,8 @@ export async function getFuncList() {
   });
 
   // 函数
-  apiRes = await T.callAPI_allPage('/api/v1/funcs/do/list', {
-    query: {fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON']},
-    alert: {showError: true},
+  apiRes = await T.callAPI_getAll('/api/v1/funcs/do/list', {
+    query: { fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON'] },
   });
   if (!apiRes.ok) return;
 

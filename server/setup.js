@@ -64,6 +64,28 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   require('./appInit').beforeAppCreate(callback);
 });
 
+// Setup error
+var SetupErrorWrap = function() {
+  this.errors = {}
+};
+SetupErrorWrap.prototype.set = function(key, title, error) {
+  if (this.errors[key]) return;
+
+  this.errors[key] = { title: title };
+  if (error) {
+    this.errors[key].error = error.toString();
+  }
+};
+SetupErrorWrap.prototype.has = function(key) {
+  return (key in this.errors);
+};
+SetupErrorWrap.prototype.hasError = function(key) {
+  return Object.keys(this.errors).length > 0;
+};
+SetupErrorWrap.prototype.toJSON = function() {
+  return this.errors;
+};
+
 function runSetup() {
   /*
     安装向导为一个单页面应用，在服务器应用之前启动
@@ -110,7 +132,7 @@ function runSetup() {
   app.use('/statics', express.static(path.join(__dirname, 'statics')));
 
   // Setup page
-  app.get('*', function(req, res) {
+  app.get('/', function(req, res) {
     var defaultConfig = toolkit.jsonCopy(CONFIG);
 
     // 默认管理员用户/密码
@@ -124,18 +146,38 @@ function runSetup() {
   // Setup handler
   app.use(bodyParser.json({limit: '1mb'}));
   app.post('/setup', function(req, res, next) {
-    clearInterval(setupCheckerT);
-
     var config = req.body.config || {};
 
-    var redirectURL = config.WEB_BASE_URL || CONFIG.WEB_BASE_URL;
+    // 提取非配置字段
+    var adminUserId         = 'u-admin';
+    var adminUsername       = config.ADMIN_USERNAME;
+    var adminPassword       = config.ADMIN_PASSWORD;
+    var adminPasswordRepeat = config.ADMIN_PASSWORD_REPEAT;
+    delete config.ADMIN_USERNAME;
+    delete config.ADMIN_PASSWORD;
+    delete config.ADMIN_PASSWORD_REPEAT;
 
-    var configErrors = {};
+    // 错误包装
+    var setupErrorWrap = new SetupErrorWrap();
 
     var cacheHelper = null;
     var dbHelper    = null;
     async.series([
-      // Check MySQL
+      // Check admin username/password
+      function(asyncCallback) {
+        if (!adminUsername || !adminPassword) {
+          setupErrorWrap.set('adminUser', 'Administrator username or password is not inputed');
+          return asyncCallback();
+        }
+
+        if (!toolkit.isNothing(adminPasswordRepeat) && adminPassword !== adminPasswordRepeat) {
+          setupErrorWrap.set('adminUser', 'Repeated administrator password not match');
+          return asyncCallback();
+        }
+
+        return asyncCallback();
+      },
+      // Check MySQL, version
       function(asyncCallback) {
         try {
           var _config = {
@@ -148,14 +190,44 @@ function runSetup() {
           dbHelper = mysqlHelper.createHelper(null, _config);
           dbHelper.skipLog = true;
 
-          dbHelper.query('SHOW DATABASES', null, function(err, data) {
-            if (err) configErrors['mysql'] = '无法连接到MySQL：' + err.toString();
+          dbHelper.query('SELECT VERSION() AS ver', null, function(err, data) {
+            if (err) {
+              setupErrorWrap.set('mysql', 'Connecting to MySQL failed', err);
+
+            } else {
+              var versionParts = data[0].ver.split('.');
+              var majorVer = parseInt(versionParts[0]);
+              var minorVer = parseInt(versionParts[1]);
+              if (majorVer < 5 || (majorVer === 5 && minorVer < 7)) {
+                setupErrorWrap.set('mysql', 'MySQL 5.7 or above is required');
+              }
+            }
 
             return asyncCallback();
           });
 
         } catch(err) {
-          configErrors['mysql'] = err.toString();
+          setupErrorWrap.set('mysql', 'Unexpected error with MySQL', err);
+          return asyncCallback();
+        }
+      },
+      // Check MySQL variable
+      function(asyncCallback) {
+        if (setupErrorWrap.has('mysql')) return asyncCallback();
+
+        try {
+          dbHelper.query("SHOW VARIABLES LIKE 'innodb_large_prefix'", null, function(err, data) {
+            if (err) {
+              setupErrorWrap.set('mysql', 'Connecting to MySQL failed', err);
+
+            } else if (data.length > 0 && data[0].Value.toUpperCase() !== 'ON') {
+              setupErrorWrap.set('mysql', 'MySQL system variable "innodb_large_prefix" should be ON');
+            }
+
+            return asyncCallback();
+          });
+        } catch(err) {
+          setupErrorWrap.set('mysql', 'Unexpected error with MySQL', err);
           return asyncCallback();
         }
       },
@@ -166,66 +238,80 @@ function runSetup() {
             host    : config.REDIS_HOST,
             port    : config.REDIS_PORT,
             password: config.REDIS_PASSWORD,
+            db      : config.REDIS_DATABASE || 0,
+
+            disableRetry: true,
+            errorCallback(err) {
+              setupErrorWrap.set('redis', 'Connecting to Redis failed', err);
+
+              if (cacheHelper) {
+                cacheHelper.end();
+              }
+            }
           }
           cacheHelper = redisHelper.createHelper(null, _config);
           cacheHelper.skipLog = true;
 
-          cacheHelper.run('select', (config.REDIS_DATABASE || 0), function(err, data) {
-            if (err) configErrors['redis'] = '无法连接到Redis：' + err.toString();
+          cacheHelper.run('info', 'server', function(err, data) {
+            if (err) {
+              setupErrorWrap.set('redis', 'Access Redis failed', err);
+
+            } else {
+              var version = null;
+              data.split('\n').forEach(function(line) {
+                if (line.indexOf('redis_version:') === 0) {
+                  version = line.split(':')[1];
+                }
+              });
+
+              var versionParts = version.split('.');
+              var majorVer = parseInt(versionParts[0]);
+              var minorVer = parseInt(versionParts[1]);
+              if (majorVer < 4) {
+                setupErrorWrap.set('redis', 'Redis 4.0 or above is required');
+              }
+            }
 
             return asyncCallback();
           });
 
         } catch(err) {
-          configErrors['redis'] = err.toString();
+          setupErrorWrap.set('redis', 'Unexpected error with Redis', err);
           return asyncCallback();
         }
       },
       // Init DB
       function(asyncCallback) {
-        if (configErrors.mysql) return asyncCallback();
+        if (setupErrorWrap.hasError()) return asyncCallback();
 
         var initSQLPath = path.join(__dirname, '../db/dataflux_func_latest.sql');
         var initSQL = fs.readFileSync(initSQLPath).toString();
 
         dbHelper.query(initSQL, null, function(err, data) {
-          if (err) configErrors['mysqlInit'] = '初始化MySQL失败：' + err.toString();
+          if (err) {
+            setupErrorWrap.set('mysqlInit', 'Initializing MySQL database failed', err);
+          }
 
           return asyncCallback();
         });
       },
       // Add sys config
       function(asyncCallback) {
+        if (setupErrorWrap.hasError()) return asyncCallback();
+
         var sql = 'INSERT INTO `wat_main_system_config` SET `id` = ?, `value` = ?';
         var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
         dbHelper.query(sql, sqlParams, function(err, data) {
-          if (err) configErrors['mysqlInit'] = '初始化系统配置项失败：' + err.toString();
+          if (err) {
+            setupErrorWrap.set('mysqlInit', 'Initializing system configs failed', err);
+          }
 
           return asyncCallback();
         });
       },
       // Update admin password
       function(asyncCallback) {
-        if (configErrors.mysql) return asyncCallback();
-
-        var adminUserId         = 'u-admin';
-        var adminUsername       = config.ADMIN_USERNAME;
-        var adminPassword       = config.ADMIN_PASSWORD;
-        var adminPasswordRepeat = config.ADMIN_PASSWORD_REPEAT;
-
-        if (!adminUsername || !adminPassword) {
-          configErrors['adminUser'] = '请配置管理员用户与密码';
-          return asyncCallback();
-        }
-
-        if (!toolkit.isNothing(adminPasswordRepeat) && adminPassword !== adminPasswordRepeat) {
-          configErrors['adminUser'] = '两次密码输入不一致';
-          return asyncCallback();
-        }
-
-        delete config.ADMIN_USERNAME;
-        delete config.ADMIN_PASSWORD;
-        delete config.ADMIN_PASSWORD_REPEAT;
+        if (setupErrorWrap.hasError()) return asyncCallback();
 
         var adminPasswordHash = toolkit.getSaltedPasswordHash(
             adminUserId, adminPassword, config.SECRET);
@@ -239,7 +325,9 @@ function runSetup() {
           adminUserId,
         ]
         dbHelper.query(sql, sqlParams, function(err, data) {
-          if (err) configErrors['adminUser'] = '更新管理员密码失败：' + err.toString();
+          if (err) {
+            setupErrorWrap.set('adminUser', 'Setup administrator password failed', err);
+          }
 
           return asyncCallback();
         });
@@ -247,10 +335,9 @@ function runSetup() {
     ], function(err) {
       if (err) return process.exit(1);
 
-      if (Object.keys(configErrors).length > 0) {
+      if (setupErrorWrap.hasError()) {
         res.status(400);
-        res.send({ configErrors: configErrors });
-        return;
+        return res.send({ setupErrors: setupErrorWrap.toJSON() });
       }
 
       // Write config file
@@ -259,14 +346,22 @@ function runSetup() {
 
       fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
-      console.log('App setup.')
+      console.log('App setup');
 
       // Response for redirection
-      res.send({ redirect: redirectURL });
+      var redirectURL = config.WEB_BASE_URL || CONFIG.WEB_BASE_URL || null;
+      res.send({ redirectURL: redirectURL });
+
+      clearInterval(setupCheckerT);
 
       server.close();
       return process.exit(0);
     });
+  });
+
+  // Redirect to /
+  app.use(function(req, res) {
+    res.redirect('/');
   });
 
   var server = http.createServer(app);

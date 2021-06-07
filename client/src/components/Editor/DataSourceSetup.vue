@@ -1,69 +1,61 @@
 <i18n locale="zh-CN" lang="yaml">
-This is a builtin Data Source, please contact the admin to change the config      : 当前数据源为内置数据源，请联系管理员调整集群配置
-Type                                                                              : 类型
-Please select the Data Source type                                                : 请选择数据源类型
-Compatibility                                                                     : 兼容性
-Title                                                                             : 标题
-Name of the Data Source for convenience                                           : 方便区分数据源的名称
-Description                                                                       : 描述
-Description about this Data Source                                                : 介绍当前数据源的作用、功能、目的等
-Host                                                                              : 主机
-Host address, domain or IP                                                        : 连接地址，IP或域名
-Port                                                                              : 端口
-Port to connect                                                                   : 连接端口
-Servers                                                                           : 服务器列表
-'Servers to connect (e.g. host1:80,host2:81)'                                     : 连接地址列表，如：host1:80,host2:81
-Protocol                                                                          : 协议
-Please select connection protocol                                                 : 请选择协议
-Source                                                                            : 源
-Source of data                                                                    : 数据来源
-Database                                                                          : 数据库
-Database to connect                                                               : 连接数据库
-User                                                                              : 用户
-User for authentication. A read-only user is recommended                          : 认证用户名。如无写入操作，请使用只读用户
-Password                                                                          : 密码
-Password for authentication                                                       : 认证密码
+Add Data Source  : 添加数据源
+Setup Data Source: 配置数据源
+
+Type               : 类型
+Compatibility      : 兼容性
+Title              : 标题
+Description        : 描述
+Host               : 主机
+Port               : 端口
+Servers            : 服务器列表
+Protocol           : 协议
+Source             : 源
+Database           : 数据库
+User               : 用户
+Password           : 密码
+Charset            : 编码
+Client ID          : 客户端ID
+'Topic/Handler'    : 主题/处理
+Topic              : 主题
+Handler Func       : 处理函数
+'Add Topic/Handler': 添加主题/处理函数
+Test connection    : 测试连通性
+
+'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Data Source requires password to connect: 如数据源需要密码，则每次修改都必须重新输入密码
-Charset                                                                           : 编码
-Database charset                                                                  : 数据库编码
-Client ID                                                                         : 客户端ID
-'Topic/Handler'                                                                   : 主题/处理
-'Shared subscription can avoid duplicated message:'                               : 建议使用共享订阅方式订阅，避免重复接收消息：
-'1. $share/GROUP/TOPIC in MQTTv5'                                                 : '1. MQTTv5 的 $share/GROUP/TOPIC'
-'2. $queue/TOPIC in EMQX'                                                         : '2. EMQX 的 $queue/TOPIC'
-Topic                                                                             : 主题
-Select handler Func                                                               : 选择处理函数
-Add handler Func                                                                  : 新增处理函数
-Test connection                                                                   : 测试连通性
+'Shared subscription can avoid duplicated message:': 建议使用共享订阅方式订阅，避免重复接收消息：
+'1. $share/GROUP/TOPIC in MQTTv5': '1. MQTTv5 的 $share/GROUP/TOPIC'
+'2. $queue/TOPIC in EMQX': '2. EMQX 的 $queue/TOPIC'
 
-Add Data Source   : 添加数据源
-Modify Data Source: 修改数据源
-Delete Data Source: 删除数据源
-Test Data Source  : 测试数据源
-
-Deleting Data Source may break the dependency with other scripts: 删除数据源可能会破坏与其他脚本的依赖关系
-Are you sure you want to delete the Data Source?                : 是否确认删除数据源？
-
-Please input ID                                   : 请输入ID
+Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number                   : 不得以数字开头
-Please input Data Source type                     : 请选择数据源类型
-Please input host                                 : 请输入主机地址
-Please input port                                 : 请输入主机端口
-Only integer between 1 and 65535 are allowed      : 主机端口范围为 1-65535
-Please input servers                              : 请输入服务器列表
-Please select HTTP protocol                       : 请选择HTTP协议
-Only HTTP and HTTPS are allowed                   : 协议只能为HTTP或HTTPS
-Please input source                               : 请输入数据源名称
-Please input database                             : 请输入数据库名
-Please input user                                 : 请输入用户名
-Please input password                             : 请输入密码
-Please input charset                              : 请输入字符集
-Please input Access Key                           : 请输入Access Key
-Please input Secret Key                           : 请输入Secret Key
-Please input client ID                            : 请输入客户端ID
-Please input topic                                : 请输入订阅主题
-Please select handler Func                        : 请选择处理函数
+Cannot not starts with a number: 不得以数字开头
+Please input Data Source type: 请选择数据源类型
+Please input host: 请输入主机地址
+Please input port: 请输入主机端口
+Only integer between 1 and 65535 are allowed: 主机端口范围为 1-65535
+Please input servers: 请输入服务器列表
+Please select HTTP protocol: 请选择HTTP协议
+Only HTTP and HTTPS are allowed: 协议只能为HTTP或HTTPS
+Please input source: 请输入数据源名称
+Please input database: 请输入数据库名
+Please input user: 请输入用户名
+Please input password: 请输入密码
+Please input charset: 请输入字符集
+Please input Access Key: 请输入Access Key
+Please input Secret Key: 请输入Secret Key
+Please input client ID: 请输入客户端ID
+Please input topic: 请输入订阅主题
+Please select handler Func: 请选择处理函数
+
+Data Source created: 数据源已创建
+Data Source saved  : 数据源已保存
+Data Source deleted: 数据源已删除
+
+Are you sure you want to delete the Data Source?: 是否确认删除此数据源？
+
+This is a builtin Data Source, please contact the admin to change the config: 当前数据源为内置数据源，请联系管理员调整集群配置
 </i18n>
 
 <template>
@@ -84,8 +76,8 @@ Please select handler Func                        : 请选择处理函数
                   <InfoBlock type="error" :title="$t('This is a builtin Data Source, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item :label="$t('Type')" prop="type" v-if="mode === 'add'">
-                  <el-select v-model="form.type" :placeholder="$t('Please select the Data Source type')" @change="switchType">
+                <el-form-item :label="$t('Type')" prop="type" v-if="T.pageMode() === 'add'">
+                  <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in C.DATE_SOURCE" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
                 </el-form-item>
@@ -113,21 +105,21 @@ Please select handler Func                        : 请选择处理函数
                   </el-form-item>
 
                   <el-form-item label="ID" prop="id">
-                    <el-input :disabled="mode === 'setup'"
+                    <el-input :disabled="T.pageMode() === 'setup'"
                       maxlength="40"
                       show-word-limit
                       v-model="form.id"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Title')">
-                    <el-input :placeholder="$t('Name of the Data Source for convenience')"
+                    <el-input
                       maxlength="25"
                       show-word-limit
                       v-model="form.title"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Description')">
-                    <el-input :placeholder="$t('Description about this Data Source')"
+                    <el-input
                       type="textarea"
                       resize="none"
                       :autosize="{minRows: 2}"
@@ -138,73 +130,75 @@ Please select handler Func                        : 请选择处理函数
 
                   <!-- 可变区域 -->
                   <el-form-item :label="$t('Host')" v-if="hasConfigField(selectedType, 'host')" prop="configJSON.host">
-                    <el-input :placeholder="$t('Host address, domain or IP')" @blur="unpackURL"
+                    <el-input @blur="unpackURL"
                       v-model="form.configJSON.host"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Port')" v-if="hasConfigField(selectedType, 'port')" prop="configJSON.port">
-                    <el-input :placeholder="$t('Port to connect')"
+                    <el-input
                       v-model.number="form.configJSON.port" min="0" max="65535"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Servers')" v-if="hasConfigField(selectedType, 'servers')" prop="configJSON.servers">
-                    <el-input :placeholder="$t('Servers to connect (e.g. host1:80,host2:81)')"
+                    <el-input
                       type="textarea"
                       resize="none"
                       :autosize="{minRows: 2}"
                       v-model="form.configJSON.servers"></el-input>
+                    <InfoBlock type="info" :title="$t('Servers to connect (e.g. host1:80,host2:81)')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Protocol')" v-if="hasConfigField(selectedType, 'protocol')" prop="configJSON.protocol">
-                    <el-select v-model="form.configJSON.protocol" :placeholder="$t('Please select connection protocol')">
+                    <el-select v-model="form.configJSON.protocol">
                       <el-option label="HTTP" key="http" value="http"></el-option>
                       <el-option label="HTTPS" key="https" value="https"></el-option>
                     </el-select>
                   </el-form-item>
 
                   <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
-                    <el-input :placeholder="$t('Source of data')"
+                    <!-- DataKit专用 -->
+                    <el-input
                       v-model="form.configJSON.source"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Database')" v-if="hasConfigField(selectedType, 'database')" prop="configJSON.database">
-                    <el-input :placeholder="$t('Database to connect')"
+                    <el-input
                       v-model="form.configJSON.database"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <el-input :placeholder="$t('User for authentication. A read-only user is recommended')"
+                    <el-input
                       v-model="form.configJSON.user"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
-                    <el-input :placeholder="$t('Password for authentication')"
+                    <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && mode === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
+                    <InfoBlock v-if="!data.isBuiltin && T.pageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
-                    <el-input :placeholder="$t('Database charset')"
+                    <el-input
                       v-model="form.configJSON.charset"></el-input>
                   </el-form-item>
 
                   <el-form-item label="Token" v-if="hasConfigField(selectedType, 'token')" prop="configJSON.token">
-                    <el-input placeholder="Token"
+                    <el-input
                       v-model="form.configJSON.token"></el-input>
                   </el-form-item>
 
                   <el-form-item label="Access Key" v-if="hasConfigField(selectedType, 'accessKey')" prop="configJSON.accessKey">
-                    <el-input placeholder="Access Key"
+                    <el-input
                       v-model="form.configJSON.accessKey"></el-input>
                   </el-form-item>
 
                   <el-form-item label="Secret Key" v-if="hasConfigField(selectedType, 'secretKey')" prop="configJSON.secretKey">
-                    <el-input placeholder="Secret Key"
+                    <el-input
                       v-model="form.configJSON.secretKey"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Client ID')" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
-                    <el-input :placeholder="$t('Client ID')"
+                    <el-input
                       v-model="form.configJSON.clientId"></el-input>
                   </el-form-item>
 
@@ -227,15 +221,16 @@ Please select handler Func                        : 请选择处理函数
                       :prop="`configJSON.topicHandlers.${index}.funcId`"
                       :rules="formRules_topic">
                       <el-cascader class="func-cascader-input" ref="funcCascader"
+                        placeholder="--"
                         filterable
-                        :placeholder="$t('Select handler Func')"
+                        :placeholder="$t('Handler Func')"
                         v-model="topicHandler.funcId"
                         :options="funcCascader"
                         :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
                     </el-form-item>
                   </template>
                   <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')">
-                    <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add handler Func') }}</el-link>
+                    <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Topic/Handler') }}</el-link>
                   </el-form-item>
                   <!-- 可变区域结束 -->
                 </template>
@@ -245,17 +240,17 @@ Please select handler Func                        : 请选择处理函数
               <!-- 此处特殊处理：要始终保证可以测试数据源 -->
               <el-form  label-width="120px">
                 <el-form-item>
-                  <el-button v-if="mode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.pageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 
                   <div class="setup-right">
-                    <el-button v-if="mode === 'setup'" @click="testDataSource">
+                    <el-button v-if="T.pageMode() === 'setup'" @click="testDataSource">
                       <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
                       <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
                       <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
                       {{ $t('Test connection') }}
                     </el-button>
 
-                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -280,7 +275,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.mode) {
+        switch(this.T.pageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.configJSON = {};
@@ -382,10 +377,8 @@ export default {
       this.form.configJSON = nextConfigJSON;
     },
     async loadData() {
-      if (this.mode === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id, {
-          alert: {showError: true},
-        });
+      if (this.T.pageMode() === 'setup') {
+        let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -414,7 +407,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -441,8 +434,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/do/add', {
-        body : {data: _formData},
-        alert: {title: this.$t('Add Data Source'), showError: true, showSuccess: true},
+        body : { data: _formData },
+        alert: { okMessage: this.$t('Data Source created') },
       });
       if (!apiRes.ok) return;
 
@@ -456,9 +449,9 @@ export default {
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
-        params: {id: this.$route.params.id},
-        body  : {data: _formData},
-        alert : {title: this.$t('Modify Data Source'), showError: true, showSuccess: true},
+        params: { id: this.$route.params.id },
+        body  : { data: _formData },
+        alert : { okMessage: this.$t('Data Source saved') },
       });
       if (!apiRes.ok) return;
 
@@ -466,22 +459,11 @@ export default {
       this.$store.commit('updateDataSourceListSyncTime');
     },
     async deleteData() {
-      try {
-        await this.$confirm(`${this.$t('Deleting Data Source may break the dependency with other scripts')}
-          <hr class="br">${this.$t('Are you sure you want to delete the Data Source?')}`, this.$t('Delete Data Source'), {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: this.$t('Delete'),
-          cancelButtonText: this.$t('Cancel'),
-          type: 'warning',
-        });
-
-      } catch(err) {
-        return; // 取消操作
-      }
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Data Source?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/delete', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Delete Data Source'), showError: true},
+        params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Data Source deleted') },
       });
       if (!apiRes.ok) return;
 
@@ -493,9 +475,8 @@ export default {
     async testDataSource() {
       this.testDataSourceResult = 'running';
 
-      let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/test', {
-        params: {id: this.$route.params.id},
-        alert : {title: this.$t('Test Data Source'), showError: true},
+      let apiRes = await this.T.callAPI_get('/api/v1/data-sources/:id/do/test', {
+        params: { id: this.$route.params.id },
       });
       if (apiRes.ok) {
         this.testDataSourceResult = 'ok';
@@ -656,29 +637,19 @@ export default {
     formRules_topicHandler() {
       return {
         trigger: 'change',
-        message : this.$t('Please input handler Func'),
+        message : this.$t('Please select handler Func'),
         required: true,
       }
     },
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
-    modeName() {
-      const _map = {
-        setup: this.$t('Modify'),
-        add  : this.$t('Add'),
-      };
-      return _map[this.mode];
-    },
     pageTitle() {
       const _map = {
-        setup: this.$t('Modify Data Source'),
+        setup: this.$t('Setup Data Source'),
         add  : this.$t('Add Data Source'),
       };
-      return _map[this.mode];
+      return _map[this.T.pageMode()];
     },
     selectedType() {
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return this.form.type;
 

@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Recover Script Lib: 还原脚本库
+
+Script Lib recovered: 脚本库已还原
 </i18n>
 
 <template>
@@ -10,7 +12,7 @@ Recover Script Lib: 还原脚本库
         <h1>
           脚本库还原点
           <div class="header-control">
-            <el-button @click="openSetup(null, 'add')" size="mini">
+            <el-button @click="openSetup(null, 'add')" size="small">
               <i class="fa fa-fw fa-camera"></i>
               创建还原点
             </el-button>
@@ -72,10 +74,9 @@ export default {
   },
   methods: {
     async loadData(pageNumber) {
-      // 只加载近100条
-      let apiRes = await this.T.callAPI('/api/v1/script-recover-points/do/list', {
-        query: {pageSize: 50},
-        alert: {showError: true},
+      // 只加载近若干条
+      let apiRes = await this.T.callAPI_get('/api/v1/script-recover-points/do/list', {
+        query: { pageSize: 50 },
       });
       if (!apiRes.ok) return;
 
@@ -86,29 +87,19 @@ export default {
     async quickSubmitData(d, operation) {
       let operationName = this.OP_NAME_MAP[operation];
 
-      try {
-        switch(operation) {
-          case 'recover':
-            await this.$confirm(`执行恢复后，脚本集、脚本、函数等数据将完整恢复到还原点创建时刻的状态且<span class="text-bad">立即生效</span>
-                <hr class="br">是否确认恢复？`, '恢复脚本',  {
-              dangerouslyUseHTMLString: true,
-              confirmButtonText: '确认恢复',
-              cancelButtonText: '取消',
-              type: 'warning',
-            });
-            break;
-        }
-
-      } catch(err) {
-        return; // 取消操作
+      switch(operation) {
+        case 'recover':
+          if (!await this.T.confirm(`执行恢复后，脚本集、脚本、函数等数据将完整恢复到还原点创建时刻的状态且立即生效
+                <hr class="br">是否确认恢复？`)) return;
+          break;
       }
 
       let apiRes = null;
       switch(operation) {
         case 'recover':
           apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/:id/do/recover', {
-            params: {id: d.id},
-            alert : {title: this.$t('Recover Script Lib'), showError: true},
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Script Lib recovered') },
           });
           break;
       }

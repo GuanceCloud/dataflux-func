@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Create Script Lib Recover Point: 创建脚本库还原点
+
+Script Lib Recover Point created: 脚本库还原点已创建
 </i18n>
 
 <template>
@@ -10,7 +12,7 @@ Create Script Lib Recover Point: 创建脚本库还原点
         <h1>
           {{ modeName }}脚本库还原点
           <div class="header-control">
-            <el-button @click="goToHistory" size="mini">
+            <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本库还原点
             </el-button>
@@ -66,18 +68,16 @@ export default {
         return console.error(err);
       }
 
-      switch(this.mode) {
+      switch(this.T.pageMode()) {
         case 'add':
           return await this.addData();
       }
     },
     async addData() {
-      let opt = {
-        body : {data: this.T.jsonCopy(this.form)},
-        alert: {title: this.$t('Create Script Lib Recover Point'), showError: true},
-      };
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', {
+        body : { data: this.T.jsonCopy(this.form) },
+        alert: { okMessage: this.$t('Script Lib Recover Point created') },
+      });
       if (!apiRes.ok) return;
 
       this.goToHistory();
@@ -89,14 +89,11 @@ export default {
     },
   },
   computed: {
-    mode() {
-      return this.$route.name.split('-').pop();
-    },
     modeName() {
       const nameMap = {
         add: '创建',
       };
-      return nameMap[this.mode];
+      return nameMap[this.T.pageMode()];
     },
   },
   props: {

@@ -34,21 +34,17 @@ export default {
 
         // 跳转
         if (this.$route.name === 'index') {
-          this.$router.push({
-            name: 'intro',
-          });
+          this.$router.push({ name: 'intro' });
         }
 
       } else {
         // 登出后
         if (this.$route.name !== 'sign-out') {
-          this.$router.push({
-            name: 'index',
-          });
+          this.$router.push({ name: 'index' });
         }
       }
     },
-    '$store.getters.uiTheme': function(val) {
+    uiTheme(val) {
       let $uiThemeLink = document.getElementById('uiTheme');
       let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
@@ -65,10 +61,6 @@ export default {
   methods: {
     reportAndCheckClientConflict(showNotice) {
       if (!this.$store.getters.isSocketIOReady) return;
-
-      if (showNotice) {
-        this.$notify.closeAll();
-      }
 
       let routeName = null; // 路径名
       let checkOnly = null; // 是否仅做检查，不记录在线状态
@@ -120,15 +112,8 @@ export default {
               break;
 
             default:
-              this.$notify({
-                dangerouslyUseHTMLString: true,
-                title   : '有其他用户或窗口也在本页面操作',
-                message : `本系统<span class="text-bad">不支持多人或多窗口同时编辑</span>。<br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`,
-                type    : 'warning',
-                position: 'top-right',
-                offset  : 20,
-                duration: 0,
-              });
+              this.T.notify(`<span class="text-bad">本系统不支持多人或多窗口同时编辑</span>。
+                <br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`);
               break;
           }
         }
@@ -150,6 +135,9 @@ export default {
     },
     isSignedIn() {
       return this.$store.getters.isSignedIn;
+    },
+    uiTheme() {
+      return this.$store.getters.uiTheme;
     },
   },
   props: {
@@ -341,7 +329,7 @@ h3 {
   background-repeat: repeat;
 }
 .fade-enter-active {
-  transition: opacity .15s;
+  transition: opacity .25s;
 }
 .fade-enter {
   opacity: 0;
@@ -363,11 +351,6 @@ h3 {
   left: 0;
   right: 0;
   bottom: 0;
-}
-.paging-area {
-  height: 50px !important;
-  text-align: right;
-  padding: 10px 20px !important;
 }
 .common-form {
   width: 620px;
@@ -400,25 +383,20 @@ h3 {
 
 .text-main {
   color: #FF6600;
-  font-weight: bold;
   text-shadow: #ffa5004d 0 0 10px;
 }
 .text-info {
   color: darkgrey;
-  font-weight: bold;
 }
 .text-watch {
   color: orange;
-  font-weight: bold;
   text-shadow: #ffc58e 0 0 10px;
 }
 .text-good {
   color: green;
-  font-weight: bold;
 }
 .text-bad {
   color: red;
-  font-weight: bold;
 }
 .text-code {
   padding: 1px 3px;
@@ -446,11 +424,8 @@ h3 {
 tr.hl-row {
   background-image: linear-gradient(to right, #FFF, #ffefe4);
 }
-tr.hl-row:hover {
-  background-image: linear-gradient(to right, #ffefe4, #ffefe4);
-}
-tr.hl-row:hover td {
-  background-color: #ffefe4 !important;
+.el-table--enable-row-hover .el-table__body tr.hl-row:hover>td {
+  background-color: #ffefe4;
 }
 hr.br {
   border: none;
@@ -476,7 +451,6 @@ kbd {
 }
 .no-data-area .no-data-title {
   color: darkgrey !important;
-  font-weight: bold;
   font-size: x-large
 }
 .no-data-area .no-data-tip {
@@ -516,7 +490,7 @@ kbd {
   transform: scale(.7, 1);
 }
 .splitter-pane-resizer.horizontal:after {
-content: "\25B2";
+  content: "\25B2";
   font-size: 12px;
   display: block;
   position: absolute;
@@ -547,16 +521,20 @@ content: "\25B2";
   border: none;
 }
 .fix-list-button .el-link {
-  font-size: 12px;
+  font-size: 14px;
   margin-left: 10px;
   position: relative;
-  top: -1px;
+  top: -2px;
 }
 .fix-list-button .el-link + .el-button {
   margin-left: 10px;
 }
 .fix-list-button .el-dropdown {
   margin-left: 10px;
+}
+
+.el-tag {
+  font-size: 14px !important;
 }
 .el-tag + .el-tag {
   margin-left: 5px;
@@ -578,6 +556,10 @@ content: "\25B2";
 }
 .el-notification {
   z-index: 3001 !important;
+  align-items: center !important;
+}
+.el-notification__content {
+  margin-top: 0 !important;
 }
 .el-message {
   top: 40px !important;

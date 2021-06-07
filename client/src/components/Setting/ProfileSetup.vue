@@ -6,7 +6,7 @@ Show Name                                                                       
 
 Please input display name: 请输入显示名
 
-Modify user info: 修改用户信息
+User Info saved: 用户信息已保存
 </i18n>
 
 <template>
@@ -69,9 +69,7 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/auth/profile/do/get', {
-        alert: {showError: true},
-      });
+      let apiRes = await this.T.callAPI_get('/api/v1/auth/profile/do/get');
       if (!apiRes.ok) return;
 
       this.data = apiRes.data;
@@ -90,8 +88,8 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/auth/profile/do/modify', {
-        body  : {data: this.T.jsonCopy(this.form)},
-        alert : {title: this.$t('Modify user info'), showError: true, showSuccess: true},
+        body  : { data: this.T.jsonCopy(this.form) },
+        alert : { okMessage: this.$t('User Info saved') },
       });
       if (!apiRes.ok) return;
 

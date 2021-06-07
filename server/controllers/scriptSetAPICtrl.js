@@ -3,6 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
+var fs     = require('fs-extra');
 var async  = require('async');
 var moment = require('moment');
 var JSZip  = require('jszip');
@@ -565,8 +566,11 @@ exports.import = function(req, res, next) {
     function(asyncCallback) {
       // AES解密
       try {
-        var _fileBuf = file.data.toString();
+        var _fileBuf = fs.readFileSync(file.path).toString();
         var _fileMD5 = toolkit.getMD5(_fileBuf);
+
+        // 删除临时文件
+        fs.removeSync(file.path);
 
         fileBuf = toolkit.decipherByAES(_fileBuf, password);
         res.locals.logger.debug(toolkit.strf('File Data: {0}...{1}, MD5: {2}', fileBuf.slice(0, 20), fileBuf.slice(-20), _fileMD5));

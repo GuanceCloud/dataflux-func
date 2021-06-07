@@ -34,6 +34,7 @@ var batchMod                  = require('../models/batchMod');
 var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
 var operationRecordMod        = require('../models/operationRecordMod');
 var fileServiceMod            = require('../models/fileServiceMod');
+var userMod                   = require('../models/userMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -237,10 +238,10 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   // 文件上传参数
   if (req.files && req.files.length > 0) {
     funcCallOptions.funcCallKwargs.files = req.files.map(function(file) {
-      // 文件保存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
+      // 文件转存路径为：<安装目录>/data/resources/uploads/<日期时间>_<随机数>/<原文件名>
       var timestampStr = toolkit.strf('{0}_{1}', moment.utc().format('YYYYMMDDHHmmss'), toolkit.genRandString(6));
       var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._FUNC_UPLOAD_DIR, timestampStr, file.originalname);
-      fs.outputFileSync(filePath, file.data);
+      fs.moveSync(file.path, filePath, { overwrite: true });
 
       return {
         filePath    : filePath,
@@ -1003,6 +1004,8 @@ exports.overview = function(req, res, next) {
   var authLinkModel      = authLinkMod.createModel(res.locals);
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   var batchModel         = batchMod.createModel(res.locals);
+  var fileServiceModel   = fileServiceMod.createModel(res.locals);
+  var userModel          = userMod.createModel(res.locals);
 
   var overviewParts = [
     { name : 'scriptSet',     model: scriptSetModel},
@@ -1013,6 +1016,8 @@ exports.overview = function(req, res, next) {
     { name : 'authLink',      model: authLinkModel},
     { name : 'crontabConfig', model: crontabConfigModel},
     { name : 'batch',         model: batchModel},
+    { name : 'fileService',   model: fileServiceModel},
+    { name : 'user',          model: userModel},
   ];
 
   var overview = {
@@ -1688,6 +1693,8 @@ exports.getSystemConfig = function(req, res, next) {
 
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
+
+    _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.mainAPI.uploadResource.files.$limitSize),
   };
 
   var funcModel = funcMod.createModel(res.locals);
@@ -1989,102 +1996,6 @@ exports.clearLogCacheTables = function(req, res, next) {
 };
 
 // Python包
-exports.queryPythonPackages = function(req, res, next) {
-  var query = req.query.query;
-  var limit = req.query.limit || 20;
-
-  var cacheKey = toolkit.getCacheKey('cache', 'availablePythonPackage');
-
-  var allPackages = null;
-  async.series([
-    // 优先从缓存中读取
-    function(asyncCallback) {
-      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (cacheRes) {
-          allPackages = JSON.parse(cacheRes);
-        }
-
-        return asyncCallback();
-      });
-    },
-    // 从网络获取
-    function(asyncCallback) {
-      if (allPackages) return asyncCallback();
-
-      var requestOptions = {
-        forever: true,
-        timeout: 3 * 1000,
-        method : 'GET',
-        url    : CONFIG.PYPI_MIRROR,
-      };
-      request(requestOptions, function(err, _res, _body) {
-        if (err) return asyncCallback(err);
-
-        // 提取所有包名
-        var PREFIX_S = '<a href="';
-        var START_S  = '/">';
-        var END_S    = '</a>';
-
-        allPackages = [];
-        _body.split('\n').forEach(line => {
-          if (line.trim().indexOf(PREFIX_S) !== 0) return;
-
-          var start = line.indexOf(START_S) + START_S.length;
-          var end   = line.indexOf(END_S);
-          var pkg   = line.slice(start, end);
-
-          allPackages.push(pkg);
-        });
-
-        // 加入缓存
-        res.locals.cacheDB.setex(cacheKey, CONFIG._PIP_LIST_EXPIRES, JSON.stringify(allPackages), asyncCallback);
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var matchedPackages = [];
-    if (!query) {
-      matchedPackages = allPackages;
-
-    } else {
-      matchedPackages = allPackages
-      // 只返回包含子内容的
-      .reduce(function(acc, x) {
-        if (x.indexOf(query) >= 0) {
-          acc.push(x);
-        }
-        return acc;
-      }, [])
-      // 分别计算相似度
-      .reduce(function(acc, x) {
-        let item = {
-          name   : x,
-          similar: toolkit.stringSimilar(query, x.toLowerCase()),
-        }
-
-        acc.push(item);
-        return acc;
-      }, [])
-      // 根据相似度排序
-      .sort(function(a, b) {
-        return b.similar - a.similar;
-      })
-      // 提取名称
-      .map(function(x) {
-        return x.name;
-      })
-      // 取TOP20
-      .slice(0, limit);
-    }
-
-    var ret = toolkit.initRet(matchedPackages);
-    return res.locals.sendJSON(ret);
-  });
-};
-
 exports.listInstalledPythonPackages = function(req, res, next) {
   // Python包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
@@ -2194,7 +2105,7 @@ exports.installPythonPackage = function(req, res, next) {
           res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
             if (err) return asyncCallback(err);
 
-            return asyncCallback(new E('ESys', 'Install Python package failed', {
+            return asyncCallback(new E('ESys', 'Preparing Python package failed', {
               package: pkg,
               stderr : stderr,
             }));
@@ -2226,6 +2137,7 @@ exports.installPythonPackage = function(req, res, next) {
             return asyncCallback(new E('ESys', 'Install Python package failed', {
               package: pkg,
               stderr : stderr,
+              message: stderr.split('\n')[0],
             }));
           });
 
@@ -2359,7 +2271,7 @@ exports.uploadResource = function(req, res, next) {
 
   var fileSaveName = rename || file.originalname;
   var filePath = path.join(CONFIG.RESOURCE_ROOT_PATH, folder, fileSaveName);
-  fs.outputFileSync(filePath, file.data);
+  fs.moveSync(file.path, filePath, { overwrite: true });
 
   var ret = toolkit.initRet();
   res.locals.sendJSON(ret);

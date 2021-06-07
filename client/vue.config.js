@@ -1,6 +1,6 @@
-const os   = require('os');
-const fs   = require('fs');
-const path = require('path');
+const os     = require('os');
+const fs     = require('fs');
+const path   = require('path');
 const cssmin = require('cssmin');
 
 const IS_PROD = process.env.NODE_ENV == 'production';
@@ -51,14 +51,14 @@ module.exports = {
       .resourceQuery(/blockType=i18n/)
       .type('javascript/auto')
       .use('i18n')
-        .loader("@intlify/vue-i18n-loader")
+        .loader('@intlify/vue-i18n-loader')
         .end();
     config.module.rule('yaml')
       .test(/\.ya?ml$/)
       .include.add(path.resolve(__dirname, './src/assets/yaml'))
       .end()
       .type('json')
-      .use("yaml-loader")
+      .use('yaml-loader')
         .loader("yaml-loader")
         .end()
   },
@@ -70,30 +70,37 @@ module.exports = {
     dll: {
       cacheFilePath: path.resolve(__dirname, './public'),
       entry: {
-        'framework': [
+        codemirror: [ 'codemirror' ],
+        echarts   : [ 'echarts' ],
+        vue: [
+          '@intlify/vue-i18n-loader',
           'element-ui',
           'vue',
+          'vue-i18n',
           'vue-router',
           'vue-splitpane',
           'vuex',
           'vuex-persistedstate',
         ],
-        'codemirror': [
-          'codemirror',
-        ],
-        'lib': [
-          'core-js',
+        lib1: [
           'axios',
+          'core-js',
           'socket.io-client',
+          'validator',
+        ],
+        lib2: [
+          'js-base64',
+          'js-yaml',
           'clipboard',
-          'diff',
           'file-saver',
           'highlight.js',
-          'js-base64',
-          'json-stringify-pretty-compact',
           'moment',
+        ],
+        lib3: [
+          'bowser',
+          'byte-size',
+          'diff',
           'splitargs',
-          'validator',
         ],
       }
     }
