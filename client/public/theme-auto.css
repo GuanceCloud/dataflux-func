@@ -229,6 +229,9 @@ a {
   background-color: black !important;
 }
 
+.node-card .node-type {
+  background-color: #333333 !important;
+}
 
 .splitter-pane-resizer {
   background-color: #3c3c3c !important;

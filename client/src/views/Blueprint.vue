@@ -293,7 +293,8 @@ export default {
 .node-card .node-type {
   text-align: center;
   padding: 5px;
-  background-color: darkred;
+  color: #FF6600;
+  background-color: #EEEEEE;
 }
 .node-card .node-title {
   text-align: center;
