@@ -18,16 +18,7 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/sqldump
 
 # Swith apt source to Aliyun
-RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-        \ndeb http://mirrors.aliyun.com/debian-security buster/updates main \
-        \ndeb-src http://mirrors.aliyun.com/debian-security buster/updates main \
-        \ndeb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-        \ndeb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
-    > /etc/apt/sources.list && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y wget curl telnet zip unzip default-mysql-client
 
 # Download, extract and install resources
