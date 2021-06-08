@@ -58,14 +58,14 @@ export default {
   },
   methods: {
     genDemoData() {
-      let node1 = this.createNode('func', '来自函数库函数的节点', { x: 50, y: 100 });
-      let node2 = this.createNode('code', '直接编写代码的节点', { x: 500, y: 200 });
-      let node3 = this.createNode('nope', '无处理', { x: 1000, y: 150 });
-      let link1 = this.createLink('nope', null, {
+      let node1 = this.createNode('exec', '来自函数库函数的节点', { x: 50, y: 100 });
+      let node2 = this.createNode('exec', '直接编写代码的节点', { x: 500, y: 200 });
+      let node3 = this.createNode('exec', '无处理', { x: 1000, y: 150 });
+      let link1 = this.createLink('exec', null, {
         startNode: node1, startAt: 'right',
         endNode  : node2, endAt  : 'left',
       });
-      let link2 = this.createLink('code', '存在数据时', {
+      let link2 = this.createLink('exec', '存在数据时', {
         startNode: node2, startAt: 'right',
         endNode  : node3, endAt  : 'left',
       });
@@ -91,36 +91,68 @@ export default {
     createNode(type, title, options) {
       options = options || {};
 
-      let meta = {
-        type  : type,  // 无处理=nope, 函数=func, 代码=code
-        title : title, // 展示文字
-        funcId: null,  // 函数ID
-        code  : null,  // 代码正文（必须包含`def main(prev_ret, **kwargs)` 函数）
-        kwargs: null,  // 传参（JSON格式）
-      };
-      Object.assign(meta, options.meta);
-
       let node = {
         id        : this.T.genDataId('node'),
-        width     : this.NODE_WIDTH,
-        height    : this.NODE_HEIGHT,
         coordinate: [options.x || 30, options.y || 30],
-        meta      : meta,
+        meta      : { type: type, title: title },
       };
+
+      // 设置大小
+      switch(type) {
+        case 'exec':
+          node.width  = 180;
+          node.height = 80;
+          break;
+
+        default:
+          node.width  = 80;
+          node.height = 80;
+          break;
+      }
+
+      // 设置meta信息
+      switch(type) {
+        case 'exec':
+          // 执行节点
+          node.meta.code     = options.code     || null; // 执行代码
+          node.meta.kwargs   = options.kwargs   || null; // 执行参数
+          node.meta.template = options.template || null; // 节点模板（用于生成自动标题）
+
+          // 单进单出
+          node.meta.allowIn  = 1;
+          node.meta.allowOut = 1;
+          break;
+
+        case 'wait':
+          // 等待节点
+
+          // 多进单出
+          node.meta.allowIn  = true;
+          node.meta.allowOut = 1;
+          break;
+
+        case 'api':
+        case 'crontab':
+          // API入口、定时触发入口
+
+          // 仅单出
+          node.meta.allowIn  = false;
+          node.meta.allowOut = 1;
+          break;
+
+        case 'end':
+          // 结束节点
+
+          // 仅单进
+          node.meta.allowIn  = 1;
+          node.meta.allowOut = false;
+          break;
+      }
 
       return node;
     },
     createLink(type, title, options) {
       options = options || {};
-
-      let meta = {
-        type  : type,  // 无处理=nope, 函数=func, 代码=code
-        title : title, // 展示文字
-        funcId: null,  // 函数ID
-        code  : null,  // 代码正文（必须包含`def main(prev_ret, **kwargs)` 函数）
-        kwargs: null,  // 传参（JSON格式）
-      }
-      Object.assign(meta, options.meta);
 
       function _getLinkNodePosition(node, position) {
         switch(position) {
@@ -140,18 +172,37 @@ export default {
         startId: options.startNode.id,
         endId  : options.endNode.id,
         startAt: _getLinkNodePosition(options.startNode, options.startAt),
-        endAt  : _getLinkNodePosition(options.endNode, options.endAt),
-        meta   : meta,
+        endAt  : _getLinkNodePosition(options.endNode,   options.endAt),
+        meta   : { type: type, title: title },
       };
+
+      // 设置meta信息
+      switch(type) {
+        case 'exec':
+          // 执行连线
+          link.meta.code     = options.code     || null; // 执行代码
+          link.meta.kwargs   = options.kwargs   || null; // 执行参数
+          link.meta.template = options.template || null; // 连线模板（用于生成自动标题）
+          break;
+      }
 
       return link;
     },
     enterIntercept(formNode, toNode, graph) {
-      console.log('IN enterIntercept')
+      let allowOut = formNode.meta.allowOut;
+      if ('boolean' === typeof allowOut) return allowOut;
+
+
+      graph.linkList
       return true;
     },
     outputIntercept(node, graph) {
-      console.log('IN outputIntercept')
+      let allowOut = formNode.meta.allowOut;
+      if ('boolean' === typeof allowOut) return allowOut;
+
+      let outCount = graph.linkList.reduce((acc, link) => {
+
+      }, 0);
       return true;
     },
     linkDesc(link) {
