@@ -1,5 +1,4 @@
-FROM python:3.7.5
-# FROM registry.jiagouyun.com/basis/python:3.7
+FROM ubuntu:20.04
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
@@ -17,18 +16,21 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/logs && \
     mkdir -p /data/sqldump
 
-# Swith apt source to Aliyun
-RUN echo "deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib \
-        \ndeb http://mirrors.aliyun.com/debian-security buster/updates main \
-        \ndeb-src http://mirrors.aliyun.com/debian-security buster/updates main \
-        \ndeb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \
-        \ndeb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib \
-        \ndeb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib" \
-    > /etc/apt/sources.list && \
+# Install
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
+            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
+            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
+            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
+            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse \
+            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse \
+            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse \
+            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse \
+            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse \
+            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse" \
+            > /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y wget curl telnet zip unzip default-mysql-client
+    apt-get install -y wget curl telnet zip unzip python3.8-dev python3-pip default-libmysqlclient-dev build-essential && \
+                update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
 # Download, extract and install resources
 WORKDIR /usr/src/resource
@@ -61,6 +63,9 @@ RUN python echo-image-info.py && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
     cd /usr/src/app/client && \
         npm run build
+
+# Some fix
+COPY tools/openssl.cnf /etc/ssl/openssl.cnf
 
 # Run Web server
 # EXPOSE 8088

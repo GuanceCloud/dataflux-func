@@ -20,7 +20,7 @@ psycopg2-binary==2.8.5
 pycryptodomex==3.8.0
 pylru==1.2.0
 pymongo==3.10.1
-pymssql==2.1.4
+pymssql==2.2.1
 python-dateutil==2.7.2
 python3-memcached==1.51
 PyYAML==4.2b2
