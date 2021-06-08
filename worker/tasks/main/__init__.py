@@ -94,11 +94,7 @@ DECIPHER_FIELDS = [
     'secretKey',
 ]
 
-UNSAFE_BUILTIN_NAMES = ('import', 'open', 'exec', 'eval', 'compile')
-UNSAFE_CONTENTS = (
-    '__import__',
-    '__bases__',
-)
+EXCLUDE_BUILTIN_NAMES = ('import', )
 
 CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
@@ -274,22 +270,6 @@ class NotEnabledException(DataFluxFuncBaseException):
     pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
-
-def jailbreak_check(script_code):
-    # 越狱检测待废除
-    return
-
-    if not isinstance(script_code, six.string_types):
-        return
-
-    for line_no, line_code in enumerate(script_code.splitlines(), start=1):
-        for unsafe_content in UNSAFE_CONTENTS:
-            line_code = line_code.strip()
-            if line_code.startswith('#'):
-                break
-
-            if unsafe_content in line_code:
-                raise JailBreakException('Are you trying to jailbreak? line: {}, `{}`'.format(line_no, line_code))
 
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
@@ -1228,10 +1208,10 @@ class FuncResponseFile(BaseFuncResponse):
         super(FuncResponseFile, self).__init__(**kwargs)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
-    def __init__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         self.__context_helper = FuncContextHelper(self)
 
-        super(ScriptBaseTask, self).__init__(*args, **kwargs)
+        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1709,7 +1689,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                     safe_scope[k] = v
 
         for name in dir(six.moves.builtins):
-            if name in UNSAFE_BUILTIN_NAMES:
+            if name in EXCLUDE_BUILTIN_NAMES:
                 continue
 
             safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
@@ -1739,13 +1719,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return self._call_func(safe_scope, func_id, kwargs)
 
         def __eval(expression, *args, **kwargs):
-            jailbreak_check(expression)
-
-            return eval(expression, *args, **kwargs)
+            return eval(expression, safe_scope)
 
         def __exec(code):
-            jailbreak_check(code)
-
             return exec(code, safe_scope)
 
         safe_scope['__builtins__']['__import__'] = __custom_import
@@ -1798,8 +1774,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         for s in scripts:
             if not s.get('code'):
                 continue
-
-            jailbreak_check(s['code'])
 
             lru_key = '{0}-{1}'.format(s['id'], s['codeMD5'])
 

@@ -28,7 +28,7 @@ CONFIG = yaml_resources.get('CONFIG')
 
 class FuncDebugger(ScriptBaseTask):
     def get_script_dict_for_debugger(self, script_id):
-        user_scripts = []
+        scripts = []
 
         # 获取当前脚本草稿
         sql = '''
@@ -53,7 +53,7 @@ class FuncDebugger(ScriptBaseTask):
             '''
         sql_params = [script_id]
         db_res = self.db.query(sql, sql_params)
-        user_scripts += db_res
+        scripts += db_res
 
         # 获取其他脚本代码
         sql = '''
@@ -75,9 +75,9 @@ class FuncDebugger(ScriptBaseTask):
             '''
         sql_params = [script_id]
         db_res = self.db.query(sql, sql_params)
-        user_scripts += db_res
+        scripts += db_res
 
-        script_dict = self.create_script_dict(user_scripts)
+        script_dict = self.create_script_dict(scripts)
 
         return script_dict
 
