@@ -16,9 +16,6 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/logs && \
     mkdir -p /data/sqldump
 
-# Some fix
-COPY tools/openssl.cnf /etc/ssl/openssl.cnf
-
 # Install
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
             \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
@@ -66,6 +63,9 @@ RUN python echo-image-info.py && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
     cd /usr/src/app/client && \
         npm run build
+
+# Some fix
+COPY tools/openssl.cnf /etc/ssl/openssl.cnf
 
 # Run Web server
 # EXPOSE 8088
