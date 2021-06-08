@@ -16,7 +16,10 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/logs && \
     mkdir -p /data/sqldump
 
-# Swith apt source to Aliyun
+# Some fix
+COPY tools/openssl.cnf /etc/ssl/openssl.cnf
+
+# Install
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
             \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
             \ndeb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
