@@ -17,7 +17,7 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/sqldump
 
 # Swith apt source to Aliyun
-RUN echo -e "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
             \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
             \ndeb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
             \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
