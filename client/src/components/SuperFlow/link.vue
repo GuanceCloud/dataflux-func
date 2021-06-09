@@ -11,7 +11,7 @@
 
 <script>
   import {
-    isFun,
+    isFunc,
     isObject,
     isString,
     vector
@@ -159,7 +159,7 @@
       drawDesc(color) {
         const ctx = this.ctx
         let desc
-        if (isFun(this.linkDesc)) {
+        if (isFunc(this.linkDesc)) {
           desc = this.linkDesc(this.link)
         }
 

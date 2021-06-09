@@ -14,12 +14,14 @@ import {
   directionVector
 } from './types'
 
+import * as toolkit from '@/toolkit'
+
 export default class GraphLink {
   static distance = 15
 
   constructor(options, graph) {
     const {
-      id = uuid('link'),
+      id = toolkit.genDataId('link'),
       start,
       end = null,
       startAt = [0, 0],
@@ -27,7 +29,7 @@ export default class GraphLink {
       meta = null,
     } = options
 
-    this.key = uuid('link')
+    this.key = toolkit.genDataId('link')
 
     this.id = id
     this.graph = graph

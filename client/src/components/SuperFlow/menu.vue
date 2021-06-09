@@ -26,7 +26,9 @@
           :class="{'is-disabled': subItem.disable}"
           @click="select(subItem)">
           <slot :item="subItem">
-            <span class="super-flow__menu-item-icon"></span>
+            <span class="super-flow__menu-item-icon">
+              <i v-if="subItem.icon" class="fa fa-fw" :class="subItem.icon"></i>
+            </span>
             <span class="super-flow__menu-item-content">
               {{subItem.label}}
             </span>
@@ -102,8 +104,8 @@
   outline: none;
   width: 180px;
   padding: 4px 0;
-  border: 1px solid #b4b4b4;
-  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.3);
+  border: 2px solid #ebeef5;
+  box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.1);
   overflow: hidden;
   border-radius: 3px;
   z-index: 10;
@@ -113,7 +115,7 @@
 .super-flow__menu-container .super-flow__menu-item {
   user-select: none;
   box-sizing: content-box;
-  width: 170px;
+  /*width: 170px;*/
   min-height: 26px;
   line-height: 26px;
   cursor: pointer;
@@ -154,7 +156,7 @@
   cursor: no-drop;
 }
 .super-flow__menu-container .super-flow__menu-item.is-disabled > span {
-  color: #999999;
+  color: #ccc;
 }
 .super-flow__menu-container .super-flow__menu-item.is-disabled:hover {
   background-color: transparent;
@@ -162,7 +164,7 @@
 .super-flow__menu-container .super-flow__menu-line {
   width: 100%;
   margin: 4px 0;
-  border-bottom: 1px solid #b4b4b4;
+  border-bottom: 1px solid #ebeef5;
   height: 0;
 }
 .super-flow__menu-container .super-flow__menu-line:last-child {

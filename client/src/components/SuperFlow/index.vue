@@ -102,7 +102,7 @@
     getOffset,
     isIntersect,
     isBool,
-    isFun,
+    isFunc,
     vector,
     debounce,
     arrayReplace
@@ -141,7 +141,7 @@
       },
       markLineColor: {
         type: String,
-        default: '#55abfc'
+        default: '#ff6600'
       },
       origin: {
         type: Array,
@@ -178,14 +178,36 @@
       outputIntercept: {
         type: Function,
         default: () => true
-      }
+      },
+
+      beforeNodeCreate: {
+        type: Function,
+        default: () => null
+      },
+      onNodeCreated: {
+        type: Function,
+        default: () => null
+      },
+      beforeLinkCreate: {
+        type: Function,
+        default: () => null
+      },
+      onLinkCreated: {
+        type: Function,
+        default: () => null
+      },
     },
     data() {
       return {
         graph: new Graph({
           width: this.width,
           height: this.height,
-          origin: this.origin
+          origin: this.origin,
+
+          beforeNodeCreate: this.beforeNodeCreate,
+          onNodeCreated   : this.onNodeCreated,
+          beforeLinkCreate: this.beforeLinkCreate,
+          onLinkCreated   : this.onLinkCreated,
         }),
         menuConf: {
           visible: false,
@@ -256,7 +278,7 @@
             let disable
             let hidden
 
-            if (isFun(item.disable)) {
+            if (isFunc(item.disable)) {
               disable = item.disable(source)
             } else if (isBool(item.disable)) {
               disable = item.disable
@@ -264,7 +286,7 @@
               disable = Boolean(item.disable)
             }
 
-            if (isFun(item.hidden)) {
+            if (isFunc(item.hidden)) {
               hidden = item.hidden(source)
             } else if (isBool(item.hidden)) {
               hidden = item.hidden
@@ -555,7 +577,7 @@
   position         : absolute;
   background-color : rgba(85, 175, 255, 0.1);
   z-index          : 20;
-  border           : 1px dashed #55abfc;
+  border           : 1px dashed #ff6600;
   cursor           : move;
   outline          : none;
 }

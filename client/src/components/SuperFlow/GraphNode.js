@@ -15,17 +15,19 @@ import {
   directionVector
 } from './types'
 
+import * as toolkit from '@/toolkit'
+
 export default class GraphNode {
   constructor(props, graph) {
     const {
-      id = uuid('node'),
+      id = toolkit.genDataId('node'),
       width = 180,
       height = 100,
       coordinate = [0, 0],
       meta = null
     } = props
 
-    this.key = uuid('node')
+    this.key = toolkit.genDataId('node')
     this.graph = graph
 
     this.id = id

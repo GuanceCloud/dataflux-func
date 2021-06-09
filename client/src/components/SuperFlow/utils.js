@@ -4,7 +4,6 @@
  * Time: 14:03
  */
 
-
 export function uuid(before = '', after = '') {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
   const charsLen = chars.length
@@ -150,7 +149,7 @@ export function toRawType(val) {
   return Object.prototype.toString.call(val).slice(8, -1).toLocaleLowerCase()
 }
 
-export function isFun(val) {
+export function isFunc(val) {
   return toRawType(val) === 'function'
 }
 

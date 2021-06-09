@@ -200,6 +200,27 @@ a {
   color: #5f5fff;
 }
 
+.node-card .stage-header {
+  background-color: #333 !important;
+}
+.super-flow__menu-container .super-flow__menu {
+  border-color: #555 !important;
+  background-color: #333 !important;
+  box-shadow: 3px 3px 5px 0 rgba(255, 255, 255, 0.1) !important;
+}
+.super-flow__menu-container .super-flow__menu-line {
+  border-bottom: 1px solid #555 !important;
+}
+.super-flow__menu-container .super-flow__menu-item:hover {
+  background-color: #555 !important;
+}
+.super-flow__menu-container .super-flow__menu-item.is-disabled > span {
+  color: #555 !important;
+}
+.super-flow__menu-container .super-flow__menu-item-content {
+  color: #ccc !important;
+}
+
 .sign-in {
   background-color: #222 !important;
 }
@@ -227,10 +248,6 @@ a {
 }
 .code-editor-status-bar {
   background-color: black !important;
-}
-
-.node-card .node-type {
-  background-color: #333333 !important;
 }
 
 .splitter-pane-resizer {

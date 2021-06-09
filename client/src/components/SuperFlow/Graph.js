@@ -17,7 +17,12 @@ class Graph extends GraphEvent {
     const {
       nodeList = [],
       linkList = [],
-      origin
+      origin,
+
+      beforeNodeCreate,
+      onNodeCreated,
+      beforeLinkCreate,
+      onLinkCreated,
     } = options
 
     super()
@@ -32,6 +37,11 @@ class Graph extends GraphEvent {
 
     this.graphSelected = false
     this.maskBoundingClientRect = {}
+
+    this.beforeNodeCreate = beforeNodeCreate
+    this.onNodeCreated    = onNodeCreated
+    this.beforeLinkCreate = beforeLinkCreate
+    this.onLinkCreated    = onLinkCreated
 
     this.initNode(nodeList)
     this.initLink(linkList)
@@ -96,28 +106,34 @@ class Graph extends GraphEvent {
   }
 
   addNode(options) {
-    const node = options.constructor === GraphNode
+    let node = options.constructor === GraphNode
       ? options
       : this.createNode(options)
 
+    node = this.beforeNodeCreate(node, this) || node
     this.nodeList.push(node)
+    this.onNodeCreated(node, this)
+
     return node
   }
 
   addLink(options) {
-    const newLink = options.constructor === GraphLink
+    let newLink = options.constructor === GraphLink
       ? options
       : this.createLink(options)
 
-    const currentLink = this.linkList.find(item => {
+    let currentLink = this.linkList.find(item => {
       return item.start === newLink.start && item.end === newLink.end
     })
 
     if (currentLink) {
       currentLink.startAt = newLink.startAt
       currentLink.endAt = newLink.endAt
+
     } else if (newLink.start && newLink.end) {
+      newLink = this.beforeLinkCreate(newLink, this) || newLink
       this.linkList.push(newLink)
+      this.onLinkCreated(newLink, this)
     }
 
     return newLink
