@@ -272,7 +272,6 @@
     },
     methods: {
       initMenu(menu, source) {
-        console.log(menu, source)
         return menu.map(subList => subList
           .map(item => {
             let disable

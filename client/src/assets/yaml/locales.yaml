@@ -117,6 +117,7 @@ en:
 
   # 通用表格-表头/标题等
   Name       : 名称
+  Title      : 标题
   Tags       : 标签
   Status     : 状态
   Note       : 备注

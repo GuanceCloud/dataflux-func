@@ -38,11 +38,12 @@ Select all     : 全选
               <div class="stage-header">
                 <template v-if="meta.type === 'execStage'">
                   <i class="fa fa-fw fa-cogs"></i>
-                  <span>{{ $t('Execute') }}</span>
                 </template>
               </div>
               <div class="node-title">
-                <span>{{ meta.title }}</span>
+                <div class="node-title-content">
+                  <span>{{ getTitle(meta) }}</span>
+                </div>
               </div>
             </el-card>
           </template>
@@ -53,15 +54,15 @@ Select all     : 全选
               <div class="entry-header">
                 <template v-if="meta.type === 'authLinkEntry'">
                   <i class="fa fa-fw fa-link"></i>
-                  <span>{{ $t('Auth Link') }}</span>
                 </template>
                 <template v-if="meta.type === 'crontabEntry'">
                   <i class="fa fa-fw fa-clock-o"></i>
-                  <span>{{ $t('Crontab') }}</span>
                 </template>
               </div>
               <div class="node-title">
-                <span>{{ meta.title }}</span>
+                <div class="node-title-content">
+                  <span>{{ getTitle(meta) }}</span>
+                </div>
               </div>
             </el-card>
           </template>
@@ -102,16 +103,23 @@ export default {
         await this.loadData();
       },
     },
+    '$store.state.uiLocale': function() {
+      // 修复切换语言后，连接描述文字由于是cavas绘制导致无法同步更新的问题
+      // 解决方案：修改`updateTime`诱使GraphLink触发watch动作
+      this.$refs.superFlow.graph.linkList.forEach(link => {
+        link.meta.updateTime = new Date().toISOString();
+      });
+    },
   },
   methods: {
-    getGraph() {
+    _getGraph() {
       if (!this.$refs.superFlow) return null;
 
       return this.$refs.superFlow.graph;
     },
 
     genDemoData() {
-      let dataJSON = '{"origin":[-116,19],"nodeList":[{"id":"node-teaX65mrKfW8","width":150,"height":80,"coordinate":[229,37.8125],"meta":{"type":"authLinkEntry","title":"API entry","category":"entry"}},{"id":"node-Igf1w7OvZ0q3","width":180,"height":80,"coordinate":[214,229.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-kgPgV8x61XN1","width":150,"height":80,"coordinate":[395,37.8125],"meta":{"type":"crontabEntry","title":"Crontab entry","category":"entry"}},{"id":"node-p3MqaelTYBpZ","width":180,"height":80,"coordinate":[380,338.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-oLj25PmTmbT3","width":180,"height":80,"coordinate":[598,198.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-wXYJvED6BtEJ","width":180,"height":80,"coordinate":[803,198.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-M3PEKx8yPxX4","width":180,"height":80,"coordinate":[803,338.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-LFSYDrbRjr9C","width":180,"height":80,"coordinate":[803,63.8125],"meta":{"type":"execStage","title":"Execute stage","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-gIwu2dcrjK6Z","width":80,"height":80,"coordinate":[1033,63.8125],"meta":{"type":"mergePoint","title":"合并点","category":"point"}},{"id":"node-xOFT4tLGHbGc","width":180,"height":80,"coordinate":[1112,198.8125],"meta":{"type":"execStage","title":"执行处理步骤","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-Mfi2rxprtGvl","width":80,"height":80,"coordinate":[1162,338.8125],"meta":{"type":"endPoint","title":"End point","category":"point"}}],"linkList":[{"id":"link-4nD0GCp8CKi6","startId":"node-teaX65mrKfW8","endId":"node-Igf1w7OvZ0q3","startAt":[75,80],"endAt":[90,0],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-Sd6NxRlYSeyE","startId":"node-oLj25PmTmbT3","endId":"node-LFSYDrbRjr9C","startAt":[90,0],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-8UOpMquBQe2a","startId":"node-oLj25PmTmbT3","endId":"node-M3PEKx8yPxX4","startAt":[90,80],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-PQ36pGbTX00U","startId":"node-oLj25PmTmbT3","endId":"node-wXYJvED6BtEJ","startAt":[180,40],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-iQMsY26Y4pUW","startId":"node-M3PEKx8yPxX4","endId":"node-Mfi2rxprtGvl","startAt":[180,40],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-CjOMzANjgB6j","startId":"node-Igf1w7OvZ0q3","endId":"node-p3MqaelTYBpZ","startAt":[90,80],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-QQjJtzN4S4nN","startId":"node-kgPgV8x61XN1","endId":"node-p3MqaelTYBpZ","startAt":[75,80],"endAt":[90,0],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-Q3Xrec8MFvYe","startId":"node-p3MqaelTYBpZ","endId":"node-oLj25PmTmbT3","startAt":[180,40],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-nXtpDpUuvWdL","startId":"node-LFSYDrbRjr9C","endId":"node-gIwu2dcrjK6Z","startAt":[180,40],"endAt":[0,40],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-aqZwqgUyKdsO","startId":"node-gIwu2dcrjK6Z","endId":"node-xOFT4tLGHbGc","startAt":[80,40],"endAt":[90,0],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-BYR11d8oOc2A","startId":"node-wXYJvED6BtEJ","endId":"node-gIwu2dcrjK6Z","startAt":[180,40],"endAt":[40,80],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}},{"id":"link-QY7kSrREUofi","startId":"node-xOFT4tLGHbGc","endId":"node-Mfi2rxprtGvl","startAt":[90,80],"endAt":[40,0],"meta":{"type":"execLink","title":null,"code":null,"kwargs":null,"template":null}}]}'
+      let dataJSON = '{"origin":[0,0],"nodeList":[{"id":"node-Vs6Yq0LqNOYy","width":200,"height":50,"coordinate":[157,24.8125],"meta":{"type":"authLinkEntry","title":null,"updateTime":"2021-06-10T19:18:04.438Z","category":"entry"}},{"id":"node-OufQE7LOzs7G","width":200,"height":50,"coordinate":[387,24.8125],"meta":{"type":"crontabEntry","title":null,"updateTime":"2021-06-10T19:18:06.718Z","category":"entry"}},{"id":"node-YdP5EVjzsbQo","width":200,"height":50,"coordinate":[157,146.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:17:44.249Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-6hvn6piGex6i","width":200,"height":50,"coordinate":[387,240.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:17:44.975Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-nrtKrQyOmFL7","width":60,"height":60,"coordinate":[957,235.8125],"meta":{"type":"mergePoint","title":null,"updateTime":"2021-06-10T19:18:54.298Z","category":"point"}},{"id":"node-m1QXhzlrr6l4","width":200,"height":50,"coordinate":[657,184.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:19.161Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-M9QG6pIz0Rdb","width":200,"height":50,"coordinate":[657,295.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:21.321Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-ctkEbzixtQOm","width":200,"height":50,"coordinate":[387,379.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:32.795Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-l2vz8jIcdYyU","width":60,"height":60,"coordinate":[1182,235.8125],"meta":{"type":"endPoint","title":null,"updateTime":"2021-06-10T19:18:51.418Z","category":"point"}}],"linkList":[{"id":"link-5vMIPEpxUM47","startId":"node-YdP5EVjzsbQo","endId":"node-6hvn6piGex6i","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:17:56.552Z","code":null,"kwargs":null,"template":null}},{"id":"link-rk4O7sZBOjvP","startId":"node-Vs6Yq0LqNOYy","endId":"node-YdP5EVjzsbQo","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:11.360Z","code":null,"kwargs":null,"template":null}},{"id":"link-PjnJ7U62d675","startId":"node-OufQE7LOzs7G","endId":"node-6hvn6piGex6i","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:17.570Z","code":null,"kwargs":null,"template":null}},{"id":"link-NcWDNmqifnSb","startId":"node-6hvn6piGex6i","endId":"node-M9QG6pIz0Rdb","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:28.721Z","code":null,"kwargs":null,"template":null}},{"id":"link-d84tMR5JHec4","startId":"node-6hvn6piGex6i","endId":"node-m1QXhzlrr6l4","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:23.994Z","code":null,"kwargs":null,"template":null}},{"id":"link-goRtUr1htsCn","startId":"node-m1QXhzlrr6l4","endId":"node-nrtKrQyOmFL7","startAt":[200,25],"endAt":[30,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:57.381Z","code":null,"kwargs":null,"template":null}},{"id":"link-XAx1ijj8yiu0","startId":"node-M9QG6pIz0Rdb","endId":"node-nrtKrQyOmFL7","startAt":[200,25],"endAt":[30,60],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:58.969Z","code":null,"kwargs":null,"template":null}},{"id":"link-rMS7cum4PobL","startId":"node-nrtKrQyOmFL7","endId":"node-l2vz8jIcdYyU","startAt":[60,30],"endAt":[0,30],"meta":{"type":"execLink","updateTime":"2021-06-10T19:19:23.022Z","code":null,"kwargs":null,"template":null}},{"id":"link-80TB9625dOoV","startId":"node-ctkEbzixtQOm","endId":"node-l2vz8jIcdYyU","startAt":[200,25],"endAt":[30,60],"meta":{"type":"execLink","updateTime":"2021-06-10T19:19:21.402Z","code":null,"kwargs":null,"template":null}},{"id":"link-7alh8N0EKRbS","startId":"node-6hvn6piGex6i","endId":"node-ctkEbzixtQOm","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:40.948Z","code":null,"kwargs":null,"template":null}}]}'
       let demoData = {
         id: this.T.genDataId('blpt'),
         dataJSON: JSON.parse(dataJSON),
@@ -134,8 +142,9 @@ export default {
         id        : this.T.genDataId('node'),
         coordinate: options.coordinate || [30, 30],
         meta: {
-          type : type,
-          title: options.title,
+          type      : type,
+          title     : options.title || null,
+          updateTime: new Date().toISOString(),
         },
       };
 
@@ -166,57 +175,38 @@ export default {
       switch(node.meta.category) {
         case 'stage':
         case 'entry':
-          node.width  = 180;
-          node.height = 80;
+          node.width  = 200;
+          node.height = 50;
           break;
 
         case 'point':
-          node.width  = 80;
-          node.height = 80;
+          node.width  = 60;
+          node.height = 60;
           break;
       }
 
       return node;
     },
-    createLinkData(type, options) {
+    createLinkMeta(type, options) {
       options = options || {};
 
-      function _getLinkNodePosition(node, position) {
-        switch(position) {
-          case 'left':
-            return [ 0, node.height / 2 ];
-          case 'right':
-            return [ node.width, node.height / 2 ];
-          case 'top':
-            return [ node.width / 2, 0 ];
-          case 'bottom':
-            return [ node.width / 2, node.height];
-        }
-      }
-
-      let link = {
-        id     : this.T.genDataId('link'),
-        startId: options.startNode.id,
-        endId  : options.endNode.id,
-        startAt: _getLinkNodePosition(options.startNode, options.startAt),
-        endAt  : _getLinkNodePosition(options.endNode,   options.endAt),
-        meta: {
-          type : type,
-          title: options.title,
-        },
+      let linkMeta = {
+        type      : type,
+        title     : options.title,
+        updateTime: new Date().toISOString(),
       };
 
       // 设置meta信息
       switch(type) {
         case 'execLink':
           // 执行连线
-          link.meta.code     = options.code     || null; // 执行代码
-          link.meta.kwargs   = options.kwargs   || null; // 执行参数
-          link.meta.template = options.template || null; // 连线模板（用于生成自动标题）
+          linkMeta.code     = options.code     || null; // 执行代码
+          linkMeta.kwargs   = options.kwargs   || null; // 执行参数
+          linkMeta.template = options.template || null; // 连线模板（用于生成自动标题）
           break;
       }
 
-      return link;
+      return linkMeta;
     },
     enterIntercept(fromNode, toNode, graph) {
       // 不允许入口直接指向结束点
@@ -250,22 +240,24 @@ export default {
       return true;
     },
     linkDesc(link) {
-      if (!link.meta) return '';
-      return link.meta.title || '';
+      return this.getTitle(link.meta);
     },
 
+    getTitle(meta) {
+      // 非标准组件不返回
+      if (!meta) return '';
+
+      // 优先使用用户指定标题
+      if (meta.title) return meta.title;
+
+      return this.$t('Title');
+    },
     beforeNodeCreate(node, graph) {
     },
     async onNodeCreated(node, graph) {
     },
     beforeLinkCreate(link, graph) {
-      link.meta = {
-        type    : 'execLink',
-        title   : null,
-        code    : null,
-        kwargs  : null,
-        template: null,
-      };
+      link.meta = this.createLinkMeta('execLink');
       return link;
     },
     async onLinkCreated(link, graph) {
@@ -280,7 +272,6 @@ export default {
             label: this.$t('Execute stage'),
             selected: (graph, coordinate) => {
               graph.addNode(this.createNodeData('execStage', {
-                title     : this.$t('Execute stage'),
                 coordinate: coordinate,
               }));
             },
@@ -292,7 +283,6 @@ export default {
             label: this.$t('Auth Link entry'),
             selected: (graph, coordinate) => {
               graph.addNode(this.createNodeData('authLinkEntry', {
-                title     : this.$t('Auth Link entry'),
                 coordinate: coordinate,
               }));
             },
@@ -302,7 +292,6 @@ export default {
             label: this.$t('Crontab entry'),
             selected: (graph, coordinate) => {
               graph.addNode(this.createNodeData('crontabEntry', {
-                title     : this.$t('Crontab entry'),
                 coordinate: coordinate,
               }));
             },
@@ -314,7 +303,6 @@ export default {
             label: this.$t('Merge point'),
             selected: (graph, coordinate) => {
               graph.addNode(this.createNodeData('mergePoint', {
-                title     : this.$t('Merge point'),
                 coordinate: coordinate,
               }));
             },
@@ -329,7 +317,6 @@ export default {
             },
             selected: (graph, coordinate) => {
               graph.addNode(this.createNodeData('endPoint', {
-                title     : this.$t('End point'),
                 coordinate: coordinate,
               }));
             },
@@ -416,12 +403,20 @@ export default {
   padding: 0;
   height: 100%;
   box-sizing: border-box;
+  display: flex;
 }
 .node-card .node-title {
   text-align: center;
   font-size: 14px;
   padding: 10px 5px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+.node-card .node-title .node-title-content {
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -444,6 +439,9 @@ export default {
   padding: 5px;
   color: #FF6600;
   background-color: #EEEEEE;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
 }
 
 .node-card .entry-header {
@@ -451,5 +449,8 @@ export default {
   padding: 5px;
   color: white;
   background-color: #FF6600;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
 }
 </style>
