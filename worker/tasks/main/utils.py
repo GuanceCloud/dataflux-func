@@ -977,24 +977,23 @@ class DBAutoBackupTask(BaseTask):
 
         dump_file_path = os.path.join(dump_file_dir, file_name)
 
-        sqldump_args = [
-            'mysqldump',
-            f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}",
-            f"--port={CONFIG['MYSQL_PORT'] or 3306}",
-            f"--user={CONFIG['MYSQL_USER']}",
-            f"--password={CONFIG['MYSQL_PASSWORD']}",
-            '--databases', CONFIG['MYSQL_DATABASE'],
-            '--hex-blob',
-            '--default-character-set=utf8mb4',
-            '--skip-extended-insert',
-            with_data_flag,
-            '--tables', ' '.join(tables),
-            f"1>>{dump_file_path}",
-            '2>/dev/null',
-        ]
+        sqldump_args = []
+        sqldump_args.append('mysqldump')
+        sqldump_args.append(f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}")
+        sqldump_args.append(f"--port={CONFIG['MYSQL_PORT'] or 3306}")
+        sqldump_args.append(f"--user={CONFIG['MYSQL_USER']}")
+        sqldump_args.append(f"--password={CONFIG['MYSQL_PASSWORD']}")
+        sqldump_args.append('--databases', CONFIG['MYSQL_DATABASE'])
+        sqldump_args.append('--hex-blob')
+        sqldump_args.append('--default-character-set=utf8mb4')
+        sqldump_args.append('--skip-extended-insert')
+        sqldump_args.append(with_data_flag)
+        sqldump_args.append('--tables')
+        sqldump_args.extend(tables)
+        sqldump_args.append(f"1>>{dump_file_path}")
+        sqldump_args.append('2>/dev/null')
 
-        cmd_line = ' '.join(sqldump_args)
-        subprocess.Popen(cmd_line, shell=True).wait()
+        subprocess.Popen(sqldump_args).wait()
 
     def limit_sqldump(self):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']

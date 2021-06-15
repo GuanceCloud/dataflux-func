@@ -23,7 +23,7 @@ pymongo==3.10.1
 pymssql==2.2.1
 python-dateutil==2.7.2
 python3-memcached==1.51
-PyYAML==4.2b2
+PyYAML==5.4.1
 redis==3.5.3
 requests==2.25.1
 retry==0.9.2

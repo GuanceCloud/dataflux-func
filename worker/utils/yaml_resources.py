@@ -30,7 +30,7 @@ def load_file(key, file_path):
     obj = None
     with open(file_path, 'r', **FILE_OPEN_KWARGS) as _f:
         file_content = _f.read()
-        obj = yaml.load(file_content)
+        obj = yaml.safe_load(file_content)
 
     if key in FILE_CACHE:
         FILE_CACHE[key].update(obj)
@@ -80,7 +80,7 @@ def load_config(config_file_path, print_detail=False):
             user_config_obj = None
             with open(user_config_path, 'r', **FILE_OPEN_KWARGS) as _f:
                 user_config_content = _f.read()
-                user_config_obj = yaml.load(user_config_content)
+                user_config_obj = yaml.safe_load(user_config_content)
 
             config_obj.update(user_config_obj)
 

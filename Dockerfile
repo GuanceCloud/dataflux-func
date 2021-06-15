@@ -29,7 +29,7 @@ RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe m
             \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse" \
             > /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y wget curl telnet zip unzip python3.8-dev python3-pip default-libmysqlclient-dev build-essential && \
+    apt-get install -y wget curl telnet zip unzip python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
 # Download, extract and install resources
