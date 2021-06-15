@@ -977,23 +977,31 @@ class DBAutoBackupTask(BaseTask):
 
         dump_file_path = os.path.join(dump_file_dir, file_name)
 
-        sqldump_args = []
-        sqldump_args.append('mysqldump')
-        sqldump_args.append(f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}")
-        sqldump_args.append(f"--port={CONFIG['MYSQL_PORT'] or 3306}")
-        sqldump_args.append(f"--user={CONFIG['MYSQL_USER']}")
-        sqldump_args.append(f"--password={CONFIG['MYSQL_PASSWORD']}")
-        sqldump_args.append('--databases', CONFIG['MYSQL_DATABASE'])
-        sqldump_args.append('--hex-blob')
-        sqldump_args.append('--default-character-set=utf8mb4')
-        sqldump_args.append('--skip-extended-insert')
-        sqldump_args.append(with_data_flag)
+        sqldump_args = [
+            'mysqldump',
+            f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}",
+            f"--port={CONFIG['MYSQL_PORT'] or 3306}",
+            f"--user={CONFIG['MYSQL_USER']}",
+            f"--password={CONFIG['MYSQL_PASSWORD']}",
+            '--databases', CONFIG['MYSQL_DATABASE'],
+            '--hex-blob',
+            '--default-character-set=utf8mb4',
+            '--skip-extended-insert',
+            '--column-statistics=0',
+        ]
+
+        if with_data_flag:
+            sqldump_args.append(with_data_flag)
+
         sqldump_args.append('--tables')
         sqldump_args.extend(tables)
-        sqldump_args.append(f"1>>{dump_file_path}")
-        sqldump_args.append('2>/dev/null')
 
-        subprocess.Popen(sqldump_args).wait()
+        sqldump = subprocess.check_output(sqldump_args)
+        sqldump = sqldump.decode()
+        sqldump = sqldump.replace(' COLLATE=utf8mb4_0900_ai_ci', '') # 兼容5.7, 8.0
+
+        with open(dump_file_path, 'a') as _f:
+            _f.write(sqldump)
 
     def limit_sqldump(self):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']

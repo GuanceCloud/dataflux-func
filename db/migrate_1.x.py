@@ -199,7 +199,7 @@ def _get_id_map(client):
              id
             ,refName
         FROM {}__biz_main_script_set
-        '''.format(MIGRATED_TABLE_PREFIX)
+        '''.format(MIGRATED_TABLE_PREFIX) #nosec
     client.execute(sql)
     db_res = client.fetchall()
     for d in db_res:
@@ -215,7 +215,7 @@ def _get_id_map(client):
         FROM {}__biz_main_script AS scpt
         JOIN {}__biz_main_script_set AS sset
             ON scpt.scriptSetId = sset.id
-        '''.format(MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX)
+        '''.format(MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX) #nosec
     client.execute(sql)
     db_res = client.fetchall()
     for d in db_res:
@@ -240,7 +240,7 @@ def _get_id_map(client):
             ON func.scriptId = scpt.id
         JOIN {}__biz_main_script_set AS sset
             ON func.scriptSetId = sset.id
-        '''.format(MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX)
+        '''.format(MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX, MIGRATED_TABLE_PREFIX) #nosec
     client.execute(sql)
     db_res = client.fetchall()
     for d in db_res:
@@ -288,7 +288,7 @@ def _migrate_table(client, id_map, table, field_map):
         SELECT
             {}
         FROM {}__{}
-        '''.format(table, ','.join(to_fields), ','.join(from_fields), MIGRATED_TABLE_PREFIX, table)
+        '''.format(table, ','.join(to_fields), ','.join(from_fields), MIGRATED_TABLE_PREFIX, table) #nosec
     client.execute(sql)
 
     # 更新新版ID
@@ -301,7 +301,7 @@ def _migrate_table(client, id_map, table, field_map):
                     {} = %s
                 WHERE
                     {} = %s
-                '''.format(table, id_field, id_field)
+                '''.format(table, id_field, id_field) #nosec
             sql_params = [new_id, old_id]
             client.execute(sql, sql_params)
 

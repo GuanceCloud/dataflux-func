@@ -1,0 +1,3 @@
+[bandit]
+exclude: ./db,./test
+skips: B101,B102,B110,B112,B303,B307,B309,B311,B404,B603

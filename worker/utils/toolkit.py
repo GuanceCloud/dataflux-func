@@ -25,10 +25,7 @@ import simplejson, ujson
 import arrow
 from dateutil import parser as dateutil_parser
 import nanoid
-try:
-    from Cryptodome.Cipher import AES
-except ImportError:
-    from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
