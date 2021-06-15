@@ -32,14 +32,16 @@ File already existed                                                            
           {{ $t('File Tool') }}
 
           &#12288;
-          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="small">
-            <i class="fa fa-fw fa-arrow-up"></i>
-            {{ $t('Go Up') }}
-          </el-button>
-          <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
-            <i class="fa fa-fw fa-refresh"></i>
-            {{ $t('Refresh') }}
-          </el-button>
+          <el-tooltip :content="$t('Go Up')">
+            <el-button @click="enterFolder('..')" :disabled="currentFolder === '/'" size="small">
+              <i class="fa fa-fw fa-arrow-up"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('Refresh')">
+            <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
+              <i class="fa fa-fw fa-refresh"></i>
+            </el-button>
+          </el-tooltip>
 
           &#12288;
           <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
@@ -77,15 +79,15 @@ File already existed                                                            
           </el-tooltip>
 
           &#12288;
-          <code class="resource-navi" v-if="folder !== '/'">
+          <code class="resource-navi" v-if="currentFolder !== '/'">
             <small>{{ $t('Path:') }}</small>
             <el-button size="small" @click="enterFolder()">
               <i class="fa fa-fw fa-home"></i>
-            </el-button><template v-for="(layer, index) in folder.slice(1).split('/')">
+            </el-button><template v-for="(layer, index) in currentFolder.slice(1).split('/')">
               <div class="path-sep"><i class="fa fa-angle-right"></i></div><el-button
                 :key="index"
                 size="small"
-                @click="enterFolder(folder.split('/').slice(0, index + 2).join('/'), true)">
+                @click="enterFolder(currentFolder.split('/').slice(0, index + 2).join('/'), true)">
                 {{ layer }}
               </el-button>
             </template>
@@ -190,9 +192,6 @@ export default {
         await this.loadData();
       }
     },
-    async folder() {
-      await this.loadData();
-    },
   },
   methods: {
     async loadData(options) {
@@ -201,8 +200,9 @@ export default {
         this.$store.commit('updateLoadStatus', false);
       };
 
+      let _listQuery = this.T.createListQuery();
       let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
-        query: { folder: this.folder },
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -303,18 +303,20 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     getPath(name) {
-      return path.join(this.folder, name);
+      return path.join(this.currentFolder, name);
     },
     enterFolder(name, isAbs) {
       if (!name) {
-        this.folder = '/';
+        this.dataFilter.folder = '/';
       } else {
         if (isAbs) {
-          this.folder = name;
+          this.dataFilter.folder = name;
         } else {
-          this.folder = this.getPath(name);
+          this.dataFilter.folder = this.getPath(name);
         }
       }
+
+      this.T.changePageFilter(this.dataFilter);
     },
     async resourceOperationCmd(options){
       if (!options) return;
@@ -426,7 +428,7 @@ export default {
 
       let bodyData = new FormData();
       bodyData.append('files', req.file);
-      bodyData.append('folder', this.folder);
+      bodyData.append('folder', this.dataFilter.folder);
       if (rename) {
         bodyData.append('rename', rename);
       }
@@ -486,13 +488,18 @@ export default {
         txt : true,
         md  : true,
       }
-    }
+    },
+    currentFolder() {
+      return this.dataFilter.folder || '/';
+    },
   },
   props: {
   },
   data() {
+    let _dataFilter = this.T.createListQuery();
+
     return {
-      folder: '/',
+      // folder: '/',
 
       files      : [],
       fileNameMap: {},
@@ -502,6 +509,10 @@ export default {
 
       fullScreenLoading: false,
       progressTip      : '',
+
+      dataFilter: {
+        folder: _dataFilter.folder,
+      }
     }
   },
 }
