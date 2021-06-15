@@ -521,15 +521,15 @@ export default {
 .compact-button {
   margin-left: 0 !important;
 }
-</style>
-
-<style>
 .path-sep {
   width: 20px;
   text-align: center;
   display: inline-block;
   font-size: 14px;
 }
+</style>
+
+<style>
 .resource-navi .el-button span {
   font-family: monospace !important;
 }

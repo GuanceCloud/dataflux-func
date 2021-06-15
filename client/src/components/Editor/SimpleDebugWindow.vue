@@ -1243,17 +1243,17 @@ export default {
 </style>
 
 <style>
-.simple-debug-window>.el-tabs {
+.simple-debug-window > .el-tabs {
   border: none;
 }
-.simple-debug-window>.el-tabs>.el-tabs__content {
+.simple-debug-window > .el-tabs > .el-tabs__content {
   height: 295px;
   padding: 0;
 }
-.simple-debug-window>.el-tabs>.el-tabs__header {
+.simple-debug-window > .el-tabs > .el-tabs__header {
   margin-top: 0;
 }
-.simple-debug-window>.el-tabs>.el-tabs__header .el-tabs__item {
+.simple-debug-window > .el-tabs > .el-tabs__header .el-tabs__item {
   height: 30px;
   line-height: 30px;
 }
