@@ -488,7 +488,7 @@ class DataKit(object):
     # def write_rum_many(self, data):
     #     return self._write_many('/v1/write/rum', data)
 
-    def query(self, dql, raw=False, dict_output=True, **kwargs):
+    def query(self, dql, raw=False, dict_output=False, **kwargs):
         q = { 'query': dql }
 
         for k, v in kwargs.items():
