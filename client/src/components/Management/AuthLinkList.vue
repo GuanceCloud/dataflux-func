@@ -27,8 +27,7 @@ Unknow Error   : 未知错误
 
 Auth Link disabled: 授权链接已禁用
 Auth Link enabled : 授权链接已启用
-Auth Link shown   : 授权链接已显示
-Auth Link hide    : 授权链接已隐藏
+Auth Link deleted : 授权链接已删除
 
 Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索授权链接（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
@@ -36,6 +35,7 @@ No Auth Link has ever been added: 从未添加过任何授权链接
 Auth Link only supports synchronous calling: 授权链接只支持同步调用
 
 Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链接？
+Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 </i18n>
 
 <template>
@@ -196,17 +196,16 @@ Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链�
             </el-table-column>
           </template>
 
-          <el-table-column align="right" width="280">
+          <el-table-column align="right" width="300">
             <template slot-scope="scope">
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.showInDoc" @click="quickSubmitData(scope.row, 'hide')" type="text">{{ $t('Hide') }}</el-button>
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'show')" type="text">{{ $t('Show') }}</el-button>
-
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -274,6 +273,10 @@ export default {
         case 'disable':
           if (!await this.T.confirm(this.$t('Are you sure you want to disable the Auth Link?'))) return;
           break;
+
+        case 'delete':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Auth Link?'))) return;
+          break;
       }
 
       let apiRes = null;
@@ -294,19 +297,10 @@ export default {
           });
           break;
 
-        case 'show':
-          apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
+        case 'delete':
+          apiRes = await this.T.callAPI('/api/v1/auth-links/:id/do/delete', {
             params: { id: d.id },
-            body  : { data: { showInDoc: true } },
-            alert : { okMessage: this.$t('Auth Link shown' ) },
-          });
-          break;
-
-        case 'hide':
-          apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', {
-            params: { id: d.id },
-            body  : { data: { showInDoc: false } },
-            alert : { okMessage: this.$t('Auth Link hide') },
+            alert : { okMessage: this.$t('Auth Link deleted') },
           });
           break;
       }
