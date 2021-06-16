@@ -429,6 +429,10 @@ class DataWay(object):
 
                 print(colored(output, color))
 
+        if resp_status_code >= 400:
+            e = Exception(resp_status_code, resp_data)
+            raise e
+
         return resp_status_code, resp_data
 
     def _do_get(self, path, query=None, headers=None):
