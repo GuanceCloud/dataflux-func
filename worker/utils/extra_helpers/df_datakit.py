@@ -505,8 +505,7 @@ class DataKit(object):
                 q[k] = v
 
         json_obj = {
-            'queries'     : [ q ],
-            'echo_explain': bool(echo_explain),
+            'queries': [ q ],
         }
         status_code, dql_res = self.post_json(json_obj, '/v1/query/raw')
 
