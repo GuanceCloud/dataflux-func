@@ -1718,11 +1718,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         def __call_func(func_id, kwargs=None):
             return self._call_func(safe_scope, func_id, kwargs)
 
-        def __eval(expression, *args, **kwargs):
-            return eval(expression, safe_scope)
+        def __eval(*args, **kwargs):
+            # 不再限制此类函数，直接调用原生函数
+            return eval(*args, **kwargs)
 
-        def __exec(code):
-            return exec(code, safe_scope)
+        def __exec(*args, **kwargs):
+            # 不再限制此类函数，直接调用原生函数
+            return exec(*args, **kwargs)
 
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
