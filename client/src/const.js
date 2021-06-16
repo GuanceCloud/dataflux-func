@@ -46,22 +46,6 @@ export default {
   },
   get DATE_SOURCE() {
     return [
-      // TODO: 尚未实装
-      // {
-      //   key           : 'df_workspace',
-      //   name          : 'Worksapce',
-      //   fullName      : 'DataFlux Workspace (HTTP)',
-      //   logo          : null,
-      //   tagType       : 'info',
-      //   debugSupported: false,
-      //   sampleCode    : `src = DFF.SRC('{0}')\ndk_res = src.query('M::some_measurement:(value)')`,
-      //   configFields: {
-      //     host    : { default: null, isRequired: true },
-      //     port    : { default: 9527, isRequired: true },
-      //     protocol: { default: 'http' },
-      //     token   : { default: null, isRequired: true },
-      //   },
-      // },
       {
         key           : 'df_dataway',
         name          : 'DataWay',

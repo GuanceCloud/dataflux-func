@@ -347,17 +347,26 @@ class DataWay(object):
 
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):
+                        # 字符串
                         v = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, v)
                         v = '"{0}"'.format(ensure_str(v))
 
                     elif isinstance(v, bool):
+                        # 布尔值
                         v = '{0}'.format(v).lower()
 
                     elif isinstance(v, integer_types):
+                        # 整数
                         v = '{0}i'.format(v)
 
-                    else:
+                    elif isinstance(v, float):
+                        # 小数
                         v = '{0}'.format(v)
+
+                    else:
+                        # 不支持的类型
+                        e = TypeError('Field `{0}` got an invalid data type. type(v)=`{1}`, repr(v)=`{2}`'.format(k, type(v), repr(v)))
+                        raise e
 
                     field_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
 
