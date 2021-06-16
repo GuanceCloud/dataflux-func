@@ -189,7 +189,7 @@ export default {
     showMkdirPopover(val) {
       if (val) {
         this.$nextTick(() => {
-          this.$refs.mkdirName.$el.querySelector('input').focus();
+          this.$refs.mkdirName.focus();
         });
       } else {
         this.mkdirName = '';
