@@ -46,14 +46,8 @@ File already existed                                                            
           &#12288;
           <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
             <div class="popover-input">
-              <el-row>
-                <el-col :span="20">
-                  <el-input size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
-                </el-col>
-                <el-col :span="4">
-                  <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
-                </el-col>
-              </el-row>
+              <el-input ref="mkdirName" size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+              <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
             </div>
             <el-button slot="reference" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -190,6 +184,15 @@ export default {
       immediate: true,
       async handler(to, from) {
         await this.loadData();
+      }
+    },
+    showMkdirPopover(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.$refs.mkdirName.$el.querySelector('input').focus();
+        });
+      } else {
+        this.mkdirName = '';
       }
     },
   },
@@ -524,7 +527,9 @@ export default {
   padding: 5px 5px !important;
 }
 .popover-input {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 .upload-button {
   display: inline-block;
@@ -543,5 +548,9 @@ export default {
 <style>
 .resource-navi .el-button span {
   font-family: monospace !important;
+}
+.popover-input .el-input {
+  width: 180px;
+  display: block;
 }
 </style>
