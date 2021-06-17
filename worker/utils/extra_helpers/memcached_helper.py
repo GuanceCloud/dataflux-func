@@ -26,7 +26,7 @@ def get_config(c):
 LIMIT_ARGS_DUMP = 200
 
 class MemcachedHelper(object):
-    def __init__(self, logger, config, database=None, *args, **kwargs):
+    def __init__(self, logger, config, *args, **kwargs):
         self.logger = logger
 
         self.config = config

@@ -29,7 +29,7 @@ CONFIG = yaml_resources.get('CONFIG')
 
 class StarterCrontabTask(BaseTask):
     # Crontab过滤器 - 向前筛选
-    def crontab_config_filter(self, trigger_time, crontab_config):
+    def check_crontab_config(self, trigger_time, crontab_config, quick_check_map=None):
         '''
         Crontab执行时机过滤函数
 
@@ -54,17 +54,26 @@ class StarterCrontabTask(BaseTask):
         except Exception as e:
             pass
 
+        # 没有表达式的，不需要执行
         if not crontab_expr:
-            return False
+            return False, None
 
+        # 通过快速检查表判断是否需要执行
+        if crontab_expr in quick_check_map:
+            return quick_check_map[crontab_expr]
+
+        # 错误的表达式，不需要执行
         if not croniter.is_valid(crontab_expr):
-            return False
+            return False, crontab_expr
 
+        # 正常判断是否需要执行
         now = arrow.get(trigger_time + 1).to('Asia/Shanghai').datetime
         crontab_iter = croniter(crontab_expr, now)
 
         start_time = int(crontab_iter.get_prev())
-        return start_time >= trigger_time
+        is_satisfied = start_time >= trigger_time
+
+        return is_satisfied, crontab_expr
 
     def get_integrated_func_crontab_configs(self):
         sql = '''
@@ -201,6 +210,7 @@ def starter_crontab(self, *args, **kwargs):
 
     # 循环获取需要执行的自动触发配置
     next_seq = 0
+    quick_check_map = {}
     while next_seq is not None:
         crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
 
@@ -211,8 +221,15 @@ def starter_crontab(self, *args, **kwargs):
 
         # 分发任务
         for c in crontab_configs:
-            # 跳过未到达出发时间的任务
-            if not self.crontab_config_filter(trigger_time, c):
+            # 检测Crontab执行时间
+            is_satisfied, crontab_expr = self.check_crontab_config(trigger_time, c, quick_check_map)
+
+            # 缓存Crontab表达式检测结果
+            if crontab_expr:
+                quick_check_map[crontab_expr] = is_satisfied
+
+            # 未满足要求的跳过
+            if not is_satisfied:
                 continue
 
             # 确定执行队列
