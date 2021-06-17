@@ -709,7 +709,7 @@ export function asideItemSorter(a, b) {
   return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
 };
 
-export async function alert(message, type) {
+export function alert(message, type) {
   type = type || 'error';
 
   let confirmButtonText = null;
@@ -724,7 +724,7 @@ export async function alert(message, type) {
   }
 
   // 简单提示，不需要区分标题和内容
-  return await MessageBox.alert(message, {
+  return MessageBox.alert(message, {
     showClose: false,
     dangerouslyUseHTMLString: true,
     confirmButtonText       : confirmButtonText,
@@ -767,11 +767,11 @@ export async function prompt(message, defaultValue) {
   }
 };
 
-export async function notify(message, type) {
+export function notify(message, type) {
   type = type || 'success';
 
   // 简单提示，不需要区分标题和内容
-  Notification({
+  return Notification({
     title                   : null,
     message                 : message,
     dangerouslyUseHTMLString: true,
@@ -938,7 +938,7 @@ async function _doAxios(axiosOpt) {
 
     } else {
       // 通讯失败，服务端没有响应
-      await MessageBox.alert(`与服务器通讯失败，请稍后再试
+      MessageBox.alert(`与服务器通讯失败，请稍后再试
           <br>如果问题持续出现，请联系管理员，检查服务器状态
           <br>${err.toString()}`, {
         showClose: false,
@@ -1010,7 +1010,7 @@ export async function callAPI(method, pathPattern, options) {
         }
 
         // 简单提示，不需要区分标题和内容
-        await MessageBox.alert(message, {
+        MessageBox.alert(message, {
           showClose: false,
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),

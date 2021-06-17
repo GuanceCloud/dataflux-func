@@ -387,7 +387,7 @@ export default {
       let fileSizeLimit = this.$store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT');
       if (req.file.size > fileSizeLimit) {
         let sizeStr = this.T.byteSizeHuman(fileSizeLimit);
-        return await this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));
+        return this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));
       }
 
       var filename = req.file.name;
