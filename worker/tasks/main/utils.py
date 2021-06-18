@@ -14,6 +14,7 @@ import pprint
 import os
 import subprocess
 import shutil
+import tempfile
 
 # 3rd-party Modules
 import six
@@ -781,7 +782,7 @@ class AutoCleanerTask(BaseTask):
         expires = CONFIG['_UPLOAD_FILE_EXPIRES']
         limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
 
-        upload_dir = CONFIG['UPLOAD_TMP_ROOT_PATH']
+        upload_dir = os.path.join(tempfile.gettempdir(), CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
         if not os.path.exists(upload_dir):
             return
 
@@ -968,8 +969,7 @@ def worker_queue_pressure_recover(self, *args, **kwargs):
 class DBAutoBackupTask(BaseTask):
     def run_sqldump(self, tables, with_data, file_name):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
-        if not os.path.exists(dump_file_dir):
-            os.makedirs(dump_file_dir)
+        os.makedirs(dump_file_dir, exist_ok=True)
 
         with_data_flag = ''
         if with_data is False:

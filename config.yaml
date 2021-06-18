@@ -1,9 +1,5 @@
 APP_NAME: DataFluxFunc
 
-# PIP依赖文件路径
-# 必须使用绝对路径
-PIP_REQUIREMENTS_FILE_PATH: '/data/requirements.txt'
-
 # 配置文件路径
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
@@ -12,9 +8,8 @@ CONFIG_FILE_PATH: '/data/user-config.yaml'
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'
 
-# 文件上传临时目录
-# 必须使用绝对路径
-UPLOAD_TMP_ROOT_PATH: '/tmp/uploads'
+# 文件上传临时目录文件夹
+UPLOAD_TEMP_ROOT_FOLDER: 'uploads'
 
 # 运行模式
 # 可选：

@@ -42,7 +42,7 @@ class ShellHelper(object):
             date_time_string = str(toolkit.gen_time_serial_seq(rand_length=10))
             self.tmp_folder = os.path.join(self.tmp_folder, date_time_string)
 
-        os.makedirs(self.tmp_folder)
+        os.makedirs(self.tmp_folder, exist_ok=True)
 
         self.third_part_tool_root_path = third_part_tool_root_path or DEFAULT_THIRD_PART_TOOLS_ROOT_PATH
 

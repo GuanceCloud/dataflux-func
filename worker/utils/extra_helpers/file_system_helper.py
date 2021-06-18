@@ -42,8 +42,7 @@ class FileSystemHelper(object):
         full_path = self._get_full_path(upload_path)
 
         dirname = os.path.dirname(full_path)
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+        os.makedirs(dirname, exist_ok=True)
 
         with open(full_path, 'wb') as _f:
             _f.write(six.ensure_binary(buf))

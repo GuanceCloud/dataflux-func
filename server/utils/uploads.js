@@ -2,6 +2,7 @@
 
 /* Build-in Modules */
 var fs   = require('fs-extra');
+var os   = require('os');
 var path = require('path');
 
 /* 3rd-part Modules */
@@ -14,7 +15,7 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
 /* Configure */
-var UPLOAD_TEMP_FOLDER    = CONFIG.UPLOAD_TMP_ROOT_PATH;
+var UPLOAD_TEMP_FOLDER    = path.join(os.tmpdir(), CONFIG.UPLOAD_TEMP_ROOT_FOLDER);
 var MULTIPART_BOUNDARY_RE = /^multipart\/form-data.\s?boundary=['"]?(.*?)['"]?$/i;
 
 module.exports = function(options) {

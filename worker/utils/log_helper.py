@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
+import os
 import sys
 import time
 import json
@@ -173,6 +174,9 @@ LOGGER.addHandler(console_handler)
 
 # Add file logger
 if CONFIG['LOG_FILE_PATH']:
+    log_dir = os.path.dirname(CONFIG['LOG_FILE_PATH'])
+    os.makedirs(log_dir, exist_ok=True)
+
     file_handler = logging.FileHandler(filename=CONFIG['LOG_FILE_PATH'])
     file_handler.setFormatter(LoggingFormatter(color=False, json=CONFIG['LOG_FILE_FORMAT'] == 'json'))
     LOGGER.addHandler(file_handler)

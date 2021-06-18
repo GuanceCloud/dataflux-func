@@ -79,7 +79,11 @@ exports.beforeAppCreate = function(callback) {
     };
     var conn = mysql.createConnection(mysqlConfig);
     conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
-      if (err) return callback(err);
+      // 无法连接数据库也不要报错
+      if (err) {
+        console.log('Cannot detect database Timezone, skip');
+        return callback();
+      }
 
       var serverSettings = {};
       dbRes.forEach(function(d) {
