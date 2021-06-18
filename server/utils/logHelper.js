@@ -1,7 +1,9 @@
 'use strict';
 
 /* Builtin Modules */
-var os = require('os');
+var os   = require('os');
+var fs   = require('fs-extra');
+var path = require('path');
 
 /* 3rd-party Modules */
 var colors  = require('colors/safe');
@@ -189,6 +191,9 @@ winstonOpt.transports.push(new winston.transports.Console(consoleOpt));
 
 // Add file logger
 if (CONFIG.LOG_FILE_PATH) {
+  var logDir = path.dirname(CONFIG.LOG_FILE_PATH);
+  fs.ensureDirSync(logDir)
+
   var fileFormatterOpt = {
     path: CONFIG.LOG_FILE_PATH,
     json: CONFIG.LOG_FILE_FORMAT === 'json',

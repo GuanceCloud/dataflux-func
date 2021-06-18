@@ -75,6 +75,9 @@ var FUNC_RESULT_LRU = new LRU({
 
 var WORKER_SYSTEM_CONFIG = null;
 
+// 自动创建资源文件夹
+fs.ensureDirSync(CONFIG.RESOURCE_ROOT_PATH);
+
 /* Handlers */
 function _getHTTPRequestInfo(req) {
   if (req.path === 'FAKE') {
@@ -2158,7 +2161,7 @@ exports.listResources = function(req, res, next) {
   var subFolder = req.query.folder || './';
   var type      = req.query.type;
 
-  var absPath   = path.join(CONFIG.RESOURCE_ROOT_PATH, subFolder);
+  var absPath = path.join(CONFIG.RESOURCE_ROOT_PATH, subFolder);
 
   if (!absPath.endsWith('/')) {
     absPath += '/';
