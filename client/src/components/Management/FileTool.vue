@@ -173,7 +173,7 @@ File already existed                                                            
 </template>
 
 <script>
-import * as path from '@/path'
+import * as pathTool from '@/pathTool'
 
 export default {
   name: 'FileTool',
@@ -306,7 +306,7 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     getPath(name) {
-      return path.join(this.currentFolder, name);
+      return pathTool.join(this.currentFolder, name);
     },
     enterFolder(name, isAbs) {
       if (!name) {

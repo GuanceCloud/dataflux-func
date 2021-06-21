@@ -12,11 +12,13 @@ Exactly match     : 完全匹配
 Install           : 安装
 Installing        : 正在安装
 
-Package installed: 包已安装
+Package installed : 包已安装
+{Any container ID}: 任意一个容器ID
 
-Cannot reinstall a packages built-in             : 无法重复安装已内置的包
-Previous installing may still running            : 之前的安装似乎仍然在运行
-Are you sure you want to install the package now?: 是否确定现在就安装？
+Cannot reinstall a packages built-in                    : 无法重复安装已内置的包
+'You can also install the package by following command:': 您也可以使用也以下命令来安装：
+Previous installing may still running                   : 之前的安装似乎仍然在运行
+Are you sure you want to install the package now?       : 是否确定现在就安装？
 
 Alibaba Cloud: 阿里云
 Douban       : 豆瓣
@@ -45,10 +47,10 @@ USTC         : 中国科学技术大学
           style="width: 180px"
           v-model="pypiMirror">
           <el-option :label="$t('Official')" value=""></el-option>
-          <el-option :label="$t('Alibaba Cloud')" value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
           <el-option :label="$t('Douban')"        value="https://pypi.douban.com/simple/"></el-option>
           <el-option :label="$t('Tsinghua')"      value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
           <el-option :label="$t('USTC')"          value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
+          <el-option :label="$t('Alibaba Cloud')" value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
           style="width: 300px"
@@ -62,10 +64,18 @@ USTC         : 中国科学技术大学
           <span v-else>{{ $t('Install') }}</span>
         </el-button>
 
-        <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
-          &#12288;
-          {{ $t('Cannot reinstall a packages built-in') }}
-        </span>
+        <p class="pip-install-tips">
+          <template v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
+            <span class="text-bad">{{ $t('Cannot reinstall a packages built-in') }}</span>
+          </template>
+          <template v-if="pipShell">
+            {{ $t('You can also install the package by following command:') }}
+            <br>
+            &#12288;
+            <code class="text-main">{{ pipShell }}</code>
+            <CopyButton :content="pipShell"></CopyButton>
+          </template>
+        </p>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
@@ -148,34 +158,17 @@ export default {
       this.packageToInstall = '';
       this.loadData();
     },
-    fetchMirrors(query, callback) {
-      return callback(this.SUGGEST_MIRRORS);
-    }
   },
   computed: {
-    SUGGEST_MIRRORS() {
-      return [
-        {
-          name: this.$t('Official'),
-          value: '',
-        },
-        {
-          name : '阿里云',
-          value: 'https://mirrors.aliyun.com/pypi/simple/'
-        },
-        {
-          name : '豆瓣',
-          value: 'https://pypi.douban.com/simple/'
-        },
-        {
-          name : '清华大学',
-          value: 'https://pypi.tuna.tsinghua.edu.cn/simple/'
-        },
-        {
-          name : '中国科学技术大学',
-          value: 'https://pypi.mirrors.ustc.edu.cn/simple/'
-        },
-      ]
+    pipShell() {
+      if (!this.isInstallable) return null;
+
+      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Any container ID}');
+      let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
+      let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
+
+      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} ${this.packageToInstall}`;
+      return cmd;
     },
     isInstallable() {
       // 检查空内容
@@ -226,8 +219,11 @@ export default {
   width: 100%;
   margin-top: 50px;
 }
-.install-option {
-  margin-bottom: 10px;
+.pip-install-tips {
+  margin-left: 10px;
+}
+.pip-install-tips code {
+  font-size: 14px;
 }
 </style>
 
