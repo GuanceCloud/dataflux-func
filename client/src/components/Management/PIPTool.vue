@@ -6,7 +6,7 @@ Install Package   : 安装包
 Installed Packages: 已安装的包
 Package           : 包
 Version           : 版本
-Built-in          : 已内置
+Built-in          : 内置
 Installed         : 已安装
 Exactly match     : 完全匹配
 Install           : 安装
@@ -14,11 +14,14 @@ Installing        : 正在安装
 
 Package installed: 包已安装
 
-Select a Pypi mirror if you have network issues               : 网络不通畅时可选择镜像源
-'Enter <Package Name> or <Package Name>==<Version> to install': '输入 <包名> 或 <包名>==<版本> 来安装'
-Cannot reinstall a packages built-in                          : 无法重复安装已内置的包
-Previous installing may still running                         : 之前的安装似乎仍然在运行
-Are you sure you want to install the package now?             : 是否确定现在就安装？
+Cannot reinstall a packages built-in             : 无法重复安装已内置的包
+Previous installing may still running            : 之前的安装似乎仍然在运行
+Are you sure you want to install the package now?: 是否确定现在就安装？
+
+Alibaba Cloud: 阿里云
+Douban       : 豆瓣
+Tsinghua     : 清华大学
+USTC         : 中国科学技术大学
 </i18n>
 
 <template>
@@ -38,34 +41,31 @@ Are you sure you want to install the package now?             : 是否确定现�
       <el-main>
         <el-divider content-position="left"><h1>{{ $t('Install Package') }}</h1></el-divider>
 
-        <div class="install-option">
-          <el-autocomplete :placeholder="$t('Select a Pypi mirror if you have network issues')"
-            :fetch-suggestions="fetchMirrors"
-            style="width: 500px"
-            v-model.trim="pypiMirror">
-            <template slot-scope="{item}">
-              <span>{{ item.name }}</span>
-            </template>
-          </el-autocomplete>
-        </div>
-        <div class="install-option">
-          <el-input :placeholder="$t('Enter <Package Name> or <Package Name>==<Version> to install')"
-            style="width: 500px"
-            v-model.trim="packageToInstall">
-          </el-input>
-          <el-button type="primary" @click="installPackage" :disabled="!isInstallable || isInstalling">
-            <span v-if="isInstalling">
-              <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-              {{ $t('Installing') }}
-            </span>
-            <span v-else>{{ $t('Install') }}</span>
-          </el-button>
-
-          <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
-            &#12288;
-            {{ $t('Cannot reinstall a packages built-in') }}
+        <el-select
+          style="width: 180px"
+          v-model="pypiMirror">
+          <el-option :label="$t('Official')" value=""></el-option>
+          <el-option :label="$t('Alibaba Cloud')" value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
+          <el-option :label="$t('Douban')"        value="https://pypi.douban.com/simple/"></el-option>
+          <el-option :label="$t('Tsinghua')"      value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
+          <el-option :label="$t('USTC')"          value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
+        </el-select>
+        <el-input placeholder="package or package==1.0.0"
+          style="width: 300px"
+          v-model.trim="packageToInstall">
+        </el-input>
+        <el-button type="primary" @click="installPackage" :disabled="!isInstallable || isInstalling">
+          <span v-if="isInstalling">
+            <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+            {{ $t('Installing') }}
           </span>
-        </div>
+          <span v-else>{{ $t('Install') }}</span>
+        </el-button>
+
+        <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
+          &#12288;
+          {{ $t('Cannot reinstall a packages built-in') }}
+        </span>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
@@ -156,7 +156,7 @@ export default {
     SUGGEST_MIRRORS() {
       return [
         {
-          name: '--',
+          name: this.$t('Official'),
           value: '',
         },
         {

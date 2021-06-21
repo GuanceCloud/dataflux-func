@@ -2135,6 +2135,7 @@ exports.installPythonPackage = function(req, res, next) {
 
       cmdArgs.push(pkg);
 
+      res.locals.logger.info('PIP: {0} {1}', cmd, cmdArgs.join(' '));
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {
           // 安装失败
