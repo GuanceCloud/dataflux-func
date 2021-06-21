@@ -80,6 +80,19 @@ Select all     : 全选
           </template>
         </template>
       </super-flow>
+
+      <!-- 配置 -->
+      <el-dialog :title="$t('Setup')" :visible.sync="showConfigPanel">
+        <el-form :model="configForm" label-width="80px">
+          <el-form-item :label="$t('Title')">
+            <el-input v-model="configForm.title" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="showConfigPanel = false">{{ $t('Cancel') }}</el-button>
+          <el-button type="primary" @click="updateItemMeta">{{ $t('Confirm') }}</el-button>
+        </div>
+      </el-dialog>
     </el-container>
   </transition>
 </template>
@@ -208,6 +221,17 @@ export default {
 
       return linkMeta;
     },
+    updateItemMeta() {
+      let item = this.T.startsWith(this.configItemId, 'node')
+                     ? this._getGraph().nodeList.find(item => item.id === this.configItemId)
+                     : this._getGraph().linkList.find(item => item.id === this.configItemId);
+
+      item.meta = this.T.jsonCopy(this.configForm);
+      item.meta.updateTime = new Date().toISOString();
+
+      this.showConfigPanel = false;
+    },
+
     enterIntercept(fromNode, toNode, graph) {
       // 不允许入口直接指向结束点
       if (fromNode.meta.category === 'entry' && toNode.meta.type === 'endPoint') {
@@ -337,10 +361,20 @@ export default {
       return [
         [
           {
+            icon: 'fa-edit',
+            label: this.$t('Setup'),
+            disable: false,
+            selected: (node, coordinate) => {
+              this.configItemId = node.id;
+              this.$set(this, 'configForm', this.T.jsonCopy(node.meta));
+              this.showConfigPanel = true;
+            },
+          },
+          {
             icon : 'fa-times',
             label: this.$t('Delete'),
             disable: false,
-            selected(node, coordinate) {
+            selected: (node, coordinate) => {
               node.remove();
             }
           }
@@ -350,6 +384,16 @@ export default {
     linkMenu() {
       return [
         [
+          {
+            icon: 'fa-edit',
+            label: this.$t('Setup'),
+            disable: false,
+            selected: (link, coordinate) => {
+              this.configItemId = link.id;
+              this.$set(this, 'configForm', this.T.jsonCopy(link.meta));
+              this.showConfigPanel = true;
+            },
+          },
           {
             icon : 'fa-times',
             label: this.$t('Delete'),
@@ -382,6 +426,15 @@ export default {
   data() {
     return {
       data: {},
+
+      showConfigPanel: false,
+      configItemId: null,
+      configForm: {
+        title   : null,
+        code    : null,
+        kwargs  : null,
+        template: null,
+      },
     }
   },
   created() {

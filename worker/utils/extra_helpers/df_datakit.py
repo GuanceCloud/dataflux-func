@@ -482,6 +482,14 @@ class DataKit(object):
         query = { 'input': self.source }
         return self.post_line_protocol(points=prepared_data, path=path, query=query)
 
+    def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None):
+        path = '/v1/write/{0}'.format(category)
+        return self._write(path, measurement, tags, fields, timestamp)
+
+    def write_by_category_many(self, category, data):
+        path = '/v1/write/{0}'.format(category)
+        return self._write_many(path, data)
+
     def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
         return self._write('/v1/write/metric', measurement, tags, fields, timestamp)
 
