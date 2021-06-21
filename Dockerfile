@@ -43,12 +43,12 @@ RUN wget -q $RESOURCE_BASE_URL/$NODE_PKG && \
     rm /usr/src/resource/$NODE_PKG && \
     rm /usr/src/resource/$ORACLE_CLIENT_PKG
 
-# Install requirements
+# Install requirements (server)
 WORKDIR /usr/src/base
-COPY package.json package-lock.json requirements.txt requirements-extra.txt ./
+COPY package.json package-lock.json requirements.txt requirements-dataflux.txt ./
 RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
         pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements.txt && \
-        pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements-extra.txt
+        pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r ./requirements-dataflux.txt
 
 # Install requirements (client)
 WORKDIR /usr/src/base/client
