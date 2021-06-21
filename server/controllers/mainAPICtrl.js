@@ -1673,7 +1673,6 @@ exports.getSystemConfig = function(req, res, next) {
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
-    PYPI_MIRROR       : CONFIG.PYPI_MIRROR,
 
     _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
     _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
@@ -2065,7 +2064,8 @@ exports.installPythonPackage = function(req, res, next) {
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
   fs.ensureDirSync(packageInstallPath);
 
-  var pkg = req.body.pkg;
+  var pkg    = req.body.pkg;
+  var mirror = req.body.mirror;
 
   // 安装状态缓存
   var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
@@ -2121,11 +2121,16 @@ exports.installPythonPackage = function(req, res, next) {
     },
     function(asyncCallback) {
       var cmd = 'pip';
-      var cmdArgs = [ 'install', '--no-cache-dir', '-t', packageInstallPath ];
+      var cmdArgs = [
+        'install',
+        '--no-cache-dir',
+        '--default-timeout', '60',
+        '-t', packageInstallPath,
+      ];
 
       // 启用镜像源
-      if (!toolkit.isNothing(CONFIG.PYPI_MIRROR)) {
-        cmdArgs.push('-i', CONFIG.PYPI_MIRROR);
+      if (!toolkit.isNothing(mirror)) {
+        cmdArgs.push('-i', mirror);
       }
 
       cmdArgs.push(pkg);

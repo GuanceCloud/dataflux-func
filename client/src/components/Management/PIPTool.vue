@@ -1,19 +1,20 @@
 <i18n locale="zh-CN" lang="yaml">
-Loading                   : 加载中
-PIP Tool                  : PIP工具
-Install Package           : 安装包
-'Current PyPi repository:': 当前 PyPi 仓库
-Installed Packages        : 已安装的包
-Package                   : 包
-Version                   : 版本
-Built-in                  : 已内置
-Installed                 : 已安装
-Exactly match             : 完全匹配
-Install                   : 安装
-Installing                : 正在安装
+Loading           : 加载中
+PIP Tool          : PIP工具
+Mirror            : 镜像源
+Install Package   : 安装包
+Installed Packages: 已安装的包
+Package           : 包
+Version           : 版本
+Built-in          : 已内置
+Installed         : 已安装
+Exactly match     : 完全匹配
+Install           : 安装
+Installing        : 正在安装
 
 Package installed: 包已安装
 
+Select a Pypi mirror if you have network issues               : 网络不通畅时可选择镜像源
 'Enter <Package Name> or <Package Name>==<Version> to install': '输入 <包名> 或 <包名>==<版本> 来安装'
 Cannot reinstall a packages built-in                          : 无法重复安装已内置的包
 Previous installing may still running                         : 之前的安装似乎仍然在运行
@@ -37,24 +38,34 @@ Are you sure you want to install the package now?             : 是否确定现�
       <el-main>
         <el-divider content-position="left"><h1>{{ $t('Install Package') }}</h1></el-divider>
 
-        <el-input :placeholder="$t('Enter <Package Name> or <Package Name>==<Version> to install')"
-          style="width: 500px"
-          v-model.trim="packageToInstall">
-        </el-input>
-        <el-button type="primary" @click="installPackage" :disabled="!isInstallable || isInstalling">
-          <span v-if="isInstalling">
-            <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-            {{ $t('Installing') }}
+        <div class="install-option">
+          <el-autocomplete :placeholder="$t('Select a Pypi mirror if you have network issues')"
+            :fetch-suggestions="fetchMirrors"
+            style="width: 500px"
+            v-model.trim="pypiMirror">
+            <template slot-scope="{item}">
+              <span>{{ item.name }}</span>
+            </template>
+          </el-autocomplete>
+        </div>
+        <div class="install-option">
+          <el-input :placeholder="$t('Enter <Package Name> or <Package Name>==<Version> to install')"
+            style="width: 500px"
+            v-model.trim="packageToInstall">
+          </el-input>
+          <el-button type="primary" @click="installPackage" :disabled="!isInstallable || isInstalling">
+            <span v-if="isInstalling">
+              <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              {{ $t('Installing') }}
+            </span>
+            <span v-else>{{ $t('Install') }}</span>
+          </el-button>
+
+          <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
+            &#12288;
+            {{ $t('Cannot reinstall a packages built-in') }}
           </span>
-          <span v-else>{{ $t('Install') }}</span>
-        </el-button>
-
-        <span class="text-bad" v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
-          &#12288;
-          {{ $t('Cannot reinstall a packages built-in') }}
-        </span>
-
-        <p class="text-info text-small">{{ `${$t('Current PyPi repository:')} ${$store.getters.CONFIG('PYPI_MIRROR') || $t('Official')}` }}</p>
+        </div>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Packages') }}</h1></el-divider>
 
@@ -108,7 +119,7 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    async installPackage(pkg) {
+    async installPackage() {
       // 检查当前安装状态
       let apiRes = await this.T.callAPI_get('/api/v1/python-packages/install-status');
       if (!apiRes.ok) return;
@@ -123,7 +134,10 @@ export default {
       this.isInstalling = true;
 
       apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
-        body : { pkg: this.packageToInstall },
+        body : {
+          mirror: this.pypiMirror,
+          pkg   : this.packageToInstall,
+        },
         alert: { okMessage: this.$t('Package installed') },
       });
 
@@ -134,8 +148,35 @@ export default {
       this.packageToInstall = '';
       this.loadData();
     },
+    fetchMirrors(query, callback) {
+      return callback(this.SUGGEST_MIRRORS);
+    }
   },
   computed: {
+    SUGGEST_MIRRORS() {
+      return [
+        {
+          name: '--',
+          value: '',
+        },
+        {
+          name : '阿里云',
+          value: 'https://mirrors.aliyun.com/pypi/simple/'
+        },
+        {
+          name : '豆瓣',
+          value: 'https://pypi.douban.com/simple/'
+        },
+        {
+          name : '清华大学',
+          value: 'https://pypi.tuna.tsinghua.edu.cn/simple/'
+        },
+        {
+          name : '中国科学技术大学',
+          value: 'https://pypi.mirrors.ustc.edu.cn/simple/'
+        },
+      ]
+    },
     isInstallable() {
       // 检查空内容
       if (this.T.isNothing(this.packageToInstall)) {
@@ -165,6 +206,7 @@ export default {
   },
   data() {
     return {
+      pypiMirror      : '',
       packageToInstall: '',
 
       queriedPackageMap  : {},
@@ -184,11 +226,8 @@ export default {
   width: 100%;
   margin-top: 50px;
 }
-.package-option-name {
-  float: left;
-}
-.package-option-info {
-  float: right;
+.install-option {
+  margin-bottom: 10px;
 }
 </style>
 

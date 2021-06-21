@@ -1772,6 +1772,9 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
     body:
+      mirror:
+        $desc: 镜像源（如：https://pypi.tuna.tsinghua.edu.cn/simple/）
+        $type: string
       pkg:
         $desc      : Python包（如：requests 或 requests==1.0.0）
         $isRequired: true
