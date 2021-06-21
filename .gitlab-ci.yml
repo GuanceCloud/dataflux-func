@@ -29,7 +29,7 @@ dev:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.dataflux
+    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.dataflux .
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:dev
     - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
@@ -53,7 +53,7 @@ singleton:
     - V_MAJOR=${V_PARTS[0]}
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.singleton
+    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.singleton .
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:latest
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR}
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
@@ -90,7 +90,7 @@ dataflux:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.dataflux
+    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile.dataflux .
     - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
     - docker push ${IMAGE_PRIVATE}:$CI_COMMIT_REF_NAME
   tags:
@@ -109,7 +109,7 @@ datafluxPaaS_prev:
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
     - REPO=dataflux-prev/$VDIR
     - TAG=${PROJECT}-${V[4]}
-    - docker build -t $REPO:$TAG -f Dockerfile.dataflux
+    - docker build -t $REPO:$TAG -f Dockerfile.dataflux .
     - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
     - docker push pubrepo.jiagouyun.com/$REPO:$TAG
   tags:
@@ -128,7 +128,7 @@ datafluxPaaS_prod:
     - VDIR=${V[0]}.${V[1]}.${V[2]}
     - REPO=dataflux/$VDIR
     - TAG=${PROJECT}-${V[3]}-${V[4]}
-    - docker build -t $REPO:$TAG -f Dockerfile.dataflux
+    - docker build -t $REPO:$TAG -f Dockerfile.dataflux .
     - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
     - docker push pubrepo.jiagouyun.com/$REPO:$TAG
   tags:
