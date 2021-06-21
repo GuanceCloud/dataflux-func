@@ -32,26 +32,22 @@ File already existed                                                            
           {{ $t('File Tool') }}
 
           &#12288;
-          <el-button @click="enterFolder('..')" :disabled="folder === '/'" size="small">
-            <i class="fa fa-fw fa-arrow-up"></i>
-            {{ $t('Go Up') }}
-          </el-button>
-          <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
-            <i class="fa fa-fw fa-refresh"></i>
-            {{ $t('Refresh') }}
-          </el-button>
+          <el-tooltip :content="$t('Go Up')">
+            <el-button @click="enterFolder('..')" :disabled="currentFolder === '/'" size="small">
+              <i class="fa fa-fw fa-arrow-up"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('Refresh')">
+            <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
+              <i class="fa fa-fw fa-refresh"></i>
+            </el-button>
+          </el-tooltip>
 
           &#12288;
           <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
             <div class="popover-input">
-              <el-row>
-                <el-col :span="20">
-                  <el-input size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
-                </el-col>
-                <el-col :span="4">
-                  <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
-                </el-col>
-              </el-row>
+              <el-input ref="mkdirName" size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+              <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
             </div>
             <el-button slot="reference" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -77,15 +73,15 @@ File already existed                                                            
           </el-tooltip>
 
           &#12288;
-          <code class="resource-navi" v-if="folder !== '/'">
+          <code class="resource-navi" v-if="currentFolder !== '/'">
             <small>{{ $t('Path:') }}</small>
             <el-button size="small" @click="enterFolder()">
               <i class="fa fa-fw fa-home"></i>
-            </el-button><template v-for="(layer, index) in folder.slice(1).split('/')">
+            </el-button><template v-for="(layer, index) in currentFolder.slice(1).split('/')">
               <div class="path-sep"><i class="fa fa-angle-right"></i></div><el-button
                 :key="index"
                 size="small"
-                @click="enterFolder(folder.split('/').slice(0, index + 2).join('/'), true)">
+                @click="enterFolder(currentFolder.split('/').slice(0, index + 2).join('/'), true)">
                 {{ layer }}
               </el-button>
             </template>
@@ -190,8 +186,14 @@ export default {
         await this.loadData();
       }
     },
-    async folder() {
-      await this.loadData();
+    showMkdirPopover(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.$refs.mkdirName.focus();
+        });
+      } else {
+        this.mkdirName = '';
+      }
     },
   },
   methods: {
@@ -201,8 +203,9 @@ export default {
         this.$store.commit('updateLoadStatus', false);
       };
 
+      let _listQuery = this.T.createListQuery();
       let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
-        query: { folder: this.folder },
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -303,18 +306,20 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     getPath(name) {
-      return path.join(this.folder, name);
+      return path.join(this.currentFolder, name);
     },
     enterFolder(name, isAbs) {
       if (!name) {
-        this.folder = '/';
+        this.dataFilter.folder = '/';
       } else {
         if (isAbs) {
-          this.folder = name;
+          this.dataFilter.folder = name;
         } else {
-          this.folder = this.getPath(name);
+          this.dataFilter.folder = this.getPath(name);
         }
       }
+
+      this.T.changePageFilter(this.dataFilter);
     },
     async resourceOperationCmd(options){
       if (!options) return;
@@ -382,7 +387,7 @@ export default {
       let fileSizeLimit = this.$store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT');
       if (req.file.size > fileSizeLimit) {
         let sizeStr = this.T.byteSizeHuman(fileSizeLimit);
-        return await this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));
+        return this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));
       }
 
       var filename = req.file.name;
@@ -426,7 +431,7 @@ export default {
 
       let bodyData = new FormData();
       bodyData.append('files', req.file);
-      bodyData.append('folder', this.folder);
+      bodyData.append('folder', this.dataFilter.folder);
       if (rename) {
         bodyData.append('rename', rename);
       }
@@ -486,13 +491,18 @@ export default {
         txt : true,
         md  : true,
       }
-    }
+    },
+    currentFolder() {
+      return this.dataFilter.folder || '/';
+    },
   },
   props: {
   },
   data() {
+    let _dataFilter = this.T.createListQuery();
+
     return {
-      folder: '/',
+      // folder: '/',
 
       files      : [],
       fileNameMap: {},
@@ -502,6 +512,10 @@ export default {
 
       fullScreenLoading: false,
       progressTip      : '',
+
+      dataFilter: {
+        folder: _dataFilter.folder,
+      }
     }
   },
 }
@@ -513,7 +527,9 @@ export default {
   padding: 5px 5px !important;
 }
 .popover-input {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 .upload-button {
   display: inline-block;
@@ -521,16 +537,20 @@ export default {
 .compact-button {
   margin-left: 0 !important;
 }
-</style>
-
-<style>
 .path-sep {
   width: 20px;
   text-align: center;
   display: inline-block;
   font-size: 14px;
 }
+</style>
+
+<style>
 .resource-navi .el-button span {
   font-family: monospace !important;
+}
+.popover-input .el-input {
+  width: 180px;
+  display: block;
 }
 </style>

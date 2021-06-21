@@ -8,7 +8,8 @@ File Service deleted : 文件服务已删除
 Search File Service(ID, root): 搜索文件服务（ID、根目录）
 No File Service has ever been added: 从未添加过任何文件服务
 
-Are you sure you want to disable the Auth Link?: 是否确认禁用此文件服务？
+Are you sure you want to disable the File Service?: 是否确认禁用此文件服务？
+Are you sure you want to delete the File Service?: 是否确认删除此文件服务？
 </i18n>
 
 <template>
@@ -84,6 +85,8 @@ Are you sure you want to disable the Auth Link?: 是否确认禁用此文件服�
               <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
               <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -140,7 +143,11 @@ export default {
     async quickSubmitData(d, operation) {
       switch(operation) {
         case 'disable':
-          if (!await this.T.confirm(this.$t('Are you sure you want to disable the Auth Link?'))) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to disable the File Service?'))) return;
+          break;
+
+        case 'delete':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the File Service?'))) return;
           break;
       }
 

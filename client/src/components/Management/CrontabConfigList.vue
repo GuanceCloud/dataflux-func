@@ -7,12 +7,14 @@ Tasks  : 任务
 
 Crontab Config disabled: 自动触发配置已禁用
 Crontab Config enabled : 自动触发配置已启用
+Crontab Config deleted : 自动触发配置已删除
 
 Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索自动触发配置（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
+Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 </i18n>
 
 <template>
@@ -131,6 +133,8 @@ Are you sure you want to disable the Crontab Config?: 是否确认禁用此自�
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Hide') }}</el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -188,6 +192,10 @@ export default {
         case 'disable':
           if (!await this.T.confirm(this.$t('Are you sure you want to disable the Crontab Config?'))) return;
           break;
+
+        case 'delete':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Crontab Config?'))) return;
+          break;
       }
 
       let apiRes = null;
@@ -205,6 +213,13 @@ export default {
             params: { id: d.id },
             body  : { data: { isDisabled: false } },
             alert : { okMessage: this.$t('Crontab Config enabled') },
+          });
+          break;
+
+        case 'delete':
+          apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Crontab Config deleted') },
           });
           break;
       }

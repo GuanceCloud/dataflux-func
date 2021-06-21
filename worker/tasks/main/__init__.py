@@ -30,10 +30,11 @@ from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper
-from worker.utils.extra_helpers import DFDataWayHelper, DFDataKitHelper, DFWorkspaceHelper
+from worker.utils.extra_helpers import DFDataWayHelper, DFDataKitHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 CONFIG = yaml_resources.get('CONFIG')
+ROUTE  = yaml_resources.get('ROUTE')
 
 COMPILED_CODE_LRU = pylru.lrucache(CONFIG['_FUNC_TASK_COMPILE_CACHE_MAX_SIZE'])
 
@@ -59,7 +60,6 @@ FIX_INTEGRATION_KEY_MAP = {
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
-    'df_workspace' : DFWorkspaceHelper,
     'df_dataway'   : DFDataWayHelper,
     'df_datakit'   : DFDataKitHelper,
     'influxdb'     : InfluxDBHelper,
@@ -93,11 +93,7 @@ DECIPHER_FIELDS = [
     'secretKey',
 ]
 
-UNSAFE_BUILTIN_NAMES = ('import', 'open', 'exec', 'eval', 'compile')
-UNSAFE_CONTENTS = (
-    '__import__',
-    '__bases__',
-)
+EXCLUDE_BUILTIN_NAMES = ('import', )
 
 CONCURRENT_POOL       = None
 CONCURRENT_RESULT_MAP = {}
@@ -274,19 +270,6 @@ class NotEnabledException(DataFluxFuncBaseException):
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
 
-def jailbreak_check(script_code):
-    if not isinstance(script_code, six.string_types):
-        return
-
-    for line_no, line_code in enumerate(script_code.splitlines(), start=1):
-        for unsafe_content in UNSAFE_CONTENTS:
-            line_code = line_code.strip()
-            if line_code.startswith('#'):
-                break
-
-            if unsafe_content in line_code:
-                raise JailBreakException('Are you trying to jailbreak? line: {}, `{}`'.format(line_no, line_code))
-
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
         self.exported_api_funcs = []
@@ -305,19 +288,19 @@ def gen_script_failure_id():
     '''
     生成脚本故障ID
     '''
-    return toolkit.gen_short_data_id('sfal')
+    return toolkit.gen_data_id('sfal')
 
 def gen_script_log_id():
     '''
     生成脚本日志ID
     '''
-    return toolkit.gen_short_data_id('slog')
+    return toolkit.gen_data_id('slog')
 
 def gen_data_source_id():
     '''
     生成数据源ID
     '''
-    return toolkit.gen_short_data_id('dsrc')
+    return toolkit.gen_data_id('dsrc')
 
 def compute_func_store_id(key, scope):
     '''
@@ -325,10 +308,8 @@ def compute_func_store_id(key, scope):
     '''
     str_to_md5 = '-'.join([key, scope])
 
-    long_id = 'fnst-' + toolkit.get_md5(str_to_md5)
-    short_id = toolkit.to_short_data_id(long_id)
-
-    return short_id
+    store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
+    return store_id
 
 def decipher_data_source_config_fields(config):
     '''
@@ -440,7 +421,7 @@ class FuncAsyncHelper(object):
             CONCURRENT_POOL = ThreadPoolExecutor(pool_size)
             CONCURRENT_RESULT_MAP.clear()
 
-        key = key or toolkit.gen_short_data_id('async')
+        key = key or toolkit.gen_data_id('async')
         self.__task.logger.debug('[ASYNC POOL] Submit Key=`{0}`'.format(key))
 
         if key in CONCURRENT_RESULT_MAP:
@@ -487,6 +468,33 @@ class FuncAsyncHelper(object):
             return collected_res.get(key)
         else:
             return collected_res
+
+class FuncContextHelper(object):
+    def __init__(self, task):
+        self.__task = task
+
+        self.__data = {}
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def has(self, key):
+        return key in self.__data
+
+    def get(self, key):
+        return self.__data.get(key)
+
+    def get_all(self):
+        return self.__data
+
+    def set(self, key, value):
+        self.__data[key] = value
+
+    def delete(self, key):
+        return self.__data.pop(key, None)
+
+    def clear(self):
+        return self.__data.clear()
 
 class FuncStoreHelper(object):
     def __init__(self, task, default_scope):
@@ -762,22 +770,10 @@ class FuncCacheHelper(object):
         return self._convert_result(res)
 
 class FuncDataSourceHelper(object):
-    AVAILABLE_CONFIG_KEYS = (
-        'host',
-        'port',
-        'servers',
-        'protocol',
-        'database',
-        'user',
-        'password',
-        'charset',
-        'token',
-        'accessKey',
-        'secretKey',
-        'clientId',
-        'topicHandlers',
-        'meta',
-    )
+    # 自动从路由配置中获取数据源可用的配置项目
+    AVAILABLE_CONFIG_KEYS = tuple(filter(
+        lambda x: not x.startswith('$'),
+        toolkit.json_smart_find(ROUTE, 'configJSON').keys()))
 
     CIPHER_CONFIG_KEYS = [
       'password',
@@ -1211,6 +1207,11 @@ class FuncResponseFile(BaseFuncResponse):
         super(FuncResponseFile, self).__init__(**kwargs)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
+    def __call__(self, *args, **kwargs):
+        self.__context_helper = FuncContextHelper(self)
+
+        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
+
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1687,7 +1688,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                     safe_scope[k] = v
 
         for name in dir(six.moves.builtins):
-            if name in UNSAFE_BUILTIN_NAMES:
+            if name in EXCLUDE_BUILTIN_NAMES:
                 continue
 
             safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
@@ -1716,45 +1717,56 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         def __call_func(func_id, kwargs=None):
             return self._call_func(safe_scope, func_id, kwargs)
 
-        def __eval(expression, *args, **kwargs):
-            jailbreak_check(expression)
+        def __eval(*args, **kwargs):
+            # 不再限制此类函数，直接调用原生函数
+            return eval(*args, **kwargs)
 
-            return eval(expression, *args, **kwargs)
+        def __exec(*args, **kwargs):
+            # 不再限制此类函数，直接调用原生函数
+            return exec(*args, **kwargs)
 
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
 
-        __async_helper        = FuncAsyncHelper(self)
-        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
         __data_source_helper  = FuncDataSourceHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
+        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
+        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
         __config_helper       = FuncConfigHelper(self)
+        __async_helper        = FuncAsyncHelper(self)
 
         def __list_data_sources():
             return __data_source_helper.list()
 
-        safe_scope['DFF'] = DFFWraper(inject_funcs={
-            'log' : __log,  # 输出日志
-            'eval': __eval, # 执行Python表达式
+        inject_funcs = {
+            'LOG' : __log,  # 输出日志
+            'EVAL': __eval, # 执行Python表达式
+            'EXEC': __exec, # 执行Python代码
 
-            'API'      : __export_as_api,       # 导出为API
-            'SRC'      : __data_source_helper,  # 数据源处理模块
-            'ENV'      : __env_variable_helper, # 环境变量处理模块
-            'STORE'    : __store_helper,        # 存储处理模块
-            'CACHE'    : __cache_helper,        # 缓存处理模块
-            'CONFIG'   : __config_helper,       # 配置处理模块
-            'SQL'      : format_sql,            # 格式化SQL语句
-            'FUNC'     : __call_func,           # 调用函数（新Task）
-            'EVAL'     : __eval,                # 执行Python表达式
-            'ASYNC'    : __async_helper,        # 异步处理模块
-            'RSRC'     : get_resource_path,     # 获取资源路径
-            'RESP'     : FuncResponse,          # 函数响应体
-            'RESP_FILE': FuncResponseFile,      # 函数响应体（返回文件）
+            'API'   : __export_as_api,       # 导出为API
+            'SRC'   : __data_source_helper,  # 数据源处理模块
+            'ENV'   : __env_variable_helper, # 环境变量处理模块
+            'CTX'   : self.__context_helper, # 上下文处理模块
+            'STORE' : __store_helper,        # 存储处理模块
+            'CACHE' : __cache_helper,        # 缓存处理模块
+            'CONFIG': __config_helper,       # 配置处理模块
+            'SQL'   : format_sql,            # 格式化SQL语句
+            'FUNC'  : __call_func,           # 调用函数（新Task）
+
+            'ASYNC'    : __async_helper,    # 异步处理模块
+            'RSRC'     : get_resource_path, # 获取资源路径
+            'RESP'     : FuncResponse,      # 函数响应体
+            'RESP_FILE': FuncResponseFile,  # 函数响应体（返回文件）
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
-        })
+        }
+        # 增加小写别名
+        inject_func_names = list(inject_funcs.keys())
+        for k in inject_func_names:
+            inject_funcs[k.lower()] = inject_funcs[k]
+
+        safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
         return safe_scope
 
@@ -1763,8 +1775,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         for s in scripts:
             if not s.get('code'):
                 continue
-
-            jailbreak_check(s['code'])
 
             lru_key = '{0}-{1}'.format(s['id'], s['codeMD5'])
 

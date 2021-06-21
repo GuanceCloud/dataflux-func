@@ -295,17 +295,26 @@ class DataKit(object):
 
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):
+                        # 字符串
                         v = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, v)
                         v = '"{0}"'.format(ensure_str(v))
 
                     elif isinstance(v, bool):
+                        # 布尔值
                         v = '{0}'.format(v).lower()
 
                     elif isinstance(v, integer_types):
+                        # 整数
                         v = '{0}i'.format(v)
 
-                    else:
+                    elif isinstance(v, float):
+                        # 小数
                         v = '{0}'.format(v)
+
+                    else:
+                        # 不支持的类型
+                        e = TypeError('Field `{0}` got an invalid data type. type(v)=`{1}`, repr(v)=`{2}`'.format(k, type(v), repr(v)))
+                        raise e
 
                     field_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
 
@@ -367,6 +376,10 @@ class DataKit(object):
                     color = 'red'
 
                 print(colored(output, color))
+
+        if resp_status_code >= 400:
+            e = Exception(resp_status_code, resp_data)
+            raise e
 
         return resp_status_code, resp_data
 
@@ -488,7 +501,7 @@ class DataKit(object):
     # def write_rum_many(self, data):
     #     return self._write_many('/v1/write/rum', data)
 
-    def query(self, dql, raw=False, dict_output=True, **kwargs):
+    def query(self, dql, raw=False, dict_output=False, **kwargs):
         q = { 'query': dql }
 
         for k, v in kwargs.items():
@@ -496,8 +509,7 @@ class DataKit(object):
                 q[k] = v
 
         json_obj = {
-            'queries'     : [ q ],
-            'echo_explain': bool(echo_explain),
+            'queries': [ q ],
         }
         status_code, dql_res = self.post_json(json_obj, '/v1/query/raw')
 

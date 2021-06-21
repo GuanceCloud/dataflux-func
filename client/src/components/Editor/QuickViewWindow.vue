@@ -254,10 +254,10 @@ export default {
 </style>
 
 <style>
-.quick-view-window>.el-tabs {
+.quick-view-window > .el-tabs {
   border: none;
 }
-.quick-view-window>.el-tabs>.el-tabs__content {
+.quick-view-window > .el-tabs > .el-tabs__content {
   height: 295px;
   padding: 0;
   overflow: auto;

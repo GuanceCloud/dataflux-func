@@ -21,6 +21,7 @@ print_detail = sys.argv[0] == '_celery.py'
 
 base_path  = os.path.dirname(os.path.abspath(__file__))
 CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'), print_detail=print_detail)
+ROUTE      = yaml_resources.load_file('ROUTE', os.path.join(base_path, '../server/route.yaml'))
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../image-info.json'))
 
 WORKER_ID = toolkit.gen_time_serial_seq()
@@ -48,12 +49,12 @@ app = Celery(quiet=True)
 app.config_from_object('worker.celeryconfig')
 
 # Redis config
-redis_password_part = ''
+redis_auth_part = ''
 if CONFIG['REDIS_PASSWORD']:
-    redis_password_part = ':{}@'.format(CONFIG['REDIS_PASSWORD'])
+    redis_auth_part = ':{}@'.format(CONFIG['REDIS_PASSWORD'])
 
 redis_url = 'redis://{}{}:{}/{}'.format(
-    redis_password_part,
+    redis_auth_part,
     CONFIG['REDIS_HOST'],
     CONFIG['REDIS_PORT'],
     CONFIG['REDIS_DATABASE'])

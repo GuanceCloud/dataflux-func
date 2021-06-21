@@ -3,6 +3,7 @@ Tasks: 任务
 
 Batch disabled: 批处理已禁用
 Batch enabled : 批处理已启用
+Batch deleted : 批处理已删除
 
 Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索批处理（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
@@ -10,6 +11,7 @@ No Batch has ever been added: 从未添加过任何批处理
 Batch only supports asynchronous calling: 批处理只支持异步调用
 
 Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
+Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 </i18n>
 
 <template>
@@ -107,6 +109,8 @@ Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -175,6 +179,10 @@ export default {
         case 'disable':
           if (!await this.T.confirm(this.$t('Are you sure you want to disable the Batch?'))) return;
           break;
+
+        case 'delete':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Batch?'))) return;
+          break;
       }
 
       let apiRes = null;
@@ -192,6 +200,13 @@ export default {
             params: { id: d.id },
             body  : { data: { isDisabled: false } },
             alert : { okMessage: this.$t('Batch enabled') },
+          });
+          break;
+
+        case 'delete':
+          apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Batch deleted') },
           });
           break;
       }

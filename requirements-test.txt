@@ -1,2 +1,3 @@
 pytest==6.2.2
 pytest-order==0.9.3
+bandit==1.7.0

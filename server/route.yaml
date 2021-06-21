@@ -2548,7 +2548,6 @@ dataSourceAPI:
         $searchType: in
         $searchKey : dsrc.type
         $commaArrayIn:
-          - df_workspace
           - df_dataway
           - df_datakit
           - influxdb
@@ -2593,7 +2592,6 @@ dataSourceAPI:
           $isRequired: true
           $type      : enum
           $in:
-            - df_workspace
             - df_dataway
             - df_datakit
             - influxdb
@@ -2818,7 +2816,6 @@ dataSourceAPI:
 
       |   数据源类型    |                   查询语句示例                  |
       |-----------------|-------------------------------------------------|
-      | `df_workspace`  | 使用封装方法操作，不适用SQL语句                 |
       | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
       | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
       | `influx`        | `"SELECT * FROM some_measurement LIMIT 10"`     |

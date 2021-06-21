@@ -361,8 +361,6 @@ export default {
       // 转换为tree数据，并增加「刷新」/「添加脚本集/脚本」项
       let treeData = Object.values(scriptSetMap);
       treeData.forEach(d => {
-        if (d.isLockedByOther) return;
-
         if (!this.T.isNothing(d.children)) {
           d.childrenCount = d.children.filter(x => x.type === 'script').length;
         }

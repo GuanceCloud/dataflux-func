@@ -124,7 +124,7 @@ def get_extra_translate_keys():
     textMap = {}
     with open(SERVER_EXTRA_TRANSLATE_KEYS, 'r', **FILE_OPEN_KWARGS) as _f:
         file_data = _f.read()
-        keys = yaml.load(file_data) or []
+        keys = yaml.safe_load(file_data) or []
 
         for k in keys:
             textMap[k] = None
@@ -140,7 +140,7 @@ def get_privilege_keys():
     textMap = {}
     with open(SERVER_PRIVILEGE_KEYS, 'r', **FILE_OPEN_KWARGS) as _f:
         file_data = _f.read()
-        file_json = yaml.load(file_data)
+        file_json = yaml.safe_load(file_data)
 
         # Get Role names and descriptions
         for role, info in file_json.get('roles', {}).items():
@@ -226,7 +226,7 @@ def load_translate_file(translate_file_path):
     translate_map = None
     with open(translate_file_path, 'r', **FILE_OPEN_KWARGS) as _f:
         file_data = _f.read()
-        translate_map = yaml.load(file_data) or {}
+        translate_map = yaml.safe_load(file_data) or {}
 
     print('\n[Translate Map] - ' + translate_file_path)
     print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '') or '\033[1;31;40m' + str(v) + '\033[0m') for k, v in translate_map.items()]))

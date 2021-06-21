@@ -611,7 +611,7 @@ export default {
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
         params: { id: this.scriptId },
         body  : { force: true, data: {note: 'Published by Code Editor'} },
-        alert : { okMessage: this.$t('Script published, new Script is in effect now') },
+        alert : { okMessage: this.$t('Script published, new Script is in effect now'),  muteError: true },
       });
 
       // 脚本发布处理结束

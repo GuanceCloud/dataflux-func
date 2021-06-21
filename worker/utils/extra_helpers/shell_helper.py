@@ -6,6 +6,7 @@ import uuid
 import subprocess
 import shutil
 import traceback
+import tempfile
 
 # 3rd-party Modules
 import six
@@ -36,7 +37,7 @@ class ShellHelper(object):
 
         self.logger = logger
 
-        self.tmp_folder = os.path.join('/tmp', tmp_folder or str(uuid.uuid4()))
+        self.tmp_folder = os.path.join(tempfile.gettempdir(), tmp_folder or str(uuid.uuid4()))
         if date_time_sub_tmp_folder:
             date_time_string = str(toolkit.gen_time_serial_seq(rand_length=10))
             self.tmp_folder = os.path.join(self.tmp_folder, date_time_string)

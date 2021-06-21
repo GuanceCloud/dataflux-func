@@ -987,14 +987,21 @@ class DBAutoBackupTask(BaseTask):
             '--hex-blob',
             '--default-character-set=utf8mb4',
             '--skip-extended-insert',
-            with_data_flag,
-            '--tables', ' '.join(tables),
-            f"1>>{dump_file_path}",
-            '2>/dev/null',
+            '--column-statistics=0',
         ]
 
-        cmd_line = ' '.join(sqldump_args)
-        subprocess.Popen(cmd_line, shell=True).wait()
+        if with_data_flag:
+            sqldump_args.append(with_data_flag)
+
+        sqldump_args.append('--tables')
+        sqldump_args.extend(tables)
+
+        sqldump = subprocess.check_output(sqldump_args)
+        sqldump = sqldump.decode()
+        sqldump = sqldump.replace(' COLLATE=utf8mb4_0900_ai_ci', '') # 兼容5.7, 8.0
+
+        with open(dump_file_path, 'a') as _f:
+            _f.write(sqldump)
 
     def limit_sqldump(self):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
