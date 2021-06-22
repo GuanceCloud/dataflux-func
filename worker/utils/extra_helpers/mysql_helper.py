@@ -20,15 +20,18 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 CONFIG = yaml_resources.get('CONFIG')
 
 def get_config(c):
+    _charset = c.get('charset') or 'utf8mb4'
+
     config = {
         'host'    : c.get('host') or '127.0.0.1',
         'port'    : c.get('port') or 3306,
         'user'    : c.get('user'),
         'password': c.get('password'),
         'database': c.get('database'),
-        'charset' : c.get('charset') or 'utf8mb4',
 
-        'cursorclass': DictCursor,
+        'cursorclass' : DictCursor,
+        'charset'     : _charset,
+        'init_command': 'SET NAMES "{0}"'.format(_charset),
     }
     return config
 

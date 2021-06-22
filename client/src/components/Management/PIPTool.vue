@@ -20,10 +20,10 @@ Cannot reinstall a packages built-in                    : 无法重复安装已�
 Previous installing may still running                   : 之前的安装似乎仍然在运行
 Are you sure you want to install the package now?       : 是否确定现在就安装？
 
-Alibaba Cloud: 阿里云
-Douban       : 豆瓣
-Tsinghua     : 清华大学
-USTC         : 中国科学技术大学
+Douban mirror             : 豆瓣镜像
+Tsinghua University mirror: 清华大学镜像
+USTC mirror               : 中国科学技术大学镜像
+Alibaba Cloud mirror      : 阿里云镜像
 </i18n>
 
 <template>
@@ -44,13 +44,13 @@ USTC         : 中国科学技术大学
         <el-divider content-position="left"><h1>{{ $t('Install Package') }}</h1></el-divider>
 
         <el-select
-          style="width: 180px"
+          style="width: 235px"
           v-model="pypiMirror">
           <el-option :label="$t('Official')" value=""></el-option>
-          <el-option :label="$t('Douban')"        value="https://pypi.douban.com/simple/"></el-option>
-          <el-option :label="$t('Tsinghua')"      value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
-          <el-option :label="$t('USTC')"          value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
-          <el-option :label="$t('Alibaba Cloud')" value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
+          <el-option :label="$t('Douban mirror')"              value="https://pypi.douban.com/simple/"></el-option>
+          <el-option :label="$t('Tsinghua University mirror')" value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
+          <el-option :label="$t('USTC mirror')"                value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
+          <el-option :label="$t('Alibaba Cloud mirror')"       value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
           style="width: 300px"
