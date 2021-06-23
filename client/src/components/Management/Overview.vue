@@ -144,22 +144,23 @@ Response                      : 响应
             <template slot-scope="scope">
               <span class="text-info">{{ $t('Client ID:') }}</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
-              <br>
 
-              <span class="text-info">{{ $t('IP Address:') }}</span>
-              <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+              <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
+                <br>
+                <span class="text-info">{{ $t('IP Address:') }}</span>
+                <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+              </template>
             </template>
           </el-table-column>
 
           <el-table-column :label="$t('User')">
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
-              <br>
 
               <template v-if="scope.row.userId">
+                <br>
                 <span class="text-info">{{ $t('User ID:') }}</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
-                <br>
               </template>
             </template>
           </el-table-column>
@@ -174,9 +175,9 @@ Response                      : 响应
               </span>
 
               <span>{{ scope.row._operationDescribe }}</span>
-              <br>
 
               <template v-if="scope.row._operationEntityId">
+                <br>
                 <span class="text-info">{{ $t('Data ID:') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>

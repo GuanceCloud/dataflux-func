@@ -46,22 +46,23 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             <template slot-scope="scope">
               <span class="text-info">客户端ID：</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
-              <br>
 
-              <span class="text-info">IP地址：</span>
-              <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+              <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
+                <br>
+                <span class="text-info">IP地址：</span>
+                <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+              </template>
             </template>
           </el-table-column>
 
           <el-table-column label="用户">
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
-              <br>
 
               <template v-if="scope.row.userId">
+                <br>
                 <span class="text-info">用户ID：</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
-                <br>
               </template>
             </template>
           </el-table-column>
@@ -74,10 +75,11 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
               <span class="text-bad" v-else>
                 <i class="fa fa-fw fa-times-circle"></i>
               </span>
+
               <span>{{ scope.row._operationDescribe }}</span>
-              <br>
 
               <template v-if="scope.row._operationEntityId">
+                <br>
                 <span class="text-info">ID：</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
