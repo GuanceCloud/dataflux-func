@@ -1357,8 +1357,15 @@ export default {
     this.updateHighlightLineConfig('selectedFuncLine', null);
     this.updateHighlightLineConfig('errorLine', null);
 
-    if (this.isLockedByOther) return next();
-    if (!this.codeMirror)     return next();
+    if (this.isLockedByOther) {
+      return next();
+    }
+    if (!this.codeMirror) {
+      return next();
+    }
+    if (!this.$store.getters.isSignedIn) {
+      return next();
+    }
 
     // 保存
     let apiRes = await this._saveCodeDraft({ mute: true });
