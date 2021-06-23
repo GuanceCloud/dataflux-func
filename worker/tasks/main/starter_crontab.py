@@ -60,7 +60,7 @@ class StarterCrontabTask(BaseTask):
 
         # 通过快速检查表判断是否需要执行
         if crontab_expr in quick_check_map:
-            return quick_check_map[crontab_expr]
+            return quick_check_map[crontab_expr], crontab_expr
 
         # 错误的表达式，不需要执行
         if not croniter.is_valid(crontab_expr):
@@ -225,7 +225,7 @@ def starter_crontab(self, *args, **kwargs):
             is_satisfied, crontab_expr = self.check_crontab_config(trigger_time, c, quick_check_map)
 
             # 缓存Crontab表达式检测结果
-            if crontab_expr:
+            if crontab_expr and isinstance(crontab_expr, str):
                 quick_check_map[crontab_expr] = is_satisfied
 
             # 未满足要求的跳过
