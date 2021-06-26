@@ -429,8 +429,7 @@ export default {
 
       // 保存时，自动去除空行的行尾空格
       let codeDraftLines = codeDraft.split('\n').map(line => {
-        if (line.trim() === '') return '';
-        return line.trimRight();
+        return line.trim() === '' ? '' : line;
       });
       codeDraft = codeDraftLines.join('\n');
 
