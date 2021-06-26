@@ -427,9 +427,10 @@ export default {
       let prevCodeDraftMD5 = this.prevCodeDraftMD5;
       let codeDraft        = this.codeMirror.getValue();
 
-      // 保存时，自动去除所有行尾空格
+      // 保存时，自动去除空行的行尾空格
       let codeDraftLines = codeDraft.split('\n').map(line => {
-        return line.replace(/\s+$/g, '');
+        if (line.trim() === '') return '';
+        return line.trimRight();
       });
       codeDraft = codeDraftLines.join('\n');
 
