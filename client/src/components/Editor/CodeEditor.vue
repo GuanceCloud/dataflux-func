@@ -14,7 +14,7 @@ All top Func without a underscore prefix are avaliable               : 可以指
 Select Func                                                          : 选择执行函数
 Viewport are too narrow                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                  : 建议编写测试用例来测试您的函数
-Arguments                                                            : 参数
+Args                                                                 : 参数
 'Arguments should be inputed like {"arg": value}'                    : '参数以 {"参数名": 参数值} 方式填写'
 'Leave blank or {} when no argument'                                 : '没有参数的不用填写，或保留 {}'
 'Arguments (JSON format)'                                            : 参数（JSON格式）
@@ -130,6 +130,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                 </el-tooltip>
               </code>
             </div>
+            <div class="code-editor-action-breaker hidden-lg-and-up"></div>
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-show="isConflict">
@@ -157,7 +158,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         {{ $t('Viewport are too narrow') }}<br>
                         {{ $t('Writing test cases to test your Func is recommended') }}
                       </div>
-                      <el-tag type="info">{{ $t('Arguments') }}</el-tag>
+                      <el-tag type="info">{{ $t('Args') }}</el-tag>
                     </el-tooltip>
                   </el-form-item>
 
@@ -256,7 +257,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                   </el-tooltip>
                 </el-form-item>
 
-                <el-form-item>
+                <el-form-item class="hidden-md-and-down">
                   <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
                     <el-button
                       @click="gotoCodeEditorSetup"
@@ -1398,9 +1399,13 @@ export default {
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
   padding-right: 25px;
+  white-space: nowrap;
 }
 .code-editor-action-left:hover {
   z-index: 1;
+}
+.code-editor-action-breaker {
+  height: 35px;
 }
 .code-editor-action-right {
   float: right;
@@ -1409,6 +1414,7 @@ export default {
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
   padding-left: 25px;
   position: relative;
+  white-space: nowrap;
 }
 .code-editor-action-right .el-select {
   position: relative;

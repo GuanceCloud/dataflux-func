@@ -121,38 +121,38 @@ export function autoScrollTable(y) {
       return;
     }
   }
-}
+};
 
 export function getTableScrollY() {
   let el = document.getElementsByClassName('el-table__body-wrapper')[0];
   if (!el) return null;
 
   return el.scrollTop;
-}
+};
 
 export function getBrowser() {
   return Bowser.getParser(window.navigator.userAgent).getBrowserName();
-}
+};
 export function getEngine() {
   return Bowser.getParser(window.navigator.userAgent).getEngineName();
-}
+};
 
 export function isMac() {
   return (navigator.platform == "Mac68K")
       || (navigator.platform == "MacPPC")
       || (navigator.platform == "Macintosh")
       || (navigator.platform == "MacIntel");
-}
+};
 
 export function getSuperKeyName() {
   return isMac() ? 'cmd' : 'CTRL';
-}
+};
 export function getAltKeyName() {
   return isMac() ? 'opt' : 'ALT';
-}
+};
 export function getShiftKeyName() {
   return isMac() ? 'shift' : 'SHIFT';
-}
+};
 
 export function debounce(fn, delay) {
   delay = delay || 500;

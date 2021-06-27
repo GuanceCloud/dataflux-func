@@ -289,6 +289,9 @@ a {
 input, textarea, code, pre, pre * {
   font-family: Iosevka !important;
 }
+html {
+  min-width: 1024px;
+}
 html, body {
   height: 100%;
   margin: 0;
@@ -338,6 +341,7 @@ h3 {
   opacity: 1;
 }
 
+/*
 #Navi {
   position: absolute;
   height: 30px;
@@ -351,7 +355,19 @@ h3 {
   left: 0;
   right: 0;
   bottom: 0;
+}*/
+#Navi {
+  position: relative;
+  height: 30px;
+  z-index: 2000;
 }
+#View {
+  position: absolute;
+  bottom: 0;
+  min-width: 1024px;
+  width: 100%;
+}
+
 .common-form {
   width: 620px;
 }

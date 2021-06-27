@@ -91,7 +91,7 @@ Saved Draft Code: 已保存的草稿代码
               </el-tooltip>
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item class="hidden-md-and-down">
               <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
                 <el-button
                   @click="gotoCodeEditorSetup"

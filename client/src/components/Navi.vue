@@ -17,13 +17,13 @@ Auto         : 自动
   <div class="navi-content">
     <el-menu
       mode="horizontal"
-      :router="true"
       :unique-opened="true"
       :default-active="$route.path"
       menu-trigger="hover"
       background-color="#3c3c3c"
       text-color="#fff"
-      active-text-color="#fff">
+      active-text-color="#fff"
+      @select="onNaviMenuSelect">
       <el-menu-item index="/editor/intro">
         <Logo type="auto"></Logo>
       </el-menu-item>
@@ -31,23 +31,23 @@ Auto         : 自动
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            <span class="hidden-sm-and-down">{{ $t('Code Editor') }}</span>
+            <span>{{ $t('Code Editor') }}</span>
           </span>
         </el-menu-item>
 
         <el-menu-item index="/management/overview">
           <span>
             <i class="fa fa-fw fa-tasks"></i>
-            <span class="hidden-md-and-down">{{ $t('Management') }}</span>
+            <span>{{ $t('Management') }}</span>
           </span>
         </el-menu-item>
       </template>
 
-      <el-menu-item index="">
-        <a href="https://function.dataflux.cn/#/doc-index" target="_blank">
+      <el-menu-item index="https://function.dataflux.cn/#/doc-index">
+        <span>
           <i class="fa fa-fw fa-question-circle-o"></i>
-          <span class="hidden-md-and-down">{{ $t('Guide') }}</span>
-        </a>
+          <span>{{ $t('Guide') }}</span>
+        </span>
       </el-menu-item>
 
       <el-submenu v-if="isSignedIn" class="menu-right" index="user" popper-class="navi-content" :show-timeout="0">
@@ -95,17 +95,17 @@ Auto         : 自动
         </el-menu-item>
       </el-submenu>
 
-      <el-menu-item class="menu-right" index="">
-        <a href="/#/auth-link-func-doc" target="_blank">
+      <el-menu-item class="menu-right" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
+        <span>
           <i class="fa fa-fw fa-link"></i>
-          <span class="hidden-sm-and-down">{{ $t('Auth Link Doc') }}</span>
-        </a>
+          <span class="hidden-md-and-down">{{ $t('Auth Link Doc') }}</span>
+        </span>
       </el-menu-item>
-      <el-menu-item class="menu-right" index="">
-        <a href="/#/func-doc" target="_blank">
+      <el-menu-item class="menu-right" :index="`${T.getBaseURL()}/#/func-doc`">
+        <span>
           <i class="fa fa-fw fa-book"></i>
-          <span class="hidden-sm-and-down">{{ $t('Func Doc') }}</span>
-        </a>
+          <span class="hidden-md-and-down">{{ $t('Func Doc') }}</span>
+        </span>
       </el-menu-item>
     </el-menu>
   </div>
@@ -117,6 +117,15 @@ export default {
   components: {
   },
   methods: {
+    onNaviMenuSelect(index) {
+      if (!index) return;
+
+      if (this.T.startsWith(index, '/')) {
+        this.$router.push({ path: index });
+      } else {
+        window.open(index);
+      }
+    },
     goToSignOut() {
       this.$router.push({
         name: 'sign-out',
