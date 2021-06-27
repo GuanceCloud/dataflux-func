@@ -1402,10 +1402,6 @@ export default {
   position: relative;
   white-space: nowrap;
 }
-.code-editor-action-right .el-select {
-  position: relative;
-  top: 1px;
-}
 </style>
 <style>
 #editorContainer_CodeEditor {

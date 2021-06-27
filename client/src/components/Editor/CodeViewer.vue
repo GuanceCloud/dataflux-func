@@ -75,8 +75,7 @@ Saved Draft Code: 已保存的草稿代码
             </el-form-item>
 
             <el-form-item v-if="!isLockedByOther">
-              <el-radio-group v-model="showMode"
-                size="mini">
+              <el-radio-group v-model="showMode" size="mini">
                 <el-tooltip placement="bottom" v-for="meta, k, i in SHOW_MODE_META_MAP" :key="k" :enterable="false">
                   <div slot="content">
                     {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>
@@ -544,10 +543,6 @@ export default {
   padding-left: 25px;
   position: relative;
   white-space: nowrap;
-}
-.code-viewer-action-right .el-select {
-  position: relative;
-  top: 1px;
 }
 </style>
 <style>

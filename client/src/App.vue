@@ -482,6 +482,27 @@ kbd {
   margin-bottom: 20px;
 }
 /* vue-splitpane 修正 */
+.el-button--mini,
+.el-input--mini .el-input__inner,
+.el-radio-button--mini .el-radio-button__inner {
+  height: 29px !important;
+}
+.el-button-group,
+.el-radio-group {
+  position: relative;
+  top: -1px !important;
+}
+.el-input__inner {
+  border-radius: 3px !important;
+}
+.el-radio-button:first-child .el-radio-button__inner {
+  border-top-left-radius: 3px !important;
+  border-bottom-left-radius: 3px !important;
+}
+.el-radio-button:last-child .el-radio-button__inner {
+  border-top-right-radius: 3px !important;
+  border-bottom-right-radius: 3px !important;
+}
 .splitter-pane-resizer {
   opacity: 1 !important;
   z-index: 10 !important;
