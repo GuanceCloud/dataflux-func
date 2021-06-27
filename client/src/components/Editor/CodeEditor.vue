@@ -21,10 +21,12 @@ Args                                                                 : 参数
 Run selected Func                                                    : 执行指定的函数
 'Shortcut:'                                                          : 快捷键：
 Run                                                                  : 执行
-Save Script draft, code will NOT take effect immediately             : 保存当前脚本草稿，但代码不会立即生效
+Save Script draft                                                    : 保存当前脚本草稿
+But code will NOT take effect immediately                            : 但代码不会立即生效
 Show code diff                                                       : 查看代码差异
 DIFF                                                                 : 差异
-Save and publish Script, code will take effect IMMEDIATELY           : 保存并发布脚本，代码将立刻生效
+Save and publish Script                                              : 保存并发布脚本
+Code will take effect IMMEDIATELY                                    : 代码将立刻生效
 Publish                                                              : 发布
 Recover code to latest published version                             : 恢复代码为上次发布的版本
 End edit                                                             : 结束编辑
@@ -158,7 +160,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         {{ $t('Viewport are too narrow') }}<br>
                         {{ $t('Writing test cases to test your Func is recommended') }}
                       </div>
-                      <el-tag type="info">{{ $t('Args') }}</el-tag>
+                      <el-tag type="info" size="medium" style="height: 29px">{{ $t('Args') }}</el-tag>
                     </el-tooltip>
                   </el-form-item>
 
@@ -199,7 +201,8 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                     <el-button-group>
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
-                          {{ $t('Save Script draft, code will NOT take effect immediately') }}<br>
+                          {{ $t('Save Script draft') }}<br>
+                          {{ $t('But code will NOT take effect immediately') }}<br>
                           {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
@@ -224,16 +227,27 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         </el-button>
                       </el-tooltip>
 
-                      <el-tooltip :content="$t('Save and publish Script, code will take effect IMMEDIATELY')" placement="bottom" :enterable="false">
+                      <el-tooltip placement="bottom" :enterable="false">
+                        <div slot="content">
+                          {{ $t('Save and publish Script') }}<br>
+                          {{ $t('Code will take effect IMMEDIATELY') }}<br>
+                          {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
+                        </div>
                         <el-button
                           @click="publishScript"
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-coffee"></i> <span class="hidden-lg-and-down">{{ $t('Publish') }}</span>
+                          <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
                         </el-button>
                       </el-tooltip>
+                    </el-button-group>
+                  </el-form-item>
+                </template>
 
+                <el-form-item>
+                  <el-button-group>
+                    <template v-if="!isConflict && !isLockedByOther">
                       <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                         <el-button
                           @click="resetScript"
@@ -241,18 +255,16 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                           plain
                           size="mini"><i class="fa fa-fw fa-history"></i></el-button>
                       </el-tooltip>
-                    </el-button-group>
-                  </el-form-item>
-                </template>
+                    </template>
 
-                <el-form-item>
-                  <el-tooltip :content="$t('End edit')" placement="bottom" :enterable="false">
-                    <el-button
-                      @click="endEdit"
-                      :disalbed="!workerRunning"
-                      plain
-                      size="mini"><i class="fa fa-fw fa-sign-out"></i></el-button>
-                  </el-tooltip>
+                    <el-tooltip :content="$t('End edit')" placement="bottom" :enterable="false">
+                      <el-button
+                        @click="endEdit"
+                        :disalbed="!workerRunning"
+                        plain
+                        size="mini"><i class="fa fa-fw fa-sign-out"></i></el-button>
+                    </el-tooltip>
+                  </el-button-group>
                 </el-form-item>
               </el-form>
             </div>
