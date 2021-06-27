@@ -227,9 +227,22 @@ export default new Vuex.Store({
     isSocketIOReady: state => {
       return state.isSocketIOAuthed && state.xAuthToken;
     },
-    getConflictRoute: state => routeInfo => {
+    getConflictStatus: state => routeInfo => {
       let routeKey = getRouteKey(routeInfo);
-      return !!state.conflictedRouteMap[routeKey];
+      let conflictId = state.conflictedRouteMap[routeKey];
+      if (!conflictId) {
+        // 没有冲突
+        return false;
+
+      } else {
+        // 存在冲突
+        if (conflictId.split(':')[0] === window.conflictId.split(':')[0]) {
+          // 相同客户端冲突
+          return 'otherTab';
+        } else {
+          return 'otherClient';
+        }
+      }
     },
     uiLocale: (state, getters) => {
       let uiLocale = state.uiLocale || window.navigator.language;
@@ -319,7 +332,7 @@ export default new Vuex.Store({
 
       let nextConflictedRouteMap = toolkit.jsonCopy(state.conflictedRouteMap);
       if (payload.isConflict) {
-        nextConflictedRouteMap[routeKey] = true;
+        nextConflictedRouteMap[routeKey] = payload.conflictId;
       } else {
         delete nextConflictedRouteMap[routeKey];
       }

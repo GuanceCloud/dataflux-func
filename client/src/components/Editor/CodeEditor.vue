@@ -9,7 +9,8 @@ seconds      : '{n} second | {n} seconds'
 
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                                         : 脚本设置
-'Other user or window are editing this Script, please wait...'       : '其他用户或窗口正在编辑此脚本，请稍后...'
+'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
+'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
 All top Func without a underscore prefix are avaliable               : 可以指定任意顶层非下划线开头的函数
 Select Func                                                          : 选择执行函数
 Viewport are too narrow                                              : 当前可视宽度太窄
@@ -133,8 +134,9 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
             <div class="code-editor-action-breaker hidden-lg-and-up"></div>
             <div class="code-editor-action-right">
               <el-form :inline="true">
-                <el-form-item v-show="isConflict">
-                  <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
+                <el-form-item v-show="conflictStatus">
+                  <el-link v-if="conflictStatus === 'otherTab'" type="danger" :underline="false">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</el-link>
+                  <el-link v-else-if="conflictStatus === 'otherClient'" type="danger" :underline="false">{{ $t('Script is under editing mode in other client, please wait...') }}</el-link>
                 </el-form-item>
 
                 <el-form-item>
@@ -151,7 +153,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                   </el-tooltip>
                 </el-form-item>
 
-                <template v-if="!isConflict">
+                <template v-if="!conflictStatus">
                   <el-form-item class="hidden-lg-and-up">
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
@@ -243,7 +245,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
 
                 <el-form-item>
                   <el-button-group>
-                    <template v-if="!isConflict && !isLockedByOther">
+                    <template v-if="!conflictStatus && !isLockedByOther">
                       <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                         <el-button
                           @click="resetScript"
@@ -1201,8 +1203,8 @@ export default {
     scriptSetId() {
       return this.scriptId.split('__')[0];
     },
-    isConflict() {
-      return this.$store.getters.getConflictRoute(this.$route);
+    conflictStatus() {
+      return this.$store.getters.getConflictStatus(this.$route);
     },
     isLockedByOther() {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId

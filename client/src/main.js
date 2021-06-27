@@ -167,6 +167,6 @@ Vue.config.silent = true;
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;
 
-window.conflictId = toolkit.genRandString();
+window.conflictId = `${store.getters.clientId}:${toolkit.genRandString()}`;
 
 export default app

@@ -101,6 +101,7 @@ export default {
         this.$store.commit('setConflictedRoute', {
           routeInfo : this.$route,
           isConflict: isConflict,
+          conflictId: resData.data.conflictId,
         });
 
         // 展示提示信息
