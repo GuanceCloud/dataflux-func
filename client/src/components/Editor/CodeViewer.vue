@@ -523,7 +523,6 @@ export default {
 }
 .code-viewer-action-left {
   margin-top: 5px;
-  margin-left: 5px;
   height: 48px;
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
@@ -540,7 +539,7 @@ export default {
   margin-top: 5px;
   height: 48px;
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
-  padding-left: 25px;
+  padding-left: 10px;
   position: relative;
   white-space: nowrap;
 }

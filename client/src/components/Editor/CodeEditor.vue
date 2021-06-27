@@ -17,16 +17,14 @@ Writing test cases to test your Func is recommended                  : 建议编
 Args                                                                 : 参数
 'Arguments should be inputed like {"arg": value}'                    : '参数以 {"参数名": 参数值} 方式填写'
 'Leave blank or {} when no argument'                                 : '没有参数的不用填写，或保留 {}'
-'Arguments (JSON format)'                                            : 参数（JSON格式）
+'Arguments (JSON)'                                                   : 参数（JSON格式）
 Run selected Func                                                    : 执行指定的函数
 'Shortcut:'                                                          : 快捷键：
 Run                                                                  : 执行
-Save Script draft                                                    : 保存当前脚本草稿
-But code will NOT take effect immediately                            : 但代码不会立即生效
-Show code diff                                                       : 查看代码差异
+Save Script draft                                                    : 保存草稿
+Show code diff                                                       : 查看差异
 DIFF                                                                 : 差异
-Save and publish Script                                              : 保存并发布脚本
-Code will take effect IMMEDIATELY                                    : 代码将立刻生效
+Save and publish Script                                              : 保存并发布
 Publish                                                              : 发布
 Recover code to latest published version                             : 恢复代码为上次发布的版本
 End edit                                                             : 结束编辑
@@ -174,7 +172,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-input
                         style="width: 150px"
                         size="mini"
-                        :placeholder="$t('Arguments (JSON format)')"
+                        :placeholder="$t('Arguments (JSON)')"
                         v-model="funcCallKwargsJSON"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
@@ -202,7 +200,6 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft') }}<br>
-                          {{ $t('But code will NOT take effect immediately') }}<br>
                           {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
@@ -230,7 +227,6 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save and publish Script') }}<br>
-                          {{ $t('Code will take effect IMMEDIATELY') }}<br>
                           {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
@@ -1392,7 +1388,6 @@ export default {
 }
 .code-editor-action-left {
   margin-top: 5px;
-  margin-left: 5px;
   height: 48px;
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
@@ -1410,7 +1405,7 @@ export default {
   margin-top: 5px;
   height: 48px;
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
-  padding-left: 25px;
+  padding-left: 10px;
   position: relative;
   white-space: nowrap;
 }
