@@ -40,9 +40,10 @@ Saved Draft Code: 已保存的草稿代码
             </el-tooltip>
           </code>
         </div>
+        <div class="code-viewer-action-breaker hidden-lg-and-up"></div>
         <div class="code-viewer-action-right">
           <el-form :inline="true">
-            <el-form-item v-if="isConflict">
+            <el-form-item v-show="isConflict">
               <el-link type="danger" :underline="false">{{ $t('Other user or window are editing this Script, please wait...') }}</el-link>
               &#12288;
               &#12288;
@@ -63,7 +64,7 @@ Saved Draft Code: 已保存的草稿代码
 
             <el-form-item>
               <el-select
-                style="width: 200px"
+                style="width: 150px"
                 v-model="selectedFuncId"
                 size="mini"
                 filterable
@@ -85,17 +86,9 @@ Saved Draft Code: 已保存的草稿代码
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item v-if="!isLockedByOther" class="download-form">
+            <el-form-item v-if="!isLockedByOther">
               <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
                 <el-button @click="download" plain size="mini">{{ $t('Download {type}', { type: SHOW_MODE_META_MAP[showMode].text } ) }}</el-button>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item class="hidden-md-and-down">
-              <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
-                <el-button
-                  @click="gotoCodeEditorSetup"
-                  plain size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
               </el-tooltip>
             </el-form-item>
           </el-form>
@@ -230,11 +223,6 @@ export default {
 
         this.$store.commit('updateCodeViewer_isCodeLoaded', true);
       });
-    },
-    gotoCodeEditorSetup() {
-      this.$router.push({
-        name: 'code-editor-setup',
-      })
     },
     startEdit() {
       this.$router.push({
@@ -525,6 +513,9 @@ export default {
   box-shadow: 5px 5px 5px lightgrey;
   z-index: 5;
 }
+.code-viewer {
+  padding-right: 5px;
+}
 .code-viewer-action-title {
   font-size: 22px;
 }
@@ -542,6 +533,9 @@ export default {
 .code-viewer-action-left:hover {
   z-index: 1;
 }
+.code-viewer-action-breaker {
+  height: 50px;
+}
 .code-viewer-action-right {
   float: right;
   margin-top: 5px;
@@ -549,6 +543,7 @@ export default {
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
   padding-left: 25px;
   position: relative;
+  white-space: nowrap;
 }
 .code-viewer-action-right .el-select {
   position: relative;
@@ -565,6 +560,8 @@ export default {
   border: 1px solid darkgray;
   padding: 0 10px;
   border-radius: 5px;
+  z-index: 10;
+  background-color: #eee;
 }
 #editorContainer_CodeViewer {
   padding: 1px 0 0 5px;
@@ -607,8 +604,5 @@ export default {
 .code-viewer-status-bar span {
   font-family: Iosevka;
   font-size: 12px;
-}
-.download-form .el-form-item__content {
-  width: 150px;
 }
 </style>

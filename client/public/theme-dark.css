@@ -72,6 +72,9 @@ a {
   background-color: #3c3c3c !important;
 }
 
+#viewModeHint {
+  background-color: #333 !important;
+}
 .CodeMirror .highlight-text {
   text-shadow: none !important;
 }

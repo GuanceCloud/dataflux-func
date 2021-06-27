@@ -140,7 +140,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                 <el-form-item>
                   <el-tooltip :content="$t('All top Func without a underscore prefix are avaliable')" placement="left" :enterable="false">
                     <el-select
-                      style="width: 200px"
+                      style="width: 150px"
                       v-model="selectedFuncId"
                       size="mini"
                       filterable
@@ -170,7 +170,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         {{ $t('Leave blank or {} when no argument') }}
                       </div>
                       <el-input
-                        style="width: 200px"
+                        style="width: 150px"
                         size="mini"
                         :placeholder="$t('Arguments (JSON format)')"
                         v-model="funcCallKwargsJSON"
@@ -190,7 +190,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                         type="primary" plain
                         size="mini"
                         :disabled="(selectedFuncId ? false : true) && !workerRunning">
-                        <i class="fa fa-fw fa-play"></i> <span class="hidden-md-and-down">{{ $t('Run') }}</span>
+                        <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
                       </el-button>
                     </el-tooltip>
                   </el-form-item>
@@ -207,7 +207,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-save"></i> <span class="hidden-md-and-down">{{ $t('Save') }}</span>
+                          <i class="fa fa-fw fa-save"></i> <span class="hidden-lg-and-down">{{ $t('Save') }}</span>
                         </el-button>
                       </el-tooltip>
 
@@ -220,7 +220,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-code"></i> <span class="hidden-md-and-down">{{ $t('DIFF') }}</span>
+                          <i class="fa fa-fw fa-code"></i> <span class="hidden-lg-and-down">{{ $t('DIFF') }}</span>
                         </el-button>
                       </el-tooltip>
 
@@ -230,20 +230,18 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                           :disalbed="!workerRunning"
                           plain
                           size="mini">
-                          <i class="fa fa-fw fa-coffee"></i> <span class="hidden-md-and-down">{{ $t('Publish') }}</span>
+                          <i class="fa fa-fw fa-coffee"></i> <span class="hidden-lg-and-down">{{ $t('Publish') }}</span>
                         </el-button>
                       </el-tooltip>
-                    </el-button-group>
-                  </el-form-item>
 
-                  <el-form-item v-if="!isLockedByOther">
-                    <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
-                      <el-button
-                        @click="resetScript"
-                        :disalbed="!workerRunning"
-                        plain
-                        size="mini"><i class="fa fa-fw fa-history"></i></el-button>
-                    </el-tooltip>
+                      <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
+                        <el-button
+                          @click="resetScript"
+                          :disalbed="!workerRunning"
+                          plain
+                          size="mini"><i class="fa fa-fw fa-history"></i></el-button>
+                      </el-tooltip>
+                    </el-button-group>
                   </el-form-item>
                 </template>
 
@@ -254,16 +252,6 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       :disalbed="!workerRunning"
                       plain
                       size="mini"><i class="fa fa-fw fa-sign-out"></i></el-button>
-                  </el-tooltip>
-                </el-form-item>
-
-                <el-form-item class="hidden-md-and-down">
-                  <el-tooltip :content="$t('Setup Code Editor')" placement="bottom" :enterable="false">
-                    <el-button
-                      @click="gotoCodeEditorSetup"
-                      :disalbed="!workerRunning"
-                      plain
-                      size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
                   </el-tooltip>
                 </el-form-item>
               </el-form>
@@ -642,11 +630,6 @@ export default {
 
       // 弹框提示
       this.T.notify(this.$t('Script has been reset to previous version'));
-    },
-    gotoCodeEditorSetup() {
-      this.$router.push({
-        name: 'code-editor-setup',
-      })
     },
     async callFuncDraft() {
       if (!this.codeMirror) return;
@@ -1386,6 +1369,9 @@ export default {
   box-shadow: 5px 5px 5px lightgrey;
   z-index: 5;
 }
+.code-editor {
+  padding-right: 5px;
+}
 .code-editor-action-title {
   font-size: 22px;
 }
@@ -1405,7 +1391,7 @@ export default {
   z-index: 1;
 }
 .code-editor-action-breaker {
-  height: 35px;
+  height: 50px;
 }
 .code-editor-action-right {
   float: right;
