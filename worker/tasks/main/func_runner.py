@@ -284,9 +284,7 @@ class FuncRunnerTask(ScriptBaseTask):
                 queue, current_worker_queue_pressure, abs(func_pressure),
                 int(current_worker_queue_pressure / worker_queue_max_pressure * 100)))
 
-@app.task(name='Main.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True,
-    soft_time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'],
-    time_limit=CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
+@app.task(name='Main.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True)
 def func_runner(self, *args, **kwargs):
     # 执行函数、参数
     func_id              = kwargs.get('funcId')
@@ -323,15 +321,18 @@ def func_runner(self, *args, **kwargs):
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
 
-    # 函数结果、上下文
+    # 是否保存结果
     save_result  = kwargs.get('saveResult') or False
+
+    # 函数结果、上下文、跟踪信息、错误堆栈
     func_resp    = None
     script_scope = None
-
-    is_succeeded = False
-    trace_info   = None
     log_messages = None
+    trace_info   = None
     einfo_text   = None
+
+    # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
+    end_status = 'failure'
 
     target_script = None
     try:
@@ -398,39 +399,17 @@ def func_runner(self, *args, **kwargs):
             raise func_resp.data
 
     except Exception as e:
-        is_succeeded = False
+        end_status = 'failure'
 
         self.logger.error('Error occured in script. `{}`'.format(func_id))
 
-        # 记录函数运行信息
-        self.cache_script_running_info(
-            func_id=func_id,
-            script_publish_version=target_script['publishVersion'],
-            exec_mode=exec_mode,
-            is_failed=True,
-            cost=time.time() - start_time)
-
-        # 记录函数运行故障
         trace_info = self.get_trace_info()
         einfo_text = self.get_formated_einfo(trace_info, only_in_script=True)
-        self.cache_script_failure(
-            func_id=func_id,
-            script_publish_version=target_script['publishVersion'],
-            exec_mode=exec_mode,
-            einfo_text=einfo_text,
-            trace_info=trace_info)
 
         raise
 
     else:
-        is_succeeded = True
-
-        # 记录函数运行信息
-        self.cache_script_running_info(
-            func_id=func_id,
-            script_publish_version=target_script['publishVersion'],
-            exec_mode=exec_mode,
-            cost=time.time() - start_time)
+        end_status = 'success'
 
         # 准备函数运行结果
         func_result_raw        = None
@@ -500,10 +479,6 @@ def func_runner(self, *args, **kwargs):
         return result
 
     finally:
-        if script_scope:
-            # 提取输出日志
-            log_messages = script_scope['DFF'].log_messages or None
-
         # Crontab解锁
         lock_key   = kwargs.get('lockKey')
         lock_value = kwargs.get('lockValue')
@@ -511,19 +486,36 @@ def func_runner(self, *args, **kwargs):
             self.cache_db.unlock(lock_key, lock_value)
 
         # 记录脚本日志
-        self.cache_script_log(
+        if script_scope:
+            log_messages = script_scope['DFF'].log_messages or None
+
+            self.cache_script_log(
+                func_id=func_id,
+                script_publish_version=target_script['publishVersion'],
+                log_messages=log_messages,
+                exec_mode=exec_mode)
+
+        # 记录函数运行故障
+        if end_status == 'failure':
+            trace_info = trace_info or self.get_trace_info()
+            einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
+
+            self.cache_script_failure(
+                func_id=func_id,
+                script_publish_version=target_script['publishVersion'],
+                exec_mode=exec_mode,
+                einfo_text=einfo_text,
+                trace_info=trace_info)
+
+        # 记录函数运行信息
+        self.cache_script_running_info(
             func_id=func_id,
             script_publish_version=target_script['publishVersion'],
-            log_messages=log_messages,
-            exec_mode=exec_mode)
+            exec_mode=exec_mode,
+            is_failed=(end_status == 'failure'),
+            cost=time.time() - start_time)
 
-        # 记录任务信息（结束）
-        end_status = None
-        if is_succeeded:
-            end_status = 'success'
-        else:
-            end_status = 'failure'
-
+        # 缓存任务状态
         self.cache_task_status(
             origin=origin,
             origin_id=origin_id,

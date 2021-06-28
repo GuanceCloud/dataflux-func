@@ -691,8 +691,8 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           }
 
           if (celeryRes.status === 'FAILURE') {
-            // 正式调用发生错误只返回堆栈错误信息最后两行
-            var einfoTEXT = celeryRes.einfoTEXT.trim().split('\n').slice(-2).join('\n').trim();
+            // 正式调用发生错误只返回堆栈错误信息最后一行
+            var einfoTEXT = celeryRes.einfoTEXT.trim().split('\n').pop().trim();
 
             if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
               // 超时错误
@@ -1508,9 +1508,9 @@ exports.callFuncDraft = function(req, res, next) {
         // 注意：由于预检查任务本身永远不会失败
         // 代码流程如果进入此处，必然是引擎内部故障
         return next(new E('EFuncFailed', 'Calling Function failed', {
-          id   : celeryRes.id,
-          etype: celeryRes.result && celeryRes.result.exc_type,
-          stack: celeryRes.einfoTEXT,
+          id       : celeryRes.id,
+          etype    : celeryRes.result && celeryRes.result.exc_type,
+          einfoTEXT: celeryRes.einfoTEXT,
         }));
 
       } else if (extraInfo.status === 'TIMEOUT') {
@@ -1520,7 +1520,7 @@ exports.callFuncDraft = function(req, res, next) {
       }
 
       var ret = null;
-      if (celeryRes.retval.stack) {
+      if (celeryRes.retval.einfoTEXT) {
         // 脚本执行错误，手工包装
         ret = {
           ok     : false,
@@ -1529,7 +1529,7 @@ exports.callFuncDraft = function(req, res, next) {
           data   : {result: celeryRes.retval.result},
           reason : 'EScriptPreCheck',
           detail : {
-            stack    : celeryRes.retval.stack,
+            einfoTEXT: celeryRes.retval.einfoTEXT,
             traceInfo: celeryRes.retval.traceInfo,
           },
         };
@@ -1545,9 +1545,14 @@ exports.callFuncDraft = function(req, res, next) {
     var celery = celeryHelper.createHelper(res.locals.logger);
 
     var taskOptions = {
-      queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-      resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
+      queue        : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
+      // softTimeLimit: CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
+      timeLimit    : 10 //CONFIG._FUNC_TASK_DEBUG_TIMEOUT + CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
     }
+
+    // 保证UI运行能够正常接收到超时报错
+    taskOptions.resultWaitTimeout = (taskOptions.timeLimit + 10) * 1000;
+
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
   });
 };
@@ -1688,13 +1693,14 @@ exports.getSystemConfig = function(req, res, next) {
 
     _FUNC_ARGUMENT_PLACEHOLDER_LIST: CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST,
 
-    _FUNC_TASK_DEBUG_TIMEOUT      : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
-    _FUNC_TASK_DEFAULT_TIMEOUT    : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,
-    _FUNC_TASK_MIN_TIMEOUT        : CONFIG._FUNC_TASK_MIN_TIMEOUT,
-    _FUNC_TASK_MAX_TIMEOUT        : CONFIG._FUNC_TASK_MAX_TIMEOUT,
-    _FUNC_TASK_DEFAULT_API_TIMEOUT: CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT,
-    _FUNC_TASK_MIN_API_TIMEOUT    : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
-    _FUNC_TASK_MAX_API_TIMEOUT    : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
+    _FUNC_TASK_DEBUG_TIMEOUT        : CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
+    _FUNC_TASK_DEFAULT_TIMEOUT      : CONFIG._FUNC_TASK_DEFAULT_TIMEOUT,
+    _FUNC_TASK_MIN_TIMEOUT          : CONFIG._FUNC_TASK_MIN_TIMEOUT,
+    _FUNC_TASK_MAX_TIMEOUT          : CONFIG._FUNC_TASK_MAX_TIMEOUT,
+    _FUNC_TASK_DEFAULT_API_TIMEOUT  : CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT,
+    _FUNC_TASK_MIN_API_TIMEOUT      : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
+    _FUNC_TASK_MAX_API_TIMEOUT      : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
+    _FUNC_TASK_EXTRA_TIMEOUT_TO_KILL: CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
 
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,

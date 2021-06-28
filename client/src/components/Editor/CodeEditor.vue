@@ -792,8 +792,12 @@ export default {
         // 函数输出
         // 在线调试成功时，包含函数输出
         if (apiRes.ok) {
-          funcOutput = apiRes.data.result.funcResult.repr || null;
-          funcOutput = this.encoding.htmlEncode(funcOutput);
+          try {
+            funcOutput = apiRes.data.result.funcResult.repr || null;
+            funcOutput = this.encoding.htmlEncode(funcOutput);
+          } catch(_) {
+            // 硬超时无返回值，此时获取函数输出报错时，忽略
+          }
         }
       }
 
@@ -802,7 +806,7 @@ export default {
         // 错误堆栈
         // 发布失败/在线调试失败时，包含错误堆栈信息
         // 【此处进行预处理，避免在computed中反复计算】
-        let stackLines = apiRes.detail.stack.split('\n').reduce((acc, x) => {
+        let stackLines = apiRes.detail.einfoTEXT.split('\n').reduce((acc, x) => {
           if (!x.trim()) return acc;
 
           acc.push(`<span class="code-editor-output-error-stack">${this.encoding.htmlEncode(x)}</span>`);
@@ -850,52 +854,22 @@ export default {
           let lastFrame       = stack[stack.length - 1];
           let lastInFileFrame = inFileStack[inFileStack.length - 1];
 
-          let errorLine    = null;
-          let errorText    = '';
-          let locationText = '';
+          let errorLine = lastInFileFrame
+                        ? lastInFileFrame.lineNumber - 1
+                        : parseInt(lastMatch[2]) - 1;
 
-          if (lastInFileFrame) {
-            // 本脚本内存在堆栈Frame（非编译错误），直接从traceInfo中提取内容即可
-            errorLine = lastInFileFrame.lineNumber - 1;
-            errorText = apiRes.detail.traceInfo.exceptionDump;
-
-            // if (errorText.length > 30) {
-            //   errorText = errorText.slice(0, 27) + '...';
-            // }
-
-            if (lastFrame.filename !== lastInFileFrame.filename) {
-              let filename = lastFrame.filename;
-              if (filename.slice(-3) === '.py') {
-                filename = '<引擎内部>'
-              }
-
-              locationText = `发生于 ${filename} ${lastFrame.lineNumber} 行，${lastFrame.funcname} 函数内`;
-            }
-
-          } else {
-            // 本脚本内不存在堆栈Frame（编译错误），堆栈指向引擎
-            // 需要解析类似如下文本：
-            // File "demo__ft_pred", line 55
-            //     if value = 0:
-            //              ^
-            // SyntaxError: invalid syntax`
-            try {errorText = apiRes.detail.traceInfo.exceptionDump} catch(err) {return console.error(err)}
-
-            let lastMatch = [...errorText.matchAll(/^File \"(\w+)\", line (\d+)$/mg)].pop();
-            if (!lastMatch) return;
-
-            errorLine = parseInt(lastMatch[2]) - 1;
+          let errorText = '';
+          try {
+            errorText = apiRes.detail.traceInfo.exceptionDump.split(':')[0].trim();
+          } catch(err) {
+            return console.error(err)
           }
-
-          errorText = errorText.split('\n').pop().trim();
 
           let innerHTML = `
               <span class="error-info">
                 <i class="fa fa-fw fa-times-circle"></i>
                 <span>${errorText}</span>
-                <span class="error-line-location">${locationText}</span>
-              </span>
-            `;
+              </span> `;
 
           this.updateHighlightLineConfig('errorLine', {
             line            : errorLine,
@@ -1452,10 +1426,6 @@ export default {
   position: absolute;
   color: red;
   right: 10px;
-}
-.CodeMirror .error-line-location {
-  font-style: italic;
-  margin-left: 15px;
 }
 
 .code-editor-call-func-kwargs-json {

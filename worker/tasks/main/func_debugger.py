@@ -81,9 +81,7 @@ class FuncDebugger(ScriptBaseTask):
 
         return script_dict
 
-@app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger,
-    soft_time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'],
-    time_limit=CONFIG['_FUNC_TASK_DEBUG_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL'])
+@app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger)
 def func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
@@ -122,8 +120,12 @@ def func_debugger(self, *args, **kwargs):
     # 函数结果、上下文、跟踪信息、错误堆栈
     func_resp    = None
     script_scope = None
+    log_messages = None
     trace_info   = None
-    error_stack  = None
+    einfo_text   = None
+
+    # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
+    end_status = 'failure'
 
     try:
         # 获取代码对象
@@ -180,15 +182,17 @@ def func_debugger(self, *args, **kwargs):
                 raise func_resp.data
 
     except Exception as e:
-        # 函数报错只输出WARNING级别日志
-        for line in traceback.format_exc().splitlines():
-            self.logger.warning(line)
-
-        trace_info = self.get_trace_info()
-        error_stack = self.get_formated_einfo(trace_info, only_in_script=True)
+        end_status = 'failure'
 
         # 预检查任务需要将检查结果和错误同时返回给调用方，因此本身永远不会失败
         # API端需要判断预检查是否通过，并将错误重新包装后返回给调用放
+        self.logger.error('Error occured in script. `{}`'.format(script_id or func_id))
+
+        trace_info = self.get_trace_info()
+        einfo_text = self.get_formated_einfo(trace_info, only_in_script=True)
+
+    else:
+        end_status = 'success'
 
     finally:
         result = {}
@@ -235,11 +239,15 @@ def func_debugger(self, *args, **kwargs):
                 '_responseControl': func_resp._create_response_control()
             }
 
+        if end_status == 'failure':
+            trace_info = trace_info or self.get_trace_info()
+            einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
+
         # 准备返回值
         retval = {
             'result'   : result,
             'traceInfo': trace_info,
-            'stack'    : error_stack,
+            'einfoTEXT': einfo_text,
             'cost'     : time.time() - start_time,
         }
 
