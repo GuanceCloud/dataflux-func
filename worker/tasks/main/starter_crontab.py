@@ -287,6 +287,7 @@ def starter_crontab(self, *args, **kwargs):
                 'saveResult'    : c['saveResult'],
                 'execMode'      : c['execMode'],
                 'triggerTime'   : trigger_time,
+                'triggerTimeMs' : trigger_time * 1000,
                 'crontab'       : c['crontab'],
                 'queue'         : specified_queue,
                 'lockKey'       : lock_key,
