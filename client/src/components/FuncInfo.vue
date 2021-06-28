@@ -3,7 +3,7 @@ Func not exists: 函数不存在
 </i18n>
 
 <template>
-  <div class="func-info" :class="{ 'func-nowrap': !!kwargsJSON }">
+  <div class="func-info">
     <template v-if="id">
       <strong class="func-title">{{ title || name }}</strong>
       <GotoFuncButton :funcId="id"></GotoFuncButton>
@@ -59,9 +59,6 @@ export default {
 <style scoped>
 .func-info {
   font-size: 16px;
-}
-.func-nowrap {
-  white-space: nowrap;
 }
 .func-title {
   font-size: 18px;
