@@ -309,9 +309,9 @@ def to_boolean(o):
         return o > 0
 
     if isinstance(o, str):
-        if o.lower() in ['true',  'o', 'y', 'yes', 'ok', 'on' ]:
+        if o.lower() in ['true',  '1', 'o', 'y', 'yes', 'ok', 'on' ]:
             return True
-        if o.lower() in ['false', 'x', 'n', 'no',  'ng', 'off']:
+        if o.lower() in ['false', '0', 'x', 'n', 'no',  'ng', 'off']:
             return False
 
     return None

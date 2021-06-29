@@ -906,8 +906,8 @@ var toBoolean = toolkit.toBoolean = function toBoolean(o) {
   }
 
   if ('string' === typeof o) {
-    if (['true',  'o', 'y', 'yes', 'ok', 'on' ].indexOf(o.toLowerCase()) > -1) return true;
-    if (['false', 'x', 'n', 'no',  'ng', 'off'].indexOf(o.toLowerCase()) > -1) return false;
+    if (['true',  '1', 'o', 'y', 'yes', 'ok', 'on' ].indexOf(o.toLowerCase()) >= 0) return true;
+    if (['false', '0', 'x', 'n', 'no',  'ng', 'off'].indexOf(o.toLowerCase()) >= 0) return false;
   }
 
   return null;
