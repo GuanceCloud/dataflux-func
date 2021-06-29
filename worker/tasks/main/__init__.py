@@ -107,153 +107,7 @@ for p in extra_import_paths:
     os.makedirs(p, exist_ok=True)
     sys.path.append(p)
 
-def _kwargs_hint_type_converter_str(x):
-    if isinstance(x, str):
-        return x
-    return str(x)
-
-def _kwargs_hint_type_converter_int(x):
-    if isinstance(x, int):
-        return x
-    return int(x)
-
-def _kwargs_hint_type_converter_float(x):
-    if isinstance(x, float):
-        return x
-    return float(x)
-
-def _kwargs_hint_type_converter_list(x):
-    if isinstance(x, list):
-        return x
-    elif isinstance(x, str):
-        x = ujson.loads(x)
-        if not isinstance(x, list):
-            e = TypeError('Parse result of value is not a `list`, but `{}`'.format(type(x).__name__))
-            raise e
-
-        return x
-
-    else:
-        e = TypeError('Cannot parse the value to a `list`')
-        raise e
-
-def _kwargs_hint_type_converter_dict(x):
-    if isinstance(x, dict):
-        return x
-    elif isinstance(x, str):
-        x = ujson.loads(x)
-        if not isinstance(x, dict):
-            raise TypeError('Parse result of value is not a `dict`, but `{}`'.format(type(x).__name__))
-
-        return x
-
-    else:
-        raise TypeError('Cannot parse the value to a `dict`')
-
-def _kwargs_hint_type_converter_json(x):
-    if isinstance(x, (list, dict)):
-        return x
-    elif isinstance(x, str):
-        x = ujson.loads(x)
-        if not isinstance(x, (list, dict)):
-            raise TypeError('Parse result of value is not a `list` or `dict`, but `{}`'.format(type(x).__name__))
-
-        return x
-
-    else:
-        raise TypeError('Cannot parse the value to a `list` or `dict`')
-
-def _kwargs_hint_type_converter_comma_array(x):
-    if isinstance(x, str):
-        return list(map(lambda x: x.strip(), x.split(',')))
-    else:
-        raise TypeError('Cannot parse the value as a comma-array')
-
-def _kwargs_hint_type_converter_bool(x):
-    if isinstance(x, bool):
-        return x
-    return bool(x)
-
-def _kwargs_hint_type_converter_enum(x):
-    return x
-
-KWARGS_HINT_TYPE_CONVERTER = {
-    'str'       : _kwargs_hint_type_converter_str,
-    'int'       : _kwargs_hint_type_converter_int,
-    'float'     : _kwargs_hint_type_converter_float,
-    'list'      : _kwargs_hint_type_converter_list,
-    'dict'      : _kwargs_hint_type_converter_dict,
-    'json'      : _kwargs_hint_type_converter_json,
-    'commaArray': _kwargs_hint_type_converter_comma_array,
-    'bool'      : _kwargs_hint_type_converter_bool,
-    'enum'      : _kwargs_hint_type_converter_enum,
-}
-
-KWARGS_HINT_FIELD_MAP = {
-    # 类型（Python类型，调用时自动转换）
-    'type': {
-        'type': str,
-        'in'  : [
-            'str',        # 字符串类型，使用 str(x) 自动转换
-            'int',        # 整数类型，使用 int(x) 自动转换
-            'float',      # 浮点数类型，使用 float(x) 自动转换
-            'list',       # list类型，使用 json.loads(x) 自动转换并检查是否为list（已经是list的不会重复转换）
-            'dict',       # dict类型，使用 json.loads(x) 自动转换并检查是否为dict（已经是dict的不会重复转换）
-            'json',       # JSON类型，使用 json.loads(x) 自动转换（已经是dict/list的不会重复转换）
-            'commaArray', # 逗号分隔数组，使用 x.split(',') 自动切割（暂不支持转义）
-            'bool',       # 布尔值类型，使用 bool(x) 自动转换（1 => True, 0 => False）
-            'enum',       # 枚举类型，需要与'in'限制条件连用
-        ],
-    },
-
-    # 类型转换错误时报错
-    # （启用且指定了type后，转换失败直接报错）
-    'raiseTypeError': {
-        'type': bool,
-        'in'  : [True, False],
-    },
-
-    ### 以下输入值检查只有在指定了type，且转换成功后才进行检查 ###
-    # 输入值必须为指定值之一（支持type=str,commaArray,enum）
-    'in': {
-        'type'    : list,
-        'forTypes': ['str', 'commaArray', 'enum'],
-    },
-
-    # 输入值不能为指定值之一（支持type=str,commaArray,enum）
-    'notIn': {
-        'type'    : list,
-        'forTypes': ['str', 'commaArray', 'enum'],
-    },
-
-    # 最小长度（支持type=str,list,dict,json,commaArray）
-    'minLength': {
-        'type'    : int,
-        'forTypes': ['str', 'list', 'dict', 'json', 'commaArray'],
-    },
-
-    # 最大长度（支持type=str,list,dict,json,commaArray）
-    'maxLength': {
-        'type'    : int,
-        'forTypes': ['str', 'list', 'dict', 'json', 'commaArray'],
-    },
-
-    # 最小值（支持type=int,float）
-    'minValue': {
-        'type'    : (int, float),
-        'forTypes': ['int', 'float'],
-    },
-
-    # 最大值（支持type=int,float）
-    'maxValue': {
-        'type'    : (int, float),
-        'forTypes': ['int', 'float'],
-    },
-}
-
 class DataFluxFuncBaseException(Exception):
-    pass
-class JailBreakException(DataFluxFuncBaseException):
     pass
 class NotFoundException(DataFluxFuncBaseException):
     pass
@@ -264,8 +118,6 @@ class NotSupportException(DataFluxFuncBaseException):
 class InvalidOptionException(DataFluxFuncBaseException):
     pass
 class AccessDenyException(DataFluxFuncBaseException):
-    pass
-class NotEnabledException(DataFluxFuncBaseException):
     pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
@@ -1318,9 +1170,14 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         else:
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
-    def _export_as_api(self, safe_scope, title=None, category=None, tags=None, hint=None, kwargs_hint=None,
+    def _export_as_api(self, safe_scope, title,
+        # 控制类参数
         fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
+        # 标记类参数
+        category=None, tags=None,
+        # 集成处理参数
         integration=None, integration_config=None,
+        # 文档控制类参数
         is_hidden=False):
         ### 参数检查/预处理 ###
         extra_config = {}
@@ -1330,78 +1187,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             e = InvalidOptionException('`title` should be a string or unicode')
             raise e
 
-        # 函数标签
-        if tags is not None:
-            if not isinstance(tags, (tuple, list)):
-                e = InvalidOptionException('`tags` should be a tuple or a list')
-                raise e
-
-            for tag in tags:
-                if not isinstance(tag, (six.string_types, six.text_type)):
-                    e = InvalidOptionException('Element of `tags` should be a string or unicode')
-                    raise e
-
-            tags = list(set(tags))
-            tags.sort()
-
-        # 参数提示
-        if kwargs_hint is not None:
-            if not isinstance(kwargs_hint, dict):
-                e = InvalidOptionException('`kwargs_hint` should be a dict')
-                raise e
-
-            for arg_key, arg_hint in kwargs_hint.items():
-                if not isinstance(arg_hint, dict):
-                    e = InvalidOptionException('Value of `kwargs_hint` item should be a dict')
-                    raise e
-
-                for hint_key, hint_value in arg_hint.items():
-                    hint_spec = KWARGS_HINT_FIELD_MAP.get(hint_key)
-                    if not hint_spec:
-                        e = InvalidOptionException('Unsupported kwargs hint key: `{}`'.format(hint_key))
-                        raise e
-
-                    # 检查 hint 配置值类型
-                    if 'type' in hint_spec:
-                        if not isinstance(hint_value, hint_spec['type']):
-                            hint_spec_types = ', '.join(['`{}`'.format(x.__name__) for x in toolkit.as_array(hint_spec['type'])])
-                            e = InvalidOptionException('Invalid type of hint value: `{}` should be {}'.format(hint_key, hint_spec_types))
-                            raise e
-
-                    # 检查 hint 配置值内容
-                    if 'in' in hint_spec:
-                        if hint_value not in hint_spec['in']:
-                            hint_spec_in = ', '.join(['`{}`'.format(repr(x)) for x in toolkit.as_array(hint_spec['in'])])
-                            e = InvalidOptionException('Invalid value of hint value: `{}` should be one of {}'.format(hint_key, hint_spec_in))
-                            raise e
-
-                    # 检查配置与类型是否匹配
-                    if 'forTypes' in hint_spec and 'type' in arg_hint:
-                        if arg_hint['type'] not in hint_spec['forTypes']:
-                            hint_spec_for_types = ', '.join(['`{}`'.format(x) for x in hint_spec['forTypes']])
-                            e = InvalidOptionException('Invalid hint key: `{}` can only be used for arguments of type {}'.format(hint_key, hint_spec_for_types))
-                            raise e
-
-        # 函数分类
-        if category is not None and not isinstance(category, (six.string_types, six.text_type)):
-            e = InvalidOptionException('`category` should be a string or unicode')
-            raise e
-
-        # 功能集成
-        if integration is not None:
-            if not isinstance(integration, (six.string_types, six.text_type)):
-                e = InvalidOptionException('`integration` should be a string or unicode')
-                raise e
-
-            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
-
-        # 函数提示
-        if hint is not None:
-            extra_config['hint'] = hint
-
-        # 隐藏函数（不在文档中出现）
-        if is_hidden is True:
-            extra_config['isHidden'] = True
+        ##############
+        # 控制类参数 #
+        ##############
 
         # 固定Crontab
         if fixed_crontab is not None:
@@ -1460,23 +1248,56 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             extra_config['queue'] = queue
 
+        ##############
+        # 标记类参数 #
+        ##############
+
+        # 函数分类
+        if category is not None and not isinstance(category, (six.string_types, six.text_type)):
+            e = InvalidOptionException('`category` should be a string or unicode')
+            raise e
+
+        # 函数标签
+        if tags is not None:
+            if not isinstance(tags, (tuple, list)):
+                e = InvalidOptionException('`tags` should be a tuple or a list')
+                raise e
+
+            for tag in tags:
+                if not isinstance(tag, (six.string_types, six.text_type)):
+                    e = InvalidOptionException('Element of `tags` should be a string or unicode')
+                    raise e
+
+            tags = list(set(tags))
+            tags.sort()
+
+        ################
+        # 集成处理参数 #
+        ################
+
+        # 功能集成
+        if integration is not None:
+            if not isinstance(integration, (six.string_types, six.text_type)):
+                e = InvalidOptionException('`integration` should be a string or unicode')
+                raise e
+
+            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
+
         # 功能集成配置
         if integration is not None:
             extra_config['integrationConfig'] = integration_config
 
+        ##################
+        # 文档控制类参数 #
+        ##################
+
+        # 隐藏函数（不在文档中出现）
+        if is_hidden is True:
+            extra_config['isHidden'] = True
+
+        # 装饰器函数
         def decorater(F):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
-
-            # 添加 kwargs 附带信息
-            if kwargs_hint is not None:
-                for arg_key, arg_hint in kwargs_hint.items():
-                    if arg_key not in f_kwargs:
-                        e = InvalidOptionException('Kwargs hint for `{}` is not a argument of the function'.format(arg_key))
-                        raise e
-
-                    for hint_field in KWARGS_HINT_FIELD_MAP.keys():
-                        if hint_field in arg_hint:
-                            f_kwargs[arg_key][hint_field] = arg_hint[hint_field]
 
             safe_scope['DFF'].exported_api_funcs.append({
                 'name'       : f_name,
@@ -1494,69 +1315,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             @functools.wraps(F)
             def dff_api_F(*args, **kwargs):
-                # 处理前参数检查检查
-                if kwargs_hint:
-                    for arg_key, arg_value in kwargs.items():
-                        arg_hint = kwargs_hint.get(arg_key) or {}
-                        arg_hint_raise_type_error = arg_hint.get('raiseTypeError') or False
-
-                        is_type_convert_succeed = False
-
-                        # 类型检查
-                        arg_type = arg_hint.get('type')
-                        if arg_type:
-                            arg_type_converter = KWARGS_HINT_TYPE_CONVERTER.get(arg_type)
-                            try:
-                                arg_value = arg_type_converter(arg_value)
-                                kwargs[arg_key] = arg_value
-                            except Exception as e:
-                                if arg_hint_raise_type_error:
-                                    exception_message = ''.join(traceback.format_exception_only(type(e), e))
-                                    e = TypeError('Invalid type of argument `{}`. {}'.format(arg_key, exception_message))
-                                    raise e
-                            else:
-                                is_type_convert_succeed = True
-
-                        # 值检查
-                        if is_type_convert_succeed is True:
-                            arg_in = arg_hint.get('in')
-                            if arg_in:
-                                if arg_value not in arg_in:
-                                    arg_in_list = ', '.join([repr(x) for x in arg_in])
-                                    e = ValueError('Invalid value of argument `{}`. Value should be one of `{}`, got `{}`'.format(arg_key, arg_in_list, repr(arg_value)))
-                                    raise e
-
-                            arg_not_in = arg_hint.get('notIn')
-                            if arg_not_in:
-                                if arg_value in arg_not_in:
-                                    arg_not_in_list = ', '.join([repr(x) for x in arg_not_in])
-                                    e = ValueError('Invalid value of argument `{}`. Value should NOT be one of `{}`, got `{}`'.format(arg_key, arg_not_in_list, repr(arg_value)))
-                                    raise e
-
-                            arg_min_length = arg_hint.get('minLength')
-                            if arg_min_length:
-                                if len(arg_value) < arg_min_length:
-                                    e = ValueError('Invalid length of argument `{}`. Min length is `{}`'.format(arg_key, arg_min_length))
-                                    raise e
-
-                            arg_max_length = arg_hint.get('maxLength')
-                            if arg_max_length:
-                                if len(arg_value) > arg_max_length:
-                                    e = ValueError('Invalid length of argument `{}`. Max length is `{}`'.format(arg_key, arg_max_length))
-                                    raise e
-
-                            arg_min_value = arg_hint.get('minValue')
-                            if arg_min_value:
-                                if arg_value < arg_min_value:
-                                    e = ValueError('Invalid value of argument `{}`. Min value is `{}`'.format(arg_key, arg_min_value))
-                                    raise e
-
-                            arg_max_value = arg_hint.get('maxValue')
-                            if arg_max_value:
-                                if arg_value < arg_max_value:
-                                    e = ValueError('Invalid value of argument `{}`. Max value is `{}`'.format(arg_key, arg_max_value))
-                                    raise e
-
                 return F(*args, **kwargs)
 
             return dff_api_F
