@@ -91,6 +91,9 @@ uploaded-files/
 
 # Vue dist
 client/dist
+client/public/theme-auto.min.css
+client/public/theme-light.min.css
+client/public/theme-dark.min.css
 
 # Other
 docker-stack.yaml
