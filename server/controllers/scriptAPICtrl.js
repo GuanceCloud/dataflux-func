@@ -300,7 +300,16 @@ exports.publish = function(req, res, next) {
           }));
         }
 
-        nextExportedAPIFuncs = celeryRes.retval && celeryRes.retval.result && celeryRes.retval.result.exportedAPIFuncs;
+        try {
+          nextExportedAPIFuncs = celeryRes.retval.result.exportedAPIFuncs
+        } catch(_) {
+          // Nope
+        } finally {
+          // 保证一定为数组
+          if (toolkit.isNothing(nextExportedAPIFuncs)) {
+            nextExportedAPIFuncs = [];
+          }
+        }
 
         // 检查重名函数
         var funcNameMap = {};

@@ -556,7 +556,7 @@ export default {
 
             // 自动保存为静默保存
             this._saveCodeDraft({ mute: true });
-          }, 1000));
+          }, 5 * 1000));
         }
 
         this.$store.commit('updateCodeEditor_isCodeLoaded', true);

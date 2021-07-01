@@ -198,11 +198,11 @@ EntityModel.prototype.delete = function(id, callback) {
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if (data.code) {
+  if ('undefined' !== typeof data.code) {
     data.code = data.code.replace(/\t/g, ' '.repeat(4));
     data.codeMD5 = toolkit.getMD5(data.code);
   }
-  if (data.codeDraft) {
+  if ('undefined' !== typeof data.codeDraft) {
     data.codeDraft = data.codeDraft.replace(/\t/g, ' '.repeat(4));
     data.codeDraftMD5 = toolkit.getMD5(data.codeDraft);
   }
