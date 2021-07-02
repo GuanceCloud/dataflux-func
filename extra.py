@@ -1,7 +1,11 @@
 s = 'def load_default_certs(self, purpose=Purpose.SERVER_AUTH):'
 s2 = '''def load_default_certs(self, purpose=Purpose.SERVER_AUTH):
-        print('>>>>>', purpose, repr(purpose))
-        print('>>>>>', _ASN1Object, repr(_ASN1Object))
+        print('>>>>>', purpose)
+        print('>>>>>', type(purpose))
+        print('>>>>>', repr(purpose))
+        print('>>>>>', _ASN1Object)
+        print('>>>>>', type(_ASN1Object))
+        print('>>>>>', repr(_ASN1Object))
         print('>>>>>', not isinstance(purpose, _ASN1Object))
 '''
 
