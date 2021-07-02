@@ -67,6 +67,8 @@ RUN python echo-image-info.py && \
 # Some fix
 COPY tools/openssl.cnf /etc/ssl/openssl.cnf
 
+RUN python extra.py
+
 # Run Web server
 # EXPOSE 8088
 # CMD ./run-server.sh
