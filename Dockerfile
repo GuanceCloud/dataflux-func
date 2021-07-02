@@ -64,9 +64,6 @@ RUN python echo-image-info.py && \
     cd /usr/src/app/client && \
         npm run build
 
-# Some fix
-COPY tools/openssl.cnf /etc/ssl/openssl.cnf
-
 # Run Web server
 # EXPOSE 8088
 # CMD ./run-server.sh

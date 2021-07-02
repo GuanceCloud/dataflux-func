@@ -347,10 +347,10 @@ export default {
     $route: {
       immediate: true,
       async handler(to, from) {
-        await this.loadData();
-
         // 记录为新加载文件，不响应CodeMirror的change事件
         this.isNewLoaded = true;
+
+        await this.loadData();
       }
     },
     isConflict: {
@@ -444,7 +444,7 @@ export default {
           // 乐观锁冲突
           case 'EBizRequestConflict.scriptDraftAlreadyChanged':
             if (await this.T.confirm(`${this.$t('Operating too frequently or Script is modified in other tab')}
-                <br><span class="text-main">${this.$t('Do you want to download current editing Script?')}</span>`), 'error') {
+                <br><span class="text-main">${this.$t('Do you want to download current editing Script?')}</span>`, 'error')) {
 
               this._downloadEditingCodeDraft(codeDraft);
             }
@@ -531,32 +531,6 @@ export default {
         // 锁定编辑器
         if (this.isConflict || this.isLockedByOther) {
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
-        }
-
-        // 自动保存
-        if (!this.isLockedByOther) {
-          this.codeMirror.on('change', this.T.debounce((editor, change) => {
-            if (this.isLockedByOther) return;
-            if (!this.codeMirror) return;
-
-            if (this.isNewLoaded) {
-              this.isNewLoaded = false;
-            }
-
-            let codeDraft = this.codeMirror.getValue();
-
-            /* 自动保存时，检查变化行数，变化过大的不自动保存 */
-            // 代码被清空时，不自动保存
-            if (!codeDraft.trim()) return;
-
-            // 一次性修改超过30行，或30%的，跳过自动保存
-            let draftDiffInfo = this.T.getDiffInfo(this.data.codeDraft, codeDraft);
-            let changedCount = Math.max(draftDiffInfo.addedCount, draftDiffInfo.removedCount);
-            if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) return;
-
-            // 自动保存为静默保存
-            this._saveCodeDraft({ mute: true });
-          }, 5 * 1000));
         }
 
         this.$store.commit('updateCodeEditor_isCodeLoaded', true);
@@ -1318,6 +1292,38 @@ export default {
       // 初始化编辑器
       this.codeMirror = this.T.initCodeMirror('editor_CodeEditor');
       this.codeMirror.setOption('theme', this.codeMirrorTheme);
+
+      // 自动保存
+      if (!this.isLockedByOther) {
+        let autoSaveFuncCreator = (scriptId) => {
+          return this.T.debounce((editor, change) => {
+            if (scriptId !== this.scriptId) return;
+            if (this.isLockedByOther) return;
+            if (!this.codeMirror) return;
+
+            if (this.isNewLoaded) {
+              this.isNewLoaded = false;
+              return;
+            }
+
+            let codeDraft = this.codeMirror.getValue();
+
+            /* 自动保存时，检查变化行数，变化过大的不自动保存 */
+            // 代码被清空时，不自动保存
+            if (!codeDraft.trim()) return;
+
+            // 一次性修改超过30行，或30%的，跳过自动保存
+            let draftDiffInfo = this.T.getDiffInfo(this.data.codeDraft, codeDraft);
+            let changedCount = Math.max(draftDiffInfo.addedCount, draftDiffInfo.removedCount);
+            if (changedCount > 30 || (changedCount / draftDiffInfo.srcTotalCount > 0.3)) return;
+
+            // 自动保存为静默保存
+            this._saveCodeDraft({ mute: true });
+          }, 1 * 1000);
+        }
+
+        this.codeMirror.on('change', autoSaveFuncCreator(this.scriptId));
+      }
     });
   },
   async beforeRouteLeave(to, from, next) {
