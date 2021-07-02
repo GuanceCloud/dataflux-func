@@ -108,6 +108,19 @@
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件服务」进入模块
                   </div>
                 </el-form-item>
+
+                <el-form-item prop="FileService">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启函数文档模块"
+                    v-model="form.FuncDoc">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于展示所有可用函数的文档功能
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数文档」进入模块
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -164,6 +177,7 @@ export default {
         PipTool      : false,
         FileTool     : false,
         FileService  : false,
+        FuncDoc      : false,
       },
     }
   },

@@ -113,7 +113,7 @@ export function getBaseURL() {
 };
 
 export function autoScrollTable(y) {
-  if (y && vm.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
+  if (y && window.app.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
     // 滚动到指定高度
     let el = document.getElementsByClassName('el-table__body-wrapper')[0];
     if (el) {

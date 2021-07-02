@@ -270,7 +270,7 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = {kwargs: funcCallKwargsJSON};
+      let apiBodyExample = { kwargs: funcCallKwargsJSON };
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
       this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);

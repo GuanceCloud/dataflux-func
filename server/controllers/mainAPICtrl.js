@@ -862,11 +862,9 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       var ret = null;
 
       if (funcCallOptions.saveResult) {
-        var resultURL = urlFor('mainAPI.getFuncResult', {query: {taskId: taskId}});
-
         ret = toolkit.initRet({
           taskId   : taskId,
-          resultURL: resultURL,
+          resultURL: urlFor('mainAPI.getFuncResult', {query: {taskId: taskId}}),
         });
 
       } else {
@@ -958,6 +956,10 @@ function _doAPIResponse(locals, res, ret, options, callback) {
       var file     = ret.data.result.raw;
       var fileName = responseControl.downloadFile;
       return locals.sendFile(file, fileName);
+
+    } else if (funcCallOptions.execMode === 'async') {
+      // 异常步调
+      return locals.sendJSON(ret);
 
     } else {
       // 作为数据返回

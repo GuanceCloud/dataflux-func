@@ -6,7 +6,6 @@ Settings     : 设置
 Sign Out     : 登出
 Not Signed In: 尚未登录
 Auth Link Doc: 授权链接文档
-Func Doc     : 函数文档
 Signed In    : 已登录
 Light Mode   : 明亮模式
 Dark Mode    : 黑暗模式
@@ -99,12 +98,6 @@ Auto         : 自动
         <span>
           <i class="fa fa-fw fa-link"></i>
           <span class="hidden-md-and-down">{{ $t('Auth Link Doc') }}</span>
-        </span>
-      </el-menu-item>
-      <el-menu-item class="menu-right" :index="`${T.getBaseURL()}/#/func-doc`">
-        <span>
-          <i class="fa fa-fw fa-book"></i>
-          <span class="hidden-md-and-down">{{ $t('Func Doc') }}</span>
         </span>
       </el-menu-item>
     </el-menu>

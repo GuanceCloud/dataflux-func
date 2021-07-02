@@ -72,8 +72,8 @@
           </el-input>
           <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
           <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
-          <InfoBlock v-if="apiCustomKwargsSupport" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
-          <InfoBlock v-if="apiFileUploadSupport" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
+          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+          <InfoBlock v-if="supportFileUpload" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
         </el-col>
         <el-col :span="2">
           <CopyButton :content="apiBodyExample"></CopyButton>
@@ -222,7 +222,25 @@ export default {
     callOptions: {
       deep: true,
       handler(val) {
-        this.update(this.apiURLExample, this.apiBodyExample);
+        let apiBodyExample = null;
+        try { apiBodyExample = JSON.parse(this.apiBodyExample) } catch(_) {}
+
+        if (!apiBodyExample) return;
+
+        apiBodyExample.options = apiBodyExample.options || {};
+        for (let k in val) {
+          if (val[k] === this.DEFAULT_CALL_OPTIONS[k]) {
+            delete apiBodyExample.options[k];
+          } else {
+            apiBodyExample.options[k] = val[k];
+          }
+        }
+
+        if (this.T.isNothing(apiBodyExample.options)) {
+          delete apiBodyExample.options;
+        }
+
+        this.apiBodyExample = JSON.stringify(apiBodyExample, null, 2);
       },
     },
   },
@@ -252,68 +270,73 @@ export default {
         return url;
       }
     },
-    update(apiURLExample, apiBodyExample, funcKwargs) {
-      if ('string' === typeof apiBodyExample) {
-        apiBodyExample = JSON.parse(apiBodyExample);
+    washAPIBody(apiBody) {
+      apiBody = this.T.jsonCopy(apiBody);
+
+      if (this.T.isNothing(apiBody)) {
+        return apiBody;
       }
 
-      let nextCallOptions = {};
-      let fillOptions = (field, skipValue) => {
-        if (this.callOptions[field] === skipValue) return;
-        nextCallOptions[field] = this.callOptions[field];
-      }
-
-      fillOptions('execMode', 'sync');
-      fillOptions('saveResult', false);
-      fillOptions('timeout',    this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'));
-      fillOptions('apiTimeout', this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'));
-
-      let nextAPIFileUploadSupport   = false;
-      let nextAPICustomKwargsSupport = false;
-      if (!this.T.isNothing(funcKwargs)) {
-        nextAPIFileUploadSupport = this.common.isFuncArgumentPlaceholder(funcKwargs['funcKwargs']);
-
-        for (let k in funcKwargs) {
-          if (k.indexOf('**') < 0) continue;
-
-          nextAPICustomKwargsSupport = true;
-          break;
-        }
-      }
-
-      let nextAPIBodyExample = {}
-      if (!this.T.isNothing(apiBodyExample.kwargs)) {
-        nextAPIBodyExample.kwargs = apiBodyExample.kwargs;
-
-        // 暂定：不展示**kwargs参数
-        if (!this.T.isNothing(nextAPIBodyExample.kwargs)) {
-          for (let k in nextAPIBodyExample.kwargs) {
-            if (k.indexOf('**') < 0) continue;
-
-            delete nextAPIBodyExample.kwargs[k];
+      if (!this.T.isNothing(apiBody.kwargs)) {
+        for (let k in apiBody.kwargs) {
+          // 不展示**kwargs、files
+          if (k.indexOf('**') === 0 || k === 'files') {
+            delete apiBody.kwargs[k];
           }
         }
       }
 
-      if (!this.T.isNothing(nextCallOptions)) {
-        nextAPIBodyExample.options = nextCallOptions;
+      if (this.T.isNothing(apiBody.kwargs)) {
+        delete apiBody.kwargs;
+      }
+      if (this.T.isNothing(apiBody.options)) {
+        delete apiBody.options;
+      }
+      return apiBody;
+    },
+    update(apiURLExample, apiBodyExample, funcKwargs) {
+      apiBodyExample         = apiBodyExample         || {};
+      apiBodyExample.kwargs  = apiBodyExample.kwargs  || {};
+      apiBodyExample.options = apiBodyExample.options || {};
+      funcKwargs             = funcKwargs             || {};
+
+      // 初始化
+      this.supportFileUpload   = false;
+      this.supportCustomKwargs = false;
+      for (let k in this.callOptions) {
+        this.callOptions[k] = this.DEFAULT_CALL_OPTIONS[k];
       }
 
-      this.apiFileUploadSupport   = nextAPIFileUploadSupport;
-      this.apiCustomKwargsSupport = nextAPICustomKwargsSupport;
-      this.apiURLExample          = apiURLExample;
-
-      this.apiBodyExample = '';
-      try { delete nextAPIBodyExample.kwargs.files } catch(_) {}
-      if (!this.T.isNothing(nextAPIBodyExample)) {
-        this.apiBodyExample = JSON.stringify(nextAPIBodyExample, null, 2);
+      // 判断是否支持上传文件
+      if (apiBodyExample.kwargs.files) {
+        this.supportFileUpload = this.common.isFuncArgumentPlaceholder(apiBodyExample.kwargs.files);
       }
+
+      // 判断是否支持额外参数
+      for (let k in funcKwargs) {
+        if (k.indexOf('**') === 0) {
+          this.supportCustomKwargs = true;
+          break;
+        }
+      }
+
+      // 清洗apiBodyExample
+      apiBodyExample = this.washAPIBody(apiBodyExample);
+      if (this.T.isNothing(apiBodyExample)) {
+        apiBodyExample = '';
+      } else {
+        apiBodyExample = JSON.stringify(apiBodyExample, null, 2);
+      }
+
+      this.apiURLExample  = apiURLExample;
+      this.apiBodyExample = apiBodyExample;
 
       this.show = true;
     },
 
     getAPIURLWithQueryExample(format, asText, decodeURL) {
       if (!this.apiBody) return null;
+      let apiBody = this.washAPIBody(this.apiBody);
 
       format = format || 'normal';
       asText = asText || false;
@@ -322,34 +345,29 @@ export default {
       let query = {};
       switch(format) {
         case 'normal':
-          query = this.T.jsonCopy(this.apiBody);
-          try { delete query.kwargs.files } catch(_) {}
-
+          query = apiBody || query;
           url = this.T.formatURL(this.apiURLExample, {query: query});
           break;
 
         case 'simplified':
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              if (k === 'files') continue;
-
-              query[k] = this.apiBody.kwargs[k];
-            }
+          if (apiBody && apiBody.kwargs) {
+            query = apiBody.kwargs || query;
           }
           url = this.T.formatURL(`${this.apiURLExample}/simplified`, {query: query});
           break;
 
         case 'flattened':
-          if (this.apiBody.kwargs) {
-            for (let k in this.apiBody.kwargs) {
-              if (k === 'files') continue;
-
-              query[`kwargs_${k}`] = this.apiBody.kwargs[k];
+          if (apiBody) {
+            if (apiBody.kwargs) {
+              for (let k in apiBody.kwargs) {
+                query[`kwargs_${k}`] = apiBody.kwargs[k];
+              }
             }
-          }
-          if (this.apiBody.options) {
-            for (let k in this.apiBody.options) {
-              query[`options_${k}`] = this.apiBody.options[k];
+
+            if (apiBody.options) {
+              for (let k in apiBody.options) {
+                query[`options_${k}`] = apiBody.options[k];
+              }
             }
           }
           url = this.T.formatURL(`${this.apiURLExample}/flattened`, {query: query});
@@ -367,6 +385,7 @@ export default {
     },
     getAPICallByCurlPostExample(format) {
       if (!this.apiBody) return null;
+      let apiBody = this.washAPIBody(this.apiBody);
 
       format = format || 'normal';
 
@@ -377,13 +396,10 @@ export default {
       switch(format) {
         case 'normal':
           url = this.apiURLExample;
+          headerOpt = `-H "Content-Type: application/json"`;
 
-          if (!this.T.isNothing(this.apiBody)) {
-            headerOpt = `-H "Content-Type: application/json"`
-
-            let body = this.T.jsonCopy(this.apiBody);
-            try { delete body.kwargs.files } catch(_) {}
-            dataOpt = `-d '${JSON.stringify(body)}'`
+          if (!this.T.isNothing(apiBody)) {
+            dataOpt = `-d '${JSON.stringify(apiBody)}'`
           }
 
           break;
@@ -391,57 +407,61 @@ export default {
         case 'simplified':
           url = `${this.apiURLExample}/${format}`;
 
-          if (!this.T.isNothing(this.apiBody.kwargs)) {
-            // headerOpt = `-H "Content-Type: multipart/form-data"`
-
-            if (this.apiBody.kwargs) {
-              for (let k in this.apiBody.kwargs) {
-                if (k === 'files') continue;
-                dataOpt += ` -F ${k}=${this.apiBody.kwargs[k]}`;
-              }
-
-              if (this.apiFileUploadSupport) {
-                dataOpt += ` -F files=@FILE_TO_UPLOAD`;
-              }
+          if (!this.T.isNothing(apiBody.kwargs)) {
+            for (let k in apiBody.kwargs) {
+              dataOpt += ` -F ${k}=${apiBody.kwargs[k]}`;
             }
           }
+
+          if (this.supportFileUpload) {
+            headerOpt = `-H "multipart/form-data"`;
+            dataOpt += ` -F files=@FILE_TO_UPLOAD`;
+          } else {
+            headerOpt = `-H "application/x-www-form-urlencoded"`;
+          }
+
           break;
 
         case 'flattened':
           url = `${this.apiURLExample}/${format}`;
+          headerOpt = `-H "application/x-www-form-urlencoded"`;
 
-          if (!this.T.isNothing(this.apiBody.kwargs) && !this.T.isNothing(this.apiBody.options)) {
-            // headerOpt = `-H "Content-Type: multipart/form-data"`
-
-            if (this.apiBody.kwargs) {
-              for (let k in this.apiBody.kwargs) {
-                if (k === 'files') continue;
-                dataOpt += ` -F kwargs_${k}=${this.apiBody.kwargs[k]}`;
-              }
-
-              if (this.apiFileUploadSupport) {
-                dataOpt += ` -F kwargs_files=@FILE_TO_UPLOAD`;
-              }
-            }
-
-            if (this.apiBody.options) {
-              for (let k in this.apiBody.options) {
-                dataOpt += ` -F options_${k}=${this.apiBody.options[k]}`;
-              }
+          if (!this.T.isNothing(apiBody.kwargs)) {
+            for (let k in apiBody.kwargs) {
+              dataOpt += ` -F kwargs_${k}=${apiBody.kwargs[k]}`;
             }
           }
+
+          if (!this.T.isNothing(apiBody.options)) {
+            for (let k in apiBody.options) {
+              dataOpt += ` -F options_${k}=${apiBody.options[k]}`;
+            }
+          }
+
+          if (this.supportFileUpload) {
+            dataOpt += ` -F kwargs_files=@FILE_TO_UPLOAD`;
+          }
+
           break;
       }
 
       let curlCmd = 'curl -X POST';
-      if (headerOpt) curlCmd += ` ${headerOpt}`;
-      if (dataOpt)   curlCmd += ` ${dataOpt}`;
-      if (url)       curlCmd += ` ${url}`;
+      if (headerOpt) curlCmd += ` ${headerOpt.trim()}`;
+      if (dataOpt)   curlCmd += ` ${dataOpt.trim()}`;
+      if (url)       curlCmd += ` ${url.trim()}`;
 
       return curlCmd;
     },
   },
   computed: {
+    DEFAULT_CALL_OPTIONS() {
+      return {
+        execMode  : 'sync',
+        saveResult: false,
+        timeout   : this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'),
+        apiTimeout: this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
+      }
+    },
     showOptions() {
       return this.showExecModeOption
           || this.showSaveResultOption
@@ -553,16 +573,18 @@ export default {
     return {
       show: false,
 
-      apiFileUploadSupport  : false,
-      apiCustomKwargsSupport: false,
-      apiURLExample         : null,
-      apiBodyExample        : null,
+      supportFileUpload  : false,
+      supportCustomKwargs: false,
+
+      apiURLExample : null,
+      apiBodyExample: null,
+      funcKwargs    : null,
 
       callOptions: {
-        execMode  : 'sync',
-        saveResult: false,
-        timeout   : this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_TIMEOUT'),
-        apiTimeout: this.$store.getters.CONFIG('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
+        execMode  : null,
+        saveResult: null,
+        timeout   : null,
+        apiTimeout: null,
       }
     }
   },

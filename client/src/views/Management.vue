@@ -16,7 +16,8 @@ Access Key        : AccessKey
 System Metric     : 系统指标
 PIP Tool          : PIP工具
 File Tool         : 文件工具
-File Service       : 文件服务
+File Service      : 文件服务
+Func Doc          : 函数文档
 </i18n>
 
 <template>
@@ -27,9 +28,9 @@ File Service       : 文件服务
         <div class="aside-content">
           <el-menu
             mode="vertical"
-            :router="true"
             :unique-opened="true"
-            :default-active="$route.path">
+            :default-active="$route.path"
+            @select="onNaviMenuSelect">
             <el-menu-item index="/management/overview">
               <span>
                 <i class="fa fa-fw fa-dashboard"></i>
@@ -122,34 +123,47 @@ File Service       : 文件服务
               </span>
             </el-menu-item>
 
-            <el-menu-item class="experimental-feature" index="/management/access-key-list" v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')">
+            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
+              class="experimental-feature" index="/management/access-key-list">
               <span>
                 <i class="fa fa-fw fa-key"></i>
                 {{ $t('Access Key') }}
               </span>
             </el-menu-item>
-            <el-menu-item class="experimental-feature" index="/management/sys-stats" v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')"
+              class="experimental-feature" index="/management/sys-stats">
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
                 {{ $t('System Metric') }}
               </span>
             </el-menu-item>
-            <el-menu-item class="experimental-feature" index="/management/pip-tool" v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')"
+              class="experimental-feature" index="/management/pip-tool" >
               <span>
                 <i class="fa fa-fw fa-cubes"></i>
                 {{ $t('PIP Tool') }}
               </span>
             </el-menu-item>
-            <el-menu-item class="experimental-feature" index="/management/file-tool" v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')"
+              class="experimental-feature" index="/management/file-tool">
               <span>
                 <i class="fa fa-fw fa-file"></i>
                 {{ $t('File Tool') }}
               </span>
             </el-menu-item>
-            <el-menu-item class="experimental-feature" index="/management/file-service-list" v-if="$store.getters.isExperimentalFeatureEnabled('FileService')">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileService')"
+              class="experimental-feature" index="/management/file-service-list">
               <span>
                 <i class="fa fa-fw fa-folder-open"></i>
                 {{ $t('File Service') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
+              class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
+              <span>
+                <i class="fa fa-fw fa-book"></i>
+                <span class="hidden-md-and-down">{{ $t('Func Doc') }}</span>
               </span>
             </el-menu-item>
           </el-menu>
@@ -171,6 +185,15 @@ export default {
   watch: {
   },
   methods: {
+    onNaviMenuSelect(index) {
+      if (!index) return;
+
+      if (this.T.startsWith(index, '/')) {
+        this.$router.push({ path: index });
+      } else {
+        window.open(index);
+      }
+    },
   },
   computed: {
   },

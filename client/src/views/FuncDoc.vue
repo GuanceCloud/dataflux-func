@@ -20,37 +20,10 @@
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.id"
-                :title="scope.row.title"
-                :name="scope.row.name"
-                :kwargsJSON="scope.row.kwargsJSON"></FuncInfo>
+                :definition="scope.row.definition"
+                :title="scope.row.title"></FuncInfo>
 
-              <strong class="func-title">{{ scope.row.title || scope.row.name }}</strong>
-
-              <br>
-              <el-tag type="info" size="mini"><code>def</code></el-tag>
-              <code class="text-main text-small">{{ `${scope.row.id}(${T.isNothing(scope.row.kwargsJSON) ? '' : '...'})` }}</code>
-              <GotoFuncButton :funcId="scope.row.id"></GotoFuncButton>
-
-              <br>
-              <span class="text-info">&#12288;参数列表:</span>
-              <div class="func-kwargs-area">
-                <span v-if="T.isNothing(scope.row.kwargsJSON)" class="text-info">无参数</span>
-                <template v-else>
-                  <div class="func-kwargs-block" v-for="(value, name, index) in scope.row.kwargsJSON">
-                    <code class="func-kwargs-name">{{ name }}</code>
-                    <code class="func-kwargs-equal">:</code>
-                    <code class="func-kwargs-value" v-if="name.indexOf('**') === 0">自定义</code>
-                    <code class="func-kwargs-value" v-else-if="!value || !value.default">必选</code>
-                    <el-tooltip placement="top" v-else>
-                      <pre class="func-kwargs-value" slot="content">默认值为：{{ JSON.stringify(value.default, null, 2) }}</pre>
-                      <code class="func-kwargs-value">可选</code>
-                    </el-tooltip>
-                    <span v-if="index < T.jsonLength(scope.row.kwargsJSON) - 1">,&nbsp;</span>
-                  </div>
-                </template>
-              </div>
-
-              <template v-if="!T.isNothing(scope.row.category) || !T.isNothing(scope.row.integration) || !T.isNothing(scope.row.tagsJSON)">
+              <div v-if="!T.isNothing(scope.row.category) || !T.isNothing(scope.row.integration) || !T.isNothing(scope.row.tagsJSON)">
                 <template v-if="!T.isNothing(scope.row.category)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
@@ -59,6 +32,7 @@
                 </template>
 
                 <template v-if="!T.isNothing(scope.row.integration)">
+                  <br>
                   <span class="text-info">&#12288;集成:</span>
                   <el-tag size="mini" type="success">
                     <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.integration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.integration).name }}</code>
@@ -67,10 +41,11 @@
                 </template>
 
                 <template v-if="!T.isNothing(scope.row.tagsJSON)">
+                  <br>
                   <span class="text-info">&#12288;标签:</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.tagsJSON" :key="t"><code>{{ t }}</code></el-tag>
                 </template>
-              </template>
+              </div>
             </template>
           </el-table-column>
 
@@ -140,9 +115,9 @@ export default {
 
       let kwargsJSON = {};
       for (let k in d.kwargsJSON) if (d.kwargsJSON.hasOwnProperty(k)) {
-        kwargsJSON[k] = `<${k.toUpperCase()}>`;
+        kwargsJSON[k] = this.$store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST')[0];
       }
-      let apiBodyExample = {kwargs: kwargsJSON};
+      let apiBodyExample = { kwargs: kwargsJSON };
 
       this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },

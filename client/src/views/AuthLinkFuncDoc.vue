@@ -37,7 +37,6 @@
 
                 <template v-if="!T.isNothing(scope.row.funcCategory) || !T.isNothing(scope.row.funcIntegration) || !T.isNothing(scope.row.funcTagsJSON)">
                   <br>
-
                   <template v-if="!T.isNothing(scope.row.funcCategory)">
                     <span class="text-info">&#12288;分类:</span>
                     <el-tag size="mini">
@@ -157,7 +156,7 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = {kwargs: funcCallKwargsJSON};
+      let apiBodyExample = { kwargs: funcCallKwargsJSON };
 
       this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
