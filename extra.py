@@ -1,3 +1,4 @@
+f = '/usr/lib/python3.8/ssl.py'
 s = 'def load_default_certs(self, purpose=Purpose.SERVER_AUTH):'
 s2 = '''def load_default_certs(self, purpose=Purpose.SERVER_AUTH):
         print('>>>>>', _ASN1Object)
@@ -18,11 +19,20 @@ s2 = '''def load_default_certs(self, purpose=Purpose.SERVER_AUTH):
 '''
 
 src = ''
+with open(f, 'r') as _f:
+    src = _f.read().replace(s, s2)
 
-with open('/usr/lib/python3.8/ssl.py', 'r') as _f:
-    src = _f.read()
+with open(f, 'w') as _f:
+    _f.write(src)
 
-src = src.replace(s, s2)
 
-with open('/usr/lib/python3.8/ssl.py', 'w') as _f:
+f = '/usr/local/lib/python3.8/dist-packages/urllib3/connection.py'
+s = 'context.load_default_certs()'
+s2 = 'context.load_default_certs(ssl.Purpose.SERVER_AUTH)'
+
+src = ''
+with open(f, 'r') as _f:
+    src = _f.read().replace(s, s2)
+
+with open(f, 'w') as _f:
     _f.write(src)
