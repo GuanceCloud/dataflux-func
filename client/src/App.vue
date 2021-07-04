@@ -98,7 +98,7 @@ export default {
         let isConflict = resData.data.isConflict;
 
         // 记录路径冲突状态
-        this.$store.commit('setConflictedRoute', {
+        this.$store.commit('updateConflictedRoute', {
           routeInfo : this.$route,
           isConflict: isConflict,
           conflictId: resData.data.conflictId,

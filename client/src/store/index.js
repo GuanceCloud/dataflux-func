@@ -10,7 +10,6 @@ const STATE_CONFIG = {
   isLoaded                                 : { persist: false, syncXTab: false },
   processingTaskCount                      : { persist: false, syncXTab: false },
   processingTaskUpdateTime                 : { persist: false, syncXTab: false },
-  isSocketIOReady                          : { persist: true,  syncXTab: true  },
   conflictedRouteMap                       : { persist: false, syncXTab: false },
   clientId                                 : { persist: true,  syncXTab: true  },
   userProfile                              : { persist: true,  syncXTab: true  },
@@ -41,15 +40,17 @@ const STATE_CONFIG = {
   enabledExperimentalFeatureMap            : { persist: true,  syncXTab: true  },
   highlightedTableDataId                   : { persist: false, syncXTab: false },
   shortcutAction                           : { persist: false, syncXTab: false },
+  isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
+  isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
 };
 const MUTATION_CONFIG = {
-  updateSystemConfig                             : { persist: true  },
   switchToBuiltinAuth                            : { persist: false },
+  updateSystemConfig                             : { persist: true  },
   updateLoadStatus                               : { persist: false },
   startProcessing                                : { persist: false },
   endProcessing                                  : { persist: false },
   updateSocketIOStatus                           : { persist: false },
-  setConflictedRoute                             : { persist: false },
+  updateConflictedRoute                          : { persist: false },
   updateUserProfile                              : { persist: false },
   updateXAuthToken                               : { persist: true  },
   updateUILocale                                 : { persist: true  },
@@ -77,6 +78,8 @@ const MUTATION_CONFIG = {
   updateEnabledExperimentalFeatures              : { persist: true  },
   updateHighlightedTableDataId                   : { persist: false },
   updateShortcutAction                           : { persist: false },
+  dismissMonkeyPatchNotice                       : { persist: false },
+  disableMonkeyPatchNotice                       : { persist: true  },
 
   syncState: { persist: false },
 }
@@ -174,6 +177,10 @@ export default new Vuex.Store({
 
     // 快捷动作
     shortcutAction: null,
+
+    // 隐藏MonkeyPatch提示
+    isMonkeyPatchNoticeDismissed: false,
+    isMonkeyPatchNoticeDisabled : false,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -292,11 +299,11 @@ export default new Vuex.Store({
     isExperimentalFeatureEnabled: state => key => {
       return !!(state.enabledExperimentalFeatureMap && state.enabledExperimentalFeatureMap[key]);
     },
+    showMonkeyPatchNotice: (state) => {
+      return !state.isMonkeyPatchNoticeDismissed && !state.isMonkeyPatchNoticeDisabled;
+    },
   },
   mutations: {
-    updateSystemConfig(state, config) {
-      state.systemConfig = config || {};
-    },
     switchToBuiltinAuth(state) {
       state.xAuthToken  = null;
       state.userProfile = null;
@@ -304,6 +311,9 @@ export default new Vuex.Store({
       var nextClientConfig = toolkit.jsonCopy(state.systemConfig);
       nextClientConfig.ftUserAuthEnabled = false;
       state.systemConfig = nextClientConfig;
+    },
+    updateSystemConfig(state, config) {
+      state.systemConfig = config || {};
     },
 
     updateLoadStatus(state, isLoaded) {
@@ -327,7 +337,7 @@ export default new Vuex.Store({
       state.isSocketIOAuthed = isAuthed;
     },
 
-    setConflictedRoute(state, payload) {
+    updateConflictedRoute(state, payload) {
       let routeKey = getRouteKey(payload.routeInfo);
 
       let nextConflictedRouteMap = toolkit.jsonCopy(state.conflictedRouteMap);
@@ -447,6 +457,13 @@ export default new Vuex.Store({
     },
     updateShortcutAction(state, value) {
       state.shortcutAction = value;
+    },
+
+    dismissMonkeyPatchNotice(state) {
+      state.isMonkeyPatchNoticeDismissed = true;
+    },
+    disableMonkeyPatchNotice(state) {
+      state.isMonkeyPatchNoticeDisabled = true;
     },
 
     syncState(state, nextState) {

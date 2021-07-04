@@ -105,6 +105,11 @@ Please check the code and try again                                             
 Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.  : 脚本发布中，正常几秒就能完成。如长时间无响应请尝试刷新页面
 Func is running. If it is not responding for a long time, please try refreshing.                                                : 函数执行中，长时间无响应后再尝试刷新页面
 Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing. : 函数执行中，执行最多等待 {seconds}，长时间无响应后再尝试刷新页面
+
+Do NOT use monkey patch: 请勿使用猴子补丁
+'For performance reasons, the script does not run in a sandbox or isolated environment.': 出于性能考虑，脚本并非运行在沙盒或隔离环境中。
+'Using monkey patches may cause problems to the entire system.'                         : 使用猴子补丁可能导致系统整体出现问题。
+'Therefore, please avoid using monkey patches in scripts.'                              : 因此，请避免在脚本中使用猴子补丁。
 </i18n>
 
 <template>
@@ -308,6 +313,38 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
           </div>
 
           <LongTextDialog :title="$t('Diff between published and previously published')" :diffMode="true" ref="longTextDialog"></LongTextDialog>
+
+          <!-- 猴子补丁提示 -->
+          <el-dialog
+            :visible.sync="showMonkeyPatchNotice"
+            :show-close="false"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            width="650px">
+            <div class="monkey-patch-notice-container">
+              <el-image :src="img_monkeyPatchNotice"></el-image>
+              <el-card class="monkey-patch-notice-content">
+                <i class="fa fa-fw fa-warning monkey-patch-notice-icon"></i>
+                <p>
+                  {{ $t('For performance reasons, the script does not run in a sandbox or isolated environment.') }}
+                  {{ $t('Using monkey patches may cause problems to the entire system.') }}
+                </p>
+                <p>
+                  {{ $t('Therefore, please avoid using monkey patches in scripts.') }}
+                </p>
+              </el-card>
+            </div>
+            <span slot="title">
+              <div class="monkey-patch-notice-title text-bad">
+                <i class="fa fa-fw fa-warning"></i>
+                {{ $t('Do NOT use monkey patch') }}
+              </div>
+            </span>
+            <span slot="footer">
+              <el-button type="text" @click="closeMonkeyPatchNotice(true)">{{ $t("Don't prompt again") }}</el-button>
+              <el-button size="small" @click="closeMonkeyPatchNotice()">{{ $t('OK') }}</el-button>
+            </span>
+          </el-dialog>
         </el-container>
       </template>
 
@@ -336,6 +373,8 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
 import LongTextDialog from '@/components/LongTextDialog'
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
+
+import img_monkeyPatchNotice from '@/assets/img/monkey-patch-notice.png'
 
 // @ is an alias to /src
 export default {
@@ -1136,6 +1175,13 @@ export default {
         });
       }
     },
+    closeMonkeyPatchNotice(disable) {
+      this.showMonkeyPatchNotice = false;
+      this.$store.commit('dismissMonkeyPatchNotice');
+      if (disable) {
+        this.$store.commit('disableMonkeyPatchNotice');
+      }
+    },
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1280,6 +1326,10 @@ export default {
       // DIFF信息
       diffAddedCount  : 0,
       diffRemovedCount: 0,
+
+      // 猴子补丁提示
+      img_monkeyPatchNotice: img_monkeyPatchNotice,
+      showMonkeyPatchNotice: false,
     }
   },
   created() {
@@ -1325,6 +1375,13 @@ export default {
         this.codeMirror.on('change', autoSaveFuncCreator(this.scriptId));
       }
     });
+
+    setTimeout(() => {
+      // 猴子补丁提示
+      if (this.$store.getters.showMonkeyPatchNotice) {
+        this.showMonkeyPatchNotice = true;
+      }
+    }, 1000);
   },
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮
@@ -1390,6 +1447,35 @@ export default {
   padding-left: 10px;
   position: relative;
   white-space: nowrap;
+}
+.monkey-patch-notice-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.monkey-patch-notice-title {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+.monkey-patch-notice-content {
+  width: 350px;
+  border-radius: 20px;
+  position: relative;
+}
+.monkey-patch-notice-content p {
+  font-size: 16px;
+  word-break: break-word;
+  position: relative;
+}
+.monkey-patch-notice-icon {
+  position: absolute;
+  font-size: 200px;
+  left: 130px;
+  top: 40px;
+  color: #ff660030;
+  line-height: 200px;
+  z-index: 0;
 }
 </style>
 <style>
