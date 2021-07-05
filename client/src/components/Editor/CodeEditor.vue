@@ -342,7 +342,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             </span>
             <span slot="footer">
               <el-button type="text" @click="closeMonkeyPatchNotice(true)">{{ $t("Don't prompt again") }}</el-button>
-              <el-button size="small" @click="closeMonkeyPatchNotice()">{{ $t('OK') }}</el-button>
+              <el-button type="primary" size="small" @click="closeMonkeyPatchNotice()">{{ $t('OK') }}</el-button>
             </span>
           </el-dialog>
         </el-container>
