@@ -554,7 +554,7 @@ export default {
         // 载入代码
         if (this.codeMirror) {
           this.codeMirror.setValue('');
-          this.codeMirror.setValue(this.data[options.codeField] || this.data.code || '');
+          this.codeMirror.setValue(this.data[options.codeField] || '');
           this.codeMirror.refresh();
           this.codeMirror.focus();
         }
