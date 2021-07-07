@@ -145,12 +145,18 @@ function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions
     path  : 'FAKE',
     method: 'FAKE',
     params: { },
-    body  : {kwargs: funcCallKwargs, options: funcCallOptions },
+    body: {
+      kwargs : funcCallKwargs,
+      options: funcCallOptions,
+    },
   }
-  return _createFuncCallOptionsFromRequest(fakeReq, func, callback);
+  var fakeRes = {
+    requestTime: new Date(),
+  }
+  return _createFuncCallOptionsFromRequest(fakeReq, fakeRes, func, callback);
 };
 
-function _createFuncCallOptionsFromRequest(req, func, callback) {
+function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   // 注意：
   //  本函数内所有搜集的时长类数据均为秒
   //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
@@ -1196,7 +1202,7 @@ exports.callFunc = function(req, res, next) {
     },
     // 创建函数调用选项
     function(asyncCallback) {
-      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+      _createFuncCallOptionsFromRequest(req, res, func, function(err, _funcCallOptions) {
         if (err) return asyncCallback(err);
 
         funcCallOptions = _funcCallOptions;
@@ -1324,7 +1330,7 @@ exports.callAuthLink = function(req, res, next) {
     },
     // 创建函数调用选项
     function(asyncCallback) {
-      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+      _createFuncCallOptionsFromRequest(req, res, func, function(err, _funcCallOptions) {
         if (err) return asyncCallback(err);
 
         funcCallOptions = _funcCallOptions;
@@ -1428,7 +1434,7 @@ exports.callBatch = function(req, res, next) {
     },
     // 创建函数调用选项
     function(asyncCallback) {
-      _createFuncCallOptionsFromRequest(req, func, function(err, _funcCallOptions) {
+      _createFuncCallOptionsFromRequest(req, res, func, function(err, _funcCallOptions) {
         if (err) return asyncCallback(err);
 
         funcCallOptions = _funcCallOptions;

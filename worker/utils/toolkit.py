@@ -540,5 +540,32 @@ class FakeTask(object):
         self.request = FakeTaskRequest(fake_task_id)
         self.name    = 'WORKER-INTERNAL'
 
+class IgnoreCaseDict(dict):
+    def __lower_key(self, key):
+        if isinstance(key, str):
+            return key.lower()
+        return key
+
+    def __init__(self, *args, **kwargs):
+        d = dict(*args, **kwargs)
+        for k, v in d.items():
+            self[k] = v
+
+    def __setitem__(self, key, value):
+        super(IgnoreCaseDict, self).__setitem__(self.__lower_key(key), value)
+
+    def __getitem__(self, item):
+        return super(IgnoreCaseDict, self).__getitem__(self.__lower_key(item))
+
+    def __delitem__(self, key):
+        super(IgnoreCaseDict, self).__delitem__(self.__lower_key(key))
+
+    def update(self, another=None, **kwargs):
+        for k, v in another.items():
+            self.__setitem__(k, v)
+
+    def __repr__(self):
+        return '{0}({1})'.format(type(self).__name__, super(IgnoreCaseDict, self).__repr__())
+
 # Alias
 ensure_str = as_str

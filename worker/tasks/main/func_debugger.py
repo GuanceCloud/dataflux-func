@@ -116,6 +116,8 @@ def func_debugger(self, *args, **kwargs):
 
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
+    if 'headers' in http_request:
+        http_request['headers'] = toolkit.IgnoreCaseDict(http_request['headers'])
 
     # 函数结果、上下文、跟踪信息、错误堆栈
     func_resp    = None

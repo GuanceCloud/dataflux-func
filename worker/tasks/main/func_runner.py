@@ -320,6 +320,8 @@ def func_runner(self, *args, **kwargs):
 
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
+    if 'headers' in http_request:
+        http_request['headers'] = toolkit.IgnoreCaseDict(http_request['headers'])
 
     # 是否保存结果
     save_result  = kwargs.get('saveResult') or False
