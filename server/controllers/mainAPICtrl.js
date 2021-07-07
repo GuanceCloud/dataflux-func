@@ -427,7 +427,7 @@ function _createFuncCallOptionsFromRequest(req, func, callback) {
   }
 
   // 触发时间
-  funcCallOptions.triggerTimeMs = Date.now();
+  funcCallOptions.triggerTimeMs = res.locals.requestTime.getTime();
   funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
 
   // 结果缓存
@@ -1493,6 +1493,9 @@ exports.callFuncDraft = function(req, res, next) {
       originId      : res.locals.traceId,
     };
 
+    kwargs.triggerTimeMs = res.locals.requestTime.getTime();
+    kwargs.triggerTime   = parseInt(kwargs.triggerTimeMs / 1000);
+
     // 启动函数执行任务
     var onResultCallback = function(err, celeryRes, extraInfo) {
       if (err) return next(err);
@@ -1548,8 +1551,8 @@ exports.callFuncDraft = function(req, res, next) {
 
     var taskOptions = {
       queue        : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-      // softTimeLimit: CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
-      timeLimit    : 10 //CONFIG._FUNC_TASK_DEBUG_TIMEOUT + CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
+      softTimeLimit: CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
+      timeLimit    : CONFIG._FUNC_TASK_DEBUG_TIMEOUT + CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
     }
 
     // 保证UI运行能够正常接收到超时报错
