@@ -355,8 +355,6 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             <el-link type="info" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
             &#12288;
             <el-link type="info" @click.stop="clearScriptOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
-            &#12288;
-            <el-link type="info" @click.stop="resizeVueSplitPane(100)"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
           </div>
           <el-tabs tab-position="left" type="border-card">
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
@@ -764,6 +762,7 @@ export default {
       this.scriptOutput = [];
 
       this.clearHighlight();
+      this.resizeVueSplitPane(100);
     },
     outputResult(type, name, apiRes) {
       if (!apiRes.ok && apiRes.reason !== 'EScriptPreCheck') {
