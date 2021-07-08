@@ -271,17 +271,17 @@ exports.publish = function(req, res, next) {
           if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
             // 超时错误
             return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code', {
-              id   : celeryRes.id,
-              etype: celeryRes.result && celeryRes.result.exc_type,
-              stack: celeryRes.einfoTEXT,
+              id       : celeryRes.id,
+              etype    : celeryRes.result && celeryRes.result.exc_type,
+              einfoTEXT: celeryRes.einfoTEXT,
             }));
 
           } else {
             // 其他错误
             return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code with the detailed information', {
-              id   : celeryRes.id,
-              etype: celeryRes.result && celeryRes.result.exc_type,
-              stack: celeryRes.einfoTEXT,
+              id       : celeryRes.id,
+              etype    : celeryRes.result && celeryRes.result.exc_type,
+              einfoTEXT: celeryRes.einfoTEXT,
             }));
           }
 
@@ -291,11 +291,11 @@ exports.publish = function(req, res, next) {
             etype: celeryRes.result && celeryRes.result.exc_type,
           }));
 
-        } else if (celeryRes.retval.stack) {
+        } else if (celeryRes.retval.einfoTEXT) {
           return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code', {
             id       : extraInfo.id,
             etype    : celeryRes.result && celeryRes.result.exc_type,
-            stack    : celeryRes.retval.stack,
+            einfoTEXT: celeryRes.retval.einfoTEXT,
             traceInfo: celeryRes.retval.traceInfo,
           }));
         }

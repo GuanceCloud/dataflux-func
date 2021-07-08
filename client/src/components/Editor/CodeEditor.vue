@@ -767,7 +767,7 @@ export default {
     },
     outputResult(type, name, apiRes) {
       if (!apiRes.ok && apiRes.reason !== 'EScriptPreCheck') {
-        // 预检查失败不执行
+        // 成功、预检查失败时执行
         return;
       }
 
@@ -1264,14 +1264,11 @@ export default {
           stackInfoTitle = `<span class="code-editor-output-info">${this.$t('Stack:')}</span>`
         }
 
-        let section = [
-          divider,
-          title,
-          costInfo,    '',
-          logMessages, '',
-          funcOutputTitle, funcOutput,
-          stackInfoTitle, stackInfo,
-        ];
+        let section = [ divider, title ]
+        if (costInfo)        section.push('', costInfo);
+        if (logMessages)     section.push('', logMessages);
+        if (funcOutputTitle) section.push('', funcOutputTitle, funcOutput);
+        if (stackInfoTitle)  section.push('', stackInfoTitle,  stackInfo);
 
         // 过滤空白内容
         section = section.filter(x => 'string' === typeof x).join('\n').trimStart();

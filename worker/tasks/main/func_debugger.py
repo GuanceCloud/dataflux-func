@@ -185,7 +185,7 @@ def func_debugger(self, *args, **kwargs):
 
     except Exception as e:
         for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
+            self.logger.warning(line)
 
         end_status = 'failure'
 
