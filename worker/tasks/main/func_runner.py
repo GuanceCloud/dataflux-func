@@ -401,6 +401,9 @@ def func_runner(self, *args, **kwargs):
             raise func_resp.data
 
     except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logging.error(line)
+
         end_status = 'failure'
 
         self.logger.error('Error occured in script. `{}`'.format(func_id))

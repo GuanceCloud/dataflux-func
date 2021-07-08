@@ -184,6 +184,9 @@ def func_debugger(self, *args, **kwargs):
                 raise func_resp.data
 
     except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logging.error(line)
+
         end_status = 'failure'
 
         # 预检查任务需要将检查结果和错误同时返回给调用方，因此本身永远不会失败
