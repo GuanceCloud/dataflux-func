@@ -1916,6 +1916,7 @@ scriptSetAPI:
       - sset.id
       - sset.title
       - sset.description
+      - sset.requirements
     query:
       id:
         $desc      : 根据ID过滤
@@ -1950,6 +1951,10 @@ scriptSetAPI:
           $desc      : 描述
           $allowNull : true
           $type      : string
+        requirements:
+          $desc      : 依赖包
+          $allowNull : true
+          $type      : string
 
   modify:
     showInDoc    : true
@@ -1972,6 +1977,10 @@ scriptSetAPI:
           $type      : string
         description:
           $desc      : 描述
+          $allowNull : true
+          $type      : string
+        requirements:
+          $desc      : 依赖包
           $allowNull : true
           $type      : string
         isLocked:
@@ -2002,6 +2011,12 @@ scriptSetAPI:
     privilege    : general_w
     body:
       $isRequired: true
+      password:
+        $desc      : 指定密码
+        $isRequired: true
+        $allowNull : true
+        $type      : string
+        $maxLength : 24
       scriptSetIds:
         $desc      : 导出的脚本集ID列表
         $isRequired: true
@@ -2022,12 +2037,6 @@ scriptSetAPI:
           $desc      : 环境变量ID
           $isRequired: true
           $type      : string
-      password:
-        $desc      : 指定密码
-        $isRequired: true
-        $allowNull : true
-        $type      : string
-        $maxLength : 24
       includeAuthLinks:
         $desc     : 是否包含关联的授权链接
         $allowNull: true
@@ -2057,6 +2066,11 @@ scriptSetAPI:
       $limitSize   : 200M
       $allowedTypes: 'application/octet-stream'
     body:
+      packageURL:
+        $desc      : 脚本包URL地址
+        $isRequired: false
+        $allowNull : true
+        $type      : string
       password:
         $desc      : 密码
         $isRequired: false

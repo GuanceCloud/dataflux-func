@@ -47,3 +47,10 @@ upgradeInfo:
       ALTER TABLE `biz_main_operation_record`
         ADD COLUMN `clientIPsJSON` json DEFAULT NULL COMMENT '客户端IP JSON'
         AFTER `clientId`;
+
+  - seq: 4
+    database: |-
+      -- 脚本集增加依赖包信息
+      ALTER TABLE `biz_main_script_set`
+        ADD COLUMN `requirements` text DEFAULT NULL COMMENT '依赖包'
+        AFTER `description`;

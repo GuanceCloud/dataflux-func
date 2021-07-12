@@ -3,10 +3,11 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var fs     = require('fs-extra');
-var async  = require('async');
-var moment = require('moment');
-var JSZip  = require('jszip');
+var fs      = require('fs-extra');
+var async   = require('async');
+var request = require('request');
+var moment  = require('moment');
+var JSZip   = require('jszip');
 
 /* Project Modules */
 var E            = require('../utils/serverError');
@@ -205,10 +206,12 @@ exports.delete = function(req, res, next) {
  */
 
 exports.export = function(req, res, next) {
+  var exportTime = moment().utcOffset('+08:00');
+
+  var password              = req.body.password;
   var scriptSetIds          = req.body.scriptSetIds;
   var dataSourceIds         = req.body.dataSourceIds;
   var envVariableIds        = req.body.envVariableIds;
-  var password              = req.body.password              || '';
   var includeAuthLinks      = req.body.includeAuthLinks      || false;
   var includeCrontabConfigs = req.body.includeCrontabConfigs || false;
   var includeBatches        = req.body.includeBatches        || false;
@@ -255,7 +258,8 @@ exports.export = function(req, res, next) {
         fields: [
           'sset.id',
           'sset.title',
-          'sset.description'
+          'sset.description',
+          'sset.requirements',
         ],
         filters: {
           'sset.id': {in: scriptSetIds},
@@ -503,7 +507,7 @@ exports.export = function(req, res, next) {
         return z.generateAsync({
           type              : 'nodebuffer',
           compression       : 'DEFLATE',
-          compressionOptions: {level: 9},
+          compressionOptions: { level: 9 },
         })
       })(function(err, zipBuf) {
         if (err) return asyncCallback(err);
@@ -546,9 +550,10 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
-  var file      = req.files[0];
-  var password  = req.body.password || '';
-  var checkOnly = toolkit.toBoolean(req.body.checkOnly);
+  var file       = req.files[0];
+  var packageURL = req.body.packageURL;
+  var password   = req.body.password || '';
+  var checkOnly  = toolkit.toBoolean(req.body.checkOnly);
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -561,19 +566,44 @@ exports.import = function(req, res, next) {
   var summary   = null;
   var diff      = null;
 
+  if (!file && !packageURL) {
+    return next(new E('EBizCondition.PackageNotProvided', 'Package file or package URL not provided.'));
+  }
+
+  var fileBuf = null;
   async.series([
+    // 获取包数据
+    function(asyncCallback) {
+      if (file) {
+        // 来自上传文件
+        fileBuf = fs.readFileSync(file.path).toString();
+        fs.removeSync(file.path);
+
+        return asyncCallback();
+
+      } else if (packageURL) {
+        // 来自远端下载
+        var requestOptions = {
+          method : 'get',
+          url    : packageURL,
+          timeout: 3 * 1000,
+        };
+        request(requestOptions, function(err, res, body) {
+          if (err) return asyncCallback(err);
+
+          fileBuf = body;
+
+          return asyncCallback();
+        });
+      }
+    },
     // AES解密、JWT验签
     function(asyncCallback) {
       // AES解密
       try {
-        var _fileBuf = fs.readFileSync(file.path).toString();
-        var _fileMD5 = toolkit.getMD5(_fileBuf);
-
-        // 删除临时文件
-        fs.removeSync(file.path);
-
-        fileBuf = toolkit.decipherByAES(_fileBuf, password);
-        res.locals.logger.debug(toolkit.strf('File Data: {0}...{1}, MD5: {2}', fileBuf.slice(0, 20), fileBuf.slice(-20), _fileMD5));
+        fileBuf = toolkit.decipherByAES(fileBuf, password);
+        res.locals.logger.debug(toolkit.strf('File Data: {0}...{1}, MD5: {2}',
+            fileBuf.slice(0, 20), fileBuf.slice(-20), toolkit.getMD5(fileBuf)));
 
       } catch(err) {
         res.locals.logger.logError(err);
