@@ -103,7 +103,7 @@ Are you sure you want to delete the Crontab Config?: 是否确认删除此自动
                 <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
                 >{{ scope.row.expireTime | datetime }}</span>
                 <br>
-                <span class="text-info">（{{ scope.row.expireTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
               </template>
             </template>
           </el-table-column>

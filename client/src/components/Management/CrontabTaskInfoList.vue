@@ -48,21 +48,21 @@ Search Crontab task(log, error), Func(ID, title, description): 搜索批处理�
               入队：
               <template v-if="scope.row.queueTime">
                 <span>{{ scope.row.queueTime | datetime }}</span>
-                <span class="text-info">（{{ scope.row.queueTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.queueTime | fromNow }}</span>
               </template>
 
               <br>
               开始：
               <template v-if="scope.row.startTime">
                 <span>{{ scope.row.startTime | datetime }}</span>
-                <span class="text-info">（{{ scope.row.startTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.startTime | fromNow }}</span>
               </template>
 
               <br>
               结束：
               <template v-if="scope.row.endTime">
                 <span>{{ scope.row.endTime | datetime }}</span>
-                <span class="text-info">（{{ scope.row.endTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.endTime | fromNow }}</span>
               </template>
             </template>
           </el-table-column>

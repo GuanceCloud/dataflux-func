@@ -123,7 +123,7 @@ Response                      : 响应
               <template v-else>
                 <span>{{ scope.row.latestPublishTime | datetime }}</span>
                 <br>
-                <span class="text-info">（{{ scope.row.latestPublishTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.latestPublishTime | fromNow }}</span>
               </template>
             </template>
           </el-table-column>
@@ -136,7 +136,7 @@ Response                      : 响应
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
-              <span class="text-info">（{{ scope.row.createTime | fromNow }}）</span>
+              <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
             </template>
           </el-table-column>
 

@@ -2536,14 +2536,14 @@ exports.installPackage = function(req, res, next) {
 
   async.series([
     function(asyncCallback) {
-
+      return asyncCallback();
     },
     function(asyncCallback) {
-
+      return asyncCallback();
     },
   ], function(err) {
     if (err) return next(err);
-
+    return res.locals.sendJSON();
   });
 };
 

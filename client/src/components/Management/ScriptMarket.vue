@@ -1,11 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
 Script Market: 脚本市场
 
-Detail : 详情
 Install: 安装
 
-Description : 描述
-Requirements: 依赖
+Script Package Detail: 脚本包详情
+Description          : 描述
+Requirements         : 依赖
+
+Are you sure you want to install the Script?         : 是否确认安装此脚本？
+Script installed, new Script is in effect immediately: 脚本已安装，新脚本立即生效
 </i18n>
 
 <template>
@@ -18,17 +21,42 @@ Requirements: 依赖
 
       <!-- 列表区 -->
       <el-main>
-        <el-card class="package-card" shadow="hover" v-for="p in packageList" :key="p.package">
-          <i class="fa fa-fw fa-file-code-o package-icon"></i>
-          <span class="package-name">{{ p.name }}</span>
-          <code class="package-id">ID: {{ p.package }}</code>
+        <a class="package-card-wrap" @click="openDetail(p)" v-for="p in packageList" :key="p.package">
+          <el-card class="package-card" shadow="hover">
+            <i class="fa fa-fw fa-file-code-o package-icon"></i>
+            <span class="package-name">{{ p.name }}</span>
+            <code class="package-id">ID: {{ p.package }}</code>
 
-          <div class="package-operation">
-            <el-link type="primary">{{ $t('Detail') }}</el-link>
-            <el-link type="primary">{{ $t('Install') }}</el-link>
-          </div>
-        </el-card>
+            <div class="package-release-time">
+              <span>{{ p.releaseTime | datetime }}</span>
+              <br>
+              <span class="text-info">{{ p.releaseTime | fromNow }}</span>
+            </div>
+          </el-card>
+        </a>
       </el-main>
+
+      <el-dialog :title="$t('Script Package Detail')" class="package-detail" :visible.sync="showDetail">
+        <el-form label-width="80px">
+          <el-form-item :label="$t('Name')">
+            <el-input readonly :value="detail.name"></el-input>
+          </el-form-item>
+          <el-form-item label="ID">
+            <el-input readonly :value="detail.package"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('Description')" v-if="!T.isNothing(detail.description)">
+            <el-input readonly type="textarea" :value="detail.description"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('Requirements')" v-if="!T.isNothing(detail.requirements)">
+            <el-input readonly type="textarea" :value="detail.requirements"></el-input>
+          </el-form-item>
+        </el-form>
+
+        <div slot="footer" class="dialog-footer">
+          <el-button size="small" @click="showDetail = false">{{ $t('Cancel') }}</el-button>
+          <el-button size="small" type="primary" @click="installPackage(detail)" :loading="isInstalling">{{ $t('Install') }}</el-button>
+        </div>
+      </el-dialog>
     </el-container>
   </transition>
 </template>
@@ -50,6 +78,7 @@ export default {
     async loadData() {
       let _query = null;
       if (!this.T.isNothing(null)) {
+        // TODO: 支持更换脚本包索引目录
       }
       let apiRes = await this.T.callAPI_get('/api/v1/script-packages/index', {
         query: _query,
@@ -60,7 +89,22 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showDetail(p) {
+    openDetail(p) {
+      this.detail     = p;
+      this.showDetail = true;
+    },
+    async installPackage(detail) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to install the Script?'))) return;
+
+      this.isInstalling = true;
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-packages/install', {
+        body : { packageURL: detail.downloadURL },
+        alert: { okMessage: this.$t('Script installed, new Script is in effect immediately') },
+      });
+      this.isInstalling = false;
+      if (!apiRes.ok) return;
+
+      this.showDetail = false;
     },
   },
   computed: {
@@ -69,6 +113,10 @@ export default {
   },
   data() {
     return {
+      isInstalling: false,
+      showDetail  : false,
+      detail      : {},
+
       packageList: [],
     }
   },
@@ -76,9 +124,12 @@ export default {
 </script>
 
 <style scoped>
+.package-card-wrap {
+  cursor: pointer;
+}
 .package-card {
-  width: 330px;
-  height: 150px;
+  width: 350px;
+  height: 165px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -93,23 +144,31 @@ export default {
   z-index: 0;
 }
 .package-name {
-  font-size: 36px;
+  font-size: 28px;
   display: block;
   z-index: 1;
   position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 75px;
 }
 .package-id {
   font-size: 18px;
   display: block;
   z-index: 1;
-  position: relative;
-}
-.package-operation {
   position: absolute;
-  left: 20px;
   bottom: 20px;
+}
+.package-release-time {
+  position: absolute;
+  right: 20px;
+  bottom: 5px;
+  text-align: right;
 }
 </style>
 
 <style>
+.package-detail > .el-dialog {
+  width: 620px;
+}
 </style>

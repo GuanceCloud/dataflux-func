@@ -61,7 +61,7 @@ Are you sure you want to publish the Script?                                    
 Publish Script                                                                         : 发布脚本
 'Publish Script:'                                                                      : 发布脚本：
 Script saved                                                                           : 脚本已保存
-Script published, new Script is in effect now                                          : 脚本发布成功，新脚本已经生效
+Script published, new Script is in effect immediately                                  : 脚本已发布，新脚本立即生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
 Are you sure you want to reset the Script?                                             : 是否确认复位此脚本？
 Script has been reset to previous version                                              : 脚本已经复位到上一个版本
@@ -620,7 +620,7 @@ export default {
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
         params: { id: this.scriptId },
         body  : { force: true, data: {note: 'Published by Code Editor'} },
-        alert : { okMessage: this.$t('Script published, new Script is in effect now'),  muteError: true },
+        alert : { okMessage: this.$t('Script published, new Script is in effect immediately'),  muteError: true },
       });
 
       // 脚本发布处理结束

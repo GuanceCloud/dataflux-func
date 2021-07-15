@@ -2,12 +2,12 @@
 
 en:
   # const.js - AUTH_LINK_THROTTLING
-  'timePerSecond': '{n} time / second | {n} times / second'
-  'timePerMinute': '{n} time / minute | {n} times / minute'
-  'timePerHour'  : '{n} time / hour | {n} times / hour'
-  'timePerDay'   : '{n} time / day | {n} times / day'
-  'timePerMonth' : '{n} time / month | {n} times / month'
-  'timePerYear'  : '{n} time / year | {n} times / year'
+  timePerSecond: '{n} time / second | {n} times / second'
+  timePerMinute: '{n} time / minute | {n} times / minute'
+  timePerHour  : '{n} time / hour | {n} times / hour'
+  timePerDay   : '{n} time / day | {n} times / day'
+  timePerMonth : '{n} time / month | {n} times / month'
+  timePerYear  : '{n} time / year | {n} times / year'
 
 'zh-CN':
   # 通用

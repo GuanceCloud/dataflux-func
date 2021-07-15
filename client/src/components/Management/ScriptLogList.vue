@@ -39,7 +39,7 @@
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
-              <span class="text-info">（{{ scope.row.createTime | fromNow }}）</span>
+              <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
             </template>
           </el-table-column>
 

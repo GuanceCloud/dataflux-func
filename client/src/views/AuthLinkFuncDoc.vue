@@ -68,7 +68,7 @@
               <template v-else>
                 <span>{{ scope.row.expireTime | datetime }}</span>
                 <br>
-                <span class="text-info">（{{ scope.row.expireTime | fromNow }}）</span>
+                <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
               </template>
             </template>
           </el-table-column>
