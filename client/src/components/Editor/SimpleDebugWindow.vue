@@ -248,6 +248,7 @@ export default {
           queryStatement: queryOptions.queryStatement,
           returnType    : 'repr',
         },
+        alert : { muteError: true },
         extraOptions: { noCountProcessing: true },
       });
 

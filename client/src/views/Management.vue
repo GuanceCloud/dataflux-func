@@ -12,10 +12,11 @@ Access Log        : 操作记录
 Script Log        : 脚本日志
 Script Failure    : 脚本故障
 Experimental      : 实验性功能
+Script Market     : 脚本市场
 Access Key        : AccessKey
 System Metric     : 系统指标
 PIP Tool          : PIP工具
-File Tool         : 文件工具
+File Manager      : 文件管理器
 File Service      : 文件服务
 Func Doc          : 函数文档
 </i18n>
@@ -123,6 +124,14 @@ Func Doc          : 函数文档
               </span>
             </el-menu-item>
 
+            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('ScriptMarket')"
+              class="experimental-feature" index="/management/script-market">
+              <span>
+                <i class="fa fa-fw fa-shopping-cart"></i>
+                {{ $t('Script Market') }}
+              </span>
+            </el-menu-item>
+
             <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
               class="experimental-feature" index="/management/access-key-list">
               <span>
@@ -144,11 +153,11 @@ Func Doc          : 函数文档
                 {{ $t('PIP Tool') }}
               </span>
             </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileTool')"
-              class="experimental-feature" index="/management/file-tool">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileManager')"
+              class="experimental-feature" index="/management/file-manager">
               <span>
                 <i class="fa fa-fw fa-file"></i>
-                {{ $t('File Tool') }}
+                {{ $t('File Manager') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileService')"

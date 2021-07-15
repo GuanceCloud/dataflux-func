@@ -588,10 +588,10 @@ exports.import = function(req, res, next) {
           url    : packageURL,
           timeout: 3 * 1000,
         };
-        request(requestOptions, function(err, res, body) {
+        request(requestOptions, function(err, _res, _body) {
           if (err) return asyncCallback(err);
 
-          fileBuf = body;
+          fileBuf = _body;
 
           return asyncCallback();
         });

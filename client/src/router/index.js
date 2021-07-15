@@ -225,10 +225,16 @@ const routes = [
         component: () => import('../components/Management/ScriptFailureList.vue'),
       },
 
+      /* 实验性功能 */
       {
         path: 'experimental-features',
         name: 'experimental-features',
         component: () => import('../components/Management/ExperimentalFeatures.vue'),
+      },
+      {
+        path: 'script-market',
+        name: 'script-market',
+        component: () => import('../components/Management/ScriptMarket.vue'),
       },
       {
         path: 'access-key-list',
@@ -251,9 +257,9 @@ const routes = [
         component: () => import('../components/Management/PIPTool.vue'),
       },
       {
-        path: 'file-tool',
-        name: 'file-tool',
-        component: () => import('../components/Management/FileTool.vue'),
+        path: 'file-manager',
+        name: 'file-manager',
+        component: () => import('../components/Management/FileManager.vue'),
       },
       {
         path: 'file-service-list',

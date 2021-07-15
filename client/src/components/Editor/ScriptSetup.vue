@@ -49,8 +49,7 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                   <el-input :disabled="T.pageMode() === 'setup'"
                     maxlength="80"
                     show-word-limit
-                    v-model="form.id">
-                  </el-input>
+                    v-model="form.id"></el-input>
                   <InfoBlock :title="$t('Script ID will be a part of the Func ID')"></InfoBlock>
                 </el-form-item>
 
@@ -66,7 +65,7 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     show-word-limit
                     v-model="form.description"></el-input>
                 </el-form-item>

@@ -1886,6 +1886,32 @@ mainAPI:
         $desc: 文件服务ID
         $type: string
 
+  getPackageIndex:
+    name         : 获取脚本包索引
+    method       : get
+    url          : /api/v1/script-packages/index
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      indexURL:
+        $desc    : 脚本包索引URL地址
+        $required: false
+        $type    : string
+
+  installPackage:
+    name         : 安装官方脚本包
+    method       : post
+    url          : /api/v1/script-packages/install
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      packageURL:
+        $desc    : 脚本包URL地址
+        $required: true
+        $type    : string
+
 mainPage:
   clientApp:
     showInDoc    : true

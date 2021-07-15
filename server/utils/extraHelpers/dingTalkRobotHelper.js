@@ -51,7 +51,7 @@ dingTalkHelper.prototype.call = function(message, callback) {
     JSON.stringify(message)
   );
 
-  request(requestOptions, function(err, res, body) {
+  request(requestOptions, function(err, _res, _body) {
     // Request Fails
     if (err) {
       self.logger && self.logger.error('[DINGTALK ROBOT] Error: `{0}`', err.toString());
@@ -59,8 +59,8 @@ dingTalkHelper.prototype.call = function(message, callback) {
     }
 
     // Error response
-    if (res.statusCode !== 200 || body.error) {
-      return callback && callback(new E('EClientBadRequest', 'Bad DingTalk Robot call', body, body));
+    if (_res.statusCode !== 200 || _body.error) {
+      return callback && callback(new E('EClientBadRequest', 'Bad DingTalk Robot call', _body, err));
     }
 
     return callback && callback();

@@ -382,8 +382,8 @@ exports.afterAppCreated = function(app, server) {
           url    : url,
           timeout: 3 * 1000,
         };
-        request(requestOptions, function(err, res, body) {
-          if (!err && res.statusCode === 200) {
+        request(requestOptions, function(err, _res, _body) {
+          if (!err && _res.statusCode === 200) {
             app.locals.logger.info('Check local DataKit: `{0}`... OK', url);
 
             localDataKitIP = ip;

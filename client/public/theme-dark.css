@@ -120,7 +120,8 @@ tr.hl-row {
 }
 
 i.icon-bg,
-i.overview-icon {
+i.overview-icon,
+i.package-icon {
   color: #2c2c2c !important;
 }
 

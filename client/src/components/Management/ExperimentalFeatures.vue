@@ -48,6 +48,19 @@
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
+                    active-text="开启脚本市场模块"
+                    v-model="form.ScriptMarket">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于从市场直接安装脚本包
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「脚本市场」进入模块
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="AccessKey" v-if="$store.getters.isSuperAdmin">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
                     active-text="开启AccessKey 管理模块"
                     v-model="form.AccessKey">
                   </el-switch>
@@ -83,16 +96,16 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="FileTool">
+                <el-form-item prop="FileManager">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
-                    active-text="开启文件工具模块"
-                    v-model="form.FileTool">
+                    active-text="开启文件管理器模块"
+                    v-model="form.FileManager">
                   </el-switch>
                   <div class="text-small form-item-tip">
                     用于在服务器端处理/保存文件
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件工具」进入模块
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件管理器」进入模块
                   </div>
                 </el-form-item>
 
@@ -172,10 +185,11 @@ export default {
       form: {
         ScriptLog    : false,
         ScriptFailure: false,
+        ScriptMarket : false,
         AccessKey    : false,
         SysStat      : false,
         PipTool      : false,
-        FileTool     : false,
+        FileManager  : false,
         FileService  : false,
         FuncDoc      : false,
       },
@@ -185,5 +199,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

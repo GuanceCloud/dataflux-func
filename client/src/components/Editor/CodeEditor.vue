@@ -234,7 +234,6 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save and publish Script') }}<br>
-                          {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
                           @click="publishScript"

@@ -123,7 +123,7 @@ This is a builtin Data Source, please contact the admin to change the config: å½
                       type="textarea"
                       resize="none"
                       :autosize="{minRows: 2}"
-                      maxlength="200"
+                      maxlength="5000"
                       show-word-limit
                       v-model="form.description"></el-input>
                   </el-form-item>

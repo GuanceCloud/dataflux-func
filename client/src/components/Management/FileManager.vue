@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-File Tool         : 文件工具
+File Tool         : 文件管理器
 Go Top            : 返回顶层
 Go Up             : 向上
 'File size limit:': '文件大小限制：'
@@ -176,7 +176,7 @@ File already existed                                                            
 import * as pathTool from '@/pathTool'
 
 export default {
-  name: 'FileTool',
+  name: 'FileManager',
   components: {
   },
   watch: {

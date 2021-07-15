@@ -2183,6 +2183,7 @@ exports.installPythonPackage = function(req, res, next) {
   });
 };
 
+// 资源目录
 exports.listResources = function(req, res, next) {
   var subFolder = req.query.folder || './';
   var type      = req.query.type;
@@ -2498,6 +2499,51 @@ exports.fileService = function(req, res, next) {
         return res.locals.render('file-service', pageData);
       }
     });
+  });
+};
+
+// 官方脚本包
+exports.getPackageIndex = function(req, res, next) {
+  var indexURL = req.query.indexURL || CONFIG.OFFICIAL_PACKAGE_INDEX_URL;
+
+  var requestOptions = {
+    forever: true,
+    timeout: 3 * 1000,
+    method : 'get',
+    url    : indexURL,
+    json   : true,
+  };
+  request(requestOptions, function(err, _res, _body) {
+    if (err) return next(err);
+
+    // 简单检查是否有效
+    var isInvalidIndex = false;
+    if (!Array.isArray(_body)) {
+      isInvalidIndex = true;
+    }
+
+    if (isInvalidIndex) {
+      return next(new E('EBizBadData', 'Invalid package'));
+    }
+
+    var ret = toolkit.initRet(_body);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.installPackage = function(req, res, next) {
+  var packageURL = req.body.packageURL;
+
+  async.series([
+    function(asyncCallback) {
+
+    },
+    function(asyncCallback) {
+
+    },
+  ], function(err) {
+    if (err) return next(err);
+
   });
 };
 

@@ -2,10 +2,12 @@
 Add Script Set  : 添加脚本集
 Setup Script Set: 配置脚本集
 
-Title      : 标题
-Description: 描述
+Title       : 标题
+Description : 描述
+Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
+requirements.txt format, one for each line : requirements.txt 文件格式，一行一个
 
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -65,9 +67,20 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     show-word-limit
                     v-model="form.description"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Requirements')">
+                  <el-input
+                    type="textarea"
+                    resize="none"
+                    :autosize="{minRows: 2}"
+                    maxlength="5000"
+                    show-word-limit
+                    v-model="form.requirements"></el-input>
+                  <InfoBlock :title="$t('requirements.txt format, one for each line')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
@@ -265,9 +278,10 @@ export default {
     return {
       data: {},
       form: {
-        id         : null,
-        title      : null,
-        description: null,
+        id          : null,
+        title       : null,
+        description : null,
+        requirements: null,
       },
     }
   },

@@ -52,7 +52,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     show-word-limit
                     v-model="form.description"></el-input>
                 </el-form-item>
@@ -62,7 +62,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="1000"
+                    maxlength="5000"
                     show-word-limit
                     v-model="form.valueTEXT"></el-input>
                 </el-form-item>
