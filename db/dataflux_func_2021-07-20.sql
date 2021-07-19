@@ -7,7 +7,7 @@
 #
 # 主机: ubuntu20-dev.vm (MySQL 5.7.34)
 # 数据库: dataflux_func
-# 生成时间: 2021-07-19 18:16:18 +0000
+# 生成时间: 2021-07-19 18:30:37 +0000
 # ************************************************************
 
 
@@ -137,7 +137,7 @@ LOCK TABLES `biz_main_crontab_config` WRITE;
 
 INSERT INTO `biz_main_crontab_config` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `isDisabled`, `note`, `createTime`, `updateTime`)
 VALUES
-	(1,X'63726F6E2D7142426C784D413432506159',X'64656D6F5F5F62617369632E706C7573','* * * * *',X'2A202A202A202A202A','0',0,X'474C4F42414C',NULL,NULL,X'5549',0,'2021-07-19 18:13:35','2021-07-19 18:13:35','2021-07-19 18:13:35');
+	(1,X'63726F6E2D694C445546434D6C4D445254',X'64656D6F5F5F62617369632E706C7573','{\"x\":1,\"y\":2}',X'2A2F35202A202A202A202A','[]',0,X'474C4F42414C',NULL,NULL,X'5549',0,NULL,'2021-07-19 18:29:09','2021-07-19 18:29:09');
 
 /*!40000 ALTER TABLE `biz_main_crontab_config` ENABLE KEYS */;
 UNLOCK TABLES;
