@@ -127,7 +127,7 @@ services:
       - datafluxfunc
       - default
     ports:
-      - "8088:8088"
+      - "<PORT>:8088"
     command: ./run-server.sh
 
 networks:

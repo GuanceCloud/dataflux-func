@@ -27,6 +27,7 @@ function log {
 # 处理选项
 OPT_DEV=FALSE
 OPT_MINI=FALSE
+OPT_PORT=DEFAULT
 OPT_INSTALL_DIR=DEFAULT
 OPT_IMAGE=DEFAULT
 OPT_NO_MYSQL=FALSE
@@ -42,6 +43,11 @@ while [ $# -ge 1 ]; do
         '--mini' )
             OPT_MINI=TRUE
             shift
+            ;;
+
+        '--port' )
+            OPT_PORT=$2
+            shift 2
             ;;
 
         '--install-dir' )
@@ -91,6 +97,11 @@ if [ ${OPT_DEV} = "TRUE" ]; then
     __PROJECT_NAME=dataflux-func-dev
     __RESOURCE_BASE_URL=https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/resource-dev
     _DATAFLUX_FUNC_IMAGE=`echo ${_DATAFLUX_FUNC_IMAGE} | sed "s#:latest#:dev#g"`
+fi
+
+_PORT=8088
+if [ ${OPT_PORT} != "DEFAULT" ]; then
+    _PORT=${OPT_PORT}
 fi
 
 _INSTALL_DIR=/usr/local/${__PROJECT_NAME}
@@ -202,6 +213,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
         -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
+        -e "s#<PORT>#${_PORT}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
 
@@ -276,4 +288,4 @@ log "    $ rm -rf ${_INSTALL_DIR}"
 log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 
 blankLine
-log "Now open http://<IP or Hostname>:8088/ and have fun!"
+log "Now open http://<IP or Hostname>:${_PORT}/ and have fun!"
