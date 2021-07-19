@@ -44,7 +44,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="AccessKey" v-if="$store.getters.isSuperAdmin">
+                <el-form-item prop="ScriptMarket" v-if="$store.getters.isSuperAdmin">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
@@ -83,12 +83,12 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="PipTool">
+                <el-form-item prop="PIPTool">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
                     active-text="开启PIP工具模块"
-                    v-model="form.PipTool">
+                    v-model="form.PIPTool">
                   </el-switch>
                   <div class="text-small form-item-tip">
                     用于安装脚本所需的额外第三方Python包（PIP）
@@ -122,7 +122,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="FileService">
+                <el-form-item prop="FuncDoc">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
@@ -188,7 +188,7 @@ export default {
         ScriptMarket : false,
         AccessKey    : false,
         SysStat      : false,
-        PipTool      : false,
+        PIPTool      : false,
         FileManager  : false,
         FileService  : false,
         FuncDoc      : false,

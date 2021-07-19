@@ -146,7 +146,7 @@ Func Doc          : 函数文档
                 {{ $t('System Metric') }}
               </span>
             </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PipTool')"
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PIPTool')"
               class="experimental-feature" index="/management/pip-tool" >
               <span>
                 <i class="fa fa-fw fa-cubes"></i>
