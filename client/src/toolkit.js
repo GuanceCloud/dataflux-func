@@ -737,8 +737,8 @@ export async function confirm(message) {
     // 简单提示，不需要区分标题和内容
     await MessageBox.confirm(message, {
       dangerouslyUseHTMLString: true,
-      confirmButtonText       : app.$t('Confirm'),
-      cancelButtonText        : app.$t('Cancel'),
+      confirmButtonText       : app.$t('Yes'),
+      cancelButtonText        : app.$t('No'),
       type                    : 'warning',
     });
 

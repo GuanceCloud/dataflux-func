@@ -10,6 +10,7 @@ Requirements         : 依赖
 Are you sure you want to install the Script?         : 是否确认安装此脚本？
 Script installed, new Script is in effect immediately: 脚本已安装，新脚本立即生效
 
+The following Script Set IDs already exists, do you want to overwrite?: 下列脚本集ID已经存在，是否覆盖？
 Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 安装的脚本集需要第三方包，是否现在前往PIP工具
 </i18n>
 
@@ -104,10 +105,36 @@ export default {
       this.showDetail = true;
     },
     async installPackage(detail) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to install the Script?'))) return;
+      // 检查重名脚本集
+      let scriptIds = detail.scriptSets.reduce((acc, x) => {
+        acc.push(x.id);
+        return acc;
+      }, []);
 
+      let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
+        query: { id: scriptIds.join(','), fields: ['id'] },
+      });
+      if (!apiRes.ok) return;
+
+      let duplicatedScriptSetIds = [];
+      if (!this.T.isNothing(apiRes.data)) {
+        duplicatedScriptSetIds = apiRes.data.reduce((acc, x) => {
+          acc.push(x.id);
+          return acc;
+        }, []);
+
+      };
+
+      // 确认框
+      if (duplicatedScriptSetIds.length > 0) {
+        if (!await this.T.confirm(`${this.$t('The following Script Set IDs already exists, do you want to overwrite?')}<br>${duplicatedScriptSetIds.join('<br>')}`)) return;
+      } else {
+        if (!await this.T.confirm(this.$t('Are you sure you want to install the Script?'))) return;
+      }
+
+      // 执行安装
       this.isInstalling = true;
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
+      apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
         body : { packageURL: detail.downloadURL },
         alert: { okMessage: this.$t('Script installed, new Script is in effect immediately') },
       });
