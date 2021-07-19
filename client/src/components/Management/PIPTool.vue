@@ -46,11 +46,7 @@ Alibaba Cloud mirror      : 阿里云镜像
         <el-select
           style="width: 235px"
           v-model="pypiMirror">
-          <el-option :label="$t('Alibaba Cloud mirror')"       value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
-          <el-option :label="$t('Douban mirror')"              value="https://pypi.douban.com/simple/"></el-option>
-          <el-option :label="$t('Tsinghua University mirror')" value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
-          <el-option :label="$t('USTC mirror')"                value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
-          <el-option :label="$t('Official')" value=""></el-option>
+          <el-option v-for="mirror in PIP_MIRRORS" :key="mirror.name" :label="mirror.name" :value="mirror.value"></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
           style="width: 500px"
@@ -127,6 +123,8 @@ export default {
         return acc;
       }, {});
 
+      this.pypiMirror = this.PIP_MIRRORS[0].value;
+
       this.$store.commit('updateLoadStatus', true);
     },
     async installPackage() {
@@ -164,6 +162,30 @@ export default {
     },
   },
   computed: {
+    PIP_MIRRORS() {
+      return [
+        {
+          name: this.$t('Alibaba Cloud mirror'),
+          value: 'https://mirrors.aliyun.com/pypi/simple/',
+        },
+        {
+          name: this.$t('Douban mirror'),
+          value: 'https://pypi.douban.com/simple/',
+        },
+        {
+          name: this.$t('Tsinghua University mirror'),
+          value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
+        },
+        {
+          name: this.$t('USTC mirror'),
+          value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
+        },
+        {
+          name: this.$t('Official'),
+          value: '',
+        },
+      ];
+    },
     pipShell() {
       if (!this.isInstallable) return null;
 
