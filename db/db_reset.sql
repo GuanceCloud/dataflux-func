@@ -66,10 +66,10 @@ ALTER TABLE biz_main_func MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL;
 ALTER TABLE biz_main_func MODIFY COLUMN `seq` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 # 示例数据
-INSERT INTO `biz_main_auth_link` (`id`, `funcId`, `funcCallKwargsJSON`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`)
+INSERT INTO `biz_main_auth_link` (`id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`)
 VALUES
-    (X'61756C6E2D68656C6C6F2D776F726C64', X'64656D6F5F5F62617369632E68656C6C6F5F776F726C64', '{\"name\": \"INPUT_BY_CALLER\"}', NULL, '{}', X'5549', 1, 0, NULL);
+    (X'61756C6E2D706C7573', X'64656D6F5F5F62617369632E706C7573', '{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}', NULL, NULL, '{}', X'5549', 0, 0, NULL, '2021-07-19 18:13:18', '2021-07-19 18:13:18');
 
-INSERT INTO `biz_main_crontab_config` (`id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `isDisabled`, `note`)
+INSERT INTO `biz_main_crontab_config` (`id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `isDisabled`, `note`, `createTime`, `updateTime`)
 VALUES
-    (X'63726F6E2D6E344B41665258656975765754796D686A6E53757644', X'64656D6F5F5F62617369632E68656C6C6F5F776F726C64', '{\"name\": \"Jerry\"}', X'2A2F35202A202A202A202A', NULL, 0, X'474C4F42414C', X'6137376334313436626638333332616339323565383735373564613036383131', NULL, X'5549', 0, NULL);
+    (X'63726F6E2D7142426C784D413432506159', X'64656D6F5F5F62617369632E706C7573', X'2A202A202A202A202A', X'2A202A202A202A202A', '0', 0, X'474C4F42414C', NULL, NULL, X'5549', 0, '2021-07-19 18:13:35', '2021-07-19 18:13:35', '2021-07-19 18:13:35');
