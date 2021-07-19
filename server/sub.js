@@ -39,7 +39,7 @@ function createMessageHandler(locals, handlerFuncId) {
     async.series([
       // 获取函数信息
       function(asyncCallback) {
-        mainAPICtrl.getFuncById(locals, handlerFuncId, function(err, _func) {
+        mainAPICtrl._getFuncById(locals, handlerFuncId, function(err, _func) {
           if (err) return asyncCallback(err);
 
           func = _func;
@@ -54,7 +54,7 @@ function createMessageHandler(locals, handlerFuncId) {
 
         var _kwargs  = { topic: topic, message: message, packet: packet };
         var _options = { originId: topic, unfold: true };
-        mainAPICtrl.createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
+        mainAPICtrl._createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -64,7 +64,7 @@ function createMessageHandler(locals, handlerFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        mainAPICtrl.callFuncRunner(locals, funcCallOptions, function(err) {
+        mainAPICtrl._callFuncRunner(locals, funcCallOptions, function(err) {
           if (err) return asyncCallback(err);
 
           /* 不需要对返回值进行任何处理 */

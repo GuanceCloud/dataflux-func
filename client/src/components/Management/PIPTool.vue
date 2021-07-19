@@ -12,7 +12,7 @@ Exactly match     : 完全匹配
 Install           : 安装
 Installing        : 正在安装
 
-Package installed : 包已安装
+'Package installed: {pkg}': 包已安装：{pkg}
 {Any container ID}: 任意一个容器ID
 
 Cannot reinstall a packages built-in                    : 无法重复安装已内置的包
@@ -46,15 +46,15 @@ Alibaba Cloud mirror      : 阿里云镜像
         <el-select
           style="width: 235px"
           v-model="pypiMirror">
-          <el-option :label="$t('Official')" value=""></el-option>
+          <el-option :label="$t('Alibaba Cloud mirror')"       value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
           <el-option :label="$t('Douban mirror')"              value="https://pypi.douban.com/simple/"></el-option>
           <el-option :label="$t('Tsinghua University mirror')" value="https://pypi.tuna.tsinghua.edu.cn/simple/"></el-option>
           <el-option :label="$t('USTC mirror')"                value="https://pypi.mirrors.ustc.edu.cn/simple/"></el-option>
-          <el-option :label="$t('Alibaba Cloud mirror')"       value="https://mirrors.aliyun.com/pypi/simple/"></el-option>
+          <el-option :label="$t('Official')" value=""></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
-          style="width: 300px"
-          v-model.trim="packageToInstall">
+          style="width: 500px"
+          v-model="packageToInstall">
         </el-input>
         <el-button type="primary" @click="installPackage" :disabled="!isInstallable || isInstalling">
           <span v-if="isInstalling">
@@ -142,20 +142,24 @@ export default {
 
       // 执行安装
       this.isInstalling = true;
+      let pkgs = this.packageToInstall.split(/\s+/);
+      let restPkgs = this.T.jsonCopy(pkgs);
+      for (let pkg of pkgs) {
+        apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
+          body : {
+            mirror: this.pypiMirror,
+            pkg   : pkg,
+          },
+          alert: { okMessage: this.$t('Package installed: {pkg}', { pkg: pkg }) },
+        });
 
-      apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
-        body : {
-          mirror: this.pypiMirror,
-          pkg   : this.packageToInstall,
-        },
-        alert: { okMessage: this.$t('Package installed') },
-      });
-
+        if (apiRes.ok) {
+          restPkgs.splice(restPkgs.indexOf(pkg), 1);
+        }
+        this.packageToInstall = restPkgs.join(' ');
+      }
       this.isInstalling = false;
 
-      if (!apiRes.ok) return;
-
-      this.packageToInstall = '';
       this.loadData();
     },
   },
@@ -207,6 +211,12 @@ export default {
       installedPackageMap: {},
 
       isInstalling: false,
+    }
+  },
+  mounted() {
+    let pkgs = this.$route.query.pkgs;
+    if (pkgs) {
+      this.packageToInstall = this.T.fromBase64(pkgs);
     }
   },
 }

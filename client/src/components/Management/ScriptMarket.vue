@@ -9,6 +9,8 @@ Requirements         : 依赖
 
 Are you sure you want to install the Script?         : 是否确认安装此脚本？
 Script installed, new Script is in effect immediately: 脚本已安装，新脚本立即生效
+
+Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 安装的脚本集需要第三方包，是否现在前往PIP工具
 </i18n>
 
 <template>
@@ -16,7 +18,7 @@ Script installed, new Script is in effect immediately: 脚本已安装，新脚�
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>{{ $t('Script Market') }} (WIP)</h1>
+        <h1>{{ $t('Script Market') }}</h1>
       </el-header>
 
       <!-- 列表区 -->
@@ -45,10 +47,18 @@ Script installed, new Script is in effect immediately: 脚本已安装，新脚�
             <el-input readonly :value="detail.package"></el-input>
           </el-form-item>
           <el-form-item :label="$t('Description')" v-if="!T.isNothing(detail.description)">
-            <el-input readonly type="textarea" :value="detail.description"></el-input>
+            <el-input readonly
+              type="textarea"
+              resize="none"
+              :autosize="true"
+              :value="detail.description"></el-input>
           </el-form-item>
           <el-form-item :label="$t('Requirements')" v-if="!T.isNothing(detail.requirements)">
-            <el-input readonly type="textarea" :value="detail.requirements"></el-input>
+            <el-input readonly
+              type="textarea"
+              resize="none"
+              :autosize="true"
+              :value="detail.requirements"></el-input>
           </el-form-item>
         </el-form>
 
@@ -97,14 +107,28 @@ export default {
       if (!await this.T.confirm(this.$t('Are you sure you want to install the Script?'))) return;
 
       this.isInstalling = true;
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-packages/install', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
         body : { packageURL: detail.downloadURL },
         alert: { okMessage: this.$t('Script installed, new Script is in effect immediately') },
       });
       this.isInstalling = false;
-      if (!apiRes.ok) return;
+      if (!apiRes.ok) {
+        return this.alertOnError(apiRes);
+      }
 
       this.showDetail = false;
+
+      if (this.T.isNothing(apiRes.data.pkgs)) {
+        // nope
+      } else {
+        if (await this.T.confirm(this.$t('Installed Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
+          let pkgs = apiRes.data.pkgs.join(' ');
+          this.$router.push({
+            name: 'pip-tool',
+            query: { pkgs: this.T.getBase64(pkgs) },
+          });
+        }
+      }
     },
   },
   computed: {
@@ -113,11 +137,12 @@ export default {
   },
   data() {
     return {
-      isInstalling: false,
-      showDetail  : false,
-      detail      : {},
+      detail: {},
 
       packageList: [],
+
+      showDetail  : false,
+      isInstalling: false,
     }
   },
 }
@@ -128,8 +153,8 @@ export default {
   cursor: pointer;
 }
 .package-card {
-  width: 350px;
-  height: 165px;
+  width: 360px;
+  height: 125px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -137,7 +162,7 @@ export default {
 .package-icon {
   position: absolute;
   font-size: 150px;
-  left: 180px;
+  right: -50px;
   top: 20px;
   color: #f5f5f5;
   line-height: 150px;
@@ -150,7 +175,6 @@ export default {
   position: relative;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: 75px;
 }
 .package-id {
   font-size: 18px;
@@ -162,7 +186,7 @@ export default {
 .package-release-time {
   position: absolute;
   right: 20px;
-  bottom: 5px;
+  bottom: 10px;
   text-align: right;
 }
 </style>

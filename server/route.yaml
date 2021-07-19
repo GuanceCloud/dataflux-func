@@ -1899,19 +1899,6 @@ mainAPI:
         $required: false
         $type    : string
 
-  installPackage:
-    name         : 安装官方脚本包
-    method       : post
-    url          : /api/v1/script-packages/install
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-    body:
-      packageURL:
-        $desc    : 脚本包URL地址
-        $required: true
-        $type    : string
-
 mainPage:
   clientApp:
     showInDoc    : true
@@ -2026,6 +2013,24 @@ scriptSetAPI:
       id:
         $desc: 脚本集ID
         $type: string
+
+  clone:
+    showInDoc    : true
+    name         : 克隆脚本集
+    method       : post
+    url          : /api/v1/script-sets/:id/do/clone
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本集ID
+        $type: string
+    body:
+      newId:
+        $desc      : 新脚本集ID
+        $isRequired: true
+        $type      : string
 
   export:
     showInDoc    : true

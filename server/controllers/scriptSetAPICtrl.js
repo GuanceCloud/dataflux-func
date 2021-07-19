@@ -194,6 +194,46 @@ exports.delete = function(req, res, next) {
   });
 };
 
+exports.clone = function(req, res, next) {
+  var id    = req.params.id;
+  var newId = req.body.newId;
+
+  var scriptSetModel = scriptSetMod.createModel(res.locals);
+
+  async.series([
+    // 检查ID重名
+    function(asyncCallback) {
+      var opt = {
+        limit  : 1,
+        fields : ['sset.id'],
+        filters: {
+          'sset.id': {eq: newId},
+        },
+      };
+      scriptSetModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes.length > 0) {
+          return asyncCallback(new E('EBizCondition.DuplicatedScriptSetID', 'ID of script set already exists'));
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 复制脚本集
+    function(asyncCallback) {
+      scriptSetModel.clone(id, newId, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: newId,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
 /* 导出步骤
  *    1. 生成导出数据：大JSON，{"scripts": [<所有脚本信息及代码>], "scriptSets": [<所有脚本集信息>]}
  *    2. 压缩
@@ -550,7 +590,7 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
-  var file       = req.files[0];
+  var file       = req.files ? req.files[0] : null;
   var packageURL = req.body.packageURL;
   var password   = req.body.password || '';
   var checkOnly  = toolkit.toBoolean(req.body.checkOnly);
@@ -561,6 +601,7 @@ exports.import = function(req, res, next) {
 
   var fileBuf     = null;
   var packageData = null;
+  var pkgs        = null;
 
   var confirmId = toolkit.genDataId('import');
   var summary   = null;
@@ -656,7 +697,13 @@ exports.import = function(req, res, next) {
         return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, packageDataTEXT, asyncCallback);
 
       } else {
-        return scriptSetModel.import(packageData, asyncCallback);
+        return scriptSetModel.import(packageData, function(err, _pkgs) {
+          if (err) return asyncCallback(err);
+
+          pkgs = _pkgs;
+
+          return asyncCallback();
+        });
       }
     },
     // 获取脚本集并计算差异（添加、替换）
@@ -698,12 +745,12 @@ exports.import = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var checkResult = {
+    var ret = toolkit.initRet({
       confirmId : confirmId,
       summary   : summary,
       diff      : diff,
-    };
-    var ret = toolkit.initRet(checkResult);
+      pkgs      : pkgs,
+    });
     return res.locals.sendJSON(ret);
   });
 };
@@ -712,6 +759,7 @@ exports.confirmImport = function(req, res, next) {
   var confirmId = req.body.confirmId;
 
   var packageData = null;
+  var pkgs = null;
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -735,7 +783,13 @@ exports.confirmImport = function(req, res, next) {
     },
     // 执行导入
     function(asyncCallback) {
-      scriptSetModel.import(packageData, asyncCallback);
+      scriptSetModel.import(packageData, function(err, _pkgs) {
+        if (err) return asyncCallback(err);
+
+        pkgs = _pkgs;
+
+        return asyncCallback();
+      });
     },
     // 发送更新脚本缓存任务（强制）
     function(asyncCallback) {
@@ -745,7 +799,9 @@ exports.confirmImport = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet();
+    var ret = toolkit.initRet({
+      pkgs: pkgs,
+    });
     return res.locals.sendJSON(ret);
   });
 };

@@ -753,13 +753,16 @@ export async function confirm(message) {
 
 export async function prompt(message, defaultValue) {
   try {
-    return await MessageBox.prompt(message, {
+    let promptRes = await MessageBox.prompt(message, {
       inputValue              : defaultValue,
       dangerouslyUseHTMLString: true,
       closeOnClickModal       : false,
       confirmButtonText       : app.$t('Confirm'),
       cancelButtonText        : app.$t('Cancel'),
     });
+
+    return promptRes ? promptRes.value || null
+                     : null;
 
   } catch(err) {
     // 取消操作
@@ -1247,9 +1250,7 @@ export function createPageInfo() {
 };
 
 export function createPageFilter(listQuery) {
-  let pageFilter = getBase64(JSON.stringify(listQuery));
-  pageFilter = pageFilter.replace(/=/g, ''); // URL去除等号`=`
-  return pageFilter;
+  return getBase64(JSON.stringify(listQuery), true);
 };
 
 export function doPageFilter(nextListQuery, pushNow=true) {
@@ -1301,7 +1302,7 @@ export function gotoPageMarker(pageMarker) {
 };
 
 export function packRouteQuery() {
-  let packedRouteQuery = getBase64(JSON.stringify(router.currentRoute.query));
+  let packedRouteQuery = getBase64(JSON.stringify(router.currentRoute.query), true);
   return { prevRouteQuery: packedRouteQuery };
 };
 

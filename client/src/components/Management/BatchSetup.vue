@@ -69,7 +69,11 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                 </el-form-item>
 
                 <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
-                  <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
+                  <el-input
+                    type="textarea"
+                    v-model="form.funcCallKwargsJSON"
+                    resize="none"
+                    :autosize="true"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 

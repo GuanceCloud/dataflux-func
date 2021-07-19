@@ -77,7 +77,11 @@ shortcutDays : '{n}天'
                 </el-form-item>
 
                 <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
-                  <el-input type="textarea" v-model="form.funcCallKwargsJSON" resize="none" :autosize="true"></el-input>
+                  <el-input
+                    type="textarea"
+                    v-model="form.funcCallKwargsJSON"
+                    resize="none"
+                    :autosize="true"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 

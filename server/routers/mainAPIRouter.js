@@ -128,10 +128,7 @@ routeLoader.load(ROUTE.mainAPI.fileService, [
   mainAPICtrl.fileService,
 ]);
 
-// 官方脚本包
+// 脚本包索引
 routeLoader.load(ROUTE.mainAPI.getPackageIndex, [
   mainAPICtrl.getPackageIndex,
-]);
-routeLoader.load(ROUTE.mainAPI.installPackage, [
-  mainAPICtrl.installPackage,
 ]);

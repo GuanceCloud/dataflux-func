@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Data imported: 数据已导入
+
+Imported Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
 </i18n>
 
 <template>
@@ -92,7 +94,7 @@ Data imported: 数据已导入
         </span>
         <span slot="footer" class="dialog-footer">
           <el-button @click="showConfirm = false">取消</el-button>
-          <el-button type="primary" @click="confirmImport">
+          <el-button type="primary" @click="confirmImport" :loading="isImporting">
             确认导入
           </el-button>
         </span>
@@ -145,15 +147,33 @@ export default {
       this.checkResult = apiRes.data;
     },
     async confirmImport() {
+      this.isImporting = true;
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', {
         body : { confirmId: this.checkResult.confirmId },
         alert: { okMessage: this.$t('Data imported') },
       });
+      this.isImporting = false;
       if (!apiRes.ok) {
         return this.alertOnError(apiRes);
       }
 
-      this.goToHistory();
+      if (this.T.isNothing(apiRes.data.pkgs)) {
+        this.goToHistory();
+
+      } else {
+        this.showConfirm = false;
+
+        if (!await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
+          this.goToHistory();
+
+        } else {
+          let pkgs = apiRes.data.pkgs.join(' ');
+          this.$router.push({
+            name: 'pip-tool',
+            query: { pkgs: this.T.getBase64(pkgs) },
+          });
+        }
+      }
     },
     alertOnError(apiRes) {
       if (apiRes.ok) return;
@@ -230,6 +250,7 @@ export default {
 
       disableUpload: true,
       showConfirm  : false,
+      isImporting  : false,
 
       checkResult: {},
 

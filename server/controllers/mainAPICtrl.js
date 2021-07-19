@@ -2080,12 +2080,12 @@ exports.getPythonPackageInstallStatus = function(req, res, next) {
 };
 
 exports.installPythonPackage = function(req, res, next) {
+  var pkg    = req.body.pkg;
+  var mirror = req.body.mirror;
+
   // Python包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
   fs.ensureDirSync(packageInstallPath);
-
-  var pkg    = req.body.pkg;
-  var mirror = req.body.mirror;
 
   // 安装状态缓存
   var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
@@ -2295,7 +2295,7 @@ exports.downloadResources = function(req, res, next) {
 };
 
 exports.uploadResource = function(req, res, next) {
-  var file   = req.files[0];
+  var file   = req.files ? req.files[0] : null;
   var folder = req.body.folder || '.';
   var rename = req.body.rename || null;
 
@@ -2502,7 +2502,7 @@ exports.fileService = function(req, res, next) {
   });
 };
 
-// 官方脚本包
+// 获取脚本包索引
 exports.getPackageIndex = function(req, res, next) {
   var indexURL = req.query.indexURL || CONFIG.OFFICIAL_PACKAGE_INDEX_URL;
 
@@ -2531,23 +2531,7 @@ exports.getPackageIndex = function(req, res, next) {
   });
 };
 
-exports.installPackage = function(req, res, next) {
-  var packageURL = req.body.packageURL;
-
-  async.series([
-    function(asyncCallback) {
-      return asyncCallback();
-    },
-    function(asyncCallback) {
-      return asyncCallback();
-    },
-  ], function(err) {
-    if (err) return next(err);
-    return res.locals.sendJSON();
-  });
-};
-
 /* 允许其他模块调用 */
-exports.getFuncById                      = _getFuncById;
-exports.createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
-exports.callFuncRunner                   = _callFuncRunner;
+exports._getFuncById                      = _getFuncById;
+exports._createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
+exports._callFuncRunner                   = _callFuncRunner;

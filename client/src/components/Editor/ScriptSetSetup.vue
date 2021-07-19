@@ -8,6 +8,7 @@ Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
 requirements.txt format, one for each line : requirements.txt 文件格式，一行一个
+Go to PIP tool to install                  : 前往PIP工具安装
 
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -19,11 +20,15 @@ Script Set saved   : 脚本集已保存
 Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script Set deleted : 脚本集已删除
+Script Set cloned  : 脚本集已克隆
 
 Are you sure you want to delete the Script Set?: 是否确认删除此脚本集？
 
 This Script Set is locked by someone else, setup is disabled: 当前脚本已被其他人锁定，无法更改配置
 This Script Set is locked by you, setup is disabled to others: 当前脚本已被您锁定，其他人无法更改配置
+
+Please input new Script Set ID: 请输入新脚本集ID
+Inputed Script Set ID already exists: 输入的脚本集ID已经存在
 </i18n>
 
 <template>
@@ -81,12 +86,16 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                     show-word-limit
                     v-model="form.requirements"></el-input>
                   <InfoBlock :title="$t('requirements.txt format, one for each line')"></InfoBlock>
+                  <div class="setup-right">
+                    <el-button v-if="requirementsTEXT" type="text" @click="goToPIPTool">{{ $t('Go to PIP tool to install') }}</el-button>
+                  </div>
                 </el-form-item>
 
                 <el-form-item>
                   <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button v-if="T.pageMode() === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
@@ -220,6 +229,32 @@ export default {
       });
       this.$store.commit('updateScriptListSyncTime');
     },
+    async cloneData() {
+      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${this.scriptSetId}_2`);
+      if (!newScriptSetId) return;
+
+      // 检查重名
+      let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', newScriptSetId);
+      if (apiRes.data) {
+        return this.T.alert(this.$t('Inputed Script Set ID already exists'));
+      }
+
+      // 执行克隆
+      apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/clone', {
+        params: { id: this.scriptSetId },
+        body  : { newId: newScriptSetId },
+        alert : { okMessage: this.$t('Script Set cloned') },
+      });
+      if (!apiRes.ok) return;
+
+      this.$store.commit('updateScriptListSyncTime');
+    },
+    goToPIPTool() {
+      this.$router.push({
+        name: 'pip-tool',
+        query: { pkgs: this.T.getBase64(this.requirementsTEXT) },
+      });
+    },
   },
   computed: {
     formRules() {
@@ -270,6 +305,12 @@ export default {
     },
     isLockedByOther() {
       return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId;
+    },
+    requirementsTEXT() {
+      if (!this.form.requirements) return null;
+
+      let pkgs = this.form.requirements.split(/\s+/).join(' ');
+      return pkgs;
     },
   },
   props: {

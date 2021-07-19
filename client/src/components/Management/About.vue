@@ -12,7 +12,7 @@ Clear Log and Cache: 清空日志与缓存表
 Worker Queue cleared : 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
 
-'You are using {browser} (engine: {engine})': 您正在使用 {browser}（{engine}）
+'You are using {browser} (engine: {engine}) browser': 您正在使用 {browser}（{engine}）浏览器
 </i18n>
 
 <template>
@@ -28,39 +28,21 @@ Log and Cache cleared: 日志与缓存表已清空
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="about-form">
-              <p class="text-main browser-detect">{{ $t('You are using {browser} (engine: {engine})', { browser: T.getBrowser(), engine: T.getEngine() }) }}</p>
+              <p class="text-main browser-detect">{{ $t('You are using {browser} (engine: {engine}) browser', { browser: T.getBrowser(), engine: T.getEngine() }) }}</p>
               <br>
 
               <!-- DataFlux Func Server -->
               <el-divider content-position="left">
                 <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="warning" class="about-dataflux-func-part">Server</el-tag>
               </el-divider>
 
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWeb.version"></el-input>
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.version"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Release date')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWeb.releaseDate"></el-input>
-                </el-form-item>
-              </el-form>
-
-              <!-- DataFlux Func Worker -->
-              <br>
-              <el-divider content-position="left">
-                <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-                <el-tag type="success" class="about-dataflux-func-part">Worker</el-tag>
-              </el-divider>
-
-              <el-form label-width="120px">
-                <el-form-item :label="$t('Version')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWorker.version"></el-input>
-                </el-form-item>
-
-                <el-form-item :label="$t('Release date')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="aboutWorker.releaseDate"></el-input>
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.releaseDate"></el-input>
                 </el-form-item>
               </el-form>
 
@@ -74,6 +56,7 @@ Log and Cache cleared: 日志与缓存表已清空
                     <el-input :placeholder="$t('Loading...')"
                       type="textarea"
                       autosize
+                      resize="none"
                       :readonly="true"
                       :value="systemReportTEXT"></el-input>
                   </el-form-item>
@@ -123,39 +106,20 @@ export default {
     },
   },
   methods: {
-    // Web镜像信息
-    async _getWebVersion() {
+    // 镜像信息
+    async _getVersion() {
       let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
                         ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
                         : '-';
-        this.aboutWeb = {
+        this.about = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
           releaseDate: releaseDate,
         };
 
       } else {
-        this.aboutWorker = {
-          version    : this.NO_INFO_TEXT,
-          releaseDate: this.NO_INFO_TEXT,
-        }
-      }
-    },
-    // Worker镜像信息
-    async _getWorkerVersion() {
-      let apiRes = await this.T.callAPI_get('/api/v1/worker-image-info/do/get');
-      if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
-        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
-                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
-                        : '-';
-        this.aboutWorker = {
-          version    : apiRes.data.CI_COMMIT_REF_NAME,
-          releaseDate: releaseDate,
-        };
-
-      } else {
-        this.aboutWorker = {
+        this.about = {
           version    : this.NO_INFO_TEXT,
           releaseDate: this.NO_INFO_TEXT,
         }
@@ -315,8 +279,7 @@ export default {
     async loadData() {
       this.$store.commit('updateLoadStatus', true);
 
-      this._getWebVersion();
-      this._getWorkerVersion();
+      this._getVersion();
     },
     async getSystemReport() {
       this.showSystemReport = true;
@@ -369,8 +332,7 @@ export default {
   },
   data() {
     return {
-      aboutWeb   : {},
-      aboutWorker: {},
+      about: {},
 
       showSystemReport: false,
 
@@ -401,12 +363,6 @@ export default {
 }
 .about-form {
   width: 600px;
-}
-.about-dataflux-func-part {
-  font-size: 16px;
-  font-style: italic;
-  font-family: monospace;
-  margin-left: 10px;
 }
 </style>
 <style>

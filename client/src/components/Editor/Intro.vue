@@ -16,16 +16,19 @@ Welcome to: 欢迎使用
           <InfoBlock type="warning" title="在开始之前，请大致阅读以下介绍"></InfoBlock>
 
           <template>
-          <!-- 包学包会 -->
+          <!-- 官方网站及使用手册 -->
           <el-divider content-position="left">
             <h1>
-              <i>包学包会</i>
+              <i>官方网站及使用手册</i>
             </h1>
           </el-divider>
           <p>
-            我们编写了详细的操作使用手册《DataFlux Func 包学包会》<br>
+            我们编写了详细的使用手册，所有相关文档都可以在官方网站找到。<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" href="https://t.dataflux.cn/func-user-guide" target="_blank">立即阅读《DataFlux Func 包学包会》（文档大小约3.5MB）</el-link>
+            <el-link type="primary" href="https://function.dataflux.cn/" target="_blank">
+              <i class="fa fa-fw fa-link"></i>
+              立即前往官方网站
+            </el-link>
           </p>
           </template>
 
@@ -39,7 +42,7 @@ Welcome to: 欢迎使用
             在左边侧栏可以找到本编辑器的核心模块入口：
             <ul>
               <li>脚本库&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以进行脚本集、脚本以及脚本内函数的编辑管理</li>
-              <li>数据源&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以维护脚本内所需各数据库的管理。<br>（目前支持 InfluxDB、MySQL、Redis）</li>
+              <li>数据源&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以维护脚本内所需各数据库的管理</li>
               <li>环境变量 <i class="fa fa-fw fa-long-arrow-right"></i> 可以配置在全局范围内可以引用的变量</li>
             </ul>
           </p>
@@ -119,7 +122,7 @@ Welcome to: 欢迎使用
                 可以指定函数按照Crontab语法自动触发执行
               </li>
               <li>
-                <i class="fa fa-fw fa-clock-o"></i> 批处理&#12288;&#12288;&#12288;
+                <i class="fa fa-fw fa-tasks"></i> 批处理&#12288;&#12288;&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 可以指定函数执行长耗时任务
               </li>
@@ -139,27 +142,29 @@ Welcome to: 欢迎使用
                 可以将脚本库还原至以前的某个时刻，在脚本发生问题时及时回滚
               </li>
               <li>
+                <i class="fa fa-fw fa-users"></i> 成员管理&#12288;&#12288;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                可以添加和管理本系统等登录用户
+              </li>
+              <li>
                 <i class="fa fa-fw fa-keyboard-o"></i> 操作记录&#12288;&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 可以查看用户在系统内的关键操作
               </li>
+              <li>
+                <i class="fa fa-fw fa-flask"></i> 实验性功能&#12288;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                可以开启/关闭实验性功能的入口
+              </li>
             </ul>
           </p>
 
-          <!-- 函数文档/授权链接函数文档 -->
+          <!-- 授权链接函数文档 -->
           <el-divider content-position="left">
             <h1>
-              <i>函数文档/授权链接函数文档</i>
+              <i>授权链接函数文档</i>
             </h1>
           </el-divider>
-          <p>
-            函数文档列出了所有可内部调用的函数，以及其参数、文档等。
-            <br>
-            <a class="text-main" href="/#/func-doc" target="_blank">
-              <i class="fa fa-fw fa-book"></i>
-              前往函数文档
-            </a>
-          </p>
           <p>
             授权链接函数文档列出了所有<span>可公开访问</span>的函数，以及其参数、文档等。这些函数可以被外部系统调用以实现集成功能。
             <br>

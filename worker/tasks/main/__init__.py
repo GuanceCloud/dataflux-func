@@ -1127,6 +1127,15 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def _custom_import(self, script_dict, imported_script_dict,
         name, globals=None, locals=None, fromlist=None, level=0,
         parent_scope=None):
+        entry_name = globals.get('__name__')
+        if isinstance(entry_name, str) and (entry_name in script_dict) and name.startswith('__'):
+            # 只有用户脚本支持相对路径引入用户脚本
+            # 支持使用"__scriptname"代替"scriptsetname__scriptname"导入
+            entry_script_set = entry_name.split('__')[0]
+            real_import_name = entry_script_set + name
+            if real_import_name in script_dict:
+                name = real_import_name
+
         if name in script_dict:
             _module = None
 

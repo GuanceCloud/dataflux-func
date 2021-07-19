@@ -331,16 +331,16 @@ export default {
     },
     async resourceOperation(name, operation) {
       // 处理前操作
-      let promptRes = null;
+      let operationArgument = null;
       switch(operation) {
         case 'cp':
-          promptRes = await this.T.prompt(this.$t('Please input destination path'), name);
-          if (!promptRes) return;
+          operationArgument = await this.T.prompt(this.$t('Please input destination path'), name);
+          if (!operationArgument) return;
           break;
 
         case 'mv':
-          promptRes = await this.T.prompt(this.$t('Please input destination path'), `./${name}`);
-          if (!promptRes) return;
+          operationArgument = await this.T.prompt(this.$t('Please input destination path'), `./${name}`);
+          if (!operationArgument) return;
           break;
 
         case 'rm':
@@ -358,7 +358,7 @@ export default {
         body : {
           targetPath       : this.getPath(name),
           operation        : operation,
-          operationArgument: promptRes ? promptRes.value : undefined,
+          operationArgument: operationArgument,
         },
       });
 

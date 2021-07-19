@@ -1662,6 +1662,18 @@ toolkit.createStringBuilder = function() {
 };
 
 /**
+ * Ensure string/object to be a pretty json string.
+ * @param  {String|Object} j
+ * @return {String}
+ */
+var ensureJSONString = toolkit.ensureJSONString = function ensureJSONString(j) {
+  if (j &&'string' !== typeof j) {
+    return JSON.stringify(j);
+  }
+  return j;
+};
+
+/**
  * Convert JSON string/object to be a pretty formatted string.
  * @param  {String|Object} j
  * @param  {String}        indent

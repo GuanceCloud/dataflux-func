@@ -125,7 +125,8 @@ Script {id}    : 脚本 {id}
             :value="showPopoverId === data.id">
 
             <div class="aside-tree-node-description">
-              <code>{{ data.title || data.id }}</code>
+              <code v-if="data.title">{{ data.title }} (ID: {{ data.id }})</code>
+              <code v-else>{{ data.id }}</code>
               <pre v-if="data.description">{{ data.description }}</pre>
             </div>
 

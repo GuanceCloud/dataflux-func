@@ -399,7 +399,7 @@ h3 {
 }
 
 .text-main {
-  color: #FF6600;
+  color: #FF6600 !important;
   text-shadow: #ffa5004d 0 0 10px;
 }
 .text-info {

@@ -95,6 +95,203 @@ EntityModel.prototype.delete = function(id, callback) {
   });
 };
 
+EntityModel.prototype.clone = function(id, newId, callback) {
+  var self = this;
+
+  var transScope = modelHelper.createTransScope(self.db);
+  async.series([
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    // 克隆脚本集
+    function(asyncCallback) {
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   title');
+      sql.append('  ,description');
+      sql.append('  ,requirements');
+      sql.append('FROM biz_main_script_set');
+      sql.append('WHERE');
+      sql.append('   id = ?');
+
+      var sqlParams = [id];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        var cloneData = [];
+        dbRes.forEach(function(d) {
+          cloneData.push([
+            newId, // id
+            d.title,
+            d.description,
+            d.requirements,
+          ]);
+        })
+
+        var sql = toolkit.createStringBuilder();
+        sql.append('INSERT INTO biz_main_script_set');
+        sql.append('(');
+        sql.append('   id');
+        sql.append('  ,title');
+        sql.append('  ,description');
+        sql.append('  ,requirements');
+        sql.append(')');
+        sql.append('VALUES');
+        sql.append('  ?');
+
+        var sqlParams = [cloneData];
+        self.db.query(sql, sqlParams, asyncCallback);
+      });
+    },
+    // 克隆脚本
+    function(asyncCallback) {
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('    id');
+      sql.append('   ,title');
+      sql.append('   ,description');
+      sql.append('   ,publishVersion');
+      sql.append('   ,type');
+      sql.append('   ,code');
+      sql.append('   ,codeMD5');
+      sql.append('   ,codeDraft');
+      sql.append('   ,codeDraftMD5');
+      sql.append('FROM biz_main_script');
+      sql.append('WHERE');
+      sql.append('   scriptSetId = ?');
+
+      var sqlParams = [id];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+        if (dbRes.length <= 0) return asyncCallback();
+
+        var cloneData = [];
+        dbRes.forEach(function(d) {
+          // 计算新脚本ID
+          var idParts = d.id.split('__');
+          idParts[0] = newId;
+          var newScriptId = idParts.join('__');
+
+          cloneData.push([
+            newScriptId, // id
+            newId,       // scriptSetId
+            d.title,
+            d.description,
+            1, // publishVersion
+            d.type,
+            d.code,
+            d.codeMD5,
+            d.codeDraft,
+            d.codeDraftMD5,
+          ]);
+        })
+
+        var sql = toolkit.createStringBuilder();
+        sql.append('INSERT INTO biz_main_script');
+        sql.append('(');
+        sql.append('   id');
+        sql.append('  ,scriptSetId');
+        sql.append('  ,title');
+        sql.append('  ,description');
+        sql.append('  ,publishVersion');
+        sql.append('  ,type');
+        sql.append('  ,code');
+        sql.append('  ,codeMD5');
+        sql.append('  ,codeDraft');
+        sql.append('  ,codeDraftMD5');
+        sql.append(')');
+        sql.append('VALUES');
+        sql.append('  ?');
+
+        var sqlParams = [cloneData];
+        self.db.query(sql, sqlParams, asyncCallback);
+      });
+    },
+    // 克隆函数
+    function(asyncCallback) {
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   id');
+      sql.append('  ,name');
+      sql.append('  ,title');
+      sql.append('  ,description');
+      sql.append('  ,definition');
+      sql.append('  ,argsJSON');
+      sql.append('  ,kwargsJSON');
+      sql.append('  ,extraConfigJSON');
+      sql.append('  ,category');
+      sql.append('  ,integration');
+      sql.append('  ,tagsJSON');
+      sql.append('  ,defOrder');
+      sql.append('FROM biz_main_func');
+      sql.append('WHERE');
+      sql.append('   scriptSetId = ?');
+
+      var sqlParams = [id];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+        if (dbRes.length <= 0) return asyncCallback();
+
+        var cloneData = [];
+        dbRes.forEach(function(d) {
+          // 计算新脚本、函数ID
+          var idParts = d.id.split('__');
+          idParts[0] = newId;
+          var newFuncId   = idParts.join('__');
+          var newScriptId = newFuncId.split('.')[0]
+
+          cloneData.push([
+            newFuncId,   // id
+            newId,       // scriptSetId
+            newScriptId, // scriptId
+            d.name,
+            d.title,
+            d.description,
+            d.definition,
+            toolkit.ensureJSONString(d.argsJSON),
+            toolkit.ensureJSONString(d.kwargsJSON),
+            toolkit.ensureJSONString(d.extraConfigJSON),
+            d.category,
+            d.integration,
+            toolkit.ensureJSONString(d.tagsJSON),
+            d.defOrder,
+          ]);
+        })
+
+        var sql = toolkit.createStringBuilder();
+        sql.append('INSERT INTO biz_main_func');
+        sql.append('(');
+        sql.append('   id');
+        sql.append('  ,scriptSetId');
+        sql.append('  ,scriptId');
+        sql.append('  ,name');
+        sql.append('  ,title');
+        sql.append('  ,description');
+        sql.append('  ,definition');
+        sql.append('  ,argsJSON');
+        sql.append('  ,kwargsJSON');
+        sql.append('  ,extraConfigJSON');
+        sql.append('  ,category');
+        sql.append('  ,integration');
+        sql.append('  ,tagsJSON');
+        sql.append('  ,defOrder');
+        sql.append(')');
+        sql.append('VALUES');
+        sql.append('  ?');
+
+        var sqlParams = [cloneData];
+        self.db.query(sql, sqlParams, asyncCallback);
+      });
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return callback(scopeErr);
+
+      return callback();
+    });
+  });
+};
+
 EntityModel.prototype.import = function(packageData, callback) {
   var self = this;
 
@@ -288,7 +485,19 @@ EntityModel.prototype.import = function(packageData, callback) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return callback(scopeErr);
 
-      return callback();
+      // 提取依赖包
+      var pkgs = []
+      packageData.scriptSets.forEach(function(s) {
+        if (!s.requirements) return;
+        pkgs = pkgs.concat(s.requirements.split('\n'));
+      });
+
+      pkgs = toolkit.noDuplication(pkgs);
+      if (toolkit.isNothing(pkgs)) {
+        pkgs = null;
+      }
+
+      return callback(null, pkgs);
     });
   });
 };

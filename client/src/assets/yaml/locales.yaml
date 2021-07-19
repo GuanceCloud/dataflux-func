@@ -22,6 +22,7 @@ en:
 
   # 通用-操作
   Add     : 添加
+  Clone   : 克隆
   Setup   : 配置
   Edit    : 编辑
   Modify  : 修改
@@ -50,6 +51,7 @@ en:
 
   # 通用-操作（小写）
   add     : 添加
+  clone   : 克隆
   setup   : 配置
   edit    : 编辑
   modify  : 修改

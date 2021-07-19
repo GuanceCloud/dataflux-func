@@ -23,6 +23,10 @@ routeLoader.load(ROUTE.scriptSetAPI.delete, [
   scriptSetAPICtrl.delete,
 ]);
 
+routeLoader.load(ROUTE.scriptSetAPI.clone, [
+  scriptSetAPICtrl.clone,
+]);
+
 routeLoader.load(ROUTE.scriptSetAPI.export, [
   scriptSetAPICtrl.export,
 ]);
