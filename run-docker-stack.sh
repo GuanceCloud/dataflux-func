@@ -114,6 +114,7 @@ if [ ${OPT_IMAGE} != "DEFAULT" ]; then
 fi
 
 log "Project name: ${__PROJECT_NAME}"
+log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Image       : ${_DATAFLUX_FUNC_IMAGE}"
 
@@ -276,6 +277,8 @@ if [ ${OPT_NO_REDIS} = "TRUE" ]; then
 fi
 
 blankLine
+log "Port:"
+log "    ${_PORT}"
 log "Installed dir:"
 log "    ${_INSTALL_DIR}"
 log "To shutdown:"
