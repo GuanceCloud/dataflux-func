@@ -1,6 +1,6 @@
 # DataFlux Func
 
-DataFlux Func 是一个基于Python 的类ServerLess 的脚本开发、管理及执行平台。
+DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 
 > `DataFlux Func` 读作`data flux function`，系统内有时会缩写为`DFF`。
 
