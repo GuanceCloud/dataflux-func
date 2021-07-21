@@ -15,6 +15,8 @@ No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
+
+Integration Func Tasks: 集成函数任务
 </i18n>
 
 <template>
@@ -25,6 +27,9 @@ Are you sure you want to delete the Crontab Config?: 是否确认删除此自动
         <h1>
           {{ $t('Crontab Config') }}
           <div class="header-control">
+            <el-button type="text" @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-button>
+            &#12288;
+
             <FuzzySearchInput
               :dataFilter="dataFilter"
               :searchTip="$t('Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
@@ -264,7 +269,6 @@ export default {
         query : prevRouteQuery,
       });
     },
-
   },
   computed: {
   },
