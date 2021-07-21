@@ -93,7 +93,7 @@ class StarterCrontabTask(BaseTask):
                 continue
 
             c = {
-                'id'            : 'cron-AUTORUN-{}'.format(f['id']),
+                'id'            : 'cron-AUTORUN',
                 'funcId'        : f['id'],
                 'funcCallKwargs': {},
                 'saveResult'    : False,
