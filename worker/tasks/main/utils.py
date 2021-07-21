@@ -578,10 +578,10 @@ class SyncCache(BaseTask):
             else:
                 return
 
-                 = '\n'.join(log_messages).strip()
-
             sql        = None
             sql_params = None
+
+            message_text = '\n'.join(log_messages).strip()
 
             # 根据是否服务降级区分处理
             if not is_service_degraded:
@@ -651,7 +651,7 @@ class SyncCache(BaseTask):
                         script_publish_version,
                         timestamp,
                         status,
-                            ,
+                        message_text,
                         einfo_text,
                         timestamp,
                         task_id,
