@@ -564,11 +564,6 @@ class SyncCache(BaseTask):
             if not all([origin, exec_mode, origin_id, timestamp]):
                 continue
 
-            if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
-                return
-
-            message_text = '\n'.join(log_messages).strip()
-
             # 记录任务信息
             table_name      = None
             origin_id_field = None
@@ -579,6 +574,11 @@ class SyncCache(BaseTask):
             elif origin == 'batch':
                 table_name      = 'biz_main_batch_task_info'
                 origin_id_field = 'batchId'
+
+            else:
+                return
+
+                 = '\n'.join(log_messages).strip()
 
             sql        = None
             sql_params = None
@@ -651,7 +651,7 @@ class SyncCache(BaseTask):
                         script_publish_version,
                         timestamp,
                         status,
-                        message_text,
+                            ,
                         einfo_text,
                         timestamp,
                         task_id,
