@@ -99,7 +99,7 @@ REDIS_TS_MAX_LENGTH: 1000
 WORKER_QUEUE_ALIAS_MAP: cpu=9
 
 # 官方脚本库索引地址
-OFFICIAL_PACKAGE_INDEX_URL: https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/dataflux-func/market/pkg-index.json
+OFFICIAL_PACKAGE_INDEX_URL: https://static.dataflux.cn/dataflux-func/market/pkg-index.json
 
 ########################
 #   以下配置请勿修改   #
