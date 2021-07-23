@@ -450,8 +450,8 @@ class DataWay(object):
 
         return self._do_request(method=method, path=path, query=query, headers=headers)
 
-    def _do_post(self, path, body, content_type, query=None, headers=None, with_rp=False):
-        method = 'POST'
+    def _do_post(self, path, body, content_type, method=None, query=None, headers=None, with_rp=False):
+        method = method or 'POST'
         path   = path or self.path
 
         query = query or {}
@@ -486,7 +486,7 @@ class DataWay(object):
 
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
 
-    def post_json(self, json_obj, path, query=None, headers=None, with_rp=False):
+    def post_json(self, json_obj, path, method=None, query=None, headers=None, with_rp=False):
         content_type = 'application/json'
 
         # break obj reference
@@ -500,7 +500,7 @@ class DataWay(object):
         if isinstance(body, (dict, list, tuple)):
             body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
-        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+        return self._do_post(path=path, body=body, content_type=content_type, method=method, query=query, headers=headers, with_rp=with_rp)
 
     # High-Level API
     def _prepare_metric(self, data):
