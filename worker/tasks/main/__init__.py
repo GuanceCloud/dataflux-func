@@ -30,7 +30,7 @@ from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import OracleDatabaseHelper, SQLServerHelper, PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper
-from worker.utils.extra_helpers import DFDataWayHelper, DFDataKitHelper
+from worker.utils.extra_helpers import DataWayHelper, DataKitHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -60,8 +60,8 @@ FIX_INTEGRATION_KEY_MAP = {
 }
 
 DATA_SOURCE_HELPER_CLASS_MAP = {
-    'df_dataway'   : DFDataWayHelper,
-    'df_datakit'   : DFDataKitHelper,
+    'df_dataway'   : DataWayHelper,
+    'df_datakit'   : DataKitHelper,
     'influxdb'     : InfluxDBHelper,
     'mysql'        : MySQLHelper,
     'redis'        : RedisHelper,

@@ -9,42 +9,35 @@ import requests
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers.df_dataway import DataWay
+from worker.utils.extra_helpers.datakit import DataKit
 
 CONFIG = yaml_resources.get('CONFIG')
 
 def get_config(c):
     return toolkit.no_none_or_white_space({
-        'url'       : c.get('url'),
-        'host'      : c.get('host'),
-        'port'      : c.get('port'),
-        'protocol'  : c.get('protocol'),
-        'path'      : c.get('path'),
-        'token'     : c.get('token'),
-        'rp'        : c.get('rp'),
-        'access_key': c.get('accessKey'),
-        'secret_key': c.get('secretKey'),
-        'debug'     : c.get('debug', False),
+        'url'     : c.get('url'),
+        'host'    : c.get('host'),
+        'port'    : c.get('port'),
+        'protocol': c.get('protocol'),
+        'source'  : c.get('source'),
+        'debug'   : c.get('debug', False),
     })
 
-class DFDataWayHelper(object):
-    def __init__(self, logger, config, token=None, rp=None, *args, **kwargs):
+class DataKitHelper(object):
+    def __init__(self, logger, config, source=None, *args, **kwargs):
         self.logger = logger
 
-        if token:
-            config['token'] = token
-
-        if rp:
-            config['rp'] = rp
+        if source:
+            config['source'] = source
 
         self.config = config
-        self.client = DataWay(**get_config(config))
+        self.client = DataKit(**get_config(config))
 
     def __del__(self):
         pass
 
     def check(self):
-        url = '{0}://{1}:{2}/'.format(
+        url = '{0}://{1}:{2}/v1/ping'.format(
             self.config.get('protocol', 'http'),
             self.config.get('host'),
             self.config.get('port'))

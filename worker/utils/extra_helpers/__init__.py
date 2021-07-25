@@ -211,8 +211,8 @@ from .redis_helper           import RedisHelper
 from .memcached_helper       import MemcachedHelper
 from .influxdb_helper        import InfluxDBHelper
 from .clickhouse_helper      import ClickHouseHelper
-from .df_dataway_helper      import DFDataWayHelper
-from .df_datakit_helper      import DFDataKitHelper
+from .dataway_helper         import DataWayHelper
+from .datakit_helper         import DataKitHelper
 from .oracle_database_helper import OracleDatabaseHelper
 from .sqlserver_helper       import SQLServerHelper
 from .postgresql_helper      import PostgreSQLHelper
