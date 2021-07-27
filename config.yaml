@@ -215,12 +215,12 @@ _MONITOR_MATCHED_ROUTE_EXPIRES   : 86400
 _MONITOR_SLOW_API_COUNT_EXPIRES  : 604800
 
 # 自动执行任务频率
-_CRONTAB_STARTER                      : '* * * * *'
-_CRONTAB_SYNC_CACHE                   : '* * * * *'
-_CRONTAB_AUTO_CLEANER                 : '*/15 * * * *'
-_CRONTAB_SCRIPT_FORCE_RELOAD          : '* * * * *'
-_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER: '* * * * *'
-_CRONTAB_DB_AUTO_BACKUP               : '0 * * * *'
+_CRONTAB_STARTER                    : '* * * * *'
+_CRONTAB_SYNC_CACHE                 : '* * * * *'
+_CRONTAB_AUTO_CLEAN                 : '*/15 * * * *'
+_CRONTAB_AUTO_BACKUP_DB             : '0 * * * *'
+_CRONTAB_FORCE_RELOAD_SCRIPT        : '* * * * *'
+_CRONTAB_RESET_WORKER_QUEUE_PRESSURE: '* * * * *'
 
 
 

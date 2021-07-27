@@ -1434,6 +1434,19 @@ mainAPI:
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
+  callCrontabConfig:
+    showInDoc    : true
+    name         : 调用自动触发配置（手动执行）
+    method       : get
+    url          : /api/v1/cron/:id
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    params:
+      id:
+        $desc: 批处理ID
+        $type: string
+
   callBatchByGet:
     showInDoc    : true
     name         : 调用批处理（GET方式）

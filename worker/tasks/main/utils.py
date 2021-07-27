@@ -2,7 +2,7 @@
 
 '''
 杂项任务
-包含各类清理类任务、AutoCleanerTask各类数据定时同步任务、数据源检查/调试任务等
+包含各类清理类任务、AutoCleanTask各类数据定时同步任务、数据源检查/调试任务等
 '''
 
 # Builtin Modules
@@ -170,10 +170,10 @@ def reload_scripts(self, *args, **kwargs):
         lock_key   = toolkit.get_cache_key('lock', 'reloadScripts')
         lock_value = toolkit.gen_uuid()
         if not self.cache_db.lock(lock_key, lock_value, 10):
-            self.logger.warning('ReloadScriptDict Task already launched.')
+            self.logger.warning('Main.ReloadScripts Task already launched.')
             return
 
-    self.logger.info('ReloadScriptDict Task launched.')
+    self.logger.info('Main.ReloadScripts Task launched.')
 
     cache_key = toolkit.get_cache_key('fixedCache', 'prevDBUpdateTimestamp')
 
@@ -697,10 +697,10 @@ def sync_cache(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'syncCache')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('SyncCache Task already launched.')
+        self.logger.warning('Main.SyncCache Task already launched.')
         return
 
-    self.logger.info('SyncCache Task launched.')
+    self.logger.info('Main.SyncCache Task launched.')
 
     # 脚本运行信息刷入数据库
     try:
@@ -730,8 +730,8 @@ def sync_cache(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-# Main.AutoCleaner
-class AutoCleanerTask(BaseTask):
+# Main.AutoClean
+class AutoCleanTask(BaseTask):
     def _delete_by_seq(self, table, seq):
         sql = '''
             DELETE FROM ??
@@ -805,15 +805,15 @@ class AutoCleanerTask(BaseTask):
                 if entry.name < limit_timestamp:
                     shutil.rmtree(entry.path)
 
-@app.task(name='Main.AutoCleaner', bind=True, base=AutoCleanerTask)
-def auto_cleaner(self, *args, **kwargs):
+@app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
+def auto_clean(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('AutoCleaner Task already launched.')
+        self.logger.warning('Main.AutoClean Task already launched.')
         return
 
-    self.logger.info('AutoCleaner Task launched.')
+    self.logger.info('Main.AutoClean Task launched.')
 
     # 清空数据库数据
     if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
@@ -855,10 +855,10 @@ def auto_run(self, *args, **kwargs):
     lock_key   = toolkit.get_cache_key('lock', 'autoRun')
     lock_value = toolkit.gen_uuid()
     if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('AutoRun Task already launched.')
+        self.logger.warning('Main.AutoRun Task already launched.')
         return
 
-    self.logger.info('AutoRun Task launched.')
+    self.logger.info('Main.AutoRun Task launched.')
 
     # 获取函数功能集成自动运行函数
     integrated_auto_run_funcs = self.get_integrated_auto_run_funcs()
@@ -879,94 +879,8 @@ def auto_run(self, *args, **kwargs):
 
         func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
 
-# Main.DataSourceChecker
-@app.task(name='Main.DataSourceChecker', bind=True, base=BaseTask)
-def data_source_checker(self, *args, **kwargs):
-    self.logger.info('DataSource Checker Task launched.')
-
-    data_source_type   = kwargs.get('type')
-    data_source_config = kwargs.get('config')
-
-    # 检查数据源
-    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
-    if not data_source_helper_class:
-        e = Exception('Unsupported DataSource type: `{}`'.format(data_source_type))
-        raise e
-
-    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
-
-    data_source_helper.check()
-
-# Main.DataSourceDebugger
-@app.task(name='Main.DataSourceDebugger', bind=True, base=BaseTask)
-def data_source_debugger(self, *args, **kwargs):
-    self.logger.info('DataSource Debugger Task launched.')
-
-    data_source_id = kwargs.get('id')
-    command        = kwargs.get('command')
-    command_args   = kwargs.get('commandArgs')   or []
-    command_kwargs = kwargs.get('commandKwargs') or {}
-    return_type    = kwargs.get('returnType')    or 'json'
-
-    data_source = None
-
-    # 查询数据源
-    sql = '''
-        SELECT
-            `type`,
-            `configJSON`
-        FROM biz_main_data_source
-        WHERE
-            `id` = ?
-        '''
-    sql_params = [data_source_id]
-    db_res = self.db.query(sql, sql_params)
-    if len(db_res) > 0:
-        data_source = db_res[0]
-        data_source['config'] = ujson.loads(data_source['configJSON'])
-
-    if not data_source:
-        e = Exception('No such DataSource')
-        raise e
-
-    # 执行数据源命令
-    data_source_type   = data_source.get('type')
-    data_source_config = data_source.get('config')
-    data_source_config = decipher_data_source_config_fields(data_source_config)
-
-    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
-    if not data_source_helper_class:
-        e = Exception('Unsupported DataSource type: `{}`'.format(da))
-        raise e
-
-    # 解密字段
-    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
-
-    db_res = getattr(data_source_helper, command)(*command_args, **command_kwargs)
-
-    ret = None
-    if return_type == 'repr':
-        ret = pprint.pformat(db_res, width=100)
-    else:
-        ret = db_res
-    return ret
-
-# Main.WorkerQueuePressureRecover
-@app.task(name='Main.WorkerQueuePressureRecover', bind=True, base=BaseTask)
-def worker_queue_pressure_recover(self, *args, **kwargs):
-    self.logger.info('Worker Queue Pressure Recover Task launched.')
-
-    for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
-        queue_key = toolkit.get_worker_queue(i)
-        queue_length = self.cache_db.run('llen', queue_key)
-
-        if not queue_length or int(queue_length) <= 0:
-            cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
-            self.cache_db.run('set', cache_key, 0)
-
-
-# Main.DBAutoBackup
-class DBAutoBackupTask(BaseTask):
+# Main.AutoBackupDB
+class AutoBackupDBTask(BaseTask):
     def run_sqldump(self, tables, with_data, file_name):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
         os.makedirs(dump_file_dir, exist_ok=True)
@@ -1020,9 +934,9 @@ class DBAutoBackupTask(BaseTask):
                 file_path = os.path.join(dump_file_dir, file_name)
                 os.remove(file_path)
 
-@app.task(name='Main.DBAutoBackup', bind=True, base=DBAutoBackupTask)
-def db_auto_backup(self, *args, **kwargs):
-    self.logger.info('DB Auto Backup Task launched.')
+@app.task(name='Main.AutoBackupDB', bind=True, base=AutoBackupDBTask)
+def auto_backup_db(self, *args, **kwargs):
+    self.logger.info('Main.AutoBackupDB Task launched.')
 
     # 准备备份
     date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
@@ -1057,3 +971,88 @@ def db_auto_backup(self, *args, **kwargs):
 
     # 自动删除旧备份
     self.limit_sqldump()
+
+# Main.CheckDataSource
+@app.task(name='Main.CheckDataSource', bind=True, base=BaseTask)
+def check_data_source(self, *args, **kwargs):
+    self.logger.info('Main.CheckDataSource Task launched.')
+
+    data_source_type   = kwargs.get('type')
+    data_source_config = kwargs.get('config')
+
+    # 检查数据源
+    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
+    if not data_source_helper_class:
+        e = Exception('Unsupported DataSource type: `{}`'.format(data_source_type))
+        raise e
+
+    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
+
+    data_source_helper.check()
+
+# Main.QueryDataSource
+@app.task(name='Main.QueryDataSource', bind=True, base=BaseTask)
+def query_data_source(self, *args, **kwargs):
+    self.logger.info('Main.QueryDataSource Task launched.')
+
+    data_source_id = kwargs.get('id')
+    command        = kwargs.get('command')
+    command_args   = kwargs.get('commandArgs')   or []
+    command_kwargs = kwargs.get('commandKwargs') or {}
+    return_type    = kwargs.get('returnType')    or 'json'
+
+    data_source = None
+
+    # 查询数据源
+    sql = '''
+        SELECT
+            `type`,
+            `configJSON`
+        FROM biz_main_data_source
+        WHERE
+            `id` = ?
+        '''
+    sql_params = [data_source_id]
+    db_res = self.db.query(sql, sql_params)
+    if len(db_res) > 0:
+        data_source = db_res[0]
+        data_source['config'] = ujson.loads(data_source['configJSON'])
+
+    if not data_source:
+        e = Exception('No such DataSource')
+        raise e
+
+    # 执行数据源命令
+    data_source_type   = data_source.get('type')
+    data_source_config = data_source.get('config')
+    data_source_config = decipher_data_source_config_fields(data_source_config)
+
+    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
+    if not data_source_helper_class:
+        e = Exception('Unsupported DataSource type: `{}`'.format(da))
+        raise e
+
+    # 解密字段
+    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
+
+    db_res = getattr(data_source_helper, command)(*command_args, **command_kwargs)
+
+    ret = None
+    if return_type == 'repr':
+        ret = pprint.pformat(db_res, width=100)
+    else:
+        ret = db_res
+    return ret
+
+# Main.ResetWorkerQueuePressure
+@app.task(name='Main.ResetWorkerQueuePressure', bind=True, base=BaseTask)
+def reset_worker_queue_pressure(self, *args, **kwargs):
+    self.logger.info('Worker Queue Pressure Recover Task launched.')
+
+    for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
+        queue_key = toolkit.get_worker_queue(i)
+        queue_length = self.cache_db.run('llen', queue_key)
+
+        if not queue_length or int(queue_length) <= 0:
+            cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
+            self.cache_db.run('set', cache_key, 0)

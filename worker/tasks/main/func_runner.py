@@ -295,7 +295,7 @@ def func_runner(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('Runner Task launched: `{}`'.format(func_id))
+    self.logger.info('Main.FuncRunner Task launched: `{}`'.format(func_id))
 
     # 来源
     origin    = kwargs.get('origin')

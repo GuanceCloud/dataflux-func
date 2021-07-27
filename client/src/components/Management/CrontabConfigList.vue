@@ -4,10 +4,12 @@ Not Set: 未配置
 Expires: 有效期
 Never  : 长期有效
 Tasks  : 任务
+Run Now: 立即执行
 
-Crontab Config disabled: 自动触发配置已禁用
-Crontab Config enabled : 自动触发配置已启用
-Crontab Config deleted : 自动触发配置已删除
+Crontab Config disabled : 自动触发配置已禁用
+Crontab Config enabled  : 自动触发配置已启用
+Crontab Config deleted  : 自动触发配置已删除
+Crontab Config Task sent: 自动触发配置任务已发送
 
 Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索自动触发配置（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
@@ -15,6 +17,7 @@ No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
+Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
 
 Integration Func Tasks: 集成函数任务
 </i18n>
@@ -126,12 +129,18 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="320">
             <template slot-scope="scope">
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
                 >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
+              </el-button>
+
+              <el-button @click="runTask(scope.row)"
+                type="text"
+                :disabled="!scope.row.func_id"
+                >{{ $t('Run Now') }}
               </el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
@@ -268,6 +277,16 @@ export default {
         params: {id: d.id},
         query : prevRouteQuery,
       });
+    },
+    async runTask(d) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to send a task of the Crontab Config?'))) return;
+
+      let apiRes = await this.T.callAPI_get('/api/v1/cron/:id', {
+        params: { id: d.id },
+        alert : { okMessage: this.$t('Crontab Config Task sent') },
+      });
+
+      this.$store.commit('updateHighlightedTableDataId', d.id);
     },
   },
   computed: {

@@ -38,6 +38,11 @@ routeLoader.load(ROUTE.mainAPI.callAuthLinkByPostWithFormat, [
   mainAPICtrl.callAuthLink,
 ]);
 
+// 通过自动触发配置调用（手动执行）
+routeLoader.load(ROUTE.mainAPI.callCrontabConfig, [
+  mainAPICtrl.callCrontabConfig,
+]);
+
 // 通过批处理调用
 routeLoader.load(ROUTE.mainAPI.callBatchByGet, [
   mainAPICtrl.callBatch,

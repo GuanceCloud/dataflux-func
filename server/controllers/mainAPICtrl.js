@@ -40,8 +40,9 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
 var dataway      = require('./dataway');
 
-var AUTH_LINK_PREFIX = authLinkMod.TABLE_OPTIONS.alias + '-';
-var BATCH_PREFIX     = batchMod.TABLE_OPTIONS.alias    + '-';
+var AUTH_LINK_PREFIX      = authLinkMod.TABLE_OPTIONS.alias + '-';
+var CRONTAB_CONFIG_PREFIX = crontabConfigMod.TABLE_OPTIONS.alias + '-';
+var BATCH_PREFIX          = batchMod.TABLE_OPTIONS.alias    + '-';
 
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,
@@ -995,7 +996,7 @@ function _doAPIResponse(locals, res, ret, options, callback) {
       }
     }
   }
-}
+};
 
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
@@ -1370,6 +1371,48 @@ exports.callAuthLink = function(req, res, next) {
   });
 };
 
+exports.callCrontabConfig = function(req, res, next) {
+  var id = req.params.id;
+
+  if (id && id.slice(0, CRONTAB_CONFIG_PREFIX.length) !== CRONTAB_CONFIG_PREFIX) {
+    id = CRONTAB_CONFIG_PREFIX + id;
+  }
+
+  async.series([
+    // 检查自动触发配置是否存在
+    function(asyncCallback) {
+      var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+
+      crontabConfigModel._get(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (!dbRes) {
+          // 查询不存在，缓存为`null`
+          return asyncCallback(new E('EClientNotFound', 'No such Crontab Config', { id: id }));
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    // 发送任务
+    var celery = celeryHelper.createHelper(res.locals.logger);
+
+    var name = 'Main.CrontabManualStarter';
+    var kwargs = { crontabConfigId: id };
+
+    // 保证UI运行能够正常接收到超时报错
+    var taskOptions = { resultWaitTimeout: 10 * 1000 };
+
+    celery.putTask(name, null, kwargs, taskOptions, null, function(err) {
+      if (err) return next(err);
+      return res.locals.sendJSON();
+    });
+  });
+};
+
 exports.callBatch = function(req, res, next) {
   var id     = req.params.id;
   var format = req.params.format;
@@ -1489,7 +1532,9 @@ exports.callFuncDraft = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    // 函数调用参数
+    // 调用草稿
+    var celery = celeryHelper.createHelper(res.locals.logger);
+
     var name = 'Main.FuncDebugger';
     var kwargs = {
       funcId        : funcId,
@@ -1552,8 +1597,6 @@ exports.callFuncDraft = function(req, res, next) {
 
       res.locals.sendJSON(ret);
     };
-
-    var celery = celeryHelper.createHelper(res.locals.logger);
 
     var taskOptions = {
       queue        : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
@@ -1785,7 +1828,9 @@ exports.integratedSignIn = function(req, res, next) {
   var username = req.body.signIn.username;
   var password = req.body.signIn.password;
 
-  // 函数调用参数
+  // 调用函数
+  var celery = celeryHelper.createHelper(res.locals.logger);
+
   var name = 'Main.FuncRunner';
   var kwargs = {
     funcId        : funcId,
@@ -1878,8 +1923,6 @@ exports.integratedSignIn = function(req, res, next) {
       return res.locals.sendJSON(ret);
     });
   };
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
 
   var taskOptions = {
     resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,

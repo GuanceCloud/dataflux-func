@@ -91,7 +91,7 @@ def func_debugger(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('Debugger Task launched: `{}`'.format(func_id))
+    self.logger.info('Main.FuncDebugger Task launched: `{}`'.format(func_id))
 
     # 来源
     origin    = kwargs.get('origin')

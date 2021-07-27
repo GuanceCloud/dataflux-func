@@ -1728,13 +1728,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
 from worker.tasks.main.func_debugger   import func_debugger
 from worker.tasks.main.func_runner     import func_runner
-from worker.tasks.main.starter_crontab import starter_crontab
+from worker.tasks.main.crontab_starter import crontab_starter
 
 from worker.tasks.main.utils import reload_scripts
 from worker.tasks.main.utils import sync_cache
-from worker.tasks.main.utils import auto_cleaner
+from worker.tasks.main.utils import auto_clean
 from worker.tasks.main.utils import auto_run
-from worker.tasks.main.utils import data_source_checker
-from worker.tasks.main.utils import data_source_debugger
-from worker.tasks.main.utils import worker_queue_pressure_recover
-from worker.tasks.main.utils import db_auto_backup
+from worker.tasks.main.utils import check_data_source
+from worker.tasks.main.utils import query_data_source
+from worker.tasks.main.utils import reset_worker_queue_pressure
+from worker.tasks.main.utils import auto_backup_db

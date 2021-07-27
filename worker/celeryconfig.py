@@ -104,8 +104,8 @@ def create_schedule(crontab_expr):
     return celery_crontab(**kwargs)
 
 # 自动触发配置启动器
-beat_schedule['run-starter-crontab'] = {
-    'task'    : 'Main.StarterCrontab',
+beat_schedule['run-crontab-starter'] = {
+    'task'    : 'Main.CrontabStarter',
     'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
 }
 
@@ -113,7 +113,7 @@ beat_schedule['run-starter-crontab'] = {
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'Main.ReloadScripts',
     'kwargs'  : { 'force': True },
-    'schedule': create_schedule(CONFIG['_CRONTAB_SCRIPT_FORCE_RELOAD']),
+    'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
 }
 
 # 缓存数据刷入数据库
@@ -123,20 +123,20 @@ beat_schedule['run-sync-cache'] = {
 }
 
 # 工作队列压力恢复
-beat_schedule['run-worker-queue-pressure-recover'] = {
-    'task'    : 'Main.WorkerQueuePressureRecover',
-    'schedule': create_schedule(CONFIG['_CRONTAB_WORKER_QUEUE_PRESSURE_RECOVER']),
+beat_schedule['run-reset-worker-queue-pressure'] = {
+    'task'    : 'Main.ResetWorkerQueuePressure',
+    'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
 }
 
 # 自动清理
-beat_schedule['run-auto-cleaner'] = {
-    'task'    : 'Main.AutoCleaner',
-    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEANER']),
+beat_schedule['run-auto-clean'] = {
+    'task'    : 'Main.AutoClean',
+    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEAN']),
 }
 
 if CONFIG['DB_AUTO_BACKUP_ENABLED']:
     # 数据库自动备份
-    beat_schedule['run-db-auto-backup'] = {
-        'task'    : 'Main.DBAutoBackup',
-        'schedule': create_schedule(CONFIG['_CRONTAB_DB_AUTO_BACKUP']),
+    beat_schedule['run-auto-backup-db'] = {
+        'task'    : 'Main.AutoBackupDB',
+        'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
     }
