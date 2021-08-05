@@ -353,10 +353,6 @@ exports.publish = function(req, res, next) {
       };
       scriptPublishHistoryModel.add(_data, asyncCallback);
     },
-    // 发送更新脚本缓存任务
-    function(asyncCallback) {
-      celery.putTask('Main.ReloadScripts', null, null, null, null, asyncCallback);
-    },
   ], function(err) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return next(scopeErr);

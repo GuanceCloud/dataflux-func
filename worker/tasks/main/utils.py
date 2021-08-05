@@ -175,7 +175,7 @@ def reload_scripts(self, *args, **kwargs):
 
     self.logger.info('Main.ReloadScripts Task launched.')
 
-    cache_key = toolkit.get_cache_key('fixedCache', 'prevDBUpdateTimestamp')
+    cache_key = toolkit.get_cache_key('fixedCache', 'prevFuncUpdateTimestamp')
 
     # 上次脚本更新时间
     prev_publish_timestamp = float(self.cache_db.get(cache_key) or 0.0)
@@ -184,6 +184,9 @@ def reload_scripts(self, *args, **kwargs):
 
     # 最近脚本更新时间
     latest_publish_timestamp = self.get_latest_publish_timestamp()
+
+    self.logger.info('Prev publish timestamp', prev_publish_timestamp)
+    self.logger.info('Latest publish timestamp', latest_publish_timestamp)
 
     is_script_reloaded = False
     if force:
