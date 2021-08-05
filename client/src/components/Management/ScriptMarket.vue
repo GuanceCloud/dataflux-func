@@ -40,7 +40,7 @@ Installed Script Set requires 3rd party packages, do you want to open PIP tool n
       </el-main>
 
       <el-dialog :title="$t('Script Package Detail')" class="package-detail" :visible.sync="showDetail">
-        <el-form label-width="80px">
+        <el-form label-width="100px">
           <el-form-item :label="$t('Name')">
             <el-input readonly :value="detail.name"></el-input>
           </el-form-item>

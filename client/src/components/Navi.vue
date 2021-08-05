@@ -7,9 +7,6 @@ Sign Out     : 登出
 Not Signed In: 尚未登录
 Auth Link Doc: 授权链接文档
 Signed In    : 已登录
-Light Mode   : 明亮模式
-Dark Mode    : 黑暗模式
-Auto         : 自动
 </i18n>
 
 <template>
@@ -58,7 +55,7 @@ Auto         : 自动
           </span>
         </template>
         <el-menu-item index="/setting/code-editor-setup">{{ $t('Settings') }}</el-menu-item>
-        <el-menu-item @click="goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
+        <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
       <el-menu-item v-else class="menu-right" index="">
@@ -70,12 +67,12 @@ Auto         : 自动
 
       <el-submenu class="menu-right menu-compact" index="ui-locale" popper-class="navi-content" :show-timeout="0">
         <template slot="title">
-          <span class="ui-locale-short-title">{{ UI_LOCALE_MAP[uiLocale].shortTitle }}</span>
+          <span class="ui-locale-short-title">{{ uiLocaleDetail.shortName }}</span>
         </template>
-        <el-menu-item v-for="(_locale, _key) in UI_LOCALE_MAP" :key="_key" @click="setUILocale(_key)">
-          <span :class="{ 'selected-option': uiLocale === _key }">
-            <span class="ui-locale-short-title">{{ _locale.shortTitle }}</span>
-            {{ _locale.title }}
+        <el-menu-item v-for="_locale in C.UI_LOCALE" :key="_locale.key" @click="$root.setUILocale(_locale.key)">
+          <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
+            <span class="ui-locale-short-title">{{ _locale.shortName }}</span>
+            {{ _locale.name }}
           </span>
         </el-menu-item>
       </el-submenu>
@@ -83,13 +80,13 @@ Auto         : 自动
       <el-submenu class="menu-right menu-compact" index="theme" popper-class="navi-content" :show-timeout="0">
         <template slot="title">
           <span>
-            <i class="fa fa-fw" :class="UI_THEME_MAP[uiTheme].icon"></i>
+            <i class="fa fa-fw" :class="uiThemeDetail.icon"></i>
           </span>
         </template>
-        <el-menu-item v-for="(_theme, _key) in UI_THEME_MAP" :key="_key" @click="setUITheme(_key)">
-          <span :class="{ 'selected-option': uiTheme === _key }">
+        <el-menu-item v-for="_theme in C.UI_THEME" :key="_theme.key" @click="$root.setUITheme(_theme.key)">
+          <span :class="{ 'selected-option': uiThemeDetail.key === _theme.key }">
             <i class="fa fa-fw" :class="_theme.icon"></i>
-            {{ _theme.title }}
+            {{ _theme.name }}
           </span>
         </el-menu-item>
       </el-submenu>
@@ -119,60 +116,8 @@ export default {
         window.open(index);
       }
     },
-    goToSignOut() {
-      this.$router.push({
-        name: 'sign-out',
-      });
-    },
-    setUITheme(uiTheme) {
-      this.$store.commit('updateUITheme', uiTheme);
-    },
-    setUILocale(uiLocale) {
-      this.$store.commit('updateUILocale', uiLocale);
-      this.$root.$i18n.locale = uiLocale;
-    },
   },
   computed: {
-    UI_THEME_MAP() {
-      return {
-        light: {
-          title: this.$t('Light Mode'),
-          icon : 'fa-sun-o',
-        },
-        dark : {
-          title: this.$t('Dark Mode'),
-          icon : 'fa-moon-o',
-        },
-        auto : {
-          title: this.$t('Auto'),
-          icon : 'fa-adjust',
-        },
-      }
-    },
-    UI_LOCALE_MAP() {
-      return {
-        'en': {
-          title     : 'English (WIP)',
-          shortTitle: 'EN',
-        },
-        'zh-CN' : {
-          title     : '简体中文',
-          shortTitle: '简',
-        },
-        // 'zh-HK' : {
-        //   title     : '香港繁體 (WIP)',
-        //   shortTitle: '港',
-        // },
-        // 'zh-TW' : {
-        //   title     : '臺灣正體 (WIP)',
-        //   shortTitle: '臺',
-        // },
-        // 'ja' : {
-        //   title     : '日本語 (WIP)',
-        //   shortTitle: '日',
-        // },
-      }
-    },
     isSignedIn() {
       return this.$store.getters.isSignedIn;
     },
@@ -189,6 +134,12 @@ export default {
     },
     uiLocale() {
       return this.$store.getters.uiLocale;
+    },
+    uiThemeDetail() {
+      return this.C.UI_THEME_MAP.get(this.uiTheme);
+    },
+    uiLocaleDetail() {
+      return this.C.UI_LOCALE_MAP.get(this.uiLocale);
     },
   },
   props: {

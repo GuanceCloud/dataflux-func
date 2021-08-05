@@ -104,10 +104,11 @@ if [ ${OPT_PORT} != "DEFAULT" ]; then
     _PORT=${OPT_PORT}
 fi
 
-_INSTALL_DIR=/usr/local/${__PROJECT_NAME}
+_INSTALL_DIR=/usr/local
 if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
     _INSTALL_DIR=${OPT_INSTALL_DIR}
 fi
+_INSTALL_DIR=${_INSTALL_DIR}/${__PROJECT_NAME}
 
 if [ ${OPT_IMAGE} != "DEFAULT" ]; then
     _DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}

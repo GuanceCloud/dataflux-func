@@ -440,7 +440,7 @@ export default {
   created() {
   },
   mounted() {
-    window.vmc = this;
+    window._DFF_Blueprint = this;
   },
 }
 </script>

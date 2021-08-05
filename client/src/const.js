@@ -1,6 +1,9 @@
 // 国际化
 import app from '@/main';
 
+const $t = function(s) {
+  return app ? app.$t(s) : s;
+}
 const createMap = function(arrayConst) {
   let map = {};
   arrayConst.forEach(d => {
@@ -9,20 +12,28 @@ const createMap = function(arrayConst) {
   return map;
 }
 
-const MAP_CONST = function(arrayConst) {
+const MAP_CONST = function(arrayConst, defaultIndex) {
   this._map = createMap(arrayConst)
+  if ('number' === typeof defaultIndex) {
+    this._default = arrayConst[defaultIndex];
+  }
 };
 MAP_CONST.prototype.get = function(key) {
   if (key in this._map) {
     return this._map[key];
   } else {
-    return {
-      name     : '-',
-      fullName : '-',
-      tagType  : 'info',
-      icon     : 'fa-ban',
-      textClass: 'text-bad',
-    };
+    if (this._default) {
+      return this._default;
+    } else {
+      return {
+        name     : '-',
+        fullName : '-',
+        shortName: '-',
+        tagType  : 'info',
+        icon     : 'fa-ban',
+        textClass: 'text-bad',
+      };
+    }
   }
 };
 
@@ -81,13 +92,13 @@ export default {
       {
         key           : 'influxdb',
         name          : 'InfluxDB',
-        fullName      : app.$t('InfluxDB (HTTP) (And other compatible Databases)'),
+        fullName      : $t('InfluxDB (HTTP) (And other compatible Databases)'),
         logo          : logo_influxdb,
         tagType       : null,
         debugSupported: true,
         sampleCode    : `influxdb = DFF.SRC('{0}')\nres = influxdb.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         compatibleDBs: [
-          app.$t('Aliyun Time Series Database for InfluxDB'),
+          $t('Aliyun Time Series Database for InfluxDB'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -101,7 +112,7 @@ export default {
       {
         key           : 'mysql',
         name          : 'MySQL',
-        fullName      : app.$t('MySQL (And other compatible Databases)'),
+        fullName      : $t('MySQL (And other compatible Databases)'),
         logo          : logo_mysql,
         tagType       : 'success',
         debugSupported: true,
@@ -109,9 +120,9 @@ export default {
         compatibleDBs: [
           'MariaDB',
           'Percona Server for MySQL',
-          app.$t('Aliyun PolarDB for MySQL'),
-          app.$t('Aliyun OceanBase'),
-          app.$t('ADB for MySQL'),
+          $t('Aliyun PolarDB for MySQL'),
+          $t('Aliyun OceanBase'),
+          $t('ADB for MySQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -169,7 +180,7 @@ export default {
       {
         key           : 'oracle',
         name          : 'Oracle',
-        fullName      : app.$t('Oracle Database'),
+        fullName      : $t('Oracle Database'),
         logo          : logo_oracle,
         tagType       : 'danger',
         debugSupported: true,
@@ -203,15 +214,15 @@ export default {
       {
         key           : 'postgresql',
         name          : 'PostgreSQL',
-        fullName      : app.$t('PostgreSQL (And other compatible Databases)'),
+        fullName      : $t('PostgreSQL (And other compatible Databases)'),
         logo          : logo_postgresql,
         tagType       : 'info',
         debugSupported: true,
         sampleCode    : `postgresql = DFF.SRC('{0}')\nres = postgresql.query('SELECT * FROM some_table LIMIT 10')`,
         compatibleDBs: [
           'Greenplum Database',
-          app.$t('Aliyun PolarDB for PostgreSQL'),
-          app.$t('ADB for PostgreSQL'),
+          $t('Aliyun PolarDB for PostgreSQL'),
+          $t('ADB for PostgreSQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -274,7 +285,7 @@ export default {
         name          : 'MQTT',
         fullName      : 'MQTT Broker (v5.0)',
         logo          : logo_mqtt,
-        tips          : app.$t('A Broker with MQTTv5 support and use share subscription is recommended'),
+        tips          : $t('A Broker with MQTTv5 support and use share subscription is recommended'),
         tagType       : 'info',
         debugSupported: false,
         sampleCode    : `mqtt = DFF.SRC('{0}')\nmqtt.publish(topic='some_topic',  message='some_message')`,
@@ -297,28 +308,85 @@ export default {
     return new MAP_CONST(this.DATE_SOURCE);
   },
 
+  // 主题
+  get UI_THEME() {
+    return [
+      {
+        key : 'light',
+        name: $t('Light Mode'),
+        icon: 'fa-sun-o',
+      },
+      {
+        key : 'dark',
+        name: $t('Dark Mode'),
+        icon: 'fa-moon-o',
+      },
+      {
+        key : 'auto',
+        name: $t('Auto'),
+        icon: 'fa-adjust',
+      },
+    ]
+  },
+  get UI_THEME_MAP() {
+    return new MAP_CONST(this.UI_THEME, 0);
+  },
+  // 语言
+  get UI_LOCALE() {
+    return [
+      {
+        key      : 'en',
+        name     : 'English (WIP)',
+        shortName: 'EN',
+      },
+      {
+        key      : 'zh-CN',
+        name     : '简体中文',
+        shortName: '简',
+      },
+      // {
+      //   key      : 'zh-HK',
+      //   name     : '香港繁體 (WIP)',
+      //   shortName: '港',
+      // },
+      // {
+      //   key      : 'zh-TW',
+      //   name     : '臺灣正體 (WIP)',
+      //   shortName: '臺',
+      // },
+      // {
+      //   key      : 'ja',
+      //   name     : '日本語 (WIP)',
+      //   shortName: '日',
+      // },
+    ]
+  },
+  get UI_LOCALE_MAP() {
+    return new MAP_CONST(this.UI_LOCALE, 1);
+  },
+
   // 侧边栏项目类型
   get ASIDE_ITEM_TYPE() {
     return [
       {
         key : 'scriptSet',
-        name: app.$t('Script Set'),
+        name: $t('Script Set'),
       },
       {
         key : 'script',
-        name: app.$t('Script'),
+        name: $t('Script'),
       },
       {
         key : 'func',
-        name: app.$t('Func'),
+        name: $t('Func'),
       },
       {
         key : 'dataSource',
-        name: app.$t('Data Source'),
+        name: $t('Data Source'),
       },
       {
         key : 'envVariable',
-        name: app.$t('ENV'),
+        name: $t('ENV'),
       },
     ];
   },
@@ -331,37 +399,37 @@ export default {
     return [
       {
         key : 'string',
-        name: app.$t('String'),
+        name: $t('String'),
       },
       {
         key : 'integer',
-        name: app.$t('Integer'),
-        tips: app.$t('Will be converted by int() automatically'),
+        name: $t('Integer'),
+        tips: $t('Will be converted by int() automatically'),
       },
       {
         key : 'float',
-        name: app.$t('Float'),
-        tips: app.$t('Will be converted by float() automatically'),
+        name: $t('Float'),
+        tips: $t('Will be converted by float() automatically'),
       },
       {
         key : 'boolean',
-        name: app.$t('Boolean'),
-        tips: app.$t('Can be "true"/"false", "yes"/"no" or "on"/"off"'),
+        name: $t('Boolean'),
+        tips: $t('Can be "true"/"false", "yes"/"no" or "on"/"off"'),
       },
       {
         key : 'json',
         name: 'JSON',
-        tips: app.$t('Will be converted by json.loads() automatically'),
+        tips: $t('Will be converted by json.loads() automatically'),
       },
       {
         key : 'commaArray',
-        name: app.$t('String array with comma separators'),
-        tips: app.$t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
+        name: $t('String array with comma separators'),
+        tips: $t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
       },
     ];
   },
   get ENV_VARIABLE_MAP() {
-    return new MAP_CONST(this.ENV_VARIABLE);
+    return new MAP_CONST(this.ENV_VARIABLE, 0);
   },
 
   // 授权链接限流
@@ -402,25 +470,25 @@ export default {
     return [
       {
         key    : 'queued',
-        name   : app.$t('Queued'),
+        name   : $t('Queued'),
         tagType: 'info',
         icon   : 'el-icon-timer',
       },
       {
         key    : 'pending',
-        name   : app.$t('Running'),
+        name   : $t('Running'),
         tagType: '',
         icon   : 'el-icon-loading',
       },
       {
         key    : 'success',
-        name   : app.$t('Succeeded'),
+        name   : $t('Succeeded'),
         tagType: 'success',
         icon   : 'el-icon-success',
       },
       {
         key    : 'failure',
-        name   : app.$t('Failed'),
+        name   : $t('Failed'),
         tagType: 'danger',
         icon   : 'el-icon-error',
       },
@@ -435,52 +503,52 @@ export default {
     return [
       {
         key : 'scriptSet',
-        name: app.$t('Script Set'),
+        name: $t('Script Set'),
         icon: 'fa-folder-open-o',
       },
       {
         key : 'script',
-        name: app.$t('Script'),
+        name: $t('Script'),
         icon: 'fa-file-code-o',
       },
       {
         key    : 'func',
-        name   : app.$t('Func'),
+        name   : $t('Func'),
         tagText: 'def',
       },
       {
         key : 'dataSource',
-        name: app.$t('Data Source'),
+        name: $t('Data Source'),
         icon: 'fa-database',
       },
       {
         key : 'envVariable',
-        name: app.$t('ENV'),
+        name: $t('ENV'),
         icon: 'fa-cogs',
       },
       {
         key : 'authLink',
-        name: app.$t('Auth Link'),
+        name: $t('Auth Link'),
         icon: 'fa-link',
       },
       {
         key : 'crontabConfig',
-        name: app.$t('Crontab Config'),
+        name: $t('Crontab Config'),
         icon: 'fa-clock-o',
       },
       {
         key : 'batch',
-        name: app.$t('Batch'),
+        name: $t('Batch'),
         icon: 'fa-tasks',
       },
       {
         key : 'fileService',
-        name: app.$t('File Service'),
+        name: $t('File Service'),
         icon: 'fa-folder-open',
       },
       {
         key : 'user',
-        name: app.$t('User'),
+        name: $t('User'),
         icon: 'fa-users',
       },
     ];
@@ -494,22 +562,22 @@ export default {
     return [
       {
         key      : 'import',
-        name     : app.$t('Before package import'),
+        name     : $t('Before package import'),
         textClass: 'text-main',
       },
       {
         key      : 'install',
-        name     : app.$t('Before package install'),
+        name     : $t('Before package install'),
         textClass: 'text-primary',
       },
       {
         key      : 'recover',
-        name     : app.$t('Before Script Lib recover'),
+        name     : $t('Before Script Lib recover'),
         textClass: 'text-info',
       },
       {
         key      : 'manual',
-        name     : app.$t('Created by user manually'),
+        name     : $t('Created by user manually'),
         textClass: 'text-good',
       },
     ];
@@ -523,17 +591,17 @@ export default {
     return [
       {
         key      : 'sync',
-        name     : app.$t('Sync call'),
+        name     : $t('Sync call'),
         textClass: 'text-main',
       },
       {
         key      : 'async',
-        name     : app.$t('Async call'),
+        name     : $t('Async call'),
         textClass: 'text-watch',
       },
       {
         key      : 'crontab',
-        name     : app.$t('Crontab'),
+        name     : $t('Crontab'),
         textClass: 'text-info',
       },
     ];
@@ -547,7 +615,7 @@ export default {
     return [
       {
         key : 'signIn',
-        name: app.$t('Sign in'),
+        name: $t('Sign in'),
       },
     ];
   },
@@ -560,70 +628,70 @@ export default {
     return [
       {
         key : 'eclipse-monokai',
-        name: app.$t( 'Auto: Default'),
+        name: $t( 'Auto: Default'),
       },
       {
         key : 'base16',
-        name: app.$t( 'Auto: base16'),
+        name: $t( 'Auto: base16'),
       },
       {
         key : 'duotone',
-        name: app.$t( 'Auto: duotone'),
+        name: $t( 'Auto: duotone'),
       },
       {
         key : 'neat-material-darker',
-        name: app.$t( 'Auto: neat/material-darker'),
+        name: $t( 'Auto: neat/material-darker'),
       },
       {
         key : 'idea-darcula',
-        name: app.$t( 'Auto: idea/darcula'),
+        name: $t( 'Auto: idea/darcula'),
       },
       {
         key : 'eclipse',
-        name: app.$t('Light: eclipse'),
+        name: $t('Light: eclipse'),
       },
       {
         key : 'base16-light',
-        name: app.$t('Light: base16-light'),
+        name: $t('Light: base16-light'),
       },
       {
         key : 'duotone-light',
-        name: app.$t('Light: duotone-light'),
+        name: $t('Light: duotone-light'),
       },
       {
         key : 'neat',
-        name: app.$t('Light: neat'),
+        name: $t('Light: neat'),
       },
       {
         key : 'idea',
-        name: app.$t('Light: idea'),
+        name: $t('Light: idea'),
       },
       {
         key : 'monokai',
-        name: app.$t('Dark: monokai'),
+        name: $t('Dark: monokai'),
       },
       {
         key : 'base16-dark',
-        name: app.$t('Dark: base16-dark'),
+        name: $t('Dark: base16-dark'),
       },
       {
         key : 'duotone-dark',
-        name: app.$t('Dark: duotone-dark'),
+        name: $t('Dark: duotone-dark'),
       },
       {
         key : 'material-darker',
-        name: app.$t('Dark: material-darker'),
+        name: $t('Dark: material-darker'),
       },
       {
         key : 'darcula',
-        name: app.$t('Dark: darcula'),
+        name: $t('Dark: darcula'),
       },
     ];
   },
   get CODE_MIRROR_THEME_MAP() {
-    return new MAP_CONST(this.CODE_MIRROR_THEME);
+    return new MAP_CONST(this.CODE_MIRROR_THEME, 0);
   },
   get CODE_MIRROR_DEFAULT_THEME() {
-    return 'eclipse-monokai';
+    return this.CODE_MIRROR_THEME[0].key;
   },
 }

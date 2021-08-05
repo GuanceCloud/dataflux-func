@@ -253,14 +253,12 @@ export default new Vuex.Store({
     },
     uiLocale: (state, getters) => {
       let uiLocale = state.uiLocale || window.navigator.language;
+      let uiLocaleParts = uiLocale.split('.')[0].split(/[_-]/);
 
-      let uiLocaleParts = uiLocale.split('-');
-      if (uiLocaleParts.length > 1) {
-        uiLocaleParts[1] = uiLocaleParts[1].toUpperCase();
-      }
-      uiLocale = uiLocaleParts.join('-');
+      // 英文不分类
+      if (uiLocaleParts[0] == 'en') uiLocale = 'en';
 
-      return uiLocale;
+      return C.UI_LOCALE_MAP.get(uiLocale).key;
     },
     uiTheme: (state, getters) => {
       let uiTheme = state.uiTheme;
