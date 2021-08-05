@@ -4,8 +4,9 @@
 var os = require('os');
 
 /* 3rd-party Modules */
-var async = require('async');
-var mysql = require('mysql2');
+var async  = require('async');
+var mysql  = require('mysql2');
+var moment = require('moment');
 
 /* Project Modules */
 var g             = require('./utils/g');
@@ -362,11 +363,30 @@ exports.afterAppCreated = function(app, server) {
   var dataSourceModel = require('./models/dataSourceMod').createModel(app.locals);
 
   var LOCAL_DATAKIT_ID    = 'datakit';
-  var LOCAL_DATAKIT_TITLE = '本地DataKit';
+  var LOCAL_DATAKIT_TITLE = 'DataFlux DataKit';
+  var LOCAL_DATAKIT_DESC  = `Auto updated at: ${moment().utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss')}`;
   var LOCAL_DATAKIT_PORT  = 9529;
 
   var localDataKitIP = null;
   async.series([
+      // 获取锁
+      function(asyncCallback) {
+        var lockKey   = toolkit.getCacheKey('lock', 'autoCreateDataKit');
+        var lockValue = Date.now().toString();
+        var lockAge   = CONFIG._LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE;
+
+        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+          if (err) return asyncCallback(err);
+
+          if (!cacheRes) {
+            var e = new Error('Local DataKit auto creating is just launched');
+            e.isWarning = true;
+            return asyncCallback(e);
+          }
+
+          return asyncCallback();
+        });
+      },
     // 检查DataKit所在IP
     function(asyncCallback) {
       var fetchIPs = [
@@ -411,9 +431,10 @@ exports.afterAppCreated = function(app, server) {
         if (err) return asyncCallback(err);
 
         var datakit = {
-          id   : LOCAL_DATAKIT_ID,
-          title: LOCAL_DATAKIT_TITLE,
-          type : 'df_datakit',
+          id         : LOCAL_DATAKIT_ID,
+          title      : LOCAL_DATAKIT_TITLE,
+          description: LOCAL_DATAKIT_DESC,
+          type       : 'df_datakit',
           configJSON: {
             host    : localDataKitIP,
             port    : LOCAL_DATAKIT_PORT,
@@ -431,7 +452,7 @@ exports.afterAppCreated = function(app, server) {
         }
       })
     },
-  ])
+  ], printError);
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
