@@ -266,8 +266,8 @@ _DBDATA_TABLE_LIMIT_MAP: >
   biz_main_script_log=10000
   ,biz_main_script_failure=10000
   ,biz_main_task_result_dataflux_func=10000
-  ,biz_main_crontab_task_info=10000
-  ,biz_main_batch_task_info=10000
+  ,biz_main_crontab_task_info=30000
+  ,biz_main_batch_task_info=30000
   ,biz_main_operation_record=50000
   ,biz_main_script_recover_point=1000
   ,biz_main_script_set_export_history=1000

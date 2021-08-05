@@ -163,7 +163,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
 @app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
 def reload_scripts(self, *args, **kwargs):
     is_startup = kwargs.get('isOnLaunch') or False
-    force      = kwargs.get('force')     or False
+    force      = kwargs.get('force')      or False
 
     # 启动时执行的，需要上锁
     if is_startup:
@@ -195,7 +195,7 @@ def reload_scripts(self, *args, **kwargs):
         is_script_reloaded = True
 
     if is_script_reloaded:
-        self.logger.debug('[SCRIPT CACHE] Reload script {} -> {} {}'.format(
+        self.logger.info('[SCRIPT CACHE] Reload script {} -> {} {}'.format(
             arrow.get(prev_publish_timestamp).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss'),
             arrow.get(latest_publish_timestamp).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss'),
             '[FORCE]' if force else ''))
