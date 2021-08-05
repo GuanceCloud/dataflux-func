@@ -63,7 +63,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
         sql = '''
             SELECT
                 UNIX_TIMESTAMP(MAX(`updateTime`)) AS `timestamp`
-            FROM biz_main_func
+            FROM biz_main_script
             '''
         db_res = self.db.query(sql)
 
@@ -184,9 +184,6 @@ def reload_scripts(self, *args, **kwargs):
 
     # 最近脚本更新时间
     latest_publish_timestamp = self.get_latest_publish_timestamp()
-
-    self.logger.info('Prev publish timestamp', prev_publish_timestamp)
-    self.logger.info('Latest publish timestamp', latest_publish_timestamp)
 
     is_script_reloaded = False
     if force:
