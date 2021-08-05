@@ -862,16 +862,20 @@ export default {
             return true;
           });
 
-          let lastFrame       = stack[stack.length - 1];
+          // 顶层用户脚本帧（用于定位用户脚本的运行时错误）
           let lastInFileFrame = inFileStack[inFileStack.length - 1];
 
+          // 最后报错行（用于定位语法错误）
+          let lastErrorLine = [...apiRes.detail.traceInfo.exceptionDump.matchAll(/^File \"(\w+)\", line (\d+)$/mg)].pop()
+
+          // 定位错误行
           let errorLine = lastInFileFrame
                         ? lastInFileFrame.lineNumber - 1
-                        : parseInt(lastMatch[2]) - 1;
+                        : parseInt(lastErrorLine[2]) - 1;
 
           let errorText = '';
           try {
-            errorText = apiRes.detail.traceInfo.exceptionDump.split(':')[0].trim();
+            errorText = apiRes.detail.traceInfo.exceptionDump.split('\n').pop().split(':')[0].trim();
           } catch(err) {
             return console.error(err)
           }
