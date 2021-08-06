@@ -49,10 +49,6 @@ class CrontabStarterTask(BaseTask):
         即：只有启动点大于等于当前触发点的才需要执行
         '''
         crontab_expr = crontab_config['crontab']
-        try:
-            crontab_expr = crontab_config['funcExtraConfig']['fixedCrontab']
-        except Exception as e:
-            pass
 
         if not crontab_expr:
             return False
@@ -86,6 +82,11 @@ class CrontabStarterTask(BaseTask):
             crontab_config['saveResult'] = True
         else:
             crontab_config['saveResult'] = False
+
+        try:
+            crontab_config['crontab'] = crontab_config['crontab'] or crontab_config['funcExtraConfig'].get('fixedCrontab')
+        except Exception as e:
+            pass
 
         return crontab_config
 
