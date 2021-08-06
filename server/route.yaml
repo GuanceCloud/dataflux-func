@@ -1884,9 +1884,10 @@ mainAPI:
           - mv
           - rm
       operationArgument:
-        $desc    : 执行操作参数
-        $required: false
-        $type    : string
+        $desc     : 执行操作参数
+        $allowNull: true
+        $required : false
+        $type     : string
 
   fileService:
     name         : 文件服务
