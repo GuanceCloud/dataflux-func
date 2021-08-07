@@ -15,7 +15,6 @@ Installing        : 正在安装
 'Package installed: {pkg}': 包已安装：{pkg}
 {Any container ID}: 任意一个容器ID
 
-Cannot reinstall a packages built-in                    : 无法重复安装已内置的包
 'You can also install the package by following command:': 您也可以使用也以下命令来安装：
 Previous installing may still running                   : 之前的安装似乎仍然在运行
 Are you sure you want to install the package now?       : 是否确定现在就安装？
@@ -61,9 +60,6 @@ Alibaba Cloud mirror      : 阿里云镜像
         </el-button>
 
         <p class="pip-install-tips">
-          <template v-if="installedPackageMap[packageToInstall] && installedPackageMap[packageToInstall].isBuiltin">
-            <span class="text-bad">{{ $t('Cannot reinstall a packages built-in') }}</span>
-          </template>
           <template v-if="pipShell">
             {{ $t('You can also install the package by following command:') }}
             <br>
@@ -118,11 +114,6 @@ export default {
       if (!apiRes.ok) return;
 
       this.installedPackages = apiRes.data;
-      this.installedPackageMap = this.installedPackages.reduce((acc, x) => {
-        acc[x.name] = x;
-        return acc;
-      }, {});
-
       this.pypiMirror = this.PIP_MIRRORS[0].value;
 
       this.$store.commit('updateLoadStatus', true);
@@ -140,7 +131,7 @@ export default {
 
       // 执行安装
       this.isInstalling = true;
-      let pkgs = this.packageToInstall.split(/\s+/);
+      let pkgs = this.packageToInstall.trim().split(/\s+/);
       let restPkgs = this.T.jsonCopy(pkgs);
       for (let pkg of pkgs) {
         apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
@@ -193,7 +184,7 @@ export default {
       let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
       let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
 
-      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} ${this.packageToInstall}`;
+      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} ${this.packageToInstall.trim()}`;
       return cmd;
     },
     isInstallable() {
@@ -202,20 +193,21 @@ export default {
         return false;
       }
 
-      // 指定版本时，检查格式
-      let parts = this.packageToInstall.split('==');
-      if (parts.length > 2) {
-        return false;
-      }
-      if (parts[0].indexOf('=') >= 0 || (parts.length > 1 && parts[1].indexOf('=') >= 0)) {
-        return false;
-      }
-
-      // 检查重复安装已内置的包
-      let pkg = parts[0];
-      let installedPackage = this.installedPackageMap[pkg];
-      if (installedPackage && installedPackage.isBuiltin) {
-        return false;
+      // 检查格式
+      for (let pkg of this.packageToInstall.trim().split(/\s+/)) {
+        // 指定版本时，检查格式
+        let parts = pkg.split('==');
+        if (parts.length > 2) {
+          return false;
+        }
+        // 检查包名
+        if (!parts[0].match(/^[0-9a-zA-Z\-]+$/)) {
+          return false;
+        }
+        // 检查版本号
+        if (parts.length > 1 && this.T.isNothing(parts[1])) {
+          return false;
+        }
       }
 
       return true;
@@ -228,9 +220,8 @@ export default {
       pypiMirror      : '',
       packageToInstall: '',
 
-      queriedPackageMap  : {},
-      installedPackages  : [],
-      installedPackageMap: {},
+      queriedPackageMap: {},
+      installedPackages: [],
 
       isInstalling: false,
     }
