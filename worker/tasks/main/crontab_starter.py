@@ -117,13 +117,15 @@ class CrontabStarterTask(BaseTask):
                 continue
 
             c = {
-                'id'            : 'cron-AUTORUN',
-                'funcId'        : f['id'],
-                'funcCallKwargs': {},
-                'saveResult'    : False,
-                'crontab'       : crontab_expr,
-                'origin'        : 'integration',
-                'execMode'      : 'crontab',
+                'seq'                : 0,
+                'id'                 : 'cron-AUTORUN',
+                'funcId'             : f['id'],
+                'funcCallKwargs'     : {},
+                'crontab'            : crontab_expr,
+                'saveResult'         : False,
+                'origin'             : 'integration',
+                'execMode'           : 'crontab',
+                'funcExtraConfigJSON': f['extraConfig'],
             }
             crontab_configs.append(c)
 
@@ -134,7 +136,6 @@ class CrontabStarterTask(BaseTask):
             SELECT
                  `cron`.`seq`
                 ,`cron`.`id`
-                ,`cron`.`funcId`
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
@@ -169,7 +170,6 @@ class CrontabStarterTask(BaseTask):
             SELECT
                  `cron`.`seq`
                 ,`cron`.`id`
-                ,`cron`.`funcId`
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
