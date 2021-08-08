@@ -835,8 +835,8 @@ class FuncEnvVariableHelper(object):
             ENV_VARIABLES_CACHE[env_variable_id]              = None
 
         # 已缓存的直接返回
-        env_value = ENV_VARIABLES_CACHE.get(env_variable_id)
-        if env_value:
+        if env_variable_id in ENV_VARIABLES_CACHE:
+            env_value = ENV_VARIABLES_CACHE[env_variable_id]
             return env_value
 
         # 从数据库创建
