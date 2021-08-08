@@ -49,6 +49,10 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       envVariableModel.add(data, asyncCallback);
     },
+    // 刷新helper缓存标志位
+    function(asyncCallback) {
+      updateEnvVariableRefreshTimestamp(res.locals, asyncCallback);
+    },
   ], function(err) {
     if (err) return next(err);
 
@@ -84,7 +88,7 @@ exports.modify = function(req, res, next) {
     },
     // 刷新环境变量缓存标志位
     function(asyncCallback) {
-      updateEnvVariableRefreshTimestamp(res.locals, envVariable, asyncCallback);
+      updateEnvVariableRefreshTimestamp(res.locals, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -120,7 +124,7 @@ exports.delete = function(req, res, next) {
     },
     // 刷新helper缓存标志位
     function(asyncCallback) {
-      updateEnvVariableRefreshTimestamp(res.locals, envVariable, asyncCallback);
+      updateEnvVariableRefreshTimestamp(res.locals, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -132,9 +136,8 @@ exports.delete = function(req, res, next) {
   });
 };
 
-function updateEnvVariableRefreshTimestamp(locals, envVariable, callback) {
-  var tags    = ['id', envVariable.id];
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestamp', tags);
+function updateEnvVariableRefreshTimestamp(locals, callback) {
+  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestamp');
 
   locals.cacheDB.set(cacheKey, Date.now(), callback);
 };

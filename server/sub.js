@@ -148,7 +148,7 @@ exports.runListener = function runListener(app) {
           if (err) return asyncCallback(err);
 
           for (var dataSourceId in cacheRes) {
-            refreshTimeMap[dataSourceId] = parseInt(cacheRes[dataSourceId]) || 0;
+            refreshTimeMap[dataSourceId] = parseInt(cacheRes[dataSourceId]) || -1;
           }
 
           return asyncCallback();
@@ -170,7 +170,7 @@ exports.runListener = function runListener(app) {
         // 重建有变化的数据源客户端
         async.eachOfSeries(dataSourceMap, function(d, dataSourceId, eachCallback) {
           var localTime   = CLIENT_REFRESH_MAP[dataSourceId] || 0;
-          var refreshTime = refreshTimeMap[dataSourceId]     || 0;
+          var refreshTime = refreshTimeMap[dataSourceId]     || -1;
 
           if (refreshTime !== localTime) {
             app.locals.logger.debug('[SUB] Client refreshed: `{0}` remote=`{1}`, local=`{2}`, diff=`{3}`',
@@ -207,7 +207,7 @@ exports.runListener = function runListener(app) {
 
           // 加入新客户端
           CLIENT_MAP[d.id]         = client;
-          CLIENT_REFRESH_MAP[d.id] = refreshTimeMap[d.id] || 0;
+          CLIENT_REFRESH_MAP[d.id] = refreshTimeMap[d.id] || -1;
 
           app.locals.logger.debug('[SUB] Client created: `{0}`', dataSourceId);
           return eachCallback();

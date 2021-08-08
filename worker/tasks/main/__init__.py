@@ -78,8 +78,8 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
 DATA_SOURCE_LOCAL_TIMESTAMP_MAP = {}
 DATA_SOURCE_HELPERS_CACHE       = {}
 
-ENV_VARIABLE_LOCAL_TIMESTAMP_MAP = {}
-ENV_VARIABLES_CACHE              = {}
+ENV_VARIABLE_LOCAL_TIMESTAMP = None
+ENV_VARIABLES_CACHE          = {}
 ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'integer'   : int,
     'float'     : float,
@@ -649,9 +649,9 @@ class FuncDataSourceHelper(object):
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
 
         cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
-        refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or 0)
+        refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or -1)
 
-        if refresh_time > local_time:
+        if refresh_time != local_time:
             self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
                     data_source_id, helper_target_key, refresh_time, local_time, refresh_time - local_time))
 
@@ -813,170 +813,63 @@ class FuncEnvVariableHelper(object):
     def __init__(self, task):
         self.__task = task
 
+        self._is_refreshed = False
+
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def get(self, env_variable_id):
-        # 用户自定义Helper
-        global ENV_VARIABLE_LOCAL_TIMESTAMP_MAP
+    def _refresh(self):
+        # 初始化时加载全部
+        global ENV_VARIABLE_LOCAL_TIMESTAMP
         global ENV_VARIABLES_CACHE
 
         # 判断是否需要刷新数据源
-        local_time = ENV_VARIABLE_LOCAL_TIMESTAMP_MAP.get(env_variable_id) or 0
+        local_time = ENV_VARIABLE_LOCAL_TIMESTAMP or 0 or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
-        refresh_time = int(self.__task.cache_db.get(cache_key) or 0)
+        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp')
+        refresh_time = int(self.__task.cache_db.get(cache_key) or -1)
 
-        if refresh_time > local_time:
+        if refresh_time != local_time:
             self.__task.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
                     refresh_time, local_time, refresh_time - local_time))
 
-            ENV_VARIABLE_LOCAL_TIMESTAMP_MAP[env_variable_id] = refresh_time
-            ENV_VARIABLES_CACHE[env_variable_id]              = None
+            ENV_VARIABLE_LOCAL_TIMESTAMP = refresh_time
 
-        # 已缓存的直接返回
-        if env_variable_id in ENV_VARIABLES_CACHE:
-            env_value = ENV_VARIABLES_CACHE[env_variable_id]
-            return env_value
+            # 重新加载全部环境变量
+            ENV_VARIABLES_CACHE = {}
 
-        # 从数据库创建
-        sql = '''
-            SELECT
-                `valueTEXT`
-               ,`autoTypeCasting`
-            FROM `biz_main_env_variable`
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [env_variable_id]
-        db_res = self.__task.db.query(sql, sql_params)
-        if not db_res:
-            return None
+            sql = '''
+                SELECT
+                    `id`
+                   ,`valueTEXT`
+                   ,`autoTypeCasting`
+                FROM `biz_main_env_variable`
+                '''
+            db_res = self.__task.db.query(sql)
+            for env in db_res:
+                env_id            = env['id']
+                env_value         = env['valueTEXT']
+                auto_type_casting = env['autoTypeCasting']
+                casted_env_value  = env_value
 
-        env_value         = db_res[0]['valueTEXT']
-        auto_type_casting = db_res[0]['autoTypeCasting']
-        casted_env_value  = env_value
+                if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+                    casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
 
-        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-            casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
+                ENV_VARIABLES_CACHE[env_id] = casted_env_value
 
-            # 防止boolean类型转换失败时返回`None`
-            if auto_type_casting == 'boolean' and not isinstance(casted_env_value, bool):
-                raise TypeError('Cannot convert ENV value "{}" to boolean.'.format(env_value))
+        self._is_refreshed = True
 
-        ENV_VARIABLES_CACHE[env_variable_id] = casted_env_value
-        return casted_env_value
+    def get(self, env_variable_id):
+        if not self._is_refreshed:
+            self._refresh()
 
-    def update_refresh_timestamp(self, env_variable_id):
-        # 更新缓存刷新时间
-        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp', tags=['id', env_variable_id])
-        self.__task.cache_db.set(cache_key, int(time.time() * 1000))
+        return ENV_VARIABLES_CACHE.get(env_variable_id)
 
     def list(self):
-        sql = '''
-            SELECT
-                 `id`
-                ,`title`
-                ,`description`
-                ,`valueTEXT`
-                ,`autoTypeCasting`
-                ,`createTime`
-                ,`updateTime`
-            FROM biz_main_env_variable
-            '''
-        data = self.__task.db.query(sql)
+        if not self._is_refreshed:
+            self._refresh()
 
-        return data
-
-    def save(self, env_variable_id, value, title=None, description=None):
-        if value is None:
-            value = ''
-
-        auto_type_casting = 'string'
-        if isinstance(value, bool):
-            # Python中`isinstance(True, int)`返回`True`，布尔值要优先判断
-            auto_type_casting = 'boolean'
-        elif isinstance(value, int):
-            auto_type_casting = 'integer'
-        elif isinstance(value, float):
-            auto_type_casting = 'float'
-        elif isinstance(value, dict):
-            auto_type_casting = 'json'
-        elif isinstance(value, list):
-            if all(map(lambda x: isinstance(x, str) and ',' not in x, value)):
-                auto_type_casting = 'commaArray'
-            else:
-                auto_type_casting = 'json'
-
-        value_text = value
-        if auto_type_casting in ('string', 'int', 'float'):
-            value_text = str(value)
-        elif auto_type_casting == 'boolean':
-            value_text = str(value).lower()
-        elif auto_type_casting == 'json':
-            value_text = toolkit.json_safe_dumps(value)
-        elif auto_type_casting == 'commaArray':
-            value_text = ','.join(value)
-
-        sql = '''
-            SELECT `id` FROM biz_main_env_variable WHERE `id` = ?
-            '''
-        sql_params = [env_variable_id]
-        db_res = self.__task.db.query(sql, sql_params)
-
-        if len(db_res) > 0:
-            # 已存在，更新
-            sql = '''
-                UPDATE biz_main_env_variable
-                SET
-                     `title`           = ?
-                    ,`description`     = ?
-                    ,`valueTEXT`       = ?
-                    ,`autoTypeCasting` = ?
-                WHERE
-                    `id` = ?
-                '''
-            sql_params = [
-                title,
-                description,
-                value_text,
-                auto_type_casting,
-                env_variable_id,
-            ]
-            self.__task.db.query(sql, sql_params)
-
-        else:
-            # 不存在，插入
-            sql = '''
-                INSERT INTO biz_main_env_variable
-                SET
-                     `id`              = ?
-                    ,`title`           = ?
-                    ,`description`     = ?
-                    ,`valueTEXT`       = ?
-                    ,`autoTypeCasting` = ?
-                '''
-            sql_params = [
-                env_variable_id,
-                title,
-                description,
-                value_text,
-                auto_type_casting,
-            ]
-            self.__task.db.query(sql, sql_params)
-
-        self.update_refresh_timestamp(env_variable_id)
-
-    def delete(self, env_variable_id):
-        sql = '''
-            DELETE FROM biz_main_env_variable
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [env_variable_id]
-        self.__task.db.query(sql, sql_params)
-
-        self.update_refresh_timestamp(env_variable_id)
+        return [ { 'id': env_id, 'value': env_value } for env_id, env_value in ENV_VARIABLES_CACHE.items()]
 
 class FuncConfigHelper(object):
     def __init__(self, task):
