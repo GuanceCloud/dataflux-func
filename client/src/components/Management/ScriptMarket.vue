@@ -181,7 +181,7 @@ export default {
 }
 .package-card {
   width: 360px;
-  height: 125px;
+  height: 150px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -204,11 +204,9 @@ export default {
   text-overflow: ellipsis;
 }
 .package-id {
-  font-size: 18px;
+  font-size: 16px;
   display: block;
   z-index: 1;
-  position: absolute;
-  bottom: 20px;
 }
 .package-release-time {
   position: absolute;
