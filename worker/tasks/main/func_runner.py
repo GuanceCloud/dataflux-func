@@ -372,6 +372,7 @@ def func_runner(self, *args, **kwargs):
             '_DFF_TRIGGER_TIME'   : kwargs.get('triggerTime') or start_time,
             '_DFF_TRIGGER_TIME_MS': kwargs.get('triggerTimeMs') or start_time_ms,
             '_DFF_CRONTAB'        : kwargs.get('crontab'),
+            '_DFF_CRONTAB_DELAY'  : kwargs.get('crontabDelay'),
             '_DFF_QUEUE'          : queue,
             '_DFF_HTTP_REQUEST'   : http_request,
         }

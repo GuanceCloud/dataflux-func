@@ -271,52 +271,57 @@ class CrontabStarterTask(BaseTask):
         # 确定超时时间
         soft_time_limit, time_limit = self._get_time_limit(crontab_config)
 
-        # 上锁
-        lock_key   = toolkit.get_cache_key('lock', 'CrontabConfig', ['crontabConfigId', crontab_config['id']])
-        lock_value = toolkit.gen_uuid()
-        if not self.cache_db.lock(lock_key, lock_value, time_limit):
-            # 触发任务前上锁，失败则跳过
-            return None
-
-        # 任务ID
-        task_id = gen_task_id()
-
         # 确定执行队列
         queue = self._get_queue(crontab_config)
 
-        # 计算任务过期时间
-        _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
-        expires = arrow.get().shift(seconds=_shift_seconds).datetime
+        # 延迟执行支持
+        delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab') or [0]
+        for delay in delayed_crontab:
+            # 上锁
+            lock_key   = toolkit.get_cache_key('lock', 'CrontabConfig', ['crontabConfigId', crontab_config['id'], 'crontabDelay', delay])
+            lock_value = toolkit.gen_uuid()
+            if not self.cache_db.lock(lock_key, lock_value, time_limit):
+                # 触发任务前上锁，失败则跳过
+                continue
 
-        # 记录任务信息（入队）
-        self._cache_task_status(task_id=task_id, crontab_config=crontab_config)
+            # 任务ID
+            task_id = gen_task_id()
 
-        # 任务入队
-        task_headers = {
-            'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
-        }
-        task_kwargs = {
-            'funcId'        : crontab_config['funcId'],
-            'funcCallKwargs': crontab_config['funcCallKwargs'],
-            'origin'        : crontab_config['origin'],
-            'originId'      : crontab_config['id'],
-            'saveResult'    : crontab_config['saveResult'],
-            'execMode'      : crontab_config['execMode'],
-            'triggerTime'   : trigger_time,
-            'triggerTimeMs' : trigger_time * 1000,
-            'crontab'       : crontab_config['crontab'],
-            'queue'         : queue,
-            'lockKey'       : lock_key,
-            'lockValue'     : lock_value,
-        }
-        func_runner.apply_async(
-                task_id=task_id,
-                kwargs=task_kwargs,
-                headers=task_headers,
-                queue=queue,
-                soft_time_limit=soft_time_limit,
-                time_limit=time_limit,
-                expires=expires)
+            # 计算任务过期时间
+            _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'] + delay)
+            expires = arrow.get().shift(seconds=_shift_seconds).datetime
+
+            # 记录任务信息（入队）
+            self._cache_task_status(task_id=task_id, crontab_config=crontab_config)
+
+            # 任务入队
+            task_headers = {
+                'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
+            }
+            task_kwargs = {
+                'funcId'        : crontab_config['funcId'],
+                'funcCallKwargs': crontab_config['funcCallKwargs'],
+                'origin'        : crontab_config['origin'],
+                'originId'      : crontab_config['id'],
+                'saveResult'    : crontab_config['saveResult'],
+                'execMode'      : crontab_config['execMode'],
+                'triggerTime'   : trigger_time,
+                'triggerTimeMs' : trigger_time * 1000,
+                'crontab'       : crontab_config['crontab'],
+                'crontabDelay'  : delay,
+                'queue'         : queue,
+                'lockKey'       : lock_key,
+                'lockValue'     : lock_value,
+            }
+            func_runner.apply_async(
+                    task_id=task_id,
+                    kwargs=task_kwargs,
+                    headers=task_headers,
+                    queue=queue,
+                    soft_time_limit=soft_time_limit,
+                    time_limit=time_limit,
+                    expires=expires,
+                    countdown=delay)
 
 @app.task(name='Main.CrontabManualStarter', bind=True, base=CrontabStarterTask)
 def crontab_manual_starter(self, *args, **kwargs):

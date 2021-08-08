@@ -1181,7 +1181,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
     def _export_as_api(self, safe_scope, title,
         # 控制类参数
-        fixed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
+        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
         # 标记类参数
         category=None, tags=None,
         # 集成处理参数
@@ -1211,6 +1211,19 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 raise e
 
             extra_config['fixedCrontab'] = fixed_crontab
+
+        # 延迟Crontab（单位秒，可多个）
+        if delayed_crontab is not None:
+            delayed_crontab = toolkit.as_array(delayed_crontab)
+            delayed_crontab = list(set(delayed_crontab))
+            delayed_crontab.sort()
+
+            for d in delayed_crontab:
+                if not isinstance(d, int):
+                    e = InvalidOptionException('Elements of `delayed_crontab` should be int')
+                    raise e
+
+            extra_config['delayedCrontab'] = delayed_crontab
 
         # 执行时限
         if timeout is not None:
