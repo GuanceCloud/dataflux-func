@@ -314,14 +314,17 @@ EntityModel.prototype.import = function(packageData, callback) {
     function(asyncCallback) {
       transScope.start(asyncCallback);
     },
-    // 创建还原点
-    function(asyncCallback) {
-      var _data = {
-        type: 'import',
-        note: '系统：导入脚本包前自动创建的还原点',
-      };
-      scriptRecoverPointModel.add(_data, asyncCallback);
-    },
+    // TODO
+    // 由于占用磁盘、处理时间过长，导入自动创建还原点的功能暂时搁置
+    //
+    // // 创建还原点
+    // function(asyncCallback) {
+    //   var _data = {
+    //     type: 'import',
+    //     note: '系统：导入脚本包前自动创建的还原点',
+    //   };
+    //   scriptRecoverPointModel.add(_data, asyncCallback);
+    // },
     // 删除所有涉及的脚本集
     function(asyncCallback) {
       if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
