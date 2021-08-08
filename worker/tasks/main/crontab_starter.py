@@ -119,13 +119,14 @@ class CrontabStarterTask(BaseTask):
             c = {
                 'seq'                : 0,
                 'id'                 : 'cron-AUTORUN',
-                'funcId'             : f['id'],
                 'funcCallKwargs'     : {},
                 'crontab'            : crontab_expr,
                 'saveResult'         : False,
-                'origin'             : 'integration',
-                'execMode'           : 'crontab',
+                'funcId'             : f['id'],
                 'funcExtraConfigJSON': f['extraConfig'],
+
+                'origin'  : 'integration',
+                'execMode': 'crontab',
             }
             crontab_configs.append(c)
 
