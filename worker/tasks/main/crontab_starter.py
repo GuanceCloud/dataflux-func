@@ -327,7 +327,7 @@ class CrontabStarterTask(BaseTask):
                     soft_time_limit=soft_time_limit,
                     time_limit=time_limit,
                     expires=expires,
-                    countdown=delay)
+                    countdown=delay or None)
 
 @app.task(name='Main.CrontabManualStarter', bind=True, base=CrontabStarterTask)
 def crontab_manual_starter(self, *args, **kwargs):
