@@ -86,7 +86,7 @@ class CrontabStarterTask(BaseTask):
         try:
             crontab_config['crontab'] = crontab_config['crontab'] or crontab_config['funcExtraConfig'].get('fixedCrontab')
         except Exception as e:
-            pass
+            crontab_config['crontab'] = None
 
         return crontab_config
 
@@ -276,7 +276,12 @@ class CrontabStarterTask(BaseTask):
         queue = self._get_queue(crontab_config)
 
         # 延迟执行支持
-        delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab') or [0]
+        delayed_crontab = None
+        try:
+            delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab') or [0]
+        except Exception as e:
+            delayed_crontab = [0]
+
         for delay in delayed_crontab:
             # 上锁
             lock_key   = toolkit.get_cache_key('lock', 'CrontabConfig', ['crontabConfigId', crontab_config['id'], 'crontabDelay', delay])
