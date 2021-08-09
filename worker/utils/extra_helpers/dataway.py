@@ -5,6 +5,7 @@ import time
 import types
 import json
 import re
+import math
 import hmac
 from hashlib import sha1, md5
 import base64
@@ -82,13 +83,13 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 if PY3:
     import http.client as httplib
-    from urllib.parse import urlsplit, urlparse, urlencode, parse_qs
+    from urllib.parse import urlsplit, urlencode, parse_qs
     long_type = int
 
 else:
     import httplib
     from urllib import urlencode
-    from urlparse import urlsplit, urlparse, parse_qs
+    from urlparse import urlsplit, parse_qs
     long_type = long
 
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
@@ -203,18 +204,19 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataWay(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):
-        self.host       = host or 'localhost'
-        self.port       = int(port or 9528)
-        self.protocol   = protocol or 'http'
-        self.path       = path or '/v1/write/metric'
-        self.token      = token
-        self.rp         = rp or None
-        self.timeout    = timeout or 3
-        self.access_key = access_key
-        self.secret_key = secret_key
-        self.debug      = debug or False
-        self.dry_run    = dry_run or False
+    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False, write_size=None):
+        self.host       = host       or 'localhost'
+        self.port       = int(port   or 9528)
+        self.protocol   = protocol   or 'http'
+        self.path       = path       or '/v1/write/metric'
+        self.token      = token      or None
+        self.rp         = rp         or None
+        self.timeout    = timeout    or 3
+        self.access_key = access_key or None
+        self.secret_key = secret_key or None
+        self.debug      = debug      or False
+        self.dry_run    = dry_run    or False
+        self.write_size = write_size or 100
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -482,9 +484,22 @@ class DataWay(object):
         if headers:
             headers = json_copy(headers)
 
-        body = self.prepare_line_protocol(points)
+        # Group send
+        group_count = int(math.ceil(float(len(points)) / float(self.write_size)))
 
-        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+        resp = None
+        for group_index in range(group_count):
+            _start = self.write_size * group_index
+            _end   = self.write_size * group_index + self.write_size
+            group = points[_start:_end]
+
+            body = self.prepare_line_protocol(group)
+            resp = self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+
+            if resp[0] >= 400:
+                break
+
+        return resp
 
     def post_json(self, json_obj, path, method=None, query=None, headers=None, with_rp=False):
         content_type = 'application/json'
@@ -542,7 +557,7 @@ class DataWay(object):
 
         return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
 
-    def write_metrics(self, data):
+    def write_metric_many(self, data):
         if not isinstance(data, (list, tuple)):
             e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
             raise e
@@ -556,17 +571,29 @@ class DataWay(object):
 
         return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
 
+    def write_metrics(self, data):
+        '''
+        Alias of self.write_metric_many()
+        '''
+        return self.write_metric_many(data)
+
     def write_point(self, measurement, tags=None, fields=None, timestamp=None):
         '''
         Alias of self.write_metric()
         '''
         return self.write_metric(measurement=measurement, tags=tags, fields=fields, timestamp=timestamp)
 
+    def write_point_many(self, points):
+        '''
+        Alias of self.write_metric_many()
+        '''
+        return self.write_metric_many(data=points)
+
     def write_points(self, points):
         '''
-        Alias of self.write_metrics()
+        Alias of self.write_metric_many()
         '''
-        return self.write_metrics(data=points)
+        return self.write_metric_many(data=points)
 
 # Alias
 Dataway = DataWay

@@ -1481,10 +1481,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         safe_scope = globals or self.create_safe_scope(script_dict=script_dict)
         exec(script_code_obj, safe_scope)
 
-        # for obj_name, obj in safe_scope.items():
-        #     if isinstance(obj, ModuleType) and obj_name in sys.modules:
-        #         six.moves.reload_module(obj)
-
         return safe_scope
 
     def clean_up(self):

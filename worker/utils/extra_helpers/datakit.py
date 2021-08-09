@@ -5,10 +5,7 @@ import time
 import types
 import json
 import re
-import hmac
-from hashlib import sha1, md5
-import base64
-from email.utils import formatdate
+import math
 
 try:
     from urllib import urlencode
@@ -82,13 +79,13 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 if PY3:
     import http.client as httplib
-    from urllib.parse import urlsplit, urlparse, urlencode, parse_qs
+    from urllib.parse import urlsplit, urlencode
     long_type = int
 
 else:
     import httplib
     from urllib import urlencode
-    from urlparse import urlsplit, urlparse, parse_qs
+    from urlparse import urlsplit
     long_type = long
 
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
@@ -203,14 +200,15 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, source=None, timeout=None, debug=False, dry_run=False):
-        self.host     = host or 'localhost'
-        self.port     = int(port or 9529)
-        self.protocol = protocol or 'http'
-        self.source   = source or 'datakit_python_sdk'
-        self.timeout  = timeout or 3
-        self.debug    = debug or False
-        self.dry_run  = dry_run or False
+    def __init__(self, url=None, host=None, port=None, protocol=None, source=None, timeout=None, debug=False, dry_run=False, write_size=None):
+        self.host       = host       or 'localhost'
+        self.port       = int(port   or 9529)
+        self.protocol   = protocol   or 'http'
+        self.source     = source     or 'datakit-python-sdk'
+        self.timeout    = timeout    or 3
+        self.debug      = debug      or False
+        self.dry_run    = dry_run    or False
+        self.write_size = write_size or 100
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -410,9 +408,22 @@ class DataKit(object):
         if headers:
             headers = json_copy(headers)
 
-        body = self.prepare_line_protocol(points)
+        # Group send
+        group_count = int(math.ceil(float(len(points)) / float(self.write_size)))
 
-        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
+        resp = None
+        for group_index in range(group_count):
+            _start = self.write_size * group_index
+            _end   = self.write_size * group_index + self.write_size
+            group = points[_start:_end]
+
+            body = self.prepare_line_protocol(group)
+            resp = self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
+
+            if resp[0] >= 400:
+                break
+
+        return resp
 
     def post_json(self, json_obj, path, query=None, headers=None):
         content_type = 'application/json'
@@ -501,13 +512,6 @@ class DataKit(object):
 
     def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
-
-    # 暂不提供
-    # def write_rum(self, measurement, tags=None, fields=None, timestamp=None):
-    #     return self._write('/v1/write/rum', measurement, tags, fields, timestamp)
-
-    # def write_rum_many(self, data):
-    #     return self._write_many('/v1/write/rum', data)
 
     def query(self, dql, raw=False, dict_output=False, **kwargs):
         q = { 'query': dql }
