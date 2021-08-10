@@ -338,6 +338,8 @@ EntityModel.prototype.export = function(options, callback) {
   async.series([
     // 获取脚本集
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
       sql.append('   sset.id');
@@ -364,6 +366,8 @@ EntityModel.prototype.export = function(options, callback) {
     },
     // 获取脚本
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
       sql.append('   scpt.id');
@@ -396,6 +400,8 @@ EntityModel.prototype.export = function(options, callback) {
     },
     // 获取函数
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
       sql.append('   func.id');
@@ -435,6 +441,7 @@ EntityModel.prototype.export = function(options, callback) {
     },
     // 获取授权链接
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
       if (!includeAuthLinks) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
@@ -474,6 +481,7 @@ EntityModel.prototype.export = function(options, callback) {
     },
     // 获取自动触发配置
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
       if (!includeCrontabConfigs) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
@@ -515,6 +523,7 @@ EntityModel.prototype.export = function(options, callback) {
     },
     // 获取批处理
     function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
       if (!includeBatches) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();

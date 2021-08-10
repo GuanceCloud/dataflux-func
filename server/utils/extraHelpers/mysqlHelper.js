@@ -358,13 +358,13 @@ MySQLHelper.prototype.query = function(sql, sqlParams, callback) {
   var self = this;
   callback = toolkit.ensureFn(callback);
 
-  if (sqlParams) {
-    for (var i = 0; i < sqlParams.length; i++) {
-      if (Array.isArray(sqlParams[i]) && sqlParams[i].length <= 0) {
-        return callback();
-      }
-    }
-  }
+  // if (sqlParams) {
+  //   for (var i = 0; i < sqlParams.length; i++) {
+  //     if (Array.isArray(sqlParams[i]) && sqlParams[i].length <= 0) {
+  //       return callback();
+  //     }
+  //   }
+  // }
 
   sql = self.format(sql.toString(), sqlParams).trim();
 
