@@ -135,7 +135,10 @@ export default {
       // 执行安装
       this.isInstalling = true;
       apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
-        body : { packageURL: detail.downloadURL },
+        body : {
+          packageInstallURL: detail.downloadURL,
+          packageInstallId : detail.package,
+        },
         alert: { okMessage: this.$t('Script installed, new Script is in effect immediately') },
       });
       this.isInstalling = false;

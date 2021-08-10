@@ -16,18 +16,10 @@ var toolkit      = require('../utils/toolkit');
 var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
-var scriptSetMod              = require('../models/scriptSetMod');
-var scriptMod                 = require('../models/scriptMod');
-var funcMod                   = require('../models/funcMod');
-var authLinkMod               = require('../models/authLinkMod');
-var crontabConfigMod          = require('../models/crontabConfigMod');
-var batchMod                  = require('../models/batchMod');
-var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
-var dataSourceMod             = require('../models/dataSourceMod');
-var envVariableMod            = require('../models/envVariableMod');
+var scriptSetMod          = require('../models/scriptSetMod');
+var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
 /* Configure */
-var FILENAME_IN_ZIP = 'dataflux-func.json';
 var BUILTIN_SCRIPT_SET_IDS = null;
 
 /* Handlers */
@@ -246,336 +238,10 @@ exports.clone = function(req, res, next) {
  */
 
 exports.export = function(req, res, next) {
-  var exportTime = moment().utcOffset('+08:00');
-
-  var password              = req.body.password;
-  var scriptSetIds          = req.body.scriptSetIds;
-  var dataSourceIds         = req.body.dataSourceIds;
-  var envVariableIds        = req.body.envVariableIds;
-  var includeAuthLinks      = req.body.includeAuthLinks      || false;
-  var includeCrontabConfigs = req.body.includeCrontabConfigs || false;
-  var includeBatches        = req.body.includeBatches        || false;
-  var note                  = req.body.note;
-
-  if (toolkit.isNothing(password)) {
-    password = '';
-  }
+  var opt = req.body;
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
-  var scriptModel    = scriptMod.createModel(res.locals);
-  var funcModel      = funcMod.createModel(res.locals);
-
-  var authLinkModel      = authLinkMod.createModel(res.locals);
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-  var batchModel         = batchMod.createModel(res.locals);
-
-  var dataSourceModel  = dataSourceMod.createModel(res.locals);
-  var envVariableModel = envVariableMod.createModel(res.locals);
-
-  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
-
-  var packageData = {
-    scriptSets: [],
-    scripts   : [],
-    funcs     : [],
-    note      : note,
-  };
-
-  // 脚本集相关数据
-  if (includeAuthLinks)      packageData.authLinks      = [];
-  if (includeCrontabConfigs) packageData.crontabConfigs = [];
-  if (includeBatches)        packageData.batches        = [];
-
-  // 数据源/环境变量
-  if (!toolkit.isNothing(dataSourceIds))  packageData.dataSources  = [];
-  if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
-
-  var fileBuf = null;
-  async.series([
-    // 获取脚本集
-    function(asyncCallback) {
-      var opt = {
-        fields: [
-          'sset.id',
-          'sset.title',
-          'sset.description',
-          'sset.requirements',
-        ],
-        filters: {
-          'sset.id': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'sset.id', method: 'ASC'},
-        ],
-      };
-      scriptSetModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.scriptSets = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取脚本
-    function(asyncCallback) {
-      var opt = {
-        fields: [
-          'scpt.id',
-          'scpt.scriptSetId',
-          'scpt.title',
-          'scpt.description',
-          'scpt.publishVersion',
-          'scpt.type',
-          'scpt.code'
-        ],
-        filters: {
-          'scpt.scriptSetId': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'scpt.id', method: 'ASC'},
-        ]
-      };
-      scriptModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.scripts = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取函数
-    function(asyncCallback) {
-      var opt = {
-        fields: [
-          'func.id',
-          'func.scriptSetId',
-          'func.scriptId',
-          'func.name',
-          'func.title',
-          'func.description',
-          'func.definition',
-          'func.argsJSON',
-          'func.kwargsJSON',
-          'func.extraConfigJSON',
-          'func.category',
-          'func.integration',
-          'func.tagsJSON',
-          'func.defOrder'
-        ],
-        filters: {
-          'func.scriptSetId': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'func.id', method: 'ASC'},
-        ],
-        extra: {
-          withCode: true,
-        },
-      };
-      funcModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.funcs = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取授权链接
-    function(asyncCallback) {
-      if (!includeAuthLinks) return asyncCallback();
-
-      var opt = {
-        fields: [
-          'auln.id',
-          'auln.funcId',
-          'auln.funcCallKwargsJSON',
-          'auln.expireTime',
-          'auln.throttlingJSON',
-          'auln.origin',
-          'auln.showInDoc',
-          'auln.isDisabled',
-          'auln.note',
-        ],
-        filters: {
-          'sset.id': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'auln.seq', method: 'ASC'},
-        ],
-      };
-      authLinkModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.authLinks = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取自动触发配置
-    function(asyncCallback) {
-      if (!includeCrontabConfigs) return asyncCallback();
-
-      var opt = {
-        fields: [
-          'cron.id',
-          'cron.funcId',
-          'cron.funcCallKwargsJSON',
-          'cron.crontab',
-          'cron.tagsJSON',
-          'cron.saveResult',
-          'cron.scope',
-          'cron.expireTime',
-          'cron.origin',
-          'cron.isDisabled',
-          'cron.note',
-        ],
-        filters: {
-          'sset.id': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'cron.seq', method: 'ASC'},
-        ],
-      };
-      crontabConfigModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.crontabConfigs = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取批处理
-    function(asyncCallback) {
-      if (!includeBatches) return asyncCallback();
-
-      var opt = {
-        fields: [
-          'bat.id',
-          'bat.funcId',
-          'bat.funcCallKwargsJSON',
-          'bat.tagsJSON',
-          'bat.origin',
-          'bat.showInDoc',
-          'bat.isDisabled',
-          'bat.note',
-        ],
-        filters: {
-          'sset.id': {in: scriptSetIds},
-        },
-        orders: [
-          {field: 'bat.seq', method: 'ASC'},
-        ],
-      };
-      batchModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.batches = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取数据源
-    function(asyncCallback) {
-      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
-
-      var opt = {
-        fields: [
-          'dsrc.id',
-          'dsrc.title',
-          'dsrc.description',
-          'dsrc.type',
-          'dsrc.configJSON',
-        ],
-        filters: {
-          'dsrc.id': {in: dataSourceIds},
-        },
-        orders: [
-          {field: 'dsrc.seq', method: 'ASC'},
-        ],
-      };
-      dataSourceModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        // 去除加密字段
-        dbRes.forEach(function(d) {
-          dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
-            var fCipher = toolkit.strf('{0}Cipher', f);
-            if (fCipher in d.configJSON) {
-              d.configJSON[fCipher] = '';
-            }
-          });
-        });
-
-        packageData.dataSources = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取环境变量
-    function(asyncCallback) {
-      if (toolkit.isNothing(envVariableIds)) return asyncCallback();
-
-      var opt = {
-        fields: [
-          'evar.id',
-          'evar.title',
-          'evar.description',
-          'evar.valueTEXT',
-          'evar.autoTypeCasting',
-        ],
-        filters: {
-          'evar.id': {in: envVariableIds},
-        },
-        orders: [
-          {field: 'evar.seq', method: 'ASC'},
-        ],
-      };
-      envVariableModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.envVariables = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 创建压缩包
-    function(asyncCallback) {
-      var z = new JSZip();
-      z.file(FILENAME_IN_ZIP, JSON.stringify(packageData));
-
-      async.asyncify(function() {
-        return z.generateAsync({
-          type              : 'nodebuffer',
-          compression       : 'DEFLATE',
-          compressionOptions: { level: 9 },
-        })
-      })(function(err, zipBuf) {
-        if (err) return asyncCallback(err);
-
-        // Base64
-        fileBuf = toolkit.getBase64(zipBuf);
-
-        // AES加密
-        fileBuf = toolkit.cipherByAES(fileBuf, password);
-
-        return asyncCallback();
-      });
-    },
-    // 记录导出历史
-    function(asyncCallback) {
-      // 生成摘要
-      var summary = toolkit.jsonCopy(packageData);
-      summary.scripts.forEach(function(d) {
-        delete d.code; // 摘要中不含代码
-      });
-
-      var _data = {
-        note       : note,
-        summaryJSON: summary,
-      }
-      scriptSetExportHistoryModel.add(_data, asyncCallback);
-    },
-  ], function(err) {
+  scriptSetModel.export(opt, function(err, fileBuf) {
     if (err) return next(err);
 
     // 文件名为固定开头+时间
@@ -590,10 +256,12 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
-  var file       = req.files ? req.files[0] : null;
-  var packageURL = req.body.packageURL;
-  var password   = req.body.password || '';
-  var checkOnly  = toolkit.toBoolean(req.body.checkOnly);
+  var file                 = req.files ? req.files[0] : null;
+  var packageInstallURL    = req.body.packageInstallURL;
+  var packageInstallId     = req.body.packageInstallId;
+  var scriptRecoverPointId = req.body.scriptRecoverPointId;
+  var password             = req.body.password || '';
+  var checkOnly            = toolkit.toBoolean(req.body.checkOnly);
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -607,8 +275,35 @@ exports.import = function(req, res, next) {
   var summary   = null;
   var diff      = null;
 
-  if (!file && !packageURL) {
-    return next(new E('EBizCondition.PackageNotProvided', 'Package file or package URL not provided.'));
+  var recoverData = null;
+  // 预处理
+  if (file) {
+    // 从文件导入
+    recoverData = {
+      type: 'import',
+      note: '系统：导入脚本包前自动创建的还原点',
+    };
+
+  } else if (packageInstallURL) {
+    // 从远端安装
+    // 脚本包安装不支持checkOnly操作
+    checkOnly = false;
+    recoverData = {
+      type: 'install',
+      note: '系统：安装脚本包前自动创建的还原点',
+    };
+
+  } else if (scriptRecoverPointId) {
+    // 从还原点还原
+    // 还原脚本库不支持checkOnly操作
+    checkOnly = false;
+    recoverData = {
+      type: 'recover',
+      note: '系统：还原脚本库至还原点',
+    };
+
+  } else {
+    return next(new E('EBizCondition.PackageNotProvided', 'Import source not specified.'));
   }
 
   var fileBuf = null;
@@ -620,13 +315,16 @@ exports.import = function(req, res, next) {
         fileBuf = fs.readFileSync(file.path).toString();
         fs.removeSync(file.path);
 
+        // 补充还原信息
+        recoverData.note += toolkit.strf(' (文件名: {0})', file.originalname);
+
         return asyncCallback();
 
-      } else if (packageURL) {
+      } else if (packageInstallURL) {
         // 来自远端下载
         var requestOptions = {
           method : 'get',
-          url    : packageURL,
+          url    : packageInstallURL,
           timeout: 3 * 1000,
         };
         request(requestOptions, function(err, _res, _body) {
@@ -634,8 +332,34 @@ exports.import = function(req, res, next) {
 
           fileBuf = _body;
 
+          // 补充还原信息
+          if (packageInstallId) {
+            recoverData.note += toolkit.strf(' (ID: {0})', packageInstallId);
+          }
+
           return asyncCallback();
         });
+
+      } else if (scriptRecoverPointId) {
+        // 来自脚本还原点
+        var scriptRecoverPointModel = scriptRecoverPointMod.createModel(res.locals);
+        scriptRecoverPointModel.getWithCheck(scriptRecoverPointId, ['seq', 'exportData'], function(err, dbRes) {
+          if (err) return asyncCallback(err);
+
+          if (toolkit.isNothing(dbRes.exportData)) {
+            return asyncCallback(new E('EClientUnsupported', 'Importing from such recover point not supported'));
+          }
+
+          fileBuf = dbRes.exportData;
+
+          // 补充还原信息
+          recoverData.note += toolkit.strf(' (# {0})', dbRes.seq);
+
+          return asyncCallback();
+        });
+
+      } else {
+        return asyncCallback(new E('EClientBadRequest', 'Importing data not found'));
       }
     },
     // AES解密、JWT验签
@@ -667,7 +391,7 @@ exports.import = function(req, res, next) {
         }
 
         async.asyncify(function() {
-          return z.file(FILENAME_IN_ZIP).async('string');
+          return z.file(scriptSetMod.FILENAME_IN_ZIP).async('string');
 
         })(function(err, zipData) {
           if (err) return asyncCallback(err);
@@ -697,7 +421,7 @@ exports.import = function(req, res, next) {
         return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, packageDataTEXT, asyncCallback);
 
       } else {
-        return scriptSetModel.import(packageData, function(err, _pkgs) {
+        return scriptSetModel.import(packageData, recoverData, function(err, _pkgs) {
           if (err) return asyncCallback(err);
 
           pkgs = _pkgs;
@@ -783,7 +507,12 @@ exports.confirmImport = function(req, res, next) {
     },
     // 执行导入
     function(asyncCallback) {
-      scriptSetModel.import(packageData, function(err, _pkgs) {
+      var recoverData = {
+        // 存在确认导入的，只有「导入脚本包」操作
+        type: 'import',
+        note: '系统：导入脚本包前自动创建的还原点',
+      };
+      scriptSetModel.import(packageData, recoverData, function(err, _pkgs) {
         if (err) return asyncCallback(err);
 
         pkgs = _pkgs;

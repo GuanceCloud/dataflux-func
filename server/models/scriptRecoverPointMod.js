@@ -12,6 +12,8 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
+var scriptSetMod = require('./scriptSetMod');
+
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'script recover point',
@@ -20,19 +22,14 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   alias      : 'srpt',
 
   objectFields: {
-    tableDumpJSON: 'json',
+    hasTableDumpJSON: 'boolean',
+    hasExportData   : 'boolean',
   },
 
   defaultOrders: [
     {field: 'srpt.seq', method: 'DESC'},
   ],
 };
-
-var TARGET_TABLE_NAMES = [
-  'biz_main_script_set',
-  'biz_main_script',
-  'biz_main_func',
-];
 
 exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
@@ -52,6 +49,8 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('   srpt.seq');
   sql.append('  ,srpt.id');
   sql.append('  ,srpt.type');
+  sql.append('  ,NOT ISNULL(srpt.tableDumpJSON) AS hasTableDumpJSON');
+  sql.append('  ,NOT ISNULL(srpt.exportData)    AS hasExportData');
   sql.append('  ,srpt.note');
   sql.append('  ,srpt.createTime');
   sql.append('  ,srpt.updateTime');
@@ -66,20 +65,46 @@ EntityModel.prototype.list = function(options, callback) {
 EntityModel.prototype.add = function(data, callback) {
   var self = this;
 
-  // 准备备份数据
-  data.tableDumpJSON = JSON.stringify(TARGET_TABLE_NAMES.reduce(function(acc, x) {
-    acc[x] = [];
-    return acc;
-  }, {}));
-
   var scriptRecoverPointId = null;
 
-  var transScope = modelHelper.createTransScope(self.db);
+  var allScriptSetIds = [];
   async.series([
+    // 查询所有脚本集ID
     function(asyncCallback) {
-      transScope.start(asyncCallback);
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   sset.id');
+
+      sql.append('FROM biz_main_script_set AS sset');
+
+      sql.append('ORDER BY');
+      sql.append('  sset.id ASC');
+
+      self.db.query(sql, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        allScriptSetIds = toolkit.arrayElementValues(dbRes, 'id');
+
+        return asyncCallback();
+      });
     },
-    // 创建还原点
+    // 获取导出数据
+    function(asyncCallback) {
+      var scriptSetModel = scriptSetMod.createModel(self.locals);
+
+      var opt = {
+        scriptSetIds: allScriptSetIds,
+        note        : 'Recover Point',
+      }
+      scriptSetModel.export(opt, function(err, fileBuf) {
+        if (err) return asyncCallback(err);
+
+        data.exportData = fileBuf;
+
+        return asyncCallback();
+      });
+    },
+    // 写入数据库
     function(asyncCallback) {
       self._add(data, function(err, addedId) {
         if (err) return asyncCallback(err);
@@ -89,49 +114,18 @@ EntityModel.prototype.add = function(data, callback) {
         return asyncCallback();
       });
     },
-    // 填入备份数据
-    function(asyncCallback) {
-      // 查询数据
-      async.eachSeries(TARGET_TABLE_NAMES, function(tableName, eachCallback) {
-        var sql = toolkit.createStringBuilder();
-        sql.append('SELECT');
-        sql.append('  *');
-        sql.append('FROM ??');
-
-        var sqlParams = [tableName];
-        self.db.query(sql, sqlParams, function(err, dbRes) {
-          if (err) return eachCallback(err);
-
-          // 防止SQL语句过长，逐条填入tableDumpJSON
-          async.eachSeries(dbRes, function(d, innerEachCallback) {
-            var sql = toolkit.createStringBuilder();
-            sql.append('UPDATE biz_main_script_recover_point');
-            sql.append('SET');
-            sql.append('  tableDumpJSON = JSON_ARRAY_APPEND(tableDumpJSON, ?, CAST(? AS JSON))');
-            sql.append('WHERE');
-            sql.append('  id = ?');
-
-            var sqlParams = [
-              toolkit.strf('$.{0}', tableName),
-              JSON.stringify(d),
-              scriptRecoverPointId,
-            ];
-            self.db.query(sql, sqlParams, innerEachCallback);
-
-          }, eachCallback);
-        });
-
-      }, asyncCallback);
-    },
   ], function(err) {
-    transScope.end(err, function(scopeErr) {
-      if (scopeErr) return callback(scopeErr);
+    if (err) return callback(err);
 
-      return callback(null, scriptRecoverPointId);
-    });
+    return callback(null, scriptRecoverPointId);
   });
 };
 
+/*【注意】
+ * 本方法已经过时，仅适用于旧数据的还原
+ * 新还原方式为直接调用`POST /api/v1/script-sets/do/import`指定还原点来还原
+ * 区分方式为判断`biz_main_script_recover_point.exportData`是否为NULL
+ */
 EntityModel.prototype.recover = function(id, data, callback) {
   var self = this;
 
@@ -183,6 +177,11 @@ EntityModel.prototype.recover = function(id, data, callback) {
                     && k.slice(-4) === 'Time'
                     && validator.isISO8601(v)) {
                   _data[k] = new Date(v);
+                }
+
+                if ('string' !== typeof v
+                    && k.slice(-4) === 'JSON') {
+                  _data[k] = JSON.stringify(v);
                 }
               }
 

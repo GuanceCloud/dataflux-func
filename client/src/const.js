@@ -568,7 +568,7 @@ export default {
       {
         key      : 'install',
         name     : $t('Before package install'),
-        textClass: 'text-primary',
+        textClass: 'text-watch',
       },
       {
         key      : 'recover',

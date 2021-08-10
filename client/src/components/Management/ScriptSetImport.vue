@@ -136,7 +136,8 @@ export default {
       bodyData.append('files', req.file);
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
-        body: bodyData,
+        body : bodyData,
+        alert: { muteError: true },
       });
       if (!apiRes.ok) {
         return this.alertOnError(apiRes);
