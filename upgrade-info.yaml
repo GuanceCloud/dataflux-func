@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '4'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '5'
 upgradeInfo:
   - seq: 0
     database: |-
