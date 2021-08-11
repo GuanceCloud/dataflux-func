@@ -136,7 +136,6 @@ export default {
       });
 
       this.data = apiRes.data;
-      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -211,12 +210,10 @@ export default {
   props: {
   },
   data() {
-    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data    : [],
-      pageInfo: _pageInfo,
+      data: [],
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

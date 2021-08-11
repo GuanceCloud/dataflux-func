@@ -15,6 +15,7 @@ import pprint
 import celery.states as celery_status
 import six
 import ujson
+import simplejson as json
 
 # Project Modules
 from worker import app

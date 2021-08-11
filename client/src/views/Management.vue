@@ -1,26 +1,3 @@
-<i18n locale="zh-CN" lang="yaml">
-Overview          : 总览
-About             : 关于
-Auth Link         : 授权链接
-Crontab Config    : 自动触发配置
-Batch             : 批处理
-Export Script Sets: 脚本包导出
-Import Script Sets: 脚本包导入
-Recover Script Lib: 脚本库还原
-User              : 成员管理
-Access Log        : 操作记录
-Script Log        : 脚本日志
-Script Failure    : 脚本故障
-Experimental      : 实验性功能
-Script Market     : 脚本市场
-Access Key        : AccessKey
-System Metric     : 系统指标
-PIP Tool          : PIP工具
-File Manager      : 文件管理器
-File Service      : 文件服务
-Func Doc          : 函数文档
-</i18n>
-
 <template>
   <el-container direction="horizontal">
     <!-- 二级导航 -->
@@ -173,6 +150,21 @@ Func Doc          : 函数文档
               <span>
                 <i class="fa fa-fw fa-book"></i>
                 <span class="hidden-md-and-down">{{ $t('Func Doc') }}</span>
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManager')"
+              class="experimental-feature" index="/management/func-cache-list">
+              <span>
+                <i class="fa fa-fw fa-dot-circle-o"></i>
+                {{ $t('Func Cache Manager') }}
+              </span>
+            </el-menu-item>
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManager')"
+              class="experimental-feature" index="/management/func-store-list">
+              <span>
+                <i class="fa fa-fw fa-database"></i>
+                {{ $t('Func Store Manager') }}
               </span>
             </el-menu-item>
           </el-menu>

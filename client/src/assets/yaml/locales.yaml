@@ -154,17 +154,34 @@ en:
   'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
-  # 业务实体/const.js - ASIDE_ITEM_TYPE, OVERVIEW_ENTITY
-  Script Set    : 脚本集
-  Script        : 脚本
-  Func          : 函数
-  Data Source   : 数据源
-  ENV           : 环境变量
-  Auth Link     : 授权链接
-  Crontab Config: 自动触发配置
-  Batch         : 批处理
-  File Service  : 文件服务
-  User          : 用户
+  # 业务实体/模块/ID
+  Script Set        : 脚本集
+  Script            : 脚本
+  Func              : 函数
+  Data Source       : 数据源
+  ENV               : 环境变量
+  Overview          : 总览
+  About             : 关于
+  Auth Link         : 授权链接
+  Crontab Config    : 自动触发配置
+  Batch             : 批处理
+  Export Script Sets: 脚本包导出
+  Import Script Sets: 脚本包导入
+  Recover Script Lib: 脚本库还原
+  User              : 成员管理
+  Access Log        : 操作记录
+  Script Log        : 脚本日志
+  Script Failure    : 脚本故障
+  Experimental      : 实验性功能
+  Script Market     : 脚本市场
+  Access Key        : AccessKey
+  System Metric     : 系统指标
+  PIP Tool          : PIP工具
+  File Manager      : 文件管理器
+  File Service      : 文件服务
+  Func Doc          : 函数文档
+  Func Cache Manager: 函数缓存管理
+  Func Store Manager: 函数存储管理
 
   Script Set ID    : 脚本集ID
   Script ID        : 脚本ID

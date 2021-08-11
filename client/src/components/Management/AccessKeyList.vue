@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Delete Access Key: 删除 AccessKey
+Access Key deleted: AccessKey已删除
 
 Search Access Key(ID, name): 搜索Access Key（ID、名称）
 No Access Key has ever been added: 从未添加过任何授权链接

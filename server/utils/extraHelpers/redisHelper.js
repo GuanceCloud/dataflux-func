@@ -137,10 +137,10 @@ RedisHelper.prototype.keys = function(pattern, limitKeys, callback) {
     limitKeys = null;
   }
 
-  var foundKeys = [];
-
   var COUNT_LIMIT = 1000;
-  var nextCursor  = 0;
+
+  var foundKeys  = [];
+  var nextCursor = 0;
   async.doUntil(function(untilCallback) {
     self.run('scan', nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
       if (err) return untilCallback(err);

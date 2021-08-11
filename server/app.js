@@ -211,6 +211,7 @@ function startApplication() {
 
   require('./routers/fileServiceAPIRouter');
   require('./routers/funcCacheAPIRouter');
+  require('./routers/funcStoreAPIRouter');
 
   routeLoader.mount(app);
 

@@ -895,8 +895,9 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class BaseFuncResponse(object):
-    def __init__(self, data=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
+    def __init__(self, data=None, data_dumps=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
         self.data             = data             # 返回数据
+        self.data_dumps       = data_dumps       # 序列化后的数据
         self.file_path        = file_path        # 返回文件（资源目录下相对路径）
         self.status_code      = status_code      # HTTP响应码
         self.content_type     = content_type     # HTTP响应体类型
@@ -929,8 +930,16 @@ class BaseFuncResponse(object):
 
 class FuncResponse(BaseFuncResponse):
     def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False, download=False):
+        # 尝试序列化返回值
+        data_dumps = None
+        try:
+            data_dumps = toolkit.json_safe_dumps(data)
+        except Exception as e:
+            data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
+
         kwargs = {
             'data'         : data,
+            'data_dumps'   : data_dumps,
             'status_code'  : status_code,
             'content_type' : content_type,
             'headers'      : headers,

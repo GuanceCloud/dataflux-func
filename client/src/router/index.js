@@ -276,6 +276,16 @@ const routes = [
         name: 'file-service-setup',
         component: () => import('../components/Management/FileServiceSetup.vue'),
       },
+      {
+        path: 'func-cache-list',
+        name: 'func-cache-list',
+        component: () => import('../components/Management/FuncCacheList.vue'),
+      },
+      {
+        path: 'func-store-list',
+        name: 'func-store-list',
+        component: () => import('../components/Management/FuncStoreList.vue'),
+      },
     ],
   },
   {

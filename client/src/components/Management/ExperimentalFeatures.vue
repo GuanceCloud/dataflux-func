@@ -134,6 +134,32 @@
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数文档」进入模块
                   </div>
                 </el-form-item>
+
+                <el-form-item prop="FuncCacheManager">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启函数缓存管理器模块"
+                    v-model="form.FuncCacheManager">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于展示、管理当前函数缓存数据的功能
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数缓存管理器」进入模块
+                  </div>
+                </el-form-item>
+                <el-form-item prop="FuncStoreManager">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启函数存储管理器模块"
+                    v-model="form.FuncStoreManager">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于展示、管理当前函数存储数据的功能
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数存储管理器」进入模块
+                  </div>
+                </el-form-item>
+
               </el-form>
             </div>
           </el-col>
@@ -183,15 +209,17 @@ export default {
   data() {
     return {
       form: {
-        ScriptLog    : false,
-        ScriptFailure: false,
-        ScriptMarket : false,
-        AccessKey    : false,
-        SysStat      : false,
-        PIPTool      : false,
-        FileManager  : false,
-        FileService  : false,
-        FuncDoc      : false,
+        ScriptLog       : false,
+        ScriptFailure   : false,
+        ScriptMarket    : false,
+        AccessKey       : false,
+        SysStat         : false,
+        PIPTool         : false,
+        FileManager     : false,
+        FileService     : false,
+        FuncDoc         : false,
+        FuncCacheManager: false,
+        FuncStoreManager: false,
       },
     }
   },

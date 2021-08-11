@@ -1,0 +1,171 @@
+<i18n locale="zh-CN" lang="yaml">
+Type         : 类型
+Never expires: 永不过期
+Memory usage : 内存使用
+
+Func Cache data deleted: 函数缓存数据已删除
+
+Search for more data: 搜索以查看更多内容
+Search Func Cache data(Key, Scope): 搜索函数缓存数据（Key、Scope）
+No Func Cache data has ever been added: 从未添加过任何函数缓存数据
+
+Are you sure you want to delete the Func Cache data?: 是否确认删除此函数缓存数据？
+</i18n>
+
+<template>
+  <transition name="fade">
+    <el-container direction="vertical" v-if="$store.state.isLoaded">
+      <!-- 标题区 -->
+      <el-header height="60px">
+        <h1>
+          {{ $t('Func Cache Manager') }}
+          <div class="header-control">
+            <small class="text-info">{{ $t('Search for more data') }}</small>
+            <FuzzySearchInput
+              :dataFilter="dataFilter"
+              :searchTip="$t('Search Func Cache data(Key, Scope)')">
+            </FuzzySearchInput>
+          </div>
+        </h1>
+      </el-header>
+
+      <!-- 列表区 -->
+      <el-main class="common-table-container">
+        <div class="no-data-area" v-if="T.isNothing(data)">
+          <h1 class="no-data-title" v-if="T.isPageFiltered()">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else>{{ $t('No Func Cache data has ever been added') }}</h1>
+
+          <p class="no-data-tip">
+            可以使用<code>DFF.CACHE.set('key', 'value', scope='scope', expire=3600)</code>和<code>DFF.CACHE('key', scope='scope')</code>来存取函数缓存数据
+            <br><code>scope</code>参数为可选。未指定时则默认为代码所在的脚本ID
+          </p>
+        </div>
+        <el-table v-else
+          class="common-table" height="100%"
+          :data="data">
+
+          <el-table-column :label="$t('Type')" width="120">
+            <template slot-scope="scope">
+              <code>{{ scope.row.type.toUpperCase() }}</code>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Key">
+            <template slot-scope="scope">
+              <code class="text-code">{{ scope.row.key }}</code><CopyButton :content="scope.row.key"></CopyButton>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Scope">
+            <template slot-scope="scope">
+              <code class="text-code">{{ scope.row.scope }}</code><CopyButton :content="scope.row.scope"></CopyButton>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="TTL" width="120" align="right">
+            <template slot-scope="scope">
+              <span v-if="scope.row.ttl === -1" class="text-bad">{{ $t('Never expires') }}</span>
+              <template v-else>
+                <code class="text-good">{{ scope.row.ttl }}</code>
+              </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Memory usage')" align="right" width="120">
+            <template slot-scope="scope">
+              <code>{{ scope.row.memoryUsageHuman }}</code>
+            </template>
+          </el-table-column>
+
+          <el-table-column align="right" width="200">
+            <template slot-scope="scope">
+              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-main>
+
+    </el-container>
+  </transition>
+</template>
+
+<script>
+export default {
+  name: 'FuncCacheList',
+  components: {
+  },
+  watch: {
+    $route: {
+      immediate: true,
+      async handler(to, from) {
+        await this.loadData();
+      }
+    },
+  },
+  methods: {
+    async loadData() {
+      // 默认过滤条件
+      let apiRes = await this.T.callAPI_get('/api/v1/func-caches/do/list', {
+        query: this.T.createListQuery(),
+      });
+      if (!apiRes.ok) return;
+
+      this.data = apiRes.data;
+
+      this.data.forEach(d => {
+        if (d.memoryUsage) {
+          d.memoryUsageHuman = this.T.byteSizeHuman(d.memoryUsage);
+        }
+      });
+
+      this.$store.commit('updateLoadStatus', true);
+    },
+    async quickSubmitData(d, operation) {
+      let extraInfo = `<small>
+          <br>Key: <code class="text-code">${d.key}</code>
+          <br>Scope: <code class="text-code">${d.scope}</code>
+        <small>`;
+
+      switch(operation) {
+        case 'delete':
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Func Cache data?') + extraInfo)) return;
+          break;
+      }
+
+      let apiRes = null;
+      switch(operation) {
+        case 'delete':
+          apiRes = await this.T.callAPI('/api/v1/func-caches/:scope/:key/do/delete', {
+            params: { scope: d.scope, key: d.key },
+            alert : { okMessage: this.$t('Func Cache data deleted') },
+          });
+          break;
+      }
+      if (!apiRes || !apiRes.ok) return;
+
+      await this.loadData();
+    },
+  },
+  computed: {
+  },
+  props: {
+  },
+  data() {
+    let _dataFilter = this.T.createListQuery();
+
+    return {
+      data: [],
+
+      dataFilter: {
+        _fuzzySearch: _dataFilter._fuzzySearch,
+      },
+    }
+  },
+}
+</script>
+
+<style scoped>
+</style>
+
+<style>
+</style>

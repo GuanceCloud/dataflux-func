@@ -4678,7 +4678,7 @@ fileServiceAPI:
         $searchType: in
         $searchKey : fsvc.id
       root:
-        $desc      : 根据根目录查询
+        $desc      : 根据根目录搜索
         $type      : string
         $searchType: like
         $searchKey : fsvc.root
@@ -4757,7 +4757,7 @@ fileServiceAPI:
 funcCacheAPI:
   list:
     showInDoc    : true
-    name         : 列出函数缓存
+    name         : 列出函数缓存（DFF.CACHE）
     method       : get
     url          : /api/v1/func-caches/do/list
     response     : json
@@ -4765,9 +4765,10 @@ funcCacheAPI:
     privilege    : general_r
     export       : true
     paging       : false
+    fuzzySearch  : true
     query:
       scope:
-        $desc: 根据Scope过滤
+        $desc: 根据Scope搜索
         $type: string
       key:
         $desc: 根据Key搜索
@@ -4775,7 +4776,7 @@ funcCacheAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除函数缓存
+    name         : 删除函数缓存（DFF.CACHE）
     method       : get
     url          : /api/v1/func-caches/:scope/:key/do/delete
     response     : json
@@ -4787,4 +4788,55 @@ funcCacheAPI:
         $type: string
       key:
         $desc: 根据Key过滤
+        $type: string
+
+# DFF.STORE存储
+funcStoreAPI:
+  list:
+    showInDoc    : true
+    name         : 列出函数存储（DFF.STORE）
+    method       : get
+    url          : /api/v1/func-stores/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : true
+    orderFields:
+      seq       : fnst.seq
+      scope     : fnst.scope
+      key       : fnst.key
+      createTime: fnst.createTime
+      updateTime: fnst.updateTime
+    fuzzySearch:
+      - fnst.scope
+      - fnst.key
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : fnst.id
+      scope:
+        $desc      : 根据Scope搜索
+        $type      : string
+        $searchType: like
+        $searchKey : fnst.scope
+      key:
+        $desc      : 根据Key搜索
+        $type      : string
+        $searchType: like
+        $searchKey : fnst.key
+
+  delete:
+    showInDoc    : true
+    name         : 删除函数存储（DFF.STORE）
+    method       : get
+    url          : /api/v1/func-stores/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 函数存储ID
         $type: string
