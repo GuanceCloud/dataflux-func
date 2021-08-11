@@ -62,7 +62,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column label="TTL" width="120" align="right">
+          <el-table-column label="TTL" sortable sort-by="ttl" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.ttl === -1" class="text-bad">{{ $t('Never expires') }}</span>
               <template v-else>
@@ -71,7 +71,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Memory usage')" align="right" width="120">
+          <el-table-column :label="$t('Memory usage')" sortable sort-by="memoryUsage" align="right" width="120">
             <template slot-scope="scope">
               <code>{{ scope.row.memoryUsageHuman }}</code>
             </template>
