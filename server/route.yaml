@@ -4752,3 +4752,39 @@ fileServiceAPI:
       id:
         $desc: 文件服务ID
         $type: string
+
+# DFF.CACHE缓存
+funcCacheAPI:
+  list:
+    showInDoc    : true
+    name         : 列出函数缓存
+    method       : get
+    url          : /api/v1/func-caches/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : false
+    query:
+      scope:
+        $desc: 根据Scope过滤
+        $type: string
+      key:
+        $desc: 根据Key搜索
+        $type: string
+
+  delete:
+    showInDoc    : true
+    name         : 删除函数缓存
+    method       : get
+    url          : /api/v1/func-caches/:scope/:key/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      scope:
+        $desc: 根据Scope过滤
+        $type: string
+      key:
+        $desc: 根据Key过滤
+        $type: string

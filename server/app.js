@@ -210,6 +210,7 @@ function startApplication() {
   require('./routers/operationRecordAPIRouter');
 
   require('./routers/fileServiceAPIRouter');
+  require('./routers/funcCacheAPIRouter');
 
   routeLoader.mount(app);
 

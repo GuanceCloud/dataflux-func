@@ -130,8 +130,12 @@ RedisHelper.prototype.run = function() {
   return this.client[command].apply(this.client, args);
 };
 
-RedisHelper.prototype.keys = function(pattern, callback) {
+RedisHelper.prototype.keys = function(pattern, limitKeys, callback) {
   var self = this;
+  if ('function' === typeof limitKeys && !callback) {
+    callback  = limitKeys;
+    limitKeys = null;
+  }
 
   var foundKeys = [];
 
@@ -152,12 +156,16 @@ RedisHelper.prototype.keys = function(pattern, callback) {
     });
 
   }, function() {
-    return parseInt(nextCursor) === 0;
+    return parseInt(nextCursor) === 0 || (limitKeys && foundKeys.length >= limitKeys);
 
   }, function(err) {
     if (err) return callback(err);
 
     foundKeys = toolkit.noDuplication(foundKeys);
+
+    if (limitKeys) {
+      foundKeys = foundKeys.slice(0, limitKeys);
+    }
 
     return callback(null, foundKeys);
   });
