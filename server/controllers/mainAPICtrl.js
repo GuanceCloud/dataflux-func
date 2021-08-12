@@ -1156,7 +1156,7 @@ exports.overview = function(req, res, next) {
     }
 
     var ret = toolkit.initRet(overview);
-    return res.locals.sendJSON(ret);
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 
@@ -1736,10 +1736,12 @@ exports.getSystemConfig = function(req, res, next) {
     _HOSTNAME       : process.env.HOSTNAME,
     _PIP_INSTALL_DIR: path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR),
 
-    _WEB_CLIENT_ID_HEADER: CONFIG._WEB_CLIENT_ID_HEADER,
-    _WEB_ORIGIN_HEADER   : CONFIG._WEB_ORIGIN_HEADER,
-    _WEB_AUTH_HEADER     : CONFIG._WEB_AUTH_HEADER,
-    _WEB_AUTH_QUERY      : CONFIG._WEB_AUTH_QUERY,
+    _WEB_CLIENT_ID_HEADER : CONFIG._WEB_CLIENT_ID_HEADER,
+    _WEB_ORIGIN_HEADER    : CONFIG._WEB_ORIGIN_HEADER,
+    _WEB_AUTH_HEADER      : CONFIG._WEB_AUTH_HEADER,
+    _WEB_AUTH_QUERY       : CONFIG._WEB_AUTH_QUERY,
+    _WEB_TRACE_ID_HEADER  : CONFIG._WEB_TRACE_ID_HEADER,
+    _WEB_PULL_LOG_TRACE_ID: CONFIG._WEB_PULL_LOG_TRACE_ID,
 
     _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
     _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
@@ -2573,6 +2575,81 @@ exports.getPackageIndex = function(req, res, next) {
 
     var ret = toolkit.initRet(_body);
     return res.locals.sendJSON(ret);
+  });
+};
+
+// 拉取系统日志
+exports.pullSystemLogs = function(req, res, next) {
+  var startPosition = parseInt(req.query.position);
+
+  var nextPosition = null;
+  var logs        = null;
+  async.series([
+    // 确定开始/结束位置
+    function(asyncCallback) {
+      fs.stat(CONFIG.LOG_FILE_PATH, function(err, stat) {
+        if (err) return asyncCallback(err);
+
+        nextPosition = stat.size;
+
+        if (!startPosition) {
+          // 默认从-10K位置读取
+          startPosition = stat.size - (1024 * 10);
+        }
+
+        if (startPosition < 0) {
+          startPosition = 0;
+        }
+        if (startPosition > nextPosition - 1) {
+          startPosition = nextPosition - 1;
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 读取日志
+    function(asyncCallback) {
+      var logContent = '';
+
+      var opt = {
+        start: startPosition,
+        end  : nextPosition - 1,
+      }
+
+      if (opt.start === opt.end) {
+        // 没有新日志
+        logs = [];
+        return asyncCallback();
+      }
+
+      // 从文件读取新日志
+      var steam = fs.createReadStream(CONFIG.LOG_FILE_PATH, opt)
+      steam.on('data', function(chunk) {
+        logContent += chunk;
+      });
+      steam.on('end', function() {
+        logContent = logContent.toString().trim();
+
+        if (!logContent) {
+          logs = [];
+        } else {
+          logs = logContent.split('\n');
+          if (!req.query.position) {
+            logs = logs.slice(1);
+          }
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      nextPosition: nextPosition,
+      logs        : logs,
+    });
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 

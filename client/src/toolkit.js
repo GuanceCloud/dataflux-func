@@ -9,6 +9,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/keymap/sublime'
 // CodeMirror高亮
 import 'codemirror/mode/python/python'
+import 'codemirror/mode/javascript/javascript'
 import 'codemirror/mode/diff/diff'
 // CodeMirror代码折叠
 import 'codemirror/addon/fold/foldgutter.css'
@@ -1391,7 +1392,7 @@ export function initCodeMirror(id) {
   //   console.log('cursor moved')
   // });
 
-  setCodeMirrorForPython(cm);
+  setCodeMirrorMode(cm, 'python');
 
   return cm;
 };
@@ -1410,23 +1411,19 @@ export function setCodeMirrorReadOnly(codeMirror, readOnly) {
 
   return codeMirror;
 };
+export function setCodeMirrorMode(codeMirror, mode) {
+  let opt = mode || null;
+  switch(mode) {
+    case 'python':
+      opt = {
+        name          : 'python',
+        version       : 3,
+        extra_keywords: ['DFF'],
+      }
+      break;
+  }
 
-export function setCodeMirrorForPython(codeMirror) {
-  codeMirror.setOption('mode', {
-    name          : 'python',
-    version       : 3,
-    extra_keywords: ['DFF'],
-  });
-  return codeMirror;
-};
-
-export function setCodeMirrorForDiff(codeMirror) {
-  codeMirror.setOption('mode', 'diff');
-  return codeMirror;
-};
-
-export function setCodeMirrorForText(codeMirror) {
-  codeMirror.setOption('mode', null);
+  codeMirror.setOption('mode', opt);
   return codeMirror;
 };
 

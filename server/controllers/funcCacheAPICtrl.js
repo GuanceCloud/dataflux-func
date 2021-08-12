@@ -133,6 +133,78 @@ exports.list = function(req, res, next) {
   })
 };
 
+exports.get = function(req, res, next) {
+  var scope = req.params.scope;
+  var key   = req.params.key;
+
+  var cacheKey = toolkit.getWorkerCacheKey('funcCache', scope, [ 'key', key ]);
+
+  var contentType = null;
+  var content     = null;
+  async.series([
+    // 检查数据类型
+    function(asyncCallback) {
+      res.locals.cacheDB.type(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        contentType = cacheRes;
+
+        return asyncCallback();
+      })
+    },
+    // 获取数据
+    function(asyncCallback) {
+      switch (contentType) {
+        case 'string':
+          res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = cacheRes;
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'hash':
+          res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = cacheRes;
+            for (let k in content) {
+              try { content[k] = JSON.parse(content[k]); } catch(_) {}
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'list':
+          res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = cacheRes;
+            for (let i = 0; i < content.length; i++) {
+              try { content[i] = JSON.parse(content[i]); } catch(_) {}
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'default':
+          content = '<Unsupported Data>'
+          return asyncCallback();
+      }
+
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    let ret = toolkit.initRet(content)
+    return res.locals.sendJSON(ret);
+  });
+};
+
 exports.delete = function(req, res, next) {
   var scope = req.params.scope;
   var key   = req.params.key;

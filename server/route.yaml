@@ -1913,6 +1913,19 @@ mainAPI:
         $required: false
         $type    : string
 
+  pullSystemLogs:
+    name         : 拉取系统日志
+    method       : get
+    url          : /api/v1/system-logs
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      position:
+        $desc    : 日志文件读取位置
+        $required: false
+        $type    : integer
+
 mainPage:
   clientApp:
     showInDoc    : true
@@ -4774,6 +4787,22 @@ funcCacheAPI:
         $desc: 根据Key搜索
         $type: string
 
+  get:
+    showInDoc    : true
+    name         : 获取函数缓存（DFF.CACHE）
+    method       : get
+    url          : /api/v1/func-caches/:scope/:key/do/get
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    params:
+      scope:
+        $desc: 根据Scope过滤
+        $type: string
+      key:
+        $desc: 根据Key过滤
+        $type: string
+
   delete:
     showInDoc    : true
     name         : 删除函数缓存（DFF.CACHE）
@@ -4827,6 +4856,19 @@ funcStoreAPI:
         $type      : string
         $searchType: like
         $searchKey : fnst.key
+
+  get:
+    showInDoc    : true
+    name         : 获取函数存储（DFF.STORE）
+    method       : get
+    url          : /api/v1/func-stores/:id/do/get
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    params:
+      id:
+        $desc: 函数存储ID
+        $type: string
 
   delete:
     showInDoc    : true

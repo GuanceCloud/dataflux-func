@@ -137,3 +137,8 @@ routeLoader.load(ROUTE.mainAPI.fileService, [
 routeLoader.load(ROUTE.mainAPI.getPackageIndex, [
   mainAPICtrl.getPackageIndex,
 ]);
+
+// 系统日志
+routeLoader.load(ROUTE.mainAPI.pullSystemLogs, [
+  mainAPICtrl.pullSystemLogs,
+]);

@@ -97,8 +97,7 @@ exports.proxy = function(req, res, next) {
 
     var ret = toolkit.initRet(httpResp);
 
-    // 不要输出日志
-    return res.send(ret);
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 

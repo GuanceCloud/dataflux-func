@@ -42,7 +42,13 @@ EntityModel.prototype.list = function(options, callback) {
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   fnst.*');
+  sql.append('   fnst.seq');
+  sql.append('  ,fnst.id');
+  sql.append('  ,fnst.scope');
+  sql.append('  ,fnst.key');
+  sql.append('  ,fnst.expireAt');
+  sql.append('  ,fnst.createTime');
+  sql.append('  ,fnst.updateTime');
   sql.append('  ,LENGTH(fnst.valueJSON) AS dataSize');
 
   sql.append('FROM biz_main_func_store AS fnst');

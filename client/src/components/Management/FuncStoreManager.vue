@@ -1,8 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
-Type     : 类型
-Expires  : 有效期
-Never    : 永不过期
-Data Size: 数据大小
+Type        : 类型
+Expires     : 有效期
+Never       : 永不过期
+Data Size   : 数据大小
+Show content: 显示内容
 
 Func Store data deleted: 函数缓存数据已删除
 
@@ -45,7 +46,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
 
           <el-table-column :label="$t('Type')" width="120">
             <template slot-scope="scope">
-              <code>{{ (typeof scope.row.valueJSON).toUpperCase() }}</code>
+              <code>{{ typeof scope.row.valueJSON }}</code>
             </template>
           </el-table-column>
 
@@ -78,8 +79,9 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="260">
             <template slot-scope="scope">
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
@@ -88,14 +90,19 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
 
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
+
+      <LongTextDialog title="内容如下" mode="javascript" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+
 export default {
-  name: 'FuncStoreList',
+  name: 'FuncStoreManager',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -150,6 +157,17 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       await this.loadData();
+    },
+    async showDetail(d) {
+      let apiRes = await this.T.callAPI_get('/api/v1/func-stores/:id/do/get', {
+        params: { id: d.id }
+      });
+      if (!apiRes.ok) return
+
+      let content = apiRes.data;
+      content = JSON.stringify(content, null, 2);
+
+      this.$refs.longTextDialog.update(content);
     },
   },
   computed: {

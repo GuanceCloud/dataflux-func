@@ -2,6 +2,7 @@
 Type         : 类型
 Never expires: 永不过期
 Memory usage : 内存使用
+Show content : 显示内容
 
 Func Cache data deleted: 函数缓存数据已删除
 
@@ -46,7 +47,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
 
           <el-table-column :label="$t('Type')" width="120">
             <template slot-scope="scope">
-              <code>{{ scope.row.type.toUpperCase() }}</code>
+              <code>{{ scope.row.type }}</code>
             </template>
           </el-table-column>
 
@@ -77,22 +78,28 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="260">
             <template slot-scope="scope">
+              <el-button v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0"
+                @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
+      <LongTextDialog title="内容如下" mode="javascript" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+
 export default {
-  name: 'FuncCacheList',
+  name: 'FuncCacheManager',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -144,6 +151,20 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       await this.loadData();
+    },
+    async showDetail(d) {
+      let apiRes = await this.T.callAPI_get('/api/v1/func-caches/:scope/:key/do/get', {
+        params: { scope: d.scope, key: d.key }
+      });
+      if (!apiRes.ok) return
+
+      let content = apiRes.data;
+      try {
+        if ('string' === typeof content) content = JSON.parse(content);
+        content = JSON.stringify(content, null, 2);
+      } catch(_) {}
+
+      this.$refs.longTextDialog.update(content);
     },
   },
   computed: {

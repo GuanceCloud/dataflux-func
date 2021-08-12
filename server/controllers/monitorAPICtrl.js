@@ -26,9 +26,7 @@ exports.getSysStats = function(req, res, next) {
       hostname: os.hostname(),
       sysStats: dbRes,
     });
-
-    // No log for monitor data;
-    return res.send(ret);
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 
@@ -39,9 +37,7 @@ exports.getServerEnvironment = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet(dbRes);
-
-    // No log for monitor data;
-    res.send(ret);
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 
@@ -55,9 +51,7 @@ exports.clearSysStats = function(req, res, next) {
       clearCount: clearCount,
       clearKeys : clearKeys,
     });
-
-    // No log for monitor data;
-    res.send(ret);
+    return res.locals.sendJSON(ret, { muteLog: true });
   });
 };
 

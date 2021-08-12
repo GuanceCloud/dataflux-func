@@ -10,6 +10,10 @@ routeLoader.load(ROUTE.funcStoreAPI.list, [
   funcStoreAPICtrl.list,
 ]);
 
+routeLoader.load(ROUTE.funcStoreAPI.get, [
+  funcStoreAPICtrl.get,
+]);
+
 routeLoader.load(ROUTE.funcStoreAPI.delete, [
   funcStoreAPICtrl.delete,
 ]);

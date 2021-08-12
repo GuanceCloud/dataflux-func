@@ -258,6 +258,10 @@ LoggerHelper.prototype._log = function() {
   var args = Array.prototype.slice.call(arguments);
   var level = args.shift();
 
+  if (this.locals.traceId === CONFIG._WEB_PULL_LOG_TRACE_ID) {
+    return;
+  }
+
   if ('string' !== typeof level || !(level.toUpperCase() in LOG_LEVELS.levels)) {
     if (level) {
       level = 'ERROR';

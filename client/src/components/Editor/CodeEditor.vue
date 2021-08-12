@@ -311,7 +311,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             </template>
           </div>
 
-          <LongTextDialog :title="$t('Diff between published and previously published')" :diffMode="true" ref="longTextDialog"></LongTextDialog>
+          <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog"></LongTextDialog>
 
           <!-- 猴子补丁提示 -->
           <el-dialog

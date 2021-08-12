@@ -15,7 +15,6 @@ var E             = require('./serverError');
 var CONFIG        = require('./yamlResources').get('CONFIG');
 var yamlResources = require('./yamlResources');
 var toolkit       = require('./toolkit');
-var logHelper     = require('./logHelper');
 var translate     = require('./translate');
 var routeLoader   = require('./routeLoader');
 var auth          = require('./auth');
@@ -310,7 +309,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   // Add response functions
-  res.locals.sendJSON = function(ret) {
+  res.locals.sendJSON = function(ret, options) {
+    options = options || {}
+
     if (toolkit.isNullOrUndefined(ret)) {
       ret = toolkit.initRet();
     }
@@ -373,7 +374,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = appInit.convertJSONResponse(ret);
     }
 
-    res.locals.logger.debug('[WEB JSON] `{0}`', getRetSample(ret));
+    if (!options.muteLog) {
+      res.locals.logger.debug('[WEB JSON] `{0}`', getRetSample(ret));
+    }
 
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, ret, 'json');

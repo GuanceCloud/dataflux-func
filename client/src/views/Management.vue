@@ -154,17 +154,25 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManager')"
-              class="experimental-feature" index="/management/func-cache-list">
+              class="experimental-feature" index="/management/func-cache-manager">
               <span>
                 <i class="fa fa-fw fa-dot-circle-o"></i>
                 {{ $t('Func Cache Manager') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManager')"
-              class="experimental-feature" index="/management/func-store-list">
+              class="experimental-feature" index="/management/func-store-manager">
               <span>
                 <i class="fa fa-fw fa-database"></i>
                 {{ $t('Func Store Manager') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SystemLogs')"
+              class="experimental-feature" index="/management/system-logs">
+              <span>
+                <i class="fa fa-fw fa-file-text-o"></i>
+                {{ $t('System Logs') }}
               </span>
             </el-menu-item>
           </el-menu>

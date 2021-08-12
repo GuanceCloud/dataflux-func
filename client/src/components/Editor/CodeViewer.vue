@@ -197,7 +197,7 @@ export default {
             let codeField = this.SHOW_MODE_META_MAP[this.showMode].codeField;
 
             this.codeMirror.setValue(this.data[codeField] || '');
-            this.T.setCodeMirrorForPython(this.codeMirror);
+            this.T.setCodeMirrorMode(this.codeMirror, 'python');
             break;
 
           case 'diff':
@@ -210,7 +210,7 @@ export default {
             let diffPatch = createPatch(fileName, oldStr, newStr, oldHeader, newHeader);
 
             this.codeMirror.setValue(diffPatch);
-            this.T.setCodeMirrorForDiff(this.codeMirror);
+            this.T.setCodeMirrorMode(this.codeMirror, 'diff');
             break;
         }
 

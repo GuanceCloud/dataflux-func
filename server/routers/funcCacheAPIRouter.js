@@ -10,6 +10,10 @@ routeLoader.load(ROUTE.funcCacheAPI.list, [
   funcCacheAPICtrl.list,
 ]);
 
+routeLoader.load(ROUTE.funcCacheAPI.get, [
+  funcCacheAPICtrl.get,
+]);
+
 routeLoader.load(ROUTE.funcCacheAPI.delete, [
   funcCacheAPICtrl.delete,
 ]);

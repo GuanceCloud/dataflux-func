@@ -160,6 +160,18 @@
                   </div>
                 </el-form-item>
 
+                <el-form-item prop="SystemLogs">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启系统日志查看模块"
+                    v-model="form.SystemLogs">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于查看当前系统日志的功能
+                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统日志」进入模块
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -220,6 +232,7 @@ export default {
         FuncDoc         : false,
         FuncCacheManager: false,
         FuncStoreManager: false,
+        SystemLogs      : false,
       },
     }
   },

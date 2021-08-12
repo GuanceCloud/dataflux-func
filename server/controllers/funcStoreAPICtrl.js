@@ -19,4 +19,5 @@ var funcStoreMod = require('../models/funcStoreMod');
 var crudHandler = exports.crudHandler = funcStoreMod.createCRUDHandler();
 
 exports.list   = crudHandler.createListHandler();
+exports.get    = crudHandler.createGetHandler();
 exports.delete = crudHandler.createDeleteHandler();

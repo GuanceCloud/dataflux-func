@@ -47,11 +47,7 @@ export default {
         // 载入代码
         this.codeMirror.setValue('');
         this.codeMirror.setValue(this.content || '');
-        if (this.diffMode) {
-          this.T.setCodeMirrorForDiff(this.codeMirror);
-        } else {
-          this.T.setCodeMirrorForText(this.codeMirror);
-        }
+        this.T.setCodeMirrorMode(this.codeMirror, this.mode || null);
         this.codeMirror.refresh();
       });
     },
@@ -65,7 +61,7 @@ export default {
   },
   props: {
     title: String,
-    diffMode: Boolean,
+    mode: Boolean,
     showDownload: Boolean,
   },
   data() {
