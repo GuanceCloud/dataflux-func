@@ -2594,7 +2594,7 @@ exports.pullSystemLogs = function(req, res, next) {
 
         if (!startPosition) {
           // 默认从-10K位置读取
-          startPosition = stat.size - (1024 * 10);
+          startPosition = stat.size - (1024 * 50);
         }
 
         if (startPosition < 0) {
