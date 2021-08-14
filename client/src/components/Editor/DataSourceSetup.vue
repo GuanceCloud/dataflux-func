@@ -24,7 +24,6 @@ Test connection    : 测试连通性
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Data Source requires password to connect: 如数据源需要密码，则每次修改都必须重新输入密码
-'Shared subscription can avoid duplicated message:': 建议使用共享订阅方式订阅，避免重复接收消息：
 '1. $share/GROUP/TOPIC in MQTTv5': '1. MQTTv5 的 $share/GROUP/TOPIC'
 '2. $queue/TOPIC in EMQX': '2. EMQX 的 $queue/TOPIC'
 

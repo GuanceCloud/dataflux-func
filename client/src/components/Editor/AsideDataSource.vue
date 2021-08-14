@@ -5,7 +5,7 @@ Add Data Source        : 添加数据源
 Simple Debug Panel     : 简易调试面板
 View                   : 查看
 Setup                  : 配置
-'Example:'             : 示例
+Example                : 示例
 Copy example           : 复制示例
 Copy {name} ID         : 复制{name}ID
 Open Simple Debug Panel: 打开简易调试面板
@@ -78,7 +78,7 @@ Open Simple Debug Panel: 打开简易调试面板
 
             <template v-if="data.sampleCode">
               <div class="aside-tree-node-sample-code">
-                {{ $t('Example:') }}
+                {{ $t('Example') }}{{ $t(':') }}
                 <pre>{{ data.sampleCode }}</pre>
               </div>
             </template>

@@ -12,7 +12,7 @@ View                                           : 查看
 Setup                                          : 配置
 Copy example                                   : 复制示例
 Copy {name} ID                                 : 复制{name}ID
-'Example:'                                     : 示例
+Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
 Open Quick View Panel                          : 打开快速预览面板
@@ -132,7 +132,7 @@ Script {id}    : 脚本 {id}
 
             <template v-if="data.sampleCode">
               <div class="aside-tree-node-sample-code">
-                {{ $t('Example:') }}
+                {{ $t('Example') }}{{ $t(':') }}
                 <pre>{{ data.sampleCode }}</pre>
               </div>
             </template>

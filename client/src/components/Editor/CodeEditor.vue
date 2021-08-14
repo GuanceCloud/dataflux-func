@@ -20,7 +20,7 @@ Args                                                                 : 参数
 'Leave blank or {} when no argument'                                 : '没有参数的不用填写，或保留 {}'
 'Arguments (JSON)'                                                   : 参数（JSON格式）
 Run selected Func                                                    : 执行指定的函数
-'Shortcut:'                                                          : 快捷键：
+Shortcut                                                             : 快捷键
 Run                                                                  : 执行
 Save Script draft                                                    : 保存草稿
 Show code diff                                                       : 查看差异
@@ -32,7 +32,6 @@ End edit                                                             : 结束编
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
 This Script has been locked by other, editing is disabled            : 当前脚本被其他用户锁定，无法修改
-'DIFF:'                                                              : '差异：'
 addedLines                                                           : '新增 {n} 行'
 removedLines                                                         : '，删除 {n} 行'
 codeLines                                                            : '共 {n} 行代码'
@@ -50,7 +49,6 @@ Operating too frequently or Script is modified in other tab                     
 Do you want to download current editing Script?                                        : 是否下载当前正在编辑的脚本？
 Saving Script failed                                                                   : 保存脚本失败
 Current editing Script has been downloaded                                             : 当前正在编辑的脚本已经下载
-'Filename:'                                                                            : 文件名：
 Script saved successfully                                                              : 脚本保存成功
 You can continue with other operations                                                 : 你可以继续进行其他操作
 Published Code                                                                         : 已发布的代码
@@ -59,7 +57,6 @@ Script will take effect after been published immediately,                       
 Funcs with {html} decorator will be available to be accessed                           : 被{html}装饰的函数可被访问
 Are you sure you want to publish the Script?                                           : 是否确认发布此脚本？
 Publish Script                                                                         : 发布脚本
-'Publish Script:'                                                                      : 发布脚本：
 Script saved                                                                           : 脚本已保存
 Script published, new Script is in effect immediately                                  : 脚本已发布，新脚本立即生效
 Reset draft to the last published version, changes not published will lost             : '复位脚本草稿到上次发布时的状态，未发布的草稿将丢失'
@@ -70,16 +67,16 @@ The parameter is not a valid JSON                                               
 Invalid argument format                                                                : 参数格式不正确
 Check input                                                                            : 输入检查
 seconds                                                                                : '{n}秒'
-'Executed Func:'                                                                       : 执行函数：
+Executed Func                                                                          : 执行函数
 This Script is not published, it will take effect after the Script is published        : 当前脚本尚未发布，脚本只有发布后才会生效
 Do you want to publish the Script now?                                                 : 是否现在发布？
 Script not published                                                                   : 脚本未发布
 Publish Now                                                                            : 立即发布
 Skip Publishing                                                                        : 跳过发布
-'Run Time:'                                                                            : 耗时：
+Run Time                                                                               : 耗时
 It took too much time for running, may not be suitable for synchronous calling scenario: 耗时较长，可能不适合需要响应速度较高的场景
-'Func Return Value:'                                                                   : 函数返回值：
-'Stack:'                                                                               : 错误堆栈：
+Func Return Value                                                                      : 函数返回值
+Stack                                                                                  : 错误堆栈
 
 Publish Failed                                                                                                                     : 发布失败
 Script Error                                                                                                                       : 脚本错误
@@ -190,7 +187,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
                         {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + B</code>
+                        {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + B</code>
                       </div>
                       <el-button
                         @click="callFuncDraft"
@@ -207,7 +204,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft') }}<br>
-                          {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + S</code>
+                          {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
                           @click="saveScript()"
@@ -282,7 +279,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
 
           <!-- 状态栏 -->
           <div class="code-editor-status-bar" v-show="$store.state.isLoaded">
-            <el-tooltip :content="`${$t('DIFF:')} ${$tc('addedLines', diffAddedCount)}${$tc('removedLines', diffRemovedCount)}`" placement="top-end">
+            <el-tooltip :content="`${$t('DIFF')}${$t(':')} ${$tc('addedLines', diffAddedCount)}${$tc('removedLines', diffRemovedCount)}`" placement="top-end">
               <span>
                 <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>
               </span>
@@ -1228,11 +1225,11 @@ export default {
         let titleLabel = '';
         switch(o.type) {
           case 'publish':
-            titleLabel = this.$t('Publish Script:');
+            titleLabel = this.$t('Publish Script') + this.$t(':');
             break;
 
           case 'execute':
-            titleLabel = this.$t('Executed Func:');
+            titleLabel = this.$t('Executed Func') + this.$t(':');
             break;
         }
         let title = `<span class="code-editor-output-info">${titleLabel} ${o.name}</span>`;
@@ -1240,7 +1237,7 @@ export default {
         // 执行耗时
         let costInfo = '';
         if (o.cost) {
-          costInfo = `<span class="code-editor-output-info">${this.$t('Run Time:')} ${this.$tc('seconds', o.cost)}</span>`;
+          costInfo = `<span class="code-editor-output-info">${this.$t('Run Time')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
             costInfo += `<br><span class="text-watch">${this.$t('It took too much time for running, may not be suitable for synchronous calling scenario')}</span>`;
           }
@@ -1255,7 +1252,7 @@ export default {
         let funcOutput = o.funcOutput;
         let funcOutputTitle = null;
         if (funcOutput) {
-          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value:')}</span>`;
+          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value')}${this.$t(':')}</span>`;
         }
 
         // 错误堆栈
@@ -1263,7 +1260,7 @@ export default {
         let stackInfo = o.stackInfo;
         let stackInfoTitle = null;
         if (stackInfo) {
-          stackInfoTitle = `<span class="code-editor-output-info">${this.$t('Stack:')}</span>`
+          stackInfoTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
         }
 
         let section = [ divider, title ]

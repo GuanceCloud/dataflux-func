@@ -2,8 +2,8 @@
 File Tool         : 文件管理器
 Go Top            : 返回顶层
 Go Up             : 向上
-'File size limit:': '文件大小限制：'
-'Path:'           : 路径：
+File size limit   : 文件大小限制
+Path              : 路径
 Create time       : 创建时间
 Update time       : 更新时间
 
@@ -55,7 +55,7 @@ File already existed                                                            
             </el-button>
           </el-popover>
 
-          <el-tooltip :content="`${$t('File size limit:')} ${T.byteSizeHuman($store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT'))}`" placement="bottom">
+          <el-tooltip :content="`${$t('File size limit')}${$t(':')} ${T.byteSizeHuman($store.getters.CONFIG('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT'))}`" placement="bottom">
             <el-upload ref="upload"
               class="upload-button"
               :limit="2"
@@ -74,7 +74,7 @@ File already existed                                                            
 
           &#12288;
           <code class="resource-navi" v-if="currentFolder !== '/'">
-            <small>{{ $t('Path:') }}</small>
+            <small>{{ $t('Path') }}{{ $t(':') }}</small>
             <el-button size="small" @click="enterFolder()">
               <i class="fa fa-fw fa-home"></i>
             </el-button><template v-for="(layer, index) in currentFolder.slice(1).split('/')">

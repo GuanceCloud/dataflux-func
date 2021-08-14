@@ -2,10 +2,10 @@
 Clear Cache                                                         : 清除缓存
 If you got trouble with UI or Code Editor, please try to clear cache: 如果界面、代码编辑器等存在问题，可尝试清除缓存来解决
 Code Editor Setting                                                 : 代码编辑器配置
-'Including:'                                                        : 包括：
+Including                                                           : 包括
 Selected UI theme                                                   : 已选择的主题
 Font size, line height                                              : 文字大小、行距
-'UI Status:'                                                        : 页面状态：
+UI Status                                                           : 页面状态
 Expanded items in Code Editor Aside                                 : 编辑器侧栏中当前已展开的栏目
 Position of Aside separator, output box                             : 编辑器当前拖动的的编辑器侧栏、脚本输出栏位置
 Position of Simple Debug Panel                                      : 简易调试面板当前位置
@@ -44,7 +44,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                   <el-checkbox v-model="form.clear_codeMirrorSetting">
                     <strong>{{ $t('Code Editor Setting') }}</strong>
                   </el-checkbox>
-                  <div class="text-small form-item-tip">{{ $t('Including:') }}
+                  <div class="text-small form-item-tip">{{ $t('Including') }}{{ $t(':') }}
                     <br/>&#12288;{{ $t('Selected UI theme')}}
                     <br/>&#12288;{{ $t('Font size, line height')}}
                   </div>
@@ -52,9 +52,9 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
 
                 <el-form-item>
                   <el-checkbox v-model="form.clear_UIStatus">
-                    <strong>{{ $t('UI Status:') }}</strong>
+                    <strong>{{ $t('UI Status') }}</strong>
                   </el-checkbox>
-                  <div class="text-small form-item-tip">{{ $t('Including:') }}
+                  <div class="text-small form-item-tip">{{ $t('Including') }}{{ $t(':') }}
                     <br/>&#12288;{{ $t('Expanded items in Code Editor Aside') }}
                     <br/>&#12288;{{ $t('Position of Aside separator, output box') }}
                     <br/>&#12288;{{ $t('Position of Simple Debug Panel') }}

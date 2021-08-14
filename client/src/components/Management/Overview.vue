@@ -25,12 +25,12 @@ Recent operations             : 最近操作记录
 recentOperationCount          : 最近{n}条
 Time                          : 时间
 Client                        : 客户端
-'Client ID:'                  : 客户端ID：
-'IP Address:'                 : IP地址：
+Client ID                     : 客户端ID
+IP Address                    : IP地址
 User                          : 用户
-'User ID:'                    : 用户ID：
+User ID                       : 用户ID
 Operation                     : 操作
-'Data ID:'                    : 数据ID：
+Data ID                       : 数据ID
 MODIFY                        : 修改操作
 DELETE                        : 删除操作
 Cost                          : 耗时
@@ -39,7 +39,7 @@ Show detail                   : 显示HTTP请求详情
 The full content is as follows: 完整内容如下
 Request                       : 请求
 Response                      : 响应
-'Pressure:'                   : 压力：
+Pressure                      : 压力
 </i18n>
 
 <template>
@@ -142,12 +142,12 @@ Response                      : 响应
 
           <el-table-column :label="$t('Client')">
             <template slot-scope="scope">
-              <span class="text-info">{{ $t('Client ID:') }}</span>
+              <span class="text-info">{{ $t('Client ID') }}{{ $t(':') }}</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
 
               <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
                 <br>
-                <span class="text-info">{{ $t('IP Address:') }}</span>
+                <span class="text-info">{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
               </template>
             </template>
@@ -159,7 +159,7 @@ Response                      : 响应
 
               <template v-if="scope.row.userId">
                 <br>
-                <span class="text-info">{{ $t('User ID:') }}</span>
+                <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
             </template>
@@ -178,7 +178,7 @@ Response                      : 响应
 
               <template v-if="scope.row._operationEntityId">
                 <br>
-                <span class="text-info">{{ $t('Data ID:') }}</span>
+                <span class="text-info">{{ $t('Data ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
             </template>
@@ -311,7 +311,7 @@ export default {
       return percentage;
     },
     workerQueuePressureFormat(percentage) {
-      return `${this.$t('Pressure:')} ${parseInt(percentage * 2)}`;
+      return `${this.$t('Pressure')}${this.$t(':')} ${parseInt(percentage * 2)}`;
     },
   },
   computed: {

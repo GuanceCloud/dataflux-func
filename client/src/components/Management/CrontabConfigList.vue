@@ -1,7 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Fixed  : 固定
 Not Set: 未配置
-Expires: 有效期
+Created: 创建时间
+Expires: 有效期限
 Never  : 长期有效
 Tasks  : 任务
 Run Now: 立即执行
@@ -93,7 +94,7 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column label="Crontab" width="160">
+          <el-table-column label="Crontab">
             <template slot-scope="scope">
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code>{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
@@ -101,17 +102,19 @@ Integration Func Tasks: 集成函数任务
               </template>
               <code v-else-if="scope.row.crontab">{{ scope.row.crontab }}</code>
               <span v-else class="text-bad">{{ $t('Not Set') }}</span>
-            </template>
-          </el-table-column>
 
-          <el-table-column :label="$t('Expires')" width="160">
-            <template slot-scope="scope">
+              <br>
+              <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
+              <span>{{ scope.row.createTime | datetime }}</span>
+              <small class="text-info">{{ $t('(') }}{{ scope.row.createTime | fromNow }}{{ $t(')') }}</small>
+
+              <br>
+              <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
               <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
               <template v-else>
                 <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
                 >{{ scope.row.expireTime | datetime }}</span>
-                <br>
-                <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
+                <small class="text-info">{{ $t('(') }}{{ scope.row.expireTime | fromNow }}{{ $t(')') }}</small>
               </template>
             </template>
           </el-table-column>

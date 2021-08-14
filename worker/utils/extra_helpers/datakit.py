@@ -513,17 +513,45 @@ class DataKit(object):
     def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
 
-    def query(self, dql, raw=False, dict_output=False, **kwargs):
-        q = { 'query': dql }
-
+    def query(self, dql, raw=False, dict_output=False, all_series=False, **kwargs):
+        q = {}
         for k, v in kwargs.items():
             if v is not None:
                 q[k] = v
 
-        json_obj = {
-            'queries': [ q ],
-        }
-        status_code, dql_res = self.post_json(json_obj, '/v1/query/raw')
+        q['query'] = dql
+
+        # 原始结果集
+        status_code = None
+        dql_res     = None
+
+        if all_series:
+            # 获取全部时间线时，强制初始化slimit, soffset
+            q['slimit']  = 100
+            q['soffset'] = 0
+
+        for i in range(1000):
+            if all_series:
+                # 获取全部时间线时，翻页
+                q['soffset'] += q['slimit'] * i
+
+            json_obj = {
+                'queries': [ q ],
+            }
+            status_code, _dql_res = self.post_json(json_obj, '/v1/query/raw')
+
+            # 合并结果集
+            if dql_res is None:
+                dql_res = _dql_res
+            else:
+                dql_res['content'][0]['series'].extend(_dql_res['content'][0]['series'])
+
+            if not all_series:
+                # 非获取全部时间线时，直接退出
+                break
+            elif len(_dql_res['content'][0]['series']) < q['slimit']:
+                # 获取全部时间线时，翻页结束时退出
+                break
 
         # 返回原始返回值
         if raw:

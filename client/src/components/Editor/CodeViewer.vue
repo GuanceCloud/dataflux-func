@@ -6,7 +6,7 @@ codeLines: '{n} line | {n} lines'
 Script Setup                                                         : 脚本设置
 'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
-'Shortcut:'                                                          : 快捷键：
+Shortcut                                                             : 快捷键
 Select Func                                                          : 选择聚焦函数
 Draft                                                                : 草稿
 Published                                                            : 已发布
@@ -54,7 +54,7 @@ Saved Draft Code: 已保存的草稿代码
             <el-form-item v-if="!conflictStatus">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
-                  {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + E</code>
+                  {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + E</code>
                 </div>
                 <el-button
                   @click="startEdit"
@@ -80,7 +80,7 @@ Saved Draft Code: 已保存的草稿代码
               <el-radio-group v-model="showMode" size="mini">
                 <el-tooltip placement="bottom" v-for="meta, k, i in SHOW_MODE_META_MAP" :key="k" :enterable="false">
                   <div slot="content">
-                    {{ $t('Shortcut:') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>
+                    {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>
                   </div>
                   <el-radio-button :label="k">{{ meta.text }}</el-radio-button>
                 </el-tooltip>

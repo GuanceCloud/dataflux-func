@@ -3,7 +3,7 @@ filter content: 过滤内容
 Refresh       : 刷新列表
 Add ENV       : 添加环境变量
 Setup         : 配置
-'Example:'    : 示例
+Example       : 示例
 Copy example  : 复制示例
 Copy {name} ID: 复制{name}ID
 </i18n>
@@ -62,7 +62,7 @@ Copy {name} ID: 复制{name}ID
 
               <template v-if="data.sampleCode">
                 <div class="aside-tree-node-sample-code">
-                  {{ $t('Example:') }}
+                  {{ $t('Example') }}{{ $t(':') }}
                   <pre>{{ data.sampleCode }}</pre>
                 </div>
               </template>

@@ -10,6 +10,10 @@ en:
   timePerYear  : '{n} time / year | {n} times / year'
 
 'zh-CN':
+  ':': '：'
+  '(': '（'
+  ')': '）'
+
   Light Mode   : 明亮模式
   Dark Mode    : 黑暗模式
   Auto         : 自动
