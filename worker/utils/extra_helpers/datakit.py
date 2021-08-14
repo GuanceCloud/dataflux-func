@@ -513,7 +513,7 @@ class DataKit(object):
     def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
 
-    def query(self, dql, raw=False, dict_output=False, all_series=False, **kwargs):
+    def query(self, dql, all_series=False, dict_output=False, raw=False, **kwargs):
         q = {}
         for k, v in kwargs.items():
             if v is not None:
