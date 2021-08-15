@@ -44,7 +44,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptMarket" v-if="$store.getters.isSuperAdmin">
+                <el-form-item prop="ScriptMarket">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"
