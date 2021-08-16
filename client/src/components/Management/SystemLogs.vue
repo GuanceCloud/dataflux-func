@@ -75,7 +75,7 @@ export default {
       } else {
         this.data = apiRes.data.logs;
       }
-      this.data = this.data.slice(-10000);
+      this.data = this.data.slice(-5000);
 
       this.nextPosition = apiRes.data.nextPosition;
 
