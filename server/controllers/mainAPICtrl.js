@@ -549,7 +549,7 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
 
         // 计算任务丢弃率（过压 / 最大可承受压力 * 100%）
         denyPercent = workerQueueOverPressure / workerQueueMaxPressure;
-        if (CONFIG._WORKER_LIMIT_PRESSURE_ENABLED && Math.random() < denyPercent) {
+        if (!CONFIG._DISABLE_WORKER_LIMIT_PRESSURE && Math.random() < denyPercent) {
           return asyncCallback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue', {
             funcPressure          : funcPressure,
             workerQueue           : funcCallOptions.queue,

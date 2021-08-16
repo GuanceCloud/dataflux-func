@@ -134,9 +134,14 @@ beat_schedule['run-auto-clean'] = {
     'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEAN']),
 }
 
-if CONFIG['DB_AUTO_BACKUP_ENABLED']:
-    # 数据库自动备份
-    beat_schedule['run-auto-backup-db'] = {
-        'task'    : 'Main.AutoBackupDB',
-        'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
-    }
+# 数据库自动备份
+beat_schedule['run-auto-backup-db'] = {
+    'task'    : 'Main.AutoBackupDB',
+    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
+}
+
+##### 功能关闭 #####
+
+# 关闭数据库自动备份
+if CONFIG['_DISABLE_DB_AUTO_BACKUP']:
+    beat_schedule.pop('run-auto-backup-db', None)
