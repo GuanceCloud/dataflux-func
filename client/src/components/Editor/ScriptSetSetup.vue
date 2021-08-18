@@ -94,8 +94,10 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 <el-form-item>
                   <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button v-if="T.pageMode() === 'setup'" @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
-                    <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
+                    <template v-if="T.pageMode() === 'setup'">
+                      <el-button @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                      <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
+                    </template>
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
