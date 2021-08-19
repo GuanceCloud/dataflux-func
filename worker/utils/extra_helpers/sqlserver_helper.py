@@ -7,7 +7,6 @@ import datetime
 import traceback
 
 # 3rd-party Modules
-import pymssql
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -31,6 +30,8 @@ def get_config(c):
 
 class SQLServerHelper(object):
     def __init__(self, logger, config, database=None, pool_size=None, *args, **kwargs):
+        import pymssql
+
         self.logger = logger
 
         self.skip_log = False

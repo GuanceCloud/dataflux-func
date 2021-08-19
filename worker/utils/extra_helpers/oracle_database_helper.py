@@ -7,7 +7,6 @@ import datetime
 import traceback
 
 # 3rd-party Modules
-import cx_Oracle
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -34,6 +33,8 @@ def get_config(c):
 
 class OracleDatabaseHelper(object):
     def __init__(self, logger, config, database=None, pool_size=None, *args, **kwargs):
+        import cx_Oracle
+
         self.logger = logger
 
         self.skip_log = False

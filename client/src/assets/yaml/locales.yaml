@@ -145,7 +145,7 @@ en:
   Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除
   Don't prompt again                      : 不再提示
 
-  # const.js - DATE_SOURCE
+  # const.js - DATA_SOURCE
   'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）
   'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库InfluxDB 版
   'MySQL (And other compatible Databases)'                                : MySQL（及兼容数据库）

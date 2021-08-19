@@ -55,7 +55,7 @@ export default {
   get NOPE() {
     return '-';
   },
-  get DATE_SOURCE() {
+  get DATA_SOURCE() {
     return [
       {
         key           : 'df_dataway',
@@ -304,8 +304,8 @@ export default {
       },
     ];
   },
-  get DATE_SOURCE_MAP() {
-    return new MAP_CONST(this.DATE_SOURCE);
+  get DATA_SOURCE_MAP() {
+    return new MAP_CONST(this.DATA_SOURCE);
   },
 
   // 主题
