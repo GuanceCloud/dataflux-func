@@ -3,6 +3,8 @@ FROM arm64v8/ubuntu:20.04
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
 ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-arm64/bin"
+ENV _ENABLE_DATA_SOURCE_SQLSERVER "false"
+ENV _ENABLE_DATA_SOURCE_ORACLE "false"
 
 ARG RESOURCE_BASE_URL="https://static.dataflux.cn/dataflux-func/resource"
 ARG NODE_PKG="node-v12.16.3-linux-arm64.tar.gz"
