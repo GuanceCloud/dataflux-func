@@ -1,9 +1,6 @@
-FROM registry.jiagouyun.com/middlewares/dataflux-func-arm64:base-extra
+FROM registry.jiagouyun.com/middlewares/dataflux-func:base-dataflux
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
-
-ENV _ENABLE_DATA_SOURCE_SQLSERVER "false"
-ENV _ENABLE_DATA_SOURCE_ORACLE "false"
 
 # Build project
 WORKDIR /usr/src/app
