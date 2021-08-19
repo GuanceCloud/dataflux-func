@@ -1,0 +1,20 @@
+FROM registry.jiagouyun.com/middlewares/dataflux-func-arm64:base-extra
+
+MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
+
+# Build project
+WORKDIR /usr/src/app
+COPY . .
+RUN python echo-image-info.py && \
+    ln -s /usr/src/base/node_modules ./node_modules && \
+    ln -s /usr/src/base/client/node_modules ./client/node_modules && \
+    cd /usr/src/app/client && \
+        npm run build
+
+# Run Web server
+# EXPOSE 8088
+# CMD ./run-server.sh
+# Run Worker
+# CMD ./run-worker.sh
+# Run Worker beat
+# CMD ./run-beat.sh

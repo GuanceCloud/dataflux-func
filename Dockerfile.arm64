@@ -1,12 +1,11 @@
-FROM ubuntu:20.04
+FROM arm64v8/ubuntu:20.04
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
-ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-x64/bin"
+ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-arm64/bin"
 
 ARG RESOURCE_BASE_URL="https://static.dataflux.cn/dataflux-func/resource"
-ARG NODE_PKG="node-v12.16.3-linux-x64.tar.gz"
-ARG ORACLE_CLIENT_PKG="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"
+ARG NODE_PKG="node-v12.16.3-linux-arm64.tar.gz"
 
 USER root
 
@@ -17,18 +16,7 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/sqldump
 
 # Install
-RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
-            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse \
-            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
-            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse \
-            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse \
-            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse \
-            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse \
-            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse \
-            \ndeb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse \
-            \ndeb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse" \
-            > /etc/apt/sources.list && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y iputils-ping vim wget curl telnet zip unzip python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client libpq-dev && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
@@ -36,12 +24,7 @@ RUN echo "deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe m
 WORKDIR /usr/src/resource
 RUN wget -q ${RESOURCE_BASE_URL}/${NODE_PKG} && \
         tar -xf ${NODE_PKG} && \
-    wget -q ${RESOURCE_BASE_URL}/${ORACLE_CLIENT_PKG} && \
-        unzip ${ORACLE_CLIENT_PKG} -d /opt/oracle && \
-        sh -c "echo /opt/oracle/instantclient_19_6 > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
-        ldconfig && \
-    rm /usr/src/resource/${NODE_PKG} && \
-    rm /usr/src/resource/${ORACLE_CLIENT_PKG}
+    rm /usr/src/resource/${NODE_PKG}
 
 # Install requirements (server)
 WORKDIR /usr/src/base

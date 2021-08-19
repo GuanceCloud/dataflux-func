@@ -1,2 +1,0 @@
-# Placeholder
-# Will download from OSS and installed in base-image Dockerfile

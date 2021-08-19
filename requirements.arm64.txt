@@ -1,11 +1,7 @@
-# For Oracle Database support:
-# see https://oracle.github.io/odpi/doc/installation.html#linux
-
 arrow==0.15.7
 celery[redis]==4.4.6
 clickhouse-driver==0.1.3
 croniter==1.0.6
-cx-Oracle==7.3.0
 DBUtils==1.3
 funcsigs==1.0.2
 influxdb==5.2.3
@@ -17,7 +13,6 @@ psycopg2-binary==2.8.5
 pycryptodomex==3.8.0
 pylru==1.2.0
 pymongo==3.10.1
-pymssql==2.2.1
 python-dateutil==2.7.2
 python3-memcached==1.51
 PyYAML==5.4.1
