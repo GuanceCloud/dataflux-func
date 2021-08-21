@@ -7,14 +7,9 @@ variables:
   OSS_PORTABLE_BASE_URL: oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable
   CDN_REFRESH_PATH     : static.dataflux.cn/${OSS_WORKDIR}/
 
-  IMAGE        : dataflux-func
-  IMAGE_PRIVATE: registry.jiagouyun.com/middlewares/dataflux-func
-  IMAGE_PUBLIC : pubrepo.jiagouyun.com/dataflux-func/dataflux-func
-
-  IMAGE_ARM64        : dataflux-func-arm64
-  IMAGE_PRIVATE_ARM64: registry.jiagouyun.com/middlewares/dataflux-func-arm64
-  IMAGE_PUBLIC_ARM64 : pubrepo.jiagouyun.com/dataflux-func/dataflux-func-arm64
-
+  IMAGE                    : dataflux-func
+  IMAGE_PRIVATE            : registry.jiagouyun.com/middlewares/dataflux-func
+  IMAGE_PUBLIC             : pubrepo.jiagouyun.com/dataflux-func/dataflux-func
   IMAGE_GZIP_FILE          : dataflux-func.tar.gz
   DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
@@ -34,37 +29,21 @@ dev:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile-dataflux .
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
-    - docker push ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-    - docker push ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
+    # 构建/推送多架构版本
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
+      -f Dockerfile-dataflux .
+      --push
+    # 相关文件发送到OSS资源目录
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}-dev/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}-dev/${RUN_DOCKER_STACK_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    # 刷新OSS缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
-    - middleware
-
-# dev_ARM64:
-#   stage: build
-#   only:
-#     - dev
-#   script:
-#     - python echo-image-info.py > image-info.json
-#     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
-#     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
-#     - docker buildx build --platform linux/arm64 -t ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} -f Dockerfile-dataflux-arm64 .
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE_ARM64}:${CI_COMMIT_REF_NAME}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC_ARM64}:${CI_COMMIT_REF_NAME}
-#     - docker push ${IMAGE_PRIVATE_ARM64}:${CI_COMMIT_REF_NAME}
-#     - docker push ${IMAGE_PUBLIC_ARM64}:${CI_COMMIT_REF_NAME}
-#     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}-dev/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}-dev/${RUN_DOCKER_STACK_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - pip install -r tools/requirements.txt
-#     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#   tags:
-#     - middleware
+    - cloudcare-multiarch
 
 # 正式发布
 #   版本号自动拆分推送为 "x", "x.y", "x.y.z", "latest"
@@ -76,77 +55,55 @@ singleton:
   script:
     - python echo-image-info.py > image-info.json
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
+    # 计算版本号
     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
     - V_MAJOR=${V_PARTS[0]}
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile-singleton .
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:latest
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${V_MAJOR_MINOR_PATCH}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:latest
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
-    - docker push ${IMAGE_PRIVATE}:latest
-    - docker push ${IMAGE_PRIVATE}:${V_MAJOR}
-    - docker push ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
-    - docker push ${IMAGE_PRIVATE}:${V_MAJOR_MINOR_PATCH}
-    - docker push ${IMAGE_PUBLIC}:latest
-    - docker push ${IMAGE_PUBLIC}:${V_MAJOR}
-    - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
-    - docker push ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    # 构建/推送多架构版本
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t ${IMAGE_PRIVATE}:latest
+      -t ${IMAGE_PRIVATE}:${V_MAJOR}
+      -t ${IMAGE_PRIVATE}:${V_MAJOR_MINOR}
+      -t ${IMAGE_PRIVATE}:${V_MAJOR_MINOR_PATCH}
+      -t ${IMAGE_PUBLIC}:latest
+      -t ${IMAGE_PUBLIC}:${V_MAJOR}
+      -t ${IMAGE_PUBLIC}:${V_MAJOR_MINOR}
+      -t ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
+      -f Dockerfile-singleton .
+      --push
+    # 单独构建x64版本用于导出
+    - docker buildx build
+      --platform linux/amd64
+      -t ${IMAGE_PUBLIC}:latest
+      -f Dockerfile-singleton .
+    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}-x64
+    # 单独构建arm64版本用于导出，并推送到公共库
+    - docker buildx build
+      --platform linux/arm64
+      -t ${IMAGE_PUBLIC}-arm64:latest
+      -t ${IMAGE_PUBLIC}-arm64:${V_MAJOR}
+      -t ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR}
+      -t ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR_PATCH}
+      -f Dockerfile-singleton .
+    - docker push ${IMAGE_PUBLIC}-arm64:latest
+    - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR}
+    - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR}
+    - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR_PATCH}
+    # 相关文件发送到OSS资源目录
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/x64/${IMAGE_GZIP_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    # 相关文件发送到OSS携带版目录
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}-x64       ${OSS_PORTABLE_BASE_URL}/x64/${IMAGE_GZIP_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}-arm64     ${OSS_PORTABLE_BASE_URL}/arm64/${IMAGE_GZIP_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}              ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    # 刷新OSS缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
-    - middleware
-
-# singleton_ARM64:
-#   stage: build
-#   only:
-#     - /^\d+\.\d+\.\d+$/      # 如：1.2.3
-#     - /^\d+\.\d+\.\d+rc\d+$/ # 如：1.2.3rc4
-#   script:
-#     - python echo-image-info.py > image-info.json
-#     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
-#     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
-#     - V_MAJOR=${V_PARTS[0]}
-#     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
-#     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
-#     - docker buildx build --platform linux/arm64 -t ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} -f Dockerfile-singleton-arm64 .
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE_ARM64}:latest
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE_ARM64}:${V_MAJOR}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE_ARM64}:${V_MAJOR_MINOR}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE_ARM64}:${V_MAJOR_MINOR_PATCH}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC_ARM64}:latest
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC_ARM64}:${V_MAJOR}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC_ARM64}:${V_MAJOR_MINOR}
-#     - docker tag ${IMAGE_ARM64}:${CI_COMMIT_REF_NAME} ${IMAGE_PUBLIC_ARM64}:${V_MAJOR_MINOR_PATCH}
-#     - docker push ${IMAGE_PRIVATE_ARM64}:latest
-#     - docker push ${IMAGE_PRIVATE_ARM64}:${V_MAJOR}
-#     - docker push ${IMAGE_PRIVATE_ARM64}:${V_MAJOR_MINOR}
-#     - docker push ${IMAGE_PRIVATE_ARM64}:${V_MAJOR_MINOR_PATCH}
-#     - docker push ${IMAGE_PUBLIC_ARM64}:latest
-#     - docker push ${IMAGE_PUBLIC_ARM64}:${V_MAJOR}
-#     - docker push ${IMAGE_PUBLIC_ARM64}:${V_MAJOR_MINOR}
-#     - docker push ${IMAGE_PUBLIC_ARM64}:${V_MAJOR_MINOR_PATCH}
-#     - docker save ${IMAGE_PUBLIC_ARM64}:latest | gzip > ${IMAGE_GZIP_FILE}
-#     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - tools/ossutil64 cp ${IMAGE_GZIP_FILE}           ${OSS_PORTABLE_BASE_URL}/arm64/${IMAGE_GZIP_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - tools/ossutil64 cp ${VERSION_FILE}              ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#     - pip install -r tools/requirements.txt
-#     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-#   tags:
-#     - middleware
+    - cloudcare-multiarch
 
 # DataFlux同捆发布
 #   主要用于驻云SaaS版预发/生产环境
@@ -159,11 +116,14 @@ dataflux:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
-    - docker build -t ${IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile-dataflux .
-    - docker tag ${IMAGE}:${CI_COMMIT_REF_NAME} ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-    - docker push ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
+    # 构建/推送多架构版本
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
+      -f Dockerfile-dataflux .
+      --push
   tags:
-    - middleware
+    - cloudcare-multiarch
 
 # PaaS 预发
 datafluxPaaS_prev:
@@ -174,15 +134,19 @@ datafluxPaaS_prev:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
     - REPO=dataflux-prev/$VDIR
     - TAG=${PROJECT}-${V[4]}
-    - docker build -t $REPO:$TAG -f Dockerfile-dataflux .
-    - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
-    - docker push pubrepo.jiagouyun.com/$REPO:$TAG
+    # 构建/推送多架构版本
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t pubrepo.jiagouyun.com/$REPO:$TAG
+      -f Dockerfile-dataflux .
+      --push
   tags:
-    - middleware
+    - cloudcare-multiarch
 
 # PaaS 生产
 datafluxPaaS_prod:
@@ -193,12 +157,16 @@ datafluxPaaS_prod:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}
     - REPO=dataflux/$VDIR
     - TAG=${PROJECT}-${V[3]}-${V[4]}
-    - docker build -t $REPO:$TAG -f Dockerfile-dataflux .
-    - docker tag $REPO:$TAG pubrepo.jiagouyun.com/$REPO:$TAG
-    - docker push pubrepo.jiagouyun.com/$REPO:$TAG
+    # 构建/推送多架构版本
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t pubrepo.jiagouyun.com/$REPO:$TAG
+      -f Dockerfile-dataflux .
+      --push
   tags:
-    - middleware
+    - cloudcare-multiarch

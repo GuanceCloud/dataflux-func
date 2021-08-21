@@ -2,6 +2,10 @@ FROM registry.jiagouyun.com/middlewares/dataflux-func:base-dataflux
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
+ARG TARGETARCH
+
+ENV TARGETARCH ${TARGETARCH}
+
 # Build project
 WORKDIR /usr/src/app
 COPY . .
@@ -10,6 +14,9 @@ RUN python echo-image-info.py && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
     cd /usr/src/app/client && \
         npm run build
+
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Run Web server
 # EXPOSE 8088
