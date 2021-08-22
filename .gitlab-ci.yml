@@ -24,7 +24,7 @@ variables:
 dev:
   stage: build
   only:
-    - dev
+    - none
   script:
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
@@ -78,7 +78,7 @@ singleton:
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}:latest
       -f Dockerfile-singleton .
-      -o type=docker,type=registry
+      -o type=docker
     - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}-x64
     # 单独构建arm64版本用于导出，并推送到公共库
     - docker buildx build
