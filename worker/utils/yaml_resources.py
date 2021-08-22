@@ -45,7 +45,10 @@ def load_config(config_file_path, print_detail=False):
     # Collect config field type map
     config_type_map = {}
     for k, v in config_obj.items():
-        if isinstance(v, int):
+        if v is True or v is False:
+            config_type_map[k] = 'boolean'
+
+        elif isinstance(v, int):
             config_type_map[k] = 'integer'
 
         elif isinstance(v, float):
@@ -60,9 +63,6 @@ def load_config(config_file_path, print_detail=False):
 
             else:
                 config_type_map[k] = 'string'
-
-        elif isinstance(v, bool):
-            config_type_map[k] = 'boolean'
 
     user_config_path = os.environ.get('CONFIG_FILE_PATH') or config_obj.get('CONFIG_FILE_PATH')
     if not user_config_path:
@@ -118,7 +118,10 @@ def load_config(config_file_path, print_detail=False):
         if v is None:
             continue
 
-        if type_ == 'integer':
+        if type_ == 'boolean':
+            config_obj[k] = toolkit.to_boolean(v)
+
+        elif type_ == 'integer':
             config_obj[k] = int(v)
 
         elif type_ == 'float':
@@ -145,9 +148,6 @@ def load_config(config_file_path, print_detail=False):
 
         elif type_ == 'string':
             config_obj[k] = str(v)
-
-        elif type_ == 'boolean':
-            config_obj[k] = toolkit.to_boolean(v)
 
     if CONFIG_KEY in FILE_CACHE:
         FILE_CACHE[CONFIG_KEY].update(config_obj)
