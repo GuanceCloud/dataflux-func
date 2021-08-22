@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 About            : 关于
 Version          : 版本号
+Platform         : 平台
 Release date     : 发布日期
 'Loading...'     : '加载中...'
 System report    : 系统报告
@@ -39,6 +40,10 @@ Log and Cache cleared: 日志与缓存表已清空
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.version"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Platform')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.platform"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Release date')">
@@ -115,12 +120,14 @@ export default {
                         : '-';
         this.about = {
           version    : apiRes.data.CI_COMMIT_REF_NAME,
+          platform   : apiRes.data.PLATFORM,
           releaseDate: releaseDate,
         };
 
       } else {
         this.about = {
           version    : this.NO_INFO_TEXT,
+          platform   : this.NO_INFO_TEXT,
           releaseDate: this.NO_INFO_TEXT,
         }
       }

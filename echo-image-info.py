@@ -3,6 +3,7 @@
 import time
 import json
 import os
+import platform
 
 EXTRACT_CI_ENVS = [
     'CI_COMMIT_REF_NAME',
@@ -14,6 +15,7 @@ EXTRACT_CI_ENVS = [
 def main():
     image_info = {
         'CREATE_TIMESTAMP': int(time.time()),
+        'PLATFORM'        : platform.machine(),
     }
 
     for k, v in os.environ.items():
