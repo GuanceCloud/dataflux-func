@@ -1,5 +1,2 @@
--i http://mirrors.aliyun.com/pypi/simple/
-
 simplejson==3.17.2
-
 requests==2.25.1
