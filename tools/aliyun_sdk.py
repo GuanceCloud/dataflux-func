@@ -158,13 +158,7 @@ PRODUCT_API_CONFIG_MAP = {
 }
 
 def percent_encode(s):
-    # I fell sick...
-    if isinstance(s, unicode):
-        s = s.encode('utf8')
-    else:
-        s = str(s).decode('utf8').encode('utf8')
-
-    encoded = urllib.quote(s, '')
+    encoded = urllib.quote(six.ensure_str(s), '')
     encoded = encoded.replace('+', '%20')
     encoded = encoded.replace('*', '%2A')
     encoded = encoded.replace('%7E', '~')
