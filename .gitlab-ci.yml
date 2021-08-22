@@ -91,6 +91,7 @@ singleton:
     - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR}
     - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR}
     - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR_PATCH}
+    - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}-arm64
     # 相关文件发送到OSS资源目录
     - tools/ossutil64 cp ${DOCKER_STACK_EXAMPLE_FILE} ${OSS_RESOURCE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${RUN_DOCKER_STACK_FILE}     ${OSS_RESOURCE_BASE_URL}/${RUN_DOCKER_STACK_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
