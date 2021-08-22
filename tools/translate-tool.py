@@ -13,65 +13,7 @@ import types
 
 import yaml
 
-# -----------------------------------------------
-# Python2 ~ Python3 Compatibility Code From `six`
-# -----------------------------------------------
-#
-# Copyright (c) 2010-2019 Benjamin Peterson
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-PY34 = sys.version_info[0:2] >= (3, 4)
-
-if PY3:
-    string_types = str,
-    integer_types = int,
-    class_types = type,
-    text_type = str
-    binary_type = bytes
-else:
-    string_types = basestring,
-    integer_types = (int, long)
-    class_types = (type, types.ClassType)
-    text_type = unicode
-    binary_type = str
-
-def ensure_binary(s, encoding='utf-8', errors='strict'):
-    if isinstance(s, text_type):
-        return s.encode(encoding, errors)
-    elif isinstance(s, binary_type):
-        return s
-    else:
-        raise TypeError("not expecting type '%s'" % type(s))
-
-def ensure_str(s, encoding='utf-8', errors='strict'):
-    if not isinstance(s, (text_type, binary_type)):
-        raise TypeError("not expecting type '%s'" % type(s))
-    if PY2 and isinstance(s, text_type):
-        s = s.encode(encoding, errors)
-    elif PY3 and isinstance(s, binary_type):
-        s = s.decode(encoding, errors)
-    return s
-
-if PY2:
+if six.PY2:
     FILE_OPEN_KWARGS = {}
 else:
     FILE_OPEN_KWARGS = dict(encoding='utf8')
@@ -130,7 +72,7 @@ def get_extra_translate_keys():
             textMap[k] = None
 
     print('\n[Extra Translate Keys]')
-    print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '')) for k, v in textMap.items()]))
+    print('  ' + '\n  '.join(['{} -> {}'.format(six.ensure_str(k or ''), six.ensure_str(v or '')) for k, v in textMap.items()]))
     return textMap
 
 def get_privilege_keys():
@@ -159,7 +101,7 @@ def get_privilege_keys():
                 textMap[info.get('desc')] = None
 
     print('\n[Privilege Keys]')
-    print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '')) for k, v in textMap.items()]))
+    print('  ' + '\n  '.join(['{} -> {}'.format(six.ensure_str(k or ''), six.ensure_str(v or '')) for k, v in textMap.items()]))
     return textMap
 
 def get_all_template_paths():
@@ -196,10 +138,10 @@ def get_text_map(template_path):
             for m in m_iter:
                 key = m.group('keyInSingle') or m.group('keyInDouble')
                 if key:
-                    textMap[ensure_str(key)] = None
+                    textMap[six.ensure_str(key)] = None
 
     print('\n[All Text Map] - ' + template_path)
-    print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '')) for k, v in textMap.items()]))
+    print('  ' + '\n  '.join(['{} -> {}'.format(six.ensure_str(k or ''), six.ensure_str(v or '')) for k, v in textMap.items()]))
     return textMap
 
 def get_all_translate_file_paths():
@@ -229,7 +171,7 @@ def load_translate_file(translate_file_path):
         translate_map = yaml.safe_load(file_data) or {}
 
     print('\n[Translate Map] - ' + translate_file_path)
-    print('  ' + '\n  '.join(['{} -> {}'.format(ensure_str(k or ''), ensure_str(v or '') or '\033[1;31;40m' + str(v) + '\033[0m') for k, v in translate_map.items()]))
+    print('  ' + '\n  '.join(['{} -> {}'.format(six.ensure_str(k or ''), six.ensure_str(v or '') or '\033[1;31;40m' + str(v) + '\033[0m') for k, v in translate_map.items()]))
     return translate_map
 
 def save_translate_file(translate_file_path, translate_map):
@@ -250,7 +192,7 @@ def save_translate_file(translate_file_path, translate_map):
 
             key_length = get_print_length(key)
             white_space = ' ' * (KEY_PADDING - key_length)
-            _f.writelines(ensure_str('{}: {}\n'.format(ensure_str(key) + ensure_str(white_space), ensure_str(value))))
+            _f.writelines(six.ensure_str('{}: {}\n'.format(six.ensure_str(key) + six.ensure_str(white_space), six.ensure_str(value))))
 
 def main():
     all_texts = {}
@@ -267,7 +209,7 @@ def main():
         output.update(translate_map);
         save_translate_file(p, output)
 
-        print('>>>' + ensure_str(p))
+        print('>>>' + six.ensure_str(p))
         print('OK!')
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ import time
 import urllib
 import uuid
 
+import six
 import requests
 
 PRODUCT_API_CONFIG_MAP = {
@@ -156,12 +157,6 @@ PRODUCT_API_CONFIG_MAP = {
     },
 }
 
-def ensure_str(s):
-    if isinstance(s, unicode):
-        return s.encode('utf8')
-    else:
-        return str(s).decode('utf8').encode('utf8')
-
 def percent_encode(s):
     # I fell sick...
     if isinstance(s, unicode):
@@ -181,8 +176,8 @@ class AliyunClient(object):
     Aliyun common HTTP API
     '''
     def __init__(self, access_key_id=None, access_key_secret=None, *args, **kwargs):
-        self.access_key_id     = ensure_str(access_key_id)
-        self.access_key_secret = ensure_str(access_key_secret)
+        self.access_key_id     = six.ensure_str(access_key_id)
+        self.access_key_secret = six.ensure_str(access_key_secret)
 
     def sign(self, params_to_sign):
         canonicalized_query_string = ''
