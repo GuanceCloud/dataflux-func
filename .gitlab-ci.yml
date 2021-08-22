@@ -78,6 +78,7 @@ singleton:
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}:latest
       -f Dockerfile-singleton .
+      --load
     - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}-x64
     # 单独构建arm64版本用于导出，并推送到公共库
     - docker buildx build
@@ -87,6 +88,7 @@ singleton:
       -t ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR}
       -t ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR_PATCH}
       -f Dockerfile-singleton .
+      --load
     - docker push ${IMAGE_PUBLIC}-arm64:latest
     - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR}
     - docker push ${IMAGE_PUBLIC}-arm64:${V_MAJOR_MINOR}
