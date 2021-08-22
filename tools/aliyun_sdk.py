@@ -4,8 +4,8 @@ import base64
 import hashlib
 import hmac
 import time
-import urllib
 import uuid
+from urllib.parse import quote
 
 import six
 import requests
@@ -158,7 +158,7 @@ PRODUCT_API_CONFIG_MAP = {
 }
 
 def percent_encode(s):
-    encoded = urllib.quote(six.ensure_str(s), '')
+    encoded = quote(six.ensure_str(s), '')
     encoded = encoded.replace('+', '%20')
     encoded = encoded.replace('*', '%2A')
     encoded = encoded.replace('%7E', '~')
@@ -184,7 +184,10 @@ class AliyunClient(object):
 
         string_to_sign = 'POST&%2F&' + percent_encode(canonicalized_query_string)
 
-        h = hmac.new(self.access_key_secret + "&", string_to_sign, hashlib.sha1)
+        h = hmac.new(
+                six.ensure_binary(self.access_key_secret + "&"),
+                six.ensure_binary(string_to_sign),
+                hashlib.sha1)
         signature = base64.encodestring(h.digest()).strip()
 
         return signature
