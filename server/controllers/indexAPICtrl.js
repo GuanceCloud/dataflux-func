@@ -20,7 +20,9 @@ var userMod = require('../models/userMod');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
-var IMAGE_INFO        = require('../../image-info.json');
+var IMAGE_INFO = require('../../image-info.json');
+IMAGE_INFO.PLATFORM = process.arch;
+
 var WORKER_IMAGE_INFO = null;
 
 /* Handlers */
