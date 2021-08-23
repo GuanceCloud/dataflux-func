@@ -308,7 +308,7 @@ exports.afterAppCreated = function(app, server) {
         if (toolkit.isNothing(funcPackages)) return asyncCallback();
 
         // 依次导入
-        var watClient = new WATClient({host: 'localhost', port: 8088});
+        var watClient = new WATClient({ host: 'localhost', port: CONFIG.WEB_PORT });
 
         // 本地临时认证令牌
         app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
