@@ -26,6 +26,7 @@ dev:
   only:
     - dev
   script:
+    - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
@@ -53,6 +54,7 @@ singleton:
     - /^\d+\.\d+\.\d+$/      # 如：1.2.3
     - /^\d+\.\d+\.\d+rc\d+$/ # 如：1.2.3rc4
   script:
+    - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 计算版本号
@@ -109,6 +111,7 @@ dataflux:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
     - /^release_\d+_\d+$/ # 如：release_20190101_01
   script:
+    - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
@@ -127,6 +130,7 @@ datafluxPaaS_prev:
   only:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
+    - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
@@ -150,6 +154,7 @@ datafluxPaaS_prod:
   only:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
+    - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
     - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
     - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
