@@ -71,7 +71,8 @@ COPY misc/openssl.cnf /etc/ssl/openssl.cnf
 # Build project
 WORKDIR /usr/src/app
 COPY . .
-RUN ln -s /usr/src/base/node_modules ./node_modules && \
+RUN python echo-image-info.py > image-info.json && \
+    ln -s /usr/src/base/node_modules ./node_modules && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
     cd /usr/src/app/client && \
         npm run build

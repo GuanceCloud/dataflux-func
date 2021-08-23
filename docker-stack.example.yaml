@@ -28,8 +28,8 @@ services:
     environment:
       - "MYSQL_ROOT_PASSWORD=<MYSQL_PASSWORD>"
       - "MYSQL_DATABASE=dataflux_func"
-    # command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=off --table-open-cache=400
+    # command: --innodb-large-prefix=on --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: --innodb-large-prefix=on --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=off --table-open-cache=400
   # MYSQL END
 
   # REDIS START
