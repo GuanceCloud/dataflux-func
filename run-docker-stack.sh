@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+META_PATH=/etc/dataflux-func
+if [ -f ${META_PATH} ]; then
+    source ${META_PATH}
+fi
+
 # 本脚本参考了docker官方文档，以及以下文章
 #   https://www.cnblogs.com/helf/p/12889955.html
 
@@ -37,37 +42,45 @@ OPT_IMAGE=DEFAULT
 
 while [ $# -ge 1 ]; do
     case $1 in
-        '--mini' )
+        --mini )
             OPT_MINI=TRUE
             shift
             ;;
 
-        '--port' )
+        --port )
             OPT_PORT=$2
             shift 2
             ;;
 
-        '--install-dir' )
+        --install-dir=* )
+            OPT_INSTALL_DIR="${1#*=}"
+            shift
+            ;;
+        --install-dir )
             OPT_INSTALL_DIR=$2
             shift 2
             ;;
 
-        '--no-mysql' )
+        --no-mysql )
             OPT_NO_MYSQL=TRUE
             shift
             ;;
 
-        '--no-redis' )
+        --no-redis )
             OPT_NO_REDIS=TRUE
             shift
             ;;
 
-        '--dev' )
+        --dev )
             OPT_DEV=TRUE
             shift
             ;;
 
-        '--image' )
+        --image=* )
+            OPT_IMAGE="${1#*=}"
+            shift
+            ;;
+        --image )
             OPT_IMAGE=$2
             shift 2
             ;;
@@ -124,11 +137,17 @@ if [ ${OPT_PORT} != "DEFAULT" ]; then
     _PORT=${OPT_PORT}
 fi
 
-_INSTALL_DIR=/usr/local
+_INSTALL_DIR=/usr/local/${__PROJECT_NAME}
 if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
-    _INSTALL_DIR=${OPT_INSTALL_DIR}
+    # 指定安装位置
+    _INSTALL_DIR=${OPT_INSTALL_DIR}/${__PROJECT_NAME}
+else
+    # 默认安装位置，并优先使用上次安装位置
+    if [ ${INSTALLED_DIR} ]; then
+        log "Found previous install directory: ${INSTALLED_DIR}"
+        _INSTALL_DIR=${INSTALLED_DIR}
+    fi
 fi
-_INSTALL_DIR=${_INSTALL_DIR}/${__PROJECT_NAME}
 
 if [ ${OPT_IMAGE} != "DEFAULT" ]; then
     DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}
@@ -138,6 +157,19 @@ log "Project name: ${__PROJECT_NAME}"
 log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Image       : ${DATAFLUX_FUNC_IMAGE}"
+
+
+# 安装前根据Meta检查
+if [ ${INSTALLED_DIR} -a ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
+    log ""
+    log "You are reinstalling/upgrading DataFlux Func into a different directory by mistake."
+    log "  Previous (from ${META_PATH}):"
+    log "    -> ${INSTALLED_DIR}"
+    log "  Current:"
+    log "    -> ${_INSTALL_DIR} "
+    log "When you are reinstalling/upgrading DataFlux Func, the --install-dir option is not needed."
+    exit 1
+fi
 
 # 关闭之前的Stack
 stopPrevStack ${__PROJECT_NAME}
@@ -313,3 +345,8 @@ log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 
 blankLine
 log "Now open http://<IP or Hostname>:${_PORT}/ and have fun!"
+
+# 写入Meta信息
+if [ ! -f ${META_PATH} ]; then
+    echo "INSTALLED_DIR=${_INSTALL_DIR}" > ${META_PATH}
+fi
