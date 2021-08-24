@@ -25,21 +25,18 @@ function log {
 }
 
 # 处理选项
-OPT_DEV=FALSE
 OPT_MINI=FALSE
 OPT_PORT=DEFAULT
 OPT_INSTALL_DIR=DEFAULT
-OPT_IMAGE=DEFAULT
 OPT_NO_MYSQL=FALSE
 OPT_NO_REDIS=FALSE
 
+# 处理选项（在线安装专用）
+OPT_DEV=FALSE
+OPT_IMAGE=DEFAULT
+
 while [ $# -ge 1 ]; do
     case $1 in
-        '--dev' )
-            OPT_DEV=TRUE
-            shift
-            ;;
-
         '--mini' )
             OPT_MINI=TRUE
             shift
@@ -55,11 +52,6 @@ while [ $# -ge 1 ]; do
             shift 2
             ;;
 
-        '--image' )
-            OPT_IMAGE=$2
-            shift 2
-            ;;
-
         '--no-mysql' )
             OPT_NO_MYSQL=TRUE
             shift
@@ -68,6 +60,16 @@ while [ $# -ge 1 ]; do
         '--no-redis' )
             OPT_NO_REDIS=TRUE
             shift
+            ;;
+
+        '--dev' )
+            OPT_DEV=TRUE
+            shift
+            ;;
+
+        '--image' )
+            OPT_IMAGE=$2
+            shift 2
             ;;
 
         * )
@@ -85,18 +87,36 @@ __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 
-__MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
-__REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-
 __PROJECT_NAME=dataflux-func
+
 __RESOURCE_BASE_URL=https://static.dataflux.cn/dataflux-func/resource
-_DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+
+MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
+REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
+DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
+
+# 根据当前架构自动选择镜像
+case `uname -m` in
+    'x86_64' )
+        MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
+        REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
+        ;;
+
+    'aarch64' )
+        MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mariadb-arm64:10.4.21
+        REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis-arm64:5.0.7
+        ;;
+
+    * )
+        shift
+        ;;
+esac
 
 # 启用dev 部署时，项目名/资源等改为dev 专用版
 if [ ${OPT_DEV} = "TRUE" ]; then
     __PROJECT_NAME=dataflux-func-dev
     __RESOURCE_BASE_URL=https://static.dataflux.cn/dataflux-func/resource-dev
-    _DATAFLUX_FUNC_IMAGE=`echo ${_DATAFLUX_FUNC_IMAGE} | sed "s#:latest#:dev#g"`
+    DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
 fi
 
 _PORT=8088
@@ -111,32 +131,32 @@ fi
 _INSTALL_DIR=${_INSTALL_DIR}/${__PROJECT_NAME}
 
 if [ ${OPT_IMAGE} != "DEFAULT" ]; then
-    _DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}
+    DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}
 fi
 
 log "Project name: ${__PROJECT_NAME}"
 log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
-log "Image       : ${_DATAFLUX_FUNC_IMAGE}"
+log "Image       : ${DATAFLUX_FUNC_IMAGE}"
 
 # 关闭之前的Stack
 stopPrevStack ${__PROJECT_NAME}
 
 # 拉取必要镜像
 blankLine
-log "Pulling image: ${_DATAFLUX_FUNC_IMAGE}"
-docker pull ${_DATAFLUX_FUNC_IMAGE}
+log "Pulling image: ${DATAFLUX_FUNC_IMAGE}"
+docker pull ${DATAFLUX_FUNC_IMAGE}
 
 # 未关闭MySQL 时，需要拉取镜像
 if [ ${OPT_NO_MYSQL} = "FALSE" ]; then
-    log "Pulling image: ${__MYSQL_IMAGE}"
-    docker pull ${__MYSQL_IMAGE}
+    log "Pulling image: ${MYSQL_IMAGE}"
+    docker pull ${MYSQL_IMAGE}
 fi
 
 # 未关闭Redis 时，需要拉取镜像
 if [ ${OPT_NO_REDIS} = "FALSE" ]; then
-    log "Pulling image: ${__REDIS_IMAGE}"
-    docker pull ${__REDIS_IMAGE}
+    log "Pulling image: ${REDIS_IMAGE}"
+    docker pull ${REDIS_IMAGE}
 fi
 
 # 创建运行环境目录并前往
@@ -212,9 +232,9 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 
     sed -i \
         -e "s#<MYSQL_PASSWORD>#${__MYSQL_PASSWORD}#g" \
-        -e "s#<MYSQL_IMAGE>#${__MYSQL_IMAGE}#g" \
-        -e "s#<REDIS_IMAGE>#${__REDIS_IMAGE}#g" \
-        -e "s#<DATAFLUX_FUNC_IMAGE>#${_DATAFLUX_FUNC_IMAGE}#g" \
+        -e "s#<MYSQL_IMAGE>#${MYSQL_IMAGE}#g" \
+        -e "s#<REDIS_IMAGE>#${REDIS_IMAGE}#g" \
+        -e "s#<DATAFLUX_FUNC_IMAGE>#${DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<PORT>#${_PORT}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
@@ -268,7 +288,7 @@ if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
     log "Notice: DataFlux Func is deployed using a custom install dir: ${_INSTALL_DIR}"
 fi
 if [ ${OPT_IMAGE} != "DEFAULT" ]; then
-    log "Notice: DataFlux Func is deployed using a custom image: ${_DATAFLUX_FUNC_IMAGE}"
+    log "Notice: DataFlux Func is deployed using a custom image: ${DATAFLUX_FUNC_IMAGE}"
 fi
 if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
     log "Notice: Builtin MySQL is NOT deployed, please specify your MySQL server configs in setup page."
