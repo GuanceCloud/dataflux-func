@@ -15,7 +15,7 @@ Installing        : 正在安装
 'Package installed: {pkg}': 包已安装：{pkg}
 {Any container ID}: 任意一个容器ID
 
-You can also install the package by following command: 您也可以使用也以下令来安装：'You can also 命令来安装
+You can also install the package by following command: 您也可以使用以下命令来安装
 Previous installing may still running                : 之前的安装似乎仍然在运行
 Are you sure you want to install the package now?    : 是否确定现在就安装？
 
