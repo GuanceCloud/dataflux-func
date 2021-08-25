@@ -23,6 +23,7 @@ Douban mirror             : 豆瓣镜像
 Tsinghua University mirror: 清华大学镜像
 USTC mirror               : 中国科学技术大学镜像
 Alibaba Cloud mirror      : 阿里云镜像
+Pypi Official             : Pypi官方原版
 </i18n>
 
 <template>
@@ -172,7 +173,7 @@ export default {
           value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
         },
         {
-          name: this.$t('Official'),
+          name: this.$t('Pypi Official'),
           value: '',
         },
       ];
