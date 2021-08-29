@@ -12,9 +12,12 @@ Position of Simple Debug Panel                                      : 简易调�
 Position of Quick View Panel                                        : 快速查看面板当前位置
 Selected Func, Highlighted line or error line                       : 编辑器当前选择的函数、高亮已选择函数所在行、高亮错误行
 Position of scroll in Management                                    : 管理界面列表当前滚动所处位置
-Config loaded from server                                           : 从服务器加载的系统配置
-Page will refresh after clearing this content                       : 清除本项目会刷新页面
-Clear                                                               : 清除
+Notice messages or dialogs                                          : 提示信息及对话框
+
+Config loaded from server                    : 从服务器加载的系统配置
+Page will refresh after clearing this content: 清除本项目会刷新页面
+
+Clear: 清除
 
 Cache is cleared                                          : 缓存已清除
 Page will be refreshed, and config will reload from server: 即将刷新页面，并从服务器重新加载系统配置
@@ -61,6 +64,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                     <br/>&#12288;{{ $t('Position of Quick View Panel') }}
                     <br/>&#12288;{{ $t('Selected Func, Highlighted line or error line') }}
                     <br/>&#12288;{{ $t('Position of scroll in Management') }}
+                    <br/>&#12288;{{ $t('Notice messages or dialogs') }}
                   </div>
                 </el-form-item>
 
@@ -110,6 +114,7 @@ export default {
         this.$store.commit('updateEditor_splitPanePercent', null);
         this.$store.commit('updateAuthLinkList_scrollY', null);
         this.$store.commit('updateCrontabConfigList_scrollY', null);
+        this.$store.commit('resetMonkeyPatchNotice');
       }
 
       let _message = this.$t('Cache is cleared');

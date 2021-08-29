@@ -137,8 +137,8 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-show="conflictStatus">
-                  <el-link v-if="conflictStatus === 'otherTab'" type="danger" :underline="false">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</el-link>
-                  <el-link v-else-if="conflictStatus === 'otherClient'" type="danger" :underline="false">{{ $t('Script is under editing mode in other client, please wait...') }}</el-link>
+                  <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</span>
+                  <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing mode in other client, please wait...') }}</span>
                 </el-form-item>
 
                 <el-form-item>
@@ -1370,14 +1370,12 @@ export default {
 
         this.codeMirror.on('change', autoSaveFuncCreator(this.scriptId));
       }
-    });
 
-    setTimeout(() => {
       // 猴子补丁提示
       if (this.$store.getters.showMonkeyPatchNotice) {
         this.showMonkeyPatchNotice = true;
       }
-    }, 1000);
+    });
   },
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮

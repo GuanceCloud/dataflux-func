@@ -80,6 +80,7 @@ const MUTATION_CONFIG = {
   updateShortcutAction                           : { persist: false },
   dismissMonkeyPatchNotice                       : { persist: false },
   disableMonkeyPatchNotice                       : { persist: true  },
+  resetMonkeyPatchNotice                         : { persist: true  },
 
   syncState: { persist: false },
 }
@@ -463,6 +464,10 @@ export default new Vuex.Store({
     disableMonkeyPatchNotice(state) {
       state.isMonkeyPatchNoticeDisabled = true;
     },
+    resetMonkeyPatchNotice(state) {
+      state.isMonkeyPatchNoticeDisabled  = false;
+      state.isMonkeyPatchNoticeDismissed = false;
+    },
 
     syncState(state, nextState) {
       if (!nextState) return;
@@ -512,7 +517,11 @@ export default new Vuex.Store({
         return persistState;
       },
       filter: (mutation) => {
-        return MUTATION_CONFIG[mutation.type].persist || false
+        if (MUTATION_CONFIG[mutation.type]) {
+          return MUTATION_CONFIG[mutation.type].persist || false;
+        } else {
+          return false;
+        }
       },
     }),
   ],

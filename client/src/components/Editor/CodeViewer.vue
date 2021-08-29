@@ -45,8 +45,8 @@ Saved Draft Code: 已保存的草稿代码
         <div class="code-viewer-action-right">
           <el-form :inline="true">
             <el-form-item v-show="conflictStatus">
-              <el-link v-if="conflictStatus === 'otherTab'" type="danger" :underline="false">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</el-link>
-              <el-link v-else-if="conflictStatus === 'otherClient'" type="danger" :underline="false">{{ $t('Script is under editing mode in other client, please wait...') }}</el-link>
+              <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</span>
+              <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing mode in other client, please wait...') }}</span>
               &#12288;
               &#12288;
             </el-form-item>
