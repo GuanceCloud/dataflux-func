@@ -1,14 +1,23 @@
+<i18n locale="en" lang="yaml">
+randomIDString: fsvc-{Random ID}
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
+randomIDString: fsvc-{随机ID}
+
 Add File Service  : 添加文件服务
 Setup File Service: 配置文件服务
 
-Use custom ID               : 使用自定义ID
-ID is used in the access URL: ID关系到访问时的URL
-Root                        : 根目录
-Note                        : 备注
+Customize ID: 定制ID
+Root        : 根目录
+Note        : 备注
+
+URL Preview: URL预览
+ID is used in the access URL: 此ID用于生成访问时的URL
 
 'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
-Please select root              : 请选择根目录
+'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
+Please select root: 请选择根目录
 
 File Service created: 文件服务已创建
 File Service saved  : 文件服务已保存
@@ -31,8 +40,12 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
+                  <span class="text-main float-right">
+                    {{ $t('URL Preview') }}{{ $t(':') }}
+                    <code>{{ `/api/v1/fs/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                  </span>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
@@ -103,7 +116,7 @@ export default {
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}`;
+        this.form.id = `${this.ID_PREFIX}foobar`;
       } else {
         this.form.id = null;
       }
@@ -199,6 +212,9 @@ export default {
             validator: (rule, value, callback) => {
               if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                 return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+              }
+              if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
               }
               return callback();
             },

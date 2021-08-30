@@ -1,25 +1,31 @@
 <i18n locale="en" lang="yaml">
+randomIDString: bat-{Random ID}
+
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+randomIDString: bat-{随机ID}
+
 Add Batch  : 添加批处理
 Setup Batch: 修改批处理
 
-Use custom ID: 使用自定义ID
-Func         : 执行函数
-Arguments    : 参数指定
-Tags         : 标签
-Add Tag      : 添加标签
-Note         : 备注
+Customize ID: 定制ID
+Func        : 执行函数
+Arguments   : 参数指定
+Tags        : 标签
+Add Tag     : 添加标签
+Note        : 备注
 
-ID will be a part of the calling URL: ID关系到调用时的URL
+URL Preview: URL预览
+ID will be a part of the calling URL: 此ID用于生成调用时的URL
 'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
 
 'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select Func: 请选择执行函数
-'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'
 
 Batch created: 批处理已创建
 Batch saved  : 批处理已保存
@@ -45,8 +51,12 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
+                  <span class="text-main float-right">
+                    {{ $t('URL Preview') }}{{ $t(':') }}
+                    <code>{{ `/api/v1/bat/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                  </span>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
@@ -143,7 +153,7 @@ export default {
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}`;
+        this.form.id = `${this.ID_PREFIX}foobar`;
       } else {
         this.form.id = null;
       }
@@ -237,7 +247,7 @@ export default {
       });
     },
     async deleteData() {
-      if (!await this.T.confirm(`是否确认删除此批处理？`)) return;
+      if (!await this.T.confirm(`Are you sure you want to delete the Batch?`)) return;
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
         params: { id: this.$route.params.id },
@@ -354,6 +364,9 @@ export default {
             validator: (rule, value, callback) => {
               if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                 return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
+              }
+              if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
               }
               return callback();
             },

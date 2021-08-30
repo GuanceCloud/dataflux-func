@@ -1,29 +1,35 @@
 <i18n locale="en" lang="yaml">
+randomIDString: auln-{Random ID}
+
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 shortcutDays : '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+randomIDString: auln-{随机ID}
+
 Add Auth Link  : 添加授权链接
 Setup Auth Link: 配置授权链接
 
-Use custom ID: 使用自定义ID
-Func         : 执行函数
-Arguments    : 参数指定
-Tags         : 标签
-Add Tag      : 添加标签
-Show in doc  : 显示于文档
-Expires      : 有效期
-Limiting     : 限流
-Note         : 备注
+Customize ID: 定制ID
+Func        : 执行函数
+Arguments   : 参数指定
+Tags        : 标签
+Add Tag     : 添加标签
+Show in doc : 显示于文档
+Expires     : 有效期
+Limiting    : 限流
+Note        : 备注
 
-ID will be a part of the calling URL: ID关系到调用时的URL
+URL Preview: URL预览
+ID will be a part of the calling URL: 此ID用于生成调用时的URL
 'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
 
 'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select Func: 请选择执行函数
-'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'
 Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
 Date-time cannot earlier than 1970: 日期不能早于1970年
 Date-time cannot later than 2037: 时间不能晚于2037年
@@ -53,8 +59,12 @@ shortcutDays : '{n}天'
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Use custom ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
+                  <span class="text-main float-right">
+                    {{ $t('URL Preview') }}{{ $t(':') }}
+                    <code>{{ `/api/v1/al/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                  </span>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
@@ -183,7 +193,7 @@ export default {
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}`;
+        this.form.id = `${this.ID_PREFIX}foobar`;
       } else {
         this.form.id = null;
       }
@@ -331,7 +341,7 @@ export default {
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
 
       return {
         id: [
@@ -340,6 +350,9 @@ export default {
             validator: (rule, value, callback) => {
               if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                 return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+              }
+              if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
               }
               return callback();
             },

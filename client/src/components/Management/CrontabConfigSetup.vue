@@ -40,7 +40,7 @@ Every 30 minutes : 每30分钟
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
 
 Please select Func: 请选择执行函数
-'Please input arguments, input {} when no argument': '请输入参数，无参数时填写 {}'
+'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'
 Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
 Date-time cannot earlier than 1970: 日期不能早于1970年
 Date-time cannot later than 2037: 时间不能晚于2037年
@@ -456,7 +456,7 @@ export default {
   },
   computed: {
     formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input {} when no argument');
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
 
       return {
         funcId: [
