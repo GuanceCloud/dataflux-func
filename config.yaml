@@ -37,6 +37,9 @@ LOG_LEVEL: WARNING
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/logs/dataflux-func.log'
 
+# 日志时间时区
+LOG_TIMEZONE: 'Asia/Shanghai'
+
 # 数据库自动备份保留数量
 DB_AUTO_BACKUP_LIMIT: 168
 

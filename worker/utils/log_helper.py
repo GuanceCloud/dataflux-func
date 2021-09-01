@@ -6,9 +6,11 @@ import sys
 import time
 import json
 import logging
+import socket
 
 # 3rd-party Modules
 import simplejson
+import arrow
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
@@ -46,6 +48,7 @@ LOG_TEXT_FIELDS = [
     # 'timestamp',
     # 'timestampMs',
     'timestampHumanized',
+    'hostname',
     # 'taskId',
     'taskIdShort',
     'task',
@@ -67,6 +70,7 @@ LOG_TEXT_COLOR_MAP = {
     'timestamp'         : True,
     'timestampMs'       : True,
     'timestampHumanized': True,
+    'hostname'          : True,
     'taskId'            : 'yellow',
     'taskIdShort'       : 'yellow',
     'task'              : 'yellow',
@@ -88,6 +92,7 @@ LOG_JSON_FIELD_MAP = {
     # 'timestamp'         : 'timestamp',
     'timestampMs'       : 'cc_timestamp',
     'timestampHumanized': 'timestamp_humanized',
+    'hostname'          : 'hostname',
     'taskId'            : 'task_id',
     # 'taskIdShort'       : 'task_id_short',
     'task'              : 'task',
@@ -203,8 +208,9 @@ class LogHelper(object):
         else:
             level = level.upper()
 
-        now_ms = int(time.time() * 1000)
-        now    = int(now_ms / 1000)
+        now_ms  = int(time.time() * 1000)
+        now     = int(now_ms / 1000)
+        now_str = arrow.get(now).to(CONFIG['LOG_TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
 
         meta_extra = toolkit.get_attr(self.task.request, 'extra', {})
 
@@ -226,7 +232,8 @@ class LogHelper(object):
                 'levelShort'        : level[0],
                 'timestamp'         : now,
                 'timestampMs'       : now_ms,
-                'timestampHumanized': toolkit.get_datetime_string(now),
+                'timestampHumanized': now_str,
+                'hostname'          : socket.gethostname(),
                 'clientIP'          : meta_extra.get('clientIP'),
                 'clientId'          : meta_extra.get('clientId'),
                 'taskId'            : _task_id,

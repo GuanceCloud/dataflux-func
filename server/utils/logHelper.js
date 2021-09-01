@@ -8,6 +8,7 @@ var path = require('path');
 /* 3rd-party Modules */
 var colors  = require('colors/safe');
 var winston = require('winston');
+var moment  = require('moment-timezone');
 
 /* Project Modules */
 var CONFIG  = require('./yamlResources').get('CONFIG');
@@ -40,6 +41,7 @@ var LOG_TEXT_FIELDS = [
   // 'timestamp',
   // 'timestampMs',
   'timestampHumanized',
+  'hostname',
   // 'traceId',
   // 'requestType',
   'traceIdShort',
@@ -58,6 +60,7 @@ var LOG_TEXT_COLOR_MAP = {
   timestamp         : true,
   timestampMs       : true,
   timestampHumanized: true,
+  hostname          : true,
   traceId           : 'yellow',
   traceIdShort      : 'yellow',
   requestType       : 'green',
@@ -77,6 +80,7 @@ var LOG_JSON_FIELD_MAP = {
   // timestamp         : 'timestamp',
   timestampMs       : 'cc_timestamp',
   timestampHumanized: 'timestamp_humanized',
+  hostname          : 'hostname',
   traceId           : 'trace_id',
   requestType       : 'request_type',
   // traceIdShort      : 'trace_id_short',
@@ -272,8 +276,10 @@ LoggerHelper.prototype._log = function() {
     level = level.toUpperCase();
   }
 
-  var nowMs = Date.now();
-  var now   = parseInt(nowMs / 1000);
+  var nowMs  = Date.now();
+  var now    = parseInt(nowMs / 1000);
+  var nowStr = moment(nowMs).tz(CONFIG.LOG_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+
   var reqTimeMs = this.locals.requestTime
                 ? this.locals.requestTime.getTime()
                 : nowMs;
@@ -290,7 +296,8 @@ LoggerHelper.prototype._log = function() {
       levelShort        : level[0],
       timestamp         : now,
       timestampMs       : nowMs,
-      timestampHumanized: toolkit.getDateTimeString(),
+      timestampHumanized: nowStr,
+      hostname          : os.hostname(),
       requestType       : this.locals.requestType,
       clientIP          : this.req.ip,
       clientId          : this.locals.clientId,
