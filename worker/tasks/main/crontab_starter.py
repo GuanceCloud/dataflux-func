@@ -98,7 +98,7 @@ class CrontabStarterTask(BaseTask):
             FROM `biz_main_func` AS `func`
             WHERE
                     `func`.`integration` = 'autoRun'
-                AND `func`.`extraConfigJSON`->>'$.integrationConfig.crontab' IS NOT NULL
+                AND JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.crontab') IS NOT NULL
             '''
         funcs = self.db.query(sql)
 

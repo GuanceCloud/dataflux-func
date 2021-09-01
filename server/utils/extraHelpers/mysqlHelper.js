@@ -26,7 +26,14 @@ var jsonFieldCompatible = function(field) {
   var _field = _fieldJSONPath[0];
   var _path  = _fieldJSONPath[1];
 
-  var jsonField = toolkit.strf('{0}{1}{2}', _field, arrowExpr, sqlstring.escape(_path));
+  var jsonField = '';
+  if (arrowExpr === '->') {
+    jsonField = toolkit.strf('JSON_EXTRACT({0}, {1})', _field, sqlstring.escape(_path));
+
+  } else if (arrowExpr === '->>') {
+    jsonField = toolkit.strf('JSON_UNQUOTE(JSON_EXTRACT({0}, {1}))', _field, sqlstring.escape(_path));
+  }
+
   return jsonField;
 };
 

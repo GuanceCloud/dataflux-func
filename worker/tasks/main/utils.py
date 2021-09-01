@@ -845,8 +845,8 @@ class AutoRunTask(BaseTask):
                `func`.`id`
             FROM biz_main_func AS `func`
             WHERE
-                  `func`.`integration` = 'autoRun'
-              AND `func`.`extraConfigJSON`->>'$.integrationConfig.onLaunch' = 'true'
+                   `func`.`integration` = 'autoRun'
+                AND JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.onLaunch') = TRUE;
             '''
         return self.db.query(sql)
 
