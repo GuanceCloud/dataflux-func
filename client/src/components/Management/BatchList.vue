@@ -51,7 +51,7 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
           <h1 class="no-data-title" v-else>{{ $t('No Batch has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            使用批处理，可以让执行长耗时函数
+            使用批处理，可以执行长耗时的函数
             <br>可运用于数据清洗、数据提取等应用场景
           </p>
         </div>
