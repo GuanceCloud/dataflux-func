@@ -82,6 +82,10 @@ import app from '@/main';
 
 import C from '@/const'
 
+// 最近网络错误时间
+let RECENT_NETWORK_ERROR_TIMESTAMP    = 0;
+let NETWORK_ERROR_NOTICE_MIN_INTERVAL = 1000;
+
 let handleCircular = function() {
   let cache = [];
   let keyCache = []
@@ -941,15 +945,21 @@ async function _doAxios(axiosOpt) {
       return errResp;
 
     } else {
-      // 通讯失败，服务端没有响应
-      MessageBox.alert(`与服务器通讯失败，请稍后再试
-          <br>如果问题持续出现，请联系管理员，检查服务器状态
-          <br>${err.toString()}`, {
-        showClose: false,
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: '了解',
-        type: 'error',
-      });
+      let now = Date.now();
+      if (now - RECENT_NETWORK_ERROR_TIMESTAMP > NETWORK_ERROR_NOTICE_MIN_INTERVAL) {
+        // 防止多请求反复提示
+        RECENT_NETWORK_ERROR_TIMESTAMP = now;
+
+        // 通讯失败，服务端没有响应
+        MessageBox.alert(`与服务器通讯失败，请稍后再试
+            <br>如果问题持续出现，请联系管理员，检查服务器状态
+            <br>${err.toString()}`, {
+          showClose: false,
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: '了解',
+          type: 'error',
+        });
+      }
 
       throw err;
     }
