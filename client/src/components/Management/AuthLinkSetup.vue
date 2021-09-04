@@ -348,11 +348,13 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (!this.T.isNothing(value) && (value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
-                return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
-              }
-              if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
-                return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
+              if (!this.T.isNothing(value)) {
+                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
+                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+                }
+                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
+                }
               }
               return callback();
             },
