@@ -401,6 +401,9 @@ class DataKit(object):
     def post_line_protocol(self, points, path=None, query=None, headers=None):
         content_type = 'text/plain'
 
+        if not isinstance(points, (list, tuple)):
+            points = [points]
+
         # break obj reference
         points = json_copy(points)
         if query:
