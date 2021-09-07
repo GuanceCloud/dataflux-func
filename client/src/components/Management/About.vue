@@ -188,7 +188,7 @@ export default {
 
             // 忽略超过15分钟无数据的条目
             let latestTimestamp = latestPoint[0];
-            if (Date.now() - latestTimestamp > 15 * 60 * 1000) return;
+            if (Date.now() - latestTimestamp > 15 * 60 * 1000) continue;
 
             let latestValue = latestPoint[1];
             let padding = ' '.repeat(maxNameLength - name.length);
