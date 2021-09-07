@@ -473,6 +473,28 @@
                 </p>
               </el-popover>
 
+              <!-- Redis TLS -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Redis TLS') }}</span>
+                    <code>REDIS_USE_TLS</code>
+                  </div>
+                  <el-select v-model="userConfigs.REDIS_USE_TLS">
+                    <el-option :label="$t('Disable TLS (default)')" value="false"></el-option>
+                    <el-option :label="$t('Enable TLS')" value="true"></el-option>
+                  </el-select>
+                </div>
+                <p>
+                  {{ $t('When connecting to AWS ElastiCache with password, TLS maybe required.') }}
+                  <br><strong>{{ $t('Or just leave default (Disable TLS)') }}</strong>
+                </p>
+              </el-popover>
+
               <!-- 管理员用户 -->
               <el-popover
                 :visible-arrow="false"
@@ -660,6 +682,12 @@
         'Redis database': 'Redis数据库',
         'Do not mix the database with other systems': '请勿和其他系统混用数据库',
 
+        'Redis TLS': 'Redis TLS',
+        'When connecting to AWS ElastiCache with password, TLS maybe required.': '当连接至开启密码的AWS ElastiCache时，可能需要使用TLS连接。',
+        'Or just leave default (Disable TLS)': '否则，保持默认（禁用TLS）即可',
+        'Disable TLS (default)': '禁用TLS（默认）',
+        'Enable TLS': '启用TLS',
+
         'Administrator username': '管理员用户名',
         'Create an initial administrator user for the system': '为系统配置一个初始管理员用户',
 
@@ -775,8 +803,9 @@
             MYSQL_DATABASE       : 'mysql',
             REDIS_HOST           : 'redis',
             REDIS_PORT           : 'redis',
-            REDIS_PASSWORD       : 'redis',
             REDIS_DATABASE       : 'redis',
+            REDIS_PASSWORD       : 'redis',
+            REDIS_USE_TLS        : 'redis',
             ADMIN_USERNAME       : 'adminUser',
             ADMIN_PASSWORD       : 'adminUser',
             ADMIN_PASSWORD_REPEAT: 'adminUser',
@@ -812,8 +841,9 @@
             MYSQL_DATABASE       : currentConfig.MYSQL_DATABASE,
             REDIS_HOST           : currentConfig.REDIS_HOST,
             REDIS_PORT           : currentConfig.REDIS_PORT,
-            REDIS_PASSWORD       : currentConfig.REDIS_PASSWORD,
             REDIS_DATABASE       : currentConfig.REDIS_DATABASE,
+            REDIS_PASSWORD       : currentConfig.REDIS_PASSWORD,
+            REDIS_USE_TLS        : `${currentConfig.REDIS_USE_TLS}`,
             ADMIN_USERNAME       : currentConfig.ADMIN_USERNAME,
             ADMIN_PASSWORD       : currentConfig.ADMIN_PASSWORD,
             ADMIN_PASSWORD_REPEAT: currentConfig.ADMIN_PASSWORD_REPEAT,

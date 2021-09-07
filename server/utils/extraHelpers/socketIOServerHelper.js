@@ -16,6 +16,7 @@ function getConfig(c, retryStrategy) {
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
+    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
   };
 
   if (retryStrategy) {
@@ -79,6 +80,7 @@ var SocketIOServerHelper = function(server, logger, config) {
         port    : CONFIG.REDIS_PORT,
         db      : CONFIG.REDIS_DATABASE,
         password: CONFIG.REDIS_PASSWORD,
+        useTLS  : CONFIG.REDIS_USE_TLS,
       });
 
       SUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));

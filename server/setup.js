@@ -239,6 +239,7 @@ function runSetup() {
             port    : config.REDIS_PORT,
             password: config.REDIS_PASSWORD,
             db      : config.REDIS_DATABASE || 0,
+            useTLS  : config.REDIS_USE_TLS  || false,
 
             disableRetry: true,
             errorCallback(err) {

@@ -86,10 +86,11 @@ MYSQL_DATABASE: dataflux_func
 
 # Redis连接配置
 # 建议：为避免与其他应用冲突，不使用默认数据库0
-REDIS_HOST        : '127.0.0.1'
-REDIS_PORT        : 6379
-REDIS_DATABASE    : 5
-REDIS_PASSWORD    : ''
+REDIS_HOST    : '127.0.0.1'
+REDIS_PORT    : 6379
+REDIS_DATABASE: 5
+REDIS_PASSWORD: ''
+REDIS_USE_TLS : false
 
 REDIS_TS_MAX_AGE   : 3600   # 1小时
 REDIS_TS_MAX_PERIOD: 259200 # 3天

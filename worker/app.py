@@ -7,6 +7,7 @@ import socket
 import simplejson as json
 import logging
 import time
+import ssl
 
 # 3rd-party Modules
 from celery import Celery, signals
@@ -49,17 +50,30 @@ app = Celery(quiet=True)
 app.config_from_object('worker.celeryconfig')
 
 # Redis config
-redis_auth_part = ''
+redis_auth = ''
 if CONFIG['REDIS_PASSWORD']:
-    redis_auth_part = ':{}@'.format(CONFIG['REDIS_PASSWORD'])
+    redis_auth = ':{}@'.format(CONFIG['REDIS_PASSWORD'])
 
-redis_url = 'redis://{}{}:{}/{}'.format(
-    redis_auth_part,
+redis_schema = 'redis://'
+ssl_options  = None
+if CONFIG['REDIS_USE_TLS']:
+    redis_schema = 'rediss://'
+    ssl_options = {
+        'ssl_cert_reqs': ssl.CERT_NONE,
+    }
+
+redis_url = '{}{}{}:{}/{}'.format(
+    redis_schema,
+    redis_auth,
     CONFIG['REDIS_HOST'],
     CONFIG['REDIS_PORT'],
     CONFIG['REDIS_DATABASE'])
 
-app.conf.update(broker_url=redis_url, result_backend=redis_url)
+app.conf.update(
+    broker_url=redis_url,
+    result_backend=redis_url,
+    broker_use_ssl=ssl_options,
+    redis_backend_use_ssl=ssl_options)
 
 # Redis helper
 from worker.utils.log_helper import LogHelper

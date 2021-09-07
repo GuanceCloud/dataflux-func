@@ -15,6 +15,7 @@ function getConfig(c) {
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
+    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
   };
 };
 
@@ -46,6 +47,7 @@ var CeleryHelper = function(logger, config) {
         port    : CONFIG.REDIS_PORT,
         db      : CONFIG.REDIS_DATABASE,
         password: CONFIG.REDIS_PASSWORD,
+        useTLS  : CONFIG.REDIS_USE_TLS,
       });
       CLIENT = new celery.Client(
         new celery.RedisHandler(getConfig(CLIENT_CONFIG)),

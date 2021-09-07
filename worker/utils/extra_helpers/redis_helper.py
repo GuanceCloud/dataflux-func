@@ -23,6 +23,7 @@ def get_config(c):
         'port'    : c.get('port')     or 6379,
         'db'      : c.get('db')       or c.get('database'),
         'password': c.get('password') or None,
+        'ssl'     : c.get('useSSL')   or c.get('useTLS'),
     }
     return config
 
@@ -65,6 +66,7 @@ class RedisHelper(object):
                     'port'    : CONFIG['REDIS_PORT'],
                     'database': CONFIG['REDIS_DATABASE'],
                     'password': CONFIG['REDIS_PASSWORD'],
+                    'useTLS'  : CONFIG['REDIS_USE_TLS'],
                 }
 
                 CLIENT_CONFIG['tsMaxAge']    = CONFIG.get('REDIS_TS_MAX_AGE')

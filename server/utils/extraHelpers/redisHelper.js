@@ -23,6 +23,7 @@ function getConfig(c, retryStrategy) {
     port    : c.port,
     db      : c.db || c.database || 0,
     password: c.password || undefined,
+    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
   };
 
   if (retryStrategy) {
@@ -86,6 +87,7 @@ var RedisHelper = function(logger, config) {
         port    : CONFIG.REDIS_PORT,
         db      : CONFIG.REDIS_DATABASE,
         password: CONFIG.REDIS_PASSWORD,
+        useTLS  : CONFIG.REDIS_USE_TLS,
       });
 
       CLIENT_CONFIG.tsMaxAge    = CONFIG.REDIS_TS_MAX_AGE;
