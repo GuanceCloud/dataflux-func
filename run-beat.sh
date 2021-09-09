@@ -9,4 +9,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run beat
-python _celery.py beat -A worker -l info -q
+python _celery.py beat -A worker -l error -q
