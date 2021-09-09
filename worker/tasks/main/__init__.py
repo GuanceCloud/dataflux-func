@@ -859,11 +859,14 @@ class FuncEnvVariableHelper(object):
 
         self._is_refreshed = True
 
-    def get(self, env_variable_id):
+    def get(self, env_variable_id, default=None):
         if not self._is_refreshed:
             self._refresh()
 
-        return ENV_VARIABLES_CACHE.get(env_variable_id)
+        if env_variable_id in ENV_VARIABLES_CACHE:
+            return ENV_VARIABLES_CACHE[env_variable_id]
+        else:
+            return default
 
     def list(self):
         if not self._is_refreshed:
@@ -878,15 +881,15 @@ class FuncConfigHelper(object):
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def get(self, config_id):
+    def get(self, config_id, default=None):
         if not config_id.startswith('CUSTOM_'):
             e = AccessDenyException('Config `{}` is not accessible'.format(config_id))
             raise e
 
-        if config_id not in CONFIG:
-            return None
-
-        return CONFIG.get(config_id)
+        if config_id in CONFIG:
+            return CONFIG[config_id]
+        else:
+            return default
 
     def list(self):
         return [{ 'key': k, 'value': v } for k, v in CONFIG.items() if k.startswith('CUSTOM_')]
