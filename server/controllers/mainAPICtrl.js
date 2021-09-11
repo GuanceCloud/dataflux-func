@@ -886,6 +886,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           'origin'     : funcCallOptions.origin,
           'originId'   : funcCallOptions.originId,
           'funcId'     : funcCallOptions.funcId,
+          'execMode'   : funcCallOptions.execMode,
           'status'     : 'queued',
           'timestamp'  : parseInt(Date.now() / 1000),
         }
@@ -965,7 +966,7 @@ function _doAPIResponse(locals, res, ret, options, callback) {
       return locals.sendFile(file, fileName);
 
     } else if (funcCallOptions.execMode === 'async') {
-      // 异常步调
+      // 异步调用
       return locals.sendJSON(ret);
 
     } else {
