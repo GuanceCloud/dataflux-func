@@ -71,10 +71,10 @@ class InfluxDBHelper(object):
             point['tags'] = tags
 
         if timestamp:
-            point['time'] = toolkit.to_iso_datetime(timestamp)
+            point['time'] = arrow.get(timestamp).isoformat()
 
         try:
-            db_res = self.client.write_points(point, database=database)
+            db_res = self.client.write_points([point], database=database)
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
@@ -90,7 +90,7 @@ class InfluxDBHelper(object):
         if not points:
             return
 
-        self.logger.debug('[INFLUXDB] Write may ({} points)'.format(len(points)))
+        self.logger.debug('[INFLUXDB] Write many ({} points)'.format(len(points)))
 
         try:
             db_res = self.client.write_points(points, database=database)
