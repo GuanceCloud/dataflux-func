@@ -24,7 +24,7 @@ def colored(s, color=None):
     return color + '{}\033[0m'.format(s)
 
 def main(options):
-    client = AliyunClient(access_key_id=options.get('ak_id'), access_key_secret=options.get('ak_secret'));
+    client = AliyunClient(access_key_id=options.get('ak_id'), access_key_secret=options.get('ak_secret'))
 
     api_res = client.cdn(Action='RefreshObjectCaches', ObjectType=options.get('object_type'), ObjectPath=options.get('object_path'))
 

@@ -11,9 +11,17 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
 /* Configure */
-var LIST_KEY_LIMIT = 500;
+var LIST_KEY_LIMIT   = 500;
+var PREVIEW_LIMIT_MB = 5;
 
 /* Handlers */
+
+function getFuncCacheKey(key) {
+  var parsedKey          = toolkit.parseCacheKey(key);
+  var funcCacheKeyPrefix = toolkit.getWorkerCacheKey('funcCache', parsedKey.name, [ 'key' ]);
+  var funcCacheKey = key.replace(funcCacheKeyPrefix, '').replace(/:$/g, '');
+  return funcCacheKey;
+}
 
 exports.list = function(req, res, next) {
   var fuzzySearch = req.query._fuzzySearch || '';
@@ -51,12 +59,13 @@ exports.list = function(req, res, next) {
         keys = toolkit.noDuplication(keys);
         keys = keys.slice(0, LIST_KEY_LIMIT);
         keys.forEach(function(key) {
-          var parsedKey = toolkit.parseCacheKey(key);
+          var parsedKey    = toolkit.parseCacheKey(key);
+          var funcCacheKey = getFuncCacheKey(key);
 
           data.push({
             fullKey: key,
             scope  : parsedKey.name,
-            key    : parsedKey.tags.key,
+            key    : funcCacheKey,
           });
         });
 
@@ -76,12 +85,13 @@ exports.list = function(req, res, next) {
 
         keys.sort();
         keys.forEach(function(key) {
-          var parsedKey = toolkit.parseCacheKey(key);
+          var parsedKey    = toolkit.parseCacheKey(key);
+          var funcCacheKey = getFuncCacheKey(key);
 
           data.push({
             fullKey: key,
             scope  : parsedKey.name,
-            key    : parsedKey.tags.key,
+            key    : funcCacheKey,
           });
         });
 
@@ -117,7 +127,7 @@ exports.list = function(req, res, next) {
       async.eachLimit(data, 10, function(d, eachCallback) {
         res.locals.cacheDB.run('MEMORY', 'USAGE', d.fullKey, 'SAMPLES', '0', function(err, cacheRes) {
           // 本内容即使出错也不终止
-          if (err) return eachCallback(err);
+          if (err) return eachCallback();
 
           d.memoryUsage = parseInt(cacheRes);
 
@@ -152,8 +162,25 @@ exports.get = function(req, res, next) {
         return asyncCallback();
       })
     },
+    // 检查大小
+    function(asyncCallback) {
+      if (content) return asyncCallback();
+
+      res.locals.cacheDB.run('MEMORY', 'USAGE', cacheKey, 'SAMPLES', '0', function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var dataSize = parseInt(cacheRes);
+        if (dataSize > 1024 * 1024 * PREVIEW_LIMIT_MB) {
+          content = `<Preview of large data (over ${PREVIEW_LIMIT_MB}MB) is not supported>`;
+        }
+
+        return asyncCallback()
+      });
+    },
     // 获取数据
     function(asyncCallback) {
+      if (content) return asyncCallback();
+
       switch (contentType) {
         case 'string':
           res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
@@ -191,11 +218,10 @@ exports.get = function(req, res, next) {
           });
           break;
 
-        case 'default':
-          content = '<Unsupported Data>'
+        default:
+          content = `<Preview of ${contentType} data is not supported>`;
           return asyncCallback();
       }
-
     },
   ], function(err) {
     if (err) return next(err);
