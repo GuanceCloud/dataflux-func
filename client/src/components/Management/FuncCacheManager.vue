@@ -74,13 +74,13 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
 
           <el-table-column :label="$t('Memory usage')" sortable sort-by="memoryUsage" align="right" width="120">
             <template slot-scope="scope">
-              <code>{{ scope.row.memoryUsageHuman }}</code>
+              <code :class="{ 'text-bad': scope.row.isOverSized }">{{ scope.row.memoryUsageHuman }}</code>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-button v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0"
+              <el-button v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0 && !scope.row.isOverSized"
                 @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
@@ -122,6 +122,7 @@ export default {
       this.data.forEach(d => {
         if (d.memoryUsage) {
           d.memoryUsageHuman = this.T.byteSizeHuman(d.memoryUsage);
+          d.isOverSized      = d.memoryUsage > 5 * 1024 * 1024;
         }
       });
 
