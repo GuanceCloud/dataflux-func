@@ -46,7 +46,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
 
           <el-table-column :label="$t('Type')" width="120">
             <template slot-scope="scope">
-              <code>{{ typeof scope.row.valueJSON }}</code>
+              <code>{{ scope.row.type.toLowerCase() }}</code>
             </template>
           </el-table-column>
 
@@ -91,7 +91,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog title="内容如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -164,10 +164,14 @@ export default {
       });
       if (!apiRes.ok) return
 
-      let content = apiRes.data;
-      content = JSON.stringify(content, null, 2);
+      let content = apiRes.data.valueJSON;
+      if ('string' !== typeof content) {
+        content = JSON.stringify(content, null, 2);
+      }
 
-      this.$refs.longTextDialog.update(content);
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
+      this.$refs.longTextDialog.update(content, fileName);
     },
   },
   computed: {

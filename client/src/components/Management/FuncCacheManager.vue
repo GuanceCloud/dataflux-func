@@ -47,7 +47,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
 
           <el-table-column :label="$t('Type')" width="120">
             <template slot-scope="scope">
-              <code>{{ scope.row.type }}</code>
+              <code>{{ scope.row.type.toLowerCase() }}</code>
             </template>
           </el-table-column>
 
@@ -88,7 +88,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
         </el-table>
       </el-main>
 
-      <LongTextDialog title="内容如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -165,7 +165,9 @@ export default {
         content = JSON.stringify(content, null, 2);
       } catch(_) {}
 
-      this.$refs.longTextDialog.update(content);
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
+      this.$refs.longTextDialog.update(content, fileName);
     },
   },
   computed: {

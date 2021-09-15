@@ -8,7 +8,7 @@ Download as text file: 作为文本文件下载
     :visible.sync="show"
     width="70%">
     <template slot="title">
-      <el-link type="primary" v-if="showDownload" @click="download">
+      <el-link type="primary" v-if="showDownload && fileName && content" @click="download">
         {{ $t('Download as text file') }}
         <i class="fa fa-fw fa-download"></i>
       </el-link>
@@ -31,6 +31,11 @@ export default {
   },
   methods: {
     update(content, fileName) {
+      if (this.codeMirror) {
+        // 清空原始内容
+        this.codeMirror.setValue('');
+      }
+
       this.content  = content;
       this.fileName = (fileName || 'dump') + '.txt';
 
@@ -45,7 +50,6 @@ export default {
         }
 
         // 载入代码
-        this.codeMirror.setValue('');
         this.codeMirror.setValue(this.content || '');
         this.T.setCodeMirrorMode(this.codeMirror, this.mode || null);
         this.codeMirror.refresh();

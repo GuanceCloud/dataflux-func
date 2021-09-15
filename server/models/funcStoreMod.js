@@ -46,6 +46,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,fnst.id');
   sql.append('  ,fnst.scope');
   sql.append('  ,fnst.key');
+  sql.append('  ,JSON_TYPE(fnst.valueJSON) AS `type`');
   sql.append('  ,fnst.expireAt');
   sql.append('  ,fnst.createTime');
   sql.append('  ,fnst.updateTime');
