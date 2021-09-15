@@ -5,7 +5,7 @@ variables:
   OSS_WORKDIR          : dataflux-func
   OSS_RESOURCE_BASE_URL: oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/resource
   OSS_PORTABLE_BASE_URL: oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable
-  CDN_REFRESH_PATH     : static.dataflux.cn/${OSS_WORKDIR}/
+  CDN_REFRESH_PATH     : static.guance.com/${OSS_WORKDIR}/
 
   IMAGE                    : dataflux-func
   IMAGE_PRIVATE            : registry.jiagouyun.com/middlewares/dataflux-func
@@ -16,8 +16,8 @@ variables:
   VERSION_FILE             : version
 
   PROJECT              : dataflux-func
-  FUNC_PKG_URL         : https://static.dataflux.cn/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
-  FUNC_REQUIREMENTS_URL: https://static.dataflux.cn/dataflux-func/market/packages/_dataflux/requirements.txt
+  FUNC_PKG_URL         : https://static.guance.com/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
+  FUNC_REQUIREMENTS_URL: https://static.guance.com/dataflux-func/market/packages/_dataflux/requirements.txt
 
 # 开发版发布
 #   主要用于驻云SaaS版开发
@@ -28,8 +28,8 @@ dev:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
-    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载观测云内置库依赖索引
     # 开发版只需支持amd64
     - docker buildx build
       --platform linux/amd64
@@ -103,7 +103,7 @@ singleton:
   tags:
     - cloudcare-multiarch
 
-# DataFlux同捆发布
+# 观测云同捆发布
 #   主要用于驻云SaaS版预发/生产环境
 dataflux:
   stage: build
@@ -113,8 +113,8 @@ dataflux:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
-    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载观测云内置库依赖索引
     # 构建/推送多架构版本
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -132,8 +132,8 @@ datafluxPaaS_prev:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
-    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载观测云内置库依赖索引
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
@@ -156,8 +156,8 @@ datafluxPaaS_prod:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载DataFlux内置库
-    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载DataFlux内置库依赖索引
+    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    - wget ${FUNC_REQUIREMENTS_URL} -O requirements-dataflux.txt;            # 下载观测云内置库依赖索引
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}

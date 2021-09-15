@@ -7,7 +7,7 @@ ARG TARGETARCH
 ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-x64/bin:/usr/src/resource/node-v12.16.3-linux-arm64/bin"
 ENV TARGETARCH ${TARGETARCH}
 
-ARG RESOURCE_BASE_URL="https://static.dataflux.cn/dataflux-func/resource"
+ARG RESOURCE_BASE_URL="https://static.guance.com/dataflux-func/resource"
 ARG NODE_PKG_X64="node-v12.16.3-linux-x64.tar.gz"
 ARG NODE_PKG_ARM64="node-v12.16.3-linux-arm64.tar.gz"
 ARG ORACLE_CLIENT_PKG="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"

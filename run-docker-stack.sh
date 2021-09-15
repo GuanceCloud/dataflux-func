@@ -102,7 +102,7 @@ __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 
 __PROJECT_NAME=dataflux-func
 
-__RESOURCE_BASE_URL=https://static.dataflux.cn/dataflux-func/resource
+__RESOURCE_BASE_URL=https://static.guance.com/dataflux-func/resource
 
 MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
@@ -128,7 +128,7 @@ esac
 # 启用dev 部署时，项目名/资源等改为dev 专用版
 if [ ${OPT_DEV} = "TRUE" ]; then
     __PROJECT_NAME=dataflux-func-dev
-    __RESOURCE_BASE_URL=https://static.dataflux.cn/dataflux-func/resource-dev
+    __RESOURCE_BASE_URL=https://static.guance.com/dataflux-func/resource-dev
     DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
 fi
 

@@ -4,7 +4,7 @@ DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 
 > `DataFlux Func` 读作`data flux function`，系统内有时会缩写为`DFF`。
 
-前身为[DataFlux](https://dataflux.cn/) 下属的一个函数计算组件，目前已成为可独立运行的系统。
+前身为[观测云](https://guance.com/) 下属的一个函数计算组件，目前已成为可独立运行的系统。
 
 本系统主要分为2个部分：
 
@@ -15,12 +15,12 @@ DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 
 有关DataFlux Func 的相关文档请参考以下链接：
 
-- [网站](https://function.dataflux.cn)
-- [快速开始](https://function.dataflux.cn/#/read?q=quick-start.md)
-- [用户手册](https://t.dataflux.cn/func-user-guide)
-- [维护手册](https://function.dataflux.cn/#/read?q=maintenance-guide.md)
-- [开发手册](https://function.dataflux.cn/#/read?q=development-guide.md)
+- [网站](https://function.guance.com)
+- [快速开始](https://function.guance.com/#/read?q=quick-start.md)
+- [用户手册](https://t.guance.com/func-user-guide)
+- [维护手册](https://function.guance.com/#/read?q=maintenance-guide.md)
+- [开发手册](https://function.guance.com/#/read?q=development-guide.md)
 - [文档库](https://www.yuque.com/dataflux/func)
 
-- [DataFlux 官方网站](https://dataflux.cn/)
+- [观测云官方网站](https://guance.com/)
 

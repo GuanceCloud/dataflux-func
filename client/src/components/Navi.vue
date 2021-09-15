@@ -39,7 +39,7 @@ Signed In    : 已登录
         </el-menu-item>
       </template>
 
-      <el-menu-item index="https://function.dataflux.cn/#/doc-index">
+      <el-menu-item index="https://function.guance.com/#/doc-index">
         <span>
           <i class="fa fa-fw fa-question-circle-o"></i>
           <span>{{ $t('Guide') }}</span>
