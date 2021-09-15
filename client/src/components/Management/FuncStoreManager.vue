@@ -91,7 +91,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog title="内容如下" mode="javascript" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="内容如下" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>

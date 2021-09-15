@@ -88,7 +88,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
         </el-table>
       </el-main>
 
-      <LongTextDialog title="内容如下" mode="javascript" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="内容如下" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
