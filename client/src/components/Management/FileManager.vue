@@ -398,19 +398,26 @@ export default {
         let promptRes = null;
         try {
           // 自动重命名为`xxx-2.ext`
-          let _defaultRename = filename;
-          let _m = filename.match(/-(\d+)\.[^.]+$/);
-          let _dateStr = this.T.getDateTimeString(null, 'YYYYMMDD_HHmmss');
-          if (!_m) {
-            _defaultRename = filename.replace(/(\.[^.]+)$/, `-${_dateStr}$1`);
-          } else {
-            _defaultRename = filename.replace(/-\d+(\.[^.]+)$/, `-${_dateStr}$1`);
+          let _filenameParts = filename.split('.');
+          let fileExt = '';
+          if (_filenameParts.length > 1) {
+            fileExt = `.${_filenameParts.pop()}`;
+          }
+          let filenameNoExt = _filenameParts.join('.');
+
+          let defaultRename = null;
+          let seq = 2;
+          while (true) {
+            defaultRename = `${filenameNoExt}-${seq}${fileExt}`;
+            if (!this.fileNameMap[defaultRename]) break;
+
+            seq++;
           }
 
           // 【特殊处理】此处输入框需要检查文件重复
           promptRes = await this.$prompt(this.$t('File <code class="text-main">{name}</code> already existed, please input a new name', { name: filename }), this.$t('Upload'), {
             customClass             : 'uploadRename',
-            inputValue              : _defaultRename,
+            inputValue              : defaultRename,
             dangerouslyUseHTMLString: true,
             closeOnClickModal       : false,
             confirmButtonText       : this.$t('Upload'),
@@ -431,7 +438,7 @@ export default {
 
       let bodyData = new FormData();
       bodyData.append('files', req.file);
-      bodyData.append('folder', this.dataFilter.folder);
+      bodyData.append('folder', this.dataFilter.folder || '.');
       if (rename) {
         bodyData.append('rename', rename);
       }
