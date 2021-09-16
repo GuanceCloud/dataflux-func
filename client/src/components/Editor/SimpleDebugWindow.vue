@@ -748,7 +748,7 @@ export default {
 
       return {
         df_dataway: {
-          name           : 'DataFlux DataWay',
+          name           : '观测云DataWay',
           supportDebugger: false,
           supportBrowser : false,
           supportDatabase: false,

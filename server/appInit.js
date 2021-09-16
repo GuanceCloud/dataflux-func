@@ -363,7 +363,7 @@ exports.afterAppCreated = function(app, server) {
   var dataSourceModel = require('./models/dataSourceMod').createModel(app.locals);
 
   var LOCAL_DATAKIT_ID    = 'datakit';
-  var LOCAL_DATAKIT_TITLE = 'DataFlux DataKit';
+  var LOCAL_DATAKIT_TITLE = '观测云DataKit';
   var LOCAL_DATAKIT_DESC  = `Auto updated at: ${moment().utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss')}`;
   var LOCAL_DATAKIT_PORT  = 9529;
 

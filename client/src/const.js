@@ -60,7 +60,7 @@ export default {
       {
         key           : 'df_dataway',
         name          : 'DataWay',
-        fullName      : 'DataFlux DataWay (HTTP)',
+        fullName      : '观测云DataWay (HTTP)',
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
@@ -77,7 +77,7 @@ export default {
       {
         key           : 'df_datakit',
         name          : 'DataKit',
-        fullName      : 'DataFlux DataKit (HTTP)',
+        fullName      : '观测云DataKit (HTTP)',
         logo          : null,
         tagType       : 'info',
         debugSupported: false,

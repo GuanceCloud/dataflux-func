@@ -3690,7 +3690,7 @@ crontabConfigAPI:
 
       相同范围内的自动触发配置不允许存在2个以上执行函数和调用参数完全相同的配置。
 
-      *对于DataFlux Studio 的触发器功能在对接自动触发配置时，可以将工作空间UUID作为scope。如："scope": "workspaceUUID=<工作空间UUID>"*
+      *对于观测云Studio 的触发器功能在对接自动触发配置时，可以将工作空间UUID作为scope。如："scope": "workspaceUUID=<工作空间UUID>"*
 
       *`scope`最长不得超过255个字符*
     method       : post
