@@ -138,6 +138,8 @@ _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
 
 # API调用时上传文件临时目录
 _FUNC_UPLOAD_DIR: uploads
+# API调用时下载文件临时目录
+_FUNC_DOWNLOAD_DIR: download
 
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''

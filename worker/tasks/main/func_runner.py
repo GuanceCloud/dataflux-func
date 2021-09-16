@@ -437,7 +437,7 @@ def func_runner(self, *args, **kwargs):
                     self.logger.error(line)
 
             try:
-                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data)
+                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data, indent=None, separators=(',', ':'))
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)

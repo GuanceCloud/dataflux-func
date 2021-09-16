@@ -936,8 +936,8 @@ function _doAPIResponse(locals, res, ret, options, callback) {
 
       // 默认与源文件名相同
       var fileName = filePath.split('/').pop();
-      if (responseControl.downloadFile && responseControl.downloadFile !== true) {
-        // 指定其他值，则作为下载名
+      if ('string' === typeof responseControl.downloadFile) {
+        // 指定下载名
         fileName = responseControl.downloadFile;
       }
 
@@ -963,37 +963,45 @@ function _doAPIResponse(locals, res, ret, options, callback) {
       // 作为文件下载
       var file     = ret.data.result.raw;
       var fileName = responseControl.downloadFile;
+      if ('string' !== typeof fileName) {
+        fileName = typeof file === 'object'
+                 ? 'api-resp.json'
+                 : 'api-resp.txt'
+      }
       return locals.sendFile(file, fileName);
-
-    } else if (funcCallOptions.execMode === 'async') {
-      // 异步调用
-      return locals.sendJSON(ret);
 
     } else {
       // 作为数据返回
-
-      // 响应控制（返回类型Content-Type）
-      if (responseControl.contentType) {
-        res.type(responseControl.contentType);
-
-        // 当指定了响应体类型后，必须提取raw且解包
-        funcCallOptions.returnType = 'raw';
-        funcCallOptions.unfold     = true;
-      }
-
-      // 选择返回类型
-      if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
-        ret.data.result = ret.data.result[funcCallOptions.returnType] || null;
-      }
-
-      // 解包
-      if (funcCallOptions.unfold) {
-        // 需要解包时，发送数据类型不确定
-        return locals.sendRaw(ret.data.result);
+      if (funcCallOptions.execMode === 'async') {
+        // 异步调用，直接返回
+        return locals.sendJSON(ret);
 
       } else {
-        // 不解包时，必然是JSON
-        return locals.sendJSON(ret);
+        // 同步调用，处理后返回
+
+        // 响应控制（返回类型Content-Type）
+        if (responseControl.contentType) {
+          res.type(responseControl.contentType);
+
+          // 当指定了响应体类型后，必须提取raw且解包
+          funcCallOptions.returnType = 'raw';
+          funcCallOptions.unfold     = true;
+        }
+
+        // 选择返回类型
+        if (funcCallOptions.returnType && funcCallOptions.returnType !== 'ALL') {
+          ret.data.result = ret.data.result[funcCallOptions.returnType] || null;
+        }
+
+        // 解包
+        if (funcCallOptions.unfold) {
+          // 需要解包时，发送数据类型不确定
+          return locals.sendRaw(ret.data.result);
+
+        } else {
+          // 不解包时，必然是JSON
+          return locals.sendJSON(ret);
+        }
       }
     }
   }

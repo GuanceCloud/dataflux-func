@@ -8,6 +8,7 @@ import traceback
 import linecache
 from types import ModuleType
 import time
+import uuid
 import json
 import pprint
 import importlib
@@ -106,6 +107,10 @@ extra_import_paths = [
 for p in extra_import_paths:
     os.makedirs(p, exist_ok=True)
     sys.path.append(p)
+
+# 下载临时文件
+func_download_dir = os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('_FUNC_DOWNLOAD_DIR'))
+os.makedirs(func_download_dir, exist_ok=True)
 
 class DataFluxFuncBaseException(Exception):
     pass
@@ -911,8 +916,7 @@ class BaseFuncResponse(object):
 
         # 检查待下载的文件是否存在
         if self.file_path:
-            abs_path = get_resource_path(self.file_path)
-            if not os.path.isfile(abs_path):
+            if not os.path.isfile(get_resource_path(self.file_path)):
                 e = Exception('No such file in Resource folder: {}'.format(self.file_path))
                 raise e
 
@@ -936,7 +940,7 @@ class FuncResponse(BaseFuncResponse):
         # 尝试序列化返回值
         data_dumps = None
         try:
-            data_dumps = toolkit.json_safe_dumps(data)
+            data_dumps = toolkit.json_safe_dumps(data, indent=None, separators=(',', ':'))
         except Exception as e:
             data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
 
@@ -962,6 +966,29 @@ class FuncResponseFile(BaseFuncResponse):
             'download_file'   : download,
         }
         super(FuncResponseFile, self).__init__(**kwargs)
+
+class FuncResponseLargeData(BaseFuncResponse):
+    def __init__(self, data, content_type=None):
+        if not content_type:
+            if isinstance(data, (dict, list, tuple)):
+                content_type = 'json'
+            else:
+                content_type = 'txt'
+
+        if not isinstance(data, str):
+            data = toolkit.json_safe_dumps(data, indent=None, separators=(',', ':'))
+
+        file_name = f"api-resp.tmp.{uuid.uuid4().hex}.{content_type}"
+        file_path = os.path.join(CONFIG.get('_FUNC_DOWNLOAD_DIR'), file_name)
+        with open(get_resource_path(file_path), 'w') as _f:
+            _f.write(data)
+
+        kwargs = {
+            'file_path'       : file_path,
+            'auto_delete_file': True,
+            'download_file'   : False,
+        }
+        super(FuncResponseLargeData, self).__init__(**kwargs)
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def __call__(self, *args, **kwargs):
@@ -1438,10 +1465,11 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'SQL'   : format_sql,            # 格式化SQL语句
             'FUNC'  : __call_func,           # 调用函数（新Task）
 
-            'ASYNC'    : __async_helper,    # 异步处理模块
-            'RSRC'     : get_resource_path, # 获取资源路径
-            'RESP'     : FuncResponse,      # 函数响应体
-            'RESP_FILE': FuncResponseFile,  # 函数响应体（返回文件）
+            'ASYNC'          : __async_helper,        # 异步处理模块
+            'RSRC'           : get_resource_path,     # 获取资源路径
+            'RESP'           : FuncResponse,          # 函数响应体
+            'RESP_FILE'      : FuncResponseFile,      # 函数响应体（返回文件）
+            'RESP_LARGE_DATA': FuncResponseLargeData, # 函数响应题（大量数据）
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
