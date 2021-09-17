@@ -27,7 +27,7 @@ from worker.tasks import BaseResultSavingTask
 from worker.tasks import BaseTask
 from worker.tasks.main import DataFluxFuncBaseException, NotFoundException, NotFoundException
 from worker.tasks.main import ScriptBaseTask
-from worker.tasks.main import BaseFuncResponse, FuncResponse
+from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, FuncResponseLargeData
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -324,8 +324,11 @@ def func_runner(self, *args, **kwargs):
     if 'headers' in http_request:
         http_request['headers'] = toolkit.IgnoreCaseDict(http_request['headers'])
 
+    # 是否缓存函数运行结果
+    cache_result_expires = None
+
     # 是否保存结果
-    save_result  = kwargs.get('saveResult') or False
+    save_result = kwargs.get('saveResult') or False
 
     # 函数结果、上下文、跟踪信息、错误堆栈
     func_resp    = None
@@ -402,6 +405,21 @@ def func_runner(self, *args, **kwargs):
         if isinstance(func_resp.data, Exception):
             raise func_resp.data
 
+        # 获取函数结果缓存配置
+        try:
+            cache_result_expires = target_script['funcExtraConfig'][func_id]['cacheResult']
+        except (KeyError, TypeError) as e:
+            pass
+
+        # 响应大型数据，根据是否开启缓存函数运行结果区分处理
+        if isinstance(func_resp, FuncResponseLargeData):
+            if cache_result_expires is None:
+                # 未开启缓存，默认方式缓存为文件
+                func_resp.cache_to_file(auto_delete=True)
+            else:
+                # 开启缓存，则指定缓存事件
+                func_resp.cache_to_file(auto_delete=False, cache_expires=cache_result_expires)
+
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
@@ -468,12 +486,7 @@ def func_runner(self, *args, **kwargs):
             result_saving_task.apply_async(task_id=result_task_id, args=args)
 
         # 缓存函数运行结果
-        cache_result_expires = None
-        try:
-            cache_result_expires = target_script['funcExtraConfig'][func_id]['cacheResult']
-        except (KeyError, TypeError) as e:
-            pass
-        else:
+        if cache_result_expires:
             self.cache_func_result(
                 func_id=func_id,
                 script_code_md5=target_script['codeMD5'],

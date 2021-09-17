@@ -8,8 +8,9 @@ CONFIG_FILE_PATH: '/data/user-config.yaml'
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'
 
-# 文件上传临时目录文件夹
-UPLOAD_TEMP_ROOT_FOLDER: 'uploads'
+# 文件上传/下载临时目录
+UPLOAD_TEMP_ROOT_FOLDER  : '.uploads'
+DOWNLOAD_TEMP_ROOT_FOLDER: '.downloads'
 
 # 运行模式
 # 可选：
@@ -135,11 +136,6 @@ _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
 
 # 函数包密码长度范围
 _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
-
-# API调用时上传文件临时目录
-_FUNC_UPLOAD_DIR: uploads
-# API调用时下载文件临时目录
-_FUNC_DOWNLOAD_DIR: download
 
 # API文档介绍文章
 _API_DOC_INTRODUCTION_LIST: ''
@@ -287,8 +283,7 @@ _DB_AUTO_BACKUP_EXT   : .sql
 _LRU_FUNC_CACHE_MAX           : 1000
 _LRU_FUNC_CACHE_MAX_AGE       : 15
 _LRU_FUNC_RESULT_CACHE_MAX    : 2000
-_LRU_FUNC_RESULT_CACHE_MAX_AGE: 2000
-_PIP_LIST_EXPIRES             : 300
+_LRU_FUNC_RESULT_CACHE_MAX_AGE: 5
 
 # 保留脚本错误信息（开启后可能会产生巨量日志）
 _INTERNAL_KEEP_SCRIPT_FAILURE: false

@@ -109,8 +109,8 @@ for p in extra_import_paths:
     sys.path.append(p)
 
 # 下载临时文件
-func_download_dir = os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('_FUNC_DOWNLOAD_DIR'))
-os.makedirs(func_download_dir, exist_ok=True)
+download_temp_folder = os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('DOWNLOAD_TEMP_ROOT_FOLDER'))
+os.makedirs(download_temp_folder, exist_ok=True)
 
 class DataFluxFuncBaseException(Exception):
     pass
@@ -978,17 +978,28 @@ class FuncResponseLargeData(BaseFuncResponse):
         if not isinstance(data, str):
             data = toolkit.json_safe_dumps(data, indent=None, separators=(',', ':'))
 
-        file_name = f"api-resp.tmp.{uuid.uuid4().hex}.{content_type}"
-        file_path = os.path.join(CONFIG.get('_FUNC_DOWNLOAD_DIR'), file_name)
-        with open(get_resource_path(file_path), 'w') as _f:
-            _f.write(data)
+        self._content_type = content_type
+        self._data         = data
 
         kwargs = {
-            'file_path'       : file_path,
             'auto_delete_file': True,
             'download_file'   : False,
         }
         super(FuncResponseLargeData, self).__init__(**kwargs)
+
+    def cache_to_file(self, auto_delete=True, cache_expires=0):
+        cache_expires = cache_expires or 0
+
+        # 保证至少60秒缓存事件
+        now = time.time() + max([cache_expires, 60])
+
+        file_name = f"{arrow.get(now).format('YYYYMMDDHHmmss')}_{toolkit.gen_rand_string(16)}_api-resp.{self._content_type}"
+        file_path = os.path.join(CONFIG.get('DOWNLOAD_TEMP_ROOT_FOLDER'), file_name)
+        with open(get_resource_path(file_path), 'w') as _f:
+            _f.write(self._data)
+
+        self.file_path        = file_path
+        self.auto_delete_file = auto_delete
 
 class ScriptBaseTask(BaseTask, ScriptCacherMixin):
     def __call__(self, *args, **kwargs):

@@ -15,7 +15,7 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
 /* Configure */
-var UPLOAD_TEMP_FOLDER    = path.join(os.tmpdir(), CONFIG.UPLOAD_TEMP_ROOT_FOLDER);
+var UPLOAD_TEMP_FOLDER    = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.UPLOAD_TEMP_ROOT_FOLDER);
 var MULTIPART_BOUNDARY_RE = /^multipart\/form-data.\s?boundary=['"]?(.*?)['"]?$/i;
 
 module.exports = function(options) {
@@ -30,8 +30,10 @@ module.exports = function(options) {
   var storage = multer.diskStorage({
     destination: UPLOAD_TEMP_FOLDER,
     filename: function (req, file, callback) {
+      var now = Date.now() + CONFIG._UPLOAD_FILE_EXPIRES * 1000;
+
       // 文件保存路径为：<上传临时目录>/<日期时间>_<随机数>_<原文件名>
-      var tmpFilename = toolkit.strf('{0}_{1}_{2}', moment.utc().format('YYYYMMDDHHmmss'), toolkit.genRandString(6), file.originalname)
+      var tmpFilename = toolkit.strf('{0}_{1}_{2}', moment(now).format('YYYYMMDDHHmmss'), toolkit.genRandString(16), file.originalname);
       return callback(null, tmpFilename);
     }
   })

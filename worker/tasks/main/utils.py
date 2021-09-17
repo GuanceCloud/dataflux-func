@@ -778,32 +778,18 @@ class AutoCleanTask(BaseTask):
         sql_params = [table]
         self.db.query(sql, sql_params)
 
-    def clear_upload_temp_file(self):
-        expires = CONFIG['_UPLOAD_FILE_EXPIRES']
-        limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
+    def clear_temp_file(self, folder):
+        limit_timestamp = f"{arrow.get().format('YYYYMMDDHHmmss')}_"
 
-        upload_dir = os.path.join(tempfile.gettempdir(), CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
-        if not os.path.exists(upload_dir):
+        temp_dir = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], folder)
+        if not os.path.exists(temp_dir):
             return
 
-        for folder_path, _, file_names in os.walk(upload_dir):
+        for folder_path, _, file_names in os.walk(temp_dir):
             for file_name in file_names:
                 if file_name < limit_timestamp:
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
-
-    def clear_func_upload_file(self):
-        expires = CONFIG['_UPLOAD_FILE_EXPIRES']
-        limit_timestamp = arrow.get(time.time() - expires).format('YYYYMMDDHHmmss')
-
-        upload_dir = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], CONFIG['_FUNC_UPLOAD_DIR'])
-        if not os.path.exists(upload_dir):
-            return
-
-        with os.scandir(upload_dir) as _iter:
-            for entry in _iter:
-                if entry.name < limit_timestamp:
-                    shutil.rmtree(entry.path)
 
 @app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
@@ -831,11 +817,9 @@ def auto_clean(self, *args, **kwargs):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-    # 清理上传临时目录
-    self.clear_upload_temp_file()
-
-    # 清理上传文件目录
-    self.clear_func_upload_file()
+    # 清理临时目录
+    self.clear_temp_file(CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
+    self.clear_temp_file(CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER'])
 
 # Main.AutoRun
 class AutoRunTask(BaseTask):
