@@ -1,8 +1,10 @@
-# 1. 保证最新数据库结构
-# 2. 运行以下代码SQL，清空无用数据
-# 3. 导出所有数据库表，保存为`db/dataflux-func_YYYY-MM-DD.sql`和`db/dataflux-func_latest.sql`
+# 1. 导入`db/dataflux_func_latest.sql`
+# 2. 更新数据库结构
+# 3. 运行以下代码SQL，清空无用数据
+# 4. 导出所有数据库表，保存为`db/dataflux-func_YYYY-MM-DD.sql`和`db/dataflux-func_latest.sql`
 
 # 清空无用数据
+TRUNCATE biz_main_api_auth;
 TRUNCATE biz_main_auth_link;
 TRUNCATE biz_main_batch;
 TRUNCATE biz_main_batch_task_info;

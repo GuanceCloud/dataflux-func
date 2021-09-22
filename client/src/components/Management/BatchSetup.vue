@@ -103,7 +103,7 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                 </el-form-item>
 
                 <el-form-item :label="$t('Note')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"

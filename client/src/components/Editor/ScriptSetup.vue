@@ -54,14 +54,14 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     maxlength="25"
                     show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Description')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"

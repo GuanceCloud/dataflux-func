@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '5'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '6'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -64,3 +64,28 @@ upgradeInfo:
       ALTER TABLE `biz_main_script_recover_point`
         ADD COLUMN `exportData` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '脚本库导出数据'
         AFTER `tableDumpJSON`;
+
+  - seq: 6
+    database: |-
+      -- 添加API认证支持
+      CREATE TABLE `biz_main_api_auth` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 fixedField|httpBasic|httpDigest|func',
+        `configJSON` json NOT NULL COMMENT '配置JSON',
+        `note` text COMMENT '备注',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API认证';
+
+      -- 授权链接添加API认证支持
+      ALTER TABLE `biz_main_auth_link`
+      ADD COLUMN `apiAuthId` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID'
+      AFTER `tagsJSON`;
+
+      -- 批处理添加API认证支持
+      ALTER TABLE `biz_main_batch`
+      ADD COLUMN `apiAuthId` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID'
+      AFTER `tagsJSON`;

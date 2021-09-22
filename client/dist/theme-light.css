@@ -1,0 +1,185 @@
+.data-source-logo {
+  background-color: white;
+  padding: 5px;
+  border: white solid 10px;
+  border-radius: 5px;
+}
+
+.splitter-pane-resizer {
+  background-color: #e9e9e9 !important;
+}
+.splitter-pane-resizer.vertical:after {
+  background-color: #e9e9e9 !important;
+}
+.splitter-pane-resizer.horizontal:after {
+  background-color: #e9e9e9 !important;
+}
+
+.navi-content .el-menu,
+.navi-content .el-menu-item,
+.navi-content .el-submenu,
+.navi-content .el-submenu__title {
+  background-color: #e1e1e1 !important;
+  color: #000 !important;
+}
+
+.navi-content .el-menu-item:focus,
+.navi-content .el-menu-item:hover {
+  background-color: #ccc !important;
+}
+
+/* CodeMirror theme */
+.cm-s-eclipse-monokai span.cm-meta { color: #FF1717; }
+.cm-s-eclipse-monokai span.cm-keyword { line-height: 1em; font-weight: bold; color: #7F0055; }
+.cm-s-eclipse-monokai span.cm-atom { color: #219; }
+.cm-s-eclipse-monokai span.cm-number { color: #164; }
+.cm-s-eclipse-monokai span.cm-def { color: #00f; }
+.cm-s-eclipse-monokai span.cm-variable { color: black; }
+.cm-s-eclipse-monokai span.cm-variable-2 { color: #0000C0; }
+.cm-s-eclipse-monokai span.cm-variable-3, .cm-s-eclipse-monokai span.cm-type { color: #0000C0; }
+.cm-s-eclipse-monokai span.cm-property { color: black; }
+.cm-s-eclipse-monokai span.cm-operator { color: black; }
+.cm-s-eclipse-monokai span.cm-comment { color: #3F7F5F; }
+.cm-s-eclipse-monokai span.cm-string { color: #2A00FF; }
+.cm-s-eclipse-monokai span.cm-string-2 { color: #f50; }
+.cm-s-eclipse-monokai span.cm-qualifier { color: #555; }
+.cm-s-eclipse-monokai span.cm-builtin { color: #30a; }
+.cm-s-eclipse-monokai span.cm-bracket { color: #cc7; }
+.cm-s-eclipse-monokai span.cm-tag { color: #170; }
+.cm-s-eclipse-monokai span.cm-attribute { color: #00c; }
+.cm-s-eclipse-monokai span.cm-link { color: #219; }
+.cm-s-eclipse-monokai span.cm-error { color: #f00; }
+
+.cm-s-eclipse-monokai .CodeMirror-activeline-background { background: #e8f2ff; }
+.cm-s-eclipse-monokai .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
+
+/*
+
+    Name:       Base16 Default Light
+    Author:     Chris Kempson (http://chriskempson.com)
+
+    CodeMirror template by Jan T. Sott (https://github.com/idleberg/base16-codemirror)
+    Original Base16 color scheme by Chris Kempson (https://github.com/chriskempson/base16)
+
+*/
+
+.cm-s-base16.CodeMirror { background: #f5f5f5; color: #202020; }
+.cm-s-base16 div.CodeMirror-selected { background: #e0e0e0; }
+.cm-s-base16 .CodeMirror-line::selection, .cm-s-base16 .CodeMirror-line > span::selection, .cm-s-base16 .CodeMirror-line > span > span::selection { background: #e0e0e0; }
+.cm-s-base16 .CodeMirror-line::-moz-selection, .cm-s-base16 .CodeMirror-line > span::-moz-selection, .cm-s-base16 .CodeMirror-line > span > span::-moz-selection { background: #e0e0e0; }
+.cm-s-base16 .CodeMirror-gutters { background: #f5f5f5; border-right: 0px; }
+.cm-s-base16 .CodeMirror-guttermarker { color: #ac4142; }
+.cm-s-base16 .CodeMirror-guttermarker-subtle { color: #b0b0b0; }
+.cm-s-base16 .CodeMirror-linenumber { color: #b0b0b0; }
+.cm-s-base16 .CodeMirror-cursor { border-left: 1px solid #505050; }
+
+.cm-s-base16 span.cm-comment { color: #8f5536; }
+.cm-s-base16 span.cm-atom { color: #aa759f; }
+.cm-s-base16 span.cm-number { color: #aa759f; }
+
+.cm-s-base16 span.cm-property, .cm-s-base16 span.cm-attribute { color: #90a959; }
+.cm-s-base16 span.cm-keyword { color: #ac4142; }
+.cm-s-base16 span.cm-string { color: #f4bf75; }
+
+.cm-s-base16 span.cm-variable { color: #90a959; }
+.cm-s-base16 span.cm-variable-2 { color: #6a9fb5; }
+.cm-s-base16 span.cm-def { color: #d28445; }
+.cm-s-base16 span.cm-bracket { color: #202020; }
+.cm-s-base16 span.cm-tag { color: #ac4142; }
+.cm-s-base16 span.cm-link { color: #aa759f; }
+.cm-s-base16 span.cm-error { background: #ac4142; color: #505050; }
+
+.cm-s-base16 .CodeMirror-activeline-background { background: #DDDCDC; }
+.cm-s-base16 .CodeMirror-matchingbracket { color: #f5f5f5 !important; background-color: #6A9FB5 !important}
+
+/*
+Name:   DuoTone-Light
+Author: by Bram de Haan, adapted from DuoTone themes by Simurai (http://simurai.com/projects/2016/01/01/duotone-themes)
+
+CodeMirror template by Jan T. Sott (https://github.com/idleberg), adapted by Bram de Haan (https://github.com/atelierbram/)
+*/
+
+.cm-s-duotone.CodeMirror { background: #faf8f5; color: #b29762; }
+.cm-s-duotone div.CodeMirror-selected { background: #e3dcce !important; }
+.cm-s-duotone .CodeMirror-gutters { background: #faf8f5; border-right: 0px; }
+.cm-s-duotone .CodeMirror-linenumber { color: #cdc4b1; }
+
+/* begin cursor */
+.cm-s-duotone .CodeMirror-cursor { border-left: 1px solid #93abdc; /* border-left: 1px solid #93abdc80; */ border-right: .5em solid #93abdc; /* border-right: .5em solid #93abdc80; */ opacity: .5; }
+.cm-s-duotone .CodeMirror-activeline-background { background: #e3dcce;  /* background: #e3dcce80; */ opacity: .5; }
+.cm-s-duotone .cm-fat-cursor .CodeMirror-cursor { background: #93abdc; /* #93abdc80; */ opacity: .5; }
+/* end cursor */
+
+.cm-s-duotone span.cm-atom, .cm-s-duotone span.cm-number, .cm-s-duotone span.cm-keyword, .cm-s-duotone span.cm-variable, .cm-s-duotone span.cm-attribute, .cm-s-duotone span.cm-quote, .cm-s-duotone-light span.cm-hr, .cm-s-duotone-light span.cm-link { color: #063289; }
+
+.cm-s-duotone span.cm-property { color: #b29762; }
+.cm-s-duotone span.cm-punctuation, .cm-s-duotone span.cm-unit, .cm-s-duotone span.cm-negative { color: #063289; }
+.cm-s-duotone span.cm-string, .cm-s-duotone span.cm-operator { color: #1659df; }
+.cm-s-duotone span.cm-positive { color: #896724; }
+
+.cm-s-duotone span.cm-variable-2, .cm-s-duotone span.cm-variable-3, .cm-s-duotone span.cm-type, .cm-s-duotone span.cm-string-2, .cm-s-duotone span.cm-url { color: #896724; }
+.cm-s-duotone span.cm-def, .cm-s-duotone span.cm-tag, .cm-s-duotone span.cm-builtin, .cm-s-duotone span.cm-qualifier, .cm-s-duotone span.cm-header, .cm-s-duotone span.cm-em { color: #2d2006; }
+.cm-s-duotone span.cm-bracket, .cm-s-duotone span.cm-comment { color: #b6ad9a; }
+
+/* using #f00 red for errors, don't think any of the colorscheme variables will stand out enough, ... maybe by giving it a background-color ... */
+/* .cm-s-duotone span.cm-error { background: #896724; color: #728fcb; } */
+.cm-s-duotone span.cm-error, .cm-s-duotone span.cm-invalidchar { color: #f00; }
+
+.cm-s-duotone span.cm-header { font-weight: normal; }
+.cm-s-duotone .CodeMirror-matchingbracket { text-decoration: underline; color: #faf8f5 !important; }
+
+.cm-s-neat-material-darker span.cm-comment { color: #a86; }
+.cm-s-neat-material-darker span.cm-keyword { line-height: 1em; font-weight: bold; color: blue; }
+.cm-s-neat-material-darker span.cm-string { color: #a22; }
+.cm-s-neat-material-darker span.cm-builtin { line-height: 1em; font-weight: bold; color: #077; }
+.cm-s-neat-material-darker span.cm-special { line-height: 1em; font-weight: bold; color: #0aa; }
+.cm-s-neat-material-darker span.cm-variable { color: black; }
+.cm-s-neat-material-darker span.cm-number, .cm-s-neat-material-darker span.cm-atom { color: #3a3; }
+.cm-s-neat-material-darker span.cm-meta { color: #555; }
+.cm-s-neat-material-darker span.cm-link { color: #3a3; }
+
+.cm-s-neat-material-darker .CodeMirror-activeline-background { background: #e8f2ff; }
+.cm-s-neat-material-darker .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
+
+/**
+    Name:       IDEA default theme
+    From IntelliJ IDEA by JetBrains
+ */
+
+.cm-s-idea-darcula span.cm-meta { color: #808000; }
+.cm-s-idea-darcula span.cm-number { color: #0000FF; }
+.cm-s-idea-darcula span.cm-keyword { line-height: 1em; font-weight: bold; color: #000080; }
+.cm-s-idea-darcula span.cm-atom { font-weight: bold; color: #000080; }
+.cm-s-idea-darcula span.cm-def { color: #000000; }
+.cm-s-idea-darcula span.cm-variable { color: black; }
+.cm-s-idea-darcula span.cm-variable-2 { color: black; }
+.cm-s-idea-darcula span.cm-variable-3, .cm-s-idea-darcula span.cm-type { color: black; }
+.cm-s-idea-darcula span.cm-property { color: black; }
+.cm-s-idea-darcula span.cm-operator { color: black; }
+.cm-s-idea-darcula span.cm-comment { color: #808080; }
+.cm-s-idea-darcula span.cm-string { color: #008000; }
+.cm-s-idea-darcula span.cm-string-2 { color: #008000; }
+.cm-s-idea-darcula span.cm-qualifier { color: #555; }
+.cm-s-idea-darcula span.cm-error { color: #FF0000; }
+.cm-s-idea-darcula span.cm-attribute { color: #0000FF; }
+.cm-s-idea-darcula span.cm-tag { color: #000080; }
+.cm-s-idea-darcula span.cm-link { color: #0000FF; }
+.cm-s-idea-darcula .CodeMirror-activeline-background { background: #FFFAE3; }
+
+.cm-s-idea-darcula span.cm-builtin { color: #30a; }
+.cm-s-idea-darcula span.cm-bracket { color: #cc7; }
+.cm-s-idea-darcula  { font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;}
+
+
+.cm-s-idea-darcula .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
+
+.CodeMirror-hints.idea-darcula {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  color: #616569;
+  background-color: #ebf3fd !important;
+}
+
+.CodeMirror-hints.idea-darcula .CodeMirror-hint-active {
+  background-color: #a2b8c9 !important;
+  color: #5c6065 !important;
+}

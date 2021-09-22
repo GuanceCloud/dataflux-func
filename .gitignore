@@ -71,10 +71,15 @@ pip-log.txt
 # Translations
 *.mo
 
+# local env files
+.env.local
+.env.*.local
+
 # NPM Packages & Logs
 node_modules
-client/node_modules
-npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Celery Beat
 celerybeat.pid
@@ -83,14 +88,22 @@ celerybeat-schedule.*
 
 # Code try
 *.try.py
-.idea/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Cache/upload files
 server/.*/
 uploaded-files/
 
 # Vue dist
-client/dist
+!client/dist
 client/public/theme-auto.min.css
 client/public/theme-light.min.css
 client/public/theme-dark.min.css

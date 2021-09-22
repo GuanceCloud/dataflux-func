@@ -142,7 +142,7 @@ shortcutDays : '{n}天'
                 </template>
 
                 <el-form-item :label="$t('Note')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"

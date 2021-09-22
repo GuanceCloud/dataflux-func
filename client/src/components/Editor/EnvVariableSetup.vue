@@ -41,14 +41,14 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     maxlength="25"
                     show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Description')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"

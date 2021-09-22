@@ -3077,6 +3077,181 @@ envVariableAPI:
         $desc: 环境变量ID
         $type: string
 
+# API认证
+apiAuthAPI:
+  list:
+    showInDoc    : true
+    name         : 列出API认证
+    method       : get
+    url          : /api/v1/api-auth/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : true
+    fieldPicking : true
+    fieldKicking : true
+    orderFields:
+      id : apia.id
+      seq: apia.seq
+    fuzzySearch:
+      - apia.id
+      - apia.title
+      - apia.description
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : apia.id
+      type:
+        $desc      : 根据类型过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : apia.type
+        $commaArrayIn:
+          - httpBasic
+          - func
+
+  add:
+    showInDoc    : true
+    name         : 添加API认证
+    method       : post
+    url          : /api/v1/api-auth/do/add
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        type:
+          $desc      : 类型
+          $isRequired: true
+          $type      : enum
+          $in:
+            - fixedField
+            - httpBasic
+            - httpDigest
+            - func
+          $example: httpBasic
+        configJSON:
+          $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
+          $isRequired: true
+          fixedField:
+            $desc: 固定字段认证
+            $allowNull: true
+            $:
+              location:
+                $desc      : 字段位置
+                $isRequired: true
+                $type      : enum
+                $in:
+                  - header
+                  - query
+                  - body
+                  - kwargs
+              name:
+                $desc      : 字段名
+                $isRequired: true
+                $type      : string
+              value:
+                $desc      : 字段值
+                $isRequired: true
+                $type      : string
+          httpAuth:
+            $desc: HTTP认证
+            $allowNull: true
+            $:
+              username:
+                $desc      : 用户名
+                $isRequired: true
+                $type      : string
+              password:
+                $desc      : 用户名
+                $isRequired: true
+                $type      : string
+          funcId:
+            $desc     : 认证函数ID
+            $allowNull: true
+            $type     : string
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : 修改API认证
+    method       : post
+    url          : /api/v1/api-auth/:id/do/modify
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: API认证ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        configJSON:
+          $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
+          $isRequired: true
+          fixedField:
+            $desc: 固定字段认证
+            $allowNull: true
+            $:
+              location:
+                $desc      : 字段位置
+                $isRequired: true
+                $type      : enum
+                $in:
+                  - header
+                  - query
+                  - body
+                  - kwargs
+              name:
+                $desc      : 字段名
+                $isRequired: true
+                $type      : string
+              value:
+                $desc      : 字段值
+                $isRequired: true
+                $type      : string
+          httpAuth:
+            $desc: HTTP认证
+            $allowNull: true
+            $:
+              username:
+                $desc      : 用户名
+                $isRequired: true
+                $type      : string
+              password:
+                $desc      : 密码
+                $isRequired: false
+                $type      : string
+          funcId:
+            $desc     : 认证函数ID
+            $allowNull: true
+            $type     : string
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : 删除API认证
+    method       : get
+    url          : /api/v1/api-auth/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: API认证ID
+        $type: string
+
 # 授权链接
 authLinkAPI:
   list:

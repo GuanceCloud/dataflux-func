@@ -203,8 +203,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
 /* Handlers */
 var crudHandler = exports.crudHandler = dataSourceMod.createCRUDHandler();
 
-exports.list   = crudHandler.createListHandler(null, {beforeResp: hidePassword});
-exports.delete = crudHandler.createDeleteHandler();
+exports.list = crudHandler.createListHandler(null, {beforeResp: hidePassword});
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

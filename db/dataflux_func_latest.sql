@@ -1,13 +1,13 @@
 # ************************************************************
 # Sequel Ace SQL dump
-# 版本号： 3034
+# 版本号： 3038
 #
 # https://sequel-ace.com/
 # https://github.com/Sequel-Ace/Sequel-Ace
 #
-# 主机: ubuntu20-dev.vm (MySQL 5.7.34)
+# 主机: ubuntu20-dev.vm (MySQL 5.7.35)
 # 数据库: dataflux_func
-# 生成时间: 2021-08-10 16:12:32 +0000
+# 生成时间: 2021-09-22 01:13:02 +0000
 # ************************************************************
 
 
@@ -18,6 +18,24 @@ SET NAMES utf8mb4;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE='NO_AUTO_VALUE_ON_ZERO', SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+# 转储表 biz_main_api_auth
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `biz_main_api_auth`;
+
+CREATE TABLE `biz_main_api_auth` (
+  `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 fixedField|httpBasic|httpDigest|func',
+  `configJSON` json NOT NULL COMMENT '配置JSON',
+  `note` text COMMENT '备注',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`seq`),
+  UNIQUE KEY `ID` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API认证';
 
 
 # 转储表 biz_main_auth_link
@@ -31,6 +49,7 @@ CREATE TABLE `biz_main_auth_link` (
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
   `funcCallKwargsJSON` text NOT NULL COMMENT '函数调用参数JSON (kwargs)',
   `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON',
+  `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
   `expireTime` datetime DEFAULT NULL COMMENT '过期时间（NULL表示永不过期）',
   `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON（value="<From Parameter>"表示从参数获取）',
   `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'API' COMMENT '来源 API|UI',
@@ -47,9 +66,9 @@ CREATE TABLE `biz_main_auth_link` (
 LOCK TABLES `biz_main_auth_link` WRITE;
 /*!40000 ALTER TABLE `biz_main_auth_link` DISABLE KEYS */;
 
-INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`)
+INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `apiAuthId`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`)
 VALUES
-	(1,X'61756C6E2D706C7573',X'64656D6F5F5F62617369632E706C7573','{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}',NULL,NULL,'{}',X'5549',0,0,NULL,'2021-07-19 18:13:18','2021-07-19 18:13:18');
+	(1,X'61756C6E2D706C7573',X'64656D6F5F5F62617369632E706C7573','{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}',NULL,NULL,NULL,'{}',X'5549',0,0,NULL,'2021-07-19 18:13:18','2021-07-19 18:13:18');
 
 /*!40000 ALTER TABLE `biz_main_auth_link` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -66,6 +85,7 @@ CREATE TABLE `biz_main_batch` (
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
   `funcCallKwargsJSON` text NOT NULL COMMENT '函数调用参数JSON (kwargs)',
   `tagsJSON` json DEFAULT NULL COMMENT '批处理标签JSON',
+  `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
   `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'API' COMMENT '来源 API|UI',
   `showInDoc` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在文档中显示',
   `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',

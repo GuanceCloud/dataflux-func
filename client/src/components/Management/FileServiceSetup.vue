@@ -66,7 +66,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                 </el-form-item>
 
                 <el-form-item :label="$t('Note')">
-                  <el-input
+                  <el-input :placeholder="$t('Optional')"
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"

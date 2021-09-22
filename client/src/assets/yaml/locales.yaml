@@ -14,9 +14,9 @@ en:
   '(': '（'
   ')': '）'
 
-  Light Mode   : 明亮模式
-  Dark Mode    : 黑暗模式
-  Auto         : 自动
+  Light Mode: 明亮模式
+  Dark Mode : 黑暗模式
+  Auto      : 自动
 
   # 通用
   Very good: 非常好
@@ -27,6 +27,7 @@ en:
   'No'     : 否
   Default  : 默认
   Official : 官方
+  Optional : 可选
 
   # 通用-操作
   Add     : 添加

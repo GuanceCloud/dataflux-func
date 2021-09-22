@@ -201,6 +201,7 @@ function startApplication() {
   require('./routers/authLinkAPIRouter');
   require('./routers/crontabConfigAPIRouter');
   require('./routers/batchAPIRouter');
+  require('./routers/apiAuthAPIRouter');
 
   require('./routers/crontabTaskInfoAPIRouter');
   require('./routers/batchTaskInfoAPIRouter');
