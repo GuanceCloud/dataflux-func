@@ -726,12 +726,17 @@
             this.setupErrorKeyStatus[k] = false;
           }
 
-          // 发送安装请求
-          let postData = {
-            config: JSON.parse(JSON.stringify(this.userConfigs)),
-          };
+          // 准备配置
+          let userConfigs = JSON.parse(JSON.stringify(this.userConfigs))
+
+          // 【配置特殊处理】
+          if ('string' === typeof userConfigs.REDIS_USE_TLS) {
+            userConfigs.REDIS_USE_TLS = JSON.parse(userConfigs.REDIS_USE_TLS);
+          }
+
           try {
-            let axiosRes = await axios.post('/setup', postData);
+            // 发送安装请求
+            let axiosRes = await axios.post('/setup', { config: userConfigs });
             this.setupRedirectURL = axiosRes.data.redirectURL;
 
           } catch(err) {
