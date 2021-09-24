@@ -201,22 +201,24 @@ This is a builtin Data Source, please contact the admin to change the config: �
                       v-model="form.configJSON.clientId"></el-input>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
+                  <el-form-item class="config-divider" :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
                     <el-divider></el-divider>
                   </el-form-item>
 
                   <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
-                    <el-form-item
+                    <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')"
                       class="topic-handler"
                       :label="`#${index + 1}`"
-                      :key="`topic-${index}`" v-if="hasConfigField(selectedType, 'topicHandlers')"
+                      :key="`topic-${index}`"
                       :prop="`configJSON.topicHandlers.${index}.topic`"
                       :rules="formRules_topic">
                       <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
+
+                      <!-- 删除按钮 -->
                       <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                     </el-form-item>
-                    <el-form-item
-                      :key="`handler-${index}`" v-if="hasConfigField(selectedType, 'topicHandlers')"
+                    <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')"
+                      :key="`handler-${index}`"
                       :prop="`configJSON.topicHandlers.${index}.funcId`"
                       :rules="formRules_topic">
                       <el-cascader class="func-cascader-input" ref="funcCascader"
@@ -446,6 +448,7 @@ export default {
     async modifyData() {
       let _formData = this._getFromData();
       delete _formData.id;
+      delete _formData.type;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
         params: { id: this.$route.params.id },
@@ -489,14 +492,15 @@ export default {
       }
       return (field in this.C.DATA_SOURCE_MAP.get(type).configFields);
     },
-    removeTopicHandler(index) {
-      this.form.configJSON.topicHandlers.splice(index, 1);
-    },
+
     addTopicHandler() {
       if (this.T.isNothing(this.form.configJSON.topicHandlers)) {
         this.$set(this.form.configJSON, 'topicHandlers', []);
       }
       this.form.configJSON.topicHandlers.push({ topic: '', funcId: '' });
+    },
+    removeTopicHandler(index) {
+      this.form.configJSON.topicHandlers.splice(index, 1);
     },
   },
   computed: {
@@ -687,6 +691,7 @@ export default {
       form: {
         id         : null,
         title      : null,
+        type       : null,
         description: null,
         configJSON : {},
       },
@@ -699,6 +704,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.config-divider {
+  margin-bottom: 0;
+}
+
 .func-cascader-input {
   width: 420px;
 }

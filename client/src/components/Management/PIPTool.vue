@@ -46,7 +46,7 @@ Pypi Official             : Pypi官方原版
         <el-select
           style="width: 235px"
           v-model="pypiMirror">
-          <el-option v-for="mirror in PIP_MIRRORS" :key="mirror.name" :label="mirror.name" :value="mirror.value"></el-option>
+          <el-option v-for="mirror in PIP_MIRRORS" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
           style="width: 500px"

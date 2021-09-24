@@ -432,6 +432,64 @@ export default {
     return new MAP_CONST(this.ENV_VARIABLE, 0);
   },
 
+  // API认证类型
+  get API_AUTH() {
+    return [
+      {
+        key : 'fixedField',
+        name: $t('Fixed Field'),
+        configFields: {
+          fixedFields: { default: [], isRequired: true },
+        },
+      },
+      {
+        key : 'httpBasic',
+        name: $t('HTTP Basic'),
+        configFields: {
+          httpAuth: { default: [], isRequired: true },
+        },
+      },
+      {
+        key : 'httpDigest',
+        name: $t('HTTP Digest'),
+        configFields: {
+          httpAuth: { default: [], isRequired: true },
+        },
+      },
+      {
+        key : 'func',
+        name: $t('Func'),
+        configFields: {
+          funcId: { default: null, isRequired: true },
+        },
+      },
+    ];
+  },
+  get API_AUTH_MAP() {
+    return new MAP_CONST(this.API_AUTH);
+  },
+
+  // API认证类型 - 固定位置
+  get API_AUTH_FIXED_FIELD_LOCATION() {
+    return [
+      {
+        key : 'header',
+        name: $t('HTTP Header'),
+      },
+      {
+        key : 'query',
+        name: $t('HTTP Query'),
+      },
+      {
+        key : 'body',
+        name: $t('HTTP Body'),
+      },
+    ];
+  },
+  get API_AUTH_FIXED_FIELD_LOCATION_MAP() {
+    return new MAP_CONST(this.API_AUTH_FIXED_FIELD_LOCATION);
+  },
+
   // 授权链接限流
   get AUTH_LINK_THROTTLING() {
     return [

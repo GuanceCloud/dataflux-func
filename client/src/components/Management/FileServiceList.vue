@@ -36,7 +36,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()">{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else>{{ $t('No File Service has ever been added') }}</h1>
 
           <p class="no-data-tip">

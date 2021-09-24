@@ -167,6 +167,7 @@ en:
   ENV               : 环境变量
   Overview          : 总览
   About             : 关于
+  API Auth          : API认证
   Auth Link         : 授权链接
   Crontab Config    : 自动触发配置
   Batch             : 批处理
@@ -211,6 +212,16 @@ en:
   'Will be converted by json.loads() automatically'            : '将自动使用 json.loads() 进行转换'
   'String array with comma separators'                         : '逗号分隔字符串数组'
   'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
+
+  # const.js - API_AUTH
+  'Fixed Field': '固定字段'
+  'HTTP Basic' : 'HTTP Basic'
+  'HTTP Digest': 'HTTP Digest'
+
+  # const.js - API_AUTH_FIXED_FIELD_LOCATION
+  'HTTP Header': 'HTTP Header'
+  'HTTP Query' : 'HTTP Query 参数'
+  'HTTP Body'  : 'HTTP Body 字段'
 
   # const.js - AUTH_LINK_THROTTLING
   'timePerSecond': '{n} 次/秒'

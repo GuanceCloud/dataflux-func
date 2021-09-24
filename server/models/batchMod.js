@@ -74,6 +74,10 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,sset.title       AS sset_title');
   sql.append('  ,sset.description AS sset_description');
 
+  sql.append('  ,apia.id   AS apia_id');
+  sql.append('  ,apia.name AS apia_name');
+  sql.append('  ,apia.type AS apia_type');
+
   sql.append('FROM biz_main_batch AS bat');
 
   sql.append('LEFT JOIN biz_main_func AS func');
@@ -84,6 +88,9 @@ EntityModel.prototype.list = function(options, callback) {
 
   sql.append('LEFT JOIN biz_main_script_set AS sset');
   sql.append('  ON sset.id = func.scriptSetId');
+
+  sql.append('LEFT JOIN biz_main_api_auth AS apia');
+  sql.append('  ON apia.id = auln.apiAuthId');
 
   options.baseSQL = sql.toString();
 

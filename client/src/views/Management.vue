@@ -23,6 +23,13 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/api-auth-list">
+              <span>
+                <i class="fa fa-fw fa-lock"></i>
+                {{ $t('API Auth') }}
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/auth-link-list">
               <span>
                 <i class="fa fa-fw fa-link"></i>

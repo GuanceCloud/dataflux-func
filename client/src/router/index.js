@@ -102,6 +102,23 @@ const routes = [
         name: 'about',
         component: () => import('../components/Management/About.vue'),
       },
+
+      {
+        path: 'api-auth-list',
+        name: 'api-auth-list',
+        component: () => import('../components/Management/APIAuthList.vue'),
+      },
+      {
+        path: 'api-auth-add',
+        name: 'api-auth-add',
+        component: () => import('../components/Management/APIAuthSetup.vue'),
+      },
+      {
+        path: 'api-auth-setup/:id',
+        name: 'api-auth-setup',
+        component: () => import('../components/Management/APIAuthSetup.vue'),
+      },
+
       {
         path: 'auth-link-list',
         name: 'auth-link-list',

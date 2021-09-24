@@ -3110,7 +3110,9 @@ apiAuthAPI:
         $searchType: in
         $searchKey : apia.type
         $commaArrayIn:
+          - fixedField
           - httpBasic
+          - httpDigest
           - func
 
   add:
@@ -3124,6 +3126,10 @@ apiAuthAPI:
     body:
       data:
         $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
         type:
           $desc      : 类型
           $isRequired: true
@@ -3137,7 +3143,7 @@ apiAuthAPI:
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
           $isRequired: true
-          fixedField:
+          fixedFields:
             $desc: 固定字段认证
             $allowNull: true
             $:
@@ -3149,7 +3155,6 @@ apiAuthAPI:
                   - header
                   - query
                   - body
-                  - kwargs
               name:
                 $desc      : 字段名
                 $isRequired: true
@@ -3194,10 +3199,14 @@ apiAuthAPI:
     body:
       data:
         $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
           $isRequired: true
-          fixedField:
+          fixedFields:
             $desc: 固定字段认证
             $allowNull: true
             $:
@@ -3209,7 +3218,6 @@ apiAuthAPI:
                   - header
                   - query
                   - body
-                  - kwargs
               name:
                 $desc      : 字段名
                 $isRequired: true

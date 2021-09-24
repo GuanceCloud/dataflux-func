@@ -28,6 +28,7 @@ const STATE_CONFIG = {
   codeViewer_isCodeLoaded                  : { persist: false, syncXTab: false },
   Editor_highlightedFuncId                 : { persist: false, syncXTab: false },
   Editor_splitPanePercent                  : { persist: true,  syncXTab: true  },
+  APIAuthList_scrollY                      : { persist: false, syncXTab: false },
   AuthLinkList_scrollY                     : { persist: false, syncXTab: false },
   CrontabConfigList_scrollY                : { persist: false, syncXTab: false },
   BatchList_scrollY                        : { persist: false, syncXTab: false },
@@ -67,6 +68,7 @@ const MUTATION_CONFIG = {
   updateCodeViewer_isCodeLoaded                  : { persist: false },
   updateEditor_highlightedFuncId                 : { persist: true  },
   updateEditor_splitPanePercent                  : { persist: true  },
+  updateAPIAuthList_scrollY                      : { persist: false },
   updateAuthLinkList_scrollY                     : { persist: false },
   updateCrontabConfigList_scrollY                : { persist: false },
   updateBatchList_scrollY                        : { persist: false },
@@ -156,6 +158,7 @@ export default new Vuex.Store({
     Editor_highlightedFuncId: null,
     Editor_splitPanePercent : null,
 
+    APIAuthList_scrollY      : 0,
     AuthLinkList_scrollY     : 0,
     CrontabConfigList_scrollY: 0,
     BatchList_scrollY        : 0,
@@ -420,6 +423,9 @@ export default new Vuex.Store({
       state.Editor_splitPanePercent = value || null;
     },
 
+    updateAPIAuthList_scrollY(state, value) {
+      state.APIAuthList_scrollY = value || 0;
+    },
     updateAuthLinkList_scrollY(state, value) {
       state.AuthLinkList_scrollY = value || 0;
     },

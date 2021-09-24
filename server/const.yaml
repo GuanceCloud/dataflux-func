@@ -38,6 +38,7 @@ respCodeMap:
   ########## Content for YOUR project below ##########
   # ESomethingWrong   : 400.91 # Something wrong
 
+  EAPIAuth                : 401.99  # API认证失败
   EAPITimeout             : 599.10  # API超时超时
   EScriptPreCheck         : 599.20  # 脚本预检查失败
   EFuncFailed             : 599.30  # 函数执行失败

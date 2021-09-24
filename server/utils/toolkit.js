@@ -2197,3 +2197,21 @@ var stringSimilar = toolkit.stringSimilar = function stringSimilar(s, t, f) {
   let res = (1 - d[n][m] / l)
   return parseFloat(res.toFixed(f));
 };
+
+var parseKVString = toolkit.parseKVString = function parseKVString(s) {
+  let parsed = {};
+
+  let tokens = s.split(/,(?=(?:[^"]|"[^"]*")*$)/);
+
+  let i = 0;
+  while (i < tokens.length) {
+    let param = /(\w+)=["]?([^"]*)["]?$/.exec(tokens[i]);
+    if (param) {
+      parsed[param[1]] = param[2];
+    }
+
+    i++;
+  }
+
+  return parsed;
+};

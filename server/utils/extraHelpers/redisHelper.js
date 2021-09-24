@@ -294,14 +294,14 @@ RedisHelper.prototype.hgetall = function(key, callback) {
   return this.run('hgetall', key, callback);
 };
 
-RedisHelper.prototype.hset = function(key, feild, value, callback) {
+RedisHelper.prototype.hset = function(key, field, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hset', key, feild, value, callback);
+  return this.run('hset', key, field, value, callback);
 };
 
-RedisHelper.prototype.hsetnx = function(key, feild, value, callback) {
+RedisHelper.prototype.hsetnx = function(key, field, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hsetnx', key, feild, value, callback);
+  return this.run('hsetnx', key, field, value, callback);
 };
 
 RedisHelper.prototype.hmset = function(key, obj, callback) {

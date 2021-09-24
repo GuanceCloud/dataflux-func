@@ -27,10 +27,6 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   ],
 };
 
-var CIPHER_CONFIG_FIELDS = exports.CIPHER_CONFIG_FIELDS = [
-  'password',
-];
-
 exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
@@ -48,7 +44,38 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   apia.*');
 
+  sql.append('  ,func.id              AS func_id');
+  sql.append('  ,func.name            AS func_name');
+  sql.append('  ,func.title           AS func_title');
+  sql.append('  ,func.description     AS func_description');
+  sql.append('  ,func.definition      AS func_definition');
+  sql.append('  ,func.argsJSON        AS func_argsJSON');
+  sql.append('  ,func.kwargsJSON      AS func_kwargsJSON');
+  sql.append('  ,func.extraConfigJSON AS func_extraConfigJSON');
+  sql.append('  ,func.category        AS func_category');
+  sql.append('  ,func.integration     AS func_integration');
+  sql.append('  ,func.tagsJSON        AS func_tagsJSON');
+
+  sql.append('  ,scpt.id             AS scpt_id');
+  sql.append('  ,scpt.title          AS scpt_title');
+  sql.append('  ,scpt.description    AS scpt_description');
+  sql.append('  ,scpt.publishVersion AS scpt_publishVersion');
+
+  sql.append('  ,sset.id          AS sset_id');
+  sql.append('  ,sset.title       AS sset_title');
+  sql.append('  ,sset.description AS sset_description');
+
   sql.append('FROM biz_main_api_auth AS apia');
+
+  sql.append('LEFT JOIN biz_main_func AS func');
+  sql.append('  ON func.id = JSON_UNQUOTE(JSON_EXTRACT(apia.configJSON, "$.funcId"))');
+
+  sql.append('LEFT JOIN biz_main_script AS scpt');
+  sql.append('  ON scpt.id = func.scriptId');
+
+  sql.append('LEFT JOIN biz_main_script_set AS sset');
+  sql.append('  ON sset.id = func.scriptSetId');
+
 
   options.baseSQL = sql.toString();
 

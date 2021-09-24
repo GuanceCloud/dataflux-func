@@ -6,13 +6,14 @@ var path         = require('path');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
-var async      = require('async');
-var request    = require('request');
-var LRU        = require('lru-cache');
-var yaml       = require('js-yaml');
-var sortedJSON = require('sorted-json');
-var moment     = require('moment');
-var byteSize   = require('byte-size');
+var async         = require('async');
+var request       = require('request');
+var LRU           = require('lru-cache');
+var yaml          = require('js-yaml');
+var sortedJSON    = require('sorted-json');
+var moment        = require('moment');
+var byteSize      = require('byte-size');
+var HTTPAuthUtils = require('http-auth-utils');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -35,6 +36,7 @@ var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
 var operationRecordMod        = require('../models/operationRecordMod');
 var fileServiceMod            = require('../models/fileServiceMod');
 var userMod                   = require('../models/userMod');
+var apiAuthMod                = require('../models/apiAuthMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -88,15 +90,18 @@ function _getHTTPRequestInfo(req) {
 
   // 请求体
   var httpRequest = {
-    method       : req.method.toUpperCase(),
-    originalUrl  : req.originalUrl,
-    url          : path.join(req.baseUrl, req.path),
-    headers      : req.headers,
-    hostname     : req.hostname,
-    ip           : req.ip,
-    ips          : req.ips,
-    protocol     : req.protocol,
-    xhr          : req.xhr,
+    method     : req.method.toUpperCase(),
+    originalUrl: req.originalUrl,
+    url        : path.join(req.baseUrl, req.path),
+    headers    : req.headers,
+    query      : req.query,
+    body       : req.body,
+    files      : req.files,
+    hostname   : req.hostname,
+    ip         : req.ip,
+    ips        : req.ips,
+    protocol   : req.protocol,
+    xhr        : req.xhr,
   };
   return httpRequest;
 }
@@ -106,6 +111,11 @@ function _getTaskDefaultQueue(execMode) {
 };
 
 function _getFuncById(locals, funcId, callback) {
+  if (!funcId) {
+    // 未传递函数ID不执行
+    return callback(new E('EClientNotFound', 'Func ID not specified'));
+  }
+
   var func = FUNC_LRU.get(funcId);
   if (func) return callback(null, func);
 
@@ -123,7 +133,7 @@ function _getFuncById(locals, funcId, callback) {
 
     dbRes = dbRes[0];
     if (!dbRes) {
-      return callback(new E('EClientNotFound', 'No such function', { funcId: funcId }));
+      return callback(new E('EClientNotFound', 'No such Func', { funcId: funcId }));
     }
 
     func = dbRes;
@@ -444,6 +454,103 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
 
   // HTTP请求信息
   funcCallOptions.httpRequest = _getHTTPRequestInfo(req);
+
+  return callback(null, funcCallOptions);
+};
+
+function _createFuncCallOptionsForAPIAuth(req, res, func, apiAuth, callback) {
+  // 注意：
+  //  本函数内所有搜集的时长类数据均为秒
+  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
+
+  func.extraConfigJSON = func.extraConfigJSON || {};
+
+  /*** 搜集函数参数/执行选项 ***/
+  var funcCallKwargs  = {};
+  var funcCallOptions = {
+    origin  : 'apiAuth',
+    originId: apiAuth.id,
+  };
+
+  /*** 开始组装参数 ***/
+
+  // 函数ID
+  funcCallOptions.funcId = func.id;
+
+  // 函数信息（用于函数结果缓存）
+  funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
+  funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
+
+  // 函数参数
+  funcCallOptions.funcCallKwargs = funcCallKwargs;
+
+  // API超时（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
+
+  } else {
+    funcCallOptions.apiTimeout = CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+  }
+
+  // 函数执行超时（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    funcCallOptions.timeout = func.extraConfigJSON.timeout;
+  } else {
+    funcCallOptions.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+  }
+
+  // 执行模式
+  funcCallOptions.execMode = 'sync';
+
+  // 函数执行超时不得大于API超时
+  //    超出时，函数执行超时自动跟随API超时
+  if (funcCallOptions.timeout > funcCallOptions.apiTimeout) {
+    funcCallOptions.timeout = funcCallOptions.apiTimeout;
+  }
+
+  // 【固定】函数任务过期
+  funcCallOptions.timeoutToExpireScale = CONFIG._FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE;
+
+  // 是否永不过期
+  funcCallOptions.neverExpire = false;
+
+  // 返回类型（此参数不在Python中处理，此处设置没有意义）
+  // funcCallOptions.returnType = 'raw';
+
+  // 结果保存
+  funcCallOptions.saveResult = false;
+
+  // 结果拆包（此参数不在Python中处理，此处设置没有意义）
+  // funcCallOptions.unfold = true;
+
+  // 执行队列（优先级：函数配置 > 默认值）
+  if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    var queueNumber = parseInt(func.extraConfigJSON.queue);
+    if (queueNumber < 1 || queueNumber > 9) {
+      return callback(new E('EClientBadRequest', 'Invalid options: queue should be an integer between 1 and 9'));
+    }
+
+    funcCallOptions.queue = '' + func.extraConfigJSON.queue;
+
+  } else {
+    funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
+  }
+
+  // 触发时间
+  funcCallOptions.triggerTimeMs = res.locals.requestTime.getTime();
+  funcCallOptions.triggerTime   = parseInt(funcCallOptions.triggerTimeMs / 1000);
+
+  // 结果缓存
+  if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (!func.extraConfigJSON.cacheResult) {
+      funcCallOptions.cacheResult = false;
+    } else {
+      funcCallOptions.cacheResult = parseInt(func.extraConfigJSON.cacheResult);
+    }
+  }
+
+  // HTTP请求信息
+  funcCallOptions.httpRequest = funcCallOptions.funcCallKwargs.req = _getHTTPRequestInfo(req);
 
   return callback(null, funcCallOptions);
 };
@@ -1003,6 +1110,247 @@ function _doAPIResponse(locals, res, ret, options, callback) {
   }
 };
 
+function __matchedFixedFields(req, fixedFields) {
+  var result = false;
+
+  for (var i = 0; i < fixedFields.length; i++) {
+    var f = fixedFields[i];
+
+    try {
+      var fullPath = toolkit.strf('{0}.{1}', f.location, f.name);
+      result = (toolkit.jsonFind(req, fullPath) === f.value)
+    } catch(_) {}
+    try { delete req[f.location][f.name] } catch(_) {}
+
+    if (result) break;
+  }
+  return result;
+};
+function __getHTTPAuth(type, req, res, callback) {
+  type = type.toLowerCase();
+
+  var authInfo = null;
+
+  var authString = req.get('Authorization');
+  if (!authString || !toolkit.startsWith(authString.toLowerCase(), type + ' ')) return callback();
+
+  var data = authString.slice(type.length + 1);
+  switch(type) {
+    case 'basic':
+      var splitted = toolkit.fromBase64(data).split(':');
+      authInfo = {
+        hash    : data,
+        username: splitted[0],
+        password: splitted.slice(1).join(':'),
+      }
+      return callback(null, authInfo);
+      break;
+
+    case 'digest':
+      authInfo = toolkit.parseKVString(data);
+      authInfo.hash = authInfo.response;
+
+      var tags = [
+        'realm', authInfo.realm,
+        'nonce', authInfo.nonce,
+      ]
+      var cacheKey = toolkit.getCacheKey('cache', 'httpAuth', tags);
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return callback(err);
+
+        if (cacheRes) {
+          return callback(null, authInfo);
+        } else {
+          return callback(null, null);
+        }
+      });
+      break;
+
+    default:
+      return callback();
+      break;
+  }
+};
+function __checkHTTPAuth(type, req, authInfo, password) {
+  var expectedHash = HTTPAuthUtils[type.toUpperCase()].computeHash({
+    username : authInfo.username,
+    realm    : authInfo.realm,
+    password : password,
+    method   : req.method.toUpperCase(),
+    uri      : authInfo.uri,
+    nonce    : authInfo.nonce,
+    nc       : authInfo.nc,
+    cnonce   : authInfo.cnonce,
+    qop      : authInfo.qop,
+    algorithm: 'md5',
+  });
+  return expectedHash === authInfo.hash;
+};
+function __askHTTPAuth(type, res, realm, callback) {
+  var nonce = toolkit.genUUID();
+
+  var tags = [
+    'realm', realm,
+    'nonce', nonce,
+  ]
+  var cacheKey = toolkit.getCacheKey('cache', 'httpAuth', tags);
+  res.locals.cacheDB.setex(cacheKey, CONFIG._HTTP_AUTH_NONCE_MAX_AGE, 'x', function(err) {
+    if (err) return callback(err);
+
+    var authMechanism = HTTPAuthUtils[type.toUpperCase()];
+    var authOpt = {
+      realm : realm,
+      qop   : 'auth',
+      nonce : nonce,
+      opaque: 'DataFlux Func Love You!',
+    };
+    var wwwAuthString = HTTPAuthUtils.buildWWWAuthenticateHeader(authMechanism, authOpt);
+
+    res.set('WWW-Authenticate', wwwAuthString);
+    return callback(new E('EAPIAuth', toolkit.strf('HTTP {0} Auth failed', type)));
+  });
+};
+function __callAuthFunc(req, res, apiAuth, callback) {
+  var func = null;
+  var funcCallOptions = null;
+  async.series([
+    // 获取函数
+    function(asyncCallback) {
+      _getFuncById(res.locals, apiAuth.configJSON.funcId, function(err, _func) {
+        if (err) return asyncCallback(err);
+
+        func = _func;
+
+        return asyncCallback();
+      });
+    },
+    // 创建函数调用选项
+    function(asyncCallback) {
+      _createFuncCallOptionsForAPIAuth(req, res, func, apiAuth, function(err, _funcCallOptions) {
+        if (err) return asyncCallback(err);
+
+        funcCallOptions = _funcCallOptions;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+
+    _callFuncRunner(res.locals, funcCallOptions, function(err, ret, isCached, responseControl) {
+      if (err) return callback(err);
+
+      var isValidAuth = false;
+      try { isValidAuth = !!ret.data.result.raw; } catch(_) {};
+
+      return callback(null, isValidAuth);
+    });
+  });
+};
+
+function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
+  var apiAuth = null;
+  async.series([
+    // 获取API认证配置
+    function(asyncCallback) {
+      apiAuth = API_AUTH_LRU.get(apiAuthId);
+      if (apiAuth === null) {
+        // 已查询过不存在
+        return asyncCallback();
+
+      } else if (apiAuth) {
+        // 已查询确定存在
+        return asyncCallback();
+      }
+
+      var apiAuthModel = apiAuthMod.createModel(locals);
+
+      apiAuthModel._get(apiAuthId, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (!dbRes) {
+          // 查询不存在，缓存为`null`
+          API_AUTH_LRU.set(apiAuthId, null);
+          return asyncCallback();
+        }
+
+        apiAuth = dbRes;
+        API_AUTH_LRU.set(apiAuthId, apiAuth);
+
+        return asyncCallback();
+      });
+    },
+    // 执行认证配置
+    function(asyncCallback) {
+      if (!apiAuth) return asyncCallback();
+
+      locals.logger.info('[API AUTH] Type: {0}', apiAuth.type);
+
+      switch(apiAuth.type) {
+        case 'fixedField':
+          var fixedFields = apiAuth.configJSON.fixedFields;
+          if (!__matchedFixedFields(req, fixedFields)) {
+            return asyncCallback(new E('EAPIAuth', 'Fixed Field Auth failed'));
+          }
+          return asyncCallback();
+          break;
+
+        case 'httpBasic':
+        case 'httpDigest':
+          var authType = apiAuth.type.replace(/^http/g, '');
+
+          __getHTTPAuth(authType, req, res, function(err, authInfo) {
+            if (err) return asyncCallback(err);
+
+            var users = apiAuth.configJSON.httpAuth;
+            if (!authInfo || toolkit.isNothing(users)) {
+              // 未发送认证信息/认证信息未配置时，要求认证
+              return __askHTTPAuth(authType, res, realm, asyncCallback);
+            }
+
+            // 查找用户
+            var matchedUser = users.filter(function(x) {
+              return x.username === authInfo.username;
+            })[0];
+
+            if (!matchedUser) {
+              // 没有匹配用户
+              return __askHTTPAuth(authType, res, realm, asyncCallback);
+
+            } else {
+              var password = toolkit.decipherByAES(matchedUser.passwordCipher, CONFIG.SECRET);
+              if (!__checkHTTPAuth(authType, req, authInfo, password)) {
+                return __askHTTPAuth(authType, res, realm, asyncCallback);
+              }
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'func':
+          var funcId = apiAuth.configJSON.funcId;
+          __callAuthFunc(req, res, apiAuth, function(err, isValidAuth) {
+            if (err) return asyncCallback(err);
+
+            if (!isValidAuth) {
+              return asyncCallback(new E('EAPIAuth', 'Func Auth failed'));
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        default:
+          return asyncCallback();
+      }
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback();
+  });
+};
+
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
@@ -1275,6 +1623,13 @@ exports.callAuthLink = function(req, res, next) {
         return asyncCallback();
       });
     },
+    // 检查认证
+    function(asyncCallback) {
+      if (!authLink.apiAuthId) return asyncCallback();
+
+      var realm = 'AuthLink:' + authLink.id;
+      _doAPIAuth(res.locals, req, res, authLink.apiAuthId, realm, asyncCallback);
+    },
     // 检查限制
     function(asyncCallback) {
       // 是否已禁用
@@ -1460,6 +1815,13 @@ exports.callBatch = function(req, res, next) {
 
         return asyncCallback();
       });
+    },
+    // 检查认证
+    function(asyncCallback) {
+      if (!batch.apiAuthId) return asyncCallback();
+
+      var realm = 'Batch:' + batch.id;
+      _doAPIAuth(res.locals, req, res, batch.apiAuthId, realm, asyncCallback);
     },
     // 检查限制
     function(asyncCallback) {

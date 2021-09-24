@@ -28,6 +28,7 @@ DROP TABLE IF EXISTS `biz_main_api_auth`;
 CREATE TABLE `biz_main_api_auth` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `name` varchar(256) DEFAULT NULL COMMENT '名称',
   `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 fixedField|httpBasic|httpDigest|func',
   `configJSON` json NOT NULL COMMENT '配置JSON',
   `note` text COMMENT '备注',

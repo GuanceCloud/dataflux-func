@@ -110,6 +110,12 @@ shortcutDays : '{n}天'
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
+                <el-form-item :label="$t('API Auth')" prop="apiAuthId">
+                  <el-select v-model="form.apiAuthId">
+                    <el-option v-for="opt in apiAuthOptions" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
+                  </el-select>
+                </el-form-item>
+
                 <el-form-item :label="$t('Show in doc')" prop="showInDoc">
                   <el-switch
                     v-model="form.showInDoc">
@@ -220,6 +226,12 @@ export default {
 
       this.funcMap      = funcList.map;
       this.funcCascader = funcList.cascader;
+
+      // 获取API认证列表
+      let apiAuthList = await this.common.getAPIAuthList();
+
+      this.apiAuthList = apiAuthList;
+
       this.$store.commit('updateLoadStatus', true);
     },
     async submitData() {
@@ -425,6 +437,13 @@ export default {
       }
       return false;
     },
+    apiAuthOptions() {
+      return this.apiAuthList.map(d => {
+        let _typeName = this.C.API_AUTH_MAP.get(d.type).name;
+        d.label = `[${_typeName}] ${d.name || ''}`;
+        return d;
+      });
+    },
     datetimePickerOptions() {
       const now = new Date().getTime();
       const shortcutDaysList = [1, 3, 7, 30, 90, 365];
@@ -453,6 +472,7 @@ export default {
       data        : {},
       funcMap     : {},
       funcCascader: [],
+      apiAuthList : [],
 
       useCustomId: false,
       showAddTag : false,
@@ -463,6 +483,7 @@ export default {
         funcId            : null,
         funcCallKwargsJSON: null,
         tagsJSON          : [],
+        apiAuthId         : null,
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,

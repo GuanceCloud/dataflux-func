@@ -45,7 +45,7 @@ Please input password: 请输入密码
                 </el-form-item>
 
                 <el-form-item :label="$t('Password')" prop="password">
-                  <el-input :placeholder="$t('Leave blank when not changing')"
+                  <el-input :placeholder="passwordPlaceholder"
                     maxlength="100"
                     show-password
                     v-model="form.password"></el-input>
@@ -195,6 +195,13 @@ export default {
         add  : this.$t('Add User'),
       };
       return _map[this.T.pageMode()];
+    },
+    passwordPlaceholder() {
+      if (this.T.pageMode() === 'add') {
+        return '';
+      } else {
+        return this.$t('Leave blank when not changing');
+      }
     },
   },
   props: {

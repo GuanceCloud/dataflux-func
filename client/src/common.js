@@ -3,6 +3,21 @@ import * as T from '@/toolkit'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
+export async function getAPIAuthList() {
+  let apiAuthList = [];
+
+  let apiRes = await T.callAPI_getAll('/api/v1/api-auth/do/list', {
+    query: { fields: ['id', 'name', 'type'] },
+  });
+  if (!apiRes.ok) return;
+
+  apiRes.data.forEach(d => {
+    apiAuthList.push(d);
+  })
+
+  return apiAuthList;
+}
+
 export async function getFuncList() {
   // 获取关联数据
   let scriptSetMap = {};
