@@ -281,14 +281,19 @@ export default {
   font-family: Iosevka;
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
+/*@font-face {
+  font-family: SourceHanSans;
+  src: url(./assets/font/SourceHanSansCN-VF.ttf);
+}*/
+@font-face {
+  font-family: AlibabaPuhuiTi;
+  src: url(./assets/font/Alibaba-PuHuiTi-Regular.ttf);
+}
 * {
-  font-family: Iosevka,"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-family: Iosevka,AlibabaPuhuiTi,Arial,sans-serif;
 }
 a {
   text-decoration: none;
-}
-input, textarea, code, pre, pre * {
-  font-family: Iosevka !important;
 }
 html {
   min-width: 1024px;
@@ -571,9 +576,6 @@ kbd {
   margin-left: 10px;
 }
 
-.el-tag {
-  font-size: 14px !important;
-}
 .el-tag + .el-tag {
   margin-left: 5px;
 }
@@ -671,9 +673,6 @@ kbd {
 }
 
 /* CodeMirror 修正 */
-.CodeMirror-line * {
-  font-family: Iosevka !important;
-}
 .cm-searching {
   background: none !important;
   border: 1px solid #f60 !important;

@@ -62,7 +62,6 @@ Script {id}    : 脚本 {id}
 
             <span>
               <el-tag v-if="data.isCodeEdited"
-                effect="dark"
                 type="danger"
                 size="mini">{{ $t('Edited') }}</el-tag>
               <el-tag v-if="data.isBuiltin"

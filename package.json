@@ -24,6 +24,7 @@
     "express-useragent": "1.0.15",
     "form-data": "3.0.0",
     "fs-extra": "9.1.0",
+    "http-auth-utils": "3.0.1",
     "iconv-lite": "0.5.1",
     "influx": "5.5.1",
     "js-base64": "2.5.2",
