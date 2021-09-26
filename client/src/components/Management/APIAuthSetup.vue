@@ -64,82 +64,90 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                   </el-form-item>
 
                   <!-- 固定字段配置 -->
-                  <el-form-item class="config-divider" :label="$t('Fixed Fields')" v-if="hasConfigField(selectedType, 'fixedFields')">
-                    <el-divider></el-divider>
-                  </el-form-item>
-
-                  <template v-for="(fixedField, index) in form.configJSON.fixedFields || []">
-                    <el-form-item v-if="hasConfigField(selectedType, 'fixedFields')"
-                      class="fixed-field-location"
-                      :label="`#${index + 1}`"
-                      :key="`fieldLocation-${index}`"
-                      :prop="`configJSON.fixedFields.${index}.location`"
-                      :rules="formRules_fixedFieldLocation">
-                      <el-select
-                        v-model="fixedField.location">
-                        <el-option v-for="location in C.API_AUTH_FIXED_FIELD_LOCATION" :label="location.name" :key="location.key" :value="location.key"></el-option>
-                      </el-select>
-
-                      <!-- 删除按钮 -->
-                      <el-link type="primary" @click.prevent="removeFixedFieldItem(index)">{{ $t('Delete') }}</el-link>
+                  <template v-if="hasConfigField(selectedType, 'fixedFields')">
+                    <el-form-item class="config-divider" :label="$t('Fixed Fields')">
+                      <el-divider></el-divider>
                     </el-form-item>
-                    <el-form-item v-if="hasConfigField(selectedType, 'fixedFields')"
-                      class="fixed-field"
-                      :key="`fieldName-${index}`"
-                      :prop="`configJSON.fixedFields.${index}.name`"
-                      :rules="formRules_fixedFieldName">
-                      <el-input :placeholder="$t('Field Name')" v-model="fixedField.name"></el-input>
-                    </el-form-item>
-                    <el-form-item v-if="hasConfigField(selectedType, 'fixedFields')"
-                      class="fixed-field"
-                      :key="`fieldValue-${index}`"
-                      :prop="`configJSON.fixedFields.${index}.value`"
-                      :rules="formRules_fixedFieldValue">
-                      <el-input :placeholder="$t('Field Value')" v-model="fixedField.value"></el-input>
+
+                    <template v-for="(fixedField, index) in form.configJSON.fixedFields || []">
+                      <el-form-item
+                        class="fixed-field-location"
+                        :label="`#${index + 1}`"
+                        :key="`fieldLocation-${index}`"
+                        :prop="`configJSON.fixedFields.${index}.location`"
+                        :rules="formRules_fixedFieldLocation">
+                        <el-select
+                          v-model="fixedField.location">
+                          <el-option v-for="location in C.API_AUTH_FIXED_FIELD_LOCATION" :label="location.name" :key="location.key" :value="location.key"></el-option>
+                        </el-select>
+
+                        <!-- 删除按钮 -->
+                        <el-link type="primary" @click.prevent="removeFixedFieldItem(index)">{{ $t('Delete') }}</el-link>
+                      </el-form-item>
+                      <el-form-item
+                        class="fixed-field"
+                        :key="`fieldName-${index}`"
+                        :prop="`configJSON.fixedFields.${index}.name`"
+                        :rules="formRules_fixedFieldName">
+                        <el-input :placeholder="$t('Field Name')" v-model="fixedField.name"></el-input>
+                      </el-form-item>
+                      <el-form-item
+                        class="fixed-field"
+                        :key="`fieldValue-${index}`"
+                        :prop="`configJSON.fixedFields.${index}.value`"
+                        :rules="formRules_fixedFieldValue">
+                        <el-input :placeholder="$t('Field Value')" v-model="fixedField.value"></el-input>
+                      </el-form-item>
+                    </template>
+                    <el-form-item>
+                      <el-link type="primary" @click="addFixedFieldItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Fixed Field') }}</el-link>
                     </el-form-item>
                   </template>
-                  <el-form-item v-if="hasConfigField(selectedType, 'fixedFields')">
-                    <el-link type="primary" @click="addFixedFieldItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Fixed Field') }}</el-link>
-                  </el-form-item>
 
                   <!-- HTTP认证配置 -->
-                  <el-form-item class="config-divider" :label="$t('HTTP Auth')" v-if="hasConfigField(selectedType, 'httpAuth')">
-                    <el-divider></el-divider>
-                  </el-form-item>
-
-                  <template v-for="(httpAuth, index) in form.configJSON.httpAuth || []">
-                    <el-form-item v-if="hasConfigField(selectedType, 'httpAuth')"
-                      class="http-auth"
-                      :label="`#${index + 1}`"
-                      :key="`username-${index}`"
-                      :prop="`configJSON.httpAuth.${index}.username`"
-                      :rules="formRules_httpAuthUsername">
-                      <el-input :placeholder="$t('Username')" v-model="httpAuth.username"></el-input>
-
-                      <!-- 删除按钮 -->
-                      <el-link type="primary" @click.prevent="removeHTTPAuthItem(index)">{{ $t('Delete') }}</el-link>
+                  <template v-if="hasConfigField(selectedType, 'httpAuth')">
+                    <el-form-item class="config-divider" :label="$t('HTTP Auth')">
+                      <el-divider></el-divider>
                     </el-form-item>
-                    <el-form-item v-if="hasConfigField(selectedType, 'httpAuth')"
-                      class="http-auth"
-                      :key="`password-${index}`"
-                      :prop="`configJSON.httpAuth.${index}.password`"
-                      :rules="formRules_httpAuthPassword">
-                      <el-input :placeholder="$t('Password (leave blank when not changing)')" v-model="httpAuth.password"></el-input>
+
+                    <template v-for="(httpAuth, index) in form.configJSON.httpAuth || []">
+                      <el-form-item
+                        class="http-auth"
+                        :label="`#${index + 1}`"
+                        :key="`username-${index}`"
+                        :prop="`configJSON.httpAuth.${index}.username`"
+                        :rules="formRules_httpAuthUsername">
+                        <el-input :placeholder="$t('Username')" v-model="httpAuth.username"></el-input>
+
+                        <!-- 删除按钮 -->
+                        <el-link type="primary" @click.prevent="removeHTTPAuthItem(index)">{{ $t('Delete') }}</el-link>
+                      </el-form-item>
+                      <el-form-item
+                        class="http-auth"
+                        :key="`password-${index}`"
+                        :prop="`configJSON.httpAuth.${index}.password`"
+                        :rules="formRules_httpAuthPassword">
+                        <el-input :placeholder="$t('Password (leave blank when not changing)')"
+                          show-password
+                          v-model="httpAuth.password"></el-input>
+                      </el-form-item>
+                    </template>
+                    <el-form-item>
+                      <el-link type="primary" @click="addHTTPAuthItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add HTTP Auth') }}</el-link>
                     </el-form-item>
                   </template>
-                  <el-form-item v-if="hasConfigField(selectedType, 'httpAuth')">
-                    <el-link type="primary" @click="addHTTPAuthItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add HTTP Auth') }}</el-link>
-                  </el-form-item>
 
                   <!-- 函数认证配置 -->
-                  <el-form-item :label="$t('Func')" prop="configJSON.funcId">
-                    <el-cascader class="func-cascader-input" ref="funcCascader"
-                      placeholder="--"
-                      filterable
-                      v-model="form.configJSON.funcId"
-                      :options="funcCascader"
-                      :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
-                  </el-form-item>
+                  <template v-if="hasConfigField(selectedType, 'funcId')">
+                    <el-form-item :label="$t('Func')" prop="configJSON.funcId">
+                      <el-cascader class="func-cascader-input" ref="funcCascader"
+                        placeholder="--"
+                        filterable
+                        v-model="form.configJSON.funcId"
+                        :options="funcCascader"
+                        :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                    </el-form-item>
+                  </template>
 
                   <!-- 可变部分结束 -->
 

@@ -1,5 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Username     : 登录账号
 Administrator: 系统管理员
 
 User disabled: 用户已禁用
@@ -17,7 +16,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ $t('Users') }}
+          {{ $t('User Manager') }}
           <div class="header-control">
             <FuzzySearchInput
               :dataFilter="dataFilter"

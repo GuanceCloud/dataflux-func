@@ -56,7 +56,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column :label="$t('Auth Type')">
+          <el-table-column :label="$t('Auth Type')" width="200">
             <template slot-scope="scope">
               {{ C.API_AUTH_MAP.get(scope.row.type).name }}
             </template>
@@ -78,7 +78,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                   {{ C.API_AUTH_FIXED_FIELD_LOCATION_MAP.get(scope.row.configJSON.fixedFields[0].location).name }}
                   <code class="text-code">{{ scope.row.configJSON.fixedFields[0].name }}</code>
 
-                  <span v-if="scope.row.configJSON.fixedFields.length > 1">
+                  <span class="more-configs-tip" v-if="scope.row.configJSON.fixedFields.length > 1">
                     <br>&#12288;
                     {{ $tc('andMoreConfigs', scope.row.configJSON.fixedFields.length - 1) }}
                   </span>
@@ -90,10 +90,9 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                   {{ $t('No config') }}
                 </span>
                 <span v-else>
-                  <code class="text-code">
-                    {{ scope.row.configJSON.httpAuth[0].username }}
-                  </code>
-                  <span v-if="scope.row.configJSON.httpAuth.length > 1">
+                  {{ $t('User') }}
+                  <code class="text-code">{{ scope.row.configJSON.httpAuth[0].username }}</code>
+                  <span class="more-configs-tip" v-if="scope.row.configJSON.httpAuth.length > 1">
                     <br>&#12288;
                     {{ $tc('andMoreUsers', scope.row.configJSON.httpAuth.length - 1) }}
                   </span>
@@ -104,6 +103,12 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"></FuncInfo>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Note')" width="160">
+            <template slot-scope="scope">
+              <span v-if="scope.row.note" class="text-info">{{ scope.row.note }}</span>
             </template>
           </el-table-column>
 
@@ -225,6 +230,10 @@ export default {
 </script>
 
 <style scoped>
+.more-configs-tip {
+  font-style: italic;
+  color: #aaa;
+}
 </style>
 
 <style>

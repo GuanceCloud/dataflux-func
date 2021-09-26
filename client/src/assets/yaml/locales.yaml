@@ -138,6 +138,8 @@ en:
   Create Time: 创建时间
   Update Time: 更新时间
   API Example: API调用示例
+  Username   : 登录账号
+  User       : 用户
 
   # toolkit.js - API调用提示
   Read data                               : 读取数据
@@ -174,7 +176,7 @@ en:
   Export Script Sets: 脚本包导出
   Import Script Sets: 脚本包导入
   Recover Script Lib: 脚本库还原
-  User              : 成员管理
+  User Manager      : 成员管理
   Access Log        : 操作记录
   Script Log        : 脚本日志
   Script Failure    : 脚本故障

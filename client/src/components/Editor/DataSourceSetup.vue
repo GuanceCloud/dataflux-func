@@ -201,38 +201,40 @@ This is a builtin Data Source, please contact the admin to change the config: �
                       v-model="form.configJSON.clientId"></el-input>
                   </el-form-item>
 
-                  <el-form-item class="config-divider" :label="$t('Topic/Handler')" v-if="hasConfigField(selectedType, 'topicHandlers')">
-                    <el-divider></el-divider>
-                  </el-form-item>
-
-                  <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
-                    <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')"
-                      class="topic-handler"
-                      :label="`#${index + 1}`"
-                      :key="`topic-${index}`"
-                      :prop="`configJSON.topicHandlers.${index}.topic`"
-                      :rules="formRules_topic">
-                      <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
-
-                      <!-- 删除按钮 -->
-                      <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
+                  <template v-if="hasConfigField(selectedType, 'topicHandlers')">
+                    <el-form-item class="config-divider" :label="$t('Topic/Handler')">
+                      <el-divider></el-divider>
                     </el-form-item>
-                    <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')"
-                      :key="`handler-${index}`"
-                      :prop="`configJSON.topicHandlers.${index}.funcId`"
-                      :rules="formRules_topic">
-                      <el-cascader class="func-cascader-input" ref="funcCascader"
-                        placeholder="--"
-                        filterable
-                        :placeholder="$t('Handler Func')"
-                        v-model="topicHandler.funcId"
-                        :options="funcCascader"
-                        :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+
+                    <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
+                      <el-form-item
+                        class="topic-handler"
+                        :label="`#${index + 1}`"
+                        :key="`topic-${index}`"
+                        :prop="`configJSON.topicHandlers.${index}.topic`"
+                        :rules="formRules_topic">
+                        <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
+
+                        <!-- 删除按钮 -->
+                        <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
+                      </el-form-item>
+                      <el-form-item
+                        :key="`handler-${index}`"
+                        :prop="`configJSON.topicHandlers.${index}.funcId`"
+                        :rules="formRules_topic">
+                        <el-cascader class="func-cascader-input" ref="funcCascader"
+                          placeholder="--"
+                          filterable
+                          :placeholder="$t('Handler Func')"
+                          v-model="topicHandler.funcId"
+                          :options="funcCascader"
+                          :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                      </el-form-item>
+                    </template>
+                    <el-form-item>
+                      <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Topic/Handler') }}</el-link>
                     </el-form-item>
                   </template>
-                  <el-form-item v-if="hasConfigField(selectedType, 'topicHandlers')">
-                    <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Topic/Handler') }}</el-link>
-                  </el-form-item>
                   <!-- 可变区域结束 -->
                 </template>
               </el-form>

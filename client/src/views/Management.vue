@@ -73,7 +73,7 @@
             <el-menu-item index="/management/user-list" v-if="$store.getters.isSuperAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
-                {{ $t('User') }}
+                {{ $t('User Manager') }}
               </span>
             </el-menu-item>
 

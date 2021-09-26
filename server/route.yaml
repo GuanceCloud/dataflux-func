@@ -3096,8 +3096,9 @@ apiAuthAPI:
       seq: apia.seq
     fuzzySearch:
       - apia.id
-      - apia.title
-      - apia.description
+      - apia.name
+      - apia.configJSON
+      - apia.note
     query:
       id:
         $desc      : 根据ID过滤
@@ -3114,6 +3115,16 @@ apiAuthAPI:
           - httpBasic
           - httpDigest
           - func
+      name:
+        $desc      : 根据名称搜索
+        $type      : string
+        $searchType: like
+        $searchKey : apia.name
+      note:
+        $desc      : 根据备注搜索
+        $type      : string
+        $searchType: like
+        $searchKey : apia.note
 
   add:
     showInDoc    : true
