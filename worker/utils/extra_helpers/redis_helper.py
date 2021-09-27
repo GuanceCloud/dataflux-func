@@ -110,7 +110,7 @@ class RedisHelper(object):
         command_args = args[1:]
 
         if not self.skip_log:
-            args_dumps = ', '.join([json.dumps(x) for x in command_args])
+            args_dumps = ', '.join([json.dumps(x) for x in command_args] + [f"{k}={json.dumps(v)}" for k, v in kwargs.items()])
             if len(args_dumps) > LIMIT_ARGS_DUMP:
                 args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 

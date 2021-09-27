@@ -112,7 +112,7 @@ beat_schedule['run-crontab-starter'] = {
 # 强制重新加载脚本
 beat_schedule['run-force-reload-scripts'] = {
     'task'    : 'Main.ReloadScripts',
-    'kwargs'  : { 'force': True },
+    'kwargs'  : { 'force': True, 'isOnCrontab': True },
     'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
 }
 

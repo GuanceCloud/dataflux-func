@@ -347,16 +347,19 @@ def crontab_manual_starter(self, *args, **kwargs):
 
 @app.task(name='Main.CrontabStarter', bind=True, base=CrontabStarterTask)
 def crontab_starter(self, *args, **kwargs):
-    self.logger.info('Main.CrontabStarter Task launched.')
-
     # 注：需要等待1秒，确保不会在整点运行，导致跳回上一触发点
     time.sleep(1)
 
     # 计算当前触发点
     now = arrow.get().to('Asia/Shanghai').datetime
-    crontab_iter = croniter(CONFIG['_CRONTAB_STARTER'], now)
-    trigger_time = int(crontab_iter.get_prev())
-    current_time = int(time.time())
+    crontab_iter      = croniter(CONFIG['_CRONTAB_STARTER'], now)
+    trigger_time      = int(crontab_iter.get_prev())
+    next_trigger_time = int(crontab_iter.get_next())
+    current_time      = int(time.time())
+
+    # 上锁
+    lock_age = int(next_trigger_time - current_time - 1)
+    self.lock(max_age=lock_age)
 
     # 获取函数功能集成自动触发
     integrated_crontab_configs = self.get_integrated_func_crontab_configs()
@@ -378,3 +381,4 @@ def crontab_starter(self, *args, **kwargs):
                 continue
 
             self.send_task(crontab_config=c, current_time=current_time, trigger_time=trigger_time)
+

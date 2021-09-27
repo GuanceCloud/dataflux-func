@@ -172,18 +172,15 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
 
 @app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
 def reload_scripts(self, *args, **kwargs):
-    is_startup = kwargs.get('isOnLaunch') or False
-    force      = kwargs.get('force')      or False
+    is_startup = kwargs.get('isOnLaunch')  or False
+    is_crontab = kwargs.get('isOnCrontab') or False
+    force      = kwargs.get('force')       or False
 
-    # 启动时执行的，需要上锁
-    if is_startup:
-        lock_key   = toolkit.get_cache_key('lock', 'reloadScripts')
-        lock_value = toolkit.gen_uuid()
-        if not self.cache_db.lock(lock_key, lock_value, 10):
-            self.logger.warning('Main.ReloadScripts Task already launched.')
-            return
-
-    self.logger.info('Main.ReloadScripts Task launched.')
+    # 启动时执行/Crontab执行的，需要上锁
+    if is_startup or is_crontab:
+        self.lock(max_age=10)
+    else:
+        self.launch_log()
 
     cache_key = toolkit.get_cache_key('fixedCache', 'prevScriptDataHash')
 
@@ -702,13 +699,8 @@ class SyncCache(BaseTask):
 
 @app.task(name='Main.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
-    lock_key   = toolkit.get_cache_key('lock', 'syncCache')
-    lock_value = toolkit.gen_uuid()
-    if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('Main.SyncCache Task already launched.')
-        return
-
-    self.logger.info('Main.SyncCache Task launched.')
+    # 上锁
+    self.lock(max_age=30)
 
     # 脚本运行信息刷入数据库
     try:
@@ -801,13 +793,8 @@ class AutoCleanTask(BaseTask):
 
 @app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
-    lock_key   = toolkit.get_cache_key('lock', 'autoCleaner')
-    lock_value = toolkit.gen_uuid()
-    if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('Main.AutoClean Task already launched.')
-        return
-
-    self.logger.info('Main.AutoClean Task launched.')
+    # 上锁
+    self.lock(max_age=30)
 
     # 清空数据库数据
     if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
@@ -844,13 +831,8 @@ class AutoRunTask(BaseTask):
 
 @app.task(name='Main.AutoRun', bind=True, base=AutoRunTask)
 def auto_run(self, *args, **kwargs):
-    lock_key   = toolkit.get_cache_key('lock', 'autoRun')
-    lock_value = toolkit.gen_uuid()
-    if not self.cache_db.lock(lock_key, lock_value, 30):
-        self.logger.warning('Main.AutoRun Task already launched.')
-        return
-
-    self.logger.info('Main.AutoRun Task launched.')
+    # 上锁
+    self.lock(max_age=30)
 
     # 获取函数功能集成自动运行函数
     integrated_auto_run_funcs = self.get_integrated_auto_run_funcs()
@@ -928,7 +910,8 @@ class AutoBackupDBTask(BaseTask):
 
 @app.task(name='Main.AutoBackupDB', bind=True, base=AutoBackupDBTask)
 def auto_backup_db(self, *args, **kwargs):
-    self.logger.info('Main.AutoBackupDB Task launched.')
+    # 上锁
+    self.lock(max_age=1800)
 
     # 准备备份
     date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
@@ -1039,7 +1022,8 @@ def query_data_source(self, *args, **kwargs):
 # Main.ResetWorkerQueuePressure
 @app.task(name='Main.ResetWorkerQueuePressure', bind=True, base=BaseTask)
 def reset_worker_queue_pressure(self, *args, **kwargs):
-    self.logger.info('Worker Queue Pressure Recover Task launched.')
+    # 上锁
+    self.lock(max_age=30)
 
     for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
         queue_key = toolkit.get_worker_queue(i)
