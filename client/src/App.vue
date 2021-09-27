@@ -290,7 +290,7 @@ export default {
   src: url(./assets/font/Alibaba-PuHuiTi-Regular.ttf);
 }
 * {
-  font-family: Iosevka,AlibabaPuhuiTi,Arial,sans-serif;
+  font-family: Iosevka,AlibabaPuhuiTi,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
 }
 a {
   text-decoration: none;
