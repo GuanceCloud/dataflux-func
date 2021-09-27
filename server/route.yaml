@@ -2331,6 +2331,10 @@ scriptAPI:
         $desc   : 强制发布（即使代码未修改也执行发布）
         $type   : boolean
         $example: false
+      wait:
+        $desc   : 等待发布结束
+        $type   : boolean
+        $example: false
       data:
         $isRequired: false
         note:

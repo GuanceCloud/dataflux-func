@@ -8,7 +8,7 @@ class TestSuitAuthLink(BaseTestSuit):
     API_PATH_ROOT = '/api/v1/auth-links'
 
     def setup_class(self):
-        self.create_prefunc()
+        self.prepare_func()
 
     def teardown_class(self):
         self.do_teardown_class()

@@ -31,9 +31,8 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, 
 
 CONFIG = yaml_resources.get('CONFIG')
 
-SCRIPTS_CACHE_MD5       = None
-SCRIPTS_CACHE_TIMESTAMP = 0
-SCRIPT_DICT_CACHE       = None
+SCRIPTS_CACHE_MD5 = None
+SCRIPT_DICT_CACHE = None
 
 @app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
@@ -85,21 +84,12 @@ class FuncRunnerTask(ScriptBaseTask):
               （正常不会发生，ReloadScriptsTask 会定时更新Redis缓存）
         '''
         global SCRIPTS_CACHE_MD5
-        global SCRIPTS_CACHE_TIMESTAMP
         global SCRIPT_DICT_CACHE
-
-        current_timestamp = time.time()
 
         cache_key_script_md5  = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
         cache_key_script_dump = toolkit.get_cache_key('fixedCache', 'scriptsDump')
 
-        # 1. 尝试使用本地缓存，不检查数据更新
-        if current_timestamp - SCRIPTS_CACHE_TIMESTAMP < CONFIG['_FUNC_TASK_LOCAL_CACHE_EXPIRES']:
-            # 处于保留期内，跳过
-            self.logger.debug('[SCRIPT CACHE] Use local cache')
-            return
-
-        # 2. 检查Redis缓存
+        # 1. 检查Redis缓存
         scripts_md5 = self.cache_db.get(cache_key_script_md5)
         if scripts_md5:
             scripts_md5 = six.ensure_str(scripts_md5)
@@ -107,13 +97,11 @@ class FuncRunnerTask(ScriptBaseTask):
         scripts_dump_exists = self.cache_db.exists(cache_key_script_dump)
 
         if scripts_md5 and scripts_md5 == SCRIPTS_CACHE_MD5 and scripts_dump_exists:
-            # 存在缓存，且MD5未发生变化，延长本地缓存
-            SCRIPTS_CACHE_TIMESTAMP = current_timestamp
-
+            # 存在缓存，且MD5未发生变化，不更新本地缓存
             self.logger.debug('[SCRIPT CACHE] Not Modified, extend local cache')
             return
 
-        # 3. 不存在缓存/缓存MD5发生变化，从Redis读取Dump
+        # 2. 不存在缓存/缓存MD5发生变化，从Redis读取Dump
         scripts = None
 
         scripts_dump = self.cache_db.get(cache_key_script_dump)
@@ -134,7 +122,7 @@ class FuncRunnerTask(ScriptBaseTask):
             # 记录缓存MD5
             SCRIPTS_CACHE_MD5 = scripts_md5
 
-        # 4. 未能从Redis读取Dump，从数据库获取完整用户脚本
+        # 3. 未能从Redis读取Dump，从数据库获取完整用户脚本
         if not scripts or not scripts_dump:
             self.logger.warning('[SCRIPT CACHE] Cache failed! Use DB data')
 
@@ -145,8 +133,7 @@ class FuncRunnerTask(ScriptBaseTask):
             SCRIPTS_CACHE_MD5 = toolkit.get_md5(scripts_dump)
 
         # 记录到本地缓存
-        SCRIPTS_CACHE_TIMESTAMP = current_timestamp
-        SCRIPT_DICT_CACHE       = self.create_script_dict(scripts)
+        SCRIPT_DICT_CACHE = self.create_script_dict(scripts)
 
     def cache_script_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
         cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')

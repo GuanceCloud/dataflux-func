@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import time
+
 import pytest
 
 from . import BaseTestSuit, AssertDesc, get_sample_script
@@ -20,7 +22,7 @@ class TestSuitScript(BaseTestSuit):
         test_id = self.state('testAddedId')
         if test_id:
             params = { 'id': test_id }
-            self.API.get('/api/v1/script-sets/:id/do/delete', params=params)
+            self.API.get('/api/v1/scripts/:id/do/delete', params=params)
 
         params = { 'id': SCRIPT_SET_ID }
         self.API.get('/api/v1/script-sets/:id/do/delete', params=params)
@@ -61,7 +63,7 @@ class TestSuitScript(BaseTestSuit):
 
         # 测试接口
         params = { 'id': SCRIPT_ID }
-        body   = { 'force': True, 'data': data }
+        body   = { 'force': True, 'wait': True, 'data': data }
         status_code, resp = self.API.post('/api/v1/scripts/:id/do/publish', params=params, body=body)
 
         assert status_code == 200, AssertDesc.bad_resp(resp)
@@ -74,7 +76,24 @@ class TestSuitScript(BaseTestSuit):
         assert len(resp['data']) == 1,                            AssertDesc.bad_count()
         assert resp['data'][0]['id'] == SCRIPT_ID + '.test_func', AssertDesc.bad_value()
 
-
     def test_call_func(self):
-        # TODO
-        pass
+        if SCRIPT_ID not in self.state('testAddedIds'):
+            pytest.skip(f"No test data to run this case")
+
+        # 数据
+        x = 10
+        y = 20
+
+        # 测试接口
+        params = { 'funcId': SCRIPT_ID + '.test_func' }
+        body = {
+            'kwargs': {
+                'x': x,
+                'y': y,
+            }
+        }
+        status_code, resp = self.API.post('/api/v1/func/:funcId', params=params, body=body)
+
+        assert status_code == 200, AssertDesc.bad_resp(resp)
+        assert resp['data']['result'] == (x + y), AssertDesc.bad_value()
+

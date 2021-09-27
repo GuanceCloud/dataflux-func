@@ -2,6 +2,7 @@
 
 import os
 import uuid
+import time
 import random
 from urllib.parse import urlparse, urlencode, quote
 
@@ -63,13 +64,16 @@ class APIClient(object):
         body = {
             'captchaToken': '<TEST>',
             'captcha'     : '0000',
-            'signIn'      : { 'username': self.username, 'password': self.password },
+            'signIn': {
+                'username': self.username,
+                'password': self.password,
+            },
         }
-        code, res = self.post('/api/v1/auth/do/sign-in', body=body)
-        if code >= 400:
-            raise Exception(f"Sign-in failed: username={self.username}, password={self.password}, detail={res}")
+        status_code, resp = self.post('/api/v1/auth/do/sign-in', body=body)
+        if status_code >= 400:
+            raise Exception(f"Sign-in failed: username={self.username}, password={self.password}, detail={resp}")
 
-        x_auth_token = res['data']['xAuthToken']
+        x_auth_token = resp['data']['xAuthToken']
 
         self.client.headers.update({
             'X-Dff-Auth-Token': x_auth_token,
@@ -82,18 +86,18 @@ class APIClient(object):
 
         r = self.client.get(url, params=query)
 
-        code = r.status_code
-        res  = r.json()
-        return code, res
+        status_code = r.status_code
+        resp        = r.json()
+        return status_code, resp
 
     def post(self, url, params=None, query=None, body=None):
         url = self.get_full_url(url, params)
 
         r = self.client.post(url, params=query, json=body)
 
-        code = r.status_code
-        res  = r.json()
-        return code, res
+        status_code = r.status_code
+        resp        = r.json()
+        return status_code, resp
 
 # 通用函数
 def gen_test_string(length=None, chars=None):
@@ -136,17 +140,18 @@ def test_func(x, y):
     return x + y
 
 @DFF.API('大型数据')
-def test_func_large_data():
+def test_func_large_data(use_feature=False):
     data = [dict(id=i, data=gen_rand_string()) for i in range(50000)]
-    data = json.dumps(data, indent=2)
-    return data
+    if use_feature:
+        return DFF.RESP_LARGE_DATA(data)
+    else:
+        return data
 
 @DFF.API('认证函数')
 def test_func_auth(req):
     return req['headers']['x-my-token'] == '<TOKEN>'
 """
     return script_set_id, script_id, script_code
-
 
 # 基础测试套件
 class BaseTestSuit(object):
@@ -188,7 +193,7 @@ class BaseTestSuit(object):
             store[key].append(item)
 
     @classmethod
-    def create_prefunc(self):
+    def prepare_func(self):
         # 预创建函数数据
         self.PRE_FUNC = True
 
@@ -197,16 +202,19 @@ class BaseTestSuit(object):
         self.PRE_SCRIPT_ID     = SCRIPT_ID
         self.PRE_SCRIPT_CODE   = SCRIPT_CODE
 
+        # 创建脚本集
         body = { 'data': { 'id': self.PRE_SCRIPT_SET_ID } }
         status_code, resp = self.API.post('/api/v1/script-sets/do/add', body=body)
         assert status_code == 200, AssertDesc.bad_resp(resp)
 
+        # 创建脚本
         body = { 'data': { 'id': self.PRE_SCRIPT_ID, 'codeDraft': self.PRE_SCRIPT_CODE } }
         status_code, resp = self.API.post('/api/v1/scripts/do/add', body=body)
         assert status_code == 200, AssertDesc.bad_resp(resp)
 
+        # 发布脚本
         params = { 'id': self.PRE_SCRIPT_ID }
-        body = { 'force': True }
+        body = { 'force': True, 'wait': True }
         status_code, resp = self.API.post('/api/v1/scripts/:id/do/publish', params=params, body=body)
         assert status_code == 200, AssertDesc.bad_resp(resp)
 
@@ -217,7 +225,7 @@ class BaseTestSuit(object):
         if test_ids:
             for test_id in test_ids:
                 params = { 'id': test_id }
-                self.API.get(self.API_PATH_ROOT + '/do/delete', params=params)
+                self.API.get(self.API_PATH_ROOT + '/:id/do/delete', params=params)
 
         # 清理预创建函数数据
         if self.PRE_FUNC:

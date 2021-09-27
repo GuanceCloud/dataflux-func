@@ -1069,7 +1069,6 @@ var fromBase64_browser = toolkit.fromBase64_browser = function fromBase64_browse
  */
 var getSaltedPasswordHash = toolkit.getSaltedPasswordHash = function getSaltedPasswordHash(salt, password, secret) {
   var strToHash = strf('~{0}~{1}~{2}~', salt, password, secret);
-
   var hash = getSha512(strToHash);
   return hash;
 };

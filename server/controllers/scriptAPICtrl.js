@@ -206,8 +206,8 @@ exports.publish = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
 
-  // 强制发布
-  var force = req.body.force;
+  var force = req.body.force; // 强制发布
+  var wait  = req.body.wait;  // 等待发布结束
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -357,17 +357,22 @@ exports.publish = function(req, res, next) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return next(scopeErr);
 
-      var ret = toolkit.initRet({
-        id              : id,
-        publishVersion  : nextScriptPublishVersion,
-        exportedAPIFuncs: nextExportedAPIFuncs,
-      });
-      res.locals.sendJSON(ret);
+      function doResponse() {
+        var ret = toolkit.initRet({
+          id              : id,
+          publishVersion  : nextScriptPublishVersion,
+          exportedAPIFuncs: nextExportedAPIFuncs,
+        });
+        res.locals.sendJSON(ret);
+      }
+
+      if (!wait) doResponse(); // 不等待发布结束
 
       // 发布成功后
       // 1. 重新加载脚本
       // 2. 运行发布后自动运行的函数
       celery.putTask('Main.ReloadScripts', null, null, null, null, function(err) {
+        if (wait) doResponse(); // 等待发布结束
         if (err) return;
 
         nextExportedAPIFuncs.forEach(function(func) {

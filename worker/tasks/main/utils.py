@@ -47,7 +47,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     与 RunnerTask.update_script_dict_cache 配合完成高速脚本加载处理
     具体如下：
         1. 由于只有当用户「发布」脚本后，才需要重新加载，
-           因此以 biz_main_func 表的最大 updateTime 作为是否需要重新读取数据库的标准
+           因此以 biz_main_func 表的所有`id`+`scriptMD5`作为是否需要重新读取数据库的标准
         2. 内存中维护 SCRIPT_MAP 作为缓存，结构如下：
            { "<脚本ID>": {完整脚本数据JSON} }
         3. 由于代码内容可能比较多，
@@ -59,17 +59,27 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
         X.1. 附带强制重新加载功能
     '''
 
-    def get_latest_publish_timestamp(self):
+    def get_latest_script_data_hash(self):
         sql = '''
-            SELECT
-                UNIX_TIMESTAMP(MAX(`updateTime`)) AS `timestamp`
-            FROM biz_main_script
+                SELECT
+                    `id`,
+                    `publishVersion`,
+                    `codeMD5`
+                FROM biz_main_script
             '''
         db_res = self.db.query(sql)
 
-        publish_timestamp = float(db_res[0]['timestamp'] or 0.0)
+        str_to_hash_parts = []
+        for d in db_res:
+            _id              = d.get('id')             or '<NO_ID>'
+            _publish_version = d.get('publishVersion') or '<NO_PUBLISH_VERSION>'
+            _code_md5        = d.get('codeMD5')        or '<NO_CODE_MD5>'
+            str_to_hash_parts.append(','.join([str(_id), str(_publish_version), str(_code_md5)]))
 
-        return publish_timestamp
+        str_to_hash = ';'.join(str_to_hash_parts)
+        script_data_hash = toolkit.get_sha1(str_to_hash)
+
+        return script_data_hash
 
     def _cache_scripts(self):
         scripts = sorted(SCRIPT_MAP.values(), key=lambda x: x['seq'])
@@ -175,32 +185,30 @@ def reload_scripts(self, *args, **kwargs):
 
     self.logger.info('Main.ReloadScripts Task launched.')
 
-    cache_key = toolkit.get_cache_key('fixedCache', 'prevFuncUpdateTimestamp')
+    cache_key = toolkit.get_cache_key('fixedCache', 'prevScriptDataHash')
 
     # 上次脚本更新时间
-    prev_publish_timestamp = float(self.cache_db.get(cache_key) or 0.0)
-    if not prev_publish_timestamp:
+    prev_script_data_hash = self.cache_db.get(cache_key) or '<NO_SCRIPT_DATA_HASH>'
+    if not prev_script_data_hash:
         force = True
 
-    # 最近脚本更新时间
-    latest_publish_timestamp = self.get_latest_publish_timestamp()
+    # 最新脚本数据Hash
+    latest_script_data_hash = self.get_latest_script_data_hash()
 
     is_script_reloaded = False
     if force:
         self.force_reload_script()
         is_script_reloaded = True
 
-    elif latest_publish_timestamp != prev_publish_timestamp:
+    elif latest_script_data_hash != prev_script_data_hash:
         self.reload_script()
         is_script_reloaded = True
 
     if is_script_reloaded:
         self.logger.info('[SCRIPT CACHE] Reload script {} -> {} {}'.format(
-            arrow.get(prev_publish_timestamp).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss'),
-            arrow.get(latest_publish_timestamp).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss'),
-            '[FORCE]' if force else ''))
+            prev_script_data_hash, latest_script_data_hash, '[FORCE]' if force else ''))
 
-        self.cache_db.set(cache_key, str(latest_publish_timestamp))
+        self.cache_db.set(cache_key, str(latest_script_data_hash))
 
 # Main.SyncCache
 class SyncCache(BaseTask):
