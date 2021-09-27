@@ -13,10 +13,22 @@ class TestSuitBatch(BaseTestSuit):
     def teardown_class(self):
         self.do_teardown_class()
 
-    def test_add(self):
+    def test_add__with_id(self):
         data = {
             'id'    : gen_test_id(),
-            'funcId': self.PRE_SCRIPT_ID + '.test_func',
+            'funcId': self.get_pre_func_id('test_func'),
+            'funcCallKwargsJSON': {
+                'x': 'INPUT_BY_CALLER',
+                'y': 'INPUT_BY_CALLER',
+            },
+            'tagsJSON': ['testTag1', '标签2'],
+            'note'    : '测试备注',
+        }
+        self.do_test_add(data)
+
+    def test_add__without_id(self):
+        data = {
+            'funcId': self.get_pre_func_id('test_func'),
             'funcCallKwargsJSON': {
                 'x': 'INPUT_BY_CALLER',
                 'y': 'INPUT_BY_CALLER',
@@ -43,7 +55,6 @@ class TestSuitBatch(BaseTestSuit):
     @pytest.mark.order(-1)
     def test_delete(self):
         self.do_test_delete()
-
 
     #----------------------#
     # 以下为非通用测试用例 #

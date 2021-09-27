@@ -42,10 +42,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
 var dataway      = require('./dataway');
 
-var AUTH_LINK_PREFIX      = authLinkMod.TABLE_OPTIONS.alias + '-';
-var CRONTAB_CONFIG_PREFIX = crontabConfigMod.TABLE_OPTIONS.alias + '-';
-var BATCH_PREFIX          = batchMod.TABLE_OPTIONS.alias    + '-';
-
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,
   byMinute: 60,
@@ -191,7 +187,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
 
   switch(format) {
     case 'normal':
-      // 普通模式：函数参数、执行选项为JSON字符串形式
+      // 普通形式：函数参数、执行选项为JSON字符串形式
       if (!toolkit.isNothing(reqOpt.kwargs)) {
         funcCallKwargs = reqOpt.kwargs;
       }
@@ -410,7 +406,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     funcCallOptions.unfold = !!funcCallOptions.unfold;
 
   } else {
-    // 只有直接调用且为普通模式时不拆包
+    // 只有直接调用且为普通形式时不拆包
     // 其他默认都拆包
     if (origin === 'direct' && format === 'normal') {
       funcCallOptions.unfold = false;
@@ -1116,6 +1112,11 @@ function __matchedFixedFields(req, fields) {
   for (var i = 0; i < fields.length; i++) {
     var f = fields[i];
 
+    // 补丁：位置为`header`，但字段位置在`req.headers`
+    if (f.location === 'header') {
+      f.location = 'headers';
+    }
+
     try {
       var fullPath = toolkit.strf('{0}.{1}', f.location, f.name);
       result = (toolkit.jsonFind(req, fullPath) === f.value)
@@ -1584,10 +1585,6 @@ exports.callAuthLink = function(req, res, next) {
   var id     = req.params.id;
   var format = req.params.format;
 
-  if (id && id.slice(0, AUTH_LINK_PREFIX.length) !== AUTH_LINK_PREFIX) {
-    id = AUTH_LINK_PREFIX + id;
-  }
-
   var authLink        = null;
   var func            = null;
   var funcCallOptions = null;
@@ -1734,10 +1731,6 @@ exports.callAuthLink = function(req, res, next) {
 exports.callCrontabConfig = function(req, res, next) {
   var id = req.params.id;
 
-  if (id && id.slice(0, CRONTAB_CONFIG_PREFIX.length) !== CRONTAB_CONFIG_PREFIX) {
-    id = CRONTAB_CONFIG_PREFIX + id;
-  }
-
   async.series([
     // 检查自动触发配置是否存在
     function(asyncCallback) {
@@ -1776,10 +1769,6 @@ exports.callCrontabConfig = function(req, res, next) {
 exports.callBatch = function(req, res, next) {
   var id     = req.params.id;
   var format = req.params.format;
-
-  if (id && id.slice(0, BATCH_PREFIX.length) !== BATCH_PREFIX) {
-    id = BATCH_PREFIX + id;
-  }
 
   var batch           = null;
   var func            = null;

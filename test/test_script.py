@@ -54,6 +54,9 @@ class TestSuitScript(BaseTestSuit):
     # 以下为非通用测试用例 #
     #----------------------#
 
+    def get_func_id(self, func_name):
+        return SCRIPT_ID + '.' + func_name
+
     def test_publish(self):
         if SCRIPT_ID not in self.state('testAddedIds'):
             pytest.skip(f"No test data to run this case")
@@ -69,12 +72,12 @@ class TestSuitScript(BaseTestSuit):
         assert status_code == 200, AssertDesc.bad_resp(resp)
 
         # 验证数据
-        query = { 'id': SCRIPT_ID + '.test_func' }
+        query = { 'id': self.get_func_id('test_func') }
         status_code, resp = self.API.get('/api/v1/funcs/do/list', query=query)
 
-        assert status_code == 200,                                AssertDesc.bad_resp(resp)
-        assert len(resp['data']) == 1,                            AssertDesc.bad_count()
-        assert resp['data'][0]['id'] == SCRIPT_ID + '.test_func', AssertDesc.bad_value()
+        assert status_code == 200,                                     AssertDesc.bad_resp(resp)
+        assert len(resp['data']) == 1,                                 AssertDesc.bad_count()
+        assert resp['data'][0]['id'] == self.get_func_id('test_func'), AssertDesc.bad_value()
 
     def test_call_func(self):
         if SCRIPT_ID not in self.state('testAddedIds'):
@@ -85,12 +88,9 @@ class TestSuitScript(BaseTestSuit):
         y = 20
 
         # 测试接口
-        params = { 'funcId': SCRIPT_ID + '.test_func' }
+        params = { 'funcId': self.get_func_id('test_func') }
         body = {
-            'kwargs': {
-                'x': x,
-                'y': y,
-            }
+            'kwargs': {'x': x, 'y': y }
         }
         status_code, resp = self.API.post('/api/v1/func/:funcId', params=params, body=body)
 

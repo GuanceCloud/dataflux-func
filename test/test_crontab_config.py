@@ -15,7 +15,7 @@ class TestSuitCrontabConfig(BaseTestSuit):
 
     def test_add(self):
         data = {
-            'funcId': self.PRE_SCRIPT_ID + '.test_func',
+            'funcId': self.get_pre_func_id('test_func'),
             'funcCallKwargsJSON': {
                 'x': 1,
                 'y': 2,
@@ -42,7 +42,6 @@ class TestSuitCrontabConfig(BaseTestSuit):
     @pytest.mark.order(-1)
     def test_delete(self):
         self.do_test_delete()
-
 
     #----------------------#
     # 以下为非通用测试用例 #
