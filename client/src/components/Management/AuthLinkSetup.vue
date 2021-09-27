@@ -217,6 +217,7 @@ export default {
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
         nextForm.tagsJSON           = nextForm.tagsJSON || [];
+        nextForm.apiAuthId          = this.data.apia_id;
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
         this.form = nextForm;
       }

@@ -94,7 +94,7 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column label="Crontab">
+          <el-table-column label="Crontab" width="350">
             <template slot-scope="scope">
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code>{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
@@ -119,7 +119,7 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="100">
+          <el-table-column :label="$t('Status')" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
               <span v-else class="text-good">{{ $t('Enabled') }}</span>

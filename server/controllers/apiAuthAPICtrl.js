@@ -27,9 +27,9 @@ function hidePassword(req, res, ret, hookExtra, callback) {
   if (!ret.data) return callback(null, ret);
 
   toolkit.asArray(ret.data).forEach(function(d) {
-    if (!Array.isArray(d.configJSON.httpAuth)) return;
+    if (!Array.isArray(d.configJSON.users)) return;
 
-    d.configJSON.httpAuth.forEach(function(x) {
+    d.configJSON.users.forEach(function(x) {
       delete x.passwordCipher;
     });
   });

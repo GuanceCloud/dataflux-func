@@ -439,21 +439,21 @@ export default {
         key : 'fixedField',
         name: $t('Fixed Field'),
         configFields: {
-          fixedFields: { default: [], isRequired: true },
+          fields: { default: [], isRequired: true },
         },
       },
       {
         key : 'httpBasic',
         name: $t('HTTP Basic'),
         configFields: {
-          httpAuth: { default: [], isRequired: true },
+          users: { default: [], isRequired: true },
         },
       },
       {
         key : 'httpDigest',
         name: $t('HTTP Digest'),
         configFields: {
-          httpAuth: { default: [], isRequired: true },
+          users: { default: [], isRequired: true },
         },
       },
       {

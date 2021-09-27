@@ -1,5 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Tasks: 任务
+API Auth: API认证
+Tasks   : 任务
 
 Batch disabled: 批处理已禁用
 Batch enabled : 批处理已启用
@@ -60,7 +61,7 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="执行函数">
+          <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.func_id"
@@ -82,7 +83,15 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="100">
+          <el-table-column :label="$t('API Auth')" width="160">
+            <template slot-scope="scope">
+              <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
+                <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Status')" width="160">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
               <span v-else class="text-good">{{ $t('Enabled') }}</span>

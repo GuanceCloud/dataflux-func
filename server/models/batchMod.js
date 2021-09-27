@@ -90,7 +90,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ON sset.id = func.scriptSetId');
 
   sql.append('LEFT JOIN biz_main_api_auth AS apia');
-  sql.append('  ON apia.id = auln.apiAuthId');
+  sql.append('  ON apia.id = bat.apiAuthId');
 
   options.baseSQL = sql.toString();
 

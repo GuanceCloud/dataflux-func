@@ -28,8 +28,9 @@ var GET_FIELDS = [
 /* Handlers */
 var crudHandler = exports.crudHandler = userMod.createCRUDHandler();
 
-exports.list = crudHandler.createListHandler();
-exports.get = crudHandler.createGetHandler(GET_FIELDS);
+exports.list   = crudHandler.createListHandler();
+exports.get    = crudHandler.createGetHandler(GET_FIELDS);
+exports.delete = crudHandler.createDeleteHandler();
 
 exports.add = function(req, res, next) {
   var data = req.body.data || {};

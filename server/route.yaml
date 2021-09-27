@@ -481,6 +481,19 @@ userAPI:
           $desc: DISABLED flag
           $type: boolean
 
+  delete:
+    name         : Delete user
+    method       : get
+    url          : /api/v1/users/:id/do/delete
+    response     : json
+    requireSignIn: true
+    authType     : builtin.byXAuthToken
+    privilege    : user_w
+    params:
+      id:
+        $desc: User ID
+        $type: string
+
 userPage:
   list:
     name         : User list
@@ -2319,7 +2332,7 @@ scriptAPI:
         $type   : boolean
         $example: false
       data:
-        $isRequired: true
+        $isRequired: false
         note:
           $desc      : 发布备注
           $isRequired: false
@@ -3154,8 +3167,8 @@ apiAuthAPI:
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
           $isRequired: true
-          fixedFields:
-            $desc: 固定字段认证
+          fields:
+            $desc: 字段列表
             $allowNull: true
             $:
               location:
@@ -3174,8 +3187,8 @@ apiAuthAPI:
                 $desc      : 字段值
                 $isRequired: true
                 $type      : string
-          httpAuth:
-            $desc: HTTP认证
+          users:
+            $desc: 用户列表
             $allowNull: true
             $:
               username:
@@ -3216,9 +3229,9 @@ apiAuthAPI:
           $type      : string
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
-          $isRequired: true
-          fixedFields:
-            $desc: 固定字段认证
+          $isRequired: false
+          fields:
+            $desc: 字段列表
             $allowNull: true
             $:
               location:
@@ -3237,8 +3250,8 @@ apiAuthAPI:
                 $desc      : 字段值
                 $isRequired: true
                 $type      : string
-          httpAuth:
-            $desc: HTTP认证
+          users:
+            $desc: 用户列表
             $allowNull: true
             $:
               username:
@@ -3395,6 +3408,10 @@ authLinkAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -3492,6 +3509,10 @@ authLinkAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -3596,6 +3617,10 @@ authLinkAPI:
               $desc      : 标签
               $isRequired: true
               $type      : string
+          apiAuthId:
+            $desc     : API认证ID
+            $allowNull: true
+            $type     : string
           expireTime:
             $desc      : 过期时间（ISO8601格式）
             $allowNull : true
@@ -3741,6 +3766,10 @@ authLinkAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4403,6 +4432,10 @@ batchAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         showInDoc:
           $desc      : 是否显示于文档
           $isRequired: false
@@ -4447,6 +4480,10 @@ batchAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         showInDoc:
           $desc      : 是否显示于文档
           $isRequired: false
@@ -4506,6 +4543,10 @@ batchAPI:
               $desc      : 标签
               $isRequired: true
               $type      : string
+          apiAuthId:
+            $desc     : API认证ID
+            $allowNull: true
+            $type     : string
           showInDoc:
             $desc      : 是否显示于文档
             $isRequired: false
@@ -4597,6 +4638,10 @@ batchAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        apiAuthId:
+          $desc     : API认证ID
+          $allowNull: true
+          $type     : string
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false

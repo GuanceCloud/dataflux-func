@@ -204,7 +204,7 @@ exports.delete = function(req, res, next) {
 
 exports.publish = function(req, res, next) {
   var id   = req.params.id;
-  var data = req.body.data;
+  var data = req.body.data || {};
 
   // 强制发布
   var force = req.body.force;

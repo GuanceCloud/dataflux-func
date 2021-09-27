@@ -87,8 +87,8 @@ EntityModel.prototype.add = function(data, callback) {
   switch(data.type) {
     case 'httpBasic':
     case 'httpDigest':
-      if (Array.isArray(data.configJSON.httpAuth)) {
-        data.configJSON.httpAuth.forEach(function(x) {
+      if (Array.isArray(data.configJSON.users)) {
+        data.configJSON.users.forEach(function(x) {
           x.passwordCipher = toolkit.cipherByAES(x.password, CONFIG.SECRET);
           delete x.password;
         });
@@ -126,16 +126,16 @@ EntityModel.prototype.modify = function(id, data, callback) {
           case 'httpBasic':
           case 'httpDigest':
             // 搜集上次填入的密码
-            if (Array.isArray(dbRes.configJSON.httpAuth)) {
-              prevMap = dbRes.configJSON.httpAuth.reduce(function(acc, x) {
+            if (Array.isArray(dbRes.configJSON.users)) {
+              prevMap = dbRes.configJSON.users.reduce(function(acc, x) {
                 acc[x.username] = x.passwordCipher || '';
                 return acc;
               }, {});
             }
 
             // 补全未修改的密码
-            if (Array.isArray(data.configJSON.httpAuth)) {
-              data.configJSON.httpAuth.forEach(function(x) {
+            if (Array.isArray(data.configJSON.users)) {
+              data.configJSON.users.forEach(function(x) {
                 if (!x.password) {
                   // 未填写密码，则沿用上次
                   x.passwordCipher = prevMap[x.username] || '';

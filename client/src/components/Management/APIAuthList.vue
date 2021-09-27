@@ -71,30 +71,30 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
           <el-table-column :label="$t('Config')">
             <template slot-scope="scope">
               <span v-if="scope.row.type === 'fixedField'">
-                <span class="text-bad" v-if="T.isNothing(scope.row.configJSON.fixedFields)">
+                <span class="text-bad" v-if="T.isNothing(scope.row.configJSON.fields)">
                   {{ $t('No config') }}
                 </span>
                 <span v-else>
-                  {{ C.API_AUTH_FIXED_FIELD_LOCATION_MAP.get(scope.row.configJSON.fixedFields[0].location).name }}
-                  <code class="text-code">{{ scope.row.configJSON.fixedFields[0].name }}</code>
+                  {{ C.API_AUTH_FIXED_FIELD_LOCATION_MAP.get(scope.row.configJSON.fields[0].location).name }}
+                  <code class="text-code">{{ scope.row.configJSON.fields[0].name }}</code>
 
-                  <span class="more-configs-tip" v-if="scope.row.configJSON.fixedFields.length > 1">
+                  <span class="more-configs-tip" v-if="scope.row.configJSON.fields.length > 1">
                     <br>&#12288;
-                    {{ $tc('andMoreConfigs', scope.row.configJSON.fixedFields.length - 1) }}
+                    {{ $tc('andMoreConfigs', scope.row.configJSON.fields.length - 1) }}
                   </span>
                 </span>
               </span>
 
               <span v-else-if="scope.row.type === 'httpBasic' || scope.row.type === 'httpDigest'">
-                <span class="text-bad" v-if="T.isNothing(scope.row.configJSON.httpAuth)">
+                <span class="text-bad" v-if="T.isNothing(scope.row.configJSON.users)">
                   {{ $t('No config') }}
                 </span>
                 <span v-else>
                   {{ $t('User') }}
-                  <code class="text-code">{{ scope.row.configJSON.httpAuth[0].username }}</code>
-                  <span class="more-configs-tip" v-if="scope.row.configJSON.httpAuth.length > 1">
+                  <code class="text-code">{{ scope.row.configJSON.users[0].username }}</code>
+                  <span class="more-configs-tip" v-if="scope.row.configJSON.users.length > 1">
                     <br>&#12288;
-                    {{ $tc('andMoreUsers', scope.row.configJSON.httpAuth.length - 1) }}
+                    {{ $tc('andMoreUsers', scope.row.configJSON.users.length - 1) }}
                   </span>
                 </span>
               </span>

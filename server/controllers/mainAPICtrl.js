@@ -1110,11 +1110,11 @@ function _doAPIResponse(locals, res, ret, options, callback) {
   }
 };
 
-function __matchedFixedFields(req, fixedFields) {
+function __matchedFixedFields(req, fields) {
   var result = false;
 
-  for (var i = 0; i < fixedFields.length; i++) {
-    var f = fixedFields[i];
+  for (var i = 0; i < fields.length; i++) {
+    var f = fields[i];
 
     try {
       var fullPath = toolkit.strf('{0}.{1}', f.location, f.name);
@@ -1288,8 +1288,8 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 
       switch(apiAuth.type) {
         case 'fixedField':
-          var fixedFields = apiAuth.configJSON.fixedFields;
-          if (!__matchedFixedFields(req, fixedFields)) {
+          var fields = apiAuth.configJSON.fields;
+          if (!__matchedFixedFields(req, fields)) {
             return asyncCallback(new E('EAPIAuth', 'Fixed Field Auth failed'));
           }
           return asyncCallback();
@@ -1302,7 +1302,7 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
           __getHTTPAuth(authType, req, res, function(err, authInfo) {
             if (err) return asyncCallback(err);
 
-            var users = apiAuth.configJSON.httpAuth;
+            var users = apiAuth.configJSON.users;
             if (!authInfo || toolkit.isNothing(users)) {
               // 未发送认证信息/认证信息未配置时，要求认证
               return __askHTTPAuth(authType, res, realm, asyncCallback);

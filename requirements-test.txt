@@ -1,3 +1,6 @@
 pytest==6.2.2
-pytest-order==0.9.3
+pytest-order==1.0.0
 bandit==1.7.0
+requests==2.25.1
+simplejson==3.17.0
+nanoid==2.0.0

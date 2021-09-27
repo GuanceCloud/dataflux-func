@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-pytest
+pytest -s -v --order-scope=class $*

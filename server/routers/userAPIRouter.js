@@ -21,3 +21,7 @@ routeLoader.load(ROUTE.userAPI.add, [
 routeLoader.load(ROUTE.userAPI.modify, [
   userAPICtrl.modify,
 ]);
+
+routeLoader.load(ROUTE.userAPI.delete, [
+  userAPICtrl.delete,
+]);

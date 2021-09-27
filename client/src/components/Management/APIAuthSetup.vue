@@ -11,8 +11,8 @@ Fixed Fields   : 固定字段
 Add Fixed Field: 添加固定字段
 Field Name     : 字段名
 Field Value    : 字段值
-HTTP Auth      : HTTP认证
-Add HTTP Auth  : 添加HTTP认证
+Users          : 用户
+Add User       : 添加用户
 Username       : 用户名
 
 'Password (leave blank when not changing)': 密码（不修改时请留空）
@@ -64,17 +64,17 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                   </el-form-item>
 
                   <!-- 固定字段配置 -->
-                  <template v-if="hasConfigField(selectedType, 'fixedFields')">
+                  <template v-if="hasConfigField(selectedType, 'fields')">
                     <el-form-item class="config-divider" :label="$t('Fixed Fields')">
                       <el-divider></el-divider>
                     </el-form-item>
 
-                    <template v-for="(fixedField, index) in form.configJSON.fixedFields || []">
+                    <template v-for="(fixedField, index) in form.configJSON.fields || []">
                       <el-form-item
                         class="fixed-field-location"
                         :label="`#${index + 1}`"
                         :key="`fieldLocation-${index}`"
-                        :prop="`configJSON.fixedFields.${index}.location`"
+                        :prop="`configJSON.fields.${index}.location`"
                         :rules="formRules_fixedFieldLocation">
                         <el-select
                           v-model="fixedField.location">
@@ -87,14 +87,14 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                       <el-form-item
                         class="fixed-field"
                         :key="`fieldName-${index}`"
-                        :prop="`configJSON.fixedFields.${index}.name`"
+                        :prop="`configJSON.fields.${index}.name`"
                         :rules="formRules_fixedFieldName">
                         <el-input :placeholder="$t('Field Name')" v-model="fixedField.name"></el-input>
                       </el-form-item>
                       <el-form-item
                         class="fixed-field"
                         :key="`fieldValue-${index}`"
-                        :prop="`configJSON.fixedFields.${index}.value`"
+                        :prop="`configJSON.fields.${index}.value`"
                         :rules="formRules_fixedFieldValue">
                         <el-input :placeholder="$t('Field Value')" v-model="fixedField.value"></el-input>
                       </el-form-item>
@@ -105,35 +105,34 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                   </template>
 
                   <!-- HTTP认证配置 -->
-                  <template v-if="hasConfigField(selectedType, 'httpAuth')">
-                    <el-form-item class="config-divider" :label="$t('HTTP Auth')">
+                  <template v-if="hasConfigField(selectedType, 'users')">
+                    <el-form-item class="config-divider" :label="$t('Users')">
                       <el-divider></el-divider>
                     </el-form-item>
 
-                    <template v-for="(httpAuth, index) in form.configJSON.httpAuth || []">
+                    <template v-for="(user, index) in form.configJSON.users || []">
                       <el-form-item
                         class="http-auth"
                         :label="`#${index + 1}`"
                         :key="`username-${index}`"
-                        :prop="`configJSON.httpAuth.${index}.username`"
+                        :prop="`configJSON.users.${index}.username`"
                         :rules="formRules_httpAuthUsername">
-                        <el-input :placeholder="$t('Username')" v-model="httpAuth.username"></el-input>
+                        <el-input :placeholder="$t('Username')" v-model="user.username"></el-input>
 
                         <!-- 删除按钮 -->
-                        <el-link type="primary" @click.prevent="removeHTTPAuthItem(index)">{{ $t('Delete') }}</el-link>
+                        <el-link type="primary" @click.prevent="removeHTTPAuthUser(index)">{{ $t('Delete') }}</el-link>
                       </el-form-item>
                       <el-form-item
                         class="http-auth"
                         :key="`password-${index}`"
-                        :prop="`configJSON.httpAuth.${index}.password`"
+                        :prop="`configJSON.users.${index}.password`"
                         :rules="formRules_httpAuthPassword">
                         <el-input :placeholder="$t('Password (leave blank when not changing)')"
-                          show-password
-                          v-model="httpAuth.password"></el-input>
+                          v-model="user.password"></el-input>
                       </el-form-item>
                     </template>
                     <el-form-item>
-                      <el-link type="primary" @click="addHTTPAuthItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add HTTP Auth') }}</el-link>
+                      <el-link type="primary" @click="addHTTPAuthUser"><i class="fa fa-fw fa-plus"></i> {{ $t('Add User') }}</el-link>
                     </el-form-item>
                   </template>
 
@@ -346,22 +345,22 @@ export default {
     },
 
     addFixedFieldItem() {
-      if (this.T.isNothing(this.form.configJSON.fixedFields)) {
-        this.$set(this.form.configJSON, 'fixedFields', []);
+      if (this.T.isNothing(this.form.configJSON.fields)) {
+        this.$set(this.form.configJSON, 'fields', []);
       }
-      this.form.configJSON.fixedFields.push({ location: '', name: '', value: '' });
+      this.form.configJSON.fields.push({ location: '', name: '', value: '' });
     },
     removeFixedFieldItem(index) {
-      this.form.configJSON.fixedFields.splice(index, 1);
+      this.form.configJSON.fields.splice(index, 1);
     },
-    addHTTPAuthItem() {
-      if (this.T.isNothing(this.form.configJSON.httpAuth)) {
-        this.$set(this.form.configJSON, 'httpAuth', []);
+    addHTTPAuthUser() {
+      if (this.T.isNothing(this.form.configJSON.users)) {
+        this.$set(this.form.configJSON, 'users', []);
       }
-      this.form.configJSON.httpAuth.push({ username: '', password: '' });
+      this.form.configJSON.users.push({ username: '', password: '' });
     },
-    removeHTTPAuthItem(index) {
-      this.form.configJSON.httpAuth.splice(index, 1);
+    removeHTTPAuthUser(index) {
+      this.form.configJSON.users.splice(index, 1);
     },
   },
   computed: {

@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Info           : 信息
 Recent Response: 响应
+API Auth       : API认证
 Expires        : 有效期
 Never          : 长期有效
 Limiting       : 限流
@@ -106,6 +107,14 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
               </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('API Auth')" width="160">
+            <template slot-scope="scope">
+              <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
+                <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+              </el-tooltip>
             </template>
           </el-table-column>
 
