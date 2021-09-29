@@ -4,11 +4,12 @@ import os
 import uuid
 import time
 import random
+import re
 from urllib.parse import urlparse, urlencode, quote
 
 import pytest
 import requests
-import simplejson as json
+import json
 import nanoid
 
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -183,6 +184,10 @@ class BaseTestSuit(object):
         cls.PRE_SCRIPT_SET_ID = SCRIPT_SET_ID
         cls.PRE_SCRIPT_ID     = SCRIPT_ID
         cls.PRE_SCRIPT_CODE   = SCRIPT_CODE
+
+        # 获取示例代码中大型数据数据量
+        m = re.search('^LARGE_DATA_LENGTH = (\d+)', SCRIPT_CODE, re.M)
+        cls.PRE_LARGE_DATA_LENGTH = int(m[1])
 
         # 创建脚本集
         body = { 'data': { 'id': cls.PRE_SCRIPT_SET_ID } }

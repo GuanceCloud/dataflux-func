@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import time
-import json
 
 # Project Modules
 from worker import app

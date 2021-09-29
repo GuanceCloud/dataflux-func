@@ -49,7 +49,7 @@ class MemcachedHelper(object):
         command      = args[0]
         command_args = args[1:]
 
-        args_dumps = ', '.join([json.dumps(x) for x in command_args])
+        args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args])
         if len(args_dumps) > LIMIT_ARGS_DUMP:
             args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
@@ -61,7 +61,7 @@ class MemcachedHelper(object):
         command      = args[0]
         command_args = args[1:]
 
-        args_dumps = ', '.join([json.dumps(x) for x in command_args])
+        args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args])
         if len(args_dumps) > LIMIT_ARGS_DUMP:
             args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 

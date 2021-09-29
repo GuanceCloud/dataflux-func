@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import re
-import json
 
 # 3rd-party Modules
 import six
@@ -11,6 +10,9 @@ import MySQLdb
 import xmltodict
 from retry import retry
 import requests
+
+# Project Modules
+from worker.utils import toolkit
 
 retry_for_requests = retry((requests.ConnectionError, requests.Timeout), tries=3, delay=1, backoff=2, jitter=(1, 2))
 
@@ -26,14 +28,14 @@ def parse_response(response):
 
     if resp_content_type == 'application/json':
         # return response.json()
-        return ujson.loads(response.text)
+        return toolkit.json_loads(response.text)
 
     elif resp_content_type == 'text/xml':
         return xmltodict.parse(response.text)
 
     else:
         try:
-            return ujson.loads(response.text)
+            return toolkit.json_loads(response.text)
 
         except ValueError:
             try:

@@ -3,5 +3,4 @@ pytest-order==1.0.0
 pytest-html==3.1.1
 bandit==1.7.0
 requests==2.25.1
-simplejson==3.17.0
 nanoid==2.0.0

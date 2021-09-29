@@ -4,12 +4,10 @@
 import os
 import sys
 import time
-import json
 import logging
 import socket
 
 # 3rd-party Modules
-import simplejson
 import arrow
 
 # Project Modules
@@ -127,7 +125,7 @@ class LoggingFormatter(logging.Formatter):
 
             log_content_json['message'] = message
 
-            output_content = simplejson.dumps(log_content_json, separators=(',',':'))
+            output_content = toolkit.json_dumps(log_content_json)
 
         else:
             log_content_arr = [];

@@ -9,7 +9,6 @@ import linecache
 from types import ModuleType
 import time
 import uuid
-import json
 import pprint
 import importlib
 import functools
@@ -18,7 +17,6 @@ from collections import OrderedDict
 
 # 3rd-party Modules
 import six
-import simplejson, ujson
 import arrow
 import pylru
 import requests
@@ -85,7 +83,7 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'integer'   : int,
     'float'     : float,
     'boolean'   : toolkit.to_boolean,
-    'json'      : simplejson.loads,
+    'json'      : toolkit.json_loads,
     'commaArray': lambda x: x.split(','),
 }
 
@@ -250,7 +248,7 @@ class ScriptCacherMixin(object):
             script_id         = f['scriptId']
             func_extra_config = f['extraConfigJSON']
             if isinstance(func_extra_config, (six.string_types, six.text_type)):
-                func_extra_config = ujson.loads(func_extra_config)
+                func_extra_config = toolkit.json_loads(func_extra_config)
 
             if f['scriptId'] not in script_func_extra_config_map:
                 script_func_extra_config_map[f['scriptId']] = {}
@@ -373,7 +371,7 @@ class FuncStoreHelper(object):
             e = Exception('`scope` is too long. Length of `scope` should be less then 256')
             raise e
 
-        value_json = toolkit.json_safe_dumps(value)
+        value_json = toolkit.json_dumps(value)
         store_id   = compute_func_store_id(key, scope)
 
         sql = '''
@@ -448,7 +446,7 @@ class FuncStoreHelper(object):
 
         value = db_res[0]['valueJSON']
         try:
-            value = ujson.loads(value)
+            value = toolkit.json_loads(value)
         except Exception as e:
             pass
         finally:
@@ -648,7 +646,7 @@ class FuncDataSourceHelper(object):
         global DATA_SOURCE_HELPERS_CACHE
         global DATA_SOURCE_HELPER_CLASS_MAP
 
-        helper_target_key = simplejson.dumps(helper_kwargs, sort_keys=True, separators=(',', ':'))
+        helper_target_key = toolkit.json_dumps(helper_kwargs, sort_keys=True)
 
         # 判断是否需要刷新数据源
         local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
@@ -686,7 +684,7 @@ class FuncDataSourceHelper(object):
 
         helper_type = db_res[0]['type']
         config_json = db_res[0]['configJSON']
-        config      = ujson.loads(config_json)
+        config      = toolkit.json_loads(config_json)
 
         # 解密字段
         config = decipher_data_source_config_fields(config)
@@ -752,7 +750,7 @@ class FuncDataSourceHelper(object):
                 config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
             config.pop(k, None)
 
-        config_json = toolkit.json_safe_dumps(config)
+        config_json = toolkit.json_dumps(config)
 
         sql = '''
             SELECT `id` FROM biz_main_data_source WHERE `id` = ?
@@ -940,7 +938,7 @@ class FuncResponse(BaseFuncResponse):
         # 尝试序列化返回值
         data_dumps = None
         try:
-            data_dumps = toolkit.json_safe_dumps(data, indent=None, separators=(',', ':'))
+            data_dumps = toolkit.json_dumps(data, indent=None, separators=(',', ':'))
         except Exception as e:
             data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
 
@@ -976,7 +974,7 @@ class FuncResponseLargeData(BaseFuncResponse):
                 content_type = 'txt'
 
         if not isinstance(data, str):
-            data = toolkit.json_safe_dumps(data, indent=None, separators=(',', ':'))
+            data = toolkit.json_dumps(data)
 
         self._content_type = content_type
         self._data         = data
@@ -1208,7 +1206,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         if queue is not None:
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])) + list(CONFIG['WORKER_QUEUE_ALIAS_MAP'].keys())
             if queue not in available_queues:
-                e = InvalidOptionException('`queue` should be one of {}'.format(json.dumps(available_queues)))
+                e = InvalidOptionException('`queue` should be one of {}'.format(toolkit.json_dumps(available_queues)))
                 raise e
 
             extra_config['queue'] = queue
@@ -1341,7 +1339,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         func = db_res[0]
         func_extra_config = None
         if func.get('extraConfigJSON'):
-            func_extra_config = ujson.loads(func['extraConfigJSON'])
+            func_extra_config = toolkit.json_loads(func['extraConfigJSON'])
 
         # 组装函数配置
         soft_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
@@ -1625,9 +1623,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                         var_repr = None
                         var_dump = None
                         if isinstance(var_value, (tuple, list, dict)):
-                            # `sort_keys`参数可能导致报UnicodeDecodeError
-                            # var_dump = json.dumps(var_value, sort_keys=True,default=toolkit.json_dump_default)
-                            var_dump = simplejson.dumps(var_value, default=toolkit.json_dump_default)
+                            # 不能添加`sort_keys`参数，可能导致报UnicodeDecodeError
+                            var_dump = toolkit.json_dumps(var_value)
                         else:
                             var_repr = pprint.saferepr(var_value)
 

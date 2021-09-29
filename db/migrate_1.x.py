@@ -3,12 +3,7 @@
 # Builtin Modules
 import sys
 import argparse
-
-try:
-    import simplejson as json
-except ImportError as e:
-    import json
-
+import json
 import re
 from pprint import pprint
 

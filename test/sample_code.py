@@ -1,14 +1,18 @@
 import time
 import json
 import random
+from datetime import datetime
 
-def gen_rand_string():
-    chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    rand_string = ''
-    for i in range(32):
-        rand_string += ''.join(random.sample(chars, 1))
+LARGE_DATA_LENGTH = 100000
 
-    return rand_string
+def gen_large_data(with_datetime_field=False):
+    data = []
+    for i in range(LARGE_DATA_LENGTH):
+        d = { 'id': i, 'value': random.uniform(0, 10000) }
+        if with_datetime_field:
+            d['date'] = datetime.now()
+        data.append(d)
+    return data
 
 @DFF.API('测试函数', category='testCate1', tags=['testTag1', '测试标签2'])
 def test_func(x, y):
@@ -23,17 +27,17 @@ def test_func_with_cache():
     time.sleep(3)
     return 'OK'
 
-@DFF.API('大型数据', api_timeout=30, timeout=30)
-def test_func_large_data(use_feature=False):
-    data = [dict(id=i, data=gen_rand_string()) for i in range(50000)]
+@DFF.API('大型数据', api_timeout=180, timeout=180)
+def test_func_large_data(use_feature=False, with_datetime_field=False):
+    data = gen_large_data(with_datetime_field)
     if use_feature:
         return DFF.RESP_LARGE_DATA(data)
     else:
         return data
 
-@DFF.API('大型数据-带缓存', api_timeout=30, timeout=30, cache_result=30)
-def test_func_large_data_with_cache():
-    data = [dict(id=i, data=gen_rand_string()) for i in range(50000)]
+@DFF.API('大型数据-带缓存', api_timeout=180, timeout=180, cache_result=30)
+def test_func_large_data_with_cache(with_datetime_field=False):
+    data = gen_large_data(with_datetime_field)
     return DFF.RESP_LARGE_DATA(data)
 
 @DFF.API('认证函数')

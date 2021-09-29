@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import json
 import time
 import traceback
 import functools
 
 # 3rd-party Modules
 import six
-import simplejson
 import redis
 
 # Project Modules
@@ -97,11 +95,11 @@ class RedisHelper(object):
         command_args = args[1:]
 
         if not self.skip_log:
-            args_dumps = ', '.join([json.dumps(x) for x in command_args])
+            args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args])
             if len(args_dumps) > LIMIT_ARGS_DUMP:
                 args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
-            self.logger.debug('[REDIS] Query `{}` <- `{}` ({})'.format(command.upper(), args_dumps, json.dumps(options)))
+            self.logger.debug('[REDIS] Query `{}` <- `{}` ({})'.format(command.upper(), args_dumps, toolkit.json_dumps(options)))
 
         return self.client.execute_command(*args, **options);
 
@@ -110,7 +108,7 @@ class RedisHelper(object):
         command_args = args[1:]
 
         if not self.skip_log:
-            args_dumps = ', '.join([json.dumps(x) for x in command_args] + [f"{k}={json.dumps(v)}" for k, v in kwargs.items()])
+            args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args] + [f"{k}={toolkit.json_dumps(v)}" for k, v in kwargs.items()])
             if len(args_dumps) > LIMIT_ARGS_DUMP:
                 args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
@@ -294,7 +292,7 @@ class RedisHelper(object):
             self.checked_keys.add(key)
 
         timestamp = timestamp or int(time.time())
-        value = toolkit.json_safe_dumps(value, indent=0)
+        value = toolkit.json_dumps(value)
 
         data = ','.join([str(timestamp), value])
         self.client.zadd(key, {data: timestamp})
@@ -324,7 +322,7 @@ class RedisHelper(object):
         def _parse(p):
             timestamp, value = six.ensure_str(p).split(',', 1)
             timestamp = int(timestamp.split('.')[0])
-            value     = simplejson.loads(value)
+            value     = toolkit.json_loads(value)
             return [timestamp, value]
 
         ts_data = list(map(_parse, ts_data))

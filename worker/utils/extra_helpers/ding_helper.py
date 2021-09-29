@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import time
-import json
 
 # 3rd-party Modules
 import requests
@@ -26,7 +25,7 @@ class DingHelper(object):
             self.start_time = time.time()
 
         headers={'Content-Type': 'application/json; charset=utf-8'}
-        data = json.dumps(data)
+        data = toolkit.json_dumps(data)
 
         resp = requests.post(self.webhook, headers=headers, data=data, timeout=timeout)
         parsed_resp = parse_response(resp)

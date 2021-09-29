@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import re
-import json
 import datetime
 import traceback
 
@@ -105,4 +104,4 @@ class ClickHouseHelper(object):
         '''
         Dump JSON to string
         '''
-        return toolkit.json_safe_dumps(val)
+        return toolkit.json_dumps(val)

@@ -2,14 +2,12 @@
 
 # Builtin Modules
 import time
-import json
 import traceback
 
 # 3rd-party Modules
 import six
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 import celery.states as celery_status
-import simplejson
 
 # Project Modules
 from worker import app
@@ -91,7 +89,7 @@ class BaseTask(app.Task):
         if hasattr(self.request, 'extra'):
             content['extra'] = self.request.extra
 
-        content = toolkit.json_safe_dumps(content, indent=None)
+        content = toolkit.json_dumps(content, indent=None)
 
         # self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
 
@@ -141,11 +139,11 @@ class BaseTask(app.Task):
         # Run
         try:
             if LOG_CALL_ARGS:
-                args_dumps = toolkit.json_safe_dumps(args, indent=None)
+                args_dumps = toolkit.json_dumps(args, indent=None)
                 if len(args_dumps) > LIMIT_ARGS_DUMP:
                     args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 
-                kwargs_dumps = toolkit.json_safe_dumps(kwargs, indent=None)
+                kwargs_dumps = toolkit.json_dumps(kwargs, indent=None)
                 if len(kwargs_dumps) > LIMIT_ARGS_DUMP:
                     kwargs_dumps = kwargs_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
 

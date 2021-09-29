@@ -7,14 +7,12 @@
 
 # Builtin Modules
 import time
-import json
 import traceback
 import pprint
 
 # 3rd-party Modules
 import celery.states as celery_status
 import six
-import ujson
 import simplejson as json
 
 # Project Modules
@@ -111,7 +109,7 @@ class FuncRunnerTask(ScriptBaseTask):
             scripts_dump = six.ensure_str(scripts_dump)
 
             try:
-                scripts = ujson.loads(scripts_dump)
+                scripts = toolkit.json_loads(scripts_dump)
             except Exception as e:
                 pass
 
@@ -129,7 +127,7 @@ class FuncRunnerTask(ScriptBaseTask):
             scripts = self.get_scripts()
 
             # 自行计算并记录缓存MD5
-            scripts_dump      = toolkit.json_safe_dumps(scripts, sort_keys=True)
+            scripts_dump      = toolkit.json_dumps(scripts, sort_keys=True)
             SCRIPTS_CACHE_MD5 = toolkit.get_md5(scripts_dump)
 
         # 记录到本地缓存
@@ -146,7 +144,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'cost'                : cost,
             'timestamp'           : int(time.time()),
         }
-        data = toolkit.json_safe_dumps(data, indent=0)
+        data = toolkit.json_dumps(data, indent=0)
 
         self.cache_db.run('lpush', cache_key, data)
 
@@ -167,7 +165,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'traceInfo'           : trace_info,
             'timestamp'           : int(time.time()),
         }
-        data = toolkit.json_safe_dumps(data, indent=0)
+        data = toolkit.json_dumps(data, indent=0)
 
         self.cache_db.run('lpush', cache_key, data)
 
@@ -187,7 +185,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'logMessages'         : log_messages,
             'timestamp'           : int(time.time()),
         }
-        data = toolkit.json_safe_dumps(data, indent=0)
+        data = toolkit.json_dumps(data, indent=0)
 
         self.cache_db.run('lpush', cache_key, data)
 
@@ -212,7 +210,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'einfoTEXT'           : einfo_text,
             'timestamp'           : int(time.time()),
         }
-        data = toolkit.json_safe_dumps(data, indent=0)
+        data = toolkit.json_dumps(data, indent=0)
 
         self.cache_db.run('lpush', cache_key, data)
 
@@ -226,7 +224,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'scriptPublishVersion', script_publish_version,
             'funcCallKwargsMD5'   , func_call_kwargs_md5])
 
-        result_dumps = toolkit.json_safe_dumps(result)
+        result_dumps = toolkit.json_dumps(result)
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
 
     def cache_func_pressure(self, func_id, func_call_kwargs_md5, func_pressure, func_cost, queue):
@@ -442,7 +440,7 @@ def func_runner(self, *args, **kwargs):
                     self.logger.error(line)
 
             try:
-                func_result_json_dumps = toolkit.json_safe_dumps(func_resp.data, indent=None, separators=(',', ':'))
+                func_result_json_dumps = toolkit.json_dumps(func_resp.data)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)

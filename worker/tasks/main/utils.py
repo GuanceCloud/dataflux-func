@@ -83,7 +83,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
 
     def _cache_scripts(self):
         scripts = sorted(SCRIPT_MAP.values(), key=lambda x: x['seq'])
-        scripts_dump = toolkit.json_safe_dumps(scripts, sort_keys=True)
+        scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
 
         cache_key = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
         self.cache_db.set(cache_key, toolkit.get_md5(scripts_dump))
@@ -220,7 +220,7 @@ class SyncCache(BaseTask):
                 break
 
             try:
-                cache_res = ujson.loads(cache_res)
+                cache_res = toolkit.json_loads(cache_res)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
@@ -404,7 +404,7 @@ class SyncCache(BaseTask):
                 break
 
             try:
-                cache_res = ujson.loads(cache_res)
+                cache_res = toolkit.json_loads(cache_res)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
@@ -435,7 +435,7 @@ class SyncCache(BaseTask):
                 else:
                     exception = None
 
-                trace_info = simplejson.dumps(trace_info, default=toolkit.json_dump_default)
+                trace_info = toolkit.json_dumps(trace_info)
 
             sql = '''
                 INSERT INTO biz_main_script_failure
@@ -487,7 +487,7 @@ class SyncCache(BaseTask):
                     continue
 
             try:
-                cache_res = ujson.loads(cache_res)
+                cache_res = toolkit.json_loads(cache_res)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
@@ -549,7 +549,7 @@ class SyncCache(BaseTask):
                 break
 
             try:
-                cache_res = ujson.loads(cache_res)
+                cache_res = toolkit.json_loads(cache_res)
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
@@ -991,7 +991,7 @@ def query_data_source(self, *args, **kwargs):
     db_res = self.db.query(sql, sql_params)
     if len(db_res) > 0:
         data_source = db_res[0]
-        data_source['config'] = ujson.loads(data_source['configJSON'])
+        data_source['config'] = toolkit.json_loads(data_source['configJSON'])
 
     if not data_source:
         e = Exception('No such DataSource')

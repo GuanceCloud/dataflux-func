@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import time
-import json
 
 # 3rd-party Modules
 import requests

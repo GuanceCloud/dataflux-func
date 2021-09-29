@@ -254,8 +254,7 @@ export default {
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  height: 31px;
 }
 .aside-tree-node i.fa {
   font-size: 14px;

@@ -8,8 +8,6 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from . import BaseTestSuit, AssertDesc, gen_test_id
 
-LARGE_DATE_LENGTH = 50000
-
 class TestSuitAuthLink(BaseTestSuit):
     API_PATH_ROOT = '/api/v1/auth-links'
 
@@ -324,7 +322,7 @@ class TestSuitAuthLink(BaseTestSuit):
         self._test_call_func('post', 'simplified', api_auth_type='func')
 
     # 调用性能
-    def _test_call_func_performance(self, feature_name, expected_percent, func_id, func_kwargs=None):
+    def _test_call_func_performance(self, feature_name, func_id, func_kwargs=None):
         func_kwargs = func_kwargs or (None, None)
 
         feature_off_cost = 0
@@ -343,38 +341,61 @@ class TestSuitAuthLink(BaseTestSuit):
         assert feature_on_cost < feature_off_cost, f"开启`{feature_name}`特性时比不开启时还慢！"
 
         performance_up = (feature_off_cost - feature_on_cost) / feature_off_cost * 100
-        print(f"开启`{feature_name}`特性后")
-        print(f"-> 性能预期提升{expected_percent}%")
-        print(f"-> 性能实际提升{performance_up:.2f}%")
-        print(f"--->（{feature_off_cost:.2f}秒 -> {feature_on_cost:.2f}秒）")
-        assert performance_up > expected_percent, f"开启`{feature_name}`特性的性能提升不足"
+        print(f"开启`{feature_name}`特性后，性能提升{performance_up:.2f}%")
+        print(f"->（{feature_off_cost:.2f}秒 -> {feature_on_cost:.2f}秒）")
 
         return resp_1, resp_2
 
     def test_call_func__with_cache(self):
         resp_1, resp_2 = self._test_call_func_performance(
             feature_name='DFF.API(cache_result)',
-            expected_percent=50,
             func_id=self.get_pre_func_id('test_func_with_cache'))
 
         assert resp_1 == resp_2, '开启特性前后返回数据不一致'
 
     def test_call_func__large_data(self):
+        func_kwargs = [
+            { 'use_feature': False },
+            { 'use_feature': True },
+        ]
         resp_1, resp_2 = self._test_call_func_performance(
             feature_name='DFF.RESP_LARGE_DATA(...)',
-            expected_percent=25,
             func_id=self.get_pre_func_id('test_func_large_data'),
-            func_kwargs=({ 'use_feature': False }, { 'use_feature': True }))
+            func_kwargs=func_kwargs)
 
-        assert len(resp_1) == LARGE_DATE_LENGTH, '开启特性【前】数据量不正确'
-        assert len(resp_2) == LARGE_DATE_LENGTH, '开启特性【后】数据量不正确'
+        assert len(resp_1) == self.PRE_LARGE_DATA_LENGTH, '开启特性【前】数据量不正确'
+        assert len(resp_2) == self.PRE_LARGE_DATA_LENGTH, '开启特性【后】数据量不正确'
 
     def test_call_func__large_data_with_cache(self):
         resp_1, resp_2 = self._test_call_func_performance(
             feature_name='DFF.API(cache_result) ON DFF.RESP_LARGE_DATA(...)',
-            expected_percent=50,
             func_id=self.get_pre_func_id('test_func_large_data_with_cache'))
 
-        assert len(resp_1) == LARGE_DATE_LENGTH, '开启特性【前】数据量不正确'
-        assert len(resp_2) == LARGE_DATE_LENGTH, '开启特性【后】数据量不正确'
+        assert len(resp_1) == self.PRE_LARGE_DATA_LENGTH, '开启特性【前】数据量不正确'
+        assert len(resp_2) == self.PRE_LARGE_DATA_LENGTH, '开启特性【后】数据量不正确'
 
+    def test_call_func__large_data__with_datetime(self):
+        func_kwargs = [
+            { 'use_feature': False, 'with_datetime_field': True },
+            { 'use_feature': True, 'with_datetime_field': True },
+        ]
+        resp_1, resp_2 = self._test_call_func_performance(
+            feature_name='DFF.RESP_LARGE_DATA(...)',
+            func_id=self.get_pre_func_id('test_func_large_data'),
+            func_kwargs=func_kwargs)
+
+        assert len(resp_1) == self.PRE_LARGE_DATA_LENGTH, '开启特性【前】数据量不正确'
+        assert len(resp_2) == self.PRE_LARGE_DATA_LENGTH, '开启特性【后】数据量不正确'
+
+    def test_call_func__large_data_with_cache__with_datetime(self):
+        func_kwargs = [
+            { 'with_datetime_field': True },
+            { 'with_datetime_field': True },
+        ]
+        resp_1, resp_2 = self._test_call_func_performance(
+            feature_name='DFF.API(cache_result) ON DFF.RESP_LARGE_DATA(...)',
+            func_id=self.get_pre_func_id('test_func_large_data_with_cache'),
+            func_kwargs=func_kwargs)
+
+        assert len(resp_1) == self.PRE_LARGE_DATA_LENGTH, '开启特性【前】数据量不正确'
+        assert len(resp_2) == self.PRE_LARGE_DATA_LENGTH, '开启特性【后】数据量不正确'

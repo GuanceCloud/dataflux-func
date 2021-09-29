@@ -130,7 +130,7 @@ class NSQLookupHelper(object):
         }
 
         if isinstance(message, (dict, list, tuple)):
-            message = toolkit.json_safe_dumps(message, indent=None, separators=(',', ':'))
+            message = toolkit.json_dumps(message)
 
         message = six.ensure_binary(message)
         timeout = timeout or self.config['timeout']

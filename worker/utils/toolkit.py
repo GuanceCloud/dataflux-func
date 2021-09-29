@@ -11,6 +11,7 @@ import random
 from collections import OrderedDict
 import binascii
 import base64
+import math
 import pprint
 
 try:
@@ -167,38 +168,32 @@ def json_update_by_keys(s, d, keys=None):
 
     return d
 
-def json_dump_default(v):
+def json_dumps_default(v):
     if isinstance(v, datetime.datetime):
         return to_iso_datetime(v)
+    elif math.isnan(v) or math.isinf(v):
+        return None
     else:
         return pprint.saferepr(v)
 
-def json_safe_dumps(v, indent=2, ensure_ascii=False, **kwargs):
-    return simplejson.dumps(v,
-                indent=indent,
-                ensure_ascii=ensure_ascii,
-                default=json_dump_default,
-                ignore_nan=True,
-                **kwargs)
+def json_dumps(v, **kwargs):
+    kwargs['allow_nan'] = False
+    kwargs['indent'] = kwargs.get('indent') or 0
 
-def json_safe_copy(j):
-    return ujson.loads(json_safe_dumps(j))
+    try:
+        return ujson.dumps(v, **kwargs)
+
+    except Exception as e:
+        kwargs['indent'] = kwargs['indent'] or None
+        if not kwargs['indent']:
+            kwargs['separators'] = (',', ':')
+        return simplejson.dumps(v, default=json_dumps_default, ignore_nan=True, **kwargs)
+
+def json_loads(s):
+    return ujson.loads(s)
 
 def json_copy(j):
-    return ujson.loads(simplejson.dumps(j, default=json_dump_default))
-
-def create_json_loaded_version(j):
-    json_loaded = json_copy(j)
-    for k, v in json_loaded.items():
-        if not k.endswith('JSON') and not k.endswith('JSON_cache'):
-            continue
-
-        if not isinstance(v, six.string_types):
-            continue
-
-        json_loaded[k] = ujson.loads(v)
-
-    return json_loaded
+    return ujson.loads(json_dumps(j))
 
 def no_duplication(arr):
     return list(set(arr))

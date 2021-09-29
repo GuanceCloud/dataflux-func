@@ -7,14 +7,12 @@
 
 # Builtin Modules
 import time
-import json
 import traceback
 
 # 3rd-party Modules
 import arrow
 from croniter import croniter
 import six
-import ujson
 
 # Project Modules
 from worker import app
@@ -68,13 +66,13 @@ class CrontabStarterTask(BaseTask):
 
         func_call_kwargs_json = crontab_config.get('funcCallKwargsJSON')
         if func_call_kwargs_json:
-            crontab_config['funcCallKwargs'] = ujson.loads(func_call_kwargs_json)
+            crontab_config['funcCallKwargs'] = toolkit.json_loads(func_call_kwargs_json)
         else:
             crontab_config['funcCallKwargs'] = {}
 
         func_extra_config_json = crontab_config.get('funcExtraConfigJSON')
         if func_extra_config_json:
-            crontab_config['funcExtraConfig'] = ujson.loads(func_extra_config_json)
+            crontab_config['funcExtraConfig'] = toolkit.json_loads(func_extra_config_json)
         else:
             crontab_config['funcExtraConfig'] = {}
 
@@ -106,7 +104,7 @@ class CrontabStarterTask(BaseTask):
         for f in funcs:
             extra_config_json = f.get('extraConfigJSON')
             if extra_config_json:
-                f['extraConfig'] = ujson.loads(extra_config_json)
+                f['extraConfig'] = toolkit.json_loads(extra_config_json)
             else:
                 f['extraConfig'] = {}
 
@@ -264,7 +262,7 @@ class CrontabStarterTask(BaseTask):
             'status'   : 'queued',
             'timestamp': int(time.time()),
         }
-        data = toolkit.json_safe_dumps(data, indent=0)
+        data = toolkit.json_dumps(data, indent=0)
 
         self.cache_db.run('lpush', cache_key, data)
 

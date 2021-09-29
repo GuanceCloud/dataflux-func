@@ -3,8 +3,6 @@
 # Builtin Modules
 import os
 import yaml
-import json
-import base64
 import requests
 
 # Project Modules
@@ -12,7 +10,6 @@ from worker.utils import toolkit
 
 # 3rd-party Modules
 import six
-import ujson
 
 if six.PY2:
     FILE_OPEN_KWARGS = {}

@@ -580,8 +580,8 @@ export default {
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-right: 8px;
+  height: 31px;
 }
 .aside-tree-node i.fa {
   font-size: 14px;
