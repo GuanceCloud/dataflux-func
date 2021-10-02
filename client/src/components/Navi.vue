@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Code Editor  : 脚本编辑器
 Management   : 管理
-Guide        : 手册
+Documents    : 文档
 Settings     : 设置
 Sign Out     : 登出
 Not Signed In: 尚未登录
@@ -41,8 +41,8 @@ Signed In    : 已登录
 
       <el-menu-item index="https://function.guance.com/#/doc-index">
         <span>
-          <i class="fa fa-fw fa-question-circle-o"></i>
-          <span>{{ $t('Guide') }}</span>
+          <i class="fa fa-fw fa-book"></i>
+          <span>{{ $t('Documents') }}</span>
         </span>
       </el-menu-item>
 
