@@ -15,9 +15,14 @@ import nanoid
 base_path = os.path.dirname(os.path.abspath(__file__))
 
 # 配置
+HOST_ENV      = 'DATAFLUX_FUNC_HOST'
 TEST_USERNAME = 'admin'
 TEST_PASSWORD = 'admin'
-TEST_HOST     = os.environ.get('DATAFLUX_FUNC_HOST') or 'localhost:8088'
+TEST_HOST     = os.environ.get(HOST_ENV) or 'localhost:8088'
+
+# 终端着色打印
+def cprint(s):
+    print(f"\033[33m{s}\033[0m")
 
 # 断言文案
 class AssertDesc(object):
@@ -44,6 +49,9 @@ class APIClient(object):
         self.username = TEST_USERNAME
         self.password = TEST_PASSWORD
         self.host     = TEST_HOST
+
+        cprint(f"* Target host: {self.host}")
+        cprint(f"   (Use env `{HOST_ENV}` to change target host)")
 
         self.client = requests.Session()
         self.client.headers.update({
