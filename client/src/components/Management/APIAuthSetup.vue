@@ -18,6 +18,8 @@ Username       : 用户名
 'Password (leave blank when not changing)': 密码（不修改时请留空）
 
 Please select Func: 请选择认证函数
+Func with a specific format is required: 必须指定特定格式的函数作为认证函数
+Sample Code: 示例代码
 
 API Auth created: API认证已创建
 API Auth saved  : API认证已保存
@@ -145,6 +147,9 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                         v-model="form.configJSON.funcId"
                         :options="funcCascader"
                         :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+
+                      <InfoBlock type="info" :title="$t('Func with a specific format is required')"></InfoBlock>
+                      <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Sample Code') }}</el-button>
                     </el-form-item>
                   </template>
 
@@ -174,14 +179,19 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
           </el-col>
         </el-row>
       </el-main>
+
+      <LongTextDialog :title="$t('Sample Code')" mode="python" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+
 export default {
   name: 'APIAuthSetup',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -361,6 +371,18 @@ export default {
     },
     removeHTTPAuthUser(index) {
       this.form.configJSON.users.splice(index, 1);
+    },
+
+    showAuthFuncSampleCode() {
+      let sampleCode = `@DFF.API('My Auth Func')
+def my_auth_func(req):
+    is_valid_header = req['headers'].get('x-some-field') == '<Header Field>'
+    is_valid_query  = req['query'].get('some_field')     == '<Query Field>'
+    is_valid_body   = req['body'].get('some_field')      == '<Body Field>'
+
+    is_authed = is_valid_header and is_valid_query and is_valid_body
+    return is_authed`;
+      this.$refs.longTextDialog.update(sampleCode);
     },
   },
   computed: {
