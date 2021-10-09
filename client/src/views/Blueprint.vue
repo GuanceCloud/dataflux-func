@@ -1,15 +1,22 @@
 <i18n locale="zh-CN" lang="yaml">
 Execute: 执行处理
 Crontab: 自动触发
-Merge  : 合并
+Start  : 开始
+Branch : 分支
 End    : 结束
 
-Execute stage  : 执行处理步骤
+Yes            : 是
+No             : 否
+Code stage     : 代码处理步骤
+Func stage     : 函数调用步骤
 Auth Link entry: 授权链接入口
 Crontab entry  : 自动触发入口
-Merge point    : 合并点
+Start point    : 开始点
+Branch point   : 分支点
 End point      : 结束点
 Select all     : 全选
+
+Code: 代码
 </i18n>
 
 <template>
@@ -24,39 +31,23 @@ Select all     : 全选
         :output-intercept="outputIntercept"
         :link-base-style="linkBaseStyle"
         :link-desc="linkDesc"
-        :node-list="data.dataJSON.nodeList"
-        :link-list="data.dataJSON.linkList"
+        :node-list="data.dataJSON.nodeList || []"
+        :link-list="data.dataJSON.linkList || []"
 
         :before-node-create="beforeNodeCreate"
         :on-node-created="onNodeCreated"
         :before-link-create="beforeLinkCreate"
         :on-link-created="onLinkCreated">
         <template v-slot:node="{meta}">
-          <!-- 节点 -->
+          <!-- 阶段 -->
           <template v-if="meta.category === 'stage'">
             <el-card class="node-card stage-card" shadow="hover">
               <div class="stage-header">
-                <template v-if="meta.type === 'execStage'">
-                  <i class="fa fa-fw fa-cogs"></i>
+                <template v-if="meta.type === 'codeStage'">
+                  <i class="fa fa-fw fa-file-code-o"></i>
                 </template>
-              </div>
-              <div class="node-title">
-                <div class="node-title-content">
-                  <span>{{ getTitle(meta) }}</span>
-                </div>
-              </div>
-            </el-card>
-          </template>
-
-          <!-- 入口 -->
-          <template v-else-if="meta.category === 'entry'">
-            <el-card class="node-card entry-card" shadow="hover">
-              <div class="entry-header">
-                <template v-if="meta.type === 'authLinkEntry'">
-                  <i class="fa fa-fw fa-link"></i>
-                </template>
-                <template v-if="meta.type === 'crontabEntry'">
-                  <i class="fa fa-fw fa-clock-o"></i>
+                <template v-else-if="meta.type === 'funcStage'">
+                  <i class="fa fa-fw fa-cog"></i>
                 </template>
               </div>
               <div class="node-title">
@@ -70,10 +61,13 @@ Select all     : 全选
           <!-- 点 -->
           <template v-else-if="meta.category === 'point'">
             <el-card class="node-card point-card" shadow="hover">
-              <template v-if="meta.type === 'mergePoint'">
-                <span>{{ $t('Merge') }}</span>
+              <template v-if="meta.type === 'startPoint'">
+                <span>{{ $t('Start') }}</span>
               </template>
-              <template v-if="meta.type === 'endPoint'">
+              <template v-else-if="meta.type === 'branchPoint'">
+                <span>{{ $t('Branch') }}</span>
+              </template>
+              <template v-else-if="meta.type === 'endPoint'">
                 <span>{{ $t('End') }}</span>
               </template>
             </el-card>
@@ -82,11 +76,28 @@ Select all     : 全选
       </super-flow>
 
       <!-- 配置 -->
-      <el-dialog :title="$t('Setup')" :visible.sync="showConfigPanel">
+      <el-dialog :title="$t('Setup')" :visible.sync="showConfigPanel" v-if="configItem && configItem.meta">
         <el-form :model="configForm" label-width="80px">
-          <el-form-item :label="$t('Title')">
+          <el-form-item :label="$t('Title')" v-if="configItem.meta.category === 'stage'">
             <el-input v-model="configForm.title" autocomplete="off"></el-input>
           </el-form-item>
+
+          <template v-if="['codeStage', 'branchPoint'].indexOf(configItem.meta.type) >= 0">
+            <el-form-item :label="$t('Code')">
+              <div id="codeStageContainer_Blueprint" :style="$store.getters.codeMirrorSetting.style">
+                <textarea id="codeStage_Blueprint">{{ configForm.code }}</textarea>
+              </div>
+            </el-form-item>
+          </template>
+
+          <template v-else-if="configItem.meta.type === 'funcStage'">
+          </template>
+
+          <template v-else-if="configItem.meta.type === 'startPoint'">
+          </template>
+
+          <template v-else-if="configItem.meta.type === 'branchPoint'">
+          </template>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="showConfigPanel = false">{{ $t('Cancel') }}</el-button>
@@ -119,9 +130,15 @@ export default {
     '$store.state.uiLocale': function() {
       // 修复切换语言后，连接描述文字由于是cavas绘制导致无法同步更新的问题
       // 解决方案：修改`updateTime`诱使GraphLink触发watch动作
-      this.$refs.superFlow.graph.linkList.forEach(link => {
-        link.meta.updateTime = new Date().toISOString();
+      // 注意点：切换语言后，需要等待i18n插件也切换语言后才能重新获取文案
+      setImmediate(() => {
+        this.$refs.superFlow.graph.linkList.forEach(link => {
+          link.meta.updateTime = new Date().toISOString();
+        });
       });
+    },
+    codeMirrorTheme(val) {
+      this.codeMirror.setOption('theme', val);
     },
   },
   methods: {
@@ -130,12 +147,15 @@ export default {
 
       return this.$refs.superFlow.graph;
     },
+    _dumpGraph() {
+      return JSON.stringify(this._getGraph().toJSON())
+    },
 
     genDemoData() {
-      let dataJSON = '{"origin":[0,0],"nodeList":[{"id":"node-Vs6Yq0LqNOYy","width":200,"height":50,"coordinate":[157,24.8125],"meta":{"type":"authLinkEntry","title":null,"updateTime":"2021-06-10T19:18:04.438Z","category":"entry"}},{"id":"node-OufQE7LOzs7G","width":200,"height":50,"coordinate":[387,24.8125],"meta":{"type":"crontabEntry","title":null,"updateTime":"2021-06-10T19:18:06.718Z","category":"entry"}},{"id":"node-YdP5EVjzsbQo","width":200,"height":50,"coordinate":[157,146.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:17:44.249Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-6hvn6piGex6i","width":200,"height":50,"coordinate":[387,240.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:17:44.975Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-nrtKrQyOmFL7","width":60,"height":60,"coordinate":[957,235.8125],"meta":{"type":"mergePoint","title":null,"updateTime":"2021-06-10T19:18:54.298Z","category":"point"}},{"id":"node-m1QXhzlrr6l4","width":200,"height":50,"coordinate":[657,184.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:19.161Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-M9QG6pIz0Rdb","width":200,"height":50,"coordinate":[657,295.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:21.321Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-ctkEbzixtQOm","width":200,"height":50,"coordinate":[387,379.8125],"meta":{"type":"execStage","title":null,"updateTime":"2021-06-10T19:18:32.795Z","category":"stage","code":null,"kwargs":null,"template":null}},{"id":"node-l2vz8jIcdYyU","width":60,"height":60,"coordinate":[1182,235.8125],"meta":{"type":"endPoint","title":null,"updateTime":"2021-06-10T19:18:51.418Z","category":"point"}}],"linkList":[{"id":"link-5vMIPEpxUM47","startId":"node-YdP5EVjzsbQo","endId":"node-6hvn6piGex6i","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:17:56.552Z","code":null,"kwargs":null,"template":null}},{"id":"link-rk4O7sZBOjvP","startId":"node-Vs6Yq0LqNOYy","endId":"node-YdP5EVjzsbQo","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:11.360Z","code":null,"kwargs":null,"template":null}},{"id":"link-PjnJ7U62d675","startId":"node-OufQE7LOzs7G","endId":"node-6hvn6piGex6i","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:17.570Z","code":null,"kwargs":null,"template":null}},{"id":"link-NcWDNmqifnSb","startId":"node-6hvn6piGex6i","endId":"node-M9QG6pIz0Rdb","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:28.721Z","code":null,"kwargs":null,"template":null}},{"id":"link-d84tMR5JHec4","startId":"node-6hvn6piGex6i","endId":"node-m1QXhzlrr6l4","startAt":[200,25],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:23.994Z","code":null,"kwargs":null,"template":null}},{"id":"link-goRtUr1htsCn","startId":"node-m1QXhzlrr6l4","endId":"node-nrtKrQyOmFL7","startAt":[200,25],"endAt":[30,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:57.381Z","code":null,"kwargs":null,"template":null}},{"id":"link-XAx1ijj8yiu0","startId":"node-M9QG6pIz0Rdb","endId":"node-nrtKrQyOmFL7","startAt":[200,25],"endAt":[30,60],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:58.969Z","code":null,"kwargs":null,"template":null}},{"id":"link-rMS7cum4PobL","startId":"node-nrtKrQyOmFL7","endId":"node-l2vz8jIcdYyU","startAt":[60,30],"endAt":[0,30],"meta":{"type":"execLink","updateTime":"2021-06-10T19:19:23.022Z","code":null,"kwargs":null,"template":null}},{"id":"link-80TB9625dOoV","startId":"node-ctkEbzixtQOm","endId":"node-l2vz8jIcdYyU","startAt":[200,25],"endAt":[30,60],"meta":{"type":"execLink","updateTime":"2021-06-10T19:19:21.402Z","code":null,"kwargs":null,"template":null}},{"id":"link-7alh8N0EKRbS","startId":"node-6hvn6piGex6i","endId":"node-ctkEbzixtQOm","startAt":[100,50],"endAt":[100,0],"meta":{"type":"execLink","updateTime":"2021-06-10T19:18:40.948Z","code":null,"kwargs":null,"template":null}}]}'
+      let dataJSON = '{"origin":[0,0],"nodeList":[{"id":"node-CNjeuprAp3Ed","width":60,"height":60,"coordinate":[108,133.8125],"meta":{"type":"startPoint","title":null,"updateTime":"2021-10-08T07:06:08.971Z","category":"point"}},{"id":"node-jLmr4fAcbfWB","width":200,"height":50,"coordinate":[252,138.8125],"meta":{"type":"codeStage","title":null,"updateTime":"2021-10-08T07:06:15.325Z","category":"stage","code":null}},{"id":"node-iAgy3TpDlZCN","width":60,"height":60,"coordinate":[548,133.8125],"meta":{"type":"branchPoint","title":null,"updateTime":"2021-10-08T07:06:28.239Z","category":"point"}},{"id":"node-9uPSppsvX5iw","width":200,"height":50,"coordinate":[698,73.8125],"meta":{"type":"codeStage","title":null,"updateTime":"2021-10-08T07:06:18.331Z","category":"stage","code":null}},{"id":"node-21btpMCTshO4","width":200,"height":50,"coordinate":[698,211.8125],"meta":{"type":"codeStage","title":null,"updateTime":"2021-10-08T07:06:45.595Z","category":"stage","code":null}},{"id":"node-yPMpMzb83Biy","width":60,"height":60,"coordinate":[1095,133.8125],"meta":{"type":"endPoint","title":null,"updateTime":"2021-10-08T07:06:10.525Z","category":"point"}}],"linkList":[{"id":"link-xWl9een3bv2T","startId":"node-CNjeuprAp3Ed","endId":"node-jLmr4fAcbfWB","startAt":[60,30],"endAt":[0,25],"meta":{"type":"execLink","updateTime":"2021-10-08T07:06:35.341Z"}},{"id":"link-YHMaYlqkLQqN","startId":"node-jLmr4fAcbfWB","endId":"node-iAgy3TpDlZCN","startAt":[200,25],"endAt":[0,30],"meta":{"type":"execLink","updateTime":"2021-10-08T07:06:42.068Z"}},{"id":"link-EWmKs952fRcG","startId":"node-iAgy3TpDlZCN","endId":"node-9uPSppsvX5iw","startAt":[60,30],"endAt":[0,25],"meta":{"type":"branchTrueLink","updateTime":"2021-10-08T07:06:44.063Z"}},{"id":"link-h6X23fnttH9d","startId":"node-iAgy3TpDlZCN","endId":"node-21btpMCTshO4","startAt":[60,30],"endAt":[0,25],"meta":{"type":"branchFalseLink","updateTime":"2021-10-08T07:06:47.805Z"}},{"id":"link-eCwMzs069WqM","startId":"node-9uPSppsvX5iw","endId":"node-yPMpMzb83Biy","startAt":[200,25],"endAt":[0,30],"meta":{"type":"execLink","updateTime":"2021-10-08T07:06:50.190Z"}},{"id":"link-RJ23PwABHvin","startId":"node-21btpMCTshO4","endId":"node-yPMpMzb83Biy","startAt":[200,25],"endAt":[0,30],"meta":{"type":"execLink","updateTime":"2021-10-08T07:06:52.231Z"}}]}'
       let demoData = {
         id: this.T.genDataId('blpt'),
-        dataJSON: JSON.parse(dataJSON),
+        dataJSON: JSON.parse(dataJSON || '{}'),
       };
 
       return demoData;
@@ -163,23 +183,23 @@ export default {
 
       // 设置meta信息
       switch(type) {
-        case 'execStage':
-          // 执行处理步骤
+        case 'codeStage':
+          // 代码处理步骤
           node.meta.category = 'stage';
-          node.meta.code     = options.code     || null; // 执行代码
-          node.meta.kwargs   = options.kwargs   || null; // 执行参数
-          node.meta.template = options.template || null; // 节点模板（用于生成自动标题）
+          node.meta.code     = options.code || null; // 执行代码
           break;
 
-        case 'authLinkEntry':
-        case 'crontabEntry':
-          // 授权链接入口、定时触发入口
-          node.meta.category = 'entry';
+        case 'funcStage':
+          // 函数调用步骤
+          node.meta.category       = 'stage';
+          node.meta.funcId         = options.funcId         || null; // 执行函数ID
+          node.meta.funcCallKwargs = options.funcCallKwargs || null; // 执行函数参数
           break;
 
-        case 'mergePoint':
+        case 'startPoint':
+        case 'branchPoint':
         case 'endPoint':
-          // 合并点、结束点
+          // 开始点、分支点、结束点
           node.meta.category = 'point';
           break;
       }
@@ -187,7 +207,6 @@ export default {
       // 设置大小
       switch(node.meta.category) {
         case 'stage':
-        case 'entry':
           node.width  = 200;
           node.height = 50;
           break;
@@ -213,52 +232,61 @@ export default {
       switch(type) {
         case 'execLink':
           // 执行连线
-          linkMeta.code     = options.code     || null; // 执行代码
-          linkMeta.kwargs   = options.kwargs   || null; // 执行参数
-          linkMeta.template = options.template || null; // 连线模板（用于生成自动标题）
+          break;
+
+        case 'branchTrueLink':
+          // 条件为真连线
+          break;
+
+        case 'branchFalseLink':
+          // 条件为假连线
           break;
       }
 
       return linkMeta;
     },
     updateItemMeta() {
-      let item = this.T.startsWith(this.configItemId, 'node')
-                     ? this._getGraph().nodeList.find(item => item.id === this.configItemId)
-                     : this._getGraph().linkList.find(item => item.id === this.configItemId);
-
-      item.meta = this.T.jsonCopy(this.configForm);
-      item.meta.updateTime = new Date().toISOString();
+      this.configItem.meta = this.T.jsonCopy(this.configForm);
+      this.configItem.meta.updateTime = new Date().toISOString();
+      if (this.configItem.meta.type === 'codeStage' && this.codeMirror) {
+        this.configItem.meta.code = this.codeMirror.getValue();
+      }
 
       this.showConfigPanel = false;
     },
 
     enterIntercept(fromNode, toNode, graph) {
       // 不允许入口直接指向结束点
-      if (fromNode.meta.category === 'entry' && toNode.meta.type === 'endPoint') {
+      if (fromNode.meta.type === 'startPoint' && toNode.meta.type === 'endPoint') {
         return false;
       }
 
-      // 任何节点都不允许指向入口
-      if (toNode.meta.category === 'entry') {
+      // 任何节点都不允许指向开始点
+      if (toNode.meta.type === 'startPoint') {
         return false;
       }
 
       return true;
     },
     outputIntercept(node, graph) {
-      // 不允许结束点指向任何节点
+      // 【开始点】只允许指向一处
+      if (node.meta.type === 'startPoint') {
+        return graph.linkList.filter(link => link.start.id === node.id).length <= 0;
+      }
+
+      // 【结束点】不允许指向任何节点
       if (node.meta.type === 'endPoint') {
         return false;
       }
 
-      // 阶段节点总是可以指向
+      // 【执行阶段类节点】只允许指向一处
       if (node.meta.category === 'stage') {
-        return true;
+        return graph.linkList.filter(link => link.start.id === node.id).length <= 0;
       }
 
-      // 入口节点只允许指向一处
-      if (node.meta.category === 'entry') {
-        return graph.linkList.filter(link => link.start.id === node.id).length <= 0;
+      // 【分支节点】只允许指向两处
+      if (node.meta.type === 'branchPoint') {
+        return graph.linkList.filter(link => link.start.id === node.id).length <= 1;
       }
 
       return true;
@@ -274,14 +302,41 @@ export default {
       // 优先使用用户指定标题
       if (meta.title) return meta.title;
 
-      return this.$t('Title');
+      // 默认标题
+      switch(meta.type) {
+        case 'codeStage':
+          return this.$t('Code stage');
+
+        case 'funcStage':
+          return this.$t('Func stage');
+
+        case 'branchTrueLink':
+          return this.$t('Yes');
+
+        case 'branchFalseLink':
+          return this.$t('No');
+
+        default:
+          return '';
+      }
+
     },
     beforeNodeCreate(node, graph) {
     },
     async onNodeCreated(node, graph) {
     },
     beforeLinkCreate(link, graph) {
-      link.meta = this.createLinkMeta('execLink');
+      let fromNode = graph.nodeList.find(node => node.id === link.start.id);
+      if (fromNode.meta.type === 'branchPoint') {
+        if (graph.linkList.filter(link => link.start.id === fromNode.id && link.meta.type === 'branchTrueLink').length === 0) {
+          link.meta = this.createLinkMeta('branchTrueLink');
+        } else {
+          link.meta = this.createLinkMeta('branchFalseLink');
+        }
+      } else {
+        link.meta = this.createLinkMeta('execLink');
+      }
+
       return link;
     },
     async onLinkCreated(link, graph) {
@@ -292,10 +347,19 @@ export default {
       return [
         [
           {
+            icon : 'fa-file-code-o',
+            label: this.$t('Code stage'),
+            selected: (graph, coordinate) => {
+              graph.addNode(this.createNodeData('codeStage', {
+                coordinate: coordinate,
+              }));
+            },
+          },
+          {
             icon : 'fa-cogs',
-            label: this.$t('Execute stage'),
+            label: this.$t('Func stage'),
             selected: (graph, coordinate) => {
-              graph.addNode(this.createNodeData('execStage', {
+              graph.addNode(this.createNodeData('funcStage', {
                 coordinate: coordinate,
               }));
             },
@@ -303,30 +367,19 @@ export default {
         ],
         [
           {
-            icon : 'fa-link',
-            label: this.$t('Auth Link entry'),
+            icon : 'fa-flag',
+            label: this.$t('Start point'),
             selected: (graph, coordinate) => {
-              graph.addNode(this.createNodeData('authLinkEntry', {
+              graph.addNode(this.createNodeData('startPoint', {
                 coordinate: coordinate,
               }));
             },
           },
           {
-            icon : 'fa-clock-o',
-            label: this.$t('Crontab entry'),
+            icon : 'fa-code-fork',
+            label: this.$t('Branch point'),
             selected: (graph, coordinate) => {
-              graph.addNode(this.createNodeData('crontabEntry', {
-                coordinate: coordinate,
-              }));
-            },
-          },
-        ],
-        [
-          {
-            icon : 'fa-compress',
-            label: this.$t('Merge point'),
-            selected: (graph, coordinate) => {
-              graph.addNode(this.createNodeData('mergePoint', {
+              graph.addNode(this.createNodeData('branchPoint', {
                 coordinate: coordinate,
               }));
             },
@@ -365,9 +418,23 @@ export default {
             label: this.$t('Setup'),
             disable: false,
             selected: (node, coordinate) => {
-              this.configItemId = node.id;
+              this.configItem = node;
               this.$set(this, 'configForm', this.T.jsonCopy(node.meta));
+
               this.showConfigPanel = true;
+
+              setImmediate(() => {
+                // 初始化编辑器
+                if (!this.codeMirror) {
+                  this.codeMirror = this.T.initCodeMirror('codeStage_Blueprint');
+                  this.codeMirror.setOption('theme', this.codeMirrorTheme);
+                }
+
+                // 载入代码
+                this.codeMirror.setValue(this.configItem.meta.code || '');
+                this.T.setCodeMirrorMode(this.codeMirror, 'python');
+                this.codeMirror.refresh();
+              });
             },
           },
           {
@@ -384,16 +451,6 @@ export default {
     linkMenu() {
       return [
         [
-          {
-            icon: 'fa-edit',
-            label: this.$t('Setup'),
-            disable: false,
-            selected: (link, coordinate) => {
-              this.configItemId = link.id;
-              this.$set(this, 'configForm', this.T.jsonCopy(link.meta));
-              this.showConfigPanel = true;
-            },
-          },
           {
             icon : 'fa-times',
             label: this.$t('Delete'),
@@ -419,22 +476,33 @@ export default {
             background: '#222222',
           }
       }
-    }
+    },
+    codeMirrorTheme() {
+      return this.T.getCodeMirrorThemeName();
+    },
   },
   props: {
   },
   data() {
     return {
-      data: {},
+      data: {
+        dataJSON: {
+          nodeList: [],
+          linkList: [],
+        }
+      },
 
       showConfigPanel: false,
-      configItemId: null,
+
+      configItem: null,
       configForm: {
-        title   : null,
-        code    : null,
-        kwargs  : null,
-        template: null,
+        title         : null,
+        code          : null,
+        funcId        : null,
+        funcCallKwargs: null,
       },
+
+      codeMirror: null,
     }
   },
   created() {
@@ -449,7 +517,7 @@ export default {
 .node-card {
   width: 100%;
   height: 100%;
-  border: 2px solid #ccc;
+  border: 2px solid #FF6600;
   box-sizing: border-box;
 }
 .node-card > .el-card__body {
@@ -490,20 +558,19 @@ export default {
 .node-card .stage-header {
   text-align: left;
   padding: 5px;
-  color: #FF6600;
-  background-color: #EEEEEE;
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-}
-
-.node-card .entry-header {
-  text-align: left;
-  padding: 5px;
   color: white;
   background-color: #FF6600;
   display: flex;
   align-items: center;
   font-size: 18px;
+}
+
+#codeStageContainer_Blueprint {
+  border: 1px solid #DCDFE6;
+  border-radius: 3px;
+}
+#codeStageContainer_Blueprint .CodeMirror {
+  height: 420px;
+  width: auto;
 }
 </style>
