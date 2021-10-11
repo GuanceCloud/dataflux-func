@@ -173,8 +173,13 @@
           this.ctx.textAlign = 'center'
           this.ctx.textBaseline = 'middle'
 
-          const {text, width} = this.descIntercept(desc)
-          const height = parseInt(font.match(/(\d+px)/g)[0])
+          let {text, width} = this.descIntercept(desc)
+          if (width > 0) {
+            // 文字与连线间距修正
+            width += 6
+          }
+
+          const height = parseInt(font.match(/(\d+px)/g)[0]) + 6
           const descPosition = this.descPosition()
           const position = vector(descPosition).minus([width / 2, height / 2]).end
 

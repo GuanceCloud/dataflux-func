@@ -291,6 +291,11 @@ en:
   Specified new file or folder name already existed       : 指定的名称已经存在
   Unsupported resource operation                          : 不支持的资源操作
 
+  # 蓝图
+  Missing branch for True   : 缺少判断为真的分支
+  Missing branch for False  : 缺少判断为假的分支
+  Incomplete processing flow: 处理流程不完整
+
 'zh-HK': {}
 
 'zh-TW': {}
