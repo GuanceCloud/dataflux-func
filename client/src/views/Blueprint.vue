@@ -161,6 +161,7 @@ Add Global Var: 添加全局变量
  * 是基于开源项目（https://github.com/caohuatao/vue-super-flow）定制修改而来
  */
 import SuperFlow from '@/components/SuperFlow'
+import * as blueprint from '@/blueprint'
 
 export default {
   name: 'Blueprint',
@@ -202,7 +203,7 @@ export default {
       let demoData = {
         id      : 'blpt-001',
         // dataJSON: null,
-        dataJSON: "{\"origin\":[0,0],\"nodeList\":[{\"id\":\"node_2\",\"width\":60,\"height\":60,\"coordinate\":[113,156],\"meta\":{\"id\":\"node_2\",\"type\":\"startPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:44:41.351Z\",\"category\":\"point\",\"kwargs\":[\"a\",\"b\",\"c\"],\"globalVars\":[\"x\",\"y\",\"z\"]}},{\"id\":\"node_1\",\"width\":200,\"height\":50,\"coordinate\":[275,161],\"meta\":{\"id\":\"node_1\",\"type\":\"codeStage\",\"title\":\"预处理\",\"updateTime\":\"2021-10-11T03:48:03.634Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    prev_res['a'] = int(prev_res['a'])\\n    prev_res['b'] = int(prev_res['b'])\\n    prev_res['c'] = int(prev_res['c'])\\n    return prev_res\"}},{\"id\":\"node_3\",\"width\":60,\"height\":60,\"coordinate\":[559,156],\"meta\":{\"id\":\"node_3\",\"type\":\"branchPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:46:03.963Z\",\"category\":\"point\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['a'] + prev_res['b'] > prev_res['c']\"}},{\"id\":\"node_5\",\"width\":200,\"height\":50,\"coordinate\":[755,236],\"meta\":{\"id\":\"node_5\",\"type\":\"codeStage\",\"title\":\"返回c\",\"updateTime\":\"2021-10-11T03:48:57.297Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['c']\"}},{\"id\":\"node_6\",\"width\":60,\"height\":60,\"coordinate\":[1115,156],\"meta\":{\"id\":\"node_6\",\"type\":\"endPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:30:06.593Z\",\"category\":\"point\"}},{\"id\":\"node_4\",\"width\":200,\"height\":50,\"coordinate\":[755,77],\"meta\":{\"id\":\"node_4\",\"type\":\"codeStage\",\"title\":\"返回a+b的和\",\"updateTime\":\"2021-10-11T03:48:47.278Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['a'] + prev_res['b']\"}}],\"linkList\":[{\"id\":\"link-xQFcklKg4zZp\",\"startId\":\"node_2\",\"endId\":\"node_1\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-l6DK1ltpfAU8\",\"startId\":\"node_5\",\"endId\":\"node_6\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-4jY6ufcTdoJm\",\"startId\":\"node_3\",\"endId\":\"node_5\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"branchFalseLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-9dQ9aiXDW2kZ\",\"startId\":\"node_4\",\"endId\":\"node_6\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-iG1a3t7txY4p\",\"startId\":\"node_3\",\"endId\":\"node_4\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"branchTrueLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-z6iDkVY5ktD5\",\"startId\":\"node_1\",\"endId\":\"node_3\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}}]}"
+        dataJSON: "{\"origin\":[0,0],\"nodeList\":[{\"id\":\"blueprint_start\",\"width\":60,\"height\":60,\"coordinate\":[113,156],\"meta\":{\"id\":\"blueprint_start\",\"type\":\"startPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:44:41.351Z\",\"category\":\"point\",\"kwargs\":[\"a\",\"b\",\"c\"],\"globalVars\":[\"x\",\"y\",\"z\"]}},{\"id\":\"node_1\",\"width\":200,\"height\":50,\"coordinate\":[275,161],\"meta\":{\"id\":\"node_1\",\"type\":\"codeStage\",\"title\":\"预处理\",\"updateTime\":\"2021-10-11T03:48:03.634Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    prev_res['a'] = int(prev_res['a'])\\n    prev_res['b'] = int(prev_res['b'])\\n    prev_res['c'] = int(prev_res['c'])\\n    return prev_res\"}},{\"id\":\"node_3\",\"width\":60,\"height\":60,\"coordinate\":[559,156],\"meta\":{\"id\":\"node_3\",\"type\":\"branchPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:46:03.963Z\",\"category\":\"point\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['a'] + prev_res['b'] > prev_res['c']\"}},{\"id\":\"node_5\",\"width\":200,\"height\":50,\"coordinate\":[755,236],\"meta\":{\"id\":\"node_5\",\"type\":\"codeStage\",\"title\":\"返回c\",\"updateTime\":\"2021-10-11T03:48:57.297Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['c']\"}},{\"id\":\"blueprint_end\",\"width\":60,\"height\":60,\"coordinate\":[1115,156],\"meta\":{\"id\":\"blueprint_end\",\"type\":\"endPoint\",\"title\":null,\"updateTime\":\"2021-10-11T03:30:06.593Z\",\"category\":\"point\"}},{\"id\":\"node_4\",\"width\":200,\"height\":50,\"coordinate\":[755,77],\"meta\":{\"id\":\"node_4\",\"type\":\"codeStage\",\"title\":\"返回a+b的和\",\"updateTime\":\"2021-10-11T03:48:47.278Z\",\"category\":\"stage\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['a'] + prev_res['b']\"}}],\"linkList\":[{\"id\":\"link-xQFcklKg4zZp\",\"startId\":\"blueprint_start\",\"endId\":\"node_1\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-l6DK1ltpfAU8\",\"startId\":\"node_5\",\"endId\":\"blueprint_end\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-4jY6ufcTdoJm\",\"startId\":\"node_3\",\"endId\":\"node_5\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"branchFalseLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-9dQ9aiXDW2kZ\",\"startId\":\"node_4\",\"endId\":\"blueprint_end\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-iG1a3t7txY4p\",\"startId\":\"node_3\",\"endId\":\"node_4\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"branchTrueLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}},{\"id\":\"link-z6iDkVY5ktD5\",\"startId\":\"node_1\",\"endId\":\"node_3\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"execLink\",\"updateTime\":\"2021-10-11T03:47:01.259Z\"}}]}"
       }
       demoData.dataJSON = JSON.parse(demoData.dataJSON || '{}');
       demoData.dataJSON.nodeList = demoData.dataJSON.nodeList || [];
@@ -225,10 +226,21 @@ export default {
       options = options || {};
 
       let newNodeId = 'node_1';
-      let lastNodeId = this.$refs.superFlow.graph.nodeList.map(node => node.id).sort().pop();
-      if (lastNodeId) {
-        let lastNodeSeq = parseInt(lastNodeId.split('_')[1]) + 1;
-        newNodeId = `node_${lastNodeSeq}`;
+      switch(type) {
+        case 'startPoint':
+          newNodeId = 'blueprint_start';
+          break;
+
+        case 'endPoint':
+          newNodeId = 'blueprint_end';
+          break;
+
+        default:
+          let lastNodeId = this.$refs.superFlow.graph.nodeList.map(node => node.id).sort().pop();
+          if (lastNodeId) {
+            let lastNodeSeq = parseInt(lastNodeId.split('_')[1]) + 1;
+            newNodeId = `node_${lastNodeSeq}`;
+          }
       }
 
       let node = {
@@ -434,16 +446,13 @@ export default {
       this.newGlobalVar     = '';
     },
 
-    generateScriptCode(dataJSON) {
-      console.log(dataJSON.nodeList)
-      console.log(dataJSON.linkList)
-    },
     async deploy() {
       let dataJSON = await this.save();
 
-      let scriptCode = this.generateScriptCode(dataJSON)
+      let scriptCode = blueprint.genScriptCode(dataJSON.nodeList, dataJSON.linkList);
 
-      console.log('CALL DEPLOY API', dataJSON)
+      console.log('Script Code: \n' + scriptCode)
+      console.log('CALL DEPLOY API')
     },
     async save() {
       let dataJSON = this._getGraph().toJSON()
