@@ -23,6 +23,7 @@
         <li
           class="super-flow__menu-item"
           v-for="subItem in subList"
+          v-if="!subItem.hidden || !isHidden(subItem)"
           :class="{'is-disabled': subItem.disable}"
           @click="select(subItem)">
           <slot :item="subItem">
@@ -73,6 +74,11 @@
       }
     },
     methods: {
+      isHidden(subItem) {
+        if (subItem.hidden === true) return true;
+
+        return subItem.hidden(this.source);
+      },
       select(subItem) {
         if (subItem.disable) return
         this.$emit('update:visible', false)

@@ -38,7 +38,7 @@ File already existed                                                            
             </el-button>
           </el-tooltip>
           <el-tooltip :content="$t('Refresh')">
-            <el-button @click="loadData({ isRefresh: true })" size="small" class="compact-button">
+            <el-button @click="loadData({ isRefresh: true })" size="small" class="fix-compact-button">
               <i class="fa fa-fw fa-refresh"></i>
             </el-button>
           </el-tooltip>
@@ -540,9 +540,6 @@ export default {
 }
 .upload-button {
   display: inline-block;
-}
-.compact-button {
-  margin-left: 0 !important;
 }
 .path-sep {
   width: 20px;

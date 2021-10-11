@@ -39,6 +39,7 @@ en:
   Enable  : 启用
   Disable : 禁用
   Save    : 保存
+  Deploy  : 部署
   Hide    : 隐藏
   Show    : 显示
   Lock    : 锁定
@@ -68,6 +69,7 @@ en:
   enable  : 启用
   disable : 禁用
   save    : 保存
+  deploy  : 部署
   hide    : 隐藏
   show    : 显示
   lock    : 解锁
@@ -191,6 +193,7 @@ en:
   Func Cache Manager: 函数缓存管理器
   Func Store Manager: 函数存储管理器
   System Logs       : 系统日志
+  Blueprint         : 蓝图
 
   Script Set ID    : 脚本集ID
   Script ID        : 脚本ID
@@ -202,6 +205,7 @@ en:
   Batch ID         : 批处理ID
   File Service ID  : 文件服务ID
   User ID          : 用户ID
+  Blueprint ID     : 蓝图
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'

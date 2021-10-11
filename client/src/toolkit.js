@@ -1326,7 +1326,7 @@ export function getPrevQuery() {
   return unpackRouteQuery(router.currentRoute.query.prevRouteQuery);
 };
 
-export function initCodeMirror(id) {
+export function initCodeMirror(id, mode) {
   let cm = CodeMirror.fromTextArea(document.getElementById(id), {
     autoRefresh : true,
     autofocus   : true,
@@ -1402,8 +1402,9 @@ export function initCodeMirror(id) {
   //   console.log('cursor moved')
   // });
 
-  setCodeMirrorMode(cm, 'python');
+  setCodeMirrorMode(cm, mode || 'python');
 
+  console.log('Code Mirror Inited');
   return cm;
 };
 

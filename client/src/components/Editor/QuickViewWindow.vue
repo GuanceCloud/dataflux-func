@@ -99,12 +99,10 @@ export default {
         // 载入代码
         this.codeMirror_code.setValue('');
         this.codeMirror_code.setValue(this.script.code || '');
-        this.T.setCodeMirror(this.codeMirror_code, 'python');
         this.codeMirror_code.refresh();
 
         this.codeMirror_codeDraft.setValue('');
         this.codeMirror_codeDraft.setValue(this.script.codeDraft || '');
-        this.T.setCodeMirror(this.codeMirror_codeDraft, 'python');
         this.codeMirror_codeDraft.refresh();
       });
     },

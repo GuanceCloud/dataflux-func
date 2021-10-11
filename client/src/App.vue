@@ -560,6 +560,9 @@ kbd {
 }
 
 /* Element-UI 修正 */
+.fix-compact-button {
+  margin-left: 0 !important;
+}
 .fix-list-button .el-button {
   border: none;
 }

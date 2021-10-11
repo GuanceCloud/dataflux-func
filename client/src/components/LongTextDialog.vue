@@ -44,14 +44,13 @@ export default {
       setImmediate(() => {
         // 初始化编辑器
         if (!this.codeMirror) {
-          this.codeMirror = this.T.initCodeMirror('longTextDialogContent');
+          this.codeMirror = this.T.initCodeMirror('longTextDialogContent', this.mode || 'text');
           this.codeMirror.setOption('theme', this.T.getCodeMirrorThemeName());
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }
 
         // 载入代码
         this.codeMirror.setValue(this.content || '');
-        this.T.setCodeMirrorMode(this.codeMirror, this.mode || null);
         this.codeMirror.refresh();
       });
     },

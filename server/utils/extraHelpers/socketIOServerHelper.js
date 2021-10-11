@@ -27,9 +27,10 @@ function getConfig(c, retryStrategy) {
 };
 
 /* Singleton Client */
-var CLIENT_CONFIG = null;
-var SUB_CLIENT    = null;
-var PUB_CLIENT    = null;
+var CLIENT_CONFIG  = null;
+var SUB_CLIENT     = null;
+var PUB_CLIENT     = null;
+var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_SOCKETIO_CLIENT');
 
 /**
  * @constructor
