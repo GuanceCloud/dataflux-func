@@ -92,11 +92,9 @@ function _getHTTPRequestInfo(req) {
     headers    : req.headers,
     query      : req.query,
     body       : req.body,
-    files      : req.files,
     hostname   : req.hostname,
     ip         : req.ip,
     ips        : req.ips,
-    protocol   : req.protocol,
     xhr        : req.xhr,
   };
   return httpRequest;

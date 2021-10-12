@@ -466,13 +466,6 @@ export default {
     },
   },
   computed: {
-    sampleCode() {
-      let lines = [];
-      lines.push('def entry_func(prev_res):');
-      lines.push('    return prev_res');
-
-      return lines.join('\n');
-    },
     graphMenu() {
       return [
         [
@@ -535,7 +528,7 @@ export default {
                   }
 
                   // 载入代码
-                  this.codeMirror.setValue(nextMeta.code || this.sampleCode);
+                  this.codeMirror.setValue(nextMeta.code || blueprint.genSampleCode());
                   this.codeMirror.refresh();
                 });
               }

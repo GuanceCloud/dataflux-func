@@ -77,7 +77,7 @@ function startApplication() {
 
   // App Setting
   app.set('x-powered-by', false);
-  app.set('trust proxy', TRUST_PROXY);
+  app.set('trust proxy', true /* TRUST_PROXY */);
   app.set('etag', 'weak');
   app.set('env', CONFIG.MODE === 'prod' ? 'production' : 'development');
   app.set('views', path.join(__dirname, 'views'));
@@ -213,6 +213,8 @@ function startApplication() {
   require('./routers/fileServiceAPIRouter');
   require('./routers/funcCacheAPIRouter');
   require('./routers/funcStoreAPIRouter');
+
+  require('./routers/blueprintAPIRouter');
 
   routeLoader.mount(app);
 

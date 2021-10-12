@@ -5,11 +5,6 @@ const $t = function(s) {
   return app ? app.$t(s) : s;
 }
 
-const NOPE_CODE = [
-  `def entry_func(prev_res):`,
-  `    return prev_res`,
-].join('\n');
-
 export function hasConfig(type, field) {
   let configMap = {
     start : ['kwargs', 'globalVars'],
@@ -91,7 +86,7 @@ function genNodeFuncCode(nodeList, linkList) {
       codeLines.push(`    '''`);
     }
 
-    (node.meta.code || NOPE_CODE).split('\n').forEach(l => {
+    (node.meta.code || genSampleCode()).split('\n').forEach(l => {
       codeLines.push('    ' + l)
     })
 
@@ -169,6 +164,14 @@ export function genScriptCode(nodeList, linkList) {
 
   return code;
 };
+
+export function genSampleCode() {
+  let lines = [];
+  lines.push('def entry_func(prev_res):');
+  lines.push('    return prev_res');
+
+  return lines.join('\n');
+}
 
 export function genSampleData() {
   return {"nodeList":[{"id":"start","width":60,"height":60,"coordinate":[76,53],"meta":{"id":"start","type":"start","title":null,"updateTime":"2021-10-11T18:22:59.778Z"}},{"id":"end","width":60,"height":60,"coordinate":[566,53],"meta":{"id":"end","type":"end","title":null,"updateTime":"2021-10-11T18:23:01.015Z"}},{"id":"code_step_1","width":200,"height":50,"coordinate":[244,58],"meta":{"id":"code_step_1","type":"code","title":"示例","updateTime":"2021-10-11T18:23:50.123Z","code":"def entry_func(prev_res):\n    return 'Hello, World!'"}}],"linkList":[{"id":"link-HClgfkuiXuD0","startId":"start","endId":"code_step_1","startAt":[60,30],"endAt":[0,25],"meta":{"type":"next","updateTime":"2021-10-11T18:23:26.349Z"}},{"id":"link-qFqSkBcaVMGz","startId":"code_step_1","endId":"end","startAt":[200,25],"endAt":[0,30],"meta":{"type":"next","updateTime":"2021-10-11T18:23:27.677Z"}}]}

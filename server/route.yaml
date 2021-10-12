@@ -5124,3 +5124,113 @@ funcStoreAPI:
       id:
         $desc: 函数存储ID
         $type: string
+
+
+# 蓝图
+blueprintAPI:
+  list:
+    showInDoc    : true
+    name         : 列出蓝图
+    method       : get
+    url          : /api/v1/blueprints/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : true
+    fieldPicking : true
+    fieldKicking : true
+    orderFields:
+      id : blpt.id
+      seq: blpt.seq
+    fuzzySearch:
+      - blpt.id
+      - blpt.title
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : blpt.id
+      title:
+        $desc      : 根据标题搜索
+        $type      : string
+        $searchType: like
+        $searchKey : blpt.title
+      isDeployed:
+        $desc      : 根据是否已部署过滤
+        $type      : bool
+        $searchType: boolean
+        $searchKey : blpt.note
+
+  add:
+    showInDoc    : true
+    name         : 添加蓝图
+    method       : post
+    url          : /api/v1/blueprints/do/add
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        id:
+          $desc          : ID
+          $isRequired    : true
+          $type          : string
+          $minLength     : 1
+          $maxLength     : 128
+          $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*__[a-zA-Z_][a-zA-Z0-9_]*$
+        title:
+          $desc      : 标题
+          $allowNull : true
+          $type      : string
+        canvasJSON:
+          $desc      : 画布JSON
+          $isRequired: true
+          $type      : json
+        isDeployed:
+          $desc     : 是否已部署
+          $allowNull: true
+          $type     : boolean
+
+  modify:
+    showInDoc    : true
+    name         : 修改蓝图
+    method       : post
+    url          : /api/v1/blueprints/:id/do/modify
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 蓝图ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        title:
+          $desc      : 标题
+          $allowNull : true
+          $type      : string
+        canvasJSON:
+          $desc      : 画布JSON
+          $isRequired: false
+          $type      : json
+        isDeployed:
+          $desc     : 是否已部署
+          $allowNull: true
+          $type     : boolean
+
+  delete:
+    showInDoc    : true
+    name         : 删除蓝图
+    method       : get
+    url          : /api/v1/blueprints/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 蓝图ID
+        $type: string

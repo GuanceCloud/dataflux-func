@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '6'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '7'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -67,7 +67,7 @@ upgradeInfo:
 
   - seq: 6
     database: |-
-      -- 添加API认证支持
+      -- 添加API认证功能
       CREATE TABLE `biz_main_api_auth` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -90,3 +90,18 @@ upgradeInfo:
       ALTER TABLE `biz_main_batch`
       ADD COLUMN `apiAuthId` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID'
       AFTER `tagsJSON`;
+
+  - seq: 7
+    database: |-
+      -- 添加蓝图功能
+      CREATE TABLE `biz_main_blueprint` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `title` varchar(256) DEFAULT NULL COMMENT '标题',
+        `canvasJSON` json NOT NULL COMMENT '画布JSON',
+        `isDeployed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已部署',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';
