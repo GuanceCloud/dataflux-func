@@ -1112,16 +1112,18 @@ function __matchedFixedFields(req, fields) {
   for (var i = 0; i < fields.length; i++) {
     var f = fields[i];
 
-    // 补丁：位置为`header`，但字段位置在`req.headers`
     if (f.location === 'header') {
-      f.location = 'headers';
-    }
+      // Header字段
+      result = (req.get(f.name) === f.value);
 
-    try {
-      var fullPath = toolkit.strf('{0}.{1}', f.location, f.name);
-      result = (toolkit.jsonFind(req, fullPath) === f.value)
-    } catch(_) {}
-    try { delete req[f.location][f.name] } catch(_) {}
+    } else {
+      // 非Header字段
+      try {
+        var fullPath = toolkit.strf('{0}.{1}', f.location, f.name);
+        result = (toolkit.jsonFind(req, fullPath) === f.value)
+      } catch(_) {}
+      try { delete req[f.location][f.name] } catch(_) {}
+    }
 
     if (result) break;
   }
