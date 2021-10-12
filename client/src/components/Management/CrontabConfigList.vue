@@ -72,7 +72,7 @@ Integration Func Tasks: 集成函数任务
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column :label="$t('Func')">
+          <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.func_id"

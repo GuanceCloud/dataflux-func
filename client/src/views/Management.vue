@@ -156,7 +156,7 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
               <span>
                 <i class="fa fa-fw fa-book"></i>
-                <span class="hidden-md-and-down">{{ $t('Func Doc') }}</span>
+                {{ $t('Func Doc') }}
               </span>
             </el-menu-item>
 

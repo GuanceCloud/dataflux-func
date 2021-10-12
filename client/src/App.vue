@@ -296,7 +296,7 @@ a {
   text-decoration: none;
 }
 html {
-  min-width: 1024px;
+  min-width: 1280px;
 }
 html, body {
   height: 100%;
@@ -370,7 +370,7 @@ h3 {
 #View {
   position: absolute;
   bottom: 0;
-  min-width: 1024px;
+  min-width: 1280px;
   width: 100%;
 }
 

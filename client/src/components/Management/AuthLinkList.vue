@@ -88,7 +88,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column :label="$t('Func')">
+          <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.func_id"
