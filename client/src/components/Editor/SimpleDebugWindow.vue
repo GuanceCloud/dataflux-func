@@ -310,10 +310,12 @@ export default {
 
       } else {
         result.data = '查询执行失败';
-        try {
+
+        // 补充错误信息
+        if (apiRes.detail && apiRes.detail.error) {
           result.data += '\n' + apiRes.detail.error;
-        } catch(err) {
-          // 忽略
+        } else if (apiRes.message) {
+          result.data += '\n' + apiRes.message;
         }
       }
 
