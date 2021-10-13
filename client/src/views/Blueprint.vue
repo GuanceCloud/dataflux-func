@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
-Execute     : 执行处理
-Crontab     : 自动触发
+Deployed    : 已部署
+Not Deployed: 未部署
+
 Start       : 开始
 End         : 结束
 Process Step: 处理步骤
@@ -30,17 +31,31 @@ Add Global Var: 添加全局变量
           {{ $t('Blueprint') }} (WIP)
 
           &#12288;
-          <el-button @click="deploy" type="primary" plain size="small" class="fix-compact-button">
-            <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
+          <el-button type="primary" plain size="mini">
+            <i class="fa fa-fw fa-plus"></i>
           </el-button>
+          <el-select size="mini" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
+            <el-option v-for="b in blueprints" :key="b.id" :label="b.title" :value="b.id">
+              <span class="float-left">{{ b.title }}</span>
+              <span v-if="b.isDeployed" class="float-right text-good">{{ $t('Deployed') }}</span>
+              <span v-else class="float-right text-bad">{{ $t('Not Deployed') }}</span>
+            </el-option>
+          </el-select>
 
-          <el-button @click="save" size="small">
-            <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
-          </el-button>
+          <template v-if="data.id">
+            <el-button size="mini">
+              <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
+            </el-button>
 
-          <div class="header-control">
+            &#12288;
+            <el-button @click="deploy" type="primary" plain size="mini" class="fix-compact-button">
+              <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
+            </el-button>
 
-          </div>
+            <el-button @click="save" size="mini">
+              <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
+            </el-button>
+          </template>
         </h1>
       </el-header>
 
@@ -53,8 +68,8 @@ Add Global Var: 添加全局变量
         :output-intercept="outputIntercept"
         :link-base-style="linkBaseStyle"
         :link-desc="linkDesc"
-        :node-list="data.dataJSON.nodeList"
-        :link-list="data.dataJSON.linkList"
+        :node-list="data.canvasJSON.nodeList"
+        :link-list="data.canvasJSON.linkList"
 
         :before-node-create="beforeNodeCreate"
         :on-node-created="onNodeCreated"
@@ -195,28 +210,16 @@ export default {
       return JSON.stringify(JSON.stringify(this._getGraph().toJSON()))
     },
 
-
-    genDemoData() {
-      let demoData = {
-        id      : 'blpt-001',
-        dataJSON: blueprint.genSampleData(),
-        // dataJSON: "{\"origin\":[0,0],\"nodeList\":[{\"id\":\"start\",\"width\":60,\"height\":60,\"coordinate\":[72,116],\"meta\":{\"id\":\"start\",\"type\":\"start\",\"title\":null,\"updateTime\":\"2021-10-11T17:24:04.891Z\",\"kwargs\":[\"x\",\"y\"],\"globalVars\":[\"tmp\"]}},{\"id\":\"code_step_1\",\"width\":200,\"height\":50,\"coordinate\":[212,121],\"meta\":{\"id\":\"code_step_1\",\"type\":\"code\",\"title\":\"参数类型转换\",\"updateTime\":\"2021-10-11T17:25:03.830Z\",\"code\":\"def entry_func(prev_res):\\n    for k, v in prev_res.items():\\n        prev_res[k] = float(v)\\n    return prev_res\"}},{\"id\":\"branch_step_1\",\"width\":200,\"height\":50,\"coordinate\":[463,121],\"meta\":{\"id\":\"branch_step_1\",\"type\":\"branch\",\"title\":\"x > y ?\",\"updateTime\":\"2021-10-11T17:26:06.963Z\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['x'] > prev_res['y']\"}},{\"id\":\"code_step_3\",\"width\":200,\"height\":50,\"coordinate\":[883,121],\"meta\":{\"id\":\"code_step_3\",\"type\":\"code\",\"title\":\"输出y值\",\"updateTime\":\"2021-10-11T17:26:37.196Z\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['y']\"}},{\"id\":\"end\",\"width\":60,\"height\":60,\"coordinate\":[1335,116],\"meta\":{\"id\":\"end\",\"type\":\"end\",\"title\":null,\"updateTime\":\"2021-10-11T17:23:24.818Z\"}},{\"id\":\"code_step_2\",\"width\":200,\"height\":50,\"coordinate\":[819,43],\"meta\":{\"id\":\"code_step_2\",\"type\":\"code\",\"title\":\"输出x值\",\"updateTime\":\"2021-10-11T17:26:23.604Z\",\"code\":\"def entry_func(prev_res):\\n    return prev_res['x']\"}}],\"linkList\":[{\"id\":\"link-Ntww4dFZM47h\",\"startId\":\"start\",\"endId\":\"code_step_1\",\"startAt\":[60,30],\"endAt\":[0,25],\"meta\":{\"type\":\"next\",\"updateTime\":\"2021-10-11T17:23:12.050Z\"}},{\"id\":\"link-gXw8lu2n0Lpu\",\"startId\":\"code_step_1\",\"endId\":\"branch_step_1\",\"startAt\":[200,25],\"endAt\":[0,25],\"meta\":{\"type\":\"next\",\"updateTime\":\"2021-10-11T17:23:15.638Z\"}},{\"id\":\"link-WE4jBXiE0pea\",\"startId\":\"branch_step_1\",\"endId\":\"code_step_3\",\"startAt\":[200,25],\"endAt\":[0,25],\"meta\":{\"type\":\"nextOnFalse\",\"updateTime\":\"2021-10-11T17:23:22.097Z\"}},{\"id\":\"link-GXiDyKct3DAC\",\"startId\":\"branch_step_1\",\"endId\":\"code_step_2\",\"startAt\":[200,25],\"endAt\":[0,25],\"meta\":{\"type\":\"nextOnTrue\",\"updateTime\":\"2021-10-11T17:23:19.081Z\"}},{\"id\":\"link-q72NTrVfj1Jh\",\"startId\":\"code_step_2\",\"endId\":\"end\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"next\",\"updateTime\":\"2021-10-11T17:23:27.496Z\"}},{\"id\":\"link-9Llttybk1NVN\",\"startId\":\"code_step_3\",\"endId\":\"end\",\"startAt\":[200,25],\"endAt\":[0,30],\"meta\":{\"type\":\"next\",\"updateTime\":\"2021-10-11T17:23:28.542Z\"}}]}"
-      }
-
-      if ('string' === demoData.dataJSON) {
-        demoData.dataJSON = JSON.parse(demoData.dataJSON || '{}');
-      }
-
-      demoData.dataJSON.nodeList = demoData.dataJSON.nodeList || [];
-      demoData.dataJSON.linkList = demoData.dataJSON.linkList || [];
-
-      return demoData;
-    },
     async loadData() {
-      let apiRes = await this.T.callAPI('/api/v1/do/ping')
+      // 获取蓝图列表
+      let apiRes = await this.T.callAPI_getAll('/api/v1/blueprints/do/list');
       if (!apiRes.ok) return;
 
-      this.data = this.genDemoData();
+      this.blueprints = apiRes.data;
+
+      if (this.blueprints.length > 0) {
+        this.data = this.blueprints[0];
+      }
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -450,19 +453,19 @@ export default {
     },
 
     async deploy() {
-      let dataJSON = await this.save();
+      let canvasJSON = await this.save();
 
-      let scriptCode = blueprint.genScriptCode(dataJSON.nodeList, dataJSON.linkList);
+      let scriptCode = blueprint.genScriptCode(canvasJSON.nodeList, canvasJSON.linkList);
 
       console.log('Script Code: \n' + scriptCode)
       console.log('CALL DEPLOY API')
     },
     async save() {
-      let dataJSON = this._getGraph().toJSON()
+      let canvasJSON = this._getGraph().toJSON()
 
-      console.log('CALL SAVE API', dataJSON)
+      console.log('CALL SAVE API', canvasJSON)
 
-      return dataJSON;
+      return canvasJSON;
     },
   },
   computed: {
@@ -582,11 +585,13 @@ export default {
     return {
       data: {
         id: '',
-        dataJSON: {
+        canvasJSON: {
           nodeList: [],
           linkList: [],
         }
       },
+
+      blueprints: [],
 
       showConfigPanel: false,
 
@@ -616,6 +621,9 @@ export default {
 </script>
 
 <style>
+.blueprint-list {
+  width: 300px;
+}
 .node-card {
   width: 100%;
   height: 100%;

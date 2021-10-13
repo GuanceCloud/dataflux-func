@@ -38,6 +38,7 @@ en:
   Delete  : 删除
   Enable  : 启用
   Disable : 禁用
+  Rename  : 重命名
   Save    : 保存
   Deploy  : 部署
   Hide    : 隐藏
@@ -68,6 +69,7 @@ en:
   delete  : 删除
   enable  : 启用
   disable : 禁用
+  rename  : 重命名
   save    : 保存
   deploy  : 部署
   hide    : 隐藏

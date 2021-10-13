@@ -20,6 +20,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     canvasJSON: 'json',
+    isDeployed: 'boolean',
   },
 
   defaultOrders: [
