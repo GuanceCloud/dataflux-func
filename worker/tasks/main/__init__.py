@@ -938,7 +938,7 @@ class FuncResponse(BaseFuncResponse):
         # 尝试序列化返回值
         data_dumps = None
         try:
-            data_dumps = toolkit.json_dumps(data, indent=None, separators=(',', ':'))
+            data_dumps = toolkit.json_dumps(data, indent=None)
         except Exception as e:
             data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
 

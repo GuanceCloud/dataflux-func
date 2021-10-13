@@ -171,7 +171,7 @@ def json_update_by_keys(s, d, keys=None):
 def json_dumps_default(v):
     if isinstance(v, datetime.datetime):
         return to_iso_datetime(v)
-    elif math.isnan(v) or math.isinf(v):
+    elif isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
         return None
     else:
         return pprint.saferepr(v)

@@ -232,7 +232,7 @@ def func_debugger(self, *args, **kwargs):
                         self.logger.error(line)
 
                 try:
-                    func_result_json_dumps = toolkit.json_dumps(func_resp.data, indent=None, separators=(',', ':'))
+                    func_result_json_dumps = toolkit.json_dumps(func_resp.data, indent=None)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
