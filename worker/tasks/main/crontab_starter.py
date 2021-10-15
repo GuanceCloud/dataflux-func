@@ -226,12 +226,12 @@ class CrontabStarterTask(BaseTask):
 
         queue = None
         if specified_queue is None:
-            queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_CRONTAB_QUEUE'])
+            queue = CONFIG['_FUNC_TASK_DEFAULT_CRONTAB_QUEUE']
 
         else:
             if isinstance(specified_queue, int) and 0 <= specified_queue < CONFIG['_WORKER_QUEUE_COUNT']:
                 # 直接指定队列编号
-                queue = toolkit.get_worker_queue(specified_queue)
+                queue = specified_queue
 
             else:
                 # 指定队列别名
@@ -240,12 +240,12 @@ class CrontabStarterTask(BaseTask):
                 except Exception as e:
                     # 配置错误，无法解析为队列编号，或队列编号超过范围，使用默认函数队列。
                     # 保证无论如何都有Worker负责执行（实际运行会报错）
-                    queue = toolkit.get_worker_queue(CONFIG['_FUNC_TASK_DEFAULT_CRONTAB_QUEUE'])
+                    queue = CONFIG['_FUNC_TASK_DEFAULT_CRONTAB_QUEUE']
                 else:
                     # 队列别名转换为队列编号
-                    queue = toolkit.get_worker_queue(queue_number)
+                    queue = queue_number
 
-        return queue
+        return str(queue)
 
     def _cache_task_status(self, task_id, crontab_config):
         if not crontab_config:
@@ -321,7 +321,7 @@ class CrontabStarterTask(BaseTask):
                     task_id=task_id,
                     kwargs=task_kwargs,
                     headers=task_headers,
-                    queue=queue,
+                    queue=toolkit.get_worker_queue(queue),
                     soft_time_limit=soft_time_limit,
                     time_limit=time_limit,
                     expires=expires,

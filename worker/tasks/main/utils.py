@@ -185,7 +185,7 @@ def reload_scripts(self, *args, **kwargs):
     cache_key = toolkit.get_cache_key('fixedCache', 'prevScriptDataHash')
 
     # 上次脚本更新时间
-    prev_script_data_hash = self.cache_db.get(cache_key) or '<NO_SCRIPT_DATA_HASH>'
+    prev_script_data_hash = str(self.cache_db.get(cache_key) or '<NO_SCRIPT_DATA_HASH>')
     if not prev_script_data_hash:
         force = True
 

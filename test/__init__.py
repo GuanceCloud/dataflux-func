@@ -194,7 +194,7 @@ class BaseTestSuit(object):
         cls.PRE_SCRIPT_CODE   = SCRIPT_CODE
 
         # 获取示例代码中大型数据数据量
-        m = re.search('^LARGE_DATA_LENGTH = (\d+)', SCRIPT_CODE, re.M)
+        m = re.search('^LARGE_DATA_LENGTH = (\\d+)', SCRIPT_CODE, re.M)
         cls.PRE_LARGE_DATA_LENGTH = int(m[1])
 
         # 创建脚本集

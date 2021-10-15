@@ -78,18 +78,20 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
 
   taskOptions.id = taskOptions.id || toolkit.genDataId('task');
 
+  var queue = null;
   if (toolkit.isNullOrUndefined(taskOptions.queue)) {
-    taskOptions.queue = toolkit.getWorkerQueue(this.defaultQueue);
-
+    queue = this.defaultQueue;
   } else {
-    taskOptions.queue = '' + taskOptions.queue;
-    if (taskOptions.queue.indexOf('#') < 0) {
-      taskOptions.queue = toolkit.getWorkerQueue(taskOptions.queue);
-    }
+    queue = '' + taskOptions.queue;
   }
 
-  this.logger.debug('[CELERY] Put task `{0}` <- `{1}({2}, {3})` options: `{4}`',
-    taskOptions.queue,
+  kwargs = kwargs || {};
+  kwargs['queue'] = queue;
+
+  taskOptions.queue = toolkit.getWorkerQueue(queue);
+
+  this.logger.debug('[CELERY] Put task `#{0}` <- `{1}({2}, {3})` options: `{4}`',
+    queue,
     name,
     JSON.stringify(args),
     JSON.stringify(kwargs),

@@ -1355,12 +1355,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
         expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-        queue = safe_scope.get('_DFF_QUEUE') or CONFIG['_WORKER_DEFAULT_QUEUE']
-        if safe_scope.get('_DFF_DEBUG'):
-            queue = CONFIG['_FUNC_TASK_DEFAULT_DEBUG_QUEUE']
-
-        worker_queue = toolkit.get_worker_queue(queue)
-
         task_headers = {
             'origin': self.request.id,
         }
@@ -1369,23 +1363,40 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'funcCallKwargs' : kwargs,
             'origin'         : safe_scope.get('_DFF_ORIGIN'),
             'originId'       : safe_scope.get('_DFF_ORIGIN_ID'),
-            'execMode'       : 'async',
             'saveResult'     : save_result,
+            'execMode'       : safe_scope.get('_DFF_EXEC_MODE'),
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
             'triggerTimeMs'  : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
-            'queue'          : queue,
             'crontab'        : safe_scope.get('_DFF_CRONTAB'),
-            'crontabConfigId': safe_scope.get('_DFF_CRONTAB_CONFIG_ID'),
+            'queue'          : safe_scope.get('_DFF_QUEUE'),
             'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
             'funcChain'      : func_chain,
         }
 
-        from worker.tasks.main.func_runner import func_runner
+        # 缓存任务状态
+        sub_task_id = gen_task_id()
+        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
+
+        data = {
+            'taskId'   : sub_task_id,
+            'origin'   : safe_scope.get('_DFF_ORIGIN'),
+            'originId' : safe_scope.get('_DFF_ORIGIN_ID'),
+            'funcId'   : func_id,
+            'execMode' : 'async',
+            'status'   : 'queued',
+            'timestamp': int(time.time()),
+        }
+        data = toolkit.json_dumps(data, indent=0)
+
+        self.cache_db.run('lpush', cache_key, data)
+
+        # 调用执行（在原队列执行）
+        queue = safe_scope.get('_DFF_QUEUE')
         func_runner.apply_async(
-            task_id=gen_task_id(),
+            task_id=sub_task_id,
             kwargs=task_kwargs,
             headers=task_headers,
-            queue=worker_queue,
+            queue=toolkit.get_worker_queue(queue),
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
