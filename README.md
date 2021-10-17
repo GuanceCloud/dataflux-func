@@ -15,12 +15,10 @@ DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 
 有关DataFlux Func 的相关文档请参考以下链接：
 
-- [网站](https://function.guance.com)
-- [快速开始](https://function.guance.com/#/read?q=quick-start.md)
+- [官方网站](https://function.guance.com)
+- [快速开始](https://function.guance.com/#/read?q=/dataflux/func/quick-start.md)
 - [用户手册](https://t.guance.com/func-user-guide)
-- [维护手册](https://function.guance.com/#/read?q=maintenance-guide.md)
-- [开发手册](https://function.guance.com/#/read?q=development-guide.md)
+- [维护手册](https://function.guance.com/#/read?q=/dataflux/func/maintenance-guide.md)
+- [开发手册](https://function.guance.com/#/read?q=/dataflux/func/development-guide.md)
 - [文档库](https://www.yuque.com/dataflux/func)
-
 - [观测云官方网站](https://guance.com/)
-
