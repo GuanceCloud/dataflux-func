@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
-Code Editor  : 脚本编辑器
-Management   : 管理
-Documents    : 文档
+Develop      : 开发
+Manage       : 管理
+Docs         : 文档
 Settings     : 设置
 Sign Out     : 登出
 Not Signed In: 尚未登录
@@ -27,14 +27,14 @@ Signed In    : 已登录
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            <span>{{ $t('Code Editor') }}</span>
+            <span>{{ $t('Develop') }}</span>
           </span>
         </el-menu-item>
 
         <el-menu-item index="/management/overview">
           <span>
             <i class="fa fa-fw fa-tasks"></i>
-            <span>{{ $t('Management') }}</span>
+            <span>{{ $t('Manage') }}</span>
           </span>
         </el-menu-item>
       </template>
@@ -42,7 +42,7 @@ Signed In    : 已登录
       <el-menu-item index="https://function.guance.com/#/doc-index">
         <span>
           <i class="fa fa-fw fa-book"></i>
-          <span>{{ $t('Documents') }}</span>
+          <span>{{ $t('Docs') }}</span>
         </span>
       </el-menu-item>
 
