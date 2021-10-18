@@ -94,8 +94,8 @@ DECIPHER_FIELDS = [
 
 EXCLUDE_BUILTIN_NAMES = ('import', )
 
-CONCURRENT_POOL       = None
-CONCURRENT_RESULT_MAP = {}
+THREAD_POOL       = None
+THREAD_RESULT_MAP = {}
 
 # 添加额外import路径
 extra_import_paths = [
@@ -261,37 +261,37 @@ class ScriptCacherMixin(object):
 
         return scripts
 
-class FuncAsyncHelper(object):
+class FuncThreadHelper(object):
     def __init__(self, task):
         self.__task = task
 
     def start(self, fn, args=None, kwargs=None, key=None):
-        global CONCURRENT_POOL
-        global CONCURRENT_RESULT_MAP
+        global THREAD_POOL
+        global THREAD_RESULT_MAP
 
-        if not CONCURRENT_POOL:
-            self.__task.logger.debug('[ASYNC POOL] Create Pool')
+        if not THREAD_POOL:
+            self.__task.logger.debug('[THREAD POOL] Create Pool')
 
-            pool_size = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
-            CONCURRENT_POOL = ThreadPoolExecutor(pool_size)
-            CONCURRENT_RESULT_MAP.clear()
+            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
+            THREAD_POOL = ThreadPoolExecutor(pool_size)
+            THREAD_RESULT_MAP.clear()
 
         key = key or toolkit.gen_data_id('async')
-        self.__task.logger.debug('[ASYNC POOL] Submit Key=`{0}`'.format(key))
+        self.__task.logger.debug('[THREAD POOL] Submit Key=`{0}`'.format(key))
 
-        if key in CONCURRENT_RESULT_MAP:
-            e = DuplicationException('Async result key already existed: `{0}`'.format(key))
+        if key in THREAD_RESULT_MAP:
+            e = DuplicationException('Thread result key already existed: `{0}`'.format(key))
             raise e
 
         args   = args   or []
         kwargs = kwargs or {}
-        CONCURRENT_RESULT_MAP[key] = CONCURRENT_POOL.submit(fn, *args, **kwargs)
+        THREAD_RESULT_MAP[key] = THREAD_POOL.submit(fn, *args, **kwargs)
 
     def get_result(self, wait=True, key=None):
-        global CONCURRENT_POOL
-        global CONCURRENT_RESULT_MAP
+        global THREAD_POOL
+        global THREAD_RESULT_MAP
 
-        if not CONCURRENT_RESULT_MAP:
+        if not THREAD_RESULT_MAP:
             return None
 
         if wait is None:
@@ -299,11 +299,11 @@ class FuncAsyncHelper(object):
 
         collected_res = {}
 
-        keys = key or list(CONCURRENT_RESULT_MAP.keys())
+        keys = key or list(THREAD_RESULT_MAP.keys())
         for k in toolkit.as_array(keys):
             collected_res[k] = None
 
-            future_res = CONCURRENT_RESULT_MAP.get(k)
+            future_res = THREAD_RESULT_MAP.get(k)
             if future_res is None:
                 continue
 
@@ -691,7 +691,7 @@ class FuncDataSourceHelper(object):
 
         helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
         if helper_class:
-            helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_ASYNC_POOL_SIZE']
+            helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
             helper = helper_class(self.__task.logger, config, **helper_kwargs);
 
         else:
@@ -1465,7 +1465,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         __store_helper        = FuncStoreHelper(self, default_scope=script_name)
         __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
         __config_helper       = FuncConfigHelper(self)
-        __async_helper        = FuncAsyncHelper(self)
+        __thread_helper       = FuncThreadHelper(self)
 
         def __list_data_sources():
             return __data_source_helper.list()
@@ -1483,13 +1483,14 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'CACHE' : __cache_helper,        # 缓存处理模块
             'CONFIG': __config_helper,       # 配置处理模块
             'SQL'   : format_sql,            # 格式化SQL语句
-            'FUNC'  : __call_func,           # 调用函数（新Task）
 
-            'ASYNC'          : __async_helper,        # 异步处理模块
             'RSRC'           : get_resource_path,     # 获取资源路径
             'RESP'           : FuncResponse,          # 函数响应体
             'RESP_FILE'      : FuncResponseFile,      # 函数响应体（返回文件）
             'RESP_LARGE_DATA': FuncResponseLargeData, # 函数响应题（大量数据）
+
+            'FUNC'  : __call_func,     # 调用函数（新Task）
+            'THREAD': __thread_helper, # 多线程处理模块
 
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
@@ -1544,14 +1545,14 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         return safe_scope
 
     def clean_up(self):
-        global CONCURRENT_POOL
-        global CONCURRENT_RESULT_MAP
+        global THREAD_POOL
+        global THREAD_RESULT_MAP
 
         # 关闭线程池
-        if CONCURRENT_POOL:
-            self.logger.debug('[ASYNC POOL] Clear')
+        if THREAD_POOL:
+            self.logger.debug('[THREAD POOL] Clear')
 
-            CONCURRENT_RESULT_MAP.clear()
+            THREAD_RESULT_MAP.clear()
 
     def get_trace_info(self):
         '''
