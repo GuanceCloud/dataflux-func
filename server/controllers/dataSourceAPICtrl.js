@@ -47,8 +47,8 @@ function _checkDataSourceConfig(locals, type, config, requiredFields, optionalFi
     var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
     if (celeryRes.status === 'FAILURE') {
       return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource failed', {
-        etype: celeryRes.result && celeryRes.result.exc_type,
-        error: errorMessage,
+        etype  : celeryRes.result && celeryRes.result.exc_type,
+        message: errorMessage,
       }));
     } else if (extraInfo.status === 'TIMEOUT') {
       return callback(new E('EClientBadRequest.ConnectingToDataSourceFailed', 'Connecting to DataSource timeout', {
@@ -71,7 +71,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
 
     return _checkDataSourceConfig(locals, 'df_dataway', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  df_datakit: function(locals, config, callback) {
+  dff_sidecar: function(locals, config, callback) {
     // 默认值
     config.port     = config.port     || 9529;
     config.protocol = config.protocol || 'http';
@@ -80,6 +80,17 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
     var OPTIONAL_FIELDS = ['protocol', 'source'];
 
     return _checkDataSourceConfig(locals, 'df_datakit', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
+  },
+  dff_sidecar: function(locals, config, callback) {
+    // 默认值
+    config.host     = config.host     || '172.17.0.1';
+    config.port     = config.port     || 8099;
+    config.protocol = config.protocol || 'http';
+
+    var REQUIRED_FIELDS = ['host', 'port', 'secretKey'];
+    var OPTIONAL_FIELDS = ['protocol'];
+
+    return _checkDataSourceConfig(locals, 'dff_sidecar', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
   influxdb: function(locals, config, callback) {
     // 默认值
@@ -405,6 +416,10 @@ exports.query = function(req, res, next) {
         case 'mongodb':
           taskKwargs.command       = 'run_method';
           taskKwargs.commandKwargs = JSON.parse(queryStatement);
+
+        default:
+          // 不支持查询
+          break;
       }
 
       if (!taskKwargs.command) return asyncCallback();
@@ -417,12 +432,7 @@ exports.query = function(req, res, next) {
             taskKwargs.commandKwargs.database = database;
             break;
 
-          case 'mysql':
-          case 'clickhouse':
-          case 'oracle':
-          case 'sqlserver':
-          case 'postgresql':
-          case 'redis':
+          default:
             // 不支持指定数据库
             break;
         }
@@ -444,8 +454,8 @@ exports.query = function(req, res, next) {
         var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
         if (celeryRes.status === 'FAILURE') {
           return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed',  {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-            error: errorMessage,
+            etype  : celeryRes.result && celeryRes.result.exc_type,
+            message: errorMessage,
           }));
 
         } else if (extraInfo.status === 'TIMEOUT') {

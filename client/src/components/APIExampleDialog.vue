@@ -2,6 +2,7 @@
   <el-dialog
     :title="title || 'API调用示例'"
     :visible.sync="show"
+    :close-on-click-modal="false"
     width="750px">
     <span>
       <span :class="descriptionClass">{{ description }}</span>

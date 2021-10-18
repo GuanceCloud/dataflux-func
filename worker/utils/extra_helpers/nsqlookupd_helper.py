@@ -113,10 +113,13 @@ class NSQLookupHelper(object):
         timeout = timeout or self.config['timeout']
 
         r = self.client.request(method=method, url=url, params=query, data=body, timeout=timeout)
-        r.raise_for_status()
-
         parsed_resp = parse_response(r)
-        return parsed_resp
+
+        if r.status_code >= 400:
+            e = Exception(r.status_code, parsed_resp)
+            raise e
+
+        return r.status_code, parsed_resp
 
     def publish(self, topic, message, timeout=None):
         if time.time() - self.producers_update_timestamp > self.PRODUCERS_UPDATE_INTERVAL:

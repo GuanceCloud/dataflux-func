@@ -67,7 +67,10 @@ class ElasticSearchHelper(object):
             params.update(query)
 
         r = self.client.request(method=method, url=url, params=params, json=body)
-        r.raise_for_status()
-
         parsed_resp = parse_response(r)
-        return parsed_resp
+
+        if r.status_code >= 400:
+            e = Exception(r.status_code, parsed_resp)
+            raise e
+
+        return r.status_code, parsed_resp

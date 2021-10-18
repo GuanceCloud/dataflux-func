@@ -204,21 +204,24 @@ def to_db_res_dict(cur, db_res):
 
     return db_res_dict or db_res
 
-from .ding_helper            import DingHelper
-from .file_system_helper     import FileSystemHelper
-from .http_helper            import HTTPHelper
+from .datakit_helper         import DataKitHelper
+from .dataway_helper         import DataWayHelper
+from .sidecar_helper         import SidecarHelper
+from .influxdb_helper        import InfluxDBHelper
 from .mysql_helper           import MySQLHelper
-from .shell_helper           import ShellHelper
 from .redis_helper           import RedisHelper
 from .memcached_helper       import MemcachedHelper
-from .influxdb_helper        import InfluxDBHelper
 from .clickhouse_helper      import ClickHouseHelper
-from .dataway_helper         import DataWayHelper
-from .datakit_helper         import DataKitHelper
-from .oracle_database_helper import OracleDatabaseHelper
-from .sqlserver_helper       import SQLServerHelper
 from .postgresql_helper      import PostgreSQLHelper
 from .mongodb_helper         import MongoDBHelper
 from .elasticsearch_helper   import ElasticSearchHelper
 from .nsqlookupd_helper      import NSQLookupHelper
 from .mqtt_helper            import MQTTHelper
+
+from .oracle_database_helper import OracleDatabaseHelper
+from .sqlserver_helper       import SQLServerHelper
+
+from .ding_helper        import DingHelper
+from .file_system_helper import FileSystemHelper
+from .http_helper        import HTTPHelper
+from .shell_helper       import ShellHelper

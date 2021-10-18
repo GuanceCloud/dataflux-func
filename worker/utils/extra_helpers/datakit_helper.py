@@ -8,10 +8,8 @@ import six
 import requests
 
 # Project Modules
-from worker.utils import yaml_resources, toolkit
+from worker.utils import toolkit
 from worker.utils.extra_helpers.datakit import DataKit
-
-CONFIG = yaml_resources.get('CONFIG')
 
 def get_config(c):
     return toolkit.no_none_or_white_space({

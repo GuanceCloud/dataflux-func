@@ -2651,6 +2651,7 @@ dataSourceAPI:
         $commaArrayIn:
           - df_dataway
           - df_datakit
+          - dff_sidecar
           - influxdb
           - mysql
           - redis
@@ -2695,6 +2696,7 @@ dataSourceAPI:
           $in:
             - df_dataway
             - df_datakit
+            - dff_sidecar
             - influxdb
             - mysql
             - redis
@@ -2919,6 +2921,7 @@ dataSourceAPI:
       |-----------------|-------------------------------------------------|
       | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
       | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
+      | `dff_sidecar`   | 使用封装方法操作，不适用SQL语句                 |
       | `influx`        | `"SELECT * FROM some_measurement LIMIT 10"`     |
       | `mysql`         | `"SELECT * FROM some_table LIMIT 10"`           |
       | `redis`         | `"GET some_key"`                                |

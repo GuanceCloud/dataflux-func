@@ -81,12 +81,27 @@ export default {
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `datakit = DFF.SRC('{0}')\nres = datakit.write_metric(measurement='some_measurement',tags={'name': 'Tom'},fields={'value': 10})`,
+        sampleCode    : `datakit = DFF.SRC('{0}')\nres = datakit.write_metric(measurement='some_measurement', tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
           port     : { default: 9529, isRequired: true },
           protocol : { default: 'http' },
           source   : { default: 'dataflux_func' },
+        },
+      },
+      {
+        key           : 'dff_sidecar',
+        name          : 'Sidecar',
+        fullName      : 'DataFlux Func Sidecar (HTTP)',
+        logo          : null,
+        tagType       : 'info',
+        debugSupported: false,
+        sampleCode    : `sidecar = DFF.SRC('{0}')\nstdout, stderr = sidecar.shell('hostname', wait=True)`,
+        configFields: {
+          host    : { default: '172.17.0.1', isRequired: true },
+          port    : { default: 8099, isRequired: true },
+          protocol: { default: 'http' },
+          secretKey: { default: null, isRequired: true },
         },
       },
       {

@@ -46,7 +46,12 @@ Signed In    : 已登录
         </span>
       </el-menu-item>
 
-      <el-submenu v-if="isSignedIn" class="menu-right" index="user" popper-class="navi-content" :show-timeout="0">
+      <el-submenu v-if="isSignedIn"
+        class="menu-right"
+        index="user"
+        popper-class="navi-content"
+        :show-timeout="0"
+        :hide-timeout="0">
         <template slot="title">
           <span>
             <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
@@ -58,14 +63,21 @@ Signed In    : 已登录
         <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
-      <el-menu-item v-else class="menu-right" index="">
+      <el-menu-item v-else
+        class="menu-right"
+        index="">
         <span>
           <i class="fa fa-fw fa-user-times"></i>
           <span class="hidden-md-and-down">{{ $t('Not Signed In') }}</span>
         </span>
       </el-menu-item>
 
-      <el-submenu class="menu-right menu-compact" index="ui-locale" popper-class="navi-content" :show-timeout="0">
+      <el-submenu
+        class="menu-right menu-compact"
+        index="ui-locale"
+        popper-class="navi-content"
+        :show-timeout="0"
+        :hide-timeout="0">
         <template slot="title">
           <span class="ui-locale-short-title">{{ uiLocaleDetail.shortName }}</span>
         </template>
@@ -77,7 +89,12 @@ Signed In    : 已登录
         </el-menu-item>
       </el-submenu>
 
-      <el-submenu class="menu-right menu-compact" index="theme" popper-class="navi-content" :show-timeout="0">
+      <el-submenu
+        class="menu-right menu-compact"
+        index="theme"
+        popper-class="navi-content"
+        :show-timeout="0"
+        :hide-timeout="0">
         <template slot="title">
           <span>
             <i class="fa fa-fw" :class="uiThemeDetail.icon"></i>
