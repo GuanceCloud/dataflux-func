@@ -96,7 +96,7 @@ export default {
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `sidecar = DFF.SRC('{0}')\nstdout, stderr = sidecar.shell('hostname', wait=True)`,
+        sampleCode    : `sidecar = DFF.SRC('{0}')\nres = sidecar.shell('hostname', workdir='/home', wait=True)`,
         configFields: {
           host    : { default: '172.17.0.1', isRequired: true },
           port    : { default: 8099, isRequired: true },
