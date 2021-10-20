@@ -1,10 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
 Info           : 信息
 Recent Response: 响应
-API Auth       : API认证
+API Info       : API信息
+Auth           : 认证
 Expires        : 有效期
 Never          : 长期有效
-Limiting       : 限流
+Throttling     : 限流
 No limit       : 无限制
 Shown in doc   : 在文档中显示
 Hidden in doc  : 在文档中隐藏
@@ -110,28 +111,25 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('API Auth')" width="160">
-            <template slot-scope="scope">
-              <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
-                <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-
           <template v-if="!showCountCost">
-            <el-table-column :label="$t('Expires')" width="160">
+            <el-table-column :label="$t('API Info')" width="180">
               <template slot-scope="scope">
+                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+                <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
+                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+                </el-tooltip>
+
+                <br>
+                <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
                 <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
                 <template v-else>
                   <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'">{{ scope.row.expireTime | datetime }}</span>
                   <br>
                   <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
                 </template>
-              </template>
-            </el-table-column>
 
-            <el-table-column :label="$t('Limiting')" width="160">
-              <template slot-scope="scope">
+                <br>
+                <span class="text-info">{{ $t('Throttling') }}{{ $t(':') }}</span>
                 <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">{{ $t('No limit') }}</span>
                 <template v-else>
                   <template v-for="opt in C.AUTH_LINK_THROTTLING">
@@ -154,6 +152,19 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
             <el-table-column :label="$t('Note')" width="160">
               <template slot-scope="scope">
                 <span v-if="scope.row.note" class="text-info">{{ scope.row.note }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="300">
+              <template slot-scope="scope">
+                <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
+
+                <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
+                <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
+
+                <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+
+                <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
               </template>
             </el-table-column>
           </template>
@@ -204,19 +215,6 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
               </template>
             </el-table-column>
           </template>
-
-          <el-table-column align="right" width="300">
-            <template slot-scope="scope">
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
-
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
-
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
-
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
-            </template>
-          </el-table-column>
         </el-table>
       </el-main>
 
