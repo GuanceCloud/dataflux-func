@@ -42,8 +42,16 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             </template>
           </el-table-column>
 
-          <el-table-column label="客户端">
+          <el-table-column label="用户">
             <template slot-scope="scope">
+              <span class="text-info">用户名：</span>
+              <strong>{{ scope.row.username }}</strong>
+
+              <br>
+              <span class="text-info">用户ID：</span>
+              <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
+
+              <br>
               <span class="text-info">客户端ID：</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
 
@@ -51,18 +59,6 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
                 <br>
                 <span class="text-info">IP地址：</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="用户">
-            <template slot-scope="scope">
-              <strong>{{ scope.row.username }}</strong>
-
-              <template v-if="scope.row.userId">
-                <br>
-                <span class="text-info">用户ID：</span>
-                <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
             </template>
           </el-table-column>
@@ -83,11 +79,8 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
                 <span class="text-info">ID：</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
-            </template>
-          </el-table-column>
 
-          <el-table-column width="120">
-            <template slot-scope="scope">
+              <br>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
                 修改操作

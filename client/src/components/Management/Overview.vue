@@ -140,8 +140,16 @@ Pressure                      : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Client')">
+          <el-table-column :label="$t('User')">
             <template slot-scope="scope">
+              <span class="text-info">{{ $t('Username') }}{{ $t(':') }}</span>
+              <strong>{{ scope.row.username }}</strong>
+
+              <br>
+              <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
+              <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
+
+              <br>
               <span class="text-info">{{ $t('Client ID') }}{{ $t(':') }}</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
 
@@ -149,18 +157,6 @@ Pressure                      : 压力
                 <br>
                 <span class="text-info">{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('User')">
-            <template slot-scope="scope">
-              <strong>{{ scope.row.username }}</strong>
-
-              <template v-if="scope.row.userId">
-                <br>
-                <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
-                <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
             </template>
           </el-table-column>
@@ -181,11 +177,8 @@ Pressure                      : 压力
                 <span class="text-info">{{ $t('Data ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
-            </template>
-          </el-table-column>
 
-          <el-table-column width="120">
-            <template slot-scope="scope">
+              <br>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
                 {{ $t('MODIFY') }}
@@ -362,7 +355,7 @@ export default {
   margin-top: 100px;
 }
 .overview-card {
-  width: 330px;
+  width: 300px;
   height: 200px;
   display: inline-block;
   margin: 10px 20px;
