@@ -1,5 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Develop      : 开发
+Blueprint    : 蓝图
 Manage       : 管理
 Docs         : 文档
 Settings     : 设置
@@ -28,6 +29,13 @@ Signed In    : 已登录
           <span>
             <i class="fa fa-fw fa-edit"></i>
             <span>{{ $t('Develop') }}</span>
+          </span>
+        </el-menu-item>
+
+        <el-menu-item index="/blueprint" v-if="$store.getters.isExperimentalFeatureEnabled('Blueprint')">
+          <span>
+            <i class="fa fa-fw fa-th-large"></i>
+            <span>{{ $t('Blueprint') }}</span>
           </span>
         </el-menu-item>
 

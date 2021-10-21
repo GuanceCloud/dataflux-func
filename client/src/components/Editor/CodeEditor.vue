@@ -1403,6 +1403,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+/* Special Fix */
+.el-button-group {
+  position: relative;
+  top: -1px !important;
+}
+
 #editor_CodeEditor {
   display: none;
 }

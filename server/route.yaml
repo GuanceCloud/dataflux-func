@@ -5183,18 +5183,18 @@ blueprintAPI:
           $type          : string
           $minLength     : 1
           $maxLength     : 128
-          $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*__[a-zA-Z_][a-zA-Z0-9_]*$
+          $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*$
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
         canvasJSON:
           $desc      : 画布JSON
-          $isRequired: true
+          $isRequired: false
           $type      : json
         isDeployed:
           $desc     : 是否已部署
-          $allowNull: true
+          $allowNull: false
           $type     : boolean
 
   modify:

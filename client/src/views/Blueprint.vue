@@ -2,6 +2,8 @@
 Deployed    : 已部署
 Not Deployed: 未部署
 
+Title: 标题
+
 Start       : 开始
 End         : 结束
 Process Step: 处理步骤
@@ -9,6 +11,7 @@ Branch Step : 分支步骤
 'True'      : 真
 'False'     : 假
 
+Select Blueprint: 选择蓝图
 Add Process Step: 添加处理步骤
 Add Branch Step : 添加分支步骤
 Select all      : 全选
@@ -20,6 +23,18 @@ Kwargs        : 执行参数
 Add Kwargs    : 添加执行参数
 Global Vars   : 全局变量
 Add Global Var: 添加全局变量
+
+Please input ID: 请输入ID
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number: 不得以数字开头
+'ID cannot contains double underscore "__"': 'ID不能包含"__"'
+
+Blueprint created : 蓝图已创建
+Blueprint saved   : 蓝图已保存
+Blueprint deployed: 蓝图已部署
+Blueprint deleted : 蓝图已删除
+
+Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
 </i18n>
 
 <template>
@@ -31,36 +46,41 @@ Add Global Var: 添加全局变量
           {{ $t('Blueprint') }} (WIP)
 
           &#12288;
-          <el-button type="primary" plain size="mini">
+          <el-button @click="openAddBlueprint" type="primary" plain size="mini">
             <i class="fa fa-fw fa-plus"></i>
           </el-button>
-          <el-select size="mini" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
+          <el-select @change="loadData(data.id)" size="mini" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
             <el-option v-for="b in blueprints" :key="b.id" :label="b.title" :value="b.id">
-              <span class="float-left">{{ b.title }}</span>
+              <span class="float-left">{{ b.title || b.id }}</span>
               <span v-if="b.isDeployed" class="float-right text-good">{{ $t('Deployed') }}</span>
               <span v-else class="float-right text-bad">{{ $t('Not Deployed') }}</span>
             </el-option>
           </el-select>
 
           <template v-if="data.id">
-            <el-button size="mini">
-              <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
-            </el-button>
+            <el-button-group>
+              <el-button @click="openRenameBlueprint" size="mini">
+                <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
+              </el-button>
 
-            &#12288;
-            <el-button @click="deploy" type="primary" plain size="mini" class="fix-compact-button">
-              <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
-            </el-button>
+              <el-button @click="saveBlueprintCanvas" size="mini">
+                <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
+              </el-button>
+            </el-button-group>
 
-            <el-button @click="save" size="mini">
-              <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
+              <el-button @click="deployBlueprintCanvas" type="primary" plain size="mini" class="fix-compact-button">
+                <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
+              </el-button>
+
+            <el-button @click="deleteBlueprintCanvas" size="mini" class="fix-compact-button">
+              <i class="fa fa-fw fa-times"></i> {{ $t('Delete') }}
             </el-button>
           </template>
         </h1>
       </el-header>
 
       <!-- 画布区 -->
-      <super-flow ref="superFlow"
+      <super-flow ref="superFlow" v-if="data.canvasJSON"
         :graph-menu="graphMenu"
         :node-menu="nodeMenu"
         :link-menu="linkMenu"
@@ -112,14 +132,42 @@ Add Global Var: 添加全局变量
         </template>
       </super-flow>
 
-      <!-- 配置 -->
-      <el-dialog :title="`${$t('Setup')} - ${currentItem.id}`" :visible.sync="showConfigPanel" v-if="currentItem"
+      <!-- 新建/重命名蓝图 -->
+      <el-dialog :title="blueprintPanelMode === 'add' ? $t('Add') : $t('Rename')" :visible.sync="showBlueprintPanel"
+        width="620px"
         :close-on-click-modal="false"
         :close-on-press-escape="false">
-        <el-form :model="metaConfigForm" label-width="100px">
+        <el-form label-width="100px" :model="form" :rules="formRules">
+          <el-form-item label="ID" prop="id" v-if="blueprintPanelMode === 'add'">
+            <el-input :disabled="T.pageMode() === 'setup'"
+              maxlength="80"
+              show-word-limit
+              v-model="form.id"></el-input>
+          </el-form-item>
+
+          <el-form-item :label="$t('Title')">
+            <el-input :placeholder="$t('Optional')"
+              maxlength="25"
+              show-word-limit
+              v-model="form.title"></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <div class="setup-right">
+              <el-button type="primary" @click="submitBlueprint">{{ $t('Save') }}</el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+
+      <!-- 图表元素配置 -->
+      <el-dialog :title="`${$t('Setup')} - ${currentItem.id}`" :visible.sync="showItemConfigPanel" v-if="currentItem"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false">
+        <el-form label-width="100px" :model="itemMetaConfigForm">
           <!-- 标题 -->
           <el-form-item :label="$t('Title')" v-if="hasConfig(currentItem.meta.type, 'title')">
-            <el-input v-model="metaConfigForm.title" autocomplete="off"></el-input>
+            <el-input v-model="itemMetaConfigForm.title" autocomplete="off"></el-input>
           </el-form-item>
 
           <!-- 代码 -->
@@ -133,7 +181,7 @@ Add Global Var: 添加全局变量
 
           <!-- 输入参数 -->
           <el-form-item :label="$t('Kwargs')" prop="kwargs" v-if="hasConfig(currentItem.meta.type, 'kwargs')">
-            <el-tag v-for="kw in metaConfigForm.kwargs" :key="kw" type="primary" closable @close="removeKwargs(kw)">{{ kw }}</el-tag>
+            <el-tag v-for="kw in itemMetaConfigForm.kwargs" :key="kw" type="primary" closable @close="removeKwargs(kw)">{{ kw }}</el-tag>
             <el-input v-if="showAddKwargs" ref="newKwargs"
               v-model="newKwargs"
               size="mini"
@@ -146,7 +194,7 @@ Add Global Var: 添加全局变量
 
           <!-- 全局变量 -->
           <el-form-item :label="$t('Global Vars')" prop="globalVars" v-if="hasConfig(currentItem.meta.type, 'globalVars')">
-            <el-tag v-for="gv in metaConfigForm.globalVars" :key="gv" type="info" closable @close="removeGlobalVar(gv)">{{ gv }}</el-tag>
+            <el-tag v-for="gv in itemMetaConfigForm.globalVars" :key="gv" type="info" closable @close="removeGlobalVar(gv)">{{ gv }}</el-tag>
             <el-input v-if="showAddGlobalVar" ref="newGlobalVar"
               v-model="newGlobalVar"
               size="mini"
@@ -158,7 +206,7 @@ Add Global Var: 添加全局变量
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="showConfigPanel = false">{{ $t('Cancel') }}</el-button>
+          <el-button @click="showItemConfigPanel  = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" @click="updateItemMeta">{{ $t('Confirm') }}</el-button>
         </div>
       </el-dialog>
@@ -210,20 +258,242 @@ export default {
       return JSON.stringify(JSON.stringify(this._getGraph().toJSON()))
     },
 
-    async loadData() {
+    async loadData(selectBlueprintId) {
       // 获取蓝图列表
       let apiRes = await this.T.callAPI_getAll('/api/v1/blueprints/do/list');
       if (!apiRes.ok) return;
 
       this.blueprints = apiRes.data;
 
-      if (this.blueprints.length > 0) {
-        this.data = this.blueprints[0];
+      if (selectBlueprintId) {
+        this.data = this.blueprints.find(d => d.id === selectBlueprintId);
+
+      } else {
+        if (this.blueprints.length > 0) {
+          this.data = this.blueprints[0];
+        } else {
+          this.data = {};
+        }
       }
 
       this.$store.commit('updateLoadStatus', true);
     },
 
+    // 跳转
+    goToStartFunc(blueprintId) {
+      let scriptId = `${blueprintId}__blueprint`;
+      let funcId   = `${scriptId}.start`;
+
+      // 记录选择的脚本ID，记录函数高亮
+      this.$store.commit('updateAsideScript_currentNodeKey', funcId);
+      this.$store.commit('updateEditor_highlightedFuncId', funcId);
+
+      // 跳转
+      this.$router.push({
+        name  : 'code-viewer',
+        params: {id: scriptId},
+      });
+    },
+
+    // 蓝图处理
+    openAddBlueprint() {
+      this.blueprintPanelMode = 'add';
+
+      this.T.jsonClear(this.form);
+
+      this.showBlueprintPanel = true;
+    },
+    openRenameBlueprint() {
+      this.blueprintPanelMode = 'rename';
+
+      this.T.jsonClear(this.form);
+
+      let nextForm = {};
+      Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
+      this.form = nextForm;
+
+      this.showBlueprintPanel = true;
+    },
+    async submitBlueprint() {
+      let apiRes = null;
+      let nextBlueprintId = null
+      switch(this.blueprintPanelMode) {
+        case 'add':
+          apiRes = await this.T.callAPI('post', '/api/v1/blueprints/do/add', {
+            body: {
+              data: {
+                id        : this.form.id,
+                title     : this.form.title,
+                canvasJSON: this.genInitCanvasJSON(),
+              }
+            },
+            alert: { okMessage: this.$t('Blueprint created') },
+          });
+          if (!apiRes.ok) return;
+
+          // 成功后展示的蓝图
+          nextBlueprintId = apiRes.data.id;
+
+          break;
+
+        case 'rename':
+          apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
+            params: { id: this.data.id },
+            body: {
+              data: {
+                title: this.form.title,
+              }
+            },
+            alert : { okMessage: this.$t('Blueprint saved') },
+          });
+          if (!apiRes.ok) return;
+
+          // 成功后展示的蓝图
+          nextBlueprintId = this.data.id;
+
+          break;
+      }
+
+      this.loadData(nextBlueprintId);
+      this.showBlueprintPanel = false;
+    },
+    async deployBlueprintCanvas() {
+      let canvasJSON = await this.saveBlueprintCanvas();
+      let scriptCode = blueprint.genScriptCode(canvasJSON.nodeList, canvasJSON.linkList);
+
+      let blueprintScriptSetId = this.data.id;
+      let blueprintScriptId    = `${blueprintScriptSetId}__blueprint`;
+
+      // 创建脚本集
+      let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', blueprintScriptSetId);
+      if (!apiRes.ok) return;
+      if (!apiRes.data) {
+        apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/add', {
+          body : {
+            data: {
+              id   : blueprintScriptSetId,
+              title: this.data.title || null,
+            }
+          },
+        });
+        if (!apiRes.ok) return;
+      }
+
+      // 创建脚本
+      apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', blueprintScriptId);
+      if (!apiRes.ok) return;
+      if (!apiRes.data) {
+        // 未创建时创建
+        apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
+          body : {
+            data: {
+              id       : blueprintScriptId,
+              title    : 'Blueprint',
+              codeDraft: scriptCode,
+            }
+          },
+        });
+        if (!apiRes.ok) return;
+
+      } else {
+        // 已创建时更新
+        apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
+          params: { id: blueprintScriptId },
+          body : {
+            data: {
+              codeDraft: scriptCode,
+            }
+          },
+        });
+        if (!apiRes.ok) return;
+      }
+
+      // 发布脚本
+      apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
+        params: { id: blueprintScriptId },
+        body  : { force: true, wait : true },
+      });
+      if (!apiRes.ok) return;
+
+      // 标记为已部署
+      apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
+        params: { id: this.data.id },
+        body: {
+          data: {
+            isDeployed: true,
+          }
+        },
+        alert : { okMessage: this.$t('Blueprint deployed') },
+      });
+      if (!apiRes.ok) return;
+
+      this.goToStartFunc(this.data.id);
+    },
+    async saveBlueprintCanvas() {
+      let canvasJSON = this._getGraph().toJSON()
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
+        params: { id: this.data.id },
+        body: {
+          data: {
+            canvasJSON: canvasJSON,
+            isDeployed: false,
+          }
+        },
+        alert : { okMessage: this.$t('Blueprint saved') },
+      });
+
+      this.loadData(this.data.id);
+
+      return canvasJSON;
+    },
+    async deleteBlueprintCanvas() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Blueprint?'))) return;
+
+      let apiRes = await this.T.callAPI('/api/v1/blueprints/:id/do/delete', {
+        params: { id: this.data.id },
+        alert : { okMessage: this.$t('Blueprint deleted') },
+      });
+
+      this.loadData();
+    },
+
+    // 画布处理
+    genInitCanvasJSON() {
+      return {
+        linkList: [
+          {
+            id     : 'link-001',
+            meta   : { 'type': 'next' },
+            endId  : 'code_step_1', endAt  : [ 0, 25 ],
+            startId: 'start',       startAt: [ 60, 30 ],
+          },
+          {
+            id     : 'link-002',
+            meta   : { 'type': 'next' },
+            endId  : 'end',         endAt  : [ 0, 30 ],
+            startId: 'code_step_1', startAt: [ 200, 25 ],
+          }
+        ],
+        nodeList: [
+          {
+            id   : 'start',
+            meta : { 'id': 'start', 'type': 'start' },
+            width: 60, height: 60, coordinate: [ 76, 53 ]
+          },
+          {
+            id   : 'end',
+            meta : { 'id': 'end', 'type': 'end' },
+            width: 60, height: 60, coordinate: [ 558, 53 ]
+          },
+          {
+            id   : 'code_step_1',
+            meta : { 'id': 'code_step_1', 'type': 'code' },
+            width: 200, height: 50, coordinate: [ 253, 58 ]
+          }
+        ]
+      };
+    },
     createNodeData(type, options) {
       options = options || {};
 
@@ -306,13 +576,13 @@ export default {
       return linkMeta;
     },
     updateItemMeta() {
-      this.currentItem.meta = this.T.jsonCopy(this.metaConfigForm);
+      this.currentItem.meta = this.T.jsonCopy(this.itemMetaConfigForm);
       this.currentItem.meta.updateTime = new Date().toISOString();
       if (this.codeMirror && this.hasConfig(this.currentItem.meta.type, 'code')) {
         this.currentItem.meta.code = this.codeMirror.getValue();
       }
 
-      this.showConfigPanel = false;
+      this.showItemConfigPanel  = false;
     },
 
     enterIntercept(fromNode, toNode, graph) {
@@ -411,7 +681,7 @@ export default {
     },
 
     removeKwargs(kw) {
-      this.metaConfigForm.kwargs.splice(this.metaConfigForm.kwargs.indexOf(kw), 1);
+      this.itemMetaConfigForm.kwargs.splice(this.itemMetaConfigForm.kwargs.indexOf(kw), 1);
     },
     openAddKwargsInput() {
       this.showAddKwargs = true;
@@ -422,17 +692,17 @@ export default {
     addKwargs() {
       let newKwargs = this.newKwargs;
       if (newKwargs) {
-        if (!Array.isArray(this.metaConfigForm.kwargs)) {
-          this.$set(this.metaConfigForm, 'kwargs', []);
+        if (!Array.isArray(this.itemMetaConfigForm.kwargs)) {
+          this.$set(this.itemMetaConfigForm, 'kwargs', []);
         }
-        this.metaConfigForm.kwargs.push(newKwargs);
+        this.itemMetaConfigForm.kwargs.push(newKwargs);
       }
       this.showAddKwargs = false;
       this.newKwargs     = '';
     },
 
     removeGlobalVar(gv) {
-      this.metaConfigForm.globalVars.splice(this.metaConfigForm.globalVars.indexOf(gv), 1);
+      this.itemMetaConfigForm.globalVars.splice(this.itemMetaConfigForm.globalVars.indexOf(gv), 1);
     },
     openAddGlobalVarInput() {
       this.showAddGlobalVar = true;
@@ -443,32 +713,47 @@ export default {
     addGlobalVar() {
       let newGlobalVar = this.newGlobalVar;
       if (newGlobalVar) {
-        if (!Array.isArray(this.metaConfigForm.globalVars)) {
-          this.$set(this.metaConfigForm, 'globalVars', []);
+        if (!Array.isArray(this.itemMetaConfigForm.globalVars)) {
+          this.$set(this.itemMetaConfigForm, 'globalVars', []);
         }
-        this.metaConfigForm.globalVars.push(newGlobalVar);
+        this.itemMetaConfigForm.globalVars.push(newGlobalVar);
       }
       this.showAddGlobalVar = false;
       this.newGlobalVar     = '';
     },
-
-    async deploy() {
-      let canvasJSON = await this.save();
-
-      let scriptCode = blueprint.genScriptCode(canvasJSON.nodeList, canvasJSON.linkList);
-
-      console.log('Script Code: \n' + scriptCode)
-      console.log('CALL DEPLOY API')
-    },
-    async save() {
-      let canvasJSON = this._getGraph().toJSON()
-
-      console.log('CALL SAVE API', canvasJSON)
-
-      return canvasJSON;
-    },
   },
   computed: {
+    formRules() {
+      return {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value.indexOf('__') >= 0) {
+                let _message = this.$t('ID cannot contains double underscore "__"');
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
+      }
+    },
     graphMenu() {
       return [
         [
@@ -517,9 +802,9 @@ export default {
 
               this.currentItem = node;
               this.currentItem.meta = nextMeta;
-              this.$set(this, 'metaConfigForm', nextMeta);
+              this.$set(this, 'itemMetaConfigForm', nextMeta);
 
-              this.showConfigPanel = true;
+              this.showItemConfigPanel  = true;
 
               if (this.hasConfig(node.meta.type, 'code')) {
                 setImmediate(() => {
@@ -584,16 +869,20 @@ export default {
   data() {
     return {
       data: {
-        id: '',
-        canvasJSON: {
-          nodeList: [],
-          linkList: [],
-        }
+      },
+      form: {
+        id   : null,
+        title: null,
       },
 
       blueprints: [],
 
-      showConfigPanel: false,
+      // 蓝图配置
+      blueprintPanelMode: '',
+      showBlueprintPanel: false,
+
+      // 项目配置
+      showItemConfigPanel: false,
 
       showAddKwargs: false,
       newKwargs    : '',
@@ -602,7 +891,7 @@ export default {
       newGlobalVar    : '',
 
       currentItem: null,
-      metaConfigForm: {
+      itemMetaConfigForm: {
         title     : null,
         code      : null,
         kwargs    : [],
@@ -619,6 +908,15 @@ export default {
   },
 }
 </script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+/* Special Fix */
+.el-button-group {
+  position: relative;
+  top: 1px !important;
+}
+</style>
 
 <style>
 .blueprint-list {

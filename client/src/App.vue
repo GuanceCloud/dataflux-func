@@ -493,11 +493,7 @@ kbd {
 .el-radio-button--mini .el-radio-button__inner {
   height: 29px !important;
 }
-.el-button-group,
-.el-radio-group {
-  position: relative;
-  top: -1px !important;
-}
+
 .el-input__inner {
   border-radius: 3px !important;
 }
