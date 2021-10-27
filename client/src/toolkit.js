@@ -367,7 +367,7 @@ export function limitLines(text, lineLimit, columnLimit) {
   return lines.join('\n');
 };
 
-export function numberPlus(n, limit) {
+export function numberLimit(n, limit) {
   n     = n || 0;
   limit = limit || 999;
 
@@ -670,6 +670,16 @@ export function getDateTimeString(dt, pattern) {
 
 export function fromNow(dt) {
   return moment.utc(dt).locale(store.getters.uiLocale).fromNow();
+};
+
+export function duration(d, humanized) {
+  let duration = moment.duration(d).locale(store.getters.uiLocale);
+  return humanized ? duration.humanize() : duration;
+};
+
+export function getTimeDiff(from, to, humanized) {
+  let diff = moment(to).diff(moment(from));
+  return duration(diff, humanized);
 };
 
 export function stringSimilar(s, t, f) {

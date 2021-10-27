@@ -1,5 +1,10 @@
 <i18n locale="zh-CN" lang="yaml">
+s: 秒
+
 Search Crontab task(log, error), Func(ID, title, description): 搜索批处理任务（日志、错误），函数（ID、标题、描述）
+
+wait: 等待
+cost: 消耗
 </i18n>
 
 <template>
@@ -55,14 +60,18 @@ Search Crontab task(log, error), Func(ID, title, description): 搜索批处理�
               开始：
               <template v-if="scope.row.startTime">
                 <span>{{ scope.row.startTime | datetime }}</span>
-                <span class="text-info">{{ scope.row.startTime | fromNow }}</span>
+                <span class="text-info" v-if="scope.row.queueTime && scope.row.startTime">
+                  {{ $t('wait')}} {{T.getTimeDiff(scope.row.queueTime, scope.row.startTime).asSeconds()}} {{ $t('s') }}
+                </span>
               </template>
 
               <br>
               结束：
               <template v-if="scope.row.endTime">
                 <span>{{ scope.row.endTime | datetime }}</span>
-                <span class="text-info">{{ scope.row.endTime | fromNow }}</span>
+                <span class="text-info" v-if="scope.row.queueTime && scope.row.endTime">
+                  {{ $t('cost')}} {{T.getTimeDiff(scope.row.queueTime, scope.row.endTime).asSeconds()}} {{ $t('s') }}
+                </span>
               </template>
             </template>
           </el-table-column>

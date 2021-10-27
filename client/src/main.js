@@ -80,6 +80,9 @@ Vue.filter('datetime', function(dt, pattern) {
 Vue.filter('fromNow', function(dt) {
   return toolkit.fromNow(dt);
 });
+Vue.filter('duration', function(d) {
+  return toolkit.duration(d);
+})
 
 // 验证
 import validator from 'validator';

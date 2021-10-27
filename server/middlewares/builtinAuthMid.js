@@ -4,7 +4,6 @@
 
 /* 3rd-party Modules */
 var async = require('async');
-var LRU   = require('lru-cache');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -14,8 +13,6 @@ var auth    = require('../utils/auth');
 
 var userMod      = require('../models/userMod');
 var accessKeyMod = require('../models/accessKeyMod');
-
-var AK_NONCE_LRU = new LRU({maxAge: CONFIG._WEB_AK_NONCE_TTL * 1000});
 
 var WATClient = require('../../sdk/wat_sdk').WATClient;
 

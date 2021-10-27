@@ -1,14 +1,14 @@
 <i18n locale="en" lang="yaml">
 overviewCountUnit   : ''
-workerCount         : '{n} worker | {n} workers'
-taskCount           : '{n} task | {n} tasks'
-scriptOverviewCount : '({n} script) | ({n} scripts)'
+workerCount         : 'NO worker | {n} worker | {n} workers'
+taskCount           : 'NO task | {n} task | {n} tasks'
+scriptOverviewCount : '(NO script) | ({n} script) | ({n} scripts)'
 recentOperationCount: '(latest {n} operation) | (latest {n} operations)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
 Overview                      : 总览
-Data Count                    : 数据计数
+Biz Entity                    : 业务实体
 Worker Queue Info             : 队列信息
 Queue                         : 队列
 overviewCountUnit             : 个
@@ -52,7 +52,7 @@ Pressure                      : 压力
 
       <!-- 列表区 -->
       <el-main>
-        <el-divider content-position="left"><h1>{{ $t('Data Count') }}</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Biz Entity') }}</h1></el-divider>
 
         <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP.get(d.name).icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP.get(d.name).icon"></i>
@@ -66,7 +66,12 @@ Pressure                      : 压力
         </el-card>
 
         <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
-        <el-card class="worker-queue-card" shadow="hover" v-for="workerQueue, i in workerQueueInfo" :key="i">
+        <el-card
+          class="worker-queue-card"
+          :class="{ 'worker-queue-highlight': workerQueue.taskCount > 0 }"
+          shadow="hover"
+          v-for="workerQueue, i in workerQueueInfo"
+          :key="i">
           <el-progress type="dashboard" width="100"
             :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
             :format="workerQueuePressureFormat"
@@ -75,7 +80,7 @@ Pressure                      : 压力
           <span class="worker-queue-info">
             <span class="worker-queue-number">#{{ i }}</span> {{ $t('Queue') }}
             <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', T.numberPlus(workerQueue.taskCount)) }}
+            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount)) }}
           </span>
         </el-card>
 
@@ -404,6 +409,10 @@ export default {
   display: inline-block;
   margin: 10px 20px;
   position: relative;
+}
+.worker-queue-highlight {
+  color: #FF6600;
+  border-color: #FF6600;
 }
 .worker-queue-card .progressbar {
   display: inline-block;
