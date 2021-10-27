@@ -71,7 +71,7 @@ var DATA_SOURCE_CHECK_CONFIG_FUNC_MAP = {
 
     return _checkDataSourceConfig(locals, 'df_dataway', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
-  dff_sidecar: function(locals, config, callback) {
+  df_datakit: function(locals, config, callback) {
     // 默认值
     config.port     = config.port     || 9529;
     config.protocol = config.protocol || 'http';
