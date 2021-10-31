@@ -1,6 +1,38 @@
 <i18n locale="zh-CN" lang="yaml">
-Query Data Source : 查询数据源
-Browse Data Source: 浏览数据源
+Schema Browser: 结构浏览器
+
+Guance DataWay: 观测云DataWay
+
+SQL Debugger      : SQL 调试
+URI Query Debugger: URI Query 调试
+Command Debugger  : 命令调试
+
+Databases         : 数据库
+Tables            : 表
+Fields            : 字段
+Data              : 数据
+Measurements      : 指标
+Tags              : 标签
+Indices           : 索引
+Collections       : 集合
+Retention Policies: 保留策略
+Initials          : 首字母
+'Keys (a part of)': 键（部分）
+Other             : 其他
+
+'Moving...': '调整位置...'
+
+Cannot connect to this Data Source, check the configs and try again.: 无法连接至数据源，请检查配置后重试。
+Error Message: 错误信息如下
+Query is running. It waits up to 5 seconds, You can refresh the page when it not response for a long time.: 查询执行中，最多等待 5 秒，长时间无响应后再尝试刷新页面
+'Results will be shown here...': '执行结果将显示在此...'
+Query Failed: 查询失败
+
+Database: 数据库
+Run     : 执行
+Query   : 查询语句
+Code    : 代码
+Result  : 结果
 </i18n>
 
 <template>
@@ -13,11 +45,11 @@ Browse Data Source: 浏览数据源
         <el-tag :type="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].tagType" size="mini"><span>{{ DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].name }}</span></el-tag>
         <span :class="{builtin: dataSource.isBuiltin}">{{ dataSource.title || dataSource.id }}</span>
       </span>
-      <el-link class="simple-debug-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> 关闭</el-link>
+      <el-link class="simple-debug-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
     </div>
 
     <div v-show="isDragging" class="simple-debug-dragging-cover">
-      <span class="simple-debug-dragging-cover-tip">调整位置...</span>
+      <span class="simple-debug-dragging-cover-tip">{{ $t('Moving...') }}</span>
     </div>
 
     <el-tabs
@@ -27,15 +59,13 @@ Browse Data Source: 浏览数据源
       v-model="selectedTab">
       <el-tab-pane
         v-if="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].supportBrowser"
-        label="数据结构浏览"
+        :label="$t('Schema Browser')"
         name="browser">
         <div class="simple-debug-browser">
           <el-link type="danger" :underline="false" v-if="browserCascaderErrorMessage">
-            获取数据源信息失败，请检查数据源配置是否正确。
-            <br>错误信息如下：
+            {{ $t('Cannot connect to this Data Source, check the configs and try again.') }}
+            <br>{{ $t('Error Message') }}{{ $t(':') }}
             <pre class="simple-debug-browser-error">{{ browserCascaderErrorMessage }}</pre>
-            请关闭本面板后重新尝试
-            <br>如问题反复出现，可能是由于数据源配置改变而无法连接
           </el-link>
           <el-form v-else>
             <el-form-item>
@@ -46,7 +76,7 @@ Browse Data Source: 浏览数据源
                 <div slot-scope="{ node, data }" @click="updateCodeExample(node)" class="simple-debug-browser-cascader-item">
                   <el-tag v-if="data.showDefaultTag"
                     plain
-                    size="mini">默认</el-tag>
+                    size="mini">{{ $t('Default') }}</el-tag>
                   <el-tag v-if="data.dbTag"
                     plain
                     :type="data.dbTag.type"
@@ -76,7 +106,7 @@ Browse Data Source: 浏览数据源
         <div class="simple-debug-sql"
           v-loading.lock="isQuerying"
           element-loading-spinner="el-icon-loading"
-          element-loading-text="查询执行中，最多等待 5 秒，长时间无响应后再尝试刷新页面">
+          :element-loading-text="$t('Query is running. It waits up to 5 seconds, You can refresh the page when it not response for a long time.')">
           <el-form>
             <el-form-item>
               <el-input
@@ -87,7 +117,7 @@ Browse Data Source: 浏览数据源
             </el-form-item>
             <el-form-item>
               <template v-if="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].supportDatabase">
-                <span>数据库</span>
+                <span>{{ $t('Database') }}</span>
                 <el-input class="simple-debug-database" size="mini" v-if="!dataSource.configJSON.database" v-model="latestQueryOptionsMap[dataSource.id].database"></el-input>
                 <el-input class="simple-debug-database" size="mini" v-else :disabled="true" :value="dataSource.configJSON.database"></el-input>
               </template>
@@ -95,21 +125,21 @@ Browse Data Source: 浏览数据源
               <el-button
                 size="mini"
                 @click.stop="queryDataSource(latestQueryOptionsMap[dataSource.id])">
-                <i class="fa fa-fw fa-play"></i> 执行
+                <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
               </el-button>
               <div class="simple-debug-copy-content" v-if="latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].ok">
-                <CopyButton tipPlacement="bottom" title="查询语句" :content="latestQueryOptionsMap[dataSource.id].queryStatement"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Query')" :content="latestQueryOptionsMap[dataSource.id].queryStatement"></CopyButton>
                 &nbsp;
-                <CopyButton tipPlacement="bottom" title="代码" :content="latestQueryOptionsMap[dataSource.id].queryCode"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Code')" :content="latestQueryOptionsMap[dataSource.id].queryCode"></CopyButton>
                 &nbsp;
-                <CopyButton tipPlacement="bottom" title="结果" :content="latestQueryResultMap[dataSource.id].data"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Result')" :content="latestQueryResultMap[dataSource.id].data"></CopyButton>
               </div>
             </el-form-item>
             <el-form-item>
               <pre
                 class="simple-debug-result"
                 :class="{'simple-debug-query-failed': latestQueryResultMap[dataSource.id] && !latestQueryResultMap[dataSource.id].ok}"
-                rows="5">{{ latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].data || '执行后在此显示结果'}}</pre>
+                rows="5">{{ latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].data || $t('Results will be shown here...')}}</pre>
             </el-form-item>
           </el-form>
         </div>
@@ -153,14 +183,6 @@ export default {
             queryCode     : `${getHelperCode}\n${doQueryCode}`,
           });
         }
-      }
-
-      if (!this.show) {
-        this.$message({
-          type    : 'warning',
-          duration: 3000,
-          message : '简易调试窗口仅在数据源侧边栏激活时显示，拖拽标题栏可以移动位置',
-        });
       }
 
       this.dataSource = dataSource;
@@ -268,7 +290,7 @@ export default {
         switch(this.dataSource.type) {
           case 'influxdb':
             commandArgs = [queryOptions.queryStatement];
-            resPicker = `if len(db_res.get('series', [])) > 0:\n    for d in db_res['series'][0]['values']:\n        # 循环处理\n        pass`;
+            resPicker = `if len(db_res.get('series', [])) > 0:\n    for d in db_res['series'][0]['values']:\n        # Your code here...\n        pass`;
             break;
 
           case 'mysql':
@@ -277,7 +299,7 @@ export default {
           case 'sqlserver':
           case 'postgresql':
             commandArgs = [queryOptions.queryStatement];
-            resPicker = `for d in db_res:\n    # 循环处理\n    pass`;
+            resPicker = `for d in db_res:\n    # Your code here...\n    pass`;
             break;
 
           case 'redis':
@@ -290,12 +312,12 @@ export default {
             } else if (this.validator.isFloat(resStr)) {
               resPicker = `db_res = float(db_res)\n`;
             }
-            resPicker += `\n# 进一步处理`;
+            resPicker += `\n# Your code...`;
             break;
 
           case 'elasticsearch':
             commandArgs = [queryOptions.queryStatement];
-            resPicker += `\n# 进一步处理`;
+            resPicker += `\n# Your code...`;
             break;
         }
 
@@ -309,7 +331,7 @@ export default {
         });
 
       } else {
-        result.data = '查询执行失败';
+        result.data = this.$t('Query Failed');
 
         // 补充错误信息
         if (apiRes.detail && apiRes.detail.error) {
@@ -416,7 +438,7 @@ export default {
               this.browserCascaderErrorMessage = apiRes.message;
             } else {
               resolve([{
-                label   : '查询失败',
+                label   : this.$t('Query Failed'),
                 value   : null,
                 leaf    : true,
                 disabled: true,
@@ -636,7 +658,7 @@ export default {
               this.browserCascaderErrorMessage = apiRes.message;
             } else {
               resolve([{
-                label   : '查询失败',
+                label   : this.$t('Query Failed'),
                 value   : null,
                 leaf    : true,
                 disabled: true,
@@ -717,14 +739,14 @@ export default {
     DATA_SOURCE_DEBUGGER_META_MAP() {
       // Redis第一层为Key首字母列表
       let REDIS_BROWSER_KEY = {
-        title  : '键（部分）',
+        title  : this.$t('Keys (a part of)'),
         type   : 'query',
         query  : 'SCAN 0 MATCH "{pattern}" COUNT 100',
         example: 'TYPE "{key}"',
         ref    : 'key',
       }
       let REDIS_BROWSERS = {
-        title: '首字母',
+        title: this.$t('Initials'),
         type : 'static',
         data : [],
       };
@@ -741,7 +763,7 @@ export default {
         allChars.push(`${char.toUpperCase()}${char}`);
       }
       REDIS_BROWSERS.data.push({
-        label  : '其他',
+        label  : this.$t('Other'),
         value  : `[^${allChars.join()}]*`,
         example: 'SCAN 0 MATCH "{pattern}" COUNT 100',
         ref    : 'pattern',
@@ -750,7 +772,7 @@ export default {
 
       return {
         df_dataway: {
-          name           : '观测云DataWay',
+          name           : this.$t('Guance DataWay'),
           supportDebugger: false,
           supportBrowser : false,
           supportDatabase: false,
@@ -764,24 +786,24 @@ export default {
           tagType           : null,
           command           : 'query',
           exampleCommandArgs: ['SELECT * FROM some_measurement LIMIT 10'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : 'SHOW DATABASES',
             example       : 'SHOW MEASUREMENTS ON "{database}"',
             defaultExample: 'SHOW MEASUREMENTS',
             ref           : 'database',
             sub: {
-              title: '数据项',
+              title: this.$t('Data'),
               type : 'static',
               data: [
                 {
-                  value         : '指标',
+                  value         : this.$t('Measurements'),
                   example       : 'SHOW MEASUREMENTS ON "{database}"',
                   defaultExample: 'SHOW MEASUREMENTS',
                   sub: {
-                    title         : '指标',
+                    title         : this.$t('Measurements'),
                     type          : 'query',
                     query         : 'SHOW MEASUREMENTS ON "{database}"',
                     example       : 'SELECT * FROM "{database}".."{measurement}"',
@@ -791,11 +813,11 @@ export default {
                       type: 'static',
                       data: [
                         {
-                          value         : '标签',
+                          value         : this.$t('Tags'),
                           example       : 'SHOW TAG KEYS ON "{database}" FROM "{measurement}"',
                           defaultExample: 'SHOW TAG KEYS FROM "{measurement}"',
                           sub: {
-                            title         : '标签',
+                            title         : this.$t('Tags'),
                             type          : 'query',
                             query         : 'SHOW TAG KEYS ON "{database}" FROM "{measurement}"',
                             example       : 'SELECT * FROM "{database}".."{measurement}" WHERE "{tagKey}" = \'标签值\'',
@@ -804,11 +826,11 @@ export default {
                           }
                         },
                         {
-                          value         : '字段',
+                          value         : this.$t('Fields'),
                           example       : 'SHOW FIELD KEYS ON "{database}" FROM "{measurement}"',
                           defaultExample: 'SHOW FIELD KEYS FROM "{measurement}"',
                           sub: {
-                            title         : '字段',
+                            title         : this.$t('Fields'),
                             type          : 'query',
                             query         : 'SHOW FIELD KEYS ON "{database}" FROM "{measurement}"',
                             example       : 'SELECT "{fieldKey}" FROM "{database}".."{measurement}"',
@@ -821,11 +843,11 @@ export default {
                   }
                 },
                 {
-                  value         : '保留策略',
+                  value         : this.$t('Retention Policies'),
                   example       : 'SHOW RETENTION POLICIES ON "{database}"',
                   defaultExample: 'SHOW RETENTION POLICIES',
                   sub: {
-                    title  : '保留策略',
+                    title  : this.$t('Retention Policies'),
                     type   : 'query',
                     query  : 'SHOW RETENTION POLICIES ON "{database}"',
                     example: 'SELECT * FROM "{database}"."{retentionPolicy}"."指标"',
@@ -844,23 +866,23 @@ export default {
           tagType           : 'success',
           command           : 'query',
           exampleCommandArgs: ['SELECT * FROM `some_table` LIMIT 10'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : 'SHOW DATABASES',
             example       : 'SHOW TABLES FROM `{database}`',
             defaultExample: 'SHOW TABLES',
             ref           : 'database',
             sub: {
-              title         : '表',
+              title         : this.$t('Tables'),
               type          : 'query',
               query         : 'SHOW TABLES FROM `{database}`',
               example       : 'SELECT * FROM `{database}`.`{table}`',
               defaultExample: 'SELECT * FROM `{table}`',
               ref           : 'table',
               sub: {
-                title         : '字段',
+                title         : this.$t('Fields'),
                 type          : 'query',
                 query         : 'SHOW FULL COLUMNS FROM `{table}` FROM `{database}`',
                 example       : 'SELECT `{field}` FROM `{database}`.`{table}`',
@@ -878,7 +900,7 @@ export default {
           tagType           : 'danger',
           command           : 'query',
           exampleCommandArgs: ['SCAN', '0', 'COUNT', '10'],
-          debuggerName      : '命令调试',
+          debuggerName      : this.$t('Command Debugger'),
           browsers          : REDIS_BROWSERS,
         },
         memcached: {
@@ -889,7 +911,7 @@ export default {
           tagType           : 'success',
           command           : 'query',
           exampleCommandArgs: ['GET', 'key'],
-          debuggerName      : '命令调试',
+          debuggerName      : this.$t('Command Debugger'),
         },
         clickhouse: {
           name              : 'ClickHouse',
@@ -899,23 +921,23 @@ export default {
           tagType           : 'warning',
           command           : 'query',
           exampleCommandArgs: ['SELECT * FROM some_table LIMIT 10'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : 'SHOW DATABASES',
             example       : 'SHOW TABLES FROM `{database}`',
             defaultExample: 'SHOW TABLES',
             ref           : 'database',
             sub: {
-              title         : '表',
+              title         : this.$t('Tables'),
               type          : 'query',
               query         : 'SHOW TABLES FROM `{database}`',
               example       : 'SELECT * FROM `{database}`.`{table}`',
               defaultExample: 'SELECT * FROM `{table}`',
               ref           : 'table',
               sub: {
-                title         : '字段',
+                title         : this.$t('Fields'),
                 type          : 'query',
                 query         : 'DESCRIBE TABLE `{database}`.`{table}`',
                 example       : 'SELECT `{field}` FROM `{database}`.`{table}`',
@@ -933,7 +955,7 @@ export default {
           tagType           : 'danger',
           command           : 'query',
           exampleCommandArgs: ['SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
             title         : '用户',
             type          : 'query',
@@ -942,14 +964,14 @@ export default {
             defaultExample: "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '{owner}'",
             ref           : 'owner',
             sub: {
-              title         : '表',
+              title         : this.$t('Tables'),
               type          : 'query',
               query         : "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '{owner}'",
               example       : 'SELECT * FROM {owner}.{table}',
               defaultExample: 'SELECT * FROM {table}',
               ref           : 'table',
               sub: {
-                title         : '字段',
+                title         : this.$t('Fields'),
                 type          : 'query',
                 query         : "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE OWNER = '{owner}' AND TABLE_NAME = '{table}'",
                 example       : 'SELECT {field} FROM {owner}.{table}',
@@ -967,23 +989,23 @@ export default {
           tagType           : 'info',
           command           : 'query',
           exampleCommandArgs: ['SELECT TOP 10 * FROM some_table'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : 'SELECT [name] FROM [master].[dbo].[sysdatabases]',
             example       : `SELECT [TABLE_NAME] FROM [{database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
             defaultExample: `SELECT [TABLE_NAME] FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
             ref           : 'database',
             sub: {
-              title         : '表',
+              title         : this.$t('Tables'),
               type          : 'query',
               query         : `SELECT [TABLE_NAME] FROM [{database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
               example       : 'SELECT * FROM [{database}].[dbo].[{table}]',
               defaultExample: 'SELECT * FROM [{table}]',
               ref           : 'table',
               sub: {
-                title         : '字段',
+                title         : this.$t('Fields'),
                 type          : 'query',
                 query         : `SELECT [COLUMN_NAME] FROM [{database}].[INFORMATION_SCHEMA].[COLUMNS] WHERE [TABLE_NAME] = '{table}'`,
                 example       : 'SELECT [{field}] FROM [{database}].[dbo].[{table}]',
@@ -1001,9 +1023,9 @@ export default {
           tagType           : 'info',
           command           : 'query',
           exampleCommandArgs: ['SELECT * FROM some_table LIMIT 10'],
-          debuggerName      : 'SQL 调试',
+          debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : `SELECT current_database()`,
             example       : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
@@ -1017,14 +1039,14 @@ export default {
               defaultExample: `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
               ref           : 'schema',
               sub: {
-                title         : '表',
+                title         : this.$t('Tables'),
                 type          : 'query',
                 query         : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = '{schema}'`,
                 example       : 'SELECT * FROM "{schema}"."{table}"',
                 defaultExample: 'SELECT * FROM "{table}"',
                 ref           : 'table',
                 sub: {
-                  title         : '字段',
+                  title         : this.$t('Fields'),
                   type          : 'query',
                   query         : `SELECT "A"."attname" FROM "pg_class" AS "C", "pg_attribute" AS "A" WHERE "A"."attrelid" = "C"."oid" AND "A"."attnum" > 0 AND "C"."relname" = '{table}'`,
                   example       : 'SELECT "{field}" FROM "{schema}"."{table}"',
@@ -1043,16 +1065,16 @@ export default {
           tagType           : 'success',
           command           : 'query',
           exampleCommandArgs: ['GET /_search?q=field:value'],
-          debuggerName      : 'URI Query 调试',
+          debuggerName      : this.$t('URI Query Debugger'),
           browsers          : {
-            title         : '数据库',
+            title         : this.$t('Databases'),
             type          : 'query',
             query         : `{"method": "list_database_names"}`,
             example       : `# Python\ndata = helper.db('{database}')`,
             defaultExample: `# Python\ndata = helper.db()`,
             ref           : 'database',
             sub: {
-              title         : '集合',
+              title         : this.$t('Collections'),
               type          : 'query',
               query         : `{"method": "list_collection_names", "db_name": "{database}"}`,
               example       : `# Python\ndata = helper.db('{database}')['{collection}'].find_one()`,
@@ -1069,16 +1091,16 @@ export default {
           tagType           : 'success',
           command           : 'query',
           exampleCommandArgs: ['GET /_search?q=field:value'],
-          debuggerName      : 'URI Query 调试',
+          debuggerName      : this.$t('URI Query Debugger'),
           browsers          : {
-            title         : '索引',
+            title         : this.$t('Indices'),
             type          : 'query',
             query         : `GET /_cat/indices`,
             example       : `GET /{index}/_search`,
             defaultExample: `GET /{index}/_search`,
             ref           : 'index',
             sub: {
-              title         : '字段',
+              title         : this.$t('Fields'),
               type          : 'query',
               query         : `GET /{index}/_mapping`,
               example       : `GET /{index}/_search?q={field}:something`,

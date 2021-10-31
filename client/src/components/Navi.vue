@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
-Develop      : 开发
+Development  : 开发
 Blueprint    : 蓝图
-Manage       : 管理
+Management   : 管理
 Docs         : 文档
 Settings     : 设置
 Sign Out     : 登出
@@ -28,7 +28,7 @@ Signed In    : 已登录
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            <span>{{ $t('Develop') }}</span>
+            <span>{{ $t('Development') }}</span>
           </span>
         </el-menu-item>
 
@@ -42,7 +42,7 @@ Signed In    : 已登录
         <el-menu-item index="/management/overview">
           <span>
             <i class="fa fa-fw fa-tasks"></i>
-            <span>{{ $t('Manage') }}</span>
+            <span>{{ $t('Management') }}</span>
           </span>
         </el-menu-item>
       </template>
@@ -64,7 +64,7 @@ Signed In    : 已登录
           <span>
             <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
             <i v-else class="fa fa-fw fa-user-md"></i>
-            <span class="hidden-md-and-down">{{ userProfileName }}</span>
+            <span>{{ userProfileName }}</span>
           </span>
         </template>
         <el-menu-item index="/setting/code-editor-setup">{{ $t('Settings') }}</el-menu-item>
@@ -76,7 +76,7 @@ Signed In    : 已登录
         index="">
         <span>
           <i class="fa fa-fw fa-user-times"></i>
-          <span class="hidden-md-and-down">{{ $t('Not Signed In') }}</span>
+          <span>{{ $t('Not Signed In') }}</span>
         </span>
       </el-menu-item>
 
@@ -119,7 +119,7 @@ Signed In    : 已登录
       <el-menu-item class="menu-right" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
         <span>
           <i class="fa fa-fw fa-link"></i>
-          <span class="hidden-md-and-down">{{ $t('Auth Link Doc') }}</span>
+          <span>{{ $t('Auth Link Doc') }}</span>
         </span>
       </el-menu-item>
     </el-menu>

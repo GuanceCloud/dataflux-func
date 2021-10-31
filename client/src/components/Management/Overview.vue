@@ -147,7 +147,6 @@ Pressure                      : 压力
 
           <el-table-column :label="$t('User')">
             <template slot-scope="scope">
-              <span class="text-info">{{ $t('Username') }}{{ $t(':') }}</span>
               <strong>{{ scope.row.username }}</strong>
 
               <br>

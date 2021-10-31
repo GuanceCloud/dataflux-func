@@ -1,4 +1,20 @@
 <i18n locale="zh-CN" lang="yaml">
+Time                          : 时间
+Client                        : 客户端
+Client ID                     : 客户端ID
+IP Address                    : IP地址
+User                          : 用户
+User ID                       : 用户ID
+Operation                     : 操作
+Data ID                       : 数据ID
+MODIFY                        : 修改操作
+DELETE                        : 删除操作
+Cost                          : 耗时
+ms                            : 毫秒
+Show detail                   : 显示HTTP请求详情
+The full content is as follows: 完整内容如下
+Request                       : 请求
+Response                      : 响应
 
 Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作记录，用户（ID、用户名），客户端ID，跟踪ID
 </i18n>
@@ -34,7 +50,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column label="时间" width="200">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -42,28 +58,27 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             </template>
           </el-table-column>
 
-          <el-table-column label="用户">
+          <el-table-column :label="$t('User')">
             <template slot-scope="scope">
-              <span class="text-info">用户名：</span>
               <strong>{{ scope.row.username }}</strong>
 
               <br>
-              <span class="text-info">用户ID：</span>
+              <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
               <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
 
               <br>
-              <span class="text-info">客户端ID：</span>
+              <span class="text-info">{{ $t('Client ID') }}{{ $t(':') }}</span>
               <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
 
               <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
                 <br>
-                <span class="text-info">IP地址：</span>
+                <span class="text-info">{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
               </template>
             </template>
           </el-table-column>
 
-          <el-table-column label="操作">
+          <el-table-column :label="$t('Operation')">
             <template slot-scope="scope">
               <span class="text-good" v-if="scope.row.respStatusCode >= 200 && scope.row.respStatusCode < 400">
                 <i class="fa fa-fw fa-check-circle"></i>
@@ -76,31 +91,31 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
 
               <template v-if="scope.row._operationEntityId">
                 <br>
-                <span class="text-info">ID：</span>
+                <span class="text-info">{{ $t('Data ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
 
               <br>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
-                修改操作
+                {{ $t('MODIFY') }}
               </strong>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/delete')" class="text-bad">
                 <i class="fa fa-fw fa-exclamation-circle"></i>
-                删除操作
+                {{ $t('DELETE') }}
               </strong>
             </template>
           </el-table-column>
 
           <el-table-column label="耗时" align="right" width="100">
             <template slot-scope="scope">
-              {{ scope.row.reqCost }} <span class="text-info">毫秒</span>
+              {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text">显示HTTP请求详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -109,7 +124,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog title="完整内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is as follows')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -150,7 +165,7 @@ export default {
 
       let httpInfoLines = [];
 
-      httpInfoLines.push('===== 请求 =====')
+      httpInfoLines.push(`===== ${this.$t('Request')} =====`)
 
       httpInfoLines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
 
@@ -158,7 +173,7 @@ export default {
         httpInfoLines.push(JSON.stringify(d.reqBodyJSON, null, 2));
       }
 
-      httpInfoLines.push('\n===== 响应 =====')
+      httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
 
       httpInfoLines.push(`Status Code: ${d.respStatusCode}`);
 
