@@ -227,6 +227,17 @@ class SyncCache(BaseTask):
             else:
                 data.append(cache_res)
 
+        # 计算最新版本号
+        func_latest_version_map = {}
+        for d in data:
+            func_id                = d['funcId']
+            script_publish_version = d['scriptPublishVersion']
+
+            if func_id not in func_latest_version_map:
+                func_latest_version_map[func_id] = script_publish_version
+            else:
+                func_latest_version_map[func_id] = max(script_publish_version, func_latest_version_map[func_id])
+
         # 分类计算
         data_map = {}
         for d in data:
@@ -238,6 +249,10 @@ class SyncCache(BaseTask):
             timestamp              = d.get('timestamp')
 
             if not timestamp:
+                continue
+
+            latest_version = func_latest_version_map.get(func_id)
+            if latest_version and script_publish_version < latest_version:
                 continue
 
             if exec_mode is None:
@@ -317,6 +332,8 @@ class SyncCache(BaseTask):
             ]
             prev_info = self.db.query(sql, sql_params)
 
+            # 删除已过时记录
+
             if not prev_info:
                 # 无记录，则补全记录
                 sql = '''
@@ -392,6 +409,20 @@ class SyncCache(BaseTask):
                     exec_mode,
                 ]
                 self.db.query(sql, sql_params)
+
+        # 删除过时数据
+        for func_id, latest_version in func_latest_version_map.items():
+            sql = '''
+                DELETE FROM biz_rel_func_running_info
+                WHERE
+                        `funcId`               =  ?
+                    AND `scriptPublishVersion` != ?
+                '''
+            sql_params = [
+                func_id,
+                latest_version
+            ]
+            self.db.query(sql, sql_params)
 
     def sync_script_failure(self):
         if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
