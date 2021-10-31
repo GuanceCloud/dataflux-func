@@ -288,8 +288,9 @@ class SyncCache(BaseTask):
 
         # 分类入库
         for pk, d in data_map.items():
-            func_id   = d['funcId']
-            exec_mode = d['execMode']
+            func_id                = d['funcId']
+            script_publish_version = d['scriptPublishVersion']
+            exec_mode              = d['execMode']
 
             sql = '''
                 SELECT
