@@ -483,6 +483,12 @@ def as_str(s):
 
     return six.ensure_str(s)
 
+def limited_text(s, max_length=30):
+    if len(s) <= max_length:
+        return s
+    else:
+        return s[0:max_length - 3] + '...'
+
 def merge_query(url, query):
     merged_query = {}
 

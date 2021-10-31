@@ -301,9 +301,6 @@ def func_runner(self, *args, **kwargs):
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
 
-    # 队列
-    queue = kwargs.get('queue')
-
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
     if 'headers' in http_request:
@@ -362,7 +359,8 @@ def func_runner(self, *args, **kwargs):
             '_DFF_TRIGGER_TIME_MS': kwargs.get('triggerTimeMs') or start_time_ms,
             '_DFF_CRONTAB'        : kwargs.get('crontab'),
             '_DFF_CRONTAB_DELAY'  : kwargs.get('crontabDelay'),
-            '_DFF_QUEUE'          : queue,
+            '_DFF_QUEUE'          : self.queue,
+            '_DFF_WORKER_QUEUE'   : self.worker_queue,
             '_DFF_HTTP_REQUEST'   : http_request,
         }
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
@@ -541,7 +539,7 @@ def func_runner(self, *args, **kwargs):
                 func_call_kwargs_md5=func_call_kwargs_md5,
                 func_pressure=func_pressure,
                 func_cost=func_cost,
-                queue=queue)
+                queue=self.queue)
 
         # 清理资源
         self.clean_up()

@@ -388,7 +388,7 @@ exports.publish = function(req, res, next) {
           var kwargs = {
             funcId  : funcId,
             origin  : 'integration',
-            execMode: 'auto',
+            execMode: 'sync',
             queue   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
           var taskOptions = {

@@ -21,8 +21,6 @@ LOG_LEVEL      = CONFIG['LOG_LEVEL']
 LOG_LEVEL_SEQS = LOG_LEVELS['levels']
 LOG_CALL_ARGS  = LOG_LEVEL_SEQS[LOG_LEVEL] >= LOG_LEVEL_SEQS['DEBUG']
 
-LIMIT_ARGS_DUMP = 500
-
 CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
 
 def gen_task_id():
@@ -67,15 +65,13 @@ class BaseTask(app.Task):
 
         self.request.update(**next_context)
 
-        task_key_prefix = 'celery-task-meta-';
-        key = task_key_prefix + self.request.id
         content = {
             'task'  : self.name,
             'id'    : self.request.id,
             'args'  : self.request.args,
             'kwargs': self.request.kwargs,
-            'queue' : self.request.delivery_info['routing_key'],
-            'origin': self.request.origin,
+            'origin': self.request.origin, # 注意：Celery中Task.requset.origin 和Func 业务中的Origin *不是*一回事
+            'queue' : self.worker_queue,
             'status': status,
 
             'startTime'       : self.request.x_start_time,
@@ -89,14 +85,20 @@ class BaseTask(app.Task):
         if hasattr(self.request, 'extra'):
             content['extra'] = self.request.extra
 
+        # Publish result by Redis
         content = toolkit.json_dumps(content, indent=None)
 
-        # self.backend.client.setex(key, CONFIG['_WORKER_RESULT_EXPIRES'], content)
+        task_key_prefix = 'celery-task-meta-';
+        key = task_key_prefix + self.request.id
 
         if status in (celery_status.SUCCESS, celery_status.FAILURE):
             self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
+        # Add Queue Info
+        self.worker_queue = self.request.delivery_info['routing_key']
+        self.queue        = self.worker_queue.split('@').pop()
+
         # Add logger
         self.logger = LogHelper(self)
 
@@ -139,13 +141,8 @@ class BaseTask(app.Task):
         # Run
         try:
             if LOG_CALL_ARGS:
-                args_dumps = toolkit.json_dumps(args, indent=None)
-                if len(args_dumps) > LIMIT_ARGS_DUMP:
-                    args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
-
-                kwargs_dumps = toolkit.json_dumps(kwargs, indent=None)
-                if len(kwargs_dumps) > LIMIT_ARGS_DUMP:
-                    kwargs_dumps = kwargs_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
+                args_dumps   = toolkit.limited_text(toolkit.json_dumps(args, indent=None),   1000)
+                kwargs_dumps = toolkit.limited_text(toolkit.json_dumps(kwargs, indent=None), 1000)
 
                 self.logger.debug('[CALL] args: `{}`; kwargs: `{}`'.format(args_dumps, kwargs_dumps))
 

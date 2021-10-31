@@ -14,9 +14,9 @@ exports.dumpRequest = function(req, res, next) {
   var dumpList = [
     toolkit.strf('{0}=`{1}`', 'host',        req.get('host')),
     toolkit.strf('{0}=`{1}`', 'method',      req.method.toUpperCase()),
-    toolkit.strf('{0}=`{1}`', 'url',         path.join(req.baseUrl, req.path)),
-    toolkit.strf('{0}=`{1}`', 'query',       JSON.stringify(req.query)),
-    toolkit.strf('{0}=`{1}`', 'originalUrl', req.originalUrl),
+    toolkit.strf('{0}=`{1}`', 'url',         toolkit.limitedText(path.join(req.baseUrl, req.path), 1000)),
+    toolkit.strf('{0}=`{1}`', 'query',       toolkit.limitedText(JSON.stringify(req.query), 1000)),
+    toolkit.strf('{0}=`{1}`', 'originalUrl', toolkit.limitedText(req.originalUrl, 1000)),
   ];
 
   res.locals.logger._log('info', '{0} {1}', '[REQUEST]', dumpList.join(', '));

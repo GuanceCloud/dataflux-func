@@ -74,6 +74,7 @@ var CeleryHelper = function(logger, config) {
  * @return {undefined}
  */
 CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callback, onResultCallback) {
+  kwargs      = kwargs      || {};
   taskOptions = taskOptions || {};
 
   taskOptions.id = taskOptions.id || toolkit.genDataId('task');
@@ -84,17 +85,13 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
   } else {
     queue = '' + taskOptions.queue;
   }
-
-  kwargs = kwargs || {};
-  kwargs['queue'] = queue;
-
   taskOptions.queue = toolkit.getWorkerQueue(queue);
 
   this.logger.debug('[CELERY] Put task `#{0}` <- `{1}({2}, {3})` options: `{4}`',
     queue,
     name,
     JSON.stringify(args),
-    JSON.stringify(kwargs),
+    toolkit.limitedText(JSON.stringify(kwargs), 1000),
     JSON.stringify(taskOptions)
   );
 

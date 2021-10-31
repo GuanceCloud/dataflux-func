@@ -560,7 +560,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   res.locals.sendText = function(text) {
-    res.locals.logger.debug('[WEB TEXT] `{0}`', JSON.stringify(text));
+    var textDump = toolkit.limitedText(JSON.stringify(text), 1000);
+    res.locals.logger.debug('[WEB TEXT] `{0}`', textDump);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
@@ -598,6 +599,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         break;
     }
 
+    rawDump = toolkit.limitedText(rawDump, 1000);
     res.locals.logger.debug('[WEB RAW] `{0}`', rawDump);
 
     // 请求附带信息

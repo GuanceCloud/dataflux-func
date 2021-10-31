@@ -14,6 +14,7 @@ from worker.utils import yaml_resources, toolkit
 
 CONFIG = yaml_resources.get('CONFIG')
 
+# 队列名与路由名相同
 def create_queue(queue_name):
     return Queue(queue_name, routing_key=queue_name)
 
