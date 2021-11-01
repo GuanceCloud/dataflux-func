@@ -415,12 +415,14 @@ class SyncCache(BaseTask):
             sql = '''
                 DELETE FROM biz_rel_func_running_info
                 WHERE
-                        `funcId`               =  ?
-                    AND `scriptPublishVersion` != ?
+                        `funcId`                                      =  ?
+                    AND `scriptPublishVersion`                        != ?
+                    OR  UNIX_TIMESTAMP() - UNIX_TIMESTAMP(updateTime) >  ?
                 '''
             sql_params = [
                 func_id,
-                latest_version
+                latest_version,
+                3600 * 24 * 30,
             ]
             self.db.query(sql, sql_params)
 
