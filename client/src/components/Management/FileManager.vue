@@ -11,7 +11,9 @@ File uploaded: 文件已上传
 
 Please input destination path                                                        : 请输入目标路径
 'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
-Are you sure you want to delete the following content?                               : 是否确定删除此内容？
+Are you sure you want to delete the content?                                         : 是否确定删除此内容？
+Are you sure you want to install the Wheel package?                                  : 是否确定安装此Wheel包？
+'Wheel package installed: {name}'                                                    : Wheel包已安装：{name}
 Delete file                                                                          : 删除文件
 File already existed                                                                 : 文件已经存在
 
@@ -136,14 +138,22 @@ File already existed                                                            
 
           <el-table-column align="right" width="260" class-name="fix-list-button">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)" type="text">{{ $t('Enter') }}</el-button>
+              <el-button v-if="scope.row.type === 'folder'"
+                type="text"
+                @click="enterFolder(scope.row.name)">{{ $t('Enter') }}</el-button>
+
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
                   v-if="previewExtMap[scope.row.ext]"
                   type="primary"
                   :href="scope.row.previewURL"
                   :underline="false"
-                  target="_blank">{{ $t('Preview') }}</el-link>
+                  target="_blank">{{ $t('Open') }}</el-link>
+
+                <el-button v-if="scope.row.ext === 'whl'"
+                  type="text"
+                  @click="installWheel(scope.row.name)">{{ $t('Install') }}</el-button>
+
                 <el-link
                   type="primary"
                   :href="scope.row.downloadURL"
@@ -344,7 +354,7 @@ export default {
           break;
 
         case 'rm':
-          if (!await this.T.confirm(this.$t('Are you sure you want to delete the following content?'))) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the content?'))) return;
           break;
       }
 
@@ -484,6 +494,23 @@ export default {
     onUploadFileChange(file, fileList) {
       if (fileList.length > 1) fileList.splice(0, 1);
     },
+    async installWheel(name) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to install the Wheel package?'))) return;
+
+      // 操作处理中
+      let delayedLoadingT = setTimeout(() => {
+        this.fullScreenLoading = true;
+      }, 200);
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
+        body : { pkg: this.getPath(name) },
+        alert: { okMessage: this.$t('Wheel package installed: {name}', { name: name }) },
+      });
+
+      // 操作处理结束
+      clearTimeout(delayedLoadingT);
+      this.fullScreenLoading = false;
+    },
   },
   computed: {
     previewExtMap() {
@@ -496,6 +523,7 @@ export default {
         mp4 : true,
         pdf : true,
         txt : true,
+        json: true,
         md  : true,
       }
     },

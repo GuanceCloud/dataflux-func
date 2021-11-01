@@ -58,6 +58,7 @@ en:
   Copy    : 复制
   Zip     : 压缩
   Unzip   : 解压
+  Install : 安装
   More    : 更多
 
   # 通用-操作（小写）
@@ -89,6 +90,7 @@ en:
   copy    : 复制
   zip     : 压缩
   unzip   : 解压
+  install : 安装
   more    : 更多
 
   # 通用-操作结果

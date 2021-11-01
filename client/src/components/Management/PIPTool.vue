@@ -202,7 +202,7 @@ export default {
           return false;
         }
         // 检查包名
-        if (!parts[0].match(/^[0-9a-zA-Z\-]+$/)) {
+        if (this.T.isNothing(parts[0])) {
           return false;
         }
         // 检查版本号

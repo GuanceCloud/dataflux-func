@@ -2483,8 +2483,15 @@ exports.getPythonPackageInstallStatus = function(req, res, next) {
 };
 
 exports.installPythonPackage = function(req, res, next) {
-  var pkg    = req.body.pkg;
-  var mirror = req.body.mirror;
+  var pkg     = req.body.pkg;
+  var mirror  = req.body.mirror;
+  var isWheel = false;
+
+  // 适配Wheel包
+  if (toolkit.endsWith(pkg, '.whl')) {
+    pkg = path.join(CONFIG.RESOURCE_ROOT_PATH, pkg);
+    isWheel = true;
+  }
 
   // Python包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
@@ -2513,16 +2520,48 @@ exports.installPythonPackage = function(req, res, next) {
     },
     // 清空之前安装的内容
     function(asyncCallback) {
-      var _pkg = pkg.split('=')[0].replace(/-/g, '_');
+      if (isWheel) return asyncCallback();
+
+      var pkgName = pkg.split('=')[0].replace(/-/g, '_');
 
       var cmd = 'rm';
       var cmdArgs = [ '-rf'];
 
       // 读取需要删除的目录
-      fs.readdirSync(packageInstallPath).forEach(function(name) {
-        if (name === _pkg || toolkit.startsWith(name, _pkg) && toolkit.endsWith(name, '.dist-info')) {
-          cmdArgs.push(path.join(packageInstallPath, name));
+      fs.readdirSync(packageInstallPath).forEach(function(folderName) {
+        var absFolderPath   = path.join(packageInstallPath, folderName);
+        var absMetaPath     = path.join(absFolderPath, 'METADATA');
+        var absTopLevelPath = path.join(absFolderPath, 'top_level.txt');
+
+        // 非dist-info目录，跳过
+        if (!toolkit.startsWith(folderName, pkgName + '-') || !toolkit.endsWith(folderName, '.dist-info')) return;
+        // 不存在METADATA文件，跳过
+        if (!fs.existsSync(absMetaPath)) return;
+
+        // 提取METADATA中名称
+        var metaName = null;
+        var metaLines = fs.readFileSync(absMetaPath).toString().split('\n');
+        for (var i = 0; i < metaLines.length; i++) {
+          if (toolkit.startsWith(metaLines[i], 'Name: ')) {
+            metaName = metaLines[i].split(':')[1].trim();
+            break;
+          }
         }
+
+        // METADATA中名称与包名不同，跳过
+        if (metaName !== pkgName) return;
+
+        // 需要删除的目录
+        cmdArgs.push(absFolderPath);
+
+        // 提取top_level.txt内容
+        // 不存在top_level.txt文件，跳过
+        if (!fs.existsSync(absTopLevelPath)) return;
+        var topLevelName = fs.readFileSync(absTopLevelPath).toString().trim();
+
+        // 需要删除的目录
+        var absTopLevelFolderPath = path.join(packageInstallPath, topLevelName);
+        cmdArgs.push(absTopLevelFolderPath);
       })
       childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
         if (err) {

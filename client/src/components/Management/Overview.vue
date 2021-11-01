@@ -149,13 +149,11 @@ Pressure                      : 压力
             <template slot-scope="scope">
               <strong>{{ scope.row.username }}</strong>
 
-              <br>
-              <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
-              <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
-
-              <br>
-              <span class="text-info">{{ $t('Client ID') }}{{ $t(':') }}</span>
-              <code class="text-code text-small">{{ scope.row.clientId }}</code><CopyButton :content="scope.row.clientId"></CopyButton>
+              <template v-if="scope.row.userId">
+                <br>
+                <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
+                <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
+              </template>
 
               <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
                 <br>
@@ -173,24 +171,19 @@ Pressure                      : 压力
               <span class="text-bad" v-else>
                 <i class="fa fa-fw fa-times-circle"></i>
               </span>
-
               <span>{{ scope.row._operationDescribe }}</span>
+              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
+                （{{ $t('MODIFY') }}）
+              </strong>
+              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/delete')" class="text-bad">
+                （{{ $t('DELETE') }}）
+              </strong>
 
               <template v-if="scope.row._operationEntityId">
                 <br>
                 <span class="text-info">{{ $t('Data ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
-
-              <br>
-              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
-                <i class="fa fa-fw fa-exclamation-triangle"></i>
-                {{ $t('MODIFY') }}
-              </strong>
-              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/delete')" class="text-bad">
-                <i class="fa fa-fw fa-exclamation-circle"></i>
-                {{ $t('DELETE') }}
-              </strong>
             </template>
           </el-table-column>
 
