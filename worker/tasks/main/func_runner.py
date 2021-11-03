@@ -133,9 +133,8 @@ class FuncRunnerTask(ScriptBaseTask):
         # 记录到本地缓存
         SCRIPT_DICT_CACHE = self.create_script_dict(scripts)
 
-    def cache_script_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-
+    def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
+        # 全局计数
         data = {
             'funcId'              : func_id,
             'scriptPublishVersion': script_publish_version,
@@ -146,7 +145,13 @@ class FuncRunnerTask(ScriptBaseTask):
         }
         data = toolkit.json_dumps(data, indent=0)
 
-        self.cache_db.run('lpush', cache_key, data)
+        cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
+        self.cache_db.lpush(cache_key, data)
+
+        # 函数调用记数
+        cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'funcCallCount', 'funcId', func_id]);
+
+        self.cache_db.ts_add(cache_key, 1, mode='addUp')
 
     def cache_script_failure(self, func_id, script_publish_version, exec_mode=None, einfo_text=None, trace_info=None):
         if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
@@ -511,7 +516,7 @@ def func_runner(self, *args, **kwargs):
                 trace_info=trace_info)
 
         # 记录函数运行信息
-        self.cache_script_running_info(
+        self.cache_running_info(
             func_id=func_id,
             script_publish_version=target_script['publishVersion'],
             exec_mode=exec_mode,

@@ -109,6 +109,26 @@ EntityModel.prototype.getSysStats = function(callback) {
         });
       }, asyncCallback);
     },
+    // Get Func call count
+    function(asyncCallback) {
+      var metric = 'funcCallCount';
+
+      sysStats[metric] = {};
+
+      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'funcId', '*']);
+      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, agg: 'sum' };
+
+      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        if (err) return asyncCallback(err);
+
+        for (var k in tsDataMap) {
+          var funcId = toolkit.parseCacheKey(k).tags.funcId;
+          sysStats[metric][funcId] = tsDataMap[k];
+        }
+
+        return asyncCallback();
+      });
+    },
     // Get Worker queue length
     function(asyncCallback) {
       var metric = 'workerQueueLength';

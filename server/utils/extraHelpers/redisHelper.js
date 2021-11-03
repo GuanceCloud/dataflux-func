@@ -234,7 +234,7 @@ RedisHelper.prototype.incrby = function(key, increment, callback) {
   return this.run('incrby', key, increment, callback);
 };
 
-RedisHelper.prototype.del = function(keys, callback) {
+RedisHelper.prototype.delete = RedisHelper.prototype.del = function(keys, callback) {
   if (this.isDryRun) return callback(null, 'OK');
   return this.run('del', keys, callback);
 };
@@ -624,27 +624,31 @@ RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
  * Add time-series point
  *
  * @param  {String}   key
- * @param  {*}        value
+ * @param  {Object}   options
+ * @param  {Integer}  options.timestamp
+ * @param  {*}        options.value
+ * @param  {String}   options.mode
  * @param  {Function} callback
  * @return {undefined}
  */
-RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
+RedisHelper.prototype.tsAdd = function(key, options, callback) {
   if (!this.skipLog) {
     this.logger.debug('[REDIS] TS Add `{0}`', key);
   }
 
   var self = this;
 
-  if (arguments.length === 3) {
-    callback  = value;
-    value     = timestamp;
-    timestamp = null;
+  if (arguments.length === 2) {
+    callback = options;
+    options  = null;
   }
 
-  if (self.isDryRun) return callback(null, 'OK');
+  options = options || {};
+  var timestamp = options.timestamp || parseInt(Date.now() / 1000);
+  var value     = options.value     || 0;
+  var mode      = options.mode      || 'update';
 
-  timestamp = timestamp || parseInt(Date.now() / 1000);
-  value     = JSON.stringify(value);
+  if (self.isDryRun) return callback(null, 'OK');
 
   async.series([
     function(asyncCallback) {
@@ -663,6 +667,27 @@ RedisHelper.prototype.tsAdd = function(key, timestamp, value, callback) {
       });
     },
     function(asyncCallback) {
+      if (mode.toLowerCase() !== 'addup') return asyncCallback();
+
+      self.client.zrangebyscore(key, timestamp, timestamp, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (toolkit.isNothing(cacheRes)) return asyncCallback();
+
+        var p = cacheRes[0];
+        var sepIndex  = p.indexOf(',');
+        var prevValue = JSON.parse(p.slice(sepIndex + 1));
+
+        value += parseFloat(prevValue);
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      return self.client.zremrangebyscore(key, timestamp, timestamp, asyncCallback);
+    },
+    function(asyncCallback) {
+      value = JSON.stringify(value);
       var data = [timestamp, value].join(',');
       self.client.zadd(key, timestamp, data, asyncCallback);
     },
@@ -804,8 +829,10 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
               d[1] = d[1] / options.scale;
             }
 
-            if (options.ndigits) {
+            if (options.ndigits > 0) {
               d[1] = parseFloat(d[1].toFixed(options.ndigits));
+            } else {
+              d[1] = parseInt(d[1]);
             }
           }
 

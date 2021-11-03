@@ -375,7 +375,10 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     }
 
     if (!options.muteLog) {
-      res.locals.logger.debug('[WEB JSON] `{0}`', getRetSample(ret));
+      var retDump = JSON.stringify(ret);
+      var retDumpLength = retDump.length;
+      var retDump = toolkit.limitedText(getRetSample(ret), 1000);
+      res.locals.logger.debug('[RESPONSE] JSON: `{0}`, Length: {1}', getRetSample(ret), retDumpLength);
     }
 
     if ('function' === typeof appInit.beforeReponse) {
@@ -386,7 +389,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
   res.locals.redirect = function(nextURL) {
     res.locals.logger.debug('{0}: {1}',
-      '[WEB REDIRECT]',
+      '[RESPONSE] REDIRECT:',
       nextURL
     );
 
@@ -476,7 +479,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     res.render(view, renderData, function(err, html) {
       if (err) return next(err);
 
-      res.locals.logger.debug('[WEB RENDER HTML] `{0}`', view);
+      res.locals.logger.debug('[RESPONSE] RENDER HTML: `{0}`', view);
 
       // 请求附带信息
       var reqInfo = _appendReqInfo();
@@ -503,7 +506,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   res.locals.sendHTML = function(html) {
-    res.locals.logger.debug('[WEB HTML] `{0}`', req.originalUrl);
+    res.locals.logger.debug('[RESPONSE] HTML: `{0}`', req.originalUrl);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
@@ -523,7 +526,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   res.locals.sendLocalFile = function(filePath) {
     var fileName = filePath.split('/').pop();
     var fileType = fileName.split('.').pop();
-    res.locals.logger.debug('[WEB LOCAL FILE] `{0}`', fileName);
+    res.locals.logger.debug('[RESPONSE] LOCAL FILE: `{0}`', fileName);
 
     res.type(fileType);
     res.attachment(fileName);
@@ -538,7 +541,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   res.locals.sendFile = function(file, fileName, fileType) {
-    res.locals.logger.debug('[WEB FILE] `{0}` ({1} Bytes)', fileName || 'FILE', file.length);
+    res.locals.logger.debug('[RESPONSE] FILE: `{0}`, Length: {1}', fileName || 'FILE', file.length);
 
     if (!fileType && fileName.indexOf('.') >= 0) {
       fileType = fileName.split('.').pop();
@@ -560,8 +563,10 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   res.locals.sendText = function(text) {
-    var textDump = toolkit.limitedText(JSON.stringify(text), 1000);
-    res.locals.logger.debug('[WEB TEXT] `{0}`', textDump);
+    var textDump = JSON.stringify(text);
+    var textDumpLenth = textDump.length;
+    var textDump = toolkit.limitedText(textDump, 1000);
+    res.locals.logger.debug('[RESPONSE] TEXT: `{0}`, Length: {1}', textDump, textDumpLenth);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
@@ -599,8 +604,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         break;
     }
 
+    var rawDumpLength = rawDump.length;
     rawDump = toolkit.limitedText(rawDump, 1000);
-    res.locals.logger.debug('[WEB RAW] `{0}`', rawDump);
+    res.locals.logger.debug('[RESPONSE] RAW: `{0}`, Length: {1}', rawDump, rawDumpLength);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();

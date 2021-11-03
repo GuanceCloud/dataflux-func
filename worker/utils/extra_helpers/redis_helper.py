@@ -280,7 +280,15 @@ class RedisHelper(object):
     def unlock(self, lock_key, lock_value):
         return self.run('eval', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lock_key, lock_value)
 
-    def ts_add(self, key, value, timestamp=None):
+    def ts_parse_point(self, point):
+        timestamp, value = six.ensure_str(point).split(',', 1)
+        timestamp = int(timestamp.split('.')[0])
+        value     = toolkit.json_loads(value)
+        return [timestamp, value]
+
+    def ts_add(self, key, value, timestamp=None, mode=None):
+        mode = mode or 'update'
+
         if not self.skip_log:
             self.logger.debug('[REDIS] TS Add `{}`'.format(key))
 
@@ -292,8 +300,16 @@ class RedisHelper(object):
             self.checked_keys.add(key)
 
         timestamp = timestamp or int(time.time())
-        value = toolkit.json_dumps(value)
 
+        if mode.lower() == 'addup':
+            prev_points = self.client.zrangebyscore(key, timestamp, timestamp)
+            if prev_points:
+                _, prev_value = self.ts_parse_point(prev_points[0])
+                value += float(prev_value)
+
+        self.client.zremrangebyscore(key, timestamp, timestamp)
+
+        value = toolkit.json_dumps(value)
         data = ','.join([str(timestamp), value])
         self.client.zadd(key, {data: timestamp})
 
@@ -318,14 +334,7 @@ class RedisHelper(object):
             self.checked_keys.add(key)
 
         ts_data = self.client.zrangebyscore(key, start, stop)
-
-        def _parse(p):
-            timestamp, value = six.ensure_str(p).split(',', 1)
-            timestamp = int(timestamp.split('.')[0])
-            value     = toolkit.json_loads(value)
-            return [timestamp, value]
-
-        ts_data = list(map(_parse, ts_data))
+        ts_data = list(map(self.ts_parse_point, ts_data))
 
         if group_time and group_time > 1:
             temp = []
@@ -364,8 +373,10 @@ class RedisHelper(object):
                 if scale and scale != 1:
                     d[1] = d[1] / scale
 
-                if ndigits:
+                if ndigits > 0:
                     d[1] = round(d[1], ndigits)
+                else:
+                    d[1] = int(d[1])
 
             if time_unit == 'ms':
                 d[0] = d[0] * 1000

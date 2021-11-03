@@ -5,6 +5,13 @@
       <el-header height="60px">
         <h1>
           系统指标
+          <div class="header-control">
+            <el-button @click="updateChart" type="primary" plain size="small" :disabled="isRefreshing">
+              <i v-if="isRefreshing" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              <i v-else class="fa fa-fw fa-refresh"></i>
+              刷新
+            </el-button>
+          </div>
         </h1>
       </el-header>
       <el-main>
@@ -18,6 +25,7 @@
         <el-divider content-position="left"><h1>Worker</h1></el-divider>
         <div id="workerCPUPercent" class="chart"></div>
         <div id="workerMemoryPSS" class="chart"></div>
+        <div id="funcCallCount" class="chart"></div>
         <div id="workerQueueLength" class="chart"></div>
 
         <el-divider content-position="left"><h1>Database/Cache</h1></el-divider>
@@ -131,6 +139,8 @@ export default {
       chart.resize();
     },
     async updateChart() {
+      this.isRefreshing = true;
+
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
       if (!apiRes.ok) return;
 
@@ -155,6 +165,15 @@ export default {
             series = this.genSeries(tsDataMap, {
               dataConvert  : 'xyTranspose',
               seriesOptions: { type: 'bar' },
+            });
+            break;
+
+          case 'funcCallCount':
+            series = this.genSeries(tsDataMap, {
+              seriesOptions: { type: 'line' },
+            });
+            series.forEach(s => {
+              s.name = s.name + '(...)';
             });
             break;
 
@@ -184,6 +203,10 @@ export default {
             break;
         }
       };
+
+      setTimeout(() => {
+        this.isRefreshing = false;
+      }, 1000);
     },
     createTitleOpt(title) {
       return {
@@ -399,6 +422,14 @@ export default {
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createVolumnYAxisOpt(),
         },
+        funcCallCount: {
+          textStyle: textStyle,
+          title  : this.createTitleOpt('函数调用次数'),
+          tooltip: this.createTSTooltipOpt({ unit: ['Times', 'Time']}),
+          grid   : this.createCommonGridOpt(),
+          xAxis  : this.createTimeXAxisOpt(),
+          yAxis  : this.createCountYAxisOpt(),
+        },
         workerQueueLength: {
           textStyle: textStyle,
           title  : this.createTitleOpt('工作队列长度'),
@@ -471,6 +502,8 @@ export default {
   },
   data() {
     return {
+      isRefreshing: false,
+
       charts: {},
     }
   },

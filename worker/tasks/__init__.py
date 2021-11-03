@@ -141,10 +141,10 @@ class BaseTask(app.Task):
         # Run
         try:
             if LOG_CALL_ARGS:
-                args_dumps   = toolkit.limited_text(toolkit.json_dumps(args, indent=None),   1000)
-                kwargs_dumps = toolkit.limited_text(toolkit.json_dumps(kwargs, indent=None), 1000)
+                kwargs_dump        = toolkit.limited_text(toolkit.json_dumps(kwargs, indent=None), 1000)
+                kwargs_dump_length = len(kwargs_dump)
 
-                self.logger.debug('[CALL] args: `{}`; kwargs: `{}`'.format(args_dumps, kwargs_dumps))
+                self.logger.debug('[CALL] `{}`, Length: {}'.format(kwargs_dump, kwargs_dump_length))
 
             return super(BaseTask, self).__call__(*args, **kwargs)
 
