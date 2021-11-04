@@ -131,11 +131,24 @@ var limitedText = toolkit.limitedText = function(text, maxLength) {
   text      = text      || '';
   maxLength = maxLength || 30;
 
-  var nextText = text;
-  while (nextText.replace(/[\u0391-\uFFE5]/g, 'xx').length > maxLength) {
-    nextText = nextText.slice(0, -1);
+  if (text.length <= maxLength) {
+    return text;
+  } else {
+    return text.slice(0, maxLength - 3) + '...';
+  }
+};
+var limitedTextGB = toolkit.limitedTextGB = function(text, maxLength) {
+  text      = text      || '';
+  maxLength = maxLength || 30;
+
+  var len = 0;
+  for (var i = 0; i < text.length; i++) {
+    var c = text.charCodeAt(i);
+    len += ((c >= 0x0001 && c <= 0x007e) || (0xff60 <= c && c <= 0xff9f)) ? 1 : 2;
+    if (len >= maxLength) break;
   }
 
+  var nextText = text.slice(0, i + 1);
   if (nextText !== text) {
     nextText += '...';
   }
