@@ -334,10 +334,14 @@ export default {
         result.data = this.$t('Query Failed');
 
         // 补充错误信息
+        if (apiRes.message) {
+          result.data += '\n\n' + apiRes.message;
+        }
         if (apiRes.detail && apiRes.detail.error) {
-          result.data += '\n' + apiRes.detail.error;
-        } else if (apiRes.message) {
-          result.data += '\n' + apiRes.message;
+          result.data += '\n\n' + apiRes.detail.error;
+        }
+        if (apiRes.detail && apiRes.detail.message) {
+          result.data += '\n\n' + apiRes.detail.message;
         }
       }
 
