@@ -209,6 +209,46 @@ def reload_scripts(self, *args, **kwargs):
 
 # Main.SyncCache
 class SyncCache(BaseTask):
+    def sync_func_call_info(self):
+        data = []
+
+        # 搜集数据
+        cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
+        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
+            cache_res = self.cache_db.run('rpop', cache_key)
+            if not cache_res:
+                break
+
+            try:
+                cache_res = toolkit.json_loads(cache_res)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
+            else:
+                data.append(cache_res)
+
+        # 归类计算
+        count_map = {}
+        for d in data:
+            func_id   = d['funcId']
+            timestamp = d.get('timestamp')
+
+            pk = '~'.join([func_id, str(timestamp)])
+            if pk not in count_map:
+                count_map[pk] = {
+                    'funcId'   : func_id,
+                    'timestamp': timestamp,
+                    'count'    : 0
+                }
+
+            count_map[pk]['count'] += 1
+
+        # 写入时序数据
+        for pk, c in count_map.items():
+            cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
+
+            self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
+
     def sync_script_running_info(self):
         data = []
 
@@ -735,6 +775,13 @@ class SyncCache(BaseTask):
 def sync_cache(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=30)
+
+    # 函数调用计数刷入数据库
+    try:
+        self.sync_func_call_info()
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
 
     # 脚本运行信息刷入数据库
     try:

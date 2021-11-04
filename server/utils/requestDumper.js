@@ -45,8 +45,11 @@ exports.dumpRequestFrom = function(req, res, next) {
 };
 
 exports.dumpRequestBody = function(req, res, next) {
+  var bodyDump = toolkit.jsonDumps(req.body);
+  var bodyDumpLenth = bodyDump.length;
+  bodyDump = toolkit.limitedText(bodyDump, 1000);
   var dumpList = [
-    toolkit.strf('{0}=`{1}`', 'body', toolkit.jsonDumps(req.body)),
+    toolkit.strf('{0}=`{1}`, Length: {2}', 'body', bodyDump, bodyDumpLenth),
   ];
 
   if (req.files) {
@@ -55,7 +58,7 @@ exports.dumpRequestBody = function(req, res, next) {
     });
   }
 
-  res.locals.logger.info('{0} {1}', '[REQUEST BODY]', dumpList.join(', '));
+  res.locals.logger.info('{0} {1}', '[REQUEST BODY]', dumpList.join('; '));
 
   return next();
 };
