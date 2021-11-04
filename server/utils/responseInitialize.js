@@ -378,7 +378,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       var retDump = JSON.stringify(ret);
       var retDumpLength = retDump.length;
       var retDump = toolkit.limitedText(getRetSample(ret), 1000);
-      res.locals.logger.debug('[RESPONSE] JSON: `{0}`, Length: {1}', getRetSample(ret), retDumpLength);
+      res.locals.logger.debug('[RESPONSE] JSON: `{0}`, Length: {1}', retDump, retDumpLength);
     }
 
     if ('function' === typeof appInit.beforeReponse) {
