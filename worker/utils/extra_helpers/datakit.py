@@ -352,7 +352,11 @@ class DataKit(object):
             else:
                 conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
-            conn.request(method, path, body=body, headers=headers)
+            try:
+                conn.request(method, path, body=body, headers=headers)
+            except Exception as e:
+                raise Exception('Send request `{} {}:{}{}` failed: {}'.format(method, self.host, self.port, path, str(e)))
+
             resp = conn.getresponse()
 
             resp_status_code = resp.status
