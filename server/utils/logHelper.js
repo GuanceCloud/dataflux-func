@@ -355,7 +355,7 @@ LoggerHelper.prototype.logError = function(err) {
 LoggerHelper.prototype._stage = function(logLine) {
   this._stagedLogs.push(logLine);
   if (this._stagedLogs.length > MAX_STAGED_LOGS) {
-    this._stagedLogs = this._stagedLogs.slice(-1 * MAX_STAGED_LOGS);
+    this._stagedLogs.shift();
   }
 };
 

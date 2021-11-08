@@ -65,6 +65,12 @@ class BaseTask(app.Task):
 
         self.request.update(**next_context)
 
+        if status not in (celery_status.SUCCESS, celery_status.FAILURE):
+            return
+
+        # Publish result by Redis
+        key = 'celery-task-meta-' + self.request.id
+
         content = {
             'task'  : self.name,
             'id'    : self.request.id,
@@ -85,14 +91,9 @@ class BaseTask(app.Task):
         if hasattr(self.request, 'extra'):
             content['extra'] = self.request.extra
 
-        # Publish result by Redis
         content = toolkit.json_dumps(content, indent=None)
 
-        task_key_prefix = 'celery-task-meta-';
-        key = task_key_prefix + self.request.id
-
-        if status in (celery_status.SUCCESS, celery_status.FAILURE):
-            self.backend.client.publish(key, content)
+        self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
         # Add Queue Info

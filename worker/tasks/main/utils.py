@@ -1111,5 +1111,5 @@ def reset_worker_queue_pressure(self, *args, **kwargs):
         queue_length = self.cache_db.run('llen', queue_key)
 
         if not queue_length or int(queue_length) <= 0:
-            cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
+            cache_key = toolkit.get_server_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', i])
             self.cache_db.run('set', cache_key, 0)

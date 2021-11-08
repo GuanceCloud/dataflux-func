@@ -608,7 +608,7 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
   var workerQueuePressure    = 0;
   var workerQueueMaxPressure = CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
 
-  var workerQueuePressureCacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', [
+  var workerQueuePressureCacheKey = toolkit.getCacheKey('cache', 'workerQueuePressure', [
         'workerQueue', funcCallOptions.queue]);
 
   var denyPercent = 0;
@@ -839,6 +839,9 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
         },
       ], function(err) {
         /* 1. 统计记录 */
+        var costMs = Date.now() - funcCallOptions.triggerTimeMs;
+
+        // 授权链接相关
         if (funcCallOptions.origin === 'authLink') {
           // 记录最近几天调用次数
           var dateStr = toolkit.getDateString();
@@ -862,7 +865,6 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           async.series([
             // 最近耗时推入队列
             function(asyncCallback) {
-              var costMs = Date.now() - funcCallOptions.triggerTimeMs;
               var status = 'OK';
               if (err) {
                 if (err.info && err.info.reason) {
@@ -889,7 +891,37 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
               var expires = CONFIG._RECENT_FUNC_RUNNING_STATUS_EXPIRES;
               locals.cacheDB.expire(cacheKey, expires, asyncCallback);
             },
-          ]);
+          ], function(err) {
+            if (err) locals.logger.logError(err);
+          });
+        }
+
+        // 同步执行相关
+        if (funcCallOptions.execMode === 'sync' && !isCached) {
+          var prevFuncPressure = funcCallOptions.funcPressure || CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
+          var nextFuncPressure = parseInt((prevFuncPressure + costMs) >> 1);
+
+          async.series([
+            // 计算/记录函数压力值
+            function(asyncCallback) {
+              var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
+                    'funcId'           , funcCallOptions.funcId,
+                    'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
+              locals.cacheDB.setex(cacheKey, CONFIG._WORKER_LIMIT_FUNC_PRESSURE_EXPIRES, nextFuncPressure, asyncCallback);
+            },
+            // 减少队列压力
+            function(asyncCallback) {
+              var cacheKey = toolkit.getCacheKey('cache', 'workerQueuePressure', [
+                    'workerQueue', funcCallOptions.queue]);
+              locals.cacheDB.incrby(cacheKey, prevFuncPressure * -1, function(err) {
+                if (err) return asyncCallback(err);
+
+                locals.cacheDB.expire(cacheKey, CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES, asyncCallback);
+              })
+            },
+          ], function(err) {
+            if (err) locals.logger.logError(err);
+          });
         }
 
         /* 2. 最终回调 */
@@ -902,7 +934,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       function(asyncCallback) {
         var funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
 
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'funcPressure', [
+        var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
               'funcId'           , funcCallOptions.funcId,
               'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
 
@@ -1439,7 +1471,7 @@ exports.overview = function(req, res, next) {
 
       var cacheKeys = [];
       for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
+        var cacheKey = toolkit.getCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
         cacheKeys.push(cacheKey);
       }
 

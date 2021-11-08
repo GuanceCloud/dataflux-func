@@ -84,17 +84,15 @@ class FuncRunnerTask(ScriptBaseTask):
         global SCRIPTS_CACHE_MD5
         global SCRIPT_DICT_CACHE
 
-        cache_key_script_md5  = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
-        cache_key_script_dump = toolkit.get_cache_key('fixedCache', 'scriptsDump')
+        cache_key_script_md5 = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
 
         # 1. 检查Redis缓存
         scripts_md5 = self.cache_db.get(cache_key_script_md5)
         if scripts_md5:
             scripts_md5 = six.ensure_str(scripts_md5)
 
-        scripts_dump_exists = self.cache_db.exists(cache_key_script_dump)
 
-        if scripts_md5 and scripts_md5 == SCRIPTS_CACHE_MD5 and scripts_dump_exists:
+        if scripts_md5 and scripts_md5 == SCRIPTS_CACHE_MD5:
             # 存在缓存，且MD5未发生变化，不更新本地缓存
             self.logger.debug('[SCRIPT CACHE] Not Modified, extend local cache')
             return
@@ -102,6 +100,7 @@ class FuncRunnerTask(ScriptBaseTask):
         # 2. 不存在缓存/缓存MD5发生变化，从Redis读取Dump
         scripts = None
 
+        cache_key_script_dump = toolkit.get_cache_key('fixedCache', 'scriptsDump')
         scripts_dump = self.cache_db.get(cache_key_script_dump)
         if scripts_dump:
             self.logger.debug('[SCRIPT CACHE] Modified, Use Redis cache')
@@ -238,49 +237,6 @@ class FuncRunnerTask(ScriptBaseTask):
 
         result_dumps = toolkit.json_dumps(result)
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
-
-    def cache_func_pressure(self, func_id, func_call_kwargs_md5, func_pressure, func_cost, queue):
-        if not all([func_id, func_call_kwargs_md5, func_pressure, func_cost, queue]):
-            return
-
-        # 获取队列最大压力
-        worker_queue_max_pressure = CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
-
-        cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueueCount', tags=['workerQueue', queue])
-        worker_count = self.cache_db.get(cache_key)
-
-        if not worker_count:
-            worker_count = 1
-        else:
-            worker_count = int(worker_count) or 1
-
-        worker_queue_max_pressure = worker_count * CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE']
-
-        # 计算并记录新函数压力
-        cache_key = toolkit.get_cache_key('cache', 'funcPressure', tags=[
-            'funcId'           , func_id,
-            'funcCallKwargsMD5', func_call_kwargs_md5])
-
-        prev_func_pressure = self.cache_db.get(cache_key)
-        if prev_func_pressure:
-            prev_func_pressure = int(prev_func_pressure)
-        else:
-            prev_func_pressure = CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_BASE']
-
-        next_func_pressure = int((prev_func_pressure + func_cost) / 2)
-
-        self.cache_db.setex(cache_key, CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_EXPIRES'], next_func_pressure)
-
-        # 任务结束，减少队列压力
-        cache_key = toolkit.get_cache_key('cache', 'workerQueuePressure', tags=['workerQueue', queue])
-        current_worker_queue_pressure = self.cache_db.run('decrby', cache_key, func_pressure)
-
-        self.cache_db.run('expire', cache_key, CONFIG['_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES'])
-
-        self.logger.debug('<<< FUNC PRESSURE >>> {}: {}, Cost: {}'.format(func_id, func_pressure, func_cost))
-        self.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{}: {} (-{}, {}%)'.format(
-                queue, current_worker_queue_pressure, abs(func_pressure),
-                int(current_worker_queue_pressure / worker_queue_max_pressure * 100)))
 
 @app.task(name='Main.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True)
 def func_runner(self, *args, **kwargs):
@@ -540,18 +496,6 @@ def func_runner(self, *args, **kwargs):
             script_publish_version=target_script['publishVersion'],
             log_messages=log_messages,
             einfo_text=einfo_text)
-
-        # 记录压力值（仅限同步方式）
-        if exec_mode == 'sync':
-            func_pressure = kwargs.get('funcPressure') or CONFIG['_WORKER_LIMIT_FUNC_PRESSURE_BASE']
-            func_cost = abs(time.time() * 1000 - start_time_ms)
-
-            self.cache_func_pressure(
-                func_id=func_id,
-                func_call_kwargs_md5=func_call_kwargs_md5,
-                func_pressure=func_pressure,
-                func_cost=func_cost,
-                queue=self.queue)
 
         # 清理资源
         self.clean_up()
