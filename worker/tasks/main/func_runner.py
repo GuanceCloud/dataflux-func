@@ -204,7 +204,7 @@ class FuncRunnerTask(ScriptBaseTask):
         if not all([origin, origin_id]):
             return
 
-        if origin not in ('crontab', 'batch'):
+        if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
             return
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')

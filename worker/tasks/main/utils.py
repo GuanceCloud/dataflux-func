@@ -185,9 +185,11 @@ def reload_scripts(self, *args, **kwargs):
     cache_key = toolkit.get_cache_key('fixedCache', 'prevScriptDataHash')
 
     # 上次脚本更新时间
-    prev_script_data_hash = str(self.cache_db.get(cache_key) or '<NO_SCRIPT_DATA_HASH>')
+    prev_script_data_hash = self.cache_db.get(cache_key)
     if not prev_script_data_hash:
         force = True
+    else:
+        prev_script_data_hash = six.ensure_str(prev_script_data_hash)
 
     # 最新脚本数据Hash
     latest_script_data_hash = self.get_latest_script_data_hash()
@@ -205,7 +207,7 @@ def reload_scripts(self, *args, **kwargs):
         self.logger.info('[SCRIPT CACHE] Reload script {} -> {} {}'.format(
             prev_script_data_hash, latest_script_data_hash, '[FORCE]' if force else ''))
 
-        self.cache_db.set(cache_key, str(latest_script_data_hash))
+        self.cache_db.set(cache_key, latest_script_data_hash)
 
 # Main.SyncCache
 class SyncCache(BaseTask):
