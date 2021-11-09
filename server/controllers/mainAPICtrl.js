@@ -3144,7 +3144,7 @@ exports.metrics = function(req, res, next) {
           if (err) return eachCallback(err);
 
           var value = 0;
-          try { value = tsData.pop()[1] } catch(_) {}
+          try { value = tsData[0][1] } catch(_) {}
 
           promMetric.labels(labels).set(value);
 
