@@ -14,6 +14,7 @@ var sortedJSON    = require('sorted-json');
 var moment        = require('moment');
 var byteSize      = require('byte-size');
 var HTTPAuthUtils = require('http-auth-utils');
+var promClient    = require('prom-client');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -73,6 +74,9 @@ var FUNC_RESULT_LRU = new LRU({
 });
 
 var WORKER_SYSTEM_CONFIG = null;
+
+// OpenMetric
+var METRIC_MAP = {};
 
 // 自动创建资源文件夹
 fs.ensureDirSync(CONFIG.RESOURCE_ROOT_PATH);
@@ -3079,6 +3083,77 @@ exports.pullSystemLogs = function(req, res, next) {
       logs        : logs,
     });
     return res.locals.sendJSON(ret, { muteLog: true });
+  });
+};
+
+// 获取指标数据
+exports.metrics = function(req, res, next) {
+  res.set('Content-Type', 'application/openmetrics-text; version=1.0.0; charset=utf-8');
+
+  var interval = 60 * 5;
+  var stop     = parseInt(Date.now() / 1000);
+  var start    = stop - interval;
+
+  var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
+  var ignoreMetrics = [
+    'cacheDBKeyCountByPrefix',
+    'matchedRouteCount',
+  ];
+
+  var keys = null;
+  async.series([
+    // 查询所有指标键
+    function(asyncCallback) {
+      res.locals.cacheDB.keys(cacheKeyPattern, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        keys = cacheRes.sort();
+        console.log(keys)
+        return asyncCallback();
+      })
+    },
+    // 设置指标
+    function(asyncCallback) {
+      async.eachSeries(keys, function(key, eachCallback) {
+        var parsedKey = toolkit.parseCacheKey(key);
+        var metric = parsedKey.tags.metric;
+        var labels = parsedKey.tags;
+        delete labels.metric;
+
+        if (ignoreMetrics.indexOf(metric) >= 0) return eachCallback();
+
+        // 初始化Prom指标
+        var promMetric = METRIC_MAP[metric];
+        if (!promMetric) {
+          promMetric = new promClient.Gauge({
+            name      : `DFF_${metric}`,
+            help      : toolkit.splitCamel(metric),
+            labelNames: Object.keys(labels),
+          });
+          METRIC_MAP[metric] = promMetric;
+        }
+
+        res.locals.cacheDB.tsGet(key, { start, stop, groupTime: interval }, function(err, tsData) {
+          if (err) return eachCallback(err);
+
+          var value = 0;
+          try { value = tsData[0][1] } catch(_) {}
+
+          promMetric.labels(labels).set(value);
+
+          return eachCallback();
+        });
+      }, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err)
+
+    promClient.register.metrics().then(function(data) {
+      return res.locals.sendRaw(data);
+
+    }) .catch(function(err) {
+      return next(err)
+    });
   });
 };
 

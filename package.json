@@ -42,6 +42,7 @@
     "mysql2": "2.2.5",
     "nanoid": "3.1.23",
     "object-checker": "1.0.20",
+    "prom-client": "14.0.1",
     "redis": "3.1.2",
     "request": "2.88.2",
     "serve-favicon": "2.5.0",

@@ -1286,6 +1286,30 @@ var endsWith = toolkit.endsWith = function endsWith(s, suffix) {
 };
 
 /**
+ * Spilt camel style string
+ * @param  {String} s
+ * @return {String}
+ */
+var splitCamel = toolkit.splitCamel = function splitCamel(s) {
+  var converted = '';
+
+  for (var i = 0; i < s.length; i++) {
+    var ch = s[i];
+    if (s.charCodeAt(i) < 90 && s.charCodeAt(i - 1) > 96) {
+      converted = converted.trim() + ' ';
+    }
+    if (s.charCodeAt(i) < 90 && s.charCodeAt(i + 1) > 96) {
+      converted = converted.trim() + ' ';
+      ch = ch.toLowerCase();
+    }
+
+    converted += ch;
+  };
+
+  return converted;
+};
+
+/**
  * Pad Zero.
  *
  * @param  {String|Number} num

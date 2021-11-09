@@ -142,3 +142,8 @@ routeLoader.load(ROUTE.mainAPI.getPackageIndex, [
 routeLoader.load(ROUTE.mainAPI.pullSystemLogs, [
   mainAPICtrl.pullSystemLogs,
 ]);
+
+// 指标数据
+routeLoader.load(ROUTE.mainAPI.metrics, [
+  mainAPICtrl.metrics,
+]);

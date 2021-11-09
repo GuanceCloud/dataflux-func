@@ -477,6 +477,25 @@ export function endsWith(s, suffix) {
   return (s.slice(-1 * suffix.length) === suffix);
 };
 
+export function splitCamel(s) {
+  var converted = '';
+
+  for (var i = 0; i < s.length; i++) {
+    var ch = s[i];
+    if (s.charCodeAt(i) < 90 && s.charCodeAt(i - 1) > 96) {
+      converted = converted.trim() + ' ';
+    }
+    if (s.charCodeAt(i) < 90 && s.charCodeAt(i + 1) > 96) {
+      converted = converted.trim() + ' ';
+      ch = ch.toLowerCase();
+    }
+
+    converted += ch;
+  };
+
+  return converted;
+};
+
 export function getDiffInfo(src, dest) {
   src  = src  || '';
   dest = dest || '';

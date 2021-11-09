@@ -1938,6 +1938,14 @@ mainAPI:
         $required: false
         $type    : integer
 
+  metrics:
+    name         : 获取指标数据（OpenMetric）
+    method       : get
+    url          : /api/v1/metrics
+    response     : text
+    requireSignIn: false
+    privilege    : general_r
+
 mainPage:
   clientApp:
     showInDoc    : true
