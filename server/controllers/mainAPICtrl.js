@@ -3091,9 +3091,9 @@ exports.metrics = function(req, res, next) {
   res.set('Content-Type', 'application/openmetrics-text; version=1.0.0; charset=utf-8');
 
   var interval_min = 5;
-  var interval     = interval_min * 60
+  var interval     = interval_min * 60;
   var stop         = parseInt(Date.now() / 1000);
-  var start        = stop - interval;
+  var start        = stop - interval * 1000;
 
   var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
   var ignoreMetrics = [
