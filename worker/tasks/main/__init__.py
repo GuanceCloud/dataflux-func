@@ -1493,6 +1493,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'FUNC'  : __call_func,     # 调用函数（新Task）
             'THREAD': __thread_helper, # 多线程处理模块
 
+            'TASK': self, # 任务本身
+
             # 历史遗留
             'list_data_sources': __list_data_sources, # 列出数据源
         }
