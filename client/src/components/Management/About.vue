@@ -296,12 +296,12 @@ export default {
       this._getNodesStats();
       this._getNodesActiveQueues();
     },
-    async clearWorkerQueue(queueName) {
-      if (!await this.T.confirm(`是否确认清空队列 "#${queueName}" ？`)) return;
+    async clearWorkerQueue(queue) {
+      if (!await this.T.confirm(`是否确认清空队列 "#${queue}" ？`)) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
-        body : { workerQueues: [queueName] },
-        alert: { okMessage: `工作队列 "#${queueName}" 已被清空
+        body : { workerQueues: [queue] },
+        alert: { okMessage: `工作队列 "#${queue}" 已被清空
             <br><small>请注意系统报告内数据可能存在延迟<small>` },
       });
     },

@@ -135,15 +135,15 @@ EntityModel.prototype.getSysStats = function(callback) {
 
       sysStats[metric] = {};
 
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'queueName', '*']);
+      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'queue', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME };
 
       self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
         if (err) return asyncCallback(err);
 
         for (var k in tsDataMap) {
-          var queueName = toolkit.parseCacheKey(k).tags.queueName;
-          sysStats[metric][queueName] = tsDataMap[k];
+          var queue = toolkit.parseCacheKey(k).tags.queue;
+          sysStats[metric][queue] = tsDataMap[k];
         }
 
         return asyncCallback();

@@ -215,12 +215,12 @@ exports.afterAppCreated = function(app, server) {
         });
       },
       function(asyncCallback) {
-        async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queueName, eachCallback) {
-          var workerQueueKey = toolkit.getWorkerQueue(queueName);
+        async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queue, eachCallback) {
+          var workerQueueKey = toolkit.getWorkerQueue(queue);
           app.locals.cacheDB.llen(workerQueueKey, function(err, cacheRes) {
             if (err) return eachCallback(err);
 
-            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'workerQueueLength', 'queueName', queueName]);
+            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'workerQueueLength', 'queue', queue]);
             var workerQueueLength = parseInt(cacheRes) || 0;
             var opt = { timestamp: currentTimestamp, value: workerQueueLength };
             app.locals.cacheDB.tsAdd(cacheKey, opt, eachCallback);
