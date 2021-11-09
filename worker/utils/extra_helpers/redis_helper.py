@@ -336,11 +336,14 @@ class RedisHelper(object):
         ts_data = self.client.zrangebyscore(key, start, stop)
         ts_data = list(map(self.ts_parse_point, ts_data))
 
-        if group_time and group_time > 1:
+        if ts_data and group_time and group_time > 1:
             temp = []
 
+            # latest_timestamp = ts_data[-1][0]
             for d in ts_data:
                 grouped_timestamp = int(d[0] / group_time) * group_time
+                # grouped_timestamp = latest_timestamp - int((latest_timestamp - d[0]) / group_time) * group_time
+
                 if len(temp) <= 0 or temp[-1][0] != grouped_timestamp:
                     temp.append([grouped_timestamp, [d[1]]])
                 else:

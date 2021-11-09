@@ -775,11 +775,14 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
           return [timestamp, value];
         });
 
-        if (options.groupTime && options.groupTime > 1) {
+        if (tsData.length > 0 && options.groupTime && options.groupTime > 1) {
           var temp = [];
 
+          // var latestTimestamp = tsData[tsData.length - 1][0];
           tsData.forEach(function(d) {
             var groupedTimestamp = parseInt(d[0] / options.groupTime) * options.groupTime;
+            // var groupedTimestamp = latestTimestamp - parseInt((latestTimestamp - d[0]) / options.groupTime) * options.groupTime
+
             if (temp.length <= 0 || temp[temp.length - 1][0] !== groupedTimestamp) {
               temp.push([groupedTimestamp, [d[1]]]);
             } else {

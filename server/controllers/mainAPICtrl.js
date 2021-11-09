@@ -3132,7 +3132,7 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        var opt = { groupTime: interval, limit: 1 };
+        var opt = { groupTime: interval, limit: 2 };
 
         switch(metric) {
           case 'funcCallCount':
@@ -3144,7 +3144,7 @@ exports.metrics = function(req, res, next) {
           if (err) return eachCallback(err);
 
           var value = 0;
-          try { value = tsData[0][1] } catch(_) {}
+          try { value = tsData.pop()[1] } catch(_) {}
 
           promMetric.labels(labels).set(value);
 
