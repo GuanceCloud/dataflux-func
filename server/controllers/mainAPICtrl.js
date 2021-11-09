@@ -3092,8 +3092,6 @@ exports.metrics = function(req, res, next) {
 
   var interval_min = 10;
   var interval     = interval_min * 60;
-  var stop         = parseInt(Date.now() / 1000);
-  var start        = stop - interval;
 
   var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
   var ignoreMetrics = [
@@ -3134,7 +3132,7 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        var opt = {start, stop, groupTime: interval };
+        var opt = { groupTime: interval, limit: 1 };
 
         switch(metric) {
           case 'funcCallCount':
