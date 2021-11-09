@@ -3108,7 +3108,7 @@ exports.metrics = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         keys = cacheRes.sort();
-        console.log(keys)
+
         return asyncCallback();
       })
     },
@@ -3133,7 +3133,15 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        res.locals.cacheDB.tsGet(key, { start, stop, groupTime: interval }, function(err, tsData) {
+        var opt = {start, stop, groupTime: interval };
+
+        switch(metric) {
+          case 'funcCallCount':
+            opt.agg = 'sum';
+            break;
+        }
+
+        res.locals.cacheDB.tsGet(key, opt, function(err, tsData) {
           if (err) return eachCallback(err);
 
           var value = 0;
