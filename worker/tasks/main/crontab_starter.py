@@ -282,7 +282,11 @@ class CrontabStarterTask(BaseTask):
 
         for delay in delayed_crontab:
             # 上锁
-            lock_key   = toolkit.get_cache_key('lock', 'CrontabConfig', ['crontabConfigId', crontab_config['id'], 'crontabDelay', delay])
+            lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
+                    'crontabConfigId', crontab_config['id'],
+                    'funcId',          crontab_config['funcId'],
+                    'crontabDelay',    delay])
+
             lock_value = toolkit.gen_uuid()
             if not self.cache_db.lock(lock_key, lock_value, time_limit):
                 # 触发任务前上锁，失败则跳过
@@ -374,7 +378,7 @@ def crontab_starter(self, *args, **kwargs):
 
         # 分发任务
         for c in crontab_configs:
-            # 跳过未到达出发时间的任务
+            # 跳过未到达触发时间的任务
             if not self.crontab_config_filter(trigger_time, c):
                 continue
 
