@@ -3090,9 +3090,10 @@ exports.pullSystemLogs = function(req, res, next) {
 exports.metrics = function(req, res, next) {
   res.set('Content-Type', 'application/openmetrics-text; version=1.0.0; charset=utf-8');
 
-  var interval = 60 * 5;
-  var stop     = parseInt(Date.now() / 1000);
-  var start    = stop - interval;
+  var interval_min = 5;
+  var interval     = interval_min * 60
+  var stop         = parseInt(Date.now() / 1000);
+  var start        = stop - interval;
 
   var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
   var ignoreMetrics = [
@@ -3127,7 +3128,7 @@ exports.metrics = function(req, res, next) {
         if (!promMetric) {
           promMetric = new promClient.Gauge({
             name      : `DFF_${metric}`,
-            help      : toolkit.splitCamel(metric),
+            help      : toolkit.splitCamel(metric) + ` (in recent ${interval_min} minutes)`,
             labelNames: Object.keys(labels),
           });
           METRIC_MAP[metric] = promMetric;
