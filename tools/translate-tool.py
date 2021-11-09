@@ -152,7 +152,7 @@ def get_all_translate_file_paths():
     """
     translate_file_paths = []
 
-    file_names = filter(lambda x: x.endswith('.translate.yaml'), os.listdir(SERVER_TRANSLATE_ROOT))
+    file_names = list(filter(lambda x: x.endswith('.translate.yaml'), os.listdir(SERVER_TRANSLATE_ROOT)))
     translate_file_paths = ['{}/{}'.format(SERVER_TRANSLATE_ROOT, x) for x in file_names]
 
     print('\n[All Translate Files]')

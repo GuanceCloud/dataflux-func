@@ -173,7 +173,7 @@ def import_new_ddl(client):
 
     # 清空所有表
     tables = _get_all_tables(client)
-    tables = filter(lambda x: not x.lower().startswith(TABLE_MIGRATE_PREFIX.lower()), tables)
+    tables = list(filter(lambda x: not x.lower().startswith(TABLE_MIGRATE_PREFIX.lower()), tables))
 
     for t in tables:
         sql = '''
