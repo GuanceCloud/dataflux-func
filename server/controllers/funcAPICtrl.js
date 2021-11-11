@@ -54,7 +54,7 @@ exports.list = function(req, res, next) {
 
             funcs.push({
               url: urlFor('mainAPI.callFunc', {
-                params: { id: d.id },
+                params: { funcId: d.id },
               }),
 
               id                  : d.id,
