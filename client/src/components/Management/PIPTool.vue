@@ -18,12 +18,6 @@ Installing        : 正在安装
 You can also install the package by following command: 您也可以使用以下命令来安装
 Previous installing may still running                : 之前的安装似乎仍然在运行
 Are you sure you want to install the package now?    : 是否确定现在就安装？
-
-Douban mirror             : 豆瓣镜像
-Tsinghua University mirror: 清华大学镜像
-USTC mirror               : 中国科学技术大学镜像
-Alibaba Cloud mirror      : 阿里云镜像
-Pypi Official             : Pypi官方原版
 </i18n>
 
 <template>
@@ -46,7 +40,7 @@ Pypi Official             : Pypi官方原版
         <el-select
           style="width: 235px"
           v-model="pypiMirror">
-          <el-option v-for="mirror in PIP_MIRRORS" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
+          <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
         </el-select>
         <el-input placeholder="package or package==1.0.0"
           style="width: 500px"
@@ -110,12 +104,16 @@ export default {
     },
   },
   methods: {
-    async loadData() {
+    async loadData(options) {
+      options = options || {};
+
       let apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed');
       if (!apiRes.ok) return;
 
       this.installedPackages = apiRes.data;
-      this.pypiMirror = this.PIP_MIRRORS[0].value;
+      if (!options.isReload) {
+        this.pypiMirror = this.C.PIP_MIRROR_DEFAULT.value;
+      }
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -150,34 +148,10 @@ export default {
       }
       this.isInstalling = false;
 
-      this.loadData();
+      this.loadData({ isReload: true });
     },
   },
   computed: {
-    PIP_MIRRORS() {
-      return [
-        {
-          name: this.$t('Alibaba Cloud mirror'),
-          value: 'https://mirrors.aliyun.com/pypi/simple/',
-        },
-        {
-          name: this.$t('Douban mirror'),
-          value: 'https://pypi.douban.com/simple/',
-        },
-        {
-          name: this.$t('Tsinghua University mirror'),
-          value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
-        },
-        {
-          name: this.$t('USTC mirror'),
-          value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
-        },
-        {
-          name: this.$t('Pypi Official'),
-          value: '',
-        },
-      ];
-    },
     pipShell() {
       if (!this.isInstallable) return null;
 

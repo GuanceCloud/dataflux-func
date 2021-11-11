@@ -764,7 +764,44 @@ export default {
   get CODE_MIRROR_THEME_MAP() {
     return new MAP_CONST(this.CODE_MIRROR_THEME, 0);
   },
-  get CODE_MIRROR_DEFAULT_THEME() {
-    return this.CODE_MIRROR_THEME[0].key;
+  get CODE_MIRROR_THEME_DEFAULT() {
+    return this.CODE_MIRROR_THEME[0];
+  },
+
+  // PIP镜像
+  get PIP_MIRROR() {
+    return [
+      {
+        key  : 'alibaba',
+        name : $t('Alibaba Cloud mirror'),
+        value: 'https://mirrors.aliyun.com/pypi/simple/',
+      },
+      {
+        key  : 'douban',
+        name : $t('Douban mirror'),
+        value: 'https://pypi.douban.com/simple/',
+      },
+      {
+        key  : 'tsinghua',
+        name : $t('Tsinghua University mirror'),
+        value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
+      },
+      {
+        key  : 'ustc',
+        name : $t('USTC mirror'),
+        value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
+      },
+      {
+        key  : 'official',
+        name : $t('Pypi Official'),
+        value: '',
+      },
+    ];
+  },
+  get PIP_MIRROR_MAP() {
+    return new MAP_CONST(this.PIP_MIRROR, 0);
+  },
+  get PIP_MIRROR_DEFAULT() {
+    return this.PIP_MIRROR[0];
   },
 }

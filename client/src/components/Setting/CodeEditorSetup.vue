@@ -102,7 +102,7 @@ export default {
     async loadData(useDefault) {
       if (useDefault) {
         let defaultSetting = {
-          theme: this.C.CODE_MIRROR_DEFAULT_THEME,
+          theme: this.C.CODE_MIRROR_THEME_DEFAULT.key,
           style: this.T.jsonCopy(this.$store.getters.DEFAULT_STATE.codeMirrorStyle),
         };
         this.form = defaultSetting;

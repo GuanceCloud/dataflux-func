@@ -7,13 +7,16 @@ Path              : 路径
 Create time       : 创建时间
 Update time       : 更新时间
 
-File uploaded: 文件已上传
+Package: Wheel包
+Mirror : PIP镜像
+
+File uploaded                    : 文件已上传
+'Wheel package installed: {name}': Wheel包已安装：{name}
 
 Please input destination path                                                        : 请输入目标路径
 'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
+Install Wheel package                                                                : 安装Wheel包
 Are you sure you want to delete the content?                                         : 是否确定删除此内容？
-Are you sure you want to install the Wheel package?                                  : 是否确定安装此Wheel包？
-'Wheel package installed: {name}'                                                    : Wheel包已安装：{name}
 Delete file                                                                          : 删除文件
 File already existed                                                                 : 文件已经存在
 
@@ -152,7 +155,7 @@ File already existed                                                            
 
                 <el-button v-if="scope.row.ext === 'whl'"
                   type="text"
-                  @click="installWheel(scope.row.name)">{{ $t('Install') }}</el-button>
+                  @click="openInstallWheel(scope.row.name)">{{ $t('Install') }}</el-button>
 
                 <el-link
                   type="primary"
@@ -178,6 +181,29 @@ File already existed                                                            
           </el-table-column>
         </el-table>
       </el-main>
+
+      <el-dialog
+        :title="$t('Install Wheel package')"
+        width="30%"
+        :visible.sync="showInstallWheel">
+        <div>
+          <el-form ref="form" label-width="80px">
+            <el-form-item :label="$t('Package')">
+              <el-input :disabled="true" :value="wheelToInstall"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="$t('Mirror')">
+              <el-select v-model="pypiMirror">
+                <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="showInstallWheel = false">{{ $t('Cancel') }}</el-button>
+          <el-button type="primary" @click="installWheel">{{ $t('Install') }}</el-button>
+        </span>
+      </el-dialog>
     </el-container>
   </transition>
 </template>
@@ -494,8 +520,14 @@ export default {
     onUploadFileChange(file, fileList) {
       if (fileList.length > 1) fileList.splice(0, 1);
     },
-    async installWheel(name) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to install the Wheel package?'))) return;
+    openInstallWheel(name) {
+      this.wheelToInstall = name;
+      this.pypiMirror     = this.C.PIP_MIRROR_DEFAULT.value;
+
+      this.showInstallWheel = true;
+    },
+    async installWheel() {
+      let name = this.wheelToInstall;
 
       // 操作处理中
       let delayedLoadingT = setTimeout(() => {
@@ -503,13 +535,17 @@ export default {
       }, 200);
 
       let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
-        body : { pkg: this.getPath(name) },
+        body : {
+          mirror: this.pypiMirror,
+          pkg   : this.getPath(name),
+        },
         alert: { okMessage: this.$t('Wheel package installed: {name}', { name: name }) },
       });
 
       // 操作处理结束
       clearTimeout(delayedLoadingT);
       this.fullScreenLoading = false;
+      this.showInstallWheel  = false;
     },
   },
   computed: {
@@ -537,13 +573,15 @@ export default {
     let _dataFilter = this.T.createListQuery();
 
     return {
-      // folder: '/',
-
       files      : [],
       fileNameMap: {},
 
       showMkdirPopover: false,
       mkdirName       : '',
+
+      showInstallWheel : false,
+      wheelToInstall   : '',
+      pypiMirror       : '',
 
       fullScreenLoading: false,
       progressTip      : '',

@@ -1468,7 +1468,7 @@ export function setCodeMirrorMode(codeMirror, mode) {
 };
 
 export function getCodeMirrorThemeName() {
-  return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_DEFAULT_THEME;
+  return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
 };
 
 export function getEchartTextStyle() {

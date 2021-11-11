@@ -280,7 +280,7 @@ export default new Vuex.Store({
       }
     },
     codeMirrorSetting: (state, getters) => {
-      let theme = state.codeMirrorSetting.theme || C.CODE_MIRROR_DEFAULT_THEME;
+      let theme = state.codeMirrorSetting.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
 
       let fontSize = state.codeMirrorSetting.style.fontSize || getters.DEFAULT_STATE.codeMirrorStyle.fontSize;
       fontSize = Math.max(fontSize, 12);
@@ -368,7 +368,7 @@ export default new Vuex.Store({
 
     updateCodeMirrorSetting(state, value) {
       state.codeMirrorSetting = value || {
-        theme: C.CODE_MIRROR_DEFAULT_THEME,
+        theme: C.CODE_MIRROR_THEME_DEFAULT.key,
         style: {},
       };
     },
