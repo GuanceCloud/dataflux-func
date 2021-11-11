@@ -137,7 +137,7 @@ Pressure                      : 压力
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
 
         <el-table :data="latestOperations" stripe>
-          <el-table-column :label="$t('Time')" width="200">
+          <el-table-column :label="$t('Time')" width="240">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -145,9 +145,9 @@ Pressure                      : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')">
+          <el-table-column :label="$t('User')" width="300">
             <template slot-scope="scope">
-              <strong>{{ scope.row.username }}</strong>
+              <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
               <template v-if="scope.row.userId">
                 <br>
@@ -171,7 +171,7 @@ Pressure                      : 压力
               <span class="text-bad" v-else>
                 <i class="fa fa-fw fa-times-circle"></i>
               </span>
-              <span>{{ scope.row._operationDescribe }}</span>
+              <span>{{ scope.row.reqRouteName }}</span>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 （{{ $t('MODIFY') }}）
               </strong>

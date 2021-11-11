@@ -1,10 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Time                          : 时间
-Client                        : 客户端
-Client ID                     : 客户端ID
-IP Address                    : IP地址
 User                          : 用户
 User ID                       : 用户ID
+IP Address                    : IP地址
 Operation                     : 操作
 Data ID                       : 数据ID
 MODIFY                        : 修改操作
@@ -50,7 +48,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column :label="$t('Time')" width="200">
+          <el-table-column :label="$t('Time')" width="240">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -58,9 +56,9 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')">
+          <el-table-column :label="$t('User')" width="300">
             <template slot-scope="scope">
-              <strong>{{ scope.row.username }}</strong>
+              <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
               <template v-if="scope.row.userId">
                 <br>
@@ -84,7 +82,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
               <span class="text-bad" v-else>
                 <i class="fa fa-fw fa-times-circle"></i>
               </span>
-              <span>{{ scope.row._operationDescribe }}</span>
+              <span>{{ scope.row.reqRouteName }}</span>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 （{{ $t('MODIFY') }}）
               </strong>
@@ -100,7 +98,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             </template>
           </el-table-column>
 
-          <el-table-column label="耗时" align="right" width="100">
+          <el-table-column :label="$t('Cost')" align="right" width="100">
             <template slot-scope="scope">
               {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
             </template>

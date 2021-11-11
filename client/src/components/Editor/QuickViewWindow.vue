@@ -1,7 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
 Drag to place: 调整位置
-Published    : 已发布
-Draft        : 草稿
 </i18n>
 
 <template>

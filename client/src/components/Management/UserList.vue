@@ -154,7 +154,6 @@ export default {
     openSetup(d, target) {
       let prevRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateUserList_scrollY', this.T.getTableScrollY());
       switch(target) {
         case 'add':
           this.$router.push({

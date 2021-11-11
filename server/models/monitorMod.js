@@ -13,6 +13,7 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var logLevels   = require('../utils/logHelper').LOG_LEVELS.levels;
+var routeLoader = require('../utils/routeLoader');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
@@ -198,6 +199,86 @@ EntityModel.prototype.getSysStats = function(callback) {
 
     if (err) return callback(err);
     return callback(null, sysStats);
+  })
+};
+
+EntityModel.prototype.listAbnormalRequests = function(type, callback) {
+  var self = this;
+
+  var abnormalRequests        = null;
+  var abnormalRequestPageInfo = null;
+
+  async.series([
+    // 获取数据
+    function(asyncCallback) {
+      var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+      var paging   = self.locals.paging;
+      self.locals.cacheDB.pagedList(cacheKey, paging, function(err, cacheRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        abnormalRequests        = cacheRes;
+        abnormalRequestPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 补充用户信息
+    function(asyncCallback) {
+      var userIds = abnormalRequests.reduce(function(acc, x) {
+        if (x.userId) {
+          acc.push(x.userId);
+        }
+        return acc;
+      }, []);
+
+      if (toolkit.isNothing(userIds)) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   u.id       AS u_id');
+      sql.append('  ,u.username AS u_username');
+      sql.append('  ,u.name     AS u_name');
+      sql.append('  ,u.mobile   AS u_mobile');
+
+      sql.append('FROM wat_main_user AS u');
+
+      sql.append('WHERE');
+      sql.append('  u.id IN (?)');
+
+      var sqlParams = [userIds];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        var userIdMap = dbRes.reduce(function(acc, x) {
+          acc[x.u_id] = x;
+          return acc;
+        }, {});
+
+        abnormalRequests.forEach(function(d) {
+          var user = userIdMap[d.userId];
+          if (user) {
+            Object.assign(d, user);
+          }
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 补充路由信息
+    function(asyncCallback) {
+      abnormalRequests.forEach(function(d) {
+        var key   = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
+        var route = routeLoader.getRoute(key);
+        if (route) {
+          d.reqRouteName = route.name;
+        }
+      });
+
+      return asyncCallback();
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, abnormalRequests, abnormalRequestPageInfo);
   })
 };
 

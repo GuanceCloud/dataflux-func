@@ -427,8 +427,7 @@ $(function() {
   });
 
   function updatePageData(resp) {
-    var currentHostname = resp.data.hostname;
-    var sysStats        = resp.data.sysStats;
+    var sysStats = resp.data;
 
     for (var metric in sysStats) if (sysStats.hasOwnProperty(metric)) {
       var chart = CHARTS[metric];

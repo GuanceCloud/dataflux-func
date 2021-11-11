@@ -169,9 +169,6 @@ function startApplication() {
   require('./routers/monitorAPIRouter');
   require('./routers/monitorPageRouter');
 
-  require('./routers/slowAPICountAPIRouter');
-  require('./routers/slowAPICountPageRouter');
-
   require('./routers/systemConfigAPIRouter');
   require('./routers/systemConfigPageRouter');
 

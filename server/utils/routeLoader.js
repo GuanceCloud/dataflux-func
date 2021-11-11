@@ -33,7 +33,8 @@ var builtinAuthMid = require('../middlewares/builtinAuthMid');
  * @type {Object[].config}      - Route config.
  * @type {Object[].middlewares} - Route middlewares.
  */
-var _ROUTES = [];
+var _ROUTES    = [];
+var _ROUTE_MAP = {};
 
 // Load markdown documents.
 function loadMarkdownDocument(filePath) {
@@ -587,6 +588,9 @@ exports.load = function(config, middlewares) {
     config     : config,
     middlewares: middlewares,
   });
+
+  var routeKey = toolkit.strf('{0} {1}', config.method.toUpperCase(), config.url);
+  _ROUTE_MAP[routeKey] = config;
 };
 
 /**
@@ -719,4 +723,8 @@ exports.createDoc = function() {
   });
 
   return router;
+};
+
+exports.getRoute = function(key) {
+  return _ROUTE_MAP[key];
 };

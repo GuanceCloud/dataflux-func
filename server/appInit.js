@@ -14,22 +14,10 @@ var E             = require('./utils/serverError');
 var yamlResources = require('./utils/yamlResources');
 var modelHelper   = require('./utils/modelHelper');
 var toolkit       = require('./utils/toolkit');
+var routeLoader   = require('./utils/routeLoader');
 
 var ROUTE  = yamlResources.get('ROUTE');
 var CONFIG = yamlResources.get('CONFIG');
-
-var API_FOR_W = {};
-for (var moduleName in ROUTE) {
-  if (!toolkit.endsWith(moduleName, 'API')) continue;
-
-  for (var apiName in ROUTE[moduleName]) {
-    var api = ROUTE[moduleName][apiName];
-
-    if (!api.privilege || !toolkit.endsWith(api.privilege, '_w')) continue;
-
-    API_FOR_W[api.url] = api.method.toUpperCase();
-  }
-}
 
 exports.convertJSONResponse = function(ret) {
   // Will disabled by `"X-Wat-Disable-Json-Response-Converting"` Header
@@ -467,16 +455,23 @@ exports.afterAppCreated = function(app, server) {
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
   /********** Content for YOUR project below **********/
+  var shouldRecordOperation = true;
 
   // 操作记录
-  var reqRoute              = req.route.path;
-  var operationRecord       = res.locals.operationRecord;
-  var shouldRecordOperation = true;
+  var reqRoute        = res.locals.route = req.route.path;
+  var operationRecord = res.locals.operationRecord;
+
+  var key   = `${req.method.toUpperCase()} ${reqRoute}`;
+  var route = routeLoader.getRoute(key);
+
   if (!operationRecord) {
     // 未经过操作记录中间件
     shouldRecordOperation = false;
 
-  } else if (API_FOR_W[reqRoute] !== req.method.toUpperCase()) {
+  } else if (!route
+    || route.response === 'html'
+    || !route.privilege
+    || !toolkit.endsWith(route.privilege, '_w')) {
     // 非写操作接口跳过
     shouldRecordOperation = false;
 

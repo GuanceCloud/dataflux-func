@@ -22,10 +22,19 @@ exports.getSysStats = function(req, res, next) {
   monitorModel.getSysStats(function(err, dbRes) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet({
-      hostname: os.hostname(),
-      sysStats: dbRes,
-    });
+    var ret = toolkit.initRet(dbRes);
+    return res.locals.sendJSON(ret, { muteLog: true });
+  });
+};
+
+exports.listAbnormalRequests = function(req, res, next) {
+  var type = req.params.type || '5xx';
+
+  var monitorModel = monitorMod.createModel(res.locals);
+  monitorModel.listAbnormalRequests(type, function(err, dbRes, pageInfo) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(dbRes, pageInfo);
     return res.locals.sendJSON(ret, { muteLog: true });
   });
 };

@@ -8,9 +8,6 @@ Script Setup                                                         : 脚本设
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
 Shortcut                                                             : 快捷键
 Select Func                                                          : 选择聚焦函数
-Draft                                                                : 草稿
-Published                                                            : 已发布
-DIFF                                                                 : 差异
 Download {type}                                                      : 下载{type}
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
@@ -60,7 +57,7 @@ Saved Draft Code: 已保存的草稿代码
                   @click="startEdit"
                   type="primary" plain
                   size="mini">
-                  <i class="fa fa-fw" :class="[USER_OPERATION_META_MAP[userOperation].icon]"></i> {{ USER_OPERATION_META_MAP[userOperation].text }}</el-button>
+                  <i class="fa fa-fw" :class="[C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).icon]"></i> {{ C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).name }}</el-button>
               </el-tooltip>
             </el-form-item>
 
@@ -78,18 +75,18 @@ Saved Draft Code: 已保存的草稿代码
 
             <el-form-item v-if="!isLockedByOther">
               <el-radio-group v-model="showMode" size="mini">
-                <el-tooltip placement="bottom" v-for="meta, k, i in SHOW_MODE_META_MAP" :key="k" :enterable="false">
+                <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                   <div slot="content">
                     {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>
                   </div>
-                  <el-radio-button :label="k">{{ meta.text }}</el-radio-button>
+                  <el-radio-button :label="mode.key">{{ mode.name }}</el-radio-button>
                 </el-tooltip>
               </el-radio-group>
             </el-form-item>
 
             <el-form-item v-if="!isLockedByOther">
               <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
-                <el-button @click="download" plain size="mini">{{ $t('Download {type}', { type: SHOW_MODE_META_MAP[showMode].text } ) }}</el-button>
+                <el-button @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
               </el-tooltip>
             </el-form-item>
           </el-form>
@@ -194,7 +191,7 @@ export default {
         switch(this.showMode) {
           case 'draft':
           case 'published':
-            let codeField = this.SHOW_MODE_META_MAP[this.showMode].codeField;
+            let codeField = this.C.CODE_VIEWER_SHOW_MODE_MAP.get(this.showMode).codeField;
 
             this.codeMirror.setValue(this.data[codeField] || '');
             this.T.setCodeMirrorMode(this.codeMirror, 'python');
@@ -416,34 +413,6 @@ export default {
     },
   },
   computed: {
-    USER_OPERATION_META_MAP() {
-      return {
-        edit: {
-          text: this.$t('Edit'),
-          icon: 'fa-edit',
-        },
-        debug: {
-          text: this.$t('Debug'),
-          icon: 'fa-search',
-        },
-      }
-    },
-    SHOW_MODE_META_MAP() {
-      return {
-        draft: {
-          text     : this.$t('Draft'),
-          codeField: 'codeDraft',
-        },
-        published: {
-          text     : this.$t('Published'),
-          codeField: 'code',
-        },
-        diff: {
-          text     : this.$t('DIFF'),
-          codeField: null,
-        },
-      }
-    },
     codeMirrorTheme() {
       return this.T.getCodeMirrorThemeName();
     },

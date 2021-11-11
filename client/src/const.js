@@ -804,4 +804,71 @@ export default {
   get PIP_MIRROR_DEFAULT() {
     return this.PIP_MIRROR[0];
   },
+
+  // 代码查看器操作按钮
+  get CODE_VIEWR_USER_OPERATION() {
+    return [
+      {
+        key : 'edit',
+        name: $t('Edit'),
+        icon: 'fa-edit',
+      },
+      {
+        key : 'debug',
+        name: $t('Debug'),
+        icon: 'fa-search',
+      },
+    ];
+  },
+  get CODE_VIEWR_USER_OPERATION_MAP() {
+    return new MAP_CONST(this.CODE_VIEWR_USER_OPERATION, 0);
+  },
+  // 代码查看器展示模式
+  get CODE_VIEWER_SHOW_MODE() {
+    return [
+      {
+        key      : 'draft',
+        name     : $t('Draft'),
+        codeField: 'codeDraft',
+      },
+      {
+        key      : 'published',
+        name     : $t('Published'),
+        codeField: 'code',
+      },
+      {
+        key      : 'diff',
+        name     : $t('DIFF'),
+        codeField: null,
+      },
+    ];
+  },
+  get CODE_VIEWER_SHOW_MODE_MAP() {
+    return new MAP_CONST(this.CODE_VIEWER_SHOW_MODE, 0);
+  },
+
+  // 异常请求
+  get ABNORMAL_REQUEST_TYPE() {
+    return [
+      {
+        key : 'reqCost1000',
+        name: $t('Request Cost 1000ms+'),
+      },
+      {
+        key : 'reqCost5000',
+        name: $t('Request Cost 5000ms+'),
+      },
+      {
+        key : 'statusCode4xx',
+        name: $t('Status Code 4xx'),
+      },
+      {
+        key : 'statusCode5xx',
+        name: $t('Status Code 5xx'),
+      },
+    ];
+  },
+  get ABNORMAL_REQUEST_TYPE_MAP() {
+    return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE, 0);
+  },
 }

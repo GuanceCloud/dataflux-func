@@ -20,8 +20,6 @@ var routeLoader   = require('./routeLoader');
 var auth          = require('./auth');
 var appInit       = require('../appInit');
 
-var slowAPICountMod = require('../models/slowAPICountMod');
-
 /* Configure */
 var STATIC_RENDER_LRU = new LRU();
 
@@ -40,17 +38,6 @@ var CLIENT_CONFIG = {
   _WEB_AUTH_LOCAL_STORAGE: CONFIG._WEB_AUTH_LOCAL_STORAGE,
   _WEB_AUTH_COOKIE       : CONFIG._WEB_AUTH_COOKIE,
 };
-
-var SLOW_API_THRESHOLDS_CONFIG = [
-  {reqCost: 10000, saveCount: 1},
-  {reqCost: 5000,  saveCount: 1},
-  {reqCost: 2000,  saveCount: 1},
-  {reqCost: 1000,  saveCount: 1},
-  {reqCost: 500,   saveCount: 10},
-  {reqCost: 200,   saveCount: 10},
-  {reqCost: 100,   saveCount: 10},
-];
-var slowAPICountMapCache = {};
 
 /**
  * Get static file path.
@@ -180,40 +167,6 @@ router.all('*', function basicClientInformation(req, res, next) {
   return next();
 });
 
-// Record slow API
-function recordSlowAPI(req, res, reqCost) {
-  if (res.locals.requestType !== 'api') return;
-  if (res.locals.slowAPIRecorded) return;
-
-  res.locals.slowAPIRecorded = true;
-
-  var shouldSave = false;
-  for (var i = 0; i < SLOW_API_THRESHOLDS_CONFIG.length; i++) {
-    var t = SLOW_API_THRESHOLDS_CONFIG[i];
-
-    if (reqCost > t.reqCost) {
-      slowAPICountMapCache[req.originalUrl]            = slowAPICountMapCache[req.originalUrl]            || {};
-      slowAPICountMapCache[req.originalUrl][t.reqCost] = slowAPICountMapCache[req.originalUrl][t.reqCost] || 0;
-      slowAPICountMapCache[req.originalUrl][t.reqCost]++;
-
-      if (slowAPICountMapCache[req.originalUrl][t.reqCost] >= t.saveCount) {
-        shouldSave = true;
-      }
-
-      break;
-    }
-  };
-
-  if (shouldSave) {
-    var slowAPICountModel = slowAPICountMod.createModel(res.locals);
-
-    var data = toolkit.jsonCopy(slowAPICountMapCache);
-    slowAPICountMapCache = {};
-
-    slowAPICountModel.save(data);
-  }
-};
-
 /**
  * Warp response functions
  */
@@ -222,7 +175,6 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     // 请求附带信息
     var now = new Date();
     var reqCost = now.getTime() - res.locals.requestTime.getTime();
-    recordSlowAPI(req, res, reqCost);
 
     var reqInfo = {
       traceId : res.locals.traceId,
@@ -642,6 +594,9 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 // Dump request
 router.all('*', require('./requestDumper').dumpRequest);
 router.all('*', require('./requestDumper').dumpRequestFrom);
+
+// Monit request
+router.all('*', require('./requestMonitor'));
 
 /**
  * Prepare functional components.

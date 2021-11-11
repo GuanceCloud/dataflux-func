@@ -903,6 +903,58 @@ RedisHelper.prototype.end = function() {
   }
 };
 
+RedisHelper.prototype.pagedList = function(key, paging, callback) {
+  var self = this;
+
+  paging = paging || { pageSize: 20, pageNumber: 1 };
+
+  var data = null;
+  var pageInfo = {
+    pagingStyle: 'normal',
+    pageSize   : paging.pageSize,
+    count      : null,
+    totalCount : null,
+    pageNumber : paging.pageNumber,
+    pageCount  : null,
+    isFirstPage: paging.pageNumber <= 1,
+  }
+
+  async.series([
+    // 获取总长度
+    function(asyncCallback) {
+      self.llen(key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var listLength = parseInt(cacheRes);
+        pageInfo.totalCount = listLength;
+        pageInfo.pageCount  = Math.ceil(listLength / paging.pageSize);
+
+        return asyncCallback();
+      });
+    },
+    // 获取数据
+    function(asyncCallback) {
+      var start = (paging.pageNumber - 1) * paging.pageSize;
+      var stop  = start + paging.pageSize - 1;
+      self.lrange(key, start, stop, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        data = cacheRes;
+        for (let i = 0; i < data.length; i++) {
+          try { data[i] = JSON.parse(data[i]); } catch(_) {}
+        }
+
+        pageInfo.count = data.length;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, data, pageInfo);
+  });
+};
+
 exports.RedisHelper = RedisHelper;
 exports.createHelper = function(logger, config) {
   return new RedisHelper(logger, config);

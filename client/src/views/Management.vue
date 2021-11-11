@@ -84,23 +84,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
-              <span>
-                <i class="fa fa-fw fa-terminal"></i>
-                {{ $t('Script Log') }}
-                <i class="fa fa-fw fa-flask"></i>
-              </span>
-            </el-menu-item>
-            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
-              <span>
-                <i class="fa fa-fw fa-bug"></i>
-                {{ $t('Script Failure') }}
-                <i class="fa fa-fw fa-flask"></i>
-              </span>
-            </el-menu-item>
-
-            <br>
-
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
@@ -115,21 +98,6 @@
                 {{ $t('Script Market') }}
               </span>
             </el-menu-item>
-
-            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
-              class="experimental-feature" index="/management/access-key-list">
-              <span>
-                <i class="fa fa-fw fa-key"></i>
-                {{ $t('Access Key') }}
-              </span>
-            </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')"
-              class="experimental-feature" index="/management/sys-stats">
-              <span>
-                <i class="fa fa-fw fa-line-chart"></i>
-                {{ $t('System Metric') }}
-              </span>
-            </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PIPTool')"
               class="experimental-feature" index="/management/pip-tool" >
               <span>
@@ -137,6 +105,7 @@
                 {{ $t('PIP Tool') }}
               </span>
             </el-menu-item>
+
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileManager')"
               class="experimental-feature" index="/management/file-manager">
               <span>
@@ -151,15 +120,6 @@
                 {{ $t('File Service') }}
               </span>
             </el-menu-item>
-
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
-              class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
-              <span>
-                <i class="fa fa-fw fa-book"></i>
-                {{ $t('Func Doc') }}
-              </span>
-            </el-menu-item>
-
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManager')"
               class="experimental-feature" index="/management/func-cache-manager">
               <span>
@@ -175,11 +135,56 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
+              class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
+              <span>
+                <i class="fa fa-fw fa-book"></i>
+                {{ $t('Func Doc') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')"
+              class="experimental-feature" index="/management/sys-stats">
+              <span>
+                <i class="fa fa-fw fa-line-chart"></i>
+                {{ $t('System Metric') }}
+              </span>
+            </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SystemLogs')"
               class="experimental-feature" index="/management/system-logs">
               <span>
                 <i class="fa fa-fw fa-file-text-o"></i>
                 {{ $t('System Logs') }}
+              </span>
+            </el-menu-item>
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('AbnormalReqs')"
+              class="experimental-feature" index="/management/abnormal-request-list">
+              <span>
+                <i class="fa fa-fw fa-exclamation-triangle"></i>
+                {{ $t('Abnormal Reqs') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
+              <span>
+                <i class="fa fa-fw fa-terminal"></i>
+                {{ $t('Script Log') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
+              <span>
+                <i class="fa fa-fw fa-bug"></i>
+                {{ $t('Script Failure') }}
+                <i class="fa fa-fw fa-flask"></i>
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
+              class="experimental-feature" index="/management/access-key-list">
+              <span>
+                <i class="fa fa-fw fa-key"></i>
+                {{ $t('Access Key') }}
               </span>
             </el-menu-item>
           </el-menu>

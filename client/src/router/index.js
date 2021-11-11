@@ -253,26 +253,13 @@ const routes = [
         name: 'script-market',
         component: () => import('../components/Management/ScriptMarket.vue'),
       },
-      {
-        path: 'access-key-list',
-        name: 'access-key-list',
-        component: () => import('../components/Management/AccessKeyList.vue'),
-      },
-      {
-        path: 'access-key-add',
-        name: 'access-key-add',
-        component: () => import('../components/Management/AccessKeySetup.vue'),
-      },
-      {
-        path: 'sys-stats',
-        name: 'sys-stats',
-        component: () => import('../components/Management/SysStats.vue'),
-      },
+
       {
         path: 'pip-tool',
         name: 'pip-tool',
         component: () => import('../components/Management/PIPTool.vue'),
       },
+
       {
         path: 'file-manager',
         name: 'file-manager',
@@ -303,10 +290,32 @@ const routes = [
         name: 'func-store-manager',
         component: () => import('../components/Management/FuncStoreManager.vue'),
       },
+
+      {
+        path: 'sys-stats',
+        name: 'sys-stats',
+        component: () => import('../components/Management/SysStats.vue'),
+      },
       {
         path: 'system-logs',
         name: 'system-logs',
         component: () => import('../components/Management/SystemLogs.vue'),
+      },
+      {
+        path: 'abnormal-request-list',
+        name: 'abnormal-request-list',
+        component: () => import('../components/Management/AbnormalRequestList.vue'),
+      },
+
+      {
+        path: 'access-key-add',
+        name: 'access-key-add',
+        component: () => import('../components/Management/AccessKeySetup.vue'),
+      },
+      {
+        path: 'access-key-list',
+        name: 'access-key-list',
+        component: () => import('../components/Management/AccessKeyList.vue'),
       },
     ],
   },

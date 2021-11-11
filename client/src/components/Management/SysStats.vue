@@ -134,7 +134,7 @@ export default {
         dataLength = Math.max(dataLength, s.data.length);
       });
 
-      let height = dataLength * 25 * chartSeries.length + (chartSeries.length - 1) * 5 + 60 + 80
+      let height = dataLength * 25 * chartSeries.length + (chartSeries.length - 1) * 5 + 60 + 80;
       chart.getDom().style.height = `${height}px`;
       chart.resize();
     },
@@ -144,8 +144,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
       if (!apiRes.ok) return;
 
-      let hostname = apiRes.data.hostname;
-      let sysStats = apiRes.data.sysStats;
+      let sysStats = apiRes.data;
 
       for (let metric in sysStats) {
         let chart = this.charts[metric];

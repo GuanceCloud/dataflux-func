@@ -6,12 +6,9 @@
 var async = require('async');
 
 /* Project Modules */
-var E             = require('../utils/serverError');
-var yamlResources = require('../utils/yamlResources');
-var toolkit       = require('../utils/toolkit');
-
-var ROUTE  = yamlResources.get('ROUTE');
-var CONFIG = yamlResources.get('CONFIG');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
 
 exports.prepare = function(req, res, next) {
   // Query部分
@@ -69,7 +66,6 @@ exports.prepare = function(req, res, next) {
 
   res.locals.operationRecord = {
     userId         : res.locals.user.id   || null,
-    username       : res.locals.user.name || null,
     clientId       : res.locals.clientId  || null,
     clientIPsJSON  : toolkit.isNothing(req.ips) ? [req.ip] : req.ips,
     traceId        : res.locals.traceId   || null,

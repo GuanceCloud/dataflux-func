@@ -1996,7 +1996,7 @@ exports.callFuncDraft = function(req, res, next) {
     }
 
     // 保证UI运行能够正常接收到超时报错
-    taskOptions.resultWaitTimeout = (taskOptions.timeLimit + 10) * 1000;
+    taskOptions.resultWaitTimeout = (taskOptions.timeLimit + 5) * 1000;
 
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
   });
@@ -3095,8 +3095,9 @@ exports.metrics = function(req, res, next) {
 
   var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
   var ignoreMetrics = [
-    'cacheDBKeyCountByPrefix',
-    'matchedRouteCount',
+    // 不适合作为OpenMetric导出的指标
+    'cacheDBKeyCountByPrefix', // 前缀包含特殊字符，需要特殊处理
+    'matchedRouteCount',       // 按每日统计的数据，非时序数据
   ];
 
   var keys = null;

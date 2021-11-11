@@ -10,6 +10,10 @@ routeLoader.load(ROUTE.monitorAPI.getSysStats, [
   monitorAPICtrl.getSysStats,
 ]);
 
+routeLoader.load(ROUTE.monitorAPI.listAbnormalRequests, [
+  monitorAPICtrl.listAbnormalRequests,
+]);
+
 routeLoader.load(ROUTE.monitorAPI.getServerEnvironment, [
   monitorAPICtrl.getServerEnvironment,
 ]);

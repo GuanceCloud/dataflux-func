@@ -19,6 +19,9 @@ en:
   Auto      : 自动
 
   # 通用
+  Anonymity: 匿名
+  Unknow   : 未知
+
   Very good: 非常好
   OK       : 了解
   Confirm  : 确定
@@ -197,6 +200,7 @@ en:
   Func Cache Manager: 函数缓存管理器
   Func Store Manager: 函数存储管理器
   System Logs       : 系统日志
+  Abnormal Reqs     : 异常请求
   Blueprint         : 蓝图
 
   Script Set ID    : 脚本集ID
@@ -284,6 +288,17 @@ en:
   'Dark: duotone-dark'        : 黑暗：duotone-dark
   'Dark: material-darker'     : 黑暗：material-darker
   'Dark: darcula'             : 黑暗：darcula
+
+  # const.js - CODE_VIEWER_SHOW_MODE
+  Draft    : 草稿
+  Published: 已发布
+  DIFF     : 差异
+
+  # const.js - ABNORMAL_REQUEST_TYPE
+  Request Cost 1000ms+: 请求耗时 1000毫秒+
+  Request Cost 5000ms+: 请求耗时 5000毫秒+
+  Status Code 4xx     : 状态码 4xx
+  Status Code 5xx     : 状态码 5xx
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题

@@ -741,13 +741,32 @@ accessKeyPage:
 # Monitor
 monitorAPI:
   getSysStats:
-    showInDoc: true
+    showInDoc    : true
     name         : Get system stats
     method       : get
     url          : /api/v1/monitor/sys-stats/do/get
     response     : json
     requireSignIn: true
     privilege    : general_r
+
+  listAbnormalRequests:
+    showInDoc    : true
+    name         : List abnormal requests
+    method       : get
+    url          : /api/v1/monitor/abnormal-requests/:type/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    paging       : true
+    params:
+      type:
+        $desc: Abnormal request type
+        $type: enum
+        $in:
+          - 'reqCost1000'
+          - 'reqCost5000'
+          - 'statusCode4xx'
+          - 'statusCode5xx'
 
   getServerEnvironment:
     name         : Get server environment
@@ -902,54 +921,6 @@ monitorPage:
     requireSignIn: true
     authType     : builtin.byXAuthToken
     privilege    : general_r
-
-# Slow API Count
-slowAPICountAPI:
-  list:
-    name         : List slow API count
-    method       : get
-    url          : /api/v1/slow-api-count/do/list
-    response     : json
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-    export       : true
-    paging       : false
-    fieldPicking : true
-    fieldKicking : true
-
-  delete:
-    name         : Delete slow API count
-    method       : get
-    url          : /api/v1/slow-api-count/:id/do/delete
-    response     : json
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_w
-    params:
-      id:
-        $desc: Slow API original URL Base64
-        $type: string
-
-  clear:
-    name         : Clear slow API count
-    method       : get
-    url          : /api/v1/slow-api-count/do/clear
-    response     : json
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_w
-
-slowAPICountPage:
-  list:
-    name         : Slow API count list
-    method       : get
-    url          : /slow-api-count
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-    paging       : false
 
 # System Config
 systemConfigAPI:

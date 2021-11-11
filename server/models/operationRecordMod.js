@@ -8,9 +8,9 @@ var async = require('async');
 /* Project Modules */
 var E           = require('../utils/serverError');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
-var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
+var routeLoader = require('../utils/routeLoader');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
@@ -33,33 +33,6 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   ],
 };
 
-var ROUTE_META_MAP = {};
-for (var _moduleName in ROUTE) {
-  if (_moduleName.slice(-3) !== 'API') continue;
-  for (var _apiName in ROUTE[_moduleName]) {
-    if (_apiName === 'list' || _apiName === 'get') continue;
-
-    var api = ROUTE[_moduleName][_apiName];
-    var key = toolkit.strf('{0} {1}', api.method.toUpperCase(), api.url);
-    ROUTE_META_MAP[key] = api;
-
-    // 更换名称
-    switch (_moduleName) {
-      case 'authAPI':
-        switch(_apiName) {
-          case 'signIn':
-            ROUTE_META_MAP[key].name = '用户登录';
-            break;
-
-          case 'signOut':
-            ROUTE_META_MAP[key].name = '用户登出';
-            break;
-        }
-        break;
-    }
-  }
-}
-
 exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
@@ -77,7 +50,15 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   oprd.*');
 
+  sql.append('  ,u.id       AS u_id');
+  sql.append('  ,u.username AS u_username');
+  sql.append('  ,u.name     AS u_name');
+  sql.append('  ,u.mobile   AS u_mobile');
+
   sql.append('FROM biz_main_operation_record AS oprd');
+
+  sql.append('JOIN wat_main_user AS u');
+  sql.append('  ON oprd.userId = u.id');
 
   options.baseSQL = sql.toString();
 
@@ -88,16 +69,16 @@ EntityModel.prototype.list = function(options, callback) {
       dbRes.forEach(function(d) {
         // 补充操作描述/用户名
         if (d.reqMethod && d.reqRoute) {
-          let key = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
-          var api = ROUTE_META_MAP[key];
+          var key   = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
+          var route = routeLoader.getRoute(key);
 
           // 已删除的接口忽略
-          if (!api) return;
+          if (!route) return;
 
-          d._operationDescribe = api.name || '未知操作';
+          d.reqRouteName = route.name || '未知操作';
 
           if (!d.username) {
-            d.username = api.privilege ? '系统内部调用' : '匿名用户';
+            d.username = route.privilege ? '系统内部调用' : '匿名用户';
           }
         }
 

@@ -573,7 +573,7 @@ export function formatURL(pathPattern, options) {
   let path = pathPattern;
   if (options.params) {
     for (let k in options.params) if (options.params.hasOwnProperty(k)) {
-      let v = options.params[k];
+      let v = options.params[k].replace('', '');
       path = path.replace(`/:${k}`, `/${v}`);
     }
   }
