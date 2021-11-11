@@ -232,7 +232,7 @@ _FUNC_TASK_DEFAULT_QUEUE                        : '1'
 _FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
 _FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
-_FUNC_TASK_DEBUG_TIMEOUT                        : 60
+_FUNC_TASK_DEBUG_TIMEOUT                        : 45
 _FUNC_TASK_DEFAULT_TIMEOUT                      : 30
 _FUNC_TASK_MIN_TIMEOUT                          : 1
 _FUNC_TASK_MAX_TIMEOUT                          : 3600
