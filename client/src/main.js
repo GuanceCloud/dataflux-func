@@ -48,12 +48,13 @@ import elementUILocale_zhTW from 'element-ui/lib/locale/lang/zh-TW'
 import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
 
 import locales from '@/assets/yaml/locales.yaml'
+import messages from '@/assets/yaml/messages.yaml'
+
+Object.assign(locales.en,       messages.en);
+Object.assign(locales['zh-CN'], messages['zh-CN']);
 
 Object.assign(locales.en,       elementUILocale_en);
 Object.assign(locales['zh-CN'], elementUILocale_zhCN);
-Object.assign(locales['zh-TW'], elementUILocale_zhTW);
-Object.assign(locales['zh-HK'], elementUILocale_zhTW);
-Object.assign(locales['ja'],    elementUILocale_ja);
 
 Vue.use(VueI18n);
 

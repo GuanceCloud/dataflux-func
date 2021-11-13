@@ -282,10 +282,10 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
 
     if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', 'Invalid options: apiTimeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
+      return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
     }
     if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-      return callback(new E('EClientBadRequest', 'Invalid options: apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
+      return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
     }
 
   } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
@@ -300,10 +300,10 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
 
     if (funcCallOptions.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT) {
-      return callback(new E('EClientBadRequest', 'Invalid options: timeout is too small', { min: CONFIG._FUNC_TASK_MIN_TIMEOUT }));
+      return callback(new E('EClientBadRequest', 'Invalid options, timeout is too small', { min: CONFIG._FUNC_TASK_MIN_TIMEOUT }));
     }
     if (funcCallOptions.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-      return callback(new E('EClientBadRequest', 'Invalid options: timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
+      return callback(new E('EClientBadRequest', 'Invalid options, timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
     }
 
   } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
@@ -326,21 +326,21 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     switch(origin) {
       case 'authLink':
         if (funcCallOptions.execMode !== 'sync') {
-          return callback(new E('EClientBadRequest', 'Invalid options: execMode of Auth Linke func call task should be "sync"'));
+          return callback(new E('EClientBadRequest', 'Invalid options, execMode should be "sync" in Auth Link calling'));
         }
         break;
 
       case 'crontab':
       case 'batch':
         if (funcCallOptions.execMode !== 'async') {
-          return callback(new E('EClientBadRequest', 'Invalid options: execMode of Crontab or Batch func call task should be "async"'));
+          return callback(new E('EClientBadRequest', 'Invalid options, execMode should be "async" in Crontab or Batch calling'));
         }
         break;
 
       default:
         var _EXEC_MODES = ['sync', 'async'];
         if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
-          return callback(new E('EClientBadRequest', 'Invalid options: invalid execMode', { allowed: _EXEC_MODES }));
+          return callback(new E('EClientBadRequest', 'Invalid options, invalid execMode', { allowed: _EXEC_MODES }));
         }
         break;
     }
@@ -388,7 +388,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   if (!toolkit.isNothing(funcCallOptions.returnType)) {
     var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
     if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
-      return callback(new E('EClientBadRequest', 'Invalid options: invalid returnType', { allowed: _RETURN_TYPES }));
+      return callback(new E('EClientBadRequest', 'Invalid options, invalid returnType', { allowed: _RETURN_TYPES }));
     }
 
   } else {
@@ -419,7 +419,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   // 预约执行
   if (!toolkit.isNothing(funcCallOptions.eta)) {
     if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
-      return callback(new E('EClientBadRequest', 'Invalid options: eta should be a valid datetime value'));
+      return callback(new E('EClientBadRequest', 'Invalid options, eta should be a valid datetime value'));
     }
   }
 
@@ -427,7 +427,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
     var queueNumber = parseInt(func.extraConfigJSON.queue);
     if (queueNumber < 1 || queueNumber > 9) {
-      return callback(new E('EClientBadRequest', 'Invalid options: queue should be an integer between 1 and 9'));
+      return callback(new E('EClientBadRequest', 'Invalid options, queue should be an integer between 1 and 9'));
     }
 
     funcCallOptions.queue = '' + func.extraConfigJSON.queue;
@@ -524,7 +524,7 @@ function _createFuncCallOptionsForAPIAuth(req, res, func, apiAuth, callback) {
   if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
     var queueNumber = parseInt(func.extraConfigJSON.queue);
     if (queueNumber < 1 || queueNumber > 9) {
-      return callback(new E('EClientBadRequest', 'Invalid options: queue should be an integer between 1 and 9'));
+      return callback(new E('EClientBadRequest', 'Invalid options, queue should be an integer between 1 and 9'));
     }
 
     funcCallOptions.queue = '' + func.extraConfigJSON.queue;
@@ -650,7 +650,7 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
         // 计算任务丢弃率（过压 / 最大可承受压力 * 100%）
         denyPercent = workerQueueOverPressure / workerQueueMaxPressure;
         if (!CONFIG._DISABLE_WORKER_LIMIT_PRESSURE && Math.random() < denyPercent) {
-          return asyncCallback(new E('EWorkerQueueCongestion', 'Too many tasks in worker queue', {
+          return asyncCallback(new E('EClientRateLimit.WorkerQueueLength', 'Too many tasks in worker queue', {
             funcPressure          : funcPressure,
             workerQueue           : funcCallOptions.queue,
             workerQueuePressure   : workerQueuePressure,
@@ -792,7 +792,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
           // 无法通过JSON.parse解析
           if ('string' === typeof celeryRes) {
-            return asyncCallback(new E('EFuncResultParsingFailed', 'Function result is not standard JSON', {
+            return asyncCallback(new E('EFuncResultParsingFailed', 'Func result is not standard JSON', {
               etype: celeryRes.result && celeryRes.result.exc_type,
             }));
           }
@@ -820,7 +820,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
 
           } else if (extraInfo.status === 'TIMEOUT') {
             // API等待超时
-            return asyncCallback(new E('EAPITimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later', {
+            return asyncCallback(new E('EAPITimeout', 'Waiting Func result timeout, but task is still running. Use task ID to fetch result later', {
               id   : extraInfo.id,
               etype: celeryRes.result && celeryRes.result.exc_type,
             }));
@@ -1694,7 +1694,7 @@ exports.callAuthLink = function(req, res, next) {
           if (currentCount > limit) {
             // 触发限流
             var waitSeconds = parseInt((ruleSep + 1) * THROTTLING_RULE_EXPIRES_MAP[rule] - Date.now() / 1000) + 1;
-            return eachCallback(new E('EBizCondition.AuthLinkThrottling', 'Maximum sending rate exceeded', {
+            return eachCallback(new E('EClientRateLimit.AuthLinkThrottling', 'Maximum calling rate exceeded', {
               rule        : rule,
               limit       : limit,
               currentCount: currentCount,
@@ -1947,7 +1947,7 @@ exports.callFuncDraft = function(req, res, next) {
 
       // 无法通过JSON.parse解析
       if ('string' === typeof celeryRes) {
-        return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON'));
+        return next(new E('EFuncResultParsingFailed', 'Func result is not standard JSON'));
       }
 
       // 失败/超时
@@ -1961,7 +1961,7 @@ exports.callFuncDraft = function(req, res, next) {
         }));
 
       } else if (extraInfo.status === 'TIMEOUT') {
-        return next(new E('EFuncTimeout', 'Waiting function result timeout, but task is still running. Use task ID to fetch result later', {
+        return next(new E('EFuncTimeout', 'Waiting Func result timeout, but task is still running. Use task ID to fetch result later', {
           id: extraInfo.id,
         }));
       }
@@ -1972,7 +1972,7 @@ exports.callFuncDraft = function(req, res, next) {
         ret = {
           ok     : false,
           error  : CONST.respCodeMap.EScriptPreCheck,
-          message: 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code.',
+          message: 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again',
           data   : {result: celeryRes.retval.result},
           reason : 'EScriptPreCheck',
           detail : {
@@ -2242,7 +2242,7 @@ exports.integratedSignIn = function(req, res, next) {
 
     // 无法通过JSON.parse解析
     if ('string' === typeof celeryRes) {
-      return next(new E('EFuncResultParsingFailed', 'Function result is not standard JSON'));
+      return next(new E('EFuncResultParsingFailed', 'Func result is not standard JSON'));
     }
 
     // 函数失败/超时

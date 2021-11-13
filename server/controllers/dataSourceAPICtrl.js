@@ -453,7 +453,7 @@ exports.query = function(req, res, next) {
 
         var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
         if (celeryRes.status === 'FAILURE') {
-          return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed',  {
+          return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed', {
             etype  : celeryRes.result && celeryRes.result.exc_type,
             message: errorMessage,
           }));

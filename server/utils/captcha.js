@@ -80,7 +80,7 @@ exports.createVerifyCaptchaHandler = function createVerifyCaptchaHandler(captcha
     var cachedCaptchaValue  = null;
 
     if (toolkit.isNullOrWhiteSpace(captchaToken)) {
-      return next(new E('EUserCaptcha', 'In valid captcha token', {
+      return next(new E('EUserCaptcha', 'Invalid captcha token', {
         captchaCategory: captchaCategory,
         captchaToken   : captchaToken,
       }));

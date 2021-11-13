@@ -3,6 +3,7 @@ Time       : 时间
 User       : 用户
 User ID    : 用户ID
 Request    : 请求
+Response   : 响应
 Status Code: 状态码
 Cost       : 耗时
 ms         : 毫秒
@@ -36,7 +37,7 @@ ms         : 毫秒
           class="common-table" height="100%"
           :data="data">
 
-          <el-table-column :label="$t('Time')" width="240">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.reqTime | datetime }}</span>
               <br>
@@ -44,7 +45,7 @@ ms         : 毫秒
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="300">
+          <el-table-column :label="$t('User')" width="200">
             <template slot-scope="scope">
               <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
@@ -59,18 +60,22 @@ ms         : 毫秒
           <el-table-column :label="$t('Request')">
             <template slot-scope="scope">
               <strong v-if="scope.row.reqRouteName">{{ scope.row.reqRouteName }}<br></strong>
-              <code class="text-code request">{{ scope.row.reqMethod }} {{ scope.row.reqURL }}</code><CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`"></CopyButton>
+              <code class="text-code">{{ scope.row.reqMethod }} {{ decodeURI(scope.row.reqURL) }}</code><CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`"></CopyButton>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status Code')" width="100">
+          <el-table-column :label="$t('Response')" align="right" width="240">
             <template slot-scope="scope">
+              <span class="text-info">{{ $t('Status Code') }}{{ $t(':') }}</span>
               <strong v-if="scope.row.respStatusCode >= 500" class="text-bad status-code">{{ scope.row.respStatusCode }}</strong>
               <strong v-else-if="scope.row.respStatusCode >= 400" class="text-watch status-code">{{ scope.row.respStatusCode }}</strong>
+              <strong v-else class="text-good status-code">{{ scope.row.respStatusCode }}</strong>
+
+              <span class="text-info" v-if="scope.row.respMessage"><br>{{ $t(scope.row.respMessage) }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Cost')" align="right" width="100">
+          <el-table-column :label="$t('Cost')" align="right" width="120">
             <template slot-scope="scope">
               {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
             </template>
@@ -141,9 +146,6 @@ export default {
 </script>
 
 <style scoped>
-.request {
-  font-size: 16px;
-}
 .status-code {
   font-size: 18px;
 }

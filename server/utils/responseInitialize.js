@@ -39,6 +39,9 @@ var CLIENT_CONFIG = {
   _WEB_AUTH_COOKIE       : CONFIG._WEB_AUTH_COOKIE,
 };
 
+var ABNORMAL_REQ_COST_LEVELS = [ 1000, 5000 ];
+var ABNORMAL_REQ_LOG_LIMIT   = 3000;
+
 /**
  * Get static file path.
  *
@@ -190,6 +193,57 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return reqInfo;
   }
 
+  function _recordAbnormalReq(respMessage) {
+    if (!res.locals.requestTime) return;
+
+    var now = new Date();
+    var reqCost = now.getTime() - res.locals.requestTime.getTime();
+
+    var reqInfo = {
+      reqMethod     : req.method,
+      reqURL        : req.originalUrl,
+      reqRoute      : req.route.path,
+      reqTime       : res.locals.requestTime.toISOString(),
+      reqCost       : reqCost,
+      respTime      : now.toISOString(),
+      respStatusCode: res.statusCode,
+      respMessage   : respMessage || undefined,
+    };
+
+    if (res.locals.user) {
+      reqInfo.userId = res.locals.user.id;
+    }
+    var reqInfoDumps = JSON.stringify(reqInfo);
+
+    async.series([
+      // 最近慢速请求
+      function(asyncCallback) {
+        async.eachSeries(ABNORMAL_REQ_COST_LEVELS, function(bucket, eachCallback) {
+          if (reqCost < bucket) return eachCallback();
+
+          var type = `reqCost${bucket}`;
+          var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+          async.series([
+            function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback)         },
+            function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
+          ], eachCallback);
+        }, asyncCallback);
+      },
+      // 最近异常请求
+      function(asyncCallback) {
+        if (res.statusCode < 400) return asyncCallback();
+
+        var type = `statusCode${parseInt(res.statusCode / 100)}xx`;
+        var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+
+        async.series([
+          function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback)         },
+          function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
+        ], asyncCallback);
+      },
+    ]);
+  };
+
   res.locals.getQueryOptions = function getQueryOptions() {
     var opt = {
       filters: res.locals.filters || {},
@@ -336,6 +390,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, ret, 'json');
     }
+
+    _recordAbnormalReq(ret.message);
     return res.send(ret);
   };
 
@@ -351,6 +407,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, 301, null, 'redirect');
     }
+
+    _recordAbnormalReq();
     return res.redirect(nextURL);
   };
 
@@ -363,6 +421,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
       if (STATIC_RENDER_LRU.get(renderMD5)) {
         res.type('html');
+
+        _recordAbnormalReq();
         return res.send(STATIC_RENDER_LRU.get(renderMD5));
       }
     }
@@ -453,6 +513,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       if ('function' === typeof appInit.beforeReponse) {
         appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, html, 'html');
       }
+
+      _recordAbnormalReq();
       return res.send(html);
     });
   };
@@ -472,6 +534,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, html, 'html');
     }
+
+    _recordAbnormalReq();
     return res.send(html);
   };
 
@@ -489,6 +553,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, fileName, 'file');
     }
+
+    _recordAbnormalReq();
     return res.download(filePath);
   };
 
@@ -511,6 +577,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, file, 'file');
     }
+
+    _recordAbnormalReq();
     return res.send(file);
   };
 
@@ -528,6 +596,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if ('function' === typeof appInit.beforeReponse) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, text, 'text');
     }
+
+    _recordAbnormalReq();
     return res.send(text);
   };
 
@@ -571,6 +641,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       res.type(contentType);
     }
 
+    _recordAbnormalReq();
     return res.send(raw);
   };
 
@@ -594,9 +665,6 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 // Dump request
 router.all('*', require('./requestDumper').dumpRequest);
 router.all('*', require('./requestDumper').dumpRequestFrom);
-
-// Monit request
-router.all('*', require('./requestMonitor'));
 
 /**
  * Prepare functional components.

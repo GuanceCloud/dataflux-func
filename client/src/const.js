@@ -359,21 +359,6 @@ export default {
         name     : '简体中文',
         shortName: '简',
       },
-      // {
-      //   key      : 'zh-HK',
-      //   name     : '香港繁體 (WIP)',
-      //   shortName: '港',
-      // },
-      // {
-      //   key      : 'zh-TW',
-      //   name     : '臺灣正體 (WIP)',
-      //   shortName: '臺',
-      // },
-      // {
-      //   key      : 'ja',
-      //   name     : '日本語 (WIP)',
-      //   shortName: '日',
-      // },
     ]
   },
   get UI_LOCALE_MAP() {

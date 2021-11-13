@@ -303,7 +303,7 @@ exports.import = function(req, res, next) {
     };
 
   } else {
-    return next(new E('EBizCondition.PackageNotProvided', 'Import source not specified.'));
+    return next(new E('EBizCondition.PackageNotProvided', 'Import source not specified'));
   }
 
   var fileBuf = null;

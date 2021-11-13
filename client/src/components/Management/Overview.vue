@@ -137,7 +137,7 @@ Pressure                      : 压力
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
 
         <el-table :data="latestOperations" stripe>
-          <el-table-column :label="$t('Time')" width="240">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -145,7 +145,7 @@ Pressure                      : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="300">
+          <el-table-column :label="$t('User')" width="240">
             <template slot-scope="scope">
               <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 

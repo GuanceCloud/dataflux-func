@@ -48,7 +48,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
           :data="data"
           :row-class-name="highlightRow">
 
-          <el-table-column :label="$t('Time')" width="240">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -56,7 +56,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="300">
+          <el-table-column :label="$t('User')" width="240">
             <template slot-scope="scope">
               <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 

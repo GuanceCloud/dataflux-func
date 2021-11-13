@@ -270,7 +270,7 @@ exports.publish = function(req, res, next) {
         if (celeryRes.status === 'FAILURE') {
           if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
             // 超时错误
-            return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code', {
+            return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again', {
               id       : celeryRes.id,
               etype    : celeryRes.result && celeryRes.result.exc_type,
               einfoTEXT: celeryRes.einfoTEXT,
@@ -278,7 +278,7 @@ exports.publish = function(req, res, next) {
 
           } else {
             // 其他错误
-            return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code with the detailed information', {
+            return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
               id       : celeryRes.id,
               etype    : celeryRes.result && celeryRes.result.exc_type,
               einfoTEXT: celeryRes.einfoTEXT,
@@ -286,13 +286,13 @@ exports.publish = function(req, res, next) {
           }
 
         } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code', {
+          return asyncCallback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
             id   : extraInfo.id,
             etype: celeryRes.result && celeryRes.result.exc_type,
           }));
 
         } else if (celeryRes.retval.einfoTEXT) {
-          return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code', {
+          return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
             id       : extraInfo.id,
             etype    : celeryRes.result && celeryRes.result.exc_type,
             einfoTEXT: celeryRes.retval.einfoTEXT,
