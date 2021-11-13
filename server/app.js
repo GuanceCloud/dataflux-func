@@ -57,6 +57,9 @@ function startApplication() {
   // Express
   var app = express();
 
+  // gzip
+  app.use(require('compression')());
+
   // For SLB Health check
   app.head('/', function(req, res, next) {
     return res.send('OK');
@@ -147,9 +150,6 @@ function startApplication() {
   if (CONFIG.MODE === 'dev') {
     app.use(require('./utils/requestDumper').dumpUserInformation);
   }
-
-  // gzip
-  app.use(require('compression')());
 
   app.use(require('./middlewares/operationRecordMid').prepare);
 
