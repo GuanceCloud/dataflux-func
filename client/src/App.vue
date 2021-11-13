@@ -281,12 +281,8 @@ export default {
   font-family: Iosevka;
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
-@font-face {
-  font-family: WenQuan;
-  src: url(./assets/font/WenQuanDengKuanWeiMiHei.ttf);
-}
 * {
-  font-family: Iosevka,WenQuan,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-family: Iosevka,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
 }
 a {
   text-decoration: none;
