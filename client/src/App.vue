@@ -281,16 +281,12 @@ export default {
   font-family: Iosevka;
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
-/*@font-face {
-  font-family: SourceHanSans;
-  src: url(./assets/font/SourceHanSansCN-VF.ttf);
-}*/
 @font-face {
-  font-family: AlibabaPuhuiTi;
-  src: url(./assets/font/Alibaba-PuHuiTi-Regular.ttf);
+  font-family: WenQuan;
+  src: url(./assets/font/WenQuanDengKuanWeiMiHei.ttf);
 }
 * {
-  font-family: Iosevka,AlibabaPuhuiTi,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-family: Iosevka,WenQuan,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
 }
 a {
   text-decoration: none;
