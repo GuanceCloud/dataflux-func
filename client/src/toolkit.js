@@ -1390,6 +1390,13 @@ export function initCodeMirror(id, mode) {
   return cm;
 };
 
+export function destoryCodeMirror(codeMirror) {
+  if (!codeMirror) return;
+
+  const codeMirrorElem = codeMirror.doc.cm.getWrapperElement();
+  codeMirrorElem && codeMirrorElem.remove && codeMirrorElem.remove();
+};
+
 export function setCodeMirrorReadOnly(codeMirror, readOnly) {
   if (!codeMirror) return;
 

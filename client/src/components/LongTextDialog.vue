@@ -77,6 +77,9 @@ export default {
       codeMirror: null,
     }
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
 }
 </script>
 

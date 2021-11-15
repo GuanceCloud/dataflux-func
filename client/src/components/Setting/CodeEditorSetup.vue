@@ -184,6 +184,9 @@ def hello_world():
       this.codeMirror.setOption('theme', this.codeMirrorTheme);
     });
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
 }
 </script>
 

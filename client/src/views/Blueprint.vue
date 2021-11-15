@@ -904,6 +904,9 @@ export default {
   mounted() {
     window._DFF_Blueprint = this;
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
 }
 </script>
 

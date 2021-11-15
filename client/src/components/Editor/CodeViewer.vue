@@ -471,6 +471,9 @@ export default {
       this.T.setCodeMirrorReadOnly(this.codeMirror, true);
     });
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
 }
 </script>
 

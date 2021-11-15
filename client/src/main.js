@@ -36,8 +36,7 @@ import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
 ElementUI.Tooltip.props.transition.default = false;
 ElementUI.Popover.props.transition.default = false;
-Vue.use(ElementUI)
-window.ElementUI = ElementUI;
+Vue.use(ElementUI);
 
 // 国际化
 import VueI18n from 'vue-i18n'
@@ -90,8 +89,8 @@ import validator from 'validator';
 Vue.prototype.validator = validator;
 
 // 剪贴板
-import clipboard from 'clipboard';
-Vue.prototype.clipboard = clipboard;
+import clipboardJS from 'clipboard';
+Vue.prototype.clipboardJS = clipboardJS;
 
 // 其他
 import * as encoding from '@/encoding'

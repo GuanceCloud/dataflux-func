@@ -1378,6 +1378,9 @@ export default {
       }
     });
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮
     this.updateHighlightLineConfig('selectedFuncLine', null);

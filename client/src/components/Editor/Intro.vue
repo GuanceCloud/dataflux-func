@@ -254,6 +254,9 @@ def hello_world():
       document.getElementsByTagName('main')[0].scrollTo(0,0);
     });
   },
+  beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
+  },
 }
 </script>
 

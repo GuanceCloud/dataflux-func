@@ -1146,7 +1146,7 @@ export default {
   mounted() {
     window.addEventListener('resize', this.fixShowPosition, false);
   },
-  destroyed() {
+  beforeDestroy() {
     window.removeEventListener('resize', this.fixShowPosition, false);
   },
 }

@@ -79,23 +79,28 @@ export default {
       manualTip: false,
       showTip  : false,
       tipStatus: 'ready',
+
+      clipboard: null,
     }
   },
   mounted() {
     let copyButton = this.$refs.copyButton.$el;
-    let clipboard = new this.clipboard(copyButton, {
+    this.clipboard = new this.clipboardJS(copyButton, {
       text: (trigger) => {
         return this.content;
       }
     });
 
-    clipboard.on('success', e => {
+    this.clipboard.on('success', e => {
       this.showCopiedTip();
     });
-    clipboard.on('error', e => {
+    this.clipboard.on('error', e => {
       this.showCopiedTip('error');
     });
-  }
+  },
+  beforeDestroy() {
+    if (this.clipboard) this.clipboard.destroy();
+  },
 }
 </script>
 
