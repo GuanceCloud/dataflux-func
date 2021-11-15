@@ -88,7 +88,6 @@ export default {
       this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
         if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
           this.prevReportAndCheckClientConflictResData = resData;
-          console.log(`Socket.io[socketio.reportAndCheckClientConflict.ack] ${resData}`);
         }
         resData = JSON.parse(resData);
 
@@ -148,6 +147,8 @@ export default {
       fullscreenLoading: false,
 
       prevReportAndCheckClientConflictResData: null,
+
+      heartbeatTimer: null,
     }
   },
   created() {
@@ -158,20 +159,12 @@ export default {
     const connectSocketIO = () => {
       if (this.$store.getters.isSocketIOReady) return;
 
-      if (this.$store.getters.CONFIG('MODE') === 'dev') {
-        console.info('Socket.io CONNECTED');
-      }
-
       // SocketIO 连接/认证
       if (this.isSignedIn) {
         this.socketIO.emit('auth', this.$store.state.xAuthToken);
       }
     }
     const handleDisconnect = () => {
-      if (this.$store.getters.CONFIG('MODE') === 'dev') {
-        console.info('Socket.io DISCONNECTED');
-      }
-
       setTimeout(() => {
         this.socketIO.connect();
       }, 1000)
@@ -181,6 +174,7 @@ export default {
     }
     const handleError = err => {
       console.error(err)
+
       try {
         err = JSON.parse(err);
         switch (err.reason) {
@@ -207,7 +201,7 @@ export default {
         .on('error', handleError);
 
       // 定期报告当前页面
-      setInterval(() => {
+      this.heartbeatTimer = setInterval(() => {
         connectSocketIO()
         this.reportAndCheckClientConflict();
       }, 1 * 1000);
@@ -272,6 +266,9 @@ export default {
         }
       };
     });
+  },
+  beforeDestroy() {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
   },
 }
 </script>

@@ -911,41 +911,6 @@ async function _prepareAxiosRes(axiosRes) {
   return axiosRes;
 };
 
-function _logAxios(axiosOpt, axiosRes) {
-  // 不对请求输出日志
-  return;
-
-  // 仅开发模式输出
-  if (process.env.NODE_ENV !== 'development') return;
-
-  try {
-    console.info(`%c[Call API]: ${axiosOpt.method.toUpperCase()} ${axiosOpt.url}`, 'color: cyan');
-    if (axiosOpt.params) {
-      console.info('    Query', axiosOpt.params);
-    }
-    if (axiosOpt.data) {
-      console.info('    Body', axiosOpt.data);
-    }
-
-    let respColor = axiosRes.status < 400 ? 'cyan' : 'red';
-    let respData  = axiosRes.data;
-    let respContentType = axiosRes.headers['content-type'];
-    if (!respContentType || 'string' === typeof respContentType && respContentType.indexOf('application/json') < 0) {
-      respData = {raw: respData};
-    }
-    console.info(`%c    [Resp]: ${axiosRes.status} ${axiosRes.statusText}`, `color:${respColor}`);
-
-    // 输出完整API返回数据
-    console.info('        Data', respData);
-    if (respData.data && Array.isArray(respData.data) && getBrowser() === 'Chrome' && 'function' === typeof console.table) {
-      console.table(respData.data);
-    }
-
-  } catch(err) {
-    console.error('Log API Calling:', err)
-  }
-};
-
 async function _doAxios(axiosOpt) {
   let isNoCount = false;
   if (axiosOpt.extraOptions && axiosOpt.extraOptions.noCountProcessing) {
@@ -1012,8 +977,6 @@ export async function callAPI(method, pathPattern, options) {
 
   const axiosOpt = _createAxiosOpt(method, pathPattern, options);
   let axiosRes = await _doAxios(axiosOpt);
-
-  _logAxios(axiosOpt, axiosRes);
 
   /* 提示 */
   let alert = options.alert || {};
@@ -1160,14 +1123,10 @@ export async function callAPI_getAll(pathPattern, options) {
         apiRes.data = apiRes.data.concat(axiosRes.data.data);
       }
 
-      _logAxios(axiosOpt, axiosRes);
-
     } else {
       // 失败中断
       apiRes = axiosRes.data;
       isFailed = true;
-
-      _logAxios(axiosOpt, axiosRes);
 
       break;
     }
@@ -1406,16 +1365,16 @@ export function initCodeMirror(id, mode) {
     // 翻译
     phrases: {
       "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）',
-      "All": '全部',
-      "No": '否',
-      "Replace all:": '全部替换',
-      "Replace with:": '替换为',
-      "Replace:": '替换',
-      "Replace?": '是否替换',
-      "Search:": '搜索',
-      "Stop": '停止',
-      "With:": '替换为',
-      "Yes": '是',
+      "All"                                : '全部',
+      "No"                                 : '否',
+      "Replace all                         :": '全部替换',
+      "Replace with                        :": '替换为',
+      "Replace                             :": '替换',
+      "Replace?"                           : '是否替换',
+      "Search                              :": '搜索',
+      "Stop"                               : '停止',
+      "With                                :": '替换为',
+      "Yes"                                : '是',
     }
   });
 
@@ -1427,13 +1386,7 @@ export function initCodeMirror(id, mode) {
     }
   }, 150));
 
-  // cm.on('cursorActivity', (editor) => {
-  //   console.log('cursor moved')
-  // });
-
   setCodeMirrorMode(cm, mode || 'python');
-
-  console.log('Code Mirror Inited');
   return cm;
 };
 

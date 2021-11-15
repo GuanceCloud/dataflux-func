@@ -482,6 +482,17 @@ export default {
       }
     },
   },
+  props: {
+  },
+  data() {
+    return {
+      isRefreshing: false,
+
+      charts: {},
+
+      autoRefreshTimer: null,
+    }
+  },
   mounted() {
     setImmediate(() => {
       // 初始化Echarts
@@ -492,19 +503,14 @@ export default {
 
       // 更新图表数据
       this.updateChart();
-      setInterval(() => {
+
+      this.autoRefreshTimer = setInterval(() => {
         this.updateChart();
       }, 30 * 1000);
     });
   },
-  props: {
-  },
-  data() {
-    return {
-      isRefreshing: false,
-
-      charts: {},
-    }
+  beforeDestroy() {
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>

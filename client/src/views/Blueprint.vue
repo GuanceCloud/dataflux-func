@@ -588,13 +588,11 @@ export default {
     enterIntercept(fromNode, toNode, graph) {
       // 不允许入口直接指向结束点
       if (fromNode.meta.type === 'start' && toNode.meta.type === 'end') {
-        console.log(1)
         return false;
       }
 
       // 任何节点都不允许指向开始点
       if (toNode.meta.type === 'start') {
-        console.log(2)
         return false;
       }
 

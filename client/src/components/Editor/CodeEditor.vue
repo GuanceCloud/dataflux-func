@@ -687,9 +687,10 @@ export default {
 
       let leftSeconds = this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT');
       updateCountDownTipTitle(leftSeconds);
+
       this.countDownTimer = setInterval(() => {
         leftSeconds--;
-        if (leftSeconds <= 0) {
+        if (leftSeconds <= 0 || !this.workerRunning) {
           clearInterval(this.countDownTimer);
         }
 
@@ -710,7 +711,7 @@ export default {
         });
 
       } catch(err) {
-        return console.log(err);
+        return console.error(err);
 
       } finally {
         clearTimeout(delayedLoadingT);

@@ -114,13 +114,17 @@ export default {
       logFilter: '',
 
       nextPosition: null,
+
+      autoRefreshTimer: null,
     }
   },
   mounted() {
-    setInterval(() => {
-      if (this.$route.name !== 'system-logs') return;
+    this.autoRefreshTimer = setInterval(() => {
       this.loadData({ append: true });
     }, 5 * 1000);
+  },
+  beforeDestroy() {
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>

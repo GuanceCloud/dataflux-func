@@ -8,17 +8,17 @@
     "dll": "vue-cli-service dll"
   },
   "dependencies": {
-    "@intlify/vue-i18n-loader": "1.0.0",
-    "axios": "0.19.0",
+    "@intlify/vue-i18n-loader": "1.1.0",
+    "axios": "0.24.0",
     "bowser": "2.11.0",
     "byte-size": "7.0.1",
-    "clipboard": "2.0.4",
-    "codemirror": "5.49.2",
-    "core-js": "3.4.3",
+    "clipboard": "2.0.8",
+    "codemirror": "5.63.3",
+    "core-js": "3.19.1",
     "cssmin": "0.4.3",
     "diff": "4.0.2",
     "echarts": "4.2.1",
-    "element-ui": "2.15.1",
+    "element-ui": "2.15.6",
     "file-saver": "2.0.2",
     "font-awesome": "4.7.0",
     "highlight.js": "9.18.0",
@@ -26,15 +26,15 @@
     "js-yaml": "3.13.1",
     "moment": "2.24.0",
     "nanoid": "3.1.23",
-    "socket.io-client": "2.3.0",
+    "socket.io-client": "2.4.0",
     "splitargs": "0.0.7",
     "validator": "10.11.0",
-    "vue": "2.6.10",
-    "vue-i18n": "8.22.4",
-    "vue-router": "3.1.3",
+    "vue": "2.6.14",
+    "vue-i18n": "8.26.7",
+    "vue-router": "3.5.3",
     "vue-splitpane": "1.0.6",
-    "vuex": "3.1.2",
-    "vuex-persistedstate": "2.7.1",
+    "vuex": "3.6.2",
+    "vuex-persistedstate": "3.2.1",
     "yaml-loader": "0.6.0"
   },
   "devDependencies": {
@@ -43,6 +43,6 @@
     "@vue/cli-plugin-vuex": "4.1.0",
     "@vue/cli-service": "4.1.0",
     "vue-cli-plugin-dll": "1.1.11",
-    "vue-template-compiler": "2.6.10"
+    "vue-template-compiler": "2.6.14"
   }
 }

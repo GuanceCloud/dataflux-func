@@ -168,20 +168,11 @@ const app = new Vue({
       this.$store.commit('updateUILocale', uiLocale);
 
       this.$nextTick(() => {
-        let nextUILocale = this.$store.getters.uiLocale;
-        this.$i18n.locale = nextUILocale;
-
-        console.log(`Set UI Locale to [${nextUILocale}]`);
+        this.$i18n.locale = this.$store.getters.uiLocale;
       });
     },
     setUITheme(uiTheme) {
       this.$store.commit('updateUITheme', uiTheme);
-
-      this.$nextTick(() => {
-        let nextUITheme = this.$store.getters.uiTheme;
-
-        console.log(`Set UI Theme to [${nextUITheme}]`);
-      });
     },
   }
 }).$mount('#app');

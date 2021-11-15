@@ -329,20 +329,17 @@ export default {
       workerQueueInfo : [],
       scriptOverview  : [],
       latestOperations: [],
-      overviewInterval: null,
+
+      autoRefreshTimer: null,
     }
   },
   mounted() {
-    if (!this.overviewInterval) {
-      this.overviewInterval = setInterval(() => {
-        if (this.$route.name !== 'overview') {
-          clearInterval(this.overviewInterval);
-          this.overviewInterval = null;
-        }
-
-        this.loadData(['workerQueueInfo'], { mute: true });
-      }, 30 * 1000);
-    }
+    this.autoRefreshTimer = setInterval(() => {
+      this.loadData(['workerQueueInfo'], { mute: true });
+    }, 5 * 1000);
+  },
+  beforeDestroy() {
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>
