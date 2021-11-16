@@ -564,6 +564,9 @@ kbd {
   margin-left: 10px;
 }
 
+.el-table .cell {
+  word-break: break-word;
+}
 .el-tag + .el-tag {
   margin-left: 5px;
 }

@@ -315,6 +315,11 @@ function startApplication() {
           method: req.method,
           url   : req.originalUrl,
         }
+        if (!toolkit.isNothing(req.body)) {
+          var bodyDump = toolkit.jsonDumps(req.body, 2);
+          bodyDump = toolkit.limitedText(bodyDump, 1000);
+          errorRet.reqDump.bodyDump = bodyDump;
+        }
         return res.locals.sendJSON(errorRet);
         break;
 

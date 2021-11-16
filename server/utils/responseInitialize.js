@@ -193,7 +193,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return reqInfo;
   }
 
-  function _recordAbnormalReq(respData) {
+  function _recordAbnormalReq(respBody) {
     if (!res.locals.requestTime) return;
 
     var now = new Date();
@@ -209,9 +209,15 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       respStatusCode: res.statusCode,
     };
 
-    if (res.statusCode >= 400) {
+    if (req.body) {
+      var reqBodyDump = toolkit.jsonDumps(req.body, 2);
+      reqBodyDump = toolkit.limitedText(reqBodyDump, 1000);
+      reqInfo.reqBodyDump = reqBodyDump;
+    }
+
+    if (res.statusCode >= 400 && respBody) {
       // 只有存在错误时记录响应数据
-      reqInfo.respData = respData;
+      reqInfo.respBody = respBody;
     }
 
     if (res.locals.user) {

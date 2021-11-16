@@ -1,14 +1,15 @@
 <i18n locale="zh-CN" lang="yaml">
-Time                               : 时间
-User                               : 用户
-User ID                            : 用户ID
-Request                            : 请求
-Response                           : 响应
-Status Code                        : 状态码
-Cost                               : 耗时
-ms                                 : 毫秒
-Show response                      : 显示响应数据
-The full response data is following: 完整响应数据如下
+Time                         : 时间
+User                         : 用户
+User ID                      : 用户ID
+Request                      : 请求
+Response                     : 响应
+Status Code                  : 状态码
+Cost                         : 耗时
+ms                           : 毫秒
+Show detail                  : 显示请求详情
+The full content is following: 完整内容如下
+omitted.                     : 略
 </i18n>
 
 <template>
@@ -88,7 +89,7 @@ The full response data is following: 完整响应数据如下
 
           <el-table-column width="150" align="right">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.respData" @click="showResponse(scope.row)" type="text">{{ $t('Show response') }}</el-button>
+              <el-button v-if="scope.row.reqBodyDump || scope.row.respBody" @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -97,7 +98,7 @@ The full response data is following: 完整响应数据如下
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog :title="$t('The full response data is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
@@ -141,19 +142,39 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     getRespError(d) {
-      return (d.respData && d.respData.error) || d.respError;
+      return (d.respBody && d.respBody.error) || d.respError;
     },
     getRespMessage(d) {
-      return (d.respData && d.respData.message) || d.respMessage;
+      return (d.respBody && d.respBody.message) || d.respMessage;
     },
-    showResponse(d) {
+    showDetail(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      let responseText = JSON.stringify(d.respData, null, 2);
+      let httpInfoLines = [];
+
+      httpInfoLines.push(`===== ${this.$t('Request')} =====`)
+
+      httpInfoLines.push(`${d.reqMethod.toUpperCase()} ${d.reqURL}`)
+
+      if (d.reqBodyDump) {
+        httpInfoLines.push(d.reqBodyDump);
+      }
+
+      httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
+
+      httpInfoLines.push(`Status Code: ${d.respStatusCode}`);
+
+      if (d.respBody) {
+        httpInfoLines.push(JSON.stringify(d.respBody, null, 2));
+      } else {
+        httpInfoLines.push(`<${this.$t('omitted.')}>`);
+      }
+
+      let httpInfoTEXT = httpInfoLines.join('\n');
 
       let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `response-dump.${createTimeStr}`;
-      this.$refs.longTextDialog.update(responseText, fileName);
+      let fileName = `http-dump.${createTimeStr}`;
+      this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
   },
   computed: {
