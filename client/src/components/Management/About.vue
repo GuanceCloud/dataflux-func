@@ -202,7 +202,7 @@ export default {
           return infoLines.join('\n');
         }
 
-        let sysStats = apiRes.data.sysStats;
+        let sysStats = apiRes.data;
 
         this.serverCPUPercentInfoTEXT  = _getInfo(sysStats.serverCPUPercent,  '%');
         this.serverMemoryRSSInfoTEXT   = _getInfo(sysStats.serverMemoryRSS,   ' MB');
