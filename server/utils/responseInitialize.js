@@ -193,7 +193,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return reqInfo;
   }
 
-  function _recordAbnormalReq(respMessage, respError) {
+  function _recordAbnormalReq(respData) {
     if (!res.locals.requestTime) return;
 
     var now = new Date();
@@ -207,9 +207,12 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       reqCost       : reqCost,
       respTime      : now.toISOString(),
       respStatusCode: res.statusCode,
-      respError     : respError   || undefined,
-      respMessage   : respMessage || undefined,
     };
+
+    if (res.statusCode >= 400) {
+      // 只有存在错误时记录响应数据
+      reqInfo.respData = respData;
+    }
 
     if (res.locals.user) {
       reqInfo.userId = res.locals.user.id;
@@ -392,7 +395,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, ret, 'json');
     }
 
-    _recordAbnormalReq(ret.message, ret.error);
+    _recordAbnormalReq(ret);
     return res.send(ret);
   };
 

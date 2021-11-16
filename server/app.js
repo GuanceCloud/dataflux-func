@@ -315,9 +315,6 @@ function startApplication() {
           method: req.method,
           url   : req.originalUrl,
         }
-        if (!toolkit.isNothing(req.body)) {
-          errorRet.reqDump.body = JSON.parse(toolkit.jsonDumps(req.body));
-        }
         return res.locals.sendJSON(errorRet);
         break;
 

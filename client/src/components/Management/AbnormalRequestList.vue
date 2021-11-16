@@ -1,12 +1,14 @@
 <i18n locale="zh-CN" lang="yaml">
-Time       : 时间
-User       : 用户
-User ID    : 用户ID
-Request    : 请求
-Response   : 响应
-Status Code: 状态码
-Cost       : 耗时
-ms         : 毫秒
+Time                               : 时间
+User                               : 用户
+User ID                            : 用户ID
+Request                            : 请求
+Response                           : 响应
+Status Code                        : 状态码
+Cost                               : 耗时
+ms                                 : 毫秒
+Show response                      : 显示HTTP响应详情
+The full response data is following: 完整响应数据如下
 </i18n>
 
 <template>
@@ -35,7 +37,8 @@ ms         : 毫秒
         </div>
         <el-table v-else
           class="common-table" height="100%"
-          :data="data">
+          :data="data"
+          :row-class-name="highlightRow">
 
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
@@ -71,9 +74,9 @@ ms         : 毫秒
               <strong v-else-if="scope.row.respStatusCode >= 400" class="text-watch status-code">{{ scope.row.respStatusCode }}</strong>
               <strong v-else class="text-good status-code">{{ scope.row.respStatusCode }}</strong>
 
-              <span v-if="scope.row.respError">{{ $t('(') }}{{ scope.row.respError }}{{ $t(')') }}</span>
+              <span v-if="getRespError(scope.row)">{{ $t('(') }}{{ getRespError(scope.row) }}{{ $t(')') }}</span>
 
-              <span class="text-info" v-if="scope.row.respMessage"><br>{{ $t(scope.row.respMessage) }}</span>
+              <span class="text-info" v-if="getRespMessage(scope.row)"><br>{{ $t(getRespMessage(scope.row)) }}</span>
             </template>
           </el-table-column>
 
@@ -83,7 +86,10 @@ ms         : 毫秒
             </template>
           </el-table-column>
 
-          <el-table-column width="50">
+          <el-table-column width="150">
+            <template slot-scope="scope">
+              <el-button v-if="scope.row.respData" @click="showResponse(scope.row)" type="text">{{ $t('Show response') }}</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </el-main>
@@ -91,15 +97,18 @@ ms         : 毫秒
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
+      <LongTextDialog :title="$t('The full response data is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'AbnormalRequestList',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -114,6 +123,9 @@ export default {
     },
   },
   methods: {
+    highlightRow({row, rowIndex}) {
+      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
+    },
     async loadData() {
       let _listQuery = this.T.createListQuery();
 
@@ -127,6 +139,21 @@ export default {
       this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
+    },
+    getRespError(d) {
+      return (d.respData && d.respData.error) || d.respError;
+    },
+    getRespMessage(d) {
+      return (d.respData && d.respData.message) || d.respMessage;
+    },
+    showResponse(d) {
+      this.$store.commit('updateHighlightedTableDataId', d.id);
+
+      let responseText = JSON.stringify(d.respData, null, 2);
+
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let fileName = `response-dump.${createTimeStr}`;
+      this.$refs.longTextDialog.update(responseText, fileName);
     },
   },
   computed: {

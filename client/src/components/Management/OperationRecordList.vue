@@ -10,7 +10,7 @@ DELETE                        : 删除操作
 Cost                          : 耗时
 ms                            : 毫秒
 Show detail                   : 显示HTTP请求详情
-The full content is as follows: 完整内容如下
+The full content is following : 完整内容如下
 Request                       : 请求
 Response                      : 响应
 
@@ -115,7 +115,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog :title="$t('The full content is as follows')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
     </el-container>
   </transition>
 </template>
