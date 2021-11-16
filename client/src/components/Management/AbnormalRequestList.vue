@@ -7,7 +7,7 @@ Response                           : 响应
 Status Code                        : 状态码
 Cost                               : 耗时
 ms                                 : 毫秒
-Show response                      : 显示HTTP响应详情
+Show response                      : 显示响应数据
 The full response data is following: 完整响应数据如下
 </i18n>
 
@@ -86,7 +86,7 @@ The full response data is following: 完整响应数据如下
             </template>
           </el-table-column>
 
-          <el-table-column width="150">
+          <el-table-column width="150" align="right">
             <template slot-scope="scope">
               <el-button v-if="scope.row.respData" @click="showResponse(scope.row)" type="text">{{ $t('Show response') }}</el-button>
             </template>
