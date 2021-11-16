@@ -193,7 +193,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return reqInfo;
   }
 
-  function _recordAbnormalReq(respMessage) {
+  function _recordAbnormalReq(respMessage, respError) {
     if (!res.locals.requestTime) return;
 
     var now = new Date();
@@ -207,6 +207,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       reqCost       : reqCost,
       respTime      : now.toISOString(),
       respStatusCode: res.statusCode,
+      respError     : respError   || undefined,
       respMessage   : respMessage || undefined,
     };
 
@@ -391,7 +392,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, ret, 'json');
     }
 
-    _recordAbnormalReq(ret.message);
+    _recordAbnormalReq(ret.message, ret.error);
     return res.send(ret);
   };
 

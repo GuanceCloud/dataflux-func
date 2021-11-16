@@ -71,6 +71,8 @@ ms         : 毫秒
               <strong v-else-if="scope.row.respStatusCode >= 400" class="text-watch status-code">{{ scope.row.respStatusCode }}</strong>
               <strong v-else class="text-good status-code">{{ scope.row.respStatusCode }}</strong>
 
+              <span v-if="scope.row.respError">{{ $t('(') }}{{ scope.row.respError }}{{ $t(')') }}</span>
+
               <span class="text-info" v-if="scope.row.respMessage"><br>{{ $t(scope.row.respMessage) }}</span>
             </template>
           </el-table-column>
