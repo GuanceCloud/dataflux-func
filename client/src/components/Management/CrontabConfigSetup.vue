@@ -1,5 +1,4 @@
 <i18n locale="en" lang="yaml">
-parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 shortcutDays : '{n} day | {n} days'
 </i18n>
 
@@ -52,7 +51,6 @@ Crontab Config deleted: 自动触发配置已删除
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Invalid argument format: 参数格式不正确
 
-parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 shortcutDays : '{n}天'
 </i18n>
 
@@ -87,7 +85,6 @@ shortcutDays : '{n}天'
                     resize="none"
                     :autosize="true"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
-                  <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
                 </el-form-item>
