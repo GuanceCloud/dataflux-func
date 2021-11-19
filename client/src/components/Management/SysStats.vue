@@ -69,6 +69,12 @@ export default {
         });
       }
     },
+    '$store.state.uiLocale': function() {
+      // 修复切换语言后，连接描述文字由于是cavas绘制导致无法同步更新的问题
+      setImmediate(() => {
+        this.updateChart();
+      });
+    },
   },
   methods: {
     async loadData() {
@@ -151,7 +157,17 @@ export default {
         if (!chart) continue;
 
         let tsDataMap = sysStats[metric];
-        if (this.T.isNothing(tsDataMap)) continue;
+        if (this.T.isNothing(tsDataMap)) {
+          chart.showLoading({
+            text       : this.$t('No Data'),
+            fontSize   : 20,
+            showSpinner: false,
+            textColor  : 'grey',
+            maskColor  : 'white',
+          });
+        } else {
+          chart.hideLoading();
+        };
 
         if (Array.isArray(tsDataMap)) {
           tsDataMap = { '': tsDataMap };
@@ -348,11 +364,13 @@ export default {
         },
       };
     },
-    createCountYAxisOpt() {
+    createCountYAxisOpt(opt) {
+      opt = opt || {};
       return {
         type       : 'value',
         offset     : 10,
         min        : 0,
+        max        : opt.max,
         minInterval: 1,
         splitLine: {
           lineStyle: this.T.getEchartSplitLineStyle(),
@@ -435,7 +453,7 @@ export default {
           tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
-          yAxis  : this.createCountYAxisOpt(),
+          yAxis  : this.createCountYAxisOpt({ max: 100 }),
         },
 
         dbDiskUsed: {
@@ -508,9 +526,15 @@ export default {
         this.updateChart();
       }, 30 * 1000);
     });
+
+    window.vmc = this;
   },
   beforeDestroy() {
     if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
+    for (let chartId in this.charts) {
+      let chart = this.charts[chartId];
+      if (chart) chart.dispose();
+    }
   },
 }
 </script>

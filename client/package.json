@@ -17,7 +17,7 @@
     "core-js": "3.19.1",
     "cssmin": "0.4.3",
     "diff": "4.0.2",
-    "echarts": "4.2.1",
+    "echarts": "4.9.0",
     "element-ui": "2.15.6",
     "file-saver": "2.0.2",
     "font-awesome": "4.7.0",
