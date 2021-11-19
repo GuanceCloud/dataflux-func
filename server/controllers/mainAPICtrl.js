@@ -3096,8 +3096,7 @@ exports.metrics = function(req, res, next) {
   var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', '*']);
   var ignoreMetrics = [
     // 不适合作为OpenMetric导出的指标
-    'cacheDBKeyCountByPrefix', // 前缀包含特殊字符，需要特殊处理
-    'matchedRouteCount',       // 按每日统计的数据，非时序数据
+    'matchedRouteCount', // 按每日统计的数据，非时序数据
   ];
 
   var keys = null;
@@ -3147,6 +3146,13 @@ exports.metrics = function(req, res, next) {
           var value = 0;
           try { value = tsData[0][1] } catch(_) {}
 
+          switch(metric) {
+            case 'cacheDBKeyCountByPrefix':
+              if (labels.prefix) {
+                labels.prefix = toolkit.fromBase64(labels.prefix);
+              }
+              break
+          }
           promMetric.labels(labels).set(value);
 
           return eachCallback();
