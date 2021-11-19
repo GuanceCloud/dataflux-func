@@ -211,7 +211,7 @@ def reload_scripts(self, *args, **kwargs):
 
 # Main.SyncCache
 class SyncCache(BaseTask):
-    def sync_func_call_info(self):
+    def sync_func_call_count(self):
         data = []
 
         # 搜集数据
@@ -234,6 +234,9 @@ class SyncCache(BaseTask):
         for d in data:
             func_id   = d['funcId']
             timestamp = d.get('timestamp')
+
+            # 时间戳按照分钟对齐（减少内部时序数据存储压力）
+            timestamp = int(int(timestamp) / 60) * 60
 
             pk = '~'.join([func_id, str(timestamp)])
             if pk not in count_map:
@@ -780,7 +783,7 @@ def sync_cache(self, *args, **kwargs):
 
     # 函数调用计数刷入数据库
     try:
-        self.sync_func_call_info()
+        self.sync_func_call_count()
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
