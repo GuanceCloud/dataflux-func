@@ -483,11 +483,18 @@ def as_str(s):
 
     return six.ensure_str(s)
 
-def limited_text(s, max_length=30):
+def limit_text(s, max_length=30, show_length=None):
     if len(s) <= max_length:
         return s
     else:
-        return s[0:max_length - 3] + '...'
+        limited = s[0:max_length - 3] + '...'
+
+        if show_length == 'newLine':
+            limited += '\n <Length: {}>'.format(len(s))
+        elif show_length:
+            limited += ' <Length: {}>'.format(len(s))
+
+        return limited
 
 def merge_query(url, query):
     merged_query = {}

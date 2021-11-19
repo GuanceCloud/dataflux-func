@@ -768,6 +768,15 @@ monitorAPI:
           - 'statusCode4xx'
           - 'statusCode5xx'
 
+  clearAbnormalRequests:
+    showInDoc    : true
+    name         : Clear abnormal requests
+    method       : get
+    url          : /api/v1/monitor/abnormal-requests/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
   getServerEnvironment:
     name         : Get server environment
     method       : get

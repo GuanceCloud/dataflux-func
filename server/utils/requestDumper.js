@@ -14,9 +14,9 @@ exports.dumpRequest = function(req, res, next) {
   var dumpList = [
     toolkit.strf('{0}=`{1}`', 'host',        req.get('host')),
     toolkit.strf('{0}=`{1}`', 'method',      req.method.toUpperCase()),
-    toolkit.strf('{0}=`{1}`', 'url',         toolkit.limitedText(path.join(req.baseUrl, req.path), 1000)),
-    toolkit.strf('{0}=`{1}`', 'query',       toolkit.limitedText(JSON.stringify(req.query), 1000)),
-    toolkit.strf('{0}=`{1}`', 'originalUrl', toolkit.limitedText(req.originalUrl, 1000)),
+    toolkit.strf('{0}=`{1}`', 'url',         toolkit.limitText(path.join(req.baseUrl, req.path), 1000, { showLength: true })),
+    toolkit.strf('{0}=`{1}`', 'query',       toolkit.limitText(JSON.stringify(req.query),        1000, { showLength: true })),
+    toolkit.strf('{0}=`{1}`', 'originalUrl', toolkit.limitText(req.originalUrl,                  1000, { showLength: true })),
   ];
 
   res.locals.logger._log('info', '{0} {1}', '[REQUEST]', dumpList.join(', '));
@@ -46,10 +46,9 @@ exports.dumpRequestFrom = function(req, res, next) {
 
 exports.dumpRequestBody = function(req, res, next) {
   var bodyDump = toolkit.jsonDumps(req.body);
-  var bodyDumpLenth = bodyDump.length;
-  bodyDump = toolkit.limitedText(bodyDump, 1000);
+  bodyDump = toolkit.limitText(bodyDump, 1000, { showLength: true });
   var dumpList = [
-    toolkit.strf('{0}=`{1}`, Length: {2}', 'body', bodyDump, bodyDumpLenth),
+    toolkit.strf('body=`{0}`', bodyDump),
   ];
 
   if (req.files) {

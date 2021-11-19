@@ -91,7 +91,7 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
     queue,
     name,
     JSON.stringify(args),
-    toolkit.limitedText(JSON.stringify(kwargs), 1000),
+    toolkit.limitText(JSON.stringify(kwargs), 1000, { showLength: true }),
     JSON.stringify(taskOptions)
   );
 

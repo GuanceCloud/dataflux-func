@@ -39,6 +39,15 @@ exports.listAbnormalRequests = function(req, res, next) {
   });
 };
 
+exports.clearAbnormalRequests = function(req, res, next) {
+  var cacheKeyPattern = toolkit.getCacheKey('monitor', 'abnormalRequest', ['*']);
+  res.locals.cacheDB.delByPattern(cacheKeyPattern, function(err) {
+    if (err) return next(err);
+
+    return res.locals.sendJSON();
+  });
+};
+
 exports.getServerEnvironment = function(req, res, next) {
   var monitorModel = monitorMod.createModel(res.locals);
 

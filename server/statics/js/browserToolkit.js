@@ -123,37 +123,31 @@ var strf = toolkit.strf = function strf() {
 /**
  * Slice text by length
  *
- * @param  {String}
- * @param  {Integer}
+ * @param  {String}  text
+ * @param  {Integer} maxLength
+ * @param  {Object}  options
+ * @param  {Any}     options.showLength
  * @return {String}
  */
-var limitedText = toolkit.limitedText = function(text, maxLength) {
+var limitText = toolkit.limitText = function(text, maxLength, options) {
   text      = text      || '';
   maxLength = maxLength || 30;
+  options   = options   || {};
 
   if (text.length <= maxLength) {
     return text;
   } else {
-    return text.slice(0, maxLength - 3) + '...';
-  }
-};
-var limitedTextGB = toolkit.limitedTextGB = function(text, maxLength) {
-  text      = text      || '';
-  maxLength = maxLength || 30;
+    var limited = text.slice(0, maxLength - 3) + '...';
 
-  var len = 0;
-  for (var i = 0; i < text.length; i++) {
-    var c = text.charCodeAt(i);
-    len += ((c >= 0x0001 && c <= 0x007e) || (0xff60 <= c && c <= 0xff9f)) ? 1 : 2;
-    if (len >= maxLength) break;
+    if (options.showLength) {
+      if (options.showLength === 'newLine') {
+        limited += `\n <Length: ${text.length}>`;
+      } else {
+        limited += ` <Length: ${text.length}>`;
+      }
+    }
+    return limited;
   }
-
-  var nextText = text.slice(0, i + 1);
-  if (nextText !== text) {
-    nextText += '...';
-  }
-
-  return nextText;
 };
 
 /**

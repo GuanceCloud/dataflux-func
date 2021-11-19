@@ -10,6 +10,10 @@ ms                           : 毫秒
 Show detail                  : 显示请求详情
 The full content is following: 完整内容如下
 omitted.                     : 略
+
+Abnormal Request data cleared: 异常请求数据已清空
+
+Are you sure you want to clear the abnormal Request data?: 是否确认清空异常请求数据？
 </i18n>
 
 <template>
@@ -20,9 +24,21 @@ omitted.                     : 略
         <h1>
           {{ $t('Abnormal Reqs') }}
           <div class="header-control">
+            <el-button @click="refresh" size="mini">
+              <i class="fa fa-fw fa-refresh"></i>
+              {{ $t('Refresh') }}
+            </el-button>
+
             <el-radio-group v-model="type" size="mini">
               <el-radio-button v-for="type, i in C.ABNORMAL_REQUEST_TYPE" :key="type.key" :label="type.key">{{ type.name }}</el-radio-button>
             </el-radio-group>
+
+            &#12288;
+            <el-tooltip :content="$t('Clear')" placement="bottom" :enterable="false">
+              <el-button @click="clear" size="mini">
+                <i class="fa fa-fw fa-trash-o"></i>
+              </el-button>
+            </el-tooltip>
           </div>
         </h1>
       </el-header>
@@ -89,7 +105,7 @@ omitted.                     : 略
 
           <el-table-column width="150" align="right">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.reqBodyDump || scope.row.respBody" @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -166,6 +182,8 @@ export default {
 
       if (d.respBody) {
         httpInfoLines.push(JSON.stringify(d.respBody, null, 2));
+      } else if (d.respBodyDump) {
+        httpInfoLines.push(d.respBodyDump);
       } else {
         httpInfoLines.push(`<${this.$t('omitted.')}>`);
       }
@@ -175,6 +193,18 @@ export default {
       let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
+    },
+    async refresh() {
+      await this.loadData();
+    },
+    async clear() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to clear the abnormal Request data?'))) return;
+
+      let apiRes = await this.T.callAPI('/api/v1/monitor/abnormal-requests/do/clear', {
+        alert : { okMessage: this.$t('Abnormal Request data cleared') },
+      });
+
+      await this.loadData();
     },
   },
   computed: {
@@ -196,6 +226,12 @@ export default {
 </script>
 
 <style scoped>
+/* Special Fix */
+.el-radio-group {
+  position: relative;
+  top: 1px !important;
+}
+
 .status-code {
   font-size: 18px;
 }

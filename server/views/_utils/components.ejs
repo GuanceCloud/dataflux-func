@@ -1367,7 +1367,7 @@ _%>
 var limitedSpan = _components.limitedSpan = function(text, maxLength, htmlTag) {
   htmlTag   = htmlTag   || 'span'
 
-  var displayText = toolkit.limitedText(text, maxLength);
+  var displayText = toolkit.limitText(text, maxLength);
 
   var tooltipTitle = null;
   if (displayText !== text) {

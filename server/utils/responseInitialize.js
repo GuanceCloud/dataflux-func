@@ -209,15 +209,20 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       respStatusCode: res.statusCode,
     };
 
-    if (req.body) {
+    if (!toolkit.isNothing(req.body)) {
       var reqBodyDump = toolkit.jsonDumps(req.body, 2);
-      reqBodyDump = toolkit.limitedText(reqBodyDump, 1000);
-      reqInfo.reqBodyDump = reqBodyDump;
+      reqInfo.reqBodyDump = toolkit.limitText(reqBodyDump, 1000, { showLength: 'newLine' });
     }
 
-    if (res.statusCode >= 400 && respBody) {
-      // 只有存在错误时记录响应数据
-      reqInfo.respBody = respBody;
+    if (respBody) {
+      if (res.statusCode >= 400) {
+        // 报错时记录完整响应体
+        reqInfo.respBody = respBody;
+      } else {
+        // 正常时记录部分响应体Dump
+        var respBodyDump = toolkit.jsonDumps(respBody, 2);
+        reqInfo.respBodyDump = toolkit.limitText(respBodyDump, 1000, { showLength: 'newLine' });
+      }
     }
 
     if (res.locals.user) {
@@ -234,7 +239,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
           var type = `reqCost${bucket}`;
           var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
           async.series([
-            function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback)         },
+            function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback) },
             function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
           ], eachCallback);
         }, asyncCallback);
@@ -393,7 +398,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     if (!options.muteLog) {
       var retDump = JSON.stringify(ret);
       var retDumpLength = retDump.length;
-      var retDump = toolkit.limitedText(getRetSample(ret), 1000);
+      var retDump = toolkit.limitText(getRetSample(ret), 1000);
       res.locals.logger.debug('[RESPONSE] JSON: `{0}`, Length: {1}', retDump, retDumpLength);
     }
 
@@ -594,9 +599,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
   res.locals.sendText = function(text) {
     var textDump = JSON.stringify(text);
-    var textDumpLenth = textDump.length;
-    var textDump = toolkit.limitedText(textDump, 1000);
-    res.locals.logger.debug('[RESPONSE] TEXT: `{0}`, Length: {1}', textDump, textDumpLenth);
+    var textDump = toolkit.limitText(textDump, 1000, { showLength: true });
+    res.locals.logger.debug('[RESPONSE] TEXT: `{0}`', textDump);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
@@ -636,9 +640,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         break;
     }
 
-    var rawDumpLength = rawDump.length;
-    rawDump = toolkit.limitedText(rawDump, 1000);
-    res.locals.logger.debug('[RESPONSE] RAW: `{0}`, Length: {1}', rawDump, rawDumpLength);
+    rawDump = toolkit.limitText(rawDump, 1000, { showLength: true });
+    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', rawDump);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
