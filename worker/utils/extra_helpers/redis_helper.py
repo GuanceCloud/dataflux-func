@@ -48,9 +48,9 @@ class RedisHelper(object):
 
             self.config = config
 
-            self.config['tsMaxAge']    = config.get('tsMaxAge')    or 3600 * 24
-            self.config['tsMaxPeriod'] = config.get('tsMaxPeriod') or 3600 * 24 * 3
-            self.config['tsMaxLength'] = config.get('tsMaxLength') or 60 * 24 * 3
+            self.config['tsMaxAge']      = config.get('tsMaxAge')      or 3600 * 24
+            self.config['tsMaxPeriod']   = config.get('tsMaxPeriod')   or 3600 * 24 * 3
+            self.config['tsMinInterval'] = config.get('tsMinInterval') or 60
 
             self.client = redis.Redis(**get_config(config))
 
@@ -67,9 +67,9 @@ class RedisHelper(object):
                     'useTLS'  : CONFIG['REDIS_USE_TLS'],
                 }
 
-                CLIENT_CONFIG['tsMaxAge']    = CONFIG.get('REDIS_TS_MAX_AGE')
-                CLIENT_CONFIG['tsMaxPeriod'] = CONFIG.get('REDIS_TS_MAX_PERIOD')
-                CLIENT_CONFIG['tsMaxLength'] = CONFIG.get('REDIS_TS_MAX_LENGTH')
+                CLIENT_CONFIG['tsMaxAge']      = CONFIG.get('REDIS_TS_MAX_AGE')
+                CLIENT_CONFIG['tsMaxPeriod']   = CONFIG.get('REDIS_TS_MAX_PERIOD')
+                CLIENT_CONFIG['tsMinInterval'] = CONFIG.get('REDIS_TS_MIN_INTERVAL')
 
                 CLIENT = redis.Redis(**get_config(CLIENT_CONFIG))
 
@@ -301,6 +301,9 @@ class RedisHelper(object):
 
         timestamp = timestamp or int(time.time())
 
+        # 时间戳自动根据最小间隔对齐
+        timestamp = int(timestamp / self.config['tsMinInterval']) * self.config['tsMinInterval']
+
         if mode.lower() == 'addup':
             prev_points = self.client.zrangebyscore(key, timestamp, timestamp)
             if prev_points:
@@ -318,9 +321,6 @@ class RedisHelper(object):
         if self.config['tsMaxPeriod']:
             min_timestamp = int(time.time()) - self.config['tsMaxPeriod']
             self.client.zremrangebyscore(key, '-inf', min_timestamp)
-
-        if self.config['tsMaxLength']:
-            self.client.zremrangebyrank(key, 0, -1 * self.config['tsMaxLength'] - 1)
 
     def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None):
         if not self.skip_log:

@@ -65,9 +65,9 @@ var RedisHelper = function(logger, config) {
 
     self.config = toolkit.noNullOrWhiteSpace(config);
 
-    self.config.tsMaxAge    = config.tsMaxAge    || 3600 * 24;
-    self.config.tsMaxPeriod = config.tsMaxPeriod || 3600 * 24 * 3;
-    self.config.tsMaxLength = config.tsMaxLength || 60 * 24 * 3;
+    self.config.tsMaxAge      = config.tsMaxAge      || 3600 * 24;
+    self.config.tsMaxPeriod   = config.tsMaxPeriod   || 3600 * 24 * 3;
+    self.config.tsMinInterval = config.tsMinInterval || 60;
 
     self.client = redis.createClient(getConfig(self.config, _retryStrategy));
 
@@ -90,9 +90,9 @@ var RedisHelper = function(logger, config) {
         useTLS  : CONFIG.REDIS_USE_TLS,
       });
 
-      CLIENT_CONFIG.tsMaxAge    = CONFIG.REDIS_TS_MAX_AGE;
-      CLIENT_CONFIG.tsMaxPeriod = CONFIG.REDIS_TS_MAX_PERIOD;
-      CLIENT_CONFIG.tsMaxLength = CONFIG.REDIS_TS_MAX_LENGTH;
+      CLIENT_CONFIG.tsMaxAge      = CONFIG.REDIS_TS_MAX_AGE;
+      CLIENT_CONFIG.tsMaxPeriod   = CONFIG.REDIS_TS_MAX_PERIOD;
+      CLIENT_CONFIG.tsMinInterval = CONFIG.REDIS_TS_MIN_INTERVAL;
 
       CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
 
@@ -648,6 +648,9 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
   var value     = options.value     || 0;
   var mode      = options.mode      || 'update';
 
+  // 时间戳自动根据最小间隔对齐
+  timestamp = parseInt(timestamp / this.config.tsMinInterval) * this.config.tsMinInterval;
+
   if (self.isDryRun) return callback(null, 'OK');
 
   async.series([
@@ -699,11 +702,6 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
 
       var minTimestamp = parseInt(Date.now() / 1000) - self.config.tsMaxPeriod;
       self.client.zremrangebyscore(key, '-inf', minTimestamp, asyncCallback);
-    },
-    function(asyncCallback) {
-      if (!self.config.tsMaxLength) return asyncCallback();
-
-      self.client.zremrangebyrank(key, 0, -1 * self.config.tsMaxLength -1, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);
