@@ -4,13 +4,14 @@ MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
 ARG TARGETARCH
 
-ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-x64/bin:/usr/src/resource/node-v12.16.3-linux-arm64/bin"
-ENV TARGETARCH ${TARGETARCH}
-
 ARG RESOURCE_BASE_URL="https://static.guance.com/dataflux-func/resource"
 ARG NODE_PKG_X64="node-v12.16.3-linux-x64.tar.gz"
 ARG NODE_PKG_ARM64="node-v12.16.3-linux-arm64.tar.gz"
-ARG ORACLE_CLIENT_PKG="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"
+ARG ORACLE_CLIENT_PKG_X64="oracle-instantclient-basic-linux.x64-19.6.0.0.0dbru.zip"
+ARG ORACLE_CLIENT_PKG_ARM64="oracle-instantclient-basic-linux.arm64-19.10.0.0.0dbru.zip"
+
+ENV TARGETARCH ${TARGETARCH}
+ENV PATH "$PATH:/usr/src/resource/node-v12.16.3-linux-x64/bin:/usr/src/resource/node-v12.16.3-linux-arm64/bin"
 
 USER root
 
@@ -22,7 +23,8 @@ RUN mkdir -p /data/extra-python-packages && \
 
 # Install
 RUN apt-get update && \
-    apt-get install -y iputils-ping vim wget curl telnet zip unzip python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev && \
+    apt-get install -y iputils-ping vim wget curl telnet zip unzip \
+                python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev libaio1 && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
 # Download, extract and install resources
@@ -31,18 +33,23 @@ RUN case ${TARGETARCH} in \
         "amd64" ) \
             wget -q ${RESOURCE_BASE_URL}/${NODE_PKG_X64} && \
                 tar -xf ${NODE_PKG_X64} && \
-            wget -q ${RESOURCE_BASE_URL}/${ORACLE_CLIENT_PKG} && \
-                unzip ${ORACLE_CLIENT_PKG} -d /opt/oracle && \
+            wget -q ${RESOURCE_BASE_URL}/${ORACLE_CLIENT_PKG_X64} && \
+                unzip ${ORACLE_CLIENT_PKG_X64} -d /opt/oracle && \
                 sh -c "echo /opt/oracle/instantclient_19_6 > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
                 ldconfig && \
             rm /usr/src/resource/${NODE_PKG_X64} && \
-            rm /usr/src/resource/${ORACLE_CLIENT_PKG} \
+            rm /usr/src/resource/${ORACLE_CLIENT_PKG_X64} \
             ;; \
 
         "arm64" ) \
             wget -q ${RESOURCE_BASE_URL}/${NODE_PKG_ARM64} && \
                 tar -xf ${NODE_PKG_ARM64} && \
-            rm /usr/src/resource/${NODE_PKG_ARM64} \
+            wget -q ${RESOURCE_BASE_URL}/${ORACLE_CLIENT_PKG_ARM64} && \
+                unzip ${ORACLE_CLIENT_PKG_ARM64} -d /opt/oracle && \
+                sh -c "echo /opt/oracle/instantclient_19_10 > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
+                ldconfig && \
+            rm /usr/src/resource/${NODE_PKG_ARM64} && \
+            rm /usr/src/resource/${ORACLE_CLIENT_PKG_ARM64} \
             ;; \
     esac
 
