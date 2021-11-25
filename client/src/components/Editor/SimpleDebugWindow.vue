@@ -435,6 +435,7 @@ export default {
               queryStatement: queryStatement,
               returnType    : 'json',
             },
+            alert       : { muteError: true },
             extraOptions: { noCountProcessing: true },
           });
           if (!apiRes.ok) {
@@ -468,11 +469,6 @@ export default {
             case 'mysql':
               apiRes.data.forEach(d => {
                 switch(browserConfig.ref) {
-                  // query/mysql/database
-                  case 'database':
-                    subNodeData.push({ value: d['Database'] });
-                    break;
-
                   // query/mysql/table
                   case 'table':
                     subNodeData.push({ value: Object.values(d)[0] });
@@ -523,11 +519,6 @@ export default {
             case 'oracle':
               apiRes.data.forEach(d => {
                 switch(browserConfig.ref) {
-                  // query/oracle/owner
-                  case 'owner':
-                    subNodeData.push({ value: d['OWNER'] });
-                    break;
-
                   // query/oracle/table
                   case 'table':
                     subNodeData.push({ value: d['TABLE_NAME'] });
@@ -549,19 +540,10 @@ export default {
             case 'sqlserver':
               apiRes.data.forEach(d => {
                 switch(browserConfig.ref) {
-                  // query/sqlserver/database
-                  case 'database':
-                    subNodeData.push({ value: d['name'] });
-                    break;
-
-                  // query/sqlserver/table
+                  // query/sqlserver/table + field
                   case 'table':
-                    subNodeData.push({ value: d['TABLE_NAME'] });
-                    break;
-
-                  // query/sqlserver/field
                   case 'field':
-                    subNodeData.push({ value: d['COLUMN_NAME'] });
+                    subNodeData.push({ value: d['NAME'] });
                     break;
 
                   // query/sqlserver/*
@@ -575,11 +557,6 @@ export default {
             case 'postgresql':
               apiRes.data.forEach(d => {
                 switch(browserConfig.ref) {
-                  // query/postgresql/database
-                  case 'database':
-                    subNodeData.push({ value: d['current_database'] });
-                    break;
-
                   // query/postgresql/schema
                   case 'schema':
                     subNodeData.push({ value: d['schemaname'] });
@@ -872,27 +849,17 @@ export default {
           exampleCommandArgs: ['SELECT * FROM `some_table` LIMIT 10'],
           debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : this.$t('Databases'),
-            type          : 'query',
-            query         : 'SHOW DATABASES',
-            example       : 'SHOW TABLES FROM `{database}`',
-            defaultExample: 'SHOW TABLES',
-            ref           : 'database',
+            title  : this.$t('Tables'),
+            type   : 'query',
+            query  : 'SHOW TABLES',
+            example: 'SELECT * FROM `{table}`',
+            ref    : 'table',
             sub: {
-              title         : this.$t('Tables'),
-              type          : 'query',
-              query         : 'SHOW TABLES FROM `{database}`',
-              example       : 'SELECT * FROM `{database}`.`{table}`',
-              defaultExample: 'SELECT * FROM `{table}`',
-              ref           : 'table',
-              sub: {
-                title         : this.$t('Fields'),
-                type          : 'query',
-                query         : 'SHOW FULL COLUMNS FROM `{table}` FROM `{database}`',
-                example       : 'SELECT `{field}` FROM `{database}`.`{table}`',
-                defaultExample: 'SELECT `{field}` FROM `{table}`',
-                ref           : 'field',
-              },
+              title  : this.$t('Fields'),
+              type   : 'query',
+              query  : 'SHOW FULL COLUMNS FROM `{table}`',
+              example: 'SELECT `{field}` FROM `{table}`',
+              ref    : 'field',
             },
           },
         },
@@ -961,27 +928,17 @@ export default {
           exampleCommandArgs: ['SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10'],
           debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : '用户',
-            type          : 'query',
-            query         : 'SELECT DISTINCT OWNER FROM ALL_TABLES',
-            example       : "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '{owner}'",
-            defaultExample: "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '{owner}'",
-            ref           : 'owner',
+            title  : this.$t('Tables'),
+            type   : 'query',
+            query  : "SELECT TABLE_NAME FROM USER_TABLES",
+            example: 'SELECT * FROM {table}',
+            ref    : 'table',
             sub: {
-              title         : this.$t('Tables'),
-              type          : 'query',
-              query         : "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '{owner}'",
-              example       : 'SELECT * FROM {owner}.{table}',
-              defaultExample: 'SELECT * FROM {table}',
-              ref           : 'table',
-              sub: {
-                title         : this.$t('Fields'),
-                type          : 'query',
-                query         : "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE OWNER = '{owner}' AND TABLE_NAME = '{table}'",
-                example       : 'SELECT {field} FROM {owner}.{table}',
-                defaultExample: 'SELECT {field} FROM {table}',
-                ref           : 'field',
-              },
+              title  : this.$t('Fields'),
+              type   : 'query',
+              query  : "SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME='{table}'",
+              example: 'SELECT {field} FROM {table}',
+              ref    : 'field',
             },
           },
         },
@@ -995,27 +952,17 @@ export default {
           exampleCommandArgs: ['SELECT TOP 10 * FROM some_table'],
           debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : this.$t('Databases'),
-            type          : 'query',
-            query         : 'SELECT [name] FROM [master].[dbo].[sysdatabases]',
-            example       : `SELECT [TABLE_NAME] FROM [{database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
-            defaultExample: `SELECT [TABLE_NAME] FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
-            ref           : 'database',
+            title  : this.$t('Tables'),
+            type   : 'query',
+            query  : `SELECT [NAME] FROM [sys].[TABLES]`,
+            example: 'SELECT * FROM [{table}]',
+            ref    : 'table',
             sub: {
-              title         : this.$t('Tables'),
-              type          : 'query',
-              query         : `SELECT [TABLE_NAME] FROM [{database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_TYPE] = 'BASE TABLE'`,
-              example       : 'SELECT * FROM [{database}].[dbo].[{table}]',
-              defaultExample: 'SELECT * FROM [{table}]',
-              ref           : 'table',
-              sub: {
-                title         : this.$t('Fields'),
-                type          : 'query',
-                query         : `SELECT [COLUMN_NAME] FROM [{database}].[INFORMATION_SCHEMA].[COLUMNS] WHERE [TABLE_NAME] = '{table}'`,
-                example       : 'SELECT [{field}] FROM [{database}].[dbo].[{table}]',
-                defaultExample: 'SELECT [{field}] FROM [{table}]',
-                ref           : 'field',
-              },
+              title  : this.$t('Fields'),
+              type   : 'query',
+              query  : `SELECT NAME FROM SYSCOLUMNS WHERE ID = object_id('{table}')`,
+              example: 'SELECT [{field}] FROM [{table}]',
+              ref    : 'field',
             },
           },
         },
@@ -1029,34 +976,26 @@ export default {
           exampleCommandArgs: ['SELECT * FROM some_table LIMIT 10'],
           debuggerName      : this.$t('SQL Debugger'),
           browsers: {
-            title         : this.$t('Databases'),
+            title         : 'Schema',
             type          : 'query',
-            query         : `SELECT current_database()`,
+            query         : `SELECT DISTINCT "schemaname" FROM "pg_tables" GROUP BY "schemaname" ORDER BY "schemaname"`,
             example       : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
             defaultExample: `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
-            ref           : 'database',
+            ref           : 'schema',
             sub: {
-              title         : 'Schema',
+              title         : this.$t('Tables'),
               type          : 'query',
-              query         : `SELECT DISTINCT "schemaname" FROM "pg_tables" GROUP BY "schemaname" ORDER BY "schemaname"`,
-              example       : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
-              defaultExample: `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = 'public'`,
-              ref           : 'schema',
+              query         : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = '{schema}'`,
+              example       : 'SELECT * FROM "{schema}"."{table}"',
+              defaultExample: 'SELECT * FROM "{table}"',
+              ref           : 'table',
               sub: {
-                title         : this.$t('Tables'),
+                title         : this.$t('Fields'),
                 type          : 'query',
-                query         : `SELECT "tablename" FROM "pg_tables" WHERE "schemaname" = '{schema}'`,
-                example       : 'SELECT * FROM "{schema}"."{table}"',
-                defaultExample: 'SELECT * FROM "{table}"',
-                ref           : 'table',
-                sub: {
-                  title         : this.$t('Fields'),
-                  type          : 'query',
-                  query         : `SELECT "A"."attname" FROM "pg_class" AS "C", "pg_attribute" AS "A" WHERE "A"."attrelid" = "C"."oid" AND "A"."attnum" > 0 AND "C"."relname" = '{table}'`,
-                  example       : 'SELECT "{field}" FROM "{schema}"."{table}"',
-                  defaultExample: 'SELECT "{field}" FROM {table}"',
-                  ref           : 'field',
-                },
+                query         : `SELECT "A"."attname" FROM "pg_class" AS "C", "pg_attribute" AS "A" WHERE "A"."attrelid" = "C"."oid" AND "A"."attnum" > 0 AND "C"."relname" = '{table}'`,
+                example       : 'SELECT "{field}" FROM "{schema}"."{table}"',
+                defaultExample: 'SELECT "{field}" FROM {table}"',
+                ref           : 'field',
               },
             },
           },
