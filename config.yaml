@@ -292,11 +292,6 @@ _INTERNAL_KEEP_SCRIPT_LOG: false
 # 是否开启错误堆栈包含本地变量信息（开启后可能会产生巨量日志）
 _INTERNAL_ERROR_STACK_WITH_LOCALS_INFO: false
 
-# 是否启用Microsoft SQL Server 支持（ARM64下需要禁用）
-_ENABLE_DATA_SOURCE_SQLSERVER: true
-# 是否启用Oracel Database 支持（ARM64下需要禁用）
-_ENABLE_DATA_SOURCE_ORACLE: true
-
 # 是否禁用安装配置
 _DISABLE_SETUP: false
 # 是否禁用自动安装附带脚本

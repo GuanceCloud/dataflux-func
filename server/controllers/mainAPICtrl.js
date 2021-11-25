@@ -2152,10 +2152,9 @@ exports.getSystemConfig = function(req, res, next) {
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
 
-    _ENABLE_DATA_SOURCE_SQLSERVER: CONFIG._ENABLE_DATA_SOURCE_SQLSERVER,
-    _ENABLE_DATA_SOURCE_ORACLE   : CONFIG._ENABLE_DATA_SOURCE_ORACLE,
-
     _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.mainAPI.uploadResource.files.$limitSize),
+
+    _ARCH: process.arch, // x64|arm64
   };
 
   var funcModel = funcMod.createModel(res.locals);

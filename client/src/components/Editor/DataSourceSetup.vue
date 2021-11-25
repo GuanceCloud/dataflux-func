@@ -511,12 +511,7 @@ export default {
         // 部分数据源特殊处理
         switch (opt.key) {
           case 'sqlserver':
-            if (!this.$store.getters.CONFIG('_ENABLE_DATA_SOURCE_SQLSERVER')) {
-              return false;
-            }
-
-          case 'oracle':
-            if (!this.$store.getters.CONFIG('_ENABLE_DATA_SOURCE_ORACLE')) {
+            if (this.$store.getters.CONFIG('_ARCH') !== 'x64') {
               return false;
             }
 
