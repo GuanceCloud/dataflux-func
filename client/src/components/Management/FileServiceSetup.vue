@@ -40,7 +40,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                   <span class="text-main float-right">
                     {{ $t('URL Preview') }}{{ $t(':') }}
@@ -48,7 +48,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                   </span>
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.pageMode() === 'add'">
+                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-input
                     maxlength="50"
                     show-word-limit
@@ -76,7 +76,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -103,7 +103,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -124,7 +124,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -148,7 +148,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -162,7 +162,7 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      this.$store.commit('updateFileServiceList_scrollY', null);
+      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       this.$router.push({
@@ -239,7 +239,7 @@ export default {
         setup: this.$t('Setup File Service'),
         add  : this.$t('Add File Service'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },
   },
   props: {

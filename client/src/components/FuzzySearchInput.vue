@@ -3,29 +3,30 @@ Input search content: 输入搜索内容
 </i18n>
 
 <template>
-  <el-tooltip
-    class="item"
-    effect="dark"
-    :content="searchTip"
-    :disabled="T.isNothing(searchTip)"
-    placement="bottom">
-    <div class="search-input">
-      <el-input
-        :placeholder="$t('Input search content')"
-        size="small"
-        v-model="dataFilter._fuzzySearch"
-        @change="T.changePageFilter(dataFilter)">
-        <i slot="prefix"
-          class="el-input__icon el-icon-close text-main"
-          v-if="dataFilter._fuzzySearch"
-          @click="T.changePageFilter(dataFilter, {_fuzzySearch: null})"></i>
-        <i slot="suffix"
-          class="el-input__icon el-icon-search text-main"
-          v-if="dataFilter._fuzzySearch"
-          @click="T.changePageFilter(dataFilter)"></i>
-      </el-input>
-    </div>
-  </el-tooltip>
+  <div class="search-input">
+    <el-autocomplete
+      :placeholder="$t('Input search content')"
+      size="small"
+      v-model="dataFilter._fuzzySearch"
+      :fetch-suggestions="getSearchHistory"
+      :debounce="100"
+      @change="doSearch()"
+      @select="doSearch()">
+      <i slot="prefix"
+        class="el-input__icon el-icon-close text-main"
+        v-if="dataFilter._fuzzySearch"
+        @click="doSearch({_fuzzySearch: null})"></i>
+      <i slot="suffix"
+        class="el-input__icon el-icon-search text-main"
+        v-if="dataFilter._fuzzySearch"
+        @click="doSearch()"></i>
+
+      <template slot-scope="{ item }">
+        <span class="text-main">{{ item.value }}</span>
+        <span class="text-info search-time">{{ $t('(') }}{{ item.timestamp | fromNow }}{{ $t(')') }}</span>
+      </template>
+    </el-autocomplete>
+  </div>
 </template>
 
 <script>
@@ -34,14 +35,26 @@ export default {
   components: {
   },
   watch: {
+    $route: {
+      immediate: true,
+      async handler(to, from) {
+
+      }
+    },
   },
   methods: {
+    doSearch(nextListQuery) {
+      this.T.changePageFilter(this.dataFilter, nextListQuery);
+      this.$store.commit('addFuzzySearchHistory', this.dataFilter._fuzzySearch);
+    },
+    getSearchHistory(queryString, callback) {
+      return callback(this.$store.getters.fuzzySearchHistory);
+    },
   },
   computed: {
   },
   props: {
     dataFilter: Object,
-    searchTip : String,
   },
   data() {
     return {
@@ -58,6 +71,9 @@ export default {
   width: 260px;
   display: inline-block;
 }
+.search-input .el-autocomplete {
+  width: 100%;
+}
 .search-input input {
   font-size: 14px;
 }
@@ -65,5 +81,9 @@ export default {
 .search-input .el-icon-close {
   cursor: pointer;
   font-weight: bold;
+}
+.search-time {
+  font-size: 12px;
+  float: right;
 }
 </style>

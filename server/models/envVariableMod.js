@@ -18,8 +18,13 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   tableName  : 'biz_main_env_variable',
   alias      : 'evar',
 
+  objectFields: {
+    isPinned: 'boolean',
+  },
+
   defaultOrders: [
-    {field: 'evar.id', method: 'ASC'},
+    {field: 'evar.pinTime', method: 'DESC'},
+    {field: 'evar.id',      method: 'ASC'},
   ],
 };
 
@@ -39,6 +44,7 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   evar.*');
+  sql.append('  ,NOT ISNULL(evar.pinTime) AS isPinned');
 
   sql.append('FROM biz_main_env_variable AS evar');
 
@@ -86,6 +92,11 @@ function _prepareData(data) {
 
   if ('valueTEXT' in data && !data.valueTEXT) {
     data.valueTEXT = '';
+  }
+
+  if ('boolean' === typeof data.isPinned) {
+    data.pinTime = data.isPinned ? new Date() : null;
+    delete data.isPinned;
   }
 
   return data;

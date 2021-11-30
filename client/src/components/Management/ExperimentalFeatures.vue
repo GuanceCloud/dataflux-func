@@ -18,6 +18,21 @@
                   <InfoBlock type="info" :title="'一些尚未正式公开的实验性功能可在本页面开启\n本页面配置仅保存在浏览器本地'"></InfoBlock>
                 </el-form-item>
 
+                <el-form-item prop="Blueprint">
+                  <el-switch
+                    :active-value="true"
+                    :inactive-value="false"
+                    active-text="开启蓝图模块"
+                    v-model="form.Blueprint">
+                  </el-switch>
+                  <div class="text-small form-item-tip">
+                    用于图形化方式开发脚本
+                    <br>开启后，可在顶部「导航栏」<i class="fa fa-fw fa-long-arrow-right"></i>「蓝图」进入模块
+                  </div>
+                </el-form-item>
+
+                <br><br>
+
                 <el-form-item prop="ScriptMarket">
                   <el-switch
                     :active-value="true"
@@ -41,19 +56,6 @@
                   <div class="text-small form-item-tip">
                     用于安装脚本所需的额外第三方Python包（PIP）
                     <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「PIP工具」进入模块
-                  </div>
-                </el-form-item>
-
-                <el-form-item prop="Blueprint">
-                  <el-switch
-                    :active-value="true"
-                    :inactive-value="false"
-                    active-text="开启蓝图模块"
-                    v-model="form.Blueprint">
-                  </el-switch>
-                  <div class="text-small form-item-tip">
-                    用于图形化方式开发脚本
-                    <br>开启后，可在顶部「导航栏」<i class="fa fa-fw fa-long-arrow-right"></i>「蓝图」进入模块
                   </div>
                 </el-form-item>
 

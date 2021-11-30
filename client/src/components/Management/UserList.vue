@@ -4,7 +4,6 @@ Administrator: 系统管理员
 User disabled: 用户已禁用
 User enabled : 用户已启用
 
-Search User(ID, username, name): 搜索用户（ID、用户名、名称）
 No User has ever been added: 从未添加过任何用户
 
 Are you sure you want to disable the User?: 是否确认禁用此用户？
@@ -18,10 +17,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
         <h1>
           {{ $t('User Manager') }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search User(ID, username, name)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -44,7 +40,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
         <el-table
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Username')">
             <template slot-scope="scope">
@@ -100,18 +96,17 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.UserList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery({
+        sort: ['seq']
+      });
+
       let apiRes = await this.T.callAPI_get('/api/v1/users/do/list', {
-        query: this.T.createListQuery({ sort: ['seq'] }),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -152,13 +147,13 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
       switch(target) {
         case 'add':
           this.$router.push({
             name: 'user-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           });
           break;
 
@@ -168,7 +163,7 @@ export default {
           this.$router.push({
             name  : 'user-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           });
           break;
       }

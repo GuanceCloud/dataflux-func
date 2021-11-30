@@ -118,7 +118,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'import':
           return await this.$refs.upload.submit();
       }
@@ -236,7 +236,7 @@ export default {
       const nameMap = {
         import: '导入',
       };
-      return nameMap[this.T.pageMode()];
+      return nameMap[this.T.setupPageMode()];
     },
   },
   props: {

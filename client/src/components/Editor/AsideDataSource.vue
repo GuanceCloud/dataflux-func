@@ -1,14 +1,16 @@
 <i18n locale="zh-CN" lang="yaml">
-filter content         : 过滤内容
-Refresh                : 刷新列表
-Add Data Source        : 添加数据源
-Simple Debug Panel     : 简易调试面板
-View                   : 查看
-Setup                  : 配置
-Example                : 示例
-Copy example           : 复制示例
-Copy {name} ID         : 复制{name}ID
-Open Simple Debug Panel: 打开简易调试面板
+filter content : 过滤内容
+Refresh        : 刷新列表
+Add Data Source: 添加数据源
+Simple Debug   : 简易调试
+View           : 查看
+Setup          : 配置
+Example        : 示例
+Copy example   : 复制示例
+Copy {name} ID : 复制{name}ID
+
+Data Source pinned  : 数据源已置顶
+Data Source unpinned: 数据源已取消
 </i18n>
 
 <template>
@@ -31,7 +33,7 @@ Open Simple Debug Panel: 打开简易调试面板
         class="aside-tree-node"
         @click="openEntity(node, data)">
 
-        <span>
+        <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
             <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
@@ -39,67 +41,87 @@ Open Simple Debug Panel: 打开简易调试面板
             <i class="fa fa-fw fa-plus"></i> {{ $t('Add Data Source') }}
           </el-link>
           <div v-else>
-            <el-tag class="aside-tree-node-tag" :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType" size="mini"><span>{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</span></el-tag>
-            <span :class="{builtin: data.isBuiltin}">{{ node.label }}</span>
+            <el-tag class="aside-tree-node-tag"
+              :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
+              size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+            <el-tag v-if="data.isBuiltin"
+              effect="dark"
+              type="warning"
+              size="mini">{{ $t('Builtin') }}</el-tag>
+            <span>{{ node.label }}</span>
           </div>
         </span>
 
         <div v-if="data.type === 'dataSource'">
-          <el-tooltip effect="dark" :content="$t('Simple Debug Panel')" placement="left" :enterable="false">
-            <span>
-              <el-button v-if="C.DATA_SOURCE_MAP.get(data.dataSourceType).debugSupported"
-                type="text"
-                @click.stop="showSimpleDebugWindow(data.dataSource)">
-                <i class="fa fa-fw fa-window-restore text-info"></i>
-              </el-button>
-            </span>
+          <!-- 状态图标 -->
+          <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+            <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
           </el-tooltip>
 
-          <el-tooltip effect="dark" :content="data.isBuiltin ? $t('View') : $t('Setup')" placement="top" :enterable="false">
-            <span>
-              <el-button v-if="data.type !== 'addDataSource'"
-                type="text"
-                @click.stop="openEntity(node, data, 'setup')">
-                <i v-if="data.isBuiltin" class="fa fa-fw fa-search text-info"></i>
-                <i v-else class="fa fa-fw fa-wrench text-info"></i>
-              </el-button>
-            </span>
-          </el-tooltip>
-
+          <!-- 菜单 -->
           <el-popover v-if="data.id"
             placement="right-start"
-            trigger="click"
+            trigger="hover"
             popper-class="aside-tip"
             :value="showPopoverId === data.id">
+
+            <!-- 基本信息 -->
             <div class="aside-tree-node-description">
-              <code>{{ data.title || data.id }}</code>
+              <div>
+                <el-tag class="aside-tree-node-tag-title"
+                  :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
+                  size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+              </div>
+
+              <CopyButton :content="data.id" tip-placement="left"></CopyButton>
+              ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+
               <pre v-if="data.description">{{ data.description }}</pre>
             </div>
 
+            <!-- 示例代码 -->
             <template v-if="data.sampleCode">
               <div class="aside-tree-node-sample-code">
+                <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
                 {{ $t('Example') }}{{ $t(':') }}
+
                 <pre>{{ data.sampleCode }}</pre>
               </div>
             </template>
 
-            <br><CopyButton
-              :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
-              :content="data.id"></CopyButton>
-            <br><CopyButton v-if="data.sampleCode"
-              :title="$t('Copy example')"
-              :content="data.sampleCode"></CopyButton>
-            <br><el-button v-if="C.DATA_SOURCE_MAP.get(data.dataSourceType).debugSupported"
-              class="aside-tree-node-simple-debug"
-              type="text"
-              @click.stop="showSimpleDebugWindow(data.dataSource)">
-              <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Simple Debug Panel') }}
-            </el-button>
+            <!-- 操作 -->
+            <br>
+            <el-button-group>
+              <!-- 简易调试 -->
+              <el-button v-if="C.DATA_SOURCE_MAP.get(data.dataSourceType).debugSupported"
+                size="small"
+                @click.stop="showSimpleDebugWindow(data.dataSource)">
+                <i class="fa fa-fw fa-window-restore"></i>
+                {{ $t('Simple Debug') }}
+              </el-button>
+
+              <!-- 置顶 -->
+              <el-button
+                size="small"
+                @click.stop="pinData(data.type, data.id, !data.isPinned)">
+                <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+                {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+              </el-button>
+
+              <!-- 配置/查看 -->
+              <el-button
+                size="small"
+                @click.stop="openEntity(node, data, 'setup')">
+                <i class="fa fa-fw" :class="[data.isBuiltin ? 'fa-search' : 'fa-wrench']"></i>
+                {{ data.isBuiltin ? $t('View') : $t('Setup') }}
+              </el-button>
+            </el-button-group>
 
             <el-button slot="reference"
               type="text"
+              class="text-info"
               @click.stop="showPopover(data.id)">
-              <i class="fa fa-fw fa-question-circle"></i>
+              <i class="fa fa-fw fa-bars"></i>
             </el-button>
           </el-popover>
         </div>
@@ -143,7 +165,7 @@ export default {
       this.loading = true;
 
       let apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', {
-        query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin'] },
+        query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin', 'isPinned', 'pinTime'] },
       });
       if (!apiRes.ok) return;
 
@@ -165,6 +187,8 @@ export default {
           type          : 'dataSource',
           dataSourceType: d.type,
           isBuiltin     : d.isBuiltin,
+          isPinned      : d.isPinned,
+          pinTime       : d.pinTime,
           searchTEXT    : `${d.title} ${d.type} ${d.id}`,
 
           title      : d.title,
@@ -180,6 +204,29 @@ export default {
 
       this.loading = false;
       this.data = treeData;
+    },
+    async pinData(dataType, dataId, isPinned) {
+      let apiPath   = null;
+      let okMessage = null;
+      switch(dataType) {
+        case 'dataSource':
+          apiPath   = '/api/v1/data-sources/:id/do/modify';
+          okMessage = isPinned
+                    ? this.$t('Data Source pinned')
+                    : this.$t('Data Source unpinned');
+          break;
+
+        default:
+          return;
+      }
+      let apiRes = await this.T.callAPI('post', apiPath, {
+        params: { id: dataId },
+        body  : { data: { isPinned: isPinned } },
+        alert : { okMessage: okMessage },
+      });
+      if (!apiRes.ok) return;
+
+      this.$store.commit('updateDataSourceListSyncTime');
     },
     showSimpleDebugWindow(dataSource) {
       this.$refs.simpleDebugWindow.showWindow(dataSource);
@@ -244,6 +291,11 @@ export default {
   width: 75px;
   text-align: center;
 }
+.aside-tree-node-tag-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
 .aside-tree-node-tag * {
   font-family: Arial;
 }
@@ -269,7 +321,6 @@ export default {
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
-  color: grey;
   text-align: left;
 }
 .aside-tree-node-simple-debug {

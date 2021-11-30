@@ -65,14 +65,24 @@ indexAPI:
       Ping test.
 
   echo:
-    showInDoc    : true
-    name         : Echo test
-    method       : post
-    url          : /api/v1/do/echo
-    response     : json
-    requireSignIn: true
+    showInDoc: true
+    name     : Echo test
+    method   : post
+    url      : /api/v1/do/echo
+    response : json
     desc: |
       Echo test.
+    query:
+      string:
+        $desc     : string value
+        $type     : string
+        $allowNull: true
+      integer:
+        $desc: integer value
+        $type: integer
+      boolean:
+        $desc: boolean value
+        $type: boolean
     body:
       echo:
         $desc: Any value
@@ -1995,6 +2005,10 @@ scriptSetAPI:
           $desc      : 依赖包
           $allowNull : true
           $type      : string
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   modify:
     showInDoc    : true
@@ -2027,6 +2041,14 @@ scriptSetAPI:
           $desc     : 是否锁定
           $allowNull: true
           $type     : boolean
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
+        color:
+          $desc      : 着色
+          $allowNull : true
+          $type      : string
 
   delete:
     showInDoc    : true
@@ -2779,6 +2801,10 @@ dataSourceAPI:
             $desc     : Meta数据（仅限API添加）
             $allowNull: true
             $type     : json
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   modify:
     showInDoc    : true
@@ -2884,6 +2910,10 @@ dataSourceAPI:
             $desc     : Meta数据（仅限API添加）
             $allowNull: true
             $type     : json
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   delete:
     showInDoc    : true
@@ -3031,6 +3061,10 @@ envVariableAPI:
             - boolean
             - json
             - commaArray
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   modify:
     showInDoc    : true
@@ -3070,6 +3104,10 @@ envVariableAPI:
             - boolean
             - json
             - commaArray
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   delete:
     showInDoc    : true
@@ -4262,12 +4300,18 @@ crontabTaskInfoAPI:
     orderFields:
       seq: crti.seq
     fuzzySearch:
+      - crti.id
+      - crti.crontabConfigId
+      - crti.rootTaskId
       - crti.logMessageTEXT
       - crti.einfoTEXT
       - func.id
       - func.title
       - func.description
     query:
+      _withSubTaskCount:
+        $desc: 是否附带子任务计数
+        $type: boolean
       id:
         $desc      : 按任务ID过滤
         $type      : commaArray
@@ -4278,6 +4322,11 @@ crontabTaskInfoAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : crti.crontabConfigId
+      rootTaskId:
+        $desc      : 根据主任务ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : crti.rootTaskId
       funcId:
         $desc      : 按函数ID过滤
         $type      : commaArray
@@ -4709,12 +4758,18 @@ batchTaskInfoAPI:
     orderFields:
       seq: bati.seq
     fuzzySearch:
+      - bati.id
+      - bati.batchId
+      - bati.rootTaskId
       - bati.logMessageTEXT
       - bati.einfoTEXT
       - func.id
       - func.title
       - func.description
     query:
+      _withSubTaskCount:
+        $desc: 是否附带子任务计数
+        $type: boolean
       id:
         $desc      : 按任务ID过滤
         $type      : commaArray
@@ -4725,6 +4780,11 @@ batchTaskInfoAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : bati.batchId
+      rootTaskId:
+        $desc      : 根据主任务ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bati.rootTaskId
       funcId:
         $desc      : 按函数ID过滤
         $type      : commaArray

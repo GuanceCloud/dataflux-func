@@ -239,7 +239,7 @@ export default {
         this.$store.commit('updateLoadStatus', false);
       };
 
-      let _listQuery = this.T.createListQuery();
+      let _listQuery = this.dataFilter = this.T.createListQuery();
       let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
         query: _listQuery,
       });

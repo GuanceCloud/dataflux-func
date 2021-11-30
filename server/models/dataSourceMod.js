@@ -21,11 +21,13 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   objectFields: {
     configJSON: 'json',
     isBuiltin : 'boolean',
+    isPinned  : 'boolean',
   },
 
   defaultOrders: [
+    {field: 'dsrc.pinTime',   method: 'DESC'},
     {field: 'dsrc.isBuiltin', method: 'DESC'},
-    {field: 'dsrc.seq', method: 'ASC'},
+    {field: 'dsrc.seq',       method: 'ASC'},
   ],
 };
 
@@ -50,6 +52,7 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   dsrc.*');
+  sql.append('  ,NOT ISNULL(dsrc.pinTime) AS isPinned');
 
   sql.append('FROM biz_main_data_source AS dsrc');
 
@@ -106,6 +109,11 @@ function _prepareData(data) {
     });
 
     data.configJSON = JSON.stringify(data.configJSON);
+  }
+
+  if ('boolean' === typeof data.isPinned) {
+    data.pinTime = data.isPinned ? new Date() : null;
+    delete data.isPinned;
   }
 
   return data;

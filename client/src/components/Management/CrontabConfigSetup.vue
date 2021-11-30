@@ -195,7 +195,7 @@ shortcutDays : '{n}天'
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -222,7 +222,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             const defaultFormCrontab = {
               weeks  : ['*'],
@@ -245,7 +245,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -289,7 +289,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -317,7 +317,7 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/do/add', opt);
       if (!apiRes.ok) return;
 
-      this.$store.commit('updateCrontabConfigList_scrollY', null);
+      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       this.$router.push({
@@ -507,7 +507,7 @@ export default {
         setup: this.$t('Setup Crontab Config'),
         add  : this.$t('Add Crontab Config'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },    apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;

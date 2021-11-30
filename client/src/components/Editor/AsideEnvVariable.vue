@@ -6,6 +6,9 @@ Setup         : 配置
 Example       : 示例
 Copy example  : 复制示例
 Copy {name} ID: 复制{name}ID
+
+ENV Variable pinned  : 环境变量已置顶
+ENV Variable unpinned: 环境变量已取消
 </i18n>
 
 <template>
@@ -28,7 +31,7 @@ Copy {name} ID: 复制{name}ID
         class="aside-tree-node"
         @click="openEntity(node, data)">
 
-        <span>
+        <span :class="{'text-bad': data.isPinned}">
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
             <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
@@ -40,47 +43,64 @@ Copy {name} ID: 复制{name}ID
           </div>
         </span>
 
-        <div>
-          <div v-if="data.type === 'envVariable'">
-            <el-tooltip effect="dark" :content="$t('Setup')" placement="top" :enterable="false">
-              <el-button
-                type="text"
-                @click.stop="openEntity(node, data, 'setup')">
-                <i class="fa fa-fw fa-wrench text-info"></i>
-              </el-button>
-            </el-tooltip>
+        <div v-if="data.type === 'envVariable'">
+          <!-- 状态图标 -->
+          <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+            <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
+          </el-tooltip>
 
-            <el-popover v-if="data.id"
-              placement="right-start"
-              trigger="click"
-              popper-class="aside-tip"
-              :value="showPopoverId === data.id">
-              <div class="aside-tree-node-description">
-                <code>{{ data.title || data.id }}</code>
-                <pre v-if="data.description">{{ data.description }}</pre>
+          <!-- 菜单 -->
+          <el-popover v-if="data.id"
+            placement="right-start"
+            trigger="hover"
+            popper-class="aside-tip"
+            :value="showPopoverId === data.id">
+
+            <!-- 基本信息 -->
+            <div class="aside-tree-node-description">
+              <CopyButton :content="data.id" tip-placement="left"></CopyButton>
+              ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+
+              <pre v-if="data.description">{{ data.description }}</pre>
+            </div>
+
+            <!-- 示例代码 -->
+            <template v-if="data.sampleCode">
+              <div class="aside-tree-node-sample-code">
+                <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
+                {{ $t('Example') }}{{ $t(':') }}
+
+                <pre>{{ data.sampleCode }}</pre>
               </div>
+            </template>
 
-              <template v-if="data.sampleCode">
-                <div class="aside-tree-node-sample-code">
-                  {{ $t('Example') }}{{ $t(':') }}
-                  <pre>{{ data.sampleCode }}</pre>
-                </div>
-              </template>
-
-              <br><CopyButton
-                :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
-                :content="data.id"></CopyButton>
-              <br><CopyButton v-if="data.sampleCode"
-                :title="$t('Copy example')"
-                :content="data.sampleCode"></CopyButton>
-
-              <el-button slot="reference"
-                type="text"
-                @click.stop="showPopover(data.id)">
-                <i class="fa fa-fw fa-question-circle"></i>
+            <!-- 操作 -->
+            <br>
+            <el-button-group>
+              <!-- 置顶 -->
+              <el-button
+                size="small"
+                @click.stop="pinData(data.type, data.id, !data.isPinned)">
+                <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+                {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
               </el-button>
-            </el-popover>
-          </div>
+
+              <!-- 配置/查看 -->
+              <el-button
+                size="small"
+                @click.stop="openEntity(node, data, 'setup')">
+                <i class="fa fa-fw fa-wrench"></i>
+                {{ $t('Setup') }}
+              </el-button>
+            </el-button-group>
+
+            <el-button slot="reference"
+              type="text"
+              class="text-info"
+              @click.stop="showPopover(data.id)">
+              <i class="fa fa-fw fa-bars"></i>
+            </el-button>
+          </el-popover>
         </div>
       </span>
     </el-tree>
@@ -117,7 +137,7 @@ export default {
       this.loading = true;
 
       let apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', {
-        query: { fields: ['id', 'title', 'description'] },
+        query: { fields: ['id', 'title', 'description', 'isPinned', 'pinTime'] },
       });
       if (!apiRes.ok) return;
 
@@ -137,6 +157,8 @@ export default {
           id        : d.id,
           label     : d.title || d.id,
           type      : 'envVariable',
+          isPinned  : d.isPinned,
+          pinTime   : d.pinTime,
           searchTEXT: `${d.title} ${d.id}`,
 
           title      : d.title,
@@ -150,6 +172,29 @@ export default {
 
       this.loading = false;
       this.data = treeData;
+    },
+    async pinData(dataType, dataId, isPinned) {
+      let apiPath   = null;
+      let okMessage = null;
+      switch(dataType) {
+        case 'envVariable':
+          apiPath   = '/api/v1/env-variables/:id/do/modify';
+          okMessage = isPinned
+                    ? this.$t('ENV Variable pinned')
+                    : this.$t('ENV Variable unpinned');
+          break;
+
+        default:
+          return;
+      }
+      let apiRes = await this.T.callAPI('post', apiPath, {
+        params: { id: dataId },
+        body  : { data: { isPinned: isPinned } },
+        alert : { okMessage: okMessage },
+      });
+      if (!apiRes.ok) return;
+
+      this.$store.commit('updateEnvVariableListSyncTime');
     },
     showPopover(id) {
       setImmediate(() => {
@@ -230,7 +275,6 @@ export default {
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
-  color: grey;
   text-align: left;
 }
 </style>

@@ -1742,16 +1742,20 @@ var convertObject = toolkit.convertObject = function convertObject(data, options
       var convertType = options[field];
       var value = row[field];
 
-      if (toolkit.isNullOrUndefined(value)) {
-        continue;
-      }
-
-      if (!convertType) {
-        continue;
-      }
+      if (toolkit.isNullOrUndefined(value)) continue;
+      if (!convertType)                     continue;
 
       try {
         switch(convertType) {
+          case 'int':
+          case 'integer':
+            row[field] = parseInt(value);
+            break;
+
+          case 'float':
+            row[field] = parseFloat(value);
+            break;
+
           case 'bool':
           case 'boolean':
             row[field] = toBoolean(value);

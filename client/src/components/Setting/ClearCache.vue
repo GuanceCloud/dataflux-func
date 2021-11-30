@@ -112,8 +112,7 @@ export default {
         this.$store.commit('updateCodeViewer_highlightedLineConfigMap', null);
         this.$store.commit('updateEditor_highlightedFuncId', null);
         this.$store.commit('updateEditor_splitPanePercent', null);
-        this.$store.commit('updateAuthLinkList_scrollY', null);
-        this.$store.commit('updateCrontabConfigList_scrollY', null);
+        this.$store.commit('updateTableList_scrollY', null);
         this.$store.commit('resetMonkeyPatchNotice');
       }
 

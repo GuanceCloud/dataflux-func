@@ -1360,18 +1360,19 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'origin': self.request.id,
         }
         task_kwargs = {
-            'funcId'         : func_id,
-            'funcCallKwargs' : kwargs,
-            'origin'         : safe_scope.get('_DFF_ORIGIN'),
-            'originId'       : safe_scope.get('_DFF_ORIGIN_ID'),
-            'saveResult'     : save_result,
-            'execMode'       : safe_scope.get('_DFF_EXEC_MODE'),
-            'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
-            'triggerTimeMs'  : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
-            'crontab'        : safe_scope.get('_DFF_CRONTAB'),
-            'queue'          : safe_scope.get('_DFF_QUEUE'),
-            'rootTaskId'     : safe_scope.get('_DFF_ROOT_TASK_ID'),
-            'funcChain'      : func_chain,
+            'rootTaskId'    : self.request.id,
+            'funcId'        : func_id,
+            'funcCallKwargs': kwargs,
+            'origin'        : safe_scope.get('_DFF_ORIGIN'),
+            'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
+            'saveResult'    : save_result,
+            'execMode'      : safe_scope.get('_DFF_EXEC_MODE'),
+            'triggerTime'   : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'triggerTimeMs' : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
+            'crontab'       : safe_scope.get('_DFF_CRONTAB'),
+            'queue'         : safe_scope.get('_DFF_QUEUE'),
+            'rootTaskId'    : safe_scope.get('_DFF_ROOT_TASK_ID'),
+            'funcChain'     : func_chain,
         }
 
         # 缓存任务状态
@@ -1379,13 +1380,14 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
 
         data = {
-            'taskId'   : sub_task_id,
-            'origin'   : safe_scope.get('_DFF_ORIGIN'),
-            'originId' : safe_scope.get('_DFF_ORIGIN_ID'),
-            'funcId'   : func_id,
-            'execMode' : 'async',
-            'status'   : 'queued',
-            'timestamp': int(time.time()),
+            'taskId'    : sub_task_id,
+            'rootTaskId': self.request.id,
+            'origin'    : safe_scope.get('_DFF_ORIGIN'),
+            'originId'  : safe_scope.get('_DFF_ORIGIN_ID'),
+            'funcId'    : func_id,
+            'execMode'  : 'async',
+            'status'    : 'queued',
+            'timestamp' : int(time.time()),
         }
         data = toolkit.json_dumps(data, indent=0)
 

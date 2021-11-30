@@ -12,7 +12,6 @@ Crontab Config enabled  : 自动触发配置已启用
 Crontab Config deleted  : 自动触发配置已删除
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索自动触发配置（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
@@ -34,10 +33,7 @@ Integration Func Tasks: 集成函数任务
             <el-button type="text" @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-button>
             &#12288;
 
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Crontab Config(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
@@ -70,7 +66,7 @@ Integration Func Tasks: 集成函数任务
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
@@ -137,7 +133,7 @@ Integration Func Tasks: 集成函数任务
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
+                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
 
               <el-button @click="runTask(scope.row)"
@@ -178,18 +174,15 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.CrontabConfigList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery({ _withTaskInfoCount: true });
+      let _listQuery = this.T.createListQuery({
+        _withTaskInfoCount: true,
+      });
       if (this.T.isNothing(this.dataFilter.origin)) {
         _listQuery.origin = 'UI';
       }
@@ -247,14 +240,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateCrontabConfigList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
           this.$router.push({
             name: 'crontab-config-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           })
           break;
 
@@ -264,21 +257,21 @@ export default {
           this.$router.push({
             name  : 'crontab-config-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           })
           break;
       }
     },
     openTaskInfo(d) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$store.commit('updateCrontabConfigList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
         name  : 'crontab-task-info-list',
         params: {id: d.id},
-        query : prevRouteQuery,
+        query : nextRouteQuery,
       });
     },
     async runTask(d) {

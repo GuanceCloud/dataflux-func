@@ -47,6 +47,8 @@ en:
   Deploy  : 部署
   Hide    : 隐藏
   Show    : 显示
+  Pin     : 置顶
+  Unpin   : 取消置顶
   Lock    : 锁定
   Unlock  : 解锁
   Open    : 打开
@@ -79,6 +81,8 @@ en:
   deploy  : 部署
   hide    : 隐藏
   show    : 显示
+  pin     : 置顶
+  unpin   : 取消置顶
   lock    : 解锁
   unlock  : 锁定
   open    : 打开

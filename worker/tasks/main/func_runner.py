@@ -200,7 +200,7 @@ class FuncRunnerTask(ScriptBaseTask):
 
         self.cache_db.run('lpush', cache_key, data)
 
-    def cache_task_status(self, origin, origin_id, exec_mode, status, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
+    def cache_task_status(self, origin, origin_id, exec_mode, status, root_task_id=None, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
         if not all([origin, origin_id]):
             return
 
@@ -211,6 +211,7 @@ class FuncRunnerTask(ScriptBaseTask):
 
         data = {
             'taskId'              : self.request.id,
+            'rootTaskId'          : root_task_id,
             'origin'              : origin,
             'originId'            : origin_id,
             'funcId'              : func_id,
@@ -255,8 +256,9 @@ def func_runner(self, *args, **kwargs):
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
 
-    # 顶层任务ID
-    root_task_id = kwargs.get('rootTaskId') or self.request.id
+    # 任务ID
+    task_id      = self.request.id
+    root_task_id = kwargs.get('rootTaskId') or 'ROOT'
 
     # 函数链
     func_chain = kwargs.get('funcChain') or []
@@ -298,6 +300,7 @@ def func_runner(self, *args, **kwargs):
             origin_id=origin_id,
             exec_mode=exec_mode,
             status='pending',
+            root_task_id=root_task_id,
             func_id=func_id)
 
         global SCRIPT_DICT_CACHE
@@ -312,6 +315,7 @@ def func_runner(self, *args, **kwargs):
 
         extra_vars = {
             '_DFF_DEBUG'          : False,
+            '_DFF_TASK_ID'        : task_id,
             '_DFF_ROOT_TASK_ID'   : root_task_id,
             '_DFF_SCRIPT_SET_ID'  : script_set_id,
             '_DFF_SCRIPT_ID'      : script_id,
@@ -492,6 +496,7 @@ def func_runner(self, *args, **kwargs):
             origin_id=origin_id,
             exec_mode=exec_mode,
             status=end_status,
+            root_task_id=root_task_id,
             func_id=func_id,
             script_publish_version=target_script['publishVersion'],
             log_messages=log_messages,

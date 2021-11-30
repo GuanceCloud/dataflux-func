@@ -31,7 +31,6 @@ Auth Link disabled: 授权链接已禁用
 Auth Link enabled : 授权链接已启用
 Auth Link deleted : 授权链接已删除
 
-Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索授权链接（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 No Auth Link has ever been added: 从未添加过任何授权链接
 Auth Link only supports synchronous calling: 授权链接只支持同步调用
@@ -51,10 +50,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
             <el-switch v-model="showCountCost" :inactive-text="$t('Info')" :active-text="$t('Recent Response')"></el-switch>
             &#12288;
 
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Auth Link(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
@@ -87,7 +83,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
@@ -249,18 +245,13 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.AuthLinkList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery();
+      let _listQuery = this.dataFilter = this.T.createListQuery();
       if (this.T.isNothing(this.dataFilter.origin)) {
         _listQuery.origin = 'UI';
       }
@@ -318,14 +309,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateAuthLinkList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
           this.$router.push({
             name : 'auth-link-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           })
           break;
 
@@ -335,7 +326,7 @@ export default {
           this.$router.push({
             name  : 'auth-link-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           })
           break;
       }

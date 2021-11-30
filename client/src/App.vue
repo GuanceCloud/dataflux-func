@@ -397,17 +397,17 @@ h3 {
   text-shadow: #ffa5004d 0 0 10px;
 }
 .text-info {
-  color: darkgrey;
+  color: darkgrey !important;
 }
 .text-watch {
-  color: orange;
+  color: orange !important;
   text-shadow: #ffc58e 0 0 10px;
 }
 .text-good {
-  color: green;
+  color: green !important;
 }
 .text-bad {
-  color: red;
+  color: red !important;
 }
 .text-code {
   padding: 1px 3px;
@@ -544,6 +544,11 @@ kbd {
   color: #ccc;
 }
 
+/* Font Awesome */
+.fa-fw {
+  width: 1.1em !important;
+}
+
 /* Element-UI 修正 */
 .fix-compact-button {
   margin-left: 0 !important;
@@ -579,18 +584,18 @@ kbd {
 .el-loading-text {
   font-size: 18px;
 }
-.el-tooltip__popper {
-  z-index: 3000 !important;
-}
-.el-popover {
-  z-index: 3001 !important;
-}
 .el-notification {
-  z-index: 3001 !important;
+  z-index: 3003 !important;
   align-items: center !important;
 }
 .el-notification__content {
   margin-top: 0 !important;
+}
+.el-tooltip__popper {
+  z-index: 3002 !important;
+}
+.el-popover {
+  z-index: 3001 !important;
 }
 .el-message {
   top: 40px !important;

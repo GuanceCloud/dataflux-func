@@ -6,7 +6,6 @@ Batch disabled: 批处理已禁用
 Batch enabled : 批处理已启用
 Batch deleted : 批处理已删除
 
-Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags): 搜索批处理（ID、标签、备注），函数（ID、参数、标题、描述、标签）
 Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
 No Batch has ever been added: 从未添加过任何批处理
 Batch only supports asynchronous calling: 批处理只支持异步调用
@@ -23,10 +22,7 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
         <h1>
           {{ $t('Batch') }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Batch(ID, tags, note), Func(ID, kwargs, title, description, tags)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
               <el-checkbox
@@ -59,7 +55,7 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
@@ -111,7 +107,7 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ scope.row.taskInfoCount > 99 ? '99+' : scope.row.taskInfoCount }})</code>
+                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
@@ -157,18 +153,15 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.BatchList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery({ _withTaskInfoCount: true });
+      let _listQuery = this.dataFilter = this.T.createListQuery({
+        _withTaskInfoCount: true,
+      });
       if (this.T.isNothing(this.dataFilter.origin)) {
         _listQuery.origin = 'UI';
       }
@@ -226,14 +219,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateBatchList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
           this.$router.push({
             name: 'batch-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           });
           break;
 
@@ -243,21 +236,21 @@ export default {
           this.$router.push({
             name  : 'batch-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           });
           break;
       }
     },
     openTaskInfo(d) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$store.commit('updateBatchList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
         name  : 'batch-task-info-list',
         params: {id: d.id},
-        query : prevRouteQuery,
+        query : nextRouteQuery,
       });
     },
     async showAPI(d) {

@@ -75,7 +75,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   <InfoBlock type="error" :title="$t('This is a builtin Data Source, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item :label="$t('Type')" prop="type" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in SUPPORTED_DATA_SOURCE" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
@@ -104,7 +104,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   </el-form-item>
 
                   <el-form-item label="ID" prop="id">
-                    <el-input :disabled="T.pageMode() === 'setup'"
+                    <el-input :disabled="T.setupPageMode() === 'setup'"
                       maxlength="40"
                       show-word-limit
                       v-model="form.id"></el-input>
@@ -173,7 +173,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.pageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
+                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
@@ -243,17 +243,22 @@ This is a builtin Data Source, please contact the admin to change the config: �
               <!-- 此处特殊处理：要始终保证可以测试数据源 -->
               <el-form  label-width="120px">
                 <el-form-item>
-                  <el-button v-if="T.pageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 
                   <div class="setup-right">
-                    <el-button v-if="T.pageMode() === 'setup'" @click="testDataSource">
+                    <el-button v-if="T.setupPageMode() === 'setup'" @click="testDataSource"
+                      :disabled="testDataSourceResult === 'running'">
                       <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
                       <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
                       <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
                       {{ $t('Test connection') }}
                     </el-button>
 
-                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData"
+                      :disabled="isSaving">
+                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+                      {{ $t('Save') }}
+                    </el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -278,7 +283,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.configJSON = {};
@@ -380,7 +385,7 @@ export default {
       this.form.configJSON = nextConfigJSON;
     },
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -410,12 +415,20 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      this.isSaving = true;
+
+      switch(this.T.setupPageMode()) {
         case 'add':
-          return await this.addData();
+          await this.addData();
+          break;
+
         case 'setup':
-          return await this.modifyData();
+          await this.modifyData();
+          break;
+
       }
+
+      this.isSaving = false;
     },
     _getFromData() {
       let _formData = this.T.jsonCopy(this.form);
@@ -459,7 +472,6 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      // await this.loadData();
       this.$store.commit('updateDataSourceListSyncTime');
     },
     async deleteData() {
@@ -665,10 +677,10 @@ export default {
         setup: this.$t('Setup Data Source'),
         add  : this.$t('Add Data Source'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },
     selectedType() {
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return this.form.type;
 
@@ -693,6 +705,7 @@ export default {
         configJSON : {},
       },
 
+      isSaving            : false,
       testDataSourceResult: null,
     }
   },

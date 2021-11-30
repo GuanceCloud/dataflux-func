@@ -1,19 +1,22 @@
-<i18n locale="zh-CN" lang="yaml">
-Search Batch task(log, error), Func(ID, title, description): 搜索批处理任务（日志、错误），函数（ID、标题、描述）
-</i18n>
-
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-if="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          近期批处理任务信息
+          {{ isMainList ? '近期批处理任务信息' : '子任务信息' }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Batch task(log, error), Func(ID, title, description)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
+
+            <el-tooltip content="在本页面只展示主任务" placement="bottom" :enterable="false">
+              <el-checkbox v-if="isMainList"
+                :border="true"
+                size="small"
+                v-model="dataFilter.rootTaskId"
+                true-label="ROOT"
+                false-label=""
+                @change="T.changePageFilter(dataFilter)">仅主任务</el-checkbox>
+            </el-tooltip>
           </div>
         </h1>
       </el-header>
@@ -31,7 +34,7 @@ Search Batch task(log, error), Func(ID, title, description): 搜索批处理任�
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column label="状态" width="150">
             <template slot-scope="scope">
@@ -92,6 +95,15 @@ Search Batch task(log, error), Func(ID, title, description): 搜索批处理任�
               </template>
             </template>
           </el-table-column>
+
+          <el-table-column width="100" align="right" v-if="isMainList">
+            <template slot-scope="scope">
+              <el-button @click="openSubTaskInfo(scope.row)"
+                v-if="scope.row.subTaskCount > 0"
+                type="text"
+                >子任务 <code>({{ T.numberLimit(scope.row.subTaskCount) }})</code></el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </el-main>
 
@@ -118,14 +130,28 @@ export default {
         await this.loadData();
       }
     },
+    '$store.state.isLoaded': function(val) {
+      if (!val) return;
+
+      setImmediate(() => this.T.autoScrollTable());
+    },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery({
+        _withSubTaskCount: this.isMainList,
+      });
+      if (this.isMainList) {
+        _listQuery.batchId = this.$route.params.id;
+        if (this.T.isNothing(this.dataFilter.rootTaskId)) {
+          _listQuery.rootTaskId = null;
+        }
+      } else {
+        _listQuery.rootTaskId = this.$route.params.id;
+      }
+
       let apiRes = await this.T.callAPI_get('/api/v1/batch-task-info/do/list', {
-        query : this.T.createListQuery({ batchId: this.$route.params.id }),
+        query : _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -147,8 +173,23 @@ export default {
       let fileName = `${d.funcId}.${field}.${createTimeStr}`;
       this.$refs.longTextDialog.update(d[field], fileName);
     },
+    openSubTaskInfo(d) {
+      let nextRouteQuery = this.T.packRouteQuery();
+
+      this.$store.commit('updateHighlightedTableDataId', d.id);
+      this.$store.commit('updateTableList_scrollY');
+
+      this.$router.push({
+        name  : 'batch-task-info-sub-list',
+        params: {id: d.id},
+        query : nextRouteQuery,
+      });
+    },
   },
   computed: {
+    isMainList() {
+      return !this.T.endsWith(this.$route.name, 'sub-list');
+    },
   },
   props: {
   },
@@ -162,6 +203,7 @@ export default {
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
+        rootTaskId  : _dataFilter.rootTaskId,
       },
     }
   },

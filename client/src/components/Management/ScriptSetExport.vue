@@ -143,7 +143,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'export':
             break;
         }
@@ -184,7 +184,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'export':
           return await this.exportData();
       }
@@ -238,7 +238,7 @@ export default {
       const nameMap = {
         export: '导出',
       };
-      return nameMap[this.T.pageMode()];
+      return nameMap[this.T.setupPageMode()];
     },
   },
   props: {

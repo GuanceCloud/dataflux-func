@@ -13,7 +13,6 @@ andMoreUsers: '以及其他 {n} 个用户'
 
 API Auth deleted: API认证已删除
 
-Search API Auth(ID, note), Func(ID, kwargs, title, description, tags): 搜索API认证（ID、备注），函数（ID、参数、标题、描述、标签）
 No API Auth has ever been added: 从未添加过任何API认证
 
 Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
@@ -27,10 +26,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
         <h1>
           {{ $t('API Auth') }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search API Auth(ID, note), Func(ID, kwargs, title, description, tags)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -54,7 +50,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Auth Type')" width="200">
             <template slot-scope="scope">
@@ -143,18 +139,15 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.APIAuthList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/api-auth/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -186,14 +179,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateAPIAuthList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
           this.$router.push({
             name : 'api-auth-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           })
           break;
 
@@ -203,7 +196,7 @@ export default {
           this.$router.push({
             name  : 'api-auth-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           })
           break;
       }

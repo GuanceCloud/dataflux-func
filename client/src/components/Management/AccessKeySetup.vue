@@ -64,7 +64,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -75,7 +75,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -95,7 +95,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
       }

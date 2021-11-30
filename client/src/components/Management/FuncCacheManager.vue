@@ -7,7 +7,6 @@ Show content : 显示内容
 Func Cache data deleted: 函数缓存数据已删除
 
 Search for more data: 搜索以查看更多内容
-Search Func Cache data(Key, Scope): 搜索函数缓存数据（Key、Scope）
 No Func Cache data has ever been added: 从未添加过任何函数缓存数据
 
 Are you sure you want to delete the Func Cache data?: 是否确认删除此函数缓存数据？
@@ -22,10 +21,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
           {{ $t('Func Cache Manager') }}
           <div class="header-control">
             <small class="text-info">{{ $t('Search for more data') }}</small>
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Func Cache data(Key, Scope)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
         </h1>
       </el-header>
@@ -112,8 +108,10 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/func-caches/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 

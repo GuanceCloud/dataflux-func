@@ -29,7 +29,10 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
               {{ $t('Refresh') }}
             </el-button>
 
-            <el-radio-group v-model="type" size="mini">
+            <el-radio-group
+              @change="switchType(type)"
+              v-model="type"
+              size="mini">
               <el-radio-button v-for="type, i in C.ABNORMAL_REQUEST_TYPE" :key="type.key" :label="type.key">{{ type.name }}</el-radio-button>
             </el-radio-group>
 
@@ -55,7 +58,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
@@ -131,20 +134,15 @@ export default {
     $route: {
       immediate: true,
       async handler(to, from) {
+        this.type = this.$route.query.type || 'statusCode5xx';
+
         await this.loadData();
       }
     },
-    async type(val) {
-      this.T.goToPageNumber(null);
-      await this.loadData();
-    },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
-    async loadData() {
-      let _listQuery = this.T.createListQuery();
+    async loadData(options) {
+      let _listQuery = this.dataFilter = this.T.createListQuery();
 
       let apiRes = await this.T.callAPI('/api/v1/monitor/abnormal-requests/:type/do/list', {
         params: { type: this.type },
@@ -156,6 +154,12 @@ export default {
       this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
+    },
+    switchType(type) {
+      this.$router.push({
+        name: 'abnormal-request-list',
+        query: { type: type },
+      });
     },
     getRespError(d) {
       return (d.respBody && d.respBody.error) || d.respError;
@@ -212,14 +216,18 @@ export default {
   props: {
   },
   data() {
-    let _pageInfo = this.T.createPageInfo();
+    let _pageInfo   = this.T.createPageInfo();
+    let _dataFilter = this.T.createListQuery();
 
     return {
       data    : [],
       pageInfo: _pageInfo,
 
+      dataFilter: {
 
-      type: 'statusCode5xx',
+      },
+
+      type: null,
     }
   },
 }

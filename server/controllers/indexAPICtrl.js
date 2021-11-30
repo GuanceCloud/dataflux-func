@@ -72,7 +72,11 @@ exports.ping = function(req, res, next) {
 };
 
 exports.echo = function(req, res, next) {
-  var ret = toolkit.initRet(req.body);
+  var data = {
+    query: req.query,
+    body : req.body,
+  }
+  var ret = toolkit.initRet(data);
   res.locals.sendJSON(ret);
 };
 

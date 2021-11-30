@@ -117,7 +117,10 @@ export function getBaseURL() {
   return baseURL;
 };
 
-export function autoScrollTable(y) {
+export function autoScrollTable() {
+  let key = router.currentRoute.name;
+  let y = (app.$store.state.TableList_scrollY || {})[key];
+
   if (y && app.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
     // 滚动到指定高度
     let el = document.getElementsByClassName('el-table__body-wrapper')[0];
@@ -369,7 +372,7 @@ export function limitLines(text, lineLimit, columnLimit) {
 
 export function numberLimit(n, limit) {
   n     = n || 0;
-  limit = limit || 999;
+  limit = limit || 99;
 
   if (n > limit) {
     return `${limit}+`;
@@ -740,7 +743,16 @@ export function stringSimilar(s, t, f) {
 }
 
 export function asideItemSorter(a, b) {
-  return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+  let pinTimeA = new Date(a.pinTime || 0).getTime();
+  let pinTimeB = new Date(b.pinTime || 0).getTime();
+
+  if (pinTimeA < pinTimeB) return 1;
+  if (pinTimeA > pinTimeB) return -1;
+
+  if (a.label < b.label) return -1;
+  if (a.label > b.label) return 1;
+
+  return 0;
 };
 
 export function alert(message, type) {
@@ -1282,7 +1294,9 @@ export function changePageSize(pageSize) {
 export function changePageFilter(listQuery, nextListQuery) {
   listQuery = listQuery || {};
   if (nextListQuery) {
-    Object.assign(listQuery, nextListQuery);
+    for (var k in nextListQuery) {
+      listQuery[k] = nextListQuery[k];
+    }
   }
   listQuery['pageNumber'] = null;
   doPageFilter(listQuery);
@@ -1451,6 +1465,10 @@ export function getEchartSplitLineStyle() {
 
 /*** 简化代码 ***/
 
-export function pageMode() {
+export function setupPageMode() {
   return router.currentRoute.name.split('-').pop();
+};
+
+export function getHighlightRowCSS({row, rowIndex}) {
+  return (store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
 };

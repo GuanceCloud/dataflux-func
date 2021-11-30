@@ -25,7 +25,7 @@
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column label="执行方式" width="150">
             <template slot-scope="scope">
@@ -93,12 +93,11 @@ export default {
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/script-failures/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 

@@ -17,8 +17,6 @@ Cannot not starts with a number: 不得以数字开头
 
 Script Set created : 脚本集已创建
 Script Set saved   : 脚本集已保存
-Script Set locked  : 脚本集已上锁
-Script Set unlocked: 脚本集已解锁
 Script Set deleted : 脚本集已删除
 Script Set cloned  : 脚本集已克隆
 
@@ -53,7 +51,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
-                  <el-input :disabled="T.pageMode() === 'setup'"
+                  <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="40"
                     show-word-limit
                     v-model="form.id"></el-input>
@@ -92,10 +90,9 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <template v-if="T.pageMode() === 'setup'">
-                      <el-button @click="lockData(!data.isLocked)">{{ data.isLocked ? $t('Unlock') : $t('Lock') }}</el-button>
+                    <template v-if="T.setupPageMode() === 'setup'">
                       <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
                     </template>
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
@@ -123,7 +120,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -137,7 +134,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
         if (!apiRes.ok) return;
 
@@ -158,7 +155,7 @@ export default {
       }
 
       let dataId = null;
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           dataId = await this.addData();
           break;
@@ -202,20 +199,6 @@ export default {
       this.$store.commit('updateScriptListSyncTime');
 
       return this.scriptSetId;
-    },
-    async lockData(isLocked) {
-      let okMessage = isLocked
-                    ? this.$t('Script Set locked')
-                    : this.$t('Script Set unlocked');
-      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/modify', {
-        params: { id: this.scriptSetId },
-        body  : { data: { isLocked: isLocked } },
-        alert : { okMessage: okMessage },
-      });
-      if (!apiRes.ok) return;
-
-      await this.loadData();
-      this.$store.commit('updateScriptListSyncTime');
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Set?'))) return;
@@ -295,10 +278,10 @@ export default {
         setup: this.$t('Setup Script Set'),
         add  : this.$t('Add Script Set'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },
     scriptSetId() {
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return this.form.id;
         case 'setup':

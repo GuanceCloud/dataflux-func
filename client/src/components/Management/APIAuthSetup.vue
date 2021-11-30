@@ -42,7 +42,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Auth Type')" prop="type" v-if="T.pageMode() === 'add'">
+                <el-form-item :label="$t('Auth Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in C.API_AUTH" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
@@ -167,7 +167,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                 </template>
 
                 <el-form-item>
-                  <el-button v-if="T.pageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
@@ -199,7 +199,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.configJSON = {};
@@ -252,7 +252,7 @@ export default {
       this.updateValidator(type);
     },
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/api-auth/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -279,7 +279,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -306,7 +306,7 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      this.$store.commit('updateAuthLinkList_scrollY', null);
+      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       this.$router.push({
@@ -444,10 +444,10 @@ def my_auth_func(req):
         setup: this.$t('Setup API Auth'),
         add  : this.$t('Add API Auth'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },
     selectedType() {
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return this.form.type;
 

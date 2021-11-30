@@ -78,7 +78,7 @@ export default {
       async handler(to, from) {
         await this.loadData();
 
-        switch(this.T.pageMode()) {
+        switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
@@ -92,7 +92,7 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.pageMode() === 'setup') {
+      if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
@@ -103,7 +103,7 @@ export default {
         this.form = nextForm;
       }
 
-      if (this.T.pageMode() === 'add') {
+      if (this.T.setupPageMode() === 'add') {
         // 添加用户时，密码必填
         this.formRules['password'][0].required = true;
       }
@@ -117,7 +117,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -194,10 +194,10 @@ export default {
         setup: this.$t('Setup User'),
         add  : this.$t('Add User'),
       };
-      return _map[this.T.pageMode()];
+      return _map[this.T.setupPageMode()];
     },
     passwordPlaceholder() {
-      if (this.T.pageMode() === 'add') {
+      if (this.T.setupPageMode() === 'add') {
         return '';
       } else {
         return this.$t('Leave blank when not changing');

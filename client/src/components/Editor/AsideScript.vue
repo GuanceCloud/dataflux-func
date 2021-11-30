@@ -5,9 +5,10 @@ Add Script                                     : 添加脚本
 Add Script Set                                 : 添加脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
+Pinned                                         : 已置顶
 Locked by someone else                         : 被其他人锁定
 Locked by you                                  : 被您锁定
-Quick View Panel                               : 快速查看面板
+Quick View                                     : 快速查看
 View                                           : 查看
 Setup                                          : 配置
 Copy example                                   : 复制示例
@@ -15,10 +16,16 @@ Copy {name} ID                                 : 复制{name}ID
 Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
-Open Quick View Panel                          : 打开快速预览面板
 
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
+
+Script Set pinned  : 环境变量已置顶
+Script Set unpinned: 环境变量已取消
+Script Set locked  : 脚本集已上锁
+Script Set unlocked: 脚本集已解锁
+Script locked      : 脚本已上锁
+Script unlocked    : 脚本已解锁
 </i18n>
 
 <template>
@@ -48,7 +55,7 @@ Script {id}    : 脚本 {id}
         :entry-id="data.id"
         @click="openEntity(node, data)">
 
-        <span>
+        <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
           <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
             <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
           </el-link>
@@ -56,109 +63,114 @@ Script {id}    : 脚本 {id}
             <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
           </el-link>
           <div v-else>
-            <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open-o':'fa-folder-o']"></i>
+            <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
             <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
             <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
 
-            <span>
-              <el-tag v-if="data.isCodeEdited"
-                type="danger"
-                size="mini">{{ $t('Edited') }}</el-tag>
-              <el-tag v-if="data.isBuiltin"
-                effect="dark"
-                type="warning"
-                size="mini">{{ $t('Builtin') }}</el-tag>
-              <span :class="{'text-watch': data.isBuiltin}">{{ node.label }}</span>
-              <span class="child-nodes-count" v-if="data.childrenCount">&nbsp;({{ data.childrenCount}})</span>
-            </span>
+            <el-tag v-if="data.isCodeEdited"
+              type="danger"
+              size="mini">{{ $t('Edited') }}</el-tag>
+            <el-tag v-if="data.isBuiltin"
+              effect="dark"
+              type="warning"
+              size="mini">{{ $t('Builtin') }}</el-tag>
+           <span>{{ node.label }}</span>
           </div>
         </span>
 
-        <div>
+        <div v-if="data.type === 'scriptSet' || data.type === 'script' || data.type === 'func'">
+          <!-- 状态图标 -->
+          <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+            <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
+          </el-tooltip>
           <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
             <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
           </el-tooltip>
 
-          <el-tooltip v-if="data.type === 'scriptSet'" effect="dark" :content="$t('Add Script')" placement="top" :enterable="false">
-            <span>
-              <el-button
-                type="text"
-                @click.stop="openEntity(node, data, 'add')">
-                <i class="fa fa-fw fa-plus text-main"></i>
-              </el-button>
-            </span>
-          </el-tooltip>
-
-          <el-tooltip effect="dark" :content="$t('Quick View Panel')" placement="top" :enterable="false">
-            <span>
-              <el-button v-if="data.type === 'script'"
-                type="text"
-                @click.stop="showQuickViewWindow(data.id)">
-                <i class="fa fa-fw fa-window-restore text-info"></i>
-              </el-button>
-            </span>
-          </el-tooltip>
-
-          <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('View') : $t('Setup')" placement="top" :enterable="false">
-            <span>
-              <el-button v-if="data.type === 'scriptSet'"
-                type="text"
-                @click.stop="openEntity(node, data, 'setup')">
-                <i v-if="data.isLockedByOther" class="fa fa-fw fa-search text-info"></i>
-                <i v-else class="fa fa-fw fa-wrench text-info"></i>
-              </el-button>
-
-              <el-button v-if="data.type === 'script'"
-                type="text"
-                @click.stop="openEntity(node, data, 'setup')">
-                <i v-if="data.isLockedByOther" class="fa fa-fw fa-search text-info"></i>
-                <i v-else class="fa fa-fw fa-wrench text-info"></i>
-              </el-button>
-            </span>
-          </el-tooltip>
-
+          <!-- 菜单 -->
           <el-popover v-if="data.id"
             placement="right-start"
-            trigger="click"
+            trigger="hover"
             popper-class="aside-tip"
             :value="showPopoverId === data.id">
 
+            <!-- 基本信息 -->
             <div class="aside-tree-node-description">
-              <code v-if="data.title">{{ data.title }} (ID: {{ data.id }})</code>
-              <code v-else>{{ data.id }}</code>
-              <pre v-if="data.description">{{ data.description }}</pre>
+              <CopyButton :content="data.id" tip-placement="left"></CopyButton>
+              ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+
+              <pre v-if="(data.type === 'scriptSet' || data.type === 'script') && data.description">{{ data.description }}</pre>
             </div>
 
+            <!-- 示例代码 -->
             <template v-if="data.sampleCode">
               <div class="aside-tree-node-sample-code">
+                <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
                 {{ $t('Example') }}{{ $t(':') }}
+
                 <pre>{{ data.sampleCode }}</pre>
               </div>
             </template>
 
-            <br><CopyButton
-              :title="$t('Copy {name} ID', { name: C.ASIDE_ITEM_TYPE_MAP.get(data.type).name })"
-              :content="data.id"></CopyButton>
-            <br><CopyButton v-if="data.sampleCode"
-              :title="$t('Copy example')"
-              :content="data.sampleCode"></CopyButton>
-            <br><el-button v-if="data.type === 'script'"
-              class="aside-tree-node-quick-view"
-              type="text"
-              @click.stop="showQuickViewWindow(data.id)">
-              <i class="fa fa-fw fa-window-restore"></i> {{ $t('Open Quick View Panel') }}
-            </el-button>
-
+            <!-- 提示 -->
             <template v-if="data.isCodeEdited">
+              <br>
               <div class="code-edited-tip">
                 <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
               </div>
             </template>
 
+            <!-- 操作 -->
+            <template v-if="data.type === 'scriptSet' || data.type === 'script'">
+              <br>
+              <el-button-group>
+                <!-- 添加脚本集 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="small"
+                  @click.stop="openEntity(node, data, 'add')">
+                  <i class="fa fa-fw fa-plus"></i>
+                  {{ $t('Add Script') }}
+                </el-button>
+
+                <!-- 快速查看 -->
+                <el-button v-if="data.type === 'script'"
+                  size="small"
+                  @click.stop="showQuickViewWindow(data.id)">
+                  <i class="fa fa-fw fa-window-restore"></i>
+                  {{ $t('Quick View') }}
+                </el-button>
+
+                <!-- 置顶 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="small"
+                  @click.stop="pinData(data.type, data.id, !data.isPinned)">
+                  <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+                  {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+                </el-button>
+
+                <!-- 锁定/解锁脚本/脚本集 -->
+                <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
+                  size="small"
+                  @click="lockData(data.type, data.id, !data.isLocked)">
+                  <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
+                  {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
+                </el-button>
+
+                <!-- 配置/查看 -->
+                <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
+                  size="small"
+                  @click.stop="openEntity(node, data, 'setup')">
+                  <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
+                  {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
+                </el-button>
+              </el-button-group>
+            </template>
+
             <el-button slot="reference"
               type="text"
+              class="text-info"
               @click.stop="showPopover(data.id)">
-              <i class="fa fa-fw fa-question-circle"></i>
+              <i class="fa fa-fw fa-bars"></i>
             </el-button>
           </el-popover>
         </div>
@@ -234,7 +246,7 @@ export default {
 
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
-        query: { fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin'] },
+        query: { fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin', 'isPinned', 'pinTime'] },
       });
       if (!apiRes.ok) return;
 
@@ -254,6 +266,8 @@ export default {
           isLocked       : d.isLocked,
           isLockedByOther: isLockedByOther,
           isBuiltin      : d.isBuiltin,
+          isPinned       : d.isPinned,
+          pinTime        : d.pinTime,
           searchTEXT     : `${d.title} ${d.id}`,
 
           title      : d.title,
@@ -292,7 +306,7 @@ export default {
         scriptMap[d.id] = {
           id             : d.id,
           scriptSetId    : d.scriptSetId,
-          label          : d.title || d.id,
+          label          : d.title || shortScriptId,
           type           : 'script',
           isLocked       : d.isLocked,
           isCodeEdited   : isCodeEdited,
@@ -361,16 +375,7 @@ export default {
       // 转换为tree数据，并增加「刷新」/「添加脚本集/脚本」项
       let treeData = Object.values(scriptSetMap);
       treeData.forEach(d => {
-        if (!this.T.isNothing(d.children)) {
-          d.childrenCount = d.children.filter(x => x.type === 'script').length;
-        }
         d.children.sort(this.T.asideItemSorter);
-
-        d.children.forEach(dd => {
-          if (!this.T.isNothing(dd.children)) {
-            dd.childrenCount = dd.children.filter(x => x.type === 'func').length;
-          }
-        });
       })
       treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addScriptSet'});
@@ -425,6 +430,56 @@ export default {
           $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
         }
       }, 500);
+    },
+    async pinData(dataType, dataId, isPinned) {
+      let apiPath   = null;
+      let okMessage = null;
+      switch(dataType) {
+        case 'scriptSet':
+          apiPath   = '/api/v1/script-sets/:id/do/modify';
+          okMessage = isPinned
+                    ? this.$t('Script Set pinned')
+                    : this.$t('Script Set unpinned');
+          break;
+
+        default:
+          return;
+      }
+      let apiRes = await this.T.callAPI('post', apiPath, {
+        params: { id: dataId },
+        body  : { data: { isPinned: isPinned } },
+        alert : { okMessage: okMessage },
+      });
+      if (!apiRes.ok) return;
+
+      this.$store.commit('updateScriptListSyncTime');
+    },
+    async lockData(dataType, dataId, isLocked) {
+      let apiPath   = null;
+      let okMessage = null;
+      switch(dataType) {
+        case 'scriptSet':
+          apiPath   = '/api/v1/script-sets/:id/do/modify';
+          okMessage = isLocked
+                    ? this.$t('Script Set locked')
+                    : this.$t('Script Set unlocked');
+          break;
+
+        case 'script':
+          apiPath   = '/api/v1/scripts/:id/do/modify';
+          okMessage = isLocked
+                    ? this.$t('Script locked')
+                    : this.$t('Script unlocked');
+          break;
+      }
+      let apiRes = await this.T.callAPI('post', apiPath, {
+        params: { id: dataId },
+        body  : { data: { isLocked: isLocked } },
+        alert : { okMessage: okMessage },
+      });
+      if (!apiRes.ok) return;
+
+      this.$store.commit('updateScriptListSyncTime');
     },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
@@ -596,7 +651,7 @@ export default {
 }
 .aside-tree-node-sample-code {
   padding-top: 10px;
-  color: grey;
+  text-align: left;
 }
 .aside-tree-node-quick-view {
   margin-left: 5px;

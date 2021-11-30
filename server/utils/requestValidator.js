@@ -8,10 +8,11 @@ var E       = require('./serverError');
 var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
-function convertArrayQuerys(req, queryConfig) {
+function convertQueryValues(req, queryConfig) {
   if (!req || !req.query) return;
   if (!queryConfig)       return;
 
+  // Convert array
   for (var k in queryConfig) if (queryConfig.hasOwnProperty(k)) {
     var c = queryConfig[k];
 
@@ -52,7 +53,7 @@ exports.createRequestValidator = function(routeConfig) {
         $type      : 'string',
       };
 
-      convertArrayQuerys(req, checkQueryConfig);
+      convertQueryValues(req, checkQueryConfig);
 
       var checker = createObjectChecker({
         defaultRequired: false,

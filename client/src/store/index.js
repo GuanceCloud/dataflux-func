@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
+import router from '@/router'
 
 import C from '@/const'
 import * as toolkit from '@/toolkit'
@@ -28,11 +29,7 @@ const STATE_CONFIG = {
   codeViewer_isCodeLoaded                  : { persist: false, syncXTab: false },
   Editor_highlightedFuncId                 : { persist: false, syncXTab: false },
   Editor_splitPanePercent                  : { persist: true,  syncXTab: true  },
-  APIAuthList_scrollY                      : { persist: false, syncXTab: false },
-  AuthLinkList_scrollY                     : { persist: false, syncXTab: false },
-  CrontabConfigList_scrollY                : { persist: false, syncXTab: false },
-  BatchList_scrollY                        : { persist: false, syncXTab: false },
-  FileServiceList_scrollY                  : { persist: false, syncXTab: false },
+  TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
   scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
   dataSourceListSyncTime                   : { persist: true,  syncXTab: true  },
@@ -43,6 +40,7 @@ const STATE_CONFIG = {
   shortcutAction                           : { persist: false, syncXTab: false },
   isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
   isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
+  fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
 };
 const MUTATION_CONFIG = {
   switchToBuiltinAuth                            : { persist: false },
@@ -68,11 +66,7 @@ const MUTATION_CONFIG = {
   updateCodeViewer_isCodeLoaded                  : { persist: false },
   updateEditor_highlightedFuncId                 : { persist: true  },
   updateEditor_splitPanePercent                  : { persist: true  },
-  updateAPIAuthList_scrollY                      : { persist: false },
-  updateAuthLinkList_scrollY                     : { persist: false },
-  updateCrontabConfigList_scrollY                : { persist: false },
-  updateBatchList_scrollY                        : { persist: false },
-  updateFileServiceList_scrollY                  : { persist: false },
+  updateTableList_scrollY                        : { persist: false },
   updateScriptListSyncTime                       : { persist: false },
   updateDataSourceListSyncTime                   : { persist: false },
   updateEnvVariableListSyncTime                  : { persist: false },
@@ -83,6 +77,7 @@ const MUTATION_CONFIG = {
   dismissMonkeyPatchNotice                       : { persist: false },
   disableMonkeyPatchNotice                       : { persist: true  },
   resetMonkeyPatchNotice                         : { persist: true  },
+  addFuzzySearchHistory                          : { persist: true  },
 
   syncState: { persist: false },
 }
@@ -158,11 +153,7 @@ export default new Vuex.Store({
     Editor_highlightedFuncId: null,
     Editor_splitPanePercent : null,
 
-    APIAuthList_scrollY      : 0,
-    AuthLinkList_scrollY     : 0,
-    CrontabConfigList_scrollY: 0,
-    BatchList_scrollY        : 0,
-    FileServiceList_scrollY  : 0,
+    TableList_scrollY: 0,
 
     // 列表同步时间
     scriptListSyncTime     : null,
@@ -185,6 +176,9 @@ export default new Vuex.Store({
     // 隐藏MonkeyPatch提示
     isMonkeyPatchNoticeDismissed: false,
     isMonkeyPatchNoticeDisabled : false,
+
+    // FuzzySearch控件搜索历史
+    fuzzySearchHistoryMap: null,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -303,6 +297,18 @@ export default new Vuex.Store({
     },
     showMonkeyPatchNotice: (state) => {
       return !state.isMonkeyPatchNoticeDismissed && !state.isMonkeyPatchNoticeDisabled;
+    },
+
+    fuzzySearchHistory: state => {
+      if (!state.fuzzySearchHistoryMap) return [];
+
+
+      let key   = router.currentRoute.path;
+      let items = state.fuzzySearchHistoryMap[key] || [];
+      items.sort((a, b) => {
+        return b.timestamp - a.timestamp;
+      })
+      return items;
     },
   },
   mutations: {
@@ -423,20 +429,22 @@ export default new Vuex.Store({
       state.Editor_splitPanePercent = value || null;
     },
 
-    updateAPIAuthList_scrollY(state, value) {
-      state.APIAuthList_scrollY = value || 0;
-    },
-    updateAuthLinkList_scrollY(state, value) {
-      state.AuthLinkList_scrollY = value || 0;
-    },
-    updateCrontabConfigList_scrollY(state, value) {
-      state.CrontabConfigList_scrollY = value || 0;
-    },
-    updateBatchList_scrollY(state, value) {
-      state.BatchList_scrollY = value || 0;
-    },
-    updateFileServiceList_scrollY(state, value) {
-      state.FileServiceList_scrollY = value || 0;
+    updateTableList_scrollY(state, key) {
+      if (key === null) {
+        state.TableList_scrollY = {};
+        return;
+      } else {
+        key = router.currentRoute.name;
+      }
+
+      let y = toolkit.getTableScrollY();
+      if (!state.TableList_scrollY) {
+        let _map = {}
+        _map[key] = y || 0;
+        state.TableList_scrollY = _map;
+      } else {
+        state.TableList_scrollY[key] = y || 0;
+      }
     },
 
     updateScriptListSyncTime(state, name) {
@@ -473,6 +481,20 @@ export default new Vuex.Store({
     resetMonkeyPatchNotice(state) {
       state.isMonkeyPatchNoticeDisabled  = false;
       state.isMonkeyPatchNoticeDismissed = false;
+    },
+
+    addFuzzySearchHistory(state, queryString) {
+      let key = router.currentRoute.path;
+
+      if (!queryString) return;
+
+      if (!state.fuzzySearchHistoryMap)      state.fuzzySearchHistoryMap      = {};
+      if (!state.fuzzySearchHistoryMap[key]) state.fuzzySearchHistoryMap[key] = [];
+
+      state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].filter(item => item.value !== queryString);
+
+      state.fuzzySearchHistoryMap[key].push({ value: queryString, timestamp: Date.now() });
+      state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(-10);
     },
 
     syncState(state, nextState) {

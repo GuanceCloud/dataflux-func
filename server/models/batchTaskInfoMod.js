@@ -82,3 +82,26 @@ EntityModel.prototype.countByBatchId = function(batchId, callback) {
 
   return this._list(options, callback);
 };
+
+EntityModel.prototype.countByRootTaskId = function(rootTaskId, callback) {
+  var rootTaskIds = toolkit.asArray(rootTaskId);
+  if (toolkit.isNothing(rootTaskIds)) return callback();
+
+  var sql = toolkit.createStringBuilder();
+
+  sql.append('SELECT');
+  sql.append('     rootTaskId');
+  sql.append('    ,COUNT(*) AS count');
+
+  sql.append('FROM biz_main_batch_task_info');
+
+  var options = {
+    baseSQL: sql.toString(),
+    filters: {
+      'rootTaskId': {in: rootTaskIds},
+    },
+    groups : ['rootTaskId'],
+  }
+
+  return this._list(options, callback);
+};

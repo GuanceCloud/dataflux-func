@@ -14,10 +14,9 @@ Func not exists: 函数不存在
       </template>
       <template v-else>
         <!-- 其次封装方式展示 -->
-        <code class="text-main">{{ id }}(</code>
-
-        <code v-if="!kwargsJSON">...</code>
-        <template v-else>
+        <code class="text-main">{{ id }}(</code
+        ><code v-if="!kwargsJSON">...</code
+        ><template v-else>
           <div class="func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
             <code class="func-kwargs-name">{{ name }}</code>
             <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)">调用时指定</code>
@@ -27,9 +26,8 @@ Func not exists: 函数不存在
             </el-tooltip>
             <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
           </div>
-        </template>
-
-        <code class="text-main">)</code>
+        </template
+        ><code class="text-main">)</code>
       </template>
     </template>
     <template v-else>

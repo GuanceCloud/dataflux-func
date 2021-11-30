@@ -28,10 +28,12 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     isLocked: 'boolean',
+    isPinned: 'boolean',
   },
 
   defaultOrders: [
-    {field: 'sset.id', method: 'ASC'},
+    {field: 'sset.pinTime', method: 'DESC'},
+    {field: 'sset.id',      method: 'ASC' },
   ],
 };
 
@@ -54,12 +56,47 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   sset.*');
   sql.append('  ,NOT ISNULL(sset.lockedByUserId) AS isLocked');
+  sql.append('  ,NOT ISNULL(sset.pinTime)        AS isPinned');
 
   sql.append('FROM biz_main_script_set AS sset');
 
   options.baseSQL = sql.toString();
 
   return this._list(options, callback);
+};
+
+EntityModel.prototype.add = function(data, callback) {
+  try {
+    data = _prepareData(data);
+  } catch(err) {
+    this.logger.logError(err);
+    if (err instanceof E) {
+      return callback(err);
+    } else {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
+        error: err.toString(),
+      }));
+    }
+  }
+
+  return this._add(data, callback);
+};
+
+EntityModel.prototype.modify = function(id, data, callback) {
+  try {
+    data = _prepareData(data);
+  } catch(err) {
+    this.logger.logError(err);
+    if (err instanceof E) {
+      return callback(err);
+    } else {
+      return callback(new E('EClientBadRequest', 'Invalid request post data', {
+        error: err.toString(),
+      }));
+    }
+  }
+
+  return this._modify(id, data, callback);
 };
 
 EntityModel.prototype.delete = function(id, callback) {
@@ -903,6 +940,17 @@ EntityModel.prototype.import = function(packageData, recoverData, callback) {
       return callback(null, pkgs);
     });
   });
+};
+
+function _prepareData(data) {
+  data = toolkit.jsonCopy(data);
+
+  if ('boolean' === typeof data.isPinned) {
+    data.pinTime = data.isPinned ? new Date() : null;
+    delete data.isPinned;
+  }
+
+  return data;
 };
 
 function _prepareImportData(data) {

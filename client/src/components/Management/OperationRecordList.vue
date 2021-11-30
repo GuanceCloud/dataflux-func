@@ -13,8 +13,6 @@ Show detail                   : 显示请求详情
 The full content is following : 完整内容如下
 Request                       : 请求
 Response                      : 响应
-
-Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作记录，用户（ID、用户名），客户端ID，跟踪ID
 </i18n>
 
 <template>
@@ -25,10 +23,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
         <h1>
           近期操作记录
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Operation Record, User(ID, username), Client ID, Trace ID')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
         </h1>
       </el-header>
@@ -46,7 +41,7 @@ Search Operation Record, User(ID, username), Client ID, Trace ID: 搜索操作�
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
@@ -137,12 +132,11 @@ export default {
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/operation-records/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 

@@ -80,7 +80,7 @@ Pressure                      : 压力
           <span class="worker-queue-info">
             <span class="worker-queue-number">#{{ i }}</span> {{ $t('Queue') }}
             <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount)) }}
+            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}
           </span>
         </el-card>
 

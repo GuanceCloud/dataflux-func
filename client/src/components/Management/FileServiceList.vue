@@ -5,7 +5,6 @@ File Service disabled: 文件服务已禁用
 File Service enabled : 文件服务已启用
 File Service deleted : 文件服务已删除
 
-Search File Service(ID, root): 搜索文件服务（ID、根目录）
 No File Service has ever been added: 从未添加过任何文件服务
 
 Are you sure you want to disable the File Service?: 是否确认禁用此文件服务？
@@ -20,10 +19,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
         <h1>
           {{ $t('File Service') }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search File Service(ID, root)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -47,7 +43,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Root')">
             <template slot-scope="scope">
@@ -111,19 +107,16 @@ export default {
     '$store.state.isLoaded': function(val) {
       if (!val) return;
 
-      setImmediate(() => {
-        this.T.autoScrollTable(this.$store.state.FileServiceList_scrollY);
-      });
+      setImmediate(() => this.T.autoScrollTable());
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
       // 默认过滤条件
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/file-services/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -182,14 +175,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateFileServiceList_scrollY', this.T.getTableScrollY());
+      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
           this.$router.push({
             name : 'file-service-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           })
           break;
 
@@ -199,7 +192,7 @@ export default {
           this.$router.push({
             name  : 'file-service-setup',
             params: {id: d.id},
-            query : prevRouteQuery,
+            query : nextRouteQuery,
           })
           break;
       }

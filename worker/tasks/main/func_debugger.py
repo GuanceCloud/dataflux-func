@@ -97,8 +97,9 @@ def func_debugger(self, *args, **kwargs):
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
 
-    # 顶层任务ID
-    root_task_id = kwargs.get('rootTaskId') or self.request.id
+    # 任务ID
+    task_id      = self.request.id
+    root_task_id = kwargs.get('rootTaskId') or task_id
 
     # 函数链
     func_chain = kwargs.get('funcChain') or []
@@ -137,6 +138,7 @@ def func_debugger(self, *args, **kwargs):
 
         extra_vars = {
             '_DFF_DEBUG'          : True,
+            '_DFF_TASK_ID'        : task_id,
             '_DFF_ROOT_TASK_ID'   : root_task_id,
             '_DFF_SCRIPT_SET_ID'  : script_set_id,
             '_DFF_SCRIPT_ID'      : script_id,

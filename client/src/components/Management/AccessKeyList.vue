@@ -1,7 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Access Key deleted: AccessKey已删除
 
-Search Access Key(ID, name): 搜索Access Key（ID、名称）
 No Access Key has ever been added: 从未添加过任何授权链接
 
 Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey？
@@ -15,10 +14,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
         <h1>
           Access Key
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Access Key(ID, name)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
@@ -41,7 +37,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
         <el-table v-else
           class="common-table" height="100%"
           :data="data"
-          :row-class-name="highlightRow">
+          :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Name')">
             <template slot-scope="scope">
@@ -102,15 +98,14 @@ export default {
     },
   },
   methods: {
-    highlightRow({row, rowIndex}) {
-      return (this.$store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
-    },
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery({
+        fields: [ 'id', 'userId', 'name', 'secret', 'createTime' ],
+        sort  : [ '-seq' ],
+      });
+
       let apiRes = await this.T.callAPI_get('/api/v1/access-keys/do/list', {
-        query: this.T.createListQuery({
-          fields: [ 'id', 'userId', 'name', 'secret', 'createTime' ],
-          sort  : [ '-seq' ],
-        }),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 
@@ -142,13 +137,13 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let prevRouteQuery = this.T.packRouteQuery();
+      let nextRouteQuery = this.T.packRouteQuery();
 
       switch(target) {
         case 'add':
           this.$router.push({
             name: 'access-key-add',
-            query: prevRouteQuery,
+            query: nextRouteQuery,
           });
           break;
       }

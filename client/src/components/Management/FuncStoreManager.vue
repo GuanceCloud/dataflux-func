@@ -7,7 +7,6 @@ Show content: 显示内容
 
 Func Store data deleted: 函数缓存数据已删除
 
-Search Func Store data(Key, Scope): 搜索函数存储数据（Key、Scope）
 No Func Store data has ever been added: 从未添加过任何函数存储数据
 
 Are you sure you want to delete the Func Store data?: 是否确认删除此函数存储数据？
@@ -21,10 +20,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
         <h1>
           {{ $t('Func Store Manager') }}
           <div class="header-control">
-            <FuzzySearchInput
-              :dataFilter="dataFilter"
-              :searchTip="$t('Search Func Store data(Key, Scope)')">
-            </FuzzySearchInput>
+            <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
         </h1>
       </el-header>
@@ -114,8 +110,10 @@ export default {
   },
   methods: {
     async loadData() {
+      let _listQuery = this.dataFilter = this.T.createListQuery();
+
       let apiRes = await this.T.callAPI_get('/api/v1/func-stores/do/list', {
-        query: this.T.createListQuery(),
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
 

@@ -68,7 +68,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.pageMode()) {
+      switch(this.T.setupPageMode()) {
         case 'add':
           return await this.addData();
       }
@@ -93,7 +93,7 @@ export default {
       const nameMap = {
         add: '创建',
       };
-      return nameMap[this.T.pageMode()];
+      return nameMap[this.T.setupPageMode()];
     },
   },
   props: {

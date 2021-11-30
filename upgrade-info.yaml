@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '7'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '8'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -105,3 +105,33 @@ upgradeInfo:
         PRIMARY KEY (`seq`),
         UNIQUE KEY `ID` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';
+
+  - seq: 8
+    database: |-
+      -- 脚本集/数据源/环境变量增加置顶功能
+      ALTER TABLE biz_main_script_set
+      ADD COLUMN `pinTime` DATETIME DEFAULT NULL COMMENT '置顶时间'
+      AFTER `lockedByUserId`;
+
+      ALTER TABLE biz_main_data_source
+      ADD COLUMN `pinTime` DATETIME DEFAULT NULL COMMENT '置顶时间'
+      AFTER `isBuiltin`;
+
+      ALTER TABLE biz_main_env_variable
+      ADD COLUMN `pinTime` DATETIME DEFAULT NULL COMMENT '置顶时间'
+      AFTER `autoTypeCasting`;
+
+      -- 自动触发任务增加层级归类
+      ALTER TABLE biz_main_crontab_task_info
+      ADD COLUMN `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
+      AFTER `crontabConfigId`;
+
+      ALTER TABLE biz_main_crontab_task_info
+      ADD INDEX `ROOT_TASK_ID` (rootTaskId);
+
+      ALTER TABLE biz_main_batch_task_info
+      ADD COLUMN `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
+      AFTER `batchId`;
+
+      ALTER TABLE biz_main_batch_task_info
+      ADD INDEX `ROOT_TASK_ID` (rootTaskId);

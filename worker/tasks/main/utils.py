@@ -635,6 +635,7 @@ class SyncCache(BaseTask):
                 continue
 
             task_id                = cache_res['taskId']
+            root_task_id           = cache_res.get('rootTaskId') or 'ROOT'
             origin                 = cache_res['origin']
             origin_id              = cache_res['originId']
             func_id                = cache_res.get('funcId')
@@ -676,6 +677,7 @@ class SyncCache(BaseTask):
                         SET
                              `id`                   = ?
                             ,`??`                   = ?
+                            ,`rootTaskId`           = ?
                             ,`funcId`               = ?
                             ,`scriptPublishVersion` = ?
                             ,`queueTime`            = FROM_UNIXTIME(?)
@@ -686,6 +688,7 @@ class SyncCache(BaseTask):
                         table_name,
                         task_id,
                         origin_id_field, origin_id,
+                        root_task_id,
                         func_id,
                         script_publish_version,
                         timestamp, timestamp, timestamp,
@@ -749,6 +752,7 @@ class SyncCache(BaseTask):
                         SET
                              `id`                   = ?
                             ,`??`                   = ?
+                            ,`rootTaskId`           = ?
                             ,`funcId`               = ?
                             ,`scriptPublishVersion` = ?
                             ,`endTime`              = FROM_UNIXTIME(?)
@@ -762,6 +766,7 @@ class SyncCache(BaseTask):
                         table_name,
                         task_id,
                         origin_id_field, origin_id,
+                        root_task_id,
                         func_id,
                         script_publish_version,
                         timestamp,
