@@ -5,7 +5,6 @@ Add Script                                     : 添加脚本
 Add Script Set                                 : 添加脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
-Pinned                                         : 已置顶
 Locked by someone else                         : 被其他人锁定
 Locked by you                                  : 被您锁定
 Quick View                                     : 快速查看
@@ -55,125 +54,120 @@ Script unlocked    : 脚本已解锁
         :entry-id="data.id"
         @click="openEntity(node, data)">
 
-        <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
-          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
-          </el-link>
-          <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
-          </el-link>
-          <div v-else>
-            <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
-            <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
-            <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
+        <!-- 菜单 -->
+        <el-popover
+          placement="right-start"
+          trigger="hover"
+          popper-class="aside-tip"
+          :disabled="!!!data.id"
+          :value="showPopoverId === data.id">
 
-            <el-tag v-if="data.isCodeEdited"
-              type="danger"
-              size="mini">{{ $t('Edited') }}</el-tag>
-            <el-tag v-if="data.isBuiltin"
-              effect="dark"
-              type="warning"
-              size="mini">{{ $t('Builtin') }}</el-tag>
-           <span>{{ node.label }}</span>
+          <!-- 基本信息 -->
+          <div class="aside-tree-node-description">
+            <CopyButton :content="data.id" tip-placement="left"></CopyButton>
+            ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+
+            <pre v-if="(data.type === 'scriptSet' || data.type === 'script') && data.description">{{ data.description }}</pre>
           </div>
-        </span>
 
-        <div v-if="data.type === 'scriptSet' || data.type === 'script' || data.type === 'func'">
-          <!-- 状态图标 -->
-          <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-            <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
-          </el-tooltip>
-          <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
-            <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
-          </el-tooltip>
+          <!-- 示例代码 -->
+          <template v-if="data.sampleCode">
+            <div class="aside-tree-node-sample-code">
+              <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
+              {{ $t('Example') }}{{ $t(':') }}
 
-          <!-- 菜单 -->
-          <el-popover v-if="data.id"
-            placement="right-start"
-            trigger="hover"
-            popper-class="aside-tip"
-            :value="showPopoverId === data.id">
-
-            <!-- 基本信息 -->
-            <div class="aside-tree-node-description">
-              <CopyButton :content="data.id" tip-placement="left"></CopyButton>
-              ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
-
-              <pre v-if="(data.type === 'scriptSet' || data.type === 'script') && data.description">{{ data.description }}</pre>
+              <pre>{{ data.sampleCode }}</pre>
             </div>
+          </template>
 
-            <!-- 示例代码 -->
-            <template v-if="data.sampleCode">
-              <div class="aside-tree-node-sample-code">
-                <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
-                {{ $t('Example') }}{{ $t(':') }}
+          <!-- 提示 -->
+          <template v-if="data.isCodeEdited">
+            <br>
+            <div class="code-edited-tip">
+              <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
+            </div>
+          </template>
 
-                <pre>{{ data.sampleCode }}</pre>
+          <!-- 操作 -->
+          <template v-if="data.type === 'scriptSet' || data.type === 'script'">
+            <br>
+            <el-button-group>
+              <!-- 添加脚本集 -->
+              <el-button v-if="data.type === 'scriptSet'"
+                size="small"
+                @click.stop="openEntity(node, data, 'add')">
+                <i class="fa fa-fw fa-plus"></i>
+                {{ $t('Add Script') }}
+              </el-button>
+
+              <!-- 快速查看 -->
+              <el-button v-if="data.type === 'script'"
+                size="small"
+                @click.stop="showQuickViewWindow(data.id)">
+                <i class="fa fa-fw fa-window-restore"></i>
+                {{ $t('Quick View') }}
+              </el-button>
+
+              <!-- 置顶 -->
+              <el-button v-if="data.type === 'scriptSet'"
+                size="small"
+                @click.stop="pinData(data.type, data.id, !data.isPinned)">
+                <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+                {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+              </el-button>
+
+              <!-- 锁定/解锁脚本/脚本集 -->
+              <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
+                size="small"
+                @click="lockData(data.type, data.id, !data.isLocked)">
+                <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
+                {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
+              </el-button>
+
+              <!-- 配置/查看 -->
+              <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
+                size="small"
+                @click.stop="openEntity(node, data, 'setup')">
+                <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
+                {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
+              </el-button>
+            </el-button-group>
+          </template>
+
+          <div slot="reference" class="aside-item">
+            <!-- 项目内容 -->
+            <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
+              <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
+              </el-link>
+              <div v-else>
+                <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
+                <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
+                <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
+
+                <el-tag v-if="data.isCodeEdited"
+                  type="danger"
+                  size="mini">{{ $t('Edited') }}</el-tag>
+                <el-tag v-if="data.isBuiltin"
+                  effect="dark"
+                  type="warning"
+                  size="mini">{{ $t('Builtin') }}</el-tag>
+               <span>{{ node.label }}</span>
               </div>
-            </template>
+            </span>
 
-            <!-- 提示 -->
-            <template v-if="data.isCodeEdited">
-              <br>
-              <div class="code-edited-tip">
-                <span class="text-bad">{{ $t('Code edited but not published yet') }}<br>{{ $t('Import/Calling will run the published version') }}</span>
-              </div>
-            </template>
-
-            <!-- 操作 -->
-            <template v-if="data.type === 'scriptSet' || data.type === 'script'">
-              <br>
-              <el-button-group>
-                <!-- 添加脚本集 -->
-                <el-button v-if="data.type === 'scriptSet'"
-                  size="small"
-                  @click.stop="openEntity(node, data, 'add')">
-                  <i class="fa fa-fw fa-plus"></i>
-                  {{ $t('Add Script') }}
-                </el-button>
-
-                <!-- 快速查看 -->
-                <el-button v-if="data.type === 'script'"
-                  size="small"
-                  @click.stop="showQuickViewWindow(data.id)">
-                  <i class="fa fa-fw fa-window-restore"></i>
-                  {{ $t('Quick View') }}
-                </el-button>
-
-                <!-- 置顶 -->
-                <el-button v-if="data.type === 'scriptSet'"
-                  size="small"
-                  @click.stop="pinData(data.type, data.id, !data.isPinned)">
-                  <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
-                  {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
-                </el-button>
-
-                <!-- 锁定/解锁脚本/脚本集 -->
-                <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                  size="small"
-                  @click="lockData(data.type, data.id, !data.isLocked)">
-                  <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
-                  {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
-                </el-button>
-
-                <!-- 配置/查看 -->
-                <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                  size="small"
-                  @click.stop="openEntity(node, data, 'setup')">
-                  <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
-                  {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
-                </el-button>
-              </el-button-group>
-            </template>
-
-            <el-button slot="reference"
-              type="text"
-              class="text-info"
-              @click.stop="showPopover(data.id)">
-              <i class="fa fa-fw fa-bars"></i>
-            </el-button>
-          </el-popover>
-        </div>
+            <!-- 状态图标 -->
+            <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+              <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
+            </el-tooltip>
+            <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
+              <i v-if="data.isLocked" class="fa fa-fw fa-lock" :class="data.isLockedByOther ? 'text-bad' : 'text-good'"></i>
+            </el-tooltip>
+          </div>
+        </el-popover>
       </span>
     </el-tree>
 
@@ -484,11 +478,6 @@ export default {
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
     },
-    showPopover(id) {
-      setImmediate(() => {
-        this.showPopoverId = id;
-      })
-    },
     expandNode(nodeKey) {
       this.$set(this.expandedNodeMap, nodeKey, true);
 
@@ -656,6 +645,18 @@ export default {
 .aside-tree-node-quick-view {
   margin-left: 5px;
 }
+
+.aside-tree-node > span {
+  display: block;
+  width: 100%;
+}
+.aside-item {
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .code-edited-tip {
   font-size: 14px;
   padding-top: 5px;

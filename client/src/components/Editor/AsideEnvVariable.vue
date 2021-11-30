@@ -31,77 +31,72 @@ ENV Variable unpinned: 环境变量已取消
         class="aside-tree-node"
         @click="openEntity(node, data)">
 
-        <span :class="{'text-bad': data.isPinned}">
-          <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
-          </el-link>
-          <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
-            <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
-          </el-link>
-          <div v-else>
-            <span>{{ node.label }}</span>
+        <!-- 菜单 -->
+        <el-popover
+          placement="right-start"
+          trigger="hover"
+          popper-class="aside-tip"
+          :disabled="!!!data.id"
+          :value="showPopoverId === data.id">
+
+          <!-- 基本信息 -->
+          <div class="aside-tree-node-description">
+            <CopyButton :content="data.id" tip-placement="left"></CopyButton>
+            ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+
+            <pre v-if="data.description">{{ data.description }}</pre>
           </div>
-        </span>
 
-        <div v-if="data.type === 'envVariable'">
-          <!-- 状态图标 -->
-          <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-            <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
-          </el-tooltip>
+          <!-- 示例代码 -->
+          <template v-if="data.sampleCode">
+            <div class="aside-tree-node-sample-code">
+              <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
+              {{ $t('Example') }}{{ $t(':') }}
 
-          <!-- 菜单 -->
-          <el-popover v-if="data.id"
-            placement="right-start"
-            trigger="hover"
-            popper-class="aside-tip"
-            :value="showPopoverId === data.id">
-
-            <!-- 基本信息 -->
-            <div class="aside-tree-node-description">
-              <CopyButton :content="data.id" tip-placement="left"></CopyButton>
-              ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
-
-              <pre v-if="data.description">{{ data.description }}</pre>
+              <pre>{{ data.sampleCode }}</pre>
             </div>
+          </template>
 
-            <!-- 示例代码 -->
-            <template v-if="data.sampleCode">
-              <div class="aside-tree-node-sample-code">
-                <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
-                {{ $t('Example') }}{{ $t(':') }}
-
-                <pre>{{ data.sampleCode }}</pre>
-              </div>
-            </template>
-
-            <!-- 操作 -->
-            <br>
-            <el-button-group>
-              <!-- 置顶 -->
-              <el-button
-                size="small"
-                @click.stop="pinData(data.type, data.id, !data.isPinned)">
-                <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
-                {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
-              </el-button>
-
-              <!-- 配置/查看 -->
-              <el-button
-                size="small"
-                @click.stop="openEntity(node, data, 'setup')">
-                <i class="fa fa-fw fa-wrench"></i>
-                {{ $t('Setup') }}
-              </el-button>
-            </el-button-group>
-
-            <el-button slot="reference"
-              type="text"
-              class="text-info"
-              @click.stop="showPopover(data.id)">
-              <i class="fa fa-fw fa-bars"></i>
+          <!-- 操作 -->
+          <br>
+          <el-button-group>
+            <!-- 置顶 -->
+            <el-button
+              size="small"
+              @click.stop="pinData(data.type, data.id, !data.isPinned)">
+              <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+              {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
             </el-button>
-          </el-popover>
-        </div>
+
+            <!-- 配置/查看 -->
+            <el-button
+              size="small"
+              @click.stop="openEntity(node, data, 'setup')">
+              <i class="fa fa-fw fa-wrench"></i>
+              {{ $t('Setup') }}
+            </el-button>
+          </el-button-group>
+
+          <div slot="reference" class="aside-item">
+            <!-- 项目内容 -->
+            <span :class="{'text-bad': data.isPinned}">
+              <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
+              </el-link>
+              <div v-else>
+                <span>{{ node.label }}</span>
+              </div>
+            </span>
+
+            <!-- 状态图标 -->
+            <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+              <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
+            </el-tooltip>
+          </div>
+        </el-popover>
       </span>
     </el-tree>
   </div>
@@ -196,11 +191,6 @@ export default {
 
       this.$store.commit('updateEnvVariableListSyncTime');
     },
-    showPopover(id) {
-      setImmediate(() => {
-        this.showPopoverId = id;
-      })
-    },
     openEntity(node, data, target) {
       if (target === 'setup') {
         this.$refs.tree.setCurrentKey(data.id);
@@ -276,5 +266,16 @@ export default {
 .aside-tree-node-sample-code {
   padding-top: 10px;
   text-align: left;
+}
+
+.aside-tree-node > span {
+  display: block;
+  width: 100%;
+}
+.aside-item {
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
