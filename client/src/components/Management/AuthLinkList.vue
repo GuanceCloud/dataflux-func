@@ -47,7 +47,11 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
         <h1>
           {{ $t('Auth Link') }}
           <div class="header-control">
-            <el-switch v-model="showCountCost" :inactive-text="$t('Info')" :active-text="$t('Recent Response')"></el-switch>
+            <el-switch
+              v-model="showCountCost"
+              :inactive-text="$t('Info')"
+              :active-text="$t('Recent Response')">
+            </el-switch>
             &#12288;
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>

@@ -485,6 +485,13 @@ export default {
         this.$refs.tree.getNode(nodeKey).expanded = true;
       });
     },
+    collapseNode(nodeKey) {
+      this.$delete(this.expandedNodeMap, nodeKey);
+
+      setImmediate(() => {
+        this.$refs.tree.getNode(nodeKey).expanded = false;
+      });
+    },
     openEntity(node, data, target) {
       if (target === 'setup') {
         this.$refs.tree.setCurrentKey(data.id);
@@ -526,7 +533,11 @@ export default {
             });
           }
 
-          this.expandNode(data.id);
+          if (this.$refs.tree.getNode(data.id).expanded) {
+            this.collapseNode(data.id);
+          } else {
+            this.expandNode(data.id);
+          }
           break;
 
         // 脚本节点

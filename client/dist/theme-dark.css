@@ -112,8 +112,9 @@ a {
   background-color: rgb(34,34,34,.9) !important;
 }
 
-tr.hl-row {
-  background-image: linear-gradient(to right, #333, #382924) !important;
+tr.hl-row td {
+  background-color: #38292480;
+  /*background-image: linear-gradient(to right, #333, #382924) !important;*/
 }
 .el-table--enable-row-hover .el-table__body tr.hl-row:hover>td {
   background-color: #382924 !important;

@@ -280,6 +280,7 @@ export default {
 }
 * {
   font-family: Iosevka,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  outline: none !important;
 }
 a {
   text-decoration: none;
@@ -432,8 +433,9 @@ h3 {
 .float-right {
   float: right;
 }
-tr.hl-row {
-  background-image: linear-gradient(to right, #FFF, #ffefe4);
+tr.hl-row td {
+  background-color: #ffefe480;
+  /*background-image: linear-gradient(to right, #FFF, #ffefe4);*/
 }
 .el-table--enable-row-hover .el-table__body tr.hl-row:hover>td {
   background-color: #ffefe4;

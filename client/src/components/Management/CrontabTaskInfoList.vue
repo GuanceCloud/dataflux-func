@@ -15,7 +15,7 @@ cost: 消耗
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip content="在本页面只展示主任务" placement="bottom" :enterable="false">
+            <el-tooltip content="只展示主任务" placement="bottom" :enterable="false">
               <el-checkbox v-if="isMainList"
                 :border="true"
                 size="small"

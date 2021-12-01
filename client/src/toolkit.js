@@ -1279,7 +1279,9 @@ export function doPageFilter(nextListQuery, pushNow=true) {
   nextRoute.query.filter = filter;
 
   if (pushNow) {
-    router.push(nextRoute);
+    setImmediate(() => {
+      router.push(nextRoute);
+    })
   }
   return nextRoute;
 };
