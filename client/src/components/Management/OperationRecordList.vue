@@ -149,19 +149,14 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       let httpInfoLines = [];
-
       httpInfoLines.push(`===== ${this.$t('Request')} =====`)
-
       httpInfoLines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
-
       if (d.reqBodyJSON) {
         httpInfoLines.push(JSON.stringify(d.reqBodyJSON, null, 2));
       }
 
       httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
-
       httpInfoLines.push(`Status Code: ${d.respStatusCode}`);
-
       if (d.respBodyJSON) {
         httpInfoLines.push(JSON.stringify(d.respBodyJSON, null, 2));
       }

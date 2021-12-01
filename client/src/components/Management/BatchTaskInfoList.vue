@@ -1,5 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 s: 秒
+
+Log      : 日志
+Exception: 异常
 </i18n>
 
 <template>
@@ -96,15 +99,12 @@ s: 秒
                 <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
                   type="text"
                   @click="openSubTaskInfo(scope.row)"
-                  >关联任务</el-button>
+                  >相关任务</el-button>
               </template>
 
               <el-button
                 :disabled="!scope.row.logMessageTEXT"
-                @click="showDetail(scope.row, 'logMessageTEXT')" type="text">日志</el-button>
-              <el-button
-                :disabled="!scope.row.einfoTEXT"
-                @click="showDetail(scope.row, 'einfoTEXT')" type="text">故障</el-button>
+                @click="showLog(scope.row)" type="text">显示日志详情</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -163,12 +163,23 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showDetail(d, field) {
+    showLog(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
+      let contentLines = [];
+      contentLines.push(`===== ${this.$t('Log')} =====`)
+      contentLines.push(d.logMessageTEXT)
+
+      if (d.einfoTEXT) {
+        contentLines.push(`\n===== ${this.$t('Exception')} =====`)
+        contentLines.push(d.einfoTEXT)
+      }
+
+      let contentTEXT = contentLines.join('\n');
+
       let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.funcId}.${field}.${createTimeStr}`;
-      this.$refs.longTextDialog.update(d[field], fileName);
+      let fileName = `${d.funcId}.log.${createTimeStr}`;
+      this.$refs.longTextDialog.update(contentTEXT, fileName);
     },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
