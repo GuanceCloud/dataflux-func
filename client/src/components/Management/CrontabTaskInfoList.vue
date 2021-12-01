@@ -109,10 +109,15 @@ cost: 消耗
 
           <el-table-column width="100" align="right" v-if="isMainList">
             <template slot-scope="scope">
-              <el-button @click="openSubTaskInfo(scope.row)"
-                v-if="scope.row.subTaskCount > 0"
+              <el-button v-if="scope.row.subTaskCount > 0"
                 type="text"
+                @click="openSubTaskInfo(scope.row)"
                 >子任务 <code>({{ T.numberLimit(scope.row.subTaskCount) }})</code></el-button>
+
+              <el-button v-if="scope.row.rootTaskId !== 'ROOT'"
+                type="text"
+                @click="openSubTaskInfo(scope.row)"
+                >关联任务</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -189,9 +194,10 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
       this.$store.commit('updateTableList_scrollY');
 
+      let rootTaskId = d.rootTaskId === 'ROOT' ? d.id : d.rootTaskId;
       this.$router.push({
         name  : 'crontab-task-info-sub-list',
-        params: {id: d.id},
+        params: { id: rootTaskId },
         query : nextRouteQuery,
       });
     },
