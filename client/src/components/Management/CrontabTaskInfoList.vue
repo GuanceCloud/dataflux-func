@@ -1,8 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
 s: 秒
-
-wait: 等待
-cost: 消耗
 </i18n>
 
 <template>
@@ -11,7 +8,7 @@ cost: 消耗
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ isMainList ? '近期自动触发任务信息' : '子任务信息' }}
+          {{ isMainList ? '近期自动触发任务信息' : '自动触发任务信息' }}
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -53,35 +50,22 @@ cost: 消耗
             </template>
           </el-table-column>
 
-          <el-table-column label="时间" width="350">
+          <el-table-column label="时间" width="200">
             <template slot-scope="scope">
-              入队：
-              <template v-if="scope.row.queueTime">
-                <span>{{ scope.row.queueTime | datetime }}</span>
-                <span class="text-info">{{ scope.row.queueTime | fromNow }}</span>
-              </template>
-
+              <span>{{ scope.row.queueTime | datetime }}</span>
               <br>
-              开始：
-              <template v-if="scope.row.startTime">
-                <span>{{ scope.row.startTime | datetime }}</span>
-                <span class="text-info" v-if="scope.row.queueTime && scope.row.startTime">
-                  {{ $t('wait')}} {{T.getTimeDiff(scope.row.queueTime, scope.row.startTime).asSeconds()}} {{ $t('s') }}
-                </span>
-              </template>
-
-              <br>
-              结束：
-              <template v-if="scope.row.endTime">
-                <span>{{ scope.row.endTime | datetime }}</span>
-                <span class="text-info" v-if="scope.row.queueTime && scope.row.endTime">
-                  {{ $t('cost')}} {{T.getTimeDiff(scope.row.queueTime, scope.row.endTime).asSeconds()}} {{ $t('s') }}
-                </span>
-              </template>
+              <span class="text-info">{{ scope.row.queueTime | fromNow }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="函数">
+          <el-table-column width="100" align="center">
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.subTaskCount > 0" size="medium" type="primary">主任务</el-tag>
+              <el-tag v-else-if="scope.row.rootTaskId !== 'ROOT'" size="small" type="info">子任务</el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="函数" min-width="200">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.func_id"
@@ -90,34 +74,37 @@ cost: 消耗
             </template>
           </el-table-column>
 
-          <el-table-column label="日志内容">
+          <el-table-column label="排队 / 总耗时" align="right" width="120">
             <template slot-scope="scope">
-              <template v-if="scope.row.logMessageSample">
-                <pre class="text-data">{{ scope.row.logMessageSample }}</pre>
-                <el-button @click="showDetail(scope.row, 'logMessageTEXT')" type="text">显示日志详情</el-button>
+              <template v-if="scope.row.startTime">
+                {{ T.getTimeDiff(scope.row.queueTime, scope.row.startTime).asSeconds() }}
               </template>
-            </template>
-          </el-table-column>
-          <el-table-column label="故障内容">
-            <template slot-scope="scope">
-              <template v-if="scope.row.einfoSample">
-                <pre class="text-data">{{ scope.row.einfoSample }}</pre>
-                <el-button @click="showDetail(scope.row, 'einfoTEXT')" type="text">显示故障详情</el-button>
+              <template v-else>-</template>
+
+              <span class="text-info">/</span>
+
+              <template v-if="scope.row.endTime">
+                {{ T.getTimeDiff(scope.row.queueTime, scope.row.endTime).asSeconds() }} <span class="text-info">{{ $t('s') }}</span>
               </template>
+              <template v-else>-</template>
             </template>
           </el-table-column>
 
-          <el-table-column width="100" align="right" v-if="isMainList">
+          <el-table-column width="240" align="right">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.subTaskCount > 0"
-                type="text"
-                @click="openSubTaskInfo(scope.row)"
-                >子任务 <code>({{ T.numberLimit(scope.row.subTaskCount) }})</code></el-button>
+              <template v-if="isMainList">
+                <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
+                  type="text"
+                  @click="openSubTaskInfo(scope.row)"
+                  >关联任务</el-button>
+              </template>
 
-              <el-button v-if="scope.row.rootTaskId !== 'ROOT'"
-                type="text"
-                @click="openSubTaskInfo(scope.row)"
-                >关联任务</el-button>
+              <el-button
+                :disabled="!scope.row.logMessageTEXT"
+                @click="showDetail(scope.row, 'logMessageTEXT')" type="text">日志</el-button>
+              <el-button
+                :disabled="!scope.row.einfoTEXT"
+                @click="showDetail(scope.row, 'einfoTEXT')" type="text">故障</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -154,7 +141,7 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withSubTaskCount: this.isMainList,
+        _withSubTaskCount: true,
       });
       if (this.isMainList) {
         _listQuery.crontabConfigId = this.$route.params.id;
@@ -169,12 +156,6 @@ export default {
         query: _listQuery,
       });
       if (!apiRes.ok) return;
-
-      // 缩减行数
-      apiRes.data.forEach(d => {
-        d.logMessageSample = this.T.limitLines(d.logMessageTEXT, -3, 100);
-        d.einfoSample      = this.T.limitLines(d.einfoTEXT, -3, 100);
-      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;

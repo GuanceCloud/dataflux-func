@@ -106,12 +106,14 @@ Vue.config.productionTip = false
 import Logo             from '@/components/Logo'
 import InfoBlock        from '@/components/InfoBlock'
 import CopyButton       from '@/components/CopyButton'
+import RelativeDateTime from '@/components/RelativeDateTime'
 import FuncInfo         from '@/components/FuncInfo'
 import FuzzySearchInput from '@/components/FuzzySearchInput'
 import Pager            from '@/components/Pager'
 Vue.component('Logo', Logo);
 Vue.component('InfoBlock', InfoBlock);
 Vue.component('CopyButton', CopyButton);
+Vue.component('RelativeDateTime', RelativeDateTime);
 Vue.component('FuncInfo', FuncInfo);
 Vue.component('FuzzySearchInput', FuzzySearchInput);
 Vue.component('Pager', Pager);

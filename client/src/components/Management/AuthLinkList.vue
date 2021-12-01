@@ -112,7 +112,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
           </el-table-column>
 
           <template v-if="!showCountCost">
-            <el-table-column :label="$t('API Info')" width="180">
+            <el-table-column :label="$t('API Info')" width="200">
               <template slot-scope="scope">
                 <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
                 <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
@@ -123,9 +123,8 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
                 <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
                 <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
                 <template v-else>
-                  <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'">{{ scope.row.expireTime | datetime }}</span>
-                  <br>
-                  <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
+                  <RelativeDateTime :datetime="scope.row.expireTime"
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
                 </template>
 
                 <br>

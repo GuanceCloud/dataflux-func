@@ -56,7 +56,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="160">
+          <el-table-column :label="$t('Status')" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
               <span v-else class="text-good">{{ $t('Enabled') }}</span>

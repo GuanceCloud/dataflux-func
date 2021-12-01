@@ -27,6 +27,16 @@ exports.list = function(req, res, next) {
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
+      // `rootTaskId`需要特殊处理
+      var rootTaskId = req.query['rootTaskId'];
+      if (rootTaskId && rootTaskId !== 'ROOT') {
+        opt.filters = opt.filters || {};
+        opt.filters['ROOT_TASK_ID'] = {
+          raw: toolkit.strf('bati.id = {0} OR bati.rootTaskId = {0}', res.locals.db.escape(rootTaskId)),
+        }
+        delete opt.filters['bati.rootTaskId'];
+      }
+
       batchTaskInfoModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 

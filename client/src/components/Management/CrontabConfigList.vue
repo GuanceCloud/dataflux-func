@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Fixed  : 固定
 Not Set: 未配置
+Config : 配置
 Created: 创建时间
 Expires: 有效期限
 Never  : 长期有效
@@ -90,32 +91,31 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column label="Crontab" width="350">
+          <el-table-column :label="$t('Config')" width="240">
             <template slot-scope="scope">
+              <span class="text-info">Crontab{{ $t(':') }}</span>
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                <code>{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                <code class="text-code">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
                 <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
               </template>
-              <code v-else-if="scope.row.crontab">{{ scope.row.crontab }}</code>
+              <code v-else-if="scope.row.crontab" class="text-code">{{ scope.row.crontab }}</code>
               <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
               <br>
               <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
-              <span>{{ scope.row.createTime | datetime }}</span>
-              <small class="text-info">{{ $t('(') }}{{ scope.row.createTime | fromNow }}{{ $t(')') }}</small>
+              <RelativeDateTime :datetime="scope.row.createTime"></RelativeDateTime>
 
               <br>
               <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
               <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
               <template v-else>
-                <span :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"
-                >{{ scope.row.expireTime | datetime }}</span>
-                <small class="text-info">{{ $t('(') }}{{ scope.row.expireTime | fromNow }}{{ $t(')') }}</small>
+                <RelativeDateTime :datetime="scope.row.expireTime"
+                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
               </template>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="160">
+          <el-table-column :label="$t('Status')" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
               <span v-else class="text-good">{{ $t('Enabled') }}</span>
@@ -135,18 +135,15 @@ Integration Func Tasks: 集成函数任务
                 :disabled="!scope.row.taskInfoCount"
                 >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
-
               <el-button @click="runTask(scope.row)"
                 type="text"
-                :disabled="!scope.row.func_id"
-                >{{ $t('Run Now') }}
+                :disabled="!scope.row.func_id">
+                {{ $t('Run Now') }}
               </el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
-
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
-
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
