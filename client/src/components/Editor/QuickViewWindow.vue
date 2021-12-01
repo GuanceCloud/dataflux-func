@@ -253,6 +253,9 @@ export default {
 </style>
 
 <style>
+.quick-view-window .CodeMirror {
+  height: 100% !important;
+}
 .quick-view-window > .el-tabs {
   border: none;
 }
