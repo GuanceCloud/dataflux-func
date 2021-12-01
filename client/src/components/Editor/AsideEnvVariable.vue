@@ -63,7 +63,7 @@ ENV Variable unpinned: 环境变量已取消
             <!-- 置顶 -->
             <el-button
               size="small"
-              @click.stop="pinData(data.type, data.id, !data.isPinned)">
+              @click="pinData(data.type, data.id, !data.isPinned)">
               <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
               {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
             </el-button>
@@ -71,7 +71,7 @@ ENV Variable unpinned: 环境变量已取消
             <!-- 配置/查看 -->
             <el-button
               size="small"
-              @click.stop="openEntity(node, data, 'setup')">
+              @click="openEntity(node, data, 'setup')">
               <i class="fa fa-fw fa-wrench"></i>
               {{ $t('Setup') }}
             </el-button>

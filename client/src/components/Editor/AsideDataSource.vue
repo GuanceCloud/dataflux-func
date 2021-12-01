@@ -71,7 +71,7 @@ Data Source unpinned: 数据源已取消
             <!-- 简易调试 -->
             <el-button v-if="C.DATA_SOURCE_MAP.get(data.dataSourceType).debugSupported"
               size="small"
-              @click.stop="showSimpleDebugWindow(data.dataSource)">
+              @click="showSimpleDebugWindow(data.dataSource)">
               <i class="fa fa-fw fa-window-restore"></i>
               {{ $t('Simple Debug') }}
             </el-button>
@@ -79,7 +79,7 @@ Data Source unpinned: 数据源已取消
             <!-- 置顶 -->
             <el-button
               size="small"
-              @click.stop="pinData(data.type, data.id, !data.isPinned)">
+              @click="pinData(data.type, data.id, !data.isPinned)">
               <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
               {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
             </el-button>
@@ -87,7 +87,7 @@ Data Source unpinned: 数据源已取消
             <!-- 配置/查看 -->
             <el-button
               size="small"
-              @click.stop="openEntity(node, data, 'setup')">
+              @click="openEntity(node, data, 'setup')">
               <i class="fa fa-fw" :class="[data.isBuiltin ? 'fa-search' : 'fa-wrench']"></i>
               {{ data.isBuiltin ? $t('View') : $t('Setup') }}
             </el-button>

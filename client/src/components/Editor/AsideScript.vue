@@ -95,7 +95,7 @@ Script unlocked    : 脚本已解锁
               <!-- 添加脚本集 -->
               <el-button v-if="data.type === 'scriptSet'"
                 size="small"
-                @click.stop="openEntity(node, data, 'add')">
+                @click="openEntity(node, data, 'add')">
                 <i class="fa fa-fw fa-plus"></i>
                 {{ $t('Add Script') }}
               </el-button>
@@ -103,7 +103,7 @@ Script unlocked    : 脚本已解锁
               <!-- 快速查看 -->
               <el-button v-if="data.type === 'script'"
                 size="small"
-                @click.stop="showQuickViewWindow(data.id)">
+                @click="showQuickViewWindow(data.id)">
                 <i class="fa fa-fw fa-window-restore"></i>
                 {{ $t('Quick View') }}
               </el-button>
@@ -111,7 +111,7 @@ Script unlocked    : 脚本已解锁
               <!-- 置顶 -->
               <el-button v-if="data.type === 'scriptSet'"
                 size="small"
-                @click.stop="pinData(data.type, data.id, !data.isPinned)">
+                @click="pinData(data.type, data.id, !data.isPinned)">
                 <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
                 {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
               </el-button>
@@ -127,7 +127,7 @@ Script unlocked    : 脚本已解锁
               <!-- 配置/查看 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
                 size="small"
-                @click.stop="openEntity(node, data, 'setup')">
+                @click="openEntity(node, data, 'setup')">
                 <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
                 {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
               </el-button>
@@ -533,12 +533,13 @@ export default {
               name  : 'script-set-setup',
               params: {id: data.id},
             });
-          }
 
-          if (this.$refs.tree.getNode(data.id).expanded) {
-            this.collapseNode(data.id);
           } else {
-            this.expandNode(data.id);
+            if (this.$refs.tree.getNode(data.id).expanded) {
+              this.collapseNode(data.id);
+            } else {
+              this.expandNode(data.id);
+            }
           }
           break;
 
