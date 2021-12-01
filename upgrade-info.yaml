@@ -122,15 +122,20 @@ upgradeInfo:
       AFTER `autoTypeCasting`;
 
       -- 自动触发任务增加层级归类
+
+      TRUNCATE biz_main_crontab_task_info;
+
       ALTER TABLE biz_main_crontab_task_info
-      ADD COLUMN `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
+      ADD COLUMN `rootTaskId` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
       AFTER `crontabConfigId`;
 
       ALTER TABLE biz_main_crontab_task_info
       ADD INDEX `ROOT_TASK_ID` (rootTaskId);
 
+      TRUNCATE biz_main_batch_task_info;
+
       ALTER TABLE biz_main_batch_task_info
-      ADD COLUMN `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
+      ADD COLUMN `rootTaskId` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID'
       AFTER `batchId`;
 
       ALTER TABLE biz_main_batch_task_info

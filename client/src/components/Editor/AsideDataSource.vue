@@ -115,9 +115,11 @@ Data Source unpinned: 数据源已取消
             </span>
 
             <!-- 状态图标 -->
-            <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-              <i v-if="data.isPinned" class="fa fa-fw fa-thumb-tack text-bad"></i>
-            </el-tooltip>
+            <div>
+              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
+              </el-tooltip>
+            </div>
           </div>
         </el-popover>
       </span>
