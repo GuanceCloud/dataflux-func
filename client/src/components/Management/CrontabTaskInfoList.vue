@@ -11,7 +11,7 @@ Exception: 异常
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ isMainList ? '近期自动触发任务信息' : '自动触发任务信息' }}
+          {{ isMainList ? '近期自动触发任务信息' : '相关自动触发任务信息' }}
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -188,7 +188,7 @@ export default {
 
       let rootTaskId = d.rootTaskId === 'ROOT' ? d.id : d.rootTaskId;
       this.$router.push({
-        name  : 'crontab-task-info-sub-list',
+        name  : 'crontab-task-info-related-list',
         params: { id: rootTaskId },
         query : nextRouteQuery,
       });
@@ -196,7 +196,7 @@ export default {
   },
   computed: {
     isMainList() {
-      return !this.T.endsWith(this.$route.name, 'sub-list');
+      return this.$route.name === 'crontab-task-info-list';
     },
   },
   props: {

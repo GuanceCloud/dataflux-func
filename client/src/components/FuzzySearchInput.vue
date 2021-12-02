@@ -48,7 +48,15 @@ export default {
       this.$store.commit('addFuzzySearchHistory', this.dataFilter._fuzzySearch);
     },
     getSearchHistory(queryString, callback) {
-      return callback(this.$store.getters.fuzzySearchHistory);
+      if (!this.$store.state.fuzzySearchHistoryMap) return [];
+
+
+      let key   = this.$route.name;
+      let items = this.$store.state.fuzzySearchHistoryMap[key] || [];
+      items.sort((a, b) => {
+        return b.timestamp - a.timestamp;
+      })
+      return callback(items);
     },
   },
   computed: {

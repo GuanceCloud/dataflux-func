@@ -298,18 +298,6 @@ export default new Vuex.Store({
     showMonkeyPatchNotice: (state) => {
       return !state.isMonkeyPatchNoticeDismissed && !state.isMonkeyPatchNoticeDisabled;
     },
-
-    fuzzySearchHistory: state => {
-      if (!state.fuzzySearchHistoryMap) return [];
-
-
-      let key   = router.currentRoute.path;
-      let items = state.fuzzySearchHistoryMap[key] || [];
-      items.sort((a, b) => {
-        return b.timestamp - a.timestamp;
-      })
-      return items;
-    },
   },
   mutations: {
     switchToBuiltinAuth(state) {
@@ -483,8 +471,11 @@ export default new Vuex.Store({
       state.isMonkeyPatchNoticeDismissed = false;
     },
 
+    clearFuzzySearchHistory(state) {
+      state.fuzzySearchHistoryMap = {};
+    },
     addFuzzySearchHistory(state, queryString) {
-      let key = router.currentRoute.path;
+      let key = router.currentRoute.name;
 
       if (!queryString) return;
 

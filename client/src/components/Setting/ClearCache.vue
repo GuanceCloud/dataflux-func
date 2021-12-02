@@ -13,6 +13,7 @@ Position of Quick View Panel                                        : 快速查�
 Selected Func, Highlighted line or error line                       : 编辑器当前选择的函数、高亮已选择函数所在行、高亮错误行
 Position of scroll in Management                                    : 管理界面列表当前滚动所处位置
 Notice messages or dialogs                                          : 提示信息及对话框
+Search history                                                      : 搜索历史
 
 Config loaded from server                    : 从服务器加载的系统配置
 Page will refresh after clearing this content: 清除本项目会刷新页面
@@ -65,6 +66,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                     <br/>&#12288;{{ $t('Selected Func, Highlighted line or error line') }}
                     <br/>&#12288;{{ $t('Position of scroll in Management') }}
                     <br/>&#12288;{{ $t('Notice messages or dialogs') }}
+                    <br/>&#12288;{{ $t('Search history') }}
                   </div>
                 </el-form-item>
 
@@ -114,6 +116,7 @@ export default {
         this.$store.commit('updateEditor_splitPanePercent', null);
         this.$store.commit('updateTableList_scrollY', null);
         this.$store.commit('resetMonkeyPatchNotice');
+        this.$store.commit('clearFuzzySearchHistory');
       }
 
       let _message = this.$t('Cache is cleared');

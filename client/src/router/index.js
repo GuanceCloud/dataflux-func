@@ -156,8 +156,8 @@ const routes = [
         component: () => import('../components/Management/CrontabTaskInfoList.vue'),
       },
       {
-        path: 'crontab-task-info-sub-list/:id',
-        name: 'crontab-task-info-sub-list',
+        path: 'crontab-task-info-related-list/:id',
+        name: 'crontab-task-info-related-list',
         component: () => import('../components/Management/CrontabTaskInfoList.vue'),
       },
 
@@ -182,8 +182,8 @@ const routes = [
         component: () => import('../components/Management/BatchTaskInfoList.vue'),
       },
       {
-        path: 'batch-task-info-sub-list/:id',
-        name: 'batch-task-info-sub-list',
+        path: 'batch-task-info-related-list/:id',
+        name: 'batch-task-info-related-list',
         component: () => import('../components/Management/BatchTaskInfoList.vue'),
       },
 
