@@ -21,7 +21,7 @@ Saved Draft Code: 已保存的草稿代码
 
 <template>
   <transition name="fade">
-    <el-container>
+    <el-container v-show="$store.state.isLoaded">
       <!-- 操作区 -->
       <el-header class="code-viewer" style="height: unset !important">
         <div class="code-viewer-action-left">

@@ -7,7 +7,7 @@ Exception: 异常
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>

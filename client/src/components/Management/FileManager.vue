@@ -27,7 +27,7 @@ File already existed                                                            
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded"
+    <el-container direction="vertical" v-show="$store.state.isLoaded"
       v-loading.fullscreen.lock="fullScreenLoading"
       element-loading-spinner="el-icon-loading"
       :element-loading-text="progressTip || $t('Processing...')">

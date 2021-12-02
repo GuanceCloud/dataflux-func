@@ -4,7 +4,7 @@ Welcome to: 欢迎使用
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1 class="main-text">{{ $t('Welcome to') }} <Logo type="auto" style="margin-bottom: -8px;"></Logo></h1>

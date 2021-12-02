@@ -18,7 +18,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>

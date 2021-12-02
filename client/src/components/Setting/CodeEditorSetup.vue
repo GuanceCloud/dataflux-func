@@ -14,7 +14,7 @@ Line height should be a number between 1 and 2 : 行高设置范围为 1-2 倍
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>

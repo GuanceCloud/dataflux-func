@@ -31,7 +31,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>

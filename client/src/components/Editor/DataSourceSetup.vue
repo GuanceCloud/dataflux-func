@@ -59,7 +59,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
@@ -239,9 +239,8 @@ This is a builtin Data Source, please contact the admin to change the config: �
                 </template>
               </el-form>
 
-
               <!-- 此处特殊处理：要始终保证可以测试数据源 -->
-              <el-form  label-width="120px">
+              <el-form label-width="120px">
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 

@@ -27,7 +27,7 @@ Are you sure you want to install the package now?    : 是否确定现在就安�
       {{ $t('Loading') }}
     </h1>
 
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>{{ $t('PIP Tool') }}</h1>

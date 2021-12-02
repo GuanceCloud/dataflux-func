@@ -39,7 +39,7 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>{{ pageTitle }} <code class="text-main">{{ data.func_title }}</code></h1>

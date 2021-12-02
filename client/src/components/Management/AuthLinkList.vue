@@ -41,7 +41,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
@@ -169,7 +169,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
           </template>
 
           <template v-else>
-            <el-table-column :label="$t('Recent')" align="right" width="160"">
+            <el-table-column :label="$t('Recent')" align="right" width="200"">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
                   <code>{{ [$t('Today'), $t('-1 Day'), $t('-2 Day')][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> {{ $t('Times') }}<br>
@@ -200,7 +200,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Result')" align="right" width="160">
+            <el-table-column :label="$t('Result')" align="right" width="300">
               <template slot-scope="scope">
                 <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">{{ $t('No info') }}</span>
                 <template v-else>

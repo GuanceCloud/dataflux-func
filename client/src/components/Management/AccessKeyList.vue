@@ -8,7 +8,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
 
 <template>
   <transition name="fade">
-    <el-container direction="vertical" v-if="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>

@@ -330,6 +330,10 @@ h3 {
 .fade-enter-active {
   transition: opacity .25s;
 }
+.fade-leave-to,
+.fade-leave {
+  display: none;
+}
 .fade-enter {
   opacity: 0;
 }
