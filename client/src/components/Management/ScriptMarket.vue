@@ -184,7 +184,7 @@ export default {
 }
 .package-card {
   width: 360px;
-  height: 150px;
+  height: 160px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -193,13 +193,13 @@ export default {
   position: absolute;
   font-size: 150px;
   right: -50px;
-  top: 20px;
+  top: 50px;
   color: #f5f5f5;
   line-height: 150px;
   z-index: 0;
 }
 .package-name {
-  font-size: 28px;
+  font-size: 24px;
   display: block;
   z-index: 1;
   position: relative;

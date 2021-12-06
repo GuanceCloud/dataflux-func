@@ -103,7 +103,7 @@ Exception: 异常
               </template>
 
               <el-button
-                :disabled="!scope.row.logMessageTEXT"
+                :disabled="!scope.row.logMessageTEXT && !scope.row.einfoTEXT"
                 @click="showLog(scope.row)" type="text">显示日志详情</el-button>
             </template>
           </el-table-column>
