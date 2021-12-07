@@ -16,6 +16,10 @@ let THANKS_LIST = [
     name: 'sx、陈春亮、郁凯、刘星',
     desc: '首个投产项目先行团队',
   },
+  {
+    name: '范育宾',
+    desc: '在Func的迭代、相关项目落地过程中，提供了大量意见反馈，帮助完善了整个系统',
+  }
 ];
 let THANKS_LISTE_CSS = 'font-weight: bold';
 
