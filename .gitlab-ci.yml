@@ -119,6 +119,7 @@ dataflux:
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
       -f Dockerfile-dataflux .
       --push
   tags:
