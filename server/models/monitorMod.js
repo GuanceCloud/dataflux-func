@@ -598,7 +598,6 @@ EntityModel.prototype.getNodesActiveQueues = function(callback) {
     var result = [];
     for (var node in celeryRes.result) if (celeryRes.result.hasOwnProperty(node)) {
       var activeQueues = celeryRes.result[node];
-      console.log('celeryRes >>>', celeryRes)
       activeQueues.forEach(function(q) {
         q.shortName = q.name.split('@')[1];
       });
