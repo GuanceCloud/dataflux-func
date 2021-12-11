@@ -187,7 +187,7 @@ class FuncRunnerTask(ScriptBaseTask):
         }
 
         if log_messages:
-            log_messages_reduced = [toolkit.limit_text(l, CONFIG['_TASK_INFO_LOG_MESSAGE_LINE_LIMIT'], show_length=True) for l in log_messages]
+            log_messages_reduced = [toolkit.limit_text(l, CONFIG['_TASK_INFO_LOG_MESSAGE_LINE_LIMIT'], show_length=True, length_title='Line length') for l in log_messages]
             data['logMessageTEXT'] = '\n'.join(log_messages_reduced).strip()
 
             log_message_text_len = len(data['logMessageTEXT'])

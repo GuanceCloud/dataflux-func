@@ -499,16 +499,17 @@ def match_wildcards(value, patterns):
 
     return False
 
-def limit_text(s, max_length=30, show_length=None):
+def limit_text(s, max_length=30, show_length=None, length_title=None):
+    length_title = length_title or 'Length'
     if len(s) <= max_length:
         return s
     else:
         limited = s[0:max_length - 3] + '...'
 
         if show_length == 'newLine':
-            limited += '\n <Length: {}>'.format(len(s))
+            limited += '\n <{}: {}>'.format(length_title, len(s))
         elif show_length:
-            limited += ' <Length: {}>'.format(len(s))
+            limited += ' <{}: {}>'.format(length_title, len(s))
 
         return limited
 
