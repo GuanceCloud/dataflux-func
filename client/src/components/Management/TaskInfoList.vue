@@ -2,8 +2,22 @@
 s : 秒
 ms: 毫秒
 
+Task       : 任务
+Func ID    : 函数ID
+Func Name  : 函数名
+Func Title : 函数标题
+Main Task  : 主任务
+Sub Task   : 子任务
+Wait Time  : 等待时间
+Run Time   : 执行时间
+Task Type  : 任务类型
+Task Status: 任务状态
+
 Log      : 日志
 Exception: 异常
+
+success: 成功
+failure: 失败
 </i18n>
 
 <template>
@@ -186,24 +200,6 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    showLog(d) {
-      this.$store.commit('updateHighlightedTableDataId', d.id);
-
-      let contentLines = [];
-      contentLines.push(`===== ${this.$t('Log')} =====`);
-      contentLines.push(d.logMessageTEXT);
-
-      if (d.einfoTEXT) {
-        contentLines.push(`\n===== ${this.$t('Exception')} =====`);
-        contentLines.push(d.einfoTEXT);
-      }
-
-      let contentTEXT = contentLines.join('\n');
-
-      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.funcId}.log.${createTimeStr}`;
-      this.$refs.longTextDialog.update(contentTEXT, fileName);
-    },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
       nextRouteQuery.filter = this.T.createPageFilter({
@@ -218,6 +214,41 @@ export default {
         params: { id: this.$route.params.id },
         query : nextRouteQuery,
       });
+    },
+    showLog(d) {
+      this.$store.commit('updateHighlightedTableDataId', d.id);
+
+      let contentLines = [];
+      contentLines.push(`===== ${this.$t('Task')} =====`);
+      contentLines.push(`${this.$t('Func ID')}: ${this.$t(d.funcId)}`);
+      contentLines.push(`${this.$t('Func Name')}: ${this.$t(d.func_name)}`);
+      contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+      if (d.waitCostMs > 2000) {
+        contentLines.push(`${this.$t('Wait Time')}: ${d.waitCostMs} ${this.$t('ms')}`);
+      } else {
+        contentLines.push(`${this.$t('Wait Time')}: -`);
+      }
+      contentLines.push(`${this.$t('Run Time')}: ${d.runCostMs} ${this.$t('ms')}`);
+      contentLines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
+      contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
+
+      if (d.logMessageTEXT) {
+        contentLines.push('');
+        contentLines.push(`===== ${this.$t('Log')} =====`);
+        contentLines.push(d.logMessageTEXT);
+      }
+
+      if (d.einfoTEXT) {
+        contentLines.push('');
+        contentLines.push(`===== ${this.$t('Exception')} =====`);
+        contentLines.push(d.einfoTEXT);
+      }
+
+      let contentTEXT = contentLines.join('\n');
+
+      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let fileName = `${d.funcId}.log.${createTimeStr}`;
+      this.$refs.longTextDialog.update(contentTEXT, fileName);
     },
   },
   computed: {
