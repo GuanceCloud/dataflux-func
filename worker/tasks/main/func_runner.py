@@ -187,7 +187,8 @@ class FuncRunnerTask(ScriptBaseTask):
         }
 
         if log_messages:
-            data['logMessageTEXT'] = '\n'.join(log_messages).strip()
+            log_messages_reduced = [toolkit.limit_text(l, CONFIG['_TASK_INFO_LOG_MESSAGE_LINE_LIMIT'], show_length=True) for l in log_messages]
+            data['logMessageTEXT'] = '\n'.join(log_messages_reduced).strip()
 
         if einfo_text:
             data['einfoTEXT'] = einfo_text
