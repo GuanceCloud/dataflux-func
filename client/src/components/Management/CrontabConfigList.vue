@@ -1,12 +1,12 @@
 <i18n locale="zh-CN" lang="yaml">
-Fixed  : 固定
-Not Set: 未配置
-Config : 配置
-Created: 创建时间
-Expires: 有效期限
-Never  : 长期有效
-Tasks  : 任务
-Run Now: 立即执行
+Fixed       : 固定
+Not Set     : 未配置
+Config      : 配置
+Created     : 创建时间
+Expires     : 有效期限
+Never       : 长期有效
+Recent Tasks: 近期任务
+Run Now     : 立即执行
 
 Crontab Config disabled : 自动触发配置已禁用
 Crontab Config enabled  : 自动触发配置已启用
@@ -128,12 +128,12 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="320">
+          <el-table-column align="right" width="350">
             <template slot-scope="scope">
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+                >{{ $t('Recent Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
               <el-button @click="runTask(scope.row)"
                 type="text"
@@ -266,7 +266,7 @@ export default {
       this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
-        name  : 'crontab-task-info-list',
+        name  : 'task-info-list',
         params: {id: d.id},
         query : nextRouteQuery,
       });

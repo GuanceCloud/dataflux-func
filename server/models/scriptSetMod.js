@@ -674,15 +674,12 @@ EntityModel.prototype.export = function(options, callback) {
       var z = new JSZip();
       z.file(FILENAME_IN_ZIP, JSON.stringify(packageData));
 
-      async.asyncify(function() {
-        return z.generateAsync({
-          type              : 'nodebuffer',
-          compression       : 'DEFLATE',
-          compressionOptions: { level: 9 },
-        })
-      })(function(err, zipBuf) {
-        if (err) return asyncCallback(err);
-
+      z.generateAsync({
+        type              : 'nodebuffer',
+        compression       : 'DEFLATE',
+        compressionOptions: { level: 9 },
+      })
+      .then(function(zipBuf) {
         // Base64
         fileBuf = toolkit.getBase64(zipBuf);
 
@@ -690,6 +687,9 @@ EntityModel.prototype.export = function(options, callback) {
         fileBuf = toolkit.cipherByAES(fileBuf, password);
 
         return asyncCallback();
+      })
+      .catch(function(err) {
+        return asyncCallback(err);
       });
     },
     // 记录导出历史

@@ -527,18 +527,6 @@ export default {
   get TASK_STATUS() {
     return [
       {
-        key    : 'queued',
-        name   : $t('Queued'),
-        tagType: 'info',
-        icon   : 'el-icon-timer',
-      },
-      {
-        key    : 'pending',
-        name   : $t('Running'),
-        tagType: '',
-        icon   : 'el-icon-loading',
-      },
-      {
         key    : 'success',
         name   : $t('Succeeded'),
         tagType: 'success',

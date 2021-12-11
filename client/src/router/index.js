@@ -150,16 +150,6 @@ const routes = [
         name: 'crontab-config-setup',
         component: () => import('../components/Management/CrontabConfigSetup.vue'),
       },
-      {
-        path: 'crontab-task-info-list/:id',
-        name: 'crontab-task-info-list',
-        component: () => import('../components/Management/CrontabTaskInfoList.vue'),
-      },
-      {
-        path: 'crontab-task-info-related-list/:id',
-        name: 'crontab-task-info-related-list',
-        component: () => import('../components/Management/CrontabTaskInfoList.vue'),
-      },
 
       {
         path: 'batch-list',
@@ -176,15 +166,16 @@ const routes = [
         name: 'batch-setup',
         component: () => import('../components/Management/BatchSetup.vue'),
       },
+
       {
-        path: 'batch-task-info-list/:id',
-        name: 'batch-task-info-list',
-        component: () => import('../components/Management/BatchTaskInfoList.vue'),
+        path: 'task-info-list/:id',
+        name: 'task-info-list',
+        component: () => import('../components/Management/TaskInfoList.vue'),
       },
       {
-        path: 'batch-task-info-related-list/:id',
-        name: 'batch-task-info-related-list',
-        component: () => import('../components/Management/BatchTaskInfoList.vue'),
+        path: 'task-info-related-list/:id',
+        name: 'task-info-related-list',
+        component: () => import('../components/Management/TaskInfoList.vue'),
       },
 
       {

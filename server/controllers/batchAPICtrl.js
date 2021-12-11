@@ -12,9 +12,8 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod          = require('../models/funcMod');
-var batchMod         = require('../models/batchMod');
-var batchTaskInfoMod = require('../models/batchTaskInfoMod');
+var funcMod  = require('../models/funcMod');
+var batchMod = require('../models/batchMod');
 
 /* Configure */
 
@@ -25,12 +24,11 @@ exports.list = function(req, res, next) {
   var batches       = null;
   var batchPageInfo = null;
 
-  var batchModel = batchMod.createModel(res.locals);
-
   async.series([
     function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
+      var batchModel = batchMod.createModel(res.locals);
 
+      var opt = res.locals.getQueryOptions();
       batchModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
@@ -47,23 +45,16 @@ exports.list = function(req, res, next) {
       var opt = res.locals.getQueryOptions();
       if (!opt.extra.withTaskInfoCount) return asyncCallback();
 
-      var batchTaskInfoModel = batchTaskInfoMod.createModel(res.locals);
+      async.eachSeries(batches, function(b, eachCallback) {
+        var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', b.id ]);
+        res.locals.cacheDB.llen(cacheKey, function(err, cacheRes) {
+          if (err) return eachCallback(err);
 
-      var ids = toolkit.arrayElementValues(batches, 'id');
-      batchTaskInfoModel.countByBatchId(ids, function(err, dbRes) {
-        if (err) return asyncCallback(err);
+          b.taskInfoCount = parseInt(cacheRes) || 0;
 
-        var _map = toolkit.arrayElementMap(dbRes, 'batchId');
-        batches.forEach(function(d) {
-          if (!_map[d.id]) {
-            d.taskInfoCount = 0;
-          } else {
-            d.taskInfoCount = _map[d.id].count || 0;
-          }
+          return eachCallback();
         });
-
-        return asyncCallback();
-      });
+      }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

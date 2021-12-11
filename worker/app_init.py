@@ -37,6 +37,17 @@ def before_app_create():
 
     toolkit.get_worker_queue = get_worker_queue
 
+    def parse_cache_key(cache_key):
+        cache_key_info = toolkit._parse_cache_key(cache_key)
+
+        app_name_topic_parts = cache_key_info['topic'].split('#')
+        cache_key_info['appName'] = app_name_topic_parts[0]
+        cache_key_info['topic']   = app_name_topic_parts[1]
+
+        return cache_key_info
+
+    toolkit.parse_cache_key = parse_cache_key
+
 def after_app_created(celery_app):
     from worker.tasks.main import reload_scripts, auto_clean, auto_run
 

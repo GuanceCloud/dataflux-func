@@ -61,8 +61,13 @@ class CrontabStarterTask(BaseTask):
         return start_time >= trigger_time
 
     def prepare_contab_config(self, crontab_config):
-        crontab_config['origin']   = 'crontab'
-        crontab_config['execMode'] = 'crontab'
+        crontab_config['taskOrigin'] = 'crontab'
+        crontab_config['execMode']   = 'crontab'
+
+        if crontab_config['origin'] == 'UI':
+            crontab_config['taskInfoLimit'] = CONFIG['_CRONTAB_TASK_INFO_FROM_UI_LIMIT']
+        else:
+            crontab_config['taskInfoLimit'] = CONFIG['_CRONTAB_TASK_INFO_FROM_API_LIMIT']
 
         func_call_kwargs_json = crontab_config.get('funcCallKwargsJSON')
         if func_call_kwargs_json:
@@ -93,6 +98,7 @@ class CrontabStarterTask(BaseTask):
             SELECT
                  `func`.`id`
                 ,`func`.`extraConfigJSON`
+
             FROM `biz_main_func` AS `func`
             WHERE
                     `func`.`integration` = 'autoRun'
@@ -116,15 +122,18 @@ class CrontabStarterTask(BaseTask):
 
             c = {
                 'seq'            : 0,
-                'id'             : 'cron-AUTORUN',
+                'id'             : CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'],
                 'funcCallKwargs' : {},
                 'crontab'        : crontab_expr,
                 'saveResult'     : False,
+                'origin'         : 'INTEGRATION',
+
                 'funcId'         : f['id'],
                 'funcExtraConfig': f['extraConfig'],
 
-                'origin'  : 'integration',
-                'execMode': 'crontab',
+                'taskOrigin'   : 'integration',
+                'execMode'     : 'crontab',
+                'taskInfoLimit': CONFIG['_CRONTAB_TASK_INFO_FROM_INTEGRATION_LIMIT'],
             }
             crontab_configs.append(c)
 
@@ -138,6 +147,7 @@ class CrontabStarterTask(BaseTask):
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
+                ,`cron`.`origin`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
@@ -172,6 +182,7 @@ class CrontabStarterTask(BaseTask):
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
+                ,`cron`.`origin`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
@@ -247,25 +258,6 @@ class CrontabStarterTask(BaseTask):
 
         return str(queue)
 
-    def _cache_task_status(self, task_id, crontab_config):
-        if not crontab_config:
-            return
-
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
-
-        data = {
-            'taskId'   : task_id,
-            'origin'   : crontab_config['origin'],
-            'originId' : crontab_config['id'],
-            'funcId'   : crontab_config['funcId'],
-            'execMode' : crontab_config['execMode'],
-            'status'   : 'queued',
-            'timestamp': int(time.time()),
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        self.cache_db.run('lpush', cache_key, data)
-
     def send_task(self, crontab_config, current_time, trigger_time):
         # 确定超时时间
         soft_time_limit, time_limit = self._get_time_limit(crontab_config)
@@ -299,25 +291,26 @@ class CrontabStarterTask(BaseTask):
             _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'] + delay)
             expires = arrow.get().shift(seconds=_shift_seconds).datetime
 
-            # 记录任务信息（入队）
-            self._cache_task_status(task_id=task_id, crontab_config=crontab_config)
-
             # 任务入队
             task_headers = {
                 'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
             }
+            # 注意：
+            # 自动触发配置本身的`origin`表示创建配置的来源（值为 API, UI, INTEGRATION）
+            # 而此处所发送任务的`origin`表示任务的来源（值为 crontab, integration）
             task_kwargs = {
                 'funcId'        : crontab_config['funcId'],
                 'funcCallKwargs': crontab_config['funcCallKwargs'],
-                'origin'        : crontab_config['origin'],
+                'origin'        : crontab_config['taskOrigin'],
                 'originId'      : crontab_config['id'],
                 'saveResult'    : crontab_config['saveResult'],
                 'execMode'      : crontab_config['execMode'],
-                'triggerTime'   : trigger_time,
-                'triggerTimeMs' : trigger_time * 1000,
+                'triggerTime'   : (trigger_time + delay),
+                'triggerTimeMs' : (trigger_time + delay) * 1000,
                 'crontab'       : crontab_config['crontab'],
                 'crontabDelay'  : delay,
                 'queue'         : queue,
+                'taskInfoLimit' : crontab_config['taskInfoLimit'],
                 'lockKey'       : lock_key,
                 'lockValue'     : lock_value,
             }

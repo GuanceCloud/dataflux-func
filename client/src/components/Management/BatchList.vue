@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-API Auth: API认证
-Tasks   : 任务
+API Auth    : API认证
+Recent Tasks: 近期任务
 
 Batch disabled: 批处理已禁用
 Batch enabled : 批处理已启用
@@ -100,14 +100,14 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="350">
+          <el-table-column align="right" width="370">
             <template slot-scope="scope">
               <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
 
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+                >{{ $t('Recent Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
@@ -248,7 +248,7 @@ export default {
       this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
-        name  : 'batch-task-info-list',
+        name  : 'task-info-list',
         params: {id: d.id},
         query : nextRouteQuery,
       });

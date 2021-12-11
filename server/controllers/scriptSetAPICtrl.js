@@ -381,35 +381,28 @@ exports.import = function(req, res, next) {
     function(asyncCallback) {
       var zipBuf = toolkit.fromBase64(fileBuf, true);
 
-      async.asyncify(function() {
-        return JSZip.loadAsync(zipBuf);
+      JSZip.loadAsync(zipBuf)
+      .then(function(z) {
+        return z.file(scriptSetMod.FILENAME_IN_ZIP).async('string');
+      })
+      .then(function(zipData) {
+        packageData = JSON.parse(zipData);
 
-      })(function(err, z) {
-        if (err) {
-          res.locals.logger.logError(err);
-          return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
-        }
-
-        async.asyncify(function() {
-          return z.file(scriptSetMod.FILENAME_IN_ZIP).async('string');
-
-        })(function(err, zipData) {
-          if (err) return asyncCallback(err);
-
-          packageData = JSON.parse(zipData);
-
-          // 生成摘要
-          summary = toolkit.jsonCopy(packageData);
-          summary.scripts.forEach(function(d) {
-            delete d.code; // 摘要中不含代码
-          });
-
-          // 摘要中不需要具体脚本、函数信息
-          delete summary.scripts;
-          delete summary.funcs;
-
-          return asyncCallback();
+        // 生成摘要
+        summary = toolkit.jsonCopy(packageData);
+        summary.scripts.forEach(function(d) {
+          delete d.code; // 摘要中不含代码
         });
+
+        // 摘要中不需要具体脚本、函数信息
+        delete summary.scripts;
+        delete summary.funcs;
+
+        return asyncCallback();
+      })
+      .catch(function(err) {
+        res.locals.logger.logError(err);
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
       });
     },
     // 导入数据/暂存数据

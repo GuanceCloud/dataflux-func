@@ -1010,21 +1010,6 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
         ret = toolkit.initRet();
       }
 
-      // 记录批处理任务信息（入队）
-      if (funcCallOptions.origin === 'batch') {
-        var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo');
-        var taskInfo = {
-          'taskId'     : taskId,
-          'origin'     : funcCallOptions.origin,
-          'originId'   : funcCallOptions.originId,
-          'funcId'     : funcCallOptions.funcId,
-          'execMode'   : funcCallOptions.execMode,
-          'status'     : 'queued',
-          'timestamp'  : parseInt(Date.now() / 1000),
-        }
-        locals.cacheDB.lpush(cacheKey, JSON.stringify(taskInfo));
-      }
-
       /* 最终回调 */
       return callback(err, ret);
     };

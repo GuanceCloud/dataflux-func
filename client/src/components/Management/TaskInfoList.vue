@@ -1,5 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-s: 秒
+s : 秒
+ms: 毫秒
 
 Log      : 日志
 Exception: 异常
@@ -11,7 +12,7 @@ Exception: 异常
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ isMainList ? '近期批处理任务信息' : '相关批处理任务信息' }}
+          {{ isMainList ? '近期任务信息' : '相关任务信息' }}
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -32,10 +33,10 @@ Exception: 异常
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>尚无任何近期批处理任务信息</h1>
+          <h1 class="no-data-title" v-else>尚无任何近期任务信息</h1>
 
           <p class="no-data-tip">
-            执行的批处理任务信息会被系统搜集，并展示在此
+            执行的任务信息会被系统搜集，并展示在此
           </p>
         </div>
         <el-table v-else
@@ -53,11 +54,11 @@ Exception: 异常
             </template>
           </el-table-column>
 
-          <el-table-column label="时间" width="200">
+          <el-table-column label="计划时间" width="200">
             <template slot-scope="scope">
-              <span>{{ scope.row.queueTime | datetime }}</span>
+              <span>{{ scope.row.triggerTimeMs | datetime }}</span>
               <br>
-              <span class="text-info">{{ scope.row.queueTime | fromNow }}</span>
+              <span class="text-info">{{ scope.row.triggerTimeMs | fromNow }}</span>
             </template>
           </el-table-column>
 
@@ -71,23 +72,26 @@ Exception: 异常
           <el-table-column label="函数" min-width="300">
             <template slot-scope="scope">
               <FuncInfo
-                :id="scope.row.func_id"
+                :id="scope.row.funcId"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"></FuncInfo>
             </template>
           </el-table-column>
 
-          <el-table-column label="排队 / 总耗时" align="right" width="120">
+          <el-table-column label="排队耗时" align="right" width="100">
             <template slot-scope="scope">
-              <template v-if="scope.row.startTime">
-                {{ T.getTimeDiff(scope.row.queueTime, scope.row.startTime).asSeconds() }}
+              <template v-if="scope.row.waitCostMs && scope.row.waitCostMs > 2000">
+                <span :class="scope.row.waitCostClass">{{ scope.row.waitCostMs < 10000 ? scope.row.waitCostMs : (scope.row.waitCostMs / 1000).toFixed(1) }}</span>
+                <span class="text-info">{{ scope.row.waitCostMs < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
-
-              <span class="text-info">/</span>
-
-              <template v-if="scope.row.endTime">
-                {{ T.getTimeDiff(scope.row.queueTime, scope.row.endTime).asSeconds() }} <span class="text-info">{{ $t('s') }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="执行耗时" align="right" width="100">
+            <template slot-scope="scope">
+              <template v-if="scope.row.runCostMs">
+                <span :class="scope.row.runCostClass">{{ scope.row.runCostMs < 10000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</span>
+                <span class="text-info">{{ scope.row.runCostMs < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
             </template>
@@ -122,7 +126,7 @@ Exception: 异常
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
-  name: 'BatchTaskInfoList',
+  name: 'TaskInfoList',
   components: {
     LongTextDialog,
   },
@@ -141,22 +145,41 @@ export default {
   },
   methods: {
     async loadData() {
-      let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withSubTaskCount: true,
-      });
-      if (this.isMainList) {
-        _listQuery.batchId = this.$route.params.id;
-        if (this.T.isNothing(this.dataFilter.rootTaskId)) {
-          _listQuery.rootTaskId = null;
-        }
-      } else {
-        _listQuery.rootTaskId = this.$route.params.id;
-      }
+      let _listQuery = this.dataFilter = this.T.createListQuery();
 
-      let apiRes = await this.T.callAPI_get('/api/v1/batch-task-info/do/list', {
-        query : _listQuery,
+      let apiRes = await this.T.callAPI_get('/api/v1/task-info/:originId/do/list', {
+        params: { originId: this.$route.params.id },
+        query: _listQuery,
       });
       if (!apiRes.ok) return;
+
+      apiRes.data.forEach(d => {
+        // 排队等待时间
+        if (d.triggerTimeMs && d.startTimeMs) {
+          d.waitCostMs = d.startTimeMs - d.triggerTimeMs;
+
+          if (d.waitCostMs > 3 * 60 * 1000) {
+            d.waitCostClass = 'text-bad';
+          } else if (d.waitCostMs > 10 * 1000) {
+            d.waitCostClass = 'text-watch';
+          } else {
+            d.waitCostClass = 'text-good';
+          }
+        }
+
+        // 执行时间
+        if (d.startTimeMs && d.endTimeMs) {
+          d.runCostMs = d.endTimeMs - d.startTimeMs;
+
+          if (d.runCostMs > 5 * 60 * 1000) {
+            d.runCostClass = 'text-bad';
+          } else if (d.runCostMs > 10 * 1000) {
+            d.runCostClass = 'text-watch';
+          } else {
+            d.runCostClass = 'text-good';
+          }
+        }
+      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
@@ -167,12 +190,12 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       let contentLines = [];
-      contentLines.push(`===== ${this.$t('Log')} =====`)
-      contentLines.push(d.logMessageTEXT)
+      contentLines.push(`===== ${this.$t('Log')} =====`);
+      contentLines.push(d.logMessageTEXT);
 
       if (d.einfoTEXT) {
-        contentLines.push(`\n===== ${this.$t('Exception')} =====`)
-        contentLines.push(d.einfoTEXT)
+        contentLines.push(`\n===== ${this.$t('Exception')} =====`);
+        contentLines.push(d.einfoTEXT);
       }
 
       let contentTEXT = contentLines.join('\n');
@@ -183,21 +206,23 @@ export default {
     },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
+      nextRouteQuery.filter = this.T.createPageFilter({
+        rootTaskId: d.rootTaskId === 'ROOT' ? d.id : d.rootTaskId,
+      })
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
       this.$store.commit('updateTableList_scrollY');
 
-      let rootTaskId = d.rootTaskId === 'ROOT' ? d.id : d.rootTaskId;
       this.$router.push({
-        name  : 'batch-task-info-related-list',
-        params: { id: rootTaskId },
+        name  : 'task-info-related-list',
+        params: { id: this.$route.params.id },
         query : nextRouteQuery,
       });
     },
   },
   computed: {
     isMainList() {
-      return this.$route.name === 'batch-task-info-list';
+      return this.$route.name === 'task-info-list';
     },
   },
   props: {

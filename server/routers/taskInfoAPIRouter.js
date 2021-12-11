@@ -4,8 +4,8 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var crontabTaskInfoAPICtrl = require('../controllers/crontabTaskInfoAPICtrl');
+var taskInfoAPICtrl = require('../controllers/taskInfoAPICtrl');
 
-routeLoader.load(ROUTE.crontabTaskInfoAPI.list, [
-  crontabTaskInfoAPICtrl.list,
+routeLoader.load(ROUTE.taskInfoAPI.list, [
+  taskInfoAPICtrl.list,
 ]);

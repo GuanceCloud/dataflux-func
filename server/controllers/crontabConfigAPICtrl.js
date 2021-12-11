@@ -4,6 +4,7 @@
 
 /* 3rd-party Modules */
 var async = require('async');
+var JSZip = require('jszip');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -11,9 +12,8 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-var funcMod            = require('../models/funcMod');
-var crontabConfigMod   = require('../models/crontabConfigMod');
-var crontabTaskInfoMod = require('../models/crontabTaskInfoMod');
+var funcMod          = require('../models/funcMod');
+var crontabConfigMod = require('../models/crontabConfigMod');
 
 /* Configure */
 var GLOBAL_SCOPE = 'GLOBAL';
@@ -25,12 +25,11 @@ exports.list = function(req, res, next) {
   var crontabConfigs        = null;
   var crontabConfigPageInfo = null;
 
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-
   async.series([
     function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
+      var crontabConfigModel = crontabConfigMod.createModel(res.locals);
 
+      var opt = res.locals.getQueryOptions();
       crontabConfigModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
@@ -47,23 +46,16 @@ exports.list = function(req, res, next) {
       var opt = res.locals.getQueryOptions();
       if (!opt.extra.withTaskInfoCount) return asyncCallback();
 
-      var crontabTaskInfoModel = crontabTaskInfoMod.createModel(res.locals);
+      async.eachSeries(crontabConfigs, function(c, eachCallback) {
+        var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', c.id ]);
+        res.locals.cacheDB.llen(cacheKey, function(err, cacheRes) {
+          if (err) return eachCallback(err);
 
-      var ids = toolkit.arrayElementValues(crontabConfigs, 'id');
-      crontabTaskInfoModel.countByCrontabConfigId(ids, function(err, dbRes) {
-        if (err) return asyncCallback(err);
+          c.taskInfoCount = parseInt(cacheRes) || 0;
 
-        var _map = toolkit.arrayElementMap(dbRes, 'crontabConfigId');
-        crontabConfigs.forEach(function(d) {
-          if (!_map[d.id]) {
-            d.taskInfoCount = 0;
-          } else {
-            d.taskInfoCount = _map[d.id].count || 0;
-          }
+          return eachCallback();
         });
-
-        return asyncCallback();
-      });
+      }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

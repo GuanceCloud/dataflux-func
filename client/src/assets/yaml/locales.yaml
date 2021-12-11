@@ -252,8 +252,6 @@ en:
   'timePerYear'  : '{n} 次/年'
 
   # const.js - TASK_STATUS
-  Queued   : 已入队
-  Running  : 运行中
   Succeeded: 已成功
   Failed   : 已失败
 

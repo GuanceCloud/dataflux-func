@@ -216,7 +216,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
-        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
+        for i in range(CONFIG['_SYNC_CACHE_BATCH_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -259,7 +259,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
+        for i in range(CONFIG['_SYNC_CACHE_BATCH_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -290,7 +290,7 @@ class SyncCache(BaseTask):
             script_publish_version = d['scriptPublishVersion']
             exec_mode              = d['execMode']
             is_failed              = d['isFailed']
-            cost                   = int(d['cost'] * 1000)
+            cost                   = d['cost']
             timestamp              = d.get('timestamp')
 
             if not timestamp:
@@ -471,316 +471,6 @@ class SyncCache(BaseTask):
             ]
             self.db.query(sql, sql_params)
 
-    def sync_script_failure(self):
-        if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
-            return
-
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptFailure')
-
-        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-
-                continue
-
-            func_id                = cache_res['funcId']
-            script_publish_version = cache_res['scriptPublishVersion']
-            exec_mode              = cache_res['execMode']
-            einfo_text             = cache_res.get('einfoTEXT')
-            trace_info             = cache_res.get('traceInfo')
-            timestamp              = cache_res.get('timestamp')
-
-            if not all([einfo_text, timestamp]):
-                continue
-
-            if exec_mode is None:
-                exec_mode = 'sync'
-
-            # 记录脚本故障
-            failure_id = gen_script_failure_id()
-
-            exception = None
-            if trace_info:
-                exception = trace_info.get('exceptionDump') or ''
-                if isinstance(exception, six.string_types):
-                    exception = exception.split(':')[0]
-                else:
-                    exception = None
-
-                trace_info = toolkit.json_dumps(trace_info)
-
-            sql = '''
-                INSERT INTO biz_main_script_failure
-                SET
-                   `id`                   = ?
-                  ,`funcId`               = ?
-                  ,`scriptPublishVersion` = ?
-                  ,`execMode`             = ?
-                  ,`einfoTEXT`            = ?
-                  ,`exception`            = ?
-                  ,`traceInfoJSON`        = ?
-                  ,`createTime`           = FROM_UNIXTIME(?)
-                  ,`updateTime`           = FROM_UNIXTIME(?)
-            '''
-            sql_params = [
-                failure_id,
-                func_id,
-                script_publish_version,
-                exec_mode,
-                einfo_text,
-                exception,
-                trace_info,
-                timestamp, timestamp,
-            ]
-            self.db.query(sql, sql_params)
-
-    def sync_script_log(self):
-        if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
-            return
-
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptLog')
-
-        # 当队列数量过大时，一些内容不再记录
-        queue_length = 0
-        cache_res = self.cache_db.run('llen', cache_key)
-        if cache_res:
-            queue_length = int(cache_res)
-
-        is_service_degraded = queue_length > CONFIG['_BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH']
-
-        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            # 发生服务降级时，随机丢弃
-            if is_service_degraded:
-                if random.randint(0, queue_length) * 2 > CONFIG['_BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH']:
-                    continue
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-
-                continue
-
-            func_id                = cache_res['funcId']
-            script_publish_version = cache_res['scriptPublishVersion']
-            exec_mode              = cache_res['execMode']
-            log_messages           = cache_res.get('logMessages')
-            timestamp              = cache_res.get('timestamp')
-
-            if not all([log_messages, timestamp]):
-                continue
-
-            if exec_mode is None:
-                exec_mode = 'sync'
-
-            # 记录脚本日志
-            log_id = gen_script_log_id()
-
-            message_text = '\n'.join(log_messages).strip()
-
-            sql = '''
-                INSERT INTO biz_main_script_log
-                SET
-                   `id`                   = ?
-                  ,`funcId`               = ?
-                  ,`scriptPublishVersion` = ?
-                  ,`execMode`             = ?
-                  ,`messageTEXT`          = ?
-                  ,`createTime`           = FROM_UNIXTIME(?)
-                  ,`updateTime`           = FROM_UNIXTIME(?)
-            '''
-            sql_params = [
-                log_id,
-                func_id,
-                script_publish_version,
-                exec_mode,
-                message_text,
-                timestamp, timestamp,
-            ]
-            self.db.query(sql, sql_params)
-
-    def sync_task_info(self):
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
-
-        # 当队列数量过大时，一些内容不再记录
-        queue_length = 0
-        cache_res = self.cache_db.run('llen', cache_key)
-        if cache_res:
-            queue_length = int(cache_res)
-
-        is_service_degraded = queue_length > CONFIG['_BUILTIN_TASK_SYNC_CACHE_SERVICE_DEGRADE_QUEUE_LENGTH']
-
-        for i in range(CONFIG['_BUILTIN_TASK_SYNC_CACHE_BATCH_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-                continue
-
-            task_id                = cache_res['taskId']
-            root_task_id           = cache_res.get('rootTaskId') or 'ROOT'
-            origin                 = cache_res['origin']
-            origin_id              = cache_res['originId']
-            func_id                = cache_res.get('funcId')
-            script_publish_version = cache_res.get('scriptPublishVersion')
-            exec_mode              = cache_res.get('execMode')
-            status                 = cache_res['status']
-            log_messages           = cache_res.get('logMessages') or []
-            einfo_text             = cache_res.get('einfoTEXT')   or ''
-            timestamp              = cache_res.get('timestamp')
-
-            if not all([origin, exec_mode, origin_id, timestamp]):
-                continue
-
-            # 记录任务信息
-            table_name      = None
-            origin_id_field = None
-            if origin == 'crontab' or exec_mode == 'crontab':
-                table_name      = 'biz_main_crontab_task_info'
-                origin_id_field = 'crontabConfigId'
-
-            elif origin == 'batch':
-                table_name      = 'biz_main_batch_task_info'
-                origin_id_field = 'batchId'
-
-            else:
-                return
-
-            sql        = None
-            sql_params = None
-
-            message_text = '\n'.join(log_messages).strip()
-
-            # 根据是否服务降级区分处理
-            if not is_service_degraded:
-                # 未发生服务降级，正常处理
-                if status == 'queued':
-                    sql = '''
-                        INSERT INTO ??
-                        SET
-                             `id`                   = ?
-                            ,`??`                   = ?
-                            ,`rootTaskId`           = ?
-                            ,`funcId`               = ?
-                            ,`scriptPublishVersion` = ?
-                            ,`queueTime`            = FROM_UNIXTIME(?)
-                            ,`createTime`           = FROM_UNIXTIME(?)
-                            ,`updateTime`           = FROM_UNIXTIME(?)
-                        '''
-                    sql_params = [
-                        table_name,
-                        task_id,
-                        origin_id_field, origin_id,
-                        root_task_id,
-                        func_id,
-                        script_publish_version,
-                        timestamp, timestamp, timestamp,
-                    ]
-
-                elif status == 'pending':
-                    sql = '''
-                        UPDATE ??
-                        SET
-                             `funcId`               = IFNULL(?, `funcId`)
-                            ,`scriptPublishVersion` = IFNULL(?, `scriptPublishVersion`)
-                            ,`startTime`  = FROM_UNIXTIME(?)
-                            ,`status`     = ?
-                            ,`updateTime` = FROM_UNIXTIME(?)
-                        WHERE
-                            `id` = ?
-                        '''
-                    sql_params = [
-                        table_name,
-
-                        func_id,
-                        script_publish_version,
-                        timestamp,
-                        status,
-                        timestamp,
-                        task_id
-                    ]
-
-                else:
-                    sql = '''
-                        UPDATE ??
-                        SET
-                             `funcId`               = IFNULL(?, `funcId`)
-                            ,`scriptPublishVersion` = IFNULL(?, `scriptPublishVersion`)
-                            ,`endTime`              = FROM_UNIXTIME(?)
-                            ,`status`               = ?
-                            ,`logMessageTEXT`       = ?
-                            ,`einfoTEXT`            = ?
-                            ,`updateTime`           = FROM_UNIXTIME(?)
-                        WHERE
-                            `id` = ?
-                        '''
-                    sql_params = [
-                        table_name,
-
-                        func_id,
-                        script_publish_version,
-                        timestamp,
-                        status,
-                        message_text,
-                        einfo_text,
-                        timestamp,
-                        task_id,
-                    ]
-
-            else:
-                # 发生服务降级，处理最终结果
-                if status in ('success', 'failure'):
-                    sql = '''
-                        REPLACE INTO ??
-                        SET
-                             `id`                   = ?
-                            ,`??`                   = ?
-                            ,`rootTaskId`           = ?
-                            ,`funcId`               = ?
-                            ,`scriptPublishVersion` = ?
-                            ,`endTime`              = FROM_UNIXTIME(?)
-                            ,`status`               = ?
-                            ,`logMessageTEXT`       = ?
-                            ,`einfoTEXT`            = ?
-                            ,`createTime`           = FROM_UNIXTIME(?)
-                            ,`updateTime`           = FROM_UNIXTIME(?)
-                        '''
-                    sql_params = [
-                        table_name,
-                        task_id,
-                        origin_id_field, origin_id,
-                        root_task_id,
-                        func_id,
-                        script_publish_version,
-                        timestamp,
-                        status,
-                        message_text,
-                        einfo_text,
-                        timestamp, timestamp,
-                    ]
-
-                else:
-                    continue
-
-            self.db.query(sql, sql_params)
-
 @app.task(name='Main.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
     # 上锁
@@ -796,27 +486,6 @@ def sync_cache(self, *args, **kwargs):
     # 脚本运行信息刷入数据库
     try:
         self.sync_script_running_info()
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 脚本失败信息刷入数据库
-    try:
-        self.sync_script_failure()
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 脚本日志刷入数据库
-    try:
-        self.sync_script_log()
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
-
-    # 任务信息刷入数据库
-    try:
-        self.sync_task_info()
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
@@ -863,11 +532,12 @@ class AutoCleanTask(BaseTask):
             self._delete_by_seq(table, db_res[0]['seq'])
 
     def clear_table(self, table):
-        sql = '''
-            TRUNCATE ??
-            '''
+        sql = '''TRUNCATE ??'''
         sql_params = [table]
         self.db.query(sql, sql_params)
+
+    def clear_cache_key(self, cache_key):
+        self.cache_db.delete(cache_key)
 
     def clear_temp_file(self, folder):
         limit_timestamp = f"{arrow.get().format('YYYYMMDDHHmmss')}_"
@@ -882,17 +552,50 @@ class AutoCleanTask(BaseTask):
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
 
+    def clear_outdated_task_info(self):
+        origin_ids = set()
+
+        # 集成函数自动触发配置永不过期
+        origin_ids.add(CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'])
+
+        # 自动触发配置ID
+        sql = '''
+            SELECT id FROM biz_main_crontab_config
+            '''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            origin_ids.add(d['id'])
+
+        # 批处理ID
+        sql = '''
+            SELECT id FROM biz_main_batch
+            '''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            origin_ids.add(d['id'])
+
+        # 获取所有任务信息Key
+        cache_pattern = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', '*' ])
+        cache_res = self.cache_db.keys(cache_pattern)
+        for cache_key in cache_res:
+            cache_key_info = toolkit.parse_cache_key(cache_key)
+
+            if cache_key_info['tags']['originId'] not in origin_ids:
+                self.cache_db.delete(k)
+
+    def clear_deprecated_data(self):
+        self.clear_table('biz_main_script_log')
+        self.clear_table('biz_main_script_failure')
+        self.clear_table('biz_main_batch_task_info')
+        self.clear_table('biz_main_crontab_task_info')
+        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptFailure'))
+        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptLog'))
+        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'taskInfo'))
+
 @app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=30)
-
-    # 清空数据库数据
-    if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
-        self.clear_table('biz_main_script_log')
-
-    if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
-        self.clear_table('biz_main_script_failure')
 
     # 回卷数据库数据
     table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
@@ -904,8 +607,31 @@ def auto_clean(self, *args, **kwargs):
                 self.logger.error(line)
 
     # 清理临时目录
-    self.clear_temp_file(CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
-    self.clear_temp_file(CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER'])
+    try:
+        self.clear_temp_file(CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
+
+    try:
+        self.clear_temp_file(CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER'])
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
+
+    # 清理过时的任务信息
+    try:
+        self.clear_outdated_task_info()
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
+
+    # 清楚已启用功能的数据
+    try:
+        self.clear_deprecated_data()
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
 
 # Main.AutoRun
 class AutoRunTask(BaseTask):

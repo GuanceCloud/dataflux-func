@@ -321,7 +321,7 @@ def get_days_from_now(d):
     return days
 
 def get_md5(s):
-    s = six.ensure_binary(as_str(s))
+    s = six.ensure_binary(s)
 
     h = hashlib.md5()
     h.update(s)
@@ -330,13 +330,13 @@ def get_md5(s):
 
 def get_sha1(s):
     h = hashlib.sha1()
-    h.update(six.ensure_binary(as_str(s)))
+    h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
 def get_sha512(s):
     h = hashlib.sha512()
-    h.update(six.ensure_binary(as_str(s)))
+    h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
@@ -374,7 +374,7 @@ def decipher_by_aes(data, key):
     return six.ensure_str(text).strip()
 
 def get_base64(s):
-    s = six.ensure_binary(as_str(s))
+    s = six.ensure_binary(s)
 
     encoded = base64.b64encode(s)
     encoded = six.ensure_str(encoded)
@@ -382,7 +382,7 @@ def get_base64(s):
     return encoded
 
 def from_base64(s):
-    s = six.ensure_binary(as_str(s))
+    s = six.ensure_binary(s)
 
     decoded = base64.b64decode(s)
     decoded = six.ensure_str(decoded)
@@ -416,6 +416,28 @@ def _get_cache_key(topic, name, tags=None):
         parts = [str(tag) for tag in tags]
         cache_key = '{}@{}:{}:'.format(topic, name, ':'.join(parts))
         return cache_key
+
+def _parse_cache_key(cache_key):
+    topic_rest_parts = cache_key.split('@')
+    topic = topic_rest_parts[0]
+    rest  = '@'.join(topic_rest_parts[1:])
+
+    name_rest_parts = rest.rstrip(':').split(':')
+    name    = name_rest_parts[0]
+    tag_kvs = name_rest_parts[1:]
+
+    cache_key_info = {
+        'topic': topic,
+        'name' : name,
+        'tags' : {},
+    }
+    for i in range(0, len(tag_kvs), 2):
+        if i + 1 >= len(tag_kvs):
+            cache_key_info['tags'][tag_kvs[i]] = None
+        else:
+            cache_key_info['tags'][tag_kvs[i]] = tag_kvs[i + 1]
+
+    return cache_key_info
 
 def _get_worker_queue(name):
     if not isinstance(name, int) and not name:
@@ -476,12 +498,6 @@ def match_wildcards(value, patterns):
             return True
 
     return False
-
-def as_str(s):
-    if not isinstance(s, six.string_types):
-        s = str(s)
-
-    return six.ensure_str(s)
 
 def limit_text(s, max_length=30, show_length=None):
     if len(s) <= max_length:
@@ -574,6 +590,3 @@ class IgnoreCaseDict(dict):
 
     def __repr__(self):
         return '{0}({1})'.format(type(self).__name__, super(IgnoreCaseDict, self).__repr__())
-
-# Alias
-ensure_str = as_str

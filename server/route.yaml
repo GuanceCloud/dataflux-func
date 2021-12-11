@@ -4284,70 +4284,6 @@ crontabConfigAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
-# 自动触发任务信息
-crontabTaskInfoAPI:
-  list:
-    showInDoc    : true
-    name         : 列出自动触发任务信息
-    method       : get
-    url          : /api/v1/crontab-task-info/do/list
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    paging       : true
-    fieldPicking : true
-    fieldKicking : true
-    orderFields:
-      seq: crti.seq
-    fuzzySearch:
-      - crti.id
-      - crti.crontabConfigId
-      - crti.rootTaskId
-      - crti.logMessageTEXT
-      - crti.einfoTEXT
-      - func.id
-      - func.title
-      - func.description
-    query:
-      _withSubTaskCount:
-        $desc: 是否附带子任务计数
-        $type: boolean
-      id:
-        $desc      : 按任务ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : crti.id
-      crontabConfigId:
-        $desc      : 按自动触发配置ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : crti.crontabConfigId
-      rootTaskId:
-        $desc      : 根据主任务ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : crti.rootTaskId
-      funcId:
-        $desc      : 按函数ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : crti.funcId
-      func_scriptSetId:
-        $desc      : 根据脚本集ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : func.scriptSetId
-      func_scriptId:
-        $desc      : 根据脚本ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : func.scriptId
-      func_tags:
-        $desc      : 根据执行函数标签过滤
-        $type      : commaArray
-        $searchType: jsonArrayHasAll
-        $searchKey : func.tagsJSON
-
 # 批处理
 batchAPI:
   list:
@@ -4742,69 +4678,54 @@ batchAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
-# 批处理任务信息
-batchTaskInfoAPI:
+# 任务信息
+taskInfoAPI:
   list:
     showInDoc    : true
-    name         : 列出批处理任务信息
+    name         : 列出任务信息
     method       : get
-    url          : /api/v1/batch-task-info/do/list
+    url          : /api/v1/task-info/:originId/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
     paging       : true
     fieldPicking : true
     fieldKicking : true
-    orderFields:
-      seq: bati.seq
     fuzzySearch:
-      - bati.id
-      - bati.batchId
-      - bati.rootTaskId
-      - bati.logMessageTEXT
-      - bati.einfoTEXT
-      - func.id
-      - func.title
-      - func.description
+      - id
+      - rootTaskId
+      - funcId
+      - logMessageTEXT
+      - einfoTEXT
+      - status
+    params:
+      originId:
+        $desc: 来源ID
+        $type: string
     query:
-      _withSubTaskCount:
-        $desc: 是否附带子任务计数
-        $type: boolean
       id:
         $desc      : 按任务ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : bati.id
-      batchId:
-        $desc      : 按批处理ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : bati.batchId
+        $type      : string
+        $searchType: eq
+        $searchKey : taskId
       rootTaskId:
         $desc      : 根据主任务ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : bati.rootTaskId
+        $type      : string
+        $searchType: eq
+        $searchKey : rootTaskId
       funcId:
         $desc      : 按函数ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : bati.funcId
-      func_scriptSetId:
-        $desc      : 根据脚本集ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : func.scriptSetId
-      func_scriptId:
-        $desc      : 根据脚本ID过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : func.scriptId
-      func_tags:
-        $desc      : 根据执行函数标签过滤
-        $type      : commaArray
-        $searchType: jsonArrayHasAll
-        $searchKey : func.tagsJSON
+        $type      : string
+        $searchType: eq
+        $searchKey : funcId
+      status:
+        $desc: 按状态过滤
+        $type: enum
+        $in:
+          - success
+          - failure
+        $searchType: eq
+        $searchKey : status
 
 # 函数调用任务结果
 datafluxFuncTaskResultAPI:

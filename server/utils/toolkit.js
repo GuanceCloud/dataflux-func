@@ -1128,13 +1128,6 @@ var _getCacheKey = toolkit._getCacheKey = function _getCacheKey(topic, name, tag
   }
 };
 
-var _getWorkerQueue = toolkit._getWorkerQueue = function _getWorkerQueue(name) {
-  if ('number' !== typeof name && !name) {
-    throw new Error('WAT: Queue name not specified.')
-  }
-  return strf('workerQueue@{0}', name);
-};
-
 /**
  * Parse cache key like pattern `<topic>@<name>:<tagName1>:<tagValue1>:<tagName2>:<tagValue2>:...:`
  *
@@ -1162,36 +1155,11 @@ var _parseCacheKey = toolkit._parseCacheKey = function _parseCacheKey(cacheKey) 
   return cacheKeyInfo;
 };
 
-/**
- * Get cache field as pattern `:<tagName1>:<tagValue1>:<tagName2>:<tagValue2>:...:`
- *
- * @param  {String[]} tags
- * @return {String} - Cache field
- */
-var getCacheField = toolkit.getCacheField = function getCacheField(tags) {
-  if (isNothing(tags) === true) {
-    throw new Error('WAT: Can not get a cache field without tags');
+var _getWorkerQueue = toolkit._getWorkerQueue = function _getWorkerQueue(name) {
+  if ('number' !== typeof name && !name) {
+    throw new Error('WAT: Queue name not specified.')
   }
-
-  var cacheField = strf(':{0}:', tags.join(':'));
-  return cacheField;
-};
-
-/**
- * Parse cache field like pattern `:<tagName1>:<tagValue1>:<tagName2>:<tagValue2>:...:`
- *
- * @param  {String}   cacheField
- * @return {Object} - parsed cache field
- */
-var parseCacheField = toolkit.parseCacheField = function parseCacheField(cacheField) {
-  var tagKVs = cacheField.replace(/^:/, '').replace(/:$/, '').split(':');
-
-  var tags = {};
-  for (var i = 0; i < tagKVs.length; i += 2) {
-    tags[tagKVs[i]] = tagKVs[i + 1] || null;
-  }
-
-  return tags;
+  return strf('workerQueue@{0}', name);
 };
 
 /**

@@ -1359,6 +1359,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         task_headers = {
             'origin': self.request.id,
         }
+        # 注意：
+        # 此处调用子任务可以不设`taskInfoLimit`
+        # 保证一次主任务调用后的所有子任务数据都能保留
         task_kwargs = {
             'rootTaskId'    : self.request.id,
             'funcId'        : func_id,
@@ -1371,30 +1374,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'triggerTimeMs' : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
             'crontab'       : safe_scope.get('_DFF_CRONTAB'),
             'queue'         : safe_scope.get('_DFF_QUEUE'),
-            'rootTaskId'    : safe_scope.get('_DFF_ROOT_TASK_ID'),
             'funcChain'     : func_chain,
         }
 
-        # 缓存任务状态
-        sub_task_id = gen_task_id()
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
-
-        data = {
-            'taskId'    : sub_task_id,
-            'rootTaskId': self.request.id,
-            'origin'    : safe_scope.get('_DFF_ORIGIN'),
-            'originId'  : safe_scope.get('_DFF_ORIGIN_ID'),
-            'funcId'    : func_id,
-            'execMode'  : 'async',
-            'status'    : 'queued',
-            'timestamp' : int(time.time()),
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        self.cache_db.run('lpush', cache_key, data)
-
         # 调用执行（在原队列执行）
-        queue = safe_scope.get('_DFF_QUEUE')
+        sub_task_id = gen_task_id()
+        queue       = safe_scope.get('_DFF_QUEUE')
+
         func_runner.apply_async(
             task_id=sub_task_id,
             kwargs=task_kwargs,
@@ -1624,44 +1610,11 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 compacted_filename = filename.replace(os.getcwd(), '<{}>'.format(CONFIG['APP_NAME']))
                 formatted_location = 'File "{}", line {}, in {}'.format(compacted_filename, line_number, funcname)
 
-                # 仅记录脚本的本地变量
-                locals_info = []
-                if CONFIG['_INTERNAL_ERROR_STACK_WITH_LOCALS_INFO'] and is_in_script:
-                    for var_name, var_value in frame.f_locals.items():
-                        # 忽略引擎内置变量
-                        if var_name in sample_scope or var_name in sample_scope['__builtins__']:
-                            continue
-
-                        # 忽略函数/类
-                        if str(type(var_value)) in ["<type 'function'>", "<type 'classobj'>"]:
-                            continue
-
-                        var_type = type(var_value)
-                        var_repr = None
-                        var_dump = None
-                        if isinstance(var_value, (tuple, list, dict)):
-                            # 不能添加`sort_keys`参数，可能导致报UnicodeDecodeError
-                            var_dump = toolkit.json_dumps(var_value)
-                        else:
-                            var_repr = pprint.saferepr(var_value)
-
-                        locals_info_item = {
-                            'name': var_name,
-                            'type': var_type,
-                        }
-                        if var_repr:
-                            locals_info_item['repr'] = var_repr
-                        if var_dump:
-                            locals_info_item['dump'] = var_dump
-
-                        locals_info.append(locals_info_item)
-
                 stack_item = {
                     'filename'         : filename,
                     'funcname'         : funcname,
                     'lineNumber'       : line_number,
                     'lineCode'         : line_code,
-                    'localsInfo'       : locals_info,
                     'formattedLocation': formatted_location,
                     'isInScript'       : is_in_script,
                 }

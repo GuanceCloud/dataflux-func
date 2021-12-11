@@ -9,6 +9,7 @@
 import time
 import traceback
 import pprint
+import io, zipfile
 
 # 3rd-party Modules
 import celery.states as celery_status
@@ -159,72 +160,51 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
         self.cache_db.lpush(cache_key, data)
 
-    def cache_script_failure(self, func_id, script_publish_version, exec_mode=None, einfo_text=None, trace_info=None):
-        if not CONFIG['_INTERNAL_KEEP_SCRIPT_FAILURE']:
-            return
-
-        if not einfo_text:
-            return
-
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptFailure')
-
-        data = {
-            'funcId'              : func_id,
-            'scriptPublishVersion': script_publish_version,
-            'execMode'            : exec_mode,
-            'einfoTEXT'           : einfo_text,
-            'traceInfo'           : trace_info,
-            'timestamp'           : int(time.time()),
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        self.cache_db.run('lpush', cache_key, data)
-
-    def cache_script_log(self, func_id, script_publish_version, log_messages, exec_mode=None):
-        if not CONFIG['_INTERNAL_KEEP_SCRIPT_LOG']:
-            return
-
-        if not log_messages:
-            return
-
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptLog')
-
-        data = {
-            'funcId'              : func_id,
-            'scriptPublishVersion': script_publish_version,
-            'execMode'            : exec_mode,
-            'logMessages'         : log_messages,
-            'timestamp'           : int(time.time()),
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        self.cache_db.run('lpush', cache_key, data)
-
-    def cache_task_status(self, origin, origin_id, exec_mode, status, root_task_id=None, func_id=None, script_publish_version=None, log_messages=None, einfo_text=None):
+    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms, root_task_id=None, func_id=None, log_messages=None, einfo_text=None, task_info_limit=None):
         if not all([origin, origin_id]):
             return
 
-        if origin not in ('crontab', 'batch') and exec_mode != 'crontab':
+        if origin in ('crontab', 'batch'):
+            # 普通自动触发配置/批处理
+            pass
+        elif origin == 'integration' and exec_mode == 'crontab':
+            # 集成函数自动触发
+            pass
+        else:
+            # 其他不记录
             return
 
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo')
-
+        # 压缩日志/错误
         data = {
-            'taskId'              : self.request.id,
-            'rootTaskId'          : root_task_id,
-            'origin'              : origin,
-            'originId'            : origin_id,
-            'funcId'              : func_id,
-            'scriptPublishVersion': script_publish_version,
-            'execMode'            : exec_mode,
-            'status'              : status,
-            'logMessages'         : log_messages,
-            'einfoTEXT'           : einfo_text,
-            'timestamp'           : int(time.time()),
+            'id'           : self.request.id,
+            'rootTaskId'   : root_task_id,
+            'funcId'       : func_id,
+            'execMode'     : exec_mode,
+            'status'       : status,
+            'triggerTimeMs': trigger_time_ms,
+            'startTimeMs'  : start_time_ms,
+            'endTimeMs'    : int(time.time() * 1000),
         }
+
+        if log_messages:
+            data['logMessageTEXT'] = '\n'.join(log_messages).strip()
+
+        if einfo_text:
+            data['einfoTEXT'] = einfo_text
+
         data = toolkit.json_dumps(data, indent=0)
 
-        self.cache_db.run('lpush', cache_key, data)
+        log_bin = io.BytesIO()
+        log_zip = zipfile.ZipFile(log_bin, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
+        log_zip.writestr('task-info.log', data)
+        log_zip.close()
+        log_b64 = toolkit.get_base64(log_bin.getvalue())
+
+        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', origin_id ])
+
+        self.cache_db.run('lpush', cache_key, log_b64)
+        if task_info_limit:
+            self.cache_db.run('ltrim', cache_key, 0, task_info_limit - 1)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
         if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):
@@ -271,6 +251,13 @@ def func_runner(self, *args, **kwargs):
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
 
+    # 触发时间
+    trigger_time    = kwargs.get('triggerTime')   or start_time
+    trigger_time_ms = kwargs.get('triggerTimeMs') or start_time_ms
+
+    # 任务信息记录限制
+    task_info_limit = kwargs.get('taskInfoLimit') or None
+
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
     if 'headers' in http_request:
@@ -294,15 +281,6 @@ def func_runner(self, *args, **kwargs):
 
     target_script = None
     try:
-        # 记录任务信息（运行中）
-        self.cache_task_status(
-            origin=origin,
-            origin_id=origin_id,
-            exec_mode=exec_mode,
-            status='pending',
-            root_task_id=root_task_id,
-            func_id=func_id)
-
         global SCRIPT_DICT_CACHE
 
         # 更新脚本缓存
@@ -327,8 +305,8 @@ def func_runner(self, *args, **kwargs):
             '_DFF_EXEC_MODE'      : exec_mode,
             '_DFF_START_TIME'     : start_time,
             '_DFF_START_TIME_MS'  : start_time_ms,
-            '_DFF_TRIGGER_TIME'   : kwargs.get('triggerTime') or start_time,
-            '_DFF_TRIGGER_TIME_MS': kwargs.get('triggerTimeMs') or start_time_ms,
+            '_DFF_TRIGGER_TIME'   : trigger_time,
+            '_DFF_TRIGGER_TIME_MS': trigger_time_ms,
             '_DFF_CRONTAB'        : kwargs.get('crontab'),
             '_DFF_CRONTAB_DELAY'  : kwargs.get('crontabDelay'),
             '_DFF_QUEUE'          : self.queue,
@@ -464,23 +442,10 @@ def func_runner(self, *args, **kwargs):
         if script_scope:
             log_messages = script_scope['DFF'].log_messages or None
 
-            self.cache_script_log(
-                func_id=func_id,
-                script_publish_version=target_script['publishVersion'],
-                log_messages=log_messages,
-                exec_mode=exec_mode)
-
         # 记录函数运行故障
         if end_status == 'failure':
             trace_info = trace_info or self.get_trace_info()
             einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
-
-            self.cache_script_failure(
-                func_id=func_id,
-                script_publish_version=target_script['publishVersion'],
-                exec_mode=exec_mode,
-                einfo_text=einfo_text,
-                trace_info=trace_info)
 
         # 记录函数运行信息
         self.cache_running_info(
@@ -488,19 +453,21 @@ def func_runner(self, *args, **kwargs):
             script_publish_version=target_script['publishVersion'],
             exec_mode=exec_mode,
             is_failed=(end_status == 'failure'),
-            cost=time.time() - start_time)
+            cost=int(time.time() * 1000) - start_time_ms)
 
         # 缓存任务状态
-        self.cache_task_status(
+        self.cache_task_info(
             origin=origin,
             origin_id=origin_id,
             exec_mode=exec_mode,
             status=end_status,
+            trigger_time_ms=trigger_time_ms,
+            start_time_ms=start_time_ms,
             root_task_id=root_task_id,
             func_id=func_id,
-            script_publish_version=target_script['publishVersion'],
             log_messages=log_messages,
-            einfo_text=einfo_text)
+            einfo_text=einfo_text,
+            task_info_limit=task_info_limit)
 
         # 清理资源
         self.clean_up()

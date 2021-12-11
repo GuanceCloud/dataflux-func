@@ -200,8 +200,7 @@ function startApplication() {
   require('./routers/batchAPIRouter');
   require('./routers/apiAuthAPIRouter');
 
-  require('./routers/crontabTaskInfoAPIRouter');
-  require('./routers/batchTaskInfoAPIRouter');
+  require('./routers/taskInfoAPIRouter');
 
   require('./routers/datafluxFuncTaskResultAPIRouter');
 

@@ -57,7 +57,7 @@ class ShellHelper(object):
         if args is not None:
             shell_command += args
 
-        shell_command = [toolkit.as_str(x) for x in shell_command]
+        shell_command = [str(x) for x in shell_command]
 
         output    = None
         exit_code = 0

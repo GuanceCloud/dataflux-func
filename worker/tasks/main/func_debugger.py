@@ -112,6 +112,10 @@ def func_debugger(self, *args, **kwargs):
     start_time    = int(time.time())
     start_time_ms = int(time.time() * 1000)
 
+    # 触发时间
+    trigger_time    = kwargs.get('triggerTime')   or start_time
+    trigger_time_ms = kwargs.get('triggerTimeMs') or start_time_ms
+
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
     if 'headers' in http_request:
@@ -150,8 +154,8 @@ def func_debugger(self, *args, **kwargs):
             '_DFF_EXEC_MODE'      : exec_mode,
             '_DFF_START_TIME'     : start_time,
             '_DFF_START_TIME_MS'  : start_time_ms,
-            '_DFF_TRIGGER_TIME'   : kwargs.get('triggerTime') or start_time,
-            '_DFF_TRIGGER_TIME_MS': kwargs.get('triggerTimeMs') or start_time_ms,
+            '_DFF_TRIGGER_TIME'   : trigger_time,
+            '_DFF_TRIGGER_TIME_MS': trigger_time_ms,
             '_DFF_CRONTAB'        : kwargs.get('crontab'),
             '_DFF_CRONTAB_DELAY'  : kwargs.get('crontabDelay'),
             '_DFF_QUEUE'          : self.queue,
