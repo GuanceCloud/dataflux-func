@@ -177,3 +177,14 @@ exports.list = function(req, res, next) {
     return res.locals.sendJSON(ret);
   })
 };
+
+exports.clear = function(req, res, next) {
+  var originId = req.params.originId;
+
+  var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', originId ]);
+  res.locals.cacheDB.delete(cacheKey, function(err, cacheRes) {
+    if (err) return next(err);
+
+    res.locals.sendJSON();
+  });
+};

@@ -4727,6 +4727,19 @@ taskInfoAPI:
         $searchType: eq
         $searchKey : status
 
+  clear:
+    showInDoc    : true
+    name         : 清空任务信息
+    method       : get
+    url          : /api/v1/task-info/:originId/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      originId:
+        $desc: 来源ID
+        $type: string
+
 # 函数调用任务结果
 datafluxFuncTaskResultAPI:
   list:

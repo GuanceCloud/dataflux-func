@@ -24,7 +24,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
         <h1>
           {{ $t('Abnormal Reqs') }}
           <div class="header-control">
-            <el-button @click="refresh" size="mini">
+            <el-button @click="refresh" size="small">
               <i class="fa fa-fw fa-refresh"></i>
               {{ $t('Refresh') }}
             </el-button>
@@ -32,13 +32,13 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
             <el-radio-group
               @change="switchType(type)"
               v-model="type"
-              size="mini">
+              size="small">
               <el-radio-button v-for="type, i in C.ABNORMAL_REQUEST_TYPE" :key="type.key" :label="type.key">{{ type.name }}</el-radio-button>
             </el-radio-group>
 
             &#12288;
             <el-tooltip :content="$t('Clear')" placement="bottom" :enterable="false">
-              <el-button @click="clear" size="mini">
+              <el-button @click="clear" size="small">
                 <i class="fa fa-fw fa-trash-o"></i>
               </el-button>
             </el-tooltip>

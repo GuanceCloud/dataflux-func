@@ -18,6 +18,10 @@ Exception: 异常
 
 success: 成功
 failure: 失败
+
+Task Info cleared: 任务信息已清空
+
+Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
 </i18n>
 
 <template>
@@ -26,18 +30,25 @@ failure: 失败
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          {{ isMainList ? '近期任务信息' : '相关任务信息' }}
+          {{ isMainTaskInfoList ? '近期任务信息' : '相关任务信息' }}
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip content="在本页面只展示主任务" placement="bottom" :enterable="false">
-              <el-checkbox v-if="isMainList"
+              <el-checkbox v-if="isMainTaskInfoList"
                 :border="true"
                 size="small"
                 v-model="dataFilter.rootTaskId"
                 true-label="ROOT"
                 false-label=""
                 @change="T.changePageFilter(dataFilter)">仅主任务</el-checkbox>
+            </el-tooltip>
+
+            &#12288;
+            <el-tooltip :content="$t('Clear')" placement="bottom" :enterable="false">
+              <el-button @click="clear" size="small" v-if="isMainTaskInfoList">
+                <i class="fa fa-fw fa-trash-o"></i>
+              </el-button>
             </el-tooltip>
           </div>
         </h1>
@@ -113,7 +124,7 @@ failure: 失败
 
           <el-table-column width="240" align="right">
             <template slot-scope="scope">
-              <template v-if="isMainList">
+              <template v-if="isMainTaskInfoList">
                 <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
                   type="text"
                   @click="openSubTaskInfo(scope.row)"
@@ -200,6 +211,32 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
+    async clear() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to clear the Task Info?'))) return;
+
+      let apiRes = await this.T.callAPI('/api/v1/task-info/:originId/do/clear', {
+        params: { originId: this.$route.params.id },
+        alert : { okMessage: this.$t('Task Info cleared') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      let nextRouteName = null;
+      switch(this.$route.params.id.split('-')[0]) {
+        case 'cron':
+          nextRouteName = 'crontab-config-list';
+          break;
+
+        case 'bat':
+          nextRouteName = 'batch-list';
+          break;
+
+        default:
+          nextRouteName = 'overview';
+          break;
+      }
+
+      this.$router.push({ name: nextRouteName });
+    },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
       nextRouteQuery.filter = this.T.createPageFilter({
@@ -252,7 +289,7 @@ export default {
     },
   },
   computed: {
-    isMainList() {
+    isMainTaskInfoList() {
       return this.$route.name === 'task-info-list';
     },
   },

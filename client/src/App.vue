@@ -554,6 +554,9 @@ kbd {
 .fa-fw {
   width: 1.1em !important;
 }
+.el-button .fa {
+  line-height: 0 !important;
+}
 
 /* Element-UI 修正 */
 .fix-compact-button {
@@ -575,6 +578,10 @@ kbd {
   margin-left: 10px;
 }
 
+.header-control .el-button.el-button--small,
+.header-control .el-button.el-button--text {
+  padding: 8px 15px 10px 15px !important;
+}
 .el-table .cell {
   word-break: break-word;
 }
