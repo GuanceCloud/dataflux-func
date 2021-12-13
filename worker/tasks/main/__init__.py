@@ -498,6 +498,10 @@ class FuncCacheHelper(object):
         else:
             return six.ensure_str(result)
 
+    def run(self, cmd, key, scope=None, *args, **kwargs):
+        key = self._get_cache_key(key, scope)
+        return self.__task.cache_db.run(cmd, key, *args, **kwargs)
+
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
