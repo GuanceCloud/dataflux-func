@@ -31,10 +31,6 @@ function convertQueryValues(req, queryConfig) {
  */
 exports.createRequestValidator = function(routeConfig) {
   return function(req, res, next) {
-    if (CONFIG.MODE === 'dev') {
-      res.locals.logger.debug('[MID] IN requestValidator');
-    }
-
     var ret = null;
 
     // Verify Files (Just get error from res.locals)

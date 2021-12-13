@@ -80,10 +80,6 @@ exports.createRequestPagingCondition = function(routeConfig) {
    * @return {Number} res.locals.paging.pageIndex
    */
   return function createRequestPagingCondition(req, res, next) {
-    if (CONFIG.MODE === 'dev') {
-      res.locals.logger.debug('[MID] IN modelHelper.requestPagingCondition');
-    }
-
     if ((routeConfig.paging === false)
     || (routeConfig.paging !== false && toolkit.toBoolean(req.query.noPage))) {
       return next();
@@ -144,10 +140,6 @@ exports.createRequestWhereCondition = function(routeConfig) {
    * @return {Object} res.locals.filters - Conditions from query
    */
   return function(req, res, next) {
-    if (CONFIG.MODE === 'dev') {
-      res.locals.logger.debug('[MID] IN modelHelper.requestWhereCondition');
-    }
-
     if (!routeConfig.query) {
       return next();
     }
@@ -231,10 +223,6 @@ exports.createRequestWhereCondition = function(routeConfig) {
  */
 exports.createRequestExtraCondition = function(routeConfig) {
   return function(req, res, next) {
-    if (CONFIG.MODE === 'dev') {
-      res.locals.logger.debug('[MID] IN modelHelper.requestExtraCondition');
-    }
-
     if (!routeConfig.query) {
       return next();
     }
@@ -275,10 +263,6 @@ exports.createRequestOrderCondition = function(routeConfig) {
    * @return {Object} res.locals.orders - Orders from query
    */
   return function(req, res, next) {
-    if (CONFIG.MODE === 'dev') {
-      res.locals.logger.debug('[MID] IN modelHelper.requestOrderCondition');
-    }
-
     if (routeConfig.method.toLowerCase() !== 'get' || !routeConfig.orderFields) {
       return next();
     }
