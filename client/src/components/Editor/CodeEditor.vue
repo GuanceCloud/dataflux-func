@@ -367,6 +367,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
 import LongTextDialog from '@/components/LongTextDialog'
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
+import * as htmlEscaper from 'html-escaper';
 
 import img_monkeyPatchNotice from '@/assets/img/monkey-patch-notice.png'
 
@@ -789,10 +790,10 @@ export default {
           logMessages = logMessages.map(l => {
             let m = l.match(/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
             if (!m) {
-              return this.encoding.htmlEncode(l);
+              return htmlEscaper.escape(l);
             } else {
               let restL = l.slice(m[0].length);
-              return this.T.strf('<span class="text-main">{0}</span>{1}', m[0], this.encoding.htmlEncode(restL));
+              return this.T.strf('<span class="text-main">{0}</span>{1}', m[0], htmlEscaper.escape(restL));
             }
           });
           logMessages = logMessages.join('\n') || null;
@@ -803,7 +804,7 @@ export default {
         if (apiRes.ok) {
           try {
             funcOutput = apiRes.data.result.funcResult.repr || null;
-            funcOutput = this.encoding.htmlEncode(funcOutput);
+            funcOutput = htmlEscaper.escape(funcOutput);
           } catch(_) {
             // 硬超时无返回值，此时获取函数输出报错时，忽略
           }
@@ -818,7 +819,7 @@ export default {
         let stackLines = apiRes.detail.einfoTEXT.split('\n').reduce((acc, x) => {
           if (!x.trim()) return acc;
 
-          acc.push(`<span class="code-editor-output-error-stack">${this.encoding.htmlEncode(x)}</span>`);
+          acc.push(`<span class="code-editor-output-error-stack">${htmlEscaper.escape(x)}</span>`);
           return acc;
         }, []);
         stackInfo = stackLines.join('\n');

@@ -18,13 +18,6 @@ Vue.prototype.C = const_;
 // 图标
 import 'font-awesome/css/font-awesome.css'
 
-// 代码高亮
-import hljs from 'highlight.js'
-import 'highlight.js/styles/github.css'
-Vue.directive('hljs', el => {
-  hljs.highlightBlock(el);
-});
-
 // 分割
 import splitPane from 'vue-splitpane'
 Vue.component('split-pane', splitPane);
@@ -94,9 +87,6 @@ import clipboardJS from 'clipboard';
 Vue.prototype.clipboardJS = clipboardJS;
 
 // 其他
-import * as encoding from '@/encoding'
-Vue.prototype.encoding = encoding;
-
 import * as common from '@/common'
 Vue.prototype.common = common;
 
