@@ -1,1 +1,0 @@
-{"name":"vue_library","content":{"./node_modules/webpack/buildin/global.js":{"id":52,"buildMeta":{"providedExports":true}},"./node_modules/vue/dist/vue.runtime.esm.js":{"id":55,"buildMeta":{"exportsType":"namespace","providedExports":["default"]}}}}

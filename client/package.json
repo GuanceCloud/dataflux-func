@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "dll": "vue-cli-service dll"
+    "build": "vue-cli-service build"
   },
   "dependencies": {
     "@intlify/vue-i18n-loader": "1.1.0",
@@ -42,7 +41,6 @@
     "@vue/cli-plugin-router": "4.1.0",
     "@vue/cli-plugin-vuex": "4.1.0",
     "@vue/cli-service": "4.1.0",
-    "vue-cli-plugin-dll": "1.1.11",
     "vue-template-compiler": "2.6.14"
   }
 }

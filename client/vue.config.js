@@ -66,38 +66,4 @@ module.exports = {
     sockHost: getNetworkIP(),
     disableHostCheck: true,
   },
-  pluginOptions: {
-    dll: {
-      cacheFilePath: path.resolve(__dirname, './public'),
-      entry: {
-        elementui  : [ 'element-ui' ],
-        codemirror : [ 'codemirror' ],
-        echarts    : [ 'echarts' ],
-        validator  : [ 'validator' ],
-        corejs     : [ 'core-js' ],
-        moment     : ['moment'],
-
-        vue       : [ 'vue' ],
-        vueplugins: [ 'vue-i18n', 'vue-router', 'vue-splitpane' ],
-        vuex      : [ 'vuex', 'vuex-persistedstate' ],
-
-        lib1: [
-          'axios',
-          'socket.io-client',
-          'nanoid',
-          'bowser',
-          'clipboard',
-          'file-saver',
-        ],
-        lib2: [
-          'byte-size',
-          'diff',
-          'html-escaper',
-          'js-base64',
-          'js-yaml',
-          'splitargs',
-        ],
-      }
-    }
-  },
 }
