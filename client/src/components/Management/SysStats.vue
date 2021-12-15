@@ -322,7 +322,7 @@ export default {
       return {
         type       : 'value',
         offset     : 10,
-        max        : 100,
+        max        : value => Math.max(parseInt(value.max * 1.1), 100),
         min        : 0,
         boundaryGap: ['20%', '20%'],
         splitLine: {
