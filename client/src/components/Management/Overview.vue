@@ -145,7 +145,7 @@ Pressure                      : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="240">
+          <el-table-column :label="$t('User')" width="270">
             <template slot-scope="scope">
               <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
