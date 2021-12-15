@@ -453,7 +453,7 @@ export default {
           tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
-          yAxis  : this.createCountYAxisOpt({ max: v => v.max < 100 ? 100 : null }),
+          yAxis  : this.createCountYAxisOpt({ max: value => Math.max(parseInt(value.max * 1.1), 100) }),
         },
 
         dbDiskUsed: {
