@@ -185,7 +185,8 @@ dev_deploy:
   script:
     - |-
       for workload in ${WORKLOADS}; do
-        curl -X POST ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy
+        curl -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}" \
+          ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy
       done
   tags:
     - cloudcare-multiarch
