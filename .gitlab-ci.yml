@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy
 
 variables:
   OSS_WORKDIR          : dataflux-func
@@ -18,6 +19,8 @@ variables:
   PROJECT              : dataflux-func
   FUNC_PKG_URL         : https://static.guance.com/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
   FUNC_REQUIREMENTS_URL: https://static.guance.com/dataflux-func/market/packages/_dataflux/requirements.txt
+
+# ========== 构建 ==========
 
 # 开发版发布
 #   主要用于驻云SaaS版开发
@@ -170,5 +173,19 @@ datafluxPaaS_prod:
       -t pubrepo.jiagouyun.com/$REPO:$TAG
       -f Dockerfile-dataflux .
       --push
+  tags:
+    - cloudcare-multiarch
+
+
+# ========== 部署 ==========
+dev:
+  stage: deploy
+  only:
+    - dev
+  script:
+    - |-
+      for workload in ${WORKLOADS}; do
+        curl -X POST ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy
+      done
   tags:
     - cloudcare-multiarch
