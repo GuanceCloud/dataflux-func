@@ -178,7 +178,7 @@ datafluxPaaS_prod:
 
 
 # ========== 部署 ==========
-dev:
+dev_deploy:
   stage: deploy
   only:
     - dev
