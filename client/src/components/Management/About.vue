@@ -47,7 +47,7 @@ Log and Cache cleared: 日志与缓存表已清空
                 </el-form-item>
 
                 <el-form-item :label="$t('Release date')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.releaseDate"></el-input>
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="releaseDateTEXT"></el-input>
                 </el-form-item>
               </el-form>
 
@@ -115,13 +115,10 @@ export default {
     async _getVersion() {
       let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
-        let releaseDate = apiRes.data.CREATE_TIMESTAMP > 0
-                        ? this.M.utc(apiRes.data.CREATE_TIMESTAMP * 1000).locale('zh_CN').utcOffset(8).format('YYYY-MM-DD HH:mm:ss')
-                        : '-';
         this.about = {
-          version    : apiRes.data.CI_COMMIT_REF_NAME,
-          platform   : apiRes.data.PLATFORM,
-          releaseDate: releaseDate,
+          version         : apiRes.data.CI_COMMIT_REF_NAME,
+          platform        : apiRes.data.PLATFORM,
+          releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
         };
 
       } else {
@@ -333,6 +330,21 @@ export default {
         '\n[Worker队列分布]',     this.nodesActiveQueuesInfoTEXT,
         '\n[Worker队列长度]',     this.workerQueueLengthInfoTEXT,
       ].join('\n');
+    },
+    releaseDateTEXT() {
+      let releaseDate    = '';
+      let releaseFromNow = '';
+      if (this.about.releaseTimestamp > 0) {
+        let _t = this.about.releaseTimestamp * 1000;
+        releaseDate    = this.M.utc(_t).locale(this.$store.getters.uiLocale).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
+        releaseFromNow = this.M.utc(_t).locale(this.$store.getters.uiLocale).fromNow();
+      }
+
+      if (releaseDate && releaseFromNow) {
+        return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`
+      } else {
+        return '-';
+      }
     },
   },
   props: {
