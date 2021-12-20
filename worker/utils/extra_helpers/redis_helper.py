@@ -23,6 +23,9 @@ def get_config(c):
         'password': c.get('password') or None,
         'ssl'     : c.get('useSSL')   or c.get('useTLS'),
     }
+    if config['ssl'] is True:
+        config['ssl_cert_reqs'] = None
+
     return config
 
 LIMIT_ARGS_DUMP = 200

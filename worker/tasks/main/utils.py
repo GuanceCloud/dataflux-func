@@ -581,7 +581,7 @@ class AutoCleanTask(BaseTask):
             cache_key_info = toolkit.parse_cache_key(cache_key)
 
             if cache_key_info['tags']['originId'] not in origin_ids:
-                self.cache_db.delete(k)
+                self.cache_db.delete(cache_key)
 
     def clear_deprecated_data(self):
         self.clear_table('biz_main_script_log')
