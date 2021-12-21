@@ -189,6 +189,7 @@ export default {
           case 'add':
             this.T.jsonClear(this.form);
             this.form.throttlingJSON = {};
+            this.form.showInDoc      = false;
             this.data = {};
             break;
 
