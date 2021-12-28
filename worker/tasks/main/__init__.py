@@ -1118,7 +1118,8 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             except Exception as e:
                 raise
 
-            globals[name] = _module
+            # 模块本身不需要直接加入上下文
+            # globals[name] = _module
             self._resolve_fromlist(_module, fromlist, globals)
 
             return _module
