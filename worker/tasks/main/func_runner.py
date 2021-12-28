@@ -160,7 +160,10 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
         self.cache_db.lpush(cache_key, data)
 
-    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms, root_task_id=None, func_id=None, log_messages=None, einfo_text=None, task_info_limit=None):
+    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
+            root_task_id=None, func_id=None,
+            log_messages=None, einfo_text=None, edump_text=None,
+            task_info_limit=None):
         if not all([origin, origin_id]):
             return
 
@@ -204,6 +207,9 @@ class FuncRunnerTask(ScriptBaseTask):
 
         if einfo_text:
             data['einfoTEXT'] = einfo_text
+
+        if edump_text:
+            data['edumpTEXT'] = edump_text
 
         data = toolkit.json_dumps(data, indent=0)
 
@@ -288,6 +294,7 @@ def func_runner(self, *args, **kwargs):
     log_messages = None
     trace_info   = None
     einfo_text   = None
+    edump_text   = None
 
     # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
     end_status = 'failure'
@@ -376,6 +383,7 @@ def func_runner(self, *args, **kwargs):
 
         trace_info = self.get_trace_info()
         einfo_text = self.get_formated_einfo(trace_info, only_in_script=True)
+        edump_text = trace_info.get('exceptionDump')
 
         raise
 
@@ -480,6 +488,7 @@ def func_runner(self, *args, **kwargs):
             func_id=func_id,
             log_messages=log_messages,
             einfo_text=einfo_text,
+            edump_text=edump_text,
             task_info_limit=task_info_limit)
 
         # 清理资源

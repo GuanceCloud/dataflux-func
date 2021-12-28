@@ -100,6 +100,9 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
                 :id="scope.row.funcId"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"></FuncInfo>
+              <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
+                :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
+                type="error" ></InfoBlock>
             </template>
           </el-table-column>
 
@@ -133,7 +136,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
 
               <el-button
                 :disabled="!scope.row.logMessageTEXT && !scope.row.einfoTEXT"
-                @click="showLog(scope.row)" type="text">显示日志详情</el-button>
+                @click="showLog(scope.row)" type="text">显示详情</el-button>
             </template>
           </el-table-column>
         </el-table>
