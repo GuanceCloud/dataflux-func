@@ -37,8 +37,7 @@ module.exports = {
   publicPath: IS_PROD ? '/client-app/' : '/',
   productionSourceMap: false,
   chainWebpack: config => {
-    config.module
-      .rule('vue')
+    config.module.rule('vue')
       .use('vue-loader')
         .loader('vue-loader')
         .tap(options => {
@@ -46,8 +45,7 @@ module.exports = {
           return options;
         })
         .end();
-    config.module
-      .rule('i18n')
+    config.module.rule('i18n')
       .resourceQuery(/blockType=i18n/)
       .type('javascript/auto')
       .use('i18n')
