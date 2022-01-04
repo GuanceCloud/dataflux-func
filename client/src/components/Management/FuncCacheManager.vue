@@ -120,7 +120,7 @@ export default {
       this.data.forEach(d => {
         if (d.memoryUsage) {
           d.memoryUsageHuman = this.T.byteSizeHuman(d.memoryUsage);
-          d.isOverSized      = d.memoryUsage > 5 * 1024 * 1024;
+          d.isOverSized      = d.memoryUsage > 20 * 1024;
         }
       });
 

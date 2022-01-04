@@ -379,6 +379,9 @@ h3 {
 .common-table {
   width: 100%;
 }
+.common-table .el-table__header {
+  height: 60px;
+}
 .common-table table {
   width: unset !important;
 }

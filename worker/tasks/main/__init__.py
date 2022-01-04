@@ -1477,14 +1477,15 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'STORE' : __store_helper,        # 存储处理模块
             'CACHE' : __cache_helper,        # 缓存处理模块
             'CONFIG': __config_helper,       # 配置处理模块
-            'SQL'   : format_sql,            # 格式化SQL语句
 
-            'RSRC'           : get_resource_path,     # 获取资源路径
+            'SQL' : format_sql,        # 格式化SQL语句
+            'RSRC': get_resource_path, # 获取资源路径
+
             'RESP'           : FuncResponse,          # 函数响应体
             'RESP_FILE'      : FuncResponseFile,      # 函数响应体（返回文件）
             'RESP_LARGE_DATA': FuncResponseLargeData, # 函数响应题（大量数据）
 
-            'FUNC'  : __call_func,     # 调用函数（新Task）
+            'FUNC'  : __call_func,     # 调用函数（产生新Task）
             'THREAD': __thread_helper, # 多线程处理模块
 
             'TASK': self, # 任务本身

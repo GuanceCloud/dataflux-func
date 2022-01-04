@@ -69,15 +69,16 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Data Size')" align="right" width="120">
+          <el-table-column :label="$t('Data Size')"  sortable sort-by="dataSize" align="right" width="120">
             <template slot-scope="scope">
-              <code>{{ scope.row.dataSizeHuman }}</code>
+              <code :class="{ 'text-bad': scope.row.isOverSized }">{{ scope.row.dataSizeHuman }}</code>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
+              <el-button v-if="!scope.row.isOverSized"
+                @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
               <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
             </template>
           </el-table-column>
@@ -126,6 +127,7 @@ export default {
         }
         if (d.dataSize) {
           d.dataSizeHuman = this.T.byteSizeHuman(d.dataSize);
+          d.isOverSized   = d.dataSize > 20 * 1024;
         }
       });
 
