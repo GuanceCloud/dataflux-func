@@ -140,11 +140,11 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
 
             <el-table-column :label="$t('Status')" width="160">
               <template slot-scope="scope">
-                <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
-                <span v-else class="text-good">{{ $t('Enabled') }}</span>
+                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
                 <br>
-                <span v-if="scope.row.showInDoc" class="text-good">{{ $t('Shown in doc') }}</span>
-                <span v-else class="text-bad">{{ $t('Hidden in doc') }}</span>
+                <span v-if="scope.row.showInDoc" class="text-good"><i class="fa fa-fw fa-eye"></i> {{ $t('Shown in doc') }}</span>
+                <span v-else class="text-bad"><i class="fa fa-fw fa-eye-slash"></i> {{ $t('Hidden in doc') }}</span>
               </template>
             </el-table-column>
 

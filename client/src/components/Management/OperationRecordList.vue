@@ -57,13 +57,13 @@ Response                      : 响应
 
               <template v-if="scope.row.userId">
                 <br>
-                <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
+                <span class="text-info">&#12288;{{ $t('User ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
 
               <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
                 <br>
-                <span class="text-info">{{ $t('IP Address') }}{{ $t(':') }}</span>
+                <span class="text-info">&#12288;{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
               </template>
             </template>
@@ -72,10 +72,10 @@ Response                      : 响应
           <el-table-column :label="$t('Operation')">
             <template slot-scope="scope">
               <span class="text-good" v-if="scope.row.respStatusCode >= 200 && scope.row.respStatusCode < 400">
-                <i class="fa fa-fw fa-check-circle"></i>
+                <i class="fa fa-fw fa-check"></i>
               </span>
               <span class="text-bad" v-else>
-                <i class="fa fa-fw fa-times-circle"></i>
+                <i class="fa fa-fw fa-times"></i>
               </span>
               <span>{{ scope.row.reqRouteName }}</span>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
@@ -87,7 +87,7 @@ Response                      : 响应
 
               <template v-if="scope.row._operationEntityId">
                 <br>
-                <span class="text-info">{{ $t('Data ID') }}{{ $t(':') }}</span>
+                <span class="text-info">&#12288;{{ $t('Data ID') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
             </template>

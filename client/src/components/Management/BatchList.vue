@@ -87,10 +87,14 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="160">
+          <el-table-column :label="$t('Status')" width="140">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
-              <span v-else class="text-good">{{ $t('Enabled') }}</span>
+              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+
+              <br>
+              <span v-if="scope.row.taskFailureCount > 0" class="text-bad"><i class="fa fa-fw fa-times"></i> {{ $t('Error') }} {{ $t('(') }}{{ scope.row.taskFailureCount }}{{ $t(')') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Normal') }}</span>
             </template>
           </el-table-column>
 
