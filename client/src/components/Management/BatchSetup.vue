@@ -2,6 +2,8 @@
 randomIDString: bat-{Random ID}
 
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+
+taskCount: '{n} task | {n} tasks'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -13,6 +15,8 @@ Setup Batch: 修改批处理
 Customize ID: 定制ID
 Func        : 执行函数
 Arguments   : 参数指定
+Recent Tasks: 近期任务
+Keep        : 保留
 Tags        : 标签
 Add Tag     : 添加标签
 Note        : 备注
@@ -35,6 +39,8 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 Invalid argument format: 参数格式不正确
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+
+taskCount: '{n}个任务'
 </i18n>
 
 <template>
@@ -102,6 +108,23 @@ parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指�
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
+                <el-form-item :label="$t('Recent Tasks')">
+                  <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
+                  <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
+                    :disabled="true"
+                    :value="fixedTaskInfoLimit"></el-input-number>
+                  <el-input-number class="task-info-limit-input" v-else
+                    :min="1"
+                    :max="10000"
+                    :step="1"
+                    :step-strictly="true"
+                    v-model="form.taskInfoLimit"></el-input-number>
+                  <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <el-link class="task-info-limit-clear"
+                    :underline="false"
+                    @click.stop="form.taskInfoLimit = 10">{{ $t('Default') }}</el-link>
+                </el-form-item>
+
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
                   <el-select v-model="form.apiAuthId">
                     <el-option v-for="opt in apiAuthOptions" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
@@ -149,6 +172,7 @@ export default {
         switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
+            this.form.taskInfoLimit = 10;
             this.data = {};
             break;
 
@@ -176,7 +200,8 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.tagsJSON           = nextForm.tagsJSON || [];
+        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || 10;
+        nextForm.tagsJSON           = nextForm.tagsJSON      || [];
         nextForm.apiAuthId          = this.data.apia_id;
         this.form = nextForm;
       }
@@ -324,11 +349,22 @@ export default {
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;
+      if (!this.funcMap[funcId]) return false;
 
       for (let k in this.funcMap[funcId].kwargsJSON) {
         if (k.indexOf('**') === 0) return true;
       }
       return false;
+    },
+    fixedTaskInfoLimit() {
+      let selectedFunc = this.funcMap[this.form.funcId];
+      if (selectedFunc
+          && selectedFunc.extraConfigJSON
+          && selectedFunc.extraConfigJSON.fixedTaskInfoLimit) {
+        return selectedFunc.extraConfigJSON.fixedTaskInfoLimit;
+      } else {
+        return null;
+      }
     },
     apiAuthOptions() {
       return this.apiAuthList.map(d => {
@@ -377,6 +413,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
+        taskInfoLimit     : 10,
         note              : null,
       },
       formRules: {
@@ -437,9 +474,22 @@ export default {
 .func-cascader-input {
   width: 500px;
 }
-
-.el-checkbox {
-  margin-left : 5px !important;
-  margin-right: 0 !important;
+.task-info-limit-input {
+  width: 260px;
+}
+.task-info-limit-prefix {
+  color: grey;
+  padding-right: 10px;
+}
+.task-info-limit-unit {
+  color: grey;
+  padding-left: 10px;
+}
+.task-info-limit-unit > span {
+  width: 35px;
+  display: inline-block;
+}
+.task-info-limit-clear {
+  float: right
 }
 </style>

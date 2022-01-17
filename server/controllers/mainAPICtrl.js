@@ -253,6 +253,13 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   // 函数参数
   funcCallOptions.funcCallKwargs = funcCallKwargs;
 
+  // 任务保留数量
+  if (!toolkit.isNothing(func.extraConfigJSON.fixedTaskInfoLimit)) {
+    funcCallOptions.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit;
+  } else {
+    funcCallOptions.taskInfoLimit = func.extraConfigJSON.taskInfoLimit;
+  }
+
   // 文件上传参数
   if (req.files && req.files.length > 0) {
     funcCallOptions.funcCallKwargs.files = req.files.map(function(file) {
@@ -761,6 +768,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       triggerTime      : funcCallOptions.triggerTime,
       triggerTimeMs    : funcCallOptions.triggerTimeMs,
       queue            : funcCallOptions.queue,
+      taskInfoLimit    : funcCallOptions.taskInfoLimit,
       httpRequest      : funcCallOptions.httpRequest,
     };
     celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
@@ -1847,6 +1855,11 @@ exports.callBatch = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         func = _func;
+
+        // 补全`taskInfoLimit`参数
+        // 优先级：`函数配置值`fixedTaskInfoLimit` > 批处理指定值 > 默认值`
+        func.extraConfigJSON = func.extraConfigJSON || {};
+        func.extraConfigJSON.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit || batch.taskInfoLimit || null;
 
         return asyncCallback();
       });

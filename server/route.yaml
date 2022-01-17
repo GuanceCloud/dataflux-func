@@ -3997,6 +3997,13 @@ crontabConfigAPI:
           $in:
             - API
             - UI
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4054,6 +4061,13 @@ crontabConfigAPI:
           $type      : string
           $isISO8601 : true
           $example   : '2019-01-01T00:00:00Z'
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4121,6 +4135,13 @@ crontabConfigAPI:
             $type      : string
             $isISO8601 : true
             $example   : '2019-01-01T00:00:00Z'
+          taskInfoLimit:
+            $desc      : 近期任务保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 1
+            $maxValue  : 10000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4219,6 +4240,13 @@ crontabConfigAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4419,6 +4447,13 @@ batchAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4467,6 +4502,13 @@ batchAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4530,6 +4572,13 @@ batchAPI:
             $desc      : 是否显示于文档
             $isRequired: false
             $type      : boolean
+          taskInfoLimit:
+            $desc      : 近期任务保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 1
+            $maxValue  : 10000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4621,6 +4670,13 @@ batchAPI:
           $desc     : API认证ID
           $allowNull: true
           $type     : string
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 1
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false

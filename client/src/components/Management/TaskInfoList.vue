@@ -8,13 +8,15 @@ Func Name  : 函数名
 Func Title : 函数标题
 Main Task  : 主任务
 Sub Task   : 子任务
-Wait Time  : 等待时间
+Wait Time  : 排队时间
 Run Time   : 执行时间
 Task Type  : 任务类型
 Task Status: 任务状态
 
-Log      : 日志
-Exception: 异常
+Log         : 日志
+Exception   : 异常
+No log      : 无日志
+No exception: 无异常
 
 success: 成功
 failure: 失败
@@ -134,9 +136,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
                   >相关任务</el-button>
               </template>
 
-              <el-button
-                :disabled="!scope.row.logMessageTEXT && !scope.row.einfoTEXT"
-                @click="showLog(scope.row)" type="text">显示详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">显示详情</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -255,7 +255,7 @@ export default {
         query : nextRouteQuery,
       });
     },
-    showLog(d) {
+    showDetail(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       let contentLines = [];
@@ -272,16 +272,20 @@ export default {
       contentLines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
       contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
 
+      contentLines.push('');
+      contentLines.push(`===== ${this.$t('Log')} =====`);
       if (d.logMessageTEXT) {
-        contentLines.push('');
-        contentLines.push(`===== ${this.$t('Log')} =====`);
         contentLines.push(d.logMessageTEXT);
+      } else {
+        contentLines.push(this.$t('No log'));
       }
 
+      contentLines.push('');
+      contentLines.push(`===== ${this.$t('Exception')} =====`);
       if (d.einfoTEXT) {
-        contentLines.push('');
-        contentLines.push(`===== ${this.$t('Exception')} =====`);
         contentLines.push(d.einfoTEXT);
+      } else {
+        contentLines.push(this.$t('No exception'))
       }
 
       let contentTEXT = contentLines.join('\n');

@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '8'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '9'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -140,3 +140,16 @@ upgradeInfo:
 
       ALTER TABLE biz_main_batch_task_info
       ADD INDEX `ROOT_TASK_ID` (rootTaskId);
+
+
+  # 对应观测云SaaS 2022-01-20 迭代
+  - seq: 9
+    database: |-
+      -- 自动触发配置/批处理支持配置任务记录数量
+      ALTER TABLE biz_main_crontab_config
+      ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
+      AFTER `origin`;
+
+      ALTER TABLE biz_main_batch
+      ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
+      AFTER `showInDoc`;

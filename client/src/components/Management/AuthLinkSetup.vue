@@ -433,6 +433,7 @@ export default {
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;
+      if (!this.funcMap[funcId]) return false;
 
       for (let k in this.funcMap[funcId].kwargsJSON) {
         if (k.indexOf('**') === 0) return true;

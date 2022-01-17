@@ -1,4 +1,5 @@
 <i18n locale="en" lang="yaml">
+taskCount: '{n} task | {n} tasks'
 shortcutDays : '{n} day | {n} days'
 </i18n>
 
@@ -6,17 +7,19 @@ shortcutDays : '{n} day | {n} days'
 Add Crontab Config  : 添加自动触发配置
 Setup Crontab Config: 配置自动触发配置
 
-Func     : 执行函数
-Arguments: 参数指定
-Tags     : 标签
-Add Tag  : 添加标签
-Weekdays : 按周重复
-Months   : 按月重复
-Days     : 按天重复
-Hours    : 按小时重复
-Minutes  : 按分钟重复
-Expires  : 有效期
-Note     : 备注
+Func        : 执行函数
+Arguments   : 参数指定
+Recent Tasks: 近期任务
+Keep        : 保留
+Tags        : 标签
+Add Tag     : 添加标签
+Weekdays    : 按周重复
+Months      : 按月重复
+Days        : 按天重复
+Hours       : 按小时重复
+Minutes     : 按分钟重复
+Expires     : 有效期
+Note        : 备注
 
 '(Fixed Crontab)': （固定Crontab）
 Every weekday    : 不限星期
@@ -51,6 +54,7 @@ Crontab Config deleted: 自动触发配置已删除
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Invalid argument format: 参数格式不正确
 
+taskCount: '{n}个任务'
 shortcutDays : '{n}天'
 </i18n>
 
@@ -99,6 +103,21 @@ shortcutDays : '{n}天'
                   <el-button v-else
                     type="text"
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
+                </el-form-item>
+
+                <el-form-item :label="$t('Recent Tasks')">
+                  <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
+                  <el-input-number class="task-info-limit-input"
+                    :min="1"
+                    :max="10000"
+                    :step="1"
+                    :step-strictly="true"
+                    :disabled="!!fixedTaskInfoLimit"
+                    v-model="form.taskInfoLimit"></el-input-number>
+                  <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <el-link class="task-info-limit-clear"
+                    :underline="false"
+                    @click.stop="form.taskInfoLimit = 10">{{ $t('Default') }}</el-link>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -234,6 +253,7 @@ export default {
             this.formCrontabCache = this.T.jsonCopy(defaultFormCrontab);
             this.formCrontab      = this.T.jsonCopy(defaultFormCrontab);
             this.T.jsonClear(this.form);
+            this.form.taskInfoLimit = 10;
             this.data = {};
             break;
 
@@ -254,7 +274,8 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.tagsJSON           = nextForm.tagsJSON || [];
+        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || 10;
+        nextForm.tagsJSON           = nextForm.tagsJSON      || [];
         this.form = nextForm;
 
         if (this.data.crontab) {
@@ -508,14 +529,26 @@ export default {
         add  : this.$t('Add Crontab Config'),
       };
       return _map[this.T.setupPageMode()];
-    },    apiCustomKwargsSupport() {
+    },
+    apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
       if (!funcId) return false;
+      if (!this.funcMap[funcId]) return false;
 
       for (let k in this.funcMap[funcId].kwargsJSON) {
         if (k.indexOf('**') === 0) return true;
       }
       return false;
+    },
+    fixedTaskInfoLimit() {
+      let selectedFunc = this.funcMap[this.form.funcId];
+      if (selectedFunc
+          && selectedFunc.extraConfigJSON
+          && selectedFunc.extraConfigJSON.fixedTaskInfoLimit) {
+        return selectedFunc.extraConfigJSON.fixedTaskInfoLimit;
+      } else {
+        return null;
+      }
     },
     fixedCrontabExpr() {
       let selectedFunc = this.funcMap[this.form.funcId];
@@ -643,6 +676,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         expireTime        : null,
+        taskInfoLimit     : 10,
         note              : null,
         // crontab 单独处理
       },
@@ -670,6 +704,24 @@ export default {
 <style scoped>
 .func-cascader-input {
   width: 500px;
+}
+.task-info-limit-input {
+  width: 260px;
+}
+.task-info-limit-prefix {
+  color: grey;
+  padding-right: 10px;
+}
+.task-info-limit-unit {
+  color: grey;
+  padding-left: 10px;
+}
+.task-info-limit-unit > span {
+  width: 35px;
+  display: inline-block;
+}
+.task-info-limit-clear {
+  float: right
 }
 .expire-time-input {
   width: 500px;

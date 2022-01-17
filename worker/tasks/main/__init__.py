@@ -1129,7 +1129,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
     def _export_as_api(self, safe_scope, title,
         # 控制类参数
-        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
+        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None, fixed_task_info_limit=None,
         # 标记类参数
         category=None, tags=None,
         # 集成处理参数
@@ -1217,6 +1217,20 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 raise e
 
             extra_config['queue'] = queue
+
+        # 固定任务记录数量
+        if fixed_task_info_limit is not None:
+            if not isinstance(fixed_task_info_limit, int):
+                e = InvalidOptionException('`fixed_task_info_limit` should be an int')
+                raise e
+
+            _min_task_info_limit = CONFIG['_TASK_INFO_MIN_LIMIT']
+            _max_task_info_limit = CONFIG['_TASK_INFO_MAX_LIMIT']
+            if not (_min_task_info_limit <= fixed_task_info_limit <= _max_task_info_limit):
+                e = InvalidOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (seconds)'.format(_min_task_info_limit, _max_task_info_limit))
+                raise e
+
+            extra_config['fixedTaskInfoLimit'] = fixed_task_info_limit
 
         ##############
         # 标记类参数 #
@@ -1366,7 +1380,6 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'origin': self.request.id,
         }
         # 注意：
-        # 此处调用子任务可以不设`taskInfoLimit`
         # 保证一次主任务调用后的所有子任务数据都能保留
         task_kwargs = {
             'rootTaskId'    : self.request.id,

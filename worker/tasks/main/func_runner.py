@@ -160,21 +160,38 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
         self.cache_db.lpush(cache_key, data)
 
-    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
-            root_task_id=None, func_id=None,
-            log_messages=None, einfo_text=None, edump_text=None,
-            task_info_limit=None):
+    def is_support_task_info(self, origin, origin_id):
         if not all([origin, origin_id]):
-            return
+            return False
 
         if origin in ('crontab', 'batch'):
             # 普通自动触发配置/批处理
-            pass
+            return True
         elif origin == 'integration' and exec_mode == 'crontab':
             # 集成函数自动触发
-            pass
+            return True
         else:
-            # 其他不记录
+            # 其他不支持
+            return False
+
+    def trim_task_info(self, origin, origin_id, task_info_limit=None):
+        if not self.is_support_task_info(origin, origin_id):
+            return
+
+        task_info_limit = task_info_limit or CONFIG['_TASK_INFO_DEFAULT_LIMIT']
+        task_info_limit = task_info_limit - 1
+        if task_info_limit < 0:
+            task_info_limit = 0
+
+        _start = 0
+        _stop  = task_info_limit - 1
+        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', origin_id ])
+        self.cache_db.run('ltrim', cache_key, _start, _stop)
+
+    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
+            root_task_id=None, func_id=None,
+            log_messages=None, einfo_text=None, edump_text=None):
+        if not self.is_support_task_info(origin, origin_id):
             return
 
         # 压缩日志/错误
@@ -220,10 +237,7 @@ class FuncRunnerTask(ScriptBaseTask):
         log_b64 = toolkit.get_base64(log_bin.getvalue())
 
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', origin_id ])
-
         self.cache_db.run('lpush', cache_key, log_b64)
-        if task_info_limit:
-            self.cache_db.run('ltrim', cache_key, 0, task_info_limit - 1)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
         if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):
@@ -251,9 +265,12 @@ def func_runner(self, *args, **kwargs):
 
     self.logger.info('Main.FuncRunner Task launched: `{}`'.format(func_id))
 
-    # 来源
+    # 任务来源
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
+
+    # 任务记录数
+    task_info_limit = kwargs.get('taskInfoLimit')
 
     # 任务ID
     task_id      = self.request.id
@@ -273,9 +290,6 @@ def func_runner(self, *args, **kwargs):
     # 触发时间
     trigger_time    = kwargs.get('triggerTime')   or start_time
     trigger_time_ms = kwargs.get('triggerTimeMs') or start_time_ms
-
-    # 任务信息记录限制
-    task_info_limit = kwargs.get('taskInfoLimit') or None
 
     # HTTP请求
     http_request = kwargs.get('httpRequest') or {}
@@ -299,6 +313,11 @@ def func_runner(self, *args, **kwargs):
     # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
     end_status = 'failure'
 
+    # 缩减任务信息缓存（仅在主任务之前）
+    if root_task_id == 'ROOT':
+        self.trim_task_info(origin, origin_id, task_info_limit)
+
+    ### 任务开始
     target_script = None
     try:
         global SCRIPT_DICT_CACHE
@@ -488,8 +507,7 @@ def func_runner(self, *args, **kwargs):
             func_id=func_id,
             log_messages=log_messages,
             einfo_text=einfo_text,
-            edump_text=edump_text,
-            task_info_limit=task_info_limit)
+            edump_text=edump_text)
 
         # 清理资源
         self.clean_up()

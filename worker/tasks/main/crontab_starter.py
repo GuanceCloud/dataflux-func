@@ -64,11 +64,6 @@ class CrontabStarterTask(BaseTask):
         crontab_config['taskOrigin'] = 'crontab'
         crontab_config['execMode']   = 'crontab'
 
-        if crontab_config['origin'] == 'UI':
-            crontab_config['taskInfoLimit'] = CONFIG['_CRONTAB_TASK_INFO_FROM_UI_LIMIT']
-        else:
-            crontab_config['taskInfoLimit'] = CONFIG['_CRONTAB_TASK_INFO_FROM_API_LIMIT']
-
         func_call_kwargs_json = crontab_config.get('funcCallKwargsJSON')
         if func_call_kwargs_json:
             crontab_config['funcCallKwargs'] = toolkit.json_loads(func_call_kwargs_json)
@@ -87,9 +82,14 @@ class CrontabStarterTask(BaseTask):
             crontab_config['saveResult'] = False
 
         try:
-            crontab_config['crontab'] = crontab_config['crontab'] or crontab_config['funcExtraConfig'].get('fixedCrontab')
+            crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config['crontab']
         except Exception as e:
             crontab_config['crontab'] = None
+
+        try:
+            crontab_config['taskInfoLimit'] = crontab_config['funcExtraConfig'].get('fixedTaskInfoLimit') or crontab_config['taskInfoLimit']
+        except Exception as e:
+            crontab_config['taskInfoLimit'] = None
 
         return crontab_config
 
@@ -126,14 +126,11 @@ class CrontabStarterTask(BaseTask):
                 'funcCallKwargs' : {},
                 'crontab'        : crontab_expr,
                 'saveResult'     : False,
-                'origin'         : 'INTEGRATION',
-
                 'funcId'         : f['id'],
                 'funcExtraConfig': f['extraConfig'],
-
-                'taskOrigin'   : 'integration',
-                'execMode'     : 'crontab',
-                'taskInfoLimit': CONFIG['_CRONTAB_TASK_INFO_FROM_INTEGRATION_LIMIT'],
+                'taskOrigin'     : 'integration',
+                'taskInfoLimit'  : CONFIG['_TASK_INFO_INTEGRATION_LIMIT'],
+                'execMode'       : 'crontab',
             }
             crontab_configs.append(c)
 
@@ -147,7 +144,7 @@ class CrontabStarterTask(BaseTask):
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
-                ,`cron`.`origin`
+                ,`cron`.`taskInfoLimit`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
@@ -182,7 +179,7 @@ class CrontabStarterTask(BaseTask):
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
                 ,`cron`.`saveResult`
-                ,`cron`.`origin`
+                ,`cron`.`taskInfoLimit`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
@@ -295,9 +292,11 @@ class CrontabStarterTask(BaseTask):
             task_headers = {
                 'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
             }
+
             # 注意：
-            # 自动触发配置本身的`origin`表示创建配置的来源（值为 API, UI, INTEGRATION）
-            # 而此处所发送任务的`origin`表示任务的来源（值为 crontab, integration）
+            # 此处「任务的`origin`」与「自动触发配置的`origin`」不同
+            # 「任务的`origin`」表示任务来源（取值 authLink, crontab, batch, integration），配合`originId`可确定业务实体
+            # 「自动触发配置的`origin`」表示配置来源（取值 API, UI, INTEGRATION）
             task_kwargs = {
                 'funcId'        : crontab_config['funcId'],
                 'funcCallKwargs': crontab_config['funcCallKwargs'],
