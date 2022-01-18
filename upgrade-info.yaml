@@ -141,7 +141,6 @@ upgradeInfo:
       ALTER TABLE biz_main_batch_task_info
       ADD INDEX `ROOT_TASK_ID` (rootTaskId);
 
-
   # 对应观测云SaaS 2022-01-20 迭代
   - seq: 9
     database: |-

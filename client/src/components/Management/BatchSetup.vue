@@ -114,15 +114,15 @@ taskCount: '{n}个任务'
                     :disabled="true"
                     :value="fixedTaskInfoLimit"></el-input-number>
                   <el-input-number class="task-info-limit-input" v-else
-                    :min="1"
-                    :max="10000"
+                    :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
+                    :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
                     :step="1"
                     :step-strictly="true"
                     v-model="form.taskInfoLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
                   <el-link class="task-info-limit-clear"
                     :underline="false"
-                    @click.stop="form.taskInfoLimit = 10">{{ $t('Default') }}</el-link>
+                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -172,7 +172,7 @@ export default {
         switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
-            this.form.taskInfoLimit = 10;
+            this.form.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
             this.data = {};
             break;
 
@@ -200,7 +200,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || 10;
+        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
         nextForm.tagsJSON           = nextForm.tagsJSON      || [];
         nextForm.apiAuthId          = this.data.apia_id;
         this.form = nextForm;
@@ -234,8 +234,13 @@ export default {
       }
     },
     async addData() {
+      let _formData = this.T.jsonCopy(this.form);
+      if (this.fixedTaskInfoLimit) {
+        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
+      }
+
       let opt = {
-        body : { data: this.T.jsonCopy(this.form) },
+        body : { data: _formData },
         alert: { okMessage: this.$t('Batch created') },
       };
 
@@ -259,6 +264,9 @@ export default {
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
+      if (this.fixedTaskInfoLimit) {
+        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
+      }
       delete _formData.id;
 
       let opt = {
@@ -373,26 +381,6 @@ export default {
         return d;
       });
     },
-    datetimePickerOptions() {
-      const now = new Date().getTime();
-      const shortcutDaysList = [1, 3, 7, 30, 90, 365];
-      let shortcuts = [];
-      shortcutDaysList.forEach((days) => {
-        const date = new Date();
-        date.setTime(now + 3600 * 24 * days * 1000);
-
-        shortcuts.push({
-          text: `${days}天`,
-          onClick(picker) {
-            picker.$emit('pick', date)
-          }
-        });
-      });
-
-      return {
-        shortcuts: shortcuts
-      }
-    },
   },
   props: {
   },
@@ -413,7 +401,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
-        taskInfoLimit     : 10,
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT'),
         note              : null,
       },
       formRules: {

@@ -1,6 +1,6 @@
 <i18n locale="en" lang="yaml">
-taskCount: '{n} task | {n} tasks'
-shortcutDays : '{n} day | {n} days'
+taskCount   : '{n} task | {n} tasks'
+shortcutDays: '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -54,8 +54,8 @@ Crontab Config deleted: 自动触发配置已删除
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Invalid argument format: 参数格式不正确
 
-taskCount: '{n}个任务'
-shortcutDays : '{n}天'
+taskCount   : '{n}个任务'
+shortcutDays: '{n}天'
 </i18n>
 
 <template>
@@ -107,17 +107,19 @@ shortcutDays : '{n}天'
 
                 <el-form-item :label="$t('Recent Tasks')">
                   <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
-                  <el-input-number class="task-info-limit-input"
-                    :min="1"
-                    :max="10000"
+                  <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
+                    :disabled="true"
+                    :value="fixedTaskInfoLimit"></el-input-number>
+                  <el-input-number class="task-info-limit-input" v-else
+                    :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
+                    :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
                     :step="1"
                     :step-strictly="true"
-                    :disabled="!!fixedTaskInfoLimit"
                     v-model="form.taskInfoLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
                   <el-link class="task-info-limit-clear"
                     :underline="false"
-                    @click.stop="form.taskInfoLimit = 10">{{ $t('Default') }}</el-link>
+                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Default') }}</el-link>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -253,7 +255,7 @@ export default {
             this.formCrontabCache = this.T.jsonCopy(defaultFormCrontab);
             this.formCrontab      = this.T.jsonCopy(defaultFormCrontab);
             this.T.jsonClear(this.form);
-            this.form.taskInfoLimit = 10;
+            this.form.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
             this.data = {};
             break;
 
@@ -274,7 +276,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || 10;
+        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
         nextForm.tagsJSON           = nextForm.tagsJSON      || [];
         this.form = nextForm;
 
@@ -318,8 +320,13 @@ export default {
       }
     },
     async addData() {
+      let _formData = this.T.jsonCopy(this.form);
+      if (this.fixedTaskInfoLimit) {
+        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
+      }
+
       let opt = {
-        body : { data: this.T.jsonCopy(this.form) },
+        body : { data: _formData },
         alert: { okMessage: this.$t('Crontab Config created') },
       };
 
@@ -347,9 +354,14 @@ export default {
       });
     },
     async modifyData() {
+      let _formData = this.T.jsonCopy(this.form);
+      if (this.fixedTaskInfoLimit) {
+        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
+      }
+
       let opt = {
         params: { id: this.$route.params.id },
-        body  : { data: this.T.jsonCopy(this.form) },
+        body  : { data: _formData },
         alert : { okMessage: this.$t('Crontab Config saved') },
       };
 
@@ -676,7 +688,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         expireTime        : null,
-        taskInfoLimit     : 10,
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT'),
         note              : null,
         // crontab 单独处理
       },
