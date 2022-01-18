@@ -1530,6 +1530,76 @@ mainAPI:
         $type: json
         $example: {'msg': 'Tom'}
 
+  callBatchByPostWithFormat:
+    showInDoc    : true
+    name         : 调用批处理（POST方式，指定形式）
+    descType: markdown
+    desc: |
+      在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
+
+      - 标准POST
+
+      ```http
+      POST /api/v1/al/auln-xxxxx
+      Content-Type: application/json
+
+      {
+        "kwargs": {
+          "arg1": "arg_value1",
+          "arg2": "arg_value2"
+        },
+        "options": {
+          "opt1": "opt_value1",
+          "opt2": "opt_value2"
+        }
+      }
+      ```
+
+      *注意：本形式不支持上传文件*
+
+      - 扁平形式 `flattened`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/flattened
+      Content-Type: x-www-form-urlencoded
+
+      kwargs_arg1=arg_value1&kwargs_arg2=arg_value2&options_opt1=opt_value1&options_opt2=opt_value2
+      ```
+
+      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
+      *注意2：当上传文件时，需要指定`Content-Type: multipart/form-data`*
+
+      - 简化形式 `simplified`
+
+      ```http
+      POST /api/v1/al/auln-xxxxx/simplified
+      Content-Type: x-www-form-urlencoded
+
+      arg1=arg_value1&arg2=arg_value2
+      ```
+
+      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
+      *注意2：本形式不支持标准形式中的`options`参数*
+      *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
+
+    method       : post
+    url          : /api/v1/bat/:id/:format
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 批处理ID
+        $type: string
+      format:
+        $desc: 调用形式
+        $type: enum
+        $in:
+          - flattened
+          - simplified
+    files:
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+
   callFuncDraft:
     showInDoc    : true
     name         : 调用函数（以草稿运行）

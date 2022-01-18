@@ -53,6 +53,9 @@ routeLoader.load(ROUTE.mainAPI.callBatchByGetWithFormat, [
 routeLoader.load(ROUTE.mainAPI.callBatchByPost, [
   mainAPICtrl.callBatch,
 ]);
+routeLoader.load(ROUTE.mainAPI.callBatchByPostWithFormat, [
+  mainAPICtrl.callBatch,
+]);
 
 // 调用函数草稿
 routeLoader.load(ROUTE.mainAPI.callFuncDraft, [

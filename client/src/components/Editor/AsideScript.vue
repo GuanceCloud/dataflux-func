@@ -91,18 +91,20 @@ Script unlocked    : 脚本已解锁
           <!-- 操作 -->
           <template v-if="data.type === 'scriptSet' || data.type === 'script'">
             <br>
-            <el-button-group>
-              <!-- 添加脚本集 -->
-              <el-button v-if="data.type === 'scriptSet'"
-                size="small"
-                @click="openEntity(node, data, 'add')">
-                <i class="fa fa-fw fa-plus"></i>
-                {{ $t('Add Script') }}
-              </el-button>
 
+            <!-- 添加脚本集 -->
+            <el-button v-if="data.type === 'scriptSet'"
+              size="mini"
+              type="primary" plain
+              @click="openEntity(node, data, 'add')">
+              <i class="fa fa-fw fa-plus"></i>
+              {{ $t('Add Script') }}
+            </el-button>
+
+            <el-button-group>
               <!-- 快速查看 -->
               <el-button v-if="data.type === 'script'"
-                size="small"
+                size="mini"
                 @click="showQuickViewWindow(data.id)">
                 <i class="fa fa-fw fa-window-restore"></i>
                 {{ $t('Quick View') }}
@@ -110,7 +112,7 @@ Script unlocked    : 脚本已解锁
 
               <!-- 置顶 -->
               <el-button v-if="data.type === 'scriptSet'"
-                size="small"
+                size="mini"
                 @click="pinData(data.type, data.id, !data.isPinned)">
                 <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
                 {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
@@ -118,7 +120,7 @@ Script unlocked    : 脚本已解锁
 
               <!-- 锁定/解锁脚本/脚本集 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                size="small"
+                size="mini"
                 @click="lockData(data.type, data.id, !data.isLocked)">
                 <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
                 {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
@@ -126,7 +128,7 @@ Script unlocked    : 脚本已解锁
 
               <!-- 配置/查看 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                size="small"
+                size="mini"
                 @click="openEntity(node, data, 'setup')">
                 <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
                 {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
@@ -632,6 +634,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+/* Special Fix */
+.el-button-group {
+  position: relative;
+  top: -1px !important;
+}
+
 .aside-tree-node {
   flex: 1;
   display: flex;

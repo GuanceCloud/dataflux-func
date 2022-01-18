@@ -74,7 +74,7 @@ Saved Draft Code: 已保存的草稿代码
             </el-form-item>
 
             <el-form-item v-if="!isLockedByOther">
-              <el-radio-group v-model="showMode" size="mini">
+              <el-radio-group v-model="showMode" size="mini" plain>
                 <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                   <div slot="content">
                     {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + {{ i + 1 }}</code>

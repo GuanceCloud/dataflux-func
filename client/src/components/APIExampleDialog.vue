@@ -111,7 +111,13 @@
           <el-divider content-position="left">GET 标准形式请求</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
-              <el-link type="primary" :href="apiURLWithQueryExample" target="_blank" class="api-url-with-query"><code v-html="apiURLWithQueryExampleText"></code></el-link>
+              <el-link
+                type="primary"
+                :href="apiURLWithQueryExample"
+                target="_blank"
+                class="api-url-with-query">
+                <code v-html="apiURLWithQueryExampleText"></code>
+              </el-link>
               <InfoBlock type="info" title="kwargs 参数为 POST 方式中对 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串"></InfoBlock>
               <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))"></InfoBlock>
             </el-col>
@@ -155,8 +161,9 @@
                 :value="apiCallByCurlExample_simplified"></el-input>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
-              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
+                title="此方式不支持 options 参数"></InfoBlock>
+              <InfoBlock type="info" title="表单形式提交时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串"></InfoBlock>
+              <InfoBlock type="info" title="JSON 形式提交时，Content-Type 可以指定为 &quot;application/json&quot;，配合 def f(**kwargs) 形式的函数，此时 Body 可以为任意 JSON 数据"></InfoBlock>
               <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
             </el-col>
             <el-col :span="2">
