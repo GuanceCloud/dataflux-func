@@ -58,7 +58,7 @@ exports.list = function(req, res, next) {
             c.taskInfoCount = parseInt(cacheRes);
           }
 
-          res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
+          res.locals.cacheDB.lrange(cacheKey, 0, 0, function(err, cacheRes) {
             if (err) return eachCallback(err);
 
             c.lastRanTime = null;
