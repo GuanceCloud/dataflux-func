@@ -1227,7 +1227,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             _min_task_info_limit = CONFIG['_TASK_INFO_MIN_LIMIT']
             _max_task_info_limit = CONFIG['_TASK_INFO_MAX_LIMIT']
             if not (_min_task_info_limit <= fixed_task_info_limit <= _max_task_info_limit):
-                e = InvalidOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (seconds)'.format(_min_task_info_limit, _max_task_info_limit))
+                e = InvalidOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (tasks)'.format(_min_task_info_limit, _max_task_info_limit))
                 raise e
 
             extra_config['fixedTaskInfoLimit'] = fixed_task_info_limit
