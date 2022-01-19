@@ -160,7 +160,7 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
         self.cache_db.lpush(cache_key, data)
 
-    def is_support_task_info(self, origin, origin_id):
+    def is_support_task_info(self, origin, origin_id, exec_mode):
         if not all([origin, origin_id]):
             return False
 
@@ -174,8 +174,8 @@ class FuncRunnerTask(ScriptBaseTask):
             # 其他不支持
             return False
 
-    def trim_task_info(self, origin, origin_id, task_info_limit=None):
-        if not self.is_support_task_info(origin, origin_id):
+    def trim_task_info(self, origin, origin_id, exec_mode, task_info_limit=None):
+        if not self.is_support_task_info(origin, origin_id, exec_mode):
             return
 
         task_info_limit = task_info_limit or CONFIG['_TASK_INFO_DEFAULT_LIMIT']
@@ -191,7 +191,7 @@ class FuncRunnerTask(ScriptBaseTask):
     def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
             root_task_id=None, func_id=None,
             log_messages=None, einfo_text=None, edump_text=None):
-        if not self.is_support_task_info(origin, origin_id):
+        if not self.is_support_task_info(origin, origin_id, exec_mode):
             return
 
         # 压缩日志/错误
@@ -315,7 +315,7 @@ def func_runner(self, *args, **kwargs):
 
     # 缩减任务信息缓存（仅在主任务之前）
     if root_task_id == 'ROOT':
-        self.trim_task_info(origin, origin_id, task_info_limit)
+        self.trim_task_info(origin, origin_id, exec_mode, task_info_limit)
 
     ### 任务开始
     target_script = None
