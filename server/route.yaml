@@ -4073,7 +4073,7 @@ crontabConfigAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4137,7 +4137,7 @@ crontabConfigAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4211,7 +4211,7 @@ crontabConfigAPI:
             $allowNull : true
             $type      : int
             $minValue  : 1
-            $maxValue  : 10000
+            $maxValue  : 500
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4316,7 +4316,7 @@ crontabConfigAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4523,7 +4523,7 @@ batchAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4578,7 +4578,7 @@ batchAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4648,7 +4648,7 @@ batchAPI:
             $allowNull : true
             $type      : int
             $minValue  : 1
-            $maxValue  : 10000
+            $maxValue  : 500
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4746,7 +4746,7 @@ batchAPI:
           $allowNull : true
           $type      : int
           $minValue  : 1
-          $maxValue  : 10000
+          $maxValue  : 500
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
