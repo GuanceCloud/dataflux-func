@@ -54,6 +54,7 @@ services:
       - datafluxfunc
       - default
     environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
       DFF__WORKER_CONCURRENCY: '2'
     command: ./run-worker-by-queue.sh 0
 
@@ -66,6 +67,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-worker-by-queue.sh 1 2 3 4 5 6
 
   worker-7:
@@ -78,6 +81,7 @@ services:
       - datafluxfunc
       - default
     environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
       DFF__WORKER_CONCURRENCY: '2'
     command: ./run-worker-by-queue.sh 7
 
@@ -90,6 +94,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-worker-by-queue.sh 8 9
   # WORKER DEFAULT END
 
@@ -103,6 +109,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-worker.sh
   # WORKER MINI END
 
@@ -115,6 +123,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-beat.sh
 
   server:
@@ -126,6 +136,8 @@ services:
     networks:
       - datafluxfunc
       - default
+    environment:
+      HOST_HOSTNAME: '{{.Node.Hostname}}'
     ports:
       - "<PORT>:8088"
     command: ./run-server.sh
