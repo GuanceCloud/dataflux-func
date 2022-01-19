@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+lastRan: 'Ran {t}'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 API Auth    : API认证
 Recent Tasks: 近期任务
@@ -12,6 +16,8 @@ Batch only supports asynchronous calling: 批处理只支持异步调用
 
 Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
 Are you sure you want to delete the Batch?: 是否确认删除此批处理？
+
+lastRan: '{t}执行'
 </i18n>
 
 <template>
@@ -87,14 +93,15 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="140">
+          <el-table-column :label="$t('Status')" width="180">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
               <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
 
-              <br>
-              <span v-if="scope.row.taskFailureCount > 0" class="text-bad"><i class="fa fa-fw fa-times"></i> {{ $t('Error') }} {{ $t('(') }}{{ scope.row.taskFailureCount }}{{ $t(')') }}</span>
-              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Normal') }}</span>
+              <template v-if="scope.row.lastRanTime">
+                <br>
+                <span class="text-main"><i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastRanTime) }) }}</span>
+              </template>
             </template>
           </el-table-column>
 

@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+lastRan: 'Ran {t}'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Fixed       : 固定
 Not Set     : 未配置
@@ -21,6 +25,8 @@ Are you sure you want to delete the Crontab Config?: 是否确认删除此自动
 Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
 
 Integration Func Tasks: 集成函数任务
+
+lastRan: '{t}执行'
 </i18n>
 
 <template>
@@ -115,14 +121,15 @@ Integration Func Tasks: 集成函数任务
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="140">
+          <el-table-column :label="$t('Status')" width="180">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
               <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
 
-              <br>
-              <span v-if="scope.row.taskFailureCount > 0" class="text-bad"><i class="fa fa-fw fa-times"></i> {{ $t('Error') }} {{ $t('(') }}{{ scope.row.taskFailureCount }}{{ $t(')') }}</span>
-              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Normal') }}</span>
+              <template v-if="scope.row.lastRanTime">
+                <br>
+                <span class="text-main"><i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastRanTime) }) }}</span>
+              </template>
             </template>
           </el-table-column>
 

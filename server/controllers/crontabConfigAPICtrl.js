@@ -3,8 +3,9 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
-var JSZip = require('jszip');
+var async  = require('async');
+var JSZip  = require('jszip');
+var moment = require('moment');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -39,7 +40,7 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 查询任务信息数量
+    // 查询任务信息数量/最后任务信息
     function(asyncCallback) {
       if (crontabConfigs.length <= 0) return asyncCallback();
 
@@ -48,35 +49,39 @@ exports.list = function(req, res, next) {
 
       async.eachSeries(crontabConfigs, function(c, eachCallback) {
         var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', c.id ]);
-        res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
+
+        res.locals.cacheDB.llen(cacheKey, function(err, cacheRes) {
           if (err) return eachCallback(err);
 
           c.taskInfoCount = 0;
           if (cacheRes) {
-            c.taskInfoCount = cacheRes.length;
+            c.taskInfoCount = parseInt(cacheRes);
           }
 
-          c.taskFailureCount = 0;
-          async.eachSeries(cacheRes, function(zipB64, innerCallback) {
-            var zipBuf = toolkit.fromBase64(zipB64, true);
+          res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
+            if (err) return eachCallback(err);
 
-            JSZip.loadAsync(zipBuf)
+            c.lastRanTime = null;
+
+            if (cacheRes.length <= 0) return eachCallback();
+
+            JSZip.loadAsync(toolkit.fromBase64(cacheRes[0], true))
             .then(function(z) {
               return z.file('task-info.log').async('string');
             })
             .then(function(zipData) {
               var taskInfo = JSON.parse(zipData);
-              if (taskInfo.status === 'failure') {
-                c.taskFailureCount += 1;
+              if (taskInfo.startTimeMs) {
+                c.lastRanTime = moment(taskInfo.startTimeMs).toISOString();
               }
-              return innerCallback();
+              return eachCallback();
             })
             .catch(function(err) {
               // 解析失败不返回
               res.locals.logger.logError(err);
-              return innerCallback();
+              return eachCallback();
             });
-          }, eachCallback);
+          });
         });
       }, asyncCallback);
     },
