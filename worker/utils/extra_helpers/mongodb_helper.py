@@ -5,7 +5,6 @@ import traceback
 
 # 3rd-party Modules
 import six
-import pymongo
 
 # Project Modules
 from worker.utils import toolkit
@@ -25,6 +24,8 @@ def get_config(c):
 
 class MongoDBHelper(object):
     def __init__(self, logger, config, database=None, *args, **kwargs):
+        import pymongo
+
         self.logger = logger
 
         if database:

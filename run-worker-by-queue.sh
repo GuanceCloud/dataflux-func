@@ -20,14 +20,5 @@ for queue in $*; do
     fi
 done
 
-# 单纯处理系统队列/调试队列的工作单元，不需要太多并发量
-if [ ${enabled_queues} = "${queue_prefix}0" ]; then
-    # 系统队列
-    _WORKER_CONCURRENCY=3
-elif [ ${enabled_queues} = "${queue_prefix}7" ]; then
-    # 调试队列
-    _WORKER_CONCURRENCY=2
-fi
-
 # run worker
-_WORKER_CONCURRENCY=${_WORKER_CONCURRENCY} python _celery.py worker -A worker -l error -q -Q ${enabled_queues}
+python _celery.py worker -A worker -l error -q -Q ${enabled_queues}

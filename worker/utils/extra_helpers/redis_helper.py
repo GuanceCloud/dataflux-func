@@ -6,8 +6,8 @@ import traceback
 import functools
 
 # 3rd-party Modules
-import six
 import redis
+import six
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources

@@ -7,7 +7,6 @@ import time
 import traceback
 
 # 3rd-party Modules
-import influxdb
 import six
 import arrow
 
@@ -35,6 +34,8 @@ RESULT_SERIES_FIELD = 'series'
 
 class InfluxDBHelper(object):
     def __init__(self, logger, config, database=None, *args, **kwargs):
+        import influxdb
+
         self.logger = logger
 
         if database:

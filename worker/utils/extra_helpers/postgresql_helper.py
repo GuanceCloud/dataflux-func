@@ -6,7 +6,6 @@ import datetime
 import traceback
 
 # 3rd-party Modules
-import psycopg2
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -29,6 +28,8 @@ def get_config(c):
 
 class PostgreSQLHelper(object):
     def __init__(self, logger, config, database=None, pool_size=None, *args, **kwargs):
+        import psycopg2
+
         self.logger = logger
 
         self.skip_log = False

@@ -6,7 +6,6 @@ import time
 import traceback
 
 # 3rd-party Modules
-import memcache
 import six
 
 # Project Modules
@@ -27,6 +26,8 @@ LIMIT_ARGS_DUMP = 200
 
 class MemcachedHelper(object):
     def __init__(self, logger, config, *args, **kwargs):
+        import memcache
+
         self.logger = logger
 
         self.config = config

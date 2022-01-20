@@ -4,7 +4,6 @@
 import time
 
 # 3rd-party Modules
-import paho.mqtt.client as mqtt
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
@@ -13,6 +12,7 @@ from worker.utils.log_helper import LogHelper
 CONFIG = yaml_resources.get('CONFIG')
 
 def get_config(c):
+    import paho.mqtt.client as mqtt
     config = {
         'client_id': c.get('clientId') or CONFIG['APP_NAME'] + '@worker-' + str(toolkit.gen_time_serial_seq()),
         'protocol' : mqtt.MQTTv5,
@@ -37,6 +37,8 @@ def get_connect_config(c):
 
 class MQTTHelper(object):
     def __init__(self, logger, config=None, *args, **kwargs):
+        import paho.mqtt.client as mqtt
+
         self.logger = logger
 
         self.config = config

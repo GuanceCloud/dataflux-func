@@ -6,8 +6,6 @@ import datetime
 import traceback
 
 # 3rd-party Modules
-from clickhouse_driver import Client
-from clickhouse_driver import dbapi as ClickHouse
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -29,6 +27,9 @@ def get_config(c):
 
 class ClickHouseHelper(object):
     def __init__(self, logger, config, database=None, pool_size=None, *args, **kwargs):
+        from clickhouse_driver import Client
+        from clickhouse_driver import dbapi as ClickHouse
+
         self.logger = logger
 
         self.skip_log = False
