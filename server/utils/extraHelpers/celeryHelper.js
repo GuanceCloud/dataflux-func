@@ -87,13 +87,7 @@ CeleryHelper.prototype.putTask = function(name, args, kwargs, taskOptions, callb
   }
   taskOptions.queue = toolkit.getWorkerQueue(queue);
 
-  this.logger.debug('[CELERY] Put task `#{0}` <- `{1}({2}, {3})` options: `{4}`',
-    queue,
-    name,
-    JSON.stringify(args),
-    toolkit.limitText(JSON.stringify(kwargs), 1000, { showLength: true }),
-    JSON.stringify(taskOptions)
-  );
+  this.logger.debug('[CELERY] Put task `{0}`@`{1}` -> `#{2}`', kwargs.funcId, name, queue);
 
   // Use <Trace ID> for origin.
   taskOptions.origin = this.logger.locals.traceId;

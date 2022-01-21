@@ -94,7 +94,8 @@ function _getHTTPRequestInfo(req) {
     url        : path.join(req.baseUrl, req.path),
     headers    : req.headers,
     query      : req.query,
-    body       : req.body,
+    // NOTE: 会产生两倍数据量，得不偿失，暂时废止
+    // body       : req.body,
     hostname   : req.hostname,
     ip         : req.ip,
     ips        : req.ips,

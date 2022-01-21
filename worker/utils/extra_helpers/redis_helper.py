@@ -98,11 +98,17 @@ class RedisHelper(object):
         command_args = args[1:]
 
         if not self.skip_log:
-            args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args])
-            if len(args_dumps) > LIMIT_ARGS_DUMP:
-                args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
+            key = ''
+            if len(command_args) > 1:
+                key = command_args[0] + ' ...'
+            elif len(command_args) > 0:
+                key = command_args[0]
 
-            self.logger.debug('[REDIS] Query `{}` <- `{}` ({})'.format(command.upper(), args_dumps, toolkit.json_dumps(options)))
+            options_dump = ''
+            if options:
+                options_dump = 'options=' + toolkit.json_dumps(options)
+
+            self.logger.debug('[REDIS] Query `{} {}` {}'.format(command.upper(), key, options_dump))
 
         return self.client.execute_command(*args, **options);
 
@@ -111,11 +117,16 @@ class RedisHelper(object):
         command_args = args[1:]
 
         if not self.skip_log:
-            args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args] + [f"{k}={toolkit.json_dumps(v)}" for k, v in kwargs.items()])
-            if len(args_dumps) > LIMIT_ARGS_DUMP:
-                args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
+            key = ''
+            if len(command_args) > 1:
+                key = command_args[0] + ' ...'
+            elif len(command_args) > 0:
+                key = command_args[0]
 
-            self.logger.debug('[REDIS] Run `{}` <- `{}`'.format(command.upper(), args_dumps))
+            kwargs_dump = ''
+            if kwargs:
+                kwargs_dump = 'kwargs=' + toolkit.json_dumps(kwargs)
+            self.logger.debug('[REDIS] Run `{} {}` {}'.format(command.upper(), key, kwargs_dump))
 
         return getattr(self.client, command)(*command_args, **kwargs)
 

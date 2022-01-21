@@ -184,6 +184,8 @@ def json_dumps(v, **kwargs):
         return ujson.dumps(v, **kwargs)
 
     except Exception as e:
+        print('Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead: ', repr(e))
+
         kwargs['indent'] = kwargs['indent'] or None
         if not kwargs['indent']:
             kwargs['separators'] = (',', ':')

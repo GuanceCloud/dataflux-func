@@ -616,32 +616,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
   };
 
   res.locals.sendRaw = function(raw, contentType) {
-    var rawDump = raw;
-    switch(typeof raw) {
-      case 'number':
-        rawDump = raw = raw.toString();
-        break;
-
-      case 'string':
-        break;
-
-      case 'object':
-        try {
-          rawDump = Buffer.isBuffer(raw)
-                  ? '<Buffer>'
-                  : JSON.stringify(raw);
-        } catch(err) {
-          rawDump = '' + raw;
-        }
-        break;
-
-      default:
-        rawDump = '' + raw;
-        break;
-    }
-
-    rawDump = toolkit.limitText(rawDump, 1000, { showLength: true });
-    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', rawDump);
+    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', contentType);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();

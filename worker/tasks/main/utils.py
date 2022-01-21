@@ -18,8 +18,6 @@ import tempfile
 
 # 3rd-party Modules
 import six
-import simplejson
-import ujson
 import requests
 import arrow
 

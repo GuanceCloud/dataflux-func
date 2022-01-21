@@ -5,7 +5,6 @@ import re
 
 # 3rd-party Modules
 import six
-import ujson
 import MySQLdb
 import xmltodict
 from retry import retry

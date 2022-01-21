@@ -17,10 +17,6 @@ from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelpe
 
 CONFIG = yaml_resources.get('CONFIG')
 
-LOG_LEVEL      = CONFIG['LOG_LEVEL']
-LOG_LEVEL_SEQS = LOG_LEVELS['levels']
-LOG_CALL_ARGS  = LOG_LEVEL_SEQS[LOG_LEVEL] >= LOG_LEVEL_SEQS['DEBUG']
-
 CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
 
 def gen_task_id():
@@ -141,10 +137,12 @@ class BaseTask(app.Task):
 
         # Run
         try:
-            if LOG_CALL_ARGS:
-                kwargs_dump = toolkit.json_dumps(kwargs, indent=None)
-                kwargs_dump = toolkit.limit_text(kwargs_dump, max_length=1000, show_length=True)
-                self.logger.debug('[CALL] `{}`'.format(kwargs_dump))
+            task_info = '`{}`'.format(self.name)
+            func_id = kwargs.get('funcId')
+            if func_id:
+                task_info = '`{}`'.format(func_id) + '@' + task_info
+
+            self.logger.debug('[CALL] {}'.format(task_info))
 
             return super(BaseTask, self).__call__(*args, **kwargs)
 
