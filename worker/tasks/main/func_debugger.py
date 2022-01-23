@@ -218,33 +218,38 @@ def func_debugger(self, *args, **kwargs):
 
         if func_name and func_resp:
             # 准备函数运行结果
-            func_result_raw        = None
-            func_result_repr       = None
-            func_result_json_dumps = None
+            func_result_repr = None
+
+            # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
+            # func_result_raw        = None
+            # func_result_json_dumps = None
 
             if func_resp.data:
-                try:
-                    func_result_raw = func_resp.data
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
-
                 try:
                     func_result_repr = pprint.saferepr(func_resp.data)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
 
-                try:
-                    func_result_json_dumps = toolkit.json_dumps(func_resp.data, indent=None)
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
+                # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
+                # try:
+                #     func_result_raw = func_resp.data
+                # except Exception as e:
+                #     for line in traceback.format_exc().splitlines():
+                #         self.logger.error(line)
+                #
+                # try:
+                #     func_result_json_dumps = toolkit.json_dumps(func_resp.data, indent=None)
+                # except Exception as e:
+                #     for line in traceback.format_exc().splitlines():
+                #         self.logger.error(line)
 
             result['funcResult'] = {
-                'raw'      : func_result_raw,
-                'repr'     : func_result_repr,
-                'jsonDumps': func_result_json_dumps,
+                'repr': func_result_repr,
+
+                # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
+                # 'raw'      : func_result_raw,
+                # 'jsonDumps': func_result_json_dumps,
 
                 '_responseControl': func_resp._create_response_control()
             }
