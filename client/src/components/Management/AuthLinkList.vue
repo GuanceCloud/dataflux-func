@@ -111,7 +111,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
                 <template v-if="scope.row.note">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
-                  <code class="text-info">{{ scope.row.note }}</code>
+                  <span>{{ scope.row.note }}</span>
                 </template>
               </div>
             </template>
