@@ -52,6 +52,12 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
               <div>
                 <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <code class="text-info">{{ scope.row.note }}</code>
+                </template>
               </div>
             </template>
           </el-table-column>
@@ -60,12 +66,6 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
               <span v-else class="text-good">{{ $t('Enabled') }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Note')" width="160">
-            <template slot-scope="scope">
-              <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
           </el-table-column>
 

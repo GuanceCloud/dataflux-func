@@ -93,6 +93,12 @@ lastRan: '{t}执行'
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
+
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <code class="text-info">{{ scope.row.note }}</code>
+                </template>
               </div>
             </template>
           </el-table-column>
@@ -130,12 +136,6 @@ lastRan: '{t}执行'
                 <br>
                 <span class="text-main"><i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastRanTime) }) }}</span>
               </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Note')" width="160">
-            <template slot-scope="scope">
-              <span v-if="scope.row.note" class="text-info text-small">{{ scope.row.note }}</span>
             </template>
           </el-table-column>
 

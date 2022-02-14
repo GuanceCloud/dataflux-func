@@ -52,15 +52,20 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Auth Type')" width="200">
-            <template slot-scope="scope">
-              {{ C.API_AUTH_MAP.get(scope.row.type).name }}
-            </template>
-          </el-table-column>
-
           <el-table-column :label="$t('Name')">
             <template slot-scope="scope">
               {{ scope.row.name }}
+              <template v-if="scope.row.note">
+                <br>
+                <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                <code class="text-info">{{ scope.row.note }}</code>
+              </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Auth Type')" width="200">
+            <template slot-scope="scope">
+              {{ C.API_AUTH_MAP.get(scope.row.type).name }}
             </template>
           </el-table-column>
 
@@ -99,12 +104,6 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"></FuncInfo>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Note')" width="160">
-            <template slot-scope="scope">
-              <span v-if="scope.row.note" class="text-info">{{ scope.row.note }}</span>
             </template>
           </el-table-column>
 

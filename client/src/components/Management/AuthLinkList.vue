@@ -107,6 +107,12 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
+
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <code class="text-info">{{ scope.row.note }}</code>
+                </template>
               </div>
             </template>
           </el-table-column>
@@ -145,12 +151,6 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
                 <br>
                 <span v-if="scope.row.showInDoc" class="text-good"><i class="fa fa-fw fa-eye"></i> {{ $t('Shown in doc') }}</span>
                 <span v-else class="text-bad"><i class="fa fa-fw fa-eye-slash"></i> {{ $t('Hidden in doc') }}</span>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Note')" width="160">
-              <template slot-scope="scope">
-                <span v-if="scope.row.note" class="text-info">{{ scope.row.note }}</span>
               </template>
             </el-table-column>
 
