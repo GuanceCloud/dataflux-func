@@ -8,7 +8,8 @@ mysqldump -h 127.0.0.1 -uroot -proot \
     --add-drop-table \
     --add-drop-trigger \
     --add-locks \
-    --allow-keywords --complete-insert \
+    --allow-keywords \
+    --complete-insert \
     --default-character-set=utf8mb4 \
     --disable-keys \
     --hex-blob \
