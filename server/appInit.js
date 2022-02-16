@@ -274,7 +274,13 @@ exports.afterAppCreated = function(app, server) {
   }
 
   // 自动导入脚本包
-  if (!CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
+  if (CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
+    // 不导入脚本包时，删除自动导入脚本包标记
+    var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+    app.locals.cacheDB.del(cacheKey);
+
+  } else {
+    // 导入脚本包时，记录脚本包ID方便后续标记自动导入的脚本包
     async.series([
       // 获取锁
       function(asyncCallback) {
