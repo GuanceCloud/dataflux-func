@@ -50,7 +50,8 @@ LOG_TEXT_FIELDS = [
     # 'taskId',
     'taskIdShort',
     'task',
-    'queue',
+    # 'queue',
+    'queueShort',
     # 'origin',
     # 'userId',
     # 'userIdShort',
@@ -73,6 +74,7 @@ LOG_TEXT_COLOR_MAP = {
     'taskIdShort'       : 'yellow',
     'task'              : 'yellow',
     'queue'             : 'yellow',
+    'queueShort'        : 'yellow',
     'origin'            : 'yellow',
     'userId'            : 'cyan',
     'userIdShort'       : 'cyan',
@@ -95,6 +97,7 @@ LOG_JSON_FIELD_MAP = {
     # 'taskIdShort'       : 'task_id_short',
     'task'              : 'task',
     'queue'             : 'queue',
+    'queueShort'        : 'queue_short',
     'origin'            : 'origin',
     'userId'            : 'user_id',
     # 'userIdShort'       : 'user_id_short',
@@ -132,7 +135,9 @@ class LoggingFormatter(logging.Formatter):
             for field in LOG_TEXT_FIELDS:
                 # Detect field color
                 field_color = LOG_TEXT_COLOR_MAP[field]
-                if field_color is True:
+                if meta['level'] == 'ERROR':
+                    field_color = LOG_LEVELS['colors']['ERROR']
+                elif field_color is True:
                     field_color = LOG_LEVELS['colors'][meta['level']]
 
                 # Pretty field
@@ -238,6 +243,7 @@ class LogHelper(object):
                 'taskIdShort'       : toolkit.get_first_part(_task_id),
                 'task'              : self.task.name,
                 'queue'             : _queue,
+                'queueShort'        : '#' + _queue.split('@')[1],
                 'origin'            : _origin,
                 'diffTime'          : now_ms - (self._prev_log_time or self._task_start_time),
                 'costTime'          : now_ms - self._task_start_time,

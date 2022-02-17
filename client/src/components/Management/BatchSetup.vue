@@ -3,7 +3,7 @@ randomIDString: bat-{Random ID}
 
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 
-taskCount: '{n} task | {n} tasks'
+recenTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -15,7 +15,7 @@ Setup Batch: 修改批处理
 Customize ID: 定制ID
 Func        : 执行函数
 Arguments   : 参数指定
-Recent Tasks: 近期任务
+Task Info   : 任务信息
 Keep        : 保留
 Tags        : 标签
 Add Tag     : 添加标签
@@ -40,7 +40,7 @@ Invalid argument format: 参数格式不正确
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 
-taskCount: '{n}个任务'
+recenTaskCount: '{n}个近期任务'
 </i18n>
 
 <template>
@@ -108,21 +108,22 @@ taskCount: '{n}个任务'
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
-                <el-form-item :label="$t('Recent Tasks')">
+                <el-form-item :label="$t('Task Info')">
                   <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
                   <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
-                    :disabled="true"
+:disabled="true"
                     :value="fixedTaskInfoLimit"></el-input-number>
                   <el-input-number class="task-info-limit-input" v-else
                     :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
                     :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
-                    :step="1"
+                    :step="10"
                     :step-strictly="true"
                     v-model="form.taskInfoLimit"></el-input-number>
-                  <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <span class="task-info-limit-unit">{{ $tc('recenTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
                   <el-link class="task-info-limit-clear"
                     :underline="false"
-                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Default') }}</el-link>
+                    type="primary"
+                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -463,7 +464,7 @@ export default {
   width: 500px;
 }
 .task-info-limit-input {
-  width: 260px;
+  width: 180px;
 }
 .task-info-limit-prefix {
   color: grey;

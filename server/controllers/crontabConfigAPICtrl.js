@@ -3,9 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async  = require('async');
-var JSZip  = require('jszip');
-var moment = require('moment');
+var async = require('async');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -39,51 +37,6 @@ exports.list = function(req, res, next) {
 
         return asyncCallback();
       });
-    },
-    // 查询任务信息数量/最后任务信息
-    function(asyncCallback) {
-      if (crontabConfigs.length <= 0) return asyncCallback();
-
-      var opt = res.locals.getQueryOptions();
-      if (!opt.extra.withTaskInfoCount) return asyncCallback();
-
-      async.eachSeries(crontabConfigs, function(c, eachCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', c.id ]);
-
-        res.locals.cacheDB.llen(cacheKey, function(err, cacheRes) {
-          if (err) return eachCallback(err);
-
-          c.taskInfoCount = 0;
-          if (cacheRes) {
-            c.taskInfoCount = parseInt(cacheRes);
-          }
-
-          res.locals.cacheDB.lrange(cacheKey, 0, 0, function(err, cacheRes) {
-            if (err) return eachCallback(err);
-
-            c.lastRanTime = null;
-
-            if (cacheRes.length <= 0) return eachCallback();
-
-            JSZip.loadAsync(toolkit.fromBase64(cacheRes[0], true))
-            .then(function(z) {
-              return z.file('task-info.log').async('string');
-            })
-            .then(function(zipData) {
-              var taskInfo = JSON.parse(zipData);
-              if (taskInfo.startTimeMs) {
-                c.lastRanTime = moment(taskInfo.startTimeMs).toISOString();
-              }
-              return eachCallback();
-            })
-            .catch(function(err) {
-              // 解析失败不返回
-              res.locals.logger.logError(err);
-              return eachCallback();
-            });
-          });
-        });
-      }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

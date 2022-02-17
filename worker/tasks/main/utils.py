@@ -214,7 +214,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
-        for i in range(CONFIG['_SYNC_CACHE_BATCH_COUNT']):
+        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -257,7 +257,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-        for i in range(CONFIG['_SYNC_CACHE_BATCH_COUNT']):
+        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -469,6 +469,63 @@ class SyncCache(BaseTask):
             ]
             self.db.query(sql, sql_params)
 
+    def sync_task_info(self):
+        data = []
+
+        # 搜集数据
+        cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
+        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
+            cache_res = self.cache_db.run('rpop', cache_key)
+            if not cache_res:
+                break
+
+            try:
+                cache_res = toolkit.json_loads(cache_res)
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
+            else:
+                data.append(cache_res)
+
+        # 搜集任务记录限额
+        task_info_limit_map = {}
+        for d in data:
+            origin_id       = d['originId']
+            task_info_limit = d.pop('taskInfoLimit') or CONFIG['_TASK_INFO_DEFAULT_LIMIT']
+            task_info_limit_map[origin_id] = task_info_limit
+
+            # 写入数据库
+            sql = '''
+                INSERT IGNORE INTO biz_main_task_info
+                SET ?
+            '''
+            sql_params = [ d ]
+            self.db.query(sql, sql_params)
+
+        # 数据回卷
+        for origin_id, task_info_limit in task_info_limit_map.items():
+            sql = '''
+                SELECT
+                    seq AS expiredMaxSeq
+                FROM biz_main_task_info
+                ORDER BY
+                    seq DESC
+                LIMIT ?, 1
+            '''
+            sql_params = [ task_info_limit ]
+            db_res = self.db.query(sql, sql_params)
+
+            if db_res:
+                expired_max_seq = db_res[0]['expiredMaxSeq']
+                sql = '''
+                    DELETE FROM biz_main_task_info
+                    WHERE
+                            seq      <= ?
+                        AND originId =  ?
+                '''
+                sql_params = [ expired_max_seq, origin_id ]
+                self.db.query(sql, sql_params)
+
 @app.task(name='Main.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
     # 上锁
@@ -484,6 +541,13 @@ def sync_cache(self, *args, **kwargs):
     # 脚本运行信息刷入数据库
     try:
         self.sync_script_running_info()
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
+
+    # 自动触发配置/批处理任务记录刷入数据库
+    try:
+        self.sync_task_info()
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)

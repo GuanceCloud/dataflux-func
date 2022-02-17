@@ -174,9 +174,9 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery();
+      _listQuery.originId = this.$route.params.id;
 
-      let apiRes = await this.T.callAPI_get('/api/v1/task-info/:originId/do/list', {
-        params: { originId: this.$route.params.id },
+      let apiRes = await this.T.callAPI_get('/api/v1/task-info/do/list', {
         query: _listQuery,
       });
       if (!apiRes.ok) return;

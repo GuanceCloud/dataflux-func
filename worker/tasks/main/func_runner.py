@@ -9,7 +9,6 @@
 import time
 import traceback
 import pprint
-import io, zipfile
 
 # 3rd-party Modules
 import celery.states as celery_status
@@ -174,29 +173,16 @@ class FuncRunnerTask(ScriptBaseTask):
             # 其他不支持
             return False
 
-    def trim_task_info(self, origin, origin_id, exec_mode, task_info_limit=None):
-        if not self.is_support_task_info(origin, origin_id, exec_mode):
-            return
-
-        task_info_limit = task_info_limit or CONFIG['_TASK_INFO_DEFAULT_LIMIT']
-        task_info_limit = task_info_limit - 1
-        if task_info_limit < 0:
-            task_info_limit = 0
-
-        _start = 0
-        _stop  = task_info_limit - 1
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', origin_id ])
-        self.cache_db.run('ltrim', cache_key, _start, _stop)
-
     def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
             root_task_id=None, func_id=None,
-            log_messages=None, einfo_text=None, edump_text=None):
+            log_messages=None, einfo_text=None, edump_text=None,
+            task_info_limit=None):
         if not self.is_support_task_info(origin, origin_id, exec_mode):
             return
 
-        # 压缩日志/错误
         data = {
             'id'           : self.request.id,
+            'originId'     : origin_id,
             'rootTaskId'   : root_task_id,
             'funcId'       : func_id,
             'execMode'     : exec_mode,
@@ -204,6 +190,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'triggerTimeMs': trigger_time_ms,
             'startTimeMs'  : start_time_ms,
             'endTimeMs'    : int(time.time() * 1000),
+            'taskInfoLimit': task_info_limit,
         }
 
         if log_messages:
@@ -229,15 +216,8 @@ class FuncRunnerTask(ScriptBaseTask):
             data['edumpTEXT'] = edump_text
 
         data = toolkit.json_dumps(data, indent=0)
-
-        log_bin = io.BytesIO()
-        log_zip = zipfile.ZipFile(log_bin, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
-        log_zip.writestr('task-info.log', data)
-        log_zip.close()
-        log_b64 = toolkit.get_base64(log_bin.getvalue())
-
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', origin_id ])
-        self.cache_db.run('lpush', cache_key, log_b64)
+        cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
+        self.cache_db.run('lpush', cache_key, data)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
         if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):
@@ -312,10 +292,6 @@ def func_runner(self, *args, **kwargs):
 
     # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
     end_status = 'failure'
-
-    # 缩减任务信息缓存（仅在主任务之前）
-    if root_task_id == 'ROOT':
-        self.trim_task_info(origin, origin_id, exec_mode, task_info_limit)
 
     ### 任务开始
     target_script = None
@@ -507,7 +483,8 @@ def func_runner(self, *args, **kwargs):
             func_id=func_id,
             log_messages=log_messages,
             einfo_text=einfo_text,
-            edump_text=edump_text)
+            edump_text=edump_text,
+            task_info_limit=task_info_limit)
 
         # 清理资源
         self.clean_up()

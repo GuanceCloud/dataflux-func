@@ -3,7 +3,8 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
+var async  = require('async');
+var moment = require('moment');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -52,6 +53,8 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   bat.*');
+  sql.append('  ,COUNT(task.seq)       AS taskInfoCount');
+  sql.append('  ,MAX(task.startTimeMs) AS lastRanTime');
 
   sql.append('  ,func.id              AS func_id');
   sql.append('  ,func.name            AS func_name');
@@ -92,22 +95,21 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('LEFT JOIN biz_main_api_auth AS apia');
   sql.append('  ON apia.id = bat.apiAuthId');
 
+  sql.append('LEFT JOIN biz_main_task_info AS task');
+  sql.append('  ON task.originId = bat.id');
+
   options.baseSQL = sql.toString();
+  options.groups  = [ 'bat.id' ];
+  options.orders  = [ { field: 'bat.seq', method: 'DESC' } ];
 
   this._list(options, function(err, dbRes, pageInfo) {
     if (err) return callback(err);
 
-    // [兼容] 补全`argsJSON`,`kwargsJSON`
+    // lastRanTime 转 ISO8601
     dbRes.forEach(function(d) {
-      // 无函数定义不需要补全
-      if (!d.func_description) return;
-
-      // 已存在不需要补全
-      if (d.func_argsJSON && d.func_kwargsJSON) return;
-
-      var parsedFuncArgs = funcMod.parseFuncArgs(d.func_definition);
-      d.func_argsJSON   = d.func_argsJSON   || parsedFuncArgs.args;
-      d.func_kwargsJSON = d.func_kwargsJSON || parsedFuncArgs.kwargs;
+      if (d.lastRanTime) {
+        d.lastRanTime = moment(d.lastRanTime).toISOString();
+      }
     });
 
     return callback(null, dbRes, pageInfo);

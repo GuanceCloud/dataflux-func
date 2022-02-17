@@ -4,6 +4,7 @@
 
 /* 3rd-party Modules */
 var async      = require('async');
+var moment     = require('moment');
 var cronParser = require("cron-parser");
 
 /* Project Modules */
@@ -49,6 +50,8 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   cron.*');
+  sql.append('  ,COUNT(task.seq)       AS taskInfoCount');
+  sql.append('  ,MAX(task.startTimeMs) AS lastRanTime');
 
   sql.append('  ,func.id              AS func_id');
   sql.append('  ,func.name            AS func_name');
@@ -80,9 +83,25 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('LEFT JOIN biz_main_script_set AS sset');
   sql.append('  ON sset.id = func.scriptSetId');
 
-  options.baseSQL = sql.toString();
+  sql.append('LEFT JOIN biz_main_task_info AS task');
+  sql.append('  ON task.originId = cron.id');
 
-  return this._list(options, callback);
+  options.baseSQL = sql.toString();
+  options.groups  = [ 'cron.id' ];
+  options.orders  = [ { field: 'cron.seq', method: 'DESC' } ];
+
+  this._list(options, function(err, dbRes, pageInfo) {
+    if (err) return callback(err);
+
+    // lastRanTime 转 ISO8601
+    dbRes.forEach(function(d) {
+      if (d.lastRanTime) {
+        d.lastRanTime = moment(d.lastRanTime).toISOString();
+      }
+    });
+
+    return callback(null, dbRes, pageInfo);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {

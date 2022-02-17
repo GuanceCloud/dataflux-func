@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`upgrade.db.upgradeSeq`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '9'
+#   INSERT INTO wat_main_system_config SET `id` = 'upgrade.db.upgradeSeq', `value` = '10'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -141,7 +141,7 @@ upgradeInfo:
       ALTER TABLE biz_main_batch_task_info
       ADD INDEX `ROOT_TASK_ID` (rootTaskId);
 
-  # 对应观测云SaaS 2022-01-20 迭代
+  # 于观测云SaaS 2022-01-20 迭代中实装
   - seq: 9
     database: |-
       -- 自动触发配置/批处理支持配置任务记录数量
@@ -152,3 +152,30 @@ upgradeInfo:
       ALTER TABLE biz_main_batch
       ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
       AFTER `showInDoc`;
+
+  # 于观测云SaaS 2022-02-22 迭代中实装
+  - seq: 10
+    database: |-
+      -- 优化任务记录功能
+      CREATE TABLE `biz_main_task_info` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务来源ID',
+        `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID',
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `execMode` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '执行模式 sync|async|crontab',
+        `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '状态 success|failure',
+        `triggerTimeMs` bigint(20) unsigned NOT NULL,
+        `startTimeMs` bigint(20) unsigned NOT NULL,
+        `endTimeMs` bigint(20) unsigned NOT NULL,
+        `logMessageTEXT` longtext COMMENT '日志信息TEXT',
+        `einfoTEXT` longtext COMMENT '错误信息TEXT',
+        `edumpTEXT` longtext COMMENT '错误DUMPTEXT',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `ORIGIN_ID` (`originId`),
+        KEY `ROOT_TASK_ID` (`rootTaskId`),
+        KEY `FUNC_ID` (`funcId`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务信息'

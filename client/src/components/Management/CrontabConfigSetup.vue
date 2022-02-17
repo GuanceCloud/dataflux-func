@@ -1,6 +1,6 @@
 <i18n locale="en" lang="yaml">
-taskCount   : '{n} task | {n} tasks'
-shortcutDays: '{n} day | {n} days'
+recenTaskCount: 'recent {n} task | recent {n} tasks'
+shortcutDays  : '{n} day | {n} days'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -9,7 +9,7 @@ Setup Crontab Config: 配置自动触发配置
 
 Func        : 执行函数
 Arguments   : 参数指定
-Recent Tasks: 近期任务
+Task Info   : 任务信息
 Keep        : 保留
 Tags        : 标签
 Add Tag     : 添加标签
@@ -54,8 +54,8 @@ Crontab Config deleted: 自动触发配置已删除
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Invalid argument format: 参数格式不正确
 
-taskCount   : '{n}个任务'
-shortcutDays: '{n}天'
+recenTaskCount: '{n}个近期任务'
+shortcutDays  : '{n}天'
 </i18n>
 
 <template>
@@ -105,7 +105,7 @@ shortcutDays: '{n}天'
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
-                <el-form-item :label="$t('Recent Tasks')">
+                <el-form-item :label="$t('Task Info')">
                   <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
                   <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
                     :disabled="true"
@@ -113,13 +113,14 @@ shortcutDays: '{n}天'
                   <el-input-number class="task-info-limit-input" v-else
                     :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
                     :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
-                    :step="1"
+                    :step="10"
                     :step-strictly="true"
                     v-model="form.taskInfoLimit"></el-input-number>
-                  <span class="task-info-limit-unit">{{ $tc('taskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <span class="task-info-limit-unit">{{ $tc('recenTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
                   <el-link class="task-info-limit-clear"
                     :underline="false"
-                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Default') }}</el-link>
+                    type="primary"
+                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -718,7 +719,7 @@ export default {
   width: 500px;
 }
 .task-info-limit-input {
-  width: 260px;
+  width: 180px;
 }
 .task-info-limit-prefix {
   color: grey;

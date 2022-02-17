@@ -4810,7 +4810,7 @@ taskInfoAPI:
     showInDoc    : true
     name         : 列出任务信息
     method       : get
-    url          : /api/v1/task-info/:originId/do/list
+    url          : /api/v1/task-info/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -4818,32 +4818,34 @@ taskInfoAPI:
     fieldPicking : true
     fieldKicking : true
     fuzzySearch:
-      - id
-      - rootTaskId
-      - funcId
-      - logMessageTEXT
-      - einfoTEXT
-      - status
-    params:
-      originId:
-        $desc: 来源ID
-        $type: string
+      - task.id
+      - task.originId
+      - task.rootTaskId
+      - task.funcId
+      - task.logMessageTEXT
+      - task.einfoTEXT
+      - task.status
     query:
       id:
         $desc      : 按任务ID过滤
         $type      : string
         $searchType: eq
-        $searchKey : taskId
+        $searchKey : task.id
+      originId:
+        $desc      : 按来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.originId
       rootTaskId:
         $desc      : 根据主任务ID过滤
         $type      : string
         $searchType: eq
-        $searchKey : rootTaskId
+        $searchKey : task.rootTaskId
       funcId:
         $desc      : 按函数ID过滤
         $type      : string
         $searchType: eq
-        $searchKey : funcId
+        $searchKey : task.funcId
       status:
         $desc: 按状态过滤
         $type: enum
@@ -4851,7 +4853,7 @@ taskInfoAPI:
           - success
           - failure
         $searchType: eq
-        $searchKey : status
+        $searchKey : task.status
 
   clear:
     showInDoc    : true

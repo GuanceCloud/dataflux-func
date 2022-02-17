@@ -95,24 +95,7 @@ EntityModel.prototype.list = function(options, callback) {
 
   options.baseSQL = sql.toString();
 
-  this._list(options, function(err, dbRes, pageInfo) {
-    if (err) return callback(err);
-
-    // [兼容] 补全`argsJSON`,`kwargsJSON`
-    dbRes.forEach(function(d) {
-      // 无函数定义不需要补全
-      if (!d.func_description) return;
-
-      // 已存在不需要补全
-      if (d.func_argsJSON && d.func_kwargsJSON) return;
-
-      var parsedFuncArgs = funcMod.parseFuncArgs(d.func_definition);
-      d.func_argsJSON   = d.func_argsJSON   || parsedFuncArgs.args;
-      d.func_kwargsJSON = d.func_kwargsJSON || parsedFuncArgs.kwargs;
-    });
-
-    return callback(null, dbRes, pageInfo);
-  });
+  this._list(options, callback);
 };
 
 EntityModel.prototype.add = function(data, callback) {

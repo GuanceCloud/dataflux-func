@@ -8,28 +8,30 @@ TRUNCATE biz_main_api_auth;
 TRUNCATE biz_main_auth_link;
 TRUNCATE biz_main_batch;
 TRUNCATE biz_main_batch_task_info;
+TRUNCATE biz_main_blueprint;
 TRUNCATE biz_main_crontab_config;
 TRUNCATE biz_main_crontab_task_info;
 TRUNCATE biz_main_data_source;
 TRUNCATE biz_main_env_variable;
 TRUNCATE biz_main_file_service;
-# biz_main_func
+# TRUNCATE biz_main_func
 TRUNCATE biz_main_func_store;
 TRUNCATE biz_main_operation_record;
-# biz_main_script
+# TRUNCATE biz_main_script
 TRUNCATE biz_main_script_failure;
 TRUNCATE biz_main_script_log;
 TRUNCATE biz_main_script_publish_history;
 TRUNCATE biz_main_script_recover_point;
-# biz_main_script_set
+# TRUNCATE biz_main_script_set
 TRUNCATE biz_main_script_set_export_history;
 TRUNCATE biz_main_script_set_import_history;
+TRUNCATE biz_main_task_info;
 TRUNCATE biz_main_task_result_dataflux_func;
 TRUNCATE biz_rel_func_running_info;
 TRUNCATE wat_main_access_key;
 TRUNCATE wat_main_system_config;
 TRUNCATE wat_main_task_result_example;
-# wat_main_user
+# TRUNCATE wat_main_user
 
 # 示例脚本集/脚本/函数数据初始化
 UPDATE biz_main_script SET publishVersion = 1;

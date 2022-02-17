@@ -69,6 +69,7 @@ en:
   Unzip   : 解压
   Install : 安装
   More    : 更多
+  Restore Default: 恢复默认
 
   # 通用-操作（小写）
   add     : 添加
@@ -103,6 +104,7 @@ en:
   unzip   : 解压
   install : 安装
   more    : 更多
+  restore default: 恢复默认
 
   # 通用-操作结果
   Added   : 已添加

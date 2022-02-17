@@ -121,7 +121,9 @@ var createWinstonFormatter = function(opt) {
 
         // Detect field color
         var fieldColor = LOG_TEXT_COLOR_MAP[field];
-        if (fieldColor === true) {
+        if (meta.level == 'ERROR') {
+          fieldColor = LOG_LEVELS.colors.ERROR;
+        } else if (fieldColor === true) {
           fieldColor = LOG_LEVELS.colors[meta.level];
         }
 
@@ -130,7 +132,7 @@ var createWinstonFormatter = function(opt) {
         switch (field) {
           case 'traceId':
           case 'traceIdShort':
-            fieldValue = fieldValue || 'NONE';
+            fieldValue = fieldValue || 'TRACE-NONE';
             break;
 
           case 'upTime':

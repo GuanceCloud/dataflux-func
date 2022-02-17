@@ -3,9 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async  = require('async');
-var JSZip  = require('jszip');
-var moment = require('moment');
+var async = require('async');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -39,48 +37,6 @@ exports.list = function(req, res, next) {
 
         return asyncCallback();
       });
-    },
-    // 查询任务信息数量
-    function(asyncCallback) {
-      if (batches.length <= 0) return asyncCallback();
-
-      var opt = res.locals.getQueryOptions();
-      if (!opt.extra.withTaskInfoCount) return asyncCallback();
-
-      async.eachSeries(batches, function(b, eachCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('syncCache', 'taskInfo', [ 'originId', b.id ]);
-        res.locals.cacheDB.llen(cacheKey, function(err, cacheRes) {
-          b.taskInfoCount = 0;
-          if (cacheRes) {
-            b.taskInfoCount = parseInt(cacheRes);
-          }
-
-          res.locals.cacheDB.lrange(cacheKey, 0, 0, function(err, cacheRes) {
-            if (err) return eachCallback(err);
-
-            b.lastRanTime = null;
-
-            if (cacheRes.length <= 0) return eachCallback();
-
-            JSZip.loadAsync(toolkit.fromBase64(cacheRes[0], true))
-            .then(function(z) {
-              return z.file('task-info.log').async('string');
-            })
-            .then(function(zipData) {
-              var taskInfo = JSON.parse(zipData);
-              if (taskInfo.startTimeMs) {
-                b.lastRanTime = moment(taskInfo.startTimeMs).toISOString();
-              }
-              return eachCallback();
-            })
-            .catch(function(err) {
-              // 解析失败不返回
-              res.locals.logger.logError(err);
-              return eachCallback();
-            });
-          });
-        });
-      }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

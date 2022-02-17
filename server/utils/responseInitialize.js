@@ -630,6 +630,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     }
 
     _recordAbnormalReq();
+
+    if ('number' === typeof raw) raw = '' + raw;
     return res.send(raw);
   };
 
