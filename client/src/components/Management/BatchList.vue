@@ -113,7 +113,7 @@ lastRan: '{t}执行'
 
           <el-table-column align="right" width="370">
             <template slot-scope="scope">
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('API Example') }}</el-button>
+              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)" type="text">{{ $t('Example') }}</el-button>
 
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"

@@ -588,6 +588,10 @@ kbd {
 .el-table .cell {
   word-break: break-word;
 }
+.el-table__row > .el-table__cell:last-child > .cell {
+  line-height: 50px !important;
+  padding-right: 0 !important;
+}
 .el-tag + .el-tag {
   margin-left: 5px;
 }

@@ -23,7 +23,7 @@ RUN mkdir -p /data/extra-python-packages && \
 
 # Install
 RUN apt-get update && \
-    apt-get install -y iputils-ping vim wget curl telnet zip unzip \
+    apt-get install -y iputils-ping vim wget curl telnet zip unzip unar \
                 python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev libaio1 && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 

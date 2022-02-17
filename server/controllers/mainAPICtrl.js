@@ -2823,10 +2823,11 @@ exports.operateResource = function(req, res, next) {
   }
 
   // 检查/准备参数
-  var cmd     = operation;
+  var cmd     = null;
   var cmdArgs = [];
   switch(operation) {
     case 'mkdir':
+      cmd = 'mkdir';
       cmdArgs.push('-p', targetName);
       break;
 
@@ -2838,23 +2839,17 @@ exports.operateResource = function(req, res, next) {
         return next(new E('EBizCondition', 'Zip file already existed', { name: zipFileName }));
       }
 
+      cmd = 'zip';
       cmdArgs.push('-r', zipFileName, targetName); // 在当前目录执行
       break;
 
     case 'unzip':
-      var unzipDestName = targetName.replace(/\.zip$/g, '');
-      var unzipDestAbsPath = toolkit.replacePathEnd(targetAbsPath, unzipDestName);
-
-      if (fs.existsSync(unzipDestAbsPath)) {
-        return next(new E('EBizCondition', 'Unzip destination already existed', { name: unzipDestName }));
-      }
-
-      cmdArgs.push(targetName);
+      cmd = 'unar';
+      cmdArgs.push('-d', '-r', targetName);
       break;
 
     case 'cp':
       cmdArgs.push('-r');
-
     case 'mv':
       var newName = operationArgument;
       var newAbsPath = newName[0] === '/'
@@ -2868,10 +2863,12 @@ exports.operateResource = function(req, res, next) {
       var parentAbsDir = toolkit.replacePathEnd(newAbsPath);
       fs.ensureDirSync(parentAbsDir);
 
+      cmd = operation;
       cmdArgs.push(targetAbsPath, newAbsPath);
       break;
 
     case 'rm':
+      cmd = 'rm';
       cmdArgs.push('-rf', targetAbsPath);
       break;
 

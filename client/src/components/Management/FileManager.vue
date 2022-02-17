@@ -170,7 +170,7 @@ File already existed                                                            
                   {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="scope.row.ext === 'zip'" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
+                  <el-dropdown-item v-if="zipExtMap[scope.row.ext]" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
                   <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'cp' }">{{ $t('Copy') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">{{ $t('Move') }}</el-dropdown-item>
@@ -281,6 +281,7 @@ export default {
           case 'rar':
           case '7z':
           case 'tar':
+          case 'bz':
           case 'gz':
             f.icon = 'file-archive-o';
             break;
@@ -563,6 +564,15 @@ export default {
         md  : true,
       }
     },
+    zipExtMap() {
+      return {
+        zip : true,
+        tar : true,
+        gz  : true,
+        bz  : true,
+        '7z': true,
+      }
+    },
     currentFolder() {
       return this.dataFilter.folder || '/';
     },
@@ -595,6 +605,11 @@ export default {
 </script>
 
 <style scoped>
+/* Special Fix */
+.el-link {
+  padding-top: 2px !important;
+}
+
 .resource-navi .el-button {
   margin-left: 0 !important;
   padding: 5px 5px !important;

@@ -3,14 +3,14 @@ lastRan: 'Ran {t}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Fixed       : 固定
-Not Set     : 未配置
-Config      : 配置
-Created     : 创建时间
-Expires     : 有效期限
-Never       : 长期有效
-Recent Tasks: 近期任务
-Run Now     : 立即执行
+Fixed  : 固定
+Not Set: 未配置
+Config : 配置
+Created: 创建时间
+Expires: 有效期限
+Never  : 长期有效
+Recent : 近期任务
+Run    : 执行
 
 Crontab Config disabled : 自动触发配置已禁用
 Crontab Config enabled  : 自动触发配置已启用
@@ -144,12 +144,12 @@ lastRan: '{t}执行'
               <el-button @click="openTaskInfo(scope.row)"
                 type="text"
                 :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Recent Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+                >{{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-button>
               <el-button @click="runTask(scope.row)"
                 type="text"
                 :disabled="!scope.row.func_id">
-                {{ $t('Run Now') }}
+                {{ $t('Run') }}
               </el-button>
 
               <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
