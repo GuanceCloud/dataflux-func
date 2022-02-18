@@ -1787,7 +1787,7 @@
         var keyList = Object.keys(tags).sort();
         keyList.forEach(function(k) {
           var v = tags[k];
-          if (!v) return;
+          if ('undefined' === typeof v || v === null || ('' + v).trim() === '') return;
 
           v = '' + v;
 

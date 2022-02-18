@@ -321,7 +321,7 @@ class DataWay(object):
                 key_list = sorted(tags.keys())
                 for k in key_list:
                     v = tags[k]
-                    if not v:
+                    if v is None or str(v).strip() == '':
                         continue
 
                     if isinstance(v, bool):
