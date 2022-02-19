@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Please select sign in method: 请选择登录方式
-Builtin user system         : 以内置用户系统登录
+DataFlux Func builtin user  : DataFlux Func 内置用户
 Username                    : 请输入账号
 Password                    : 请输入密码
 Captcha                     : 请输入验证码
@@ -30,7 +30,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
           <el-form-item prop="funcId" v-if="signInFuncs">
             <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
               <i slot="prefix" class="fth-man-icon fth-man-icon-integration"></i>
-              <el-option :label="$t('Builtin user system')" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
+              <el-option :label="$t('DataFlux Func builtin user')" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
               <el-option v-for="opt in signInFuncs" :label="opt.name" :key="opt.id" :value="opt.id"></el-option>
             </el-select>
           </el-form-item>
