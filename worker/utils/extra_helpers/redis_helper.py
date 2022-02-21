@@ -183,6 +183,16 @@ class RedisHelper(object):
     def delete(self, key):
         return self.run('delete', key)
 
+    def del_by_pattern(self, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS] DEL by pattern `{}`'.format(pattern))
+
+        keys = self.keys(pattern)
+        if len(keys) <= 0:
+            return None
+        else:
+            return self.delete(keys)
+
     def expire(self, key, expires):
         return self.run('expire', key, expires)
 

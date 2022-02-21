@@ -601,6 +601,9 @@ class AutoCleanTask(BaseTask):
     def clear_cache_key(self, cache_key):
         self.cache_db.delete(cache_key)
 
+    def clear_cache_key_pattern(self, pattern):
+        self.cache_db.del_by_pattern(pattern)
+
     def clear_temp_file(self, folder):
         limit_timestamp = f"{arrow.get().format('YYYYMMDDHHmmss')}_"
 
@@ -614,7 +617,7 @@ class AutoCleanTask(BaseTask):
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
 
-    def clear_outdated_task_info(self):
+    def clear_outdated_cache_key(self):
         origin_ids = set()
 
         # 集成函数自动触发配置永不过期
@@ -653,6 +656,7 @@ class AutoCleanTask(BaseTask):
         self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptFailure'))
         self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptLog'))
         self.clear_cache_key(toolkit.get_cache_key('syncCache', 'taskInfo'))
+        self.clear_cache_key_pattern(toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', '*' ]))
 
 @app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
@@ -681,9 +685,9 @@ def auto_clean(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-    # 清理过时的任务信息
+    # 清理过时的缓存
     try:
-        self.clear_outdated_task_info()
+        self.clear_outdated_cache_key()
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
