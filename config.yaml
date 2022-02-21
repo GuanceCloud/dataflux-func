@@ -233,7 +233,7 @@ _TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL  : 40960
 # 自动执行任务频率
 _CRONTAB_STARTER                    : '* * * * *'
 _CRONTAB_SYNC_CACHE                 : '* * * * *'
-_CRONTAB_AUTO_CLEAN                 : '*/15 * * * *'
+_CRONTAB_AUTO_CLEAN                 : '* * * * *'
 _CRONTAB_AUTO_BACKUP_DB             : '0 * * * *'
 _CRONTAB_FORCE_RELOAD_SCRIPT        : '* * * * *'
 _CRONTAB_RESET_WORKER_QUEUE_PRESSURE: '* * * * *'

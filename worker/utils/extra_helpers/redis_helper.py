@@ -180,8 +180,10 @@ class RedisHelper(object):
     def incrby(self, key, increment):
         return self.run('incrby', key, amount=increment)
 
-    def delete(self, key):
-        return self.run('delete', key)
+    def delete(self, keys):
+        if not isinstance(key, list):
+            keys = [keys]
+        return self.run('delete', *keys)
 
     def del_by_pattern(self, pattern):
         if not self.skip_log:
