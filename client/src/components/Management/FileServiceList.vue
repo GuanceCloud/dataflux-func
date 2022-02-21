@@ -16,8 +16,8 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('File Service') }}
+        <div class="page-header">
+          <span>{{ $t('File Service') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -26,7 +26,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

@@ -460,6 +460,14 @@ kbd {
   -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
   box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
 }
+.page-header {
+  padding: 20px 10px 10px 10px;
+}
+.page-header > span:first-child {
+  font-weight: bold;
+  font-size: 24px;
+  vertical-align: bottom;
+}
 .header-control {
   float: right;
 }
@@ -490,6 +498,10 @@ kbd {
 .el-input--mini .el-input__inner,
 .el-radio-button--mini .el-radio-button__inner {
   height: 29px !important;
+}
+.el-form-item__content .el-button-group {
+  position: relative;
+  top: -1px;
 }
 
 .el-input__inner {
@@ -564,15 +576,6 @@ kbd {
 /* Element-UI 修正 */
 .fix-compact-button {
   margin-left: 0 !important;
-}
-
-.header-control .el-button {
-  position: relative;
-  top: 1px;
-}
-.header-control .el-radio-group {
-  position: relative;
-  top: 2px;
 }
 
 .el-table .cell {

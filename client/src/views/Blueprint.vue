@@ -42,8 +42,8 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('Blueprint') }} (WIP)
+        <div class="page-header">
+          <span>{{ $t('Blueprint') }} (WIP)</span>
 
           &#12288;
           <el-button @click="openAddBlueprint" type="primary" plain size="mini">
@@ -63,12 +63,12 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
                 <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
               </el-button>
 
-              <el-button @click="saveBlueprintCanvas" size="mini">
+              <el-button v-prevent-re-click @click="saveBlueprintCanvas" size="mini">
                 <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
               </el-button>
             </el-button-group>
 
-              <el-button @click="deployBlueprintCanvas" type="primary" plain size="mini" class="fix-compact-button">
+              <el-button v-prevent-re-click @click="deployBlueprintCanvas" type="primary" plain size="mini" class="fix-compact-button">
                 <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
               </el-button>
 
@@ -76,7 +76,7 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
               <i class="fa fa-fw fa-times"></i> {{ $t('Delete') }}
             </el-button>
           </template>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 画布区 -->

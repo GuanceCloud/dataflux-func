@@ -3,8 +3,8 @@
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          系统指标
+        <div class="page-header">
+          <span>系统指标</span>
           <div class="header-control">
             <el-button @click="updateChart" type="primary" plain size="small" :disabled="isRefreshing">
               <i v-if="isRefreshing" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
@@ -12,7 +12,7 @@
               刷新
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
       <el-main>
         <el-divider content-position="left"><h1>Server</h1></el-divider>

@@ -31,8 +31,8 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ isMainTaskInfoList ? '近期任务信息' : '相关任务信息' }}
+        <div class="page-header">
+          <span>{{ isMainTaskInfoList ? '近期任务信息' : '相关任务信息' }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -53,7 +53,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
               </el-button>
             </el-tooltip>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

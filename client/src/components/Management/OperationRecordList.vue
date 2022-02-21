@@ -20,12 +20,12 @@ Response                      : 响应
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          近期操作记录
+        <div class="page-header">
+          <span>近期操作记录</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

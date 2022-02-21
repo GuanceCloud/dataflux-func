@@ -44,8 +44,8 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('Auth Link') }}
+        <div class="page-header">
+          <span>{{ $t('Auth Link') }}</span>
           <div class="header-control">
             <el-switch
               v-model="showCountCost"
@@ -70,7 +70,7 @@ Are you sure you want to delete the Auth Link?: 是否确认删除此授权链�
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

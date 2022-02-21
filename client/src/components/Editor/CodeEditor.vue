@@ -190,7 +190,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + B</code>
                       </div>
                       <el-button
-                        @click="callFuncDraft"
+                        v-prevent-re-click @click="callFuncDraft"
                         type="primary" plain
                         size="mini"
                         :disabled="(selectedFuncId ? false : true) && !workerRunning">
@@ -207,7 +207,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                           {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + S</code>
                         </div>
                         <el-button
-                          @click="saveScript()"
+                          v-prevent-re-click @click="saveScript()"
                           :disalbed="!workerRunning"
                           plain
                           size="mini">

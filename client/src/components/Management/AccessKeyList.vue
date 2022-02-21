@@ -11,8 +11,8 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          Access Key
+        <div class="page-header">
+          <span>Access Key</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -21,7 +21,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

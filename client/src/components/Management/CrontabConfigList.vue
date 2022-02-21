@@ -34,8 +34,8 @@ lastRan: '{t}执行'
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('Crontab Config') }}
+        <div class="page-header">
+          <span>{{ $t('Crontab Config') }}</span>
           <div class="header-control">
             <el-link @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-link>
             &#12288;
@@ -56,7 +56,7 @@ lastRan: '{t}执行'
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

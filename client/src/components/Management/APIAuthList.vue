@@ -23,8 +23,8 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('API Auth') }}
+        <div class="page-header">
+          <span>{{ $t('API Auth') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -33,7 +33,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

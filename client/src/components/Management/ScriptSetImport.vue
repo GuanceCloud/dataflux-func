@@ -9,15 +9,15 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}脚本包
+        <div class="page-header">
+          <span>{{ modeName }}脚本包</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本包导入历史
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 编辑区 -->

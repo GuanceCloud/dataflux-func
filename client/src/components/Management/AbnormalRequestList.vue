@@ -21,8 +21,8 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('Abnormal Reqs') }}
+        <div class="page-header">
+          <span>{{ $t('Abnormal Reqs') }}</span>
           <div class="header-control">
             <el-button @click="refresh" size="small">
               <i class="fa fa-fw fa-refresh"></i>
@@ -43,7 +43,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
               </el-button>
             </el-tooltip>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

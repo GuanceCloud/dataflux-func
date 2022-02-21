@@ -25,8 +25,8 @@ lastRan: '{t}执行'
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('Batch') }}
+        <div class="page-header">
+          <span>{{ $t('Batch') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -44,7 +44,7 @@ lastRan: '{t}执行'
               {{ $t('New') }}
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

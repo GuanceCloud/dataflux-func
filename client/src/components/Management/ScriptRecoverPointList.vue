@@ -9,15 +9,15 @@ Script Lib recovered: 脚本库已还原
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          脚本库还原点
+        <div class="page-header">
+          <span>脚本库还原点</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'add')" size="small">
               <i class="fa fa-fw fa-camera"></i>
               创建还原点
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

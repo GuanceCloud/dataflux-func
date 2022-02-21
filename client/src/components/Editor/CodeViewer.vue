@@ -86,7 +86,7 @@ Saved Draft Code: 已保存的草稿代码
 
             <el-form-item v-if="!isLockedByOther">
               <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
-                <el-button @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
+                <el-button v-prevent-re-click @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
               </el-tooltip>
             </el-form-item>
           </el-form>

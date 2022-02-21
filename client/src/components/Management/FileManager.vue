@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-File Tool         : 文件管理器
+File Manager      : 文件管理器
 Go Top            : 返回顶层
 Go Up             : 向上
 File size limit   : 文件大小限制
@@ -33,8 +33,8 @@ File already existed                                                            
       :element-loading-text="progressTip || $t('Processing...')">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ $t('File Tool') }}
+        <div class="page-header">
+          <span>{{ $t('File Manager') }}</span>
 
           &#12288;
           <el-tooltip :content="$t('Go Up')">
@@ -91,10 +91,7 @@ File already existed                                                            
               </el-button>
             </template>
           </code>
-          <div class="header-control">
-
-          </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 列表区 -->

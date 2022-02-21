@@ -9,15 +9,15 @@ Script Lib Recover Point created: 脚本库还原点已创建
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>
-          {{ modeName }}脚本库还原点
+        <div class="page-header">
+          <span>{{ modeName }}脚本库还原点</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
               脚本库还原点
             </el-button>
           </div>
-        </h1>
+        </div>
       </el-header>
 
       <!-- 编辑区 -->
