@@ -743,6 +743,7 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
   options.timeUnit   = options.timeUnit   || 's';
   options.dictOutput = options.dictOutput || false;
   options.limit      = options.limit      || null;
+  options.fillZero   = options.fillZero   || false;
 
   var tsData = [];
   async.series([
@@ -768,7 +769,7 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
           return [timestamp, value];
         });
 
-        if (tsData.length > 0 && options.groupTime && options.groupTime > 1) {
+        if (tsData.length > 0 && options.groupTime && options.groupTime >= 1) {
           var temp = [];
 
           // var latestTimestamp = tsData[tsData.length - 1][0];
@@ -811,6 +812,19 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
                 break;
             }
           });
+
+          if (options.fillZero) {
+            var zeroFillMap = temp.reduce(function(acc, d) {
+              acc[d[0]] = d[1];
+              return acc;
+            }, {});
+
+            var _nextTemp = []
+            for (var ts = temp[0][0]; ts <= temp[temp.length - 1][0]; ts += options.groupTime) {
+              _nextTemp.push([ts, zeroFillMap[ts] || 0]);
+            }
+            temp = _nextTemp;
+          }
 
           tsData = temp;
         }

@@ -348,7 +348,7 @@ class RedisHelper(object):
             min_timestamp = int(time.time()) - self.config['tsMaxPeriod']
             self.client.zremrangebyscore(key, '-inf', min_timestamp)
 
-    def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None):
+    def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None, fill_zero=False):
         if not self.skip_log:
             self.logger.debug('[REDIS] TS Get `{}`'.format(key))
 
@@ -362,7 +362,7 @@ class RedisHelper(object):
         ts_data = self.client.zrangebyscore(key, start, stop)
         ts_data = list(map(self.ts_parse_point, ts_data))
 
-        if ts_data and group_time and group_time > 1:
+        if ts_data and group_time and group_time >= 1:
             temp = []
 
             # latest_timestamp = ts_data[-1][0]
@@ -391,6 +391,15 @@ class RedisHelper(object):
 
                 elif agg == 'max':
                     d[1] = max(d[1])
+
+            if fill_zero:
+                zero_fill_map = dict([(d[0], d[1]) for d in temp])
+
+                _next_temp = []
+                for ts in range(int(temp[0][0]), int(temp[-1][0]) + group_time, group_time):
+                    _next_temp.append([ts, zero_fill_map.get(ts) or 0])
+
+                temp = _next_temp
 
             ts_data = temp
 
