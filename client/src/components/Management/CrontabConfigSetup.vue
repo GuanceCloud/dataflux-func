@@ -117,10 +117,7 @@ shortcutDays  : '{n}天'
                     :step-strictly="true"
                     v-model="form.taskInfoLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('recenTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear"
-                    :underline="false"
-                    type="primary"
-                    @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Restore Default') }}</el-link>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <!-- Crontab配置 -->
@@ -219,7 +216,7 @@ shortcutDays  : '{n}天'
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>

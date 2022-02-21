@@ -348,9 +348,9 @@ Do NOT use monkey patch: 请勿使用猴子补丁
       <template slot="paneR">
         <div class="code-editor-output">
           <div class="code-editor-output-close">
-            <el-link type="info" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
+            <el-link type="info" :underline="true" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
             &#12288;
-            <el-link type="info" @click.stop="clearScriptOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
+            <el-link type="info" :underline="true" @click.stop="clearScriptOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
           </div>
           <el-tabs tab-position="left" type="border-card">
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
@@ -1408,12 +1408,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-/* Special Fix */
-.el-button-group {
-  position: relative;
-  top: -1px !important;
-}
-
 #editor_CodeEditor {
   display: none;
 }

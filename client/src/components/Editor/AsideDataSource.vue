@@ -79,7 +79,7 @@ Data Source unpinned: 数据源已取消
             <!-- 置顶 -->
             <el-button
               size="small"
-              @click="pinData(data.type, data.id, !data.isPinned)">
+              v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
               <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
               {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
             </el-button>
@@ -96,10 +96,10 @@ Data Source unpinned: 数据源已取消
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
             <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+              <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
-              <el-link v-else-if="data.type === 'addDataSource'" type="primary" :underline="false">
+              <el-link v-else-if="data.type === 'addDataSource'" type="primary">
                 <i class="fa fa-fw fa-plus"></i> {{ $t('Add Data Source') }}
               </el-link>
               <div v-else>

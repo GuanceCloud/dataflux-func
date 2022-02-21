@@ -72,7 +72,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

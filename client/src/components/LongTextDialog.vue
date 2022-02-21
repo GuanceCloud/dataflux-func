@@ -6,6 +6,7 @@ Download as text file: 作为文本文件下载
   <el-dialog
     id="LongTextDialog"
     :visible.sync="show"
+    :close-on-click-modal="false"
     width="70%">
     <template slot="title">
       <el-link type="primary" v-if="showDownload && fileName && content" @click="download">

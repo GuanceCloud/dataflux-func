@@ -25,7 +25,7 @@ Welcome to: 欢迎使用
           <p>
             我们编写了详细的使用手册，所有相关文档都可以在官方网站找到。<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" href="https://function.guance.com/" target="_blank">
+            <el-link type="primary" :underline="true" href="https://function.guance.com/" target="_blank">
               <i class="fa fa-fw fa-link"></i>
               立即前往官方网站
             </el-link>

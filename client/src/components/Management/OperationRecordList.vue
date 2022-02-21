@@ -101,7 +101,7 @@ Response                      : 响应
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
+              <el-link @click="showDetail(scope.row)">{{ $t('Show detail') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

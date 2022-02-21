@@ -427,7 +427,9 @@ export default {
 
       }
 
-      this.isSaving = false;
+      setTimeout(() => {
+        this.isSaving = false;
+      }, 500);
     },
     _getFromData() {
       let _formData = this.T.jsonCopy(this.form);

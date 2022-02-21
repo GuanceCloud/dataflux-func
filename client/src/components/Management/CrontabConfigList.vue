@@ -37,7 +37,7 @@ lastRan: '{t}执行'
         <h1>
           {{ $t('Crontab Config') }}
           <div class="header-control">
-            <el-button type="text" @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-button>
+            <el-link @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-link>
             &#12288;
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
@@ -141,21 +141,17 @@ lastRan: '{t}执行'
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-button @click="openTaskInfo(scope.row)"
-                type="text"
-                :disabled="!scope.row.taskInfoCount"
-                >{{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
-              </el-button>
-              <el-button @click="runTask(scope.row)"
-                type="text"
-                :disabled="!scope.row.func_id">
+              <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
+                {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+              </el-link>
+              <el-link @click="runTask(scope.row)" :disabled="!scope.row.func_id">
                 {{ $t('Run') }}
-              </el-button>
+              </el-link>
 
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
-              <el-button :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
-              <el-button :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

@@ -55,6 +55,7 @@ Data exported: 数据已导出
                       <code class="select-item-id">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
+                  <InfoBlock v-if="!T.isNothing(form.dataSourceIds)" type="warning" title="导出的数据源不包含密码等敏感信息，导入后需要重新输入这些内容"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="环境变量" prop="envVariableIds">
@@ -92,7 +93,7 @@ Data exported: 数据已导出
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ modeName }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -107,6 +108,7 @@ Data exported: 数据已导出
         title="脚本包已下载"
         :visible.sync="showPassword"
         :close-on-press-escape="false"
+        :close-on-click-modal="false"
         width="750px">
         <span class="import-token-dialog-content">
           <template v-if="password">

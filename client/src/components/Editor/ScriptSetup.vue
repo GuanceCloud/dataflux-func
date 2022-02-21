@@ -71,7 +71,7 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>

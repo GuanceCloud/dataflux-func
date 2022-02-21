@@ -527,6 +527,10 @@ export default {
       }, 30 * 1000);
     });
 
+    window.onresize = () => {
+      for (let chartId in this.charts) this.charts[chartId].resize()
+    }
+
     window.vmc = this;
   },
   beforeDestroy() {
@@ -541,7 +545,8 @@ export default {
 
 <style scoped>
 .chart {
-  width : 90%;
+  width : 100%;
+  min-width: 1040px;
   height: 350px;
 }
 </style>

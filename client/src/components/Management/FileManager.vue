@@ -104,11 +104,10 @@ File already existed                                                            
           :data="files">
           <el-table-column :label="$t('Name')" sortable sort-by="name">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.type === 'folder'"
-                @click="enterFolder(scope.row.name)" type="text">
+              <el-link v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)">
                 <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
                 <code>{{ scope.row.name }}/</code>
-              </el-button>
+              </el-link>
 
               <template v-else>
                 <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
@@ -139,36 +138,27 @@ File already existed                                                            
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260" class-name="fix-list-button">
+          <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.type === 'folder'"
-                type="text"
-                @click="enterFolder(scope.row.name)">{{ $t('Enter') }}</el-button>
+              <el-link v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)">{{ $t('Enter') }}</el-link>
 
               <template v-else-if="scope.row.type === 'file'">
                 <el-link
-                  v-if="previewExtMap[scope.row.ext]"
-                  type="primary"
-                  :href="scope.row.previewURL"
-                  :underline="false"
-                  target="_blank">{{ $t('Open') }}</el-link>
-
-                <el-button v-if="scope.row.ext === 'whl'"
-                  type="text"
-                  @click="openInstallWheel(scope.row.name)">{{ $t('Install') }}</el-button>
-
-                <el-link
-                  type="primary"
                   :href="scope.row.downloadURL"
                   :download="scope.row.name"
-                  :underline="false"
                   target="_blank">{{ $t('Download') }}</el-link>
+
+                <el-link
+                  v-if="previewExtMap[scope.row.ext]"
+                  :href="scope.row.previewURL"
+                  target="_blank">{{ $t('Open') }}</el-link>
+
+                <el-link v-if="scope.row.ext === 'whl'"
+                  @click="openInstallWheel(scope.row.name)">{{ $t('Install') }}</el-link>
               </template>
 
               <el-dropdown @command="resourceOperationCmd">
-                <el-button type="text">
-                  {{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
+                <el-link :underline="false">{{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i></el-link>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item v-if="zipExtMap[scope.row.ext]" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
                   <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
@@ -605,11 +595,6 @@ export default {
 </script>
 
 <style scoped>
-/* Special Fix */
-.el-link {
-  padding-top: 2px !important;
-}
-
 .resource-navi .el-button {
   margin-left: 0 !important;
   padding: 5px 5px !important;

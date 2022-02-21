@@ -141,9 +141,7 @@ shortcutDays : '{n}天'
                       :step-strictly="true"
                       v-model="form.throttlingJSON[opt.key]"></el-input-number>
                     <span class="throttling-unit">{{ $tc(opt.name, form.throttlingJSON[opt.key], { n: '' }) }} </span>
-                    <el-link class="throttling-clear"
-                      :underline="false"
-                      @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
+                    <el-link class="throttling-clear" @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
                   </el-form-item>
                 </template>
 
@@ -160,7 +158,7 @@ shortcutDays : '{n}天'
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>

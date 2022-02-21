@@ -109,9 +109,9 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
 
           <el-table-column align="right" width="300">
             <template slot-scope="scope">
-              <el-button :disabled="scope.row.type === 'func' && T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+              <el-link :disabled="scope.row.type === 'func' && T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
 
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

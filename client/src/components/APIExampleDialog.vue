@@ -90,7 +90,7 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link v-if="stringParametersOnly"
-                type="primary"
+                type="primary" :underline="true"
                 :href="apiURLWithQueryExample_simplified"
                 target="_blank"
                 class="api-url-with-query">
@@ -112,7 +112,7 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link
-                type="primary"
+                type="primary" :underline="true"
                 :href="apiURLWithQueryExample"
                 target="_blank"
                 class="api-url-with-query">
@@ -132,7 +132,7 @@
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link v-if="stringParametersOnly"
-                type="primary"
+                type="primary" :underline="true"
                 :href="apiURLWithQueryExample_flattened"
                 target="_blank"
                 class="api-url-with-query">

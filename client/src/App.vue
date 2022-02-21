@@ -565,33 +565,27 @@ kbd {
 .fix-compact-button {
   margin-left: 0 !important;
 }
-.fix-list-button .el-button {
-  border: none;
-}
-.fix-list-button .el-link {
-  font-size: 14px;
-  margin-left: 10px;
+
+.header-control .el-button {
   position: relative;
-  top: -2px;
+  top: 1px;
 }
-.fix-list-button .el-link + .el-button {
-  margin-left: 10px;
-}
-.fix-list-button .el-dropdown {
-  margin-left: 10px;
+.header-control .el-radio-group {
+  position: relative;
+  top: 2px;
 }
 
-.header-control .el-button.el-button--small,
-.header-control .el-button.el-button--text {
-  padding: 8px 15px 10px 15px !important;
-}
 .el-table .cell {
   word-break: break-word;
 }
 .el-table__row > .el-table__cell:last-child > .cell {
-  line-height: 50px !important;
-  padding-right: 0 !important;
+  padding-right: 5 !important;
 }
+.el-table__row > .el-table__cell:last-child > .cell .el-link {
+  position: relative;
+  margin-left: 10px;
+}
+
 .el-tag + .el-tag {
   margin-left: 5px;
 }
@@ -636,6 +630,14 @@ kbd {
 }
 .el-row:last-child {
   margin-bottom: 0;
+}
+.el-form--inline .el-form-item,
+.el-form--inline .el-form-item__content {
+  vertical-align: unset !important;
+}
+.el-form--inline .el-form-item__content .el-radio-group {
+  position: relative;
+  top: -1px;
 }
 .el-form-item__content .el-select {
   display: block;

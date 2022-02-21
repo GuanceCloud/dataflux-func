@@ -234,12 +234,6 @@ export default {
 </script>
 
 <style scoped>
-/* Special Fix */
-.el-radio-group {
-  position: relative;
-  top: 1px !important;
-}
-
 .status-code {
   font-size: 18px;
 }

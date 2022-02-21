@@ -91,17 +91,15 @@ Script unlocked    : 脚本已解锁
           <!-- 操作 -->
           <template v-if="data.type === 'scriptSet' || data.type === 'script'">
             <br>
-
-            <!-- 添加脚本集 -->
-            <el-button v-if="data.type === 'scriptSet'"
-              size="mini"
-              type="primary" plain
-              @click="openEntity(node, data, 'add')">
-              <i class="fa fa-fw fa-plus"></i>
-              {{ $t('Add Script') }}
-            </el-button>
-
             <el-button-group>
+              <!-- 添加脚本集 -->
+              <el-button v-if="data.type === 'scriptSet'"
+                size="mini" class="text-main"
+                @click="openEntity(node, data, 'add')">
+                <i class="fa fa-fw fa-plus"></i>
+                {{ $t('Add Script') }}
+              </el-button>
+
               <!-- 快速查看 -->
               <el-button v-if="data.type === 'script'"
                 size="mini"
@@ -113,7 +111,7 @@ Script unlocked    : 脚本已解锁
               <!-- 置顶 -->
               <el-button v-if="data.type === 'scriptSet'"
                 size="mini"
-                @click="pinData(data.type, data.id, !data.isPinned)">
+                v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
                 <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
                 {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
               </el-button>
@@ -121,7 +119,7 @@ Script unlocked    : 脚本已解锁
               <!-- 锁定/解锁脚本/脚本集 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
                 size="mini"
-                @click="lockData(data.type, data.id, !data.isLocked)">
+                v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
                 <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
                 {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
               </el-button>
@@ -139,10 +137,10 @@ Script unlocked    : 脚本已解锁
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
             <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+              <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
-              <el-link v-else-if="data.type === 'addScriptSet'" type="primary" :underline="false">
+              <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
                 <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
               </el-link>
               <div v-else>
@@ -634,12 +632,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-/* Special Fix */
-.el-button-group {
-  position: relative;
-  top: -1px !important;
-}
-
 .aside-tree-node {
   flex: 1;
   display: flex;
@@ -687,4 +679,5 @@ export default {
 .child-nodes-count {
   font-size: 14px;
 }
+
 </style>

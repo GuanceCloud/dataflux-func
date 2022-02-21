@@ -65,10 +65,10 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
             <template slot-scope="scope">
               <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">{{ $t('Administrator') }}</span>
               <template v-else>
-                <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
-                <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
+                <el-link v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
+                <el-link v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
 
-                <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+                <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
               </template>
             </template>
           </el-table-column>

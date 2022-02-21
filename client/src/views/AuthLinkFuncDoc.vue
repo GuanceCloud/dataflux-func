@@ -96,7 +96,7 @@
 
           <el-table-column align="right" width="100">
             <template slot-scope="scope">
-              <el-button @click="showAPI(scope.row)" type="text">API调用示例</el-button>
+              <el-link @click="showAPI(scope.row)">API调用示例</el-link>
             </template>
           </el-table-column>
         </el-table>

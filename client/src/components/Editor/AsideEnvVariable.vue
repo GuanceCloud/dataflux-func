@@ -80,10 +80,10 @@ ENV Variable unpinned: 环境变量已取消
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
             <span :class="{'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary" :underline="false">
+              <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
-              <el-link v-else-if="data.type === 'addEnvVariable'" type="primary" :underline="false">
+              <el-link v-else-if="data.type === 'addEnvVariable'" type="primary">
                 <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
               </el-link>
               <div v-else>

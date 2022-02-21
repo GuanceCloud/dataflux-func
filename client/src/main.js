@@ -30,6 +30,8 @@ import ElementUI from 'element-ui'
 ElementUI.Tooltip.props.transition.default = false;
 ElementUI.Popover.props.transition.default = false;
 ElementUI.Popover.props.openDelay.default  = 100;
+ElementUI.Link.props.underline.default     = true;
+ElementUI.Link.props.type.default          = 'primary';
 Vue.use(ElementUI);
 
 // 国际化
@@ -85,6 +87,10 @@ Vue.prototype.validator = validator;
 // 剪贴板
 import clipboardJS from 'clipboard';
 Vue.prototype.clipboardJS = clipboardJS;
+
+// 防止连点
+import preventReClick from '@/preventReClick'
+Vue.use(preventReClick);
 
 // 其他
 import * as common from '@/common'

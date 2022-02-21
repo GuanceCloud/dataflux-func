@@ -76,9 +76,10 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
 
           <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-button v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0 && !scope.row.isOverSized"
-                @click="showDetail(scope.row)" type="text">{{ $t('Show content') }}</el-button>
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+              <el-link v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0 && !scope.row.isOverSized" @click="showDetail(scope.row)">
+                {{ $t('Show content') }}
+              </el-link>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

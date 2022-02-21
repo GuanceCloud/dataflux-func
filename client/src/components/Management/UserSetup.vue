@@ -53,7 +53,7 @@ Please input password: 请输入密码
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>

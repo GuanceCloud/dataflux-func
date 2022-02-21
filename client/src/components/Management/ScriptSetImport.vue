@@ -48,6 +48,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                     show-word-limit
                     v-model="form.password"></el-input>
                   <InfoBlock title="填写导出时提示的密码，无密码则留空即可"></InfoBlock>
+                  <InfoBlock type="warning" title="脚本包附带导入的数据源，密码等敏感信息需要重新输入"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
@@ -66,8 +67,8 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <el-dialog
         title="即将导入脚本包"
         :visible.sync="showConfirm"
-        :close-on-click-modal="true"
-        :close-on-press-escape="true"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
         :show-close="true"
         width="750px">
         <span class="import-token-dialog-content">
@@ -94,7 +95,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         </span>
         <span slot="footer" class="dialog-footer">
           <el-button @click="showConfirm = false">取消</el-button>
-          <el-button type="primary" @click="confirmImport" :loading="isImporting">
+          <el-button type="primary" v-prevent-re-click @click="confirmImport" :loading="isImporting">
             确认导入
           </el-button>
         </span>
@@ -109,6 +110,11 @@ export default {
   components: {
   },
   watch: {
+    showConfirm(val) {
+      if (val === false) {
+        this.initFilePreview();
+      }
+    },
   },
   methods: {
     async submitData() {
@@ -208,7 +214,7 @@ export default {
 
       this.uploadAreaBorderClass = [];
       this.uploadAreaIconClass   = ['fa-cloud-upload'];
-      this.uploadAreaIconText    = `将文件拖到此处，或<em>点击上传</em>`;
+      this.uploadAreaIconText    = `将文件拖到此处，或 <em>点击上传</em>`;
     },
     showFilePreview(filename) {
       this.uploadAreaBorderClass = ['upload-area-active'];
@@ -247,7 +253,7 @@ export default {
 
       uploadAreaBorderClass: [],
       uploadAreaIconClass  : ['fa-cloud-upload'],
-      uploadAreaIconText   : `将文件拖到此处，或<em>点击上传</em>`,
+      uploadAreaIconText   : `将文件拖到此处，或 <em>点击上传</em>`,
 
       disableUpload: true,
       showConfirm  : false,

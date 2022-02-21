@@ -95,7 +95,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                     <template v-if="T.setupPageMode() === 'setup'">
                       <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
                     </template>
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>

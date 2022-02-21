@@ -62,7 +62,7 @@ Result  : 结果
         :label="$t('Schema Browser')"
         name="browser">
         <div class="simple-debug-browser">
-          <el-link type="danger" :underline="false" v-if="browserCascaderErrorMessage">
+          <el-link type="danger" v-if="browserCascaderErrorMessage">
             {{ $t('Cannot connect to this Data Source, check the configs and try again.') }}
             <br>{{ $t('Error Message') }}{{ $t(':') }}
             <pre class="simple-debug-browser-error">{{ browserCascaderErrorMessage }}</pre>

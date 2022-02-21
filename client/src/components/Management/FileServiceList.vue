@@ -69,20 +69,16 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260" class-name="fix-list-button">
+          <el-table-column align="right" width="260">
             <template slot-scope="scope">
-              <el-link
-                type="primary"
-                :href="scope.row.openURL"
-                :underline="false"
-                target="_blank">{{ $t('Open') }}</el-link>
+              <el-link :href="scope.row.openURL" target="_blank">{{ $t('Open') }}</el-link>
 
-              <el-button v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')" type="text">{{ $t('Enable') }}</el-button>
-              <el-button v-else @click="quickSubmitData(scope.row, 'disable')" type="text">{{ $t('Disable') }}</el-button>
+              <el-link v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
+              <el-link v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
 
-              <el-button @click="openSetup(scope.row, 'setup')" type="text">{{ $t('Setup') }}</el-button>
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
 
-              <el-button @click="quickSubmitData(scope.row, 'delete')" type="text">{{ $t('Delete') }}</el-button>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
         </el-table>
