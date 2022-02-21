@@ -181,7 +181,7 @@ class RedisHelper(object):
         return self.run('incrby', key, amount=increment)
 
     def delete(self, keys):
-        if not isinstance(key, list):
+        if not isinstance(keys, list):
             keys = [keys]
         return self.run('delete', *keys)
 
