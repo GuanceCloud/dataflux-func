@@ -46,36 +46,38 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
           <span>{{ $t('Blueprint') }} (WIP)</span>
 
           &#12288;
-          <el-button @click="openAddBlueprint" type="primary" plain size="mini">
-            <i class="fa fa-fw fa-plus"></i>
-          </el-button>
-          <el-select @change="loadData(data.id)" size="mini" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
-            <el-option v-for="b in blueprints" :key="b.id" :label="b.title" :value="b.id">
-              <span class="float-left">{{ b.title || b.id }}</span>
-              <span v-if="b.isDeployed" class="float-right text-good">{{ $t('Deployed') }}</span>
-              <span v-else class="float-right text-bad">{{ $t('Not Deployed') }}</span>
-            </el-option>
-          </el-select>
-
-          <template v-if="data.id">
-            <el-button-group>
-              <el-button @click="openRenameBlueprint" size="mini">
-                <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
-              </el-button>
-
-              <el-button v-prevent-re-click @click="saveBlueprintCanvas" size="mini">
-                <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
-              </el-button>
-            </el-button-group>
-
-              <el-button v-prevent-re-click @click="deployBlueprintCanvas" type="primary" plain size="mini" class="fix-compact-button">
-                <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
-              </el-button>
-
-            <el-button @click="deleteBlueprintCanvas" size="mini" class="fix-compact-button">
-              <i class="fa fa-fw fa-times"></i> {{ $t('Delete') }}
+          <div class="header-control header-control-left">
+            <el-button @click="openAddBlueprint" type="primary" plain size="small">
+              <i class="fa fa-fw fa-plus"></i>
             </el-button>
-          </template>
+            <el-select @change="loadData(data.id)" size="small" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
+              <el-option v-for="b in blueprints" :key="b.id" :label="b.title" :value="b.id">
+                <span class="float-left">{{ b.title || b.id }}</span>
+                <span v-if="b.isDeployed" class="float-right text-good">{{ $t('Deployed') }}</span>
+                <span v-else class="float-right text-bad">{{ $t('Not Deployed') }}</span>
+              </el-option>
+            </el-select>
+
+            <template v-if="data.id">
+              <el-button-group>
+                <el-button @click="openRenameBlueprint" size="small">
+                  <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
+                </el-button>
+
+                <el-button v-prevent-re-click @click="saveBlueprintCanvas" size="small">
+                  <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
+                </el-button>
+              </el-button-group>
+
+                <el-button v-prevent-re-click @click="deployBlueprintCanvas" type="primary" plain size="small" class="fix-compact-button">
+                  <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
+                </el-button>
+
+              <el-button @click="deleteBlueprintCanvas" size="small" class="fix-compact-button">
+                <i class="fa fa-fw fa-times"></i> {{ $t('Delete') }}
+              </el-button>
+            </template>
+          </div>
         </div>
       </el-header>
 
@@ -958,9 +960,11 @@ export default {
 
 .node-card.code-step-card {
   border: 2px solid #FF6600 !important;
+  background-image: linear-gradient(to right, #FF6600FF 16%, #FFFF 16%, #FFFF);
 }
 .node-card.branch-step-card {
   border: 2px solid orange !important;
+  background-image: linear-gradient(to right, #ffa500FF 16%, #FFFF 16%, #FFFF);
 }
 .node-card .step-header {
   text-align: left;
@@ -969,12 +973,6 @@ export default {
   display: flex;
   align-items: center;
   font-size: 18px;
-}
-.node-card .code-step-header {
-  background-color: #FF6600;
-}
-.node-card .branch-step-header {
-  background-color: orange;
 }
 
 #codeStageContainer_Blueprint {

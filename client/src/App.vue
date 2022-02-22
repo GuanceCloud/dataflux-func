@@ -465,14 +465,22 @@ kbd {
 }
 .page-header > span:first-child {
   font-weight: bold;
-  font-size: 24px;
-  vertical-align: bottom;
+  font-size: 22px;
+  float: left;
 }
 .header-control {
   float: right;
 }
+.header-control-left {
+  float: left;
+  margin-left: 30px;
+}
 .header-control > * {
   margin-left: 5px !important;
+}
+.header-control .el-checkbox.is-bordered.el-checkbox--small {
+  /* Magic Fix! */
+  padding-top: 6px;
 }
 .no-data-area {
   text-align: center;
@@ -494,27 +502,6 @@ kbd {
   margin-bottom: 20px;
 }
 /* vue-splitpane 修正 */
-.el-button--mini,
-.el-input--mini .el-input__inner,
-.el-radio-button--mini .el-radio-button__inner {
-  height: 29px !important;
-}
-.el-form-item__content .el-button-group {
-  position: relative;
-  top: -1px;
-}
-
-.el-input__inner {
-  border-radius: 3px !important;
-}
-.el-radio-button:first-child .el-radio-button__inner {
-  border-top-left-radius: 3px !important;
-  border-bottom-left-radius: 3px !important;
-}
-.el-radio-button:last-child .el-radio-button__inner {
-  border-top-right-radius: 3px !important;
-  border-bottom-right-radius: 3px !important;
-}
 .splitter-pane-resizer {
   opacity: 1 !important;
   z-index: 10 !important;
@@ -574,6 +561,24 @@ kbd {
 }
 
 /* Element-UI 修正 */
+.el-button--mini,
+.el-input--mini .el-input__inner,
+.el-radio-button--mini .el-radio-button__inner {
+  height: 29px !important;
+}
+.el-form--inline .el-form-item,
+.el-form--inline .el-form-item__content {
+  vertical-align: unset !important;
+}
+.el-form--inline .el-form-item__content .el-radio-group {
+  position: relative;
+  top: -1px;
+}
+.el-form--inline .el-form-item__content .el-button-group {
+  position: relative;
+  top: -1px;
+}
+
 .fix-compact-button {
   margin-left: 0 !important;
 }
@@ -587,6 +592,12 @@ kbd {
 .el-table__row > .el-table__cell:last-child > .cell .el-link {
   position: relative;
   margin-left: 10px;
+}
+.el-row {
+  margin-bottom: 20px;
+}
+.el-row:last-child {
+  margin-bottom: 0;
 }
 
 .el-tag + .el-tag {
@@ -628,26 +639,6 @@ kbd {
   text-align: start !important;
 }
 
-.el-row {
-  margin-bottom: 20px;
-}
-.el-row:last-child {
-  margin-bottom: 0;
-}
-.el-form--inline .el-form-item,
-.el-form--inline .el-form-item__content {
-  vertical-align: unset !important;
-}
-.el-form--inline .el-form-item__content .el-radio-group {
-  position: relative;
-  top: -1px;
-}
-.el-form-item__content .el-select {
-  display: block;
-}
-.el-form-item__error {
-  font-size: 14px !important;
-}
 .el-tree-node__content {
   border: 1px solid white;
   margin-top: 3px;
@@ -656,6 +647,7 @@ kbd {
   border: 1px solid #FF6600;
   border-radius: 5px;
 }
+
 [captcha] .el-input__inner {
   letter-spacing: 15px;
   font-size: x-large;
@@ -666,11 +658,21 @@ kbd {
   padding-left: 0;
   padding-right: 0;
 }
+.el-input__inner {
+  border-radius: 3px !important;
+}
+.el-form-item__error {
+  font-size: 14px !important;
+}
+.el-form-item__content .el-select {
+  display: block;
+}
 .el-form .el-transfer-panel__item {
   /*https://github.com/ElemeFE/element/issues/18228*/
   margin-left: 0;
   display: block !important;
 }
+
 .el-aside {
   border-right: solid 1px #e6e6e6;
 }
@@ -680,11 +682,20 @@ kbd {
 .el-menu-item * {
   vertical-align: none;
 }
+
 .switch-tips {
   padding-left: 10px;
   font-size: 1px;
   font-weight: normal;
   color: darkgrey !important;
+}
+.el-radio-button:first-child .el-radio-button__inner {
+  border-top-left-radius: 3px !important;
+  border-bottom-left-radius: 3px !important;
+}
+.el-radio-button:last-child .el-radio-button__inner {
+  border-top-right-radius: 3px !important;
+  border-bottom-right-radius: 3px !important;
 }
 .el-checkbox.el-transfer-panel__item {
   margin-right: 0px !important;

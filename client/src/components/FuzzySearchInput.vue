@@ -73,8 +73,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .search-input {
-  position: relative;
-  top: 1px;
   width: 260px;
   display: inline-block;
 }
