@@ -1,30 +1,27 @@
-# ************************************************************
-# Sequel Ace SQL dump
-# 版本号： 20021
-#
-# https://sequel-ace.com/
-# https://github.com/Sequel-Ace/Sequel-Ace
-#
-# 主机: ubuntu20-dev.vm (MySQL 5.7.35)
-# 数据库: dataflux_func
-# 生成时间: 2022-01-17 18:14:31 +0000
-# ************************************************************
-
+-- MySQL dump 10.13  Distrib 8.0.28, for Linux (x86_64)
+--
+-- Host: 127.0.0.1    Database: dataflux_func
+-- ------------------------------------------------------
+-- Server version	5.7.36
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-SET NAMES utf8mb4;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE='NO_AUTO_VALUE_ON_ZERO', SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-
-# 转储表 biz_main_api_auth
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_api_auth`
+--
 
 DROP TABLE IF EXISTS `biz_main_api_auth`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_api_auth` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -37,14 +34,24 @@ CREATE TABLE `biz_main_api_auth` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API认证';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_api_auth`
+--
 
+LOCK TABLES `biz_main_api_auth` WRITE;
+/*!40000 ALTER TABLE `biz_main_api_auth` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_api_auth` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_auth_link
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_auth_link`
+--
 
 DROP TABLE IF EXISTS `biz_main_auth_link`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_auth_link` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
@@ -63,24 +70,26 @@ CREATE TABLE `biz_main_auth_link` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
   KEY `ORIGIN` (`origin`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='授权链接';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='授权链接';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_auth_link`
+--
 
 LOCK TABLES `biz_main_auth_link` WRITE;
 /*!40000 ALTER TABLE `biz_main_auth_link` DISABLE KEYS */;
-
-INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `apiAuthId`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`)
-VALUES
-	(1,X'61756C6E2D706C7573',X'64656D6F5F5F62617369632E706C7573','{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}',NULL,NULL,NULL,'{}',X'5549',0,0,NULL,'2021-07-19 18:13:18','2021-07-19 18:13:18');
-
+INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `apiAuthId`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `isDisabled`, `note`, `createTime`, `updateTime`) VALUES (1,'auln-plus','demo__basic.plus','{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}',NULL,NULL,NULL,'{}','UI',0,0,NULL,'2021-07-19 18:13:18','2021-07-19 18:13:18');
 /*!40000 ALTER TABLE `biz_main_auth_link` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
-# 转储表 biz_main_batch
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_batch`
+--
 
 DROP TABLE IF EXISTS `biz_main_batch`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_batch` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
@@ -99,14 +108,24 @@ CREATE TABLE `biz_main_batch` (
   UNIQUE KEY `ID` (`id`),
   KEY `ORIGIN` (`origin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='批处理';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_batch`
+--
 
+LOCK TABLES `biz_main_batch` WRITE;
+/*!40000 ALTER TABLE `biz_main_batch` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_batch` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_batch_task_info
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_batch_task_info`
+--
 
 DROP TABLE IF EXISTS `biz_main_batch_task_info`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_batch_task_info` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -127,14 +146,24 @@ CREATE TABLE `biz_main_batch_task_info` (
   KEY `BATCH_ID` (`batchId`),
   KEY `ROOT_TASK_ID` (`rootTaskId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='批处理任务信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_batch_task_info`
+--
 
+LOCK TABLES `biz_main_batch_task_info` WRITE;
+/*!40000 ALTER TABLE `biz_main_batch_task_info` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_batch_task_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_blueprint
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_blueprint`
+--
 
 DROP TABLE IF EXISTS `biz_main_blueprint`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_blueprint` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -146,14 +175,24 @@ CREATE TABLE `biz_main_blueprint` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_blueprint`
+--
 
+LOCK TABLES `biz_main_blueprint` WRITE;
+/*!40000 ALTER TABLE `biz_main_blueprint` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_blueprint` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_crontab_config
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_crontab_config`
+--
 
 DROP TABLE IF EXISTS `biz_main_crontab_config`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_crontab_config` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -175,24 +214,26 @@ CREATE TABLE `biz_main_crontab_config` (
   UNIQUE KEY `ID` (`id`),
   UNIQUE KEY `SCOPE_CONFIG` (`scope`,`configMD5`),
   KEY `ORIGIN` (`origin`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='自动触发配置';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='自动触发配置';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_crontab_config`
+--
 
 LOCK TABLES `biz_main_crontab_config` WRITE;
 /*!40000 ALTER TABLE `biz_main_crontab_config` DISABLE KEYS */;
-
-INSERT INTO `biz_main_crontab_config` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `taskInfoLimit`, `isDisabled`, `note`, `createTime`, `updateTime`)
-VALUES
-	(1,X'63726F6E2D694C445546434D6C4D445254',X'64656D6F5F5F62617369632E706C7573','{\"x\":1,\"y\":2}',X'2A2F35202A202A202A202A','[]',0,X'474C4F42414C',NULL,NULL,X'5549',NULL,0,NULL,'2021-07-19 18:29:09','2021-07-19 18:29:09');
-
+INSERT INTO `biz_main_crontab_config` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `taskInfoLimit`, `isDisabled`, `note`, `createTime`, `updateTime`) VALUES (1,'cron-iLDUFCMlMDRT','demo__basic.plus','{\"x\":1,\"y\":2}','*/5 * * * *','[]',0,'GLOBAL',NULL,NULL,'UI',NULL,0,NULL,'2021-07-19 18:29:09','2021-07-19 18:29:09');
 /*!40000 ALTER TABLE `biz_main_crontab_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
-# 转储表 biz_main_crontab_task_info
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_crontab_task_info`
+--
 
 DROP TABLE IF EXISTS `biz_main_crontab_task_info`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_crontab_task_info` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -213,14 +254,24 @@ CREATE TABLE `biz_main_crontab_task_info` (
   KEY `CRONTAB_CONFIG_ID` (`crontabConfigId`),
   KEY `ROOT_TASK_ID` (`rootTaskId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='自动触发任务信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_crontab_task_info`
+--
 
+LOCK TABLES `biz_main_crontab_task_info` WRITE;
+/*!40000 ALTER TABLE `biz_main_crontab_task_info` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_crontab_task_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_data_source
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_data_source`
+--
 
 DROP TABLE IF EXISTS `biz_main_data_source`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_data_source` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -235,14 +286,24 @@ CREATE TABLE `biz_main_data_source` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据源';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_data_source`
+--
 
+LOCK TABLES `biz_main_data_source` WRITE;
+/*!40000 ALTER TABLE `biz_main_data_source` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_data_source` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_env_variable
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_env_variable`
+--
 
 DROP TABLE IF EXISTS `biz_main_env_variable`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_env_variable` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -256,14 +317,24 @@ CREATE TABLE `biz_main_env_variable` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='环境变量';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_env_variable`
+--
 
+LOCK TABLES `biz_main_env_variable` WRITE;
+/*!40000 ALTER TABLE `biz_main_env_variable` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_env_variable` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_file_service
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_file_service`
+--
 
 DROP TABLE IF EXISTS `biz_main_file_service`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_file_service` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -275,14 +346,24 @@ CREATE TABLE `biz_main_file_service` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件服务';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_file_service`
+--
 
+LOCK TABLES `biz_main_file_service` WRITE;
+/*!40000 ALTER TABLE `biz_main_file_service` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_file_service` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_func
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_func`
+--
 
 DROP TABLE IF EXISTS `biz_main_func`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_func` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -308,24 +389,26 @@ CREATE TABLE `biz_main_func` (
   KEY `NAME` (`name`),
   KEY `CATEGORY` (`category`),
   KEY `INTEGRATION` (`integration`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='函数';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='函数';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_func`
+--
 
 LOCK TABLES `biz_main_func` WRITE;
 /*!40000 ALTER TABLE `biz_main_func` DISABLE KEYS */;
-
-INSERT INTO `biz_main_func` (`seq`, `id`, `scriptSetId`, `scriptId`, `name`, `title`, `description`, `definition`, `argsJSON`, `kwargsJSON`, `extraConfigJSON`, `category`, `integration`, `tagsJSON`, `defOrder`, `createTime`, `updateTime`)
-VALUES
-	(1,X'64656D6F5F5F62617369632E706C7573',X'64656D6F',X'64656D6F5F5F6261736963',X'706C7573','两数相加','两数相加\n输入参数 x, y 均为数字类型，返回结果为两者之和',X'706C757328782C207929','[\"x\", \"y\"]','{\"x\":{},\"y\":{}}','{\"timeout\": 10, \"cacheResult\": 300}',X'6D617468',NULL,'[\"math\", \"simple\"]',0,'2021-07-19 18:13:01','2021-07-19 18:16:10.043246');
-
+INSERT INTO `biz_main_func` (`seq`, `id`, `scriptSetId`, `scriptId`, `name`, `title`, `description`, `definition`, `argsJSON`, `kwargsJSON`, `extraConfigJSON`, `category`, `integration`, `tagsJSON`, `defOrder`, `createTime`, `updateTime`) VALUES (1,'demo__basic.plus','demo','demo__basic','plus','两数相加','两数相加\n输入参数 x, y 均为数字类型，返回结果为两者之和','plus(x, y)','[\"x\", \"y\"]','{\"x\":{},\"y\":{}}','{\"timeout\": 10, \"cacheResult\": 300}','math',NULL,'[\"math\", \"simple\"]',0,'2021-07-19 18:13:01','2021-07-19 18:16:10.043246');
 /*!40000 ALTER TABLE `biz_main_func` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
-# 转储表 biz_main_func_store
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_func_store`
+--
 
 DROP TABLE IF EXISTS `biz_main_func_store`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_func_store` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -339,14 +422,24 @@ CREATE TABLE `biz_main_func_store` (
   UNIQUE KEY `ID` (`id`),
   UNIQUE KEY `BIZ` (`scope`,`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='函数存储';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_func_store`
+--
 
+LOCK TABLES `biz_main_func_store` WRITE;
+/*!40000 ALTER TABLE `biz_main_func_store` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_func_store` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_operation_record
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_operation_record`
+--
 
 DROP TABLE IF EXISTS `biz_main_operation_record`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_operation_record` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -375,14 +468,24 @@ CREATE TABLE `biz_main_operation_record` (
   KEY `REQ_ROUTE` (`reqRoute`),
   KEY `CREATE_TIME` (`createTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作记录';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_operation_record`
+--
 
+LOCK TABLES `biz_main_operation_record` WRITE;
+/*!40000 ALTER TABLE `biz_main_operation_record` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_operation_record` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script`
+--
 
 DROP TABLE IF EXISTS `biz_main_script`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -402,24 +505,26 @@ CREATE TABLE `biz_main_script` (
   UNIQUE KEY `ID` (`id`),
   KEY `SCRIPT_SET_ID` (`scriptSetId`),
   FULLTEXT KEY `FT` (`code`,`codeDraft`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='脚本';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_script`
+--
 
 LOCK TABLES `biz_main_script` WRITE;
 /*!40000 ALTER TABLE `biz_main_script` DISABLE KEYS */;
-
-INSERT INTO `biz_main_script` (`seq`, `id`, `scriptSetId`, `title`, `description`, `publishVersion`, `type`, `code`, `codeMD5`, `codeDraft`, `codeDraftMD5`, `lockedByUserId`, `createTime`, `updateTime`)
-VALUES
-	(1,X'64656D6F5F5F6261736963',X'64656D6F','基础演示',NULL,1,X'707974686F6E',X'2320E59FBAE7A180E6BC94E7A4BA0A0A2320E4BDBFE794A8E8A385E9A5B0E599A8E4B8BAE587BDE695B0E591BDE5908DE4B8BA27E4B8A4E695B0E79BB8E58AA027EFBC8CE5B9B6E58581E8AEB8E5A496E983A8E8B083E794A8E69CACE587BDE695B00A2320E9A29DE5A496E79A84E9858DE7BDAEE58C85E68BACEFBC9A0A232063617465676F72793D276D617468270A232020202020E68C87E5AE9AE58886E7B1BBE4B8BA226D617468220A2320746167733D5B276261736963272C202773696D706C65275D0A232020202020E68C87E5AE9A32E4B8AAE6A087E7ADBEEFBC9A276261736963272C202773696D706C65270A232063616368655F726573756C743D3330300A232020202020E68C87E5AE9AE5A484E79086E7BB93E69E9CE7BC93E5AD98333030E7A792EFBC8CE5908EE7BBADE4BDBFE794A8E5AE8CE585A8E79BB8E5908CE79A84E58F82E695B0E8BF9BE8A18C415049E8B083E794A8E697B6EFBC8CE58FAFE4BBA5E79BB4E68EA5E8BF94E59B9EE8808CE4B88DE99C80E8A681E9878DE696B0E8BF90E8A18C0A232074696D656F75743D31300A232020202020E68C87E5AE9AE587BDE695B0E689A7E8A18CE8B685E697B6E697B6E997B4E4B8BA3130E7A792EFBC8CE689A7E8A18CE8B685E8BF873130E7A792E697B6EFBC8CE5B086E5BCBAE588B6E4B8ADE696AD0A404446462E4150492827E4B8A4E695B0E79BB8E58AA0272C2063617465676F72793D276D617468272C20746167733D5B276D617468272C202773696D706C65275D2C2063616368655F726573756C743D3330302C2074696D656F75743D3130290A64656620706C757328782C2079293A0A202020202727270A20202020E4B8A4E695B0E79BB8E58AA00A20202020E8BE93E585A5E58F82E695B020782C207920E59D87E4B8BAE695B0E5AD97E7B1BBE59E8BEFBC8CE8BF94E59B9EE7BB93E69E9CE4B8BAE4B8A4E88085E4B98BE5928C0A202020202727270A202020207072696E742827494E5055543A2078203D207B7D2C2079203D207B7D272E666F726D617428782C207929290A0A202020205F78203D20666C6F61742878290A202020205F79203D20666C6F61742879290A20202020726573756C74203D205F78202B205F790A202020206966206973696E7374616E636528782C20696E742920616E64206973696E7374616E636528792C20696E74293A0A2020202020202020726573756C74203D20696E7428726573756C74290A0A202020207072696E7428275C74524553554C543A207B7D272E666F726D617428726573756C7429290A2020202072657475726E20726573756C740A0A2320E6B58BE8AF95E587BDE695B0E4B88DE99C80E8A681E8A385E9A5B0E599A80A64656620746573745F706C757328293A0A2020202061737365727420706C757328312C203129203D3D20320A2020202061737365727420706C757328312C20312E3129203D3D20322E310A2020202061737365727420706C757328312E312C20312E3229203D3D20322E330A2020202072657475726E20274F4B27',X'6332663465383131313137323838396263653331313861366164383936666339',X'2320E59FBAE7A180E6BC94E7A4BA0A0A2320E4BDBFE794A8E8A385E9A5B0E599A8E4B8BAE587BDE695B0E591BDE5908DE4B8BA27E4B8A4E695B0E79BB8E58AA027EFBC8CE5B9B6E58581E8AEB8E5A496E983A8E8B083E794A8E69CACE587BDE695B00A2320E9A29DE5A496E79A84E9858DE7BDAEE58C85E68BACEFBC9A0A232063617465676F72793D276D617468270A232020202020E68C87E5AE9AE58886E7B1BBE4B8BA226D617468220A2320746167733D5B276261736963272C202773696D706C65275D0A232020202020E68C87E5AE9A32E4B8AAE6A087E7ADBEEFBC9A276261736963272C202773696D706C65270A232063616368655F726573756C743D3330300A232020202020E68C87E5AE9AE5A484E79086E7BB93E69E9CE7BC93E5AD98333030E7A792EFBC8CE5908EE7BBADE4BDBFE794A8E5AE8CE585A8E79BB8E5908CE79A84E58F82E695B0E8BF9BE8A18C415049E8B083E794A8E697B6EFBC8CE58FAFE4BBA5E79BB4E68EA5E8BF94E59B9EE8808CE4B88DE99C80E8A681E9878DE696B0E8BF90E8A18C0A232074696D656F75743D31300A232020202020E68C87E5AE9AE587BDE695B0E689A7E8A18CE8B685E697B6E697B6E997B4E4B8BA3130E7A792EFBC8CE689A7E8A18CE8B685E8BF873130E7A792E697B6EFBC8CE5B086E5BCBAE588B6E4B8ADE696AD0A404446462E4150492827E4B8A4E695B0E79BB8E58AA0272C2063617465676F72793D276D617468272C20746167733D5B276D617468272C202773696D706C65275D2C2063616368655F726573756C743D3330302C2074696D656F75743D3130290A64656620706C757328782C2079293A0A202020202727270A20202020E4B8A4E695B0E79BB8E58AA00A20202020E8BE93E585A5E58F82E695B020782C207920E59D87E4B8BAE695B0E5AD97E7B1BBE59E8BEFBC8CE8BF94E59B9EE7BB93E69E9CE4B8BAE4B8A4E88085E4B98BE5928C0A202020202727270A202020207072696E742827494E5055543A2078203D207B7D2C2079203D207B7D272E666F726D617428782C207929290A0A202020205F78203D20666C6F61742878290A202020205F79203D20666C6F61742879290A20202020726573756C74203D205F78202B205F790A202020206966206973696E7374616E636528782C20696E742920616E64206973696E7374616E636528792C20696E74293A0A2020202020202020726573756C74203D20696E7428726573756C74290A0A202020207072696E7428275C74524553554C543A207B7D272E666F726D617428726573756C7429290A2020202072657475726E20726573756C740A0A2320E6B58BE8AF95E587BDE695B0E4B88DE99C80E8A681E8A385E9A5B0E599A80A64656620746573745F706C757328293A0A2020202061737365727420706C757328312C203129203D3D20320A2020202061737365727420706C757328312C20312E3129203D3D20322E310A2020202061737365727420706C757328312E312C20312E3229203D3D20322E330A2020202072657475726E20274F4B27',X'6332663465383131313137323838396263653331313861366164383936666339',NULL,'2020-09-19 09:37:30','2021-07-19 18:16:09');
-
+INSERT INTO `biz_main_script` (`seq`, `id`, `scriptSetId`, `title`, `description`, `publishVersion`, `type`, `code`, `codeMD5`, `codeDraft`, `codeDraftMD5`, `lockedByUserId`, `createTime`, `updateTime`) VALUES (1,'demo__basic','demo','基础演示',NULL,1,'python','# 基础演示\n\n# 使用装饰器为函数命名为\'两数相加\'，并允许外部调用本函数\n# 额外的配置包括：\n# category=\'math\'\n#     指定分类为\"math\"\n# tags=[\'basic\', \'simple\']\n#     指定2个标签：\'basic\', \'simple\'\n# cache_result=300\n#     指定处理结果缓存300秒，后续使用完全相同的参数进行API调用时，可以直接返回而不需要重新运行\n# timeout=10\n#     指定函数执行超时时间为10秒，执行超过10秒时，将强制中断\n@DFF.API(\'两数相加\', category=\'math\', tags=[\'math\', \'simple\'], cache_result=300, timeout=10)\ndef plus(x, y):\n    \'\'\'\n    两数相加\n    输入参数 x, y 均为数字类型，返回结果为两者之和\n    \'\'\'\n    print(\'INPUT: x = {}, y = {}\'.format(x, y))\n\n    _x = float(x)\n    _y = float(y)\n    result = _x + _y\n    if isinstance(x, int) and isinstance(y, int):\n        result = int(result)\n\n    print(\'\\tRESULT: {}\'.format(result))\n    return result\n\n# 测试函数不需要装饰器\ndef test_plus():\n    assert plus(1, 1) == 2\n    assert plus(1, 1.1) == 2.1\n    assert plus(1.1, 1.2) == 2.3\n    return \'OK\'','c2f4e8111172889bce3118a6ad896fc9','# 基础演示\n\n# 使用装饰器为函数命名为\'两数相加\'，并允许外部调用本函数\n# 额外的配置包括：\n# category=\'math\'\n#     指定分类为\"math\"\n# tags=[\'basic\', \'simple\']\n#     指定2个标签：\'basic\', \'simple\'\n# cache_result=300\n#     指定处理结果缓存300秒，后续使用完全相同的参数进行API调用时，可以直接返回而不需要重新运行\n# timeout=10\n#     指定函数执行超时时间为10秒，执行超过10秒时，将强制中断\n@DFF.API(\'两数相加\', category=\'math\', tags=[\'math\', \'simple\'], cache_result=300, timeout=10)\ndef plus(x, y):\n    \'\'\'\n    两数相加\n    输入参数 x, y 均为数字类型，返回结果为两者之和\n    \'\'\'\n    print(\'INPUT: x = {}, y = {}\'.format(x, y))\n\n    _x = float(x)\n    _y = float(y)\n    result = _x + _y\n    if isinstance(x, int) and isinstance(y, int):\n        result = int(result)\n\n    print(\'\\tRESULT: {}\'.format(result))\n    return result\n\n# 测试函数不需要装饰器\ndef test_plus():\n    assert plus(1, 1) == 2\n    assert plus(1, 1.1) == 2.1\n    assert plus(1.1, 1.2) == 2.3\n    return \'OK\'','c2f4e8111172889bce3118a6ad896fc9',NULL,'2020-09-19 09:37:30','2021-07-19 18:16:09');
 /*!40000 ALTER TABLE `biz_main_script` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
-# 转储表 biz_main_script_failure
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_failure`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_failure`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_failure` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -437,14 +542,24 @@ CREATE TABLE `biz_main_script_failure` (
   KEY `ENTRY` (`funcId`,`scriptPublishVersion`),
   KEY `CREATE_TIME` (`createTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本故障信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_failure`
+--
 
+LOCK TABLES `biz_main_script_failure` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_failure` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_failure` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script_log
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_log`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_log`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_log` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -459,14 +574,24 @@ CREATE TABLE `biz_main_script_log` (
   KEY `ENTRY` (`funcId`,`scriptPublishVersion`),
   KEY `CREATE_TIME` (`createTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本日志信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_log`
+--
 
+LOCK TABLES `biz_main_script_log` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_log` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script_publish_history
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_publish_history`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_publish_history`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_publish_history` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -480,14 +605,24 @@ CREATE TABLE `biz_main_script_publish_history` (
   UNIQUE KEY `ID` (`id`),
   FULLTEXT KEY `FT` (`scriptCode_cache`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本发布历史';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_publish_history`
+--
 
+LOCK TABLES `biz_main_script_publish_history` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_publish_history` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_publish_history` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script_recover_point
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_recover_point`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_recover_point`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_recover_point` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -499,14 +634,24 @@ CREATE TABLE `biz_main_script_recover_point` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本还原点';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_recover_point`
+--
 
+LOCK TABLES `biz_main_script_recover_point` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_recover_point` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_recover_point` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script_set
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_set`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_set`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_set` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -519,24 +664,26 @@ CREATE TABLE `biz_main_script_set` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本集';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='脚本集';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_script_set`
+--
 
 LOCK TABLES `biz_main_script_set` WRITE;
 /*!40000 ALTER TABLE `biz_main_script_set` DISABLE KEYS */;
-
-INSERT INTO `biz_main_script_set` (`seq`, `id`, `title`, `description`, `requirements`, `lockedByUserId`, `pinTime`, `createTime`, `updateTime`)
-VALUES
-	(1,X'64656D6F','示例',NULL,NULL,NULL,NULL,'2020-09-19 09:36:57','2020-09-29 13:40:21');
-
+INSERT INTO `biz_main_script_set` (`seq`, `id`, `title`, `description`, `requirements`, `lockedByUserId`, `pinTime`, `createTime`, `updateTime`) VALUES (1,'demo','示例',NULL,NULL,NULL,NULL,'2020-09-19 09:36:57','2020-09-29 13:40:21');
 /*!40000 ALTER TABLE `biz_main_script_set` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
-# 转储表 biz_main_script_set_export_history
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_set_export_history`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_set_export_history`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_set_export_history` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -547,14 +694,24 @@ CREATE TABLE `biz_main_script_set_export_history` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='导出历史';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_set_export_history`
+--
 
+LOCK TABLES `biz_main_script_set_export_history` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_set_export_history` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_set_export_history` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_script_set_import_history
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_script_set_import_history`
+--
 
 DROP TABLE IF EXISTS `biz_main_script_set_import_history`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_script_set_import_history` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -565,14 +722,64 @@ CREATE TABLE `biz_main_script_set_import_history` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='导出历史';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_script_set_import_history`
+--
 
+LOCK TABLES `biz_main_script_set_import_history` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_set_import_history` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_set_import_history` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_main_task_result_dataflux_func
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_main_task_info`
+--
+
+DROP TABLE IF EXISTS `biz_main_task_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `biz_main_task_info` (
+  `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务来源ID',
+  `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID',
+  `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+  `execMode` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '执行模式 sync|async|crontab',
+  `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '状态 success|failure',
+  `triggerTimeMs` bigint(20) unsigned NOT NULL,
+  `startTimeMs` bigint(20) unsigned NOT NULL,
+  `endTimeMs` bigint(20) unsigned NOT NULL,
+  `logMessageTEXT` longtext COMMENT '日志信息TEXT',
+  `einfoTEXT` longtext COMMENT '错误信息TEXT',
+  `edumpTEXT` longtext COMMENT '错误DUMPTEXT',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`seq`),
+  UNIQUE KEY `ID` (`id`),
+  KEY `ORIGIN_ID` (`originId`),
+  KEY `ROOT_TASK_ID` (`rootTaskId`),
+  KEY `FUNC_ID` (`funcId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_task_info`
+--
+
+LOCK TABLES `biz_main_task_info` WRITE;
+/*!40000 ALTER TABLE `biz_main_task_info` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_task_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `biz_main_task_result_dataflux_func`
+--
 
 DROP TABLE IF EXISTS `biz_main_task_result_dataflux_func`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_main_task_result_dataflux_func` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -592,14 +799,24 @@ CREATE TABLE `biz_main_task_result_dataflux_func` (
   KEY `TASK` (`task`),
   KEY `ORIGIN` (`origin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DataFluxFunc 任务结果';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_main_task_result_dataflux_func`
+--
 
+LOCK TABLES `biz_main_task_result_dataflux_func` WRITE;
+/*!40000 ALTER TABLE `biz_main_task_result_dataflux_func` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_task_result_dataflux_func` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 biz_rel_func_running_info
-# ------------------------------------------------------------
+--
+-- Table structure for table `biz_rel_func_running_info`
+--
 
 DROP TABLE IF EXISTS `biz_rel_func_running_info`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `biz_rel_func_running_info` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
@@ -619,14 +836,24 @@ CREATE TABLE `biz_rel_func_running_info` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `BIZ` (`funcId`,`scriptPublishVersion`,`execMode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='函数执行信息';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `biz_rel_func_running_info`
+--
 
+LOCK TABLES `biz_rel_func_running_info` WRITE;
+/*!40000 ALTER TABLE `biz_rel_func_running_info` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_rel_func_running_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 wat_main_access_key
-# ------------------------------------------------------------
+--
+-- Table structure for table `wat_main_access_key`
+--
 
 DROP TABLE IF EXISTS `wat_main_access_key`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wat_main_access_key` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -642,14 +869,24 @@ CREATE TABLE `wat_main_access_key` (
   UNIQUE KEY `ID` (`id`),
   KEY `USER_ID` (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `wat_main_access_key`
+--
 
+LOCK TABLES `wat_main_access_key` WRITE;
+/*!40000 ALTER TABLE `wat_main_access_key` DISABLE KEYS */;
+/*!40000 ALTER TABLE `wat_main_access_key` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 wat_main_system_config
-# ------------------------------------------------------------
+--
+-- Table structure for table `wat_main_system_config`
+--
 
 DROP TABLE IF EXISTS `wat_main_system_config`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wat_main_system_config` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -659,14 +896,24 @@ CREATE TABLE `wat_main_system_config` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `wat_main_system_config`
+--
 
+LOCK TABLES `wat_main_system_config` WRITE;
+/*!40000 ALTER TABLE `wat_main_system_config` DISABLE KEYS */;
+/*!40000 ALTER TABLE `wat_main_system_config` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 wat_main_task_result_example
-# ------------------------------------------------------------
+--
+-- Table structure for table `wat_main_task_result_example`
+--
 
 DROP TABLE IF EXISTS `wat_main_task_result_example`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wat_main_task_result_example` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -686,14 +933,24 @@ CREATE TABLE `wat_main_task_result_example` (
   KEY `TASK` (`task`),
   KEY `ORIGIN` (`origin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `wat_main_task_result_example`
+--
 
+LOCK TABLES `wat_main_task_result_example` WRITE;
+/*!40000 ALTER TABLE `wat_main_task_result_example` DISABLE KEYS */;
+/*!40000 ALTER TABLE `wat_main_task_result_example` ENABLE KEYS */;
+UNLOCK TABLES;
 
-# 转储表 wat_main_user
-# ------------------------------------------------------------
+--
+-- Table structure for table `wat_main_user`
+--
 
 DROP TABLE IF EXISTS `wat_main_user`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wat_main_user` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -710,23 +967,26 @@ CREATE TABLE `wat_main_user` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
   UNIQUE KEY `USERNAME` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `wat_main_user`
+--
 
 LOCK TABLES `wat_main_user` WRITE;
 /*!40000 ALTER TABLE `wat_main_user` DISABLE KEYS */;
-
-INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`)
-VALUES
-	(1,X'752D61646D696E',X'61646D696E',X'3033343439636639336562643866363766363532663961383262323134383338306232353937656564643737373936333234353437326265333331316537356633616535313632343462366437363438623962303434653235323363323834306264663836613835323033376462376535386539623231363533396232643231','Administrator',NULL,NULL,'sa','*',0,'2017-07-28 18:08:03','2021-10-30 17:48:12');
-
+INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`) VALUES (1,'u-admin','admin','03449cf93ebd8f67f652f9a82b2148380b2597eedd777963245472be3311e75f3ae516244b6d7648b9b044e2523c2840bdf86a852037db7e58e9b216539b2d21','Administrator',NULL,NULL,'sa','*',0,'2017-07-28 18:08:03','2021-10-30 17:48:12');
 /*!40000 ALTER TABLE `wat_main_user` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-
-
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2022-02-17 20:25:23
