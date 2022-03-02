@@ -10,7 +10,7 @@ Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部�
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
-'ID of Script belong to "{scriptSetId}" should starts with "{prefix}"': '脚本集 {scriptSetId} 下的脚本ID必须以 "{prefix}" 开头'
+'Script ID should starts with "{prefix}"': '脚本ID必须以 "{prefix}" 开头'
 
 Script created : 脚本已创建
 Script saved   : 脚本已保存
@@ -220,7 +220,7 @@ export default {
             validator: (rule, value, callback) => {
               let prefix = `${this.scriptSetId}__`;
               if (value.indexOf(prefix) < 0 || value === prefix) {
-                let _message = this.$t('ID of Script belong to "{scriptSetId}" should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
+                let _message = this.$t('Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
                 return callback(new Error(_message));
               }
               return callback();
