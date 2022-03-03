@@ -91,7 +91,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('ScriptMarket')"
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('ScriptMarket')"
               class="experimental-feature" index="/management/script-market">
               <span>
                 <i class="fa fa-fw fa-shopping-cart"></i>

@@ -379,18 +379,32 @@ const noAuthRoutes = [
   'auth-link-func-doc',
   'dream',
 ];
+const superAdminRoutes = [
+  'user-list',
+  'user-add',
+  'user-setup',
+  'access-key-list',
+  'access-key-add',
+];
 
 router.beforeEach((to, from, next) => {
   // 切换路径时，已加载标记置为false，等待加载完再显示
   // 防止屏幕不和谐闪烁
   store.commit('updateLoadStatus', false);
 
-  // 登录跳转
-  if (!store.state.xAuthToken && noAuthRoutes.indexOf(to.name) < 0) {
-    return next({name: 'index'});
-  }
+  // 已登录跳转
   if (store.state.xAuthToken && to.name === 'index') {
-    return next({name: 'intro'});
+    return next({ name: 'intro' });
+  }
+
+  // 未登录跳转
+  if (!store.state.xAuthToken && noAuthRoutes.indexOf(to.name) < 0) {
+    return next({ name: 'index' });
+  }
+
+  // SA权限控制跳转
+  if (superAdminRoutes.indexOf(to.name) >= 0 && !store.getters.isSuperAdmin) {
+    return next({ name: 'index' });
   }
 
   return next();
