@@ -199,7 +199,8 @@ export default {
   z-index: 0;
 }
 .package-name {
-  font-size: 24px;
+  font-size: 20px;
+  font-weight: bold;
   display: block;
   z-index: 1;
   position: relative;
