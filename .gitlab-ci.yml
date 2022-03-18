@@ -16,8 +16,7 @@ variables:
   RUN_DOCKER_STACK_FILE    : run-docker-stack.sh
   VERSION_FILE             : version
 
-  PROJECT     : dataflux-func
-  FUNC_PKG_URL: https://static.guance.com/dataflux-func/market/packages/_dataflux/dataflux-func-latest.func-pkg
+  PROJECT: dataflux-func
 
 # ========== 构建 ==========
 
@@ -30,7 +29,10 @@ dev:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    # 下载观测云内置库
+    - mkdir -p func-pkg
+    - wget ${FUNC_PKG_URL_DATAFLUX}        -O func-pkg/dataflux.func-pkg;        # 旧版
+    #- wget ${FUNC_PKG_URL_GUANCE_INTERNAL} -O func-pkg/guance-internal.func-pkg; # 新版
     # 开发版只需支持amd64
     - docker buildx build
       --platform linux/amd64
@@ -114,7 +116,10 @@ dataflux:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    # 下载观测云内置库
+    - mkdir -p func-pkg
+    - wget ${FUNC_PKG_URL_DATAFLUX}        -O func-pkg/dataflux.func-pkg;        # 旧版
+    #- wget ${FUNC_PKG_URL_GUANCE_INTERNAL} -O func-pkg/guance-internal.func-pkg; # 新版
     # 构建/推送多架构版本
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -133,7 +138,10 @@ datafluxPaaS_prev:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    # 下载观测云内置库
+    - mkdir -p func-pkg
+    - wget ${FUNC_PKG_URL_DATAFLUX}        -O func-pkg/dataflux.func-pkg;        # 旧版
+    #- wget ${FUNC_PKG_URL_GUANCE_INTERNAL} -O func-pkg/guance-internal.func-pkg; # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
@@ -156,7 +164,10 @@ datafluxPaaS_prod:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    - mkdir -p func-pkg; wget ${FUNC_PKG_URL} -O func-pkg/dataflux.func-pkg; # 下载观测云内置库
+    # 下载观测云内置库
+    - mkdir -p func-pkg
+    - wget ${FUNC_PKG_URL_DATAFLUX}        -O func-pkg/dataflux.func-pkg;        # 旧版
+    #- wget ${FUNC_PKG_URL_GUANCE_INTERNAL} -O func-pkg/guance-internal.func-pkg; # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}
