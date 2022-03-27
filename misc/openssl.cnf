@@ -20,11 +20,11 @@ openssl_conf = default_conf
 ssl_conf = ssl_sect
 
 [ssl_sect]
-system_default = system_default_sect
+system_default = ssl_default_sect
 
-[system_default_sect]
-MinProtocol = TLSv1.1
-CipherString = DEFAULT@SECLEVEL=1
+[ssl_default_sect]
+MinProtocol = TLSv1
+CipherString = DEFAULT:@SECLEVEL=1
 
 # To use this configuration file with the "-extfile" option of the
 # "openssl x509" utility, name here the section containing the

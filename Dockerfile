@@ -73,7 +73,7 @@ COPY client/package.json client/package-lock.json ./
 RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
 
 # Some fix
-COPY misc/openssl.cnf /etc/ssl/openssl.cnf
+# COPY misc/openssl.cnf /etc/ssl/openssl.cnf
 
 # Build project
 WORKDIR /usr/src/app
