@@ -216,7 +216,7 @@ def func_debugger(self, *args, **kwargs):
             log_messages = script_scope['DFF'].log_messages or []
             result['logMessages'] = log_messages
 
-        if func_name:
+        if func_name and func_resp:
             # 准备函数运行结果
             # NOTE: `func_debugger`对应前端只使用了repr结果
             #   因此对比`func_runner`，此处raw/json的处理可以忽略
