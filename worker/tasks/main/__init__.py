@@ -924,7 +924,7 @@ class BaseFuncResponse(object):
                 e = Exception('No such file in Resource folder: {}'.format(self.file_path))
                 raise e
 
-    def _create_response_control(self):
+    def make_response_control(self):
         response_control = {
             'statusCode'  : self.status_code,
             'contentType' : self.content_type,

@@ -390,7 +390,7 @@ def func_runner(self, *args, **kwargs):
         func_result_repr       = None
         func_result_json_dumps = None
 
-        if func_resp.data:
+        if func_resp.data is not None:
             try:
                 func_result_raw = func_resp.data
             except Exception as e:
@@ -414,7 +414,7 @@ def func_runner(self, *args, **kwargs):
             'repr'     : func_result_repr,
             'jsonDumps': func_result_json_dumps,
 
-            '_responseControl': func_resp._create_response_control()
+            '_responseControl': func_resp.make_response_control()
         }
 
         # 记录函数运行结果

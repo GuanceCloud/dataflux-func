@@ -216,42 +216,24 @@ def func_debugger(self, *args, **kwargs):
             log_messages = script_scope['DFF'].log_messages or []
             result['logMessages'] = log_messages
 
-        if func_name and func_resp:
+        if func_name:
             # 准备函数运行结果
+            # NOTE: `func_debugger`对应前端只使用了repr结果
+            #   因此对比`func_runner`，此处raw/json的处理可以忽略
+
             func_result_repr = None
 
-            # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
-            # func_result_raw        = None
-            # func_result_json_dumps = None
-
-            if func_resp.data:
+            if func_resp.data is not None:
                 try:
                     func_result_repr = pprint.saferepr(func_resp.data)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
 
-                # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
-                # try:
-                #     func_result_raw = func_resp.data
-                # except Exception as e:
-                #     for line in traceback.format_exc().splitlines():
-                #         self.logger.error(line)
-                #
-                # try:
-                #     func_result_json_dumps = toolkit.json_dumps(func_resp.data, indent=None)
-                # except Exception as e:
-                #     for line in traceback.format_exc().splitlines():
-                #         self.logger.error(line)
-
             result['funcResult'] = {
                 'repr': func_result_repr,
 
-                # NOTE: 前端只使用了repr结果，因此此处raw/json的处理可以忽略
-                # 'raw'      : func_result_raw,
-                # 'jsonDumps': func_result_json_dumps,
-
-                '_responseControl': func_resp._create_response_control()
+                '_responseControl': func_resp.make_response_control()
             }
 
         if end_status == 'failure':
