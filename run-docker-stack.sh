@@ -277,8 +277,7 @@ else
     log "Docker stack file already exists:"
 
     # 为MySQL服务添加TLS版本
-    grep -q "\-\-tls\-version" ${__DOCKER_STACK_FILE}
-    if [ $? -ne 0 ]; then
+    if [ `grep "\-\-tls\-version" ${__DOCKER_STACK_FILE} | wc -l` -eq 0 ]; then
             echo 'Add `--tls-version=TLSv1.2` to mysql service'
             sed -i \
                 -e "s#command: --innodb-large-prefix=on#command: --tls-version=TLSv1.2 --innodb-large-prefix=on#g" \
