@@ -52,6 +52,6 @@ def after_app_created(celery_app):
     from worker.tasks.main import reload_scripts, auto_clean, auto_run
 
     # 启动时自动执行
-    reload_scripts.apply_async(kwargs={'isOnLaunch': True, 'force': True}, countdown=10)
+    reload_scripts.apply_async(kwargs={'lockTime': 15}, countdown=10)
     auto_run.apply_async(countdown=10)
     auto_clean.apply_async(countdown=30)

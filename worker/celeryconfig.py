@@ -41,6 +41,12 @@ worker_hijack_root_logger  = False
 worker_log_color           = False
 worker_redirect_stdouts    = False
 
+# Broker
+broker_transport_options = {
+    'priority_steps'      : list(range(4)), # 0=system, 1=high, 2=medium, 3=low
+    'queue_order_strategy': 'priority',
+}
+
 # Queue
 task_default_queue       = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
 task_default_routing_key = task_default_queue
@@ -110,17 +116,17 @@ beat_schedule['run-crontab-starter'] = {
     'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
 }
 
-# 强制重新加载脚本
-beat_schedule['run-force-reload-scripts'] = {
+# 重新加载脚本
+beat_schedule['run-reload-scripts'] = {
     'task'    : 'Main.ReloadScripts',
-    'kwargs'  : { 'force': True, 'isOnCrontab': True },
+    'kwargs'  : { 'lockTime': 15 },
     'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
 }
 
 # 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
     'task'    : 'Main.SyncCache',
-    'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
+    'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
 }
 
 # 工作队列压力恢复
@@ -146,3 +152,10 @@ beat_schedule['run-auto-backup-db'] = {
 # 关闭数据库自动备份
 if CONFIG['_DISABLE_DB_AUTO_BACKUP']:
     beat_schedule.pop('run-auto-backup-db', None)
+
+##### 系统任务默认最高优先级 #####
+for t, opt in beat_schedule.items():
+    if 'options' not in opt:
+        opt['options'] = {}
+
+    opt['options']['priority'] = 0

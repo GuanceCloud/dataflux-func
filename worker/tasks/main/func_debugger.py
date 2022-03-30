@@ -168,8 +168,8 @@ def func_debugger(self, *args, **kwargs):
             script_dict=script_dict,
             extra_vars=extra_vars)
 
-        # 加载代码
-        self.logger.info('[LOAD SCRIPT] `{}`'.format(script_id))
+        # 加载入口脚本
+        self.logger.info('[ENTRY SCRIPT] `{}`'.format(script_id))
         script_scope = self.safe_exec(target_script['codeObj'], globals=script_scope)
 
         # 执行脚本

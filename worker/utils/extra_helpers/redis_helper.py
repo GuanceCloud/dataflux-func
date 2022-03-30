@@ -118,10 +118,12 @@ class RedisHelper(object):
 
         if not self.skip_log:
             key = ''
-            if len(command_args) > 1:
-                key = command_args[0] + ' ...'
-            elif len(command_args) > 0:
+            if len(command_args) > 0:
                 key = command_args[0]
+                if isinstance(key, (list, tuple)):
+                    key = ', '.join([str(k) for k in key])
+                elif isinstance(key, dict):
+                    key = ', '.join(key.keys())
 
             kwargs_dump = ''
             if kwargs:

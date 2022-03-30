@@ -51,7 +51,10 @@ var CeleryHelper = function(logger, config) {
       });
       CLIENT = new celery.Client(
         new celery.RedisHandler(getConfig(CLIENT_CONFIG)),
-        new celery.RedisHandler(getConfig(CLIENT_CONFIG))
+        new celery.RedisHandler(getConfig(CLIENT_CONFIG)),
+        {
+          priority: 2, // medium
+        }
       );
     }
 

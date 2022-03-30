@@ -29,8 +29,8 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, 
 
 CONFIG = yaml_resources.get('CONFIG')
 
-SCRIPTS_CACHE_MD5 = None
-SCRIPT_DICT_CACHE = None
+LOCAL_SCRIPTS_CACHE_MD5 = None
+LOCAL_SCRIPT_DICT_CACHE = None
 
 @app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
@@ -74,63 +74,56 @@ class FuncRunnerTask(ScriptBaseTask):
         更新脚本字典缓存
         与 ReloadScriptsTask 配合完成高速脚本加载处理
         具体如下：
-            1. 从本地内存中获取缓存时间，未超时直接结束
-            2. 从Redis检查当前脚本缓存MD5值
-            2.1. 如未改变，则延长缓存时间并结束
-            2.2. 如已改变，则从Redis中获取脚本缓存数据
-            3. 如Redis中无脚本缓存数据，则直接从数据库中获取数据
+            1. 从Redis检查当前脚本缓存MD5值
+                -> 如存在缓存，且MD5未发生变化，结束处理
+            2. 从Redis读取脚本
+                -> 如存在缓存，建立本地缓存并结束处理
+            3. 从数据库读取脚本
               （正常不会发生，ReloadScriptsTask 会定时更新Redis缓存）
         '''
-        global SCRIPTS_CACHE_MD5
-        global SCRIPT_DICT_CACHE
+        global LOCAL_SCRIPTS_CACHE_MD5
+        global LOCAL_SCRIPT_DICT_CACHE
 
-        cache_key_script_md5 = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
+        # 获取脚本缓存MD5
+        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
+        cached_scripts_md5 = self.cache_db.get(cache_key)
+        if cached_scripts_md5:
+            cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
 
-        # 1. 检查Redis缓存
-        scripts_md5 = self.cache_db.get(cache_key_script_md5)
-        if scripts_md5:
-            scripts_md5 = six.ensure_str(scripts_md5)
-
-
-        if scripts_md5 and scripts_md5 == SCRIPTS_CACHE_MD5:
+        # 1. 检查当前缓存的脚本MD5值
+        if cached_scripts_md5 and cached_scripts_md5 == LOCAL_SCRIPTS_CACHE_MD5:
             # 存在缓存，且MD5未发生变化，不更新本地缓存
-            self.logger.debug('[SCRIPT CACHE] Not Modified, extend local cache')
+            self.logger.debug('[SCRIPT CACHE] Use local cache (Remote Script MD5 not modified)')
             return
 
-        # 2. 不存在缓存/缓存MD5发生变化，从Redis读取Dump
-        scripts = None
-
-        cache_key_script_dump = toolkit.get_cache_key('fixedCache', 'scriptsDump')
-        scripts_dump = self.cache_db.get(cache_key_script_dump)
+        # 2. 从Redis读取脚本
+        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsDump')
+        scripts_dump = self.cache_db.get(cache_key)
         if scripts_dump:
-            self.logger.debug('[SCRIPT CACHE] Modified, Use Redis cache')
-
             scripts_dump = six.ensure_str(scripts_dump)
 
-            try:
-                scripts = toolkit.json_loads(scripts_dump)
-            except Exception as e:
-                pass
+            # 不存在缓存脚本MD5，自行计算（极少情况）
+            if not cached_scripts_md5:
+                cached_scripts_md5 = toolkit.get_md5(scripts_dump)
 
-            if not scripts_md5:
-                # 不存在缓存，自行计算（极少情况）
-                scripts_md5 = toolkit.get_md5(scripts_dump)
+            scripts = toolkit.json_loads(scripts_dump)
 
-            # 记录缓存MD5
-            SCRIPTS_CACHE_MD5 = scripts_md5
+            # 建立本地缓存
+            LOCAL_SCRIPTS_CACHE_MD5 = cached_scripts_md5
+            LOCAL_SCRIPT_DICT_CACHE = self.create_script_dict(scripts)
 
-        # 3. 未能从Redis读取Dump，从数据库获取完整用户脚本
-        if not scripts or not scripts_dump:
-            self.logger.warning('[SCRIPT CACHE] Cache failed! Use DB data')
+            self.logger.debug('[SCRIPT CACHE] Use Redis cache')
+            return
 
-            scripts = self.get_scripts()
+        # 3. 从数据库获取完整用户脚本
+        scripts = self.get_scripts()
+        scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
 
-            # 自行计算并记录缓存MD5
-            scripts_dump      = toolkit.json_dumps(scripts, sort_keys=True)
-            SCRIPTS_CACHE_MD5 = toolkit.get_md5(scripts_dump)
+        # 建立本地缓存
+        LOCAL_SCRIPTS_CACHE_MD5 = toolkit.get_md5(scripts_dump)
+        LOCAL_SCRIPT_DICT_CACHE = self.create_script_dict(scripts)
 
-        # 记录到本地缓存
-        SCRIPT_DICT_CACHE = self.create_script_dict(scripts)
+        self.logger.warning('[SCRIPT CACHE] Use DB data')
 
     def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
         timestamp = int(time.time())
@@ -296,11 +289,11 @@ def func_runner(self, *args, **kwargs):
     ### 任务开始
     target_script = None
     try:
-        global SCRIPT_DICT_CACHE
+        global LOCAL_SCRIPT_DICT_CACHE
 
         # 更新脚本缓存
         self.update_script_dict_cache()
-        target_script = SCRIPT_DICT_CACHE.get(script_id)
+        target_script = LOCAL_SCRIPT_DICT_CACHE.get(script_id)
 
         if not target_script:
             e = NotFoundException('Script `{}` not found'.format(script_id))
@@ -331,11 +324,11 @@ def func_runner(self, *args, **kwargs):
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
             script_name=script_id,
-            script_dict=SCRIPT_DICT_CACHE,
+            script_dict=LOCAL_SCRIPT_DICT_CACHE,
             extra_vars=extra_vars)
 
-        # 加载代码
-        self.logger.info('[LOAD SCRIPT] `{}`'.format(script_id))
+        # 加载入口脚本
+        self.logger.info('[ENTRY SCRIPT] `{}`'.format(script_id))
         script_scope = self.safe_exec(target_script['codeObj'], globals=script_scope)
 
         # 执行脚本

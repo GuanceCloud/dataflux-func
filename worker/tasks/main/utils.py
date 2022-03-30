@@ -36,176 +36,41 @@ from worker.tasks.main import func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER
 
 CONFIG = yaml_resources.get('CONFIG')
 
-SCRIPT_MAP = {}
-
 # Main.ReloadScripts
 class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     '''
-    脚本重新载入任务
-    与 RunnerTask.update_script_dict_cache 配合完成高速脚本加载处理
-    具体如下：
-        1. 由于只有当用户「发布」脚本后，才需要重新加载，
-           因此以 biz_main_func 表的所有`id`+`scriptMD5`作为是否需要重新读取数据库的标准
-        2. 内存中维护 SCRIPT_MAP 作为缓存，结构如下：
-           { "<脚本ID>": {完整脚本数据JSON} }
-        3. 由于代码内容可能比较多，
-           因此每次重新加载代码时，先只读取所有脚本的ID和MD5值，
-           和内存中维护的 SCRIPT_MAP 对比获取需要更新的脚本ID列表
-        4.1. 如果没有需要更新的脚本，则结束
-        4.2. 如果存在需要更新的脚本，则从数据库中读取需要更新的脚本信息，并合并到 SCRIPT_MAP 中，
-             最后更新整个脚本库和脚本库MD5缓存
-        X.1. 附带强制重新加载功能
+    脚本重新载入Redis任务
     '''
-
-    def get_latest_script_data_hash(self):
-        sql = '''
-                SELECT
-                    `id`,
-                    `publishVersion`,
-                    `codeMD5`
-                FROM biz_main_script
-            '''
-        db_res = self.db.query(sql)
-
-        str_to_hash_parts = []
-        for d in db_res:
-            _id              = d.get('id')             or '<NO_ID>'
-            _publish_version = d.get('publishVersion') or '<NO_PUBLISH_VERSION>'
-            _code_md5        = d.get('codeMD5')        or '<NO_CODE_MD5>'
-            str_to_hash_parts.append(','.join([str(_id), str(_publish_version), str(_code_md5)]))
-
-        str_to_hash = ';'.join(str_to_hash_parts)
-        script_data_hash = toolkit.get_sha1(str_to_hash)
-
-        return script_data_hash
-
-    def _cache_scripts(self):
-        scripts = sorted(SCRIPT_MAP.values(), key=lambda x: x['seq'])
+    def cache_scripts_to_redis(self):
+        # 获取脚本
+        scripts      = self.get_scripts()
         scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
+        scripts_md5  = toolkit.get_md5(scripts_dump)
 
+        # 获取脚本缓存MD5
         cache_key = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
-        self.cache_db.set(cache_key, toolkit.get_md5(scripts_dump))
+        cached_scripts_md5 = self.cache_db.get(cache_key)
+        if cached_scripts_md5:
+            cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
 
-        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsDump')
-        self.cache_db.set(cache_key, scripts_dump)
-
-    def force_reload_script(self):
-        global SCRIPT_MAP
-
-        # 获取所有脚本
-        scripts = self.get_scripts()
-        for s in scripts:
-            self.logger.debug('[SCRIPT CACHE] Load {}'.format(s['id']))
-
-        # 字典化
-        SCRIPT_MAP = dict([(s['id'], s) for s in scripts])
-
-        # 3. Dump和MD5值写入缓存
-        self._cache_scripts()
-
-    def reload_script(self):
-        global SCRIPT_MAP
-
-        # 1. 获取当前所有脚本ID和MD5
-        sql = '''
-            SELECT
-                 `scpt`.`id`
-                ,`scpt`.`codeMD5`
-                ,`scpt`.`publishVersion`
-                ,`sset`.`id` AS `scriptSetId`
-            FROM biz_main_script AS scpt
-
-            JOIN biz_main_script_set as sset
-            '''
-        db_res = self.db.query(sql)
-
-        current_script_ids = set()
-        reload_script_ids  = set()
-        for d in db_res:
-            script_id  = d['id']
-
-            current_script_ids.add(script_id)
-            cached_script = SCRIPT_MAP.get(script_id)
-
-            if not cached_script:
-                # 新脚本
-                reload_script_ids.add(script_id)
-
-            elif cached_script['codeMD5'] != d['codeMD5'] or cached_script['publishVersion'] != d['publishVersion']:
-                # 更新脚本
-                reload_script_ids.add(script_id)
-
-        # 去除已经不存在的脚本
-        script_ids_to_pop = []
-        for script_id in SCRIPT_MAP.keys():
-            if script_id not in current_script_ids:
-                self.logger.debug('[SCRIPT CACHE] Remove {}'.format(script_id))
-                script_ids_to_pop.append(script_id)
-
-        for script_id in script_ids_to_pop:
-            SCRIPT_MAP.pop(script_id, None)
-
-        if reload_script_ids:
-            # 2. 从数据库获取更新后的脚本
-            scripts = self.get_scripts(script_ids=reload_script_ids)
-            for s in scripts:
-                self.logger.debug('[SCRIPT CACHE] Load {}'.format(s['id']))
-
-            # 合并加载的脚本
-            reloaded_script_map = dict([(s['id'], s) for s in scripts])
-            SCRIPT_MAP.update(reloaded_script_map)
-
-            # 3. Dump和MD5值写入缓存
-            self._cache_scripts()
-
-            # 4. 删除函数结果缓存
-            for script_id in reload_script_ids:
-                func_id_pattern = '{0}.*'.format(script_id)
-                cache_key = toolkit.get_cache_key('cache', 'funcResult', tags=[
-                    'funcId', func_id_pattern,
-                    'scriptCodeMD5', '*',
-                    'funcKwargsMD5', '*'])
-                for k in self.cache_db.client.scan_iter(cache_key):
-                    self.cache_db.delete(six.ensure_str(k))
+        # 缓存脚本至Redis
+        if cached_scripts_md5 != scripts_md5:
+            key_values = {
+                toolkit.get_cache_key('fixedCache', 'scriptsDump'): scripts_dump,
+                toolkit.get_cache_key('fixedCache', 'scriptsMD5') : scripts_md5,
+            }
+            self.cache_db.mset(key_values)
 
 @app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
 def reload_scripts(self, *args, **kwargs):
-    is_startup = kwargs.get('isOnLaunch')  or False
-    is_crontab = kwargs.get('isOnCrontab') or False
-    force      = kwargs.get('force')       or False
+    lock_time = kwargs.get('lockTime') or 0
 
-    # 启动时执行/Crontab执行的，需要上锁
-    if is_startup or is_crontab:
-        self.lock(max_age=10)
-    else:
-        self.launch_log()
+    # 根据参数确定是否需要上锁
+    if isinstance(lock_time, (int, float)) and lock_time > 0:
+        self.lock(max_age=int(lock_time))
 
-    cache_key = toolkit.get_cache_key('fixedCache', 'prevScriptDataHash')
-
-    # 上次脚本更新时间
-    prev_script_data_hash = self.cache_db.get(cache_key)
-    if not prev_script_data_hash:
-        force = True
-    else:
-        prev_script_data_hash = six.ensure_str(prev_script_data_hash)
-
-    # 最新脚本数据Hash
-    latest_script_data_hash = self.get_latest_script_data_hash()
-
-    is_script_reloaded = False
-    if force:
-        self.force_reload_script()
-        is_script_reloaded = True
-
-    elif latest_script_data_hash != prev_script_data_hash:
-        self.reload_script()
-        is_script_reloaded = True
-
-    if is_script_reloaded:
-        self.logger.info('[SCRIPT CACHE] Reload script {} -> {} {}'.format(
-            prev_script_data_hash, latest_script_data_hash, '[FORCE]' if force else ''))
-
-        self.cache_db.set(cache_key, latest_script_data_hash)
+    # 将脚本缓存如Redis
+    self.cache_scripts_to_redis()
 
 # Main.SyncCache
 class SyncCache(BaseTask):

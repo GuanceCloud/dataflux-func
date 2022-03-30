@@ -191,16 +191,7 @@ def get_resource_path(file_path):
     return abs_path
 
 class ScriptCacherMixin(object):
-    def get_scripts(self, script_ids=None):
-        # 【注意】
-        # 加载脚本处理存在两处
-        #   1. ReloadScriptsTask.force_reload_script()
-        #       强制加载所有脚本，并缓存到Redis
-        #   2. ReloadScriptsTask.reload_script()
-        #       按需加载已变更的脚本，并缓存到Redis
-        #   3. RunnerTask.update_script_dict_cache()
-        #       缓存击穿时加载所需脚本，并缓存到内存
-
+    def get_scripts(self):
         # 获取脚本数据
         sql = '''
             SELECT
@@ -216,14 +207,11 @@ class ScriptCacherMixin(object):
 
             JOIN biz_main_script AS scpt
                 ON `sset`.`id` = `scpt`.`scriptSetId`
+
+            ORDER BY
+                `scpt`.`seq` ASC
             '''
-        sql_params = None
-
-        if script_ids:
-            sql += '''WHERE `scpt`.`id` IN (?) '''
-            sql_params = [script_ids]
-
-        scripts = self.db.query(sql, sql_params)
+        scripts = self.db.query(sql)
 
         # 获取函数额外配置
         sql = '''
@@ -233,13 +221,7 @@ class ScriptCacherMixin(object):
                 ,`func`.`extraConfigJSON`
             FROM biz_main_func AS func
             '''
-        sql_params = None
-
-        if script_ids:
-            sql += '''WHERE `func`.`scriptId` IN (?) '''
-            sql_params = [script_ids]
-
-        funcs = self.db.query(sql, sql_params)
+        funcs = self.db.query(sql, None)
 
         # 整理函数额外配置表
         # 结构如下：{ "<脚本ID>": { "<函数ID>": <额外配置JSON> }}

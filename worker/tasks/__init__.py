@@ -222,17 +222,12 @@ class BaseTask(app.Task):
 
         self.logger.error('[{}]'.format(celery_status.FAILURE))
 
-    def launch_log(self):
-        self.logger.info(f"`{self.name}` Task launched.")
-
     def lock(self, max_age=60):
         lock_key   = toolkit.get_cache_key('lock', self.name)
         lock_value = toolkit.gen_uuid()
         if not self.cache_db.lock(lock_key, lock_value, max_age):
             self.logger.warning(f"`{self.name}` Task already launched.")
             return
-
-        self.launch_log()
 
         return lock_key, lock_value
 
