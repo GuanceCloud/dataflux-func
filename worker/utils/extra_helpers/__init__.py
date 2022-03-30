@@ -15,12 +15,6 @@ from worker.utils import toolkit
 
 retry_for_requests = retry((requests.ConnectionError, requests.Timeout), tries=3, delay=1, backoff=2, jitter=(1, 2))
 
-def ensure_str(s):
-    if isinstance(s, six.string_types):
-        return six.ensure_str(s)
-    else:
-        return six.ensure_str(str(s))
-
 def parse_response(response):
     resp_content_type = response.headers.get('content-type') or ''
     resp_content_type = resp_content_type.lower().split(';')[0].strip()
