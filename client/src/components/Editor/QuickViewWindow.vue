@@ -202,7 +202,7 @@ export default {
 <style scoped>
 .quick-view-window {
   position: fixed;
-  z-index: 2060;
+  z-index: 2047;
   height: 360px;
   width: 610px;
   border: 1px;
