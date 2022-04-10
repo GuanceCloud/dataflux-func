@@ -789,7 +789,7 @@ export default {
       {
         key : 'debug',
         name: $t('Debug'),
-        icon: 'fa-search',
+        icon: 'fa-play',
       },
     ];
   },

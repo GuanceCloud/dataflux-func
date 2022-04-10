@@ -1,6 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Administrator: 系统管理员
-
 User disabled: 用户已禁用
 User enabled : 用户已启用
 

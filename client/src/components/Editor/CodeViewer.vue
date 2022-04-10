@@ -11,7 +11,7 @@ Select Func                                                          : 选择聚
 Download {type}                                                      : 下载{type}
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
-This Script has been locked by other, editing is disabled            : 当前脚本被其他用户锁定，无法修改
+This Script is locked by other user({user})                          : 当前脚本被其他用户（{user}）锁定
 Currently in view mode, click Edit button to enter edit mode         : 当前为查看模式，点击「编辑」按钮进入编辑模式
 View Mode                                                            : 查看模式
 
@@ -32,8 +32,7 @@ Saved Draft Code: 已保存的草稿代码
               <el-button
                 type="text"
                 @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
-                <i v-if="!isLockedByOther" class="fa fa-fw fa-wrench"></i>
-                <i v-else class="fa fa-fw fa-search"></i>
+                <i class="fa fa-fw fa-wrench"></i>
               </el-button>
             </el-tooltip>
           </code>
@@ -73,7 +72,7 @@ Saved Draft Code: 已保存的草稿代码
               </el-select>
             </el-form-item>
 
-            <el-form-item v-if="!isLockedByOther">
+            <el-form-item>
               <el-radio-group v-model="showMode" size="mini" plain>
                 <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                   <div slot="content">
@@ -84,7 +83,7 @@ Saved Draft Code: 已保存的草稿代码
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item v-if="!isLockedByOther">
+            <el-form-item>
               <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
                 <el-button v-prevent-re-click @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
               </el-tooltip>
@@ -92,9 +91,9 @@ Saved Draft Code: 已保存的草稿代码
           </el-form>
         </div>
 
-        <InfoBlock v-if="scriptSet.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
-        <InfoBlock v-else-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
+        <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
         <InfoBlock v-else type="warning" :title="$t('Currently in view mode, click Edit button to enter edit mode')"></InfoBlock>
+        <InfoBlock v-if="data.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
       </el-header>
 
       <!-- 代码区 -->
@@ -159,8 +158,8 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
-        params: { id: this.$route.params.id }
+      let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.$route.params.id, {
+        query: { _withCode: true, _withCodeDraft: true },
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -176,12 +175,6 @@ export default {
       let diffInfo = this.T.getDiffInfo(this.data.code, this.data.codeDraft);
       this.diffAddedCount   = diffInfo.addedCount;
       this.diffRemovedCount = diffInfo.removedCount;
-
-      // 获取关联数据
-      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
-      if (!apiRes.ok) return;
-
-      this.scriptSet = apiRes.data;
 
       this.$store.commit('updateLoadStatus', true);
 
@@ -425,12 +418,31 @@ export default {
     conflictStatus() {
       return this.$store.getters.getConflictStatus(this.$route);
     },
-    isLockedByOther() {
-      return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId
-          || this.scriptSet.lockedByUserId && this.scriptSet.lockedByUserId !== this.$store.getters.userId;
+
+    lockedByUserId() {
+      return this.data.sset_lockedByUserId || this.data.lockedByUserId;
     },
+    lockedByUser() {
+      if (this.data.sset_lockedByUserId) {
+        return `${this.data.sset_lockedByUserName || this.data.sset_lockedByUsername}`
+      } else if (this.data.lockedByUserId) {
+        return `${this.data.lockedByUserName || this.data.lockedByUsername}`
+      }
+    },
+    isLockedByMe() {
+      return this.lockedByUserId === this.$store.getters.userId
+    },
+    isLockedByOther() {
+      return this.lockedByUserId && !this.isLockedByMe;
+    },
+    isEditable() {
+      // 超级管理员不受限制
+      if (this.$store.getters.isAdmin) return true;
+      return !this.isLockedByOther;
+    },
+
     userOperation() {
-      return this.isLockedByOther ? 'debug' : 'edit';
+      return this.isEditable ? 'edit' : 'debug';
     },
     highlightedFuncId() {
       return this.$store.state.Editor_highlightedFuncId;
@@ -450,8 +462,7 @@ export default {
 
       highlightedLineInfoMap: {},
 
-      data     : {},
-      scriptSet: {},
+      data: {},
 
       draftFuncs    : [],
       selectedFuncId: '',

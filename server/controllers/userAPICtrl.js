@@ -68,7 +68,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (Array.isArray(dbRes.roles) && dbRes.roles.indexOf('sa') >= 0) {
-          return asyncCallback(new E('EBizCondition.adminUserCannotBeModified', 'Admin user cannot been modified directly'));
+          return asyncCallback(new E('EBizCondition.adminUserCannotBeModified', 'Super Admin user cannot been modified directly'));
         }
 
         return asyncCallback(err);

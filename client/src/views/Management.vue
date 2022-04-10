@@ -70,7 +70,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/user-list" v-if="$store.getters.isSuperAdmin">
+            <el-menu-item index="/management/user-list" v-if="$store.getters.isAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
                 {{ $t('User Manager') }}
@@ -180,7 +180,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isSuperAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
+            <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
               class="experimental-feature" index="/management/access-key-list">
               <span>
                 <i class="fa fa-fw fa-key"></i>

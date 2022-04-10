@@ -19,6 +19,8 @@ en:
   Auto      : 自动
 
   # 通用
+  Administrator: 系统管理员
+
   Anonymity: 匿名
   Unknow   : 未知
   No Data  : 暂无数据

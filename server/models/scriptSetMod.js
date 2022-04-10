@@ -55,10 +55,13 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   sset.*');
-  sql.append('  ,NOT ISNULL(sset.lockedByUserId) AS isLocked');
-  sql.append('  ,NOT ISNULL(sset.pinTime)        AS isPinned');
+  sql.append('  ,locker.username AS lockedByUserUsername');
+  sql.append('  ,locker.name     AS lockedByUserName');
 
   sql.append('FROM biz_main_script_set AS sset');
+
+  sql.append('LEFT JOIN wat_main_user AS locker');
+  sql.append('  ON locker.id = sset.lockedByUserId');
 
   options.baseSQL = sql.toString();
 

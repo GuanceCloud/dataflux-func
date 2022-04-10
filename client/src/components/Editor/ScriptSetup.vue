@@ -18,8 +18,8 @@ Script deleted : 脚本已删除
 
 Are you sure you want to delete the Script?: 是否确认删除此脚本？
 
-This Script Set is locked by someone else, setup is disabled : 当前脚本已被其他人锁定，无法更改配置
-This Script Set is locked by you, setup is disabled to others: 当前脚本已被您锁定，其他人无法更改配置
+This Script is locked by you: 当前脚本已被您锁定
+This Script is locked by other user({user}): 当前脚本已被其他用户（{user}）锁定
 </i18n>
 
 <template>
@@ -35,12 +35,12 @@ This Script Set is locked by you, setup is disabled to others: 当前脚本已�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
-                <el-form-item v-if="isLockedByOther">
-                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, setup is disabled')"></InfoBlock>
+              <el-form ref="form" label-width="120px" :model="form" :disabled="!isEditable" :rules="formRules">
+                <el-form-item v-if="isLockedByMe">
+                  <InfoBlock type="success" :title="$t('This Script is locked by you')"></InfoBlock>
                 </el-form-item>
-                <el-form-item v-else-if="data.isLocked">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, setup is disabled to others')"></InfoBlock>
+                <el-form-item v-else-if="isLockedByOther">
+                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -252,9 +252,27 @@ export default {
           return this.$route.params.id;
       }
     },
+
+    lockedByUserId() {
+      return this.data.sset_lockedByUserId || this.data.lockedByUserId;
+    },
+    lockedByUser() {
+      if (this.data.sset_lockedByUserId) {
+        return `${this.data.sset_lockedByUserName || this.data.sset_lockedByUsername}`
+      } else if (this.data.lockedByUserId) {
+        return `${this.data.lockedByUserName || this.data.lockedByUsername}`
+      }
+    },
+    isLockedByMe() {
+      return this.lockedByUserId === this.$store.getters.userId
+    },
     isLockedByOther() {
-      return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId
-          || this.data.sset_lockedByUserId && this.data.sset_lockedByUserId !== this.$store.getters.userId;
+      return this.lockedByUserId && !this.isLockedByMe;
+    },
+    isEditable() {
+      // 超级管理员不受限制
+      if (this.$store.getters.isAdmin) return true;
+      return !this.isLockedByOther;
     },
   },
   props: {

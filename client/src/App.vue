@@ -412,10 +412,16 @@ h3 {
   text-shadow: #ffc58e 0 0 10px;
 }
 .text-good {
-  color: green !important;
+  color: rgb(0,128,0) !important;
+}
+.text-good-fade {
+  color: rgb(0,128,0,.5) !important;
 }
 .text-bad {
-  color: red !important;
+  color: rgb(255,0,0) !important;
+}
+.text-bad-fade {
+  color: rgb(255,0,0,.5) !important;
 }
 .text-code {
   padding: 1px 3px;

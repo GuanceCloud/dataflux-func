@@ -19,12 +19,61 @@ var scriptRecoverPointMod   = require('../models/scriptRecoverPointMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
 /* Configure */
+var BUILTIN_SCRIPT_SET_IDS = null;
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptMod.createCRUDHandler();
 
-exports.list = crudHandler.createListHandler();
-exports.get  = crudHandler.createGetHandler(null, {beforeResp: hideOfficialCode});
+exports.get = crudHandler.createGetHandler();
+
+exports.list = function(req, res, next) {
+  var scripts        = null;
+  var scriptPageInfo = null;
+
+  var scriptModel = scriptMod.createModel(res.locals);
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      scriptModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        scripts        = dbRes;
+        scriptPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 查询内置记录
+    function(asyncCallback) {
+      if (BUILTIN_SCRIPT_SET_IDS) return asyncCallback();
+
+      var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          BUILTIN_SCRIPT_SET_IDS = JSON.parse(cacheRes);
+        } else {
+          BUILTIN_SCRIPT_SET_IDS = [];
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    // 内置标记
+    scripts.forEach(function(script) {
+       script.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(script.scriptSetId) >= 0);
+    });
+
+    var ret = toolkit.initRet(scripts, scriptPageInfo);
+    res.locals.sendJSON(ret);
+  });
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
@@ -54,6 +103,9 @@ exports.add = function(req, res, next) {
     },
     // 检查脚本集锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       var scriptSetId = data.id.split('__')[0];
       scriptSetModel.getWithCheck(scriptSetId, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -88,12 +140,13 @@ exports.modify = function(req, res, next) {
   var scriptModel    = scriptMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
-  var script = null;
-
   var codeDraftMD5 = null;
   async.series([
     // 检查脚本集锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       var scriptSetId = id.split('__')[0];
       scriptSetModel.getWithCheck(scriptSetId, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -105,20 +158,19 @@ exports.modify = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 获取脚本，检查脚本锁定状态、检查代码MD5值
+    // 检查脚本锁定状态、检查代码MD5值
     function(asyncCallback) {
       scriptModel.getWithCheck(id, ['codeDraftMD5', 'lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
+        if (!res.locals.user.is('sa') // 超级管理员不受限制
+            && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
           return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script is locked by other user'));
         }
 
         if (prevCodeDraftMD5 && prevCodeDraftMD5 !== dbRes.codeDraftMD5) {
           return asyncCallback(new E('EBizRequestConflict.scriptDraftAlreadyChanged', 'Script draft already changed'));
         }
-
-        script = dbRes;
 
         return asyncCallback();
       });
@@ -158,11 +210,12 @@ exports.delete = function(req, res, next) {
   var scriptModel    = scriptMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
-  var script = null;
-
   async.series([
     // 检查脚本集锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       var scriptSetId = id.split('__')[0];
       scriptSetModel.getWithCheck(scriptSetId, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -174,16 +227,17 @@ exports.delete = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 获取脚本，检查脚本锁定状态
+    // 检查脚本锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       scriptModel.getWithCheck(id, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
           return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script is locked by other user'));
         }
-
-        script = dbRes;
 
         return asyncCallback();
       });
@@ -225,10 +279,15 @@ exports.publish = function(req, res, next) {
 
   var transScope = modelHelper.createTransScope(res.locals.db);
   async.series([
-    // 获取脚本
+    // 获取并检查脚本锁定状态
     function(asyncCallback) {
       scriptModel.getWithCheck(id, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
+
+        if (!res.locals.user.is('sa') // 超级管理员不受限制
+            && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
+          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This script is locked by other user'));
+        }
 
         // 没有修改的脚本不允许发布
         if (!force && (dbRes.codeMD5 === dbRes.codeDraftMD5 || dbRes.code === dbRes.codeDraft)) {
@@ -242,10 +301,15 @@ exports.publish = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 获取并检查脚本集
+    // 获取并检查脚本集锁定状态
     function(asyncCallback) {
       scriptSetModel.getWithCheck(script.scriptSetId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
+
+        if (!res.locals.user.is('sa') // 超级管理员不受限制
+            && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
+          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This script set is locked by other user'));
+        }
 
         scriptSet = dbRes;
 
@@ -481,23 +545,4 @@ function getCodeSummary(code) {
   var summary = summaryLines.join('\n').trim();
 
   return summary;
-};
-
-function hideOfficialCode(req, res, ret, hookExtra, callback) {
-  if (!ret.data) return callback(null, ret);
-  if (!ret.data.code && !ret.data.codeDraft) return callback(null, ret);
-
-  var scriptSetModel = scriptSetMod.createModel(res.locals);
-  scriptSetModel.getWithCheck(ret.data.scriptSetId, null, function(err, dbRes) {
-    if (err) return callback(err);
-
-    if (dbRes.type === 'official') {
-      var codeSummary = getCodeSummary(ret.data.code || ret.data.codeDraft);
-
-      if (ret.data.code)      ret.data.code      = codeSummary;
-      if (ret.data.codeDraft) ret.data.codeDraft = codeSummary;
-    }
-
-    return callback(null, ret);
-  });
 };

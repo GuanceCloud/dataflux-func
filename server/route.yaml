@@ -2289,6 +2289,12 @@ scriptAPI:
       - sset.title
       - sset.description
     query:
+      _withCode:
+        $desc: 是否同时返回代码
+        $type: bool
+      _withCodeDraft:
+        $desc: 是否同时返回代码草稿
+        $type: bool
       id:
         $desc      : 根据ID过滤
         $type      : commaArray

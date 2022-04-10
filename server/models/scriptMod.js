@@ -55,12 +55,14 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,scpt.lockedByUserId');
   sql.append('  ,scpt.createTime');
   sql.append('  ,scpt.updateTime');
+  sql.append('  ,scptLocker.username AS lockedByUserUsername');
+  sql.append('  ,scptLocker.name     AS lockedByUserName');
 
   sql.append('  ,sset.title          AS sset_title');
   sql.append('  ,sset.description    AS sset_description');
   sql.append('  ,sset.lockedByUserId AS sset_lockedByUserId');
-
-  sql.append('  ,(NOT ISNULL(scpt.lockedByUserId)) OR (NOT ISNULL(sset.lockedByUserId)) AS isLocked');
+  sql.append('  ,ssetLocker.username AS sset_lockedByUserUsername');
+  sql.append('  ,ssetLocker.name     AS sset_lockedByUserName');
 
   if (options.extra.withCode)      sql.append(',scpt.code');
   if (options.extra.withCodeDraft) sql.append(',scpt.codeDraft');
@@ -69,6 +71,12 @@ EntityModel.prototype.list = function(options, callback) {
 
   sql.append('LEFT JOIN biz_main_script_set AS sset');
   sql.append('  ON sset.id = scpt.scriptSetId');
+
+  sql.append('LEFT JOIN wat_main_user as scptLocker')
+  sql.append('  ON scptLocker.id = scpt.lockedByUserId')
+
+  sql.append('LEFT JOIN wat_main_user as ssetLocker')
+  sql.append('  ON ssetLocker.id = sset.lockedByUserId')
 
   options.baseSQL = sql.toString();
 

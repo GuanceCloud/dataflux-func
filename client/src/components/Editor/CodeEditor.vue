@@ -31,7 +31,7 @@ Recover code to latest published version                             : 恢复代
 End edit                                                             : 结束编辑
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
-This Script has been locked by other, editing is disabled            : 当前脚本被其他用户锁定，无法修改
+This Script is locked by other user({user})                          : 当前脚本被其他用户（{user}）锁定
 addedLines                                                           : '新增 {n} 行'
 removedLines                                                         : '，删除 {n} 行'
 codeLines                                                            : '共 {n} 行代码'
@@ -127,8 +127,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                   <el-button
                     type="text"
                     @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
-                    <i v-if="!isLockedByOther" class="fa fa-fw fa-wrench"></i>
-                    <i v-else class="fa fa-fw fa-search"></i>
+                    <i class="fa fa-fw fa-wrench"></i>
                   </el-button>
                 </el-tooltip>
               </code>
@@ -199,7 +198,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     </el-tooltip>
                   </el-form-item>
 
-                  <el-form-item v-if="!isLockedByOther">
+                  <el-form-item v-if="isEditable">
                     <el-button-group>
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
@@ -246,7 +245,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
 
                 <el-form-item>
                   <el-button-group>
-                    <template v-if="!conflictStatus && !isLockedByOther">
+                    <template v-if="!conflictStatus && isEditable">
                       <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                         <el-button
                           @click="resetScript"
@@ -268,45 +267,14 @@ Do NOT use monkey patch: 请勿使用猴子补丁
               </el-form>
             </div>
 
-            <InfoBlock v-if="scriptSet.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
-            <InfoBlock v-else-if="isLockedByOther" type="error" :title="$t('This Script has been locked by other, editing is disabled')"></InfoBlock>
+            <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
+            <InfoBlock v-if="data.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
           </el-header>
 
           <!-- 代码区 -->
           <el-main id="editorContainer_CodeEditor" :style="$store.getters.codeMirrorSetting.style">
             <textarea id="editor_CodeEditor"></textarea>
           </el-main>
-
-          <!-- 状态栏 -->
-          <div class="code-editor-status-bar" v-show="$store.state.isLoaded">
-            <el-tooltip :content="`${$t('DIFF')}${$t(':')} ${$tc('addedLines', diffAddedCount)}${$tc('removedLines', diffRemovedCount)}`" placement="top-end">
-              <span>
-                <span class="text-good">+{{ diffAddedCount }}</span>/<span class="text-bad">-{{ diffRemovedCount }}</span>
-              </span>
-            </el-tooltip>
-            ,
-            <template v-if="codeLines === codeDraftLines">
-              <el-tooltip :content="$tc('codeLines', codeLines)" placement="top-end">
-                <span>{{ codeLines }}</span>
-              </el-tooltip>
-            </template>
-            <template v-else>
-              <el-tooltip :content="`${$tc('codeLinesPrev', codeLines)}${$tc('codeLinesCurr', codeDraftLines)}`" placement="top-end">
-                <span>{{ codeLines }}<i class="fa fa-long-arrow-right"></i><span class="text-main">{{ codeDraftLines }}</span></span>
-              </el-tooltip>
-            </template>
-            ,
-            <template v-if="data.codeMD5 !== data.codeDraftMD5">
-              <el-tooltip :content="$t('Script is modified but NOT published yet')" placement="top-end">
-                <span class="text-main">MODIFIED</span>
-              </el-tooltip>
-            </template>
-            <template v-else>
-              <el-tooltip :content="$t('Script is published')" placement="top-end">
-                <span class="text-good">CLEAR</span>
-              </el-tooltip>
-            </template>
-          </div>
 
           <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog"></LongTextDialog>
 
@@ -454,7 +422,7 @@ export default {
     async _saveCodeDraftImpl(options) {
       options = options || {};
 
-      if (this.isLockedByOther) return;
+      if (!this.isEditable) return;
       if (!this.codeMirror) return;
 
       let prevCodeDraftMD5 = this.prevCodeDraftMD5;
@@ -505,11 +473,6 @@ export default {
 
         // 刷新侧边栏
         this._refreshAside();
-
-        // 更新状态栏数据
-        let diffInfo = this.T.getDiffInfo(this.data.code, codeDraft);
-        this.diffAddedCount   = diffInfo.addedCount;
-        this.diffRemovedCount = diffInfo.removedCount;
       }
 
       return apiRes;
@@ -518,8 +481,8 @@ export default {
       options = options || {};
       options.codeField = options.codeField || 'codeDraft';
 
-      let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
-        params: { id: this.scriptId }
+      let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
+        query: { _withCode: true, _withCodeDraft: true },
       });
       if (!apiRes.ok) {
         // 获取脚本失败则跳回简介页面
@@ -531,17 +494,6 @@ export default {
 
       this.data = apiRes.data;
       this.prevCodeDraftMD5 = apiRes.data.codeDraftMD5;
-
-      // 计算状态栏数据
-      let diffInfo = this.T.getDiffInfo(this.data.code, this.data.codeDraft);
-      this.diffAddedCount   = diffInfo.addedCount;
-      this.diffRemovedCount = diffInfo.removedCount;
-
-      // 获取关联数据
-      apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
-      if (!apiRes.ok) return;
-
-      this.scriptSet = apiRes.data;
 
       this.$store.commit('updateLoadStatus', true);
 
@@ -563,7 +515,7 @@ export default {
         this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
 
         // 锁定编辑器
-        if (this.isConflict || this.isLockedByOther) {
+        if (this.isConflict || !this.isEditable) {
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }
 
@@ -574,7 +526,7 @@ export default {
       this.closeVueSplitPane();
     },
     async saveScript() {
-      if (this.isLockedByOther) return;
+      if (!this.isEditable) return;
       if (!this.codeMirror) return;
 
       // 保存
@@ -594,7 +546,7 @@ export default {
       this.$refs.longTextDialog.update(diffPatch, diffName);
     },
     async publishScript() {
-      if (this.isLockedByOther) return;
+      if (!this.isEditable) return;
       if (!this.codeMirror) return;
 
       // 清除所有高亮
@@ -637,7 +589,7 @@ export default {
       this._refreshAside();
     },
     async resetScript() {
-      if (this.isLockedByOther) return;
+      if (!this.isEditable) return;
       if (!this.codeMirror) return;
 
       if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
@@ -657,7 +609,7 @@ export default {
       this.updateHighlightLineConfig('errorLine', null);
 
       // 保存
-      if (!this.isLockedByOther) {
+      if (this.isEditable) {
         // 仅限可编辑时
         let apiRes = await this._saveCodeDraft({ mute: true });
         if (!apiRes || !apiRes.ok) return;
@@ -1201,10 +1153,29 @@ export default {
     conflictStatus() {
       return this.$store.getters.getConflictStatus(this.$route);
     },
-    isLockedByOther() {
-      return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId
-          || this.scriptSet.lockedByUserId && this.scriptSet.lockedByUserId !== this.$store.getters.userId;
+
+    lockedByUserId() {
+      return this.data.sset_lockedByUserId || this.data.lockedByUserId;
     },
+    lockedByUser() {
+      if (this.data.sset_lockedByUserId) {
+        return `${this.data.sset_lockedByUserName || this.data.sset_lockedByUsername}`
+      } else if (this.data.lockedByUserId) {
+        return `${this.data.lockedByUserName || this.data.lockedByUsername}`
+      }
+    },
+    isLockedByMe() {
+      return this.lockedByUserId === this.$store.getters.userId
+    },
+    isLockedByOther() {
+      return this.lockedByUserId && !this.isLockedByMe;
+    },
+    isEditable() {
+      // 超级管理员不受限制
+      if (this.$store.getters.isAdmin) return true;
+      return !this.isLockedByOther;
+    },
+
     highlightedFuncId() {
       return this.$store.state.Editor_highlightedFuncId;
     },
@@ -1321,10 +1292,6 @@ export default {
       // 代码保存中标志位
       isSavingCodeDraft: false,
 
-      // DIFF信息
-      diffAddedCount  : 0,
-      diffRemovedCount: 0,
-
       // 猴子补丁提示
       img_monkeyPatchNotice: img_monkeyPatchNotice,
       showMonkeyPatchNotice: false,
@@ -1342,11 +1309,11 @@ export default {
       this.codeMirror.setOption('theme', this.codeMirrorTheme);
 
       // 自动保存
-      if (!this.isLockedByOther) {
+      if (this.isEditable) {
         let autoSaveFuncCreator = (scriptId) => {
           return this.T.debounce((editor, change) => {
             if (scriptId !== this.scriptId) return;
-            if (this.isLockedByOther) return;
+            if (!this.isEditable) return;
             if (!this.codeMirror) return;
 
             if (this.isNewLoaded) {
@@ -1387,7 +1354,7 @@ export default {
     this.updateHighlightLineConfig('selectedFuncLine', null);
     this.updateHighlightLineConfig('errorLine', null);
 
-    if (this.isLockedByOther) {
+    if (!this.isEditable) {
       return next();
     }
     if (!this.codeMirror) {

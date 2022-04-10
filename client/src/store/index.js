@@ -226,8 +226,10 @@ export default new Vuex.Store({
 
       return !!state.userProfile.isIntegratedUser;
     },
-    isSuperAdmin: (state, getters) => {
-      return !!(state.userProfile && state.userProfile.roles.indexOf('sa') >= 0);
+    isAdmin: (state, getters) => {
+      return !!(state.userProfile
+        && (state.userProfile.roles.indexOf('sa') >= 0
+          || state.userProfile.roles.indexOf('admin') >= 0));
     },
     isSocketIOReady: state => {
       return state.isSocketIOAuthed && state.xAuthToken;

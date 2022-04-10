@@ -403,7 +403,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // SA权限控制跳转
-  if (superAdminRoutes.indexOf(to.name) >= 0 && !store.getters.isSuperAdmin) {
+  if (superAdminRoutes.indexOf(to.name) >= 0 && !store.getters.isAdmin) {
     return next({ name: 'index' });
   }
 

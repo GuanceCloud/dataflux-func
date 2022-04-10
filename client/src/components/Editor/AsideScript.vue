@@ -5,7 +5,7 @@ Add Script                                     : 添加脚本
 Add Script Set                                 : 添加脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
-Locked by someone else                         : 被其他人锁定
+Locked by other user({user})                   : 被其他用户（{user}）锁定
 Locked by you                                  : 被您锁定
 Quick View                                     : 快速查看
 View                                           : 查看
@@ -19,8 +19,8 @@ Code edited but not published yet              : 代码已修改但尚未发布
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
 
-Script Set pinned  : 环境变量已置顶
-Script Set unpinned: 环境变量已取消
+Script Set pinned  : 脚本集已置顶
+Script Set unpinned: 脚本集已取消
 Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script locked      : 脚本已上锁
@@ -94,7 +94,8 @@ Script unlocked    : 脚本已解锁
             <el-button-group>
               <!-- 添加脚本集 -->
               <el-button v-if="data.type === 'scriptSet'"
-                size="mini" class="text-main"
+                size="mini"
+                :disabled="!data.isEditable"
                 @click="openEntity(node, data, 'add')">
                 <i class="fa fa-fw fa-plus"></i>
                 {{ $t('Add Script') }}
@@ -111,6 +112,7 @@ Script unlocked    : 脚本已解锁
               <!-- 置顶 -->
               <el-button v-if="data.type === 'scriptSet'"
                 size="mini"
+                :disabled="!data.isEditable"
                 v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
                 <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
                 {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
@@ -119,17 +121,18 @@ Script unlocked    : 脚本已解锁
               <!-- 锁定/解锁脚本/脚本集 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
                 size="mini"
+                :disabled="!data.isEditable || (data.type === 'script' && data.isLockedByScriptSet)"
                 v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
                 <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
                 {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
               </el-button>
 
-              <!-- 配置/查看 -->
+              <!-- 配置 -->
               <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
                 size="mini"
                 @click="openEntity(node, data, 'setup')">
-                <i class="fa fa-fw" :class="[data.isLockedByOther ? 'fa-search' : 'fa-wrench']"></i>
-                {{ data.isLockedByOther ? $t('View') : $t('Setup') }}
+                <i class="fa fa-fw fa-wrench"></i>
+                {{ $t('Setup') }}
               </el-button>
             </el-button-group>
           </template>
@@ -161,8 +164,8 @@ Script unlocked    : 脚本已解锁
 
             <!-- 状态图标 -->
             <div>
-              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by someone else') : $t('Locked by you')" placement="top" :enterable="false">
-                <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', data.isLockedByOther ? 'text-bad':'text-good' ]"></i>
+              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+                <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', (data.isLockedByOther ? 'text-bad':'text-good') + (data.isLockedByScriptSet ? '-fade text-small':'') ]"></i>
               </el-tooltip>
               <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
                 <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
@@ -242,7 +245,18 @@ export default {
 
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
-        query: { fields: ['id', 'title', 'description', 'isLocked', 'lockedByUserId', 'isBuiltin', 'isPinned', 'pinTime'] },
+        query: {
+          fields: [
+            'id',
+            'title',
+            'description',
+            'lockedByUserId',
+            'lockedByUserUsername',
+            'lockedByUserName',
+            'pinTime',
+            'isBuiltin',
+          ]
+        },
       });
       if (!apiRes.ok) return;
 
@@ -254,16 +268,24 @@ export default {
         d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
-        let isLockedByOther = d.lockedByUserId && d.lockedByUserId !== this.$store.getters.userId;
+        let lockedByUser    = `${d.lockedByUserName || d.lockedByUsername}`
+        let isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
+        let isLockedByOther = d.lockedByUserId && !isLockedByMe;
+        let isEditable      = this.$store.getters.isAdmin || !isLockedByOther;
+        let isLocked        = isLockedByMe || isLockedByOther;
+        let isPinned        = !!d.pinTime;
         scriptSetMap[d.id] = {
           id             : d.id,
           label          : d.title || d.id,
           type           : 'scriptSet',
-          isLocked       : d.isLocked,
+          lockedByUser   : lockedByUser,
+          isLockedByMe   : isLockedByMe,
           isLockedByOther: isLockedByOther,
-          isBuiltin      : d.isBuiltin,
-          isPinned       : d.isPinned,
+          isEditable     : isEditable,
+          isLocked       : isLocked,
+          isPinned       : isPinned,
           pinTime        : d.pinTime,
+          isBuiltin      : d.isBuiltin,
           searchTEXT     : `${d.title} ${d.id}`,
 
           title      : d.title,
@@ -275,7 +297,22 @@ export default {
 
       /***** 脚本 *****/
       apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
-        query: { fields: ['id', 'title', 'description', 'scriptSetId', 'codeMD5', 'codeDraftMD5', 'isLocked', 'lockedByUserId', 'sset_lockedByUserId'] },
+        query: {
+          fields: [
+            'id',
+            'title',
+            'description',
+            'scriptSetId',
+            'codeMD5',
+            'codeDraftMD5',
+            'lockedByUserId',
+            'lockedByUserUsername',
+            'lockedByUserName',
+            'sset_lockedByUserId',
+            'sset_lockedByUserUsername',
+            'sset_lockedByUserName',
+          ]
+        },
       });
       if (!apiRes.ok) return;
 
@@ -289,25 +326,34 @@ export default {
         // 缩减描述行数
         d.description = this.T.limitLines(d.description, 10);
 
-        // 状态
-        let isCodeEdited = d.codeMD5 !== d.codeDraftMD5;
-        let isLockedByOther = d.lockedByUserId && d.lockedByUserId !== this.$store.getters.userId
-                            || d.sset_lockedByUserId && d.sset_lockedByUserId !== this.$store.getters.userId;
-
         // 示例代码
         let shortScriptId = d.id.split('__').slice(1).join('__');
         let sampleCode = `import ${d.id} as ${shortScriptId}`;
 
         // 创建节点数据
+        let isCodeEdited   = d.codeMD5 !== d.codeDraftMD5;
+        let lockedByUserId = d.sset_lockedByUserId || d.lockedByUserId;
+        let lockedByUser   = d.sset_lockedByUserId
+                           ? `${d.sset_lockedByUserName || d.sset_lockedByUsername}`
+                           : `${d.lockedByUserName || d.lockedByUsername}`
+        let isLockedByMe        = lockedByUserId === this.$store.getters.userId;
+        let isLockedByOther     = lockedByUserId && !isLockedByMe;
+        let isLocked            = isLockedByMe || isLockedByOther;
+        let isLockedByScriptSet = isLocked && !!d.sset_lockedByUserId;
+        let isEditable          = this.$store.getters.isAdmin || !isLockedByOther;
         scriptMap[d.id] = {
-          id             : d.id,
-          scriptSetId    : d.scriptSetId,
-          label          : d.title || shortScriptId,
-          type           : 'script',
-          isLocked       : d.isLocked,
-          isCodeEdited   : isCodeEdited,
-          isLockedByOther: isLockedByOther,
-          searchTEXT     : `${d.title} ${d.id}`,
+          id                 : d.id,
+          scriptSetId        : d.scriptSetId,
+          label              : d.title || shortScriptId,
+          type               : 'script',
+          isCodeEdited       : isCodeEdited,
+          lockedByUser       : lockedByUser,
+          isLockedByMe       : isLockedByMe,
+          isLockedByOther    : isLockedByOther,
+          isLocked           : isLocked,
+          isLockedByScriptSet: isLockedByScriptSet,
+          isEditable         : isEditable,
+          searchTEXT         : `${d.title} ${d.id}`,
 
           title      : d.title,
           description: d.description,
@@ -324,7 +370,19 @@ export default {
 
       /***** 函数 *****/
       apiRes = await this.T.callAPI_getAll('/api/v1/funcs/do/list', {
-        query: { fields: ['id', 'title', 'description', 'definition', 'scriptSetId', 'scriptId', 'sset_type', 'integration', 'extraConfigJSON'] },
+        query: {
+          fields: [
+            'id',
+            'title',
+            'description',
+            'definition',
+            'scriptSetId',
+            'scriptId',
+            'sset_type',
+            'integration',
+            'extraConfigJSON',
+          ]
+        },
       });
       if (!apiRes.ok) return;
 

@@ -186,7 +186,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="AccessKey" v-if="$store.getters.isSuperAdmin">
+                <el-form-item prop="AccessKey" v-if="$store.getters.isAdmin">
                   <el-switch
                     :active-value="true"
                     :inactive-value="false"

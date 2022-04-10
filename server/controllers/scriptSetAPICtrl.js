@@ -64,7 +64,7 @@ exports.list = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    // 内置
+    // 内置标记
     scriptSets.forEach(function(scriptSet) {
        scriptSet.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0);
     });
@@ -122,6 +122,9 @@ exports.modify = function(req, res, next) {
   async.series([
     // 检查脚本集锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       scriptSetModel.getWithCheck(id, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -162,6 +165,9 @@ exports.delete = function(req, res, next) {
   async.series([
     // 检查脚本集锁定状态
     function(asyncCallback) {
+      // 超级管理员不受限制
+      if (res.locals.user.is('sa')) return asyncCallback();
+
       scriptSetModel.getWithCheck(id, ['lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
 

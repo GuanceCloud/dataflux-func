@@ -22,8 +22,8 @@ Script Set cloned  : 脚本集已克隆
 
 Are you sure you want to delete the Script Set?: 是否确认删除此脚本集？
 
-This Script Set is locked by someone else, setup is disabled: 当前脚本已被其他人锁定，无法更改配置
-This Script Set is locked by you, setup is disabled to others: 当前脚本已被您锁定，其他人无法更改配置
+This Script Set is locked by you: 当前脚本已被您锁定
+This Script Set is locked by other user({user}): 当前脚本已被其他用户（{user}）锁定
 
 Please input new Script Set ID: 请输入新脚本集ID
 Inputed Script Set ID already exists: 输入的脚本集ID已经存在
@@ -42,12 +42,12 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="isLockedByOther" :rules="formRules">
-                <el-form-item v-if="isLockedByOther">
-                  <InfoBlock type="error" :title="$t('This Script Set is locked by someone else, setup is disabled')"></InfoBlock>
+              <el-form ref="form" label-width="120px" :model="form" :disabled="!isEditable" :rules="formRules">
+                <el-form-item v-if="isLockedByMe">
+                  <InfoBlock type="success" :title="$t('This Script Set is locked by you')"></InfoBlock>
                 </el-form-item>
-                <el-form-item v-else-if="data.isLocked">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you, setup is disabled to others')"></InfoBlock>
+                <el-form-item v-else-if="isLockedByOther">
+                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
@@ -288,9 +288,22 @@ export default {
           return this.$route.params.id;
       }
     },
-    isLockedByOther() {
-      return this.data.lockedByUserId && this.data.lockedByUserId !== this.$store.getters.userId;
+
+    lockedByUser() {
+        return `${this.data.lockedByUserName || this.data.lockedByUsername}`
     },
+    isLockedByMe() {
+      return this.data.lockedByUserId === this.$store.getters.userId
+    },
+    isLockedByOther() {
+      return this.data.lockedByUserId && !this.isLockedByMe;
+    },
+    isEditable() {
+      // 超级管理员不受限制
+      if (this.$store.getters.isAdmin) return true;
+      return !this.isLockedByOther;
+    },
+
     requirementsTEXT() {
       if (!this.form.requirements) return null;
 
