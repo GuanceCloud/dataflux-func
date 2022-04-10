@@ -373,11 +373,13 @@ class SyncCache(BaseTask):
                 SELECT
                     seq AS expiredMaxSeq
                 FROM biz_main_task_info
+                WHERE
+                    originId = ?
                 ORDER BY
                     seq DESC
                 LIMIT ?, 1
             '''
-            sql_params = [ task_info_limit ]
+            sql_params = [ origin_id, task_info_limit ]
             db_res = self.db.query(sql, sql_params)
 
             if db_res:
