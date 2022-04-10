@@ -309,7 +309,7 @@ docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}
 
 # 等待完成
 blankLine
-log "Please wait for the container to run, wait 30 seconds..."
+log "Please wait 30 seconds for the system to be ready..."
 sleep 30
 docker ps
 
