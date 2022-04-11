@@ -432,7 +432,7 @@ exports.import = function(req, res, next) {
     // 获取脚本集并计算差异（添加、替换）
     function(asyncCallback) {
       var opt = {
-        fields: ['id', 'title'],
+        fields: ['sset.id', 'sset.title'],
       };
       scriptSetModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);

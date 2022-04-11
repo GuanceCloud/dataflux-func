@@ -58,7 +58,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Expires')" width="160">
+          <el-table-column :label="$t('Expires')" width="120">
             <template slot-scope="scope">
               <span v-if="!scope.row.expireAtMs" class="text-bad">{{ $t('Never') }}</span>
               <template v-else>
@@ -69,13 +69,13 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Data Size')"  sortable sort-by="dataSize" align="right" width="120">
+          <el-table-column :label="$t('Data Size')" sortable sort-by="dataSize" align="right" width="150">
             <template slot-scope="scope">
               <code :class="{ 'text-bad': scope.row.isOverSized }">{{ scope.row.dataSizeHuman }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="200">
             <template slot-scope="scope">
               <el-link v-if="!scope.row.isOverSized" @click="showDetail(scope.row)">{{ $t('Show content') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
