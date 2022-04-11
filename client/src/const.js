@@ -745,6 +745,11 @@ export default {
   get PIP_MIRROR() {
     return [
       {
+        key  : 'ustc',
+        name : $t('USTC mirror'),
+        value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
+      },
+      {
         key  : 'alibaba',
         name : $t('Alibaba Cloud mirror'),
         value: 'https://mirrors.aliyun.com/pypi/simple/',
@@ -758,11 +763,6 @@ export default {
         key  : 'tsinghua',
         name : $t('Tsinghua University mirror'),
         value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
-      },
-      {
-        key  : 'ustc',
-        name : $t('USTC mirror'),
-        value: 'https://pypi.mirrors.ustc.edu.cn/simple/',
       },
       {
         key  : 'official',
