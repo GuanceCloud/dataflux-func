@@ -51,7 +51,7 @@ Response                      : 响应
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="270">
+          <el-table-column :label="$t('User')" width="350">
             <template slot-scope="scope">
               <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
