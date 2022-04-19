@@ -52,9 +52,6 @@ export default {
 
       let key   = this.$route.name;
       let items = this.$store.state.fuzzySearchHistoryMap[key] || [];
-      items.sort((a, b) => {
-        return b.timestamp - a.timestamp;
-      })
       return callback(items);
     },
   },

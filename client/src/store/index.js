@@ -481,13 +481,17 @@ export default new Vuex.Store({
 
       if (!queryString) return;
 
-      if (!state.fuzzySearchHistoryMap)      state.fuzzySearchHistoryMap      = {};
-      if (!state.fuzzySearchHistoryMap[key]) state.fuzzySearchHistoryMap[key] = [];
+      if (!state.fuzzySearchHistoryMap) {
+        state.fuzzySearchHistoryMap = {};
+      }
+      if (!state.fuzzySearchHistoryMap[key]) {
+        state.fuzzySearchHistoryMap[key] = [];
+      }
 
       state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].filter(item => item.value !== queryString);
-
       state.fuzzySearchHistoryMap[key].push({ value: queryString, timestamp: Date.now() });
-      state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(-10);
+      state.fuzzySearchHistoryMap[key].sort((a, b) => { return b.timestamp - a.timestamp })
+      state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(0, 10);
     },
 
     syncState(state, nextState) {
