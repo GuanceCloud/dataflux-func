@@ -281,6 +281,8 @@ _DBDATA_TABLE_LIMIT_MAP: >
   ,biz_main_script_set_export_history=1000
   ,biz_main_script_set_import_history=1000
   ,biz_main_script_publish_history=1000
+_DBDATA_TABLE_EXPIRE_MAP: >
+  biz_main_task_info=7776000
 _UPLOAD_FILE_EXPIRES: 3600
 
 # 数据库自动备份

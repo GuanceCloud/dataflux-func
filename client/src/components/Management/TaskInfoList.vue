@@ -138,7 +138,10 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           </el-table-column>
           <el-table-column :label="$t('Log Lines')" align="right" width="100">
             <template slot-scope="scope">
-              <span class="text-info">{{ scope.row.logLines }}</span>
+              <span v-if="scope.row.logLines < 10" class="text-info">{{ scope.row.logLines }}</span>
+              <span v-else-if="scope.row.logLines < 100" class="text-good">{{ scope.row.logLines }}</span>
+              <span v-else-if="scope.row.logLines < 1000" class="text-watch">{{ scope.row.logLines }}</span>
+              <span v-else="scope.row.logLines" class="text-bad">{{ scope.row.logLines }}</span>
             </template>
           </el-table-column>
 

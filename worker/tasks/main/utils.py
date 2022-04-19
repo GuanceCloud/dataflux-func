@@ -539,6 +539,14 @@ def auto_clean(self, *args, **kwargs):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
+    table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
+    for table, expires in table_expire_map.items():
+        try:
+            self.clear_table_by_expires(table=table, expires=int(expires))
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
     # 清理临时目录
     try:
         self.clear_temp_file(CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
@@ -559,7 +567,7 @@ def auto_clean(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-    # 清楚已启用功能的数据
+    # 清楚已弃用功能的数据
     try:
         self.clear_deprecated_data()
     except Exception as e:
