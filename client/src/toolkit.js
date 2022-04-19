@@ -1277,6 +1277,7 @@ export function doPageFilter(nextListQuery, pushNow=true) {
     query : jsonCopy(currentRoute.query),
   };
   nextRoute.query.filter = filter;
+  nextRoute.query.ts = Date.now();
 
   if (pushNow) {
     setImmediate(() => {
