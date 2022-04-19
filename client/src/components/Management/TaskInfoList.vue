@@ -2,24 +2,34 @@
 s : 秒
 ms: 毫秒
 
-Task       : 任务
-Func ID    : 函数ID
-Func Name  : 函数名
-Func Title : 函数标题
-Main Task  : 主任务
-Sub Task   : 子任务
-Wait Time  : 排队时间
-Run Time   : 执行时间
-Task Type  : 任务类型
-Task Status: 任务状态
+Planned Time: 计划时间
+Task        : 任务
+Func ID     : 函数ID
+Func Name   : 函数名
+Func Title  : 函数标题
+Main Task   : 主任务
+Sub Task    : 子任务
+Wait Cost   : 排队耗时
+Run Cost    : 执行耗时
+Log Lines   : 日志行数
+Task Type   : 任务类型
+Task Status : 任务状态
 
 Log         : 日志
 Exception   : 异常
 No log      : 无日志
 No exception: 无异常
 
+Recent Task Info : 近期任务信息
+Related Task Info: 相关任务信息
+Only main tasks are listed: 在本页面只展示主任务
+
 success: 成功
 failure: 失败
+
+Only Main Task: 仅主任务
+Show Detail   : 显示详情
+Related Tasks : 相关任务
 
 Task Info cleared: 任务信息已清空
 
@@ -32,18 +42,18 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ isMainTaskInfoList ? '近期任务信息' : '相关任务信息' }}</span>
+          <span>{{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip content="在本页面只展示主任务" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Only main tasks are listed')" placement="bottom" :enterable="false">
               <el-checkbox v-if="isMainTaskInfoList"
                 :border="true"
                 size="small"
                 v-model="dataFilter.rootTaskId"
                 true-label="ROOT"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">仅主任务</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Only Main Task') }}</el-checkbox>
             </el-tooltip>
 
             &#12288;
@@ -71,7 +81,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column label="状态" width="150">
+          <el-table-column :label="$t('Status')" width="150">
             <template slot-scope="scope">
               <el-tag
                 v-if="C.TASK_STATUS_MAP.get(scope.row.status)"
@@ -81,7 +91,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             </template>
           </el-table-column>
 
-          <el-table-column label="计划时间" width="200">
+          <el-table-column :label="$t('Planned Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.triggerTimeMs | datetime }}</span>
               <br>
@@ -91,12 +101,12 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
 
           <el-table-column width="100" align="center">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.subTaskCount > 0" size="medium" type="primary">主任务</el-tag>
-              <el-tag v-else-if="scope.row.rootTaskId !== 'ROOT'" size="small" type="info">子任务</el-tag>
+              <el-tag v-if="scope.row.subTaskCount > 0" size="medium" type="primary">{{ $t('Main Task') }}</el-tag>
+              <el-tag v-else-if="scope.row.rootTaskId !== 'ROOT'" size="small" type="info">{{ $t('Sub Task') }}</el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column label="函数" min-width="300">
+          <el-table-column :label="$t('Func')" min-width="300">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.funcId"
@@ -108,7 +118,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             </template>
           </el-table-column>
 
-          <el-table-column label="排队耗时" align="right" width="100">
+          <el-table-column :label="$t('Wait Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.waitCostMs && scope.row.waitCostMs > 2000">
                 <span :class="scope.row.waitCostClass">{{ scope.row.waitCostMs < 10000 ? scope.row.waitCostMs : (scope.row.waitCostMs / 1000).toFixed(1) }}</span>
@@ -117,13 +127,18 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
               <template v-else>-</template>
             </template>
           </el-table-column>
-          <el-table-column label="执行耗时" align="right" width="100">
+          <el-table-column :label="$t('Run Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.runCostMs">
                 <span :class="scope.row.runCostClass">{{ scope.row.runCostMs < 10000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</span>
                 <span class="text-info">{{ scope.row.runCostMs < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Log Lines')" align="right" width="100">
+            <template slot-scope="scope">
+              <span class="text-info">{{ scope.row.logLines }}</span>
             </template>
           </el-table-column>
 
@@ -133,10 +148,10 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
                 <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
                   type="text"
                   @click="openSubTaskInfo(scope.row)"
-                  >相关任务</el-button>
+                  >{{ $t('Related Tasks') }}</el-button>
               </template>
 
-              <el-button @click="showDetail(scope.row)" type="text">显示详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show Detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -182,6 +197,12 @@ export default {
       if (!apiRes.ok) return;
 
       apiRes.data.forEach(d => {
+        // 日志长度
+        d.logLines = 0
+        if (d.logMessageTEXT) {
+          d.logLines = d.logMessageTEXT.split('\n').length;
+        }
+
         // 排队等待时间
         if (d.triggerTimeMs && d.startTimeMs) {
           d.waitCostMs = d.startTimeMs - d.triggerTimeMs;
