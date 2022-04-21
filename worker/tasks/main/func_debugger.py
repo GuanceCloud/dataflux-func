@@ -27,7 +27,7 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse
 CONFIG = yaml_resources.get('CONFIG')
 
 class FuncDebugger(ScriptBaseTask):
-    def get_script_dict_for_debugger(self, script_id):
+    def load_script_dict_for_debugger(self, draft_script_id):
         scripts = []
 
         # 获取当前脚本草稿
@@ -51,7 +51,7 @@ class FuncDebugger(ScriptBaseTask):
 
             LIMIT 1
             '''
-        sql_params = [script_id]
+        sql_params = [draft_script_id]
         db_res = self.db.query(sql, sql_params)
         scripts += db_res
 
@@ -73,13 +73,11 @@ class FuncDebugger(ScriptBaseTask):
             WHERE
                 `scpt`.`id` != ?
             '''
-        sql_params = [script_id]
+        sql_params = [draft_script_id]
         db_res = self.db.query(sql, sql_params)
         scripts += db_res
 
-        script_dict = self.create_script_dict(scripts)
-
-        return script_dict
+        self.load_script_dict(scripts)
 
 @app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger)
 def func_debugger(self, *args, **kwargs):
@@ -133,8 +131,8 @@ def func_debugger(self, *args, **kwargs):
 
     try:
         # 获取代码对象
-        script_dict = self.get_script_dict_for_debugger(script_id)
-        target_script = script_dict.get(script_id)
+        self.load_script_dict_for_debugger(draft_script_id=script_id)
+        target_script = self.script_dict.get(script_id)
 
         if not target_script:
             e = NotFoundException('Script `{}` not found'.format(script_id))
@@ -165,7 +163,7 @@ def func_debugger(self, *args, **kwargs):
         self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
         script_scope = self.create_safe_scope(
             script_name=script_id,
-            script_dict=script_dict,
+            script_dict=self.script_dict,
             extra_vars=extra_vars)
 
         # 加载入口脚本

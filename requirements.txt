@@ -15,9 +15,9 @@ paho-mqtt==1.5.1
 psutil==5.8.0
 psycopg2==2.8.5
 pycryptodomex==3.8.0
-pylru==1.2.0
 pymongo==3.10.1
 pymssql==2.2.1
+PyMySQL[rsa,ed25519]==1.0.2
 python-dateutil==2.7.2
 python3-memcached==1.51
 PyYAML==5.4.1

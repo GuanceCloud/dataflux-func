@@ -5,7 +5,6 @@ import re
 
 # 3rd-party Modules
 import six
-import MySQLdb
 import xmltodict
 from retry import retry
 import requests
@@ -14,6 +13,18 @@ import requests
 from worker.utils import toolkit
 
 retry_for_requests = retry((requests.ConnectionError, requests.Timeout), tries=3, delay=1, backoff=2, jitter=(1, 2))
+
+SQL_PARAM_ESCAPE_MAP = {
+  '\0'  : '\\0',
+  '\b'  : '\\b',
+  '\t'  : '\\t',
+  '\n'  : '\\n',
+  '\r'  : '\\r',
+  '\x1a': '\\Z',
+  '"'   : '\\"',
+  '\''  : '\\\'',
+  '\\'  : '\\\\',
+}
 
 def parse_response(response):
     resp_content_type = response.headers.get('content-type') or ''
@@ -43,7 +54,7 @@ def parse_response(response):
         except:
             raise
 
-def escape_string(s):
+def escape_sql_param(s):
     if s is None:
         return 'NULL'
 
@@ -53,7 +64,8 @@ def escape_string(s):
         return s
 
     elif isinstance(s, six.string_types):
-        s = MySQLdb.escape_string(six.ensure_str(s))
+        s = six.ensure_str(s)
+        s = ''.join(SQL_PARAM_ESCAPE_MAP.get(c, c) for c in list(s))
         s = "'{}'".format(six.ensure_str(s))
         return s
 
@@ -94,7 +106,7 @@ def format_sql(sql, sql_params=None):
                             expressions.append('{} = NULL'.format(k))
 
                         else:
-                            expressions.append("{} = {}".format(k, escape_string(v)))
+                            expressions.append("{} = {}".format(k, escape_sql_param(v)))
 
                     sql = sql.replace('?', placeholder_token, 1)
                     sql_format_data[placeholder] = ', '.join(expressions)
@@ -104,11 +116,11 @@ def format_sql(sql, sql_params=None):
                     expressions = []
                     for x in sql_param:
                         if isinstance(x, (tuple, list, set)):
-                            values = [escape_string(v) for v in x]
+                            values = [escape_sql_param(v) for v in x]
                             expressions.append('({})'.format(', '.join(values)))
 
                         else:
-                            expressions.append(escape_string(x))
+                            expressions.append(escape_sql_param(x))
 
                     sql = sql.replace('?', placeholder_token, 1)
                     sql_format_data[placeholder] = ', '.join(expressions)
@@ -116,7 +128,7 @@ def format_sql(sql, sql_params=None):
                 else:
                     # Other -> 'value'
                     sql = sql.replace('?', placeholder_token, 1)
-                    sql_format_data[placeholder] = escape_string(sql_param)
+                    sql_format_data[placeholder] = escape_sql_param(sql_param)
 
     sql = sql.format(**sql_format_data)
 
@@ -155,7 +167,7 @@ def format_sql_v2(sql, sql_params=None):
                         expressions.append('{} = NULL'.format(k))
 
                     else:
-                        expressions.append("{} = {}".format(k, escape_string(v)))
+                        expressions.append("{} = {}".format(k, escape_sql_param(v)))
 
                 escaped_sql_param = ', '.join(expressions)
 
@@ -164,17 +176,17 @@ def format_sql_v2(sql, sql_params=None):
                 expressions = []
                 for x in sql_param:
                     if isinstance(x, (tuple, list, set)):
-                        values = [escape_string(v) for v in x]
+                        values = [escape_sql_param(v) for v in x]
                         expressions.append('({})'.format(', '.join(values)))
 
                     else:
-                        expressions.append(escape_string(x))
+                        expressions.append(escape_sql_param(x))
 
                 escaped_sql_param = ', '.join(expressions)
 
             else:
                 # Other -> 'value'
-                escaped_sql_param = escape_string(sql_param)
+                escaped_sql_param = escape_sql_param(sql_param)
 
         start_index, end_index = m.span()
         result += sql[chunk_index:start_index] + escaped_sql_param

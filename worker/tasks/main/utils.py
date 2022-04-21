@@ -41,7 +41,7 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     '''
     脚本重新载入Redis任务
     '''
-    def cache_scripts_to_redis(self):
+    def cache_scripts_to_redis(self, force=False):
         # 获取脚本
         scripts      = self.get_scripts()
         scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
@@ -54,23 +54,24 @@ class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
             cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
 
         # 缓存脚本至Redis
-        if cached_scripts_md5 != scripts_md5:
+        if force or cached_scripts_md5 != scripts_md5:
             key_values = {
-                toolkit.get_cache_key('fixedCache', 'scriptsDump'): scripts_dump,
                 toolkit.get_cache_key('fixedCache', 'scriptsMD5') : scripts_md5,
+                toolkit.get_cache_key('fixedCache', 'scriptsDump'): scripts_dump,
             }
             self.cache_db.mset(key_values)
 
 @app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
 def reload_scripts(self, *args, **kwargs):
     lock_time = kwargs.get('lockTime') or 0
+    force     = kwargs.get('force') or False
 
     # 根据参数确定是否需要上锁
     if isinstance(lock_time, (int, float)) and lock_time > 0:
         self.lock(max_age=int(lock_time))
 
     # 将脚本缓存如Redis
-    self.cache_scripts_to_redis()
+    self.cache_scripts_to_redis(force=force)
 
 # Main.SyncCache
 class SyncCache(BaseTask):

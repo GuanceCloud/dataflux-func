@@ -19,6 +19,9 @@ CONFIG = yaml_resources.get('CONFIG')
 
 CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
 
+class TaskInLockedException(Exception):
+    pass
+
 def gen_task_id():
     '''
     Generate a prefixed task ID
@@ -146,6 +149,10 @@ class BaseTask(app.Task):
 
             return super(BaseTask, self).__call__(*args, **kwargs)
 
+        except TaskInLockedException as e:
+            # 任务重复运行错误，认为正常结束即可
+            self.logger.warning(str(e))
+
         except (SoftTimeLimitExceeded, TimeLimitExceeded) as e:
             raise
 
@@ -226,8 +233,7 @@ class BaseTask(app.Task):
         lock_key   = toolkit.get_cache_key('lock', self.name)
         lock_value = toolkit.gen_uuid()
         if not self.cache_db.lock(lock_key, lock_value, max_age):
-            self.logger.warning(f"`{self.name}` Task already launched.")
-            return
+            raise TaskInLockedException(f"`{self.name}` Task already launched.")
 
         return lock_key, lock_value
 

@@ -18,7 +18,6 @@ from collections import OrderedDict
 # 3rd-party Modules
 import six
 import arrow
-import pylru
 import requests
 from croniter import croniter
 import funcsigs
@@ -35,7 +34,7 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 CONFIG = yaml_resources.get('CONFIG')
 ROUTE  = yaml_resources.get('ROUTE')
 
-COMPILED_CODE_LRU = pylru.lrucache(CONFIG['_FUNC_TASK_COMPILE_CACHE_MAX_SIZE'])
+COMPILED_CODE_CACHE_MAP = {}
 
 FIX_INTEGRATION_KEY_MAP = {
     # 额外用于登录DataFlux Func平台的函数
@@ -1497,25 +1496,41 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         return safe_scope
 
-    def create_script_dict(self, scripts):
+    def load_script_dict(self, scripts):
+        # 清理超过任务最长执行时间的缓存代码编译
+        for k in list(COMPILED_CODE_CACHE_MAP.keys()):
+            timestamp = 0
+            try:
+                timestamp = COMPILED_CODE_CACHE_MAP[k]['timestamp']
+            except KeyError as e:
+                pass
+
+            if timestamp < time.time() - CONFIG['_FUNC_TASK_MAX_TIMEOUT']:
+                COMPILED_CODE_CACHE_MAP.pop(k, None)
+                self.logger.info('[COMPILE CODE CACHE] expired: `{}`'.format(k))
+
+        # 生成脚本字典并缓存编译
         script_dict = {}
         for s in scripts:
             if not s.get('code'):
                 continue
 
-            lru_key = '{0}-{1}'.format(s['id'], s['codeMD5'])
+            cache_key = '{0}-{1}'.format(s['id'], s['codeMD5'])
 
             # 优先从内存缓存中获取编译后的代码对象
             script_code_obj = None
             try:
-                script_code_obj = COMPILED_CODE_LRU[lru_key]
+                script_code_obj = COMPILED_CODE_CACHE_MAP[cache_key]['codeObj']
             except KeyError as e:
                 pass
 
             if not script_code_obj:
                 script_code_obj = compile(s['code'], s['id'], 'exec')
-                COMPILED_CODE_LRU[lru_key] = script_code_obj
-                self.logger.info('[COMPILE SCRIPT] {}'.format(s['id']))
+                COMPILED_CODE_CACHE_MAP[cache_key] = {
+                    'codeObj' : script_code_obj,
+                    'timetamp': time.time(),
+                }
+                self.logger.info('[COMPILE CODE CACHE] added: `{}`'.format(s['id']))
 
             script_dict[s['id']] = {
                 'id'             : s['id'],
@@ -1527,9 +1542,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 'scriptSetId'    : s['scriptSetId'],
             }
 
-        self.script_dict = script_dict
+        self.logger.info('[COMPILE CODE CACHE] count: {}'.format(len(COMPILED_CODE_CACHE_MAP)))
 
-        return script_dict
+        self.script_dict = script_dict
 
     def safe_exec(self, script_code_obj, globals=None, locals=None, script_dict=None):
         safe_scope = globals or self.create_safe_scope(script_dict=script_dict)

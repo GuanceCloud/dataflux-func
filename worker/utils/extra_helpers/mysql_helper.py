@@ -6,8 +6,8 @@ import datetime
 import traceback
 
 # 3rd-party Modules
-import MySQLdb
-from MySQLdb.cursors import DictCursor
+import pymysql
+from pymysql.cursors import DictCursor
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -52,9 +52,9 @@ class MySQLHelper(object):
 
             self.config = config
             if pool_size:
-                self.client = PooledDB(MySQLdb, **get_config(config))
+                self.client = PooledDB(pymysql, **get_config(config))
             else:
-                self.client = PersistentDB(MySQLdb, **get_config(config))
+                self.client = PersistentDB(pymysql, **get_config(config))
 
         else:
             global CLIENT_CONFIG
@@ -69,7 +69,7 @@ class MySQLHelper(object):
                     'database': CONFIG['MYSQL_DATABASE'],
                     'charset' : CONFIG['_MYSQL_CHARSET'],
                 }
-                CLIENT = PersistentDB(MySQLdb, **get_config(CLIENT_CONFIG))
+                CLIENT = PersistentDB(pymysql, **get_config(CLIENT_CONFIG))
 
             self.config = CLIENT_CONFIG
             self.client = CLIENT

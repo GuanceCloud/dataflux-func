@@ -435,7 +435,8 @@ exports.publish = function(req, res, next) {
       // 发布成功后
       // 1. 重新加载脚本
       // 2. 运行发布后自动运行的函数
-      celery.putTask('Main.ReloadScripts', null, null, null, null, function(err) {
+      var taskKwargs = { force: true };
+      celery.putTask('Main.ReloadScripts', null, taskKwargs, null, null, function(err) {
         if (wait) doResponse(); // 等待发布结束
         if (err) return;
 
