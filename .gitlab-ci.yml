@@ -108,7 +108,7 @@ singleton:
 
 # 观测云同捆发布
 #   主要用于驻云SaaS版预发/生产环境
-dataflux:
+guanceSaaS:
   stage: build
   only:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
@@ -131,7 +131,7 @@ dataflux:
     - cloudcare-multiarch
 
 # PaaS 预发
-datafluxPaaS_prev:
+guancePaaS_prev:
   stage: build
   only:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
@@ -157,7 +157,7 @@ datafluxPaaS_prev:
     - cloudcare-multiarch
 
 # PaaS 生产
-datafluxPaaS_prod:
+guancePaaS_prod:
   stage: build
   only:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
@@ -181,7 +181,6 @@ datafluxPaaS_prod:
       --push
   tags:
     - cloudcare-multiarch
-
 
 # ========== 部署 ==========
 dev_deploy:
