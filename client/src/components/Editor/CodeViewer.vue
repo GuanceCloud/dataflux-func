@@ -92,8 +92,8 @@ Saved Draft Code: 已保存的草稿代码
         </div>
 
         <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
+        <InfoBlock v-else-if="data.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
         <InfoBlock v-else type="warning" :title="$t('Currently in view mode, click Edit button to enter edit mode')"></InfoBlock>
-        <InfoBlock v-if="data.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
       </el-header>
 
       <!-- 代码区 -->
