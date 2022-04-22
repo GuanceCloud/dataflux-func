@@ -144,17 +144,15 @@ failureCount  : '失败 {n}'
                 <span v-if="scope.row.lastStatus === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
                 </span>
-                <el-tooltip v-else-if="scope.row.lastStatus === 'failure'" :content="scope.row.lastEdumpTEXT" placement="bottom">
-                  <span class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-                </el-tooltip>
+                <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
+                  <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                </span>
                 <span v-else class="text-main">
                   <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
                 </span>
 
                 <br>
-                <i class="fa fa-fw fa-pie-chart"></i>
+                <i class="fa fa-fw fa-pie-chart text-info"></i>
                 <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
                 / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
               </template>
