@@ -36,6 +36,13 @@ from worker.tasks.main import func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER
 
 CONFIG = yaml_resources.get('CONFIG')
 
+DEFAULT_TASK_INFO_LIMIT_MAP = {
+    'authLink'   : CONFIG['_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'],
+    'crontab'    : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB'],
+    'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
+    'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
+}
+
 # Main.ReloadScripts
 class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
     '''
@@ -356,17 +363,38 @@ class SyncCache(BaseTask):
         # 搜集任务记录限额
         task_info_limit_map = {}
         for d in data:
-            origin_id       = d['originId']
-            task_info_limit = d.pop('taskInfoLimit') or CONFIG['_TASK_INFO_DEFAULT_LIMIT']
+            origin    = d.get('origin')
+            origin_id = d.get('originId')
+
+            default_task_info_limit = DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
+            task_info_limit         = d.get('taskInfoLimit') or default_task_info_limit
+            if origin == 'authLink':
+                print('default_task_info_limit', default_task_info_limit)
+                print('task_info_limit', task_info_limit)
             task_info_limit_map[origin_id] = task_info_limit
 
             # 写入数据库
-            sql = '''
-                INSERT IGNORE INTO biz_main_task_info
-                SET ?
-            '''
-            sql_params = [ d ]
-            self.db.query(sql, sql_params)
+            if task_info_limit > 0:
+                _data = {
+                    'id'            : d['id'],
+                    'originId'      : d['originId'],
+                    'rootTaskId'    : d['rootTaskId'],
+                    'funcId'        : d['funcId'],
+                    'execMode'      : d['execMode'],
+                    'status'        : d['status'],
+                    'triggerTimeMs' : d['triggerTimeMs'],
+                    'startTimeMs'   : d['startTimeMs'],
+                    'endTimeMs'     : d['endTimeMs'],
+                    'logMessageTEXT': d.get('logMessageTEXT'),
+                    'einfoTEXT'     : d.get('einfoTEXT'),
+                    'edumpTEXT'     : d.get('edumpTEXT'),
+                }
+                sql = '''
+                    INSERT IGNORE INTO biz_main_task_info
+                    SET ?
+                '''
+                sql_params = [ _data ]
+                self.db.query(sql, sql_params)
 
         # 数据回卷
         for origin_id, task_info_limit in task_info_limit_map.items():

@@ -3,8 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async  = require('async');
-var moment = require('moment');
+var async = require('async');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -53,8 +52,6 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   bat.*');
-  sql.append('  ,COUNT(task.seq)       AS taskInfoCount');
-  sql.append('  ,MAX(task.startTimeMs) AS lastRanTime');
 
   sql.append('  ,func.id              AS func_id');
   sql.append('  ,func.name            AS func_name');
@@ -95,25 +92,11 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('LEFT JOIN biz_main_api_auth AS apia');
   sql.append('  ON apia.id = bat.apiAuthId');
 
-  sql.append('LEFT JOIN biz_main_task_info AS task');
-  sql.append('  ON task.originId = bat.id');
-
   options.baseSQL = sql.toString();
   options.groups  = [ 'bat.id' ];
   options.orders  = [ { field: 'bat.seq', method: 'DESC' } ];
 
-  this._list(options, function(err, dbRes, pageInfo) {
-    if (err) return callback(err);
-
-    // lastRanTime 转 ISO8601
-    dbRes.forEach(function(d) {
-      if (d.lastRanTime) {
-        d.lastRanTime = moment(d.lastRanTime).toISOString();
-      }
-    });
-
-    return callback(null, dbRes, pageInfo);
-  });
+  this._list(options, callback);
 };
 
 EntityModel.prototype.add = function(data, callback) {

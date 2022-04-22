@@ -11,38 +11,6 @@ DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 - Server：使用Node.js + Express 构建，主要提供Web UI 服务、对外API 接口
 - Worker：使用Python3 + Celery 构建，主要提供Python 脚本的执行环境（内含Beat模块）
 
-## 相关命令
-
-启动客户端（开发）：
-
-```shell
-./run-client-dev.sh
-```
-
-编译客户端：
-
-```shell
-./run-client-build.sh
-```
-
-启动Server：
-
-```shell
-./run-server.sh
-```
-
-启动Worker：
-
-```shell
-./run-worker.sh
-```
-
-启动Beat
-
-```shell
-./run-beat.sh
-```
-
 ## 相关文档
 
 有关DataFlux Func 的相关文档请参考以下链接：
@@ -54,3 +22,7 @@ DataFlux Func 是一个基于Python 的脚本开发、管理、执行平台。
 - [开发手册](https://function.guance.com/#/read?q=/dataflux/func/development-guide.md)
 - [文档库](https://www.yuque.com/dataflux/func)
 - [观测云官方网站](https://guance.com/)
+
+## 备注
+
+目前DataFlux Func 正在快速开发过程中，我们建议始终安装最新版使用，因此暂不提供历史版本。

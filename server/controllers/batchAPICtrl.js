@@ -12,8 +12,9 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod  = require('../models/funcMod');
-var batchMod = require('../models/batchMod');
+var funcMod     = require('../models/funcMod');
+var batchMod    = require('../models/batchMod');
+var taskInfoMod = require('../models/taskInfoMod');
 
 /* Configure */
 
@@ -24,10 +25,11 @@ exports.list = function(req, res, next) {
   var batches       = null;
   var batchPageInfo = null;
 
+  var batchModel    = batchMod.createModel(res.locals);
+  var taskInfoModel = taskInfoMod.createModel(res.locals);
+
   async.series([
     function(asyncCallback) {
-      var batchModel = batchMod.createModel(res.locals);
-
       var opt = res.locals.getQueryOptions();
       batchModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
@@ -35,7 +37,11 @@ exports.list = function(req, res, next) {
         batches       = dbRes;
         batchPageInfo = pageInfo;
 
-        return asyncCallback();
+        if (opt.extra && opt.extra.withTaskInfo) {
+          return taskInfoModel.appendTaskInfoMap(batches, asyncCallback);
+        } else {
+          return asyncCallback();
+        }
       });
     },
   ], function(err) {

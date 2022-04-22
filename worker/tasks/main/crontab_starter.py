@@ -129,7 +129,7 @@ class CrontabStarterTask(BaseTask):
                 'funcId'         : f['id'],
                 'funcExtraConfig': f['extraConfig'],
                 'taskOrigin'     : 'integration',
-                'taskInfoLimit'  : CONFIG['_TASK_INFO_INTEGRATION_LIMIT'],
+                'taskInfoLimit'  : CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
                 'execMode'       : 'crontab',
             }
             crontab_configs.append(c)

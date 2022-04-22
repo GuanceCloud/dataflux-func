@@ -13,6 +13,7 @@ var modelHelper = require('../utils/modelHelper');
 
 var funcMod          = require('../models/funcMod');
 var crontabConfigMod = require('../models/crontabConfigMod');
+var taskInfoMod      = require('../models/taskInfoMod');
 
 /* Configure */
 var GLOBAL_SCOPE = 'GLOBAL';
@@ -24,10 +25,11 @@ exports.list = function(req, res, next) {
   var crontabConfigs        = null;
   var crontabConfigPageInfo = null;
 
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var taskInfoModel      = taskInfoMod.createModel(res.locals);
+
   async.series([
     function(asyncCallback) {
-      var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-
       var opt = res.locals.getQueryOptions();
       crontabConfigModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
@@ -35,7 +37,11 @@ exports.list = function(req, res, next) {
         crontabConfigs        = dbRes;
         crontabConfigPageInfo = pageInfo;
 
-        return asyncCallback();
+        if (opt.extra && opt.extra.withTaskInfo) {
+          return taskInfoModel.appendTaskInfoMap(crontabConfigs, asyncCallback);
+        } else {
+          return asyncCallback();
+        }
       });
     },
   ], function(err) {

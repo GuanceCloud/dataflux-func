@@ -151,29 +151,19 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
         self.cache_db.lpush(cache_key, data)
 
-    def is_support_task_info(self, origin, origin_id, exec_mode):
-        if not all([origin, origin_id]):
-            return False
-
-        if origin in ('crontab', 'batch'):
-            # 普通自动触发配置/批处理
-            return True
-        elif origin == 'integration' and exec_mode == 'crontab':
-            # 集成函数自动触发
-            return True
-        else:
-            # 其他不支持
-            return False
-
     def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
             root_task_id=None, func_id=None,
             log_messages=None, einfo_text=None, edump_text=None,
             task_info_limit=None):
-        if not self.is_support_task_info(origin, origin_id, exec_mode):
+        if not all([origin, origin_id]):
+            return
+
+        if isinstance(task_info_limit, (int, float)) and task_info_limit <= 0:
             return
 
         data = {
             'id'           : self.request.id,
+            'origin'       : origin,
             'originId'     : origin_id,
             'rootTaskId'   : root_task_id,
             'funcId'       : func_id,

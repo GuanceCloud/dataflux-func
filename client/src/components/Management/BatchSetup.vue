@@ -3,7 +3,7 @@ randomIDString: bat-{Random ID}
 
 parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
 
-recenTaskCount: 'recent {n} task | recent {n} tasks'
+recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -40,7 +40,7 @@ Invalid argument format: 参数格式不正确
 
 parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
 
-recenTaskCount: '{n}个近期任务'
+recentTaskCount: '{n}个近期任务'
 </i18n>
 
 <template>
@@ -119,8 +119,8 @@ recenTaskCount: '{n}个近期任务'
                     :step="10"
                     :step-strictly="true"
                     v-model="form.taskInfoLimit"></el-input-number>
-                  <span class="task-info-limit-unit">{{ $tc('recenTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT')">{{ $t('Restore Default') }}</el-link>
+                  <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -170,7 +170,7 @@ export default {
         switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
-            this.form.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
+            this.form.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH');
             this.data = {};
             break;
 
@@ -198,7 +198,7 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT');
+        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH');
         nextForm.tagsJSON           = nextForm.tagsJSON      || [];
         nextForm.apiAuthId          = this.data.apia_id;
         this.form = nextForm;
@@ -399,7 +399,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
-        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT'),
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH'),
         note              : null,
       },
       formRules: {

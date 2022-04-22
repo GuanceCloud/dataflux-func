@@ -27,7 +27,7 @@ Only main tasks are listed: 在本页面只展示主任务
 success: 成功
 failure: 失败
 
-Only Main Task: 仅主任务
+Main Task Only: 仅主任务
 Show Detail   : 显示详情
 Related Tasks : 相关任务
 
@@ -46,14 +46,14 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip :content="$t('Only main tasks are listed')" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Only main tasks are listed')" placement="bottom" :enterable="false" v-if="hasTaskType">
               <el-checkbox v-if="isMainTaskInfoList"
                 :border="true"
                 size="small"
                 v-model="dataFilter.rootTaskId"
                 true-label="ROOT"
                 false-label=""
-                @change="T.changePageFilter(dataFilter)">{{ $t('Only Main Task') }}</el-checkbox>
+                @change="T.changePageFilter(dataFilter)">{{ $t('Main Task Only') }}</el-checkbox>
             </el-tooltip>
 
             &#12288;
@@ -99,7 +99,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             </template>
           </el-table-column>
 
-          <el-table-column width="100" align="center">
+          <el-table-column width="100" align="center" v-if="hasTaskType">
             <template slot-scope="scope">
               <el-tag v-if="scope.row.subTaskCount > 0" size="medium" type="primary">{{ $t('Main Task') }}</el-tag>
               <el-tag v-else-if="scope.row.rootTaskId !== 'ROOT'" size="small" type="info">{{ $t('Sub Task') }}</el-tag>
@@ -200,6 +200,11 @@ export default {
       if (!apiRes.ok) return;
 
       apiRes.data.forEach(d => {
+        // 判断是否存在主、子任务
+        if (d.subTaskCount > 0 || d.rootTaskId !== 'ROOT') {
+          this.hasTaskType = true;
+        }
+
         // 日志长度
         d.logLines = 0
         if (d.logMessageTEXT) {
@@ -288,11 +293,11 @@ export default {
       contentLines.push(`${this.$t('Func Name')}: ${this.$t(d.func_name)}`);
       contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
       if (d.waitCostMs > 2000) {
-        contentLines.push(`${this.$t('Wait Time')}: ${d.waitCostMs} ${this.$t('ms')}`);
+        contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {
-        contentLines.push(`${this.$t('Wait Time')}: -`);
+        contentLines.push(`${this.$t('Wait Cost')}: -`);
       }
-      contentLines.push(`${this.$t('Run Time')}: ${d.runCostMs} ${this.$t('ms')}`);
+      contentLines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
       contentLines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
       contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
 
@@ -338,6 +343,8 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
         rootTaskId  : _dataFilter.rootTaskId,
       },
+
+      hasTaskType: false,
     }
   },
 }

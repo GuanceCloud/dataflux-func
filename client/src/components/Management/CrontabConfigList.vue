@@ -1,15 +1,18 @@
 <i18n locale="en" lang="yaml">
-lastRan: 'Ran {t}'
+lastSucceeded : 'Succeeded {t}'
+lastFailed    : 'Failed {t}'
+lastRan       : 'Ran {t}'
+successCount  : 'Success {n}'
+failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
 Fixed  : 固定
 Not Set: 未配置
 Config : 配置
-Created: 创建时间
-Expires: 有效期限
-Never  : 长期有效
-Recent : 近期任务
+Created: 创建
+Expires: 过期
+Recent : 近期执行
 Run    : 执行
 
 Crontab Config disabled : 自动触发配置已禁用
@@ -26,7 +29,11 @@ Are you sure you want to send a task of the Crontab Config?: 是否确认立刻�
 
 Integration Func Tasks: 集成函数任务
 
-lastRan: '{t}执行'
+lastSucceeded : '{t}执行成功'
+lastFailed    : '{t}执行失败'
+lastRan       : '{t}执行'
+successCount  : '成功 {n}'
+failureCount  : '失败 {n}'
 </i18n>
 
 <template>
@@ -103,7 +110,7 @@ lastRan: '{t}执行'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Config')" width="240">
+          <el-table-column :label="$t('Config')" width="220">
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
@@ -119,7 +126,7 @@ lastRan: '{t}执行'
 
               <br>
               <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
-              <span v-if="!scope.row.expireTime" class="text-good">{{ $t('Never') }}</span>
+              <span v-if="!scope.row.expireTime">-</span>
               <template v-else>
                 <RelativeDateTime :datetime="scope.row.expireTime"
                   :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
@@ -127,14 +134,29 @@ lastRan: '{t}执行'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="180">
+          <el-table-column :label="$t('Status')" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
               <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
 
-              <template v-if="scope.row.lastRanTime">
+              <template v-if="scope.row.lastStartTime">
                 <br>
-                <span class="text-main"><i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastRanTime) }) }}</span>
+                <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                </span>
+                <el-tooltip v-else-if="scope.row.lastStatus === 'failure'" :content="scope.row.lastEdumpTEXT" placement="bottom">
+                  <span class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                </el-tooltip>
+                <span v-else class="text-main">
+                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                </span>
+
+                <br>
+                <i class="fa fa-fw fa-pie-chart"></i>
+                <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
               </template>
             </template>
           </el-table-column>
@@ -185,7 +207,7 @@ export default {
     async loadData() {
       // 默认过滤条件
       let _listQuery = this.T.createListQuery({
-        _withTaskInfoCount: true,
+        _withTaskInfo: true,
       });
       if (this.T.isNothing(this.dataFilter.origin)) {
         _listQuery.origin = 'UI';

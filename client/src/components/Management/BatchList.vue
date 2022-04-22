@@ -1,10 +1,15 @@
 <i18n locale="en" lang="yaml">
-lastRan: 'Ran {t}'
+lastSucceeded : 'Succeeded {t}'
+lastFailed    : 'Failed {t}'
+lastRan       : 'Ran {t}'
+successCount  : 'Success {n}'
+failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-API Auth    : API认证
-Recent Tasks: 近期任务
+Config: 配置
+Auth  : 认证
+Recent: 近期调用
 
 Batch disabled: 批处理已禁用
 Batch enabled : 批处理已启用
@@ -17,7 +22,11 @@ Batch only supports asynchronous calling: 批处理只支持异步调用
 Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
 Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 
-lastRan: '{t}执行'
+lastSucceeded : '{t}调用成功'
+lastFailed    : '{t}调用失败'
+lastRan       : '{t}调用'
+successCount  : '成功 {n}'
+failureCount  : '失败 {n}'
 </i18n>
 
 <template>
@@ -91,33 +100,49 @@ lastRan: '{t}执行'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('API Auth')" width="160">
+          <el-table-column :label="$t('Config')" width="220">
             <template slot-scope="scope">
-              <el-tooltip effect="dark" :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="top">
+              <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+              <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
                 <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
               </el-tooltip>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="180">
+          <el-table-column :label="$t('Status')" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
               <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
 
-              <template v-if="scope.row.lastRanTime">
+              <template v-if="scope.row.lastStartTime">
                 <br>
-                <span class="text-main"><i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastRanTime) }) }}</span>
+                <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                </span>
+                <el-tooltip v-else-if="scope.row.lastStatus === 'failure'" :content="scope.row.lastEdumpTEXT" placement="bottom">
+                  <span class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                </el-tooltip>
+                <span v-else class="text-main">
+                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                </span>
+
+                <br>
+                <i class="fa fa-fw fa-pie-chart"></i>
+                <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
               </template>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="370">
+          <el-table-column align="right" width="350">
             <template slot-scope="scope">
+              <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
+                {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+              </el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">
                 {{ $t('Example') }}
-              </el-link>
-              <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
-                {{ $t('Recent Tasks') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-link>
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
@@ -170,7 +195,7 @@ export default {
     async loadData() {
       // 默认过滤条件
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withTaskInfoCount: true,
+        _withTaskInfo: true,
       });
       if (this.T.isNothing(this.dataFilter.origin)) {
         _listQuery.origin = 'UI';

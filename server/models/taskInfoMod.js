@@ -3,7 +3,8 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
+var async  = require('async');
+var moment = require('moment');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -75,6 +76,68 @@ EntityModel.prototype.list = function(options, callback) {
   }
 
   this._list(options, callback);
+};
+
+EntityModel.prototype.appendTaskInfoMap = function(data, callback) {
+  if (toolkit.isNothing(data)) return callback(null, data);
+
+  var originIds = data.reduce(function(acc, x) {
+    acc.push(x.id);
+    return acc;
+  }, []);
+
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('   b.*');
+  sql.append('  ,a.startTimeMs AS lastStartTime');
+  sql.append('  ,a.status      AS lastStatus');
+  sql.append('  ,a.edumpTEXT   AS lastEdumpTEXT');
+  sql.append('FROM biz_main_task_info AS a');
+  sql.append('JOIN (SELECT');
+  sql.append('         originId');
+  sql.append('        ,MAX(seq)  AS seq');
+  sql.append('        ,COUNT(*)  AS taskInfoCount');
+  sql.append("        ,COUNT(IF(status = 'success', 1, NULL)) AS recentSuccessCount");
+  sql.append("        ,COUNT(IF(status = 'failure', 1, NULL)) AS recentFailureCount");
+  sql.append('      FROM biz_main_task_info');
+  sql.append('      WHERE');
+  sql.append('        originId IN (?)');
+  sql.append('      GROUP BY');
+  sql.append('        originId');
+  sql.append(') AS b');
+  sql.append('  ON  a.originId = b.originId');
+  sql.append('  AND a.seq      = b.seq');
+
+  var sqlParams = [ originIds ];
+  this.db.query(sql, sqlParams, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 整理成map
+    var taskInfoMap = {};
+    dbRes.forEach(function(d) {
+      if (!d.originId) return;
+
+      // lastRanTime 转 ISO8601
+      if (d.lastRanTime) {
+        d.lastRanTime = moment(d.lastRanTime).toISOString();
+      }
+
+      taskInfoMap[d.originId] = d;
+    });
+
+    // 填入数据
+    data.forEach(function(x) {
+      var taskInfo = taskInfoMap[x.id] || {};
+      x.taskInfoCount      = taskInfo.taskInfoCount || 0
+      x.lastStartTime      = taskInfo.lastStartTime || null;
+      x.lastStatus         = taskInfo.lastStatus    || null;
+      x.lastEdumpTEXT      = taskInfo.lastEdumpTEXT || null;
+      x.recentSuccessCount = taskInfo.recentSuccessCount || 0;
+      x.recentFailureCount = taskInfo.recentFailureCount || 0;
+    });
+
+    return callback(null, data);
+  });
 };
 
 EntityModel.prototype.deleteByOriginId = function(originId, callback) {

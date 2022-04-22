@@ -3419,6 +3419,9 @@ authLinkAPI:
       - func.description
       - func.tagsJSON
     query:
+      _withTaskInfo:
+        $desc: 是否附带任务信息
+        $type: boolean
       id:
         $desc      : 根据ID过滤
         $type      : commaArray
@@ -3965,8 +3968,8 @@ crontabConfigAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfoCount:
-        $desc: 是否附带任务信息计数
+      _withTaskInfo:
+        $desc: 是否附带任务信息
         $type: boolean
       id:
         $desc      : 根据ID过滤
@@ -4415,8 +4418,8 @@ batchAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfoCount:
-        $desc: 是否附带任务信息计数
+      _withTaskInfo:
+        $desc: 是否附带任务信息
         $type: boolean
       id:
         $desc      : 根据ID过滤

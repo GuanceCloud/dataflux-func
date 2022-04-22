@@ -34,6 +34,9 @@ en:
   Cancel   : 取消
   'Yes'    : 是
   'No'     : 否
+  'ON'     : 开启
+  'OFF'    : 关闭
+  'None'   : 无
   Default  : 默认
   Official : 官方
   Optional : 可选

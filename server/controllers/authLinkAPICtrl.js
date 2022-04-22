@@ -14,6 +14,7 @@ var urlFor      = require('../utils/routeLoader').urlFor;
 
 var funcMod     = require('../models/funcMod');
 var authLinkMod = require('../models/authLinkMod');
+var taskInfoMod = require('../models/taskInfoMod');
 
 /* Configure */
 
@@ -25,18 +26,22 @@ exports.list = function(req, res, next) {
   var authLinkPageInfo = null;
 
   var authLinkModel = authLinkMod.createModel(res.locals);
+  var taskInfoModel = taskInfoMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
-
       authLinkModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
         authLinks        = dbRes;
         authLinkPageInfo = pageInfo;
 
-        return asyncCallback();
+        if (opt.extra && opt.extra.withTaskInfo) {
+          return taskInfoModel.appendTaskInfoMap(authLinks, asyncCallback);
+        } else {
+          return asyncCallback();
+        }
       });
     },
     // 查询最近几天调用次数
