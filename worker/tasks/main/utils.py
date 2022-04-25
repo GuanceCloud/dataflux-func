@@ -767,7 +767,8 @@ class AutoBackupDBTask(BaseTask):
 
     def run_backup(self, tables):
         # 准备备份
-        date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
+        now = arrow.get().to('Asia/Shanghai')
+        date_str = now.format('YYYYMMDD-HHmmss')
         dump_file_dir  = CONFIG['DB_AUTO_BACKUP_PATH']
         dump_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}{CONFIG['_DB_AUTO_BACKUP_EXT']}"
         dump_file_path = os.path.join(dump_file_dir, dump_file_name)
@@ -779,7 +780,7 @@ class AutoBackupDBTask(BaseTask):
             _f.write(textwrap.dedent(f'''
                     -- {'-' * 50}
                     -- DataFlux Func DB Backup
-                    -- Date: {arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')}
+                    -- Date: {now.format('YYYY-MM-DD HH:mm:ss')}
                     -- Version: {IMAGE_INFO['CI_COMMIT_REF_NAME']}
                     -- {'-' * 50}
                 ''').lstrip())
