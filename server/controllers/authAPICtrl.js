@@ -34,10 +34,14 @@ exports.signIn = function(req, res, next) {
         // Prepare to check
         dbUser = dbRes;
 
-        var passwordHash = toolkit.getSaltedPasswordHash(
-            dbUser.id, password, CONFIG.SECRET);
+        var passwordHash = toolkit.getSaltedPasswordHash(dbUser.id, password, CONFIG.SECRET);
 
-        if (dbUser.isDisabled) {
+        // admin密码清空时，认为密码与用户名相同
+        if (dbUser.id === 'u-admin' && dbUser.passwordHash === null) {
+          dbUser.passwordHash = toolkit.getSaltedPasswordHash(dbUser.id, dbUser.username, CONFIG.SECRET);
+        }
+
+        if (dbUser.id !== 'u-admin' && dbUser.isDisabled) {
           return asyncCallback(new E('EUserDisabled', 'Current user has been disabled'));
         }
 
@@ -124,7 +128,14 @@ exports.changePassword = function(req, res, next) {
           return asyncCallback(new E('EBizBadData', 'Current user does not exists'));
         }
 
-        if (oldPasswordHash !== dbRes.passwordHash) {
+        dbUser = dbRes;
+
+        // admin密码清空时，认为密码与用户名相同
+        if (dbUser.id === 'u-admin' && dbUser.passwordHash === null) {
+          dbUser.passwordHash = toolkit.getSaltedPasswordHash(dbUser.id, dbUser.username, CONFIG.SECRET);
+        }
+
+        if (oldPasswordHash !== dbUser.passwordHash) {
           return asyncCallback(new E('EUserPassword', 'Invalid old password'));
         }
 

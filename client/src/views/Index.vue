@@ -21,7 +21,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
 </i18n>
 
 <template>
-  <div @click.stop="useBuiltinAuth" class="sign-in">
+  <div class="sign-in">
     <div class="sign-in-area">
       <Logo type="auto" class="logo" width="400px" height="70px"></Logo>
 
@@ -66,7 +66,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
             <CaptchaImage
               captcha-category='signIn'
               :captcha-token="form.captchaToken"
-              @click.native="refreshCaptcha(true)"></CaptchaImage>
+              @click.native="refreshCaptcha()"></CaptchaImage>
           </el-form-item>
             <el-button tabindex="4" type="primary" @click="submitData">{{ $t('Sign In')}}</el-button>
           <el-form-item>
@@ -168,18 +168,9 @@ export default {
       this.$store.commit('updateXAuthToken', xAuthToken);
       this.$store.dispatch('reloadUserProfile');
     },
-    useBuiltinAuth() {
-      if (this.useBuiltinAuthWish++ > 20) {
-        this.T._switchToBuiltinAuth();
-      }
-    },
-    refreshCaptcha(clearInputedCaptcha) {
-      this.useBuiltinAuthWish = 0;
-
+    refreshCaptcha() {
       this.form.captchaToken = Math.random().toString();
-      if (clearInputedCaptcha) {
-        this.form.captcha = '';
-      }
+      this.form.captcha = '';
     },
   },
   computed: {
@@ -228,7 +219,6 @@ export default {
   },
   data() {
     return {
-      useBuiltinAuthWish: 0,
       respError: {
         password: null,
         captcha : null,
@@ -245,7 +235,7 @@ export default {
   },
   created() {
     // 进入页面刷新验证码框
-    this.refreshCaptcha(true);
+    this.refreshCaptcha();
   },
 }
 </script>

@@ -6,35 +6,31 @@
 '''
 
 # Builtin Modules
-import time
-import json
-import random
 import traceback
 import pprint
 import os
-import subprocess
-import shutil
-import tempfile
+import textwrap
 
 # 3rd-party Modules
 import six
-import requests
 import arrow
-
-from six.moves.urllib_parse import urlsplit
 
 # Project Modules
 from worker import app
 from worker.utils import toolkit, yaml_resources
-from worker.tasks import gen_task_id, webhook
-from worker.tasks.main import gen_script_failure_id, gen_script_log_id, gen_data_source_id, decipher_data_source_config_fields
-from worker.utils.extra_helpers import InfluxDBHelper
+from worker.tasks import gen_task_id
+from worker.tasks.main import decipher_data_source_config_fields
+from worker.utils.extra_helpers import HexStr
+from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 # Current Module
 from worker.tasks import BaseTask
 from worker.tasks.main import func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
 
-CONFIG = yaml_resources.get('CONFIG')
+CONFIG     = yaml_resources.get('CONFIG')
+IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
+
+SQL_STR_TYPE_KEYWORDS = { 'char', 'text', 'blob' }
 
 DEFAULT_TASK_INFO_LIMIT_MAP = {
     'authLink'   : CONFIG['_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'],
@@ -368,9 +364,6 @@ class SyncCache(BaseTask):
 
             default_task_info_limit = DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
             task_info_limit         = d.get('taskInfoLimit') or default_task_info_limit
-            if origin == 'authLink':
-                print('default_task_info_limit', default_task_info_limit)
-                print('task_info_limit', task_info_limit)
             task_info_limit_map[origin_id] = task_info_limit
 
             # 写入数据库
@@ -642,43 +635,161 @@ def auto_run(self, *args, **kwargs):
 
 # Main.AutoBackupDB
 class AutoBackupDBTask(BaseTask):
-    def run_sqldump(self, tables, with_data, file_name):
-        dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
+    def get_tables(self):
+        # 查询需要导出的表
+        tables = []
+
+        sql = '''SHOW TABLES'''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            t = list(d.values())[0]
+
+            # 避免备份到迁移数据
+            t_lower = t.lower()
+            if not t_lower.startswith('biz_') and not t_lower.startswith('wat_'):
+                continue
+
+            tables.append(t)
+
+        return tables
+
+    def get_table_dump_parts(self, table):
+        table_dumps_parts = []
+
+        # 删除表
+        sql = '''DROP TABLE IF EXISTS `??`'''
+        sql_params = [ table ]
+        table_dumps_parts.append(format_sql(sql, sql_params) + ';')
+
+        # 获取表创建语句
+        sql = '''SHOW CREATE TABLE `??`'''
+        sql_params = [ table ]
+        db_res = self.db.query(sql, sql_params);
+        if not db_res:
+            return
+
+        table_dumps_parts.append(db_res[0]['Create Table'] + ';')
+
+        # 限制数据量的表不备份数据
+
+        if table in CONFIG['_DBDATA_TABLE_LIMIT_MAP'] \
+            or table in CONFIG['_DBDATA_TABLE_EXPIRE_MAP']:
+            return table_dumps_parts
+
+        # 无数据的表不备份数据
+        sql = '''SELECT * FROM `??` LIMIT 1'''
+        sql_params = [ table ]
+        db_res = self.db.query(sql, sql_params)
+        if not db_res:
+            return table_dumps_parts
+
+        # 获取表结构
+        field_type_map = {}
+
+        sql = '''DESCRIBE `??`'''
+        sql_params = [ table ]
+        db_res = self.db.query(sql, sql_params)
+        for d in db_res:
+            field      = d['Field']
+            field_type = d['Type'].lower()
+            if field_type == 'json':
+                field_type_map[field] = 'json'
+            else:
+                for type_keyword in SQL_STR_TYPE_KEYWORDS:
+                    if type_keyword in field_type:
+                        field_type_map[field] = 'hexStr'
+                        break
+                else:
+                    field_type_map[field] = 'normal'
+
+        # 备份数据
+        table_dumps_parts.append('');
+
+        sql = '''LOCK TABLES `??` WRITE'''
+        sql_params = [ table ]
+        table_dumps_parts.append(format_sql(sql, sql_params) + ';')
+
+        select_fields = []
+        for f, t in field_type_map.items():
+            if t == 'hexStr':
+                select_fields.append('HEX(`{0}`) AS `{0}`'.format(f))
+            else:
+                select_fields.append(f)
+
+        select_fields_sql = ', '.join(select_fields)
+
+        seq = 0
+        while True:
+            sql = '''
+                SELECT ??
+                FROM `??`
+                WHERE
+                    `seq` > ?
+                ORDER BY
+                    `seq` ASC
+                LIMIT 20
+            '''
+            sql_params = [ select_fields_sql, table, seq ]
+            db_res = self.db.query(sql, sql_params)
+            if not db_res:
+                table_dumps_parts.append('''UNLOCK TABLES;''')
+                break
+
+            values = []
+            for d in db_res:
+                _d = []
+                for f in field_type_map.keys():
+                    v = d[f]
+                    t = field_type_map[f]
+                    if v is None:
+                        _d.append(None)
+                    else:
+                        if t == 'hexStr':
+                            _d.append(HexStr(v))
+                        else:
+                            _d.append(v)
+
+                values.append(_d)
+
+            insert_fields = []
+            for f in field_type_map.keys():
+                insert_fields.append('`{0}`'.format(f))
+
+            insert_fields_sql = ', '.join(insert_fields)
+
+            sql = '''INSERT INTO `??` (??)\nVALUES\n  ?'''
+            sql_params = [ table, insert_fields_sql, values ]
+            table_dumps_parts.append(format_sql(sql, sql_params, pretty=True) + ';')
+
+            seq = db_res[-1]['seq']
+
+        return table_dumps_parts
+
+    def run_backup(self, tables):
+        # 准备备份
+        date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
+        dump_file_dir  = CONFIG['DB_AUTO_BACKUP_PATH']
+        dump_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}{CONFIG['_DB_AUTO_BACKUP_EXT']}"
+        dump_file_path = os.path.join(dump_file_dir, dump_file_name)
+
+        # 保证目录
         os.makedirs(dump_file_dir, exist_ok=True)
 
-        with_data_flag = ''
-        if with_data is False:
-            with_data_flag = '--no-data'
-
-        dump_file_path = os.path.join(dump_file_dir, file_name)
-
-        sqldump_args = [
-            'mysqldump',
-            f"--host={CONFIG['MYSQL_HOST'] or '127.0.0.1'}",
-            f"--port={CONFIG['MYSQL_PORT'] or 3306}",
-            f"--user={CONFIG['MYSQL_USER']}",
-            f"--password={CONFIG['MYSQL_PASSWORD']}",
-            '--databases', CONFIG['MYSQL_DATABASE'],
-            '--hex-blob',
-            '--default-character-set=utf8mb4',
-            '--skip-extended-insert',
-            '--column-statistics=0',
-        ]
-
-        if with_data_flag:
-            sqldump_args.append(with_data_flag)
-
-        sqldump_args.append('--tables')
-        sqldump_args.extend(tables)
-
-        sqldump = subprocess.check_output(sqldump_args)
-        sqldump = sqldump.decode()
-        sqldump = sqldump.replace(' COLLATE=utf8mb4_0900_ai_ci', '') # 兼容5.7, 8.0
-
         with open(dump_file_path, 'a') as _f:
-            _f.write(sqldump)
+            _f.write(textwrap.dedent(f'''
+                    -- {'-' * 50}
+                    -- DataFlux Func DB Backup
+                    -- Date: {arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')}
+                    -- Version: {IMAGE_INFO['CI_COMMIT_REF_NAME']}
+                    -- {'-' * 50}
+                ''').lstrip())
+            for t in tables:
+                table_dump_parts = self.get_table_dump_parts(t)
+                if table_dump_parts:
+                    table_dumps = '\n'.join(table_dump_parts) + '\n\n'
+                    _f.write(table_dumps)
 
-    def limit_sqldump(self):
+    def limit_backups(self):
         dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
         if not os.path.exists(dump_file_dir):
             return
@@ -698,41 +809,16 @@ class AutoBackupDBTask(BaseTask):
 @app.task(name='Main.AutoBackupDB', bind=True, base=AutoBackupDBTask)
 def auto_backup_db(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=1800)
+    self.lock(max_age=60)
 
-    # 准备备份
-    date_str = arrow.get().to('Asia/Shanghai').format('YYYYMMDD-HHmmss')
-    dump_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}{CONFIG['_DB_AUTO_BACKUP_EXT']}"
+    # 需要导出的表
+    tables = self.get_tables()
 
-    table_with_data    = []
-    table_without_data = []
-
-    # 查询需要导出的表
-    sql = '''
-        SHOW TABLES
-        '''
-    db_res = self.db.query(sql)
-    for d in db_res:
-        t = list(d.values())[0]
-
-        # 避免备份到迁移数据
-        t_lower = t.lower()
-        if not t_lower.startswith('biz_') and not t_lower.startswith('wat_'):
-            continue
-
-        if t in CONFIG['_DBDATA_TABLE_LIMIT_MAP']:
-            table_without_data.append(t)
-        else:
-            table_with_data.append(t)
-
-    # 导出表+数据
-    self.run_sqldump(tables=table_with_data, with_data=True, file_name=dump_file_name)
-
-    # 导出表
-    self.run_sqldump(tables=table_without_data, with_data=False, file_name=dump_file_name)
+    # 导出
+    self.run_backup(tables)
 
     # 自动删除旧备份
-    self.limit_sqldump()
+    self.limit_backups()
 
 # Main.CheckDataSource
 @app.task(name='Main.CheckDataSource', bind=True, base=BaseTask)

@@ -176,17 +176,73 @@
             </ul>
           </p>
 
-          <!-- 自定义选项 -->
           <hr>
-          <div id="setupConfigArea">
-            <el-checkbox v-model="showCustomConfig">{{ $t('Show custom configs') }}</el-checkbox>
-
-            <p v-if="!showCustomConfig"
-              class="custom-config-tip"
-              v-html="$t('The default administrator username and password are <code>admin</code>, which can be changed after installation.')">
+          <!-- 管理员用户 -->
+          <el-popover
+            :visible-arrow="false"
+            placement="right"
+            popper-class="popover-tips"
+            trigger="hover">
+            <div slot="reference">
+              <div class="config-info">
+                <span>{{ $t('Administrator username') }}</span>
+                <code>ADMIN_USERNAME</code>
+              </div>
+              <el-input
+                ref="ADMIN_USERNAME"
+                v-model="userConfigs.ADMIN_USERNAME"></el-input>
+            </div>
+            <p>
+              {{ $t('Create an initial administrator user for the system') }}
             </p>
+          </el-popover>
 
-            <template v-else>
+          <!-- 管理员密码（默认为 admin) -->
+          <el-popover
+            :visible-arrow="false"
+            placement="right"
+            popper-class="popover-tips"
+            trigger="hover">
+            <div slot="reference">
+              <div class="config-info">
+                <span>{{ $t('Administrator password (default is admin)') }}</span>
+                <code>ADMIN_PASSWORD</code>
+              </div>
+              <el-input
+                ref="ADMIN_PASSWORD"
+                v-model="userConfigs.ADMIN_PASSWORD" show-password></el-input>
+            </div>
+            <p>
+              {{ $t('A strong password can protect your data security') }}
+            </p>
+          </el-popover>
+
+          <!-- 重复管理员密码 -->
+          <el-popover
+            :visible-arrow="false"
+            placement="right"
+            popper-class="popover-tips"
+            trigger="hover">
+            <div slot="reference">
+              <div class="config-info">
+                <span>{{ $t('Repeat administrator password') }}</span>
+                <code>ADMIN_PASSWORD_REPEAT</code>
+              </div>
+              <el-input
+                ref="ADMIN_PASSWORD_REPEAT"
+                v-model="userConfigs.ADMIN_PASSWORD_REPEAT" show-password></el-input>
+            </div>
+            <p>
+              {{ $t('Enter the administrator password again') }}
+            </p>
+          </el-popover>
+
+          <!-- 自定义选项 -->
+          <div id="setupConfigArea">
+            <div class="config-info">
+              <el-checkbox v-model="showMoreConfigs">{{ $t('Show more configs') }}</el-checkbox>
+            </div>
+            <template v-if="showMoreConfigs">
               <p class="custom-config-tip"><strong>{{ $t('Unless necessary, just use the default configuration') }}</strong></p>
 
               <!-- 加密密钥 -->
@@ -494,69 +550,6 @@
                   <br><strong>{{ $t('Or just leave default (Disable TLS)') }}</strong>
                 </p>
               </el-popover>
-
-              <!-- 管理员用户 -->
-              <el-popover
-                :visible-arrow="false"
-                placement="right"
-                popper-class="popover-tips"
-                trigger="hover">
-                <div slot="reference">
-                  <div class="config-info">
-                    <strong>{{ $t('Administrator username') }}</strong>
-                    <code>ADMIN_USERNAME</code>
-                  </div>
-                  <el-input
-                    ref="ADMIN_USERNAME"
-                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
-                    v-model="userConfigs.ADMIN_USERNAME"></el-input>
-                </div>
-                <p>
-                  {{ $t('Create an initial administrator user for the system') }}
-                </p>
-              </el-popover>
-
-              <!-- 管理员密码（默认为 admin) -->
-              <el-popover
-                :visible-arrow="false"
-                placement="right"
-                popper-class="popover-tips"
-                trigger="hover">
-                <div slot="reference">
-                  <div class="config-info">
-                    <strong>{{ $t('Administrator password (default is admin)') }}</strong>
-                    <code>ADMIN_PASSWORD</code>
-                  </div>
-                  <el-input
-                    ref="ADMIN_PASSWORD"
-                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
-                    v-model="userConfigs.ADMIN_PASSWORD" show-password></el-input>
-                </div>
-                <p>
-                  {{ $t('A strong password can protect your data security') }}
-                </p>
-              </el-popover>
-
-              <!-- 重复管理员密码 -->
-              <el-popover
-                :visible-arrow="false"
-                placement="right"
-                popper-class="popover-tips"
-                trigger="hover">
-                <div slot="reference">
-                  <div class="config-info">
-                    <strong>{{ $t('Repeat administrator password') }}</strong>
-                    <code>ADMIN_PASSWORD_REPEAT</code>
-                  </div>
-                  <el-input
-                    ref="ADMIN_PASSWORD_REPEAT"
-                    :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
-                    v-model="userConfigs.ADMIN_PASSWORD_REPEAT" show-password></el-input>
-                </div>
-                <p>
-                  {{ $t('Enter the administrator password again') }}
-                </p>
-              </el-popover>
             </template>
           </div>
 
@@ -633,7 +626,7 @@
         '(Official MySQL 5.7 doc)': '（MySQL 5.7 官方文档）',
         'Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode': 'Redis 4.0 或以上版本，且<strong>不是</strong>Redis集群',
 
-        'Show custom configs': '显示自定义配置',
+        'Show more configs': '显示更多配置',
         'The default administrator username and password are <code>admin</code>, which can be changed after installation.': '系统管理员用户名和密码默认都是<code>admin</code>，安装完成后也可以修改',
         'Unless necessary, just use the default configuration': '除非必要，使用默认配置即可',
 
@@ -822,7 +815,7 @@
 
         return {
           locale             : 'zh-CN',
-          showCustomConfig   : false,
+          showMoreConfigs    : false,
           showSetupProcess   : false,
           showLongTimeWaitTip: false,
 
@@ -853,6 +846,11 @@
             ADMIN_PASSWORD       : currentConfig.ADMIN_PASSWORD,
             ADMIN_PASSWORD_REPEAT: currentConfig.ADMIN_PASSWORD_REPEAT,
           }
+        }
+      },
+      mounted() {
+        if (this.autoInstall) {
+          alert('自动安装！')
         }
       },
     }).$mount('#app');

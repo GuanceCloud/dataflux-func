@@ -196,11 +196,13 @@ RedisHelper.prototype.setnx = function(key, value, callback) {
 
 RedisHelper.prototype.setex = function(key, maxAge, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
+  if (maxAge <= 0) maxAge = 1;
   return this.run('setex', key, maxAge, value, callback);
 };
 
 RedisHelper.prototype.setexnx = function(key, maxAge, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
+  if (maxAge <= 0) maxAge = 1;
   return this.run('set', key, value, 'EX', maxAge, 'NX', callback);
 };
 
@@ -236,6 +238,7 @@ RedisHelper.prototype.delete = RedisHelper.prototype.del = function(keys, callba
 
 RedisHelper.prototype.expire = function(key, expires, callback) {
   if (this.isDryRun) return callback(null, 'OK');
+  if (expires <= 0) expires = 1;
   return this.run('expire', key, expires, callback);
 };
 
@@ -577,6 +580,7 @@ RedisHelper.prototype.unsub = function(topic, callback) {
  * @return {undefined}
  */
 RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback) {
+  if (maxLockTime <= 0) maxLockTime = 1;
   return this.run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', callback);
 };
 
@@ -592,6 +596,7 @@ RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback)
 RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime, callback) {
   var self = this;
 
+  if (maxLockTime <= 0) maxLockTime = 1;
   self.run('GET', lockKey, function(err, cacheRes) {
     if (err) return callback && callback(err);
 

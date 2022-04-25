@@ -31,7 +31,13 @@ TRUNCATE biz_rel_func_running_info;
 TRUNCATE wat_main_access_key;
 TRUNCATE wat_main_system_config;
 TRUNCATE wat_main_task_result_example;
-# TRUNCATE wat_main_user
+
+# admin用户密码清空
+TRUNCATE wat_main_user;
+INSERT INTO `wat_main_user`
+  (`id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`)
+VALUES
+  ('u-admin','admin', NULL,'Administrator',NULL,NULL,'sa','*',0);
 
 # 示例脚本集/脚本/函数数据初始化
 UPDATE biz_main_script SET publishVersion = 1;

@@ -73,7 +73,7 @@ New password not matches                                         : 两次输入�
                   <CaptchaImage
                     captcha-category='changePassword'
                     :captcha-token="form.captchaToken"
-                    @click.native="refreshCaptcha(true)"></CaptchaImage>
+                    @click.native="refreshCaptcha()"></CaptchaImage>
                 </el-form-item>
 
                 <el-form-item>
@@ -123,8 +123,6 @@ export default {
         alert: { okMessage: this.$t('Password changed') },
       });
       if (!apiRes.ok) {
-        this.refreshCaptcha();
-
         switch(apiRes.reason) {
           case 'EUserPassword':
             this.respError.oldPassword = this.$t('Invalid old password');
@@ -138,17 +136,17 @@ export default {
             this.respError.captcha = this.$t('Invalid captcha');
             break;
         }
-
-        return;
-      };
-
-      this.$refs.form.resetFields();
-    },
-    refreshCaptcha(clearInputedCaptcha) {
-      this.form.captchaToken = Math.random().toString();
-      if (clearInputedCaptcha) {
-        this.form.captcha = '';
       }
+
+      this.refreshCaptcha();
+
+      if (apiRes.ok) {
+        this.$refs.form.resetFields();
+      }
+    },
+    refreshCaptcha() {
+      this.form.captchaToken = Math.random().toString();
+      this.form.captcha = '';
     },
   },
   computed: {
@@ -229,7 +227,7 @@ export default {
   },
   created() {
     // 进入页面刷新验证码框
-    this.refreshCaptcha(true);
+    this.refreshCaptcha();
 
     this.$store.commit('updateLoadStatus', true);
   },

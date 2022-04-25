@@ -43,7 +43,6 @@ const STATE_CONFIG = {
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
 };
 const MUTATION_CONFIG = {
-  switchToBuiltinAuth                            : { persist: false },
   updateSystemConfig                             : { persist: true  },
   updateLoadStatus                               : { persist: false },
   startProcessing                                : { persist: false },
@@ -302,14 +301,6 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    switchToBuiltinAuth(state) {
-      state.xAuthToken  = null;
-      state.userProfile = null;
-
-      var nextClientConfig = toolkit.jsonCopy(state.systemConfig);
-      nextClientConfig.ftUserAuthEnabled = false;
-      state.systemConfig = nextClientConfig;
-    },
     updateSystemConfig(state, config) {
       state.systemConfig = config || {};
     },

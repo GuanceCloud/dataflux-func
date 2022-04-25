@@ -26,6 +26,9 @@ SQL_PARAM_ESCAPE_MAP = {
   '\\'  : '\\\\',
 }
 
+class HexStr(str):
+    pass
+
 def parse_response(response):
     resp_content_type = response.headers.get('content-type') or ''
     resp_content_type = resp_content_type.lower().split(';')[0].strip()
@@ -64,9 +67,13 @@ def escape_sql_param(s):
         return s
 
     elif isinstance(s, six.string_types):
+        is_hex_str = isinstance(s, HexStr)
+
         s = six.ensure_str(s)
         s = ''.join(SQL_PARAM_ESCAPE_MAP.get(c, c) for c in list(s))
         s = "'{}'".format(six.ensure_str(s))
+        if is_hex_str:
+            s = 'X' + s
         return s
 
     elif isinstance(s, (six.integer_types, float)):
@@ -134,7 +141,7 @@ def format_sql(sql, sql_params=None):
 
     return sql.strip()
 
-def format_sql_v2(sql, sql_params=None):
+def format_sql_v2(sql, sql_params=None, pretty=False):
     # Inspired by https://github.com/mysqljs/sqlstring/blob/master/lib/SqlString.js
     if not sql_params:
         return sql
@@ -169,7 +176,7 @@ def format_sql_v2(sql, sql_params=None):
                     else:
                         expressions.append("{} = {}".format(k, escape_sql_param(v)))
 
-                escaped_sql_param = ', '.join(expressions)
+                escaped_sql_param = (',\n  ' if pretty else ', ').join(expressions)
 
             elif isinstance(sql_param, (tuple, list, set)):
                 # Tuple, List -> 'value1', 'value2', ...
@@ -182,7 +189,7 @@ def format_sql_v2(sql, sql_params=None):
                     else:
                         expressions.append(escape_sql_param(x))
 
-                escaped_sql_param = ', '.join(expressions)
+                escaped_sql_param = (',\n  ' if pretty else ', ').join(expressions)
 
             else:
                 # Other -> 'value'

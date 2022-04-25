@@ -976,7 +976,7 @@ CREATE TABLE `wat_main_user` (
 
 LOCK TABLES `wat_main_user` WRITE;
 /*!40000 ALTER TABLE `wat_main_user` DISABLE KEYS */;
-INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`) VALUES (1,'u-admin','admin','03449cf93ebd8f67f652f9a82b2148380b2597eedd777963245472be3311e75f3ae516244b6d7648b9b044e2523c2840bdf86a852037db7e58e9b216539b2d21','Administrator',NULL,NULL,'sa','*',0,'2017-07-28 18:08:03','2021-10-30 17:48:12');
+INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`) VALUES (1,'u-admin','admin',NULL,'Administrator',NULL,NULL,'sa','*',0,'2017-07-28 18:08:03','2021-10-30 17:48:12');
 /*!40000 ALTER TABLE `wat_main_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

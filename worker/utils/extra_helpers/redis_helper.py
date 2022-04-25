@@ -165,9 +165,13 @@ class RedisHelper(object):
         return self.run('setnx', key, value)
 
     def setex(self, key, max_age, value):
+        if max_age <= 0:
+            max_age = 1;
         return self.run('setex', key, max_age, value)
 
     def setexnx(self, key, max_age, value):
+        if max_age <= 0:
+            max_age = 1;
         return self.run('set', key, value, ex=max_age, nx=True)
 
     def mget(self, keys, *args):
@@ -198,6 +202,8 @@ class RedisHelper(object):
             return self.delete(keys)
 
     def expire(self, key, expires):
+        if expires <= 0:
+            expires = 1
         return self.run('expire', key, expires)
 
     def expireat(self, key, timestamp):
@@ -295,9 +301,14 @@ class RedisHelper(object):
         return self.run('info')
 
     def lock(self, lock_key, lock_value, max_lock_time):
+        if max_lock_time <= 0:
+            max_lock_time = 1
         return self.run('set', lock_key, lock_value, ex=max_lock_time, nx=True)
 
     def extend_lock_time(self, lock_key, lock_value, max_lock_time):
+        if max_lock_time <= 0:
+            max_lock_time = 1
+
         expected_lock_value = self.run('get', lock_key)
         expected_lock_value = six.ensure_str(expected_lock_value)
         if expected_lock_value != lock_value:
