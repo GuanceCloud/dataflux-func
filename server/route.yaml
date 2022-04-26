@@ -4081,8 +4081,8 @@ crontabConfigAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4145,8 +4145,8 @@ crontabConfigAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4219,8 +4219,8 @@ crontabConfigAPI:
             $isRequired: false
             $allowNull : true
             $type      : int
-            $minValue  : 1
-            $maxValue  : 500
+            $minValue  : 0
+            $maxValue  : 5000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4324,8 +4324,8 @@ crontabConfigAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4531,8 +4531,8 @@ batchAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4586,8 +4586,8 @@ batchAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4656,8 +4656,8 @@ batchAPI:
             $isRequired: false
             $allowNull : true
             $type      : int
-            $minValue  : 1
-            $maxValue  : 500
+            $minValue  : 0
+            $maxValue  : 5000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4754,8 +4754,8 @@ batchAPI:
           $isRequired: false
           $allowNull : true
           $type      : int
-          $minValue  : 1
-          $maxValue  : 500
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
