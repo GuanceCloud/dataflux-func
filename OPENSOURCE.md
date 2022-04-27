@@ -92,6 +92,7 @@
 | DBUtils           | 1.3    | MIT License (MIT License)                                                      | https://webwareforpython.github.io/DBUtils/    |
 | funcsigs          | 1.0.2  | Apache Software License (ASL)                                                  | http://funcsigs.readthedocs.org/               |
 | influxdb          | 5.2.3  | MIT License (MIT License)                                                      | https://github.com/influxdb/influxdb-python    |
+| Markdown          | 3.3.6  | BSD License (BSD License)                                                      | https://python-markdown.github.io/             |
 | nanoid            | 2.0.0  | MIT License (MIT)                                                              | https://github.com/puyuan/py-nanoid            |
 | paho-mqtt         | 1.5.1  | OSI Approved (Eclipse Public License v2.0 / Eclipse Distribution License v1.0) | http://eclipse.org/paho                        |
 | psutil            | 5.8.0  | BSD License (BSD)                                                              | https://github.com/giampaolo/psutil            |
