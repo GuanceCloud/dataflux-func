@@ -1499,7 +1499,8 @@ export default {
   padding-bottom: 70px;
   padding-right: 10px;
   white-space: pre-wrap;
-  line-height: 1.75;
+  line-height: 1.5;
+  font-size: 14px;
 }
 .code-editor-output .el-tabs {
   height: 100%;
