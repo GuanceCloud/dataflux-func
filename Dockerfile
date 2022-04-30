@@ -70,7 +70,7 @@ RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao
 # Install requirements (client)
 WORKDIR /usr/src/base/client
 COPY client/package.json client/package-lock.json ./
-RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
+RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist --unsafe-perm
 
 # Some fix
 # COPY misc/openssl.cnf /etc/ssl/openssl.cnf
