@@ -22,7 +22,7 @@ var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 var IMAGE_INFO   = require('../image-info.json');
 
-var INSTALL_CHECK_INTERVAL            = 3 * 1000;
+var INSTALL_CHECKER_INTERVAL          = 3 * 1000;
 var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
 
 // DB/Cache helper should load AFTER config is loaded.
