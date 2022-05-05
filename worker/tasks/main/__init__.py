@@ -397,6 +397,25 @@ class FuncStoreHelper(object):
             sql_params = [store_id, key, value_json, scope, expire]
             self.__task.db.query(sql, sql_params)
 
+    def keys(self, pattern, scope=None):
+        if scope is None:
+            scope = self.default_scope
+
+        pattern = pattern.replace('%', '\%').replace('_', '\_').replace('*', '%').replace('?', '_')
+
+        sql = '''
+            SELECT
+                 `key`
+            FROM biz_main_func_store
+            WHERE
+                `key` LIKE ?
+            '''
+        sql_params = [pattern]
+        db_res = self.__task.db.query(sql, sql_params)
+
+        ret = [ d['key'] for d in db_res ]
+        return ret
+
     def get(self, key, scope=None):
         if scope is None:
             scope = self.default_scope
@@ -433,40 +452,6 @@ class FuncStoreHelper(object):
             pass
         finally:
             return value
-
-    def pattern(self, pattern, scope=None):
-        if scope is None:
-            scope = self.default_scope
-
-        pattern = pattern.replace('%', '\%').replace('_', '\_').replace('*', '%').replace('?', '_')
-
-        sql = '''
-            SELECT
-                 `key`
-                ,`valueJSON`
-            FROM biz_main_func_store
-            WHERE
-                `key` LIKE ?
-            '''
-        sql_params = [pattern]
-        db_res = self.__task.db.query(sql, sql_params)
-        if not db_res:
-            return None
-
-        ret = []
-        for d in db_res:
-            value = d['valueJSON']
-            try:
-                value = toolkit.json_loads(value)
-            except Exception as e:
-                pass
-            finally:
-                ret.append({
-                    'key'  : d['key'],
-                    'value': value,
-                })
-
-        return ret
 
     def delete(self, key, scope=None):
         if scope is None:
