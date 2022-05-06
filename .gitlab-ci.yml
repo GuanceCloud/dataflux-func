@@ -46,6 +46,7 @@ dev:
     # 刷新OSS缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - sh build-charts.sh 1.1.1 ${CI_COMMIT_REF_NAME} func-test-chart
   tags:
     - cloudcare-multiarch
 
@@ -103,6 +104,8 @@ singleton:
     # 刷新OSS缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    # 推送生产Helm
+    - sh build-charts.sh ${V_MAJOR_MINOR_PATCH} ${V_MAJOR_MINOR_PATCH} func-prod-chart
   tags:
     - cloudcare-multiarch
 

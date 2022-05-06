@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-server
+  name: {{ include "func.fullname" . }}-server
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-server
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-server
+    spec:
+      initContainers:
+{{/*      - name: inita-service*/}}
+{{/*        image: curlimages/curl:latest*/}}
+{{/*        command: ['sh', '-c', 'until nslookup redis && nslookup mysql; do echo waiting for init-service && sleep 2; done']*/}}
+      - name: initb-service
+        image: busybox:1.28.3
+        command: ['sh', '-c', 'cat /data/user-config-template.yaml && cat "/data/user-config.yaml"; if [ $? -ne 0 ]; then cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml; else echo "" && echo "in else" && rm /data/user-config.yaml 2>1 && cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml && echo "" >> /data/user-config.yaml && echo "_IS_INSTALLED: true" >> /data/user-config.yaml; fi']
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /data/user-config-template.yaml
+          name: user-config
+          subPath: user-config-template.yaml
+      containers:
+      - args:
+        - ./run-server.sh
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ include "func.fullname" . }}-server
+        ports:
+        - containerPort: 8088
+          name: 8088tcp8088
+          protocol: TCP
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /data/user-config-template.yaml
+          name: user-config
+          subPath: user-config-template.yaml
+          readOnly: false
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      - configMap:
+          name: {{ include "func.fullname" . }}-user-config
+          #items:
+          #  - key: user-config-template.yaml
+          #    path: user-config-template.yaml
+          defaultMode: 0666
+        name: user-config
+      {{- if .Values.storage.pvc.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "func.fullname" . }}-resources
+        {{- else }}
+      - name: data
+        hostPath:
+          path: {{ .Values.storage.hostPath.path }}/resources
+      {{- end }}
+      {{- with .Values.storage.hostPath.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}

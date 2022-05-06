@@ -1,0 +1,16 @@
+{{- if .Values.redis.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "func.fullname" . }}-redis
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.storage.pvc.storageClass }}"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: "{{ .Values.storage.pvc.redis.storageRequests }}"
+{{- end }}
+
+

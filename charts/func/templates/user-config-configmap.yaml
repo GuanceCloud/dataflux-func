@@ -1,0 +1,32 @@
+apiVersion: v1
+data:
+  user-config-template.yaml: |-
+    SECRET: aa7ca52eee226085
+    {{- if .Values.mysql.enabled }}
+    MYSQL_HOST: {{ include "func.fullname" . }}-mysql
+    {{- else }}
+    MYSQL_HOST: {{ .Values.func.MYSQL_HOST }}
+    {{- end }}
+    MYSQL_PORT: {{ .Values.func.MYSQL_PORT }}
+    MYSQL_USER:  {{ .Values.func.MYSQL_USER }}
+    MYSQL_PASSWORD:  {{ .Values.func.MYSQL_PASSWORD }}
+    MYSQL_DATABASE:  {{ .Values.func.MYSQL_DATABASE }}
+    {{- if .Values.redis.enabled }}
+    REDIS_HOST: {{ include "func.fullname" . }}-redis
+    {{- else }}
+    REDIS_HOST:  {{ .Values.func.REDIS_HOST }}
+    {{- end }}
+
+    REDIS_PORT:  {{ .Values.func.REDIS_PORT }}
+    REDIS_DATABASE:  {{ .Values.func.REDIS_DATABASE }}
+    REDIS_PASSWORD:  {{ .Values.func.REDIS_PASSWORD }}
+
+    LOG_LEVEL:  {{ .Values.func.LOG_LEVEL }}
+    LOG_FILE_FORMAT:  {{ .Values.func.LOG_FILE_FORMAT }}
+    WEB_BASE_URL:  {{ .Values.func.WEB_BASE_URL }}
+    #TEST: ''
+    #
+    #_IS_INSTALLED: true
+kind: ConfigMap
+metadata:
+  name: {{ include "func.fullname" . }}-user-config

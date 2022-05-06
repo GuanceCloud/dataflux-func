@@ -1,0 +1,149 @@
+# Default values for func.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+image:
+  ## @param repository - string - required
+  ## Define the repository to use:
+  #
+  repository: "pubrepo.jiagouyun.com/dataflux-func/dataflux-func"
+  pullPolicy: IfNotPresent
+  ## @param tag - string - required
+  ## Define the Cluster-Agent version to use.
+  #
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "{{tag}}"
+
+
+## @param imagePullSecrets - string - optional
+## Func images pull secrets, Can be empty
+#
+imagePullSecrets:
+  name: ""
+
+# Func stores settings, PVC and hostpath. Only one can be selected. When setting hostpath, be sure to set nodeselector
+storage:
+  pvc:
+    enabled: true
+    ## @param storageClass - string - required
+    ## If PVC is enabled,input storageClass name
+    #
+    storageClass: ""
+    mysql:
+      storageRequests: 50G
+    redis:
+      storageRequests: 10G
+    resources:
+      storageRequests: 10G
+  hostPath:
+    enabled: false
+    path: "/data"
+    nodeSelector: {}
+
+## @param nameOverride - string - optional
+## Override name of app.
+#
+nameOverride: ""
+
+## @param fullnameOverride - string - optional
+## Override name of app.
+#
+fullnameOverride: ""
+
+# Func configuration item, some database related information. If external MySQL and redis, please enter the correct configuration information and set mysql Enabled = false and redis enabled=false
+func:
+  MYSQL_HOST: mysql
+  MYSQL_PORT: 3306
+  MYSQL_USER: root
+  MYSQL_PASSWORD: dea45f7be3dd8184
+  MYSQL_DATABASE: dataflux_func
+
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_DATABASE: 5
+  REDIS_PASSWORD: 'dsfs3%sf4343'
+
+  LOG_LEVEL: WARNING
+  LOG_FILE_FORMAT: text
+  WEB_BASE_URL: ''
+
+# Ingress settings
+ingress:
+  enabled: false
+  className: ""
+  hostName: myfunc.com
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+#Built in MySQL configuration
+mysql:
+  enabled: true
+  replicas: 1
+  image:
+    repository: pubrepo.jiagouyun.com/dataflux-func/mysql
+    tag: "5.7.26"
+
+
+#Built in Redis configuration
+redis:
+  enabled: true
+  replicas: 1
+  image:
+    repository: pubrepo.jiagouyun.com/dataflux-func/redis
+    tag: "5.0.7"
+
+
+# Func core services
+server:
+  enabled: true
+  replicas: 1
+  #ports: 8088
+  service:
+    nodePortEnable: true
+    ## Service type
+    ## NodePort, ClusterIP
+    port: 8088
+    type: NodePort
+    ## Only used if service.type is 'NodePort'
+    nodePort: 31080
+
+#worker-0.yaml
+# System task processing
+worker_0:
+  enabled: true
+  replicas: 2
+
+# work-1-6.yaml
+# Synchronous task processing
+worker_1_6:
+  enabled: true
+  replicas: 2
+
+# work-7.yaml
+# UI interface debugging task processing
+worker_7:
+  enabled: true
+  replicas: 2
+
+# work-8-9.yaml
+# Asynchronous task processing
+worker_8_9:
+  enabled: true
+  replicas: 2
+
+# work-beat.yaml
+# timer
+worker_beat:
+  enabled: true
+  replicas: 1
+
