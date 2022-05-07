@@ -27,5 +27,5 @@ push_charts(){
 }
 
 helm_info()
-build_package()
+build_charts()
 push_charts()
