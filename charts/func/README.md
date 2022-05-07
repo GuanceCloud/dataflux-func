@@ -112,7 +112,7 @@ $ helm delete <RELEASE_NAME> -n func
 | `func.MYSQL_DATABASE`               | Mysql 数据库                 | `dataflux_func`                                     |
 | `func.REDIS_HOST`                   | Redis 地址                   | `redis`                                             |
 | `func.REDIS_DATABASE`               | Redis 数据库                 | `5`                                                 |
-| `func.REDIS_PASSWORD`               | Redis 密码                   | ``                                                  |
+| `func.REDIS_PASSWORD`               | Redis 密码                   | `dsfs3%sf4343`                                                  |
 | `func.LOG_LEVEL`                    | Func 日志级别                | `WARNING`                                           |
 | `func.LOG_FILE_FORMAT`              | Func 日志规则                | `text`                                              |
 | `func.WEB_BASE_URL`                 | Func 访问Url                 | ``                                                  |

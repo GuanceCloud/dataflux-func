@@ -17,8 +17,7 @@ helm_info(){
 
 
 build_charts(){
-	sed "s,{{tag}},$IMAGETAG,g" charts/values.yaml > charts/func/values.yaml
-	sed "s,{{version}},$VERSION,g" charts/Chart.yaml > charts/func/Chart.yaml
+	sed -e "s,{{tag}},$IMAGETAG,g" -e "s,{{version}},$VERSION,g" charts/values.yaml > charts/func/values.yaml
 	helm package charts/func
 }
 
