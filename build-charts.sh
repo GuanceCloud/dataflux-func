@@ -10,11 +10,9 @@ VERSION=$1
 IMAGETAG=$2
 REPO=$3
 
-
 helm_info(){
 	helm repo ls
 }
-
 
 build_charts(){
   sed -e "s,{{tag}},$IMAGETAG,g" -e "s,{{version}},$VERSION,g" charts/values.yaml > charts/func/values.yaml
