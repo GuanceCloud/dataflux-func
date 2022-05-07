@@ -1,0 +1,22 @@
+{{- if .Values.server.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-server
+  name: {{ include "func.fullname" . }}-server
+spec:
+  ports:
+  - name: 8088tcp8088
+    port:  {{ .Values.server.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.server.service.port }}
+{{- if and  .Values.server.service.type  .Values.server.service.nodePort }}
+    nodePort: {{ .Values.server.service.nodePort }}
+{{- end }}
+  selector:
+    app: {{ include "func.fullname" . }}-server
+  type: {{ .Values.server.service.type }}
+
+{{- end }}
+

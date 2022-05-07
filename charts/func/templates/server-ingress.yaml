@@ -1,0 +1,17 @@
+{{/*{{- if .Values.server.ingress.enabled }}*/}}
+{{/*apiVersion: extensions/v1beta1*/}}
+{{/*kind: Ingress*/}}
+{{/*metadata:*/}}
+{{/*  labels:*/}}
+{{/*    app: server*/}}
+{{/*  name: server*/}}
+{{/*spec:*/}}
+{{/*  rules:*/}}
+{{/*  - host: {{ .Values.server.ingress.host }}*/}}
+{{/*    http:*/}}
+{{/*      paths:*/}}
+{{/*      - backend:*/}}
+{{/*          serviceName: server*/}}
+{{/*          servicePort: 8088*/}}
+{{/*        path: /*/}}
+{{/*{{- end }}*/}}

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-worker-beat
+  name: {{ include "func.fullname" . }}-worker-beat
+spec:
+  replicas: {{ .Values.worker_beat.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-worker-beat
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-worker-beat
+    spec:
+{{/*      initContainers:*/}}
+{{/*      - name: init-service*/}}
+{{/*        image: curlimages/curl:latest #busybox:1.28.3*/}}
+{{/*        command: ['sh', '-c', 'until curl -I server:8088; do echo waiting for init-service && sleep 2; done']*/}}
+      containers:
+      - args:
+        - ./run-beat.sh
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ include "func.fullname" . }}-worker-beat
+        resources: {}
+        volumeMounts:
+        #- mountPath: /data/user-config.yaml
+        #  name: user-config
+        #  subPath: user-config.yaml
+        - mountPath: /data
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      {{- if .Values.storage.pvc.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "func.fullname" . }}-resources
+        {{- else }}
+        - name: data
+          hostPath:
+            path: {{ .Values.storage.hostPath.path }}/resources
+      {{- end }}
+      {{- with .Values.storage.hostPath.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      dnsPolicy: ClusterFirst
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "func.fullname" . }}-worker-beat
+spec:
+  ports:
+  - name: default
+    port: 42
+    protocol: TCP
+    targetPort: 42
+  selector:
+    app: {{ include "func.fullname" . }}-worker-beat
+  type: ClusterIP

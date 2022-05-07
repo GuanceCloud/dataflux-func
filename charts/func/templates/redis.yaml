@@ -1,0 +1,74 @@
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-redis
+  name: {{ include "func.fullname" . }}-redis
+spec:
+  replicas: {{ .Values.redis.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-redis
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-redis
+    spec:
+      containers:
+      - name: {{ include "func.fullname" . }}-redis
+        image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 6379
+          name: 6379tcp
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - name: config
+          mountPath: /usr/local/etc/redis
+        command:
+          - redis-server
+          - /usr/local/etc/redis/redis.conf
+      volumes:
+      {{- if .Values.storage.pvc.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "func.fullname" . }}-redis
+      {{- else }}
+      - name: data
+        hostPath:
+          path: {{ .Values.storage.hostPath.path }}/redis
+      {{- end }}
+      - name: config
+        configMap:
+          name: {{ include "func.fullname" . }}-redis
+      {{- with .Values.storage.hostPath.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "func.fullname" . }}-redis
+spec:
+  ports:
+  - name: 6379tcp
+    port: 6379
+    protocol: TCP
+    targetPort: 6379
+  selector:
+    app: {{ include "func.fullname" . }}-redis
+  type: ClusterIP
+
+{{- end }}
