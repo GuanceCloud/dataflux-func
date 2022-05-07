@@ -20,7 +20,7 @@ build_charts(){
 }
 
 push_charts(){
-	helm push func-$VERSION.tgz $REPO
+	helm cm-push func-$VERSION.tgz $REPO
 	rm -f func-$VERSION.tgz
 }
 
