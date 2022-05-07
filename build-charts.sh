@@ -17,15 +17,15 @@ helm_info(){
 
 
 build_charts(){
-	sed -e "s,{{tag}},$IMAGETAG,g" -e "s,{{version}},$VERSION,g" charts/values.yaml > charts/func/values.yaml
-	helm package charts/func
+  sed -e "s,{{tag}},$IMAGETAG,g" -e "s,{{version}},$VERSION,g" charts/values.yaml > charts/func/values.yaml
+  helm package charts/func
 }
 
 push_charts(){
-	helm push func-$VERSION.tgz $(1)
-	rm -f func-$VERSION.tgz $REPO
+	helm push func-$VERSION.tgz $REPO
+	rm -f func-$VERSION.tgz
 }
 
-helm_info()
-build_charts()
-push_charts()
+helm_info
+build_charts
+push_charts
