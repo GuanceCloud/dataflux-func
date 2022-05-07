@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # 此脚步用于打包Func charts 包
 # 生产地址为 https://pubrepo.guance.com/chartrepo/func  func-prod-chart
 # 测试地址为 https://registry.jiagouyun.com/chartrepo/func-test  func-test-chart
