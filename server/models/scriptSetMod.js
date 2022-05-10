@@ -962,11 +962,16 @@ function _prepareImportData(data) {
   for (var f in data) {
     var v = data[f];
 
-    if (v === null)                   continue; // NULL值不转换
-    if (!toolkit.endsWith(f, 'JSON')) continue; // 非JSON字段不转换
+    // NULL值不转换
+    if (v === null) continue;
 
-    if ('string' !== typeof v) {
+    if (toolkit.endsWith(f, 'JSON') && 'string' !== typeof v) {
+      // JSON字段序列化
       data[f] = JSON.stringify(v);
+
+    } else if (f === 'expireTime') {
+      // 时间字段
+      data[f] = new Date(v);
     }
   }
 
