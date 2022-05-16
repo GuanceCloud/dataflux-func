@@ -429,7 +429,17 @@ exports.import = function(req, res, next) {
 
           pkgs = _pkgs;
 
-          return asyncCallback();
+          async.series([
+            // 刷新相关RefreshTimestamp
+            function(innerCallback) {
+              updateRefreshTimestamp(res.locals, innerCallback);
+            },
+            // 发送更新脚本缓存任务（强制）
+            function(innerCallback) {
+              var taskKwargs = { force: true };
+              celery.putTask('Main.ReloadScripts', null, taskKwargs, null, innerCallback);
+            },
+          ], asyncCallback);
         });
       }
     },
@@ -463,15 +473,6 @@ exports.import = function(req, res, next) {
 
         return asyncCallback();
       });
-    },
-    // 刷新相关RefreshTimestamp
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, asyncCallback);
-    },
-    // 发送更新脚本缓存任务（强制）
-    function(asyncCallback) {
-      var taskKwargs = { force: true };
-      celery.putTask('Main.ReloadScripts', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -524,13 +525,18 @@ exports.confirmImport = function(req, res, next) {
 
         pkgs = _pkgs;
 
-        return asyncCallback();
+        async.series([
+          // 刷新相关RefreshTimestamp
+          function(innerCallback) {
+            updateRefreshTimestamp(res.locals, innerCallback);
+          },
+          // 发送更新脚本缓存任务（强制）
+          function(innerCallback) {
+            var taskKwargs = { force: true };
+            celery.putTask('Main.ReloadScripts', null, taskKwargs, null, innerCallback);
+          },
+        ], asyncCallback);
       });
-    },
-    // 发送更新脚本缓存任务（强制）
-    function(asyncCallback) {
-      var taskKwargs = { force: true };
-      celery.putTask('Main.ReloadScripts', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

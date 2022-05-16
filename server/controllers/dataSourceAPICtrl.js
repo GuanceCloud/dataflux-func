@@ -547,8 +547,8 @@ function hidePassword(req, res, ret, hookExtra, callback) {
   return callback(null, ret);
 };
 
-exports.updateRefreshTimestamp = function updateRefreshTimestamp(locals, dataSourceIds, callback) {
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMap');
+var updateRefreshTimestamp = exports.updateRefreshTimestamp = function(locals, dataSourceIds, callback) {
+  var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMsMap');
 
   async.series([
     function(asyncCallback) {

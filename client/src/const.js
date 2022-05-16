@@ -327,6 +327,11 @@ export default {
   get UI_THEME() {
     return [
       {
+        key : 'auto',
+        name: $t('Follow System'),
+        icon: 'fa-adjust',
+      },
+      {
         key : 'light',
         name: $t('Light Mode'),
         icon: 'fa-sun-o',
@@ -335,11 +340,6 @@ export default {
         key : 'dark',
         name: $t('Dark Mode'),
         icon: 'fa-moon-o',
-      },
-      {
-        key : 'auto',
-        name: $t('Auto'),
-        icon: 'fa-adjust',
       },
     ]
   },

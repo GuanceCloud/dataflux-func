@@ -57,6 +57,8 @@ FIX_INTEGRATION_KEY_MAP = {
     'autoRun': 'autoRun',
 }
 
+NEVER_REFRESHED_TIMESTAMP_MS = -1
+
 DATA_SOURCE_HELPER_CLASS_MAP = {
     'df_dataway'   : DataWayHelper,
     'df_datakit'   : DataKitHelper,
@@ -74,8 +76,8 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'nsq'          : NSQLookupHelper,
     'mqtt'         : MQTTHelper,
 }
-LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP = {}
-LOCAL_DATA_SOURCE_HELPERS_CACHE         = {}
+LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP = {}
+LOCAL_DATA_SOURCE_HELPERS_CACHE            = {}
 
 ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'integer'   : int,
@@ -84,8 +86,9 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'json'      : toolkit.json_loads,
     'commaArray': lambda x: x.split(','),
 }
-LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP = 0
-LOCAL_ENV_VARIABLES_CACHE             = {}
+LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS = 0
+LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS   = 0
+LOCAL_ENV_VARIABLES_CACHE                = {}
 
 DECIPHER_FIELDS = [
     'password',
@@ -649,15 +652,15 @@ class FuncDataSourceHelper(object):
 
     def get(self, data_source_id, **helper_kwargs):
         global DATA_SOURCE_HELPER_CLASS_MAP
-        global LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP
+        global LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP
         global LOCAL_DATA_SOURCE_HELPERS_CACHE
 
         helper_target_key = toolkit.json_dumps(helper_kwargs, sort_keys=True)
 
         # 判断是否需要刷新数据源
-        local_time = LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP.get(data_source_id) or 0
+        local_time = LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMsMap')
         refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or -1)
 
         if refresh_time != local_time:
@@ -669,7 +672,7 @@ class FuncDataSourceHelper(object):
             if data_source_id in LOCAL_DATA_SOURCE_HELPERS_CACHE:
                 prev_helpers = list(LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id].values())
 
-            LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP[data_source_id] = refresh_time
+            LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP[data_source_id] = refresh_time
             LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
 
             for _ in range(len(prev_helpers)):
@@ -722,7 +725,7 @@ class FuncDataSourceHelper(object):
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMsMap')
         self.__task.cache_db.hset(cache_key, data_source_id, int(time.time() * 1000))
 
     def list(self):
@@ -837,20 +840,30 @@ class FuncEnvVariableHelper(object):
 
     def _refresh(self):
         global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
-        global LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP
+        global LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS
+        global LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS
         global LOCAL_ENV_VARIABLES_CACHE
 
         # 判断是否需要刷新数据源
-        local_time = LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP or 0
+        now_ms = int(time.time() * 1000)
 
-        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp')
-        refresh_time = int(self.__task.cache_db.get(cache_key) or -1)
+        local_time = LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS
+        cache_time = LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS
 
-        if refresh_time != local_time or local_time < time.time() - 60:
-            self.__task.logger.debug('LOCAL_ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    refresh_time, local_time, refresh_time - local_time))
+        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestampMs')
+        refresh_time = int(self.__task.cache_db.get(cache_key) or NEVER_REFRESHED_TIMESTAMP_MS)
 
-            LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP = refresh_time
+        # 合适更新本地缓存？
+        # 1. 本地缓存时间与远端刷新时间不一致
+        # 2. 本地缓存超过60秒
+        if local_time != refresh_time or cache_time < now_ms - 60 * 1000:
+            self.__task.logger.debug('[DFF.ENV] refreshed. remote_t=`{}`, local_t=`{}`, cache_t=`{}`'.format(
+                    now_ms - refresh_time,
+                    now_ms - local_time,
+                    now_ms - cache_time))
+
+            LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS = refresh_time
+            LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS   = now_ms
 
             # 重新加载全部环境变量
             LOCAL_ENV_VARIABLES_CACHE = {}

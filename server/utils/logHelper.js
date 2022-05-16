@@ -16,6 +16,8 @@ var toolkit = require('./toolkit');
 var g       = require('./g');
 
 /* Configure */
+var HOSTNAME = os.hostname();
+
 var LOG_LEVELS = exports.LOG_LEVELS = {
   levels: {
     'ALL'    : 4,
@@ -35,12 +37,15 @@ var LOG_LEVELS = exports.LOG_LEVELS = {
 };
 var LOG_TEXT_FIELDS = [
   // 'appName',
+  // 'subAppName',
+  'subAppNameShort',
   // 'upTime',
   // 'level',
   'levelShort',
   // 'timestamp',
   // 'timestampMs',
-  'timestampHumanized',
+  // 'timestampHumanized',
+  'timestampShort',
   'hostname',
   // 'traceId',
   // 'requestType',
@@ -54,12 +59,15 @@ var LOG_TEXT_FIELDS = [
 ];
 var LOG_TEXT_COLOR_MAP = {
   appName           : true,
+  subAppName        : true,
+  subAppNameShort   : true,
   upTime            : true,
   level             : true,
   levelShort        : true,
   timestamp         : true,
   timestampMs       : true,
   timestampHumanized: true,
+  timestampShort    : true,
   hostname          : true,
   traceId           : 'yellow',
   traceIdShort      : 'yellow',
@@ -74,12 +82,15 @@ var LOG_TEXT_COLOR_MAP = {
 };
 var LOG_JSON_FIELD_MAP = {
   appName           : 'app',
+  subAppName        : 'sub_app',
+  // subAppNameShort   : 'sub_app_short',
   upTime            : 'up_time',
   level             : 'level',
-  // levelShort        : 'levelShort',
+  // levelShort        : 'level_short',
   // timestamp         : 'timestamp',
-  timestampMs       : 'cc_timestamp',
+  timestampMs       : 'timestamp',
   timestampHumanized: 'timestamp_humanized',
+  // timestampShort    : 'timestamp_short',
   hostname          : 'hostname',
   traceId           : 'trace_id',
   requestType       : 'request_type',
@@ -149,11 +160,11 @@ var createWinstonFormatter = function(opt) {
 
           case 'userId':
           case 'userIdShort':
-            fieldValue = fieldValue || 'NON_USER_ID';
+            fieldValue = fieldValue || 'ANONYMOUS';
             break;
 
           case 'username':
-            fieldValue = '@' + (fieldValue || 'NON_USERNAME');
+            fieldValue = '@' + (fieldValue || 'ANONYMOUS');
             break;
         }
 
@@ -278,9 +289,10 @@ LoggerHelper.prototype._log = function() {
     level = level.toUpperCase();
   }
 
-  var nowMs  = Date.now();
-  var now    = parseInt(nowMs / 1000);
-  var nowStr = moment(nowMs).tz(CONFIG.LOG_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+  var nowMs    = Date.now();
+  var now      = parseInt(nowMs / 1000);
+  var nowStr   = moment(nowMs).tz(CONFIG.LOG_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+  var nowShort = nowStr.slice(5);
 
   var reqTimeMs = this.locals.requestTime
                 ? this.locals.requestTime.getTime()
@@ -293,13 +305,16 @@ LoggerHelper.prototype._log = function() {
     isFixWinston: fixedMessage !== message,
     meta: {
       appName           : CONFIG.APP_NAME,
+      subAppName        : 'Server',
+      subAppNameShort   : 'SVR',
       upTime            : now - g.runUpTime,
       level             : level,
       levelShort        : level[0],
       timestamp         : now,
       timestampMs       : nowMs,
       timestampHumanized: nowStr,
-      hostname          : os.hostname(),
+      timestampShort    : nowShort,
+      hostname          : HOSTNAME,
       requestType       : this.locals.requestType,
       clientIP          : this.req.ip,
       clientId          : this.locals.clientId,

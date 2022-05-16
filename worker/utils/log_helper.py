@@ -20,6 +20,7 @@ CONFIG = yaml_resources.get('CONFIG')
 REDIS = None
 
 RUN_UP_TIME = int(time.time())
+HOSTNAME    = socket.gethostname()
 
 LOG_LEVELS = {
     'levels': {
@@ -40,18 +41,21 @@ LOG_LEVELS = {
 }
 LOG_TEXT_FIELDS = [
     # 'appName',
+    # 'subAppName',
+    'subAppNameShort',
     # 'upTime',
     # 'level',
     'levelShort',
     # 'timestamp',
     # 'timestampMs',
-    'timestampHumanized',
+    # 'timestampHumanized',
+    'timestampShort',
     'hostname',
+    # 'queue',
+    'queueShort',
     # 'taskId',
     'taskIdShort',
     'task',
-    # 'queue',
-    'queueShort',
     # 'origin',
     # 'userId',
     # 'userIdShort',
@@ -63,18 +67,21 @@ LOG_TEXT_FIELDS = [
 ]
 LOG_TEXT_COLOR_MAP = {
     'appName'           : True,
+    'subAppName'        : True,
+    'subAppNameShort'   : True,
     'upTime'            : True,
     'level'             : True,
     'levelShort'        : True,
     'timestamp'         : True,
     'timestampMs'       : True,
     'timestampHumanized': True,
+    'timestampShort'    : True,
     'hostname'          : True,
+    'queue'             : 'yellow',
+    'queueShort'        : 'yellow',
     'taskId'            : 'yellow',
     'taskIdShort'       : 'yellow',
     'task'              : 'yellow',
-    'queue'             : 'yellow',
-    'queueShort'        : 'yellow',
     'origin'            : 'yellow',
     'userId'            : 'cyan',
     'userIdShort'       : 'cyan',
@@ -86,18 +93,21 @@ LOG_TEXT_COLOR_MAP = {
 }
 LOG_JSON_FIELD_MAP = {
     'appName'           : 'app',
+    'subAppName'        : 'sub_app',
+    # 'subAppNameShort'   : 'sub_app_short',
     'upTime'            : 'up_time',
     'level'             : 'level',
-    # 'levelShort'        : 'levelShort',
+    # 'levelShort'        : 'level_short',
     # 'timestamp'         : 'timestamp',
-    'timestampMs'       : 'cc_timestamp',
+    'timestampMs'       : 'timestamp',
     'timestampHumanized': 'timestamp_humanized',
+    # 'timestampShort'    : 'timestamp_short',
     'hostname'          : 'hostname',
+    'queue'             : 'queue',
+    'queueShort'        : 'queue_short',
     'taskId'            : 'task_id',
     # 'taskIdShort'       : 'task_id_short',
     'task'              : 'task',
-    'queue'             : 'queue',
-    'queueShort'        : 'queue_short',
     'origin'            : 'origin',
     'userId'            : 'user_id',
     # 'userIdShort'       : 'user_id_short',
@@ -211,9 +221,10 @@ class LogHelper(object):
         else:
             level = level.upper()
 
-        now_ms  = int(time.time() * 1000)
-        now     = int(now_ms / 1000)
-        now_str = arrow.get(now).to(CONFIG['LOG_TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
+        now_ms    = int(time.time() * 1000)
+        now       = int(now_ms / 1000)
+        now_str   = arrow.get(now).to(CONFIG['LOG_TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
+        now_short = now_str[5:]
 
         meta_extra = toolkit.get_attr(self.task.request, 'extra', {})
 
@@ -230,20 +241,23 @@ class LogHelper(object):
             'message': message,
             'meta': {
                 'appName'           : CONFIG['APP_NAME'],
+                'subAppName'        : 'Worker',
+                'subAppNameShort'   : 'WKR',
                 'upTime'            : now - RUN_UP_TIME,
                 'level'             : level,
                 'levelShort'        : level[0],
                 'timestamp'         : now,
                 'timestampMs'       : now_ms,
                 'timestampHumanized': now_str,
-                'hostname'          : socket.gethostname(),
+                'timestampShort'    : now_short,
+                'hostname'          : HOSTNAME,
+                'queue'             : _queue,
+                'queueShort'        : '#' + _queue.split('@')[1],
                 'clientIP'          : meta_extra.get('clientIP'),
                 'clientId'          : meta_extra.get('clientId'),
                 'taskId'            : _task_id,
                 'taskIdShort'       : toolkit.get_first_part(_task_id),
                 'task'              : self.task.name,
-                'queue'             : _queue,
-                'queueShort'        : '#' + _queue.split('@')[1],
                 'origin'            : _origin,
                 'diffTime'          : now_ms - (self._prev_log_time or self._task_start_time),
                 'costTime'          : now_ms - self._task_start_time,

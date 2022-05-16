@@ -14,9 +14,10 @@ en:
   '(': '（'
   ')': '）'
 
-  Light Mode: 明亮模式
-  Dark Mode : 黑暗模式
-  Auto      : 自动
+  Light Mode   : 明亮模式
+  Dark Mode    : 黑暗模式
+  Auto         : 自动
+  Follow System: 跟随系统
 
   # 通用
   Administrator: 系统管理员

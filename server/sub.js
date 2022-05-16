@@ -143,7 +143,7 @@ exports.runListener = function runListener(app) {
       },
       // 获取数据源刷新时间
       function(asyncCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMap');
+        var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMsMap');
         app.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
           if (err) return asyncCallback(err);
 

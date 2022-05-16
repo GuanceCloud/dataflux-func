@@ -136,8 +136,7 @@ exports.delete = function(req, res, next) {
   });
 };
 
-exports.updateRefreshTimestamp = function updateRefreshTimestamp(locals, callback) {
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestamp');
-
+var updateRefreshTimestamp = exports.updateRefreshTimestamp = function(locals, callback) {
+  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestampMs');
   locals.cacheDB.set(cacheKey, Date.now(), callback);
 };

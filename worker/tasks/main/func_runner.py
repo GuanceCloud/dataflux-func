@@ -79,7 +79,7 @@ class FuncRunnerTask(ScriptBaseTask):
             2. 从Redis读取脚本
                 -> 如存在缓存，建立本地缓存并结束处理
             3. 从数据库读取脚本
-              （正常不会发生，ReloadScriptsTask 会定时更新Redis缓存）
+                （正常不会发生，且 ReloadScriptsTask 会定时更新Redis缓存）
         '''
         global LOCAL_SCRIPT_DICT_CACHE_MD5
         global LOCAL_SCRIPT_DICT_CACHE
