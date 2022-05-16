@@ -252,22 +252,7 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      let nextRouteName = null;
-      switch(this.$route.params.id.split('-')[0]) {
-        case 'cron':
-          nextRouteName = 'crontab-config-list';
-          break;
-
-        case 'bat':
-          nextRouteName = 'batch-list';
-          break;
-
-        default:
-          nextRouteName = 'overview';
-          break;
-      }
-
-      this.$router.push({ name: nextRouteName });
+      this.loadData();
     },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
