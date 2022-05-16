@@ -32,6 +32,7 @@
               size="mini"
               step-strictly
               :step="1"
+              :precision="0"
               :min="$store.getters.CONFIG('_FUNC_TASK_MIN_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_TIMEOUT')">
             </el-input-number>&#12288;秒
           </el-form-item>
@@ -42,6 +43,7 @@
               size="mini"
               step-strictly
               :step="1"
+              :precision="0"
               :min="$store.getters.CONFIG('_FUNC_TASK_MIN_API_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_API_TIMEOUT')">
             </el-input-number>&#12288;秒
           </el-form-item>

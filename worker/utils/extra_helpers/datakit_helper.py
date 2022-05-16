@@ -4,7 +4,6 @@
 import traceback
 
 # 3rd-party Modules
-import six
 import requests
 
 # Project Modules
@@ -32,7 +31,7 @@ class DataKitHelper(object):
         self.client = DataKit(**get_config(config))
 
     def __del__(self):
-        pass
+        self.client = None
 
     def check(self):
         url = '{0}://{1}:{2}/v1/ping'.format(

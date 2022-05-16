@@ -179,3 +179,11 @@ upgradeInfo:
         KEY `ROOT_TASK_ID` (`rootTaskId`),
         KEY `FUNC_ID` (`funcId`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务信息'
+
+  # 于观测云SaaS 2022-05-19 迭代中实装
+  - seq: 11
+    database: |-
+      -- 授权链接支持配置任务记录数量
+      ALTER TABLE biz_main_auth_link
+      ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
+      AFTER `showInDoc`;

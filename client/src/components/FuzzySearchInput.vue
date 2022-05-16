@@ -7,7 +7,7 @@ Input search content: 输入搜索内容
     <el-autocomplete
       :placeholder="$t('Input search content')"
       size="small"
-      v-model.trim="dataFilter._fuzzySearch"
+      v-model="dataFilter._fuzzySearch"
       :fetch-suggestions="getSearchHistory"
       :debounce="100"
       @change="doSearch()"
@@ -44,6 +44,10 @@ export default {
   },
   methods: {
     doSearch(nextListQuery) {
+      [this.dataFilter, nextListQuery].forEach(obj => {
+        if (!obj || !obj._fuzzySearch) return;
+        obj._fuzzySearch = obj._fuzzySearch.trim();
+      })
       this.T.changePageFilter(this.dataFilter, nextListQuery);
       this.$store.commit('addFuzzySearchHistory', this.dataFilter._fuzzySearch);
     },

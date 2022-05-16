@@ -367,6 +367,14 @@ const routes = [
     name: 'blueprint',
     component: () => import('../views/Blueprint.vue'),
   },
+
+  {
+    path: '*',
+    redirect: {
+      name: 'home',
+      query: null,
+    }
+  }
 ];
 
 const router = new VueRouter({

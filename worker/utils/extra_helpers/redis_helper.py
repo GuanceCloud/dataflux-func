@@ -11,7 +11,6 @@ import six
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.utils.log_helper import LogHelper
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -80,8 +79,18 @@ class RedisHelper(object):
             self.client = CLIENT
 
     def __del__(self):
-        if self.client and self.client is not CLIENT:
+        if not self.client or self.client is CLIENT:
+            return
+
+        try:
             self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:
@@ -280,11 +289,9 @@ class RedisHelper(object):
     def ltrim(self, key, start, stop):
         return self.run('ltrim', key, start, stop);
 
-    def rpoplpush(self, key, dest_key=None, dest_scope=None):
+    def rpoplpush(self, key, dest_key=None):
         if dest_key is None:
             dest_key = key
-        if dest_scope is None:
-            dest_scope = scope
 
         return self.run('rpoplpush', key, dest_key)
 
@@ -312,7 +319,7 @@ class RedisHelper(object):
         expected_lock_value = self.run('get', lock_key)
         expected_lock_value = six.ensure_str(expected_lock_value)
         if expected_lock_value != lock_value:
-            raise Error('Not lock owner')
+            raise Exception('Not lock owner')
 
         self.run('expire', lock_key, max_lock_time)
 

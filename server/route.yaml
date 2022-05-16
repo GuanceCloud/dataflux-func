@@ -3580,6 +3580,13 @@ authLinkAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3673,6 +3680,13 @@ authLinkAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3789,6 +3803,13 @@ authLinkAPI:
             $desc      : 是否显示于文档
             $isRequired: false
             $type      : boolean
+          taskInfoLimit:
+            $desc      : 近期任务保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 0
+            $maxValue  : 5000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -3881,6 +3902,13 @@ authLinkAPI:
           $desc     : API认证ID
           $allowNull: true
           $type     : string
+        taskInfoLimit:
+          $desc      : 近期任务保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 5000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false

@@ -1712,6 +1712,11 @@ exports.callAuthLink = function(req, res, next) {
 
         func = _func;
 
+        // 补全`taskInfoLimit`参数
+        // 优先级：`函数配置值`fixedTaskInfoLimit` > 指定值 > 默认值`
+        func.extraConfigJSON = func.extraConfigJSON || {};
+        func.extraConfigJSON.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit || authLink.taskInfoLimit || null;
+
         return asyncCallback();
       });
     },
@@ -1858,7 +1863,7 @@ exports.callBatch = function(req, res, next) {
         func = _func;
 
         // 补全`taskInfoLimit`参数
-        // 优先级：`函数配置值`fixedTaskInfoLimit` > 批处理指定值 > 默认值`
+        // 优先级：`函数配置值`fixedTaskInfoLimit` > 指定值 > 默认值`
         func.extraConfigJSON = func.extraConfigJSON || {};
         func.extraConfigJSON.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit || batch.taskInfoLimit || null;
 
@@ -2148,11 +2153,11 @@ exports.getSystemConfig = function(req, res, next) {
     _FUNC_TASK_MAX_API_TIMEOUT      : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
     _FUNC_TASK_EXTRA_TIMEOUT_TO_KILL: CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
 
-    _TASK_INFO_DEFAULT_LIMIT_AUTH_LINK     : CONFIG._TASK_INFO_DEFAULT_LIMIT_AUTH_LINK,
-    _TASK_INFO_DEFAULT_LIMIT_CRONTAB: CONFIG._TASK_INFO_DEFAULT_LIMIT_CRONTAB,
-    _TASK_INFO_DEFAULT_LIMIT_BATCH         : CONFIG._TASK_INFO_DEFAULT_LIMIT_BATCH,
-    _TASK_INFO_MIN_LIMIT                   : CONFIG._TASK_INFO_MIN_LIMIT,
-    _TASK_INFO_MAX_LIMIT                   : CONFIG._TASK_INFO_MAX_LIMIT,
+    _TASK_INFO_DEFAULT_LIMIT_AUTH_LINK: CONFIG._TASK_INFO_DEFAULT_LIMIT_AUTH_LINK,
+    _TASK_INFO_DEFAULT_LIMIT_CRONTAB  : CONFIG._TASK_INFO_DEFAULT_LIMIT_CRONTAB,
+    _TASK_INFO_DEFAULT_LIMIT_BATCH    : CONFIG._TASK_INFO_DEFAULT_LIMIT_BATCH,
+    _TASK_INFO_MIN_LIMIT              : CONFIG._TASK_INFO_MIN_LIMIT,
+    _TASK_INFO_MAX_LIMIT              : CONFIG._TASK_INFO_MAX_LIMIT,
 
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,

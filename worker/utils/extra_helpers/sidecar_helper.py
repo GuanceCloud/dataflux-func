@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import json
 import time
 import uuid
 import hashlib
@@ -35,7 +34,18 @@ class SidecarHelper(object):
         self.client = session
 
     def __del__(self):
-        pass
+        if not self.client:
+            return
+
+        try:
+            self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         url = '{0}://{1}:{2}/'.format(

@@ -9,7 +9,7 @@ import six
 
 # Project Modules
 from . import parse_response
-from worker.utils import yaml_resources, toolkit
+from worker.utils import toolkit
 
 class DingHelper(object):
     def __init__(self, webhook):

@@ -19,6 +19,9 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var scriptSetMod          = require('../models/scriptSetMod');
 var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
+var dataSourceAPICtrl  = require('./dataSourceAPICtrl');
+var envVariableAPICtrl = require('./envVariableAPICtrl');
+
 /* Configure */
 var BUILTIN_SCRIPT_SET_IDS = null;
 
@@ -420,6 +423,7 @@ exports.import = function(req, res, next) {
         return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, packageDataTEXT, asyncCallback);
 
       } else {
+        // 直接导入
         return scriptSetModel.import(packageData, recoverData, function(err, _pkgs) {
           if (err) return asyncCallback(err);
 
@@ -459,6 +463,10 @@ exports.import = function(req, res, next) {
 
         return asyncCallback();
       });
+    },
+    // 刷新相关RefreshTimestamp
+    function(asyncCallback) {
+      updateRefreshTimestamp(res.locals, asyncCallback);
     },
     // 发送更新脚本缓存任务（强制）
     function(asyncCallback) {
@@ -534,3 +542,13 @@ exports.confirmImport = function(req, res, next) {
   });
 };
 
+function updateRefreshTimestamp(locals, callback) {
+  async.series([
+    function(asyncCallback) {
+      dataSourceAPICtrl.updateRefreshTimestamp(locals, null, asyncCallback);
+    },
+    function(asyncCallback) {
+      envVariableAPICtrl.updateRefreshTimestamp(locals, asyncCallback);
+    },
+  ], callback);
+};

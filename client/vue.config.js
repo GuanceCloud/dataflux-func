@@ -61,7 +61,7 @@ module.exports = {
         .end()
   },
   devServer: {
-    sockHost: getNetworkIP(),
+    sockHost: 'localhost',
     disableHostCheck: true,
   },
 }

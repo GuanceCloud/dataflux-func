@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import re
-import datetime
 import traceback
 
 # 3rd-party Modules
@@ -12,7 +11,6 @@ from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
 # Project Modules
-from worker import celeryconfig
 from worker.utils import toolkit, yaml_resources
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
@@ -75,7 +73,18 @@ class MySQLHelper(object):
             self.client = CLIENT
 
     def __del__(self):
-        pass
+        if not self.client or self.client is CLIENT:
+            return
+
+        try:
+            self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

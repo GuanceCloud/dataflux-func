@@ -721,6 +721,10 @@ kbd {
   border-radius: 3px;
 }
 
+.CodeMirror-wrap pre.CodeMirror-line {
+  word-break: break-all;
+}
+
 /*动画效果*/
 @keyframes highlight-code-line-blink {
   from, to {

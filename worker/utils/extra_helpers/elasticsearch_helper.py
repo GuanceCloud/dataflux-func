@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import re
-import datetime
 import traceback
 
 # 3rd-party Modules
@@ -10,7 +8,6 @@ import requests
 
 # Project Modules
 from . import parse_response
-from worker.utils import toolkit
 
 def get_config(c):
     config = {
@@ -37,8 +34,18 @@ class ElasticSearchHelper(object):
         self.client = session
 
     def __del__(self):
-        if self.client:
+        if not self.client:
+            return
+
+        try:
             self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

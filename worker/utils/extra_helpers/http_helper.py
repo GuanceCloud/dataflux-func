@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import time
 
 # 3rd-party Modules
 import requests
 
 # Project Modules
 from . import parse_response
-from worker.utils import yaml_resources, toolkit
 
 class HTTPHelper(object):
     REQUESTS_OPT = { 'verify': False }

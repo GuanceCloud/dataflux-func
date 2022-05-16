@@ -2,7 +2,6 @@
 
 # Builtin Modules
 import re
-import datetime
 import traceback
 
 # 3rd-party Modules
@@ -10,9 +9,7 @@ from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
 # Project Modules
-from worker import celeryconfig
 from worker.utils import toolkit
-from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 from worker.utils.extra_helpers import to_db_res_dict
 
@@ -51,7 +48,18 @@ class OracleDatabaseHelper(object):
             self.client = PersistentDB(cx_Oracle, **get_config(config))
 
     def __del__(self):
-        pass
+        if not self.client:
+            return
+
+        try:
+            self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

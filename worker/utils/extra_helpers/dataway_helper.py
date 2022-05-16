@@ -4,7 +4,6 @@
 import traceback
 
 # 3rd-party Modules
-import six
 import requests
 
 # Project Modules
@@ -39,7 +38,7 @@ class DataWayHelper(object):
         self.client = DataWay(**get_config(config))
 
     def __del__(self):
-        pass
+        self.client = None
 
     def check(self):
         url = '{0}://{1}:{2}/'.format(

@@ -4,7 +4,7 @@
 import os
 
 # Project Modules
-from worker.utils import yaml_resources, toolkit
+from worker.utils import yaml_resources
 
 # 3rd-party Modules
 import six

@@ -78,7 +78,7 @@ class ShellHelper(object):
             raise
 
         finally:
-            if isinstance(stdout, file) and not stdout.closed:
+            if not isinstance(stdout, six.string_types) and not stdout.closed:
                 stdout.close()
 
         output.strip()
@@ -101,7 +101,7 @@ class ShellHelper(object):
         return file_content
 
     def download_file(self, file_name, url):
-        return self.__call('wget', '-q', '-O', file_name)
+        return self.__call('wget', url, '-q', '-O', file_name)
 
     def call_3rd_part_tool(self, command, exec_file, *args):
         exec_file = os.path.join(self.third_part_tool_root_path, exec_file)

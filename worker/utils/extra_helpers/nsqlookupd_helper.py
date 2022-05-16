@@ -53,7 +53,18 @@ class NSQLookupHelper(object):
         self.update_producers()
 
     def __del__(self):
-        pass
+        if not self.client:
+            return
+
+        try:
+            self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

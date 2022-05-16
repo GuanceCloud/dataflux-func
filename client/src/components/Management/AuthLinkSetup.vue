@@ -1,8 +1,9 @@
 <i18n locale="en" lang="yaml">
 randomIDString: auln-{Random ID}
 
-parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
-shortcutDays : '{n} day | {n} days'
+parameterHint  : 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+shortcutDays   : '{n} day | {n} days'
+recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -14,6 +15,8 @@ Setup Auth Link: 配置授权链接
 Customize ID: 定制ID
 Func        : 执行函数
 Arguments   : 参数指定
+Task Info   : 任务信息
+Keep        : 保留
 Tags        : 标签
 Add Tag     : 添加标签
 Show in doc : 显示于文档
@@ -41,8 +44,9 @@ Auth Link deleted: 授权链接已删除
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 Invalid argument format: 参数格式不正确
 
-parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
-shortcutDays : '{n}天'
+parameterHint  : '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+shortcutDays   : '{n}天'
+recentTaskCount: '{n}个近期任务'
 </i18n>
 
 <template>
@@ -110,6 +114,21 @@ shortcutDays : '{n}天'
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
+                <el-form-item :label="$t('Task Info')">
+                  <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
+                  <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
+                    :disabled="true"
+                    :value="fixedTaskInfoLimit"></el-input-number>
+                  <el-input-number class="task-info-limit-input" v-else
+                    :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
+                    :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
+                    :step="10"
+                    :precision="0"
+                    v-model="form.taskInfoLimit"></el-input-number>
+                  <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+                </el-form-item>
+
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
                   <el-select v-model="form.apiAuthId">
                     <el-option v-for="opt in apiAuthOptions" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
@@ -138,7 +157,7 @@ shortcutDays : '{n}天'
                     <el-input-number class="throttling-input"
                       :min="1"
                       :step="1"
-                      :step-strictly="true"
+                      :precision="0"
                       v-model="form.throttlingJSON[opt.key]"></el-input-number>
                     <span class="throttling-unit">{{ $tc(opt.name, form.throttlingJSON[opt.key], { n: '' }) }} </span>
                     <el-link class="throttling-clear" @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
@@ -188,6 +207,7 @@ export default {
             this.T.jsonClear(this.form);
             this.form.throttlingJSON = {};
             this.form.showInDoc      = false;
+            this.form.taskInfoLimit  = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK');
             this.data = {};
             break;
 
@@ -218,6 +238,11 @@ export default {
         nextForm.tagsJSON           = nextForm.tagsJSON || [];
         nextForm.apiAuthId          = this.data.apia_id;
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
+
+        if (this.T.isNothing(nextForm.taskInfoLimit)) {
+          nextForm.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')
+        }
+
         this.form = nextForm;
       }
 
@@ -488,6 +513,7 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'),
         note              : null,
       },
     }
@@ -499,6 +525,24 @@ export default {
 <style scoped>
 .func-cascader-input {
   width: 500px;
+}
+.task-info-limit-input {
+  width: 180px;
+}
+.task-info-limit-prefix {
+  color: grey;
+  padding-right: 10px;
+}
+.task-info-limit-unit {
+  color: grey;
+  padding-left: 10px;
+}
+.task-info-limit-unit > span {
+  width: 35px;
+  display: inline-block;
+}
+.task-info-limit-clear {
+  float: right
 }
 .expire-time-input {
   width: 500px;

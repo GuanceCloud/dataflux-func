@@ -2,8 +2,6 @@
 
 # Builtin Modules
 import re
-import json
-import time
 import traceback
 
 # 3rd-party Modules
@@ -11,8 +9,7 @@ import six
 import arrow
 
 # Project Modules
-from worker.utils import yaml_resources, toolkit
-from worker.utils.log_helper import LogHelper
+from worker.utils import toolkit
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 def get_config(c):
@@ -45,8 +42,18 @@ class InfluxDBHelper(object):
         self.client = influxdb.InfluxDBClient(**get_config(config))
 
     def __del__(self):
-        if self.client:
+        if not self.client:
+            return
+
+        try:
             self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

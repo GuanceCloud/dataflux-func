@@ -114,7 +114,7 @@ shortcutDays  : '{n}天'
                     :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
                     :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
                     :step="10"
-                    :step-strictly="true"
+                    :precision="0"
                     v-model="form.taskInfoLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
                   <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_CRONTAB')">{{ $t('Restore Default') }}</el-link>
@@ -274,8 +274,12 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
-        nextForm.taskInfoLimit      = nextForm.taskInfoLimit || this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_CRONTAB');
-        nextForm.tagsJSON           = nextForm.tagsJSON      || [];
+        nextForm.tagsJSON = nextForm.tagsJSON || [];
+
+        if (this.T.isNothing(nextForm.taskInfoLimit)) {
+          nextForm.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_CRONTAB')
+        }
+
         this.form = nextForm;
 
         if (this.data.crontab) {

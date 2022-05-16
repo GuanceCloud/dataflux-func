@@ -74,11 +74,9 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'nsq'          : NSQLookupHelper,
     'mqtt'         : MQTTHelper,
 }
-DATA_SOURCE_LOCAL_TIMESTAMP_MAP = {}
-DATA_SOURCE_HELPERS_CACHE       = {}
+LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP = {}
+LOCAL_DATA_SOURCE_HELPERS_CACHE         = {}
 
-ENV_VARIABLE_LOCAL_TIMESTAMP = None
-ENV_VARIABLES_CACHE          = {}
 ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'integer'   : int,
     'float'     : float,
@@ -86,6 +84,8 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'json'      : toolkit.json_loads,
     'commaArray': lambda x: x.split(','),
 }
+LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP = 0
+LOCAL_ENV_VARIABLES_CACHE             = {}
 
 DECIPHER_FIELDS = [
     'password',
@@ -639,7 +639,7 @@ class FuncDataSourceHelper(object):
     CIPHER_CONFIG_KEYS = [
       'password',
       'secretKey',
-    ];
+    ]
 
     def __init__(self, task):
         self.__task = task
@@ -648,27 +648,35 @@ class FuncDataSourceHelper(object):
         return self.get(*args, **kwargs)
 
     def get(self, data_source_id, **helper_kwargs):
-        global DATA_SOURCE_LOCAL_TIMESTAMP_MAP
-        global DATA_SOURCE_HELPERS_CACHE
         global DATA_SOURCE_HELPER_CLASS_MAP
+        global LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP
+        global LOCAL_DATA_SOURCE_HELPERS_CACHE
 
         helper_target_key = toolkit.json_dumps(helper_kwargs, sort_keys=True)
 
         # 判断是否需要刷新数据源
-        local_time = DATA_SOURCE_LOCAL_TIMESTAMP_MAP.get(data_source_id) or 0
+        local_time = LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP.get(data_source_id) or 0
 
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMap')
         refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or -1)
 
         if refresh_time != local_time:
-            self.__task.logger.debug('DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
+            self.__task.logger.debug('LOCAL_DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
                     data_source_id, helper_target_key, refresh_time, local_time, refresh_time - local_time))
 
-            DATA_SOURCE_LOCAL_TIMESTAMP_MAP[data_source_id] = refresh_time
-            DATA_SOURCE_HELPERS_CACHE[data_source_id]       = {}
+            # 回收所有Helper
+            prev_helpers = []
+            if data_source_id in LOCAL_DATA_SOURCE_HELPERS_CACHE:
+                prev_helpers = list(LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id].values())
+
+            LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MAP[data_source_id] = refresh_time
+            LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
+
+            for _ in range(len(prev_helpers)):
+                del prev_helpers[0]
 
         # 已缓存的直接返回
-        helper = DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
+        helper = LOCAL_DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
         if helper:
             self.__task.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
             return helper
@@ -704,17 +712,17 @@ class FuncDataSourceHelper(object):
             e = NotSupportException('Data source type not support: `{}`'.format(helper_type))
             raise e
 
-        if not DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
-            DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
+        if not LOCAL_DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
+            LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
 
-        DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
+        LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
 
         self.__task.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
         return helper
 
     def update_refresh_timestamp(self, data_source_id):
         # 更新缓存刷新时间
-        cache_key = toolkit.get_server_cache_key('cache', 'dataSourceRefreshTimestampMap')
+        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMap')
         self.__task.cache_db.hset(cache_key, data_source_id, int(time.time() * 1000))
 
     def list(self):
@@ -828,24 +836,24 @@ class FuncEnvVariableHelper(object):
         return self.get(*args, **kwargs)
 
     def _refresh(self):
-        # 初始化时加载全部
-        global ENV_VARIABLE_LOCAL_TIMESTAMP
-        global ENV_VARIABLES_CACHE
+        global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
+        global LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP
+        global LOCAL_ENV_VARIABLES_CACHE
 
         # 判断是否需要刷新数据源
-        local_time = ENV_VARIABLE_LOCAL_TIMESTAMP or 0 or 0
+        local_time = LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP or 0
 
         cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestamp')
         refresh_time = int(self.__task.cache_db.get(cache_key) or -1)
 
-        if refresh_time != local_time:
-            self.__task.logger.debug('ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
+        if refresh_time != local_time or local_time < time.time() - 60:
+            self.__task.logger.debug('LOCAL_ENV_VARIABLES_CACHE refreshed. remote=`{}`, local=`{}`, diff=`{}`'.format(
                     refresh_time, local_time, refresh_time - local_time))
 
-            ENV_VARIABLE_LOCAL_TIMESTAMP = refresh_time
+            LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP = refresh_time
 
             # 重新加载全部环境变量
-            ENV_VARIABLES_CACHE = {}
+            LOCAL_ENV_VARIABLES_CACHE = {}
 
             sql = '''
                 SELECT
@@ -864,7 +872,7 @@ class FuncEnvVariableHelper(object):
                 if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
                     casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
 
-                ENV_VARIABLES_CACHE[env_id] = casted_env_value
+                LOCAL_ENV_VARIABLES_CACHE[env_id] = casted_env_value
 
         self._is_refreshed = True
 
@@ -872,8 +880,8 @@ class FuncEnvVariableHelper(object):
         if not self._is_refreshed:
             self._refresh()
 
-        if env_variable_id in ENV_VARIABLES_CACHE:
-            return ENV_VARIABLES_CACHE[env_variable_id]
+        if env_variable_id in LOCAL_ENV_VARIABLES_CACHE:
+            return LOCAL_ENV_VARIABLES_CACHE[env_variable_id]
         else:
             return default
 
@@ -881,7 +889,7 @@ class FuncEnvVariableHelper(object):
         if not self._is_refreshed:
             self._refresh()
 
-        return [ { 'id': env_id, 'value': env_value } for env_id, env_value in ENV_VARIABLES_CACHE.items()]
+        return [ { 'id': env_id, 'value': env_value } for env_id, env_value in LOCAL_ENV_VARIABLES_CACHE.items()]
 
 class FuncConfigHelper(object):
     def __init__(self, task):

@@ -4,10 +4,8 @@
 import traceback
 
 # 3rd-party Modules
-import six
 
 # Project Modules
-from worker.utils import toolkit
 
 def get_config(c):
     host     = c.get('host')     or '127.0.0.1'
@@ -35,8 +33,18 @@ class MongoDBHelper(object):
         self.client = pymongo.MongoClient(**get_config(config))
 
     def __del__(self):
-        if self.client:
+        if not self.client:
+            return
+
+        try:
             self.client.close()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:

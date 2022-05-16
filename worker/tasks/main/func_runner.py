@@ -29,8 +29,8 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, 
 
 CONFIG = yaml_resources.get('CONFIG')
 
-LOCAL_SCRIPTS_CACHE_MD5 = None
-LOCAL_SCRIPT_DICT_CACHE = None
+LOCAL_SCRIPT_DICT_CACHE_MD5 = None
+LOCAL_SCRIPT_DICT_CACHE     = {}
 
 @app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
@@ -81,7 +81,7 @@ class FuncRunnerTask(ScriptBaseTask):
             3. 从数据库读取脚本
               （正常不会发生，ReloadScriptsTask 会定时更新Redis缓存）
         '''
-        global LOCAL_SCRIPTS_CACHE_MD5
+        global LOCAL_SCRIPT_DICT_CACHE_MD5
         global LOCAL_SCRIPT_DICT_CACHE
 
         # 获取脚本缓存MD5
@@ -91,7 +91,7 @@ class FuncRunnerTask(ScriptBaseTask):
             cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
 
         # 1. 检查当前缓存的脚本MD5值
-        if cached_scripts_md5 and cached_scripts_md5 == LOCAL_SCRIPTS_CACHE_MD5:
+        if cached_scripts_md5 and cached_scripts_md5 == LOCAL_SCRIPT_DICT_CACHE_MD5:
             # 存在缓存，且MD5未发生变化，不更新本地缓存
             self.logger.debug('[LOAD SCRIPT] Use local cache (Remote Script MD5 not modified)')
             return
@@ -121,8 +121,8 @@ class FuncRunnerTask(ScriptBaseTask):
         self.load_script_dict(scripts)
 
         # 建立本地缓存
-        LOCAL_SCRIPTS_CACHE_MD5 = cached_scripts_md5
-        LOCAL_SCRIPT_DICT_CACHE = self.script_dict
+        LOCAL_SCRIPT_DICT_CACHE_MD5 = cached_scripts_md5
+        LOCAL_SCRIPT_DICT_CACHE     = self.script_dict
 
     def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
         timestamp = int(time.time())

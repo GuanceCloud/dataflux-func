@@ -265,7 +265,7 @@ exports.add = function(req, res, next) {
     },
     // 刷新helper缓存标志位
     function(asyncCallback) {
-      updateDataSourceRefreshTimestamp(res.locals, newDataSource, asyncCallback);
+      updateRefreshTimestamp(res.locals, newDataSource.id, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -311,7 +311,7 @@ exports.modify = function(req, res, next) {
     },
     // 刷新helper缓存标志位
     function(asyncCallback) {
-      updateDataSourceRefreshTimestamp(res.locals, dataSource, asyncCallback);
+      updateRefreshTimestamp(res.locals, dataSource.id, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -350,7 +350,7 @@ exports.delete = function(req, res, next) {
     },
     // 刷新helper缓存标志位
     function(asyncCallback) {
-      updateDataSourceRefreshTimestamp(res.locals, dataSource, asyncCallback);
+      updateRefreshTimestamp(res.locals, dataSource.id, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -547,11 +547,28 @@ function hidePassword(req, res, ret, hookExtra, callback) {
   return callback(null, ret);
 };
 
-function updateDataSourceRefreshTimestamp(locals, dataSource, callback) {
+exports.updateRefreshTimestamp = function updateRefreshTimestamp(locals, dataSourceIds, callback) {
+  var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMap');
+
   async.series([
     function(asyncCallback) {
-      var cacheKey = toolkit.getCacheKey('cache', 'dataSourceRefreshTimestampMap');
-      locals.cacheDB.hset(cacheKey, dataSource.id, Date.now(), asyncCallback);
+      if (!toolkit.isNothing(dataSourceIds)) {
+        dataSourceIds = toolkit.asArray(dataSourceIds);
+        return asyncCallback();
+      }
+
+      locals.cacheDB.hkeys(cacheKey, '*', function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        dataSourceIds = cacheRes;
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      async.eachSeries(dataSourceIds, function(dataSourceId, eachCallback) {
+        locals.cacheDB.hset(cacheKey, dataSourceId, Date.now(), eachCallback);
+      }, asyncCallback);
     },
   ], callback);
 };

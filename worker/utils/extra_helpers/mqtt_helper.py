@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import time
+import traceback
 
 # 3rd-party Modules
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
-from worker.utils.log_helper import LogHelper
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -48,9 +47,16 @@ class MQTTHelper(object):
         self.client.connect(**get_connect_config(config))
 
     def __del__(self):
-        if self.client:
+        if not self.client:
+            return
+
+        try:
             self.client.disconnect()
             self.client = None
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
 
     def check(self):
         try:

@@ -121,7 +121,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           <el-table-column :label="$t('Wait Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.waitCostMs && scope.row.waitCostMs > 2000">
-                <span :class="scope.row.waitCostClass">{{ scope.row.waitCostMs < 10000 ? scope.row.waitCostMs : (scope.row.waitCostMs / 1000).toFixed(1) }}</span>
+                <strong :class="scope.row.waitCostClass">{{ scope.row.waitCostMs < 10000 ? scope.row.waitCostMs : (scope.row.waitCostMs / 1000).toFixed(1) }}</strong>
                 <span class="text-info">{{ scope.row.waitCostMs < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
@@ -130,7 +130,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           <el-table-column :label="$t('Run Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.runCostMs">
-                <span :class="scope.row.runCostClass">{{ scope.row.runCostMs < 10000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</span>
+                <strong :class="scope.row.runCostClass">{{ scope.row.runCostMs < 10000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</strong>
                 <span class="text-info">{{ scope.row.runCostMs < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
@@ -138,10 +138,10 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
           </el-table-column>
           <el-table-column :label="$t('Log Lines')" align="right" width="100">
             <template slot-scope="scope">
-              <span v-if="scope.row.logLines < 10" class="text-info">{{ scope.row.logLines }}</span>
-              <span v-else-if="scope.row.logLines < 100" class="text-good">{{ scope.row.logLines }}</span>
-              <span v-else-if="scope.row.logLines < 1000" class="text-watch">{{ scope.row.logLines }}</span>
-              <span v-else="scope.row.logLines" class="text-bad">{{ scope.row.logLines }}</span>
+              <strong v-if="scope.row.logLines < 10" class="text-info">{{ scope.row.logLines }}</strong>
+              <strong v-else-if="scope.row.logLines < 100" class="text-good">{{ scope.row.logLines }}</strong>
+              <strong v-else-if="scope.row.logLines < 1000" class="text-watch">{{ scope.row.logLines }}</strong>
+              <strong v-else="scope.row.logLines" class="text-bad">{{ scope.row.logLines }}</strong>
             </template>
           </el-table-column>
 

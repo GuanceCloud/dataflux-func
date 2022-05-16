@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
-import json
-import time
 import traceback
 
 # 3rd-party Modules
@@ -10,7 +8,6 @@ import six
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.log_helper import LogHelper
 
 def get_config(c):
     servers = c.get('servers') or None
@@ -34,7 +31,18 @@ class MemcachedHelper(object):
         self.client = memcache.Client(get_config(config))
 
     def __del__(self):
-        pass
+        if not self.client:
+            return
+
+        try:
+            self.client.disconnect_all()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+        finally:
+            self.client = None
 
     def check(self):
         try:
