@@ -1075,7 +1075,7 @@ class ScriptBaseTask(BaseTask):
                     _module = ModuleType(import_script_id)
                     _module.__dict__.clear()
 
-                    module_scope = self.create_safe_scope(name)
+                    module_scope = self.create_safe_scope(import_script_id)
                     if parent_scope:
                         module_scope['DFF'].log_messages = parent_scope['DFF'].log_messages
 
@@ -1094,7 +1094,6 @@ class ScriptBaseTask(BaseTask):
                     raise
 
             # 模块本身不需要直接加入上下文
-            # globals[name] = _module
             self._resolve_fromlist(_module, fromlist, globals)
 
             return _module
