@@ -15,15 +15,15 @@ var mysqlHelper = require('./utils/extraHelpers/mysqlHelper');
 var redisHelper = require('./utils/extraHelpers/redisHelper');
 var mqttHelper  = require('./utils/extraHelpers/mqttHelper');
 
-var dataSourceMod       = require('./models/dataSourceMod');
-var mainAPICtrl = require('./controllers/mainAPICtrl');
+var dataSourceMod = require('./models/dataSourceMod');
+var mainAPICtrl   = require('./controllers/mainAPICtrl');
+const { createClient } = require('redis');
 
 /* Configure */
 var DATA_SOURCE_CHECK_INTERVAL = 3 * 1000;
 var SUB_CLIENT_LOCK_EXPIRES    = 30;
 
-var CLIENT_MAP         = {};
-var CLIENT_REFRESH_MAP = {};
+var LOCAL_DATA_SOURCE_MAP = {};
 
 var DATA_SOURCE_HELPER_MAP = {
   redis: redisHelper,
@@ -87,8 +87,7 @@ exports.runListener = function runListener(app) {
   // 定期检查
   function dataSourceChecker() {
     // 重建数据源客户端
-    var dataSourceMap  = {};
-    var refreshTimeMap = {};
+    var remoteDataSourceMap = {};
     async.series([
       // 上锁
       function(asyncCallback) {
@@ -121,7 +120,12 @@ exports.runListener = function runListener(app) {
         var dataSourceModel = dataSourceMod.createModel(app.locals);
 
         var opt = {
-          fields: ['dsrc.id', 'dsrc.type', 'dsrc.configJSON'],
+          fields: [
+            'dsrc.id',
+            'dsrc.type',
+            'dsrc.configJSON',
+            'MD5(dsrc.configJSON) AS configMD5',
+          ],
           filters: {
             'dsrc.type': {in: Object.keys(DATA_SOURCE_HELPER_MAP)},
           },
@@ -134,85 +138,61 @@ exports.runListener = function runListener(app) {
 
             if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
               // 仅搜集配置了主题处理函数的数据源
-              dataSourceMap[d.id] = d;
+              remoteDataSourceMap[d.id] = d;
             }
           });
 
           return asyncCallback();
         });
       },
-      // 获取数据源刷新时间
-      function(asyncCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMsMap');
-        app.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
-          if (err) return asyncCallback(err);
-
-          for (var dataSourceId in cacheRes) {
-            refreshTimeMap[dataSourceId] = parseInt(cacheRes[dataSourceId]) || -1;
-          }
-
-          return asyncCallback();
-        });
-      },
       // 更新数据源订阅客户端
       function(asyncCallback) {
-        // 清除已删除的客户端
-        for (var dataSourceId in CLIENT_MAP) {
-          if ('undefined' === typeof dataSourceMap[dataSourceId]) {
-            CLIENT_MAP[dataSourceId].end();
-            delete CLIENT_MAP[dataSourceId];
-            delete CLIENT_REFRESH_MAP[dataSourceId];
+        // 清除已不存在的数据源
+        for (var dataSourceId in LOCAL_DATA_SOURCE_MAP) {
+          if ('undefined' === typeof remoteDataSourceMap[dataSourceId]) {
+            LOCAL_DATA_SOURCE_MAP[dataSourceId].client.end();
+            delete LOCAL_DATA_SOURCE_MAP[dataSourceId];
 
             app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
           }
         }
 
         // 重建有变化的数据源客户端
-        async.eachOfSeries(dataSourceMap, function(d, dataSourceId, eachCallback) {
-          var localTime   = CLIENT_REFRESH_MAP[dataSourceId] || 0;
-          var refreshTime = refreshTimeMap[dataSourceId]     || -1;
+        for (var dataSourceId in remoteDataSourceMap) {
+          var _remote = remoteDataSourceMap[dataSourceId];
+          var _local  = LOCAL_DATA_SOURCE_MAP[dataSourceId];
 
-          if (refreshTime !== localTime) {
-            app.locals.logger.debug('[SUB] Client refreshed: `{0}` remote=`{1}`, local=`{2}`, diff=`{3}`',
-                dataSourceId, refreshTime, localTime, refreshTime - localTime);
-
-            if (CLIENT_MAP[dataSourceId]) {
-              CLIENT_MAP[dataSourceId].end();
-              delete CLIENT_MAP[dataSourceId];
-              delete CLIENT_REFRESH_MAP[dataSourceId];
-
-              app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
-            }
+          // 无变化客户端
+          if (_local && _local['configMD5'] == _remote['configMD5']) {
+            continue
           }
 
-          var client = CLIENT_MAP[dataSourceId];
-          if (client) {
-            return eachCallback();
+          // 删除客户端
+          if (_local) {
+            _local.client.end();
+            delete LOCAL_DATA_SOURCE_MAP[dataSourceId];
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
           }
 
-          // 生成客户端
+          // 新建客户端
           try {
-            client = DATA_SOURCE_HELPER_MAP[d.type].createHelper(app.locals.logger, d.configJSON);
+            _remote.client = DATA_SOURCE_HELPER_MAP[_remote.type].createHelper(app.locals.logger, _remote.configJSON);
           } catch(err) {
             app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', dataSourceId, err.toString());
-            return eachCallback();
+            continue
           }
 
           // 订阅主题
-          if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
-            d.configJSON.topicHandlers.forEach(function(th) {
-              client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
+          if (!toolkit.isNothing(_remote.configJSON.topicHandlers)) {
+            _remote.configJSON.topicHandlers.forEach(function(th) {
+              _remote.client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
             });
           }
 
-          // 加入新客户端
-          CLIENT_MAP[d.id]         = client;
-          CLIENT_REFRESH_MAP[d.id] = refreshTimeMap[d.id] || -1;
-
+          // 记录到本地
+          LOCAL_DATA_SOURCE_MAP[dataSourceId] = _remote;
           app.locals.logger.debug('[SUB] Client created: `{0}`', dataSourceId);
-          return eachCallback();
-
-        }, asyncCallback);
+        }
       },
     ], function(err) {
       if (err) return app.locals.logger.logError(err);

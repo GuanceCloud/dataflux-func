@@ -49,10 +49,10 @@ def before_app_create():
     toolkit.parse_cache_key = parse_cache_key
 
 def after_app_created(celery_app):
-    from worker.tasks.main import reload_scripts, auto_clean, auto_run
+    from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
-        reload_scripts.apply_async(kwargs={ 'lockTime': 15, 'force': True }, countdown=10)
+        reload_data_md5_cache.apply_async(kwargs={ 'lockTime': 15, 'all': True }, countdown=10)
         auto_run.apply_async(countdown=10)
         auto_clean.apply_async(countdown=30)

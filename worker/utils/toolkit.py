@@ -593,3 +593,72 @@ class IgnoreCaseDict(dict):
 
     def __repr__(self):
         return '{0}({1})'.format(type(self).__name__, super(IgnoreCaseDict, self).__repr__())
+
+class LocalCache(object):
+    def __init__(self, expires=None, clean_interval=60):
+        self.__last_clean = time.time()
+        self.__data = {
+            # <Key>: {
+            #     "ts" : <Timestamp>,
+            #     "dat": <Data>,
+            # }
+        }
+
+        self.expires        = expires
+        self.clean_interval = clean_interval
+
+    def clean(self):
+        now = time.time()
+
+        if not self.expires:
+            return now
+
+        if now - self.__last_clean < self.clean_interval:
+            return now
+
+        for key in list(self.__data.keys()):
+            elem = self.__data.get(key)
+            if now - elem['ts'] > self.expires:
+                try:
+                    self.__data[key]
+                except KeyError as e:
+                    pass
+
+        return now
+
+    def keys(self):
+        return self.__data.keys()
+
+    def __len__(self):
+        self.clean()
+
+        return len(self.__data)
+
+    def __setitem__(self, key, data):
+        now = self.clean()
+
+        elem = {
+            'ts' : now,
+            'dat': data,
+        }
+        self.__data[key] = elem
+
+    def __getitem__(self, key):
+        now = self.clean()
+
+        elem = self.__data.get(key)
+        if not elem:
+            return None
+
+        elif self.expires and now - elem['ts'] > self.expires:
+            self.__data.pop(key, None)
+            return None
+
+        else:
+            return elem['dat']
+
+    def __delitem__(self, key):
+        try:
+            self.__data[key]
+        except KeyError as e:
+            pass

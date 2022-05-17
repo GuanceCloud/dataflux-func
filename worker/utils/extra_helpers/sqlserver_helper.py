@@ -45,7 +45,7 @@ class SQLServerHelper(object):
             self.client = PersistentDB(pymssql, **get_config(config))
 
     def __del__(self):
-        if not self.client:
+        if not self.client or not isinstance(self.client, PooledDB):
             return
 
         try:

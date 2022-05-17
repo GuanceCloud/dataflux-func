@@ -15,7 +15,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var scriptMod               = require('../models/scriptMod');
 var scriptSetMod            = require('../models/scriptSetMod');
 var funcMod                 = require('../models/funcMod');
-var scriptRecoverPointMod   = require('../models/scriptRecoverPointMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
 /* Configure */
@@ -252,7 +251,10 @@ exports.delete = function(req, res, next) {
     var ret = toolkit.initRet({
       id: id,
     });
-    return res.locals.sendJSON(ret);
+    res.locals.sendJSON(ret);
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+    reloadDataMD5Cache(celery, id);
   });
 };
 
@@ -268,7 +270,6 @@ exports.publish = function(req, res, next) {
   var scriptModel               = scriptMod.createModel(res.locals);
   var scriptSetModel            = scriptSetMod.createModel(res.locals);
   var funcModel                 = funcMod.createModel(res.locals);
-  var scriptRecoverPointModel   = scriptRecoverPointMod.createModel(res.locals);
   var scriptPublishHistoryModel = scriptPublishHistoryMod.createModel(res.locals);
 
   var script    = null;
@@ -433,10 +434,9 @@ exports.publish = function(req, res, next) {
       if (!wait) doResponse(); // 不等待发布结束
 
       // 发布成功后
-      // 1. 重新加载脚本
+      // 1. 重新加载脚本代码MD5缓存
       // 2. 运行发布后自动运行的函数
-      var taskKwargs = { force: true };
-      celery.putTask('Main.ReloadScripts', null, taskKwargs, null, null, function(err) {
+      reloadDataMD5Cache(celery, id, function(err) {
         if (wait) doResponse(); // 等待发布结束
         if (err) return;
 
@@ -466,84 +466,7 @@ exports.publish = function(req, res, next) {
   });
 };
 
-function getCodeSummary(code) {
-  var lines = code.split('\n');
-
-  var prevStat = null;
-  var stat     = null;
-
-  var summaryLines = [];
-
-  var PATTERNS = {
-    comment    : /^# /g,
-    dffAPIStart: /^@DFF\.API\(/g,
-    dffAPIEnd  : /\)$\s*/g,
-    defStart   : /^def [a-zA-Z][a-zA-Z0-9_]+\(/g,
-    defEnd     : /\)\:\s*/g,
-    docStart   : /^\s{4}(\'\'\'|\"\"\")/g,
-    docEnd     : /(\'\'\'|\"\"\")\s*$/g,
-  };
-
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
-
-    prevStat = stat;
-    if (line.match(PATTERNS.comment)) {
-      stat = 'comment';
-
-    } else if (line.match(PATTERNS.dffAPIStart) && line.match(PATTERNS.dffAPIEnd)) {
-      stat = 'dffAPI';
-    } else if (line.match(PATTERNS.dffAPIStart) && ['dffAPIStart', 'dffAPIContent'].indexOf(prevStat) < 0) {
-      stat = 'dffAPIStart';
-    } else if (line.match(PATTERNS.dffAPIEnd) && ['dffAPIStart', 'dffAPIContent'].indexOf(prevStat) >= 0) {
-      stat = 'dffAPIEnd';
-
-    } else if (line.match(PATTERNS.defStart) && line.match(PATTERNS.defEnd)) {
-      stat = 'def';
-    } else if (line.match(PATTERNS.defStart) && ['defStart', 'defContent'].indexOf(prevStat) < 0) {
-      stat = 'defStart';
-    } else if (line.match(PATTERNS.defEnd) && ['defStart', 'defContent'].indexOf(prevStat) >= 0) {
-      stat = 'defEnd';
-
-    } else if (line.match(PATTERNS.docStart) && line.match(PATTERNS.docEnd) && line.trim().length > 3) {
-      stat = 'doc';
-    } else if (line.match(PATTERNS.docStart) && ['def', 'defEnd'].indexOf(prevStat) >= 0) {
-      stat = 'docStart';
-    } else if (line.match(PATTERNS.docEnd) && ['docStart', 'docContent'].indexOf(prevStat) >= 0) {
-      stat = 'docEnd';
-
-    } else {
-      if (['dffAPIStart', 'dffAPIContent'].indexOf(prevStat) >= 0) {
-        stat = 'dffAPIContent';
-      } else if (['defStart', 'defContent'].indexOf(prevStat) >= 0) {
-        stat = 'defContent';
-      } else if (['docStart', 'docContent'].indexOf(prevStat) >= 0) {
-        stat = 'docContent';
-      } else {
-        stat = 'CODE';
-      }
-    }
-
-    var label = `[${i}][${stat}]`;
-    label += ' '.repeat(20 - label.length);
-
-    if (stat !== 'CODE') {
-      var addBlankLine = false;
-      if (stat === 'dffAPI' || stat === 'dffAPIStart') {
-        addBlankLine = true;
-      } else if ((stat === 'def' || stat === 'defStart') && (prevStat !== 'dffAPI' && prevStat !== 'dffAPIEnd')) {
-        addBlankLine = true;
-      }
-
-      if (addBlankLine) {
-        summaryLines.push('');
-      }
-
-      summaryLines.push(line);
-    }
-  }
-
-  var summary = summaryLines.join('\n').trim();
-
-  return summary;
-};
+function reloadDataMD5Cache(celery, scriptId, callback) {
+  var taskKwargs = { type: 'script', id: scriptId };
+  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+}

@@ -46,7 +46,7 @@ class ClickHouseHelper(object):
         self.driver = Client(**get_config(self.config))
 
     def __del__(self):
-        if not self.client:
+        if not self.client or not isinstance(self.client, PooledDB):
             return
 
         try:

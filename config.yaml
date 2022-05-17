@@ -237,8 +237,8 @@ _CRONTAB_STARTER                    : '* * * * *'
 _CRONTAB_SYNC_CACHE                 : '* * * * *'
 _CRONTAB_AUTO_CLEAN                 : '* * * * *'
 _CRONTAB_AUTO_BACKUP_DB             : '0 * * * *'
-_CRONTAB_FORCE_RELOAD_SCRIPT        : '* * * * *'
 _CRONTAB_RESET_WORKER_QUEUE_PRESSURE: '* * * * *'
+_CRONTAB_RELOAD_DATA_MD5_CACHE      : '* * * * *'
 
 
 

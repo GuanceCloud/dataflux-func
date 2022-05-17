@@ -6,9 +6,10 @@
 var async = require('async');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var toolkit = require('../utils/toolkit');
+var E            = require('../utils/serverError');
+var CONFIG       = require('../utils/yamlResources').get('CONFIG');
+var toolkit      = require('../utils/toolkit');
+var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 var envVariableMod = require('../models/envVariableMod');
 
@@ -17,8 +18,7 @@ var envVariableMod = require('../models/envVariableMod');
 /* Handlers */
 var crudHandler = exports.crudHandler = envVariableMod.createCRUDHandler();
 
-exports.list   = crudHandler.createListHandler();
-exports.delete = crudHandler.createDeleteHandler();
+exports.list = crudHandler.createListHandler();
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
@@ -48,10 +48,6 @@ exports.add = function(req, res, next) {
     // 数据入库
     function(asyncCallback) {
       envVariableModel.add(data, asyncCallback);
-    },
-    // 刷新helper缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -86,17 +82,16 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       envVariableModel.modify(id, data, asyncCallback);
     },
-    // 刷新环境变量缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id: id,
     });
-    return res.locals.sendJSON(ret);
+    res.locals.sendJSON(ret);
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+    reloadDataMD5Cache(celery, id);
   });
 };
 
@@ -122,21 +117,20 @@ exports.delete = function(req, res, next) {
     function(asyncCallback) {
       envVariableModel.delete(id, asyncCallback);
     },
-    // 刷新helper缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id: id,
     });
-    return res.locals.sendJSON(ret);
+    res.locals.sendJSON(ret);
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+    reloadDataMD5Cache(celery, id);
   });
 };
 
-var updateRefreshTimestamp = exports.updateRefreshTimestamp = function(locals, callback) {
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'envVariableRefreshTimestampMs');
-  locals.cacheDB.set(cacheKey, Date.now(), callback);
+function reloadDataMD5Cache(celery, envVariableId, callback) {
+  var taskKwargs = { type: 'envVariable', id: envVariableId };
+  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 };

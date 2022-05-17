@@ -1,5 +1,8 @@
 'use strict';
 
+/* Monkey patch */
+require('./monkeyPatch');
+
 /* Builtin Modules */
 var path = require('path');
 var http = require('http');

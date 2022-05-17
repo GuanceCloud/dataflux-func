@@ -161,7 +161,9 @@ function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions
     },
   }
   var fakeRes = {
-    requestTime: new Date(),
+    locals: {
+      requestTime: new Date(),
+    }
   }
   return _createFuncCallOptionsFromRequest(fakeReq, fakeRes, func, callback);
 };

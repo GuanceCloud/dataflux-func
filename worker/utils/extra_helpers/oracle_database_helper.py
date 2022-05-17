@@ -48,7 +48,7 @@ class OracleDatabaseHelper(object):
             self.client = PersistentDB(cx_Oracle, **get_config(config))
 
     def __del__(self):
-        if not self.client:
+        if not self.client or not isinstance(self.client, PooledDB):
             return
 
         try:

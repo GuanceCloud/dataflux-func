@@ -45,7 +45,7 @@ class PostgreSQLHelper(object):
             self.client = PersistentDB(psycopg2, **get_config(config))
 
     def __del__(self):
-        if not self.client:
+        if not self.client or not isinstance(self.client, PooledDB):
             return
 
         try:

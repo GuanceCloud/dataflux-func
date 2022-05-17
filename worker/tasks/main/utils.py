@@ -25,7 +25,7 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main import func_runner, ScriptCacherMixin, DATA_SOURCE_HELPER_CLASS_MAP
+from worker.tasks.main import func_runner, DATA_SOURCE_HELPER_CLASS_MAP
 
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
@@ -39,42 +39,79 @@ DEFAULT_TASK_INFO_LIMIT_MAP = {
     'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
 }
 
-# Main.ReloadScripts
-class ReloadScriptsTask(BaseTask, ScriptCacherMixin):
+# Main.ReloadDataMD5Cache
+class ReloadDataMD5CacheTask(BaseTask):
     '''
-    脚本重新载入Redis任务
+    数据MD5缓存任务
     '''
-    def cache_scripts_to_redis(self, force=False):
-        # 获取脚本
-        scripts      = self.get_scripts()
-        scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
-        scripts_md5  = toolkit.get_md5(scripts_dump)
 
-        # 获取脚本缓存MD5
-        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
-        cached_scripts_md5 = self.cache_db.get(cache_key)
-        if cached_scripts_md5:
-            cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
+    META = {
+        'script': {
+            'table'   : 'biz_main_script',
+            'md5Field': "IFNULL(`codeMD5`, 'x')",
+        },
+        'dataSource': {
+            'table'   : 'biz_main_data_source',
+            'md5Field': "MD5(`configJSON`)",
+        },
+        'envVariable': {
+            'table'   : 'biz_main_env_variable',
+            'md5Field': "MD5(CONCAT(valueTEXT, '|', autoTypeCasting))"
+        },
+    }
 
-        # 缓存脚本至Redis
-        if force or cached_scripts_md5 != scripts_md5:
-            key_values = {
-                toolkit.get_cache_key('fixedCache', 'scriptsMD5') : scripts_md5,
-                toolkit.get_cache_key('fixedCache', 'scriptsDump'): scripts_dump,
-            }
-            self.cache_db.mset(key_values)
+    def cache_data_md5(self, data_type, data_id=None):
+        meta = self.META.get(data_type)
 
-@app.task(name='Main.ReloadScripts', bind=True, base=ReloadScriptsTask)
-def reload_scripts(self, *args, **kwargs):
-    lock_time = kwargs.get('lockTime') or 0
-    force     = kwargs.get('force') or False
+        sql = '''
+            SELECT `id`, ? AS `md5` FROM ??
+            '''
+        sql_params = [ meta['md5Field'], meta['table'] ]
+
+        if data_id:
+            data_id = toolkit.as_array(data_id)
+
+            sql += '''
+                WHERE `id` IN (?)
+                '''
+            sql_params.append(data_id)
+
+        db_res = self.db.query(sql, sql_params)
+
+        data_md5_map = dict([ ( d['id'], d['md5'] ) for d in db_res ])
+
+        data_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', data_type])
+
+        # 不指定ID表示全部重建
+        if not data_id:
+            self.cache_db.delete(data_md5_cache_key)
+
+        if data_md5_map:
+            # 有数据 -> 建立缓存
+            self.cache_db.hmset(data_md5_cache_key, data_md5_map)
+
+        elif data_id:
+            # 无数据 + 指定ID -> 清除缓存
+            self.cache_db.hdel(data_md5_cache_key, data_id)
+
+@app.task(name='Main.ReloadDataMD5Cache', bind=True, base=ReloadDataMD5CacheTask)
+def reload_data_md5_cache(self, *args, **kwargs):
+    lock_time  = kwargs.get('lockTime') or 0
+    reload_all = kwargs.get('all')      or False
+    data_type  = kwargs.get('type')
+    data_id    = kwargs.get('id')
 
     # 根据参数确定是否需要上锁
     if isinstance(lock_time, (int, float)) and lock_time > 0:
         self.lock(max_age=int(lock_time))
 
-    # 将脚本缓存如Redis
-    self.cache_scripts_to_redis(force=force)
+    # 将数据MD5缓存入Redis
+    if reload_all:
+        for data_type in self.META.keys():
+            self.cache_data_md5(data_type)
+
+    else:
+        self.cache_data_md5(data_type, data_id)
 
 # Main.SyncCache
 class SyncCache(BaseTask):

@@ -19,9 +19,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var scriptSetMod          = require('../models/scriptSetMod');
 var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
-var dataSourceAPICtrl  = require('./dataSourceAPICtrl');
-var envVariableAPICtrl = require('./envVariableAPICtrl');
-
 /* Configure */
 var BUILTIN_SCRIPT_SET_IDS = null;
 
@@ -284,11 +281,11 @@ exports.import = function(req, res, next) {
   var summary   = null;
   var diff      = null;
 
-  var recoverData = null;
+  var recoverPoint = null;
   // 预处理
   if (file) {
     // 从文件导入
-    recoverData = {
+    recoverPoint = {
       type: 'import',
       note: '系统：导入脚本包前自动创建的还原点',
     };
@@ -297,7 +294,7 @@ exports.import = function(req, res, next) {
     // 从远端安装
     // 脚本包安装不支持checkOnly操作
     checkOnly = false;
-    recoverData = {
+    recoverPoint = {
       type: 'install',
       note: '系统：安装脚本包前自动创建的还原点',
     };
@@ -306,7 +303,7 @@ exports.import = function(req, res, next) {
     // 从还原点还原
     // 还原脚本库不支持checkOnly操作
     checkOnly = false;
-    recoverData = {
+    recoverPoint = {
       type: 'recover',
       note: '系统：还原脚本库至还原点',
     };
@@ -325,7 +322,7 @@ exports.import = function(req, res, next) {
         fs.removeSync(file.path);
 
         // 补充还原信息
-        recoverData.note += toolkit.strf(' (文件名: {0})', file.originalname);
+        recoverPoint.note += toolkit.strf(' (文件名: {0})', file.originalname);
 
         return asyncCallback();
 
@@ -343,7 +340,7 @@ exports.import = function(req, res, next) {
 
           // 补充还原信息
           if (packageInstallId) {
-            recoverData.note += toolkit.strf(' (ID: {0})', packageInstallId);
+            recoverPoint.note += toolkit.strf(' (ID: {0})', packageInstallId);
           }
 
           return asyncCallback();
@@ -362,7 +359,7 @@ exports.import = function(req, res, next) {
           fileBuf = dbRes.exportData;
 
           // 补充还原信息
-          recoverData.note += toolkit.strf(' (# {0})', dbRes.seq);
+          recoverPoint.note += toolkit.strf(' (# {0})', dbRes.seq);
 
           return asyncCallback();
         });
@@ -424,22 +421,12 @@ exports.import = function(req, res, next) {
 
       } else {
         // 直接导入
-        return scriptSetModel.import(packageData, recoverData, function(err, _pkgs) {
+        return scriptSetModel.import(packageData, recoverPoint, function(err, _pkgs) {
           if (err) return asyncCallback(err);
 
           pkgs = _pkgs;
 
-          async.series([
-            // 刷新相关RefreshTimestamp
-            function(innerCallback) {
-              updateRefreshTimestamp(res.locals, innerCallback);
-            },
-            // 发送更新脚本缓存任务（强制）
-            function(innerCallback) {
-              var taskKwargs = { force: true };
-              celery.putTask('Main.ReloadScripts', null, taskKwargs, null, innerCallback);
-            },
-          ], asyncCallback);
+          reloadDataMD5Cache(celery, asyncCallback);
         });
       }
     },
@@ -515,27 +502,17 @@ exports.confirmImport = function(req, res, next) {
     },
     // 执行导入
     function(asyncCallback) {
-      var recoverData = {
+      var recoverPoint = {
         // 存在确认导入的，只有「导入脚本包」操作
         type: 'import',
         note: '系统：导入脚本包前自动创建的还原点',
       };
-      scriptSetModel.import(packageData, recoverData, function(err, _pkgs) {
+      scriptSetModel.import(packageData, recoverPoint, function(err, _pkgs) {
         if (err) return asyncCallback(err);
 
         pkgs = _pkgs;
 
-        async.series([
-          // 刷新相关RefreshTimestamp
-          function(innerCallback) {
-            updateRefreshTimestamp(res.locals, innerCallback);
-          },
-          // 发送更新脚本缓存任务（强制）
-          function(innerCallback) {
-            var taskKwargs = { force: true };
-            celery.putTask('Main.ReloadScripts', null, taskKwargs, null, innerCallback);
-          },
-        ], asyncCallback);
+        reloadDataMD5Cache(celery, asyncCallback);
       });
     },
   ], function(err) {
@@ -548,13 +525,7 @@ exports.confirmImport = function(req, res, next) {
   });
 };
 
-function updateRefreshTimestamp(locals, callback) {
-  async.series([
-    function(asyncCallback) {
-      dataSourceAPICtrl.updateRefreshTimestamp(locals, null, asyncCallback);
-    },
-    function(asyncCallback) {
-      envVariableAPICtrl.updateRefreshTimestamp(locals, asyncCallback);
-    },
-  ], callback);
+function reloadDataMD5Cache(celery, callback) {
+  var taskKwargs = { all: true };
+  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 };

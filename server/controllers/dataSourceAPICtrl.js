@@ -7,9 +7,10 @@ var async     = require('async');
 var splitargs = require('splitargs');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var toolkit = require('../utils/toolkit');
+var E            = require('../utils/serverError');
+var CONFIG       = require('../utils/yamlResources').get('CONFIG');
+var toolkit      = require('../utils/toolkit');
+var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 var dataSourceMod = require('../models/dataSourceMod');
 
@@ -263,10 +264,6 @@ exports.add = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 刷新helper缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, newDataSource.id, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
@@ -309,17 +306,16 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       dataSourceModel.modify(id, data, asyncCallback);
     },
-    // 刷新helper缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, dataSource.id, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id: id,
     });
-    return res.locals.sendJSON(ret);
+    res.locals.sendJSON(ret);
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+    reloadDataMD5Cache(celery, id);
   });
 };
 
@@ -348,17 +344,16 @@ exports.delete = function(req, res, next) {
     function(asyncCallback) {
       dataSourceModel.delete(id, asyncCallback);
     },
-    // 刷新helper缓存标志位
-    function(asyncCallback) {
-      updateRefreshTimestamp(res.locals, dataSource.id, asyncCallback);
-    },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       id: id,
     });
-    return res.locals.sendJSON(ret);
+    res.locals.sendJSON(ret);
+
+    var celery = celeryHelper.createHelper(res.locals.logger);
+    reloadDataMD5Cache(celery, id);
   });
 };
 
@@ -547,28 +542,7 @@ function hidePassword(req, res, ret, hookExtra, callback) {
   return callback(null, ret);
 };
 
-var updateRefreshTimestamp = exports.updateRefreshTimestamp = function(locals, dataSourceIds, callback) {
-  var cacheKey = toolkit.getWorkerCacheKey('cache', 'dataSourceRefreshTimestampMsMap');
-
-  async.series([
-    function(asyncCallback) {
-      if (!toolkit.isNothing(dataSourceIds)) {
-        dataSourceIds = toolkit.asArray(dataSourceIds);
-        return asyncCallback();
-      }
-
-      locals.cacheDB.hkeys(cacheKey, '*', function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        dataSourceIds = cacheRes;
-
-        return asyncCallback();
-      });
-    },
-    function(asyncCallback) {
-      async.eachSeries(dataSourceIds, function(dataSourceId, eachCallback) {
-        locals.cacheDB.hset(cacheKey, dataSourceId, Date.now(), eachCallback);
-      }, asyncCallback);
-    },
-  ], callback);
+function reloadDataMD5Cache(celery, dataSourceId, callback) {
+  var taskKwargs = { type: 'dataSource', id: dataSourceId };
+  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 };

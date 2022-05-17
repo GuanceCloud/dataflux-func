@@ -73,7 +73,7 @@ class MySQLHelper(object):
             self.client = CLIENT
 
     def __del__(self):
-        if not self.client or self.client is CLIENT:
+        if not self.client or self.client is CLIENT or not isinstance(self.client, PooledDB):
             return
 
         try:

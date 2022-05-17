@@ -23,14 +23,11 @@ from worker.tasks import BaseResultSavingTask
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main import DataFluxFuncBaseException, NotFoundException, NotFoundException
+from worker.tasks.main import NotFoundException
 from worker.tasks.main import ScriptBaseTask
 from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, FuncResponseLargeData
 
 CONFIG = yaml_resources.get('CONFIG')
-
-LOCAL_SCRIPT_DICT_CACHE_MD5 = None
-LOCAL_SCRIPT_DICT_CACHE     = {}
 
 @app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
@@ -68,61 +65,6 @@ class FuncRunnerTask(ScriptBaseTask):
     # Specify the success/failure result saving task
     # _success_result_saving_task = result_saving_task
     # _failure_result_saving_task = result_saving_task
-
-    def load_script_dict_cache(self):
-        '''
-        更新脚本字典缓存
-        与 ReloadScriptsTask 配合完成高速脚本加载处理
-        具体如下：
-            1. 从Redis检查当前脚本缓存MD5值
-                -> 如存在缓存，且MD5未发生变化，结束处理
-            2. 从Redis读取脚本
-                -> 如存在缓存，建立本地缓存并结束处理
-            3. 从数据库读取脚本
-                （正常不会发生，且 ReloadScriptsTask 会定时更新Redis缓存）
-        '''
-        global LOCAL_SCRIPT_DICT_CACHE_MD5
-        global LOCAL_SCRIPT_DICT_CACHE
-
-        # 获取脚本缓存MD5
-        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsMD5')
-        cached_scripts_md5 = self.cache_db.get(cache_key)
-        if cached_scripts_md5:
-            cached_scripts_md5 = six.ensure_str(cached_scripts_md5)
-
-        # 1. 检查当前缓存的脚本MD5值
-        if cached_scripts_md5 and cached_scripts_md5 == LOCAL_SCRIPT_DICT_CACHE_MD5:
-            # 存在缓存，且MD5未发生变化，不更新本地缓存
-            self.logger.debug('[LOAD SCRIPT] Use local cache (Remote Script MD5 not modified)')
-            return
-
-        cache_key = toolkit.get_cache_key('fixedCache', 'scriptsDump')
-        scripts_dump = self.cache_db.get(cache_key)
-        if scripts_dump:
-            # 2. 从Redis读取脚本
-            self.logger.debug('[LOAD SCRIPT] Use Redis cache')
-
-            scripts_dump = six.ensure_str(scripts_dump)
-            scripts = toolkit.json_loads(scripts_dump)
-
-            # 不存在缓存脚本MD5，自行计算（极少情况）
-            if not cached_scripts_md5:
-                cached_scripts_md5 = toolkit.get_md5(scripts_dump)
-
-        else:
-            # 3. 从数据库获取完整用户脚本
-            self.logger.warning('[LOAD SCRIPT] Use DB data')
-
-            scripts = self.get_scripts()
-            scripts_dump = toolkit.json_dumps(scripts, sort_keys=True)
-            cached_scripts_md5 = toolkit.get_md5(scripts_dump)
-
-        # 加载代码
-        self.load_script_dict(scripts)
-
-        # 建立本地缓存
-        LOCAL_SCRIPT_DICT_CACHE_MD5 = cached_scripts_md5
-        LOCAL_SCRIPT_DICT_CACHE     = self.script_dict
 
     def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
         timestamp = int(time.time())
@@ -278,11 +220,8 @@ def func_runner(self, *args, **kwargs):
     ### 任务开始
     target_script = None
     try:
-        global LOCAL_SCRIPT_DICT_CACHE
-
-        # 更新脚本缓存
-        self.load_script_dict_cache()
-        target_script = LOCAL_SCRIPT_DICT_CACHE.get(script_id)
+        # 获取脚本
+        target_script = self.load_script(script_id)
 
         if not target_script:
             e = NotFoundException('Script `{}` not found'.format(script_id))
@@ -310,11 +249,7 @@ def func_runner(self, *args, **kwargs):
             '_DFF_WORKER_QUEUE'   : self.worker_queue,
             '_DFF_HTTP_REQUEST'   : http_request,
         }
-        self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
-        script_scope = self.create_safe_scope(
-            script_name=script_id,
-            script_dict=LOCAL_SCRIPT_DICT_CACHE,
-            extra_vars=extra_vars)
+        script_scope = self.create_safe_scope(script_id, extra_vars=extra_vars)
 
         # 加载入口脚本
         self.logger.info('[ENTRY SCRIPT] `{}`'.format(script_id))

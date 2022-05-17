@@ -20,64 +20,14 @@ from worker.tasks import gen_task_id, webhook
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main import DataFluxFuncBaseException, NotFoundException, NotFoundException
+from worker.tasks.main import NotFoundException
 from worker.tasks.main import ScriptBaseTask
 from worker.tasks.main import BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
 class FuncDebugger(ScriptBaseTask):
-    def load_script_dict_for_debugger(self, draft_script_id):
-        scripts = []
-
-        # 获取当前脚本草稿
-        sql = '''
-            SELECT
-                 `scpt`.`seq`
-                ,`scpt`.`id`
-                ,`scpt`.`publishVersion`
-                ,`scpt`.`codeDraft`    AS `code`
-                ,`scpt`.`codeDraftMD5` AS `codeMD5`
-
-                ,`sset`.`id` AS `scriptSetId`
-
-            FROM biz_main_script_set AS sset
-
-            JOIN biz_main_script AS scpt
-                ON `sset`.`id` = `scpt`.`scriptSetId`
-
-            WHERE
-                `scpt`.`id` = ?
-
-            LIMIT 1
-            '''
-        sql_params = [draft_script_id]
-        db_res = self.db.query(sql, sql_params)
-        scripts += db_res
-
-        # 获取其他脚本代码
-        sql = '''
-            SELECT
-                 `scpt`.`id`
-                ,`scpt`.`publishVersion`
-                ,`scpt`.`code`
-                ,`scpt`.`codeMD5`
-
-                ,`sset`.`id` AS `scriptSetId`
-
-            FROM biz_main_script_set AS sset
-
-            JOIN biz_main_script AS scpt
-                ON `sset`.`id` = `scpt`.`scriptSetId`
-
-            WHERE
-                `scpt`.`id` != ?
-            '''
-        sql_params = [draft_script_id]
-        db_res = self.db.query(sql, sql_params)
-        scripts += db_res
-
-        self.load_script_dict(scripts)
+    pass
 
 @app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger)
 def func_debugger(self, *args, **kwargs):
@@ -131,8 +81,7 @@ def func_debugger(self, *args, **kwargs):
 
     try:
         # 获取代码对象
-        self.load_script_dict_for_debugger(draft_script_id=script_id)
-        target_script = self.script_dict.get(script_id)
+        target_script = self.load_script(script_id, draft=True)
 
         if not target_script:
             e = NotFoundException('Script `{}` not found'.format(script_id))
@@ -160,11 +109,7 @@ def func_debugger(self, *args, **kwargs):
             '_DFF_WORKER_QUEUE'   : self.worker_queue,
             '_DFF_HTTP_REQUEST'   : http_request,
         }
-        self.logger.info('[CREATE SAFE SCOPE] `{}`'.format(script_id))
-        script_scope = self.create_safe_scope(
-            script_name=script_id,
-            script_dict=self.script_dict,
-            extra_vars=extra_vars)
+        script_scope = self.create_safe_scope(script_id, extra_vars=extra_vars)
 
         # 加载入口脚本
         self.logger.info('[ENTRY SCRIPT] `{}`'.format(script_id))
@@ -174,7 +119,7 @@ def func_debugger(self, *args, **kwargs):
         if func_name:
             entry_func = script_scope.get(func_name)
             if not entry_func:
-                e = NotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
+                e = FuncNotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
                 raise e
 
             # 执行函数

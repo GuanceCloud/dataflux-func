@@ -38,10 +38,10 @@ exports.recover = function(req, res, next) {
     function(asyncCallback) {
       scriptRecoverPointModel.recover(id, data, asyncCallback);
     },
-    // 发送更新脚本缓存任务（强制）
+    // 发送更新脚本代码MD5缓存任务
     function(asyncCallback) {
-      var taskKwargs = { force: true };
-      celery.putTask('Main.ReloadScripts', null, taskKwargs, null, asyncCallback);
+      var taskKwargs = { all: true };
+      celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

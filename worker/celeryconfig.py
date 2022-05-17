@@ -116,23 +116,10 @@ beat_schedule['run-crontab-starter'] = {
     'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
 }
 
-# 重新加载脚本
-beat_schedule['run-reload-scripts'] = {
-    'task'    : 'Main.ReloadScripts',
-    'kwargs'  : { 'lockTime': 15 },
-    'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
-}
-
 # 缓存数据刷入数据库
 beat_schedule['run-sync-cache'] = {
     'task'    : 'Main.SyncCache',
-    'schedule': create_schedule(CONFIG['_CRONTAB_FORCE_RELOAD_SCRIPT']),
-}
-
-# 工作队列压力恢复
-beat_schedule['run-reset-worker-queue-pressure'] = {
-    'task'    : 'Main.ResetWorkerQueuePressure',
-    'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
+    'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
 }
 
 # 自动清理
@@ -145,6 +132,19 @@ beat_schedule['run-auto-clean'] = {
 beat_schedule['run-auto-backup-db'] = {
     'task'    : 'Main.AutoBackupDB',
     'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
+}
+
+# 工作队列压力恢复
+beat_schedule['run-reset-worker-queue-pressure'] = {
+    'task'    : 'Main.ResetWorkerQueuePressure',
+    'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
+}
+
+# 重新加载数据MD5缓存
+beat_schedule['run-reload-data-md5-cache'] = {
+    'task'    : 'Main.ReloadDataMD5Cache',
+    'kwargs'  : { 'lockTime': 15, 'all': True },
+    'schedule': create_schedule(CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE']),
 }
 
 ##### 功能关闭 #####

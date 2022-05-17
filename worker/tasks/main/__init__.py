@@ -34,8 +34,7 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 CONFIG = yaml_resources.get('CONFIG')
 ROUTE  = yaml_resources.get('ROUTE')
 
-COMPILED_CODE_CACHE_MAP = {}
-
+# 集成处理
 FIX_INTEGRATION_KEY_MAP = {
     # 额外用于登录DataFlux Func平台的函数
     # 集成为`POST /api/v1/func/integration/sign-in`
@@ -57,8 +56,7 @@ FIX_INTEGRATION_KEY_MAP = {
     'autoRun': 'autoRun',
 }
 
-NEVER_REFRESHED_TIMESTAMP_MS = -1
-
+# 数据源对应 Helper 类
 DATA_SOURCE_HELPER_CLASS_MAP = {
     'df_dataway'   : DataWayHelper,
     'df_datakit'   : DataKitHelper,
@@ -76,9 +74,14 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'nsq'          : NSQLookupHelper,
     'mqtt'         : MQTTHelper,
 }
-LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP = {}
-LOCAL_DATA_SOURCE_HELPERS_CACHE            = {}
 
+# 数据源加密字段
+DATA_SOURCE_CIPHER_FIELDS = [
+    'password',
+    'secretKey',
+]
+
+# 环境变量自动类型转换函数
 ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'integer'   : int,
     'float'     : float,
@@ -86,19 +89,21 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
     'json'      : toolkit.json_loads,
     'commaArray': lambda x: x.split(','),
 }
-LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS = 0
-LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS   = 0
-LOCAL_ENV_VARIABLES_CACHE                = {}
 
-DECIPHER_FIELDS = [
-    'password',
-    'secretKey',
+# 函数线程池
+FUNC_THREAD_POOL = None
+
+# 脚本本地缓存
+SCRIPT_LOCAL_CACHE = toolkit.LocalCache(expires=60)
+USER_SCRIPT_ID_BLACK_LIST = [
+    '__future__'
 ]
 
-EXCLUDE_BUILTIN_NAMES = ('import', )
+# 环境变量本地缓存
+ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=60)
 
-THREAD_POOL       = None
-THREAD_RESULT_MAP = {}
+# 数据源 Helper 对象本地缓存
+DATA_SOURCE_HELPER_LOCAL_CACHE = toolkit.LocalCache()
 
 # 添加额外import路径
 extra_import_paths = [
@@ -109,7 +114,7 @@ for p in extra_import_paths:
     os.makedirs(p, exist_ok=True)
     sys.path.append(p)
 
-# 下载临时文件
+# 确保临时文件目录
 download_temp_folder = os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('DOWNLOAD_TEMP_ROOT_FOLDER'))
 os.makedirs(download_temp_folder, exist_ok=True)
 
@@ -117,15 +122,19 @@ class DataFluxFuncBaseException(Exception):
     pass
 class NotFoundException(DataFluxFuncBaseException):
     pass
-class DuplicationException(DataFluxFuncBaseException):
-    pass
-class NotSupportException(DataFluxFuncBaseException):
-    pass
-class InvalidOptionException(DataFluxFuncBaseException):
-    pass
-class AccessDenyException(DataFluxFuncBaseException):
+class FuncRecursiveCallException(DataFluxFuncBaseException):
     pass
 class FuncChainTooLongException(DataFluxFuncBaseException):
+    pass
+class ThreadResultKeyDuplicatedException(DataFluxFuncBaseException):
+    pass
+class DataSourceNotSupportException(DataFluxFuncBaseException):
+    pass
+class InvalidDataSourceOptionException(DataFluxFuncBaseException):
+    pass
+class InvalidAPIOptionException(DataFluxFuncBaseException):
+    pass
+class ConfigUnaccessableException(DataFluxFuncBaseException):
     pass
 
 class DFFWraper(object):
@@ -134,6 +143,11 @@ class DFFWraper(object):
         self.log_messages       = []
 
         self.inject_funcs = inject_funcs
+
+        # 增加小写别名
+        for func_name in list(self.inject_funcs.keys()):
+            func_name_lower = func_name.lower()
+            self.inject_funcs[func_name_lower] = self.inject_funcs[func_name]
 
     def __getattr__(self, name):
         if not self.inject_funcs:
@@ -175,7 +189,7 @@ def decipher_data_source_config_fields(config):
     '''
     config = toolkit.json_copy(config)
 
-    for f in DECIPHER_FIELDS:
+    for f in DATA_SOURCE_CIPHER_FIELDS:
         f_cipher = '{}Cipher'.format(f)
 
         if config.get(f_cipher):
@@ -192,91 +206,35 @@ def get_resource_path(file_path):
     abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file_path.lstrip('/'))
     return abs_path
 
-class ScriptCacherMixin(object):
-    def get_scripts(self):
-        # 获取脚本数据
-        sql = '''
-            SELECT
-                 `scpt`.`seq`
-                ,`scpt`.`id`
-                ,`scpt`.`publishVersion`
-                ,`scpt`.`code`
-                ,`scpt`.`codeMD5`
-
-                ,`sset`.`id` AS `scriptSetId`
-
-            FROM biz_main_script_set AS sset
-
-            JOIN biz_main_script AS scpt
-                ON `sset`.`id` = `scpt`.`scriptSetId`
-
-            ORDER BY
-                `scpt`.`seq` ASC
-            '''
-        scripts = self.db.query(sql)
-
-        # 获取函数额外配置
-        sql = '''
-            SELECT
-                 `func`.`id`
-                ,`func`.`scriptId`
-                ,`func`.`extraConfigJSON`
-            FROM biz_main_func AS func
-            '''
-        funcs = self.db.query(sql, None)
-
-        # 整理函数额外配置表
-        # 结构如下：{ "<脚本ID>": { "<函数ID>": <额外配置JSON> }}
-        script_func_extra_config_map = {}
-        for f in funcs:
-            func_id           = f['id']
-            script_id         = f['scriptId']
-            func_extra_config = f['extraConfigJSON']
-            if isinstance(func_extra_config, (six.string_types, six.text_type)):
-                func_extra_config = toolkit.json_loads(func_extra_config)
-
-            if f['scriptId'] not in script_func_extra_config_map:
-                script_func_extra_config_map[f['scriptId']] = {}
-
-            script_func_extra_config_map[f['scriptId']][func_id] = func_extra_config
-
-        # 函数额外配置表插入脚本信息
-        for s in scripts:
-            s['funcExtraConfig'] = script_func_extra_config_map.get(s['id']) or {}
-
-        return scripts
-
 class FuncThreadHelper(object):
     def __init__(self, task):
         self.__task = task
+        self.result_map = {}
 
     def start(self, fn, args=None, kwargs=None, key=None):
-        global THREAD_POOL
-        global THREAD_RESULT_MAP
+        global FUNC_THREAD_POOL
 
-        if not THREAD_POOL:
+        if not FUNC_THREAD_POOL:
             self.__task.logger.debug('[THREAD POOL] Create Pool')
 
             pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
-            THREAD_POOL = ThreadPoolExecutor(pool_size)
-            THREAD_RESULT_MAP.clear()
+            FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
 
         key = key or toolkit.gen_data_id('async')
         self.__task.logger.debug('[THREAD POOL] Submit Key=`{0}`'.format(key))
 
-        if key in THREAD_RESULT_MAP:
-            e = DuplicationException('Thread result key already existed: `{0}`'.format(key))
+        if key in self.result_map:
+            e = ThreadResultKeyDuplicatedException('Thread result key already existed: `{0}`'.format(key))
             raise e
 
         args   = args   or []
         kwargs = kwargs or {}
-        THREAD_RESULT_MAP[key] = THREAD_POOL.submit(fn, *args, **kwargs)
+        self.result_map[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
 
     def get_result(self, wait=True, key=None):
-        global THREAD_POOL
-        global THREAD_RESULT_MAP
+        global FUNC_THREAD_POOL
 
-        if not THREAD_RESULT_MAP:
+        if not self.result_map:
             return None
 
         if wait is None:
@@ -284,11 +242,11 @@ class FuncThreadHelper(object):
 
         collected_res = {}
 
-        keys = key or list(THREAD_RESULT_MAP.keys())
+        keys = key or list(self.result_map.keys())
         for k in toolkit.as_array(keys):
             collected_res[k] = None
 
-            future_res = THREAD_RESULT_MAP.get(k)
+            future_res = self.result_map.get(k)
             if future_res is None:
                 continue
 
@@ -639,11 +597,6 @@ class FuncDataSourceHelper(object):
         lambda x: not x.startswith('$'),
         toolkit.json_smart_find(ROUTE, 'configJSON').keys()))
 
-    CIPHER_CONFIG_KEYS = [
-      'password',
-      'secretKey',
-    ]
-
     def __init__(self, task):
         self.__task = task
 
@@ -651,117 +604,104 @@ class FuncDataSourceHelper(object):
         return self.get(*args, **kwargs)
 
     def get(self, data_source_id, **helper_kwargs):
+        # 同一个数据源可能有不同的配置（如指定的数据库不同）
+        helper_kwargs = toolkit.no_none_or_white_space(helper_kwargs)
+        data_source_key = f'{data_source_id}~{toolkit.json_dumps(helper_kwargs, sort_keys=True)}'
+
         global DATA_SOURCE_HELPER_CLASS_MAP
-        global LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP
-        global LOCAL_DATA_SOURCE_HELPERS_CACHE
+        global DATA_SOURCE_HELPER_LOCAL_CACHE
 
-        helper_target_key = toolkit.json_dumps(helper_kwargs, sort_keys=True)
+        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'dataSource'])
+        remote_md5           = None
 
-        # 判断是否需要刷新数据源
-        local_time = LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP.get(data_source_id) or 0
+        data_source = DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key]
+        if data_source:
+            # 检查 Redis 缓存的数据源 MD5
+            remote_md5 = six.ensure_str(self.__task.cache_db.hget(remote_md5_cache_key, data_source_id))
 
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMsMap')
-        refresh_time = int(self.__task.cache_db.hget(cache_key, data_source_id) or -1)
+            # 数据源 MD5 未变化时直接返回
+            if data_source['configMD5'] == remote_md5:
+                self.__task.logger.debug(f'[LOAD DATA SOURCE] load `{data_source_id}` from Cache')
 
-        if refresh_time != local_time:
-            self.__task.logger.debug('LOCAL_DATA_SOURCE_HELPERS_CACHE refreshed: `{}:{}` remote=`{}`, local=`{}`, diff=`{}`'.format(
-                    data_source_id, helper_target_key, refresh_time, local_time, refresh_time - local_time))
+                return data_source['helper']
 
-            # 回收所有Helper
-            prev_helpers = []
-            if data_source_id in LOCAL_DATA_SOURCE_HELPERS_CACHE:
-                prev_helpers = list(LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id].values())
+        # 从 DB 获取数据源
+        self.__task.logger.debug(f"[LOAD DATA SOURCE] load `{data_source_id}` from DB")
 
-            LOCAL_DATA_SOURCE_REFRESH_TIMESTAMP_MS_MAP[data_source_id] = refresh_time
-            LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
-
-            for _ in range(len(prev_helpers)):
-                del prev_helpers[0]
-
-        # 已缓存的直接返回
-        helper = LOCAL_DATA_SOURCE_HELPERS_CACHE.get(data_source_id, {}).get(helper_target_key)
-        if helper:
-            self.__task.logger.debug('Get DataSource Helper from cache: `{}:{}`'.format(data_source_id, helper_target_key))
-            return helper
-
-        # 从数据库创建
         sql = '''
             SELECT
-                 `type`
+                `id`
+                ,`type`
                 ,`configJSON`
+                ,MD5(IFNULL(`configJSON`, '')) AS configMD5
             FROM `biz_main_data_source`
             WHERE
                 `id` = ?
             '''
-        sql_params = [data_source_id]
-        db_res = self.__task.db.query(sql, sql_params)
-        if not db_res:
-            e = NotFoundException('Data source `{}` not found'.format(data_source_id))
+        sql_params = [ data_source_id ]
+        data_source = self.__task.db.query(sql, sql_params)
+        if not data_source:
+            e = NotFoundException(f'Data source not found: `{data_source_id}`')
             raise e
 
-        helper_type = db_res[0]['type']
-        config_json = db_res[0]['configJSON']
-        config      = toolkit.json_loads(config_json)
+        data_source = data_source[0]
 
-        # 解密字段
+        # 确定数据源类型
+        helper_type  = data_source['type']
+        helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
+        if not helper_class:
+            e = DataSourceNotSupportException('Data source type not support: `{}`'.format(helper_type))
+            raise e
+
+        # 创建数据源 Helper
+        config = toolkit.json_loads(data_source['configJSON'])
         config = decipher_data_source_config_fields(config)
 
-        helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
-        if helper_class:
-            helper_kwargs['pool_size'] = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
-            helper = helper_class(self.__task.logger, config, **helper_kwargs);
+        data_source['helper'] = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
 
-        else:
-            e = NotSupportException('Data source type not support: `{}`'.format(helper_type))
-            raise e
+        # 缓存数据源 MD5
+        self.__task.cache_db.hset(remote_md5_cache_key, data_source_id, data_source['configMD5'])
+        del DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key]
+        DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key] = data_source
 
-        if not LOCAL_DATA_SOURCE_HELPERS_CACHE.get(data_source_id):
-            LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id] = {}
+        return data_source['helper']
 
-        LOCAL_DATA_SOURCE_HELPERS_CACHE[data_source_id][helper_target_key] = helper
+    def reload_config_md5(self, data_source_id):
+        cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'dataSource'])
 
-        self.__task.logger.debug('Create DataSource Helper: `{}:{}`'.format(data_source_id, helper_target_key))
-        return helper
-
-    def update_refresh_timestamp(self, data_source_id):
-        # 更新缓存刷新时间
-        cache_key = toolkit.get_cache_key('cache', 'dataSourceRefreshTimestampMsMap')
-        self.__task.cache_db.hset(cache_key, data_source_id, int(time.time() * 1000))
-
-    def list(self):
         sql = '''
             SELECT
-                 `id`
-                ,`title`
-                ,`description`
-                ,`type`
-                ,`isBuiltin`
-                ,`createTime`
-                ,`updateTime`
-            FROM biz_main_data_source AS dsrc
+                `id`
+                ,MD5(`configJSON`) AS `configMD5`
+            FROM biz_main_data_source
+            WHERE
+                `id` = ?
             '''
-        data = self.__task.db.query(sql)
+        sql_params = [ data_source_id ]
+        data_source = self.__task.db.query(sql, sql_params)
+        if not data_source:
+            return
 
-        for d in data:
-            d['isBuiltin'] = bool(d['isBuiltin'])
+        data_source = data_source[0]
+        self.__task.cache_db.hset(cache_key, data_source_id, data_source['configMD5'])
 
-        return data
-
-    def save(self, data_source_id, type_, config, title=None, description=None):
-        if type_ not in DATA_SOURCE_HELPER_CLASS_MAP:
-            raise NotSupportException('Data source type `{}` not supported'.format(type_))
+    def save(self, data_source_id, data_source_type, config, title=None, description=None):
+        if data_source_type not in DATA_SOURCE_HELPER_CLASS_MAP:
+            e = DataSourceNotSupportException('Data source type `{}` not supported'.format(data_source_type))
+            raise e
 
         if not config:
             config = {}
+
         if not isinstance(config, dict):
-            raise InvalidOptionException('Data source config should be a dict')
+            raise InvalidDataSourceOptionException('Data source config should be a dict')
 
         for k in config.keys():
             if k not in self.AVAILABLE_CONFIG_KEYS:
-                raise NotSupportException('Data source config item `{}` not supported'.format(k))
+                raise InvalidDataSourceOptionException('Data source config item `{}` not available'.format(k))
 
         # 加密字段
-        for k in self.CIPHER_CONFIG_KEYS:
+        for k in DATA_SOURCE_CIPHER_FIELDS:
             v = config.get(k)
             if v is not None:
                 config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
@@ -790,7 +730,7 @@ class FuncDataSourceHelper(object):
             sql_params = [
                 title,
                 description,
-                type_,
+                data_source_type,
                 config_json,
                 data_source_id,
             ]
@@ -811,12 +751,12 @@ class FuncDataSourceHelper(object):
                 data_source_id,
                 title,
                 description,
-                type_,
+                data_source_type,
                 config_json,
             ]
             self.__task.db.query(sql, sql_params)
 
-        self.update_refresh_timestamp(data_source_id)
+        self.reload_config_md5(data_source_id)
 
     def delete(self, data_source_id):
         sql = '''
@@ -827,82 +767,92 @@ class FuncDataSourceHelper(object):
         sql_params = [data_source_id]
         self.__task.db.query(sql, sql_params)
 
-        self.update_refresh_timestamp(data_source_id)
+        self.reload_config_md5(data_source_id)
 
 class FuncEnvVariableHelper(object):
+    '''
+    加载环境变量
+    1. 检查本地缓存（60秒强制失效）的MD5与Redis缓存的MD5是否一致
+        a. 一致则直接使用本地缓存
+        b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
+    '''
     def __init__(self, task):
         self.__task = task
 
-        self._is_refreshed = False
+        self.__loaded_env_variable_cache = toolkit.LocalCache()
 
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def _refresh(self):
+    def keys(self):
+        sql = '''
+            SELECT
+                `id`
+            FROM `biz_main_env_variable`
+            '''
+        db_res = self.__task.db.query(sql)
+
+        return [ d['id'] for d in db_res]
+
+    def get(self, env_variable_id):
+        env_variable = self.__loaded_env_variable_cache[env_variable_id]
+        if env_variable:
+            return env_variable['castedValue']
+
         global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
-        global LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS
-        global LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS
-        global LOCAL_ENV_VARIABLES_CACHE
+        global ENV_VARIABLE_LOCAL_CACHE
 
-        # 判断是否需要刷新数据源
-        now_ms = int(time.time() * 1000)
+        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'envVariable'])
+        remote_md5           = None
 
-        local_time = LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS
-        cache_time = LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS
+        env_variable = ENV_VARIABLE_LOCAL_CACHE[env_variable_id]
+        if env_variable:
+            # 检查 Redis 缓存的环境变量 MD5
+            remote_md5 = six.ensure_str(self.__task.cache_db.hget(remote_md5_cache_key, env_variable_id))
 
-        cache_key = toolkit.get_cache_key('cache', 'envVariableRefreshTimestampMs')
-        refresh_time = int(self.__task.cache_db.get(cache_key) or NEVER_REFRESHED_TIMESTAMP_MS)
+            # 环境变量 MD5 未变化时直接返回
+            if env_variable['valueMD5'] == remote_md5:
+                self.__task.logger.debug(f'[LOAD ENV VARIABLE] load `{env_variable_id}` from Cache')
 
-        # 合适更新本地缓存？
-        # 1. 本地缓存时间与远端刷新时间不一致
-        # 2. 本地缓存超过60秒
-        if local_time != refresh_time or cache_time < now_ms - 60 * 1000:
-            self.__task.logger.debug('[DFF.ENV] refreshed. remote_t=`{}`, local_t=`{}`, cache_t=`{}`'.format(
-                    now_ms - refresh_time,
-                    now_ms - local_time,
-                    now_ms - cache_time))
+                # 缓存环境变量
+                self.__loaded_env_variable_cache[env_variable_id] = env_variable
+                return env_variable['castedValue']
 
-            LOCAL_ENV_VARIABLES_REFRESH_TIMESTAMP_MS = refresh_time
-            LOCAL_ENV_VARIABLES_CACHE_TIMESTAMP_MS   = now_ms
+        # 从 DB 获取环境变量
+        self.__task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
 
-            # 重新加载全部环境变量
-            LOCAL_ENV_VARIABLES_CACHE = {}
+        sql = '''
+            SELECT
+                `id`
+                ,`valueTEXT`
+                ,MD5(IFNULL(`valueTEXT`, '')) AS valueMD5
+                ,`autoTypeCasting`
+            FROM `biz_main_env_variable`
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [ env_variable_id ]
+        env_variable = self.__task.db.query(sql, sql_params)
+        if not env_variable:
+            return None
 
-            sql = '''
-                SELECT
-                    `id`
-                   ,`valueTEXT`
-                   ,`autoTypeCasting`
-                FROM `biz_main_env_variable`
-                '''
-            db_res = self.__task.db.query(sql)
-            for env in db_res:
-                env_id            = env['id']
-                env_value         = env['valueTEXT']
-                auto_type_casting = env['autoTypeCasting']
-                casted_env_value  = env_value
+        env_variable = env_variable[0]
 
-                if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-                    casted_env_value = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_value)
-
-                LOCAL_ENV_VARIABLES_CACHE[env_id] = casted_env_value
-
-        self._is_refreshed = True
-
-    def get(self, env_variable_id, default=None):
-        if not self._is_refreshed:
-            self._refresh()
-
-        if env_variable_id in LOCAL_ENV_VARIABLES_CACHE:
-            return LOCAL_ENV_VARIABLES_CACHE[env_variable_id]
+        # 类型转换
+        auto_type_casting = env_variable['autoTypeCasting']
+        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+            env_variable['castedValue'] = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_variable['valueTEXT'])
         else:
-            return default
+            env_variable['castedValue'] = env_variable['valueTEXT']
 
-    def list(self):
-        if not self._is_refreshed:
-            self._refresh()
+        # 缓存环境变量 MD5
+        self.__task.cache_db.hset(remote_md5_cache_key, env_variable_id, env_variable['valueMD5'])
+        ENV_VARIABLE_LOCAL_CACHE[env_variable_id] = env_variable
 
-        return [ { 'id': env_id, 'value': env_value } for env_id, env_value in LOCAL_ENV_VARIABLES_CACHE.items()]
+        # 缓存环境变量
+        self.__loaded_env_variable_cache[env_variable_id] = env_variable
+
+        return env_variable['castedValue']
 
 class FuncConfigHelper(object):
     def __init__(self, task):
@@ -913,7 +863,7 @@ class FuncConfigHelper(object):
 
     def get(self, config_id, default=None):
         if not config_id.startswith('CUSTOM_'):
-            e = AccessDenyException('Config `{}` is not accessible'.format(config_id))
+            e = ConfigUnaccessableException('Config `{}` is not accessible'.format(config_id))
             raise e
 
         if config_id in CONFIG:
@@ -1026,11 +976,14 @@ class FuncResponseLargeData(BaseFuncResponse):
         self.file_path        = file_path
         self.auto_delete_file = auto_delete
 
-class ScriptBaseTask(BaseTask, ScriptCacherMixin):
+class ScriptBaseTask(BaseTask):
     def __call__(self, *args, **kwargs):
         self.__context_helper = FuncContextHelper(self)
 
-        return super(ScriptBaseTask, self).__call__(*args, **kwargs)
+        self.__loaded_script_cache   = toolkit.LocalCache()
+        self.__imported_module_cache = toolkit.LocalCache()
+
+        return super().__call__(*args, **kwargs)
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1092,37 +1045,37 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 e = Exception('CustomImport: Cannot import name `{}`'.format(import_name))
                 raise e
 
-    def _custom_import(self, script_dict, imported_script_dict,
-        name, globals=None, locals=None, fromlist=None, level=0,
-        parent_scope=None):
-        entry_name = globals.get('__name__')
-        if isinstance(entry_name, str) and (entry_name in script_dict) and name.startswith('__'):
-            # 只有用户脚本支持相对路径引入用户脚本
-            # 支持使用"__scriptname"代替"scriptsetname__scriptname"导入
-            entry_script_set = entry_name.split('__')[0]
-            real_import_name = entry_script_set + name
-            if real_import_name in script_dict:
-                name = real_import_name
+    def _custom_import(self, name, globals=None, locals=None, fromlist=None, level=0, parent_scope=None):
+        '''
+        导入用户脚本处理完全依赖 `scriptset__script` 的命名方式
+        一般第三方包
+        '''
+        entry_script_id = globals.get('__name__')
 
-        if name in script_dict:
-            _module = None
+        import_script_id = name
+        import_script    = None
 
-            try:
-                if name in imported_script_dict:
-                    _module = imported_script_dict[name]
+        # 只有用户脚本支持相对路径引入用户脚本
+        # 支持使用"__scriptname"代替"scriptsetname__scriptname"导入
+        if name.startswith('__') and name not in USER_SCRIPT_ID_BLACK_LIST:
+            import_script_id = entry_script_id.split('__')[0] + name
 
-                else:
-                    _module = ModuleType(name)
+        # 执行导入
+        import_script = self.load_script(import_script_id)
+        if import_script:
+            # 用户脚本导入
+            _module = self.__imported_module_cache[import_script_id]
+            if _module:
+                self.logger.debug(f'[CUSTOM IMPORT] user script `{import_script_id}` already imported')
 
-                    imported_script_dict[name] = _module
+            else:
+                self.logger.debug(f'[CUSTOM IMPORT] import user script `{import_script_id}`')
 
+                try:
+                    _module = ModuleType(import_script_id)
                     _module.__dict__.clear()
 
-                    module_scope = self.create_safe_scope(
-                            script_name=name,
-                            script_dict=script_dict,
-                            imported_script_dict=imported_script_dict)
-
+                    module_scope = self.create_safe_scope(name)
                     if parent_scope:
                         module_scope['DFF'].log_messages = parent_scope['DFF'].log_messages
 
@@ -1132,12 +1085,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
                     _module.__dict__.update(module_scope)
 
-                    script_code_obj = script_dict[name]['codeObj']
-                    if script_code_obj:
-                        exec(script_code_obj, _module.__dict__)
+                    script_code_obj = import_script['codeObj']
+                    exec(script_code_obj, _module.__dict__)
 
-            except Exception as e:
-                raise
+                    self.__imported_module_cache[import_script_id] = _module
+
+                except Exception as e:
+                    raise
 
             # 模块本身不需要直接加入上下文
             # globals[name] = _module
@@ -1146,6 +1100,9 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             return _module
 
         else:
+            # 普通导入
+            self.logger.debug(f'[CUSTOM IMPORT] import non-user module `{import_script_id}`')
+
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
     def _export_as_api(self, safe_scope, title,
@@ -1162,7 +1119,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 函数标题
         if title is not None and not isinstance(title, (six.string_types, six.text_type)):
-            e = InvalidOptionException('`title` should be a string or unicode')
+            e = InvalidAPIOptionException('`title` should be a string or unicode')
             raise e
 
         ##############
@@ -1172,11 +1129,11 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 固定Crontab
         if fixed_crontab is not None:
             if not croniter.is_valid(fixed_crontab):
-                e = InvalidOptionException('`fixed_crontab` is not a valid crontab expression')
+                e = InvalidAPIOptionException('`fixed_crontab` is not a valid crontab expression')
                 raise e
 
             if len(fixed_crontab.split(' ')) > 5:
-                e = InvalidOptionException('`fixed_crontab` does not support second part')
+                e = InvalidAPIOptionException('`fixed_crontab` does not support second part')
                 raise e
 
             extra_config['fixedCrontab'] = fixed_crontab
@@ -1189,7 +1146,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
             for d in delayed_crontab:
                 if not isinstance(d, int):
-                    e = InvalidOptionException('Elements of `delayed_crontab` should be int')
+                    e = InvalidAPIOptionException('Elements of `delayed_crontab` should be int')
                     raise e
 
             extra_config['delayedCrontab'] = delayed_crontab
@@ -1197,13 +1154,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 执行时限
         if timeout is not None:
             if not isinstance(timeout, six.integer_types):
-                e = InvalidOptionException('`timeout` should be an integer or long')
+                e = InvalidAPIOptionException('`timeout` should be an integer or long')
                 raise e
 
             _min_timeout = CONFIG['_FUNC_TASK_MIN_TIMEOUT']
             _max_timeout = CONFIG['_FUNC_TASK_MAX_TIMEOUT']
             if not (_min_timeout <= timeout <= _max_timeout):
-                e = InvalidOptionException('`timeout` should be between `{}` and `{}` (seconds)'.format(_min_timeout, _max_timeout))
+                e = InvalidAPIOptionException('`timeout` should be between `{}` and `{}` (seconds)'.format(_min_timeout, _max_timeout))
                 raise e
 
             extra_config['timeout'] = timeout
@@ -1211,13 +1168,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # API返回时限
         if api_timeout is not None:
             if not isinstance(api_timeout, six.integer_types):
-                e = InvalidOptionException('`api_timeout` should be an integer or long')
+                e = InvalidAPIOptionException('`api_timeout` should be an integer or long')
                 raise e
 
             _min_api_timeout = CONFIG['_FUNC_TASK_MIN_API_TIMEOUT']
             _max_api_timeout = CONFIG['_FUNC_TASK_MAX_API_TIMEOUT']
             if not (_min_api_timeout <= api_timeout <= _max_api_timeout):
-                e = InvalidOptionException('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
+                e = InvalidAPIOptionException('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
                 raise e
 
             extra_config['apiTimeout'] = api_timeout
@@ -1225,7 +1182,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 结果缓存
         if cache_result is not None:
             if not isinstance(cache_result, (int, float)):
-                e = InvalidOptionException('`cache_result` should be an int or a float')
+                e = InvalidAPIOptionException('`cache_result` should be an int or a float')
                 raise e
 
             extra_config['cacheResult'] = cache_result
@@ -1234,7 +1191,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         if queue is not None:
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])) + list(CONFIG['WORKER_QUEUE_ALIAS_MAP'].keys())
             if queue not in available_queues:
-                e = InvalidOptionException('`queue` should be one of {}'.format(toolkit.json_dumps(available_queues)))
+                e = InvalidAPIOptionException('`queue` should be one of {}'.format(toolkit.json_dumps(available_queues)))
                 raise e
 
             extra_config['queue'] = queue
@@ -1242,13 +1199,13 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 固定任务记录数量
         if fixed_task_info_limit is not None:
             if not isinstance(fixed_task_info_limit, int):
-                e = InvalidOptionException('`fixed_task_info_limit` should be an int')
+                e = InvalidAPIOptionException('`fixed_task_info_limit` should be an int')
                 raise e
 
             _min_task_info_limit = CONFIG['_TASK_INFO_MIN_LIMIT']
             _max_task_info_limit = CONFIG['_TASK_INFO_MAX_LIMIT']
             if not (_min_task_info_limit <= fixed_task_info_limit <= _max_task_info_limit):
-                e = InvalidOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (tasks)'.format(_min_task_info_limit, _max_task_info_limit))
+                e = InvalidAPIOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (tasks)'.format(_min_task_info_limit, _max_task_info_limit))
                 raise e
 
             extra_config['fixedTaskInfoLimit'] = fixed_task_info_limit
@@ -1259,18 +1216,18 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 函数分类
         if category is not None and not isinstance(category, (six.string_types, six.text_type)):
-            e = InvalidOptionException('`category` should be a string or unicode')
+            e = InvalidAPIOptionException('`category` should be a string or unicode')
             raise e
 
         # 函数标签
         if tags is not None:
             if not isinstance(tags, (tuple, list)):
-                e = InvalidOptionException('`tags` should be a tuple or a list')
+                e = InvalidAPIOptionException('`tags` should be a tuple or a list')
                 raise e
 
             for tag in tags:
                 if not isinstance(tag, (six.string_types, six.text_type)):
-                    e = InvalidOptionException('Element of `tags` should be a string or unicode')
+                    e = InvalidAPIOptionException('Element of `tags` should be a string or unicode')
                     raise e
 
             tags = list(set(tags))
@@ -1283,7 +1240,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
         # 功能集成
         if integration is not None:
             if not isinstance(integration, (six.string_types, six.text_type)):
-                e = InvalidOptionException('`integration` should be a string or unicode')
+                e = InvalidAPIOptionException('`integration` should be a string or unicode')
                 raise e
 
             integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
@@ -1359,7 +1316,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
 
         # 检查重复调用
         if func_id in func_chain:
-            e = DuplicationException('{} -> [{}]'.format(func_chain_info, func_id))
+            e = FuncRecursiveCallException('{} -> [{}]'.format(func_chain_info, func_id))
             raise e
 
         # 检查并获取函数信息
@@ -1430,53 +1387,141 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             time_limit=time_limit,
             expires=expires)
 
-    def create_safe_scope(self, script_name=None, script_dict=None, imported_script_dict=None, extra_vars=None):
+    def load_script(self, script_id, draft=False):
+        '''
+        加载脚本
+        1. 草稿脚本始终直接从数据库中读取
+        2. 正式脚本检查本地缓存（60秒强制失效）的MD5与Redis缓存的MD5是否一致
+            a. 一致则直接使用本地缓存
+            b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
+        '''
+        script = self.__loaded_script_cache[script_id]
+        if script:
+            return script
+
+        global SCRIPT_LOCAL_CACHE
+
+        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'script'])
+        remote_md5           = None
+
+        if not draft:
+            script = SCRIPT_LOCAL_CACHE[script_id]
+            if script:
+                # 检查 Redis 缓存的脚本 MD5
+                remote_md5 = six.ensure_str(self.cache_db.hget(remote_md5_cache_key, script_id))
+
+                # MD5 未变化时直接返回
+                if script['codeMD5'] == remote_md5:
+                    self.logger.debug(f'[LOAD SCRIPT] load `{script_id}` from Cache')
+
+                    # 缓存脚本
+                    self.__loaded_script_cache[script_id] = script
+                    return script
+
+        # 从 DB 获取脚本
+        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ '(DRAFT)' if draft else '' } from DB")
+
+        code_field     = '`scpt`.`code`'
+        code_md5_field = '`scpt`.`codeMD5`'
+        if draft == True:
+            code_field     = '`scpt`.`codeDraft`'
+            code_md5_field = '`scpt`.`codeDraftMD5`'
+
+        sql = '''
+            SELECT
+                 `scpt`.`seq`
+                ,`scpt`.`id`
+                ,`scpt`.`publishVersion`
+                ,IFNULL(??, '') AS `code`
+                ,IFNULL(??, '') AS `codeMD5`
+
+                ,`sset`.`id` AS `scriptSetId`
+
+            FROM biz_main_script_set AS sset
+
+            JOIN biz_main_script AS scpt
+                ON `sset`.`id` = `scpt`.`scriptSetId`
+
+            WHERE
+                `scpt`.`id` = ?
+
+            ORDER BY
+                `scpt`.`seq` ASC
+            '''
+        sql_params = [ code_field, code_md5_field, script_id ]
+        script = self.db.query(sql, sql_params)
+        if not script:
+            return None
+
+        script = script[0]
+
+        # 获取函数额外配置
+        sql = '''
+            SELECT
+                 `func`.`id`
+                ,`func`.`scriptId`
+                ,`func`.`extraConfigJSON`
+            FROM biz_main_func AS func
+            WHERE
+                `func`.`scriptId` = ?
+            '''
+        sql_params = [ script_id ]
+        funcs = self.db.query(sql, sql_params)
+
+        # 编译脚本
+        if script.get('code'):
+            script_code = script['code']
+            script_code_obj = compile(script_code, script_id, 'exec')
+
+            script['codeObj'] = script_code_obj
+
+        # 函数配置表
+        script['funcExtraConfig'] = {}
+        for f in funcs:
+            func_id           = f['id']
+            func_extra_config = f['extraConfigJSON']
+            if isinstance(func_extra_config, (six.string_types, six.text_type)):
+                func_extra_config = toolkit.json_loads(func_extra_config)
+
+            script['funcExtraConfig'][func_id] = func_extra_config
+
+        # 仅缓存正式脚本
+        if not draft:
+            # 缓存脚本 MD5
+            self.cache_db.hset(remote_md5_cache_key, script_id, script['codeMD5'])
+            SCRIPT_LOCAL_CACHE[script_id] = script
+
+        # 缓存脚本
+        self.__loaded_script_cache[script_id] = script
+
+        return script
+
+    def create_safe_scope(self, script_name=None, extra_vars=None):
         '''
         创建安全脚本作用域
         '''
-        script_dict          = script_dict          or {}
-        imported_script_dict = imported_script_dict or {}
-
         safe_scope = {
             '__name__'    : script_name or '<script>',
             '__file__'    : script_name or '<script>',
             '__builtins__': {},
         }
 
+        # 填充DataFlux Func 内置变量
         if extra_vars:
             for k, v in extra_vars.items():
                 if k not in safe_scope:
                     safe_scope[k] = v
 
-        for name in dir(six.moves.builtins):
-            if name in EXCLUDE_BUILTIN_NAMES:
-                continue
-
-            safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
-
-        # 自定义import实现
-        def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
-            return self._custom_import(script_dict, imported_script_dict,
-                name, globals, locals, fromlist, level, safe_scope)
-
-        # 注入方便函数
-        def __export_as_api(title=None, **extra_config):
-            return self._export_as_api(safe_scope, title, **extra_config)
-
-        def __get_data_source_helper(data_source_id, **helper_kwargs):
-            return self._get_data_source_helper(data_source_id, **helper_kwargs)
-
-        def __get_env_variable(env_variable_id):
-            return self._get_env_variable(env_variable_id)
+        # 填充DataFlux Func 内置方法/对象
+        __data_source_helper  = FuncDataSourceHelper(self)
+        __env_variable_helper = FuncEnvVariableHelper(self)
+        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
+        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
+        __config_helper       = FuncConfigHelper(self)
+        __thread_helper       = FuncThreadHelper(self)
 
         def __log(message):
             return self._log(safe_scope, message)
-
-        def __print(*args, **kwargs):
-            return self._print(safe_scope, *args, **kwargs)
-
-        def __call_func(func_id, kwargs=None):
-            return self._call_func(safe_scope, func_id, kwargs)
 
         def __eval(*args, **kwargs):
             # 不再限制此类函数，直接调用原生函数
@@ -1486,18 +1531,11 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             # 不再限制此类函数，直接调用原生函数
             return exec(*args, **kwargs)
 
-        safe_scope['__builtins__']['__import__'] = __custom_import
-        safe_scope['__builtins__']['print']      = __print
+        def __export_as_api(title=None, **extra_config):
+            return self._export_as_api(safe_scope, title, **extra_config)
 
-        __data_source_helper  = FuncDataSourceHelper(self)
-        __env_variable_helper = FuncEnvVariableHelper(self)
-        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
-        __config_helper       = FuncConfigHelper(self)
-        __thread_helper       = FuncThreadHelper(self)
-
-        def __list_data_sources():
-            return __data_source_helper.list()
+        def __call_func(func_id, kwargs=None):
+            return self._call_func(safe_scope, func_id, kwargs)
 
         inject_funcs = {
             'LOG' : __log,  # 输出日志
@@ -1523,84 +1561,44 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
             'THREAD': __thread_helper, # 多线程处理模块
 
             'TASK': self, # 任务本身
-
-            # 历史遗留
-            'list_data_sources': __list_data_sources, # 列出数据源
         }
-        # 增加小写别名
-        inject_func_names = list(inject_funcs.keys())
-        for k in inject_func_names:
-            inject_funcs[k.lower()] = inject_funcs[k]
-
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
+
+        # 填充内置对象/函数
+        for name in dir(six.moves.builtins):
+            # 跳过内置 import 函数，后续替换为 custom_import 函数
+            if name == 'import':
+                continue
+
+            safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
+
+        # 替换内置对象/函数
+        def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
+            return self._custom_import(name, globals, locals, fromlist, level, safe_scope)
+
+        def __print(*args, **kwargs):
+            return self._print(safe_scope, *args, **kwargs)
+
+        safe_scope['__builtins__']['__import__'] = __custom_import
+        safe_scope['__builtins__']['print']      = __print
 
         return safe_scope
 
-    def load_script_dict(self, scripts):
-        # 清理超过任务最长执行时间的缓存代码编译
-        for k in list(COMPILED_CODE_CACHE_MAP.keys()):
-            timestamp = 0
-            try:
-                timestamp = COMPILED_CODE_CACHE_MAP[k]['timestamp']
-            except KeyError as e:
-                pass
-
-            if timestamp < time.time() - CONFIG['_FUNC_TASK_MAX_TIMEOUT']:
-                COMPILED_CODE_CACHE_MAP.pop(k, None)
-                self.logger.info('[COMPILE CODE CACHE] expired: `{}`'.format(k))
-
-        # 生成脚本字典并缓存编译
-        script_dict = {}
-        for s in scripts:
-            if not s.get('code'):
-                continue
-
-            cache_key = '{0}-{1}'.format(s['id'], s['codeMD5'])
-
-            # 优先从内存缓存中获取编译后的代码对象
-            script_code_obj = None
-            try:
-                script_code_obj = COMPILED_CODE_CACHE_MAP[cache_key]['codeObj']
-            except KeyError as e:
-                pass
-
-            if not script_code_obj:
-                script_code_obj = compile(s['code'], s['id'], 'exec')
-                COMPILED_CODE_CACHE_MAP[cache_key] = {
-                    'codeObj' : script_code_obj,
-                    'timetamp': time.time(),
-                }
-                self.logger.info('[COMPILE CODE CACHE] added: `{}`'.format(s['id']))
-
-            script_dict[s['id']] = {
-                'id'             : s['id'],
-                'publishVersion' : s['publishVersion'],
-                'code'           : s['code'],
-                'codeMD5'        : s['codeMD5'],
-                'codeObj'        : script_code_obj,
-                'funcExtraConfig': s.get('funcExtraConfig') or {},
-                'scriptSetId'    : s['scriptSetId'],
-            }
-
-        self.logger.info('[COMPILE CODE CACHE] count: {}'.format(len(COMPILED_CODE_CACHE_MAP)))
-
-        self.script_dict = script_dict
-
-    def safe_exec(self, script_code_obj, globals=None, locals=None, script_dict=None):
-        safe_scope = globals or self.create_safe_scope(script_dict=script_dict)
+    def safe_exec(self, script_code_obj, globals=None, locals=None):
+        safe_scope = globals or self.create_safe_scope()
         exec(script_code_obj, safe_scope)
 
         return safe_scope
 
     def clean_up(self):
-        global THREAD_POOL
-        global THREAD_RESULT_MAP
+        global FUNC_THREAD_POOL
+        global FUNC_THREAD_RESULT_MAP
 
         # 关闭线程池
-        if THREAD_POOL:
+        if FUNC_THREAD_POOL:
             self.logger.debug('[THREAD POOL] Clear')
 
-            THREAD_RESULT_MAP.clear()
+            FUNC_THREAD_RESULT_MAP.clear()
 
     def get_trace_info(self):
         '''
@@ -1647,7 +1645,7 @@ class ScriptBaseTask(BaseTask, ScriptCacherMixin):
                 line_code = ''
                 if is_in_script:
                     # 脚本内从缓存中获取
-                    script_code = (self.script_dict.get(filename) or {}).get('code')
+                    script_code = (self.load_script(filename) or {}).get('code')
                     script_code_lines = []
 
                     if script_code:
@@ -1707,7 +1705,7 @@ from worker.tasks.main.func_debugger   import func_debugger
 from worker.tasks.main.func_runner     import func_runner
 from worker.tasks.main.crontab_starter import crontab_starter
 
-from worker.tasks.main.utils import reload_scripts
+from worker.tasks.main.utils import reload_data_md5_cache
 from worker.tasks.main.utils import sync_cache
 from worker.tasks.main.utils import auto_clean
 from worker.tasks.main.utils import auto_run

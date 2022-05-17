@@ -716,7 +716,7 @@ EntityModel.prototype.export = function(options, callback) {
   });
 };
 
-EntityModel.prototype.import = function(packageData, recoverData, callback) {
+EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
   var self = this;
 
   if ('string' === typeof packageData) {
@@ -740,13 +740,13 @@ EntityModel.prototype.import = function(packageData, recoverData, callback) {
     },
     // 创建还原点
     function(asyncCallback) {
-      if (toolkit.isNothing(recoverData)) return asyncCallback();
+      if (toolkit.isNothing(recoverPoint)) return asyncCallback();
 
-      scriptRecoverPointModel.add(recoverData, asyncCallback);
+      scriptRecoverPointModel.add(recoverPoint, asyncCallback);
     },
     // 删除所有涉及的脚本集
     function(asyncCallback) {
-      if (recoverData.type === 'recover') {
+      if (recoverPoint.type === 'recover') {
         // 恢复模式
         var sql = toolkit.createStringBuilder();
         sql.append('DELETE FROM biz_main_script_set');
@@ -768,7 +768,7 @@ EntityModel.prototype.import = function(packageData, recoverData, callback) {
     },
     // 删除相关数据（脚本/函数）
     function(asyncCallback) {
-      if (recoverData.type === 'recover') {
+      if (recoverPoint.type === 'recover') {
         // 恢复模式
         var sql = toolkit.createStringBuilder();
         sql.append('DELETE FROM biz_main_script;');
