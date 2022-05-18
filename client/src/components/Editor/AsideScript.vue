@@ -35,9 +35,10 @@ Script unlocked    : 脚本已解锁
       size="small"
       :filterable="true"
       :clearable="true"
+      :filter-method="doFilter"
       v-model="selectFilterText">
       <el-option
-        v-for="item in selectOptions"
+        v-for="item in selectShowOptions"
         :key="item.id"
         :label="item.label"
         :value="item.id">
@@ -218,10 +219,11 @@ export default {
       // 展开所有父层
       let _node = this.$refs.tree.getNode(val);
       while (true) {
-        _node = _node.parent;
         if (!_node) break;
-
         _node.expanded = true;
+
+        if (!_node.parent) break;
+        _node = _node.parent;
       }
 
       this.onSelectNode();
@@ -239,6 +241,14 @@ export default {
     },
   },
   methods: {
+    doFilter(q) {
+      q = (q || '').trim();
+      if (!q) {
+        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+      } else {
+        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+      }
+    },
     onExpandNode(data, node) {
       this.$set(this.expandedNodeMap, data.id, true);
     },
@@ -495,9 +505,10 @@ export default {
       });
 
       // 加载数据
-      this.loading = false;
-      this.data          = treeData;
-      this.selectOptions = selectOptions;
+      this.loading           = false;
+      this.data              = treeData;
+      this.selectOptions     = selectOptions;
+      this.selectShowOptions = selectOptions;
 
       // 自动展开
       this.expandedNodeMap = this.$store.state.asideScript_expandedNodeMap || {};
@@ -698,8 +709,9 @@ export default {
       loading: false,
       data   : [],
 
-      selectFilterText: '',
-      selectOptions   : [],
+      selectFilterText : '',
+      selectOptions    : [],
+      selectShowOptions: [],
 
       showPopoverId: null,
 

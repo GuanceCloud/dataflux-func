@@ -19,9 +19,10 @@ ENV Variable unpinned: 环境变量已取消
       size="small"
       :filterable="true"
       :clearable="true"
+      :filter-method="doFilter"
       v-model="selectFilterText">
       <el-option
-        v-for="item in selectOptions"
+        v-for="item in selectShowOptions"
         :key="item.id"
         :label="item.label"
         :value="item.id">
@@ -142,6 +143,14 @@ export default {
     },
   },
   methods: {
+    doFilter(q) {
+      q = (q || '').trim();
+      if (!q) {
+        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+      } else {
+        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+      }
+    },
     onSelectNode(data, node) {
       if (!this.$refs.tree) return;
 
@@ -198,9 +207,10 @@ export default {
       let selectOptions = treeData.filter(x => x.type === 'envVariable');
 
       // 加载数据
-      this.loading       = false;
-      this.data          = treeData;
-      this.selectOptions = selectOptions;
+      this.loading           = false;
+      this.data              = treeData;
+      this.selectOptions     = selectOptions;
+      this.selectShowOptions = selectOptions;
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -264,8 +274,9 @@ export default {
       loading: false,
       data   : [],
 
-      selectFilterText: '',
-      selectOptions   : [],
+      selectFilterText : '',
+      selectOptions    : [],
+      selectShowOptions: [],
 
       showPopoverId: null,
     };

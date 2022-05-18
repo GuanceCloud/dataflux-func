@@ -21,16 +21,17 @@ Data Source unpinned: 数据源已取消
       size="small"
       :filterable="true"
       :clearable="true"
+      :filter-method="doFilter"
       v-model="selectFilterText">
       <el-option
-        v-for="item in selectOptions"
+        v-for="item in selectShowOptions"
         :key="item.id"
         :label="item.label"
         :value="item.id">
         <span class="select-item-name">
           <el-tag class="aside-tree-node-tag"
-            :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
-            size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+            :type="C.DATA_SOURCE_MAP.get(item.dataSourceType).tagType"
+            size="mini">{{ C.DATA_SOURCE_MAP.get(item.dataSourceType).name }}</el-tag>
           {{ item.label }}
         </span>
         <code class="select-item-id">ID: {{ item.id }}</code>
@@ -173,6 +174,14 @@ export default {
     },
   },
   methods: {
+    doFilter(q) {
+      q = (q || '').trim();
+      if (!q) {
+        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+      } else {
+        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+      }
+    },
     onSelectNode(data, node) {
       if (!this.$refs.tree) return;
 
@@ -234,9 +243,10 @@ export default {
       let selectOptions = treeData.filter(x => x.type === 'dataSource');
 
       // 加载数据
-      this.loading       = false;
-      this.data          = treeData;
-      this.selectOptions = selectOptions;
+      this.loading           = false;
+      this.data              = treeData;
+      this.selectOptions     = selectOptions;
+      this.selectShowOptions = selectOptions;
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -303,8 +313,9 @@ export default {
       loading: false,
       data   : [],
 
-      selectFilterText: '',
-      selectOptions   : [],
+      selectFilterText : '',
+      selectOptions    : [],
+      selectShowOptions: [],
 
       showPopoverId: null,
     };
