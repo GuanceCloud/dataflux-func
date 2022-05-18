@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-filter content : 过滤内容
+Jump to...     : 跳转到...
 Refresh        : 刷新列表
 Add Data Source: 添加数据源
 Simple Debug   : 简易调试
@@ -14,23 +14,42 @@ Data Source unpinned: 数据源已取消
 </i18n>
 
 <template>
-  <div>
-    <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
-      <el-button slot="prefix" type="text"></el-button>
-    </el-input>
+  <div id="aside-data-source-content">
+    <el-select class="jump-to-select"
+      :placeholder="$t('Jump to...')"
+      :no-data-text="$t('No Data')"
+      size="small"
+      :filterable="true"
+      :clearable="true"
+      v-model="selectFilterText">
+      <el-option
+        v-for="item in selectOptions"
+        :key="item.id"
+        :label="item.label"
+        :value="item.id">
+        <span class="select-item-name">
+          <el-tag class="aside-tree-node-tag"
+            :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
+            size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+          {{ item.label }}
+        </span>
+        <code class="select-item-id">ID: {{ item.id }}</code>
+      </el-option>
+    </el-select>
 
-    <el-tree
+    <el-tree class="aside-tree"
       v-loading="loading"
       :data="data"
-      :filter-node-method="filterNode"
       :highlight-current="true"
       :indent="10"
       node-key="id"
+      v-on:current-change="onSelectNode"
       ref="tree">
 
       <span
         slot-scope="{node, data}"
         class="aside-tree-node"
+        :entry-id="data.id"
         @click="openEntity(node, data)">
 
         <!-- 菜单 -->
@@ -141,22 +160,34 @@ export default {
     $route() {
       this.showPopoverId = null;
     },
-    filterText(val) {
-      this.$refs.tree.filter(val);
+    selectFilterText(val) {
+      if (!this.$refs.tree) return;
+
+      // 选中
+      this.$refs.tree.setCurrentKey(val);
+
+      this.onSelectNode();
     },
     '$store.state.dataSourceListSyncTime': function() {
       this.loadData();
     },
   },
   methods: {
-    filterNode(value, data) {
-      if (!value) return true;
-      if (['addDataSource', 'refresh'].indexOf(data.type) >= 0) return true;
+    onSelectNode(data, node) {
+      if (!this.$refs.tree) return;
 
-      let targetValue = ('' + value).toLowerCase();
-      let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
+      setTimeout(() => {
+        // 滚动到目标位置
+        let entryId = this.$refs.tree.getCurrentKey();
+        if (entryId) {
+          let $asideContent = document.getElementById('aside-data-source-content');
+          let $target = document.querySelector(`[entry-id="${entryId}"]`);
 
-      return searchTEXT.indexOf(targetValue) >= 0;
+          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 50;
+          console.log(scrollTop)
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
+      }, 500);
     },
     async loadData() {
       this.loading = true;
@@ -199,8 +230,13 @@ export default {
       treeData.unshift({type: 'addDataSource'});
       treeData.unshift({type: 'refresh'});
 
-      this.loading = false;
-      this.data = treeData;
+      // 生成选择器选项
+      let selectOptions = treeData.filter(x => x.type === 'dataSource');
+
+      // 加载数据
+      this.loading       = false;
+      this.data          = treeData;
+      this.selectOptions = selectOptions;
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -264,9 +300,11 @@ export default {
   },
   data() {
     return {
-      loading   : false,
-      filterText: '',
-      data      : [],
+      loading: false,
+      data   : [],
+
+      selectFilterText: '',
+      selectOptions   : [],
 
       showPopoverId: null,
     };
@@ -279,6 +317,24 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.jump-to-select {
+  position: absolute;
+  left: 5px;
+  right: 9px;
+  z-index: 9;
+}
+.select-item-name {
+  float: left;
+}
+.select-item-id {
+  float: right;
+  padding-left: 30px;
+  font-size: 12px;
+}
+
+.aside-tree {
+  padding-top: 35px;
+}
 .aside-tree-node-tag {
   width: 75px;
   text-align: center;

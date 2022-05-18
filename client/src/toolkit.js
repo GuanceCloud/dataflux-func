@@ -743,11 +743,19 @@ export function stringSimilar(s, t, f) {
 }
 
 export function asideItemSorter(a, b) {
-  let pinTimeA = new Date(a.pinTime || 0).getTime();
-  let pinTimeB = new Date(b.pinTime || 0).getTime();
+  // // 根据置顶时间排序
+  // let pinTimeA = new Date(a.pinTime || 0).getTime();
+  // let pinTimeB = new Date(b.pinTime || 0).getTime();
 
-  if (pinTimeA < pinTimeB) return 1;
-  if (pinTimeA > pinTimeB) return -1;
+  // if (pinTimeA < pinTimeB) return 1;
+  // if (pinTimeA > pinTimeB) return -1;
+
+  // 根据是否置顶排序
+  let isPinnedA = !!a.pinTime;
+  let isPinnedB = !!b.pinTime;
+
+  if (isPinnedA < isPinnedB) return 1;
+  if (isPinnedA > isPinnedB) return -1;
 
   if (a.label < b.label) return -1;
   if (a.label > b.label) return 1;

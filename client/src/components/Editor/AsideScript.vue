@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-filter content                                 : 过滤内容
+Jump to...                                     : 跳转到...
 Refresh                                        : 刷新列表
 Add Script                                     : 添加脚本
 Add Script Set                                 : 添加脚本集
@@ -28,24 +28,42 @@ Script unlocked    : 脚本已解锁
 </i18n>
 
 <template>
-  <div>
-    <el-input :placeholder="$t('filter content')" size="small" :clearable="true" v-model="filterText">
-      <el-button slot="prefix" type="text"></el-button>
-    </el-input>
+  <div id="aside-script-content">
+    <el-select class="jump-to-select"
+      :placeholder="$t('Jump to...')"
+      :no-data-text="$t('No Data')"
+      size="small"
+      :filterable="true"
+      :clearable="true"
+      v-model="selectFilterText">
+      <el-option
+        v-for="item in selectOptions"
+        :key="item.id"
+        :label="item.label"
+        :value="item.id">
+        <span class="select-item-name">
+          <i v-if="item.type === 'scriptSet'" class="fa fa-fw fa-folder"></i>
+          <i v-else-if="item.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
+          <el-tag v-else-if="item.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
+          {{ item.label }}
+        </span>
+        <code class="select-item-id">ID: {{ item.id }}</code>
+      </el-option>
+    </el-select>
 
-    <el-tree
+    <el-tree class="aside-tree"
       v-loading="loading"
       :data="data"
-      :filter-node-method="filterNode"
       :highlight-current="true"
       :default-expand-all="false"
       :default-expanded-keys="defaultExpandedNodeKeys"
-      :auto-expand-parent="false"
+      :auto-expand-parent="true"
       :expand-on-click-node="false"
       :indent="10"
       node-key="id"
       v-on:node-expand="onExpandNode"
       v-on:node-collapse="onCollapseNode"
+      v-on:current-change="onSelectNode"
       ref="tree">
 
       <span
@@ -175,7 +193,6 @@ Script unlocked    : 脚本已解锁
         </el-popover>
       </span>
     </el-tree>
-
     <QuickViewWindow ref="quickViewWindow"></QuickViewWindow>
   </div>
 </template>
@@ -192,8 +209,22 @@ export default {
     $route() {
       this.showPopoverId = null;
     },
-    filterText(val) {
-      this.$refs.tree.filter(val);
+    selectFilterText(val) {
+      if (!this.$refs.tree) return;
+
+      // 选中
+      this.$refs.tree.setCurrentKey(val);
+
+      // 展开所有父层
+      let _node = this.$refs.tree.getNode(val);
+      while (true) {
+        _node = _node.parent;
+        if (!_node) break;
+
+        _node.expanded = true;
+      }
+
+      this.onSelectNode();
     },
     '$store.state.scriptListSyncTime': function() {
       this.loadData();
@@ -208,24 +239,26 @@ export default {
     },
   },
   methods: {
-    filterNode(value, data) {
-      if (!value) return true;
-      if (['addScriptSet', 'refresh'].indexOf(data.type) >= 0) return true;
-
-      let targetValue = ('' + value).toLowerCase();
-      let searchTEXT  = ('' + data.searchTEXT).toLowerCase();
-
-      if (targetValue === '+') {
-        return data.isCodeEdited;
-      }
-
-      return searchTEXT.indexOf(targetValue) >= 0;
-    },
     onExpandNode(data, node) {
       this.$set(this.expandedNodeMap, data.id, true);
     },
     onCollapseNode(data, node) {
       this.$delete(this.expandedNodeMap, data.id);
+    },
+    onSelectNode(data, node) {
+      if (!this.$refs.tree) return;
+
+      setTimeout(() => {
+        // 滚动到目标位置
+        let entryId = this.$refs.tree.getCurrentKey();
+        if (entryId) {
+          let $asideContent = document.getElementById('aside-script-content');
+          let $target = document.querySelector(`[entry-id="${entryId}"]`);
+
+          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 50;
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
+      }, 500);
     },
     async loadData() {
       if (this.T.isNothing(this.data)) {
@@ -239,9 +272,6 @@ export default {
       let scriptSetMap = {};
       let scriptMap    = {};
       let funcMap      = {};
-
-      let pushedScriptMap = {};
-      let pushedFuncMap   = {};
 
       /***** 脚本集 *****/
       let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
@@ -456,9 +486,18 @@ export default {
       }
       this.$store.commit('updateCodeViewer_highlightedLineConfigMap', _d);
 
+      // 生成选择器选项
+      let selectOptions = [];
+      [scriptSetMap, scriptMap, funcMap].forEach(x => {
+        let _options = Object.values(x);
+        _options.sort(this.T.asideItemSorter);
+        selectOptions = selectOptions.concat(_options)
+      });
+
       // 加载数据
       this.loading = false;
-      this.data = treeData;
+      this.data          = treeData;
+      this.selectOptions = selectOptions;
 
       // 自动展开
       this.expandedNodeMap = this.$store.state.asideScript_expandedNodeMap || {};
@@ -470,20 +509,6 @@ export default {
         // 自动选中
         this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
       });
-
-      setTimeout(() => {
-        if (!this.$refs.tree) return;
-
-        // 滚动到目标位置
-        let entryId = this.$refs.tree.getCurrentKey();
-        if (entryId) {
-          let $asideContent = document.getElementById('pane-aside-script').parentElement;
-          let $target = document.querySelector(`[entry-id="${entryId}"]`);
-
-          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 100;
-          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
-        }
-      }, 500);
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -670,16 +695,18 @@ export default {
   },
   data() {
     return {
-      loading   : false,
-      filterText: '',
-      data      : [],
+      loading: false,
+      data   : [],
+
+      selectFilterText: '',
+      selectOptions   : [],
+
+      showPopoverId: null,
 
       // 直接修改el-tree的`default-expanded-keys`参数会导致过渡动画被跳过
       // 因此需要将初始状态单独提取且防止中途修改
       expandedNodeMap        : {},
       defaultExpandedNodeKeys: [],
-
-      showPopoverId: null,
     };
   },
   created() {
@@ -690,6 +717,24 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.jump-to-select {
+  position: absolute;
+  left: 5px;
+  right: 9px;
+  z-index: 9;
+}
+.select-item-name {
+  float: left;
+}
+.select-item-id {
+  float: right;
+  padding-left: 30px;
+  font-size: 12px;
+}
+
+.aside-tree {
+  padding-top: 35px;
+}
 .aside-tree-node {
   flex: 1;
   display: flex;

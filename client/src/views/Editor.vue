@@ -158,9 +158,16 @@ export default {
 </style>
 
 <style>
-.aside-content>.el-tabs>.el-tabs__content {
-  padding: 5px 12px 10px 5px;
+.aside-content > .el-tabs > .el-tabs__content > .el-tab-pane {
+  height: 100%;
+}
+.aside-content > .el-tabs > .el-tabs__content > .el-tab-pane > div {
+  height: 100%;
+  padding-right: 5px;
   overflow-y: auto;
+}
+.aside-content > .el-tabs > .el-tabs__content {
+  padding: 5px 1px 10px 5px;
   position: absolute;
   top: 40px;
   left: 0;
