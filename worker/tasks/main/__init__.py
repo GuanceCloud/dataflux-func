@@ -1398,6 +1398,10 @@ class ScriptBaseTask(BaseTask):
             a. 一致则直接使用本地缓存
             b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
         '''
+        # 只有导入名称中包含`__`的才有可能是用户脚本
+        if '__' not in script_id:
+            return None
+
         script = self.__loaded_script_cache[script_id]
         if script:
             return script
