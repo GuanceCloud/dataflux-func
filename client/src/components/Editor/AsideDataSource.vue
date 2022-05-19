@@ -162,12 +162,12 @@ export default {
       this.showPopoverId = null;
     },
     selectFilterText(val) {
+      if (!val) return;
       if (!this.$refs.tree) return;
 
-      // 选中
-      this.$refs.tree.setCurrentKey(val);
+      let node = this.$refs.tree.getNode(val);
 
-      this.onSelectNode();
+      this.onSelectNode(node.data);
     },
     '$store.state.dataSourceListSyncTime': function() {
       this.loadData();
@@ -183,20 +183,31 @@ export default {
       }
     },
     onSelectNode(data, node) {
+      if (!data) return;
       if (!this.$refs.tree) return;
 
-      setTimeout(() => {
-        // 滚动到目标位置
-        let entryId = this.$refs.tree.getCurrentKey();
-        if (entryId) {
-          let $asideContent = document.getElementById('aside-data-source-content');
-          let $target = document.querySelector(`[entry-id="${entryId}"]`);
+      this.$nextTick(() => {
+        var entryId = data.id || data;
+        if (!entryId) return;
 
-          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 50;
-          console.log(scrollTop)
-          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        // 选中
+        this.$refs.tree.setCurrentKey(entryId);
+
+        // 滚动到目标位置
+        let $asideContent = document.getElementById('aside-data-source-content');
+        let $target = document.querySelector(`[entry-id="${entryId}"]`);
+
+        let scrollTop = 0;
+        let topPadding = 35;
+        if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
+          scrollTop = $target.offsetTop - topPadding;
+        } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
+          scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
+        } else {
+          return;
         }
-      }, 500);
+        $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+      });
     },
     async loadData() {
       this.loading = true;
@@ -275,10 +286,6 @@ export default {
       this.$refs.simpleDebugWindow.showWindow(dataSource);
     },
     openEntity(node, data, target) {
-      if (target === 'setup') {
-        this.$refs.tree.setCurrentKey(data.id);
-      }
-
       switch(data.type) {
         // 刷新
         case 'refresh':
@@ -304,6 +311,8 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+
+      this.onSelectNode(data);
     },
   },
   props: {

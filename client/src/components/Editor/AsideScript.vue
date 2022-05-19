@@ -211,10 +211,15 @@ export default {
       this.showPopoverId = null;
     },
     selectFilterText(val) {
+      if (!val) return;
       if (!this.$refs.tree) return;
 
-      // 选中
-      this.$refs.tree.setCurrentKey(val);
+      let node = this.$refs.tree.getNode(val);
+
+      // 选择脚本、函数时，打开编辑器
+      if (['script', 'func'].indexOf(node.data.type) >= 0) {
+        this.openEntity(node, node.data);
+      }
 
       // 展开所有父层
       let _node = this.$refs.tree.getNode(val);
@@ -226,7 +231,7 @@ export default {
         _node = _node.parent;
       }
 
-      this.onSelectNode();
+      this.onSelectNode(node.data);
     },
     '$store.state.scriptListSyncTime': function() {
       this.loadData();
@@ -234,10 +239,6 @@ export default {
     expandedNodeMap(val) {
       // 自动记录已展开的节点
       this.$store.commit('updateAsideScript_expandedNodeMap', val);
-    },
-    highlightedFuncId(val) {
-      // 自动选中函数
-      this.$refs.tree.setCurrentKey(val);
     },
   },
   methods: {
@@ -256,19 +257,31 @@ export default {
       this.$delete(this.expandedNodeMap, data.id);
     },
     onSelectNode(data, node) {
+      if (!data) return;
       if (!this.$refs.tree) return;
 
-      setTimeout(() => {
-        // 滚动到目标位置
-        let entryId = this.$refs.tree.getCurrentKey();
-        if (entryId) {
-          let $asideContent = document.getElementById('aside-script-content');
-          let $target = document.querySelector(`[entry-id="${entryId}"]`);
+      this.$nextTick(() => {
+        var entryId = data.id || data;
+        if (!entryId) return;
 
-          let scrollTop = $target.offsetTop - $asideContent.offsetHeight / 2 + 50;
-          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        // 选中
+        this.$refs.tree.setCurrentKey(entryId);
+
+        // 滚动到目标位置
+        let $asideContent = document.getElementById('aside-script-content');
+        let $target = document.querySelector(`[entry-id="${entryId}"]`);
+
+        let scrollTop = 0;
+        let topPadding = 35;
+        if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
+          scrollTop = $target.offsetTop - topPadding;
+        } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
+          scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
+        } else {
+          return;
         }
-      }, 500);
+        $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+      });
     },
     async loadData() {
       if (this.T.isNothing(this.data)) {
@@ -514,12 +527,8 @@ export default {
       this.expandedNodeMap = this.$store.state.asideScript_expandedNodeMap || {};
       this.defaultExpandedNodeKeys = Object.keys(this.expandedNodeMap);
 
-      setImmediate(() => {
-        if (!this.$refs.tree) return;
-
-        // 自动选中
-        this.$refs.tree.setCurrentKey(this.$store.state.asideScript_currentNodeKey || null);
-      });
+      // 自动选中
+      this.onSelectNode(this.$store.state.asideScript_currentNodeKey);
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -589,10 +598,6 @@ export default {
       });
     },
     openEntity(node, data, target) {
-      if (target === 'setup') {
-        this.$refs.tree.setCurrentKey(data.id);
-      }
-
       let setCodeLoading = (nextScriptId) => {
         if (this.$route.name === 'code-editor' && this.$route.params.id !== nextScriptId) {
           this.$store.commit('updateCodeEditor_isCodeLoaded', false);
@@ -688,6 +693,8 @@ export default {
 
       this.$store.commit('updateAsideScript_currentNodeKey', data.id);
       this.$store.commit('updateEditor_highlightedFuncId', data.type === 'func' ? data.id : null);
+
+      this.onSelectNode(data);
     },
   },
   computed: {
