@@ -607,6 +607,13 @@ class LocalCache(object):
         self.expires        = expires
         self.clean_interval = clean_interval
 
+    def refresh(self, key):
+        if not self.expires:
+            return
+
+        if key in self.__data:
+            self.__data[key]['ts'] = time.time() + self.expires
+
     def clean(self):
         now = time.time()
 

@@ -94,13 +94,13 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
 FUNC_THREAD_POOL = None
 
 # 脚本本地缓存
-SCRIPT_LOCAL_CACHE = toolkit.LocalCache(expires=60)
+SCRIPT_LOCAL_CACHE = toolkit.LocalCache(expires=30)
 USER_SCRIPT_ID_BLACK_LIST = [
     '__future__'
 ]
 
 # 环境变量本地缓存
-ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=60)
+ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=30)
 
 # 数据源 Helper 对象本地缓存
 DATA_SOURCE_HELPER_LOCAL_CACHE = toolkit.LocalCache()
@@ -815,16 +815,16 @@ class FuncEnvVariableHelper(object):
             if remote_md5:
                 remote_md5 = six.ensure_str(remote_md5)
 
-            # 环境变量 MD5 未变化时直接返回
+            # 环境变量 MD5 未变化时，延长本地缓存，并返回缓存值
             if env_variable['valueMD5'] == remote_md5:
                 self.__task.logger.debug(f'[LOAD ENV VARIABLE] load `{env_variable_id}` from Cache')
+
+                # 延长本地缓存
+                ENV_VARIABLE_LOCAL_CACHE.refresh(env_variable_id)
 
                 # 缓存环境变量
                 self.__loaded_env_variable_cache[env_variable_id] = env_variable
                 return env_variable['castedValue']
-
-        # 从 DB 获取环境变量
-        self.__task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
 
         sql = '''
             SELECT
@@ -839,7 +839,11 @@ class FuncEnvVariableHelper(object):
         sql_params = [ env_variable_id ]
         env_variable = self.__task.db.query(sql, sql_params)
         if not env_variable:
+            self.__task.logger.debug(f"[LOAD ENV VARIABLE] `{env_variable_id}` not found")
             return None
+
+        # 从 DB 获取环境变量
+        self.__task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
 
         env_variable = env_variable[0]
 
@@ -1432,9 +1436,12 @@ class ScriptBaseTask(BaseTask):
                 if remote_md5:
                     remote_md5 = six.ensure_str(remote_md5)
 
-                # MD5 未变化时直接返回
+                # MD5 未变化时，延长本地缓存，并返回缓存值
                 if script['codeMD5'] == remote_md5:
                     self.logger.debug(f'[LOAD SCRIPT] load `{script_id}` from Cache')
+
+                    # 延长本地缓存
+                    SCRIPT_LOCAL_CACHE.refresh(script_id)
 
                     # 缓存脚本
                     self.__loaded_script_cache[script_id] = script
@@ -1470,6 +1477,7 @@ class ScriptBaseTask(BaseTask):
         sql_params = [ code_field, code_md5_field, script_id ]
         script = self.db.query(sql, sql_params)
         if not script:
+            self.logger.debug(f"[LOAD SCRIPT] `{script_id}` not found")
             return None
 
         script = script[0]
