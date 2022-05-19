@@ -617,7 +617,9 @@ class FuncDataSourceHelper(object):
         data_source = DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key]
         if data_source:
             # 检查 Redis 缓存的数据源 MD5
-            remote_md5 = six.ensure_str(self.__task.cache_db.hget(remote_md5_cache_key, data_source_id))
+            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, data_source_id)
+            if remote_md5:
+                remote_md5 = six.ensure_str(remote_md5)
 
             # 数据源 MD5 未变化时直接返回
             if data_source['configMD5'] == remote_md5:
@@ -808,7 +810,9 @@ class FuncEnvVariableHelper(object):
         env_variable = ENV_VARIABLE_LOCAL_CACHE[env_variable_id]
         if env_variable:
             # 检查 Redis 缓存的环境变量 MD5
-            remote_md5 = six.ensure_str(self.__task.cache_db.hget(remote_md5_cache_key, env_variable_id))
+            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, env_variable_id)
+            if remote_md5:
+                remote_md5 = six.ensure_str(remote_md5)
 
             # 环境变量 MD5 未变化时直接返回
             if env_variable['valueMD5'] == remote_md5:
@@ -1407,7 +1411,9 @@ class ScriptBaseTask(BaseTask):
             script = SCRIPT_LOCAL_CACHE[script_id]
             if script:
                 # 检查 Redis 缓存的脚本 MD5
-                remote_md5 = six.ensure_str(self.cache_db.hget(remote_md5_cache_key, script_id))
+                remote_md5 = self.cache_db.hget(remote_md5_cache_key, script_id)
+                if remote_md5:
+                    remote_md5 = six.ensure_str(remote_md5)
 
                 # MD5 未变化时直接返回
                 if script['codeMD5'] == remote_md5:
