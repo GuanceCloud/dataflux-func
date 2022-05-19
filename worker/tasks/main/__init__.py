@@ -1423,9 +1423,6 @@ class ScriptBaseTask(BaseTask):
                     self.__loaded_script_cache[script_id] = script
                     return script
 
-        # 从 DB 获取脚本
-        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ '(DRAFT)' if draft else '' } from DB")
-
         code_field     = '`scpt`.`code`'
         code_md5_field = '`scpt`.`codeMD5`'
         if draft == True:
@@ -1459,6 +1456,9 @@ class ScriptBaseTask(BaseTask):
             return None
 
         script = script[0]
+
+        # 从 DB 获取脚本
+        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ '(DRAFT)' if draft else '' } from DB")
 
         # 获取函数额外配置
         sql = '''
