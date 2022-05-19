@@ -777,6 +777,7 @@ class FuncEnvVariableHelper(object):
     1. 检查本地缓存（60秒强制失效）的MD5与Redis缓存的MD5是否一致
         a. 一致则直接使用本地缓存
         b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
+    2. 单次任务中，一旦加载则保持到任务结束
     '''
     def __init__(self, task):
         self.__task = task
@@ -986,6 +987,8 @@ class ScriptBaseTask(BaseTask):
 
         self.__loaded_script_cache   = toolkit.LocalCache()
         self.__imported_module_cache = toolkit.LocalCache()
+
+        self.__prev_log_time = 0
 
         return super().__call__(*args, **kwargs)
 
@@ -1286,8 +1289,18 @@ class ScriptBaseTask(BaseTask):
         return decorater
 
     def _log(self, safe_scope, message):
-        message_time = arrow.get().to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
-        line = '[{}] {}'.format(message_time, message)
+        now = time.time()
+
+        # 输出当前时间
+        message_time = arrow.get(now).to('Asia/Shanghai').format('MM-DD HH:mm:ss.SSS')
+
+        # 计算时间差
+        delta = 0
+        if self.__prev_log_time:
+            delta = int((now - self.__prev_log_time) * 1000)
+        self.__prev_log_time = now
+
+        line = '[{}] [+{}ms] {}'.format(message_time, delta, message)
         safe_scope['DFF'].log_messages.append(line)
 
     def _print(self, safe_scope, *args, **kwargs):
