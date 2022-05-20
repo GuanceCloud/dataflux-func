@@ -598,13 +598,14 @@ def auto_clean(self, *args, **kwargs):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-    table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
-    for table, expires in table_expire_map.items():
-        try:
-            self.clear_table_by_expires(table=table, expires=int(expires))
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+    # FIXME: 存在性能问题，待优化
+    # table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
+    # for table, expires in table_expire_map.items():
+    #     try:
+    #         self.clear_table_by_expires(table=table, expires=int(expires))
+    #     except Exception as e:
+    #         for line in traceback.format_exc().splitlines():
+    #             self.logger.error(line)
 
     # 清理临时目录
     try:
