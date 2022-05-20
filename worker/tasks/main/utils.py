@@ -481,6 +481,9 @@ def sync_cache(self, *args, **kwargs):
 # Main.AutoClean
 class AutoCleanTask(BaseTask):
     def _delete_by_seq(self, table, seq):
+        if seq <= 0:
+            return
+
         sql = '''
             DELETE FROM ??
             WHERE
@@ -492,32 +495,94 @@ class AutoCleanTask(BaseTask):
     def clear_table_by_limit(self, table, limit):
         sql = '''
             SELECT
-                `seq`
+                MAX(`seq`) AS maxSeq
             FROM ??
-            ORDER BY
-                `seq` DESC
-            LIMIT ?, 1;
             '''
-        sql_params = [table, limit]
+        sql_params = [ table ]
         db_res = self.db.query(sql, sql_params)
-        if db_res:
-            self._delete_by_seq(table, db_res[0]['seq'])
+        if not db_res:
+            return
+
+        max_seq = db_res[0]['maxSeq'] or 0
+        if not max_seq:
+            return
+
+        delete_from_seq = max(max_seq - limit, 0)
+        self._delete_by_seq(table, delete_from_seq)
 
     def clear_table_by_expires(self, table, expires):
+        delete_from_seq = 0
+
+        # 开始SEQ
         sql = '''
             SELECT
-                `seq`
+                MIN(seq) AS seq
             FROM ??
-            WHERE
-                UNIX_TIMESTAMP(`createTime`) < UNIX_TIMESTAMP() - ?
-            ORDER BY
-                `seq` DESC
-            LIMIT 1;
             '''
-        sql_params = [table, expires]
-        db_res = self.db.query(sql, sql_params)
-        if db_res:
-            self._delete_by_seq(table, db_res[0]['seq'])
+        sql_params = [ table ]
+        res = self.db.query(sql, sql_params)
+        if not res:
+            return
+
+        start_seq = res[0]['seq'] or 0
+        if not start_seq:
+            return
+
+        # 结束SEQ
+        sql = '''
+            SELECT
+                MAX(seq) AS seq
+            FROM ??
+            '''
+        sql_params = [ table ]
+        res = self.db.query(sql, sql_params)
+        if not res:
+            return
+
+        end_seq = res[0]['seq'] or 0
+        if not end_seq:
+            return
+
+        # 分组查询
+        MAX_TRY = 30
+        GROUPS  = 20
+
+        check_seq_list = None
+        for i in range(MAX_TRY):
+            # 分组采样
+            next_check_seq_list = list(range(start_seq, end_seq, int((end_seq - start_seq) / GROUPS)))
+            next_check_seq_list.extend([start_seq, end_seq])     # 添加端点
+            next_check_seq_list = list(set(next_check_seq_list)) # 去重
+            next_check_seq_list = sorted(next_check_seq_list)    # 排序
+
+            if check_seq_list == next_check_seq_list:
+                delete_from_seq = check_seq_list[0]
+                break
+
+            check_seq_list = next_check_seq_list
+
+            sql = '''
+                    SELECT
+                        seq,
+                        createTime,
+                        UNIX_TIMESTAMP() - UNIX_TIMESTAMP(createTime) AS elapse
+                    FROM ??
+                    WHERE
+                        seq IN (?)
+                '''
+            sql_params = [ table, check_seq_list ]
+            res = self.db.query(sql, sql_params)
+            for d in res:
+                if d['elapse'] > expires:
+                    start_seq = d['seq']
+                else:
+                    end_seq = d['seq']
+
+        if not delete_from_seq and check_seq_list:
+            delete_from_seq = check_seq_list[0]
+
+        if delete_from_seq:
+            self._delete_by_seq(table, delete_from_seq)
 
     def clear_table(self, table):
         sql = '''TRUNCATE ??'''
@@ -598,14 +663,13 @@ def auto_clean(self, *args, **kwargs):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-    # FIXME: 存在性能问题，待优化
-    # table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
-    # for table, expires in table_expire_map.items():
-    #     try:
-    #         self.clear_table_by_expires(table=table, expires=int(expires))
-    #     except Exception as e:
-    #         for line in traceback.format_exc().splitlines():
-    #             self.logger.error(line)
+    table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
+    for table, expires in table_expire_map.items():
+        try:
+            self.clear_table_by_expires(table=table, expires=int(expires))
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
 
     # 清理临时目录
     try:
