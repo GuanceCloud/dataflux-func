@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+FoundPackagesCount: 'Package not Found | Found {n} package | Found {n} packages'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Script Market: 脚本市场
 
@@ -12,6 +16,8 @@ Script installed, new Script is in effect immediately: 脚本已安装，新脚�
 
 The following Script Set IDs already exists, do you want to overwrite?: 下列脚本集ID已经存在，是否覆盖？
 Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 安装的脚本集需要第三方包，是否现在前往PIP工具
+
+FoundPackagesCount: '找不到脚本包 | 共找到 {n} 个脚本包 | 共找到 {n} 个脚本包'
 </i18n>
 
 <template>
@@ -19,17 +25,33 @@ Installed Script Set requires 3rd party packages, do you want to open PIP tool n
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>{{ $t('Script Market') }}</h1>
+        <div class="page-header">
+          <span>{{ $t('Script Market') }}</span>
+          <div class="header-control">
+            <span class="text-main">{{ $tc('FoundPackagesCount', filteredPackageList.length) }}</span>
+            &#12288;
+            <el-input :placeholder="$t('Filter')"
+              size="small"
+              class="filter-input"
+              v-model="filterTEXT">
+              <i slot="prefix"
+                class="el-input__icon el-icon-close text-main"
+                v-if="filterTEXT"
+                @click="filterTEXT = ''"></i>
+            </el-input>
+          </div>
+        </div>
       </el-header>
 
       <!-- 列表区 -->
       <el-main>
-        <a class="package-card-wrap" @click="openDetail(p)" v-for="p in packageList" :key="p.package">
+        <a class="package-card-wrap" @click="openDetail(p)" v-for="p in filteredPackageList" :key="p.package">
           <el-card class="package-card" shadow="hover">
-            <i class="fa fa-fw fa-file-code-o package-icon"></i>
-            <span class="package-name">{{ p.name }}</span>
-            <code class="package-id">ID: {{ p.package }}</code>
-
+            <i class="fa fa-fw fa-folder-open package-icon"></i>
+            <div class="package-info">
+              <span class="package-name">{{ p.name }}</span>
+              <code class="package-id">ID: {{ p.package }}</code>
+            </div>
             <div class="package-release-time">
               <span>{{ p.releaseTime | datetime }}</span>
               <br>
@@ -162,6 +184,13 @@ export default {
     },
   },
   computed: {
+    filteredPackageList() {
+      if (this.T.isNothing(this.filterTEXT)) return this.packageList;
+
+      return this.packageList.filter(p => {
+        return p.name.indexOf(this.filterTEXT) >= 0 || p.package.indexOf(this.filterTEXT) >= 0
+      });
+    },
   },
   props: {
   },
@@ -169,6 +198,7 @@ export default {
     return {
       detail: {},
 
+      filterTEXT : [],
       packageList: [],
 
       showDetail  : false,
@@ -179,24 +209,35 @@ export default {
 </script>
 
 <style scoped>
+.filter-input {
+  width: 260px;
+  display: inline-block;
+}
+.filter-input input {
+  font-size: 14px;
+}
+.filter-input .el-icon-close {
+  cursor: pointer;
+  font-weight: bold;
+}
+
 .package-card-wrap {
   cursor: pointer;
 }
 .package-card {
-  width: 360px;
-  height: 160px;
+  width: 100%;
+  height: 100px;
   display: inline-block;
-  margin: 10px 20px;
+  margin-top: 15px;
   position: relative;
 }
 .package-icon {
   position: absolute;
   font-size: 150px;
-  right: -50px;
-  top: 50px;
+  left: 5px;
+  top: 0px;
   color: #f5f5f5;
   line-height: 150px;
-  z-index: 0;
 }
 .package-name {
   font-size: 20px;
@@ -209,8 +250,12 @@ export default {
 }
 .package-id {
   font-size: 16px;
+  line-height: 2;
   display: block;
   z-index: 1;
+}
+.package-info {
+  position: absolute;
 }
 .package-release-time {
   position: absolute;
