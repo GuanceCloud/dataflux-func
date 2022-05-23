@@ -358,7 +358,7 @@ class FuncStoreHelper(object):
             sql_params = [store_id, key, value_json, scope, expire]
             self.__task.db.query(sql, sql_params)
 
-    def keys(self, pattern, scope=None):
+    def keys(self, pattern='*', scope=None):
         if scope is None:
             scope = self.default_scope
 
@@ -369,7 +369,11 @@ class FuncStoreHelper(object):
                  `key`
             FROM biz_main_func_store
             WHERE
-                `key` LIKE ?
+                    `key` LIKE ?
+                AND (
+                           `expireAt` IS NULL
+                        OR `expireAt` >= UNIX_TIMESTAMP()
+                    )
             '''
         sql_params = [pattern]
         db_res = self.__task.db.query(sql, sql_params)
@@ -451,6 +455,14 @@ class FuncCacheHelper(object):
         key = toolkit.get_cache_key('funcCache', scope, tags=['key', key])
         return key
 
+    def _get_user_cache_key(self, key, scope):
+        if scope is None:
+            scope = self.default_scope
+
+        key_template = self._get_cache_key('\n', scope)
+        a, b = map(len, key_template.splitlines())
+        return key[a:-b]
+
     def _convert_result(self, result):
         if result is None:
             return None
@@ -467,6 +479,12 @@ class FuncCacheHelper(object):
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
+
+    def keys(self, pattern='*', scope=None):
+        pattern = self._get_cache_key(pattern, scope)
+        res = self.__task.cache_db.keys(pattern)
+        res = list(map(lambda x: self._get_user_cache_key(x, scope), res))
+        return res
 
     def get(self, key, scope=None):
         key = self._get_cache_key(key, scope)
@@ -493,26 +511,8 @@ class FuncCacheHelper(object):
 
     def hkeys(self, key, pattern='*', scope=None):
         key = self._get_cache_key(key, scope)
-
-        found_keys = []
-
-        COUNT_LIMIT = 1000
-        next_cursor = 0
-        while True:
-            next_cursor, keys = self.__task.cache_db.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
-            if len(keys) > 0:
-                if isinstance(keys, dict):
-                    keys = list(keys.keys())
-
-                if isinstance(keys, list):
-                    for k in keys:
-                        found_keys.append(six.ensure_str(k))
-
-            if next_cursor == 0:
-                break
-
-        found_keys = list(set(found_keys))
-        return found_keys
+        res = self.__task.cache_db.hkeys(key, pattern)
+        return res
 
     def hget(self, key, field=None, scope=None):
         key = self._get_cache_key(key, scope)
