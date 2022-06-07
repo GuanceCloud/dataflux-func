@@ -21,6 +21,11 @@ services:
     image: <MYSQL_IMAGE>
     labels:
       - mysql
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: 10
     networks:
       - datafluxfunc
     volumes:
@@ -37,6 +42,11 @@ services:
     image: <REDIS_IMAGE>
     labels:
       - redis
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: 10
     networks:
       - datafluxfunc
     volumes:
@@ -50,6 +60,11 @@ services:
       - worker-0
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -64,6 +79,11 @@ services:
       - worker-1-6
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -77,6 +97,11 @@ services:
       - worker-7
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -91,6 +116,11 @@ services:
       - worker-8-9
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -106,6 +136,11 @@ services:
       - worker
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -120,6 +155,11 @@ services:
       - beat
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
@@ -133,6 +173,11 @@ services:
       - server
     volumes:
       - "<INSTALL_DIR>/data:/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 10
     networks:
       - datafluxfunc
       - default
