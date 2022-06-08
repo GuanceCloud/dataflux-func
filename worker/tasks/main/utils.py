@@ -553,7 +553,7 @@ class AutoCleanTask(BaseTask):
         check_seq_list = None
         for i in range(MAX_TRY):
             # 分组采样
-            next_check_seq_list = list(range(start_seq, end_seq, int((end_seq - start_seq) / GROUPS)))
+            next_check_seq_list = list(range(start_seq, end_seq, int((end_seq - start_seq) / GROUPS) or 1))
             next_check_seq_list.extend([start_seq, end_seq])     # 添加端点
             next_check_seq_list = list(set(next_check_seq_list)) # 去重
             next_check_seq_list = sorted(next_check_seq_list)    # 排序
@@ -572,14 +572,18 @@ class AutoCleanTask(BaseTask):
                     FROM ??
                     WHERE
                         seq IN (?)
+                    ORDER BY
+                        seq ASC
                 '''
             sql_params = [ table, check_seq_list ]
             res = self.db.query(sql, sql_params)
             for d in res:
                 if d['elapse'] > expires:
-                    start_seq = d['seq']
+                    if d['seq'] > start_seq:
+                        start_seq = d['seq']
                 else:
-                    end_seq = d['seq']
+                    if d['seq'] < end_seq:
+                        end_seq = d['seq']
 
         if not delete_from_seq and check_seq_list:
             delete_from_seq = check_seq_list[0]
