@@ -924,7 +924,7 @@ def auto_backup_db(self, *args, **kwargs):
     self.limit_backups()
 
 # Main.CheckDataSource
-@app.task(name='Main.CheckDataSource', bind=True, base=BaseTask)
+@app.task(name='Main.CheckDataSource', bind=True, base=BaseTask, soft_time_limit=3, time_limit=5)
 def check_data_source(self, *args, **kwargs):
     self.logger.info('Main.CheckDataSource Task launched.')
 
@@ -942,7 +942,7 @@ def check_data_source(self, *args, **kwargs):
     data_source_helper.check()
 
 # Main.QueryDataSource
-@app.task(name='Main.QueryDataSource', bind=True, base=BaseTask)
+@app.task(name='Main.QueryDataSource', bind=True, base=BaseTask, soft_time_limit=30, time_limit=35)
 def query_data_source(self, *args, **kwargs):
     self.logger.info('Main.QueryDataSource Task launched.')
 
