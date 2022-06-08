@@ -20,7 +20,7 @@ spec:
 {{/*        command: ['sh', '-c', 'until nslookup redis && nslookup mysql; do echo waiting for init-service && sleep 2; done']*/}}
       - name: initb-service
         image: busybox:1.28.3
-        command: ['sh', '-c', 'cat /data/user-config-template.yaml && cat "/data/user-config.yaml"; if [ $? -ne 0 ]; then cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml; else echo "" && echo "in else" && rm /data/user-config.yaml 2>1 && cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml && echo "" >> /data/user-config.yaml && echo "_IS_INSTALLED: true" >> /data/user-config.yaml; fi']
+        command: ['sh', '-c', 'data=`grep -Ev "^#" /data/user-config.yaml | grep _IS_INSTALLED | grep true 2>/dev/null` ;if [ -z "$data" ];then cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml; fi']
         volumeMounts:
         - mountPath: /data
           name: data
