@@ -82,13 +82,15 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     logClass(row) {
-      if (this.T.startsWith(row, '[D]')) {
+      let levelTag = row.split(' ')[1];
+      console.log(levelTag)
+      if (levelTag === '[D]') {
         return 'log-debug';
-      } else if (this.T.startsWith(row, '[I]')) {
+      } else if (levelTag === '[I]') {
         return 'log-info';
-      } else if (this.T.startsWith(row, '[W]')) {
+      } else if (levelTag === '[W]') {
         return 'log-warning';
-      } else if (this.T.startsWith(row, '[E]')) {
+      } else if (levelTag === '[E]') {
         return 'log-error';
       } else {
         return '';
@@ -133,6 +135,7 @@ export default {
 .log-line {
   margin: 0;
   font-size: 14px;
+  line-height: 1.5;
 }
 .log-debug {
   color: darkgrey;
@@ -142,9 +145,11 @@ export default {
 }
 .log-warning {
   color: orange;
+  font-weight: bold;
 }
 .log-error {
   color: red;
+  font-weight: bold;
 }
 .log-filter-input {
   width: 300px;
