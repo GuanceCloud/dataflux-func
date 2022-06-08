@@ -60,7 +60,11 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         }
         break;
 
-      case 'string':
+      case 'boolean':
+        configTypeMap[k] = 'boolean';
+        break;
+
+      default:
         if (toolkit.endsWith(k, '_LIST')) {
           configTypeMap[k] = 'list';
 
@@ -70,10 +74,6 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         } else {
           configTypeMap[k] = 'string';
         }
-        break;
-
-      case 'boolean':
-        configTypeMap[k] = 'boolean';
         break;
     }
   }
@@ -124,8 +124,34 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
     var v = configObj[k];
     var type = configTypeMap[k];
 
-    if (!type)      continue;
-    if (v === null) continue;
+    if (!type) continue;
+
+    // Set
+    if (v === null) {
+      switch(type) {
+        case 'integer':
+        case 'float':
+          configObj[k] = 0;
+          break;
+
+        case 'list':
+          configObj[k] = [];
+          break;
+
+        case 'map':
+          configObj[k] = {};
+          break;
+
+        case 'string':
+          configObj[k] = '';
+          break;
+
+        case 'boolean':
+          configObj[k] = false;
+          break;
+      }
+      continue;
+    }
 
     switch(type) {
       case 'integer':
@@ -159,13 +185,13 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         configObj[k] = itemMap;
         break;
 
-      case 'string':
-        configObj[k] = v.toString();
-        break;
+        case 'string':
+          configObj[k] = v.toString();
+          break;
 
-      case 'boolean':
-        configObj[k] = toolkit.toBoolean(v);
-        break;
+        case 'boolean':
+          configObj[k] = toolkit.toBoolean(v);
+          break;
     }
   }
 

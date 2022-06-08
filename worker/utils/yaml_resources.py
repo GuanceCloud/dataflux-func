@@ -51,7 +51,7 @@ def load_config(config_file_path, print_detail=False):
         elif isinstance(v, float):
             config_type_map[k] = 'float'
 
-        elif isinstance(v, str):
+        else:
             if k.endswith('_LIST'):
                 config_type_map[k] = 'list'
 
@@ -112,7 +112,26 @@ def load_config(config_file_path, print_detail=False):
 
         if not type_:
             continue
+
         if v is None:
+            if type_ == 'boolean':
+                config_obj[k] = False
+
+            elif type_ == 'integer':
+                config_obj[k] = 0
+
+            elif type_ == 'float':
+                config_obj[k] = 0.0
+
+            elif type_ == 'list':
+                config_obj[k] = []
+
+            elif type_ == 'map':
+                config_obj[k] = {}
+
+            elif type_ == 'string':
+                config_obj[k] = ''
+
             continue
 
         if type_ == 'boolean':
