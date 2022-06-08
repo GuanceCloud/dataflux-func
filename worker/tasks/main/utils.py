@@ -480,9 +480,12 @@ def sync_cache(self, *args, **kwargs):
 
 # Main.AutoClean
 class AutoCleanTask(BaseTask):
-    def _delete_by_seq(self, table, seq):
+    def _delete_by_seq(self, table, seq, include=True):
         if seq <= 0:
             return
+
+        if not include:
+            seq = seq - 1
 
         sql = '''
             DELETE FROM ??
@@ -508,7 +511,7 @@ class AutoCleanTask(BaseTask):
             return
 
         delete_from_seq = max(max_seq - limit, 0)
-        self._delete_by_seq(table, delete_from_seq)
+        self._delete_by_seq(table, delete_from_seq, include=True)
 
     def clear_table_by_expires(self, table, expires):
         delete_from_seq = 0
@@ -582,7 +585,7 @@ class AutoCleanTask(BaseTask):
             delete_from_seq = check_seq_list[0]
 
         if delete_from_seq:
-            self._delete_by_seq(table, delete_from_seq)
+            self._delete_by_seq(table, delete_from_seq, include=False)
 
     def clear_table(self, table):
         sql = '''TRUNCATE ??'''

@@ -119,7 +119,7 @@ def func_debugger(self, *args, **kwargs):
         if func_name:
             entry_func = script_scope.get(func_name)
             if not entry_func:
-                e = FuncNotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
+                e = NotFoundException('Function `{}` not found in `{}`'.format(func_name, script_id))
                 raise e
 
             # 执行函数
