@@ -31,7 +31,10 @@ spec:
         #  subPath: user-config.yaml
         - mountPath: /data
           name: data
-      dnsPolicy: ClusterFirst
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
       volumes:
@@ -44,6 +47,11 @@ spec:
           hostPath:
             path: {{ .Values.storage.hostPath.path }}/resources
       {{- end }}
+      {{- if (eq .Values.timeZone "UTC") }}
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/UTC
+      {{- end}}
       {{- with .Values.storage.hostPath.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
