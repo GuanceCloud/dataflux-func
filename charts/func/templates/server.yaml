@@ -27,6 +27,10 @@ spec:
         - mountPath: /data/user-config-template.yaml
           name: user-config
           subPath: user-config-template.yaml
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
       containers:
       - args:
         - ./run-server.sh
@@ -46,6 +50,11 @@ spec:
           name: user-config
           subPath: user-config-template.yaml
           readOnly: false
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
+
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -61,10 +70,15 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: {{ include "func.fullname" . }}-resources
-        {{- else }}
+      {{- else }}
       - name: data
         hostPath:
           path: {{ .Values.storage.hostPath.path }}/resources
+      {{- end }}
+      {{- if (eq .Values.timeZone "UTC") }}
+      - name: timezone
+        hostPath:
+          path: /usr/share/zoneinfo/UTC
       {{- end }}
       {{- with .Values.storage.hostPath.nodeSelector }}
       nodeSelector:

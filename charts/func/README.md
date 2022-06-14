@@ -92,6 +92,7 @@ $ helm delete <RELEASE_NAME> -n func
 
 | Parameter                           | Description                  | Default                                             |
 | ----------------------------------- | ---------------------------- | --------------------------------------------------- |
+| `timeZore`                          | 容器时区                       | `CST`                                               |
 | `image.repository`                  | Func 镜像地址                | `pubrepo.guance.com/dataflux-func/dataflux-func` |
 | `image.tag`                         | 镜像 tag                     | `nil`                                               |
 | `image.pullPolicy`                  | 镜像拉动政策                 | `IfNotPresent`                                      |

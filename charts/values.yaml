@@ -15,6 +15,11 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "{{tag}}"
 
+## @param timeZone - string - required
+## Define the Func time zone
+#
+# CST or UTC can be selected, default CST
+timeZone: CST
 
 ## @param imagePullSecrets - string - optional
 ## Func images pull secrets, Can be empty
