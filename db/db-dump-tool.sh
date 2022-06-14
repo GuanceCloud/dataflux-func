@@ -1,10 +1,12 @@
 #!/bin/bash
 
+passwd=$1
+
 time=`date '+%Y-%m-%d'`
 dumpname=dataflux_func_${time}.sql
 
 rm -f dumpname;
-mysqldump -h 127.0.0.1 -uroot -proot \
+mysqldump -h 127.0.0.1 -uroot -p${passwd} \
     --add-drop-table \
     --add-drop-trigger \
     --add-locks \
@@ -15,4 +17,5 @@ mysqldump -h 127.0.0.1 -uroot -proot \
     --hex-blob \
     --quick \
     --column-statistics=0 \
+    --ssl-mode=disabled \
     dataflux_func > $dumpname
