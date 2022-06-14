@@ -1621,14 +1621,7 @@ class ScriptBaseTask(BaseTask):
         return safe_scope
 
     def clean_up(self):
-        global FUNC_THREAD_POOL
-        global FUNC_THREAD_RESULT_MAP
-
-        # 关闭线程池
-        if FUNC_THREAD_POOL:
-            self.logger.debug('[THREAD POOL] Clear')
-
-            FUNC_THREAD_RESULT_MAP.clear()
+        pass
 
     def get_trace_info(self):
         '''
