@@ -83,7 +83,6 @@ export default {
     },
     logClass(row) {
       let levelTag = row.split(' ')[1];
-      console.log(levelTag)
       if (levelTag === '[D]') {
         return 'log-debug';
       } else if (levelTag === '[I]') {
