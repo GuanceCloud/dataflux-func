@@ -24,8 +24,7 @@ timeZone: CST
 ## @param imagePullSecrets - string - optional
 ## Func images pull secrets, Can be empty
 #
-imagePullSecrets:
-  name: ""
+imagePullSecrets: {}
 
 # Func stores settings, PVC and hostpath. Only one can be selected. When setting hostpath, be sure to set nodeselector
 storage:
