@@ -402,7 +402,7 @@ class DataKit(object):
     def get(self, path, query=None, headers=None):
         return self._do_get(path=path, query=query, headers=headers)
 
-    def post_line_protocol(self, points, path=None, query=None, headers=None):
+    def post_line_protocol(self, path, points, query=None, headers=None):
         content_type = 'text/plain'
 
         if not isinstance(points, (list, tuple)):
@@ -432,7 +432,7 @@ class DataKit(object):
 
         return resp
 
-    def post_json(self, json_obj, path, query=None, headers=None):
+    def post_json(self, path, json_obj, query=None, headers=None):
         content_type = 'application/json'
 
         # break obj reference
@@ -487,7 +487,7 @@ class DataKit(object):
         prepared_data = self._prepare_data(data)
 
         query = { 'input': self.source }
-        return self.post_line_protocol(points=prepared_data, path=path, query=query)
+        return self.post_line_protocol(path=path, points=prepared_data, query=query)
 
     def _write_many(self, path, data):
         # break obj reference
@@ -498,7 +498,7 @@ class DataKit(object):
             prepared_data.append(self._prepare_data(d))
 
         query = { 'input': self.source }
-        return self.post_line_protocol(points=prepared_data, path=path, query=query)
+        return self.post_line_protocol(path=path, points=prepared_data, query=query)
 
     def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None):
         path = '/v1/write/{0}'.format(category)
@@ -521,44 +521,55 @@ class DataKit(object):
         return self._write_many('/v1/write/logging', data)
 
     def query(self, dql, all_series=False, dict_output=False, raw=False, **kwargs):
-        q = {}
+        q = {
+            'query' : dql,
+        }
         for k, v in kwargs.items():
-            if v is not None:
+            if v:
                 q[k] = v
-
-        q['query'] = dql
 
         # 原始结果集
         status_code = None
-        dql_res     = None
+        dql_res     = {}
 
+        # 翻页限制
+        max_page_count = 1
         if all_series:
-            # 获取全部时间线时，强制初始化slimit, soffset
-            q['slimit']  = 100
-            q['soffset'] = 0
+            if dql.strip().startswith('M::'):
+                # 指标类查询最多翻1000页
+                max_page_count = 1000
+            else:
+                # 非指标类查询最多翻10页
+                max_page_count = 10
 
-        for i in range(1000):
+        for i in range(max_page_count):
             if all_series:
-                # 获取全部时间线时，翻页
-                q['soffset'] += q['slimit'] * i
+                q['slimit']  = 100
+                q['soffset'] = q['slimit'] * i
 
+            path = '/v1/query/raw'
             json_obj = {
                 'queries': [ q ],
             }
-            status_code, _dql_res = self.post_json(json_obj, '/v1/query/raw')
+            status_code, _dql_res = self.post_json(path, json_obj)
+
+            # 【兼容】确保`series`为数组
+            _dql_res['content'][0]['series'] = _dql_res['content'][0].get('series') or []
 
             # 合并结果集
-            if dql_res is None:
-                dql_res = _dql_res
+            if 'content' not in dql_res:
+                dql_res.update(_dql_res)
             else:
                 dql_res['content'][0]['series'].extend(_dql_res['content'][0]['series'])
 
             if not all_series:
-                # 非获取全部时间线时，直接退出
+                # 非自动翻页直接退出
                 break
-            elif len(_dql_res['content'][0]['series']) < q['slimit']:
-                # 获取全部时间线时，翻页结束时退出
-                break
+
+            else:
+                # 自动翻页时，获取全部时间线时，翻页结束时退出
+                if len(_dql_res['content'][0]['series']) < q['slimit']:
+                    break
 
         # 返回原始返回值
         if raw:
@@ -567,11 +578,10 @@ class DataKit(object):
         # 解开包装
         dql_series = dql_res['content'][0]['series'] or []
         unpacked_dql_res = {
-            'statement_id': 0,
-            'series'      : dql_series,
+            'series': dql_series,
         }
 
-        # 转换为字典格式
+        # 结果集转换为字典格式
         if dict_output:
             dicted_series_list = []
             for series in dql_series:
