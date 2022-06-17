@@ -182,13 +182,20 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     origin = 'batch';
   }
 
-  var reqOpt = req.method.toLowerCase() === 'get' ? req.query : req.body;
-  var format = req.params.format || 'normal';
-
   /*** 搜集函数参数/执行选项 ***/
+  var reqOpt = req.method.toLowerCase() === 'get' ? req.query : req.body;
+  if ('string' === typeof reqOpt) {
+    // 纯文本Body
+    reqOpt = { text: reqOpt };
+  } else if (Buffer.isBuffer(reqOpt)) {
+    // 二进制Body
+    reqOpt = { raw: reqOpt.toString('hex') }
+  }
+
   var funcCallKwargs  = {};
   var funcCallOptions = {};
 
+  var format = req.params.format || 'normal';
   switch(format) {
     case 'normal':
       // 普通形式：函数参数、执行选项为JSON字符串形式
