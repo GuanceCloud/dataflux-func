@@ -188,8 +188,8 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
     // 纯文本Body
     reqOpt = { text: reqOpt };
   } else if (Buffer.isBuffer(reqOpt)) {
-    // 二进制Body
-    reqOpt = { raw: reqOpt.toString('hex') }
+    // Base64 Body
+    reqOpt = { base64: toolkit.getBase64(reqOpt) }
   }
 
   var funcCallKwargs  = {};
