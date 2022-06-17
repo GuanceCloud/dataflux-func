@@ -202,7 +202,7 @@ failureCount  : '失败 {n}'
           </template>
 
           <template v-else>
-            <el-table-column :label="$t('Recent')" align="right" width="200"">
+            <el-table-column :label="$t('Recent')" align="right" width="200">
               <template slot-scope="scope">
                 <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
                   <code>{{ [$t('Today'), $t('-1 Day'), $t('-2 Day')][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> {{ $t('Times') }}<br>

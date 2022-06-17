@@ -65,7 +65,7 @@
           <CopyButton :content="apiURLExample"></CopyButton>
         </el-col>
       </el-row>
-      <el-row :gutter="20" v-if="apiBodyExample">
+      <el-row :gutter="20" v-if="apiBodyExample || supportCustomKwargs">
         <el-col :span="22">
           <el-input
             type="textarea"
@@ -75,7 +75,7 @@
           </el-input>
           <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
           <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
-          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数"></InfoBlock>
+          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数（**kwargs 语法）"></InfoBlock>
           <InfoBlock v-if="supportFileUpload" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
         </el-col>
         <el-col :span="2">
@@ -296,7 +296,7 @@ export default {
         }
       }
 
-      if (this.T.isNothing(apiBody.kwargs)) {
+      if (this.T.isNothing(apiBody.kwargs) && !this.supportCustomKwargs) {
         delete apiBody.kwargs;
       }
       if (this.T.isNothing(apiBody.options)) {
@@ -409,7 +409,7 @@ export default {
           headerOpt = `-H "Content-Type: application/json"`;
 
           if (!this.T.isNothing(apiBody)) {
-            dataOpt = `-d '${JSON.stringify(apiBody)}'`
+            dataOpt = `-d '${JSON.stringify(apiBody)}'`;
           }
 
           break;
@@ -417,24 +417,29 @@ export default {
         case 'simplified':
           url = `${this.apiURLExample}/${format}`;
 
-          if (!this.T.isNothing(apiBody.kwargs)) {
-            for (let k in apiBody.kwargs) {
-              dataOpt += ` -F ${k}=${apiBody.kwargs[k]}`;
-            }
-          }
-
           if (this.supportFileUpload) {
-            headerOpt = `-H "multipart/form-data"`;
+            headerOpt = `-H "Content-Type: multipart/form-data"`;
+
+            if (!this.T.isNothing(apiBody.kwargs)) {
+              for (let k in apiBody.kwargs) {
+                dataOpt += ` -F '${k}=${apiBody.kwargs[k]}'`;
+              }
+            }
             dataOpt += ` -F files=@FILE_TO_UPLOAD`;
+
           } else {
-            headerOpt = `-H "application/x-www-form-urlencoded"`;
+            headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
+
+            if (!this.T.isNothing(apiBody.kwargs)) {
+              dataOpt += ` -d '${this.T.formatQuery(apiBody.kwargs)}'`;
+            }
           }
 
           break;
 
         case 'flattened':
           url = `${this.apiURLExample}/${format}`;
-          headerOpt = `-H "application/x-www-form-urlencoded"`;
+          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
 
           if (!this.T.isNothing(apiBody.kwargs)) {
             for (let k in apiBody.kwargs) {
