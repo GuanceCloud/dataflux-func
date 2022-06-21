@@ -111,5 +111,5 @@ client/public/theme-dark.min.css
 
 # Other
 docker-stack.yaml
-func-pkg/dataflux.func-pkg
+func-pkg/*.func-pkg
 client/report.*.json

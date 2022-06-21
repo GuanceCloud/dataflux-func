@@ -131,7 +131,10 @@ function startApplication() {
   app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
   app.use(bodyParser.json({limit: '50mb'}));
   app.use(bodyParser.text({limit: '50mb'}));
-  app.use(bodyParser.raw({limit: '50mb', type: '*/*'}));
+  app.use(bodyParser.raw({limit: '50mb', type: function(req) {
+    // 非文件上传的请求执行raw解析
+    return req.get('content-type').indexOf('multipart/form-data') < 0;
+  }}));
 
   app.use(function(err, req, res, next) {
     if (err && res.locals.isBodyParsing) {
