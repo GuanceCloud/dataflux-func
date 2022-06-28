@@ -1386,21 +1386,6 @@ export function initCodeMirror(id, mode) {
       'Cmd-F' : 'findPersistent',
       'Ctrl-F': 'findPersistent',
     },
-
-    // 翻译
-    phrases: {
-      "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）',
-      "All"                                : '全部',
-      "No"                                 : '否',
-      "Replace all                         :": '全部替换',
-      "Replace with                        :": '替换为',
-      "Replace                             :": '替换',
-      "Replace?"                           : '是否替换',
-      "Search                              :": '搜索',
-      "Stop"                               : '停止',
-      "With                                :": '替换为',
-      "Yes"                                : '是',
-    }
   });
 
   // 随键入代码提示
@@ -1411,6 +1396,7 @@ export function initCodeMirror(id, mode) {
     }
   }, 150));
 
+  resetCodeMirrorPhrases(cm);
   setCodeMirrorMode(cm, mode || 'python');
   return cm;
 };
@@ -1420,6 +1406,27 @@ export function destoryCodeMirror(codeMirror) {
 
   const codeMirrorElem = codeMirror.doc.cm.getWrapperElement();
   codeMirrorElem && codeMirrorElem.remove && codeMirrorElem.remove();
+};
+
+export function resetCodeMirrorPhrases(codeMirror) {
+  if (!codeMirror) return;
+
+  setImmediate(() => {
+    var phrases = {
+      "(Use /re/ syntax for regexp search)": app.$t("(Use /re/ syntax for regexp search)"),
+      "All"                                : app.$t("All"),
+      "No"                                 : app.$t("No"),
+      "Replace all:"                       : app.$t("Replace all:"),
+      "Replace with:"                      : app.$t("Replace with:"),
+      "Replace:"                           : app.$t("Replace:"),
+      "Replace?"                           : app.$t("Replace?"),
+      "Search:"                            : app.$t("Search:"),
+      "Stop"                               : app.$t("Stop"),
+      "With:"                              : app.$t("With:"),
+      "Yes"                                : app.$t("Yes"),
+    }
+    codeMirror.setOption('phrases', phrases);
+  });
 };
 
 export function setCodeMirrorReadOnly(codeMirror, readOnly) {
@@ -1436,6 +1443,7 @@ export function setCodeMirrorReadOnly(codeMirror, readOnly) {
 
   return codeMirror;
 };
+
 export function setCodeMirrorMode(codeMirror, mode) {
   let opt = mode || null;
   switch(mode) {

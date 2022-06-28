@@ -388,6 +388,9 @@ export default {
           break;
       }
     },
+    '$store.state.uiLocale'(val) {
+      this.T.resetCodeMirrorPhrases(this.codeMirror);
+    },
   },
   methods: {
     _refreshAside() {

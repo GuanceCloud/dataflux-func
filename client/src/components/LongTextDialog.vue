@@ -29,6 +29,9 @@ export default {
   components: {
   },
   watch: {
+    '$store.state.uiLocale'(val) {
+      this.T.resetCodeMirrorPhrases(this.codeMirror);
+    },
   },
   methods: {
     update(content, fileName) {

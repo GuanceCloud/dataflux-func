@@ -175,7 +175,7 @@ export default {
 
 <style scoped>
 .func-list {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; */
   padding: 0 30px;
 }
 .title-tip {

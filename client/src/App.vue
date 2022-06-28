@@ -291,6 +291,7 @@ html {
 html, body {
   height: 100%;
   margin: 0;
+  overflow-y: hidden;
 }
 pre {
   word-break: break-all;
@@ -394,7 +395,7 @@ h3 {
   padding-right: 10px;
 }
 .common-table-container {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; */
   padding-left: 0 !important;
   padding-right: 0 !important;
   padding-bottom: 0 !important;
@@ -766,7 +767,9 @@ kbd {
   display: none;
 }
 ::-webkit-scrollbar-thumb:vertical {
-  background-image: linear-gradient(to top, rgb(255, 102, 0, 0), rgb(255, 102, 0) 40%, rgb(255, 102, 0) 60%, rgb(255, 102, 0, 0));
+  background: #FF6600;
+  min-height: 30%;
+  /* background-image: linear-gradient(to top, rgb(255, 102, 0, 0), rgb(255, 102, 0) 40%, rgb(255, 102, 0) 60%, rgb(255, 102, 0, 0)); */
 }
 ::-webkit-scrollbar-track {
   background: none;

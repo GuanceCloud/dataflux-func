@@ -188,6 +188,9 @@ export default {
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
+    '$store.state.uiLocale'(val) {
+      this.T.resetCodeMirrorPhrases(this.codeMirror);
+    },
   },
   methods: {
     onCollapseChange(activeNames) {

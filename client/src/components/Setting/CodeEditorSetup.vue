@@ -97,6 +97,9 @@ export default {
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
+    '$store.state.uiLocale'(val) {
+      this.T.resetCodeMirrorPhrases(this.codeMirror);
+    },
   },
   methods: {
     async loadData(useDefault) {
@@ -175,6 +178,8 @@ def hello_world():
           lineHeight: null,
         }
       },
+
+      codeMirror: null,
     }
   },
   mounted() {
