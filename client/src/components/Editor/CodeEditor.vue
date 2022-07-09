@@ -8,42 +8,41 @@ seconds      : '{n} second | {n} seconds'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                                         : 脚本设置
-'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
-'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
-All top Func without a underscore prefix are avaliable               : 可以指定任意顶层非下划线开头的函数
-Select Func                                                          : 选择执行函数
-Viewport are too narrow                                              : 当前可视宽度太窄
-Writing test cases to test your Func is recommended                  : 建议编写测试用例来测试您的函数
-Args                                                                 : 参数
-'Arguments should be inputed like {"arg": value}'                    : '参数以 {"参数名": 参数值} 方式填写'
-'Leave blank or {} when no argument'                                 : '没有参数的不用填写，或保留 {}'
-'Arguments (JSON)'                                                   : 参数（JSON格式）
-Run selected Func                                                    : 执行指定的函数
-Shortcut                                                             : 快捷键
-Run                                                                  : 执行
-Save Script draft                                                    : 保存草稿
-Show code diff                                                       : 查看差异
-DIFF                                                                 : 差异
-Save and publish Script                                              : 保存并发布
-Publish                                                              : 发布
-Recover code to latest published version                             : 恢复代码为上次发布的版本
-End edit                                                             : 结束编辑
-Setup Code Editor                                                    : 调整编辑器显示样式
-This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
-This Script is locked by other user({user})                          : 当前脚本被其他用户（{user}）锁定
-addedLines                                                           : '新增 {n} 行'
-removedLines                                                         : '，删除 {n} 行'
-codeLines                                                            : '共 {n} 行代码'
-codeLinesPrev                                                        : '修改前共 {n} 行代码'
-codeLinesCurr                                                        : '，修改后共 {n} 行代码'
-Script is modified but NOT published yet                             : 脚本已修改但尚未发布
-Script is published                                                  : 脚本已发布
-Diff between published and previously published                      : 发布前后差异
-Clear highlighted                                                    : 清除高亮
-Close                                                                : 关闭
-Output                                                               : 输出
-Func exection result or log message will be shown here               : 函数执行结果与日志信息将显示在此处
+Script Setup                                                                         : 脚本设置
+'Script is under editing mode in other browser tab, please wait...'                  : '其他标签页或窗口正在编辑此脚本，请稍后...'
+'Script is under editing mode in other client, please wait...'                       : '其他客户端正在编辑此脚本，请稍后...'
+All top Func without a underscore prefix are avaliable                               : 可以指定任意顶层非下划线开头的函数
+Select Func                                                                          : 选择执行函数
+Viewport are too narrow                                                              : 当前可视宽度太窄
+Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
+Args                                                                                 : 参数
+'Arguments should be inputed like {"arg": value}, leave blank or {} when no argument': '参数以 {"参数名": 参数值} 方式填写，没有参数的不用填写，或保留 {}'
+'Arguments (JSON)'                                                                   : 参数（JSON格式）
+Run selected Func                                                                    : 执行指定的函数
+Shortcut                                                                             : 快捷键
+Run                                                                                  : 执行
+Save Script draft                                                                    : 保存草稿
+Show code diff                                                                       : 查看差异
+DIFF                                                                                 : 差异
+Save and publish Script                                                              : 保存并发布
+Publish                                                                              : 发布
+Recover code to latest published version                                             : 恢复代码为上次发布的版本
+End edit                                                                             : 结束编辑
+Setup Code Editor                                                                    : 调整编辑器显示样式
+This is a builtin Script, code will be reset when the system restarts                : 这是一个内置脚本，代码会在系统重启后复位
+This Script is locked by other user({user})                                          : 当前脚本被其他用户（{user}）锁定
+addedLines                                                                           : '新增 {n} 行'
+removedLines                                                                         : '，删除 {n} 行'
+codeLines                                                                            : '共 {n} 行代码'
+codeLinesPrev                                                                        : '修改前共 {n} 行代码'
+codeLinesCurr                                                                        : '，修改后共 {n} 行代码'
+Script is modified but NOT published yet                                             : 脚本已修改但尚未发布
+Script is published                                                                  : 脚本已发布
+Diff between published and previously published                                      : 发布前后差异
+Clear highlighted                                                                    : 清除高亮
+Close                                                                                : 关闭
+Output                                                                               : 输出
+Func exection result or log message will be shown here                               : 函数执行结果与日志信息将显示在此处
 
 Operating too frequently or Script is modified in other tab                            : 操作过于频繁，或脚本已经在其他窗口被修改。
 Do you want to download current editing Script?                                        : 是否下载当前正在编辑的脚本？
@@ -166,20 +165,29 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                   </el-form-item>
 
                   <el-form-item class="hidden-md-and-down">
-                    <el-tooltip placement="bottom" :enterable="false">
-                      <div slot="content">
-                        {{ $t('Writing test cases to test your Func is recommended') }}<br>
-                        {{ $t('Arguments should be inputed like {"arg": value}') }}<br>
-                        {{ $t('Leave blank or {} when no argument') }}
+                    <el-popover placement="bottom" trigger="hover" width="320">
+                      <div>
+                        <el-input
+                          type="textarea"
+                          resize="none"
+                          :autosize="{ minRows: 2 }"
+                          :clearable="true"
+                          :placeholder="$t('Arguments (JSON)')"
+                          v-model="funcCallKwargsJSON"
+                          class="code-editor-call-func-kwargs-json">
+                        </el-input>
+                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}, leave blank or {} when no argument')"></InfoBlock>
+                        <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')"></InfoBlock>
                       </div>
-                      <el-input
-                        style="width: 150px"
+                      <el-input slot="reference"
+                        style="width: 150px; text-overflow: ellipsis;"
                         size="mini"
+                        :readonly="true"
                         :placeholder="$t('Arguments (JSON)')"
-                        v-model="funcCallKwargsJSON"
+                        :value="funcCallKwargsShowValue"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
-                    </el-tooltip>
+                    </el-popover>
                   </el-form-item>
 
                   <el-form-item>
@@ -864,7 +872,7 @@ export default {
 
       for (let i = 0; i < this.draftFuncs.length; i++) {
         if (this.draftFuncs[i].id === draftFuncId) {
-          this.funcCallKwargsJSON = JSON.stringify(this.draftFuncs[i].kwargs);
+          this.funcCallKwargsJSON = JSON.stringify(this.draftFuncs[i].kwargs, null, 2);
           return;
         }
       }
@@ -1164,6 +1172,14 @@ export default {
     },
     conflictStatus() {
       return this.$store.getters.getConflictStatus(this.$route);
+    },
+
+    funcCallKwargsShowValue() {
+      try {
+        return JSON.stringify(JSON.parse(this.funcCallKwargsJSON));
+      } catch(err) {
+        return this.funcCallKwargsJSON;
+      }
     },
 
     lockedByUserId() {

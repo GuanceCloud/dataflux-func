@@ -6,7 +6,7 @@
       :type="type">
       <template slot="title">
         <template v-for="line in title.split('\n')">
-          <code>{{ line }}</code><br>
+          <code class="line">{{ line }}</code><br>
         </template>
       </template>
     </el-alert>
@@ -44,5 +44,8 @@ export default {
 }
 .el-alert {
   align-items: baseline !important;
+}
+.line {
+  word-break: break-word;
 }
 </style>
