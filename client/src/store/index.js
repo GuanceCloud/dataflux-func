@@ -18,17 +18,15 @@ const STATE_CONFIG = {
   uiLocale                                 : { persist: true,  syncXTab: true  },
   uiTheme                                  : { persist: true,  syncXTab: true  },
   codeMirrorSetting                        : { persist: true,  syncXTab: true  },
-  asideScript_expandedNodeMap              : { persist: true,  syncXTab: false },
-  asideScript_currentNodeKey               : { persist: true,  syncXTab: false },
+  asideScript_expandedNodeMap              : { persist: false, syncXTab: false },
   asideScript_quickViewWindowPosition      : { persist: true,  syncXTab: false },
   asideDataSource_simpleDebugWindowPosition: { persist: true,  syncXTab: false },
-  codeEditor_splitPanePercent              : { persist: true,  syncXTab: true  },
+  codeEditor_splitPanePercent              : { persist: false, syncXTab: false  },
   codeEditor_highlightedLineConfigMap      : { persist: false, syncXTab: false },
   codeEditor_isCodeLoaded                  : { persist: false, syncXTab: false },
   codeViewer_highlightedLineConfigMap      : { persist: false, syncXTab: false },
-  codeViewer_isCodeLoaded                  : { persist: false, syncXTab: false },
   Editor_highlightedFuncId                 : { persist: false, syncXTab: false },
-  Editor_splitPanePercent                  : { persist: true,  syncXTab: true  },
+  Editor_splitPanePercent                  : { persist: false, syncXTab: false  },
   TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
   scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
@@ -55,14 +53,12 @@ const MUTATION_CONFIG = {
   updateUITheme                                  : { persist: true  },
   updateCodeMirrorSetting                        : { persist: true  },
   updateAsideScript_expandedNodeMap              : { persist: true  },
-  updateAsideScript_currentNodeKey               : { persist: true  },
   updateAsideScript_quickViewWindowPosition      : { persist: true  },
   updateAsideDataSource_simpleDebugWindowPosition: { persist: true  },
   updateCodeEditor_splitPanePercent              : { persist: true  },
   updateCodeEditor_highlightedLineConfigMap      : { persist: true  },
   updateCodeEditor_isCodeLoaded                  : { persist: false },
   updateCodeViewer_highlightedLineConfigMap      : { persist: true  },
-  updateCodeViewer_isCodeLoaded                  : { persist: false },
   updateEditor_highlightedFuncId                 : { persist: true  },
   updateEditor_splitPanePercent                  : { persist: true  },
   updateTableList_scrollY                        : { persist: false },
@@ -136,8 +132,7 @@ export default new Vuex.Store({
     },
 
     // UI窗体状态
-    asideScript_expandedNodeMap: null,
-    asideScript_currentNodeKey : null,
+    asideScript_expandedNodeMap: {},
 
     asideScript_quickViewWindowPosition      : null,
     asideDataSource_simpleDebugWindowPosition: null,
@@ -147,7 +142,6 @@ export default new Vuex.Store({
     codeEditor_isCodeLoaded            : null,
 
     codeViewer_highlightedLineConfigMap: null,
-    codeViewer_isCodeLoaded            : null,
 
     Editor_highlightedFuncId: null,
     Editor_splitPanePercent : null,
@@ -363,9 +357,6 @@ export default new Vuex.Store({
     updateAsideScript_expandedNodeMap(state, value) {
       state.asideScript_expandedNodeMap = value || null;
     },
-    updateAsideScript_currentNodeKey(state, value) {
-      state.asideScript_currentNodeKey = value || null;
-    },
 
     updateAsideScript_quickViewWindowPosition(state, value) {
       state.asideScript_quickViewWindowPosition = value || null;
@@ -392,15 +383,6 @@ export default new Vuex.Store({
 
     updateCodeViewer_highlightedLineConfigMap(state, value) {
       state.codeViewer_highlightedLineConfigMap = value || null;
-    },
-    updateCodeViewer_isCodeLoaded(state, isCodeLoaded) {
-      if (isCodeLoaded === false) {
-        state.codeViewer_isCodeLoaded = false;
-      } else {
-        setImmediate(() => {
-          state.codeViewer_isCodeLoaded = true;
-        })
-      }
     },
 
     updateEditor_highlightedFuncId(state, value) {

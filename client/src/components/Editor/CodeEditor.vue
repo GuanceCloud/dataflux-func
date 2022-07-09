@@ -41,8 +41,8 @@ Script is modified but NOT published yet                             : 脚本已
 Script is published                                                  : 脚本已发布
 Diff between published and previously published                      : 发布前后差异
 Clear highlighted                                                    : 清除高亮
-Clear output                                                         : 清除输出
-Output                                                               : 脚本输出
+Close                                                                : 关闭
+Output                                                               : 输出
 Func exection result or log message will be shown here               : 函数执行结果与日志信息将显示在此处
 
 Operating too frequently or Script is modified in other tab                            : 操作过于频繁，或脚本已经在其他窗口被修改。
@@ -318,7 +318,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
           <div class="code-editor-output-close">
             <el-link type="info" :underline="true" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
             &#12288;
-            <el-link type="info" :underline="true" @click.stop="clearScriptOutput()"><i class="fa fa-trash-o"></i> {{ $t('Clear output') }}</el-link>
+            <el-link type="info" :underline="true" @click.stop="clearScriptOutput()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
           </div>
           <el-tabs tab-position="left" type="border-card">
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
@@ -361,21 +361,23 @@ export default {
         this.T.setCodeMirrorReadOnly(this.codeMirror, val);
       }
     },
-    selectedFuncId(val) {
-      this.$store.commit('updateEditor_highlightedFuncId', val);
-      this.highlightFunc(val);
-
-      // 自动填充参数
-      this.autoFillFuncCallKwargsJSON(val);
-    },
-    highlightedFuncId(val) {
-      this.selectedFuncId = val;
-    },
     splitPanePercent(val) {
       this.resizeVueSplitPane(val);
     },
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
+    },
+    selectedFuncId(val) {
+      this.$store.commit('updateEditor_highlightedFuncId', val);
+      this.highlightFunc();
+
+      // 自动填充参数
+      this.autoFillFuncCallKwargsJSON(val);
+    },
+    '$store.state.Editor_highlightedFuncId'(val) {
+      if (this.selectedFuncId !== val) {
+        this.selectedFuncId = val;
+      }
     },
     '$store.state.shortcutAction'(val) {
       switch(val.action) {
@@ -502,27 +504,27 @@ export default {
 
       setImmediate(() => {
         // 载入代码
-        if (this.codeMirror) {
-          this.codeMirror.setValue('');
-          this.codeMirror.setValue(this.data[options.codeField] || '');
-          this.codeMirror.refresh();
-          this.codeMirror.focus();
-        }
-
-        // 更新函数列表
-        this.updateFuncList();
-
-        // 加载高亮函数为已选择
-        this.selectedFuncId = this.highlightedFuncId;
-        // 自动填充参数
-        this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
+        this.codeMirror.setValue('');
+        this.codeMirror.setValue(this.data[options.codeField] || '');
+        this.codeMirror.refresh();
+        this.codeMirror.focus();
 
         // 锁定编辑器
         if (this.isConflict || !this.isEditable) {
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }
 
-        this.$store.commit('updateCodeEditor_isCodeLoaded', true);
+        // 更新函数列表
+        this.updateFuncList();
+
+        // 选中函数
+        if (this.$store.state.Editor_highlightedFuncId) {
+          this.selectedFuncId = this.$store.state.Editor_highlightedFuncId;
+          this.highlightFunc();
+
+          // 自动填充参数
+          this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
+        }
       });
 
       // 默认隐藏
@@ -698,7 +700,7 @@ export default {
       if (apiRes.ok) {
         // 等待输出栏弹出后执行
         setImmediate(() => {
-          this.highlightFunc(this.selectedFuncId);
+          this.highlightFunc();
         });
       }
 
@@ -1106,11 +1108,18 @@ export default {
 
       this.$store.commit('updateCodeEditor_highlightedLineConfigMap', nextHighlightedLineConfigMap);
     },
-    highlightFunc(funcId) {
+    highlightFunc() {
+      if (!this.$store.state.isLoaded) return;
       if (!this.codeMirror) return;
+
+      let funcId = this.selectedFuncId;
       if (!funcId) return;
 
-      let nextFuncName = funcId.split('.')[1];
+      let funcIdParts = funcId.split('.');
+      let scriptId = funcIdParts[0]
+      if (scriptId !== this.$route.params.id) return;
+
+      let nextFuncName = funcIdParts[1];
 
       // 清除之前选择
       this.updateHighlightLineConfig('selectedFuncLine', null);
@@ -1179,9 +1188,6 @@ export default {
       return !this.isLockedByOther;
     },
 
-    highlightedFuncId() {
-      return this.$store.state.Editor_highlightedFuncId;
-    },
     splitPanePercent() {
       return this.$store.state.codeEditor_splitPanePercent || this.$store.getters.DEFAULT_STATE.codeEditor_splitPanePercent;
     },
@@ -1276,7 +1282,8 @@ export default {
       data     : {},
       scriptSet: {},
 
-      draftFuncs        : [],
+      draftFuncs: [],
+
       selectedFuncId    : '',
       funcCallKwargsJSON: '',
       funcCallSeq       : 0,
@@ -1463,12 +1470,15 @@ export default {
   text-shadow: 1px 1px 3px #b3b3b3;
 }
 .CodeMirror .error-info {
-  width: 15vw;
-  display: block;
+  max-width: 15vw;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: right;
+  background-color: rgb(255,0,0,.7);
+  color: white;
+  display: block;
+  padding: 0 5px;
 }
 .CodeMirror .current-func-background {
   border: 2px solid;
@@ -1486,7 +1496,7 @@ export default {
 .CodeMirror .error-line-text {
   position: absolute;
   color: red;
-  right: 10px;
+  right: 0;
 }
 
 .code-editor-call-func-kwargs-json {

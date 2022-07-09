@@ -25,7 +25,7 @@ Welcome to: 欢迎使用
           <p>
             我们编写了详细的使用手册，所有相关文档都可以在官方网站找到。<br>
             建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" :underline="true" href="https://function.guance.com/" target="_blank">
+            <el-link type="primary" :underline="true" href="https://func.guance.com/" target="_blank">
               <i class="fa fa-fw fa-link"></i>
               立即前往官方网站
             </el-link>
@@ -54,28 +54,33 @@ Welcome to: 欢迎使用
             </h1>
           </el-divider>
           <p>
-            点击左边侧栏中的扳手图标<i class="fa fa-fw fa-wrench text-info"></i>，即可进入编辑管理页面<br>
-            也可以将鼠标指向问号图标<i class="fa fa-fw fa-question-circle text-main"></i>，页面会显示一些与此项目关联的描述、提示、示例代码等。
-          </p>
-          <p>
-            左侧栏每一页都可以进行过滤筛选项目，当项目数量过多时可以通过过滤找到您想要的内容。
+            将鼠标悬停在项目上，即可展示项目的相关信息以及可进行的操作。<br>
+            左侧栏每一页都可以进行过快速项目跳转，输入需要跳转的ID或名称并选择，即可定位到项目。
           </p>
           <p>
             此外，如果左侧栏中的标题过长导致无法完全展示，可以拖动中间的灰色分割线调整左侧栏宽度。<br>
-            左侧栏宽度会在本机保存，刷新页面后宽度会自动读取上一次调整到的位置。
           </p>
 
-          <!-- 引擎内置功能 -->
+          <!-- 内置功能 -->
           <el-divider content-position="left">
             <h1>
-              <i>引擎内置功能</i>
+              <i>内置功能</i>
             </h1>
           </el-divider>
-          <p>脚本的上下文环境由引擎预先注入了一些内置功能，无需导入即可直接调用。</p>
+          <p>脚本的上下文环境预先注入了一些内置功能，无需导入即可直接调用。</p>
           <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSetting.style">
             <textarea id="editor_Intro">{{ codeExample }}</textarea>
           </div>
-          <p>更多代码示例请参考DEMO脚本集以及侧边栏「参考」</p>
+          <p>
+            更多内置功能，请参考
+            <el-link type="primary" :underline="true" href="https://func.guance.com/doc/development-guide-builtin-features/" target="_blank">
+              <i class="fa fa-fw fa-link"></i>
+              官方网站
+              <i class="fa fa-fw fa-caret-right"></i> 手册
+              <i class="fa fa-fw fa-caret-right"></i> 开发手册
+              <i class="fa fa-fw fa-caret-right"></i> 内置功能
+            </el-link>
+          </p>
           <p>代码编辑器的文字大小、行高等可在设置页面进行配置</p>
 
           <!-- 编写代码 -->
@@ -86,7 +91,7 @@ Welcome to: 欢迎使用
           </el-divider>
           <p>
             左边侧栏中选择脚本或函数项目可进入此脚本的代码编辑器<br>
-            代码编辑器的基本快捷键与Sublime Text 基本相同，如：
+            代码编辑器的基本快捷键与 Sublime Text 类似，如：
             <ul>
               <li>随键入提示 <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>：自动补全上屏</li>
               <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>/</kbd>：注释/取消注释（支持多行操作）</li>
@@ -112,6 +117,21 @@ Welcome to: 欢迎使用
             管理界面可以对系统的特定功能进行配置，包括：
             <ul>
               <li>
+                <i class="fa fa-fw fa-dashboard"></i> 总览&#12288;&#12288;&#12288;&#12288;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                展示当前系统的使用信息
+              </li>
+              <li>
+                <i class="fa fa-fw fa-info-circle"></i> 信息&#12288;&#12288;&#12288;&#12288;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                展示当前系统的版本、系统信息
+              </li>
+              <li>
+                <i class="fa fa-fw fa-lock"></i> API认证&#12288;&#12288;&nbsp;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                可以为授权链接创建认证处理
+              </li>
+              <li>
                 <i class="fa fa-fw fa-link"></i> 授权链接&#12288;&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 可以将指定的函数在公网暴露，供外部系统调用
@@ -119,7 +139,7 @@ Welcome to: 欢迎使用
               <li>
                 <i class="fa fa-fw fa-clock-o"></i> 自动触发配置
                 <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以指定函数按照Crontab语法自动触发执行
+                可以指定函数按照 Crontab 语法自动触发执行
               </li>
               <li>
                 <i class="fa fa-fw fa-tasks"></i> 批处理&#12288;&#12288;&#12288;
@@ -137,7 +157,7 @@ Welcome to: 欢迎使用
                 可以导入从之前导出的脚本包
               </li>
               <li>
-                <i class="fa fa-fw fa-history"></i> 脚本还原&#12288;&#12288;
+                <i class="fa fa-fw fa-history"></i> 脚本库还原&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 可以将脚本库还原至以前的某个时刻，在脚本发生问题时及时回滚
               </li>

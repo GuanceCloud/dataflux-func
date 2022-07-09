@@ -287,7 +287,6 @@ export default {
       let funcId   = `${scriptId}.start`;
 
       // 记录选择的脚本ID，记录函数高亮
-      this.$store.commit('updateAsideScript_currentNodeKey', funcId);
       this.$store.commit('updateEditor_highlightedFuncId', funcId);
 
       // 跳转

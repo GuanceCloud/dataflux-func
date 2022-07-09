@@ -58,13 +58,12 @@ Script unlocked    : 脚本已解锁
       :highlight-current="true"
       :default-expand-all="false"
       :default-expanded-keys="defaultExpandedNodeKeys"
-      :auto-expand-parent="true"
+      :auto-expand-parent="false"
       :expand-on-click-node="false"
       :indent="10"
       node-key="id"
       v-on:node-expand="onExpandNode"
       v-on:node-collapse="onCollapseNode"
-      v-on:current-change="onSelectNode"
       ref="tree">
 
       <span
@@ -175,7 +174,7 @@ Script unlocked    : 脚本已解锁
                   size="mini">{{ $t('Edited') }}</el-tag>
                 <el-tag v-if="data.isBuiltin"
                   effect="dark"
-                  type="warning"
+                  :type="data.isPinned ? 'danger':'warning'"
                   size="mini">{{ $t('Builtin') }}</el-tag>
                <span>{{ node.label }}</span>
               </div>
@@ -215,23 +214,7 @@ export default {
       if (!this.$refs.tree) return;
 
       let node = this.$refs.tree.getNode(val);
-
-      // 选择脚本、函数时，打开编辑器
-      if (['script', 'func'].indexOf(node.data.type) >= 0) {
-        this.openEntity(node, node.data);
-      }
-
-      // 展开所有父层
-      let _node = this.$refs.tree.getNode(val);
-      while (true) {
-        if (!_node) break;
-        _node.expanded = true;
-
-        if (!_node.parent) break;
-        _node = _node.parent;
-      }
-
-      this.onSelectNode(node.data);
+      this.openEntity(node, node.data);
     },
     '$store.state.scriptListSyncTime': function() {
       this.loadData();
@@ -250,39 +233,63 @@ export default {
         this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
       }
     },
+
+    // 展开/收起节点
     onExpandNode(data, node) {
       this.$set(this.expandedNodeMap, data.id, true);
     },
     onCollapseNode(data, node) {
       this.$delete(this.expandedNodeMap, data.id);
     },
-    onSelectNode(data, node) {
-      if (!data) return;
-      if (!this.$refs.tree) return;
 
-      this.$nextTick(() => {
-        var entryId = data.id || data;
-        if (!entryId) return;
+    // 选中节点
+    selectNode(nodeKey, options) {
+      options = options || {};
+
+      if (!this.$refs.tree) return;
+      if (!nodeKey) return;
+
+      setImmediate(() => {
+        let node = this.$refs.tree.getNode(nodeKey);
+        if (!node || !node.data) return;
 
         // 选中
-        this.$refs.tree.setCurrentKey(entryId);
+        this.$refs.tree.setCurrentKey(node.data.id);
 
-        // 滚动到目标位置
-        let $asideContent = document.getElementById('aside-script-content');
-        let $target = document.querySelector(`[entry-id="${entryId}"]`);
+        // 展开所有父层
+        let parentNode = node.parent;
+        while (parentNode) {
+          parentNode.expand();
+          this.onExpandNode(parentNode.data, parentNode);
 
-        let scrollTop = 0;
-        let topPadding = 35;
-        if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
-          scrollTop = $target.offsetTop - topPadding;
-        } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
-          scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
-        } else {
-          return;
+          parentNode = parentNode.parent;
         }
-        $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+
+        // 展开当前节点
+        if (options.expandChildren) {
+          node.expand();
+          this.onExpandNode(node.data, node);
+        }
+
+        setTimeout(() => {
+          // 滚动到目标位置
+          let $asideContent = document.getElementById('aside-script-content');
+          let $target = document.querySelector(`[entry-id="${node.data.id}"]`);
+
+          let scrollTop = 0;
+          let topPadding = 35;
+          if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
+            scrollTop = $target.offsetTop - topPadding;
+          } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
+            scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
+          } else {
+            return;
+          }
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }, 300);
       });
     },
+
     async loadData() {
       if (this.T.isNothing(this.data)) {
         this.loading = true;
@@ -527,8 +534,8 @@ export default {
       this.expandedNodeMap = this.$store.state.asideScript_expandedNodeMap || {};
       this.defaultExpandedNodeKeys = Object.keys(this.expandedNodeMap);
 
-      // 自动选中
-      this.onSelectNode(this.$store.state.asideScript_currentNodeKey);
+      // 自动选择
+      this.selectNode(this.$route.params.id);
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -583,20 +590,7 @@ export default {
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
     },
-    expandNode(nodeKey) {
-      this.$set(this.expandedNodeMap, nodeKey, true);
 
-      setImmediate(() => {
-        this.$refs.tree.getNode(nodeKey).expanded = true;
-      });
-    },
-    collapseNode(nodeKey) {
-      this.$delete(this.expandedNodeMap, nodeKey);
-
-      setImmediate(() => {
-        this.$refs.tree.getNode(nodeKey).expanded = false;
-      });
-    },
     openEntity(node, data, target) {
       let setCodeLoading = (nextScriptId) => {
         if (this.$route.name === 'code-editor' && this.$route.params.id !== nextScriptId) {
@@ -620,32 +614,35 @@ export default {
         // 脚本集节点
         case 'scriptSet':
           if (target === 'add') {
-            // 只有点击「添加」按钮才跳转
+            // 添加脚本
+            this.selectNode(data.id, { expandChildren: true });
+
             this.$router.push({
               name  : 'script-add',
               params: {id: data.id},
             });
 
           } else if (target === 'setup') {
-            // 只有点击「配置」按钮才跳转
+            // 打开脚本集配置
+            this.selectNode(data.id, { expandChildren: false });
+
             this.$router.push({
               name  : 'script-set-setup',
               params: {id: data.id},
             });
 
           } else {
-            if (this.$refs.tree.getNode(data.id).expanded) {
-              this.collapseNode(data.id);
-            } else {
-              this.expandNode(data.id);
-            }
+            // 点击脚本
+            this.selectNode(data.id, { expandChildren: true });
           }
           break;
 
         // 脚本节点
         case 'script':
           if (target === 'setup') {
-            // 只有点击「配置」按钮才跳转
+            // 打开脚本配置
+            this.selectNode(data.id, { expandChildren: false });
+
             this.$router.push({
               name  : 'script-setup',
               params: {id: data.id},
@@ -653,10 +650,13 @@ export default {
 
           } else if ((this.$route.name === 'code-viewer' || this.$route.name === 'code-editor')
                 && data.id === this.$route.params.id) {
-            // 点击同一脚本项目，无处理
+            // 点击当前脚本
+            this.selectNode(data.id, { expandChildren: true });
 
           } else {
-            // 跳转至代码查看器
+            // 点击其他脚本
+            this.selectNode(data.id, { expandChildren: true });
+
             setCodeLoading(data.id);
 
             this.$router.push({
@@ -664,20 +664,24 @@ export default {
               params: {id: data.id},
             });
 
-            this.expandNode(data.id);
           }
           break;
 
         // 函数节点
         case 'func':
-          setCodeLoading(data.scriptId);
+          // 高亮选中函数
+          this.$store.commit('updateEditor_highlightedFuncId', data.id);
 
           if ((this.$route.name === 'code-viewer' || this.$route.name === 'code-editor')
                 && data.scriptId === this.$route.params.id) {
-            // 同一脚本内切换函数，无处理
+            // 点击同一脚本内函数
+            this.selectNode(data.id, { expandChildren: false });
 
           } else {
-            // 不同脚本切换，进入查看模式
+            // 点击不同脚本下的函数
+            this.selectNode(data.id, { expandChildren: false });
+
+            setCodeLoading(data.scriptId);
             this.$router.push({
               name  : 'code-viewer',
               params: {id: data.scriptId},
@@ -690,11 +694,6 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
-
-      this.$store.commit('updateAsideScript_currentNodeKey', data.id);
-      this.$store.commit('updateEditor_highlightedFuncId', data.type === 'func' ? data.id : null);
-
-      this.onSelectNode(data);
     },
   },
   computed: {
@@ -731,6 +730,9 @@ export default {
   created() {
     this.loadData();
   },
+  mounted() {
+    window.vmc = this;
+  }
 }
 </script>
 

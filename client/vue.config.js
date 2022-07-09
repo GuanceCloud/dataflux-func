@@ -61,7 +61,8 @@ module.exports = {
         .end()
   },
   devServer: {
-    sockHost: 'localhost',
+    host: 'localhost',
+    port: 8081,
     disableHostCheck: true,
   },
 }

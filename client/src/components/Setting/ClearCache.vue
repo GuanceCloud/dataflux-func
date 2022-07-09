@@ -106,7 +106,6 @@ export default {
 
       if (this.form.clear_UIStatus) {
         this.$store.commit('updateAsideScript_expandedNodeMap', null);
-        this.$store.commit('updateAsideScript_currentNodeKey', null);
         this.$store.commit('updateAsideScript_quickViewWindowPosition', null);
         this.$store.commit('updateAsideDataSource_simpleDebugWindowPosition', null);
         this.$store.commit('updateCodeEditor_splitPanePercent', null);

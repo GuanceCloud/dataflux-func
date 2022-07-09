@@ -124,15 +124,17 @@ export default {
     showMode(val) {
       this.loadData();
     },
-    selectedFuncId(val) {
-      this.$store.commit('updateEditor_highlightedFuncId', val);
-      this.highlightFunc(val);
-    },
-    highlightedFuncId(val) {
-      this.selectedFuncId = val;
-    },
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
+    },
+    selectedFuncId(val) {
+      this.$store.commit('updateEditor_highlightedFuncId', val);
+      this.highlightFunc();
+    },
+    '$store.state.Editor_highlightedFuncId'(val) {
+      if (this.selectedFuncId !== val) {
+        this.selectedFuncId = val;
+      }
     },
     '$store.state.shortcutAction'(val) {
       switch(val.action) {
@@ -206,16 +208,17 @@ export default {
             this.T.setCodeMirrorMode(this.codeMirror, 'diff');
             break;
         }
-
         this.codeMirror.refresh();
+        this.codeMirror.focus();
 
         // 更新函数列表
         this.updateFuncList();
 
-        // 加载高亮函数为已选择
-        this.selectedFuncId = this.highlightedFuncId;
-
-        this.$store.commit('updateCodeViewer_isCodeLoaded', true);
+        // 选中函数
+        if (this.$store.state.Editor_highlightedFuncId) {
+          this.selectedFuncId = this.$store.state.Editor_highlightedFuncId;
+          this.highlightFunc();
+        }
       });
     },
     startEdit() {
@@ -363,11 +366,18 @@ export default {
 
       this.$store.commit('updateCodeViewer_highlightedLineConfigMap', nextHighlightedLineConfigMap);
     },
-    highlightFunc(funcId) {
+    highlightFunc() {
+      if (!this.$store.state.isLoaded) return;
       if (!this.codeMirror) return;
+
+      let funcId = this.selectedFuncId;
       if (!funcId) return;
 
-      let nextFuncName = funcId.split('.')[1];
+      let funcIdParts = funcId.split('.');
+      let scriptId = funcIdParts[0]
+      if (scriptId !== this.$route.params.id) return;
+
+      let nextFuncName = funcIdParts[1];
 
       // 清除之前选择
       this.updateHighlightLineConfig('selectedFuncLine', null);
@@ -447,9 +457,6 @@ export default {
     userOperation() {
       return this.isEditable ? 'edit' : 'debug';
     },
-    highlightedFuncId() {
-      return this.$store.state.Editor_highlightedFuncId;
-    },
     codeLines() {
       return (this.data.code || '').split('\n').length;
     },
@@ -467,10 +474,10 @@ export default {
 
       data: {},
 
-      draftFuncs    : [],
-      selectedFuncId: '',
+      draftFuncs: [],
 
-      showMode: 'draft', // 'draft|published|diff'
+      selectedFuncId: '',
+      showMode      : 'draft', // 'draft|published|diff'
 
       // DIFF信息
       diffAddedCount  : 0,
