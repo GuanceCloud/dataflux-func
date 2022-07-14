@@ -2,7 +2,7 @@
 
 > 清楚明确地说明，你正在打算做什么
 
-【示例】我想在 DataFlux Func 中通过 DataKit 向观测云写入一些时序数据
+【示例】我想在 DataFlux Func 中通过 DataKit 向观测云写入时序数据
 
 ## 问题
 
@@ -31,7 +31,7 @@
 
 ---
 
-*以下内容请勿修改，Gitlab 会自动添加「BUG」标签，并指定处理人*
+*以下内容请勿修改，Gitlab 会自动添加相关标签，并指定处理人*
 
-/label ~BUG
+/label ~"DataFlux Func" ~BUG
 /assign @zyl
