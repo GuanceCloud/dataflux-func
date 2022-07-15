@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 # Builtin Modules
+import os
+import sys
+import psutil
+import itertools
 import re
 import uuid
 import time
@@ -8,7 +12,7 @@ import json
 import datetime
 import hashlib
 import random
-from collections import OrderedDict
+from collections import OrderedDict, deque
 import binascii
 import base64
 import math
@@ -36,7 +40,51 @@ MAX_UNIX_TIMESTAMP    = 2145888000 # 2038-01-01 00:00:00
 MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 
 def print_var(v, name=None):
-    print('[VAR] `{}` type=`{}`, value=`{}`'.format(name or '<NO NAME>', type(v), str(v)))
+    print('[VAR] `{}` type=`{}`, value=`{}`, obj_size=`{}`'.format(name or '<NO NAME>', type(v), str(v), get_obj_size(v)))
+
+def get_obj_size(o, handlers={}):
+    '''
+    获取内存占用大小
+    参考：https://code.activestate.com/recipes/577504/
+    '''
+    dict_handler = lambda d: itertools.chain.from_iterable(d.items())
+    all_handlers = {
+        tuple    : iter,
+        list     : iter,
+        deque    : iter,
+        dict     : dict_handler,
+        set      : iter,
+        frozenset: iter,
+    }
+
+    all_handlers.update(handlers)     # user handlers take precedence
+    seen = set()                      # track which object id's have already been seen
+    default_size = sys.getsizeof(0)       # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:       # do not double count the same object
+            return 0
+
+        seen.add(id(o))
+        s = sys.getsizeof(o, default_size)
+
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+
+        return s
+
+    return sizeof(o)
+
+def get_memory_usage():
+    '''
+    获取内存使用量
+    '''
+    pid = os.getpid()
+    p = psutil.Process(pid)
+    memory_usage = p.memory_full_info().uss
+    return memory_usage
 
 def get_attr(obj, attr, default=None):
     if hasattr(obj, attr):
