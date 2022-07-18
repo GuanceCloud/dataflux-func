@@ -65,16 +65,17 @@ Reset Script                                                                    
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
 Invalid argument format                                                                : 参数格式不正确
 Check input                                                                            : 输入检查
-seconds                                                                                : '{n}秒'
+seconds                                                                                : '{n} 秒'
 Executed Func                                                                          : 执行函数
 This Script is not published, it will take effect after the Script is published        : 当前脚本尚未发布，脚本只有发布后才会生效
 Do you want to publish the Script now?                                                 : 是否现在发布？
 Script not published                                                                   : 脚本未发布
 Publish Now                                                                            : 立即发布
 Skip Publishing                                                                        : 跳过发布
-Run Time                                                                               : 耗时
+Run Time                                                                               : 函数执行耗时
+Peak Memory Allocated                                                                  : 内存分配峰值
 It took too much time for running, may not be suitable for synchronous calling scenario: 耗时较长，可能不适合需要响应速度较高的场景
-Func Return Value                                                                      : 函数返回值
+'Func Return Value (repr)'                                                             : 函数返回值（repr）
 Stack                                                                                  : 错误堆栈
 
 Publish Failed                                                                                                                     : 发布失败
@@ -735,16 +736,18 @@ export default {
 
       this.funcCallSeq++;
 
-      let cost        = null; // 执行耗时
-      let logMessages = null; // 日志输出
-      let funcOutput  = null; // 函数输出
-      let stackInfo   = null; // 错误堆栈
+      let cost            = null; // 执行耗时
+      let peakMemroyUsage = null; // 内存分配峰值
+      let logMessages     = null; // 日志输出
+      let funcOutput      = null; // 函数输出
+      let stackInfo       = null; // 错误堆栈
 
       // 执行耗时，日志输出，函数输出
       if (apiRes.data) {
         // 执行耗时
         if (apiRes.ok) {
-          cost = apiRes.data.cost.toFixed(3);
+          cost            = apiRes.data.cost.toFixed(3);
+          peakMemroyUsage = apiRes.data.peakMemroyUsage;
         }
 
         // 日志输出
@@ -753,13 +756,13 @@ export default {
         logMessages = apiRes.data.result.logMessages;
         if (Array.isArray(logMessages)) {
           logMessages = logMessages.map(l => {
-            let m = l.match(/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
-            if (!m) {
-              return htmlEscaper.escape(l);
-            } else {
-              let restL = l.slice(m[0].length);
-              return this.T.strf('<span class="text-main">{0}</span>{1}', m[0], htmlEscaper.escape(restL));
-            }
+            // 由于日志开头格式固定，此处直接使用字符串处理，而不用正则
+            let lineParts = l.split(' ');
+            let timeTag     = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
+            let timeDiffTag = `<span class="text-good">${lineParts[2]}</span>`
+            let logContent = htmlEscaper.escape(lineParts.slice(3).join(' '));
+
+            return [timeTag, timeDiffTag, logContent].join(' ');
           });
           logMessages = logMessages.join('\n') || null;
         }
@@ -791,13 +794,14 @@ export default {
       }
 
       let output = {
-        seq        : this.funcCallSeq,
-        type       : type,
-        name       : name,
-        cost       : cost,
-        logMessages: logMessages,
-        funcOutput : funcOutput,
-        stackInfo  : stackInfo,
+        seq            : this.funcCallSeq,
+        type           : type,
+        name           : name,
+        cost           : cost,
+        peakMemroyUsage: peakMemroyUsage,
+        logMessages    : logMessages,
+        funcOutput     : funcOutput,
+        stackInfo      : stackInfo,
       };
       this.scriptOutput.push(output);
 
@@ -1241,6 +1245,12 @@ export default {
           }
         }
 
+        // 执行内存消耗
+        let peakMemoryUsageInfo = '';
+        if (o.peakMemroyUsage) {
+          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')} ${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
+        }
+
         // 日志输出
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
         let logMessages = o.logMessages;
@@ -1250,7 +1260,7 @@ export default {
         let funcOutput = o.funcOutput;
         let funcOutputTitle = null;
         if (funcOutput) {
-          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value')}${this.$t(':')}</span>`;
+          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value (repr)')}${this.$t(':')}</span>`;
         }
 
         // 错误堆栈
@@ -1262,10 +1272,20 @@ export default {
         }
 
         let section = [ divider, title ]
-        if (costInfo)        section.push('', costInfo);
-        if (logMessages)     section.push('', logMessages);
-        if (funcOutputTitle) section.push('', funcOutputTitle, funcOutput);
-        if (stackInfoTitle)  section.push('', stackInfoTitle,  stackInfo);
+        if (logMessages) {
+          section.push('', logMessages);
+        }
+        if (funcOutputTitle) {
+          section.push('', funcOutputTitle, funcOutput);
+        }
+        if (costInfo || peakMemoryUsageInfo) {
+          section.push('');
+          if (costInfo)            section.push(costInfo);
+          if (peakMemoryUsageInfo) section.push(peakMemoryUsageInfo);
+        }
+        if (stackInfoTitle) {
+          section.push('', stackInfoTitle,  stackInfo);
+        }
 
         // 过滤空白内容
         section = section.filter(x => 'string' === typeof x).join('\n').trimStart();

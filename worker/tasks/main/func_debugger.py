@@ -9,6 +9,7 @@
 import time
 import traceback
 import pprint
+import tracemalloc
 
 # 3rd-party Modules
 import six
@@ -76,6 +77,9 @@ def func_debugger(self, *args, **kwargs):
     trace_info   = None
     einfo_text   = None
 
+    # 最大内存使用
+    peak_memory_usage = None
+
     # 被强行Kill时，不会进入except范围，所以默认制定为"failure"
     end_status = 'failure'
 
@@ -124,7 +128,12 @@ def func_debugger(self, *args, **kwargs):
 
             # 执行函数
             self.logger.info('[RUN FUNC] `{}`'.format(func_id))
+
+            tracemalloc.start()
             func_resp = entry_func(**func_call_kwargs)
+            _, peak_memory_usage = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
             if not isinstance(func_resp, BaseFuncResponse):
                 func_resp = FuncResponse(func_resp)
 
@@ -185,10 +194,11 @@ def func_debugger(self, *args, **kwargs):
 
         # 准备返回值
         retval = {
-            'result'   : result,
-            'traceInfo': trace_info,
-            'einfoTEXT': einfo_text,
-            'cost'     : time.time() - start_time,
+            'result'         : result,
+            'traceInfo'      : trace_info,
+            'einfoTEXT'      : einfo_text,
+            'cost'           : time.time() - start_time,
+            'peakMemroyUsage': peak_memory_usage,
         }
 
         # 清理资源
