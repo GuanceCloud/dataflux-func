@@ -16,7 +16,8 @@ Select Func                                                                     
 Viewport are too narrow                                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
 Args                                                                                 : 参数
-'Arguments should be inputed like {"arg": value}, leave blank or {} when no argument': '参数以 {"参数名": 参数值} 方式填写，没有参数的不用填写，或保留 {}'
+'Arguments should be inputed like {"arg": value}.'                                   : '参数以 {"参数名": 参数值} 方式填写。'
+'Leave blank or {} when no argument'                                                 : '没有参数的不用填写，或保留 {}'
 'Arguments (JSON)'                                                                   : 参数（JSON格式）
 Run selected Func                                                                    : 执行指定的函数
 Shortcut                                                                             : 快捷键
@@ -74,7 +75,7 @@ Publish Now                                                                     
 Skip Publishing                                                                        : 跳过发布
 Run Time                                                                               : 函数执行耗时
 Peak Memory Allocated                                                                  : 内存分配峰值
-It took too much time for running, may not be suitable for synchronous calling scenario: 耗时较长，可能不适合需要响应速度较高的场景
+It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario: 耗时较长（大于 3 秒），可能不适合需要响应速度较高的场景
 'Func Return Value (repr)'                                                             : 函数返回值（repr）
 Stack                                                                                  : 错误堆栈
 
@@ -166,18 +167,19 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                   </el-form-item>
 
                   <el-form-item class="hidden-md-and-down">
-                    <el-popover placement="bottom" trigger="hover" width="320">
+                    <el-popover placement="bottom" trigger="hover" width="380">
                       <div>
                         <el-input
                           type="textarea"
                           resize="none"
-                          :autosize="{ minRows: 2 }"
+                          :autosize="{ minRows: 3, maxRows: 15 }"
                           :clearable="true"
                           :placeholder="$t('Arguments (JSON)')"
                           v-model="funcCallKwargsJSON"
                           class="code-editor-call-func-kwargs-json">
                         </el-input>
-                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}, leave blank or {} when no argument')"></InfoBlock>
+                        <InfoBlock type="error" v-if="!isValidFuncCallKwargsJSON" :title="$t('Invalid argument format')"></InfoBlock>
+                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}.') + '\n' + $t('Leave blank or {} when no argument')"></InfoBlock>
                         <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')"></InfoBlock>
                       </div>
                       <el-input slot="reference"
@@ -736,8 +738,8 @@ export default {
 
       this.funcCallSeq++;
 
-      let cost            = null; // 执行耗时
       let peakMemroyUsage = null; // 内存分配峰值
+      let cost            = null; // 执行耗时
       let logMessages     = null; // 日志输出
       let funcOutput      = null; // 函数输出
       let stackInfo       = null; // 错误堆栈
@@ -746,8 +748,8 @@ export default {
       if (apiRes.data) {
         // 执行耗时
         if (apiRes.ok) {
-          cost            = apiRes.data.cost.toFixed(3);
           peakMemroyUsage = apiRes.data.peakMemroyUsage;
+          cost            = apiRes.data.cost.toFixed(3);
         }
 
         // 日志输出
@@ -797,8 +799,8 @@ export default {
         seq            : this.funcCallSeq,
         type           : type,
         name           : name,
-        cost           : cost,
         peakMemroyUsage: peakMemroyUsage,
+        cost           : cost,
         logMessages    : logMessages,
         funcOutput     : funcOutput,
         stackInfo      : stackInfo,
@@ -1236,19 +1238,19 @@ export default {
         }
         let title = `<span class="code-editor-output-info">${titleLabel} ${o.name}</span>`;
 
+        // 执行内存消耗
+        let peakMemoryUsageInfo = '';
+        if (o.peakMemroyUsage) {
+          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')} ${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
+        }
+
         // 执行耗时
         let costInfo = '';
         if (o.cost) {
           costInfo = `<span class="code-editor-output-info">${this.$t('Run Time')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
-            costInfo += `<br><span class="text-watch">${this.$t('It took too much time for running, may not be suitable for synchronous calling scenario')}</span>`;
+            costInfo += `<br>&emsp;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }
-        }
-
-        // 执行内存消耗
-        let peakMemoryUsageInfo = '';
-        if (o.peakMemroyUsage) {
-          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')} ${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
         }
 
         // 日志输出
@@ -1280,8 +1282,8 @@ export default {
         }
         if (costInfo || peakMemoryUsageInfo) {
           section.push('');
-          if (costInfo)            section.push(costInfo);
           if (peakMemoryUsageInfo) section.push(peakMemoryUsageInfo);
+          if (costInfo)            section.push(costInfo);
         }
         if (stackInfoTitle) {
           section.push('', stackInfoTitle,  stackInfo);
@@ -1302,6 +1304,28 @@ export default {
       }
 
       return sectionText;
+    },
+
+    isValidFuncCallKwargsJSON() {
+      // 允许空白
+      if (this.funcCallKwargsJSON.trim() === '') {
+        return true;
+      }
+
+      // 必须为字典
+      if (this.funcCallKwargsJSON.trim()[0] !== '{') {
+        return false;
+      }
+
+      // 必须可解析JSON
+      let _parsed = null
+      try {
+        _parsed = JSON.parse(this.funcCallKwargsJSON)
+      } catch(e) {
+        return false;
+      }
+
+      return true;
     },
   },
   props: {
