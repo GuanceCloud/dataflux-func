@@ -7,7 +7,7 @@ Script Setup                                                         : 脚本设
 'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
 Shortcut                                                             : 快捷键
-Select Item                                                          : 选择聚焦项目
+Select Target                                                        : 选择跳转目标
 Download {type}                                                      : 下载{type}
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
@@ -66,9 +66,15 @@ Saved Draft Code: 已保存的草稿代码
                 v-model="selectedItemId"
                 size="mini"
                 filterable
-                :placeholder="$t('Select Item')">
+                :placeholder="$t('Select Target')">
                 <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
-                  <el-tag class="quick-select-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                  <el-tag v-if="item.type === 'todo'"
+                    size="mini"
+                    class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
+                    <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
+                    {{ item.todoType }}
+                  </el-tag>
+                  <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
                   {{ item.name }}
                 </el-option>
               </el-select>
@@ -232,8 +238,27 @@ export default {
     updateSelectableItems() {
       if (!this.data.codeDraft) return;
 
-      let nextSelectableItems = [];
+      let todoItems = [];
+      let codeItems = [];
       this.data.codeDraft.split('\n').forEach((l, i) => {
+        // 注释项目
+        this.C.TODO_TYPE.forEach(x => {
+          let _tag = `# ${x.key}`;
+          let _pos = l.indexOf(_tag);
+          if (_pos >= 0 && !/[0-9a-zA-Z]/.test(l[_pos + _tag.length])) {
+            let id   = `${this.scriptId}.__L${i}`;
+            let name = l.slice(_pos).split(' ').slice(2).join(' ');
+            todoItems.push({
+              id      : id,
+              type    : 'todo',
+              todoType: x.key,
+              name    : name,
+              line    : i,
+            })
+          }
+        })
+
+        // 代码项目
         if (l.indexOf('def ') === 0 && l.indexOf('def _') < 0) {
           // 函数定义
           let _parts = l.slice(4).split('(');
@@ -249,7 +274,7 @@ export default {
             return acc;
           }, {});
 
-          nextSelectableItems.push({
+          codeItems.push({
             id    : id,
             type  : 'def',
             name  : name,
@@ -264,7 +289,7 @@ export default {
           let name = _parts[0];
           let id   = `${this.scriptId}.${name}`;
 
-          nextSelectableItems.push({
+          codeItems.push({
             id    : id,
             type  : 'class',
             name  : name,
@@ -273,6 +298,7 @@ export default {
         }
       });
 
+      let nextSelectableItems = todoItems.concat(codeItems);
       this.selectableItems = nextSelectableItems;
     },
     _clearLineHighlight(line) {
@@ -515,7 +541,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.quick-select-tag {
+.select-item-tag {
   width: 42px;
   text-align: center;
 }

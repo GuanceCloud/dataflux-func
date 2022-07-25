@@ -323,6 +323,40 @@ export default {
     return new MAP_CONST(this.DATA_SOURCE);
   },
 
+  // 代码注释
+  get TODO_TYPE() {
+    return [
+      {
+        key  : 'XXX',
+        tagType: 'info',
+        icon : 'fa-times',
+      },
+      {
+        key  : 'TODO',
+        tagType: 'success',
+        icon : 'fa-check-circle',
+      },
+      {
+        key  : 'BUG',
+        tagType: 'danger',
+        icon : 'fa-bug',
+      },
+      {
+        key  : 'FIXME',
+        tagType: 'primary',
+        icon : 'fa-wrench',
+      },
+      {
+        key  : 'HACK',
+        tagType: 'warning',
+        icon : 'fa-user-secret',
+      },
+    ]
+  },
+  get TODO_TYPE_MAP() {
+    return new MAP_CONST(this.TODO_TYPE, 0);
+  },
+
   // 主题
   get UI_THEME() {
     return [
