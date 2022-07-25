@@ -670,7 +670,7 @@ export default {
         // 函数节点
         case 'func':
           // 高亮选中函数
-          this.$store.commit('updateEditor_highlightedFuncId', data.id);
+          this.$store.commit('updateEditor_selectedItemId', data.id);
 
           if ((this.$route.name === 'code-viewer' || this.$route.name === 'code-editor')
                 && data.scriptId === this.$route.params.id) {
@@ -701,7 +701,7 @@ export default {
       switch(this.$route.name) {
         case 'code-editor':
         case 'code-viewer':
-          return this.$store.state.Editor_highlightedFuncId;
+          return this.$store.state.Editor_selectedItemId;
 
         default:
           return null;

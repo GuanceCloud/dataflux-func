@@ -21,12 +21,12 @@ const STATE_CONFIG = {
   asideScript_expandedNodeMap              : { persist: false, syncXTab: false },
   asideScript_quickViewWindowPosition      : { persist: true,  syncXTab: false },
   asideDataSource_simpleDebugWindowPosition: { persist: true,  syncXTab: false },
-  codeEditor_splitPanePercent              : { persist: false, syncXTab: false  },
+  codeEditor_splitPanePercent              : { persist: false, syncXTab: false },
   codeEditor_highlightedLineConfigMap      : { persist: false, syncXTab: false },
   codeEditor_isCodeLoaded                  : { persist: false, syncXTab: false },
   codeViewer_highlightedLineConfigMap      : { persist: false, syncXTab: false },
-  Editor_highlightedFuncId                 : { persist: false, syncXTab: false },
-  Editor_splitPanePercent                  : { persist: false, syncXTab: false  },
+  Editor_selectedItemId                 : { persist: false, syncXTab: false },
+  Editor_splitPanePercent                  : { persist: false, syncXTab: false },
   TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
   scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
@@ -59,7 +59,7 @@ const MUTATION_CONFIG = {
   updateCodeEditor_highlightedLineConfigMap      : { persist: true  },
   updateCodeEditor_isCodeLoaded                  : { persist: false },
   updateCodeViewer_highlightedLineConfigMap      : { persist: true  },
-  updateEditor_highlightedFuncId                 : { persist: true  },
+  updateEditor_selectedItemId                 : { persist: true  },
   updateEditor_splitPanePercent                  : { persist: true  },
   updateTableList_scrollY                        : { persist: false },
   updateScriptListSyncTime                       : { persist: false },
@@ -143,7 +143,7 @@ export default new Vuex.Store({
 
     codeViewer_highlightedLineConfigMap: null,
 
-    Editor_highlightedFuncId: null,
+    Editor_selectedItemId: null,
     Editor_splitPanePercent : null,
 
     TableList_scrollY: 0,
@@ -385,8 +385,8 @@ export default new Vuex.Store({
       state.codeViewer_highlightedLineConfigMap = value || null;
     },
 
-    updateEditor_highlightedFuncId(state, value) {
-      state.Editor_highlightedFuncId = value || null;
+    updateEditor_selectedItemId(state, value) {
+      state.Editor_selectedItemId = value || null;
     },
     updateEditor_splitPanePercent(state, value) {
       state.Editor_splitPanePercent = value || null;

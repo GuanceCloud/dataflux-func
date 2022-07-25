@@ -166,7 +166,7 @@ export default {
       }
 
       if (dataId) {
-        this.$store.commit('updateEditor_highlightedFuncId', null);
+        this.$store.commit('updateEditor_selectedItemId', null);
       }
     },
     async addData() {

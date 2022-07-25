@@ -7,7 +7,7 @@ Script Setup                                                         : 脚本设
 'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
 Shortcut                                                             : 快捷键
-Select Func                                                          : 选择聚焦函数
+Select Item                                                          : 选择聚焦项目
 Download {type}                                                      : 下载{type}
 Setup Code Editor                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
@@ -63,11 +63,13 @@ Saved Draft Code: 已保存的草稿代码
             <el-form-item>
               <el-select
                 style="width: 150px"
-                v-model="selectedFuncId"
+                v-model="selectedItemId"
                 size="mini"
                 filterable
-                :placeholder="$t('Select Func')">
-                <el-option v-for="f in draftFuncs" :key="f.id" :label="f.name" :value="f.id">
+                :placeholder="$t('Select Item')">
+                <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                  <el-tag class="quick-select-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                  {{ item.name }}
                 </el-option>
               </el-select>
             </el-form-item>
@@ -127,13 +129,13 @@ export default {
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
-    selectedFuncId(val) {
-      this.$store.commit('updateEditor_highlightedFuncId', val);
-      this.highlightFunc();
+    selectedItemId(val) {
+      this.$store.commit('updateEditor_selectedItemId', val);
+      this.highlightQuickSelectItem();
     },
-    '$store.state.Editor_highlightedFuncId'(val) {
-      if (this.selectedFuncId !== val) {
-        this.selectedFuncId = val;
+    '$store.state.Editor_selectedItemId'(val) {
+      if (this.selectedItemId !== val) {
+        this.selectedItemId = val;
       }
     },
     '$store.state.shortcutAction'(val) {
@@ -212,12 +214,12 @@ export default {
         this.codeMirror.focus();
 
         // 更新函数列表
-        this.updateFuncList();
+        this.updateSelectableItems();
 
         // 选中函数
-        if (this.$store.state.Editor_highlightedFuncId) {
-          this.selectedFuncId = this.$store.state.Editor_highlightedFuncId;
-          this.highlightFunc();
+        if (this.$store.state.Editor_selectedItemId) {
+          this.selectedItemId = this.$store.state.Editor_selectedItemId;
+          this.highlightQuickSelectItem();
         }
       });
     },
@@ -227,37 +229,51 @@ export default {
         params: {id: this.data.id},
       });
     },
-    updateFuncList() {
+    updateSelectableItems() {
       if (!this.data.codeDraft) return;
 
-      const regexp = /^def ([a-zA-Z][a-zA-Z0-9_]+)\((.*)\)\:/gm;
-      let scriptDraftFuncs = Array.from(this.data.codeDraft.matchAll(regexp), m => {
-        let name   = m[1];
-        let id     = `${this.scriptId}.${name}`;
-        let kwargs = m[2].replace(/\n/g, ' ').split(',').reduce((acc, x) => {
-          let k = x.trim().split('=')[0]
-          if (k) acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
-          return acc;
-        }, {});
+      let nextSelectableItems = [];
+      this.data.codeDraft.split('\n').forEach((l, i) => {
+        if (l.indexOf('def ') === 0 && l.indexOf('def _') < 0) {
+          // 函数定义
+          let _parts = l.slice(4).split('(');
 
-        return {
-          id    : id,
-          name  : name,
-          kwargs: kwargs,
-        };
+          let name = _parts[0];
+          let id   = `${this.scriptId}.${name}`;
+
+          let kwargs = _parts[1].slice(0, -2).split(',').reduce((acc, x) => {
+            let k = x.trim().split('=')[0];
+            if (k && k.indexOf('*') < 0) {
+              acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
+            }
+            return acc;
+          }, {});
+
+          nextSelectableItems.push({
+            id    : id,
+            type  : 'def',
+            name  : name,
+            kwargs: kwargs,
+            line  : i,
+          });
+
+        } else if (l.indexOf('class ') === 0 && l.indexOf('class _') < 0) {
+          // 类定义
+          let _parts = l.slice(6).split('(');
+
+          let name = _parts[0];
+          let id   = `${this.scriptId}.${name}`;
+
+          nextSelectableItems.push({
+            id    : id,
+            type  : 'class',
+            name  : name,
+            line  : i,
+          });
+        }
       });
 
-      // 去重
-      let nextDraftFuncs = [];
-      let tmpMap = {};
-      scriptDraftFuncs.forEach((f) => {
-        if (tmpMap[f.id]) return;
-
-        nextDraftFuncs.push(f);
-        tmpMap[f.id] = true;
-      });
-
-      this.draftFuncs = nextDraftFuncs;
+      this.selectableItems = nextSelectableItems;
     },
     _clearLineHighlight(line) {
       try {
@@ -366,37 +382,25 @@ export default {
 
       this.$store.commit('updateCodeViewer_highlightedLineConfigMap', nextHighlightedLineConfigMap);
     },
-    highlightFunc() {
+    highlightQuickSelectItem() {
       if (!this.$store.state.isLoaded) return;
       if (!this.codeMirror) return;
-
-      let funcId = this.selectedFuncId;
-      if (!funcId) return;
-
-      let funcIdParts = funcId.split('.');
-      let scriptId = funcIdParts[0]
-      if (scriptId !== this.$route.params.id) return;
-
-      let nextFuncName = funcIdParts[1];
+      if (!this.selectedItem) return;
 
       // 清除之前选择
       this.updateHighlightLineConfig('selectedFuncLine', null);
 
-      // 查找函数所在行
-      let funcQuery = `def ${nextFuncName}(`;
+      // 清除之前选择
+      this.updateHighlightLineConfig('selectedFuncLine', null);
 
-      let searchCursor = this.codeMirror.getSearchCursor(funcQuery);
-      if (searchCursor.findNext()) {
-        let funcLine = searchCursor.from().line;
-
-        this.updateHighlightLineConfig('selectedFuncLine', {
-          line           : funcLine,
-          marginType     : 'next',
-          scroll         : -1,
-          textClass      : 'highlight-text',
-          backgroundClass: 'current-func-background highlight-code-line-blink',
-        });
-      }
+      // 定位到选择行
+      this.updateHighlightLineConfig('selectedFuncLine', {
+        line           : this.selectedItem.line,
+        marginType     : 'next',
+        scroll         : -1,
+        textClass      : 'highlight-text',
+        backgroundClass: 'current-func-background highlight-code-line-blink',
+      });
     },
     download() {
       let blob = new Blob([this.codeMirror.getValue()], {type: 'text/plain'});
@@ -463,6 +467,17 @@ export default {
     codeDraftLines() {
       return (this.data.codeDraft || '').split('\n').length;
     },
+
+    selectedItem() {
+      if (!this.selectedItemId) return null;
+
+      for (let i = 0; i < this.selectableItems.length; i++) {
+        let _item = this.selectableItems[i];
+        if (_item.id === this.selectedItemId) {
+          return _item;
+        }
+      }
+    },
   },
   props: {
   },
@@ -474,10 +489,10 @@ export default {
 
       data: {},
 
-      draftFuncs: [],
+      selectableItems: [],
+      selectedItemId : '',
 
-      selectedFuncId: '',
-      showMode      : 'draft', // 'draft|published|diff'
+      showMode: 'draft', // 'draft|published|diff'
 
       // DIFF信息
       diffAddedCount  : 0,
@@ -500,6 +515,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.quick-select-tag {
+  width: 42px;
+  text-align: center;
+}
 #editor_CodeViewer {
   display: none;
 }

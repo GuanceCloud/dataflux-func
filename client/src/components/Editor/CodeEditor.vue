@@ -11,8 +11,8 @@ seconds      : '{n} second | {n} seconds'
 Script Setup                                                                         : 脚本设置
 'Script is under editing mode in other browser tab, please wait...'                  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'                       : '其他客户端正在编辑此脚本，请稍后...'
-All top Func without a underscore prefix are avaliable                               : 可以指定任意顶层非下划线开头的函数
-Select Func                                                                          : 选择执行函数
+All top Func/Class without a underscore prefix are avaliable                         : 可以指定任意顶层非下划线开头的函数/类
+Select Item                                                                          : 选择聚焦项目
 Viewport are too narrow                                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
 Args                                                                                 : 参数
@@ -142,14 +142,16 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                 </el-form-item>
 
                 <el-form-item>
-                  <el-tooltip :content="$t('All top Func without a underscore prefix are avaliable')" placement="left" :enterable="false">
+                  <el-tooltip :content="$t('All top Func/Class without a underscore prefix are avaliable')" placement="left" :enterable="false">
                     <el-select
                       style="width: 150px"
-                      v-model="selectedFuncId"
+                      v-model="selectedItemId"
                       size="mini"
                       filterable
-                      :placeholder="$t('Select Func')">
-                      <el-option v-for="f in draftFuncs" :key="f.id" :label="f.name" :value="f.id">
+                      :placeholder="$t('Select Item')">
+                      <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                        <el-tag class="quick-select-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                        {{ item.name }}
                       </el-option>
                     </el-select>
                   </el-tooltip>
@@ -167,7 +169,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                   </el-form-item>
 
                   <el-form-item class="hidden-md-and-down">
-                    <el-popover placement="bottom" trigger="hover" width="380">
+                    <el-popover placement="bottom" trigger="hover" width="380" :disabled="!isFuncSelected">
                       <div>
                         <el-input
                           type="textarea"
@@ -188,6 +190,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         :readonly="true"
                         :placeholder="$t('Arguments (JSON)')"
                         :value="funcCallKwargsShowValue"
+                        :disabled="!isFuncSelected"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
                     </el-popover>
@@ -203,7 +206,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         v-prevent-re-click @click="callFuncDraft"
                         type="primary" plain
                         size="mini"
-                        :disabled="(selectedFuncId ? false : true) && !workerRunning">
+                        :disabled="!(!!selectedItemId && !workerRunning && isFuncSelected)">
                         <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
                       </el-button>
                     </el-tooltip>
@@ -378,16 +381,16 @@ export default {
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
-    selectedFuncId(val) {
-      this.$store.commit('updateEditor_highlightedFuncId', val);
-      this.highlightFunc();
+    selectedItemId(val) {
+      this.$store.commit('updateEditor_selectedItemId', val);
+      this.highlightQuickSelectItem();
 
       // 自动填充参数
       this.autoFillFuncCallKwargsJSON(val);
     },
-    '$store.state.Editor_highlightedFuncId'(val) {
-      if (this.selectedFuncId !== val) {
-        this.selectedFuncId = val;
+    '$store.state.Editor_selectedItemId'(val) {
+      if (this.selectedItemId !== val) {
+        this.selectedItemId = val;
       }
     },
     '$store.state.shortcutAction'(val) {
@@ -408,7 +411,7 @@ export default {
   methods: {
     _refreshAside() {
       // 更新函数列表
-      this.updateFuncList();
+      this.updateSelectableItems();
       // 更新左侧列表
       this.$store.commit('updateScriptListSyncTime');
     },
@@ -526,15 +529,15 @@ export default {
         }
 
         // 更新函数列表
-        this.updateFuncList();
+        this.updateSelectableItems();
 
         // 选中函数
-        if (this.$store.state.Editor_highlightedFuncId) {
-          this.selectedFuncId = this.$store.state.Editor_highlightedFuncId;
-          this.highlightFunc();
+        if (this.$store.state.Editor_selectedItemId) {
+          this.selectedItemId = this.$store.state.Editor_selectedItemId;
+          this.highlightQuickSelectItem();
 
           // 自动填充参数
-          this.autoFillFuncCallKwargsJSON(this.selectedFuncId);
+          this.autoFillFuncCallKwargsJSON(this.selectedItemId);
         }
       });
 
@@ -673,7 +676,7 @@ export default {
       let apiRes = null;
       try {
         apiRes = await this.T.callAPI('post', '/api/v1/func-draft/:funcId', {
-          params      : { funcId: this.selectedFuncId },
+          params      : { funcId: this.selectedItemId },
           body        : { kwargs: funcCallKwargs },
           alert       : { muteError: true },
           extraOptions: { noCountProcessing: true },
@@ -705,13 +708,13 @@ export default {
         argParts.push(`${k}=${v}`);
       }
       let argStr = argParts.join(', ');
-      this.outputResult('execute', `${this.selectedFuncId}(${argStr})`, apiRes);
+      this.outputResult('execute', `${this.selectedItemId}(${argStr})`, apiRes);
 
       // 标记运行的函数
       if (apiRes.ok) {
         // 等待输出栏弹出后执行
         setImmediate(() => {
-          this.highlightFunc();
+          this.highlightQuickSelectItem();
         });
       }
 
@@ -871,16 +874,13 @@ export default {
       }
     },
     autoFillFuncCallKwargsJSON(draftFuncId) {
-      if (this.draftFuncs.length <= 0) {
-        this.funcCallKwargsJSON = '';
-        return;
-      }
+      // 清空
+      this.funcCallKwargsJSON = '';
 
-      for (let i = 0; i < this.draftFuncs.length; i++) {
-        if (this.draftFuncs[i].id === draftFuncId) {
-          this.funcCallKwargsJSON = JSON.stringify(this.draftFuncs[i].kwargs, null, 2);
-          return;
-        }
+      if (!this.selectedItem) return;
+
+      if (this.selectedItem.type === 'def' && this.selectedItem.id === draftFuncId) {
+        this.funcCallKwargsJSON = JSON.stringify(this.selectedItem.kwargs, null, 2);
       }
     },
     endEdit(options) {
@@ -909,37 +909,51 @@ export default {
       this.$refs.vueSplitPane.percent = percent;
       this.debouncedUpdatePanePercent(this.$store, percent);
     },
-    updateFuncList() {
+    updateSelectableItems() {
       if (!this.data.codeDraft) return;
 
-      const regexp = /^def ([a-zA-Z][a-zA-Z0-9_]+)\((.*)\)\:/gm;
-      let scriptDraftFuncs = Array.from(this.data.codeDraft.matchAll(regexp), m => {
-        let name   = m[1];
-        let id     = `${this.scriptId}.${name}`;
-        let kwargs = m[2].replace(/\n/g, ' ').split(',').reduce((acc, x) => {
-          let k = x.trim().split('=')[0]
-          if (k) acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
-          return acc;
-        }, {});
+      let nextSelectableItems = [];
+      this.data.codeDraft.split('\n').forEach((l, i) => {
+        if (l.indexOf('def ') === 0 && l.indexOf('def _') < 0) {
+          // 函数定义
+          let _parts = l.slice(4).split('(');
 
-        return {
-          id    : id,
-          name  : name,
-          kwargs: kwargs,
-        };
+          let name = _parts[0];
+          let id   = `${this.scriptId}.${name}`;
+
+          let kwargs = _parts[1].slice(0, -2).split(',').reduce((acc, x) => {
+            let k = x.trim().split('=')[0];
+            if (k && k.indexOf('*') < 0) {
+              acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
+            }
+            return acc;
+          }, {});
+
+          nextSelectableItems.push({
+            id    : id,
+            type  : 'def',
+            name  : name,
+            kwargs: kwargs,
+            line  : i,
+          });
+
+        } else if (l.indexOf('class ') === 0 && l.indexOf('class _') < 0) {
+          // 类定义
+          let _parts = l.slice(6).split('(');
+
+          let name = _parts[0];
+          let id   = `${this.scriptId}.${name}`;
+
+          nextSelectableItems.push({
+            id    : id,
+            type  : 'class',
+            name  : name,
+            line  : i,
+          });
+        }
       });
 
-      // 去重
-      let nextDraftFuncs = [];
-      let tmpMap = {};
-      scriptDraftFuncs.forEach((f) => {
-        if (tmpMap[f.id]) return;
-
-        nextDraftFuncs.push(f);
-        tmpMap[f.id] = true;
-      });
-
-      this.draftFuncs = nextDraftFuncs;
+      this.selectableItems = nextSelectableItems;
     },
     openVueSplitPane() {
       this.$refs.vueSplitPane.percent = this.splitPanePercent;
@@ -1122,37 +1136,22 @@ export default {
 
       this.$store.commit('updateCodeEditor_highlightedLineConfigMap', nextHighlightedLineConfigMap);
     },
-    highlightFunc() {
+    highlightQuickSelectItem() {
       if (!this.$store.state.isLoaded) return;
       if (!this.codeMirror) return;
-
-      let funcId = this.selectedFuncId;
-      if (!funcId) return;
-
-      let funcIdParts = funcId.split('.');
-      let scriptId = funcIdParts[0]
-      if (scriptId !== this.$route.params.id) return;
-
-      let nextFuncName = funcIdParts[1];
+      if (!this.selectedItem) return;
 
       // 清除之前选择
       this.updateHighlightLineConfig('selectedFuncLine', null);
 
-      // 查找函数所在行
-      let funcQuery = `def ${nextFuncName}(`;
-
-      let searchCursor = this.codeMirror.getSearchCursor(funcQuery);
-      if (searchCursor.findNext()) {
-        let funcLine = searchCursor.from().line;
-
-        this.updateHighlightLineConfig('selectedFuncLine', {
-          line           : funcLine,
-          marginType     : 'next',
-          scroll         : -1,
-          textClass      : 'highlight-text',
-          backgroundClass: 'current-func-background highlight-code-line-blink',
-        });
-      }
+      // 定位到选择行
+      this.updateHighlightLineConfig('selectedFuncLine', {
+        line           : this.selectedItem.line,
+        marginType     : 'next',
+        scroll         : -1,
+        textClass      : 'highlight-text',
+        backgroundClass: 'current-func-background highlight-code-line-blink',
+      });
     },
     closeMonkeyPatchNotice(disable) {
       this.showMonkeyPatchNotice = false;
@@ -1327,6 +1326,21 @@ export default {
 
       return true;
     },
+
+    selectedItem() {
+      if (!this.selectedItemId) return null;
+
+      for (let i = 0; i < this.selectableItems.length; i++) {
+        let _item = this.selectableItems[i];
+        if (_item.id === this.selectedItemId) {
+          return _item;
+        }
+      }
+    },
+    isFuncSelected() {
+      if (!this.selectedItem) return false;
+      return this.selectedItem.type === 'def';
+    },
   },
   props: {
   },
@@ -1342,9 +1356,9 @@ export default {
       data     : {},
       scriptSet: {},
 
-      draftFuncs: [],
+      selectableItems: [],
+      selectedItemId : '',
 
-      selectedFuncId    : '',
       funcCallKwargsJSON: '',
       funcCallSeq       : 0,
 
@@ -1445,6 +1459,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.quick-select-tag {
+  width: 42px;
+  text-align: center;
+}
 #editor_CodeEditor {
   display: none;
 }

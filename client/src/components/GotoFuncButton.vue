@@ -39,7 +39,7 @@ export default {
       this.$store.commit('updateAsideScript_expandedNodeMap', nextExpandedNodeMap);
 
       // 记录选择的脚本ID，记录函数高亮
-      this.$store.commit('updateEditor_highlightedFuncId', this.funcId);
+      this.$store.commit('updateEditor_selectedItemId', this.funcId);
 
       // 跳转
       this.$router.push({

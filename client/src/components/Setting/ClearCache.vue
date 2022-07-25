@@ -111,7 +111,7 @@ export default {
         this.$store.commit('updateCodeEditor_splitPanePercent', null);
         this.$store.commit('updateCodeEditor_highlightedLineConfigMap', null);
         this.$store.commit('updateCodeViewer_highlightedLineConfigMap', null);
-        this.$store.commit('updateEditor_highlightedFuncId', null);
+        this.$store.commit('updateEditor_selectedItemId', null);
         this.$store.commit('updateEditor_splitPanePercent', null);
         this.$store.commit('updateTableList_scrollY', null);
         this.$store.commit('resetMonkeyPatchNotice');
