@@ -3,6 +3,9 @@
     element-loading-text="正在处理中，请稍后..."
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
+    <div id="NoticeBar" v-if="false">
+      TODO 公告信息
+    </div>
     <div id="Navi" v-if="showNavi">
       <Navi></Navi>
     </div>
@@ -357,6 +360,14 @@ h3 {
   right: 0;
   bottom: 0;
 }*/
+#NoticeBar {
+  background-color: #ff6600cc;
+  font-size: 12px;
+  padding: 1px;
+  text-align: center;
+  color: white;
+  height: 16px;
+}
 #Navi {
   position: relative;
   height: 30px;
