@@ -30,6 +30,7 @@ respCodeMap:
   ESysLimitReached    : 503.10  # Limit reached error.
   ESysAsyncTaskFailed : 503.20  # Async task failed error.
   ESysAsyncTaskTimeout: 503.21  # Async task timeout error.
+  ESysNetwork         : 503.22  # Network error.
 
   EOuterSystem        : 500.60 ## Common outer system error.
   EOuterSystemNotFound: 500.61 # No such data in outer system.

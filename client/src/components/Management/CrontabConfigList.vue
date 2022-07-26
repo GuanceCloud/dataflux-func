@@ -69,8 +69,8 @@ failureCount  : '失败 {n}'
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>{{ $t('No Crontab Config has ever been added') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Crontab Config has ever been added') }}</h1>
 
           <p class="no-data-tip">
             使用自动触发配置，可以让函数定时执行

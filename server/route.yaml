@@ -1972,7 +1972,7 @@ mainAPI:
         $desc: 文件服务ID
         $type: string
 
-  getPackageIndex:
+  getScriptPackageIndex:
     name         : 获取脚本包索引
     method       : get
     url          : /api/v1/script-packages/index

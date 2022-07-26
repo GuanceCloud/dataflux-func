@@ -17,8 +17,8 @@
       <!-- 列表区 -->
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>从未导出或安装过脚本包</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>从未导出或安装过脚本包</h1>
 
           <p class="no-data-tip">
             如需备份、分发脚本集，可以使用导出功能

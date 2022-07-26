@@ -137,8 +137,8 @@ routeLoader.load(ROUTE.mainAPI.fileService, [
 ]);
 
 // 脚本包索引
-routeLoader.load(ROUTE.mainAPI.getPackageIndex, [
-  mainAPICtrl.getPackageIndex,
+routeLoader.load(ROUTE.mainAPI.getScriptPackageIndex, [
+  mainAPICtrl.getScriptPackageIndex,
 ]);
 
 // 系统日志

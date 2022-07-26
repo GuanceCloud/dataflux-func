@@ -28,8 +28,8 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else>{{ $t('No Func Store data has ever been added') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Func Store data has ever been added') }}</h1>
 
           <p class="no-data-tip">
             可以使用<code>DFF.STORE.set('key', 'value', scope='scope', expire=3600)</code>和<code>DFF.STORE('key', scope='scope')</code>来存取函数存储数据

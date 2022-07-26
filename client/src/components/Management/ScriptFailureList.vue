@@ -14,8 +14,8 @@
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>尚无任何近期脚本故障</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>尚无任何近期脚本故障</h1>
 
           <p class="no-data-tip">
             脚本运行时可能产生各种问题，如未在函数内部处理，则会抛出到系统层

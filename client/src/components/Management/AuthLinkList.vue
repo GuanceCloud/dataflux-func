@@ -88,8 +88,8 @@ failureCount  : '失败 {n}'
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })">{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else>{{ $t('No Auth Link has ever been added') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Auth Link has ever been added') }}</h1>
 
           <p class="no-data-tip">
             出于安全性考虑，函数默认只能从内部网络访问

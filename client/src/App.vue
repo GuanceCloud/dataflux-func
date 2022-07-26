@@ -505,12 +505,18 @@ kbd {
 }
 .no-data-area .no-data-title {
   color: darkgrey !important;
-  font-size: x-large
+  font-size: x-large;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.no-data-area .no-data-title .fa {
+  margin-bottom: 20px;
+  font-size: 50px;
 }
 .no-data-area .no-data-tip {
   color: darkgrey !important;
   line-height: 2;
-  padding-top: 20px;
 }
 .timeline-tip {
   width: 800px;

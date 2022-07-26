@@ -23,8 +23,8 @@ Script Lib recovered: 脚本库已还原
       <!-- 列表区 -->
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered()">当前过滤条件无匹配数据</h1>
-          <h1 class="no-data-title" v-else>当前未全新安装系统，尚无任何还原点</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>当前未全新安装系统，尚无任何还原点</h1>
 
           <p class="no-data-tip">
             在进行发布脚本、导入脚本集、安装官方脚本集等操作之前，系统会自动创建还原点，保存整个脚本库状态

@@ -14,9 +14,12 @@ Requirements         : 依赖
 Are you sure you want to install the Script?         : 是否确认安装此脚本？
 Script installed, new Script is in effect immediately: 脚本已安装，新脚本立即生效
 
-The following Script Set IDs already exists, do you want to overwrite?: 下列脚本集ID已经存在，是否覆盖？
+The following Script Set IDs already exists, do you want to overwrite?             : 下列脚本集ID已经存在，是否覆盖？
 Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 安装的脚本集需要第三方包，是否现在前往PIP工具
+Unable to access the Script Market                                                 : 无法访问脚本市场
+Please check if the system can access the Internet properly                        : 请确认系统是否可以正常访问公网
 
+No Script Package has ever been published: 尚未发布任何脚本包
 FoundPackagesCount: '找不到脚本包 | 共找到 {n} 个脚本包 | 共找到 {n} 个脚本包'
 </i18n>
 
@@ -27,7 +30,8 @@ FoundPackagesCount: '找不到脚本包 | 共找到 {n} 个脚本包 | 共找到
       <el-header height="60px">
         <div class="page-header">
           <span>{{ $t('Script Market') }}</span>
-          <div class="header-control">
+
+          <div class="header-control" v-if="!T.isNothing(packageList)">
             <span class="text-main">{{ $tc('FoundPackagesCount', filteredPackageList.length) }}</span>
             &#12288;
             <el-input :placeholder="$t('Filter')"
@@ -45,7 +49,22 @@ FoundPackagesCount: '找不到脚本包 | 共找到 {n} 个脚本包 | 共找到
 
       <!-- 列表区 -->
       <el-main>
-        <a class="package-card-wrap" @click="openDetail(p)" v-for="p in filteredPackageList" :key="p.package">
+        <div class="no-data-area" v-if="!indexLoaded">
+          <h1 class="no-data-title">
+            <i class="fa fa-fw fa-chain-broken"></i>
+            {{ $t('Unable to access the Script Market') }}
+          </h1>
+          <p class="no-data-tip">
+            {{ $t('Please check if the system can access the Internet properly') }}
+          </p>
+        </div>
+
+        <div class="no-data-area" v-else-if="T.isNothing(packageList)">
+          <h1 class="no-data-title"><i class="fa fa-fw fa-inbox"></i>{{ $t('No Script Package has ever been published') }}</h1>
+        </div>
+        <a class="package-card-wrap" v-else
+          v-for="p in filteredPackageList" :key="p.package"
+          @click="openDetail(p)">
           <el-card class="package-card" shadow="hover">
             <i class="fa fa-fw fa-folder-open package-icon"></i>
             <div class="package-info">
@@ -59,6 +78,7 @@ FoundPackagesCount: '找不到脚本包 | 共找到 {n} 个脚本包 | 共找到
             </div>
           </el-card>
         </a>
+
       </el-main>
 
       <el-dialog :title="$t('Script Package Detail')" class="package-detail" :visible.sync="showDetail">
@@ -116,9 +136,10 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/script-packages/index', {
         query: _query,
       });
-      if (!apiRes.ok) return;
-
-      this.packageList = apiRes.data;
+      if (apiRes.ok) {
+        this.packageList = apiRes.data;
+        this.indexLoaded = true;
+      }
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -198,11 +219,13 @@ export default {
     return {
       detail: {},
 
-      filterTEXT : [],
+      filterTEXT : '',
       packageList: [],
 
       showDetail  : false,
       isInstalling: false,
+
+      indexLoaded: false,
     }
   },
 }

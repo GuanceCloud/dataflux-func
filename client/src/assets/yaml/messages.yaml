@@ -67,7 +67,7 @@ en: {}
   Invalid options, queue should be an integer between 1 and 9                                             : 配置错误，队列必须为1到9之间的整数
   Invalid options, timeout is too large                                                                   : 配置错误，timeout过大
   Invalid options, timeout is too small                                                                   : 配置错误，timeout过小
-  Invalid package                                                                                         : 包名无效
+  Invalid package index                                                                                   : 包索引无效
   Invalid password                                                                                        : 密码无效
   Invalid request body                                                                                    : 请求体无效
   Invalid request post data                                                                               : 请求体数据无效
