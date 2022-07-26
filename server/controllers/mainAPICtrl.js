@@ -3147,7 +3147,12 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        var opt = { groupTime: interval, limit: 2 };
+        var now = parseInt(Date.now() / 1000);
+        var opt = {
+          start    : now - interval * 2,
+          groupTime: interval,
+          limit    : 2,
+        };
 
         switch(metric) {
           case 'funcCallCount':
