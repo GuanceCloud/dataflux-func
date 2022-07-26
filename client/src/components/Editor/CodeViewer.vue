@@ -6,6 +6,8 @@ codeLines: '{n} line | {n} lines'
 Script Setup                                                         : 脚本设置
 'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
+Select to quick jump to                                              : 选择一项以快速跳转至
+'Function, Class or "# XXX/TEST/TODO/BUG/FIXME/HACK" line'           : '函数、类或 "# XXX/TEST/TODO/BUG/FIXME/HACK" 代码行'
 Shortcut                                                             : 快捷键
 Select Target                                                        : 选择跳转目标
 Download {type}                                                      : 下载{type}
@@ -61,23 +63,29 @@ Saved Draft Code: 已保存的草稿代码
             </el-form-item>
 
             <el-form-item>
-              <el-select
-                style="width: 150px"
-                v-model="selectedItemId"
-                size="mini"
-                filterable
-                :placeholder="$t('Select Target')">
-                <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
-                  <el-tag v-if="item.type === 'todo'"
-                    size="mini"
-                    class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
-                    <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
-                    {{ item.todoType }}
-                  </el-tag>
-                  <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
-                  {{ item.name }}
-                </el-option>
-              </el-select>
+              <el-tooltip placement="left" :enterable="false">
+                <div slot="content">
+                  {{ $t('Select to quick jump to') }}<br>
+                  {{ $t('Function, Class or "# XXX/TEST/TODO/BUG/FIXME/HACK" line' )}}
+                </div>
+                <el-select
+                  style="width: 150px"
+                  v-model="selectedItemId"
+                  size="mini"
+                  filterable
+                  :placeholder="$t('Select Target')">
+                  <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                    <el-tag v-if="item.type === 'todo'"
+                      size="mini"
+                      class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
+                      <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
+                      {{ item.todoType }}
+                    </el-tag>
+                    <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                    {{ item.name }}
+                  </el-option>
+                </el-select>
+              </el-tooltip>
             </el-form-item>
 
             <el-form-item>
@@ -541,6 +549,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.select-todo-tag {
+  width: 62px;
+  text-align: left;
+}
 .select-item-tag {
   width: 42px;
   text-align: center;

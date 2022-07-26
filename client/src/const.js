@@ -332,6 +332,11 @@ export default {
         icon : 'fa-times',
       },
       {
+        key  : 'TEST',
+        tagType: 'info',
+        icon : 'fa-question',
+      },
+      {
         key  : 'TODO',
         tagType: 'success',
         icon : 'fa-check-circle',
