@@ -530,8 +530,6 @@ export default {
     window.onresize = () => {
       for (let chartId in this.charts) this.charts[chartId].resize()
     }
-
-    window.vmc = this;
   },
   beforeDestroy() {
     if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);

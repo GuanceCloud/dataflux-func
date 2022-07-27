@@ -730,9 +730,6 @@ export default {
   created() {
     this.loadData();
   },
-  mounted() {
-    window.vmc = this;
-  }
 }
 </script>
 

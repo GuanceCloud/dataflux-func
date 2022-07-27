@@ -181,12 +181,14 @@ input:disabled {
 .el-message-box__title,
 .el-message-box__content,
 .el-notification__title,
-.el-notification__content {
+.el-notification__content,
+.el-drawer__header {
   color: #ccc !important;
 }
 .el-dialog,
 .el-message-box,
-.el-notification {
+.el-notification,
+.el-drawer {
   background: #222 !important;
   border: 1px solid #555 !important
 }

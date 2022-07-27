@@ -11,7 +11,7 @@ Select to quick jump to                                              : 选择一
 Shortcut                                                             : 快捷键
 Select Target                                                        : 选择跳转目标
 Download {type}                                                      : 下载{type}
-Setup Code Editor                                                    : 调整编辑器显示样式
+Code Editor setting                                                  : 代码编辑器设置
 This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
 This Script is locked by other user({user})                          : 当前脚本被其他用户（{user}）锁定
 Currently in view mode, click Edit button to enter edit mode         : 当前为查看模式，点击「编辑」按钮进入编辑模式
@@ -104,6 +104,17 @@ Saved Draft Code: 已保存的草稿代码
                 <el-button v-prevent-re-click @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
               </el-tooltip>
             </el-form-item>
+
+            <el-form-item>
+              <el-button-group>
+                <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+                  <el-button
+                    @click="$refs.codeEditorSetting.open()"
+                    plain
+                    size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
+                </el-tooltip>
+              </el-button-group>
+            </el-form-item>
           </el-form>
         </div>
 
@@ -117,18 +128,23 @@ Saved Draft Code: 已保存的草稿代码
         <textarea id="editor_CodeViewer"></textarea>
         <h1 id="viewModeHint">{{ $t('View Mode') }}</h1>
       </el-main>
+
+      <CodeEditorSetting :instance="codeMirror" ref="codeEditorSetting" />
     </el-container>
   </transition>
 </template>
 
 <script>
 // @ is an alias to /src
+import CodeEditorSetting from '@/components/Editor/CodeEditorSetting'
+
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 
 export default {
   name: 'CodeViewer',
   components: {
+    CodeEditorSetting,
   },
   watch: {
     $route: {
