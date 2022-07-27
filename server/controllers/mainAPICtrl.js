@@ -2123,6 +2123,10 @@ exports.getAuthLinkFuncList = function(req, res, next) {
         funcCategory   : d.func_category,
         funcIntegration: d.func_integration,
         funcTagsJSON   : d.func_tagsJSON,
+
+        apiAuthId  : d.apia_id,
+        apiAuthName: d.apia_name,
+        apiAuthType: d.apia_type,
       });
     });
 

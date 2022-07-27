@@ -55,9 +55,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="100">
+          <el-table-column align="right" width="80">
             <template slot-scope="scope">
-              <el-link @click="showAPI(scope.row)">API调用示例</el-link>
+              <el-link @click="showAPI(scope.row)">示例</el-link>
             </template>
           </el-table-column>
         </el-table>

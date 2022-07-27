@@ -1,3 +1,12 @@
+<i18n locale="zh-CN" lang="yaml">
+Config         : 配置
+Auth           : 认证
+Expires        : 过期
+Throttling     : 限流
+
+Auth Link only supports synchronous calling: 授权链接只支持同步调用
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
@@ -16,7 +25,7 @@
         <el-table class="common-table" height="100%"
           :data="data">
 
-          <el-table-column label="函数">
+          <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.funcId"
@@ -25,12 +34,12 @@
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
-                <span class="text-info">&#12288;授权链接ID:</span>
+                <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
                 <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.funcTagsJSON)">
                   <br>
-                  <span class="text-info">&#12288;标签:</span>
+                  <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.funcTagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
@@ -38,14 +47,14 @@
                 <template v-if="!T.isNothing(scope.row.funcCategory) || !T.isNothing(scope.row.funcIntegration) || !T.isNothing(scope.row.funcTagsJSON)">
                   <br>
                   <template v-if="!T.isNothing(scope.row.funcCategory)">
-                    <span class="text-info">&#12288;分类:</span>
+                    <span class="text-info">&#12288;分类</span>
                     <el-tag size="mini">
                       <code>{{ scope.row.funcCategory }}</code>
                     </el-tag>
                   </template>
 
                   <template v-if="!T.isNothing(scope.row.funcIntegration)">
-                    <span class="text-info">&#12288;集成:</span>
+                    <span class="text-info">&#12288;集成</span>
                     <el-tag size="mini">
                       <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
                       <code v-else>{{ scope.row.funcIntegration }}</code>
@@ -62,48 +71,52 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="有效期至" width="180">
+          <el-table-column :label="$t('Config')" width="220">
             <template slot-scope="scope">
-              <span v-if="!scope.row.expireTime" class="text-good">永久有效</span>
+              <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+              <el-tooltip :content="scope.row.apiAuthName" :disabled="!!!scope.row.apiAuthName" placement="right">
+                <span :class="{ 'text-main': !!scope.row.apiAuthId }">{{ C.API_AUTH_MAP.get(scope.row.apiAuthType).name }}</span>
+              </el-tooltip>
+
+              <br>
+              <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
+              <span v-if="!scope.row.expireTime">-</span>
               <template v-else>
-                <span>{{ scope.row.expireTime | datetime }}</span>
-                <br>
-                <span class="text-info">{{ scope.row.expireTime | fromNow }}</span>
+                <RelativeDateTime :datetime="scope.row.expireTime"
+                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
               </template>
+
+              <br>
+              <span class="text-info">{{ $t('Throttling') }}{{ $t(':') }}</span>
+              <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
+              <el-tooltip v-else placement="right">
+                <div slot="content">
+                  <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                    <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
+                  </template>
+                </div>
+                <span class="text-bad">{{ $t('ON') }}</span>
+              </el-tooltip>
             </template>
           </el-table-column>
 
-          <el-table-column label="限流策略" width="150">
+          <el-table-column :label="$t('Status')" width="200">
             <template slot-scope="scope">
-              <span v-if="T.isNothing(scope.row.throttlingJSON)" class="text-good">无限制</span>
-              <template v-else>
-                <span v-if="scope.row.throttlingJSON.bySecond">{{ scope.row.throttlingJSON.bySecond }}次/秒<br></span>
-                <span v-if="scope.row.throttlingJSON.byMinute">{{ scope.row.throttlingJSON.byMinute }}次/分钟<br></span>
-                <span v-if="scope.row.throttlingJSON.byHour">{{ scope.row.throttlingJSON.byHour }}次/小时<br></span>
-                <span v-if="scope.row.throttlingJSON.byDay">{{ scope.row.throttlingJSON.byDay }}次/天<br></span>
-                <span v-if="scope.row.throttlingJSON.byMonth">{{ scope.row.throttlingJSON.byMonth }}次/月<br></span>
-                <span v-if="scope.row.throttlingJSON.byYear">{{ scope.row.throttlingJSON.byYear }}次/年<br></span>
-              </template>
+              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="状态" width="100">
+          <el-table-column align="right" width="80">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">已禁用</span>
-              <span v-else class="text-good">已启用</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column align="right" width="100">
-            <template slot-scope="scope">
-              <el-link @click="showAPI(scope.row)">API调用示例</el-link>
+              <el-link @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        description="授权链接API固定为同步调用"
+        :description="$t('Auth Link only supports synchronous calling')"
         :showPostExample="true"
         :showPostExampleSimplified="true"
         :showGetExample="true"
