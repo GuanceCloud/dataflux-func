@@ -67,7 +67,7 @@ Signed In    : 已登录
             <span>{{ userProfileName }}</span>
           </span>
         </template>
-        <el-menu-item index="/setting/code-editor-setup">{{ $t('Settings') }}</el-menu-item>
+        <el-menu-item index="/setting/profile-setup">{{ $t('Settings') }}</el-menu-item>
         <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 

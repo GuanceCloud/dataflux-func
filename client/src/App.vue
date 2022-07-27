@@ -731,6 +731,19 @@ kbd {
   margin-top: 60px !important;
 }
 
+.el-drawer__wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  margin: 0;
+}
+.el-drawer__body {
+  overflow-y: auto;
+}
+
 /* CodeMirror 修正 */
 .cm-searching {
   background: none !important;

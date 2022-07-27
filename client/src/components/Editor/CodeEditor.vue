@@ -29,7 +29,8 @@ DIFF                                                                            
 Save and publish Script                                                              : 保存并发布
 Publish                                                                              : 发布
 Recover code to latest published version                                             : 恢复代码为上次发布的版本
-End edit                                                                             : 结束编辑
+End editing                                                                          : 结束编辑
+Code Editor setting                                                                  : 代码编辑器设置
 Setup Code Editor                                                                    : 调整编辑器显示样式
 This is a builtin Script, code will be reset when the system restarts                : 这是一个内置脚本，代码会在系统重启后复位
 This Script is locked by other user({user})                                          : 当前脚本被其他用户（{user}）锁定
@@ -109,6 +110,16 @@ Do NOT use monkey patch: 请勿使用猴子补丁
 'For performance reasons, the script does not run in a sandbox or isolated environment.': 出于性能考虑，脚本并非运行在沙盒或隔离环境中。
 'Using monkey patches may cause problems to the entire system.'                         : 使用猴子补丁可能导致系统整体出现问题。
 'Therefore, please avoid using monkey patches in scripts.'                              : 因此，请避免在脚本中使用猴子补丁。
+
+Setting of Code Editor only effect current browser: 代码编辑器配置仅保存在当前浏览器，更换浏览器或电脑后需要重新配置
+Theme                                             : 主题
+Font Size                                         : 文字大小
+Line Height                                       : 行高
+Reset to default                                  : 恢复默认设置
+Please input font size                            : 请输入文字大小
+Font size should be a integer between 12 and 36   : 文字大小设置范围为 12-36 px
+Please input line height                          : 请输入行高
+Line height should be a number between 1 and 2    : 行高设置范围为 1-2 倍
 </i18n>
 
 <template>
@@ -280,12 +291,24 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                       </el-tooltip>
                     </template>
 
-                    <el-tooltip :content="$t('End edit')" placement="bottom" :enterable="false">
+                    <el-tooltip :content="$t('End editing')" placement="bottom" :enterable="false">
                       <el-button
                         @click="endEdit"
                         :disalbed="!workerRunning"
                         plain
                         size="mini"><i class="fa fa-fw fa-sign-out"></i></el-button>
+                    </el-tooltip>
+                  </el-button-group>
+                </el-form-item>
+
+                <el-form-item>
+                  <el-button-group>
+                    <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+                      <el-button
+                        @click="showEditorSetting = true"
+                        :disalbed="!workerRunning"
+                        plain
+                        size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
                     </el-tooltip>
                   </el-button-group>
                 </el-form-item>
@@ -334,6 +357,48 @@ Do NOT use monkey patch: 请勿使用猴子补丁
               <el-button type="primary" size="small" @click="closeMonkeyPatchNotice()">{{ $t('OK') }}</el-button>
             </span>
           </el-dialog>
+
+          <!-- 代码编辑器设置 -->
+          <el-drawer :visible.sync="showEditorSetting" direction="rtl">
+            <div slot="title">
+              <i class="fa fa-fw fa-cog"></i> {{ $t('Code Editor setting') }}
+            </div>
+            <div class="code-editor-setting">
+              <InfoBlock type="info" :title="$t('Setting of Code Editor only effect current browser')"></InfoBlock>
+              <br>
+              <el-form ref="form" label-width="100px" :model="codeEditorSettingForm" :rules="codeEditorSettingFormRules">
+                <el-form-item :label="$t('Theme')">
+                  <el-select v-model="codeEditorSettingForm.theme">
+                    <el-option v-for="t in C.CODE_MIRROR_THEME" :key="t.key" :label="$t(t.name)" :value="t.key"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('Font Size')" prop="style.fontSize">
+                  <el-slider
+                    :min="12"
+                    :max="36"
+                    :step="1"
+                    :show-input="true"
+                    :show-input-controls="false"
+                    v-model.number="codeEditorSettingForm.style.fontSize"></el-slider>
+                </el-form-item>
+
+                <el-form-item :label="$t('Line Height')" prop="style.lineHeight">
+                  <el-slider
+                    :min="1"
+                    :max="2"
+                    :step="0.1"
+                    :show-input="true"
+                    :show-input-controls="false"
+                    v-model.number="codeEditorSettingForm.style.lineHeight"></el-slider>
+                </el-form-item>
+
+                <el-form-item>
+                  <el-button @click="resetDefaultCodeEditorSetting">{{ $t('Reset to default') }}</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-drawer>
         </el-container>
       </template>
 
@@ -417,6 +482,13 @@ export default {
     },
     '$store.state.uiLocale'(val) {
       this.T.resetCodeMirrorPhrases(this.codeMirror);
+    },
+    codeEditorSettingForm: {
+      deep: true,
+      handler(to, from) {
+        let _formData = this.T.jsonCopy(this.codeEditorSettingForm);
+        this.$store.commit('updateCodeMirrorSetting', _formData);
+      }
     },
   },
   methods: {
@@ -511,6 +583,16 @@ export default {
       options = options || {};
       options.codeField = options.codeField || 'codeDraft';
 
+      // 代码编辑器设置
+      this.codeEditorSettingForm = this.T.jsonCopy({
+        theme: this.$store.getters.codeMirrorSetting.theme,
+        style: {
+          fontSize  : parseInt(this.$store.getters.codeMirrorSetting.style.fontSize),
+          lineHeight: this.$store.getters.codeMirrorSetting.style.lineHeight,
+        }
+      });
+
+      // 代码
       let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
         query: { _withCode: true, _withCodeDraft: true },
       });
@@ -1191,6 +1273,12 @@ export default {
         this.$store.commit('disableMonkeyPatchNotice');
       }
     },
+    resetDefaultCodeEditorSetting() {
+      this.codeEditorSettingForm = this.T.jsonCopy({
+        theme: this.C.CODE_MIRROR_THEME_DEFAULT.key,
+        style: this.$store.getters.DEFAULT_STATE.codeMirrorStyle,
+      });
+    },
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1372,6 +1460,35 @@ export default {
       if (!this.selectedItem) return false;
       return this.selectedItem.type === 'def';
     },
+
+    codeEditorSettingFormRules() {
+      return {
+        'style.fontSize': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input font size'),
+            required: true,
+          },
+          {
+            trigger : 'change',
+            message : this.$t('Font size should be a integer between 12 and 36'),
+            type   : 'integer', min: 12, max: 36,
+          },
+        ],
+        'style.lineHeight': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input line height'),
+            required: true,
+          },
+          {
+            trigger : 'change',
+            message : this.$t('Line height should be a number between 1 and 2'),
+            type   : 'number', min: 1, max: 2,
+          },
+        ],
+      }
+    },
   },
   props: {
   },
@@ -1410,6 +1527,16 @@ export default {
       // 猴子补丁提示
       img_monkeyPatchNotice: img_monkeyPatchNotice,
       showMonkeyPatchNotice: false,
+
+      // 代码编辑器设置
+      showEditorSetting: false,
+      codeEditorSettingForm: {
+        theme: null,
+        style: {
+          fontSize  : null,
+          lineHeight: null,
+        }
+      },
     }
   },
   created() {
@@ -1566,6 +1693,9 @@ export default {
   line-height: 200px;
   z-index: 0;
 }
+.code-editor-setting {
+  padding: 10px 30px;
+}
 </style>
 <style>
 #editorContainer_CodeEditor {
@@ -1678,5 +1808,13 @@ pre .code-editor-output-error-stack {
 .code-editor-status-bar span {
   font-family: Iosevka;
   font-size: 14px;
+}
+
+.code-editor-setting .el-slider__input {
+  width: 60px;
+}
+.code-editor-setting .el-slider__runway.show-input {
+  margin-right: 80px;
+  width: auto;
 }
 </style>

@@ -326,16 +326,6 @@ const routes = [
     component: () => import('../views/Setting.vue'),
     children: [
       {
-        path: 'clear-cache',
-        name: 'clear-cache',
-        component: () => import('../components/Setting/ClearCache.vue'),
-      },
-      {
-        path: 'code-editor-setup',
-        name: 'code-editor-setup',
-        component: () => import('../components/Setting/CodeEditorSetup.vue'),
-      },
-      {
         path: 'profile-setup',
         name: 'profile-setup',
         component: () => import('../components/Setting/ProfileSetup.vue'),
@@ -344,6 +334,11 @@ const routes = [
         path: 'password-setup',
         name: 'password-setup',
         component: () => import('../components/Setting/PasswordSetup.vue'),
+      },
+      {
+        path: 'clear-cache',
+        name: 'clear-cache',
+        component: () => import('../components/Setting/ClearCache.vue'),
       },
     ],
   },

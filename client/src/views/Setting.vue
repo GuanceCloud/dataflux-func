@@ -1,6 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
 Cache Clear: 清除缓存
-Code Editor: 代码编辑器配置
 User Info  : 用户信息
 Password   : 修改密码
 </i18n>
@@ -16,12 +15,6 @@ Password   : 修改密码
             :router="true"
             :unique-opened="true"
             :default-active="$route.path">
-            <el-menu-item index="/setting/code-editor-setup">
-              <span>
-                <i class="fa fa-fw fa-edit"></i>
-                {{ $t('Code Editor') }}
-              </span>
-            </el-menu-item>
             <el-menu-item index="/setting/profile-setup" v-if="!$store.getters.isIntegratedUser">
               <span>
                 <i class="fa fa-fw fa-user-circle"></i>

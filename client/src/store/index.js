@@ -273,7 +273,7 @@ export default new Vuex.Store({
 
       let fontSize = state.codeMirrorSetting.style.fontSize || getters.DEFAULT_STATE.codeMirrorStyle.fontSize;
       fontSize = Math.max(fontSize, 12);
-      fontSize = Math.min(fontSize, 24);
+      fontSize = Math.min(fontSize, 36);
 
       let lineHeight = state.codeMirrorSetting.style.lineHeight || getters.DEFAULT_STATE.codeMirrorStyle.lineHeight;
       lineHeight = Math.max(lineHeight, 1);
