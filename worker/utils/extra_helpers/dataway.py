@@ -276,7 +276,7 @@ class DataWay(object):
 
         body_md5 = self._get_body_md5(body)
         date_str = formatdate(timeval=None, localtime=False, usegmt=True)
-        str_to_sign = '\n'.join([method, body_md5, self.CONTENT_TYPE, date_str])
+        str_to_sign = '\n'.join([method, body_md5, content_type, date_str])
 
         sign = self._get_sign(str_to_sign)
 
