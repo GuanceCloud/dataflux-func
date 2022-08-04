@@ -190,3 +190,12 @@ dev_deploy:
       done
   tags:
     - cloudcare-multiarch
+
+guanceSaaS_deploy:
+  stage: deploy
+  only:
+    - /^deploy_\d+$/
+  script:
+    - sh deploy-guance.sh -d
+  tags:
+    - cloudcare-multiarch
