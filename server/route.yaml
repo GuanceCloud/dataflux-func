@@ -1442,7 +1442,7 @@ mainAPI:
     method       : get
     url          : /api/v1/cron/:id
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_r
     params:
       id:
