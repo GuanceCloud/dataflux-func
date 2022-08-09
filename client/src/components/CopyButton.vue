@@ -1,7 +1,5 @@
+<!-- # NOTE: i18n 翻译在 locales.yaml 中定义 -->
 <i18n locale="zh-CN" lang="yaml">
-Copied               : 已复制
-Click to Copy        : 点击复制
-Browser not supported: 当前浏览器不支持
 </i18n>
 
 <template>
@@ -64,13 +62,13 @@ export default {
     tipContent() {
       switch (this.tipStatus) {
         case 'ready':
-          return this.$t('Click to Copy');
+          return this.$root.i18n.t('Click to Copy');
 
         case 'ok':
-          return this.$t('Copied');
+          return this.$root.i18n.t('Copied');
 
         case 'error':
-          return this.$('Browser not supported');
+          return this.$root.i18n.t('Browser not supported');
       }
     }
   },

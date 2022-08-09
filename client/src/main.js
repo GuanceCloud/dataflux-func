@@ -45,16 +45,12 @@ import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
 import locales from '@/assets/yaml/locales.yaml'
 import messages from '@/assets/yaml/messages.yaml'
 
-Object.assign(locales.en,       messages.en);
-Object.assign(locales['zh-CN'], messages['zh-CN']);
-
-Object.assign(locales.en,       elementUILocale_en);
-Object.assign(locales['zh-CN'], elementUILocale_zhCN);
-
 Vue.use(VueI18n);
 
-// 参考 https://blog.csdn.net/songhsia/article/details/104800966
-ElementLocale.i18n((key, value) => i18n.t(key, value));
+Object.assign(locales.en,       messages.en);
+Object.assign(locales.en,       elementUILocale_en);
+Object.assign(locales['zh-CN'], messages['zh-CN']);
+Object.assign(locales['zh-CN'], elementUILocale_zhCN);
 
 const i18n = new VueI18n({
   // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
@@ -65,6 +61,10 @@ const i18n = new VueI18n({
   silentTranslationWarn : true,
   messages              : locales,
 });
+
+// 参考 https://blog.csdn.net/songhsia/article/details/104800966
+ElementLocale.i18n((key, value) => i18n.t(key, value));
+Vue.prototype.i18n = i18n;
 
 // 时间处理
 import moment from 'moment'
@@ -177,7 +177,7 @@ const app = new Vue({
 }).$mount('#app');
 window.app = app;
 
-// 全剧配置
+// 全局配置
 Vue.config.devtools = true;
 Vue.config.productionTip = false;
 Vue.config.silent = true;

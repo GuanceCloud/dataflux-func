@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Func not exists: 函数不存在
+Fixed          : 固定值
+By Input       : 调用时指定
 </i18n>
 
 <template>
@@ -19,10 +21,13 @@ Func not exists: 函数不存在
         ><template v-else>
           <div class="func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
             <code class="func-kwargs-name">{{ name }}</code>
-            <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)">调用时指定</code>
+            <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)"><{{ $t('By Input') }}></code>
             <el-tooltip placement="top" v-else>
-              <pre class="func-kwargs-value" slot="content">{{ JSON.stringify(value, null, 2) }}</pre>
-              <code class="func-kwargs-value">固定值</code>
+              <div slot="content">
+                <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
+                <CopyButton :content="JSON.stringify(value, null, 2)" :title="$t('Copy')" font-size="12px"></CopyButton>
+              </div>
+              <code class="func-kwargs-value"><{{ $t('Fixed') }}></code>
             </el-tooltip>
             <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
           </div>

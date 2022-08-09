@@ -168,6 +168,11 @@ en:
   Username   : 登录账号
   User       : 用户
 
+  # CopyButton
+  Copied               : 已复制
+  Click to Copy        : 点击复制
+  Browser not supported: 当前浏览器不支持
+
   # CodeMirror
   "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）'
   "All"                                : '全部'
