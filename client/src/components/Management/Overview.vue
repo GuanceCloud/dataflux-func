@@ -288,7 +288,8 @@ export default {
     overviewCountFontSize(count) {
       // 最大80px，每多一位减少15px
       let numberLength = ('' + count).length;
-      return Math.min(80 - 15 * (numberLength - 4), 80);
+      let fontSize = parseInt(280 / numberLength * 1.2);
+      return Math.min(80, fontSize);
     },
     workerQueuePressurePercentage(pressure, maxPressure) {
       var percentage = 100 * pressure / (maxPressure * 2);
@@ -349,7 +350,7 @@ export default {
   margin-top: 100px;
 }
 .overview-card {
-  width: 300px;
+  width: 330px;
   height: 200px;
   display: inline-block;
   margin: 10px 20px;
