@@ -4,7 +4,6 @@
 
 /* 3rd-party Modules */
 var async = require('async');
-var JSZip = require('jszip');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
