@@ -165,7 +165,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo"></Pager>
 
-      <LongTextDialog title="完整内容如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="完整内容如下" ref="longTextDialog" :showDownload="true"></LongTextDialog>
     </el-container>
   </transition>
 </template>

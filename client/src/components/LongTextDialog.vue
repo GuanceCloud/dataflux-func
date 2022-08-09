@@ -67,8 +67,8 @@ export default {
   computed: {
   },
   props: {
-    title: String,
-    mode: Boolean,
+    title       : String,
+    mode        : Boolean,
     showDownload: Boolean,
   },
   data() {
