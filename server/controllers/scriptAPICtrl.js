@@ -451,10 +451,12 @@ exports.publish = function(req, res, next) {
 
           var funcId = toolkit.strf('{0}.{1}', id, func.name);
           var kwargs = {
-            funcId  : funcId,
-            origin  : 'integration',
-            execMode: 'sync',
-            queue   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            funcId       : funcId,
+            origin       : 'integration',
+            originId     : CONFIG._INTEGRATION_CRONTAB_CONFIG_ID,
+            execMode     : 'onPublish',
+            queue        : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
           }
           var taskOptions = {
             queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,

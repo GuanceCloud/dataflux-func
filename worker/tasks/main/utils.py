@@ -707,7 +707,7 @@ def auto_clean(self, *args, **kwargs):
 
 # Main.AutoRun
 class AutoRunTask(BaseTask):
-    def get_integrated_auto_run_funcs(self):
+    def get_integrated_on_launch_funcs(self):
         sql = '''
             SELECT
                `func`.`id`
@@ -724,17 +724,19 @@ def auto_run(self, *args, **kwargs):
     self.lock(max_age=30)
 
     # 获取函数功能集成自动运行函数
-    integrated_auto_run_funcs = self.get_integrated_auto_run_funcs()
+    integrated_auto_run_funcs = self.get_integrated_on_launch_funcs()
     for f in integrated_auto_run_funcs:
         # 任务ID
         task_id = gen_task_id()
 
         # 任务参数
         task_kwargs = {
-            'funcId'  : f['id'],
-            'origin'  : 'integration',
-            'execMode': 'async',
-            'queue'   : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
+            'funcId'       : f['id'],
+            'origin'       : 'integration',
+            'originId'     : CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'],
+            'execMode'     : 'onLaunch',
+            'queue'        : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
+            'taskInfoLimit': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
         }
 
         # 自动运行总是使用默认队列

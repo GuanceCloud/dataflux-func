@@ -414,14 +414,14 @@ h3 {
 
 .text-main {
   color: #FF6600 !important;
-  text-shadow: #ffa5004d 0 0 10px;
+  /* text-shadow: #ffa5004d 0 0 10px; */
 }
 .text-info {
   color: darkgrey !important;
 }
 .text-watch {
   color: orange !important;
-  text-shadow: #ffc58e 0 0 10px;
+  /* text-shadow: #ffc58e 0 0 10px; */
 }
 .text-good {
   color: rgb(0,128,0) !important;

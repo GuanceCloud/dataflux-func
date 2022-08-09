@@ -2,7 +2,9 @@
 s : 秒
 ms: 毫秒
 
-Planned Time: 计划时间
+Exec Mode   : 执行模式
+Trigger Time: 触发时间
+Start Time  : 启动时间
 Task        : 任务
 Func ID     : 函数ID
 Func Name   : 函数名
@@ -91,7 +93,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Planned Time')" width="200">
+          <el-table-column :label="$t('Trigger Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.triggerTimeMs | datetime }}</span>
               <br>
@@ -115,6 +117,16 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
               <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
                 :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
                 type="error" ></InfoBlock>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Exec Mode')" align="center" width="120">
+            <template slot-scope="scope">
+              <span
+                v-if="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode)"
+                :class="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).textClass">
+                {{ C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).name }}
+              </span>
             </template>
           </el-table-column>
 
@@ -277,6 +289,11 @@ export default {
       contentLines.push(`${this.$t('Func ID')}: ${this.$t(d.funcId)}`);
       contentLines.push(`${this.$t('Func Name')}: ${this.$t(d.func_name)}`);
       contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+
+      contentLines.push('');
+      contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
+      contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
+      contentLines.push(`${this.$t('Exec Mode')}: ${this.C.FUNC_EXEC_MODE_MAP.get(d.execMode).name}`);
       if (d.waitCostMs > 2000) {
         contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {

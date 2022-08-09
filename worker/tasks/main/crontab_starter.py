@@ -255,7 +255,7 @@ class CrontabStarterTask(BaseTask):
 
         return str(queue)
 
-    def send_task(self, crontab_config, current_time, trigger_time):
+    def send_task(self, crontab_config, current_time, trigger_time, exec_mode=None):
         # 确定超时时间
         soft_time_limit, time_limit = self._get_time_limit(crontab_config)
 
@@ -303,7 +303,7 @@ class CrontabStarterTask(BaseTask):
                 'origin'        : crontab_config['taskOrigin'],
                 'originId'      : crontab_config['id'],
                 'saveResult'    : crontab_config['saveResult'],
-                'execMode'      : crontab_config['execMode'],
+                'execMode'      : exec_mode or crontab_config['execMode'],
                 'triggerTime'   : (trigger_time + delay),
                 'triggerTimeMs' : (trigger_time + delay) * 1000,
                 'crontab'       : crontab_config['crontab'],
@@ -337,7 +337,7 @@ def crontab_manual_starter(self, *args, **kwargs):
     # 获取需要执行的自动触发配置
     crontab_config = self.get_crontab_config(crontab_config_id)
 
-    self.send_task(crontab_config=crontab_config, current_time=current_time, trigger_time=trigger_time)
+    self.send_task(crontab_config=crontab_config, current_time=current_time, trigger_time=trigger_time, exec_mode='async')
 
 @app.task(name='Main.CrontabStarter', bind=True, base=CrontabStarterTask)
 def crontab_starter(self, *args, **kwargs):
