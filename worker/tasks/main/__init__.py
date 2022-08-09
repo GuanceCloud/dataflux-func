@@ -1296,7 +1296,7 @@ class ScriptBaseTask(BaseTask):
         now = time.time()
 
         # 输出当前时间
-        message_time = arrow.get(now).to('Asia/Shanghai').format('MM-DD HH:mm:ss.SSS')
+        message_time = arrow.get(now).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss.SSS')
 
         # 计算时间差
         delta = 0

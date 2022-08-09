@@ -120,16 +120,6 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Exec Mode')" align="center" width="120">
-            <template slot-scope="scope">
-              <span
-                v-if="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode)"
-                :class="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).textClass">
-                {{ C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).name }}
-              </span>
-            </template>
-          </el-table-column>
-
           <el-table-column :label="$t('Wait Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.waitCostMs && scope.row.waitCostMs > 2000">
