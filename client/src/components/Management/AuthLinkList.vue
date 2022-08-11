@@ -106,7 +106,6 @@ failureCount  : '失败 {n}'
               <FuncInfo
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
-                :name="scope.row.func_name"
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>

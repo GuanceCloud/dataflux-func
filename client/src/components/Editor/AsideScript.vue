@@ -1,3 +1,11 @@
+<i18n locale="en" lang="yaml">
+lastSucceeded : 'Succeeded {t}'
+lastFailed    : 'Failed {t}'
+lastRan       : 'Ran {t}'
+successCount  : 'Success {n}'
+failureCount  : 'Failure {n}'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Jump to...                                     : 跳转到...
 Refresh                                        : 刷新列表
@@ -25,6 +33,22 @@ Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script locked      : 脚本已上锁
 Script unlocked    : 脚本已解锁
+
+Config    : 配置
+Auth      : 认证
+Expires   : 过期
+Throttling: 限流
+Created   : 创建
+Run       : 执行
+
+lastSucceeded : '{t}调用成功'
+lastFailed    : '{t}调用失败'
+lastRan       : '{t}调用'
+successCount  : '成功 {n}'
+failureCount  : '失败 {n}'
+
+Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
+Crontab Config Task sent: 自动触发配置任务已发送
 </i18n>
 
 <template>
@@ -107,7 +131,7 @@ Script unlocked    : 脚本已解锁
           </template>
 
           <!-- 操作 -->
-          <template v-if="data.type === 'scriptSet' || data.type === 'script'">
+          <template v-if="data.type === 'scriptSet' || data.type === 'script' || data.type === 'func'">
             <br>
             <el-button-group>
               <!-- 添加脚本集 -->
@@ -152,6 +176,27 @@ Script unlocked    : 脚本已解锁
                 <i class="fa fa-fw fa-wrench"></i>
                 {{ $t('Setup') }}
               </el-button>
+
+              <!-- 关联配置 -->
+              <el-button v-if="data.type === 'func'"
+                size="mini"
+                @click="openRelEntity(node, data, 'authLink')">
+                <i class="fa fa-fw fa-link"></i>
+                {{ $t('Auth Link') }}
+              </el-button>
+              <el-button v-if="data.type === 'func'"
+                size="mini"
+                @click="openRelEntity(node, data, 'crontabConfig')">
+                <i class="fa fa-fw fa-clock-o"></i>
+                {{ $t('Crontab Config') }}
+              </el-button>
+              <el-button v-if="data.type === 'func'"
+                size="mini"
+                @click="openRelEntity(node, data, 'batch')">
+                <i class="fa fa-fw fa-tasks"></i>
+                {{ $t('Batch') }}
+              </el-button>
+
             </el-button-group>
           </template>
 
@@ -176,7 +221,7 @@ Script unlocked    : 脚本已解锁
                   effect="dark"
                   :type="data.isPinned ? 'danger':'warning'"
                   size="mini">{{ $t('Builtin') }}</el-tag>
-               <span>{{ node.label }}</span>
+                <span>{{ node.label }}</span>
               </div>
             </span>
 
@@ -193,17 +238,262 @@ Script unlocked    : 脚本已解锁
         </el-popover>
       </span>
     </el-tree>
+
     <QuickViewWindow ref="quickViewWindow"></QuickViewWindow>
+
+    <APIExampleDialog ref="apiExampleDialog"
+      :showPostExample="true"
+      :showPostExampleSimplified="true"
+      :showGetExample="true"
+      :showGetExampleSimplified="true"></APIExampleDialog>
+
+    <el-dialog
+      :visible.sync="showRelEntity"
+      :close-on-click-modal="false"
+      width="1050px">
+      <div slot="title">
+        <FuncInfo
+          :id="relEntityFunc.id"
+          :title="relEntityFunc.title"
+          :definition="relEntityFunc.definition"
+          :hideGotoFunc="true"></FuncInfo>
+      </div>
+      <el-tabs v-model="relEntityTarget">
+        <el-tab-pane name="authLink">
+          <span slot="label"><i class="fa fa-fw fa-link"></i> {{ $t('Auth Link') }}</span>
+
+          <transition name="fade">
+          <el-table
+            class="common-table" v-if="showRelEntityData"
+            :data="relEntities.authLinks">
+            <el-table-column :label="$t('Auth Link')">
+              <template slot-scope="scope">
+                <span class="text-info">ID</span>
+                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <span>{{ scope.row.note }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Config')" width="220">
+              <template slot-scope="scope">
+                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+                <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
+                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+                </el-tooltip>
+
+                <br>
+                <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
+                <span v-if="!scope.row.expireTime">-</span>
+                <template v-else>
+                  <RelativeDateTime :datetime="scope.row.expireTime"
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                </template>
+
+                <br>
+                <span class="text-info">{{ $t('Throttling') }}{{ $t(':') }}</span>
+                <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
+                <el-tooltip v-else placement="right">
+                  <div slot="content">
+                    <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                      <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
+                    </template>
+                  </div>
+                  <span class="text-bad">{{ $t('ON') }}</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Status')" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+
+                <template v-if="scope.row.lastStartTime">
+                  <br>
+                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else class="text-main">
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+
+                  <br>
+                  <i class="fa fa-fw fa-pie-chart text-info"></i>
+                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="100">
+              <template slot-scope="scope">
+                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/al/:id')">{{ $t('Example') }}</el-link>
+              </template>
+            </el-table-column>
+          </el-table>
+          </transition>
+        </el-tab-pane>
+        <el-tab-pane name="crontabConfig">
+          <span slot="label"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Config') }}</span>
+
+          <transition name="fade">
+          <el-table
+            class="common-table" v-if="showRelEntityData"
+            :data="relEntities.crontabConfigs">
+            <el-table-column :label="$t('Crontab Config')">
+              <template slot-scope="scope">
+                <span class="text-info">ID</span>
+                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <span>{{ scope.row.note }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Config')" width="220">
+              <template slot-scope="scope">
+                <span class="text-info">Crontab{{ $t(':') }}</span>
+                <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
+                  <code class="text-code">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                  <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
+                </template>
+                <code v-else-if="scope.row.crontab" class="text-code">{{ scope.row.crontab }}</code>
+                <span v-else class="text-bad">{{ $t('Not Set') }}</span>
+
+                <br>
+                <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
+                <RelativeDateTime :datetime="scope.row.createTime"></RelativeDateTime>
+
+                <br>
+                <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
+                <span v-if="!scope.row.expireTime">-</span>
+                <template v-else>
+                  <RelativeDateTime :datetime="scope.row.expireTime"
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Status')" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+
+                <template v-if="scope.row.lastStartTime">
+                  <br>
+                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else class="text-main">
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+
+                  <br>
+                  <i class="fa fa-fw fa-pie-chart text-info"></i>
+                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="100">
+              <template slot-scope="scope">
+                <el-link @click="runCrontabTask(scope.row)" :disabled="!scope.row.func_id">
+                  {{ $t('Run') }}
+                </el-link>
+              </template>
+            </el-table-column>
+          </el-table>
+          </transition>
+        </el-tab-pane>
+
+        <el-tab-pane name="batch">
+          <span slot="label"><i class="fa fa-fw fa-tasks"></i> {{ $t('Batch') }}</span>
+
+          <transition name="fade">
+          <el-table
+            class="common-table" v-if="showRelEntityData"
+            :data="relEntities.batches">
+            <el-table-column :label="$t('Batch')">
+              <template slot-scope="scope">
+                <span class="text-info">ID</span>
+                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <span>{{ scope.row.note }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Config')" width="220">
+              <template slot-scope="scope">
+                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+                <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
+                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Status')" width="200">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+
+                <template v-if="scope.row.lastStartTime">
+                  <br>
+                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else class="text-main">
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+
+                  <br>
+                  <i class="fa fa-fw fa-pie-chart text-info"></i>
+                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="100">
+              <template slot-scope="scope">
+                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/bat/:id')">{{ $t('Example') }}</el-link>
+              </template>
+            </el-table-column>
+          </el-table>
+          </transition>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import QuickViewWindow from '@/components/Editor/QuickViewWindow'
+import APIExampleDialog from '@/components/APIExampleDialog'
 
 export default {
   name: 'AsideScript',
   components: {
     QuickViewWindow,
+    APIExampleDialog,
   },
   watch: {
     $route() {
@@ -222,6 +512,12 @@ export default {
     expandedNodeMap(val) {
       // 自动记录已展开的节点
       this.$store.commit('updateAsideScript_expandedNodeMap', val);
+    },
+    relEntityTarget(val) {
+      this.showRelEntityData = false;
+      this.$nextTick(() => {
+        this.showRelEntityData = true;
+      });
     },
   },
   methods: {
@@ -695,6 +991,74 @@ export default {
           break;
       }
     },
+
+    async loadRelEntityData(funcId) {
+      let apiRes  = null;
+      let listOpt = {
+        query: {
+          _withTaskInfo: true,
+          origin       : 'UI',
+          pageSize     : 100,
+        }
+      };
+
+      // 加载授权链接列表
+      apiRes = await this.T.callAPI_get('/api/v1/auth-links/do/list', listOpt);
+      if (apiRes.ok) {
+        this.relEntities.authLinks = apiRes.data;
+      }
+
+      // 加载自动触发配置列表
+      apiRes = await this.T.callAPI_get('/api/v1/crontab-configs/do/list', listOpt);
+      if (apiRes.ok) {
+        this.relEntities.crontabConfigs = apiRes.data;
+      }
+
+      // 加载批处理列表
+      apiRes = await this.T.callAPI_get('/api/v1/batches/do/list', listOpt);
+      if (apiRes.ok) {
+        this.relEntities.batches = apiRes.data;
+      }
+    },
+    async openRelEntity(node, data, target) {
+      await this.loadRelEntityData(data.id);
+
+      this.relEntityFunc   = data;
+      this.relEntityTarget = target;
+      this.showRelEntity   = true;
+      this.showPopoverId   = null;
+    },
+    async showAPI(d, urlPattern) {
+      // 获取函数详情
+      let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
+      if (!apiRes.ok) return;
+
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      // 生成API请求示例
+      let apiURLExample = this.T.formatURL(urlPattern, {
+        baseURL: true,
+        params : {id: d.id},
+      });
+
+      let funcCallKwargsJSON = {};
+      for (let k in d.funcCallKwargsJSON) if (d.funcCallKwargsJSON.hasOwnProperty(k)) {
+        if (this.common.isFuncArgumentPlaceholder(d.funcCallKwargsJSON[k])) {
+          funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
+        }
+      }
+      let apiBodyExample = { kwargs: funcCallKwargsJSON };
+
+      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
+    },
+    async runCrontabTask(d) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to send a task of the Crontab Config?'))) return;
+
+      let apiRes = await this.T.callAPI_get('/api/v1/cron/:id', {
+        params: { id: d.id },
+        alert : { okMessage: this.$t('Crontab Config Task sent') },
+      });
+    },
   },
   computed: {
     highlightedFuncId() {
@@ -725,6 +1089,18 @@ export default {
       // 因此需要将初始状态单独提取且防止中途修改
       expandedNodeMap        : {},
       defaultExpandedNodeKeys: [],
+
+      showRelEntity    : false,
+      showRelEntityData: false,
+      relEntityTarget  : '',
+      relEntityFunc: {
+
+      },
+      relEntities: {
+        authLinks     : [],
+        crontabConfigs: [],
+        batches       : [],
+      },
     };
   },
   created() {

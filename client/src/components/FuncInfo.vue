@@ -8,7 +8,7 @@ By Input       : 调用时指定
   <div class="func-info">
     <template v-if="id">
       <strong class="func-title">{{ title || name }}</strong>
-      <GotoFuncButton :funcId="id"></GotoFuncButton>
+      <GotoFuncButton v-if="!hideGotoFunc" :funcId="id"></GotoFuncButton>
       <br>
       <template v-if="fullDefinition">
         <!-- 优先使用定义方式展示 -->
@@ -51,6 +51,9 @@ export default {
   methods: {
   },
   computed: {
+    name() {
+      return this.id.split('.').pop();
+    },
     fullDefinition() {
       if (this.id && this.definition) {
         return `${this.id.split('.')[0]}.${this.definition}`;
@@ -60,12 +63,12 @@ export default {
     },
   },
   props: {
-    mode      : String,
-    title     : String,
-    definition: String,
-    id        : String,
-    name      : String,
-    kwargsJSON: Object,
+    mode        : String,
+    title       : String,
+    definition  : String,
+    id          : String,
+    kwargsJSON  : Object,
+    hideGotoFunc: Boolean,
   },
   data() {
     return {}

@@ -139,9 +139,7 @@ failureCount  : '失败 {n}'
               <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
                 {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-link>
-              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">
-                {{ $t('Example') }}
-              </el-link>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>

@@ -660,12 +660,14 @@ kbd {
 .el-notification__content {
   margin-top: 0 !important;
 }
+/*
 .el-tooltip__popper {
   z-index: 3002 !important;
 }
 .el-popover {
   z-index: 3001 !important;
 }
+*/
 .el-message {
   top: 40px !important;
   z-index: 3001 !important;
