@@ -83,6 +83,7 @@ export default {
 }
 .func-title {
   font-size: 18px;
+  line-height: 25px;
 }
 .func-kwargs-block {
   display: inline-block;

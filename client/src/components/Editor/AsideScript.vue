@@ -41,6 +41,10 @@ Throttling: 限流
 Created   : 创建
 Run       : 执行
 
+Auth Link List     : 授权链接列表
+Crontab Config List: 自动触发配置列表
+Batch List         : 批处理列表
+
 lastSucceeded : '{t}调用成功'
 lastFailed    : '{t}调用失败'
 lastRan       : '{t}调用'
@@ -307,7 +311,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Status')" width="200">
+            <el-table-column :label="$t('Status')" width="220">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
                 <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
@@ -332,7 +336,13 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column align="right" width="100">
+            <el-table-column align="right" width="180">
+              <template slot="header" slot-scope="scope">
+                <el-link type="primary" @click="$router.push({name: 'auth-link-list'})">
+                  {{ $t('Auth Link List') }}
+                  <i class="fa fa-fw fa-share-square"></i>
+                </el-link>
+              </template>
               <template slot-scope="scope">
                 <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/al/:id')">{{ $t('Example') }}</el-link>
               </template>
@@ -383,7 +393,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Status')" width="200">
+            <el-table-column :label="$t('Status')" width="220">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
                 <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
@@ -408,7 +418,13 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column align="right" width="100">
+            <el-table-column align="right" width="180">
+              <template slot="header" slot-scope="scope">
+                <el-link type="primary" @click="$router.push({name: 'crontab-config-list'})">
+                  {{ $t('Crontab Config List') }}
+                  <i class="fa fa-fw fa-share-square"></i>
+                </el-link>
+              </template>
               <template slot-scope="scope">
                 <el-link @click="runCrontabTask(scope.row)" :disabled="!scope.row.func_id">
                   {{ $t('Run') }}
@@ -447,7 +463,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Status')" width="200">
+            <el-table-column :label="$t('Status')" width="220">
               <template slot-scope="scope">
                 <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
                 <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
@@ -472,7 +488,13 @@ Crontab Config Task sent: 自动触发配置任务已发送
               </template>
             </el-table-column>
 
-            <el-table-column align="right" width="100">
+            <el-table-column align="right" width="180">
+              <template slot="header" slot-scope="scope">
+                <el-link type="primary" @click="$router.push({name: 'batch-list'})">
+                  {{ $t('Batch List') }}
+                  <i class="fa fa-fw fa-share-square"></i>
+                </el-link>
+              </template>
               <template slot-scope="scope">
                 <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/bat/:id')">{{ $t('Example') }}</el-link>
               </template>
