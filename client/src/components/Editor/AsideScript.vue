@@ -998,6 +998,7 @@ export default {
         query: {
           _withTaskInfo: true,
           origin       : 'UI',
+          funcId       : funcId,
           pageSize     : 100,
         }
       };
