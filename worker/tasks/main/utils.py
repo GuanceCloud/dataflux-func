@@ -10,10 +10,12 @@ import traceback
 import pprint
 import os
 import textwrap
+from urllib.parse import urljoin
 
 # 3rd-party Modules
 import six
 import arrow
+import requests
 
 # Project Modules
 from worker import app
@@ -22,6 +24,7 @@ from worker.tasks import gen_task_id
 from worker.tasks.main import decipher_data_source_config_fields
 from worker.utils.extra_helpers import HexStr
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers.datakit import DataKit
 
 # Current Module
 from worker.tasks import BaseTask
@@ -115,6 +118,45 @@ def reload_data_md5_cache(self, *args, **kwargs):
 
 # Main.SyncCache
 class SyncCache(BaseTask):
+    def _monitor_data_report(self, points, category='metric'):
+        _config = {}
+
+        # 查询配置
+        sql = '''SELECT
+                    id
+                    ,value
+                FROM wat_main_system_config
+                WHERE
+                    id IN (?)
+                '''
+        sql_params = [ [ 'MONITOR_DATA_UPLOAD_ENABLED', 'MONITOR_DATA_UPLOAD_URL'] ]
+        db_res = self.db.query(sql, sql_params)
+        for d in db_res:
+            try:
+                _config[d['id']] = toolkit.json_loads(d['value'])
+
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
+
+        upload_enabled = _config.get('MONITOR_DATA_UPLOAD_ENABLED') or False
+        upload_url     = _config.get('MONITOR_DATA_UPLOAD_URL')     or None
+        if not all([upload_enabled, upload_url]):
+            return
+
+        # 上报数据
+        try:
+            _url_parts = upload_url.split('?')
+            _url_parts[0] = urljoin(_url_parts[0], f'/v1/write/{category}')
+            write_url = '?'.join(_url_parts)
+
+            resp = requests.post(write_url, data=DataKit.prepare_line_protocol(points), timeout=3)
+            resp.raise_for_status()
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
     def sync_func_call_count(self):
         data = []
 
@@ -393,8 +435,9 @@ class SyncCache(BaseTask):
             else:
                 data.append(cache_res)
 
-        # 搜集任务记录限额
+        # 搜集任务记录限额，组装监控上报数据，写入本地DB数据
         task_info_limit_map = {}
+        monitor_data_points = []
         for d in data:
             origin    = d.get('origin')
             origin_id = d.get('originId')
@@ -402,6 +445,26 @@ class SyncCache(BaseTask):
             default_task_info_limit = DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
             task_info_limit         = d.get('taskInfoLimit') or default_task_info_limit
             task_info_limit_map[origin_id] = task_info_limit
+
+            # 组装监控上报数据
+            _point = {
+                'measurement': 'DFF_task_info',
+                'tags': {
+                    'workspaceUUID': d['funcCallKwargs'].get('workspace_uuid') or 'NONE',
+                    'originId'     : d['originId'],
+                    'funcId'       : d['funcId'],
+                    'execMode'     : d['execMode'],
+                    'status'       : d['status'],
+                    'queue'        : str(d['queue']),
+                },
+                'fields': {
+                    'waitCost' : d['startTimeMs'] - d['triggerTimeMs'],
+                    'runCost'  : d['endTimeMs']   - d['startTimeMs'],
+                    'totalCost': d['endTimeMs']   - d['triggerTimeMs'],
+                },
+                'timestamp': d['triggerTimeMs'],
+            }
+            monitor_data_points.append(_point)
 
             # 写入数据库
             if task_info_limit > 0:
@@ -425,6 +488,9 @@ class SyncCache(BaseTask):
                 '''
                 sql_params = [ _data ]
                 self.db.query(sql, sql_params)
+
+        # 发送监控数据
+        self._monitor_data_report(monitor_data_points)
 
         # 数据回卷
         for origin_id, task_info_limit in task_info_limit_map.items():

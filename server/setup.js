@@ -22,8 +22,9 @@ var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 var IMAGE_INFO   = require('../image-info.json');
 
-var INSTALL_CHECKER_INTERVAL          = 3 * 1000;
-var SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ = 'upgrade.db.upgradeSeq';
+var INSTALL_CHECKER_INTERVAL         = 3 * 1000;
+var SYS_CONFIG_ID_UPGRADE_DB_SEQ     = 'UPGRADE_DB_SEQ';
+var SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD = 'upgrade.db.upgradeSeq';
 
 // DB/Cache helper should load AFTER config is loaded.
 var mysqlHelper = null;
@@ -206,7 +207,7 @@ function _doInstall(config, callback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
 
       var sql = 'INSERT INTO `wat_main_system_config` SET `id` = ?, `value` = ?';
-      var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
+      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
       dbHelper.query(sql, sqlParams, function(err, data) {
         if (err) {
           setupErrorWrap.set('mysqlInit', 'Initializing system configs failed', err);
@@ -381,6 +382,12 @@ function runUpgrade() {
   var lockValue   = toolkit.genRandString();
   var maxLockTime = 30;
   async.series([
+    // 更新旧版数据库标记
+    function(asyncCallback) {
+      var sql = 'UPDATE wat_main_system_config SET id = ? WHERE id = ?';
+      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ, SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD];
+      dbHelper.query(sql, sqlParams, asyncCallback);
+    },
     // Check upgrade lock
     function(asyncCallback) {
       cacheHelper.lock(lockKey, lockValue, maxLockTime, function(err, cacheRes) {
@@ -415,7 +422,7 @@ function runUpgrade() {
     // Get upgrade items
     function(asyncCallback) {
       var sql = 'SELECT value FROM wat_main_system_config WHERE id = ?';
-      var sqlParams = [SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ];
+      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ];
       dbHelper.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -470,7 +477,7 @@ function runUpgrade() {
       var sql = toolkit.isNothing(currentUpgradeSeq)
               ? 'INSERT INTO wat_main_system_config SET value = ?, id = ?'
               : 'UPDATE wat_main_system_config SET value = ? WHERE id = ?';
-      var sqlParams = [nextUpgradeSeq, SYS_CONFIG_ID_CURRENT_UPGRADE_SEQ];
+      var sqlParams = [nextUpgradeSeq, SYS_CONFIG_ID_UPGRADE_DB_SEQ];
 
       dbHelper.query(sql, sqlParams, function(err) {
         if (err) return asyncCallback(err);

@@ -15,7 +15,7 @@ class HTTPHelper(object):
         pass
 
     def get(self, url, timeout=3):
-        r = requests.get(url, timeout=timeout, verify=REQUESTS_OPT)
+        r = requests.get(url, timeout=timeout, **REQUESTS_OPT)
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
@@ -24,7 +24,7 @@ class HTTPHelper(object):
         return parsed_resp
 
     def post(self, url, data, timeout=3):
-        r = requests.post(url, data=data, timeout=timeout, verify=REQUESTS_OPT)
+        r = requests.post(url, data=data, timeout=timeout, **REQUESTS_OPT)
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:

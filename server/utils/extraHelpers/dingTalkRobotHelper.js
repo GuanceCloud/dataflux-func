@@ -18,13 +18,7 @@ var logHelper = require('../logHelper');
 var dingTalkHelper = function(logger, config) {
   this.logger = logger || logHelper.createHelper();
 
-  if (config) {
-    this.config = toolkit.noNullOrWhiteSpace(config);
-  } else {
-    this.config = toolkit.noNullOrWhiteSpace({
-      webhookURL: CONFIG.DING_TALK_ROBOT_URL,
-    });
-  }
+  this.config = toolkit.noNullOrWhiteSpace(config);
 };
 
 /**

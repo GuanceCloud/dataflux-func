@@ -27,7 +27,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
 
       <div class="sign-in-panel">
         <el-form ref="form" :model="form" :rules="formRules" class="sign-in-form">
-          <el-form-item prop="funcId" v-if="signInFuncs">
+          <el-form-item prop="funcId" v-if="signInFuncs && signInFuncs.length > 0">
             <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
               <i slot="prefix" class="fth-man-icon fth-man-icon-integration"></i>
               <el-option :label="$t('DataFlux Func builtin user')" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
@@ -178,7 +178,7 @@ export default {
       return 'builtIn';
     },
     signInFuncs() {
-      return this.$store.getters.CONFIG('_INTEGRATED_SIGN_IN_FUNC');
+      return this.$store.getters.CONFIG('INTEGRATED_SIGN_IN_FUNC');
     },
     isBuiltInSignIn() {
       return this.T.isNothing(this.signInFuncs) || this.form.funcId === this.BUILTIN_SIGN_IN_FUNC_ID;

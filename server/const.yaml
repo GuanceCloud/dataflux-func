@@ -74,6 +74,9 @@ fileIcon:
   xml : file-code-o
   csv : file-code-o
 
-# System Configs
-systemConfigs:
-  - config.example
+# System Config IDs
+systemConfigIds:
+  - NOTICE_BAR_ENABLED
+  - NOTICE_BAR_TEXT
+  - MONITOR_DATA_UPLOAD_ENABLED
+  - MONITOR_DATA_UPLOAD_URL

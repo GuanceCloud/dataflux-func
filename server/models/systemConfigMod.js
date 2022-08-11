@@ -17,6 +17,10 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   entityName : 'systemConfig',
   tableName  : 'wat_main_system_config',
   alias      : 'sc',
+
+  objectFields: {
+    value: 'json',
+  }
 };
 
 exports.createCRUDHandler = function() {
@@ -57,10 +61,12 @@ EntityModel.prototype.set = function(id, newValue, callback) {
     },
     // 添加/更新配置项目
     function(asyncCallback) {
+      var _newValue = JSON.stringify(newValue);
+
       if (systemConfigId) {
         // 更新数据
         var nextData = {
-          value: newValue,
+          value: _newValue,
         };
         self.modify(systemConfigId, nextData, asyncCallback);
 
@@ -68,7 +74,7 @@ EntityModel.prototype.set = function(id, newValue, callback) {
         // 插入数据
         var newData = {
           id   : id,
-          value: newValue,
+          value: _newValue,
         };
         self.add(newData, asyncCallback);
       }

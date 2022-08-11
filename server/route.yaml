@@ -989,7 +989,7 @@ systemConfigAPI:
         $isRequired: true
         value:
           $desc: System Config Value
-          $type: string
+          $type: any
 
   delete:
     name         : Delete System Config

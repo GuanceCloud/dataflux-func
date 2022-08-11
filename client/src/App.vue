@@ -3,13 +3,13 @@
     element-loading-text="正在处理中，请稍后..."
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
-    <div id="NoticeBar" v-if="false">
-      TODO 公告信息
+    <div id="NoticeBar" v-if="showNoticeBar">
+      {{ variableConfig['NOTICE_BAR_TEXT'] }}
     </div>
     <div id="Navi" v-if="showNavi">
       <Navi></Navi>
     </div>
-    <div id="View" :style="{top: showNavi ? '30px' : '0'}">
+    <div id="View" :style="{top: viewTop}">
       <router-view />
     </div>
   </div>
@@ -124,6 +124,9 @@ export default {
     },
   },
   computed: {
+    variableConfig() {
+      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
+    },
     showNavi() {
       switch(this.$route.name) {
         case 'index':
@@ -135,6 +138,17 @@ export default {
         default:
           return true;
       }
+    },
+    showNoticeBar() {
+      return this.variableConfig['NOTICE_BAR_ENABLED'] && this.variableConfig['NOTICE_BAR_TEXT'];
+    },
+    viewTop() {
+      let top = 0;
+
+      if (this.showNavi)      top += 30;
+      if (this.showNoticeBar) top += 16;
+
+      return `${top}px`;
     },
     isSignedIn() {
       return this.$store.getters.isSignedIn;

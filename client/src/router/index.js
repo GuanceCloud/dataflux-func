@@ -318,6 +318,12 @@ const routes = [
         name: 'access-key-list',
         component: () => import('../components/Management/AccessKeyList.vue'),
       },
+
+      {
+        path: 'system-config',
+        name: 'system-config',
+        component: () => import('../components/Management/SystemConfig.vue'),
+      },
     ],
   },
   {
@@ -388,6 +394,7 @@ const superAdminRoutes = [
   'user-setup',
   'access-key-list',
   'access-key-add',
+  'system-config',
 ];
 
 router.beforeEach((to, from, next) => {

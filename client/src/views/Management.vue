@@ -84,6 +84,13 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/system-config" v-if="$store.getters.isAdmin">
+              <span>
+                <i class="fa fa-fw fa-cog"></i>
+                {{ $t('System Config') }}
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>

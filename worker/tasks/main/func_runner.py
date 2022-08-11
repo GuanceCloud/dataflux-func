@@ -94,7 +94,7 @@ class FuncRunnerTask(ScriptBaseTask):
         self.cache_db.lpush(cache_key, data)
 
     def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
-            root_task_id=None, func_id=None,
+            root_task_id=None, func_id=None, func_call_kwargs=None,
             log_messages=None, einfo_text=None, edump_text=None,
             task_info_limit=None):
         if not all([origin, origin_id]):
@@ -104,17 +104,19 @@ class FuncRunnerTask(ScriptBaseTask):
             return
 
         data = {
-            'id'           : self.request.id,
-            'origin'       : origin,
-            'originId'     : origin_id,
-            'rootTaskId'   : root_task_id,
-            'funcId'       : func_id,
-            'execMode'     : exec_mode,
-            'status'       : status,
-            'triggerTimeMs': trigger_time_ms,
-            'startTimeMs'  : start_time_ms,
-            'endTimeMs'    : int(time.time() * 1000),
-            'taskInfoLimit': task_info_limit,
+            'id'            : self.request.id,
+            'origin'        : origin,
+            'originId'      : origin_id,
+            'rootTaskId'    : root_task_id,
+            'funcId'        : func_id,
+            'funcCallKwargs': func_call_kwargs,
+            'execMode'      : exec_mode,
+            'status'        : status,
+            'triggerTimeMs' : trigger_time_ms,
+            'startTimeMs'   : start_time_ms,
+            'endTimeMs'     : int(time.time() * 1000),
+            'taskInfoLimit' : task_info_limit,
+            'queue'         : self.queue,
         }
 
         if log_messages:
@@ -398,6 +400,7 @@ def func_runner(self, *args, **kwargs):
             start_time_ms=start_time_ms,
             root_task_id=root_task_id,
             func_id=func_id,
+            func_call_kwargs=func_call_kwargs,
             log_messages=log_messages,
             einfo_text=einfo_text,
             edump_text=edump_text,

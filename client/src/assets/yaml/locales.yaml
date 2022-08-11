@@ -212,6 +212,7 @@ en:
   ENV               : 环境变量
   Overview          : 总览
   About             : 关于
+  System Config     : 系统配置
   API Auth          : API认证
   Auth Link         : 授权链接
   Crontab Config    : 自动触发配置
@@ -247,7 +248,7 @@ en:
   Batch ID         : 批处理ID
   File Service ID  : 文件服务ID
   User ID          : 用户ID
-  Blueprint ID     : 蓝图
+  Blueprint ID     : 蓝图ID
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'

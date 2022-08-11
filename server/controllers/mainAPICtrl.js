@@ -38,6 +38,7 @@ var operationRecordMod        = require('../models/operationRecordMod');
 var fileServiceMod            = require('../models/fileServiceMod');
 var userMod                   = require('../models/userMod');
 var apiAuthMod                = require('../models/apiAuthMod');
+var systemConfigMod           = require('../models/systemConfigMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -2136,7 +2137,10 @@ exports.getAuthLinkFuncList = function(req, res, next) {
 };
 
 exports.getSystemConfig = function(req, res, next) {
-  var systemConfig = {
+  var systemConfig = {};
+
+  // 配置文件（部分）
+  var configFile = {
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
@@ -2179,8 +2183,10 @@ exports.getSystemConfig = function(req, res, next) {
 
     _ARCH: process.arch, // x64|arm64
   };
+  Object.assign(systemConfig, configFile);
 
-  var funcModel = funcMod.createModel(res.locals);
+  var funcModel         = funcMod.createModel(res.locals);
+  var systemConfigModel = systemConfigMod.createModel(res.locals);
 
   async.series([
     // 获取登录集成函数
@@ -2193,8 +2199,6 @@ exports.getSystemConfig = function(req, res, next) {
       funcModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        if (dbRes.length <= 0) return asyncCallback();
-
         // 集成登录记录为配置信息
         var integratedSignInFuncs = [];
         dbRes.forEach(function(d) {
@@ -2204,7 +2208,27 @@ exports.getSystemConfig = function(req, res, next) {
           });
         });
 
-        systemConfig._INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
+        systemConfig.INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
+
+        return asyncCallback();
+      });
+    },
+    // 获取系统配置表配置
+    function(asyncCallback) {
+      var opt = {
+        filters: {
+          id: {in: CONST.systemConfigIds}
+        }
+      };
+      systemConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        var variableConfigs = {};
+        dbRes.forEach(function(d) {
+          variableConfigs[d.id] = d.value;
+        });
+
+        systemConfig.VARIABLE_CONFIG = variableConfigs;
 
         return asyncCallback();
       });

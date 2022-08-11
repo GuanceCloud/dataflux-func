@@ -107,10 +107,6 @@ OFFICIAL_PACKAGE_INDEX_URL: https://static.guance.com/dataflux-func/market/pkg-i
 #   以下配置请勿修改   #
 ########################
 
-# 钉钉机器人
-DING_TALK_ROBOT_URL   : ''
-DING_TALK_ROBOT_SECRET: ''
-
 # 文件存储根目录
 FILE_STORE_ROOT_DIR: uploaded-files
 # 额外Python 包安装目录

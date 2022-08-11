@@ -38,7 +38,7 @@ DB       = MySQLHelper(logging)
 CACHE_DB = RedisHelper(logging)
 
 ADMIN_USER_ID     = 'u-admin'
-DB_UPGRADE_SEQ_ID = 'upgrade.db.upgradeSeq'
+DB_UPGRADE_SEQ_ID = 'UPGRADE_DB_SEQ'
 
 COMMAND_FUNCS = {}
 
@@ -56,28 +56,21 @@ def reset_db_data(table, data):
     try:
         trans_conn = DB.start_trans()
 
-        # 删除数据
-        sql = '''
-            DELETE FROM ??
-            WHERE
-                id = ?
-            '''
-        sql_params = [
-            table,
-            data['id'],
-        ]
-        DB.trans_non_query(trans_conn, sql, sql_params)
+        # 查询数据
+        sql = '''SELECT id FROM ?? WHERE id = ?'''
+        sql_params = [ table, data['id'] ]
+        db_res = DB.trans_query(trans_conn, sql, sql_params)
+        if db_res:
+            # 存在则更新
+            sql = '''UPDATE ?? SET ? WHERE id = ?'''
+            sql_params = [ table, data, data['id'] ]
+            DB.trans_non_query(trans_conn, sql, sql_params)
 
-        # 创建新数据
-        sql = '''
-            INSERT INTO ??
-            SET ?
-        '''
-        sql_params = [
-            table,
-            data,
-        ]
-        DB.trans_non_query(trans_conn, sql, sql_params)
+        else:
+            # 不存在则创建新数据
+            sql = '''INSERT INTO ?? SET ?'''
+            sql_params = [ table, data ]
+            DB.trans_non_query(trans_conn, sql, sql_params)
 
     except Exception as e:
         for line in traceback.format_exc().splitlines():
@@ -128,7 +121,7 @@ def reset_admin():
     reset_db_data('wat_main_user', data)
 
 @command
-def reset_db_upgrade_seq():
+def reset_upgrade_db_seq():
     '''
     重置数据库升级序号
     '''
@@ -181,7 +174,7 @@ def get_options_by_command_line():
             This tool should run in the Docker container:
                 $ docker exec {DataFlux Func Container ID} sh -c 'exec python admin-tool.py --help'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_admin'
-                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_db_upgrade_seq'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_upgrade_db_seq'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py clear_redis'
         '''))
 
