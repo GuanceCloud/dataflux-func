@@ -233,6 +233,12 @@ const routes = [
       },
 
       {
+        path: 'system-config',
+        name: 'system-config',
+        component: () => import('../components/Management/SystemConfig.vue'),
+      },
+
+      {
         path: 'script-log-list',
         name: 'script-log-list',
         component: () => import('../components/Management/ScriptLogList.vue'),
@@ -317,12 +323,6 @@ const routes = [
         path: 'access-key-list',
         name: 'access-key-list',
         component: () => import('../components/Management/AccessKeyList.vue'),
-      },
-
-      {
-        path: 'system-config',
-        name: 'system-config',
-        component: () => import('../components/Management/SystemConfig.vue'),
       },
     ],
   },

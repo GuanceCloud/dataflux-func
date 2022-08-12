@@ -77,17 +77,17 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/operation-record-list">
-              <span>
-                <i class="fa fa-fw fa-keyboard-o"></i>
-                {{ $t('Access Log') }}
-              </span>
-            </el-menu-item>
-
             <el-menu-item index="/management/system-config" v-if="$store.getters.isAdmin">
               <span>
                 <i class="fa fa-fw fa-cog"></i>
                 {{ $t('System Config') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item index="/management/operation-record-list">
+              <span>
+                <i class="fa fa-fw fa-keyboard-o"></i>
+                {{ $t('Access Log') }}
               </span>
             </el-menu-item>
 
