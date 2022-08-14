@@ -1,4 +1,4 @@
-FROM registry.jiagouyun.com/middlewares/dataflux-func:base-dataflux
+FROM registry.jiagouyun.com/middlewares/dataflux-func:base-guance
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
