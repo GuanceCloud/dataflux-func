@@ -9,4 +9,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run worker
-python _celery.py worker -A worker -l error -q $*
+celery --app=worker --quiet worker --loglevel=ERROR

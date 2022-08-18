@@ -21,4 +21,4 @@ for queue in $*; do
 done
 
 # run worker
-python _celery.py worker -A worker -l error -q -Q ${enabled_queues}
+celery --app=worker --quiet worker --loglevel=ERROR --queues=${enabled_queues}

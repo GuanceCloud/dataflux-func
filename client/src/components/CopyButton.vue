@@ -1,7 +1,7 @@
-<!-- # NOTE: i18n 翻译在 locales.yaml 中定义 -->
+<!-- # NOTE: i18n 翻译在 locales.yaml 中定义
 <i18n locale="zh-CN" lang="yaml">
 </i18n>
-
+-->
 <template>
   <div class="copy-button">
     <el-tooltip

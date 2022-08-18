@@ -61,7 +61,7 @@ function loadMarkdownDocument(filePath) {
   });
 
   sections.forEach(function(s) {
-    s.contentHTML = marked(s.content);
+    s.contentHTML = marked.parse(s.content);
   });
 
   return sections;

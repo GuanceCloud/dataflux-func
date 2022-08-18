@@ -1,3 +1,5 @@
+# 由于在环境准备步骤中，buildx 在 qemu-arm64 下执行速度太慢
+# 因此日常镜像构建由半成品镜像开始打包，以提高效率
 FROM registry.jiagouyun.com/middlewares/dataflux-func:base-guance
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
@@ -6,26 +8,26 @@ ARG TARGETARCH
 
 ENV TARGETARCH ${TARGETARCH}
 
-# Build project
+# 构建项目
+#   由于 buildx 在 qemu-arm64 下执行 npm run build 速度太慢
+#   因此改为本机执行 npm run build，并把 dist 目录也提交到 git 库中，不再由服务器进行构建
+#   因此只需要拷贝构建后的内容即可
 WORKDIR /usr/src/app
 COPY . .
-
-# 由于buildx 在arm64 下执行npm run build 速度太慢
-# 暂时改为本机执行npm run build，并把dist 目录也提交到git库中，不再由服务器进行构建
-# RUN ln -s /usr/src/base/node_modules ./node_modules && \
-#     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
-#     cd /usr/src/app/client && \
-#         npm run build
 RUN ln -s /usr/src/base/node_modules ./node_modules && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules
 
+# 启动脚本
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Run Web server
+# 参考
+# 启动 Web 服务器
 # EXPOSE 8088
 # CMD ./run-server.sh
-# Run Worker
+
+# 启动 Worker 进程
 # CMD ./run-worker.sh
-# Run Worker beat
+
+# 启动 Beat 进程
 # CMD ./run-beat.sh

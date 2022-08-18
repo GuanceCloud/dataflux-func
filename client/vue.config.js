@@ -58,6 +58,11 @@ module.exports = {
       .type('json')
       .use('yaml-loader')
         .loader("yaml-loader")
+        .tap(options => {
+          options = options || {};
+          options.asJSON = true;
+          return options;
+        })
         .end()
   },
   devServer: {
