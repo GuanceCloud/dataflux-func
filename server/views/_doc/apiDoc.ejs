@@ -519,7 +519,7 @@
             <div>
               <h3><%= __('Description') %></h3>
               <% if (c.descType === 'markdown') { %>
-                <div class="wat-doc-desc wat-doc"><%- marked(c.desc) %></div>
+                <div class="wat-doc-desc wat-doc"><%- marked.parse(c.desc) %></div>
               <% } else { %>
                 <pre class="wat-doc-desc wat-plain-text"><%= c.desc %></pre>
               <% } %>
