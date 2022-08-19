@@ -55,7 +55,7 @@ DB_AUTO_BACKUP_PATH: '/data/sqldump/'
 LOG_FILE_FORMAT: text
 
 # 终端日志是否着色
-LOG_CONSOLE_COLOR: true
+LOG_CONSOLE_COLOR: false
 
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址

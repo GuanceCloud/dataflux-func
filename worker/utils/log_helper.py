@@ -187,7 +187,7 @@ LOGGER.propagate = False
 
 # Add console logger
 console_handler = logging.StreamHandler(stream=sys.stdout)
-console_handler.setFormatter(LoggingFormatter(color=True, json=False))
+console_handler.setFormatter(LoggingFormatter(color=CONFIG['LOG_CONSOLE_COLOR'], json=False))
 LOGGER.addHandler(console_handler)
 
 # Add file logger
