@@ -378,7 +378,7 @@ exports.import = function(req, res, next) {
 
       } catch(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password (1)'));
       }
 
       return asyncCallback();
@@ -408,7 +408,7 @@ exports.import = function(req, res, next) {
       })
       .catch(function(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password (2)'));
       });
     },
     // 导入数据/暂存数据
