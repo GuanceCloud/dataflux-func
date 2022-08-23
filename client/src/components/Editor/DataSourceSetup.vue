@@ -225,6 +225,7 @@ This is a builtin Data Source, please contact the admin to change the config: å½
                         <el-cascader class="func-cascader-input" ref="funcCascader"
                           placeholder="--"
                           filterable
+                          :filter-method="common.funcCascaderFilter"
                           :placeholder="$t('Handler Func')"
                           v-model="topicHandler.funcId"
                           :options="funcCascader"

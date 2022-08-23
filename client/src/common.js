@@ -32,9 +32,10 @@ export async function getFuncList() {
 
   apiRes.data.forEach(d => {
     scriptSetMap[d.id] = {
-      label   : d.title || d.id,
-      value   : d.id,
-      children: [],
+      label     : d.title || d.id,
+      value     : d.id,
+      searchTEXT: T.getSearchText(d, ['id', 'title']),
+      children  : [],
     };
   });
 
@@ -46,9 +47,10 @@ export async function getFuncList() {
 
   apiRes.data.forEach(d => {
     scriptMap[d.id] = {
-      label   : d.title || d.id,
-      value   : d.id,
-      children: [],
+      label     : d.title || d.id,
+      value     : d.id,
+      searchTEXT: T.getSearchText(d, ['id', 'title']),
+      children  : [],
     };
 
     // 插入上一层"children"
@@ -67,6 +69,7 @@ export async function getFuncList() {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
+      searchTEXT     : T.getSearchText(d, ['id', 'title']),
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
@@ -84,6 +87,11 @@ export async function getFuncList() {
   }
 
   return result;
+}
+
+export function funcCascaderFilter(node, keyword) {
+  keyword = (keyword || '').toLowerCase().trim();
+  return node.data.searchTEXT.indexOf(keyword.toLowerCase());
 }
 
 export function isFuncArgumentPlaceholder(v) {

@@ -1491,3 +1491,11 @@ export function setupPageMode() {
 export function getHighlightRowCSS({row, rowIndex}) {
   return (store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
 };
+
+export function getSearchText(data, keys) {
+  let searchText = '';
+  keys.forEach(k => {
+    searchText += ` ${(data[k] || '').toLowerCase()}`;
+  });
+  return searchText.trim();
+};

@@ -29,7 +29,7 @@ Data exported: 数据已导出
                     <el-option
                       v-for="item in scriptSets"
                       :key="item.id"
-                      :label="item.title || item.id"
+                      :label="T.getSearchText(item, ['id', 'title'])"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
                       <code class="select-item-id">ID: {{ item.id }}</code>
@@ -49,7 +49,7 @@ Data exported: 数据已导出
                     <el-option
                       v-for="item in dataSources"
                       :key="item.id"
-                      :label="item.title || item.id"
+                      :label="T.getSearchText(item, ['id', 'title'])"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
                       <code class="select-item-id">ID: {{ item.id }}</code>
@@ -63,7 +63,7 @@ Data exported: 数据已导出
                     <el-option
                       v-for="item in envVariables"
                       :key="item.id"
-                      :label="item.title || item.id"
+                      :label="T.getSearchText(item, ['id', 'title'])"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
                       <code class="select-item-id">ID: {{ item.id }}</code>

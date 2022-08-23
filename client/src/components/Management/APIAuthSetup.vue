@@ -144,6 +144,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
                       <el-cascader class="func-cascader-input" ref="funcCascader"
                         placeholder="--"
                         filterable
+                        :filter-method="common.funcCascaderFilter"
                         v-model="form.configJSON.funcId"
                         :options="funcCascader"
                         :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>

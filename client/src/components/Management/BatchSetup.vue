@@ -78,6 +78,7 @@ recentTaskCount: '{n}个近期任务'
                   <el-cascader class="func-cascader-input" ref="funcCascader"
                     placeholder="--"
                     filterable
+                    :filter-method="common.funcCascaderFilter"
                     v-model="form.funcId"
                     :options="funcCascader"
                     :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"

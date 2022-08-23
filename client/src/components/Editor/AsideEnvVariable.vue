@@ -144,7 +144,7 @@ export default {
   },
   methods: {
     doFilter(q) {
-      q = (q || '').trim();
+      q = (q || '').toLowerCase().trim();
       if (!q) {
         this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
       } else {
@@ -204,7 +204,7 @@ export default {
           type      : 'envVariable',
           isPinned  : d.isPinned,
           pinTime   : d.pinTime,
-          searchTEXT: `${d.title} ${d.id}`,
+          searchTEXT: this.T.getSearchText(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
