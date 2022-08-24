@@ -11,7 +11,7 @@ TRUNCATE biz_main_batch_task_info;
 TRUNCATE biz_main_blueprint;
 TRUNCATE biz_main_crontab_config;
 TRUNCATE biz_main_crontab_task_info;
-TRUNCATE biz_main_data_source;
+TRUNCATE biz_main_connector;
 TRUNCATE biz_main_env_variable;
 TRUNCATE biz_main_file_service;
 # TRUNCATE biz_main_func
