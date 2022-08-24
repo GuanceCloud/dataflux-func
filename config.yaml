@@ -20,7 +20,7 @@ DOWNLOAD_TEMP_ROOT_FOLDER: '.downloads'
 MODE: prod
 
 # 私钥
-# 用于登录令牌、数据源配置加密等
+# 用于登录令牌、连接器配置加密等
 # 一旦配置后请勿修改，否则会导致系统无法正常运行
 SECRET: 'your_secret'
 

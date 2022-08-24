@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Jump to...     : 跳转到...
 Refresh        : 刷新列表
-Add Data Source: 添加数据源
+Add Connector  : 添加连接器
 Simple Debug   : 简易调试
 View           : 查看
 Setup          : 配置
@@ -9,12 +9,12 @@ Example        : 示例
 Copy example   : 复制示例
 Copy {name} ID : 复制{name}ID
 
-Data Source pinned  : 数据源已置顶
-Data Source unpinned: 数据源已取消
+Connector pinned  : 连接器已置顶
+Connector unpinned: 连接器已取消
 </i18n>
 
 <template>
-  <div id="aside-data-source-content">
+  <div id="aside-connector-content">
     <el-select class="jump-to-select"
       :placeholder="$t('Jump to...')"
       :no-data-text="$t('No Data')"
@@ -30,8 +30,8 @@ Data Source unpinned: 数据源已取消
         :value="item.id">
         <span class="select-item-name">
           <el-tag class="aside-tree-node-tag"
-            :type="C.DATA_SOURCE_MAP.get(item.dataSourceType).tagType"
-            size="mini">{{ C.DATA_SOURCE_MAP.get(item.dataSourceType).name }}</el-tag>
+            :type="C.CONNECTOR_MAP.get(item.connectorType).tagType"
+            size="mini">{{ C.CONNECTOR_MAP.get(item.connectorType).name }}</el-tag>
           {{ item.label }}
         </span>
         <code class="select-item-id">ID: {{ item.id }}</code>
@@ -65,8 +65,8 @@ Data Source unpinned: 数据源已取消
           <div class="aside-tree-node-description">
             <div>
               <el-tag class="aside-tree-node-tag-title"
-                :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
-                size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+                :type="C.CONNECTOR_MAP.get(data.connectorType).tagType"
+                size="mini">{{ C.CONNECTOR_MAP.get(data.connectorType).name }}</el-tag>
             </div>
 
             <CopyButton :content="data.id" tip-placement="left"></CopyButton>
@@ -89,9 +89,9 @@ Data Source unpinned: 数据源已取消
           <br>
           <el-button-group>
             <!-- 简易调试 -->
-            <el-button v-if="C.DATA_SOURCE_MAP.get(data.dataSourceType).debugSupported"
+            <el-button v-if="C.CONNECTOR_MAP.get(data.connectorType).debugSupported"
               size="small"
-              @click="showSimpleDebugWindow(data.dataSource)">
+              @click="showSimpleDebugWindow(data.connector)">
               <i class="fa fa-fw fa-window-restore"></i>
               {{ $t('Simple Debug') }}
             </el-button>
@@ -119,13 +119,13 @@ Data Source unpinned: 数据源已取消
               <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
-              <el-link v-else-if="data.type === 'addDataSource'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Data Source') }}
+              <el-link v-else-if="data.type === 'addConnector'" type="primary">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Connector') }}
               </el-link>
               <div v-else>
                 <el-tag class="aside-tree-node-tag"
-                  :type="C.DATA_SOURCE_MAP.get(data.dataSourceType).tagType"
-                  size="mini">{{ C.DATA_SOURCE_MAP.get(data.dataSourceType).name }}</el-tag>
+                  :type="C.CONNECTOR_MAP.get(data.connectorType).tagType"
+                  size="mini">{{ C.CONNECTOR_MAP.get(data.connectorType).name }}</el-tag>
                 <el-tag v-if="data.isBuiltin"
                   effect="dark"
                   type="warning"
@@ -153,7 +153,7 @@ Data Source unpinned: 数据源已取消
 import SimpleDebugWindow from '@/components/Editor/SimpleDebugWindow'
 
 export default {
-  name: 'AsideDataSource',
+  name: 'AsideConnector',
   components: {
     SimpleDebugWindow,
   },
@@ -169,7 +169,7 @@ export default {
 
       this.onSelectNode(node.data);
     },
-    '$store.state.dataSourceListSyncTime': function() {
+    '$store.state.connectorListSyncTime': function() {
       this.loadData();
     },
   },
@@ -194,7 +194,7 @@ export default {
         this.$refs.tree.setCurrentKey(entryId);
 
         // 滚动到目标位置
-        let $asideContent = document.getElementById('aside-data-source-content');
+        let $asideContent = document.getElementById('aside-connector-content');
         let $target = document.querySelector(`[entry-id="${entryId}"]`);
 
         let scrollTop = 0;
@@ -212,28 +212,28 @@ export default {
     async loadData() {
       this.loading = true;
 
-      let apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', {
+      let apiRes = await this.T.callAPI_getAll('/api/v1/connectors/do/list', {
         query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin', 'isPinned', 'pinTime'] },
       });
       if (!apiRes.ok) return;
 
       let treeData = [];
-      window._DFF_dataSourceIds = [];
+      window._DFF_connectorIds = [];
       apiRes.data.forEach(d => {
-        window._DFF_dataSourceIds.push(d.id);
+        window._DFF_connectorIds.push(d.id);
 
         // 缩减描述行数
         d.description = this.T.limitLines(d.description, 10);
 
         // 示例代码
-        let sampleCode = this.T.strf(this.C.DATA_SOURCE_MAP.get(d.type).sampleCode, d.id);
+        let sampleCode = this.T.strf(this.C.CONNECTOR_MAP.get(d.type).sampleCode, d.id);
 
         // 创建节点数据
         treeData.push({
           id            : d.id,
           label         : d.title || d.id,
-          type          : 'dataSource',
-          dataSourceType: d.type,
+          type          : 'connector',
+          connectorType : d.type,
           isBuiltin     : d.isBuiltin,
           isPinned      : d.isPinned,
           pinTime       : d.pinTime,
@@ -243,15 +243,15 @@ export default {
           description: d.description,
           sampleCode : sampleCode,
 
-          dataSource: d,
+          connector: d,
         });
       });
       treeData.sort(this.T.asideItemSorter);
-      treeData.unshift({type: 'addDataSource'});
+      treeData.unshift({type: 'addConnector'});
       treeData.unshift({type: 'refresh'});
 
       // 生成选择器选项
-      let selectOptions = treeData.filter(x => x.type === 'dataSource');
+      let selectOptions = treeData.filter(x => x.type === 'connector');
 
       // 加载数据
       this.loading           = false;
@@ -263,11 +263,11 @@ export default {
       let apiPath   = null;
       let okMessage = null;
       switch(dataType) {
-        case 'dataSource':
-          apiPath   = '/api/v1/data-sources/:id/do/modify';
+        case 'connector':
+          apiPath   = '/api/v1/connectors/:id/do/modify';
           okMessage = isPinned
-                    ? this.$t('Data Source pinned')
-                    : this.$t('Data Source unpinned');
+                    ? this.$t('Connector pinned')
+                    : this.$t('Connector unpinned');
           break;
 
         default:
@@ -280,10 +280,10 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      this.$store.commit('updateDataSourceListSyncTime');
+      this.$store.commit('updateConnectorListSyncTime');
     },
-    showSimpleDebugWindow(dataSource) {
-      this.$refs.simpleDebugWindow.showWindow(dataSource);
+    showSimpleDebugWindow(connector) {
+      this.$refs.simpleDebugWindow.showWindow(connector);
     },
     openEntity(node, data, target) {
       switch(data.type) {
@@ -292,17 +292,17 @@ export default {
           this.loadData();
           break;
 
-        // 「添加数据源」节点
-        case 'addDataSource':
+        // 「添加连接器」节点
+        case 'addConnector':
           this.$router.push({
-            name: 'data-source-add',
+            name: 'connector-add',
           });
           break;
 
-        // 数据源节点
-        case 'dataSource':
+        // 连接器节点
+        case 'connector':
           this.$router.push({
-            name  : 'data-source-setup',
+            name  : 'connector-setup',
             params: {id: data.id},
           });
           break;

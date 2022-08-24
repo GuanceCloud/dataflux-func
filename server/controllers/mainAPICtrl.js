@@ -28,7 +28,7 @@ var auth    = require('../utils/auth');
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
 var funcMod                   = require('../models/funcMod');
-var dataSourceMod             = require('../models/dataSourceMod');
+var connectorMod              = require('../models/connectorMod');
 var envVariableMod            = require('../models/envVariableMod');
 var authLinkMod               = require('../models/authLinkMod');
 var crontabConfigMod          = require('../models/crontabConfigMod');
@@ -1403,7 +1403,7 @@ exports.overview = function(req, res, next) {
   var scriptSetModel     = scriptSetMod.createModel(res.locals);
   var scriptModel        = scriptMod.createModel(res.locals);
   var funcModel          = funcMod.createModel(res.locals);
-  var dataSourceModel    = dataSourceMod.createModel(res.locals);
+  var connectorModel     = connectorMod.createModel(res.locals);
   var envVariableModel   = envVariableMod.createModel(res.locals);
   var authLinkModel      = authLinkMod.createModel(res.locals);
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
@@ -1415,7 +1415,7 @@ exports.overview = function(req, res, next) {
     { name : 'scriptSet',     model: scriptSetModel},
     { name : 'script',        model: scriptModel},
     { name : 'func',          model: funcModel},
-    { name : 'dataSource',    model: dataSourceModel},
+    { name : 'connector',     model: connectorModel},
     { name : 'envVariable',   model: envVariableModel},
     { name : 'authLink',      model: authLinkModel},
     { name : 'crontabConfig', model: crontabConfigModel},

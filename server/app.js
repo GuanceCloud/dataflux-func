@@ -172,7 +172,7 @@ function startApplication() {
   require('./routers/scriptSetExportHistoryAPIRouter');
   require('./routers/scriptSetImportHistoryAPIRouter');
 
-  require('./routers/dataSourceAPIRouter');
+  require('./routers/connectorAPIRouter');
   require('./routers/envVariableAPIRouter');
 
   require('./routers/authLinkAPIRouter');

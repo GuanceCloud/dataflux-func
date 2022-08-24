@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Script Lib : 脚本库
-Data Source: 数据源
+Connector  : 连接器
 Env        : 环境变量
 </i18n>
 
@@ -16,8 +16,8 @@ Env        : 环境变量
             <el-tab-pane :label="$t('Script Lib')" name="aside-script">
               <AsideScript ref="asideScript"></AsideScript>
             </el-tab-pane>
-            <el-tab-pane :label="$t('Data Source')" name="aside-data-source">
-              <AsideDataSource ref="asideDataSource"></AsideDataSource>
+            <el-tab-pane :label="$t('Connector')" name="aside-connector">
+              <AsideConnector ref="asideConnector"></AsideConnector>
             </el-tab-pane>
             <el-tab-pane :label="$t('ENV')" name="aside-env-variable">
               <AsideEnvVariable ref="asideEnvVariable"></AsideEnvVariable>
@@ -38,7 +38,7 @@ Env        : 环境变量
 // @ is an alias to /src
 // 边栏导航区
 import AsideScript      from '@/components/Editor/AsideScript'
-import AsideDataSource  from '@/components/Editor/AsideDataSource'
+import AsideConnector   from '@/components/Editor/AsideConnector'
 import AsideEnvVariable from '@/components/Editor/AsideEnvVariable'
 
 export default {
@@ -46,7 +46,7 @@ export default {
   components: {
     // 边栏导航区
     AsideScript,
-    AsideDataSource,
+    AsideConnector,
     AsideEnvVariable,
   },
   watch: {
@@ -85,9 +85,9 @@ export default {
     SPLIT_PANE_MIN_PERCENT: () => 10,
     currentTabFromRoute() {
       switch(this.$route.name) {
-        case 'data-source-add':
-        case 'data-source-setup':
-          return 'aside-data-source';
+        case 'connector-add':
+        case 'connector-setup':
+          return 'aside-connector';
 
         case 'env-variable-add':
         case 'env-variable-setup':
@@ -104,7 +104,7 @@ export default {
           c.push('fa-file-code-o');
           break;
 
-        case 'aside-data-source':
+        case 'aside-connector':
           c.push('fa-database');
           break;
 

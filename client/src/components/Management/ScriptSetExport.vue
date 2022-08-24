@@ -44,10 +44,10 @@ Data exported: 数据已导出
                   <InfoBlock title="系统会自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="数据源" prop="dataSourceIds">
-                  <el-select v-model="form.dataSourceIds" multiple filterable placeholder="请选择">
+                <el-form-item label="连接器" prop="connectorIds">
+                  <el-select v-model="form.connectorIds" multiple filterable placeholder="请选择">
                     <el-option
-                      v-for="item in dataSources"
+                      v-for="item in connectors"
                       :key="item.id"
                       :label="T.getSearchText(item, ['id', 'title'])"
                       :value="item.id">
@@ -55,7 +55,7 @@ Data exported: 数据已导出
                       <code class="select-item-id">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
-                  <InfoBlock v-if="!T.isNothing(form.dataSourceIds)" type="warning" title="导出的数据源不包含密码等敏感信息，导入后需要重新输入这些内容"></InfoBlock>
+                  <InfoBlock v-if="!T.isNothing(form.connectorIds)" type="warning" title="导出的连接器不包含密码等敏感信息，导入后需要重新输入这些内容"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="环境变量" prop="envVariableIds">
@@ -165,11 +165,11 @@ export default {
 
       this.scriptSets = apiRes.data;
 
-      // 数据源
-      apiRes = await this.T.callAPI_getAll('/api/v1/data-sources/do/list', opt);
+      // 连接器
+      apiRes = await this.T.callAPI_getAll('/api/v1/connectors/do/list', opt);
       if (!apiRes.ok) return;
 
-      this.dataSources = apiRes.data;
+      this.connectors = apiRes.data;
 
       // 环境变量
       apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', opt);
@@ -248,7 +248,7 @@ export default {
   data() {
     return {
       scriptSets  : [],
-      dataSources : [],
+      connectors  : [],
       envVariables: [],
 
       showPassword: false,
@@ -262,7 +262,7 @@ export default {
         includeAuthLinks     : false,
         includeCrontabConfigs: false,
         includeBatches       : false,
-        dataSourceIds        : [],
+        connectorIds         : [],
         envVariableIds       : [],
       },
       formRules: {

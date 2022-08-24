@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Add Data Source  : 添加数据源
-Setup Data Source: 配置数据源
+Add Connector  : 添加连接器
+Setup Connector: 配置连接器
 
 Type               : 类型
 Compatibility      : 兼容性
@@ -23,21 +23,21 @@ Handler Func       : 处理函数
 Test connection    : 测试连通性
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
-Password here is always required when the Data Source requires password to connect: 如数据源需要密码，则每次修改都必须重新输入密码
+Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
 '1. $share/GROUP/TOPIC in MQTTv5': '1. MQTTv5 的 $share/GROUP/TOPIC'
 '2. $queue/TOPIC in EMQX': '2. EMQX 的 $queue/TOPIC'
 
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
-Please input Data Source type: 请选择数据源类型
+Please input Connector type: 请选择连接器类型
 Please input host: 请输入主机地址
 Please input port: 请输入主机端口
 Only integer between 1 and 65535 are allowed: 主机端口范围为 1-65535
 Please input servers: 请输入服务器列表
 Please select HTTP protocol: 请选择HTTP协议
 Only HTTP and HTTPS are allowed: 协议只能为HTTP或HTTPS
-Please input source: 请输入数据源名称
+Please input source: 请输入连接器名称
 Please input database: 请输入数据库名
 Please input user: 请输入用户名
 Please input password: 请输入密码
@@ -48,13 +48,13 @@ Please input client ID: 请输入客户端ID
 Please input topic: 请输入订阅主题
 Please select handler Func: 请选择处理函数
 
-Data Source created: 数据源已创建
-Data Source saved  : 数据源已保存
-Data Source deleted: 数据源已删除
+Connector created: 连接器已创建
+Connector saved  : 连接器已保存
+Connector deleted: 连接器已删除
 
-Are you sure you want to delete the Data Source?: 是否确认删除此数据源？
+Are you sure you want to delete the Connector?: 是否确认删除此连接器？
 
-This is a builtin Data Source, please contact the admin to change the config: 当前数据源为内置数据源，请联系管理员调整集群配置
+This is a builtin Connector, please contact the admin to change the config: 当前连接器为内置连接器，请联系管理员调整集群配置
 </i18n>
 
 <template>
@@ -72,35 +72,35 @@ This is a builtin Data Source, please contact the admin to change the config: �
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
                 <el-form-item v-if="data.isBuiltin">
-                  <InfoBlock type="error" :title="$t('This is a builtin Data Source, please contact the admin to change the config')"></InfoBlock>
+                  <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
-                    <el-option v-for="opt in SUPPORTED_DATA_SOURCE" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
+                    <el-option v-for="opt in SUPPORTED_CONNECTOR" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item :label="$t('Type')" v-else>
                   <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.DATA_SOURCE_MAP.get(selectedType).fullName" :value="selectedType"></el-option>
+                    <el-option :label="C.CONNECTOR_MAP.get(selectedType).fullName" :value="selectedType"></el-option>
                   </el-select>
                 </el-form-item>
 
                 <template v-if="selectedType">
-                  <el-form-item v-if="C.DATA_SOURCE_MAP.get(selectedType).logo">
+                  <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).logo">
                     <el-image
-                      class="data-source-logo"
+                      class="connector-logo"
                       :class="[`logo-${selectedType}`]"
-                      :src="C.DATA_SOURCE_MAP.get(selectedType).logo">
+                      :src="C.CONNECTOR_MAP.get(selectedType).logo">
                     </el-image>
                   </el-form-item>
 
-                  <el-form-item v-if="C.DATA_SOURCE_MAP.get(selectedType).tips">
-                    <InfoBlock type="info" :title="C.DATA_SOURCE_MAP.get(selectedType).tips"></InfoBlock>
+                  <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
+                    <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips"></InfoBlock>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.DATA_SOURCE_MAP.get(selectedType).compatibleDBs)">
-                    <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.DATA_SOURCE_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
+                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
+                    <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
                   </el-form-item>
 
                   <el-form-item label="ID" prop="id">
@@ -173,7 +173,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Data Source requires password to connect')"></InfoBlock>
+                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
@@ -240,17 +240,17 @@ This is a builtin Data Source, please contact the admin to change the config: �
                 </template>
               </el-form>
 
-              <!-- 此处特殊处理：要始终保证可以测试数据源 -->
+              <!-- 此处特殊处理：要始终保证可以测试连接器 -->
               <el-form label-width="120px">
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 
                   <div class="setup-right">
-                    <el-button v-if="T.setupPageMode() === 'setup'" @click="testDataSource"
-                      :disabled="testDataSourceResult === 'running'">
-                      <i class="fa fa-fw fa-check text-good" v-if="testDataSourceResult === 'ok'"></i>
-                      <i class="fa fa-fw fa-times text-bad" v-if="testDataSourceResult === 'ng'"></i>
-                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testDataSourceResult === 'running'"></i>
+                    <el-button v-if="T.setupPageMode() === 'setup'" @click="testConnector"
+                      :disabled="testConnectorResult === 'running'">
+                      <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
+                      <i class="fa fa-fw fa-times text-bad" v-if="testConnectorResult === 'ng'"></i>
+                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testConnectorResult === 'running'"></i>
                       {{ $t('Test connection') }}
                     </el-button>
 
@@ -274,7 +274,7 @@ This is a builtin Data Source, please contact the admin to change the config: �
 
 <script>
 export default {
-  name: 'DataSourceSetup',
+  name: 'ConnectorSetup',
   components: {
   },
   watch: {
@@ -302,7 +302,7 @@ export default {
         this.$refs.form.clearValidate();
       }
 
-      let fieldMap = this.C.DATA_SOURCE_MAP.get(type).configFields;
+      let fieldMap = this.C.CONNECTOR_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       for (let f in fieldMap) if (fieldMap.hasOwnProperty(f)) {
@@ -316,7 +316,7 @@ export default {
       }
     },
     fillDefault(type) {
-      let fieldMap = this.C.DATA_SOURCE_MAP.get(type).configFields;
+      let fieldMap = this.C.CONNECTOR_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       let nextConfigJSON = {};
@@ -345,7 +345,7 @@ export default {
       if (!parsedURL || parsedURL.hostname == this.form.configJSON.host) return;
 
       // 没有对应支持不处理
-      let fieldMap = this.C.DATA_SOURCE_MAP.get(this.selectedType).configFields;
+      let fieldMap = this.C.CONNECTOR_MAP.get(this.selectedType).configFields;
       if (!fieldMap) return;
 
       let nextConfigJSON = this.T.jsonCopy(this.form.configJSON);
@@ -386,7 +386,7 @@ export default {
     },
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/data-sources/do/list', this.$route.params.id);
+        let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.$route.params.id);
         if (!apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -395,7 +395,7 @@ export default {
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         this.form = nextForm;
 
-        this.testDataSourceResult = null;
+        this.testConnectorResult = null;
 
         this.updateValidator(this.data.type);
       }
@@ -451,62 +451,62 @@ export default {
         _formData.configJSON.servers = _formData.configJSON.servers.replace(/\n/g, ',').replace(/\s/g, '');
       }
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/do/add', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/connectors/do/add', {
         body : { data: _formData },
-        alert: { okMessage: this.$t('Data Source created') },
+        alert: { okMessage: this.$t('Connector created') },
       });
       if (!apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
       });
-      this.$store.commit('updateDataSourceListSyncTime');
+      this.$store.commit('updateConnectorListSyncTime');
     },
     async modifyData() {
       let _formData = this._getFromData();
       delete _formData.id;
       delete _formData.type;
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/modify', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/connectors/:id/do/modify', {
         params: { id: this.$route.params.id },
         body  : { data: _formData },
-        alert : { okMessage: this.$t('Data Source saved') },
+        alert : { okMessage: this.$t('Connector saved') },
       });
       if (!apiRes.ok) return;
 
-      this.$store.commit('updateDataSourceListSyncTime');
+      this.$store.commit('updateConnectorListSyncTime');
     },
     async deleteData() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Data Source?'))) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Connector?'))) return;
 
-      let apiRes = await this.T.callAPI('/api/v1/data-sources/:id/do/delete', {
+      let apiRes = await this.T.callAPI('/api/v1/connectors/:id/do/delete', {
         params: { id: this.$route.params.id },
-        alert : { okMessage: this.$t('Data Source deleted') },
+        alert : { okMessage: this.$t('Connector deleted') },
       });
       if (!apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
       });
-      this.$store.commit('updateDataSourceListSyncTime');
+      this.$store.commit('updateConnectorListSyncTime');
     },
-    async testDataSource() {
-      this.testDataSourceResult = 'running';
+    async testConnector() {
+      this.testConnectorResult = 'running';
 
-      let apiRes = await this.T.callAPI_get('/api/v1/data-sources/:id/do/test', {
+      let apiRes = await this.T.callAPI_get('/api/v1/connectors/:id/do/test', {
         params: { id: this.$route.params.id },
       });
       if (apiRes.ok) {
-        this.testDataSourceResult = 'ok';
+        this.testConnectorResult = 'ok';
       } else {
-        this.testDataSourceResult = 'ng';
+        this.testConnectorResult = 'ng';
       }
     },
     hasConfigField(type, field) {
-      if (!this.C.DATA_SOURCE_MAP.get(type) || !this.C.DATA_SOURCE_MAP.get(type).configFields) {
+      if (!this.C.CONNECTOR_MAP.get(type) || !this.C.CONNECTOR_MAP.get(type).configFields) {
         return false;
       }
-      return (field in this.C.DATA_SOURCE_MAP.get(type).configFields);
+      return (field in this.C.CONNECTOR_MAP.get(type).configFields);
     },
 
     addTopicHandler() {
@@ -520,9 +520,9 @@ export default {
     },
   },
   computed: {
-    SUPPORTED_DATA_SOURCE() {
-      return this.C.DATA_SOURCE.filter(opt => {
-        // 部分数据源特殊处理
+    SUPPORTED_CONNECTOR() {
+      return this.C.CONNECTOR.filter(opt => {
+        // 部分连接器特殊处理
         switch (opt.key) {
           case 'sqlserver':
             if (this.$store.getters.CONFIG('_ARCH') !== 'x64') {
@@ -556,7 +556,7 @@ export default {
         type: [
           {
             trigger : 'change',
-            message : this.$t('Please input Data Source type'),
+            message : this.$t('Please input Connector type'),
             required: true,
           },
         ],
@@ -676,8 +676,8 @@ export default {
     },
     pageTitle() {
       const _map = {
-        setup: this.$t('Setup Data Source'),
-        add  : this.$t('Add Data Source'),
+        setup: this.$t('Setup Connector'),
+        add  : this.$t('Add Connector'),
       };
       return _map[this.T.setupPageMode()];
     },
@@ -708,7 +708,7 @@ export default {
       },
 
       isSaving            : false,
-      testDataSourceResult: null,
+      testConnectorResult: null,
     }
   },
 }
@@ -731,47 +731,47 @@ export default {
 }
 </style>
 <style>
-.data-source-logo img {
+.connector-logo img {
   width: auto;
 }
-.data-source-logo.logo-df_dataway {
+.connector-logo.logo-df_dataway {
 }
-.data-source-logo.logo-df_datakit {
+.connector-logo.logo-df_datakit {
 }
-.data-source-logo.logo-influxdb {
+.connector-logo.logo-influxdb {
   height: 70px !important;
 }
-.data-source-logo.logo-mysql {
+.connector-logo.logo-mysql {
   height: 100px !important;
 }
-.data-source-logo.logo-redis {
+.connector-logo.logo-redis {
   height: 90px !important;
 }
-.data-source-logo.logo-memcached {
+.connector-logo.logo-memcached {
   height: 90px !important;
 }
-.data-source-logo.logo-clickhouse {
+.connector-logo.logo-clickhouse {
   height: 100px !important;
 }
-.data-source-logo.logo-oracle {
+.connector-logo.logo-oracle {
   height: 40px !important;
 }
-.data-source-logo.logo-sqlserver {
+.connector-logo.logo-sqlserver {
   height: 60px !important;
 }
-.data-source-logo.logo-postgresql {
+.connector-logo.logo-postgresql {
   height: 100px !important;
 }
-.data-source-logo.logo-mongodb {
+.connector-logo.logo-mongodb {
   height: 100px !important;
 }
-.data-source-logo.logo-elasticsearch {
+.connector-logo.logo-elasticsearch {
   height: 70px !important;
 }
-.data-source-logo.logo-nsq {
+.connector-logo.logo-nsq {
   height: 90px !important;
 }
-.data-source-logo.logo-mqtt {
+.connector-logo.logo-mqtt {
   height: 90px !important;
 }
 </style>

@@ -362,9 +362,9 @@ exports.afterAppCreated = function(app, server) {
     ], printError);
   }
 
-  // 自动添加本地DataKit数据源
+  // 自动添加本地DataKit连接器
   var request = require('request');
-  var dataSourceModel = require('./models/dataSourceMod').createModel(app.locals);
+  var connectorModel = require('./models/connectorMod').createModel(app.locals);
 
   var LOCAL_DATAKIT_ID    = 'datakit';
   var LOCAL_DATAKIT_TITLE = '观测云DataKit';
@@ -420,7 +420,7 @@ exports.afterAppCreated = function(app, server) {
         });
       }, asyncCallback);
     },
-    // 添加DataKit数据源
+    // 添加DataKit连接器
     function(asyncCallback) {
       if (!localDataKitIP) return asyncCallback();
 
@@ -431,7 +431,7 @@ exports.afterAppCreated = function(app, server) {
           id: { eq: LOCAL_DATAKIT_ID }
         }
       }
-      dataSourceModel.list(opt, function(err, dbRes) {
+      connectorModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         var datakit = {
@@ -448,11 +448,11 @@ exports.afterAppCreated = function(app, server) {
         }
         if (dbRes.length <= 0) {
           // 不存在，则添加
-          dataSourceModel.add(datakit, asyncCallback);
+          connectorModel.add(datakit, asyncCallback);
 
         } else {
           // 存在，则更新
-          dataSourceModel.modify(datakit.id, datakit, asyncCallback);
+          connectorModel.modify(datakit.id, datakit, asyncCallback);
         }
       })
     },

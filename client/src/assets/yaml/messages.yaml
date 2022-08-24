@@ -24,12 +24,12 @@ en: {}
   Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again: 代码预检查失败。脚本在执行期间产生了异常错误，请检查代码后再试一次
   Code pre-check failed. Script TIMEOUT during executing, please check your code and try again            : 代码预检查失败。脚本在执行超时，请检查代码后再试一次
   Confirming import timeout                                                                               : 导入确认超时
-  Connecting to DataSource failed                                                                         : 连接到数据源失败
-  Connecting to DataSource timeout                                                                        : 连接到数据源超时
+  Connecting to Connector failed                                                                          : 连接到连接器失败
+  Connecting to Connector timeout                                                                         : 连接到连接器超时
   Current user does not exists                                                                            : 当前用户不存在
   Current user has been disabled                                                                          : 当前用户已被禁用
   Data of Socket.io must be a JSON string                                                                 : Socket.io数据必须为JSON字符串
-  Deleting builtin data source is not allowed                                                             : 不允许删除内置数据源
+  Deleting builtin Connector is not allowed                                                               : 不允许删除内置连接器
   Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io事件必须满足格式"socketio.*"
   Export failed                                                                                           : 导出失败
   File not exists                                                                                         : 文件不存在
@@ -41,7 +41,7 @@ en: {}
   Func Auth failed                                                                                        : 函数认证失败
   Func ID not specified                                                                                   : 函数ID未指定
   Func result is not standard JSON                                                                        : 函数结果无法解析为标准JSON
-  ID of data source already exists                                                                        : 数据源ID已存在
+  ID of Connector already exists                                                                          : 连接器ID已存在
   ID of ENV Variable already exists                                                                       : 环境变量ID已存在
   ID of file service already exists                                                                       : 文件服务ID已存在
   ID of script already exists                                                                             : 脚本ID已存在
@@ -74,7 +74,7 @@ en: {}
   Invalid request query                                                                                   : 请求参数无效
   Invalid username or password                                                                            : 用户名或密码无效
   Maximum calling rate exceeded                                                                           : 达到最大调用频率
-  Modifying builtin data source is not allowed, please edit the config instead                            : 不允许修改内置数据源，请修改系统配置
+  Modifying builtin Connector is not allowed, please edit the config instead                              : 不允许修改内置连接器，请修改系统配置
   No such Auth Link                                                                                       : 不存在此授权链接
   No such Batch                                                                                           : 不存在批处理
   No such Crontab Config                                                                                  : 不存在自动触发配置

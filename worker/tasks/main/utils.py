@@ -2,7 +2,7 @@
 
 '''
 杂项任务
-包含各类清理类任务、AutoCleanTask各类数据定时同步任务、数据源检查/调试任务等
+包含各类清理类任务、AutoCleanTask各类数据定时同步任务、连接器检查/调试任务等
 '''
 
 # Builtin Modules
@@ -21,14 +21,14 @@ import requests
 from worker import app
 from worker.utils import toolkit, yaml_resources
 from worker.tasks import gen_task_id
-from worker.tasks.main import decipher_data_source_config_fields
+from worker.tasks.main import decipher_connector_config_fields
 from worker.utils.extra_helpers import HexStr
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 from worker.utils.extra_helpers.datakit import DataKit
 
 # Current Module
 from worker.tasks import BaseTask
-from worker.tasks.main import func_runner, DATA_SOURCE_HELPER_CLASS_MAP
+from worker.tasks.main import func_runner, CONNECTOR_HELPER_CLASS_MAP
 
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
@@ -53,8 +53,8 @@ class ReloadDataMD5CacheTask(BaseTask):
             'table'   : 'biz_main_script',
             'md5Field': "IFNULL(`codeMD5`, 'x')",
         },
-        'dataSource': {
-            'table'   : 'biz_main_data_source',
+        'connector': {
+            'table'   : 'biz_main_connector',
             'md5Field': "MD5(`configJSON`)",
         },
         'envVariable': {
@@ -998,70 +998,70 @@ def auto_backup_db(self, *args, **kwargs):
     # 自动删除旧备份
     self.limit_backups()
 
-# Main.CheckDataSource
-@app.task(name='Main.CheckDataSource', bind=True, base=BaseTask, soft_time_limit=3, time_limit=5)
-def check_data_source(self, *args, **kwargs):
-    self.logger.info('Main.CheckDataSource Task launched.')
+# Main.CheckConnector
+@app.task(name='Main.CheckConnector', bind=True, base=BaseTask, soft_time_limit=3, time_limit=5)
+def check_connector(self, *args, **kwargs):
+    self.logger.info('Main.CheckConnector Task launched.')
 
-    data_source_type   = kwargs.get('type')
-    data_source_config = kwargs.get('config')
+    connector_type   = kwargs.get('type')
+    connector_config = kwargs.get('config')
 
-    # 检查数据源
-    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
-    if not data_source_helper_class:
-        e = Exception('Unsupported DataSource type: `{}`'.format(data_source_type))
+    # 检查连接器
+    connector_helper_class = CONNECTOR_HELPER_CLASS_MAP.get(connector_type)
+    if not connector_helper_class:
+        e = Exception('Unsupported Connector type: `{}`'.format(connector_type))
         raise e
 
-    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
+    connector_helper = connector_helper_class(self.logger, config=connector_config)
 
-    data_source_helper.check()
+    connector_helper.check()
 
-# Main.QueryDataSource
-@app.task(name='Main.QueryDataSource', bind=True, base=BaseTask, soft_time_limit=30, time_limit=35)
-def query_data_source(self, *args, **kwargs):
-    self.logger.info('Main.QueryDataSource Task launched.')
+# Main.QueryConnector
+@app.task(name='Main.QueryConnector', bind=True, base=BaseTask, soft_time_limit=30, time_limit=35)
+def query_connector(self, *args, **kwargs):
+    self.logger.info('Main.QueryConnector Task launched.')
 
-    data_source_id = kwargs.get('id')
+    connector_id   = kwargs.get('id')
     command        = kwargs.get('command')
     command_args   = kwargs.get('commandArgs')   or []
     command_kwargs = kwargs.get('commandKwargs') or {}
     return_type    = kwargs.get('returnType')    or 'json'
 
-    data_source = None
+    connector = None
 
-    # 查询数据源
+    # 查询连接器
     sql = '''
         SELECT
             `type`,
             `configJSON`
-        FROM biz_main_data_source
+        FROM biz_main_connector
         WHERE
             `id` = ?
         '''
-    sql_params = [data_source_id]
+    sql_params = [connector_id]
     db_res = self.db.query(sql, sql_params)
     if len(db_res) > 0:
-        data_source = db_res[0]
-        data_source['config'] = toolkit.json_loads(data_source['configJSON'])
+        connector = db_res[0]
+        connector['config'] = toolkit.json_loads(connector['configJSON'])
 
-    if not data_source:
-        e = Exception('No such DataSource')
+    if not connector:
+        e = Exception('No such Connector')
         raise e
 
-    # 执行数据源命令
-    data_source_type   = data_source.get('type')
-    data_source_config = data_source.get('config')
-    data_source_config = decipher_data_source_config_fields(data_source_config)
+    # 执行连接器命令
+    connector_type   = connector.get('type')
+    connector_config = connector.get('config')
+    connector_config = decipher_connector_config_fields(connector_config)
 
-    data_source_helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(data_source_type)
-    if not data_source_helper_class:
-        e = Exception('Unsupported DataSource type: `{}`'.format(da))
+    connector_helper_class = CONNECTOR_HELPER_CLASS_MAP.get(connector_type)
+    if not connector_helper_class:
+        e = Exception('Unsupported Connector type: `{}`'.format(da))
         raise e
 
     # 解密字段
-    data_source_helper = data_source_helper_class(self.logger, config=data_source_config)
+    connector_helper = connector_helper_class(self.logger, config=connector_config)
 
-    db_res = getattr(data_source_helper, command)(*command_args, **command_kwargs)
+    db_res = getattr(connector_helper, command)(*command_args, **command_kwargs)
 
     ret = None
     if return_type == 'repr':

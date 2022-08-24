@@ -200,7 +200,7 @@ module.exports = function(app, server) {
             case 'reportAndCheckClientConflict':
               switch(data.routeName) {
                 case 'code-editor':
-                case 'data-source-setup':
+                case 'connector-setup':
                 case 'env-variable-setup':
                   conflictSource = [
                     'routeName',      data.routeName,

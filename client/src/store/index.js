@@ -20,7 +20,7 @@ const STATE_CONFIG = {
   codeMirrorSetting                        : { persist: true,  syncXTab: true  },
   asideScript_expandedNodeMap              : { persist: false, syncXTab: false },
   asideScript_quickViewWindowPosition      : { persist: true,  syncXTab: false },
-  asideDataSource_simpleDebugWindowPosition: { persist: true,  syncXTab: false },
+  asideConnector_simpleDebugWindowPosition : { persist: true,  syncXTab: false },
   codeEditor_splitPanePercent              : { persist: false, syncXTab: false },
   codeEditor_highlightedLineConfigMap      : { persist: false, syncXTab: false },
   codeEditor_isCodeLoaded                  : { persist: false, syncXTab: false },
@@ -30,7 +30,7 @@ const STATE_CONFIG = {
   TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
   scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
-  dataSourceListSyncTime                   : { persist: true,  syncXTab: true  },
+  connectorListSyncTime                    : { persist: true,  syncXTab: true  },
   envVariableListSyncTime                  : { persist: true,  syncXTab: true  },
   pageFilterSettings                       : { persist: true,  syncXTab: true  },
   enabledExperimentalFeatureMap            : { persist: true,  syncXTab: true  },
@@ -54,7 +54,7 @@ const MUTATION_CONFIG = {
   updateCodeMirrorSetting                        : { persist: true  },
   updateAsideScript_expandedNodeMap              : { persist: true  },
   updateAsideScript_quickViewWindowPosition      : { persist: true  },
-  updateAsideDataSource_simpleDebugWindowPosition: { persist: true  },
+  updateAsideConnector_simpleDebugWindowPosition : { persist: true  },
   updateCodeEditor_splitPanePercent              : { persist: true  },
   updateCodeEditor_highlightedLineConfigMap      : { persist: true  },
   updateCodeEditor_isCodeLoaded                  : { persist: false },
@@ -63,7 +63,7 @@ const MUTATION_CONFIG = {
   updateEditor_splitPanePercent                  : { persist: true  },
   updateTableList_scrollY                        : { persist: false },
   updateScriptListSyncTime                       : { persist: false },
-  updateDataSourceListSyncTime                   : { persist: false },
+  updateConnectorListSyncTime                    : { persist: false },
   updateEnvVariableListSyncTime                  : { persist: false },
   updatePageFilterSettings                       : { persist: false },
   updateEnabledExperimentalFeatures              : { persist: true  },
@@ -135,7 +135,7 @@ export default new Vuex.Store({
     asideScript_expandedNodeMap: {},
 
     asideScript_quickViewWindowPosition      : null,
-    asideDataSource_simpleDebugWindowPosition: null,
+    asideConnector_simpleDebugWindowPosition : null,
 
     codeEditor_splitPanePercent        : null,
     codeEditor_highlightedLineConfigMap: null,
@@ -151,7 +151,7 @@ export default new Vuex.Store({
     // 列表同步时间
     scriptListSyncTime     : null,
     scriptSetListSyncTime  : null,
-    dataSourceListSyncTime : null,
+    connectorListSyncTime  : null,
     envVariableListSyncTime: null,
 
     // 页面过滤配置
@@ -361,8 +361,8 @@ export default new Vuex.Store({
     updateAsideScript_quickViewWindowPosition(state, value) {
       state.asideScript_quickViewWindowPosition = value || null;
     },
-    updateAsideDataSource_simpleDebugWindowPosition(state, value) {
-      state.asideDataSource_simpleDebugWindowPosition = value || null;
+    updateAsideConnector_simpleDebugWindowPosition(state, value) {
+      state.asideConnector_simpleDebugWindowPosition = value || null;
     },
 
     updateCodeEditor_splitPanePercent(state, value) {
@@ -413,8 +413,8 @@ export default new Vuex.Store({
     updateScriptListSyncTime(state, name) {
       state.scriptListSyncTime = Date.now();
     },
-    updateDataSourceListSyncTime(state, name) {
-      state.dataSourceListSyncTime = Date.now();
+    updateConnectorListSyncTime(state, name) {
+      state.connectorListSyncTime = Date.now();
     },
     updateEnvVariableListSyncTime(state, name) {
       state.envVariableListSyncTime = Date.now();

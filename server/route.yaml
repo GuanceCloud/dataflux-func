@@ -1932,10 +1932,10 @@ scriptSetAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
-      dataSourceIds:
-        $desc: 导出的数据源ID列表
+      connectorIds:
+        $desc: 导出的连接器ID列表
         $:
-          $desc      : 数据源ID
+          $desc      : 连接器ID
           $isRequired: true
           $type      : string
       envVariableIds:
@@ -2370,7 +2370,7 @@ scriptRecoverPointAPI:
     privilege    : general_w
     params:
       id:
-        $desc: 数据源ID
+        $desc: 连接器ID
         $type: string
 
 # 脚本发布历史
@@ -2462,13 +2462,13 @@ scriptSetImportHistoryAPI:
         $searchType: in
         $searchKey : ssih.id
 
-# 数据源
-dataSourceAPI:
+# 连接器
+connectorAPI:
   list:
     showInDoc    : true
-    name         : 列出数据源
+    name         : 列出连接器
     method       : get
-    url          : /api/v1/data-sources/do/list
+    url          : /api/v1/connectors/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -2477,23 +2477,23 @@ dataSourceAPI:
     fieldPicking : true
     fieldKicking : true
     orderFields:
-      id : dsrc.id
-      seq: dsrc.seq
+      id : cnct.id
+      seq: cnct.seq
     fuzzySearch:
-      - dsrc.id
-      - dsrc.title
-      - dsrc.description
+      - cnct.id
+      - cnct.title
+      - cnct.description
     query:
       id:
         $desc      : 根据ID过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : dsrc.id
+        $searchKey : cnct.id
       type:
         $desc      : 根据类型过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : dsrc.type
+        $searchKey : cnct.type
         $commaArrayIn:
           - df_dataway
           - df_datakit
@@ -2513,9 +2513,9 @@ dataSourceAPI:
 
   add:
     showInDoc    : true
-    name         : 添加数据源
+    name         : 添加连接器
     method       : post
-    url          : /api/v1/data-sources/do/add
+    url          : /api/v1/connectors/do/add
     response     : json
     requireSignIn: true
     privilege    : general_w
@@ -2644,15 +2644,15 @@ dataSourceAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改数据源
+    name         : 修改连接器
     method       : post
-    url          : /api/v1/data-sources/:id/do/modify
+    url          : /api/v1/connectors/:id/do/modify
     response     : json
     requireSignIn: true
     privilege    : general_w
     params:
       id:
-        $desc: 数据源ID
+        $desc: 连接器ID
         $type: string
     body:
       data:
@@ -2753,25 +2753,25 @@ dataSourceAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除数据源
+    name         : 删除连接器
     method       : get
-    url          : /api/v1/data-sources/:id/do/delete
+    url          : /api/v1/connectors/:id/do/delete
     response     : json
     requireSignIn: true
     privilege    : general_w
     params:
       id:
-        $desc: 数据源ID
+        $desc: 连接器ID
         $type: string
 
   query:
     showInDoc    : true
-    name         : 查询数据源
+    name         : 查询连接器
     descType: markdown
     desc: |
-      查询语句根据数据源类型不同而不同：
+      查询语句根据连接器类型不同而不同：
 
-      |   数据源类型    |                   查询语句示例                  |
+      |   连接器类型    |                   查询语句示例                  |
       |-----------------|-------------------------------------------------|
       | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
       | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
@@ -2790,13 +2790,13 @@ dataSourceAPI:
       | `mqtt`          | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
-    url          : /api/v1/data-sources/:id/do/query
+    url          : /api/v1/connectors/:id/do/query
     response     : json
     requireSignIn: true
     privilege    : general_w
     params:
       id:
-        $desc: 数据源ID
+        $desc: 连接器ID
         $type: string
     body:
       database:
@@ -2818,15 +2818,15 @@ dataSourceAPI:
 
   test:
     showInDoc    : true
-    name         : 测试数据源
+    name         : 测试连接器
     method       : get
-    url          : /api/v1/data-sources/:id/do/test
+    url          : /api/v1/connectors/:id/do/test
     response     : json
     requireSignIn: true
     privilege    : general_w
     params:
       id:
-        $desc: 数据源ID
+        $desc: 连接器ID
         $type: string
 
 # 环境变量

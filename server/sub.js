@@ -11,16 +11,16 @@ var E       = require('./utils/serverError');
 var CONFIG  = require('./utils/yamlResources').get('CONFIG');
 var toolkit = require('./utils/toolkit');
 
-var dataSourceMod = require('./models/dataSourceMod');
-var mainAPICtrl   = require('./controllers/mainAPICtrl');
+var connectorMod = require('./models/connectorMod');
+var mainAPICtrl  = require('./controllers/mainAPICtrl');
 
 /* Configure */
-var DATA_SOURCE_CHECK_INTERVAL = 3 * 1000;
-var SUB_CLIENT_LOCK_EXPIRES    = 30;
+var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
+var SUB_CLIENT_LOCK_EXPIRES  = 30;
 
-var LOCAL_DATA_SOURCE_MAP = {};
+var LOCAL_CONNECTOR_MAP = {};
 
-var DATA_SOURCE_HELPER_MAP = {
+var CONNECTOR_HELPER_MAP = {
   redis: require('./utils/extraHelpers/redisHelper'),
   mqtt : require('./utils/extraHelpers/mqttHelper'),
 };
@@ -80,9 +80,9 @@ exports.runListener = function runListener(app) {
   app.locals.logger.info('Start subscriber... Lock: `{0}`', lockValue);
 
   // 定期检查
-  function dataSourceChecker() {
-    // 重建数据源客户端
-    var remoteDataSourceMap = {};
+  function connectorChecker() {
+    // 重建连接器客户端
+    var remoteConnectorMap = {};
     async.series([
       // 上锁
       function(asyncCallback) {
@@ -101,62 +101,62 @@ exports.runListener = function runListener(app) {
           if (!err) return asyncCallback();
 
           // 锁为其他进程获得，安全起见，清理本进程内的所有客户端
-          for (var dataSourceId in LOCAL_DATA_SOURCE_MAP) {
-            var dataSource = LOCAL_DATA_SOURCE_MAP[dataSourceId];
-            if (dataSource) {
-              dataSource.client.end();
+          for (var connectorId in LOCAL_CONNECTOR_MAP) {
+            var connector = LOCAL_CONNECTOR_MAP[connectorId];
+            if (connector) {
+              connector.client.end();
             }
           }
 
-          LOCAL_DATA_SOURCE_MAP = {};
+          LOCAL_CONNECTOR_MAP = {};
         });
       },
-      // 获取数据源列表
+      // 获取连接器列表
       function(asyncCallback) {
-        var dataSourceModel = dataSourceMod.createModel(app.locals);
+        var connectorModel = connectorMod.createModel(app.locals);
 
         var opt = {
           fields: [
-            'dsrc.id',
-            'dsrc.type',
-            'dsrc.configJSON',
-            'MD5(dsrc.configJSON) AS configMD5',
+            'cnct.id',
+            'cnct.type',
+            'cnct.configJSON',
+            'MD5(cnct.configJSON) AS configMD5',
           ],
           filters: {
-            'dsrc.type': {in: Object.keys(DATA_SOURCE_HELPER_MAP)},
+            'cnct.type': {in: Object.keys(CONNECTOR_HELPER_MAP)},
           },
         };
-        dataSourceModel.list(opt, function(err, dbRes) {
+        connectorModel.list(opt, function(err, dbRes) {
           if (err) return asyncCallback(err);
 
           dbRes.forEach(function(d) {
             d.configJSON = d.configJSON || {};
 
             if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
-              // 仅搜集配置了主题处理函数的数据源
-              remoteDataSourceMap[d.id] = d;
+              // 仅搜集配置了主题处理函数的连接器
+              remoteConnectorMap[d.id] = d;
             }
           });
 
           return asyncCallback();
         });
       },
-      // 更新数据源订阅客户端
+      // 更新连接器订阅客户端
       function(asyncCallback) {
-        // 清除已不存在的数据源
-        for (var dataSourceId in LOCAL_DATA_SOURCE_MAP) {
-          if ('undefined' === typeof remoteDataSourceMap[dataSourceId]) {
-            LOCAL_DATA_SOURCE_MAP[dataSourceId].client.end();
-            delete LOCAL_DATA_SOURCE_MAP[dataSourceId];
+        // 清除已不存在的连接器
+        for (var connectorId in LOCAL_CONNECTOR_MAP) {
+          if ('undefined' === typeof remoteConnectorMap[connectorId]) {
+            LOCAL_CONNECTOR_MAP[connectorId].client.end();
+            delete LOCAL_CONNECTOR_MAP[connectorId];
 
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', connectorId);
           }
         }
 
-        // 重建有变化的数据源客户端
-        for (var dataSourceId in remoteDataSourceMap) {
-          var _remote = remoteDataSourceMap[dataSourceId];
-          var _local  = LOCAL_DATA_SOURCE_MAP[dataSourceId];
+        // 重建有变化的连接器客户端
+        for (var connectorId in remoteConnectorMap) {
+          var _remote = remoteConnectorMap[connectorId];
+          var _local  = LOCAL_CONNECTOR_MAP[connectorId];
 
           // 无变化客户端
           if (_local && _local['configMD5'] == _remote['configMD5']) {
@@ -166,15 +166,15 @@ exports.runListener = function runListener(app) {
           // 删除客户端
           if (_local) {
             _local.client.end();
-            delete LOCAL_DATA_SOURCE_MAP[dataSourceId];
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', dataSourceId);
+            delete LOCAL_CONNECTOR_MAP[connectorId];
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', connectorId);
           }
 
           // 新建客户端
           try {
-            _remote.client = DATA_SOURCE_HELPER_MAP[_remote.type].createHelper(app.locals.logger, _remote.configJSON);
+            _remote.client = CONNECTOR_HELPER_MAP[_remote.type].createHelper(app.locals.logger, _remote.configJSON);
           } catch(err) {
-            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', dataSourceId, err.toString());
+            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', connectorId, err.toString());
             continue
           }
 
@@ -186,13 +186,13 @@ exports.runListener = function runListener(app) {
           }
 
           // 记录到本地
-          LOCAL_DATA_SOURCE_MAP[dataSourceId] = _remote;
-          app.locals.logger.debug('[SUB] Client created: `{0}`', dataSourceId);
+          LOCAL_CONNECTOR_MAP[connectorId] = _remote;
+          app.locals.logger.debug('[SUB] Client created: `{0}`', connectorId);
         }
       },
     ], function(err) {
       if (err) return app.locals.logger.logError(err);
     });
   };
-  var dataSourceChecker = setInterval(dataSourceChecker, DATA_SOURCE_CHECK_INTERVAL);
+  var connectorChecker = setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
 };

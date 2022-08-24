@@ -66,14 +66,14 @@ const routes = [
         component: () => import('../components/Editor/ScriptSetup.vue'),
       },
       {
-        path: 'data-source-add',
-        name: 'data-source-add',
-        component: () => import('../components/Editor/DataSourceSetup.vue'),
+        path: 'connector-add',
+        name: 'connector-add',
+        component: () => import('../components/Editor/ConnectorSetup.vue'),
       },
       {
-        path: 'data-source-setup/:id',
-        name: 'data-source-setup',
-        component: () => import('../components/Editor/DataSourceSetup.vue'),
+        path: 'connector-setup/:id',
+        name: 'connector-setup',
+        component: () => import('../components/Editor/ConnectorSetup.vue'),
       },
       {
         path: 'env-variable-add',

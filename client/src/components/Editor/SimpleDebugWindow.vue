@@ -22,7 +22,7 @@ Other             : 其他
 
 'Moving...': '调整位置...'
 
-Cannot connect to this Data Source, check the configs and try again.: 无法连接至数据源，请检查配置后重试。
+Cannot connect to this Connector, check the configs and try again.: 无法使用此连接器，请检查配置后重试。
 Error Message: 错误信息如下
 Query is running. It waits up to 5 seconds, You can refresh the page when it not response for a long time.: 查询执行中，最多等待 5 秒，长时间无响应后再尝试刷新页面
 'Results will be shown here...': '执行结果将显示在此...'
@@ -38,12 +38,12 @@ Result  : 结果
 <template>
   <div id="simpleDebugWindow"
     class="simple-debug-window"
-    v-if="show && dataSource"
+    v-if="show && connector"
     :style="{top: showPosition.top + 'px', left: showPosition.left + 'px'}">
     <div @mousedown="startDrag" class="simple-debug-header">
       <span class="simple-debug-title">
-        <el-tag :type="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].tagType" size="mini"><span>{{ DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].name }}</span></el-tag>
-        <span :class="{builtin: dataSource.isBuiltin}">{{ dataSource.title || dataSource.id }}</span>
+        <el-tag :type="CONNECTOR_DEBUGGER_META_MAP[connector.type].tagType" size="mini"><span>{{ CONNECTOR_DEBUGGER_META_MAP[connector.type].name }}</span></el-tag>
+        <span :class="{builtin: connector.isBuiltin}">{{ connector.title || connector.id }}</span>
       </span>
       <el-link class="simple-debug-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
     </div>
@@ -58,12 +58,12 @@ Result  : 结果
       type="border-card"
       v-model="selectedTab">
       <el-tab-pane
-        v-if="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].supportBrowser"
+        v-if="CONNECTOR_DEBUGGER_META_MAP[connector.type].supportBrowser"
         :label="$t('Schema Browser')"
         name="browser">
         <div class="simple-debug-browser">
           <el-link type="danger" v-if="browserCascaderErrorMessage">
-            {{ $t('Cannot connect to this Data Source, check the configs and try again.') }}
+            {{ $t('Cannot connect to this Connector, check the configs and try again.') }}
             <br>{{ $t('Error Message') }}{{ $t(':') }}
             <pre class="simple-debug-browser-error">{{ browserCascaderErrorMessage }}</pre>
           </el-link>
@@ -100,8 +100,8 @@ Result  : 结果
         </div>
       </el-tab-pane>
       <el-tab-pane
-        v-if="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].supportDebugger"
-        :label="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].debuggerName"
+        v-if="CONNECTOR_DEBUGGER_META_MAP[connector.type].supportDebugger"
+        :label="CONNECTOR_DEBUGGER_META_MAP[connector.type].debuggerName"
         name="debugger">
         <div class="simple-debug-sql"
           v-loading.lock="isQuerying"
@@ -113,33 +113,33 @@ Result  : 结果
                 type="textarea"
                 resize="none"
                 rows="3"
-                v-model="latestQueryOptionsMap[dataSource.id].queryStatement"></el-input>
+                v-model="latestQueryOptionsMap[connector.id].queryStatement"></el-input>
             </el-form-item>
             <el-form-item>
-              <template v-if="DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type].supportDatabase">
+              <template v-if="CONNECTOR_DEBUGGER_META_MAP[connector.type].supportDatabase">
                 <span>{{ $t('Database') }}</span>
-                <el-input class="simple-debug-database" size="mini" v-if="!dataSource.configJSON.database" v-model="latestQueryOptionsMap[dataSource.id].database"></el-input>
-                <el-input class="simple-debug-database" size="mini" v-else :disabled="true" :value="dataSource.configJSON.database"></el-input>
+                <el-input class="simple-debug-database" size="mini" v-if="!connector.configJSON.database" v-model="latestQueryOptionsMap[connector.id].database"></el-input>
+                <el-input class="simple-debug-database" size="mini" v-else :disabled="true" :value="connector.configJSON.database"></el-input>
               </template>
 
               <el-button
                 size="mini"
-                @click.stop="queryDataSource(latestQueryOptionsMap[dataSource.id])">
+                @click.stop="queryConnector(latestQueryOptionsMap[connector.id])">
                 <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
               </el-button>
-              <div class="simple-debug-copy-content" v-if="latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].ok">
-                <CopyButton tipPlacement="bottom" :title="$t('Query')" :content="latestQueryOptionsMap[dataSource.id].queryStatement"></CopyButton>
+              <div class="simple-debug-copy-content" v-if="latestQueryResultMap[connector.id] && latestQueryResultMap[connector.id].ok">
+                <CopyButton tipPlacement="bottom" :title="$t('Query')" :content="latestQueryOptionsMap[connector.id].queryStatement"></CopyButton>
                 &nbsp;
-                <CopyButton tipPlacement="bottom" :title="$t('Code')" :content="latestQueryOptionsMap[dataSource.id].queryCode"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Code')" :content="latestQueryOptionsMap[connector.id].queryCode"></CopyButton>
                 &nbsp;
-                <CopyButton tipPlacement="bottom" :title="$t('Result')" :content="latestQueryResultMap[dataSource.id].data"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Result')" :content="latestQueryResultMap[connector.id].data"></CopyButton>
               </div>
             </el-form-item>
             <el-form-item>
               <pre
                 class="simple-debug-result"
-                :class="{'simple-debug-query-failed': latestQueryResultMap[dataSource.id] && !latestQueryResultMap[dataSource.id].ok}"
-                rows="5">{{ latestQueryResultMap[dataSource.id] && latestQueryResultMap[dataSource.id].data || $t('Results will be shown here...')}}</pre>
+                :class="{'simple-debug-query-failed': latestQueryResultMap[connector.id] && !latestQueryResultMap[connector.id].ok}"
+                rows="5">{{ latestQueryResultMap[connector.id] && latestQueryResultMap[connector.id].data || $t('Results will be shown here...')}}</pre>
             </el-form-item>
           </el-form>
         </div>
@@ -156,7 +156,7 @@ export default {
   components: {
   },
   watch: {
-    dataSource(val) {
+    connector(val) {
       if (this.$refs.browserCascader) {
         this.$refs.browserCascader.clearCheckedNodes();
         this.$refs.browserCascader.initStore();
@@ -165,27 +165,27 @@ export default {
     },
   },
   methods: {
-    async showWindow(dataSource) {
+    async showWindow(connector) {
       this.browserCascaderErrorMessage = '';
 
-      let meta = this.DATA_SOURCE_DEBUGGER_META_MAP[dataSource.type];
+      let meta = this.CONNECTOR_DEBUGGER_META_MAP[connector.type];
       if (meta.supportDebugger) {
         let command     = meta.command;
         let commandArgs = meta.exampleCommandArgs;
 
-        if (!this.latestQueryOptionsMap[dataSource.id]) {
-          let getHelperCode = `helper = DFF.SRC('${dataSource.id}')`;
+        if (!this.latestQueryOptionsMap[connector.id]) {
+          let getHelperCode = `helper = DFF.CONN('${connector.id}')`;
           let doQueryCode   = `helper.${command}('${commandArgs.join("', '")}')`;
 
-          this.$set(this.latestQueryOptionsMap, dataSource.id, {
-            database      : dataSource.database,
+          this.$set(this.latestQueryOptionsMap, connector.id, {
+            database      : connector.database,
             queryStatement: commandArgs.join(' '),
             queryCode     : `${getHelperCode}\n${doQueryCode}`,
           });
         }
       }
 
-      this.dataSource = dataSource;
+      this.connector = connector;
       this.show = true;
 
       // 自动切换到第一个tab
@@ -229,7 +229,7 @@ export default {
         };
 
         this.dragPosition = nextDragPosition;
-        this.$store.commit('updateAsideDataSource_simpleDebugWindowPosition', this.dragPosition);
+        this.$store.commit('updateAsideConnector_simpleDebugWindowPosition', this.dragPosition);
 
         this.fixShowPosition();
       };
@@ -260,11 +260,11 @@ export default {
 
       this.showPosition = nextShowPosition;
     },
-    async queryDataSource(queryOptions) {
+    async queryConnector(queryOptions) {
       this.isQuerying = true;
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-        params: { id: this.dataSource.id },
+      let apiRes = await this.T.callAPI('post', '/api/v1/connectors/:id/do/query', {
+        params: { id: this.connector.id },
         body: {
           database      : queryOptions.database,
           queryStatement: queryOptions.queryStatement,
@@ -282,12 +282,12 @@ export default {
         result.data = '# pprint.pprint(db_res)\n' + apiRes.data;
 
         // 生成示例 Python 代码
-        let command     = this.DATA_SOURCE_DEBUGGER_META_MAP[this.dataSource.type].command;
+        let command     = this.CONNECTOR_DEBUGGER_META_MAP[this.connector.type].command;
         let commandArgs = null;
 
         let resStr    = '';
         let resPicker = '';
-        switch(this.dataSource.type) {
+        switch(this.connector.type) {
           case 'influxdb':
             commandArgs = [queryOptions.queryStatement];
             resPicker = `if len(db_res.get('series', [])) > 0:\n    for d in db_res['series'][0]['values']:\n        # Your code here...\n        pass`;
@@ -321,10 +321,10 @@ export default {
             break;
         }
 
-        let getHelperCode = `helper = DFF.SRC('${this.dataSource.id}')`;
+        let getHelperCode = `helper = DFF.CONN('${this.connector.id}')`;
         let doQueryCode   = `db_res = helper.${command}('${(commandArgs || []).join("', '")}')`;
 
-        this.$set(this.latestQueryOptionsMap, this.dataSource.id, {
+        this.$set(this.latestQueryOptionsMap, this.connector.id, {
           database      : queryOptions.database,
           queryStatement: queryOptions.queryStatement,
           queryCode     : `${getHelperCode}\n${doQueryCode}\n${resPicker}`,
@@ -345,14 +345,14 @@ export default {
         }
       }
 
-      this.$set(this.latestQueryResultMap, this.dataSource.id, result);
+      this.$set(this.latestQueryResultMap, this.connector.id, result);
 
       this.isQuerying = false;
     },
     async browserDataLoader(node, resolve) {
       if (node.isLeaf) return resolve();
 
-      let meta = this.DATA_SOURCE_DEBUGGER_META_MAP[this.dataSource.type];
+      let meta = this.CONNECTOR_DEBUGGER_META_MAP[this.connector.type];
       if (!meta.browsers) return resolve();
 
       /* 父层数据 */
@@ -428,10 +428,10 @@ export default {
           let queryStatement = formatQueryStatement(browserConfig.query);
 
           // 查询数据
-          apiRes = await this.T.callAPI('post', '/api/v1/data-sources/:id/do/query', {
-            params: { id: this.dataSource.id },
+          apiRes = await this.T.callAPI('post', '/api/v1/connectors/:id/do/query', {
+            params: { id: this.connector.id },
             body: {
-              database      : this.dataSource.configJSON.database,
+              database      : this.connector.configJSON.database,
               queryStatement: queryStatement,
               returnType    : 'json',
             },
@@ -455,7 +455,7 @@ export default {
           }
 
           // 提取数据
-          switch(this.dataSource.type) {
+          switch(this.connector.type) {
             // query/influxdb
             case 'influxdb':
               if (apiRes.data.series && apiRes.data.series.length > 0) {
@@ -651,7 +651,7 @@ export default {
           }
 
           // 提取数据
-          switch(this.dataSource.type) {
+          switch(this.connector.type) {
             // api/*
             default:
               break;
@@ -679,10 +679,10 @@ export default {
 
       /* 补全是否为默认数据库 */
       subNodeData.forEach(d => {
-        d.isDefaultDatabase = (d.ref === 'database' && d.value === this.dataSource.configJSON.database);
+        d.isDefaultDatabase = (d.ref === 'database' && d.value === this.connector.configJSON.database);
         if (!d.isDefaultDatabase) {
           parentData.forEach(p => {
-            if (p.ref === 'database' && p.value ===  this.dataSource.configJSON.database) {
+            if (p.ref === 'database' && p.value ===  this.connector.configJSON.database) {
               d.isDefaultDatabase = true;
             }
           });
@@ -717,7 +717,7 @@ export default {
     },
   },
   computed: {
-    DATA_SOURCE_DEBUGGER_META_MAP() {
+    CONNECTOR_DEBUGGER_META_MAP() {
       // Redis第一层为Key首字母列表
       let REDIS_BROWSER_KEY = {
         title  : this.$t('Keys (a part of)'),
@@ -1058,7 +1058,7 @@ export default {
   props: {
   },
   data() {
-    let dragPosition = this.$store.state.asideDataSource_simpleDebugWindowPosition || { left: 10, bottom: 10 };
+    let dragPosition = this.$store.state.asideConnector_simpleDebugWindowPosition || { left: 10, bottom: 10 };
 
     return {
       show: false,
@@ -1069,7 +1069,7 @@ export default {
       dragPosition: this.T.jsonCopy(dragPosition),
       isDragging  : false,
 
-      dataSource: {},
+      connector: {},
 
       latestQueryOptionsMap: {},
       latestQueryResultMap : {},

@@ -17,7 +17,7 @@ var scriptRecoverPointMod     = require('./scriptRecoverPointMod');
 var scriptSetExportHistoryMod = require('./scriptSetExportHistoryMod');
 var scriptSetImportHistoryMod = require('./scriptSetImportHistoryMod');
 
-var dataSourceMod = require('./dataSourceMod');
+var connectorMod = require('./connectorMod');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
@@ -344,7 +344,7 @@ EntityModel.prototype.export = function(options, callback) {
   options = options || {};
   var password              = options.password;
   var scriptSetIds          = options.scriptSetIds;
-  var dataSourceIds         = options.dataSourceIds;
+  var connectorIds          = options.connectorIds;
   var envVariableIds        = options.envVariableIds;
   var includeAuthLinks      = options.includeAuthLinks      || false;
   var includeCrontabConfigs = options.includeCrontabConfigs || false;
@@ -370,8 +370,8 @@ EntityModel.prototype.export = function(options, callback) {
   if (includeCrontabConfigs) packageData.crontabConfigs = [];
   if (includeBatches)        packageData.batches        = [];
 
-  // 数据源/环境变量
-  if (!toolkit.isNothing(dataSourceIds))  packageData.dataSources  = [];
+  // 连接器/环境变量
+  if (!toolkit.isNothing(connectorIds))  packageData.connectors  = [];
   if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
 
   var fileBuf = null;
@@ -600,27 +600,27 @@ EntityModel.prototype.export = function(options, callback) {
         return asyncCallback();
       });
     },
-    // 获取数据源
+    // 获取连接器
     function(asyncCallback) {
-      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
+      if (toolkit.isNothing(connectorIds)) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
-      sql.append('   dsrc.id');
-      sql.append('  ,dsrc.title');
-      sql.append('  ,dsrc.description');
-      sql.append('  ,dsrc.type');
-      sql.append('  ,dsrc.configJSON');
+      sql.append('   cnct.id');
+      sql.append('  ,cnct.title');
+      sql.append('  ,cnct.description');
+      sql.append('  ,cnct.type');
+      sql.append('  ,cnct.configJSON');
 
-      sql.append('FROM biz_main_data_source AS dsrc')
+      sql.append('FROM biz_main_connector AS cnct')
 
       sql.append('WHERE');
-      sql.append('  dsrc.id IN (?)');
+      sql.append('  cnct.id IN (?)');
 
       sql.append('ORDER BY');
-      sql.append('  dsrc.id ASC');
+      sql.append('  cnct.id ASC');
 
-      var sqlParams = [dataSourceIds];
+      var sqlParams = [connectorIds];
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -630,7 +630,7 @@ EntityModel.prototype.export = function(options, callback) {
             d.configJSON = JSON.parse(d.configJSON);
           }
 
-          dataSourceMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
+          connectorMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
             var fCipher = toolkit.strf('{0}Cipher', f);
             if (fCipher in d.configJSON) {
               d.configJSON[fCipher] = '';
@@ -638,7 +638,7 @@ EntityModel.prototype.export = function(options, callback) {
           });
         });
 
-        packageData.dataSources = dbRes;
+        packageData.connectors = dbRes;
 
         return asyncCallback();
       });
@@ -730,7 +730,7 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
   var authLinkIds      = toolkit.arrayElementValues(packageData.authLinks       || [], 'id');
   var crontabConfigIds = toolkit.arrayElementValues(packageData.crontabConfigs  || [], 'id');
   var batchIds         = toolkit.arrayElementValues(packageData.batches         || [], 'id');
-  var dataSourceIds    = toolkit.arrayElementValues(packageData.dataSources     || [], 'id');
+  var connectorIds     = toolkit.arrayElementValues(packageData.connectors     || [], 'id');
   var envVariableIds   = toolkit.arrayElementValues(packageData.envVariables    || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
@@ -832,16 +832,16 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
       var sqlParams = [batchIds];
       self.db.query(sql, sqlParams, asyncCallback);
     },
-    // 删除所有涉及的数据源
+    // 删除所有涉及的连接器
     function(asyncCallback) {
-      if (toolkit.isNothing(dataSourceIds)) return asyncCallback();
+      if (toolkit.isNothing(connectorIds)) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_data_source');
+      sql.append('DELETE FROM biz_main_connector');
       sql.append('WHERE');
       sql.append('   id IN (?)');
 
-      var sqlParams = [dataSourceIds];
+      var sqlParams = [connectorIds];
       self.db.query(sql, sqlParams, asyncCallback);
     },
     // 删除所有涉及的环境变量
@@ -874,7 +874,7 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
         { name: 'authLinks',      table: 'biz_main_auth_link' },
         { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
         { name: 'batches',        table: 'biz_main_batch' },
-        { name: 'dataSources',    table: 'biz_main_data_source' },
+        { name: 'connectors',     table: 'biz_main_connector' },
         { name: 'envVariables',   table: 'biz_main_env_variable' },
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {

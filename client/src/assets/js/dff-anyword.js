@@ -86,9 +86,9 @@
 
     // Add DataFlux DFF.* hint
     if ('dff'.indexOf(_lowCurWord) === 0) {
-      if (window._DFF_dataSourceIds) {
-        window._DFF_dataSourceIds.forEach(function(id) {
-          list.push("DFF.SRC('" + id + "')");
+      if (window._DFF_connectorIds) {
+        window._DFF_connectorIds.forEach(function(id) {
+          list.push("DFF.CONN('" + id + "')");
         });
       }
 

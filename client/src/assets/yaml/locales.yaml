@@ -191,7 +191,7 @@ en:
   Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除
   Don't prompt again                      : 不再提示
 
-  # const.js - DATA_SOURCE
+  # const.js - CONNECTOR
   'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）
   'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库InfluxDB 版
   'MySQL (And other compatible Databases)'                                : MySQL（及兼容数据库）
@@ -208,7 +208,7 @@ en:
   Script Set        : 脚本集
   Script            : 脚本
   Func              : 函数
-  Data Source       : 数据源
+  Connector         : 连接器
   ENV               : 环境变量
   Overview          : 总览
   About             : 关于
@@ -241,7 +241,7 @@ en:
   Script Set ID    : 脚本集ID
   Script ID        : 脚本ID
   Func ID          : 函数ID
-  Data Source ID   : 数据源ID
+  Connector ID     : 连接器ID
   ENV ID           : 环境变量ID
   Auth Link ID     : 授权链接ID
   Crontab Config ID: 自动触发配置ID

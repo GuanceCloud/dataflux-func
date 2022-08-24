@@ -37,7 +37,7 @@ MAP_CONST.prototype.get = function(key) {
   }
 };
 
-// 数据源
+// 连接器
 import logo_influxdb      from '@/assets/img/logo-influxdb.png'
 import logo_mysql         from '@/assets/img/logo-mysql.png'
 import logo_memcached     from '@/assets/img/logo-memcached.png'
@@ -55,7 +55,7 @@ export default {
   get NOPE() {
     return '-';
   },
-  get DATA_SOURCE() {
+  get CONNECTOR() {
     return [
       {
         key           : 'df_dataway',
@@ -64,7 +64,7 @@ export default {
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `dataway = DFF.SRC('{0}', token='DATAWAY_TOKEN')
+        sampleCode    : `dataway = DFF.CONN('{0}', token='DATAWAY_TOKEN')
 res = dataway.write_point(measurement='some_measurement',
     tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
@@ -83,7 +83,7 @@ res = dataway.write_point(measurement='some_measurement',
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `datakit = DFF.SRC('{0}')
+        sampleCode    : `datakit = DFF.CONN('{0}')
 res = datakit.write_metric(measurement='some_measurement',
     tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
@@ -100,7 +100,7 @@ res = datakit.write_metric(measurement='some_measurement',
         logo          : null,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `sidecar = DFF.SRC('{0}')
+        sampleCode    : `sidecar = DFF.CONN('{0}')
 res = sidecar.shell('ls -l', workdir='/home', wait=True)`,
         configFields: {
           host    : { default: '172.17.0.1', isRequired: true },
@@ -116,7 +116,7 @@ res = sidecar.shell('ls -l', workdir='/home', wait=True)`,
         logo          : logo_influxdb,
         tagType       : null,
         debugSupported: true,
-        sampleCode    : `influxdb = DFF.SRC('{0}')
+        sampleCode    : `influxdb = DFF.CONN('{0}')
 res = influxdb.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         compatibleDBs: [
           $t('Aliyun Time Series Database for InfluxDB'),
@@ -137,7 +137,7 @@ res = influxdb.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         logo          : logo_mysql,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `mysql = DFF.SRC('{0}')
+        sampleCode    : `mysql = DFF.CONN('{0}')
 res = mysql.query('SELECT * FROM \`some_table\` LIMIT 10')`,
         compatibleDBs: [
           'MariaDB',
@@ -162,7 +162,7 @@ res = mysql.query('SELECT * FROM \`some_table\` LIMIT 10')`,
         logo          : logo_redis,
         tagType       : 'danger',
         debugSupported: true,
-        sampleCode    : `redis = DFF.SRC('{0}')
+        sampleCode    : `redis = DFF.CONN('{0}')
 res = redis.query('GET', 'some_key')`,
         configFields: {
           host         : { default: null, isRequired: true },
@@ -179,7 +179,7 @@ res = redis.query('GET', 'some_key')`,
         logo          : logo_memcached,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `memcached = DFF.SRC('{0}')
+        sampleCode    : `memcached = DFF.CONN('{0}')
 res = memcached.query('GET', 'some_key')`,
         configFields: {
           servers: { default: null, isRequired: true },
@@ -192,7 +192,7 @@ res = memcached.query('GET', 'some_key')`,
         logo          : logo_clickhouse,
         tagType       : 'warning',
         debugSupported: true,
-        sampleCode    : `clickhouse = DFF.SRC('{0}')
+        sampleCode    : `clickhouse = DFF.CONN('{0}')
 res = clickhouse.query('SELECT * FROM some_table LIMIT 10')`,
         configFields: {
           host    : { default: null, isRequired: true },
@@ -209,7 +209,7 @@ res = clickhouse.query('SELECT * FROM some_table LIMIT 10')`,
         logo          : logo_oracle,
         tagType       : 'danger',
         debugSupported: true,
-        sampleCode    : `oracle = DFF.SRC('{0}')
+        sampleCode    : `oracle = DFF.CONN('{0}')
 res = oracle.query('SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10')`,
         configFields: {
           host    : { default: null, isRequired: true },
@@ -227,7 +227,7 @@ res = oracle.query('SELECT * FROM SOME_TABLE WHERE ROWNUM <= 10')`,
         logo          : logo_sqlserver,
         tagType       : 'info',
         debugSupported: true,
-        sampleCode    : `sqlserver = DFF.SRC('{0}')
+        sampleCode    : `sqlserver = DFF.CONN('{0}')
 res = sqlserver.query('SELECT TOP 10 * FROM some_table')`,
         configFields: {
           host    : { default: null, isRequired: true },
@@ -245,7 +245,7 @@ res = sqlserver.query('SELECT TOP 10 * FROM some_table')`,
         logo          : logo_postgresql,
         tagType       : 'info',
         debugSupported: true,
-        sampleCode    : `postgresql = DFF.SRC('{0}')
+        sampleCode    : `postgresql = DFF.CONN('{0}')
 res = postgresql.query('SELECT * FROM some_table LIMIT 10')`,
         compatibleDBs: [
           'Greenplum Database',
@@ -268,7 +268,7 @@ res = postgresql.query('SELECT * FROM some_table LIMIT 10')`,
         logo          : logo_mongodb,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `mongodb = DFF.SRC('{0}')
+        sampleCode    : `mongodb = DFF.CONN('{0}')
 res = mongodb.query()`,
         configFields: {
           host      : { default: null, isRequired: true },
@@ -285,7 +285,7 @@ res = mongodb.query()`,
         logo          : logo_elasticsearch,
         tagType       : 'success',
         debugSupported: true,
-        sampleCode    : `elasticsearch = DFF.SRC('{0}')
+        sampleCode    : `elasticsearch = DFF.CONN('{0}')
 res = elasticsearch.query('GET /_search?q=field:value')`,
         configFields: {
           host    : { default: null, isRequired: true },
@@ -302,7 +302,7 @@ res = elasticsearch.query('GET /_search?q=field:value')`,
         logo          : logo_nsq,
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `nsq = DFF.SRC('{0}')
+        sampleCode    : `nsq = DFF.CONN('{0}')
 nsq.publish(topic='some_topic', message='some_message')`,
         configFields: {
           host    : { default: null },
@@ -319,7 +319,7 @@ nsq.publish(topic='some_topic', message='some_message')`,
         tips          : $t('A Broker with MQTTv5 support and use share subscription is recommended'),
         tagType       : 'info',
         debugSupported: false,
-        sampleCode    : `mqtt = DFF.SRC('{0}')
+        sampleCode    : `mqtt = DFF.CONN('{0}')
 mqtt.publish(topic='some_topic',  message='some_message')`,
         compatibleDBs: [
           'Mosquitto 2.0+',
@@ -336,8 +336,8 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
       },
     ];
   },
-  get DATA_SOURCE_MAP() {
-    return new MAP_CONST(this.DATA_SOURCE);
+  get CONNECTOR_MAP() {
+    return new MAP_CONST(this.CONNECTOR);
   },
 
   // 代码注释
@@ -437,8 +437,8 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
         name: $t('Func'),
       },
       {
-        key : 'dataSource',
-        name: $t('Data Source'),
+        key : 'connector',
+        name: $t('Connector'),
       },
       {
         key : 'envVariable',
@@ -619,8 +619,8 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
         tagText: 'def',
       },
       {
-        key : 'dataSource',
-        name: $t('Data Source'),
+        key : 'connector',
+        name: $t('Connector'),
         icon: 'fa-database',
       },
       {

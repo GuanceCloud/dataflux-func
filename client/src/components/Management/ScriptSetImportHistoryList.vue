@@ -42,9 +42,9 @@
                   </el-tag>
                 </div>
 
-                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.dataSources)">
-                  <span class="text-info">数据源：</span>
-                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.dataSources" :key="item.id">
+                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.connectors)">
+                  <span class="text-info">连接器：</span>
+                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.connectors" :key="item.id">
                     <code>{{ item.title || item.id }}</code>
                   </el-tag>
                 </div>

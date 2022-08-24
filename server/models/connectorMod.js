@@ -13,10 +13,10 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'data source',
-  entityName : 'dataSource',
-  tableName  : 'biz_main_data_source',
-  alias      : 'dsrc',
+  displayName: 'connector',
+  entityName : 'connector',
+  tableName  : 'biz_main_connector',
+  alias      : 'cnct',
 
   objectFields: {
     configJSON: 'json',
@@ -25,9 +25,9 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   },
 
   defaultOrders: [
-    {field: 'dsrc.pinTime',   method: 'DESC'},
-    {field: 'dsrc.isBuiltin', method: 'DESC'},
-    {field: 'dsrc.seq',       method: 'ASC'},
+    {field: 'cnct.pinTime',   method: 'DESC'},
+    {field: 'cnct.isBuiltin', method: 'DESC'},
+    {field: 'cnct.seq',       method: 'ASC' },
   ],
 };
 
@@ -51,10 +51,10 @@ EntityModel.prototype.list = function(options, callback) {
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   dsrc.*');
-  sql.append('  ,NOT ISNULL(dsrc.pinTime) AS isPinned');
+  sql.append('   cnct.*');
+  sql.append('  ,NOT ISNULL(cnct.pinTime) AS isPinned');
 
-  sql.append('FROM biz_main_data_source AS dsrc');
+  sql.append('FROM biz_main_connector AS cnct');
 
   options.baseSQL = sql.toString();
 

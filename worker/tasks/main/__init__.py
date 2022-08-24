@@ -56,8 +56,8 @@ FIX_INTEGRATION_KEY_MAP = {
     'autoRun': 'autoRun',
 }
 
-# 数据源对应 Helper 类
-DATA_SOURCE_HELPER_CLASS_MAP = {
+# 连接器对应 Helper 类
+CONNECTOR_HELPER_CLASS_MAP = {
     'df_dataway'   : DataWayHelper,
     'df_datakit'   : DataKitHelper,
     'dff_sidecar'  : SidecarHelper,
@@ -75,8 +75,8 @@ DATA_SOURCE_HELPER_CLASS_MAP = {
     'mqtt'         : MQTTHelper,
 }
 
-# 数据源加密字段
-DATA_SOURCE_CIPHER_FIELDS = [
+# 连接器加密字段
+CONNECTOR_CIPHER_FIELDS = [
     'password',
     'secretKey',
 ]
@@ -102,8 +102,8 @@ USER_SCRIPT_ID_BLACK_LIST = [
 # 环境变量本地缓存
 ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=30)
 
-# 数据源 Helper 对象本地缓存
-DATA_SOURCE_HELPER_LOCAL_CACHE = toolkit.LocalCache()
+# 连接器 Helper 对象本地缓存
+CONNECTOR_HELPER_LOCAL_CACHE = toolkit.LocalCache()
 
 # 添加额外import路径
 extra_import_paths = [
@@ -128,9 +128,9 @@ class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
 class ThreadResultKeyDuplicatedException(DataFluxFuncBaseException):
     pass
-class DataSourceNotSupportException(DataFluxFuncBaseException):
+class ConnectorNotSupportException(DataFluxFuncBaseException):
     pass
-class InvalidDataSourceOptionException(DataFluxFuncBaseException):
+class InvalidConnectorOptionException(DataFluxFuncBaseException):
     pass
 class InvalidAPIOptionException(DataFluxFuncBaseException):
     pass
@@ -168,11 +168,11 @@ def gen_script_log_id():
     '''
     return toolkit.gen_data_id('slog')
 
-def gen_data_source_id():
+def gen_connector_id():
     '''
-    生成数据源ID
+    生成连接器ID
     '''
-    return toolkit.gen_data_id('dsrc')
+    return toolkit.gen_data_id('cnct')
 
 def compute_func_store_id(key, scope):
     '''
@@ -183,13 +183,13 @@ def compute_func_store_id(key, scope):
     store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
     return store_id
 
-def decipher_data_source_config_fields(config):
+def decipher_connector_config_fields(config):
     '''
     解密字段
     '''
     config = toolkit.json_copy(config)
 
-    for f in DATA_SOURCE_CIPHER_FIELDS:
+    for f in CONNECTOR_CIPHER_FIELDS:
         f_cipher = '{}Cipher'.format(f)
 
         if config.get(f_cipher):
@@ -591,8 +591,8 @@ class FuncCacheHelper(object):
         res = self.__task.cache_db.run('rpoplpush', key, dest_key)
         return self._convert_result(res)
 
-class FuncDataSourceHelper(object):
-    # 自动从路由配置中获取数据源可用的配置项目
+class FuncConnectorHelper(object):
+    # 自动从路由配置中获取连接器可用的配置项目
     AVAILABLE_CONFIG_KEYS = tuple(filter(
         lambda x: not x.startswith('$'),
         toolkit.json_smart_find(ROUTE, 'configJSON').keys()))
@@ -603,32 +603,32 @@ class FuncDataSourceHelper(object):
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def get(self, data_source_id, **helper_kwargs):
-        # 同一个数据源可能有不同的配置（如指定的数据库不同）
+    def get(self, connector_id, **helper_kwargs):
+        # 同一个连接器可能有不同的配置（如指定的数据库不同）
         helper_kwargs = toolkit.no_none_or_white_space(helper_kwargs)
-        data_source_key = f'{data_source_id}~{toolkit.json_dumps(helper_kwargs, sort_keys=True)}'
+        connector_key = f'{connector_id}~{toolkit.json_dumps(helper_kwargs, sort_keys=True)}'
 
-        global DATA_SOURCE_HELPER_CLASS_MAP
-        global DATA_SOURCE_HELPER_LOCAL_CACHE
+        global CONNECTOR_HELPER_CLASS_MAP
+        global CONNECTOR_HELPER_LOCAL_CACHE
 
-        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'dataSource'])
+        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])
         remote_md5           = None
 
-        data_source = DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key]
-        if data_source:
-            # 检查 Redis 缓存的数据源 MD5
-            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, data_source_id)
+        connector = CONNECTOR_HELPER_LOCAL_CACHE[connector_key]
+        if connector:
+            # 检查 Redis 缓存的连接器 MD5
+            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, connector_id)
             if remote_md5:
                 remote_md5 = six.ensure_str(remote_md5)
 
-            # 数据源 MD5 未变化时直接返回
-            if data_source['configMD5'] == remote_md5:
-                self.__task.logger.debug(f'[LOAD DATA SOURCE] load `{data_source_id}` from Cache')
+            # 连接器 MD5 未变化时直接返回
+            if connector['configMD5'] == remote_md5:
+                self.__task.logger.debug(f'[LOAD connector] load `{connector_id}` from Cache')
 
-                return data_source['helper']
+                return connector['helper']
 
-        # 从 DB 获取数据源
-        self.__task.logger.debug(f"[LOAD DATA SOURCE] load `{data_source_id}` from DB")
+        # 从 DB 获取连接器
+        self.__task.logger.debug(f"[LOAD connector] load `{connector_id}` from DB")
 
         sql = '''
             SELECT
@@ -636,74 +636,74 @@ class FuncDataSourceHelper(object):
                 ,`type`
                 ,`configJSON`
                 ,MD5(IFNULL(`configJSON`, '')) AS configMD5
-            FROM `biz_main_data_source`
+            FROM `biz_main_connector`
             WHERE
                 `id` = ?
             '''
-        sql_params = [ data_source_id ]
-        data_source = self.__task.db.query(sql, sql_params)
-        if not data_source:
-            e = NotFoundException(f'Data source not found: `{data_source_id}`')
+        sql_params = [ connector_id ]
+        connector = self.__task.db.query(sql, sql_params)
+        if not connector:
+            e = NotFoundException(f'Connector not found: `{connector_id}`')
             raise e
 
-        data_source = data_source[0]
+        connector = connector[0]
 
-        # 确定数据源类型
-        helper_type  = data_source['type']
-        helper_class = DATA_SOURCE_HELPER_CLASS_MAP.get(helper_type)
+        # 确定连接器类型
+        helper_type  = connector['type']
+        helper_class = CONNECTOR_HELPER_CLASS_MAP.get(helper_type)
         if not helper_class:
-            e = DataSourceNotSupportException('Data source type not support: `{}`'.format(helper_type))
+            e = ConnectorNotSupportException(f'Connector type not support: `{helper_type}`')
             raise e
 
-        # 创建数据源 Helper
-        config = toolkit.json_loads(data_source['configJSON'])
-        config = decipher_data_source_config_fields(config)
+        # 创建连接器 Helper
+        config = toolkit.json_loads(connector['configJSON'])
+        config = decipher_connector_config_fields(config)
 
-        data_source['helper'] = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
+        connector['helper'] = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
 
-        # 缓存数据源 MD5
-        self.__task.cache_db.hset(remote_md5_cache_key, data_source_id, data_source['configMD5'])
-        del DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key]
-        DATA_SOURCE_HELPER_LOCAL_CACHE[data_source_key] = data_source
+        # 缓存连接器 MD5
+        self.__task.cache_db.hset(remote_md5_cache_key, connector_id, connector['configMD5'])
+        del CONNECTOR_HELPER_LOCAL_CACHE[connector_key]
+        CONNECTOR_HELPER_LOCAL_CACHE[connector_key] = connector
 
-        return data_source['helper']
+        return connector['helper']
 
-    def reload_config_md5(self, data_source_id):
-        cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'dataSource'])
+    def reload_config_md5(self, connector_id):
+        cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])
 
         sql = '''
             SELECT
                 `id`
                 ,MD5(`configJSON`) AS `configMD5`
-            FROM biz_main_data_source
+            FROM biz_main_connector
             WHERE
                 `id` = ?
             '''
-        sql_params = [ data_source_id ]
-        data_source = self.__task.db.query(sql, sql_params)
-        if not data_source:
+        sql_params = [ connector_id ]
+        connector = self.__task.db.query(sql, sql_params)
+        if not connector:
             return
 
-        data_source = data_source[0]
-        self.__task.cache_db.hset(cache_key, data_source_id, data_source['configMD5'])
+        connector = connector[0]
+        self.__task.cache_db.hset(cache_key, connector_id, connector['configMD5'])
 
-    def save(self, data_source_id, data_source_type, config, title=None, description=None):
-        if data_source_type not in DATA_SOURCE_HELPER_CLASS_MAP:
-            e = DataSourceNotSupportException('Data source type `{}` not supported'.format(data_source_type))
+    def save(self, connector_id, connector_type, config, title=None, description=None):
+        if connector_type not in CONNECTOR_HELPER_CLASS_MAP:
+            e = ConnectorNotSupportException(f'Connector type `{connector_type}` not supported')
             raise e
 
         if not config:
             config = {}
 
         if not isinstance(config, dict):
-            raise InvalidDataSourceOptionException('Data source config should be a dict')
+            raise InvalidConnectorOptionException('Connector config should be a dict')
 
         for k in config.keys():
             if k not in self.AVAILABLE_CONFIG_KEYS:
-                raise InvalidDataSourceOptionException('Data source config item `{}` not available'.format(k))
+                raise InvalidConnectorOptionException(f'Connector config item `{k}` not available')
 
         # 加密字段
-        for k in DATA_SOURCE_CIPHER_FIELDS:
+        for k in CONNECTOR_CIPHER_FIELDS:
             v = config.get(k)
             if v is not None:
                 config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
@@ -712,15 +712,15 @@ class FuncDataSourceHelper(object):
         config_json = toolkit.json_dumps(config)
 
         sql = '''
-            SELECT `id` FROM biz_main_data_source WHERE `id` = ?
+            SELECT `id` FROM biz_main_connector WHERE `id` = ?
             '''
-        sql_params = [data_source_id]
+        sql_params = [connector_id]
         db_res = self.__task.db.query(sql, sql_params)
 
         if len(db_res) > 0:
             # 已存在，更新
             sql = '''
-                UPDATE biz_main_data_source
+                UPDATE biz_main_connector
                 SET
                      `title`       = ?
                     ,`description` = ?
@@ -732,16 +732,16 @@ class FuncDataSourceHelper(object):
             sql_params = [
                 title,
                 description,
-                data_source_type,
+                connector_type,
                 config_json,
-                data_source_id,
+                connector_id,
             ]
             self.__task.db.query(sql, sql_params)
 
         else:
             # 不存在，插入
             sql = '''
-                INSERT INTO biz_main_data_source
+                INSERT INTO biz_main_connector
                 SET
                      `id`          = ?
                     ,`title`       = ?
@@ -750,26 +750,26 @@ class FuncDataSourceHelper(object):
                     ,`configJSON`  = ?
                 '''
             sql_params = [
-                data_source_id,
+                connector_id,
                 title,
                 description,
-                data_source_type,
+                connector_type,
                 config_json,
             ]
             self.__task.db.query(sql, sql_params)
 
-        self.reload_config_md5(data_source_id)
+        self.reload_config_md5(connector_id)
 
-    def delete(self, data_source_id):
+    def delete(self, connector_id):
         sql = '''
-            DELETE FROM biz_main_data_source
+            DELETE FROM biz_main_connector
             WHERE
                 `id` = ?
             '''
-        sql_params = [data_source_id]
+        sql_params = [connector_id]
         self.__task.db.query(sql, sql_params)
 
-        self.reload_config_md5(data_source_id)
+        self.reload_config_md5(connector_id)
 
 class FuncEnvVariableHelper(object):
     '''
@@ -1543,7 +1543,7 @@ class ScriptBaseTask(BaseTask):
                     safe_scope[k] = v
 
         # 填充DataFlux Func 内置方法/对象
-        __data_source_helper  = FuncDataSourceHelper(self)
+        __connector_helper    = FuncConnectorHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
         __store_helper        = FuncStoreHelper(self, default_scope=script_name)
         __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
@@ -1573,7 +1573,7 @@ class ScriptBaseTask(BaseTask):
             'EXEC': __exec, # 执行Python代码
 
             'API'   : __export_as_api,       # 导出为API
-            'SRC'   : __data_source_helper,  # 数据源处理模块
+            'CONN'  : __connector_helper,    # 连接器处理模块
             'ENV'   : __env_variable_helper, # 环境变量处理模块
             'CTX'   : self.__context_helper, # 上下文处理模块
             'STORE' : __store_helper,        # 存储处理模块
@@ -1627,22 +1627,22 @@ class ScriptBaseTask(BaseTask):
         '''
         Data sample:
             {
-              "header"       : "Traceback (most recent call last):",
-              "exceptionDump": "ZeroDivisionError: integer division or modulo by zero",
-              "stack": [
-                {
-                  "localsInfo": [
-                    { "type": "<type 'int'>",  "name": "a", "repr": "1" },
-                    { "type": "<type 'dict'>", "name": "d", "dump": "{\"a\": 1, \"b\": 2}" }
-                  ],
-                  "funcname"         : "f1",
-                  "lineCode"         : "a = a / 0",
-                  "lineNumber"       : 12,
-                  "formattedLocation": "File \"/Users/pastgift/Documents/01-try/try_traceback_2.py\", line 12, in f1",
-                  "filename"         : "/Users/pastgift/Documents/01-try/try_traceback_2.py",
-                  "isInScript"       : true,
-                }
-              ]
+                "header"       : "Traceback (most recent call last):",
+                "exceptionDump": "ZeroDivisionError: integer division or modulo by zero",
+                "stack": [
+                    {
+                    "localsInfo": [
+                        { "type": "<type 'int'>",  "name": "a", "repr": "1" },
+                        { "type": "<type 'dict'>", "name": "d", "dump": "{\"a\": 1, \"b\": 2}" }
+                    ],
+                    "funcname"         : "f1",
+                    "lineCode"         : "a = a / 0",
+                    "lineNumber"       : 12,
+                    "formattedLocation": "File \"/Users/pastgift/Documents/01-try/try_traceback_2.py\", line 12, in f1",
+                    "filename"         : "/Users/pastgift/Documents/01-try/try_traceback_2.py",
+                    "isInScript"       : true,
+                    }
+                ]
             }
         '''
         try:
@@ -1732,7 +1732,7 @@ from worker.tasks.main.utils import reload_data_md5_cache
 from worker.tasks.main.utils import sync_cache
 from worker.tasks.main.utils import auto_clean
 from worker.tasks.main.utils import auto_run
-from worker.tasks.main.utils import check_data_source
-from worker.tasks.main.utils import query_data_source
+from worker.tasks.main.utils import check_connector
+from worker.tasks.main.utils import query_connector
 from worker.tasks.main.utils import reset_worker_queue_pressure
 from worker.tasks.main.utils import auto_backup_db

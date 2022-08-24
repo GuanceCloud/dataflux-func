@@ -42,7 +42,7 @@ Welcome to: 欢迎使用
             在左边侧栏可以找到本编辑器的核心模块入口：
             <ul>
               <li>脚本库&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以进行脚本集、脚本以及脚本内函数的编辑管理</li>
-              <li>数据源&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以维护脚本内所需各数据库的管理</li>
+              <li>连接器&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以维护脚本内所需各数据库的管理</li>
               <li>环境变量 <i class="fa fa-fw fa-long-arrow-right"></i> 可以配置在全局范围内可以引用的变量</li>
             </ul>
           </p>
@@ -239,8 +239,8 @@ export default {
 # 导出函数为HTTP API接口
 @DFF.API('API名称')
 def hello_world():
-    # 从数据源读取数据
-    db = DFF.SRC('db')
+    # 从连接器读取数据
+    db = DFF.CONN('db')
     db.query('SELECT * FROM table LIMIT 3', database='my_database')
 
     # 使用环境变量

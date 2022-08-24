@@ -48,7 +48,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                     show-word-limit
                     v-model="form.password"></el-input>
                   <InfoBlock title="填写导出时提示的密码，无密码则留空即可"></InfoBlock>
-                  <InfoBlock type="warning" title="脚本包附带导入的数据源，密码等敏感信息需要重新输入"></InfoBlock>
+                  <InfoBlock type="warning" title="脚本包附带导入的连接器，密码等敏感信息需要重新输入"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
