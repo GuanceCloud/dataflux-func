@@ -16,7 +16,7 @@ spec:
     spec:
 {{/*      initContainers:*/}}
 {{/*      - name: init-service*/}}
-{{/*        image: curlimages/curl:latest #busybox:1.28.3*/}}
+{{/*        image: curlimages/curl:latest #busybox:1.35.0*/}}
 {{/*        command: ['sh', '-c', 'until curl -I server:8088; do echo waiting for init-service && sleep 2; done']*/}}
 {{/*        #command: ['sh', '-c', "curl --connect-timeout 3 --max-time 3 --retry 5 --retry-delay 3 --retry-max-time 5 server:8088"]*/}}
       containers:
