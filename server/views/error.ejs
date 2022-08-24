@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/statics/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/statics/libs/highlight-js/css/default.min.css">
+    <script src="/statics/libs/highlight-js/js/highlight.min.js"></script>
+  </head>
+  <body>
+    <style>
+      * { font-family: monospace }
+      html { padding: 20px; }
+      pre { display: inline-block; white-space: break-spaces; }
+      #errorCode { color: red; }
+      #backToIndex { display: inline-block; color: #ff6600; font-size: 16px; text-decoration: none; }
+      .section { margin-top: 30px; }
+      .error-info-label { font-size: 18px; }
+      .error-info-content { font-size: 16px; padding-left: 30px; }
+    </style>
+    <h1>
+      <% if (pageData.error.info.error >= 400 && pageData.error.info.error < 500) { %>
+        Client Error
+      <% } else { %>
+        Server Error
+      <% } %>
+      <span id="errorCode">(<%= pageData.error.info.error %> - <%= pageData.error.info.reason %>)</span>
+    </h1>
+    <hr>
+
+    <div class="section">
+      <strong class="error-info-label">Message:</strong>
+      <br>
+      <p class="error-info-content"><%= pageData.error.info.message %><p>
+    </div>
+
+    <div class="section">
+      <strong class="error-info-label">Info:</strong>
+      <br>
+      <pre class="error-info-content"><code><%= JSON.stringify(pageData.error, null, 2) %></code></pre>
+    </div>
+
+    <div class="section">
+      <a id="backToIndex" href="<%= pageData.CONFIG._WEB_CLIENT_APP_PATH %>">
+        <i class="fa fa-fw fa-arrow-left"></i>
+        Back to Index
+      </a>
+    </div>
+  </body>
+  <script>hljs.highlightAll()</script>
+</html>

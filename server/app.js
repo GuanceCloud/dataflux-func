@@ -6,7 +6,6 @@ require('./monkeyPatch');
 /* Builtin Modules */
 var path = require('path');
 var http = require('http');
-var fs   = require('fs-extra');
 
 /* 3rd-party Modules */
 var express          = require('express');
@@ -15,29 +14,17 @@ var expressUseragent = require('express-useragent');
 var bodyParser       = require('body-parser');
 var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
-var async            = require('async');
-var yaml             = require('js-yaml');
 
 /* Configure */
-var TRUST_PROXY = [
-  // Subnet
-  'loopback',
-  'linklocal',
-  'uniquelocal',
-  // Aliyun SLB
-  '100.64.0.0/10',
-  '10.158.0.0/16',
-  '10.159.0.0/16',
-  '10.49.0.0/16',
-];
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
 
-var CONST     = yamlResources.loadFile('CONST',     path.join(__dirname, './const.yaml'));
-var ROUTE     = yamlResources.loadFile('ROUTE',     path.join(__dirname, './route.yaml'));
-var PRIVILEGE = yamlResources.loadFile('PRIVILEGE', path.join(__dirname, './privilege.yaml'));
-var CONFIG    = null;
+yamlResources.loadFile('CONST',     path.join(__dirname, './const.yaml'));
+yamlResources.loadFile('ROUTE',     path.join(__dirname, './route.yaml'));
+yamlResources.loadFile('PRIVILEGE', path.join(__dirname, './privilege.yaml'));
+
+var CONFIG = null;
 
 // Load extra YAML resources
 yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config) {
@@ -70,12 +57,12 @@ function startApplication() {
 
   // For index jumping
   app.get('/', function(req, res, next) {
-    return res.redirect(routeLoader.urlFor(CONFIG._WEB_INDEX_PAGE || 'indexPage.index'));
+    return res.redirect(CONFIG._WEB_CLIENT_APP_PATH);
   });
 
   // Favicon
-  var faviconPath = CONFIG.MODE === 'prod' ? 'statics/img/wat-logo.jpg'
-                                           : 'statics/img/wat-logo-warning.jpg';
+  var faviconFile = CONFIG.MODE === 'prod' ? 'wat-logo.jpg' : 'wat-logo-warning.jpg';
+  var faviconPath = 'statics/img/' + faviconFile;
   app.use(favicon(path.join(__dirname, faviconPath)));
 
   // Logger
@@ -83,7 +70,7 @@ function startApplication() {
 
   // App Setting
   app.set('x-powered-by', false);
-  app.set('trust proxy', true /* TRUST_PROXY */);
+  app.set('trust proxy', true);
   app.set('etag', 'weak');
   app.set('env', CONFIG.MODE === 'prod' ? 'production' : 'development');
   app.set('views', path.join(__dirname, 'views'));
@@ -108,10 +95,10 @@ function startApplication() {
   app.use(cors(corsConfig));
 
   // Client APP
-  app.use('/client-app', express.static(path.join(__dirname, '../client/dist')));
+  app.use(CONFIG._WEB_CLIENT_APP_PATH, express.static(path.join(__dirname, '../client/dist')));
 
   // Static files
-  app.use('/statics', express.static(path.join(__dirname, 'statics')));
+  app.use(CONFIG._WEB_STATICS_PATH, express.static(path.join(__dirname, 'statics')));
 
   // User agent
   app.use(expressUseragent.express());
@@ -162,29 +149,15 @@ function startApplication() {
 
   // Load routes
   require('./routers/indexAPIRouter');
-  require('./routers/indexPageRouter');
-
   require('./routers/authAPIRouter');
-  require('./routers/authPageRouter');
-
   require('./routers/userAPIRouter');
-  require('./routers/userPageRouter');
-
   require('./routers/accessKeyAPIRouter');
-  require('./routers/accessKeyPageRouter');
-
   require('./routers/monitorAPIRouter');
-  require('./routers/monitorPageRouter');
-
   require('./routers/systemConfigAPIRouter');
-  require('./routers/systemConfigPageRouter');
-
   require('./routers/debugAPIRouter');
 
   /***** DataFlux Func *****/
-
   require('./routers/mainAPIRouter');
-  require('./routers/mainPageRouter.js');
 
   require('./routers/scriptSetAPIRouter');
   require('./routers/scriptAPIRouter');
@@ -221,12 +194,6 @@ function startApplication() {
 
   routeLoader.mount(app);
 
-  // Route Docs
-  app.use(['/doc', '/docs', '/dev'],
-    auth.createAuthChecker({ requireSignIn: true }),
-    routeLoader.createDoc()
-  );
-
   // More Server initialize
   var serverLogger = logHelper.createHelper();
   app.locals.logger = serverLogger;
@@ -246,7 +213,6 @@ function startApplication() {
     return next(new E('EClientNotFound', 'No such router. Please make sure that the METHOD is correct and no spelling missing in the URL', {
       method: req.method,
       url   : req.originalUrl,
-      links : {doc: '/doc'},
     }));
   });
 
@@ -327,41 +293,18 @@ function startApplication() {
           errorRet.reqDump.bodyDump = bodyDump;
         }
         return res.locals.sendJSON(errorRet);
-        break;
 
       case 'page':
       default:
         if ('function' !== typeof res.locals.render) {
-          return res.send(err.toString());
+          return res.send(err.toHTML());
         }
 
         // Response a HTML page
-        if (err.status === 404) {
-          // Not found error
-          return res.locals.render('_error/errorNotFound', {
-            error: err,
-          });
-        } else if (err.info.reason === 'EUserAuth') {
-          // User auth error
-          return res.locals.render('_error/authError');
-        } else if (err.info.reason === 'EUserPrivilege') {
-          // User privilege error
-          return res.locals.render('_error/errorPrivilege', {
-            error: err,
-          });
-        } else if (err.status >= 500) {
-          // System error
-          return res.locals.render('_error/errorSys', {
-            error: err,
-          });
-        } else if (err.status >= 400) {
-          // Business logic error
-          return res.locals.render('_error/errorBiz', {
-            error: err,
-          });
-        }
-
-        break;
+        return res.locals.render('error', {
+          error : err,
+          CONFIG: CONFIG,
+        });
     }
   });
 

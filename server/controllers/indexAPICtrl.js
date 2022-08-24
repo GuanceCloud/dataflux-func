@@ -1,7 +1,6 @@
 'use strict';
 
 /* Builtin Modules */
-var path         = require('path');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
@@ -10,13 +9,9 @@ var async   = require('async');
 var request = require('request');
 
 /* Project Modules */
-var E         = require('../utils/serverError');
-var CONFIG    = require('../utils/yamlResources').get('CONFIG');
-var ROUTE     = require('../utils/yamlResources').get('ROUTE');
-var toolkit   = require('../utils/toolkit');
-var translate = require('../utils/translate');
-
-var userMod = require('../models/userMod');
+var E       = require('../utils/serverError');
+var ROUTE   = require('../utils/yamlResources').get('ROUTE');
+var toolkit = require('../utils/toolkit');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
@@ -110,9 +105,6 @@ exports.proxy = function(req, res, next) {
 
 exports.testThrowError = function(req, res, next) {
   throw new Error('Test Throw Error');
-
-  var ret = toolkit.initRet(req.body);
-  res.locals.sendJSON(ret);
 };
 
 exports.testThrowErrorInAsync = function(req, res, next) {

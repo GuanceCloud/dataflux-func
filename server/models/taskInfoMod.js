@@ -78,7 +78,7 @@ EntityModel.prototype.list = function(options, callback) {
   this._list(options, callback);
 };
 
-EntityModel.prototype.appendTaskInfoMap = function(data, callback) {
+EntityModel.prototype.appendTaskInfo = function(data, callback) {
   if (toolkit.isNothing(data)) return callback(null, data);
 
   var originIds = data.reduce(function(acc, x) {

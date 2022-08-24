@@ -42,7 +42,6 @@ var systemConfigMod           = require('../models/systemConfigMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
-var dataway      = require('./dataway');
 
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,

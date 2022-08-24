@@ -159,30 +159,6 @@ indexAPI:
         $type    : integer
         $minValue: 1
 
-indexPage:
-  index:
-    name    : Home
-    method  : get
-    url     : /index
-    response: html
-    desc: |
-      Index Page.
-
-  dashboard:
-    name         : Dashboard
-    method       : get
-    url          : /dashboard
-    response     : html
-    requireSignIn: true
-    desc: |
-      Dashbard page for signed user.
-
-  authError:
-    name    : Auth Error
-    method  : get
-    url     : /auth-error
-    response: html
-
 # Authentication
 authAPI:
   signIn:
@@ -286,35 +262,6 @@ authAPI:
           $type      : string
           $maxLength : 20
           $example   : '18600000000'
-
-authPage:
-  signIn:
-    name    : User sign in
-    method  : get
-    url     : /sign-in
-    response: html
-
-  signOut:
-    name    : User sign out
-    method  : get
-    url     : /sign-out
-    response: html
-
-  changePassword:
-    name         : Change password
-    method       : get
-    url          : /change-password
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-
-  profile:
-    name         : User profile
-    method       : get
-    url          : /profile
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
 
 # User
 userAPI:
@@ -504,73 +451,6 @@ userAPI:
         $desc: User ID
         $type: string
 
-userPage:
-  list:
-    name         : User list
-    method       : get
-    url          : /users
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : user_r
-    paging       : true
-    orderFields:
-      seq     : u.seq
-      username: u.username
-      name    : u.name
-    fuzzySearch:
-      - u.username
-      - u.name
-      - u.mobile
-    query:
-      id:
-        $desc      : Filter by ID
-        $type      : commaArray
-        $searchType: in
-        $searchKey : u.id
-      username:
-        $desc      : Search by username
-        $type      : string
-        $searchType: like
-        $searchKey : u.username
-      name:
-        $desc      : Search by name
-        $type      : string
-        $searchType: like
-        $searchKey : u.name
-      mobile:
-        $desc      : Search by mobile number
-        $type      : int
-        $searchType: like
-        $searchKey : u.mobile
-      isDisabled:
-        $desc      : Filter by DISABLED flag
-        $type      : boolean
-        $searchType: boolean
-        $searchKey : u.isDisabled
-
-  add:
-    name         : User adding
-    method       : get
-    url          : /user-add
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : user_w
-
-  modify:
-    name         : User modifying
-    method       : get
-    url          : /users/:id/modify
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : user_w
-    params:
-      id:
-        $desc: User ID
-        $type: string
-
 # Access Key
 accessKeyAPI:
   list:
@@ -694,55 +574,6 @@ accessKeyAPI:
     requireSignIn: true
     authType     : builtin.byXAuthToken
     privilege    : accessKey_r
-    params:
-      id:
-        $desc: Access key ID
-        $type: string
-
-accessKeyPage:
-  list:
-    name         : Access key list
-    method       : get
-    url          : /access-keys
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : accessKey_r
-    paging       : true
-    orderFields:
-      seq : ak.seq
-    fuzzySearch:
-      - ak.id
-      - ak.name
-    query:
-      id:
-        $desc      : Filter by ID
-        $type      : commaArray
-        $searchType: in
-        $searchKey : ak.id
-      name:
-        $desc      : Search by name
-        $type      : string
-        $searchType: like
-        $searchKey : ak.name
-
-  add:
-    name         : Access key adding
-    method       : get
-    url          : /access-key-add
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : accessKey_w
-
-  modify:
-    name         : Access key modifying
-    method       : get
-    url          : /access-keys/:id/modify
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : accessKey_w
     params:
       id:
         $desc: Access key ID
@@ -895,52 +726,6 @@ monitorAPI:
           $type      : string
           $minLength : 1
 
-monitorPage:
-  sysStats:
-    name         : System Stats
-    method       : get
-    url          : /monitor/sys-stats
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-
-  serverEnvironment:
-    name         : Server environment
-    method       : get
-    url          : /monitor/server-environment
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-
-  tasks:
-    name         : Tasks
-    method       : get
-    url          : /monitor/tasks
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-
-  nodesStats:
-    name         : Worker node stats
-    method       : get
-    url          : /monitor/nodes/stats
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-
-  nodesReport:
-    name         : Worker node report
-    method       : get
-    url          : /monitor/nodes/report
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : general_r
-
 # System Config
 systemConfigAPI:
   list:
@@ -1003,25 +788,6 @@ systemConfigAPI:
       id:
         $desc: System Config ID
         $type: string
-
-systemConfigPage:
-  list:
-    name         : System Config list
-    method       : get
-    url          : /system-configs
-    response     : html
-    requireSignIn: true
-    authType     : builtin.byXAuthToken
-    privilege    : systemConfig_r
-    export       : true
-    fuzzySearch:
-      - sc.id
-    query:
-      id:
-        $desc      : Filter by ID
-        $type      : commaArray
-        $searchType: in
-        $searchKey : sc.id
 
 # Debug
 debugAPI:
@@ -2006,15 +1772,6 @@ mainAPI:
     requireSignIn: false
     privilege    : general_r
 
-mainPage:
-  clientApp:
-    showInDoc    : true
-    name         : 客户端应用
-    method       : get
-    url          : /client-app
-    response     : html
-    requireSignIn: false
-
 # 脚本集
 scriptSetAPI:
   list:
@@ -2449,6 +2206,9 @@ funcAPI:
       - func.title
       - func.description
     query:
+      _asFuncDoc:
+        $desc      : 以函数文档形式返回
+        $type      : boolean
       id:
         $desc      : 按函数ID过滤
         $type      : commaArray
@@ -5274,7 +5034,6 @@ funcStoreAPI:
       id:
         $desc: 函数存储ID
         $type: string
-
 
 # 蓝图
 blueprintAPI:

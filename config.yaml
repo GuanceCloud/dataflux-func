@@ -164,9 +164,8 @@ _MYSQL_CHARSET         : utf8mb4
 _MYSQL_TIMEZONE        : ''
 
 # WEB模块一般作为常量的配置
-_WEB_INDEX_PAGE            : mainPage.clientApp
-_WEB_SIGN_IN_PAGE          : mainPage.clientApp
-_WEB_DASHBOARD_PAGE        : indexPage.dashboard
+_WEB_CLIENT_APP_PATH       : /client-app
+_WEB_STATICS_PATH          : /statics
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
 _WEB_ORIGIN_HEADER         : X-Dff-Origin

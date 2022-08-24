@@ -15,7 +15,6 @@ var E             = require('./serverError');
 var CONFIG        = require('./yamlResources').get('CONFIG');
 var yamlResources = require('./yamlResources');
 var toolkit       = require('./toolkit');
-var translate     = require('./translate');
 var routeLoader   = require('./routeLoader');
 var auth          = require('./auth');
 var appInit       = require('../appInit');
@@ -455,15 +454,6 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       return moment.duration.apply(moment.duration, args).locale(momentLocale);
     }
 
-    var translateText = function() {
-      var args = Array.prototype.slice.call(arguments);
-      args[0] = translate(args[0], res.locals.clientLocale);
-
-      if (args.length <= 1) return args[0];
-
-      return toolkit.strf.apply(null, args);
-    };
-
     pageData = pageData || {};
 
     var renderData = {
@@ -492,7 +482,6 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         moment             : moment,
         localMoment        : localMoment,
         localDuration      : localDuration,
-        __                 : translateText,
         static             : getStaticFilePath,
         urlFor             : routeLoader.urlFor,
     };

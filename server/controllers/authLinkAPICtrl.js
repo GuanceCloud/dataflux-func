@@ -38,7 +38,7 @@ exports.list = function(req, res, next) {
         authLinkPageInfo = pageInfo;
 
         if (opt.extra && opt.extra.withTaskInfo) {
-          return taskInfoModel.appendTaskInfoMap(authLinks, asyncCallback);
+          return taskInfoModel.appendTaskInfo(authLinks, asyncCallback);
         } else {
           return asyncCallback();
         }
@@ -388,6 +388,7 @@ function _modify(locals, id, data, opt, callback) {
 
 function _delete(locals, id, callback) {
   var authLinkModel = authLinkMod.createModel(locals);
+  var taskInfoModel = taskInfoMod.createModel(locals);
 
   async.series([
     function(asyncCallback) {
@@ -395,6 +396,9 @@ function _delete(locals, id, callback) {
     },
     function(asyncCallback) {
       authLinkModel.delete(id, asyncCallback);
+    },
+    function(asyncCallback) {
+      taskInfoModel.deleteByOriginId(id, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);

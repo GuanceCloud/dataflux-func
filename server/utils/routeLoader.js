@@ -1,9 +1,7 @@
 'use strict';
 
 /* Builtin Modules */
-var os   = require('os');
 var path = require('path');
-var fs   = require('fs');
 
 /* 3rd-party Modules */
 var async  = require('async');
@@ -20,11 +18,8 @@ var toolkit          = require('./toolkit');
 var auth             = require('./auth');
 var requestValidator = require('./requestValidator');
 var modelHelper      = require('./modelHelper');
-var translate        = require('./translate');
 var uploads          = require('./uploads');
 var requestDumper    = require('./requestDumper');
-
-var builtinAuthMid = require('../middlewares/builtinAuthMid');
 
 /**
  * All route configs.
@@ -35,37 +30,6 @@ var builtinAuthMid = require('../middlewares/builtinAuthMid');
  */
 var _ROUTES    = [];
 var _ROUTE_MAP = {};
-
-// Load markdown documents.
-function loadMarkdownDocument(filePath) {
-  var md = fs.readFileSync(filePath, 'utf8').toString();
-
-  var sections = [];
-  md.split('\n').forEach(function(line) {
-    if (line.indexOf('# ') === 0) {
-      sections.push({
-        title  : line.slice(2),
-        content: '',
-      });
-
-    } else {
-      if (sections.length <= 0) {
-        sections.push({
-          title  : '',
-          content: '',
-        });
-      }
-
-      sections[sections.length - 1].content += '\n' + line;
-    }
-  });
-
-  sections.forEach(function(s) {
-    s.contentHTML = marked.parse(s.content);
-  });
-
-  return sections;
-}
 
 function getValue(value, defaultValue) {
   if ('undefined' === typeof value) {
@@ -127,8 +91,6 @@ function fieldPickingCondition(req, res, next) {
 
   return next();
 };
-
-// Old version
 function fieldKickingCondition(req, res, next) {
   var fieldKicking = req.query.fieldKicking;
   if (!toolkit.isNothing(fieldKicking)) {
@@ -674,55 +636,6 @@ exports.mount = function(app) {
 
     app[c.method](c.url, preMiddlewares, r.middlewares);
   }
-};
-
-/**
- * Create document page.
- *
- * @return {Object} - `Express.js` Route object.
- */
-exports.createDoc = function() {
-  var router = Router();
-
-  var htmlAPIDocIntroductionSections = [];
-  if (CONFIG._API_DOC_INTRODUCTION_LIST) {
-    var apiDocIntroductionFiles = toolkit.asArray(CONFIG._API_DOC_INTRODUCTION_LIST);
-
-    apiDocIntroductionFiles.forEach(function(fileName) {
-      var filePath = path.join(__dirname, '../views/_doc/' + fileName);
-      var sections = loadMarkdownDocument(filePath);
-
-      htmlAPIDocIntroductionSections = htmlAPIDocIntroductionSections.concat(sections);
-    });
-  }
-
-  router.get('/', function(req, res, next) {
-    var pageData = {
-      docPageTitle: 'API Documents',
-
-      htmlAPIDocIntroductionSections: htmlAPIDocIntroductionSections,
-      routes                        : _ROUTES,
-      fn: {
-        flattenQueryConfig: flattenQueryConfig,
-        flattenParamConfig: flattenParamConfig,
-        genParamSample    : genParamSample,
-      },
-    };
-    return res.locals.render('_doc/apiDoc', pageData);
-  });
-
-  router.get('/change-log', function(req, res, next) {
-    var filePath = path.join(__dirname, '../../CHANGE_LOG.md');
-    var sections = loadMarkdownDocument(filePath);
-
-    return res.locals.render('_doc/changeLog', {
-      docPageTitle: 'Change Log',
-
-      sections : sections,
-    });
-  });
-
-  return router;
 };
 
 exports.getRoute = function(key) {

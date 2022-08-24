@@ -7,17 +7,12 @@ var path = require('path');
 var async = require('async');
 
 /* Project Modules */
-var E           = require('./utils/serverError');
-var CONFIG      = require('./utils/yamlResources').get('CONFIG');
-var toolkit     = require('./utils/toolkit');
-var logHelper   = require('./utils/logHelper');
-var mysqlHelper = require('./utils/extraHelpers/mysqlHelper');
-var redisHelper = require('./utils/extraHelpers/redisHelper');
-var mqttHelper  = require('./utils/extraHelpers/mqttHelper');
+var E       = require('./utils/serverError');
+var CONFIG  = require('./utils/yamlResources').get('CONFIG');
+var toolkit = require('./utils/toolkit');
 
 var dataSourceMod = require('./models/dataSourceMod');
 var mainAPICtrl   = require('./controllers/mainAPICtrl');
-const { createClient } = require('redis');
 
 /* Configure */
 var DATA_SOURCE_CHECK_INTERVAL = 3 * 1000;
@@ -26,8 +21,8 @@ var SUB_CLIENT_LOCK_EXPIRES    = 30;
 var LOCAL_DATA_SOURCE_MAP = {};
 
 var DATA_SOURCE_HELPER_MAP = {
-  redis: redisHelper,
-  mqtt : mqttHelper,
+  redis: require('./utils/extraHelpers/redisHelper'),
+  mqtt : require('./utils/extraHelpers/mqttHelper'),
 };
 
 function createMessageHandler(locals, handlerFuncId) {

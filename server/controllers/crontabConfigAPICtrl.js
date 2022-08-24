@@ -38,7 +38,7 @@ exports.list = function(req, res, next) {
         crontabConfigPageInfo = pageInfo;
 
         if (opt.extra && opt.extra.withTaskInfo) {
-          return taskInfoModel.appendTaskInfoMap(crontabConfigs, asyncCallback);
+          return taskInfoModel.appendTaskInfo(crontabConfigs, asyncCallback);
         } else {
           return asyncCallback();
         }
@@ -323,6 +323,7 @@ function _modify(locals, id, data, opt, callback) {
 
 function _delete(locals, id, callback) {
   var crontabConfigModel = crontabConfigMod.createModel(locals);
+  var taskInfoModel      = taskInfoMod.createModel(locals);
 
   async.series([
     function(asyncCallback) {
@@ -330,6 +331,9 @@ function _delete(locals, id, callback) {
     },
     function(asyncCallback) {
       crontabConfigModel.delete(id, asyncCallback);
+    },
+    function(asyncCallback) {
+      taskInfoModel.deleteByOriginId(id, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);
