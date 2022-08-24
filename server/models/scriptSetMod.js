@@ -371,7 +371,10 @@ EntityModel.prototype.export = function(options, callback) {
   if (includeBatches)        packageData.batches        = [];
 
   // 连接器/环境变量
-  if (!toolkit.isNothing(connectorIds))  packageData.connectors  = [];
+  if (!toolkit.isNothing(connectorIds)) {
+    packageData.connectors  = [];
+    packageData.dataSources = []; // 兼容旧版
+  }
   if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
 
   var fileBuf = null;
@@ -638,7 +641,8 @@ EntityModel.prototype.export = function(options, callback) {
           });
         });
 
-        packageData.connectors = dbRes;
+        packageData.connectors  = dbRes;
+        packageData.dataSources = dbRes; // 兼容旧版
 
         return asyncCallback();
       });
@@ -726,12 +730,12 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds     = toolkit.arrayElementValues(packageData.scriptSets      || [], 'id');
-  var authLinkIds      = toolkit.arrayElementValues(packageData.authLinks       || [], 'id');
-  var crontabConfigIds = toolkit.arrayElementValues(packageData.crontabConfigs  || [], 'id');
-  var batchIds         = toolkit.arrayElementValues(packageData.batches         || [], 'id');
-  var connectorIds     = toolkit.arrayElementValues(packageData.connectors     || [], 'id');
-  var envVariableIds   = toolkit.arrayElementValues(packageData.envVariables    || [], 'id');
+  var scriptSetIds     = toolkit.arrayElementValues(packageData.scriptSets                            || [], 'id');
+  var authLinkIds      = toolkit.arrayElementValues(packageData.authLinks                             || [], 'id');
+  var crontabConfigIds = toolkit.arrayElementValues(packageData.crontabConfigs                        || [], 'id');
+  var batchIds         = toolkit.arrayElementValues(packageData.batches                               || [], 'id');
+  var connectorIds     = toolkit.arrayElementValues(packageData.connectors || packageData.dataSources || [], 'id'); // 兼容旧版
+  var envVariableIds   = toolkit.arrayElementValues(packageData.envVariables                          || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([

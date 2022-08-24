@@ -1574,6 +1574,7 @@ class ScriptBaseTask(BaseTask):
 
             'API'   : __export_as_api,       # 导出为API
             'CONN'  : __connector_helper,    # 连接器处理模块
+            'SRC'   : __connector_helper,    # 连接器处理模块（兼容旧版）
             'ENV'   : __env_variable_helper, # 环境变量处理模块
             'CTX'   : self.__context_helper, # 上下文处理模块
             'STORE' : __store_helper,        # 存储处理模块
