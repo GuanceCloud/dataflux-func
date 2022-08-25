@@ -204,7 +204,7 @@ export default {
           type      : 'envVariable',
           isPinned  : d.isPinned,
           pinTime   : d.pinTime,
-          searchTEXT: this.T.getSearchText(d, ['id', 'title']),
+          searchTEXT: this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,

@@ -664,7 +664,7 @@ export default {
           isPinned       : isPinned,
           pinTime        : d.pinTime,
           isBuiltin      : d.isBuiltin,
-          searchTEXT     : this.T.getSearchText(d, ['id', 'title']),
+          searchTEXT     : this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
@@ -731,7 +731,7 @@ export default {
           isLocked           : isLocked,
           isLockedByScriptSet: isLockedByScriptSet,
           isEditable         : isEditable,
-          searchTEXT         : this.T.getSearchText(d, ['id', 'title']),
+          searchTEXT         : this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
@@ -786,7 +786,7 @@ export default {
           label      : d.title || d.id,
           type       : 'func',
           definition : d.definition,
-          searchTEXT: this.T.getSearchText(d, ['id', 'title']),
+          searchTEXT: this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,

@@ -34,7 +34,7 @@ export async function getFuncList() {
     scriptSetMap[d.id] = {
       label     : d.title || d.id,
       value     : d.id,
-      searchTEXT: T.getSearchText(d, ['id', 'title']),
+      searchTEXT: T.getSearchTEXT(d, ['id', 'title']),
       children  : [],
     };
   });
@@ -49,7 +49,7 @@ export async function getFuncList() {
     scriptMap[d.id] = {
       label     : d.title || d.id,
       value     : d.id,
-      searchTEXT: T.getSearchText(d, ['id', 'title']),
+      searchTEXT: T.getSearchTEXT(d, ['id', 'title']),
       children  : [],
     };
 
@@ -69,7 +69,7 @@ export async function getFuncList() {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
-      searchTEXT     : T.getSearchText(d, ['id', 'title']),
+      searchTEXT     : T.getSearchTEXT(d, ['id', 'title']),
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,

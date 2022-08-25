@@ -237,7 +237,7 @@ export default {
           isBuiltin     : d.isBuiltin,
           isPinned      : d.isPinned,
           pinTime       : d.pinTime,
-          searchTEXT    : this.T.getSearchText(d, ['id', 'title', 'type']),
+          searchTEXT    : this.T.getSearchTEXT(d, ['id', 'title', 'type']),
 
           title      : d.title,
           description: d.description,
