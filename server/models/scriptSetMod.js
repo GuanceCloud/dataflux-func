@@ -375,7 +375,9 @@ EntityModel.prototype.export = function(options, callback) {
     packageData.connectors  = [];
     packageData.dataSources = []; // 兼容旧版
   }
-  if (!toolkit.isNothing(envVariableIds)) packageData.envVariables = [];
+  if (!toolkit.isNothing(envVariableIds)) {
+    packageData.envVariables = [];
+  }
 
   var fileBuf = null;
   async.series([
@@ -879,6 +881,7 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
         { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
         { name: 'batches',        table: 'biz_main_batch' },
         { name: 'connectors',     table: 'biz_main_connector' },
+        { name: 'dataSources',    table: 'biz_main_connector' }, // 旧版兼容
         { name: 'envVariables',   table: 'biz_main_env_variable' },
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {

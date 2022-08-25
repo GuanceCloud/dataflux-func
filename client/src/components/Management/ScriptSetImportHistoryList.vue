@@ -89,8 +89,15 @@ export default {
       });
       if (!apiRes.ok) return;
 
-      this.data = apiRes.data;
+      let data = apiRes.data;
 
+      // 旧版兼容
+      data.forEach(d => {
+        if (!d.summaryJSON || !d.summaryJSON.dataSources) return;
+        d.summaryJSON.connectors = d.summaryJSON.dataSources;
+      });
+
+      this.data = data;
       this.$store.commit('updateLoadStatus', true);
     },
     openSetup(d, target) {
