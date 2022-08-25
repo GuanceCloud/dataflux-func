@@ -44,7 +44,6 @@ Connector unpinned: 连接器已取消
       :highlight-current="true"
       :indent="10"
       node-key="id"
-      v-on:current-change="onSelectNode"
       ref="tree">
 
       <span
@@ -166,8 +165,7 @@ export default {
       if (!this.$refs.tree) return;
 
       let node = this.$refs.tree.getNode(val);
-
-      this.onSelectNode(node.data);
+      this.openEntity(node, node.data);
     },
     '$store.state.connectorListSyncTime': function() {
       this.loadData();
@@ -182,33 +180,40 @@ export default {
         this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
       }
     },
-    onSelectNode(data, node) {
-      if (!data) return;
-      if (!this.$refs.tree) return;
 
-      this.$nextTick(() => {
-        var entryId = data.id || data;
-        if (!entryId) return;
+    // 选中节点
+    selectNode(nodeKey, options) {
+      options = options || {};
+
+      if (!this.$refs.tree) return;
+      if (!nodeKey) return;
+
+      setImmediate(() => {
+        let node = this.$refs.tree.getNode(nodeKey);
+        if (!node || !node.data) return;
 
         // 选中
-        this.$refs.tree.setCurrentKey(entryId);
+        this.$refs.tree.setCurrentKey(node.data.id);
 
-        // 滚动到目标位置
-        let $asideContent = document.getElementById('aside-connector-content');
-        let $target = document.querySelector(`[entry-id="${entryId}"]`);
+        setTimeout(() => {
+          // 滚动到目标位置
+          let $asideContent = document.getElementById('aside-connector-content');
+          let $target = document.querySelector(`[entry-id="${node.data.id}"]`);
 
-        let scrollTop = 0;
-        let topPadding = 35;
-        if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
-          scrollTop = $target.offsetTop - topPadding;
-        } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
-          scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
-        } else {
-          return;
-        }
-        $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+          let scrollTop = 0;
+          let topPadding = 35;
+          if ($asideContent.scrollTop + topPadding > $target.offsetTop) {
+            scrollTop = $target.offsetTop - topPadding;
+          } else if ($asideContent.scrollTop + $asideContent.offsetHeight < $target.offsetTop) {
+            scrollTop = $target.offsetTop - $asideContent.offsetHeight + $target.offsetHeight;
+          } else {
+            return;
+          }
+          $asideContent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }, 300);
       });
     },
+
     async loadData() {
       this.loading = true;
 
@@ -258,6 +263,9 @@ export default {
       this.data              = treeData;
       this.selectOptions     = selectOptions;
       this.selectShowOptions = selectOptions;
+
+      // 自动选择
+      this.selectNode(this.$route.params.id);
     },
     async pinData(dataType, dataId, isPinned) {
       let apiPath   = null;
@@ -301,6 +309,8 @@ export default {
 
         // 连接器节点
         case 'connector':
+          this.selectNode(data.id);
+
           this.$router.push({
             name  : 'connector-setup',
             params: {id: data.id},
@@ -311,8 +321,6 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
-
-      this.onSelectNode(data);
     },
   },
   props: {
