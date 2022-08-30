@@ -1,17 +1,61 @@
-# Func
+# DataFlux Func
 
-## [Func](https://func.guance.com/) - 一款函数开发、管理、执行平台。
+DataFlux Func 是一个用于 Python 脚本开发、管理、执行的平台。
 
-  DataFlux Func 是一款函数开发、管理、执行平台。简单易用、无需从零搭建Web服务，无需管理服务器等基础设施，只需编写代码并发布，简单配置即可为函数生成HTTP API接口
+> `DataFlux Func`读作"data flux function"。在系统内有时会缩写为`DFF`。
 
-### 多种连接器支持
+DataFlux Func 前身为 [观测云](https://guance.com/) 下属的一个计算组件，目前已成为可独立运行的系统。
 
-  集成主流数据库支持，可接入MySQL、Redis、InfluxDB、SQL Server、Oracle、ES等多种类型数据库
+本系统主要分为 2 个部分：
 
-### 直接编写业务代码
-  基于Python语言的运行时环境，同时提供多种内置功能。发布后函数可自动生成API，轻松进行应用开发，提高效率
+- Server：使用 Node.js + Express 构建，主要提供 Web UI 服务、对外 API 接口
+- Worker：使用 Python3 + Celery 构建，主要提供 Python 脚本的执行环境（内含 Beat 模块）
 
-### 开箱即用
-  完全基于Docker构建，部署简单。同时提供携带版，无公网环境也能运行
+> 目前 DataFlux Func 正在快速开发过程中，我们建议始终安装最新版使用，因此暂不提供历史版本。
 
+## 相关文档
 
+有关 DataFlux Func 的相关文档请参考以下链接：
+
+- [官方网站](https://func.guance.com)
+- [快速开始](https://func.guance.com/doc/quick-start/)
+- [开发手册](https://func.guance.com/doc/development-guide/)
+- [部署和维护手册](https://func.guance.com/doc/maintenance-guide/)
+- [文档库](https://func.guance.com/doc/)
+- [观测云官方网站](https://guance.com/)
+
+## LICENSE
+
+[AGPL v3](LICENSE)
+
+---
+
+# DataFlux Func
+
+DataFlux Func is a platform for developing, managing, executing Python scripts.
+
+> `DataFlux Func` is pronounced as "data flux function". Sometimes abbreviated as `DFF` in the system。
+
+DataFlux Func, formerly a computing component under [Guance](https://guance.com/), is now a stand-alone system.
+
+The system is divided into 2 main parts.
+
+- Server: built with Node.js + Express, mainly providing Web UI services and API interface
+- Worker: built with Python3 + Celery, mainly providing the execution environment of Python scripts (including Beat module)
+
+> As DataFlux Func is currently under rapid development, we recommend always installing the latest version and therefore do not provide historical versions at this time.
+
+## Related Docs
+
+For documentation on DataFlux Func, please refer to the following link.
+
+- [Official Site](https://func.guance.com)
+- [Quick Start](https://func.guance.com/doc/quick-start/)
+- [Development Guide](https://func.guance.com/doc/development-guide/)
+- [Deployment and Maintenance Guide](https://func.guance.com/doc/maintenance-guide/)
+- [Documentation Library](https://func.guance.com/doc/)
+- [Guance Official Site](https://guance.com/)
+
+## LICENSE
+
+[AGPL v3](LICENSE)
