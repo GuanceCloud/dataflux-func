@@ -47,7 +47,7 @@ The system is divided into 2 main parts.
 
 ## Related Docs
 
-For documentation on DataFlux Func, please refer to the following link.
+For documentations on DataFlux Func, please refer to the following links.
 
 - [Official Site](https://func.guance.com)
 - [Quick Start](https://func.guance.com/doc/quick-start/)

@@ -6,7 +6,7 @@
 
 ## 相关文档
 
-见主项目 [README.md](../README.md)
+见 [README.md](../README.md)
 
 ---
 
@@ -18,4 +18,4 @@ Web client project of DataFlux Func, based on Vue 2.x and ElementUI.
 
 ## Related Docs
 
-See main project [README.md](../README.md)
+See [README.md](../README.md)
