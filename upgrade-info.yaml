@@ -188,6 +188,7 @@ upgradeInfo:
       ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
       AFTER `showInDoc`;
 
+  # 于观测云SaaS 2022-09-01 迭代中实装
   - seq: 12
     database: |-
       -- 「数据源」重命名为「连接器」
