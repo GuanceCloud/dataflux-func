@@ -185,9 +185,7 @@ export default {
         alert: { okMessage: this.$t('Script installed, new Script is in effect immediately') },
       });
       this.isInstalling = false;
-      if (!apiRes.ok) {
-        return this.alertOnError(apiRes);
-      }
+      if (!apiRes.ok) return;
 
       this.showDetail = false;
 

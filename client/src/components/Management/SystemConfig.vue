@@ -26,7 +26,7 @@ System Config Saved: 系统配置已保存
                 <el-divider content-position="left"><h1>{{ $t('Notice Bar') }}</h1></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置文案后，会在整个DataFlux Func UI界面顶部展示固定的提示栏"></InfoBlock>
+                  <InfoBlock title="启用并配置文案后，会在整个 DataFlux Func UI 界面顶部展示固定的提示栏"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="NOTICE_BAR_ENABLED">
