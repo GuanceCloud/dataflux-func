@@ -55,17 +55,18 @@ function routeMonitor(routeConfig) {
         'metric', 'matchedRouteCount',
         'date', toolkit.getDateString()]);
     async.series([
-      // 按照路由记录
       function(asyncCallback) {
-        var _record = `${req.method.toUpperCase()} ${matchedRoute}`;
-        res.locals.cacheDB.hincrby(cacheKey, _record, 1, asyncCallback);
-      },
-      // 额外记录函数调用
-      function(asyncCallback) {
-        if (matchedRoute !== '/api/v1/func/:funcId') return asyncCallback();
+        var method = req.method.toUpperCase();
 
-        var _record = `${req.method.toUpperCase()} ${path.join(req.baseUrl, req.path)}`;
-        res.locals.cacheDB.hincrby(cacheKey, _record, 1, asyncCallback);
+        var record = null;
+        if (method === 'POST' && matchedRoute === '/api/v1/func/:funcId') {
+          // 记录函数调用
+          record = `${method} ${path.join(req.baseUrl, req.path)}`;
+        } else {
+          // 记录路由调用
+          record = `${method} ${matchedRoute}`;
+        }
+        res.locals.cacheDB.hincrby(cacheKey, record, 1, asyncCallback);
       },
       function(asyncCallback) {
         res.locals.cacheDB.expire(cacheKey, CONFIG._MONITOR_MATCHED_ROUTE_EXPIRES, asyncCallback);

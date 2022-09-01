@@ -303,5 +303,8 @@ _DISABLE_WORKER_LIMIT_PRESSURE: false
 # 是否禁用启动运行任务
 _DISABLE_STARTUP_TASKS: false
 
+# 是否禁用脚本包导入、安装等功能
+_DISABLE_SCRIPT_SET_IMPORT: false
+
 # 是否已安装完成
 _IS_INSTALLED: false

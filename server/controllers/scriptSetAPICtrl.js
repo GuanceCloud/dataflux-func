@@ -262,6 +262,10 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
+  if (CONFIG._DISABLE_SCRIPT_SET_IMPORT) {
+    return next(new E('EBizCondition.Disabled', 'Script importing, installing, recovering is disabled, please contact your administrator.'));
+  }
+
   var file                 = req.files ? req.files[0] : null;
   var packageInstallURL    = req.body.packageInstallURL;
   var packageInstallId     = req.body.packageInstallId;
@@ -373,12 +377,11 @@ exports.import = function(req, res, next) {
       // AES解密
       try {
         fileBuf = toolkit.decipherByAES(fileBuf, password);
-        res.locals.logger.debug(toolkit.strf('File Data: {0}...{1}, MD5: {2}',
-            fileBuf.slice(0, 20), fileBuf.slice(-20), toolkit.getMD5(fileBuf)));
+        res.locals.logger.debug(toolkit.strf('File Data: MD5: {0}', toolkit.getMD5(fileBuf)));
 
       } catch(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password (1)'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
       }
 
       return asyncCallback();
@@ -408,7 +411,7 @@ exports.import = function(req, res, next) {
       })
       .catch(function(err) {
         res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password (2)'));
+        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password, please check if the password is entered correctly'));
       });
     },
     // 导入数据/暂存数据

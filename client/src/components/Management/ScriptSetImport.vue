@@ -142,8 +142,7 @@ export default {
       bodyData.append('files', req.file);
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
-        body : bodyData,
-        alert: { muteError: true },
+        body: bodyData,
       });
       if (!apiRes.ok) {
         return this.alertOnError(apiRes);
@@ -184,23 +183,6 @@ export default {
     },
     alertOnError(apiRes) {
       if (apiRes.ok) return;
-
-      switch(apiRes.reason) {
-        case 'EBizCondition.InvalidPassword':
-          this.T.alert(`导入令牌错误<br>
-              请使用复制粘贴的方式填写导入令牌，避免错填容易混淆的字母数字`);
-          break;
-
-        case 'EBizCondition.ConfirmingImportTimeout':
-          this.T.alert(`脚本包导入确认超时<br>
-              脚本包导入后长时间未确认，请重新尝试导入`);
-          break;
-
-        default:
-          this.T.alert(`脚本包导入时发生意外错误<br>
-              请尝试重新导入，如果问题一直出现，请联系脚本包发行方`);
-          break;
-      }
 
       this.form.password = '';
       this.initFilePreview();
