@@ -371,10 +371,8 @@ def get_days_from_now(d):
     return days
 
 def get_md5(s):
-    s = six.ensure_binary(s)
-
     h = hashlib.md5()
-    h.update(s)
+    h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
