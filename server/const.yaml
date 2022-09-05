@@ -74,9 +74,10 @@ fileIcon:
   xml : file-code-o
   csv : file-code-o
 
-# System Config IDs
-systemConfigIds:
-  - NOTICE_BAR_ENABLED
-  - NOTICE_BAR_TEXT
-  - MONITOR_DATA_UPLOAD_ENABLED
-  - MONITOR_DATA_UPLOAD_URL
+# System Configs and defaults
+systemConfigs:
+  NOTICE_BAR_ENABLED         : false
+  NOTICE_BAR_TEXT            : null
+  NOTICE_BAR_COLOR           : '#FF6600'
+  MONITOR_DATA_UPLOAD_ENABLED: false
+  MONITOR_DATA_UPLOAD_URL    : null

@@ -2217,13 +2217,13 @@ exports.getSystemConfig = function(req, res, next) {
     function(asyncCallback) {
       var opt = {
         filters: {
-          id: {in: CONST.systemConfigIds}
+          id: {in: Object.keys(CONST.systemConfigs)}
         }
       };
       systemConfigModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        var variableConfigs = {};
+        var variableConfigs = toolkit.jsonCopy(CONST.systemConfigs);
         dbRes.forEach(function(d) {
           variableConfigs[d.id] = d.value;
         });

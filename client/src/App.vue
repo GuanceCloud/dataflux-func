@@ -3,7 +3,7 @@
     element-loading-text="正在处理中，请稍后..."
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
-    <div id="NoticeBar" v-if="showNoticeBar">
+    <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: variableConfig['NOTICE_BAR_COLOR'] }">
       {{ variableConfig['NOTICE_BAR_TEXT'] }}
     </div>
     <div id="Navi" v-if="showNavi">
@@ -402,6 +402,11 @@ h3 {
   margin-left: 25px;
   line-height: 1.5;
 }
+.common-form .el-color-picker,
+.common-form .el-color-picker__trigger {
+  width: 100%;
+}
+
 .common-table {
   width: 100%;
 }

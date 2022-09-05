@@ -4,6 +4,7 @@ Monitor Data Upload: 监控数据上报
 
 Enable: 启用功能
 Text  : 文案
+Color : 颜色
 URL   : URL地址
 
 System Config Saved: 系统配置已保存
@@ -41,6 +42,12 @@ System Config Saved: 系统配置已保存
                     type="textarea"
                     :autosize="{ minRows: 2 }"
                     v-model="form['NOTICE_BAR_TEXT']"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Color')" prop="NOTICE_BAR_COLOR">
+                  <el-color-picker
+                    :predefine="colorPanel"
+                    v-model="form['NOTICE_BAR_COLOR']"></el-color-picker>
                 </el-form-item>
 
                 <el-divider content-position="left"><h1>{{ $t('Monitor Data Upload') }}</h1></el-divider>
@@ -145,6 +152,19 @@ export default {
     },
   },
   computed: {
+    colorPanel() {
+      return [
+        '#FF0000',
+        '#FF6600',
+        '#3BA272',
+        '#359EC6',
+        '#5470C6',
+        '#9A60B4',
+        '#EA7CCC',
+        '#666666',
+        '#000000',
+      ]
+    },
   },
   props: {
   },
@@ -154,6 +174,7 @@ export default {
       form: {
         NOTICE_BAR_ENABLED         : null,
         NOTICE_BAR_TEXT            : null,
+        NOTICE_BAR_COLOR           : null,
         MONITOR_DATA_UPLOAD_ENABLED: null,
         MONITOR_DATA_UPLOAD_URL    : null,
       },
