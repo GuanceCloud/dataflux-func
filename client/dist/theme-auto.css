@@ -436,7 +436,8 @@ input:disabled {
 .el-input__inner,
 .el-textarea__inner,
 .el-input .el-input__count .el-input__count-inner,
-.el-textarea .el-input__count {
+.el-textarea .el-input__count,
+.el-color-picker__trigger {
   background-color: #000 !important;
   border-color: #555 !important;
 }
@@ -590,7 +591,8 @@ input:disabled {
 }
 
 .el-autocomplete-suggestion,
-.el-select-dropdown {
+.el-select-dropdown,
+.el-color-dropdown {
   background: #000 !important;
   border: solid 1px #777 !important;
 }
