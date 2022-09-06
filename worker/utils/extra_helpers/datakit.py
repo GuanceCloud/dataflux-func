@@ -536,22 +536,23 @@ class DataKit(object):
         max_page_count = 1
         if all_series:
             if dql.strip().startswith('M::'):
-                # 指标类查询最多翻1000页
-                max_page_count = 1000
+                # 指标类查询最多翻20页
+                max_page_count = 20
             else:
-                # 非指标类查询最多翻10页
-                max_page_count = 10
+                # 非指标类查询最多翻5页
+                max_page_count = 5
 
         for i in range(max_page_count):
             if all_series:
-                q['slimit']  = 100
+                q['slimit']  = 500
                 q['soffset'] = q['slimit'] * i
 
             path = '/v1/query/raw'
             json_obj = {
-                'queries': [ q ],
+                'queries'     : [ q ],
+                'mask_visible': True, # 禁用敏感字段屏蔽
             }
-            status_code, _dql_res = self.post_json(path, json_obj)
+            status_code, _dql_res = self.post_json(path=path, json_obj=json_obj)
 
             # 【兼容】确保`series`为数组
             _dql_res['content'][0]['series'] = _dql_res['content'][0].get('series') or []
