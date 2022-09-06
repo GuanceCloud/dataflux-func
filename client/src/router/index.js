@@ -421,6 +421,11 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
+  if (['code-editor', 'code-viewer'].indexOf(to.name) >= 0) {
+    document.title = `[${to.params.id}] - DataFlux Func`
+  } else {
+    document.title = 'DataFlux Func'
+  }
 });
 
 export default router
