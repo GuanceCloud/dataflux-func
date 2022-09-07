@@ -1229,6 +1229,9 @@ class ScriptBaseTask(BaseTask):
             e = InvalidAPIOptionException('`category` should be a string or unicode')
             raise e
 
+        if category is None:
+            category = 'general'
+
         # 函数标签
         if tags is not None:
             if not isinstance(tags, (tuple, list)):
@@ -1271,13 +1274,14 @@ class ScriptBaseTask(BaseTask):
         def decorater(F):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
 
+            # 记录至已导出函数列表
             safe_scope['DFF'].exported_api_funcs.append({
                 'name'       : f_name,
                 'title'      : title,
                 'description': f_doc,
                 'definition' : f_def,
                 'extraConfig': extra_config or None,
-                'category'   : category or 'general',
+                'category'   : category,
                 'tags'       : tags,
                 'args'       : f_args,
                 'kwargs'     : f_kwargs,
@@ -1288,6 +1292,18 @@ class ScriptBaseTask(BaseTask):
             @functools.wraps(F)
             def dff_api_F(*args, **kwargs):
                 return F(*args, **kwargs)
+
+            # 相关配置记录至函数对象
+            for _f in (F, dff_api_F):
+                _f.__setattr__('_DFF_FUNC_NAME'       , f_name)
+                _f.__setattr__('_DFF_FUNC_TITLE'      , title)
+                _f.__setattr__('_DFF_FUNC_DESCRIPTION', f_doc)
+                _f.__setattr__('_DFF_FUNC_DEFINITION' , f_def)
+                _f.__setattr__('_DFF_FUNC_CATEGORY'   , category)
+                _f.__setattr__('_DFF_FUNC_TAGS'       , tags)
+                _f.__setattr__('_DFF_FUNC_ARGS'       , tags)
+                _f.__setattr__('_DFF_FUNC_ARGS'       , f_args)
+                _f.__setattr__('_DFF_FUNC_KWARGS'     , f_kwargs)
 
             return dff_api_F
         return decorater
