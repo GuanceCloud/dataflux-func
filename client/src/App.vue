@@ -296,7 +296,7 @@ export default {
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
-  font-family: Iosevka,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-family: "Iosevka","PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
   outline: none !important;
 }
 a {
