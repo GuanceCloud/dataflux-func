@@ -377,6 +377,7 @@ h3 {
 #NoticeBar {
   background-color: #ff6600cc;
   font-size: 12px;
+  line-height: 14px;
   padding: 1px;
   text-align: center;
   color: white;

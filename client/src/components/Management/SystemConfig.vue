@@ -57,7 +57,7 @@ System Config Saved: 系统配置已保存
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="MONITOR_DATA_UPLOAD_ENABLED">
-                  <el-select v-model="form['MONITOR_DATA_UPLOAD_ENABLED']" :class="enableClass(form['NOTICE_BAR_ENABLED'])">
+                  <el-select v-model="form['MONITOR_DATA_UPLOAD_ENABLED']" :class="enableClass(form['MONITOR_DATA_UPLOAD_ENABLED'])">
                     <el-option :label="$t('Enabled')" key="true"   :value="true"></el-option>
                     <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
                   </el-select>
@@ -186,9 +186,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 .config-enabled input {
-  color: green;
+  color: green !important;
 }
 .config-disabled input {
-  color: red;
+  color: red !important;
 }
 </style>
