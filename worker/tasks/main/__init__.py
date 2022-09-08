@@ -206,6 +206,10 @@ def get_resource_path(file_path):
     abs_path = os.path.join(CONFIG['RESOURCE_ROOT_PATH'], file_path.lstrip('/'))
     return abs_path
 
+def get_sign(*args):
+    str_to_sign = CONFIG['SECRET'] + '\n' + '\n'.join(map(str, args))
+    return toolkit.get_md5(str_to_sign)
+
 class FuncThreadHelper(object):
     def __init__(self, task):
         self.__task = task
@@ -1599,6 +1603,7 @@ class ScriptBaseTask(BaseTask):
 
             'SQL' : format_sql,        # 格式化SQL语句
             'RSRC': get_resource_path, # 获取资源路径
+            'SIGN': get_sign,          # 数据签名
 
             'RESP'           : FuncResponse,          # 函数响应体
             'RESP_FILE'      : FuncResponseFile,      # 函数响应体（返回文件）
