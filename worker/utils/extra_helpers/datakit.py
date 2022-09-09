@@ -362,13 +362,11 @@ class DataKit(object):
             resp_status_code = resp.status
             resp_raw_data    = resp.read()
 
-            resp_content_type = resp.getheader('Content-Type')
-            if isinstance(resp_content_type, string_types):
-                resp_content_type = resp_content_type.split(';')[0].strip()
-
             resp_data = resp_raw_data
-            if resp_content_type == 'application/json':
+            try:
                 resp_data = json.loads(ensure_str(resp_raw_data))
+            except Exception as e:
+                pass
 
             if self.debug:
                 output = '\n[Response Status Code] {0}\n[Response Body] {1}'.format(resp_status_code, ensure_str(resp_raw_data or '') or '<EMPTY>')
@@ -553,6 +551,9 @@ class DataKit(object):
                 'mask_visible': True, # 禁用敏感字段屏蔽
             }
             status_code, _dql_res = self.post_json(path=path, json_obj=json_obj)
+            if not isinstance(_dql_res, dict):
+                # 接收到非 JSON 响应，无法翻页，直接返回
+                return status_code, _dql_res
 
             # 【兼容】确保`series`为数组
             _dql_res['content'][0]['series'] = _dql_res['content'][0].get('series') or []
