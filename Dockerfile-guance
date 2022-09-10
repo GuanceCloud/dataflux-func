@@ -15,8 +15,7 @@ ENV TARGETARCH ${TARGETARCH}
 WORKDIR /usr/src/app
 COPY . .
 RUN ln -s /usr/src/base/node_modules ./node_modules && \
-    ln -s /usr/src/base/client/node_modules ./client/node_modules && \
-    python echo-image-info.py > image-info.json
+    ln -s /usr/src/base/client/node_modules ./client/node_modules
 
 # 启动脚本
 COPY docker-entrypoint.sh /usr/local/bin/

@@ -1,10 +1,10 @@
 {
-  "CREATE_TIMESTAMP"  : 0,
+  "ARCHITECTURE"      : "local",
   "CI_COMMIT_REF_NAME": "local",
-  "TARGETARCH"        : "local",
   "CI_PIPELINE_ID"    : "-",
   "CI_JOB_ID"         : "-",
   "CI_BUILD_ID"       : "-",
   "PYTHON_VERSION"    : "local",
-  "NODE_VERSION"      : "local"
+  "NODE_VERSION"      : "local",
+  "CREATE_TIMESTAMP"  : 0
 }

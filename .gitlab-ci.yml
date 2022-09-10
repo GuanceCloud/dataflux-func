@@ -26,6 +26,7 @@ dev:
     - dev
   script:
     - docker buildx ls # 确认可用平台
+    - python echo-image-info.py > image-info.json
     # 开发版只需支持amd64
     - docker buildx build
       --platform linux/amd64
@@ -50,6 +51,7 @@ singleton:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     - docker buildx ls # 确认可用平台
+    - python echo-image-info.py > image-info.json
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 计算版本号
     - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
@@ -108,6 +110,7 @@ guanceSaaS:
     - /^release_\d+_\d+$/ # 如：release_20190101_01
   script:
     - docker buildx ls # 确认可用平台
+    - python echo-image-info.py > image-info.json
     # 下载观测云内置库
     - mkdir -p func-pkg
     - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版
@@ -129,6 +132,7 @@ guancePaaS_prev:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
     - docker buildx ls # 确认可用平台
+    - python echo-image-info.py > image-info.json
     # 下载观测云内置库
     - mkdir -p func-pkg
     - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版
@@ -154,6 +158,7 @@ guancePaaS_prod:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
     - docker buildx ls # 确认可用平台
+    - python echo-image-info.py > image-info.json
     # 下载观测云内置库
     - mkdir -p func-pkg
     - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版

@@ -127,7 +127,7 @@ export default {
       if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
         this.about = {
           version         : apiRes.data.CI_COMMIT_REF_NAME,
-          architecture    : apiRes.data.TARGETARCH,
+          architecture    : apiRes.data.ARCHITECTURE,
           pythonVersion   : apiRes.data.PYTHON_VERSION,
           nodeVersion     : apiRes.data.NODE_VERSION,
           releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
