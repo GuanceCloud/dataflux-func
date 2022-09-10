@@ -19,10 +19,6 @@ routeLoader.load(ROUTE.indexAPI.imageInfo, [
   indexAPICtrl.imageInfo,
 ]);
 
-routeLoader.load(ROUTE.indexAPI.workerImageInfo, [
-  indexAPICtrl.workerImageInfo,
-]);
-
 routeLoader.load(ROUTE.indexAPI.captcha, [
   captcha.createGetCaptchaHandler(),
 ]);

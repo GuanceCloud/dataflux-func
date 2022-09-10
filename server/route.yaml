@@ -24,14 +24,6 @@ indexAPI:
     desc: |
       Image Information
 
-  workerImageInfo:
-    name    : Worker image information
-    method  : get
-    url     : /api/v1/worker-image-info/do/get
-    response: json
-    desc: |
-      Worker Image Information
-
   captcha:
     name    : Gen captcha image
     method  : get

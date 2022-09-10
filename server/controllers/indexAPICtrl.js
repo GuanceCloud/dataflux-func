@@ -39,30 +39,6 @@ exports.imageInfo = function(req, res, next) {
   res.locals.sendJSON(ret);
 };
 
-exports.workerImageInfo = function(req, res, next) {
-  if (WORKER_IMAGE_INFO) {
-    var ret = toolkit.initRet(WORKER_IMAGE_INFO);
-    return res.locals.sendJSON(ret);
-  }
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
-  celery.putTask('Internal.GetImageInfo', null, null, null, null, function(err, celeryRes) {
-    if (err) return next(err);
-
-    celeryRes = celeryRes || {};
-
-    if (celeryRes.status === 'SUCCESS') {
-      WORKER_IMAGE_INFO = celeryRes.retval;
-
-      var ret = toolkit.initRet(WORKER_IMAGE_INFO);
-      return res.locals.sendJSON(ret);
-
-    } else {
-      return next(new E('ESysAsyncTaskFailed', 'Worker no response'));
-    }
-  });
-};
-
 exports.ping = function(req, res, next) {
   var ret = toolkit.initRet('pong');
   res.locals.sendJSON(ret);

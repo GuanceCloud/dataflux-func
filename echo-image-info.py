@@ -3,7 +3,7 @@
 import time
 import json
 import os
-z
+
 EXTRACT_CI_ENVS = [
     'CI_COMMIT_REF_NAME',
     'CI_PIPELINE_ID',
@@ -16,9 +16,8 @@ def main():
         'CREATE_TIMESTAMP': int(time.time()),
     }
 
-    for k, v in os.environ.items():
-        if k in EXTRACT_CI_ENVS:
-            image_info[k] = v
+    for env in EXTRACT_CI_ENVS:
+        image_info[env] = os.environ.get(env)
 
     print(json.dumps(image_info, indent=2))
 
