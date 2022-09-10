@@ -1299,13 +1299,13 @@ class ScriptBaseTask(BaseTask):
 
             # 相关配置记录至函数对象
             for _f in (F, dff_api_F):
+                _f.__setattr__('_DFF_FUNC_ID'         , f'{_f.__module__}.{f_name}')
                 _f.__setattr__('_DFF_FUNC_NAME'       , f_name)
                 _f.__setattr__('_DFF_FUNC_TITLE'      , title)
                 _f.__setattr__('_DFF_FUNC_DESCRIPTION', f_doc)
                 _f.__setattr__('_DFF_FUNC_DEFINITION' , f_def)
                 _f.__setattr__('_DFF_FUNC_CATEGORY'   , category)
                 _f.__setattr__('_DFF_FUNC_TAGS'       , tags)
-                _f.__setattr__('_DFF_FUNC_ARGS'       , tags)
                 _f.__setattr__('_DFF_FUNC_ARGS'       , f_args)
                 _f.__setattr__('_DFF_FUNC_KWARGS'     , f_kwargs)
 
