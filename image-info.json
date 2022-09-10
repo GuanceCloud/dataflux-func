@@ -4,5 +4,7 @@
   "PLATFORM"          : "None",
   "CI_PIPELINE_ID"    : "None",
   "CI_JOB_ID"         : "None",
-  "CI_BUILD_ID"       : "None"
+  "CI_BUILD_ID"       : "None",
+  "PYTHON_VERSION"    : "local",
+  "NODE_VERSION"      : "local"
 }

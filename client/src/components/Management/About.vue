@@ -2,6 +2,8 @@
 About            : 关于
 Version          : 版本号
 Platform         : 平台
+Python Version   : Python 版本
+Node Version     : Node 版本
 Release date     : 发布日期
 'Loading...'     : '加载中...'
 System report    : 系统报告
@@ -44,6 +46,14 @@ Log and Cache cleared: 日志与缓存表已清空
 
                 <el-form-item :label="$t('Platform')">
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.platform"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Python Version')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.pythonVersion"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Node Version')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.nodeVersion"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Release date')">
@@ -118,14 +128,18 @@ export default {
         this.about = {
           version         : apiRes.data.CI_COMMIT_REF_NAME,
           platform        : apiRes.data.PLATFORM,
+          pythonVersion   : apiRes.data.PYTHON_VERSION,
+          nodeVersion     : apiRes.data.NODE_VERSION,
           releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
         };
 
       } else {
         this.about = {
-          version    : this.NO_INFO_TEXT,
-          platform   : this.NO_INFO_TEXT,
-          releaseDate: this.NO_INFO_TEXT,
+          version      : this.NO_INFO_TEXT,
+          platform     : this.NO_INFO_TEXT,
+          pythonVersion: this.NO_INFO_TEXT,
+          nodeVersion  : this.NO_INFO_TEXT,
+          releaseDate  : this.NO_INFO_TEXT,
         }
       }
     },
