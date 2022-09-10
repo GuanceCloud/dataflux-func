@@ -1,7 +1,6 @@
 'use strict';
 
 /* Builtin Modules */
-var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var fs      = require('fs-extra');
@@ -17,7 +16,6 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
 var IMAGE_INFO = require('../../image-info.json');
-IMAGE_INFO.PLATFORM = childProcess.execSync('uname -m').toString().trim();
 
 var WORKER_IMAGE_INFO = null;
 

@@ -1,10 +1,10 @@
 {
   "CREATE_TIMESTAMP"  : 0,
   "CI_COMMIT_REF_NAME": "local",
-  "PLATFORM"          : "None",
-  "CI_PIPELINE_ID"    : "None",
-  "CI_JOB_ID"         : "None",
-  "CI_BUILD_ID"       : "None",
+  "TARGETARCH"        : "local",
+  "CI_PIPELINE_ID"    : "-",
+  "CI_JOB_ID"         : "-",
+  "CI_BUILD_ID"       : "-",
   "PYTHON_VERSION"    : "local",
   "NODE_VERSION"      : "local"
 }
