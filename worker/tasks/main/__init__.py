@@ -30,6 +30,7 @@ from worker.utils.extra_helpers import DataWayHelper, DataKitHelper, SidecarHelp
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, SQLServerHelper, OracleDatabaseHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers.dataway import DataWay
 
 CONFIG = yaml_resources.get('CONFIG')
 ROUTE  = yaml_resources.get('ROUTE')
@@ -1613,6 +1614,8 @@ class ScriptBaseTask(BaseTask):
             'THREAD': __thread_helper, # 多线程处理模块
 
             'TASK': self, # 任务本身
+
+            'DATAWAY': DataWay, # DataWay
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
