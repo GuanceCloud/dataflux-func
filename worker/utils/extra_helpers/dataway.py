@@ -608,7 +608,7 @@ class DataWay(object):
             'query' : dql,
         }
         for k, v in kwargs.items():
-            if v:
+            if v is not None:
                 q[k] = v
 
         # 原始结果集
