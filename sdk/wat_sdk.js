@@ -33,7 +33,7 @@ function strf() {
   var pattern = args.shift();
   try {
     pattern = pattern.toString();
-  } catch (ex) {
+  } catch (err) {
     pattern = '';
   }
 

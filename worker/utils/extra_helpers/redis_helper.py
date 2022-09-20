@@ -141,6 +141,9 @@ class RedisHelper(object):
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
+    def publish(self, topic, message):
+        return self.run('publish', topic, message)
+
     def keys(self, pattern='*'):
         found_keys = []
 

@@ -50,6 +50,7 @@ import logo_mongodb       from '@/assets/img/logo-mongodb.png'
 import logo_elasticsearch from '@/assets/img/logo-elasticsearch.png'
 import logo_nsq           from '@/assets/img/logo-nsq.png'
 import logo_mqtt          from '@/assets/img/logo-mqtt.png'
+import logo_kafka         from '@/assets/img/logo-kafka.png'
 
 export default {
   get NOPE() {
@@ -331,7 +332,23 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
           user         : { default: null },
           password     : { default: null },
           clientId     : { default: null },
-          topicHandlers: { default: [{ topic: 'TOPIC', funcId: null }] },
+          topicHandlers: { default: [] },
+        },
+      },
+      {
+        key           : 'kafka',
+        name          : 'Kafka',
+        fullName      : 'Kafka',
+        logo          : logo_kafka,
+        tagType       : 'info',
+        debugSupported: false,
+        sampleCode    : `kafka = DFF.CONN('{0}')
+kafka.publish(topic='some_topic', message='some_message')`,
+        configFields: {
+          servers      : { default: null, isRequired: true },
+          user         : { default: null },
+          password     : { default: null },
+          topicHandlers: { default: [] },
         },
       },
     ];
@@ -344,34 +361,39 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
   get TODO_TYPE() {
     return [
       {
-        key  : 'XXX',
+        key    : 'XXX',
         tagType: 'info',
-        icon : 'fa-times',
+        icon   : 'fa-times',
       },
       {
-        key  : 'TEST',
-        tagType: 'info',
-        icon : 'fa-question',
-      },
-      {
-        key  : 'TODO',
-        tagType: 'success',
-        icon : 'fa-check-circle',
-      },
-      {
-        key  : 'BUG',
-        tagType: 'danger',
-        icon : 'fa-bug',
-      },
-      {
-        key  : 'FIXME',
+        key    : 'STAR',
         tagType: 'primary',
-        icon : 'fa-wrench',
+        icon   : 'fa-star',
       },
       {
-        key  : 'HACK',
+        key    : 'TEST',
+        tagType: 'info',
+        icon   : 'fa-question-circle',
+      },
+      {
+        key    : 'TODO',
         tagType: 'warning',
-        icon : 'fa-user-secret',
+        icon   : 'fa-check-circle',
+      },
+      {
+        key    : 'BUG',
+        tagType: 'danger',
+        icon   : 'fa-bug',
+      },
+      {
+        key    : 'FIXME',
+        tagType: 'danger',
+        icon   : 'fa-wrench',
+      },
+      {
+        key    : 'HACK',
+        tagType: 'warning',
+        icon   : 'fa-user-secret',
       },
     ]
   },

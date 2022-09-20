@@ -13,7 +13,7 @@ CONFIG = yaml_resources.get('CONFIG')
 def get_config(c):
     import paho.mqtt.client as mqtt
     config = {
-        'client_id': c.get('clientId') or CONFIG['APP_NAME'] + '@worker-' + str(toolkit.gen_time_serial_seq()),
+        'client_id': c.get('clientId') or f"{CONFIG['APP_NAME']}@{toolkit.gen_time_serial_seq()}",
         'protocol' : mqtt.MQTTv5,
         'transport': c.get('transport') or 'tcp',
     }
@@ -60,7 +60,7 @@ class MQTTHelper(object):
 
     def check(self):
         try:
-            self.publish(topic='test', message='test')
+            self.publish(topic='test', message='Test message from DataFlux Func')
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

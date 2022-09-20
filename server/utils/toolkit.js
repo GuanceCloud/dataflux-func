@@ -1761,7 +1761,7 @@ var convertObject = toolkit.convertObject = function convertObject(data, options
             break;
         }
 
-      } catch(ex) {
+      } catch(err) {
         // Nope
       }
     }
@@ -2216,4 +2216,15 @@ var parseKVString = toolkit.parseKVString = function parseKVString(s) {
   }
 
   return parsed;
+};
+
+var waitFor = toolkit.waitFor = function waitFor(test, callback) {
+  async.until(test, function(asyncCallback) {
+    setTimeout(function() {
+      asyncCallback();
+    }, 500);
+  },
+  function() {
+    return callback();
+  });
 };

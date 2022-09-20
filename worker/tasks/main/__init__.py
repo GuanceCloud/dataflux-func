@@ -26,9 +26,10 @@ import funcsigs
 from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers import DataWayHelper, DataKitHelper, SidecarHelper
+from worker.utils.extra_helpers import DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
-from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, SQLServerHelper, OracleDatabaseHelper
+from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, KafkaHelper
+from worker.utils.extra_helpers import SQLServerHelper, OracleDatabaseHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
 from worker.utils.extra_helpers.dataway import DataWay
 
@@ -74,6 +75,7 @@ CONNECTOR_HELPER_CLASS_MAP = {
     'elasticsearch': ElasticSearchHelper,
     'nsq'          : NSQLookupHelper,
     'mqtt'         : MQTTHelper,
+    'kafka'        : KafkaHelper,
 }
 
 # 连接器加密字段
@@ -102,9 +104,6 @@ USER_SCRIPT_ID_BLACK_LIST = [
 
 # 环境变量本地缓存
 ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=30)
-
-# 连接器 Helper 对象本地缓存
-CONNECTOR_HELPER_LOCAL_CACHE = toolkit.LocalCache()
 
 # 添加额外import路径
 extra_import_paths = [
@@ -611,26 +610,8 @@ class FuncConnectorHelper(object):
     def get(self, connector_id, **helper_kwargs):
         # 同一个连接器可能有不同的配置（如指定的数据库不同）
         helper_kwargs = toolkit.no_none_or_white_space(helper_kwargs)
-        connector_key = f'{connector_id}~{toolkit.json_dumps(helper_kwargs, sort_keys=True)}'
 
         global CONNECTOR_HELPER_CLASS_MAP
-        global CONNECTOR_HELPER_LOCAL_CACHE
-
-        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])
-        remote_md5           = None
-
-        connector = CONNECTOR_HELPER_LOCAL_CACHE[connector_key]
-        if connector:
-            # 检查 Redis 缓存的连接器 MD5
-            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, connector_id)
-            if remote_md5:
-                remote_md5 = six.ensure_str(remote_md5)
-
-            # 连接器 MD5 未变化时直接返回
-            if connector['configMD5'] == remote_md5:
-                self.__task.logger.debug(f'[LOAD connector] load `{connector_id}` from Cache')
-
-                return connector['helper']
 
         # 从 DB 获取连接器
         self.__task.logger.debug(f"[LOAD connector] load `{connector_id}` from DB")
@@ -640,7 +621,6 @@ class FuncConnectorHelper(object):
                 `id`
                 ,`type`
                 ,`configJSON`
-                ,MD5(IFNULL(`configJSON`, '')) AS configMD5
             FROM `biz_main_connector`
             WHERE
                 `id` = ?
@@ -664,14 +644,8 @@ class FuncConnectorHelper(object):
         config = toolkit.json_loads(connector['configJSON'])
         config = decipher_connector_config_fields(config)
 
-        connector['helper'] = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
-
-        # 缓存连接器 MD5
-        self.__task.cache_db.hset(remote_md5_cache_key, connector_id, connector['configMD5'])
-        del CONNECTOR_HELPER_LOCAL_CACHE[connector_key]
-        CONNECTOR_HELPER_LOCAL_CACHE[connector_key] = connector
-
-        return connector['helper']
+        helper = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
+        return helper
 
     def reload_config_md5(self, connector_id):
         cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])

@@ -11,6 +11,7 @@ requirements.txt format, one for each line : requirements.txt 文件格式，一
 Go to PIP tool to install                  : 前往PIP工具安装
 
 Please input ID: 请输入ID
+Script Set ID too long: 脚本集ID过长
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
 'ID cannot contains double underscore "__"': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
@@ -52,7 +53,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
 
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
-                    maxlength="40"
+                    maxlength="32"
                     show-word-limit
                     v-model="form.id"></el-input>
                   <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')"></InfoBlock>
@@ -214,7 +215,21 @@ export default {
       this.$store.commit('updateScriptListSyncTime');
     },
     async cloneData() {
-      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${this.scriptSetId}_2`);
+      let promptOpt = {
+        inputValidator: v => {
+          if (v.length <= 0) {
+            return this.$t('Please input ID');
+          } else if (v.length > 32) {
+            return this.$t('Script Set ID too long');
+          } else if (!v.match(/^[a-zA-Z0-9_]*$/g)) {
+            return this.$t('Only alphabets, numbers and underscore are allowed');
+          } else if (!v.match(/^[^0-9]/g)) {
+            return this.$t('Cannot not starts with a number');
+          }
+          return true;
+        }
+      }
+      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${this.scriptSetId}_2`, promptOpt);
       if (!newScriptSetId) return;
 
       // 检查重名

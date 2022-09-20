@@ -1809,7 +1809,7 @@ scriptSetAPI:
           $isRequired    : true
           $type          : string
           $minLength     : 1
-          $maxLength     : 64
+          $maxLength     : 32
           $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*$
           $notMatchRegExp: __
         title:
@@ -1899,6 +1899,7 @@ scriptSetAPI:
         $desc      : 新脚本集ID
         $isRequired: true
         $type      : string
+        $maxLength : 32
 
   export:
     showInDoc    : true
@@ -2084,16 +2085,16 @@ scriptAPI:
           $isRequired    : true
           $type          : string
           $minLength     : 1
-          $maxLength     : 128
+          $maxLength     : 64
           $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*__[a-zA-Z_][a-zA-Z0-9_]*$
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
         description:
-          $desc      : 描述
-          $allowNull : true
-          $type      : string
+          $desc     : 描述
+          $allowNull: true
+          $type     : string
         codeDraft:
           $desc      : 草稿
           $isRequired: false
@@ -2502,6 +2503,7 @@ connectorAPI:
           - elasticsearch
           - nsq
           - mqtt
+          - kafka
 
   add:
     showInDoc    : true
@@ -2547,6 +2549,7 @@ connectorAPI:
             - elasticsearch
             - nsq
             - mqtt
+            - kafka
           $example: mysql
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。提交时检查，3秒超时）
@@ -2780,6 +2783,7 @@ connectorAPI:
       | `elasticsearch` | `"GET /_search?q=field:value"`                  |
       | `nsq`           | 使用封装方法操作，不适用SQL语句                 |
       | `mqtt`          | 使用封装方法操作，不适用SQL语句                 |
+      | `kafka`         | 使用封装方法操作，不适用SQL语句                 |
 
     method       : post
     url          : /api/v1/connectors/:id/do/query

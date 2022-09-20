@@ -230,7 +230,7 @@ class LogHelper(object):
 
         if self.task.request.called_directly:
             _task_id = 'CALLED_DIRECTLY'
-            _queue   = 'CALLED_DIRECTLY'
+            _queue   = 'CALLED_DIRECTLY@NONE'
             _origin  = 'CALLED_DIRECTLY'
         else:
             _task_id = self.task.request.id

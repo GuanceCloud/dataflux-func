@@ -605,7 +605,7 @@ class FakeTaskRequest(object):
     def __init__(self, fake_task_id=None):
         self.called_directly = False
         self.id              = fake_task_id or 'TASK-' + gen_rand_string(4).upper()
-        self.delivery_info   = { 'routing_key': 'WORKER-INTERNAL' }
+        self.delivery_info   = { 'routing_key': 'WORKER-INTERNAL@NONE' }
         self.origin          = 'WORKER-INTERNAL'
 
 class FakeTask(object):
@@ -712,6 +712,6 @@ class LocalCache(object):
 
     def __delitem__(self, key):
         try:
-            self.__data[key]
+            del self.__data[key]
         except KeyError as e:
             pass

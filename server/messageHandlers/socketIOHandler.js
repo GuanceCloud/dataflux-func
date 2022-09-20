@@ -104,7 +104,7 @@ module.exports = function(app, server) {
         if ('function' === typeof ackCallback) {
           try {
             ackCallback(ackData); // Socket.io 2.0 ACK 返回
-          } catch(ex) {
+          } catch(err) {
             app.locals.logger.error(ex);
           }
         }
@@ -183,7 +183,7 @@ module.exports = function(app, server) {
         data  = JSON.parse(data);
         ackId = data.ackId || undefined;
 
-      } catch(ex) {
+      } catch(err) {
         return next(new E('ESocketIOData', 'Data of Socket.io must be a JSON string').forSocketIO(ackId));
       }
 
@@ -265,7 +265,7 @@ module.exports = function(app, server) {
         if ('function' === typeof ackCallback) {
           try {
             ackCallback(ackData); // Socket.io 2.0 ACK 返回
-          } catch(ex) {
+          } catch(err) {
             app.locals.logger.error(ex);
           }
         }

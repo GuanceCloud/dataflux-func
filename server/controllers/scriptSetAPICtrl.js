@@ -12,11 +12,13 @@ var JSZip   = require('jszip');
 /* Project Modules */
 var E            = require('../utils/serverError');
 var CONFIG       = require('../utils/yamlResources').get('CONFIG');
+var ROUTE        = require('../utils/yamlResources').get('ROUTE');
 var toolkit      = require('../utils/toolkit');
 var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 var scriptSetMod          = require('../models/scriptSetMod');
+var scriptMod             = require('../models/scriptMod');
 var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
 /* Configure */
@@ -197,6 +199,7 @@ exports.clone = function(req, res, next) {
   var newId = req.body.newId;
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
+  var scriptModel    = scriptMod.createModel(res.locals);
 
   async.series([
     // 检查ID重名
@@ -213,6 +216,27 @@ exports.clone = function(req, res, next) {
 
         if (dbRes.length > 0) {
           return asyncCallback(new E('EBizCondition.DuplicatedScriptSetID', 'ID of script set already exists'));
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 检查ID过长
+    function(asyncCallback) {
+      var opt = {
+        fields : ['scpt.id'],
+        filters: {
+          'scpt.scriptsetId': {eq: id},
+        },
+      };
+      scriptModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        for (var i = 0; i < dbRes.length; i++) {
+          var newScriptid = `${newId}__${dbRes[i].id}`;
+          if (newScriptid.length > ROUTE.scriptAPI.add.body.data.id.$maxLength) {
+            return asyncCallback(new E('EBizCondition.ClonedScriptIDTooLong', 'ID of cloned Script will be too long'));
+          }
         }
 
         return asyncCallback();

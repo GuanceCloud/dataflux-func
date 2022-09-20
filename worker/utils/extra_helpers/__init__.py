@@ -229,6 +229,7 @@ from .mongodb_helper         import MongoDBHelper
 from .elasticsearch_helper   import ElasticSearchHelper
 from .nsqlookupd_helper      import NSQLookupHelper
 from .mqtt_helper            import MQTTHelper
+from .kafka_helper           import KafkaHelper
 
 from .oracle_database_helper import OracleDatabaseHelper
 from .sqlserver_helper       import SQLServerHelper

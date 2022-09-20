@@ -126,7 +126,7 @@ export default {
         }
         if (d.dataSize) {
           d.dataSizeHuman = this.T.byteSizeHuman(d.dataSize);
-          d.isOverSized   = d.dataSize > 20 * 1024;
+          d.isOverSized   = d.dataSize > (100 * 1024);
         }
       });
 

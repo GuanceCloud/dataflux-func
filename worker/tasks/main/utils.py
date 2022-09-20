@@ -999,7 +999,7 @@ def auto_backup_db(self, *args, **kwargs):
     self.limit_backups()
 
 # Main.CheckConnector
-@app.task(name='Main.CheckConnector', bind=True, base=BaseTask, soft_time_limit=3, time_limit=5)
+@app.task(name='Main.CheckConnector', bind=True, base=BaseTask, soft_time_limit=30, time_limit=35)
 def check_connector(self, *args, **kwargs):
     self.logger.info('Main.CheckConnector Task launched.')
 
@@ -1007,14 +1007,14 @@ def check_connector(self, *args, **kwargs):
     connector_config = kwargs.get('config')
 
     # 检查连接器
-    connector_helper_class = CONNECTOR_HELPER_CLASS_MAP.get(connector_type)
-    if not connector_helper_class:
+    if connector_type not in CONNECTOR_HELPER_CLASS_MAP:
         e = Exception('Unsupported Connector type: `{}`'.format(connector_type))
         raise e
 
-    connector_helper = connector_helper_class(self.logger, config=connector_config)
-
-    connector_helper.check()
+    connector_helper_class = CONNECTOR_HELPER_CLASS_MAP[connector_type]
+    if connector_helper_class:
+        connector_helper = connector_helper_class(self.logger, config=connector_config)
+        connector_helper.check()
 
 # Main.QueryConnector
 @app.task(name='Main.QueryConnector', bind=True, base=BaseTask, soft_time_limit=30, time_limit=35)

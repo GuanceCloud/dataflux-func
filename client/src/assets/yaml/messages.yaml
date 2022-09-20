@@ -42,6 +42,7 @@ en: {}
   Func ID not specified                                                                                   : 函数ID未指定
   Func result is not standard JSON                                                                        : 函数结果无法解析为标准JSON
   ID of Connector already exists                                                                          : 连接器ID已存在
+  ID of cloned Script will be too long                                                                    : 脚本ID将在克隆后会变得过长
   ID of ENV Variable already exists                                                                       : 环境变量ID已存在
   ID of file service already exists                                                                       : 文件服务ID已存在
   ID of script already exists                                                                             : 脚本ID已存在

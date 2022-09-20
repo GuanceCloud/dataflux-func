@@ -15,7 +15,7 @@ function getConfig(c) {
     port           : c.port,
     username       : c.user || c.username,
     password       : c.password,
-    clientId       : c.clientId || (CONFIG.APP_NAME + '@' + toolkit.genTimeSerialSeq()),
+    clientId       : c.clientId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`,
     protocolId     : 'MQTT',
     protocolVersion: 5,
     clean          : false,
@@ -36,6 +36,27 @@ var MQTTHelper = function(logger, config) {
 
   self.config = toolkit.noNullOrWhiteSpace(config);
   self.client = mqtt.connect(getConfig(self.config));
+
+  // PUB-SUB 消息处理
+  self.topicHandlerMap = {};
+
+  self.client.on('message', function(_topic, _message, _packet) {
+    var handler = null;
+    for (var matchTopic in self.topicHandlerMap) {
+      if (mqttWildcard(_topic, matchTopic)) {
+        handler = self.topicHandlerMap[matchTopic];
+        break;
+      }
+    }
+
+    if (!handler) return;
+
+    if (!self.skipLog) {
+      self.logger.debug('[MQTT] Receive <- `{0}`', _topic);
+    }
+
+    return handler(_topic, _message);
+  });
 
   self.client.on('error', function(err) {
     self.logger.error('[MQTT] Error: `{0}`', err.toString());
@@ -75,10 +96,8 @@ MQTTHelper.prototype.pub = function(topic, message, options, callback) {
  * @return {undefined}
  */
 MQTTHelper.prototype.sub = function(topic, handler, callback) {
-  var self = this;
-
   if (!this.skipLog) {
-    self.logger.debug('[MQTT] Sub `{0}`', topic);
+    this.logger.debug('[MQTT] Sub `{0}`', topic);
   }
 
   var matchTopic = topic.trim();
@@ -92,19 +111,9 @@ MQTTHelper.prototype.sub = function(topic, handler, callback) {
     matchTopic = matchTopic.replace(/^\$queue\//, '');
   }
 
-  self.client.subscribe(topic, function(err) {
-    if (err) return callback && callback(err);
+  this.topicHandlerMap[matchTopic] = handler;
 
-    self.client.on('message', function(_topic, _message, _packet) {
-      if (!mqttWildcard(_topic, matchTopic)) return;
-
-      if (!self.skipLog) {
-        self.logger.debug('[MQTT] Receive <- `{0}`', _topic);
-      }
-
-      return handler(_topic, _message, _packet);
-    });
-  });
+  return this.client.subscribe(topic, callback);
 };
 
 /**
@@ -119,6 +128,8 @@ MQTTHelper.prototype.unsub = function(topic, callback) {
     this.logger.debug('[MQTT] Unsub `{0}`', topic);
   }
 
+  delete this.topicHandlerMap[topic];
+
   this.client.unsubscribe(topic, callback);
 };
 
@@ -127,10 +138,11 @@ MQTTHelper.prototype.unsub = function(topic, callback) {
  * @param  {Function} callback
  * @return {Undefined}
  */
-MQTTHelper.prototype.end = function(callback) {
+MQTTHelper.prototype.end = function() {
   this.logger.info(`[MQTT] End`);
 
-  this.client.end(true, callback);
+  this.client.end(true);
+  this.client = null;
 };
 
 exports.MQTTHelper = MQTTHelper;

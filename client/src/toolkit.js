@@ -211,7 +211,7 @@ export function strf() {
   let pattern = args.shift();
   try {
     pattern = pattern.toString();
-  } catch (ex) {
+  } catch (err) {
     pattern = '';
   }
 
@@ -805,18 +805,20 @@ export async function confirm(message) {
   }
 };
 
-export async function prompt(message, defaultValue) {
+export async function prompt(message, defaultValue, options) {
+  options = options || {};
+
   try {
-    let promptRes = await MessageBox.prompt(message, {
+    Object.assign(options, {
       inputValue              : defaultValue,
       dangerouslyUseHTMLString: true,
       closeOnClickModal       : false,
       confirmButtonText       : app.$t('Confirm'),
       cancelButtonText        : app.$t('Cancel'),
-    });
+    })
+    let promptRes = await MessageBox.prompt(message, options);
 
-    return promptRes ? promptRes.value || null
-                     : null;
+    return promptRes ? promptRes.value || null : null;
 
   } catch(err) {
     // 取消操作

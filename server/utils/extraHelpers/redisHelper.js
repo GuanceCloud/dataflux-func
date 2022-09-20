@@ -106,7 +106,34 @@ var RedisHelper = function(logger, config) {
     self.client = CLIENT;
   }
 
-  self.subClient = null;
+  // PUB-SUB 消息处理
+  self.topicHandlerMap = {};
+};
+
+/**
+ * Init Redis sub client.
+ */
+RedisHelper.prototype.initSubClient = function() {
+  var self = this;
+
+  if (self.subClient) return;
+
+  self.subClient = self.client.duplicate();
+
+  self.subClient.on('pmessage', function(_pattern, _channel, _message) {
+    var handler = self.topicHandlerMap[_pattern];
+    if (!handler) return;
+
+    if (!self.skipLog) {
+      self.logger.debug('[REDIS] Receive <- `{0}`', _channel);
+    }
+
+    return handler(_channel, _message);
+  });
+
+  self.subClient.on('error', function(err) {
+    self.logger.error('[REDIS] Error: `{0}`', err.toString());
+  });
 };
 
 /**
@@ -525,34 +552,14 @@ RedisHelper.prototype.pub = function(topic, message, options, callback) {
  * @return {undefined}
  */
 RedisHelper.prototype.sub = function(topic, handler, callback) {
-  var self = this;
-
   if (!this.skipLog) {
-    self.logger.debug('[REDIS] Sub `{0}`', topic);
+    this.logger.debug('[REDIS] Sub `{0}`', topic);
   }
 
-  if (!self.subClient) {
-    self.subClient = self.client.duplicate();
-    self.subClient.on('error', function(err) {
-      self.logger.error('[REDIS] Error: `{0}`', err.toString());
-    });
-  }
+  this.initSubClient();
+  this.topicHandlerMap[topic] = handler;
 
-  self.subClient.psubscribe(topic, function(err) {
-    if (err) return callback && callback(err);
-
-    self.subClient.on('pmessage', function(_pattern, _channel, _message) {
-      if (!micromatch.isMatch(_channel, topic)) return;
-
-      if (!self.skipLog) {
-        self.logger.debug('[REDIS] Receive <- `{0}`', _channel);
-      }
-
-      handler(_channel, _message);
-
-      return callback && callback();
-    });
-  });
+  return this.subClient.psubscribe(topic, callback);
 };
 
 /**
@@ -566,6 +573,9 @@ RedisHelper.prototype.unsub = function(topic, callback) {
   if (!this.skipLog) {
     this.logger && this.logger.debug('[REDIS] Unsub `{0}`', topic);
   }
+
+  this.initSubClient();
+  delete this.topicHandlerMap[topic];
 
   return this.subClient.punsubscribe(topic, callback);
 };

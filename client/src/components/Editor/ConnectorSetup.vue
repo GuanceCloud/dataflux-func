@@ -166,6 +166,10 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                   </el-form-item>
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
+                    <div style="height: 0">
+                      <input type="text" />
+                      <input type="password" />
+                    </div>
                     <el-input
                       v-model="form.configJSON.user"></el-input>
                   </el-form-item>
@@ -772,6 +776,9 @@ export default {
   height: 90px !important;
 }
 .connector-logo.logo-mqtt {
+  height: 90px !important;
+}
+.connector-logo.logo-kafka {
   height: 90px !important;
 }
 </style>

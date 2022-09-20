@@ -7,7 +7,7 @@ Script Setup                                                         : 脚本设
 'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
 Select to quick jump to                                              : 选择一项以快速跳转至
-'Function, Class or "# XXX/TEST/TODO/BUG/FIXME/HACK" line'           : '函数、类或 "# XXX/TEST/TODO/BUG/FIXME/HACK" 代码行'
+'Function, Class or "# XXX/STAR/TEST/TODO/BUG/FIXME/HACK" line'      : '函数、类或 "# XXX/STAR/TEST/TODO/BUG/FIXME/HACK" 代码行'
 Shortcut                                                             : 快捷键
 Select Target                                                        : 选择跳转目标
 Download {type}                                                      : 下载{type}
@@ -66,7 +66,7 @@ Saved Draft Code: 已保存的草稿代码
               <el-tooltip placement="left" :enterable="false">
                 <div slot="content">
                   {{ $t('Select to quick jump to') }}<br>
-                  {{ $t('Function, Class or "# XXX/TEST/TODO/BUG/FIXME/HACK" line' )}}
+                  {{ $t('Function, Class or "# XXX/STAR/TEST/TODO/BUG/FIXME/HACK" line' )}}
                 </div>
                 <el-select
                   style="width: 150px"
@@ -270,9 +270,12 @@ export default {
           this.C.TODO_TYPE.forEach(x => {
             let _tag = `# ${x.key}`;
             let _pos = l.indexOf(_tag);
-            if (_pos >= 0 && !/[0-9a-zA-Z]/.test(l[_pos + _tag.length])) {
+            if (_pos >= 0) {
+              let _nextChar = l[_pos + _tag.length];
+              if ([' ', ':', '　', '：'].indexOf(_nextChar) < 0) return;
+
               let id   = `${this.scriptId}.__L${i}`;
-              let name = l.slice(_pos).split(' ').slice(2).join(' ');
+              let name = l.slice(_pos + _tag.length + 1).trim();
               todoItems.push({
                 id      : id,
                 type    : 'todo',
