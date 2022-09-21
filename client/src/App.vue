@@ -381,6 +381,8 @@ h3 {
   text-align: center;
   color: white;
   height: 16px;
+  z-index: 99999;
+  position: relative;
 }
 #Navi {
   position: relative;
@@ -405,6 +407,17 @@ h3 {
 .common-form .el-color-picker,
 .common-form .el-color-picker__trigger {
   width: 100%;
+}
+.common-form .el-upload-dragger {
+  width: 500px;
+  height: unset;
+}
+.common-form .el-upload-dragger > .image-preview {
+  max-width: 500px;
+  padding: 10px;
+}
+.common-form .el-upload-dragger > .image-preview > img {
+  max-width: 100%;
 }
 
 .common-table {
@@ -604,6 +617,17 @@ kbd {
 }
 
 /* Element-UI 修正 */
+.el-upload-dragger .fa {
+  font-size: 67px;
+  color: #C0C4CC;
+  margin: 40px 0 16px;
+  line-height: 50px;
+}
+.el-upload-dragger .el-upload__text {
+  padding-bottom: 20px;
+  color: #FF6600 !important;
+}
+
 .el-link.is-disabled {
   opacity: .6;
 }
@@ -728,7 +752,7 @@ kbd {
   border-right: none !important;
 }
 .el-menu-item * {
-  vertical-align: none;
+  vertical-align: unset !important;
 }
 
 .switch-tips {

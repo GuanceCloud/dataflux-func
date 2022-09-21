@@ -32,12 +32,11 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                     :multiple="false"
                     :auto-upload="false"
                     :show-file-list="false"
-                    :http-request="handleUpload"
-                    :on-change="onUploadFileChange"
                     :accept="$store.getters.CONFIG('_FUNC_PKG_EXPORT_EXT')"
-                    action="">
+                    :http-request="handleUpload"
+                    :on-change="onUploadFileChange">
                     <i class="fa" :class="uploadAreaIconClass"></i>
-                    <div class="el-upload__text"><span v-html="uploadAreaIconText"></span></div>
+                    <div class="el-upload__text">{{ uploadAreaIconText }}</div>
                   </el-upload>
                 </el-form-item>
 
@@ -196,12 +195,12 @@ export default {
 
       this.uploadAreaBorderClass = [];
       this.uploadAreaIconClass   = ['fa-cloud-upload'];
-      this.uploadAreaIconText    = `将文件拖到此处，或 <em>点击上传</em>`;
+      this.uploadAreaIconText    = '将文件拖到此处，或点击此处上传';
     },
     showFilePreview(filename) {
       this.uploadAreaBorderClass = ['upload-area-active'];
       this.uploadAreaIconClass   = ['fa-cloud-upload', 'text-main'];
-      this.uploadAreaIconText    = `<code class="text-main">${filename}</code>`;
+      this.uploadAreaIconText    = filename;
     },
     onUploadFileChange(file, fileList) {
       if (fileList.length > 1) fileList.splice(0, 1);
@@ -235,7 +234,7 @@ export default {
 
       uploadAreaBorderClass: [],
       uploadAreaIconClass  : ['fa-cloud-upload'],
-      uploadAreaIconText   : `将文件拖到此处，或 <em>点击上传</em>`,
+      uploadAreaIconText   : '将文件拖到此处，或点击此处上传',
 
       disableUpload: true,
       showConfirm  : false,
@@ -258,17 +257,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-.common-form .el-upload-dragger {
-  width: 500px;
-}
 .el-upload-dragger.upload-area-active {
   border-color: #FF6600 !important;
-}
-.el-upload-dragger .fa {
-  font-size: 67px;
-  color: #C0C4CC;
-  margin: 40px 0 16px;
-  line-height: 50px;
 }
 </style>
 <style scoped>

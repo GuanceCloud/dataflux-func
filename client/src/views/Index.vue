@@ -300,9 +300,6 @@ export default {
 }
 </style>
 <style>
-.logo img {
-  width: 400px;
-}
 .sign-in-form input {
   height: 47px;
   font-size: 16px;

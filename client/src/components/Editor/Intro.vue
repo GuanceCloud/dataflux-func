@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Welcome to: 欢迎使用
+Welcome: 欢迎
 </i18n>
 
 <template>
@@ -7,30 +7,15 @@ Welcome to: 欢迎使用
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1 class="main-text">{{ $t('Welcome to') }} <Logo type="auto" style="margin-bottom: -8px;"></Logo></h1>
+        <h1 class="main-text">
+          {{ $t('Welcome') }}
+        </h1>
       </el-header>
 
       <!-- 正文区 -->
       <el-main>
         <div class="intro-content">
           <InfoBlock type="warning" title="在开始之前，请大致阅读以下介绍"></InfoBlock>
-
-          <template>
-          <!-- 官方网站及使用手册 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>官方网站及使用手册</i>
-            </h1>
-          </el-divider>
-          <p>
-            我们编写了详细的使用手册，所有相关文档都可以在官方网站找到。<br>
-            建议在使用本系统仔细阅读。<br>
-            <el-link type="primary" :underline="true" href="https://func.guance.com/" target="_blank">
-              <i class="fa fa-fw fa-link"></i>
-              立即前往官方网站
-            </el-link>
-          </p>
-          </template>
 
           <!-- 编辑器 -->
           <el-divider content-position="left">
@@ -71,17 +56,6 @@ Welcome to: 欢迎使用
           <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSetting.style">
             <textarea id="editor_Intro">{{ codeExample }}</textarea>
           </div>
-          <p>
-            更多内置功能，请参考
-            <el-link type="primary" :underline="true" href="https://func.guance.com/doc/development-guide-builtin-features/" target="_blank">
-              <i class="fa fa-fw fa-link"></i>
-              官方网站
-              <i class="fa fa-fw fa-caret-right"></i> 手册
-              <i class="fa fa-fw fa-caret-right"></i> 开发手册
-              <i class="fa fa-fw fa-caret-right"></i> 内置功能
-            </el-link>
-          </p>
-          <p>代码编辑器的文字大小、行高等可在设置页面进行配置</p>
 
           <!-- 编写代码 -->
           <el-divider content-position="left">
@@ -122,7 +96,7 @@ Welcome to: 欢迎使用
                 展示当前系统的使用信息
               </li>
               <li>
-                <i class="fa fa-fw fa-info-circle"></i> 信息&#12288;&#12288;&#12288;&#12288;
+                <i class="fa fa-fw fa-info-circle"></i> 关于&#12288;&#12288;&#12288;&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 展示当前系统的版本、系统信息
               </li>
@@ -165,6 +139,11 @@ Welcome to: 欢迎使用
                 <i class="fa fa-fw fa-users"></i> 成员管理&#12288;&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
                 可以添加和管理本系统等登录用户
+              </li>
+              <li>
+                <i class="fa fa-fw fa-cog"></i> 系统配置&#12288;&#12288;
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                可以对系统进行一些个性化配置
               </li>
               <li>
                 <i class="fa fa-fw fa-keyboard-o"></i> 操作记录&#12288;&#12288;

@@ -1,5 +1,14 @@
 <template>
-  <div class="logo-img" :style="{width: width || '165px', height: height || '30px'}" :class="[`logo-img-${logoTheme}`]"></div>
+  <div class="logo-container">
+    <img v-if="variableConfig['CUSTOM_LOGO_ENABLED'] && variableConfig['CUSTOM_LOGO_IMAGE_SRC']"
+      class="custom-logo-img"
+      :style="customLogoStyle"
+      :src="variableConfig['CUSTOM_LOGO_IMAGE_SRC']" />
+    <div v-else
+      class="logo-img"
+      :class="logoClass"
+      :style="logoStyle"></div>
+  </div>
 </template>
 
 <script>
@@ -11,20 +20,40 @@ export default {
   },
   methods: {
   },
-  computed: {
-  },
   props: {
     width : String,
     height: String,
     type  : String,
   },
   computed: {
-    logoTheme() {
-      if (this.type === 'auto') {
-        return this.$store.getters.uiTheme;
-      } else {
-        return this.type;
+    variableConfig() {
+      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
+    },
+
+    customLogoStyle() {
+      let style = {
+        maxWidth : this.width  || '165px',
+        maxHeight: this.height || '25px',
       }
+      return style;
+    },
+
+    logoClass() {
+      let theme = null;
+      if (this.type === 'auto') {
+        theme = this.$store.getters.uiTheme;
+      } else {
+        theme = this.type;
+      }
+
+      return `logo-img-${theme}`;
+    },
+    logoStyle() {
+      let style = {
+        width : this.width  || '165px',
+        height: this.height || '30px',
+      }
+      return style;
     },
   },
   data() {
@@ -37,26 +66,17 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.logo-text {
-  font-family: serif;
-  font-size: 24px;
-  font-style: italic;
-  position: relative;
-}
-.logo-text-func {
-  font-size: 30px;
-  position: relative;
-  top: -5px;
-  right: -4px;
-}
-.logo-text-func-arg {
-  font-size: 20px;
-  position: relative;
-  top: -3px;
-  left: 3px;
-}
-.logo-img {
+.logo-container {
   display: inline-block;
+  text-align: center;
+}
+
+.custom-logo-img {
+  margin: 0 auto;
+}
+
+.logo-img {
+  margin: 0 auto;
   background-size: contain;
   background-repeat: no-repeat;
 }

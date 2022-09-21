@@ -76,8 +76,25 @@ fileIcon:
 
 # System Configs and defaults
 systemConfigs:
-  NOTICE_BAR_ENABLED         : false
-  NOTICE_BAR_TEXT            : null
-  NOTICE_BAR_COLOR           : '#FF6600'
+  # 是否启用自定义 Logo
+  CUSTOM_LOGO_ENABLED: false
+  # 自定义 Logo 数据（Base64）
+  CUSTOM_LOGO_IMAGE_SRC: null
+
+  # 是否启用提示栏
+  NOTICE_BAR_ENABLED: false
+  # 提示栏文案
+  NOTICE_BAR_TEXT: null
+  # 提示栏颜色
+  NOTICE_BAR_COLOR: '#FF6600'
+
+  # 是否禁用导航栏文档链接
+  NAVI_DOC_LINK_ENABLED: true
+  # 导航文档地址
+  NAVI_DOC_LINK_URL: 'https://func.guance.com/#/doc-index'
+
+  # 是否启用监控数据上传
   MONITOR_DATA_UPLOAD_ENABLED: false
-  MONITOR_DATA_UPLOAD_URL    : null
+  # 监控数据上传地址
+  MONITOR_DATA_UPLOAD_URL: null
+

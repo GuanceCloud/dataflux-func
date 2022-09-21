@@ -779,7 +779,7 @@ export function alert(message, type) {
 
   // 简单提示，不需要区分标题和内容
   return MessageBox.alert(message, {
-    showClose: false,
+    showClose               : false,
     dangerouslyUseHTMLString: true,
     confirmButtonText       : confirmButtonText,
     type                    : type,

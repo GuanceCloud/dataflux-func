@@ -1,13 +1,15 @@
 <i18n locale="zh-CN" lang="yaml">
-About            : 关于
-Version          : 版本号
-Architecture     : 架构
-Node Version     : Node 版本
-Python Version   : Python 版本
-Release date     : 发布日期
-'Loading...'     : '加载中...'
-System report    : 系统报告
-Get System Report: 获取系统报告
+About             : 关于
+System Information: 系统信息
+System Report     : 系统报告
+Infomation        : 信息
+Version           : 版本号
+Architecture      : 架构
+Node Version      : Node 版本
+Python Version    : Python 版本
+Release date      : 发布日期
+'Loading...'      : '加载中...'
+Get System Report : 获取系统报告
 
 Clear Worker Queue : 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
@@ -35,9 +37,7 @@ Log and Cache cleared: 日志与缓存表已清空
               <br>
 
               <!-- DataFlux Func Server -->
-              <el-divider content-position="left">
-                <Logo type="auto" style="margin-bottom: -9px;"></Logo>
-              </el-divider>
+              <el-divider content-position="left"><h1>{{ $t('System Information') }}</h1></el-divider>
 
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
@@ -63,7 +63,7 @@ Log and Cache cleared: 日志与缓存表已清空
 
               <!-- 系统报告 -->
               <br>
-              <el-divider content-position="left"><h1>{{ $t('System report') }}</h1></el-divider>
+              <el-divider content-position="left"><h1>{{ $t('System Report') }}</h1></el-divider>
 
               <el-form label-width="120px">
                 <template v-if="showSystemReport">

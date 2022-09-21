@@ -1,6 +1,6 @@
 # 当前数据库版本SEQ保存于`wat_main_system_config`，ID为`UPGRADE_DB_SEQ`
 # 全新安装会自动创建此数据，参考SQL如下：
-#   INSERT INTO wat_main_system_config SET `id` = 'UPGRADE_DB_SEQ', `value` = '12'
+#   INSERT INTO wat_main_system_config SET `id` = 'UPGRADE_DB_SEQ', `value` = '13'
 upgradeInfo:
   - seq: 0
     database: |-
@@ -193,3 +193,10 @@ upgradeInfo:
     database: |-
       -- 「数据源」重命名为「连接器」
       RENAME TABLE biz_main_data_source TO biz_main_connector;
+
+  # 于观测云SaaS 2022-09-29 迭代中实装
+  - seq: 13
+    database: |-
+      -- 扩充系统配置 value 字段
+      ALTER TABLE wat_main_system_config
+        MODIFY COLUMN `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '值';

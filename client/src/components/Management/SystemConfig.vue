@@ -1,12 +1,16 @@
 <i18n locale="zh-CN" lang="yaml">
 Notice Bar         : 顶部提示栏
+Custom Logo        : 自定义 Logo
+Navi Bar Doc Link  : 导航栏文档链接
 Monitor Data Upload: 监控数据上报
 
-Enable: 启用功能
+Enable: 启用
 Text  : 文案
 Color : 颜色
-URL   : URL地址
+Image : 图片
+URL   : URL 地址
 
+Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
 System Config Saved: 系统配置已保存
 </i18n>
 
@@ -24,7 +28,38 @@ System Config Saved: 系统配置已保存
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form">
-                <el-divider content-position="left"><h1>{{ $t('Notice Bar') }}</h1></el-divider>
+                <!-- 自定义 Logo -->
+                <el-divider content-position="left"><h3>{{ $t('Custom Logo') }}</h3></el-divider>
+
+                <el-form-item>
+                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为 Logo"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Enable')" prop="CUSTOM_LOGO_ENABLED">
+                  <el-select v-model="form['CUSTOM_LOGO_ENABLED']" :class="enableClass(form['CUSTOM_LOGO_ENABLED'])">
+                    <el-option :label="$t('Enabled')"  key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('Image')" prop="CUSTOM_LOGO_IMAGE_SRC">
+                  <el-upload drag ref="CUSTOM_LOGO_IMAGE_SRC"
+                    :limit="2"
+                    :multiple="false"
+                    :auto-upload="false"
+                    :show-file-list="false"
+                    :accept="['.jpg', '.jpeg', '.png', '.gif']"
+                    :on-change="onCustomLogoChange">
+                    <div v-if="form.CUSTOM_LOGO_IMAGE_SRC" class="image-preview"><img :src="form.CUSTOM_LOGO_IMAGE_SRC" /></div>
+                    <template v-else>
+                      <i class="fa fa-cloud-upload"></i>
+                      <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
+                    </template>
+                  </el-upload>
+                </el-form-item>
+
+                <!-- 提示栏 -->
+                <el-divider content-position="left"><h3>{{ $t('Notice Bar') }}</h3></el-divider>
 
                 <el-form-item>
                   <InfoBlock title="启用并配置文案后，会在整个 DataFlux Func UI 界面顶部展示固定的提示栏"></InfoBlock>
@@ -47,10 +82,34 @@ System Config Saved: 系统配置已保存
                 <el-form-item :label="$t('Color')" prop="NOTICE_BAR_COLOR">
                   <el-color-picker
                     :predefine="colorPanel"
+                    color-format="rgb"
+                    @active-change="onNoticeBarColorChange"
                     v-model="form['NOTICE_BAR_COLOR']"></el-color-picker>
                 </el-form-item>
 
-                <el-divider content-position="left"><h1>{{ $t('Monitor Data Upload') }}</h1></el-divider>
+                <!-- 导航栏文档链接 -->
+                <el-divider content-position="left"><h3>{{ $t('Navi Bar Doc Link') }}</h3></el-divider>
+
+                <el-form-item>
+                  <InfoBlock title="启用并指定 URL 地址后，导航栏会出现「文档」，并可以跳转至指定的 URL 地址"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Enable')" prop="NAVI_DOC_LINK_ENABLED">
+                  <el-select v-model="form['NAVI_DOC_LINK_ENABLED']" :class="enableClass(form['NAVI_DOC_LINK_ENABLED'])">
+                    <el-option :label="$t('Enabled')"  key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('URL')" prop="NAVI_DOC_LINK_URL">
+                  <el-input
+                    type="textarea"
+                    :autosize="{ minRows: 2 }"
+                    v-model="form['NAVI_DOC_LINK_URL']"></el-input>
+                </el-form-item>
+
+                <!-- 监控数据上传 -->
+                <el-divider content-position="left"><h3>{{ $t('Monitor Data Upload') }}</h3></el-divider>
 
                 <el-form-item>
                   <InfoBlock title="启用并配置上报地址（DataWay 或 DataKit）后，会将任务执行信息上报"></InfoBlock>
@@ -101,15 +160,7 @@ export default {
   },
   methods: {
     async loadData() {
-      let apiRes = await this.T.callAPI_get('/api/v1/system-configs/do/list');
-      if (!apiRes.ok) return;
-
-      this.data = apiRes.data;
-
       let nextForm = this.T.jsonCopy(this.$store.getters.CONFIG('VARIABLE_CONFIG'));
-      this.data.forEach(d => {
-        nextForm[d.id] = this.T.isNothing(d.value) ? null : d.value;
-      })
       this.form = nextForm;
 
       this.$store.commit('updateLoadStatus', true);
@@ -129,6 +180,11 @@ export default {
         let v = this.form[id]
         let value = this.T.isNothing(v) ? null : v;
 
+        // URL地址自动添加 http://
+        if (id.slice(-4) === '_URL' && value && !value.match(/^\w+:\/\//g)) {
+          value = `http://${value}`;
+        }
+
         apiRes = await this.T.callAPI('post', '/api/v1/system-configs/:id/do/set', {
           params: { id: id },
           body  : { data: { value: value } },
@@ -137,8 +193,9 @@ export default {
       }
 
       if (apiRes.ok) {
-        this.T.alert(this.$t('System Config Saved'), 'success');
-        this.$store.dispatch('reloadSystemConfig');
+        this.T.notify(this.$t('System Config Saved'), 'success');
+        await this.$store.dispatch('reloadSystemConfig');
+        await this.loadData();
       }
     },
     enableClass(val) {
@@ -149,6 +206,21 @@ export default {
       } else {
         return '';
       }
+    },
+
+    onCustomLogoChange(file, fileList) {
+      var self = this;
+
+      if (fileList.length > 1) fileList.splice(0, 1);
+
+      var reader = new FileReader();
+      reader.readAsDataURL(file.raw);
+      reader.onload = () => {
+        this.form.CUSTOM_LOGO_IMAGE_SRC = reader.result;
+      };
+    },
+    onNoticeBarColorChange(color) {
+      this.form.NOTICE_BAR_COLOR = color;
     },
   },
   computed: {
@@ -171,13 +243,7 @@ export default {
   data() {
     return {
       data: {},
-      form: {
-        NOTICE_BAR_ENABLED         : null,
-        NOTICE_BAR_TEXT            : null,
-        NOTICE_BAR_COLOR           : null,
-        MONITOR_DATA_UPLOAD_ENABLED: null,
-        MONITOR_DATA_UPLOAD_URL    : null,
-      },
+      form: {},
     }
   },
 }
@@ -187,8 +253,10 @@ export default {
 <style>
 .config-enabled input {
   color: green !important;
+  font-weight: bold;
 }
 .config-disabled input {
   color: red !important;
+  font-weight: bold;
 }
 </style>

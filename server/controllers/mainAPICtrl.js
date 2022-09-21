@@ -2225,7 +2225,9 @@ exports.getSystemConfig = function(req, res, next) {
 
         var variableConfigs = toolkit.jsonCopy(CONST.systemConfigs);
         dbRes.forEach(function(d) {
-          variableConfigs[d.id] = d.value;
+          if (!toolkit.isNothing(d.value)) {
+            variableConfigs[d.id] = d.value;
+          }
         });
 
         systemConfig.VARIABLE_CONFIG = variableConfigs;

@@ -3,7 +3,7 @@ Development  : 开发
 Blueprint    : 蓝图
 Management   : 管理
 Docs         : 文档
-Settings     : 设置
+Profile      : 个人设置
 Sign Out     : 登出
 Not Signed In: 尚未登录
 Auth Link Doc: 授权链接文档
@@ -47,7 +47,9 @@ Signed In    : 已登录
         </el-menu-item>
       </template>
 
-      <el-menu-item index="https://function.guance.com/#/doc-index">
+      <el-menu-item
+        v-if="variableConfig['NAVI_DOC_LINK_ENABLED'] && variableConfig['NAVI_DOC_LINK_URL']"
+        :index="variableConfig['NAVI_DOC_LINK_URL']">
         <span>
           <i class="fa fa-fw fa-book"></i>
           <span>{{ $t('Docs') }}</span>
@@ -67,7 +69,7 @@ Signed In    : 已登录
             <span>{{ userProfileName }}</span>
           </span>
         </template>
-        <el-menu-item index="/setting/profile-setup">{{ $t('Settings') }}</el-menu-item>
+        <el-menu-item index="/setting/profile-setup">{{ $t('Profile') }}</el-menu-item>
         <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
@@ -143,6 +145,9 @@ export default {
     },
   },
   computed: {
+    variableConfig() {
+      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
+    },
     isSignedIn() {
       return this.$store.getters.isSignedIn;
     },
@@ -206,6 +211,8 @@ export default {
 }
 .navi-content i.fa {
   font-size: 18px;
+  position: relative;
+  top: 2px;
 }
 .navi-content .ui-locale-short-title {
   border: 1px solid grey;

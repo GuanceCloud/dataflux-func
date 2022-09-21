@@ -687,8 +687,7 @@ var noNullOrWhiteSpace = toolkit.noNullOrWhiteSpace = function noNullOrWhiteSpac
  * JSON.stringify replacer to stringify pageData in ejs.
  */
 var noFunctionReplacer = toolkit.noFunctionReplacer = function noFunctionReplacer(k, v) {
-  return typeof v === 'function' ? '<FUNCTION>'
-                                 : v;
+  return typeof v === 'function' ? '<FUNCTION>' : v;
 };
 
 /**
