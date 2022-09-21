@@ -40,34 +40,37 @@ var KafkaHelper = function(logger, config) {
 
   self.config = toolkit.noNullOrWhiteSpace(config);
 
-  self.producer = new kafka.HighLevelProducer(getConfig(self.config))
-  self.producer.connect();
+  if (!config.disablePub) {
+    self.producer = new kafka.HighLevelProducer(getConfig(self.config))
+    self.producer.connect();
+  }
 
-  self.consumer = new kafka.KafkaConsumer(getConfig(self.config, true))
-  self.consumer.connect();
+  if (!config.disableSub) {
+    self.consumer = new kafka.KafkaConsumer(getConfig(self.config, true))
+    self.consumer.connect();
 
-  // PUB-SUB 消息处理
-  self.topicHandlerMap = {};
-  self.isReady = false;
+    // PUB-SUB 消息处理
+    self.topicHandlerMap = {};
+    self.isReady = false;
 
-  self.consumer.on('ready', function() {
-    self.isReady = true;
-    self.consumer.consume();
-  });
+    self.consumer.on('ready', function() {
+      self.isReady = true;
 
-  self.consumer.on('data', function(_packet) {
-    var _topic   = _packet.topic;
-    var _message = _packet.value.toString();
+      self.consumer.consume(function(err, _packet) {
+        var _topic   = _packet.topic;
+        var _message = _packet.value.toString();
 
-    var handler = self.topicHandlerMap[_topic];
-    if (!handler) return;
+        var handler = self.topicHandlerMap[_topic];
+        if (!handler) return;
 
-    if (!self.skipLog) {
-      self.logger.debug('[KAFKA] Receive <- `{0}`', _topic);
-    }
+        if (!self.skipLog) {
+          self.logger.debug('[KAFKA] Receive <- `{0}`', _topic);
+        }
 
-    return handler(_topic, _message);
-  });
+        return handler(_topic, _message);
+      });
+    });
+  }
 };
 
 /**

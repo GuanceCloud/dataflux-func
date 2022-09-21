@@ -25,6 +25,10 @@ exports.convertJSONResponse = function(ret) {
 };
 
 exports.beforeAppCreate = function(callback) {
+  // UV thread pool
+  process.env.UV_THREADPOOL_SIZE = parseInt(CONFIG._NODE_UV_THREADPOOL_SIZE);
+
+  // Init toolkit
   var APP_NAME_SERVER = CONFIG.APP_NAME + '-server';
   var APP_NAME_WORKER = CONFIG.APP_NAME + '-worker';
 

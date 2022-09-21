@@ -286,6 +286,7 @@ _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
 _DB_AUTO_BACKUP_EXT   : .sql
 
 # 其他（内部控制）
+_NODE_UV_THREADPOOL_SIZE      : 8
 _LRU_FUNC_CACHE_MAX           : 1000
 _LRU_FUNC_CACHE_MAX_AGE       : 15
 _LRU_FUNC_RESULT_CACHE_MAX    : 2000

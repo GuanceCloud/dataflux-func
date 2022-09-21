@@ -186,6 +186,8 @@ exports.runListener = function runListener(app) {
 
           // 新建客户端
           try {
+            // 订阅专用
+            _next.configJSON.disablePub = true;
             _next.client = CONNECTOR_HELPER_MAP[_next.type].createHelper(app.locals.logger, _next.configJSON);
           } catch(err) {
             app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', connectorId, err.toString());
