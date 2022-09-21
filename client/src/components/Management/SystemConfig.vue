@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
+Custom Site Title  : 自定义网站标题
+Custom Site Logo   : 自定义网站 Logo
 Notice Bar         : 顶部提示栏
-Custom Logo        : 自定义 Logo
 Navi Bar Doc Link  : 导航栏文档链接
 Monitor Data Upload: 监控数据上报
 
@@ -11,7 +12,7 @@ Image : 图片
 URL   : URL 地址
 
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
-System Config Saved: 系统配置已保存
+'System Config Saved. Page will be refreshed soon...': '系统配置已保存，页面即将刷新...'
 </i18n>
 
 <template>
@@ -28,11 +29,29 @@ System Config Saved: 系统配置已保存
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="120px" :model="form">
-                <!-- 自定义 Logo -->
-                <el-divider content-position="left"><h3>{{ $t('Custom Logo') }}</h3></el-divider>
+                <!-- 网站标题 -->
+                <el-divider content-position="left"><h3>{{ $t('Custom Site Title') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为 Logo"></InfoBlock>
+                  <InfoBlock title="启用并配置文案后，会使用指定的文案作为网站标题"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Enable')" prop="CUSTOM_SITE_TITLE_ENABLED">
+                  <el-select v-model="form['CUSTOM_SITE_TITLE_ENABLED']" :class="enableClass(form['CUSTOM_SITE_TITLE_ENABLED'])">
+                    <el-option :label="$t('Enabled')"  key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('Text')" prop="CUSTOM_SITE_TITLE_TEXT">
+                  <el-input v-model="form['CUSTOM_SITE_TITLE_TEXT']"></el-input>
+                </el-form-item>
+
+                <!-- 自定义 Logo -->
+                <el-divider content-position="left"><h3>{{ $t('Custom Site Logo') }}</h3></el-divider>
+
+                <el-form-item>
+                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Logo"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_LOGO_ENABLED">
@@ -160,8 +179,9 @@ export default {
   },
   methods: {
     async loadData() {
-      let nextForm = this.T.jsonCopy(this.$store.getters.CONFIG('VARIABLE_CONFIG'));
-      this.form = nextForm;
+      let variableConfig = this.$store.getters.CONFIG('VARIABLE_CONFIG');
+      this.data = this.T.jsonCopy(variableConfig);
+      this.form = this.T.jsonCopy(variableConfig);
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -180,6 +200,9 @@ export default {
         let v = this.form[id]
         let value = this.T.isNothing(v) ? null : v;
 
+        // 没有改变的内容不提交
+        if (value === this.data[id]) continue;
+
         // URL地址自动添加 http://
         if (id.slice(-4) === '_URL' && value && !value.match(/^\w+:\/\//g)) {
           value = `http://${value}`;
@@ -189,13 +212,13 @@ export default {
           params: { id: id },
           body  : { data: { value: value } },
         });
-        if (!apiRes.ok) break;
+        if (!apiRes.ok) return;
       }
 
-      if (apiRes.ok) {
-        this.T.notify(this.$t('System Config Saved'), 'success');
+      if (!apiRes || apiRes.ok) {
         await this.$store.dispatch('reloadSystemConfig');
-        await this.loadData();
+        await this.T.alert(this.$t('System Config Saved. Page will be refreshed soon...'), 'success');
+        location.reload();
       }
     },
     enableClass(val) {

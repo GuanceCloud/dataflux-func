@@ -76,9 +76,14 @@ fileIcon:
 
 # System Configs and defaults
 systemConfigs:
-  # 是否启用自定义 Logo
+  # 是否启用自定义网站标题
+  CUSTOM_SITE_TITLE_ENABLED: false
+  # 自定义网站标题文案
+  CUSTOM_SITE_TITLE_TEXT: null
+
+  # 是否启用自定义网站 Logo
   CUSTOM_LOGO_ENABLED: false
-  # 自定义 Logo 数据（Base64）
+  # 自定义网站 Logo 数据（Base64）
   CUSTOM_LOGO_IMAGE_SRC: null
 
   # 是否启用提示栏
@@ -88,7 +93,7 @@ systemConfigs:
   # 提示栏颜色
   NOTICE_BAR_COLOR: '#FF6600'
 
-  # 是否禁用导航栏文档链接
+  # 是否启用导航栏文档链接
   NAVI_DOC_LINK_ENABLED: true
   # 导航文档地址
   NAVI_DOC_LINK_URL: 'https://func.guance.com/#/doc-index'

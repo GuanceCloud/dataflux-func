@@ -421,10 +421,16 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
+  let siteTitle = 'DataFlux Func';
+  let variableConfig = store.getters.CONFIG('VARIABLE_CONFIG');
+  if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {
+    siteTitle = variableConfig['CUSTOM_SITE_TITLE_TEXT'];
+  }
+
   if (['code-editor', 'code-viewer'].indexOf(to.name) >= 0) {
-    document.title = `[${to.params.id}] - DataFlux Func`
+    document.title = `[${to.params.id}] - ${siteTitle}`;
   } else {
-    document.title = 'DataFlux Func'
+    document.title = siteTitle;
   }
 });
 
