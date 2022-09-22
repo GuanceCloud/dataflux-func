@@ -144,9 +144,9 @@ export default {
     doFilter(q) {
       q = (q || '').toLowerCase().trim();
       if (!q) {
-        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+        this.selectShowOptions = this.selectOptions;
       } else {
-        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectShowOptions = this.T.searchKeywords(q, this.selectOptions);
       }
     },
 
@@ -203,18 +203,20 @@ export default {
         let sampleCode = `${d.id} = DFF.ENV('${d.id}')`
 
         // 创建数据节点
-        treeData.push({
+        let treeNode = {
           id        : d.id,
           label     : d.title || d.id,
           type      : 'envVariable',
           isPinned  : d.isPinned,
           pinTime   : d.pinTime,
-          searchTEXT: this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
           sampleCode : sampleCode,
-        });
+        };
+        this.T.appendSearchKeywords(treeNode, ['id', 'title'])
+
+        treeData.push(treeNode);
       });
       treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addEnvVariable'});

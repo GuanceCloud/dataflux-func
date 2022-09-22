@@ -32,11 +32,12 @@ export async function getFuncList() {
 
   apiRes.data.forEach(d => {
     scriptSetMap[d.id] = {
-      label     : d.title || d.id,
-      value     : d.id,
-      searchTEXT: T.getSearchTEXT(d, ['id', 'title']),
-      children  : [],
+      label   : d.title || d.id,
+      value   : d.id,
+      title   : d.title,
+      children: [],
     };
+    T.appendSearchKeywords(scriptSetMap[d.id], ['id', 'title']);
   });
 
   // 脚本
@@ -47,11 +48,12 @@ export async function getFuncList() {
 
   apiRes.data.forEach(d => {
     scriptMap[d.id] = {
-      label     : d.title || d.id,
-      value     : d.id,
-      searchTEXT: T.getSearchTEXT(d, ['id', 'title']),
-      children  : [],
+      label   : d.title || d.id,
+      value   : d.id,
+      title   : d.title,
+      children: [],
     };
+    T.appendSearchKeywords(scriptMap[d.id], ['id', 'title']);
 
     // 插入上一层"children"
     if (scriptSetMap[d.scriptSetId]) {
@@ -69,11 +71,12 @@ export async function getFuncList() {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
-      searchTEXT     : T.getSearchTEXT(d, ['id', 'title']),
+      title          : d.title,
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
     };
+    T.appendSearchKeywords(funcMap[d.id], ['id', 'title']);
 
     // 插入上一层"children"
     if (scriptMap[d.scriptId]) {
@@ -90,8 +93,8 @@ export async function getFuncList() {
 }
 
 export function funcCascaderFilter(node, keyword) {
-  keyword = (keyword || '').toLowerCase().trim();
-  return node.data.searchTEXT.indexOf(keyword.toLowerCase());
+  keyword = (keyword || '').trim();
+  return T.searchKeywords(keyword, [node.data]).length > 0;
 }
 
 export function isFuncArgumentPlaceholder(v) {

@@ -546,9 +546,9 @@ export default {
     doFilter(q) {
       q = (q || '').toLowerCase().trim();
       if (!q) {
-        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+        this.selectShowOptions = this.selectOptions;
       } else {
-        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectShowOptions = this.T.searchKeywords(q, this.selectOptions);
       }
     },
 
@@ -664,13 +664,13 @@ export default {
           isPinned       : isPinned,
           pinTime        : d.pinTime,
           isBuiltin      : d.isBuiltin,
-          searchTEXT     : this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
 
           children: [],
         };
+        this.T.appendSearchKeywords(scriptSetMap[d.id], ['id', 'title'])
       });
 
       /***** 脚本 *****/
@@ -731,7 +731,6 @@ export default {
           isLocked           : isLocked,
           isLockedByScriptSet: isLockedByScriptSet,
           isEditable         : isEditable,
-          searchTEXT         : this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
@@ -739,6 +738,7 @@ export default {
 
           children: [],
         };
+        this.T.appendSearchKeywords(scriptMap[d.id], ['id', 'title'])
 
         // 插入上一层节点"children"
         if (scriptSetMap[d.scriptSetId]) {
@@ -786,7 +786,6 @@ export default {
           label      : d.title || d.id,
           type       : 'func',
           definition : d.definition,
-          searchTEXT: this.T.getSearchTEXT(d, ['id', 'title']),
 
           title      : d.title,
           description: d.description,
@@ -797,6 +796,7 @@ export default {
           integration    : d.integration,
           extraConfigJSON: d.extraConfigJSON,
         };
+        this.T.appendSearchKeywords(funcMap[d.id], ['id', 'title'])
 
         // 插入上一层节点"children"
         if (scriptMap[d.scriptId]) {

@@ -175,9 +175,9 @@ export default {
     doFilter(q) {
       q = (q || '').toLowerCase().trim();
       if (!q) {
-        this.selectShowOptions = this.selectOptions.filter(x => x.type === 'scriptSet');
+        this.selectShowOptions = this.selectOptions;
       } else {
-        this.selectShowOptions = this.selectOptions.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectShowOptions = this.T.searchKeywords(q, this.selectOptions);
       }
     },
 
@@ -234,7 +234,7 @@ export default {
         let sampleCode = this.T.strf(this.C.CONNECTOR_MAP.get(d.type).sampleCode, d.id);
 
         // 创建节点数据
-        treeData.push({
+        let treeNode = {
           id            : d.id,
           label         : d.title || d.id,
           type          : 'connector',
@@ -242,14 +242,16 @@ export default {
           isBuiltin     : d.isBuiltin,
           isPinned      : d.isPinned,
           pinTime       : d.pinTime,
-          searchTEXT    : this.T.getSearchTEXT(d, ['id', 'title', 'type']),
 
           title      : d.title,
           description: d.description,
           sampleCode : sampleCode,
 
           connector: d,
-        });
+        };
+        this.T.appendSearchKeywords(treeNode, ['id', 'title'])
+
+        treeData.push(treeNode);
       });
       treeData.sort(this.T.asideItemSorter);
       treeData.unshift({type: 'addConnector'});

@@ -704,7 +704,69 @@ export function getTimeDiff(from, to, humanized) {
   return duration(diff, humanized);
 };
 
+export function filterBySimilar(s, l, key, minScore) {
+  minScore = minScore || 0.5;
+
+  let listScore = l.reduce((acc, x) => {
+    if (key) {
+      acc.push([ stringSimilar(s, x[key]), x])
+    } else {
+      acc.push([ stringSimilar(s, x), x])
+    }
+    return acc;
+  }, []);
+
+  listScore.filter(x => {
+    return x[0] >= minScore;
+  });
+
+  listScore.sort((a, b) => {
+    if (a[0] > b[0]) {
+      return -1;
+    } else if (a[0] < b[0]) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+
+  let result = listScore.map(x => x[1]);
+  return result;
+};
+
+export function sortBySimilar(s, l, key) {
+  let scoreMap = {}
+  l.sort((a, b) => {
+    if (key) {
+      a = a[key];
+      b = b[key];
+    }
+
+    let scoreA = scoreMap[a];
+    let scoreB = scoreMap[b];
+
+    if (isNothing(scoreA)) {
+      scoreA = scoreMap[a] = stringSimilar(s, a);
+    }
+    if (isNothing(scoreB)) {
+      scoreB = scoreMap[b] = stringSimilar(s, b);
+    }
+
+    if (scoreA > scoreB) {
+      return -1;
+    } else if (scoreA < scoreB) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  return l;
+};
+
 export function stringSimilar(s, t, f) {
+  s = s.toLowerCase();
+  t = t.toLowerCase();
+
   if (!s || !t) {
       return 0
   }
@@ -1494,10 +1556,46 @@ export function getHighlightRowCSS({row, rowIndex}) {
   return (store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
 };
 
-export function getSearchTEXT(data, keys) {
-  let searchText = '';
+export function appendSearchKeywords(data, keys) {
+  let searchKeywords = [];
   keys.forEach(k => {
-    searchText += ` ${(data[k] || '').toLowerCase()}`;
+    searchKeywords.push(`${(data[k] || '').toLowerCase()}`);
   });
-  return searchText.trim();
+  data.searchKeywords = searchKeywords;
+  return data;
+};
+
+export function searchKeywords(s, l, minScore) {
+  minScore = minScore || 0.1;
+
+  let listScore = l.reduce((acc, x) => {
+    let score = 0;
+    x.searchKeywords.forEach((keyword, index) => {
+      let _score = stringSimilar(s, keyword);
+      if (_score < minScore) return;
+
+      score = Math.max(score, _score);
+    });
+
+    x.stringSimilarScore = score;
+    acc.push([ score, x ])
+    return acc;
+  }, []);
+
+  listScore = listScore.filter(x => {
+    return x[0] > 0;
+  });
+
+  listScore.sort((a, b) => {
+    if (a[0] > b[0]) {
+      return -1;
+    } else if (a[0] < b[0]) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+
+  let result = listScore.map(x => x[1]);
+  return result;
 };

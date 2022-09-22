@@ -165,7 +165,7 @@ export default {
 
       let scriptSets = apiRes.data;
       scriptSets.forEach(x => {
-        x.searchTEXT = this.T.getSearchTEXT(x, ['id', 'title'])
+        this.T.appendSearchKeywords(x, ['id', 'title'])
       });
 
       this.scriptSets             = scriptSets;
@@ -177,7 +177,7 @@ export default {
 
       let connectors = apiRes.data;
       connectors.forEach(x => {
-        x.searchTEXT = this.T.getSearchTEXT(x, ['id', 'title'])
+        this.T.appendSearchKeywords(x, ['id', 'title'])
       });
 
       this.connectors             = connectors;
@@ -189,7 +189,7 @@ export default {
 
       let envVariables = apiRes.data;
       envVariables.forEach(x => {
-        x.searchTEXT = this.T.getSearchTEXT(x, ['id', 'title'])
+        this.T.appendSearchKeywords(x, ['id', 'title'])
       });
 
       this.envVariables             = envVariables;
@@ -258,7 +258,7 @@ export default {
       if (!q) {
         this.selectScriptSetOptions = this.scriptSets;
       } else {
-        this.selectScriptSetOptions = this.scriptSets.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectScriptSetOptions = this.T.searchKeywords(q, this.scriptSets);
       }
     },
     doConnectorFilter(q) {
@@ -266,7 +266,7 @@ export default {
       if (!q) {
         this.selectConnectorOptions = this.connectors;
       } else {
-        this.selectConnectorOptions = this.connectors.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectConnectorOptions = this.T.searchKeywords(q, this.connectors);
       }
     },
     doEnvVariableFilter(q) {
@@ -274,7 +274,7 @@ export default {
       if (!q) {
         this.selectEnvVariableOptions = this.envVariables;
       } else {
-        this.selectEnvVariableOptions = this.envVariables.filter(x => x.searchTEXT.indexOf(q) >= 0);
+        this.selectEnvVariableOptions = this.T.searchKeywords(q, this.envVariables);
       }
     },
   },
