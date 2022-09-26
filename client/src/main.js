@@ -152,6 +152,8 @@ window.addEventListener('storage', function (ev) {
   store.commit('syncState', nextState);
 });
 
+// 初始化 vuex 数据，避免报错
+
 // 本体
 const app = new Vue({
   router,
@@ -159,6 +161,15 @@ const app = new Vue({
   i18n,
   render: h => h(App),
 
+  created() {
+    this.$store.dispatch('reloadSystemConfig');
+    this.$store.dispatch('reloadUserProfile');
+  },
+  computed: {
+    variableConfig() {
+      return this.$store.getters.CONFIG('VARIABLE_CONFIG', {});
+    },
+  },
   methods: {
     goToSignOut() {
       this.$router.push({ name: 'sign-out' });

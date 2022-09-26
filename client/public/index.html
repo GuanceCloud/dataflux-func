@@ -11,7 +11,7 @@
     <meta http-equiv="Content-Language" content="zh-CN">
     <meta name="viewport" content="width=1280, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" id="favicon" href="<%= BASE_URL %>favicon.ico">
+    <link rel="icon" id="favicon" origin-href="<%= BASE_URL %>favicon.ico">
     <link rel="stylesheet" id="uiTheme" href-pattern="<%= BASE_URL %>theme-XXX<%= VUE_APP_CSS_EXT || '.min.css' %>" href="">
     <title>Loading...</title>
   </head>
@@ -26,28 +26,45 @@
   </body>
   <script>
     (function() {
-      var vuexData = localStorage.getItem('vuex');
-      if (!vuexData) {
-        vuexData = {};
-      } else if ('string' === typeof vuexData) {
-        vuexData = JSON.parse(vuexData);
-      }
+      // 延迟处理
+      var T = setInterval(function() {
+        if (!window._DFF_isSystemConfigLoaded) return;
 
-      var VARIABLE_CONFIG = vuexData.systemConfig.VARIABLE_CONFIG;
+        var vuexData = localStorage.getItem('vuex');
+        if (!vuexData) {
+          vuexData = {};
+        } else if ('string' === typeof vuexData) {
+          vuexData = JSON.parse(vuexData);
+        }
 
-      // 切换 favicon
-      if ( VARIABLE_CONFIG.CUSTOM_FAVICON_ENABLED &&  VARIABLE_CONFIG.CUSTOM_FAVICON_IMAGE_SRC) {
+        var variableConfig = vuexData.systemConfig.VARIABLE_CONFIG;
+
+        // 切换主题
+        var uiTheme = vuexData.uiTheme;
+        if (uiTheme !== 'dark' && uiTheme !== 'light') uiTheme = 'auto';
+
+        var $uiThemeLink = document.getElementById('uiTheme');
+        var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme);
+        $uiThemeLink.setAttribute('href', cssHref);
+
+        // 切换 favicon
         var $faviconLink = document.getElementById('favicon');
-        $faviconLink.setAttribute('href',  VARIABLE_CONFIG.CUSTOM_FAVICON_IMAGE_SRC);
-      }
+        if (variableConfig['CUSTOM_FAVICON_ENABLED'] && variableConfig['CUSTOM_FAVICON_IMAGE_SRC']) {
+          $faviconLink.setAttribute('href', variableConfig['CUSTOM_FAVICON_IMAGE_SRC']);
+        } else {
+          var defaultHref = $faviconLink.getAttribute('origin-href');
+          // $faviconLink.setAttribute('href', defaultHref);
+        }
 
-      // 切换主题
-      var uiTheme = vuexData.uiTheme;
-      if (uiTheme !== 'dark' && uiTheme !== 'light') uiTheme = 'auto';
+        // 切换 title
+        if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {
+          document.title = variableConfig['CUSTOM_SITE_TITLE_TEXT'];
+        } else {
+          document.title = 'DataFlux Func';
+        }
 
-      var $uiThemeLink = document.getElementById('uiTheme');
-      var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme);
-      $uiThemeLink.setAttribute('href', cssHref);
+        clearInterval(T);
+      }, 300);
     })();
   </script>
 </html>

@@ -48,8 +48,8 @@ Signed In    : 已登录
       </template>
 
       <el-menu-item
-        v-if="variableConfig['NAVI_DOC_LINK_ENABLED'] && variableConfig['NAVI_DOC_LINK_URL']"
-        :index="variableConfig['NAVI_DOC_LINK_URL']">
+        v-if="$root.variableConfig['NAVI_DOC_LINK_ENABLED'] && $root.variableConfig['NAVI_DOC_LINK_URL']"
+        :index="$root.variableConfig['NAVI_DOC_LINK_URL']">
         <span>
           <i class="fa fa-fw fa-book"></i>
           <span>{{ $t('Docs') }}</span>
@@ -145,9 +145,6 @@ export default {
     },
   },
   computed: {
-    variableConfig() {
-      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
-    },
     isSignedIn() {
       return this.$store.getters.isSignedIn;
     },

@@ -1,9 +1,9 @@
 <template>
-  <div class="logo-container">
-    <img v-if="variableConfig['CUSTOM_LOGO_ENABLED'] && variableConfig['CUSTOM_LOGO_IMAGE_SRC']"
+  <div class="logo-container" v-show="$store.state.isSystemConfigLoaded">
+    <img v-if="$root.variableConfig['CUSTOM_LOGO_ENABLED'] && $root.variableConfig['CUSTOM_LOGO_IMAGE_SRC']"
       class="custom-logo-img"
       :style="customLogoStyle"
-      :src="variableConfig['CUSTOM_LOGO_IMAGE_SRC']" />
+      :src="$root.variableConfig['CUSTOM_LOGO_IMAGE_SRC']" />
     <div v-else
       class="logo-img"
       :class="logoClass"
@@ -26,10 +26,6 @@ export default {
     type  : String,
   },
   computed: {
-    variableConfig() {
-      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
-    },
-
     customLogoStyle() {
       let style = {
         maxWidth : this.width  || '165px',
@@ -67,8 +63,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .logo-container {
-  display: inline-block;
+  display: flex;
   text-align: center;
+  align-content: center;
 }
 
 .custom-logo-img {

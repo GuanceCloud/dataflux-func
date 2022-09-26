@@ -7,6 +7,7 @@ import C from '@/const'
 import * as toolkit from '@/toolkit'
 
 const STATE_CONFIG = {
+  isSystemConfigLoaded                     : { persist: false, syncXTab: false },
   systemConfig                             : { persist: true,  syncXTab: true  },
   isLoaded                                 : { persist: false, syncXTab: false },
   processingTaskCount                      : { persist: false, syncXTab: false },
@@ -297,6 +298,7 @@ export default new Vuex.Store({
   mutations: {
     updateSystemConfig(state, config) {
       state.systemConfig = config || {};
+      state.isSystemConfigLoaded = true;
     },
 
     updateLoadStatus(state, isLoaded) {
@@ -484,7 +486,8 @@ export default new Vuex.Store({
       let apiRes = await toolkit.callAPI_get('/api/v1/func-system-config');
       if (!apiRes.ok) return;
 
-      commit('updateSystemConfig', apiRes.data);
+      await commit('updateSystemConfig', apiRes.data);
+      window._DFF_isSystemConfigLoaded = true;
     },
     async reloadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;

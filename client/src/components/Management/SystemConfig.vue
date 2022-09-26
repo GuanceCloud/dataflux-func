@@ -70,7 +70,9 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                     :show-file-list="false"
                     :accept="['.jpg', '.jpeg', '.png', '.gif', 'ico']"
                     :on-change="onCustomFaviconChange">
-                    <div v-if="form.CUSTOM_FAVICON_IMAGE_SRC" class="image-preview"><img :src="form.CUSTOM_FAVICON_IMAGE_SRC" /></div>
+                    <div v-if="form.CUSTOM_FAVICON_IMAGE_SRC" class="image-preview">
+                      <img :src="form.CUSTOM_FAVICON_IMAGE_SRC" />
+                    </div>
                     <template v-else>
                       <i class="fa fa-cloud-upload"></i>
                       <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
@@ -100,7 +102,9 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                     :show-file-list="false"
                     :accept="['.jpg', '.jpeg', '.png', '.gif']"
                     :on-change="onCustomLogoChange">
-                    <div v-if="form.CUSTOM_LOGO_IMAGE_SRC" class="image-preview"><img :src="form.CUSTOM_LOGO_IMAGE_SRC" /></div>
+                    <div v-if="form.CUSTOM_LOGO_IMAGE_SRC" class="image-preview">
+                      <img :src="form.CUSTOM_LOGO_IMAGE_SRC" />
+                    </div>
                     <template v-else>
                       <i class="fa fa-cloud-upload"></i>
                       <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
@@ -210,9 +214,10 @@ export default {
   },
   methods: {
     async loadData() {
-      let variableConfig = this.$store.getters.CONFIG('VARIABLE_CONFIG');
-      this.data = this.T.jsonCopy(variableConfig);
-      this.form = this.T.jsonCopy(variableConfig);
+      await this.$store.dispatch('reloadSystemConfig');
+
+      this.data = this.T.jsonCopy(this.$root.variableConfig);
+      this.form = this.T.jsonCopy(this.$root.variableConfig);
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -247,7 +252,6 @@ export default {
       }
 
       if (!apiRes || apiRes.ok) {
-        await this.$store.dispatch('reloadSystemConfig');
         await this.T.alert(this.$t('System Config Saved. Page will be refreshed soon...'), 'success');
         location.reload();
       }

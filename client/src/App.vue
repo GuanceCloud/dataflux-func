@@ -3,8 +3,8 @@
     element-loading-text="正在处理中，请稍后..."
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
-    <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: variableConfig['NOTICE_BAR_COLOR'] }">
-      {{ variableConfig['NOTICE_BAR_TEXT'] }}
+    <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: $root.variableConfig['NOTICE_BAR_COLOR'] }">
+      {{ $root.variableConfig['NOTICE_BAR_TEXT'] }}
     </div>
     <div id="Navi" v-if="showNavi">
       <Navi></Navi>
@@ -124,9 +124,6 @@ export default {
     },
   },
   computed: {
-    variableConfig() {
-      return this.$store.getters.CONFIG('VARIABLE_CONFIG');
-    },
     showNavi() {
       switch(this.$route.name) {
         case 'index':
@@ -140,7 +137,7 @@ export default {
       }
     },
     showNoticeBar() {
-      return this.variableConfig['NOTICE_BAR_ENABLED'] && this.variableConfig['NOTICE_BAR_TEXT'];
+      return this.$root.variableConfig['NOTICE_BAR_ENABLED'] && this.$root.variableConfig['NOTICE_BAR_TEXT'];
     },
     viewTop() {
       let top = 0;
@@ -167,10 +164,6 @@ export default {
 
       heartbeatTimer: null,
     }
-  },
-  created() {
-    this.$store.dispatch('reloadSystemConfig');
-    this.$store.dispatch('reloadUserProfile');
   },
   mounted() {
     const connectSocketIO = () => {
@@ -773,7 +766,7 @@ kbd {
   margin-right: 0px !important;
 }
 .el-divider--horizontal:not(:first-of-type) {
-  margin-top: 60px !important;
+  margin-top: 80px !important;
 }
 
 .el-drawer__wrapper {
