@@ -1,5 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Custom Site Title  : 自定义网站标题
+Custom Site Favicon: 自定义网站 Favicon
 Custom Site Logo   : 自定义网站 Logo
 Notice Bar         : 顶部提示栏
 Navi Bar Doc Link  : 导航栏文档链接
@@ -45,6 +46,36 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
 
                 <el-form-item :label="$t('Text')" prop="CUSTOM_SITE_TITLE_TEXT">
                   <el-input v-model="form['CUSTOM_SITE_TITLE_TEXT']"></el-input>
+                </el-form-item>
+
+                <!-- 自定义 Favicon -->
+                <el-divider content-position="left"><h3>{{ $t('Custom Site Favicon') }}</h3></el-divider>
+
+                <el-form-item>
+                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Favicon"></InfoBlock>
+                </el-form-item>
+
+                <el-form-item :label="$t('Enable')" prop="CUSTOM_FAVICON_ENABLED">
+                  <el-select v-model="form['CUSTOM_FAVICON_ENABLED']" :class="enableClass(form['CUSTOM_FAVICON_ENABLED'])">
+                    <el-option :label="$t('Enabled')"  key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('Image')" prop="CUSTOM_FAVICON_IMAGE_SRC">
+                  <el-upload drag ref="CUSTOM_FAVICON_IMAGE_SRC"
+                    :limit="2"
+                    :multiple="false"
+                    :auto-upload="false"
+                    :show-file-list="false"
+                    :accept="['.jpg', '.jpeg', '.png', '.gif', 'ico']"
+                    :on-change="onCustomFaviconChange">
+                    <div v-if="form.CUSTOM_FAVICON_IMAGE_SRC" class="image-preview"><img :src="form.CUSTOM_FAVICON_IMAGE_SRC" /></div>
+                    <template v-else>
+                      <i class="fa fa-cloud-upload"></i>
+                      <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
+                    </template>
+                  </el-upload>
                 </el-form-item>
 
                 <!-- 自定义 Logo -->
@@ -231,7 +262,7 @@ export default {
       }
     },
 
-    onCustomLogoChange(file, fileList) {
+    onCustomBase64ImageChange(file, fileList, key) {
       var self = this;
 
       if (fileList.length > 1) fileList.splice(0, 1);
@@ -239,8 +270,14 @@ export default {
       var reader = new FileReader();
       reader.readAsDataURL(file.raw);
       reader.onload = () => {
-        this.form.CUSTOM_LOGO_IMAGE_SRC = reader.result;
+        this.form[key] = reader.result;
       };
+    },
+    onCustomFaviconChange(file, fileList) {
+      return this.onCustomBase64ImageChange(file, fileList, 'CUSTOM_FAVICON_IMAGE_SRC');
+    },
+    onCustomLogoChange(file, fileList) {
+      return this.onCustomBase64ImageChange(file, fileList, 'CUSTOM_LOGO_IMAGE_SRC');
     },
     onNoticeBarColorChange(color) {
       this.form.NOTICE_BAR_COLOR = color;

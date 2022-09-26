@@ -81,6 +81,11 @@ systemConfigs:
   # 自定义网站标题文案
   CUSTOM_SITE_TITLE_TEXT: null
 
+  # 是否启用自定义网站 favicon
+  CUSTOM_FAVICON_ENABLED: false
+  # 自定义网站 favicon 数据（Base64）
+  CUSTOM_FAVICON_IMAGE_SRC: null
+
   # 是否启用自定义网站 Logo
   CUSTOM_LOGO_ENABLED: false
   # 自定义网站 Logo 数据（Base64）

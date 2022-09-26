@@ -421,6 +421,7 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
+  // 页面标题
   let siteTitle = 'DataFlux Func';
   let variableConfig = store.getters.CONFIG('VARIABLE_CONFIG');
   if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {

@@ -11,7 +11,7 @@
     <meta http-equiv="Content-Language" content="zh-CN">
     <meta name="viewport" content="width=1280, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <link rel="icon" id="favicon" href="<%= BASE_URL %>favicon.ico">
     <link rel="stylesheet" id="uiTheme" href-pattern="<%= BASE_URL %>theme-XXX<%= VUE_APP_CSS_EXT || '.min.css' %>" href="">
     <title>Loading...</title>
   </head>
@@ -33,6 +33,15 @@
         vuexData = JSON.parse(vuexData);
       }
 
+      var VARIABLE_CONFIG = vuexData.systemConfig.VARIABLE_CONFIG;
+
+      // 切换 favicon
+      if ( VARIABLE_CONFIG.CUSTOM_FAVICON_ENABLED &&  VARIABLE_CONFIG.CUSTOM_FAVICON_IMAGE_SRC) {
+        var $faviconLink = document.getElementById('favicon');
+        $faviconLink.setAttribute('href',  VARIABLE_CONFIG.CUSTOM_FAVICON_IMAGE_SRC);
+      }
+
+      // 切换主题
       var uiTheme = vuexData.uiTheme;
       if (uiTheme !== 'dark' && uiTheme !== 'light') uiTheme = 'auto';
 
