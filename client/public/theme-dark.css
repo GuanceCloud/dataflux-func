@@ -82,6 +82,10 @@ a {
 .CodeMirror .error-line-background {
   background-image: none !important;
 }
+.CodeMirror-dialog-top {
+  border-bottom: 1px solid #3c3c3c !important;
+  font-size: 14px;
+}
 .code-viewer.el-header,
 .code-editor.el-header {
   box-shadow: 5px 5px 5px black !important;

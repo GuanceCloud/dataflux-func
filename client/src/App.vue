@@ -793,6 +793,13 @@ kbd {
   border-radius: 3px;
 }
 
+.CodeMirror-dialog input {
+  width: 30em !important;
+  background-color: #FFCF003D !important;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-family: "Iosevka","PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
+}
 .CodeMirror-wrap pre.CodeMirror-line {
   word-break: break-all;
 }

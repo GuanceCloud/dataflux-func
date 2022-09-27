@@ -176,13 +176,13 @@ en:
   # CodeMirror
   "(Use /re/ syntax for regexp search)": '（也可以使用 /正则表达式/ 搜索，如 /\\d+/）'
   "All"                                : '全部'
-  "Replace all:"                       : '全部替换'
-  "Replace with:"                      : '替换为'
-  "Replace:"                           : '替换'
-  "Replace?"                           : '是否替换'
-  "Search:"                            : '搜索'
+  "Replace all:"                       : '全部替换：'
+  "Replace with:"                      : '替换为：'
+  "Replace:"                           : '替换：'
+  "Replace?"                           : '是否替换？'
+  "Search:"                            : '搜索：'
   "Stop"                               : '停止'
-  "With:"                              : '替换为'
+  "With:"                              : '替换为：'
 
   # toolkit.js - API调用提示
   Read data                               : 读取数据
