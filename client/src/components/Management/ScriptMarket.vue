@@ -137,7 +137,12 @@ export default {
         query: _query,
       });
       if (apiRes.ok) {
-        this.packageList = apiRes.data;
+        let packageList = apiRes.data;
+        packageList.forEach(p => {
+          this.T.appendSearchKeywords(p, ['name', 'package'])
+        });
+
+        this.packageList = packageList;
         this.indexLoaded = true;
       }
 
@@ -204,11 +209,12 @@ export default {
   },
   computed: {
     filteredPackageList() {
-      if (this.T.isNothing(this.filterTEXT)) return this.packageList;
-
-      return this.packageList.filter(p => {
-        return p.name.indexOf(this.filterTEXT) >= 0 || p.package.indexOf(this.filterTEXT) >= 0
-      });
+      let q = (this.filterTEXT || '').toLowerCase().trim();
+      if (!q) {
+        return this.packageList;
+      } else {
+        return this.T.searchKeywords(q, this.packageList);
+      }
     },
   },
   props: {
