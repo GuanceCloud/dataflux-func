@@ -34,6 +34,7 @@ class CommandCanceledException(Exception):
     pass
 
 CONFIG = yaml_resources.get('CONFIG')
+
 DB       = MySQLHelper(logging)
 CACHE_DB = RedisHelper(logging)
 
@@ -90,7 +91,7 @@ def reset_admin():
     '''
     # 等待用户输入数据
     username        = input('Enter new Admin username: ')
-    password        = getpass.getpass('New password: ')
+    password        = getpass.getpass(f'Enter new password for [{username}]: ')
     password_repeat = getpass.getpass('Confirm new password: ')
 
     if password != password_repeat:
@@ -152,14 +153,14 @@ def clear_redis():
     CACHE_DB.client.flushdb()
 
 def main(options):
+    if not CONFIG.get('_IS_INSTALLED'):
+        raise Exception(f"This DataFlux Func is not installed yet, please complete the installation first.\n Default URL is http(s)://<Domain or IP>:{CONFIG.get('WEB_PORT')}/")
+
     command = options.get('command')
     command_func = COMMAND_FUNCS.get(command)
 
     if not command_func:
-        raise Exception('No such command: {0}\n Command should be one of {1}'.format(
-                command,
-                ', '.join(COMMAND_FUNCS.keys())
-            ))
+        raise Exception(f"No such command: {command}\n Command should be one of {', '.join(COMMAND_FUNCS.keys())}")
 
     command_func()
 
