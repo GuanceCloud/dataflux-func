@@ -233,7 +233,7 @@ exports.clone = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         for (var i = 0; i < dbRes.length; i++) {
-          var newScriptid = `${newId}__${dbRes[i].id}`;
+          var newScriptid = `${newId}__${dbRes[i].id.split('__')[1]}`;
           if (newScriptid.length > ROUTE.scriptAPI.add.body.data.id.$maxLength) {
             return asyncCallback(new E('EBizCondition.ClonedScriptIDTooLong', 'ID of cloned Script will be too long'));
           }
