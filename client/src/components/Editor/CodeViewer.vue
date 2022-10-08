@@ -271,11 +271,8 @@ export default {
             let _tag = `# ${x.key}`;
             let _pos = l.indexOf(_tag);
             if (_pos >= 0) {
-              let _nextChar = l[_pos + _tag.length];
-              if ([' ', ':', '　', '：'].indexOf(_nextChar) < 0) return;
-
               let id   = `${this.scriptId}.__L${i}`;
-              let name = l.slice(_pos + _tag.length + 1).trim();
+              let name = (l.slice(_pos + _tag.length) || '').trim() || x.key;
               todoItems.push({
                 id      : id,
                 type    : 'todo',
