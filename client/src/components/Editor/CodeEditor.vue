@@ -11,8 +11,7 @@ seconds      : '{n} second | {n} seconds'
 Script Setup                                                                         : 脚本设置
 'Script is under editing mode in other browser tab, please wait...'                  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'                       : '其他客户端正在编辑此脚本，请稍后...'
-Select to quick jump to                                                              : 选择一项以快速跳转至
-'Function, Class or "# STAR/XXX/TEST/TODO/BUG/FIXME/HACK" line'                      : '函数、类或 "# STAR/XXX/TEST/TODO/BUG/FIXME/HACK" 代码行'
+Select one to quick jump                                                             : 选择一项以快速跳转
 Select Target                                                                        : 选择跳转目标
 Viewport are too narrow                                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
@@ -145,8 +144,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                 <el-form-item>
                   <el-tooltip placement="left" :enterable="false">
                     <div slot="content">
-                      {{ $t('Select to quick jump to') }}<br>
-                      {{ $t('Function, Class or "# STAR/XXX/TEST/TODO/BUG/FIXME/HACK" line' )}}
+                      {{ $t('Select one to quick jump') }}
                     </div>
                     <el-select
                       style="width: 150px"
