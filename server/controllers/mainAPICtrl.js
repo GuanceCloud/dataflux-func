@@ -81,7 +81,6 @@ var METRIC_MAP = {};
 // 自动创建资源文件夹
 fs.ensureDirSync(CONFIG.RESOURCE_ROOT_PATH);
 
-/* Handlers */
 function _getHTTPRequestInfo(req) {
   if (req.path === 'FAKE') {
     return toolkit.jsonCopy(req);
@@ -150,6 +149,7 @@ function _isFuncArgumentPlaceholder(v) {
   return false;
 };
 
+// FIXME: 应当以此函数为主要函数调用构建函数
 function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions, callback) {
   var fakeReq = {
     path  : 'FAKE',
@@ -168,6 +168,7 @@ function _createFuncCallOptionsFromOptions(func, funcCallKwargs, funcCallOptions
   return _createFuncCallOptionsFromRequest(fakeReq, fakeRes, func, callback);
 };
 
+// FIXME: 此函数应为 _createFuncCallOptionsFromOptions(...) 的包装
 function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   // 注意：
   //  本函数内所有搜集的时长类数据均为秒
@@ -472,6 +473,7 @@ function _createFuncCallOptionsFromRequest(req, res, func, callback) {
   return callback(null, funcCallOptions);
 };
 
+// FIXME: 此函数应为 _createFuncCallOptionsFromOptions(...) 的包装
 function _createFuncCallOptionsForAPIAuth(req, res, func, apiAuth, callback) {
   // 注意：
   //  本函数内所有搜集的时长类数据均为秒
@@ -568,6 +570,7 @@ function _createFuncCallOptionsForAPIAuth(req, res, func, apiAuth, callback) {
 
   return callback(null, funcCallOptions);
 };
+
 
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs, format) {
   // 合并请求参数
@@ -716,6 +719,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
   var sendTask = function(err) {
     if (err) return callback(err);
 
+    // FIXME: 队列处理应当在构建 funcCallOptions 时完成
     // 处理队列别名
     if (toolkit.isNullOrUndefined(funcCallOptions.queue)) {
       funcCallOptions.queue = _getTaskDefaultQueue(funcCallOptions.execMode);
@@ -1099,9 +1103,8 @@ function _doAPIResponse(locals, res, ret, options, callback) {
       var file     = ret.data.result.raw;
       var fileName = responseControl.downloadFile;
       if ('string' !== typeof fileName) {
-        fileName = typeof file === 'object'
-                 ? 'api-resp.json'
-                 : 'api-resp.txt'
+        var fileExt = typeof file === 'object' ? 'json' : 'txt';
+        fileName = `api-resp.${fileExt}`;
       }
       return locals.sendFile(file, fileName);
 
@@ -1390,6 +1393,7 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
   });
 };
 
+/* Handlers */
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;

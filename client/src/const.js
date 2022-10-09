@@ -361,14 +361,14 @@ kafka.publish(topic='some_topic', message='some_message')`,
   get TODO_TYPE() {
     return [
       {
-        key    : 'XXX',
-        tagType: 'info',
-        icon   : 'fa-times',
-      },
-      {
         key    : 'STAR',
         tagType: 'primary',
         icon   : 'fa-star',
+      },
+      {
+        key    : 'XXX',
+        tagType: 'info',
+        icon   : 'fa-times',
       },
       {
         key    : 'TEST',
