@@ -11,7 +11,6 @@ seconds      : '{n} second | {n} seconds'
 Script Setup                                                                         : 脚本设置
 'Script is under editing mode in other browser tab, please wait...'                  : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing mode in other client, please wait...'                       : '其他客户端正在编辑此脚本，请稍后...'
-Select one to quick jump                                                             : 选择一项以快速跳转
 Select Target                                                                        : 选择跳转目标
 Viewport are too narrow                                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
@@ -142,28 +141,23 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                 </el-form-item>
 
                 <el-form-item>
-                  <el-tooltip placement="left" :enterable="false">
-                    <div slot="content">
-                      {{ $t('Select one to quick jump') }}
-                    </div>
-                    <el-select
-                      style="width: 150px"
-                      v-model="selectedItemId"
-                      size="mini"
-                      filterable
-                      :placeholder="$t('Select Target')">
-                      <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
-                        <el-tag v-if="item.type === 'todo'"
-                          size="mini"
-                          class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
-                          <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
-                          {{ item.todoType }}
-                        </el-tag>
-                        <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
-                        {{ item.name }}
-                      </el-option>
-                    </el-select>
-                  </el-tooltip>
+                  <el-select
+                    style="width: 150px"
+                    v-model="selectedItemId"
+                    size="mini"
+                    filterable
+                    :placeholder="$t('Select Target')">
+                    <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                      <el-tag v-if="item.type === 'todo'"
+                        size="mini"
+                        class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
+                        <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
+                        {{ item.todoType }}
+                      </el-tag>
+                      <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                      {{ item.name }}
+                    </el-option>
+                  </el-select>
                 </el-form-item>
 
                 <template v-if="!conflictStatus">
