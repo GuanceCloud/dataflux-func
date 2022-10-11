@@ -160,10 +160,14 @@ KafkaHelper.prototype.unsub = function(topic, callback) {
 KafkaHelper.prototype.end = function() {
   this.logger.info(`[KAFKA] End`);
 
-  this.producer.disconnect();
+  if (this.producer) {
+    this.producer.disconnect();
+  }
   this.producer = null;
 
-  this.consumer.disconnect()
+  if (this.consumer) {
+    this.consumer.disconnect()
+  }
   this.consumer = null;
   this.topicHandlerMap = {};
 };

@@ -141,7 +141,9 @@ MQTTHelper.prototype.unsub = function(topic, callback) {
 MQTTHelper.prototype.end = function() {
   this.logger.info(`[MQTT] End`);
 
-  this.client.end(true);
+  if (this.client) {
+    this.client.end(true);
+  }
   this.client = null;
 };
 

@@ -917,12 +917,13 @@ RedisHelper.prototype.end = function() {
 
   if (this.client) {
     this.client.end(true);
-    this.client = null;
   }
+  this.client = null;
+
   if (this.subClient) {
     this.subClient.end(true);
-    this.subClient = null;
   }
+  this.subClient = null;
 };
 
 RedisHelper.prototype.pagedList = function(key, paging, callback) {
