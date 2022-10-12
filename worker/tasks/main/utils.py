@@ -681,36 +681,50 @@ class AutoCleanTask(BaseTask):
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
 
-    def clear_outdated_cache_key(self):
+    def clear_outdated_task_info(self):
         origin_ids = set()
 
         # 集成函数自动触发配置永不过期
         origin_ids.add(CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'])
 
-        # 自动触发配置ID
+        # 搜集实际存活的 Origin ID 列表
         sql = '''
+            SELECT id FROM biz_main_auth_link
+            UNION
             SELECT id FROM biz_main_crontab_config
-            '''
-        db_res = self.db.query(sql)
-        for d in db_res:
-            origin_ids.add(d['id'])
-
-        # 批处理ID
-        sql = '''
+            UNION
             SELECT id FROM biz_main_batch
             '''
         db_res = self.db.query(sql)
         for d in db_res:
             origin_ids.add(d['id'])
 
-        # 获取所有任务信息Key
+        # 删除无效 TaskInfo Key
         cache_pattern = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', '*' ])
         cache_res = self.cache_db.keys(cache_pattern)
         for cache_key in cache_res:
             cache_key_info = toolkit.parse_cache_key(cache_key)
 
-            if cache_key_info['tags']['originId'] not in origin_ids:
-                self.cache_db.delete(cache_key)
+            if cache_key_info['tags']['originId'] in origin_ids:
+                continue
+
+            self.cache_db.delete(cache_key)
+
+        # 删除无效的 TaskInfo 数据
+        sql = '''
+            SELECT DISTINCT originId FROM biz_main_task_info
+            '''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            origin_id = d['originId']
+            if origin_id in origin_ids:
+                continue
+
+            sql = '''
+                DELETE FROM biz_main_task_info WHERE originId = ?
+                '''
+            sql_params = [ origin_id ]
+            self.db.non_query(sql, sql_params)
 
     def clear_deprecated_data(self):
         self.clear_table('biz_main_script_log')
@@ -729,20 +743,22 @@ def auto_clean(self, *args, **kwargs):
 
     # 回卷数据库数据
     table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
-    for table, limit in table_limit_map.items():
-        try:
-            self.clear_table_by_limit(table=table, limit=int(limit))
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+    if table_limit_map:
+        for table, limit in table_limit_map.items():
+            try:
+                self.clear_table_by_limit(table=table, limit=int(limit))
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
     table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
-    for table, expires in table_expire_map.items():
-        try:
-            self.clear_table_by_expires(table=table, expires=int(expires))
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+    if table_expire_map:
+        for table, expires in table_expire_map.items():
+            try:
+                self.clear_table_by_expires(table=table, expires=int(expires))
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
 
     # 清理临时目录
     try:
@@ -757,9 +773,9 @@ def auto_clean(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-    # 清理过时的缓存
+    # 清理过时的任务信息
     try:
-        self.clear_outdated_cache_key()
+        self.clear_outdated_task_info()
     except Exception as e:
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)

@@ -1,10 +1,11 @@
 # General
 indexAPI:
   index:
-    name     : API Index
-    method   : get
-    url      : /api
-    response : json
+    name         : API Index
+    method       : get
+    url          : /api
+    response     : json
+    requireSignIn: true
     desc: |
       All API list.
 

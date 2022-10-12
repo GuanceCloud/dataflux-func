@@ -20,6 +20,8 @@ var taskInfoMod = require('../models/taskInfoMod');
 
 /* Handlers */
 var crudHandler = exports.crudHandler = batchMod.createCRUDHandler();
+exports.delete     = crudHandler.createDeleteHandler();
+exports.deleteMany = crudHandler.createDeleteManyHandler();
 
 exports.list = function(req, res, next) {
   var batches       = null;
@@ -79,19 +81,6 @@ exports.modify = function(req, res, next) {
     var ret = toolkit.initRet({
       id : id,
       url: url,
-    });
-    return res.locals.sendJSON(ret);
-  });
-};
-
-exports.delete = function(req, res, next) {
-  var id = req.params.id;
-
-  _delete(res.locals, id, function(err, deletedId) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet({
-      id: deletedId,
     });
     return res.locals.sendJSON(ret);
   });
@@ -181,52 +170,6 @@ exports.modifyMany = function(req, res, next) {
   });
 };
 
-exports.deleteMany = function(req, res, next) {
-  var deleteIds = [];
-
-  var batchModel = batchMod.createModel(res.locals);
-
-  var transScope = modelHelper.createTransScope(res.locals.db);
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      opt.fields = ['bat.id'];
-
-      if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
-      }
-
-      batchModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        deleteIds = dbRes.reduce(function(acc, x) {
-          acc.push(x.id);
-          return acc;
-        }, []);
-
-        return asyncCallback();
-      });
-    },
-    function(asyncCallback) {
-      transScope.start(asyncCallback);
-    },
-    function(asyncCallback) {
-      async.eachSeries(deleteIds, function(id, eachCallback) {
-        _delete(res.locals, id, eachCallback);
-      }, asyncCallback);
-    },
-  ], function(err) {
-    transScope.end(err, function(scopeErr) {
-      if (scopeErr) return next(scopeErr);
-
-      var ret = toolkit.initRet({
-        ids: deleteIds,
-      });
-      return res.locals.sendJSON(ret);
-    });
-  });
-};
-
 function _add(locals, data, origin, callback) {
   // 自动记录操作界面
   data.origin = origin;
@@ -300,25 +243,5 @@ function _modify(locals, id, data, opt, callback) {
 
     var url = urlFor('mainAPI.callBatchByGet', { params: { id: id } });
     return callback(null, id, url);
-  });
-};
-
-function _delete(locals, id, callback) {
-  var batchModel    = batchMod.createModel(locals);
-  var taskInfoModel = taskInfoMod.createModel(locals);
-
-  async.series([
-    function(asyncCallback) {
-      batchModel.getWithCheck(id, ['bat.seq'], asyncCallback);
-    },
-    function(asyncCallback) {
-      batchModel.delete(id, asyncCallback);
-    },
-    function(asyncCallback) {
-      taskInfoModel.deleteByOriginId(id, asyncCallback);
-    },
-  ], function(err) {
-    if (err) return callback(err);
-    return callback(null, id);
   });
 };

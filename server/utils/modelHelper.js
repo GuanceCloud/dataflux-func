@@ -1035,6 +1035,51 @@ Model.prototype._delete = Model.prototype.delete = function(id, callback) {
 };
 
 /**
+ * Delete records in DB by ID list.
+ *
+ * @param  {Array}   ids
+ * @param  {Function} callback
+ * @return {undefined}
+ */
+Model.prototype._deleteMany = Model.prototype.deleteMany = function(idList, callback) {
+  if (toolkit.isNothing(idList)) return callback();
+
+  var self = this;
+
+  if (!self.tableName) {
+    return callback && callback(new E('ESys', 'Cannot generate SQL for non-SQL database'));
+  }
+
+  var sql = toolkit.strf('DELETE FROM {0} WHERE id IN (?)', self.tableName);
+  var sqlParams = [idList];
+
+  if (!self.ignoreUserLimit && self.userIdLimitField) {
+    sql += ' AND ?? = ?';
+    sqlParams.push(self.userIdLimitField, self.userId);
+  }
+
+  sql += ' LIMIT ' + idList.length.toString();
+
+  var transScope = createTransScope(self.db);
+  async.series([
+    // Start transaction
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    // Access DB
+    function(asyncCallback) {
+      self.db.query(sql, sqlParams, asyncCallback);
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return callback && callback(scopeErr);
+
+      return callback && callback(null, idList);
+    });
+  });
+};
+
+/**
  * Detect value exists on field.
  *
  * @param  {String}   field
@@ -1688,6 +1733,71 @@ CRUDHandler.prototype.createDeleteHandler = function(hooks) {
 
           ret = toolkit.initRet({
             id: _deletedId,
+          });
+
+          return asyncCallback();
+        });
+      }
+    ], function(err, dbRes) {
+      if (err) return next(err);
+
+      var hookExtra = {
+        oldData  : oldData,
+        mainModel: model,
+      };
+
+      async.series([
+        function(asyncCallback) {
+          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+
+          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+            if (err) return asyncCallback(err);
+
+            ret = nextRet;
+
+            return asyncCallback();
+          });
+        },
+      ], function(err) {
+        if (err) return next(err);
+
+        res.locals.sendJSON(ret);
+
+        if ('function' === typeof hooks.afterResp) {
+          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        }
+      });
+    });
+  };
+};
+
+/**
+ * Create a `/data/:id/do/delete-many` handler
+ *
+ * @param  {Object=null}   hooks
+ * @param  {Function=null} hooks.beforeResp
+ * @param  {Function=null} hooks.afterResp
+ * @return {Function}
+ */
+CRUDHandler.prototype.createDeleteManyHandler = function(hooks) {
+  hooks = hooks || {};
+
+  var self = this;
+  return function(req, res, next) {
+    var ret = null;
+
+    var model = new self.modelProto(res.locals);
+    var id = req.query.id;
+
+    var oldData = null;
+
+    async.series([
+      function(asyncCallback) {
+        model.deleteMany(id, function(err, _deletedIds) {
+          if (err) return asyncCallback(err);
+
+          ret = toolkit.initRet({
+            id: _deletedIds,
           });
 
           return asyncCallback();

@@ -20,6 +20,8 @@ var taskInfoMod = require('../models/taskInfoMod');
 
 /* Handlers */
 var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
+exports.delete     = crudHandler.createDeleteHandler();
+exports.deleteMany = crudHandler.createDeleteManyHandler();
 
 exports.list = function(req, res, next) {
   var authLinks        = null;
@@ -167,19 +169,6 @@ exports.modify = function(req, res, next) {
   });
 };
 
-exports.delete = function(req, res, next) {
-  var id = req.params.id;
-
-  _delete(res.locals, id, function(err, deletedId) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet({
-      id: deletedId,
-    });
-    return res.locals.sendJSON(ret);
-  });
-};
-
 exports.addMany = function(req, res, next) {
   var data   = req.body.data;
   var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
@@ -264,52 +253,6 @@ exports.modifyMany = function(req, res, next) {
   });
 };
 
-exports.deleteMany = function(req, res, next) {
-  var deleteIds = [];
-
-  var authLinkModel = authLinkMod.createModel(res.locals);
-
-  var transScope = modelHelper.createTransScope(res.locals.db);
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      opt.fields = ['auln.id'];
-
-      if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
-      }
-
-      authLinkModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        deleteIds = dbRes.reduce(function(acc, x) {
-          acc.push(x.id);
-          return acc;
-        }, []);
-
-        return asyncCallback();
-      });
-    },
-    function(asyncCallback) {
-      transScope.start(asyncCallback);
-    },
-    function(asyncCallback) {
-      async.eachSeries(deleteIds, function(id, eachCallback) {
-        _delete(res.locals, id, eachCallback);
-      }, asyncCallback);
-    },
-  ], function(err) {
-    transScope.end(err, function(scopeErr) {
-      if (scopeErr) return next(scopeErr);
-
-      var ret = toolkit.initRet({
-        ids: deleteIds,
-      });
-      return res.locals.sendJSON(ret);
-    });
-  });
-};
-
 function _add(locals, data, origin, callback) {
   // 自动记录操作界面
   data.origin = origin;
@@ -386,22 +329,3 @@ function _modify(locals, id, data, opt, callback) {
   });
 };
 
-function _delete(locals, id, callback) {
-  var authLinkModel = authLinkMod.createModel(locals);
-  var taskInfoModel = taskInfoMod.createModel(locals);
-
-  async.series([
-    function(asyncCallback) {
-      authLinkModel.getWithCheck(id, ['auln.seq'], asyncCallback);
-    },
-    function(asyncCallback) {
-      authLinkModel.delete(id, asyncCallback);
-    },
-    function(asyncCallback) {
-      taskInfoModel.deleteByOriginId(id, asyncCallback);
-    },
-  ], function(err) {
-    if (err) return callback(err);
-    return callback(null, id);
-  });
-};

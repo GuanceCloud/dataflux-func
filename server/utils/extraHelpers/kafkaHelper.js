@@ -56,20 +56,28 @@ var KafkaHelper = function(logger, config) {
     self.consumer.on('ready', function() {
       self.isReady = true;
 
-      self.consumer.consume(function(err, _packet) {
-        var _topic   = _packet.topic;
-        var _message = _packet.value.toString();
+      if (self.consumerT) {
+        clearInterval(self.consumerT);
+      }
 
-        var handler = self.topicHandlerMap[_topic];
-        if (!handler) return;
+      if (CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND > 0) {
+        self.consumerT = setInterval(function() {
+          self.consumer.consume(CONFIG._SUB_KAFKA_COMSUME_INTERVAL * CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND);
+        }, CONFIG._SUB_KAFKA_COMSUME_INTERVAL * 1000);
+      }
+    }).on('data', function(_packet) {
+      var _topic   = _packet.topic;
+      var _message = _packet.value.toString();
 
-        if (!self.skipLog) {
-          self.logger.debug('[KAFKA] Receive <- `{0}`', _topic);
-        }
+      var handler = self.topicHandlerMap[_topic];
+      if (!handler) return;
 
-        return handler(_topic, _message);
-      });
-    });
+      if (!self.skipLog) {
+        self.logger.debug('[KAFKA] Receive <- `{0}`, Length: {1}', _topic, _message.length);
+      }
+
+      return handler(_topic, _message);
+    })
   }
 };
 
@@ -159,6 +167,10 @@ KafkaHelper.prototype.unsub = function(topic, callback) {
  */
 KafkaHelper.prototype.end = function() {
   this.logger.info(`[KAFKA] End`);
+
+  if (self.consumerT) {
+    clearInterval(self.consumerT);
+  }
 
   if (this.producer) {
     this.producer.disconnect();

@@ -52,7 +52,7 @@ var MQTTHelper = function(logger, config) {
     if (!handler) return;
 
     if (!self.skipLog) {
-      self.logger.debug('[MQTT] Receive <- `{0}`', _topic);
+      self.logger.debug('[MQTT] Receive <- `{0}`, Length: {1}', _topic, _message.length);
     }
 
     return handler(_topic, _message);
