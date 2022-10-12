@@ -62,7 +62,8 @@ var KafkaHelper = function(logger, config) {
 
       if (CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND > 0) {
         self.consumerT = setInterval(function() {
-          self.consumer.consume(CONFIG._SUB_KAFKA_COMSUME_INTERVAL * CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND);
+          var consumeCount = Math.ceil(CONFIG._SUB_KAFKA_COMSUME_INTERVAL * CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND);
+          self.consumer.consume(consumeCount);
         }, CONFIG._SUB_KAFKA_COMSUME_INTERVAL * 1000);
       }
     }).on('data', function(_packet) {
