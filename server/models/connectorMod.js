@@ -46,6 +46,25 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
+EntityModel.prototype.get = function(id, options, callback) {
+  var self = this;
+
+  return self._get(id, options, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 解密/隐藏相关字段
+    if (dbRes) {
+      if (self.decipher) {
+        _doDecipher(dbRes.configJSON);
+      } else {
+        _removeCipherFields(dbRes.configJSON);
+      }
+    }
+
+    return callback(null, dbRes);
+  });
+};
+
 EntityModel.prototype.list = function(options, callback) {
   var self = this;
   options = options || {};
@@ -64,21 +83,12 @@ EntityModel.prototype.list = function(options, callback) {
 
     // 解密/隐藏相关字段
     dbRes.forEach(function(d) {
-      CIPHER_CONFIG_FIELDS.forEach(function(f) {
-        var fCipher = toolkit.strf('{0}Cipher', f);
-
-        if (self.decipher && d.configJSON[fCipher]) {
-          try {
-            d.configJSON[f] = toolkit.decipherByAES(d.configJSON[fCipher], CONFIG.SECRET);
-          } catch(err) {
-            d.configJSON[f] = '';
-          }
-        }
-
-        delete d.configJSON[fCipher];
-      });
+      if (self.decipher) {
+        _doDecipher(d.configJSON);
+      } else {
+        _removeCipherFields(d.configJSON);
+      }
     });
-
 
     return callback(null, dbRes, pageInfo);
   });
@@ -118,19 +128,50 @@ EntityModel.prototype.modify = function(id, data, callback) {
   return this._modify(id, data, callback);
 };
 
+function _doCipher(configJSON) {
+  CIPHER_CONFIG_FIELDS.forEach(function(f) {
+    var fCipher = toolkit.strf('{0}Cipher', f);
+
+    if (configJSON[f]) {
+      configJSON[fCipher] = toolkit.cipherByAES(configJSON[f], CONFIG.SECRET);
+      delete configJSON[f];
+    }
+  });
+
+  return configJSON;
+};
+
+function _doDecipher(configJSON) {
+  CIPHER_CONFIG_FIELDS.forEach(function(f) {
+    var fCipher = toolkit.strf('{0}Cipher', f);
+
+    if (configJSON[fCipher]) {
+      try {
+        configJSON[f] = toolkit.decipherByAES(configJSON[fCipher], CONFIG.SECRET);
+      } catch(err) {
+        configJSON[f] = '';
+      }
+    }
+  });
+
+  _removeCipherFields(configJSON);
+
+  return configJSON;
+};
+
+function _removeCipherFields(configJSON) {
+  CIPHER_CONFIG_FIELDS.forEach(function(f) {
+    var fCipher = toolkit.strf('{0}Cipher', f);
+    delete configJSON[fCipher];
+  });
+  return configJSON;
+};
+
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
   if (data.configJSON && 'object' === typeof data.configJSON) {
-    CIPHER_CONFIG_FIELDS.forEach(function(f) {
-      var fCipher = toolkit.strf('{0}Cipher', f);
-
-      if (data.configJSON[f]) {
-        data.configJSON[fCipher] = toolkit.cipherByAES(data.configJSON[f], CONFIG.SECRET);
-        delete data.configJSON[f];
-      }
-    });
-
+    _doCipher(data.configJSON);
     data.configJSON = JSON.stringify(data.configJSON);
   }
 

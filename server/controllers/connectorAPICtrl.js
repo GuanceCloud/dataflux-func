@@ -28,6 +28,7 @@ function _checkConnectorConfig(locals, type, config, requiredFields, optionalFie
       return callback(new E('EClientBadRequest.InvalidConnectorConfigJSON', 'Invalid config JSON', {
         requiredFields: requiredFields,
         optionalFields: optionalFields,
+        missingField  : f,
       }));
     }
   }
@@ -286,6 +287,7 @@ exports.modify = function(req, res, next) {
   var data = req.body.data;
 
   var connectorModel = connectorMod.createModel(res.locals);
+  connectorModel.decipher = true;
 
   var connector = null;
 

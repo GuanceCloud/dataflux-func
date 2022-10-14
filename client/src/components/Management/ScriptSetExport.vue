@@ -366,6 +366,7 @@ export default {
 }
 .select-item-id {
   float: right;
+  margin-right: 15px;
   padding-left: 30px;
   font-size: 12px;
 }
