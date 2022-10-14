@@ -128,6 +128,7 @@ exports.runListener = function runListener(app) {
       // 获取连接器列表
       function(asyncCallback) {
         var connectorModel = connectorMod.createModel(app.locals);
+        connectorModel.decipher = true;
 
         var opt = {
           fields: [

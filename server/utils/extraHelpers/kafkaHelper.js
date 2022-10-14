@@ -8,18 +8,25 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-function getConfig(c, groupId) {
+function getConfig(c, autoGroupId) {
   var config = {
     'client.id'           : c.clientId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`,
     'metadata.broker.list': c.servers,
+    'auto.offset.reset'   : 'end',
   };
 
-  if (groupId) {
-    config['group.id'] = groupId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`;
+  if (c.groupId) {
+    config['group.id'] = c.groupId;
+  } else if (autoGroupId) {
+    config['group.id'] = `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`;
+  }
+
+  if (c.securityProtocol) {
+    config['security.protocol'] = (c.securityProtocol || 'SASL_PLAINTEXT').toUpperCase();
   }
 
   if (c.password) {
-    config['sasl.mechanisms'] = 'PLAIN';
+    config['sasl.mechanisms'] = (c.saslMechanisms || 'PLAIN').toUpperCase();
     config['sasl.username']   = c.user || c.username;
     config['sasl.password']   = c.password;
   }
@@ -169,8 +176,8 @@ KafkaHelper.prototype.unsub = function(topic, callback) {
 KafkaHelper.prototype.end = function() {
   this.logger.info(`[KAFKA] End`);
 
-  if (self.consumerT) {
-    clearInterval(self.consumerT);
+  if (this.consumerT) {
+    clearInterval(this.consumerT);
   }
 
   if (this.producer) {

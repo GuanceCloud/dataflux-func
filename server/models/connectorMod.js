@@ -47,6 +47,7 @@ exports.createModel = function(locals) {
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
 EntityModel.prototype.list = function(options, callback) {
+  var self = this;
   options = options || {};
 
   var sql = toolkit.createStringBuilder();
@@ -58,7 +59,29 @@ EntityModel.prototype.list = function(options, callback) {
 
   options.baseSQL = sql.toString();
 
-  return this._list(options, callback);
+  return self._list(options, function(err, dbRes, pageInfo) {
+    if (err) return callback(err);
+
+    // 解密/隐藏相关字段
+    dbRes.forEach(function(d) {
+      CIPHER_CONFIG_FIELDS.forEach(function(f) {
+        var fCipher = toolkit.strf('{0}Cipher', f);
+
+        if (self.decipher && d.configJSON[fCipher]) {
+          try {
+            d.configJSON[f] = toolkit.decipherByAES(d.configJSON[fCipher], CONFIG.SECRET);
+          } catch(err) {
+            d.configJSON[f] = '';
+          }
+        }
+
+        delete d.configJSON[fCipher];
+      });
+    });
+
+
+    return callback(null, dbRes, pageInfo);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {

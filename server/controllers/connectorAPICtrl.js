@@ -213,7 +213,7 @@ var CONNECTOR_CHECK_CONFIG_FUNC_MAP = {
   kafka: function(locals, config, callback) {
     // 默认值
     var REQUIRED_FIELDS = ['servers'];
-    var OPTIONAL_FIELDS = ['user', 'password'];
+    var OPTIONAL_FIELDS = ['user', 'password', 'groupId', 'securityProtocol', 'saslMechanisms'];
 
     return _checkConnectorConfig(locals, 'kafka', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
@@ -222,7 +222,7 @@ var CONNECTOR_CHECK_CONFIG_FUNC_MAP = {
 /* Handlers */
 var crudHandler = exports.crudHandler = connectorMod.createCRUDHandler();
 
-exports.list = crudHandler.createListHandler(null, {beforeResp: hidePassword});
+exports.list = crudHandler.createListHandler();
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
@@ -483,6 +483,7 @@ exports.test = function(req, res, next) {
   var id = req.params.id;
 
   var connectorModel = connectorMod.createModel(res.locals);
+  connectorModel.decipher = true;
 
   var connector = null;
 
@@ -493,23 +494,6 @@ exports.test = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         connector = dbRes;
-
-        // 解密相关字段
-        if (connector.configJSON && 'object' === typeof connector.configJSON) {
-          connectorMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
-            var fCipher = toolkit.strf('{0}Cipher', f);
-
-            if (connector.configJSON[fCipher]) {
-              try {
-                connector.configJSON[f] = toolkit.decipherByAES(connector.configJSON[fCipher], CONFIG.SECRET);
-              } catch(err) {
-                connector.configJSON[f] = '';
-              }
-
-              delete connector.configJSON[fCipher];
-            }
-          });
-        }
 
         return asyncCallback();
       });
@@ -526,27 +510,6 @@ exports.test = function(req, res, next) {
     });
     return res.locals.sendJSON(ret);
   });
-};
-
-function hidePassword(req, res, ret, hookExtra, callback) {
-  if (!ret.data) return callback(null, ret);
-
-  toolkit.asArray(ret.data).forEach(function(d) {
-    connectorMod.CIPHER_CONFIG_FIELDS.forEach(function(f) {
-      var fCipher = toolkit.strf('{0}Cipher', f);
-
-      if (d && d.configJSON) {
-        if (f in d.configJSON) {
-          d.configJSON[f] = '';
-        }
-        if (fCipher in d.configJSON) {
-          delete d.configJSON[fCipher];
-        }
-      }
-    });
-  });
-
-  return callback(null, ret);
 };
 
 function reloadDataMD5Cache(celery, connectorId, callback) {

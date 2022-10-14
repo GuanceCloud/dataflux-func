@@ -60,7 +60,7 @@ class MQTTHelper(object):
 
     def check(self):
         try:
-            self.publish(topic='test', message='Test message from DataFlux Func')
+            self.publish(topic='test', message='This is a test message')
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

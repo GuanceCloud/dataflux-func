@@ -15,8 +15,11 @@ Database           : 数据库
 User               : 用户
 Password           : 密码
 Charset            : 编码
-Client ID          : 客户端ID
-'Topic/Handler'    : 主题/处理
+Client ID          : 客户端 ID
+Group ID           : 分组 ID
+Security Protocol  : 安全协议
+SASL Mechanisms    : SASL 机制
+'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
 'Add Topic/Handler': 添加主题/处理函数
@@ -154,6 +157,16 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                     </el-select>
                   </el-form-item>
 
+                  <el-form-item :label="$t('Security Protocol')" v-if="hasConfigField(selectedType, 'securityProtocol')" prop="configJSON.securityProtocol">
+                    <el-input
+                      v-model="form.configJSON.securityProtocol"></el-input>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('SASL Mechanisms')" v-if="hasConfigField(selectedType, 'saslMechanisms')" prop="configJSON.saslMechanisms">
+                    <el-input
+                      v-model="form.configJSON.saslMechanisms"></el-input>
+                  </el-form-item>
+
                   <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
                     <!-- DataKit专用 -->
                     <el-input
@@ -203,6 +216,11 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                   <el-form-item :label="$t('Client ID')" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
                     <el-input
                       v-model="form.configJSON.clientId"></el-input>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Group ID')" v-if="hasConfigField(selectedType, 'groupId')" prop="configJSON.groupId">
+                    <el-input
+                      v-model="form.configJSON.groupId"></el-input>
                   </el-form-item>
 
                   <template v-if="hasConfigField(selectedType, 'topicHandlers')">
@@ -659,6 +677,20 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input client ID'),
+            required: false,
+          },
+        ],
+        'configJSON.groupId': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input group ID'),
+            required: false,
+          },
+        ],
+        'configJSON.securityProtocol': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input security protocol'),
             required: false,
           },
         ],

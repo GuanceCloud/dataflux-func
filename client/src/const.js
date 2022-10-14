@@ -345,10 +345,13 @@ mqtt.publish(topic='some_topic',  message='some_message')`,
         sampleCode    : `kafka = DFF.CONN('{0}')
 kafka.publish(topic='some_topic', message='some_message')`,
         configFields: {
-          servers      : { default: null, isRequired: true },
-          user         : { default: null },
-          password     : { default: null },
-          topicHandlers: { default: [] },
+          servers         : { default: null, isRequired: true },
+          user            : { default: null },
+          password        : { default: null },
+          groupId         : { default: null },
+          securityProtocol: { default: null },
+          saslMechanisms  : { default: null },
+          topicHandlers   : { default: [] },
         },
       },
     ];

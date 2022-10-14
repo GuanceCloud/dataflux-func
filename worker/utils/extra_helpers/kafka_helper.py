@@ -24,8 +24,11 @@ def get_config(c):
         'client_id'        : c.get('groupId') or f"{CONFIG['APP_NAME']}@{toolkit.gen_time_serial_seq()}",
     }
 
+    if c.get('securityProtocol'):
+        config['security_protocol'] = (c.get('securityProtocol') or 'SASL_PLAINTEXT').upper()
+
     if c.get('password'):
-        config['sasl_mechanism'] = 'PLAIN'
+        config['sasl_mechanism']      = (c.get('saslMechanism') or 'PLAIN').upper()
         config['sasl_plain_username'] = c.get('user') or c.get('username')
         config['sasl_plain_password'] = c.get('password')
 
@@ -42,6 +45,9 @@ class KafkaHelper(object):
         self.producer = KafkaProducer(**get_config(config))
 
     def __del__(self):
+        if not self.producer:
+            return
+
         try:
             self.producer.close(3)
             self.producer = None
@@ -52,7 +58,7 @@ class KafkaHelper(object):
 
     def check(self):
         try:
-            self.publish(topic='test', message='Test message from DataFlux Func')
+            self.publish(topic='test', message='This is a test message')
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

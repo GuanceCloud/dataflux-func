@@ -2617,6 +2617,18 @@ connectorAPI:
             $desc     : 客户端ID
             $allowNull: true
             $type     : string
+          groupId:
+            $desc     : 组ID
+            $allowNull: true
+            $type     : string
+          securityProtocol:
+            $desc     : 安全协议
+            $allowNull: true
+            $type     : string
+          saslMechanisms:
+            $desc     : SASL机制
+            $allowNull: true
+            $type     : string
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true
@@ -2724,6 +2736,18 @@ connectorAPI:
             $type     : string
           clientId:
             $desc     : 客户端ID
+            $allowNull: true
+            $type     : string
+          groupId:
+            $desc     : 组ID
+            $allowNull: true
+            $type     : string
+          securityProtocol:
+            $desc     : 安全协议
+            $allowNull: true
+            $type     : string
+          saslMechanisms:
+            $desc     : SASL机制
             $allowNull: true
             $type     : string
           topicHandlers:
