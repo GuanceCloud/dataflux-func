@@ -3,7 +3,8 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
+var async      = require('async');
+var sortedJSON = require('sorted-json');
 
 /* Project Modules */
 var E       = require('./utils/serverError');
@@ -23,7 +24,7 @@ var CONNECTOR_HELPER_MAP = {
   kafka: require('./utils/extraHelpers/kafkaHelper'),
 };
 
-var CONNECTOR_MAP = {};
+var CONNECTOR_TOPIC_MAP = {};
 
 function createMessageHandler(locals, handlerFuncId) {
   return function(topic, message, packet) {
@@ -84,7 +85,7 @@ exports.runListener = function runListener(app) {
   // 定期检查
   function connectorChecker() {
     // 重建连接器客户端
-    var nextConnectorMap = {};
+    var nextConnectorTopicMap = {};
     async.series([
       // 上锁
       function(asyncCallback) {
@@ -105,14 +106,14 @@ exports.runListener = function runListener(app) {
 
           } else {
             // 锁为其他进程获得，安全起见，清理本进程内的所有客户端
-            for (var connectorId in CONNECTOR_MAP) {
-              var connector = CONNECTOR_MAP[connectorId];
+            for (var connTopicKey in CONNECTOR_TOPIC_MAP) {
+              var connector = CONNECTOR_TOPIC_MAP[connTopicKey];
               if (connector) {
                 connector.client.end();
               }
             }
 
-            CONNECTOR_MAP = {};
+            CONNECTOR_TOPIC_MAP = {};
 
             // 由于锁由其他进程获得，不在向下处理
           }
@@ -142,7 +143,12 @@ exports.runListener = function runListener(app) {
 
             if (!toolkit.isNothing(d.configJSON.topicHandlers)) {
               // 仅搜集配置了主题处理函数的连接器
-              nextConnectorMap[d.id] = d;
+              d.configJSON.topicHandlers.forEach(function(th) {
+                var connTopicKey = sortedJSON.sortify({ 'id': d.id, 'topic': th.topic, 'funcId': th.funcId }, {
+                  stringify: true
+                })
+                nextConnectorTopicMap[connTopicKey] = toolkit.jsonCopy(d);
+              })
             }
           });
 
@@ -152,19 +158,23 @@ exports.runListener = function runListener(app) {
       // 更新连接器订阅客户端
       function(asyncCallback) {
         // 清除已不存在的连接器
-        for (var connectorId in CONNECTOR_MAP) {
-          if ('undefined' === typeof nextConnectorMap[connectorId]) {
-            CONNECTOR_MAP[connectorId].client.end();
-            delete CONNECTOR_MAP[connectorId];
+        for (var connTopicKey in CONNECTOR_TOPIC_MAP) {
+          if ('undefined' === typeof nextConnectorTopicMap[connTopicKey]) {
+            CONNECTOR_TOPIC_MAP[connTopicKey].client.end();
+            delete CONNECTOR_TOPIC_MAP[connTopicKey];
 
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', connectorId);
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', connTopicKey);
           }
         }
 
         // 重建有变化的连接器客户端
-        for (var connectorId in nextConnectorMap) {
-          var _next    = nextConnectorMap[connectorId];
-          var _current = CONNECTOR_MAP[connectorId];
+        for (var connTopicKey in nextConnectorTopicMap) {
+          var _tmp = JSON.parse(connTopicKey);
+          var topic  = _tmp.topic;
+          var funcId = _tmp.funcId;
+
+          var _next    = nextConnectorTopicMap[connTopicKey];
+          var _current = CONNECTOR_TOPIC_MAP[connTopicKey];
 
           // 跳过无变化客户端
           if (_current && _current['configMD5'] && _current['configMD5'] === _next['configMD5']) {
@@ -174,8 +184,8 @@ exports.runListener = function runListener(app) {
           // 删除客户端
           if (_current) {
             _current.client.end();
-            delete CONNECTOR_MAP[connectorId];
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', connectorId);
+            delete CONNECTOR_TOPIC_MAP[connTopicKey];
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', connTopicKey);
           }
 
           // 新建客户端
@@ -184,20 +194,16 @@ exports.runListener = function runListener(app) {
             _next.configJSON.disablePub = true;
             _next.client = CONNECTOR_HELPER_MAP[_next.type].createHelper(app.locals.logger, _next.configJSON);
           } catch(err) {
-            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', connectorId, err.toString());
+            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', connTopicKey, err.toString());
             continue
           }
 
           // 订阅主题
-          if (!toolkit.isNothing(_next.configJSON.topicHandlers)) {
-            _next.configJSON.topicHandlers.forEach(function(th) {
-              _next.client.sub(th.topic, createMessageHandler(app.locals, th.funcId));
-            });
-          }
+          _next.client.sub(topic, createMessageHandler(app.locals, funcId));
 
           // 记录到本地
-          CONNECTOR_MAP[connectorId] = _next;
-          app.locals.logger.debug('[SUB] Client created: `{0}`', connectorId);
+          CONNECTOR_TOPIC_MAP[connTopicKey] = _next;
+          app.locals.logger.debug('[SUB] Client created: `{0}`', connTopicKey);
         }
       },
     ], function(err) {
