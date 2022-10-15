@@ -61,6 +61,7 @@ en:
   Lock    : 锁定
   Unlock  : 解锁
   Open    : 打开
+  Exit    : 退出
   Close   : 关闭
   Clear   : 清空
   Debug   : 调试
@@ -97,6 +98,7 @@ en:
   lock    : 解锁
   unlock  : 锁定
   open    : 打开
+  exit    : 退出
   close   : 关闭
   clear   : 清空
   debug   : 调试

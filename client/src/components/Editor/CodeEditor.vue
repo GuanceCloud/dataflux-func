@@ -277,7 +277,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         @click="endEdit"
                         :disalbed="!workerRunning"
                         plain
-                        size="mini"><i class="fa fa-fw fa-sign-out"></i></el-button>
+                        size="mini"><i class="fa fa-fw fa-sign-out"></i> {{ $t('Exit') }}</el-button>
                     </el-tooltip>
                   </el-button-group>
                 </el-form-item>
@@ -549,20 +549,13 @@ export default {
         // 更新函数列表
         this.updateSelectableItems();
 
-        // 选中函数
         if (this.$store.state.Editor_selectedItemId) {
+          // 选中函数定位
           this.selectedItemId = this.$store.state.Editor_selectedItemId;
-          this.highlightQuickSelectItem();
-
-          // 自动填充参数
-          this.autoFillFuncCallKwargsJSON(this.selectedItemId);
-        }
-
-        // 移动光标
-        let cursor = this.$store.state.Editor_scriptCursorMap[this.scriptId];
-        if (cursor) {
-          this.codeMirror.setCursor({line: this.codeMirror.lineCount() - 1});
-          this.codeMirror.setCursor(cursor);
+        } else {
+          // 上次活跃位置定位
+          let cursor = this.$store.state.Editor_scriptCursorMap[this.scriptId];
+          this.T.jumpToCodeMirrorLine(this.codeMirror, cursor);
         }
 
         this.isReady = true;
@@ -1092,19 +1085,8 @@ export default {
 
       options = options || {};
 
-      let scrollTo = options.line + (options.scroll || 0);
-      scrollTo = Math.min(Math.max(scrollTo, 0), this.codeMirror.lineCount() - 1);
-      if (options.marginType === 'next') {
-        // 向下留余地，触底回滚
-        this.codeMirror.setCursor({line: this.codeMirror.lineCount() - 1});
-        this.codeMirror.setCursor({line: scrollTo});
-      } else if (options.marginType === 'prev') {
-        // 向上留余地，回顶下滚
-        this.codeMirror.setCursor({line: 0});
-        this.codeMirror.setCursor({line: scrollTo});
-      }
-
-      this.codeMirror.setCursor({line: options.line});
+      // 跳转位置
+      this.T.jumpToCodeMirrorLine(this.codeMirror, options.line);
 
       // 添加样式
       if (options.textClass) {
@@ -1200,7 +1182,6 @@ export default {
       this.updateHighlightLineConfig('selectedFuncLine', {
         line           : this.selectedItem.line,
         marginType     : 'next',
-        scroll         : -1,
         textClass      : 'highlight-text',
         backgroundClass: 'current-func-background highlight-code-line-blink',
       });

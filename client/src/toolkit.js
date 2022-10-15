@@ -1528,6 +1528,24 @@ export function getCodeMirrorThemeName() {
   return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
 };
 
+export function jumpToCodeMirrorLine(codeMirror, cursor) {
+  if (!cursor) return;
+
+  if ('number' === typeof cursor) {
+    cursor = { line: cursor };
+  }
+  codeMirror.setCursor({line: codeMirror.lineCount() - 1});
+  codeMirror.setCursor(cursor);
+
+  let $target = document.querySelector(`.CodeMirror-scroll`);
+  let _scollHeight = -parseInt($target.clientHeight * 0.2);
+  if ($target.scrollTop + $target.clientHeight + _scollHeight < $target.scrollHeight) {
+    setImmediate(() => {
+      $target.scrollTo(0, $target.scrollTop + _scollHeight);
+    })
+  }
+};
+
 export function getEchartTextStyle() {
   let colorMap = {
     light: 'black',
