@@ -125,7 +125,7 @@ RedisHelper.prototype.initSubClient = function() {
     if (!handler) return;
 
     if (!self.skipLog) {
-      self.logger.debug('[REDIS] Receive <- `{0}`, Length: {1}', _topic, _message.length);
+      self.logger.debug('[REDIS] Receive <- `{0}`, Length: {1}', _channel, _message.length);
     }
 
     return handler(_channel, _message);

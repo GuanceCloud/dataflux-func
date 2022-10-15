@@ -1,7 +1,6 @@
 'use strict';
 
 /* Builtin Modules */
-var path = require('path');
 
 /* 3rd-party Modules */
 var async = require('async');
@@ -29,28 +28,22 @@ var CONNECTOR_MAP = {};
 function createMessageHandler(locals, handlerFuncId) {
   return function(topic, message, packet) {
     // 发送任务
-    var func            = null;
     var funcCallOptions = null;
 
     async.series([
-      // 获取函数信息
-      function(asyncCallback) {
-        mainAPICtrl._getFuncById(locals, handlerFuncId, function(err, _func) {
-          if (err) return asyncCallback(err);
-
-          func = _func;
-
-          return asyncCallback();
-        });
-      },
       // 生成函数调用配置
       function(asyncCallback) {
-        topic   = topic.toString();
-        message = message.toString();
-
-        var _kwargs  = { topic: topic, message: message, packet: packet };
-        var _options = { originId: topic };
-        mainAPICtrl._createFuncCallOptionsFromOptions(func, _kwargs, _options, function(err, _funcCallOptions) {
+        var funcId = handlerFuncId;
+        var opt = {
+          origin  : 'sub',
+          originId: topic,
+          funcCallKwargs: {
+            topic  : topic.toString(),
+            message: message.toString(),
+            packet : packet,
+          },
+        }
+        mainAPICtrl._createFuncCallOptionsFromOptions(locals, funcId, opt, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -61,7 +54,7 @@ function createMessageHandler(locals, handlerFuncId) {
       // 发送任务
       function(asyncCallback) {
         mainAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
-          locals.logger.debug('TOPIC: `{0}` -> FUNC: `{1}`', topic, func.id);
+          locals.logger.debug('TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
 
           if (err) return asyncCallback(err);
 
@@ -72,7 +65,7 @@ function createMessageHandler(locals, handlerFuncId) {
             ret = null;
           }
 
-          locals.logger.debug('FUNC: `{0}` -> `{1}`', func.id, JSON.stringify(ret));
+          locals.logger.debug('FUNC: `{0}` -> `{1}`', handlerFuncId, JSON.stringify(ret));
 
           return asyncCallback();
         });

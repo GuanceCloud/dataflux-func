@@ -39,8 +39,14 @@ exports.prepare = function(req, res, next) {
     if (!toolkit.isNothing(req.body)) {
       if (Buffer.isBuffer(req.body)) {
         reqBody = JSON.stringify(toolkit.strf('<Buffer, size={0}>', req.body.length));
+      } else if ('string' === typeof req.body) {
+        reqBody = req.body;
       } else {
-        reqBody = toolkit.jsonCopy(req.body);
+        try {
+          reqBody = toolkit.jsonCopy(req.body);
+        } catch(err) {
+          reqBody = '' + req.body;
+        }
       }
     }
 

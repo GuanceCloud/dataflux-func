@@ -47,19 +47,6 @@ Saved Draft Code: 已保存的草稿代码
               &#12288;
             </el-form-item>
 
-            <el-form-item v-if="!conflictStatus">
-              <el-tooltip placement="bottom" :enterable="false">
-                <div slot="content">
-                  {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + E</code>
-                </div>
-                <el-button
-                  @click="startEdit"
-                  type="primary" plain
-                  size="mini">
-                  <i class="fa fa-fw" :class="[C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).icon]"></i> {{ C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).name }}</el-button>
-              </el-tooltip>
-            </el-form-item>
-
             <el-form-item>
               <el-select
                 style="width: 150px"
@@ -78,6 +65,19 @@ Saved Draft Code: 已保存的草稿代码
                   {{ item.name }}
                 </el-option>
               </el-select>
+            </el-form-item>
+
+            <el-form-item v-if="!conflictStatus">
+              <el-tooltip placement="bottom" :enterable="false">
+                <div slot="content">
+                  {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + E</code>
+                </div>
+                <el-button
+                  @click="startEdit"
+                  type="primary" plain
+                  size="mini">
+                  <i class="fa fa-fw" :class="[C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).icon]"></i> {{ C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).name }}</el-button>
+              </el-tooltip>
             </el-form-item>
 
             <el-form-item>
