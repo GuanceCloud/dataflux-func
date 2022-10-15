@@ -521,7 +521,7 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId, {
         query: { _withCode: true, _withCodeDraft: true },
       });
-      if (!apiRes.ok) {
+      if (!apiRes.ok || !apiRes.data) {
         // 获取脚本失败则跳回简介页面
         this.$router.push({
           name: 'intro',
@@ -557,6 +557,15 @@ export default {
           // 自动填充参数
           this.autoFillFuncCallKwargsJSON(this.selectedItemId);
         }
+
+        // 移动光标
+        let cursor = this.$store.state.Editor_scriptCursorMap[this.scriptId];
+        if (cursor) {
+          this.codeMirror.setCursor({line: this.codeMirror.lineCount() - 1});
+          this.codeMirror.setCursor(cursor);
+        }
+
+        this.isReady = true;
       });
 
       // 默认隐藏
@@ -1213,7 +1222,7 @@ export default {
       return this.T.getCodeMirrorThemeName();
     },
     scriptId() {
-      return this.$route.params.id;
+      return this.T.isNothing(this.data) ? this.$route.params.id : this.data.id;
     },
     scriptSetId() {
       return this.scriptId.split('__')[0];
@@ -1389,6 +1398,7 @@ export default {
   },
   data() {
     return {
+      isReady: false,
       isNewLoaded: true,
       codeMirror: null,
 
@@ -1437,6 +1447,15 @@ export default {
       // 初始化编辑器
       this.codeMirror = this.T.initCodeMirror('editor_CodeEditor');
       this.codeMirror.setOption('theme', this.codeMirrorTheme);
+      this.codeMirror.on('cursorActivity', () => {
+        if (!this.isReady) return;
+
+        let cursorInfo = {
+          scriptId: this.scriptId,
+          cursor  : this.codeMirror.getCursor(),
+        };
+        this.$store.commit('updateEditor_scriptCursorMap', cursorInfo);
+      });
 
       // 自动保存
       if (this.isEditable) {
@@ -1478,6 +1497,7 @@ export default {
   },
   beforeDestroy() {
     this.T.destoryCodeMirror(this.codeMirror);
+    this.$store.commit('updateEditor_selectedItemId', null);
   },
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮
@@ -1491,6 +1511,9 @@ export default {
       return next();
     }
     if (!this.$store.getters.isSignedIn) {
+      return next();
+    }
+    if (this.T.isNothing(this.data)) {
       return next();
     }
 

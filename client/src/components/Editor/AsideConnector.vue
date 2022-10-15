@@ -199,6 +199,7 @@ export default {
           // 滚动到目标位置
           let $asideContent = document.getElementById('aside-connector-content');
           let $target = document.querySelector(`[entry-id="${node.data.id}"]`);
+          if (!$target) return;
 
           let scrollTop = 0;
           let topPadding = 35;

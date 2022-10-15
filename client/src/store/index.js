@@ -26,6 +26,7 @@ const STATE_CONFIG = {
   codeEditor_highlightedLineConfigMap      : { persist: false, syncXTab: false },
   codeEditor_isCodeLoaded                  : { persist: false, syncXTab: false },
   codeViewer_highlightedLineConfigMap      : { persist: false, syncXTab: false },
+  Editor_scriptCursorMap                   : { persist: false, syncXTab: false },
   Editor_selectedItemId                    : { persist: false, syncXTab: false },
   Editor_splitPanePercent                  : { persist: false, syncXTab: false },
   TableList_scrollY                        : { persist: false, syncXTab: false },
@@ -60,6 +61,7 @@ const MUTATION_CONFIG = {
   updateCodeEditor_highlightedLineConfigMap      : { persist: true  },
   updateCodeEditor_isCodeLoaded                  : { persist: false },
   updateCodeViewer_highlightedLineConfigMap      : { persist: true  },
+  updateEditor_scriptCursorMap                   : { persist: false },
   updateEditor_selectedItemId                    : { persist: true  },
   updateEditor_splitPanePercent                  : { persist: true  },
   updateTableList_scrollY                        : { persist: false },
@@ -144,6 +146,7 @@ export default new Vuex.Store({
 
     codeViewer_highlightedLineConfigMap: null,
 
+    Editor_scriptCursorMap: {},
     Editor_selectedItemId: null,
     Editor_splitPanePercent : null,
 
@@ -387,6 +390,10 @@ export default new Vuex.Store({
       state.codeViewer_highlightedLineConfigMap = value || null;
     },
 
+    updateEditor_scriptCursorMap(state, value) {
+      if (!value.cursor) return;
+      state.Editor_scriptCursorMap[value.scriptId] = value.cursor;
+    },
     updateEditor_selectedItemId(state, value) {
       state.Editor_selectedItemId = value || null;
     },
