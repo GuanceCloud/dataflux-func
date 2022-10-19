@@ -24,14 +24,14 @@ def get_config(c):
     })
 
 class SidecarHelper(object):
-    def __init__(self, logger, config, *args, **kwargs):
+    def __init__(self, logger, config, timeout=None, *args, **kwargs):
         self.logger = logger
 
-        config = get_config(config)
-        session = requests.Session()
+        if timeout:
+            config['timeout'] = timeout
 
-        self.config = config
-        self.client = session
+        self.config = get_config(config)
+        self.client = requests.Session()
 
     def __del__(self):
         if not self.client:

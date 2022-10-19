@@ -21,11 +21,12 @@ def get_config(c):
         'rp'        : c.get('rp'),
         'access_key': c.get('accessKey'),
         'secret_key': c.get('secretKey'),
-        'debug'     : c.get('debug', False),
+        'timeout'   : c.get('timeout') or 3,
+        'debug'     : c.get('debug')   or False,
     })
 
 class DataWayHelper(object):
-    def __init__(self, logger, config, token=None, rp=None, *args, **kwargs):
+    def __init__(self, logger, config, token=None, rp=None, timeout=None, *args, **kwargs):
         self.logger = logger
 
         if token:
@@ -33,6 +34,9 @@ class DataWayHelper(object):
 
         if rp:
             config['rp'] = rp
+
+        if timeout:
+            config['timeout'] = timeout
 
         self.config = config
         self.client = DataWay(**get_config(config))

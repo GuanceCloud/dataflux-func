@@ -17,15 +17,19 @@ def get_config(c):
         'port'    : c.get('port'),
         'protocol': c.get('protocol'),
         'source'  : c.get('source'),
-        'debug'   : c.get('debug', False),
+        'timeout' : c.get('timeout') or 3,
+        'debug'   : c.get('debug')   or False,
     })
 
 class DataKitHelper(object):
-    def __init__(self, logger, config, source=None, *args, **kwargs):
+    def __init__(self, logger, config, source=None, timeout=None, *args, **kwargs):
         self.logger = logger
 
         if source:
             config['source'] = source
+
+        if timeout:
+            config['timeout'] = timeout
 
         self.config = config
         self.client = DataKit(**get_config(config))
