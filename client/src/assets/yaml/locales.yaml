@@ -303,11 +303,11 @@ en:
   Sign in: 登录
 
   # const.js - PIP_MIRROR
-  Douban mirror             : 豆瓣镜像
+  BFSU mirror               : 北京外国语大学
   Tsinghua University mirror: 清华大学镜像
-  USTC mirror               : 中国科学技术大学镜像
   Alibaba Cloud mirror      : 阿里云镜像
-  Pypi Official             : Pypi官方原版
+  Douban mirror             : 豆瓣镜像
+  Pypi Official             : Pypi 官方原版
 
   # const.js - CODE_MIRROR_THEME
   'Auto: Default'             : 自动切换：默认
