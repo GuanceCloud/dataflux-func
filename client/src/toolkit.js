@@ -1188,13 +1188,14 @@ export async function callAPI_getAll(pathPattern, options) {
 
   let apiRes   = null;
   let isFailed = false;
+  let axiosRes = null;
   while (true) {
     // 注入分页选项
     axiosOpt        = axiosOpt        || {};
     axiosOpt.params = axiosOpt.params || {};
     Object.assign(axiosOpt.params, pagingOpt)
 
-    let axiosRes = await _doAxios(axiosOpt);
+    axiosRes = await _doAxios(axiosOpt);
 
     if (axiosRes.data.ok) {
       // 成功继续翻页

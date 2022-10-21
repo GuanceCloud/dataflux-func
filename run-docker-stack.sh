@@ -14,10 +14,10 @@ function stopPrevStack {
 
     isRunning=1
     while [ $isRunning -ne 0 ]; do
-      echo 'Waiting...'
-      sleep 3
+        echo 'Waiting...'
+        sleep 3
 
-      isRunning=`docker ps | grep "$1_" | wc -l`
+        isRunning=`docker ps | grep "$1_" | wc -l`
     done
 }
 

@@ -95,7 +95,7 @@ def heartbeat():
         MONITOR_HEARTBEAT_TIMESTAMP = current_timestamp
 
         # Get queue list
-        _Q_flag = '-Q'
+        _Q_flag = '--queues'
 
         # Record worker count
         worker_queues = []
@@ -106,7 +106,7 @@ def heartbeat():
         else:
             worker_queues = [str(i) for i in range(CONFIG['_WORKER_QUEUE_COUNT'])]
 
-        _expires = CONFIG['_MONITOR_WORKER_HEARTBEAT_INTERVAL'] * 2
+        _expires = int(CONFIG['_MONITOR_WORKER_HEARTBEAT_INTERVAL'] * 1.5)
         for q in worker_queues:
             cache_key = toolkit.get_cache_key('heartbeat', 'workerOnQueue', tags=['workerId', WORKER_ID, 'workerQueue', q])
             REDIS_HELPER.setex(cache_key, _expires, 'x')
@@ -172,5 +172,3 @@ def on_worker_ready(*args, **kwargs):
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(*args, **kwargs):
     heartbeat()
-
-heartbeat()

@@ -9,4 +9,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run beat
-celery --app=worker --quiet beat --loglevel=ERROR
+celery --app worker --quiet beat --loglevel ERROR

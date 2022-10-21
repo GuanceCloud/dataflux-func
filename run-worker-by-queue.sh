@@ -21,4 +21,4 @@ for queue in $*; do
 done
 
 # run worker
-celery --app=worker --quiet worker --loglevel=ERROR --queues=${enabled_queues}
+celery --app worker --quiet worker --loglevel ERROR --queues ${enabled_queues}
