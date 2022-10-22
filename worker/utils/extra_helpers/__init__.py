@@ -6,24 +6,21 @@ import re
 # 3rd-party Modules
 import six
 import xmltodict
-from retry import retry
 import requests
 
 # Project Modules
 from worker.utils import toolkit
 
-retry_for_requests = retry((requests.ConnectionError, requests.Timeout), tries=3, delay=1, backoff=2, jitter=(1, 2))
-
 SQL_PARAM_ESCAPE_MAP = {
-  '\0'  : '\\0',
-  '\b'  : '\\b',
-  '\t'  : '\\t',
-  '\n'  : '\\n',
-  '\r'  : '\\r',
-  '\x1a': '\\Z',
-  '"'   : '\\"',
-  '\''  : '\\\'',
-  '\\'  : '\\\\',
+    '\0'  : '\\0',
+    '\b'  : '\\b',
+    '\t'  : '\\t',
+    '\n'  : '\\n',
+    '\r'  : '\\r',
+    '\x1a': '\\Z',
+    '"'   : '\\"',
+    '\''  : '\\\'',
+    '\\'  : '\\\\',
 }
 
 class HexStr(str):

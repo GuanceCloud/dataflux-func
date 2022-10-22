@@ -23,7 +23,7 @@ python3-memcached==1.51
 PyYAML==5.4.1
 redis==3.5.3
 requests==2.28.1
-retry==0.9.2
+retry2==0.9.4
 simplejson==3.17.6
 six==1.16.0
 ujson==5.4.0
