@@ -146,7 +146,7 @@ File already existed                                                            
                   target="_blank">{{ $t('Download') }}</el-link>
 
                 <el-link
-                  v-if="previewExtMap[scope.row.ext]"
+                  v-if="previewExts.includes(scope.row.ext)"
                   :href="scope.row.previewURL"
                   target="_blank">{{ $t('Open') }}</el-link>
 
@@ -157,7 +157,7 @@ File already existed                                                            
               <el-dropdown @command="resourceOperationCmd">
                 <el-link :underline="false">{{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i></el-link>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="zipExtMap[scope.row.ext]" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
+                  <el-dropdown-item v-if="zipExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
                   <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'cp' }">{{ $t('Copy') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">{{ $t('Move') }}</el-dropdown-item>
@@ -274,11 +274,34 @@ export default {
             break;
           case 'htm':
           case 'html':
-          case 'js':
           case 'css':
+          case 'js':
+          case 'ts':
+          case 'coffee':
+          case 'py':
+          case 'ipynb':
+          case 'go':
+          case 'java':
+          case 'php':
+          case 'pl':
+          case 'sh':
+          case 'rb':
+          case 'lua':
+          case 'kt':
+          case 'r':
+          case 'h':
+          case 'c':
+          case 'cpp':
+          case 'cs':
+          case 'm':
+          case 'swift':
+          case 'sql':
+          case 'ini':
+          case 'xml':
+          case 'toml':
           case 'yaml':
           case 'json':
-          case 'py':
+          case 'jsonl':
             f.icon = 'file-code-o';
             break;
           case 'jpg':
@@ -296,6 +319,9 @@ export default {
           case 'md':
           case 'markdown':
             f.icon = 'file-text-o';
+            break;
+          case 'mp3':
+            f.icon = 'file-audio-o';
             break;
           case 'avi':
           case 'mp4':
@@ -537,28 +563,28 @@ export default {
     },
   },
   computed: {
-    previewExtMap() {
-      return {
-        jpg : true,
-        jpeg: true,
-        png : true,
-        bmp : true,
-        gif : true,
-        mp4 : true,
-        pdf : true,
-        txt : true,
-        json: true,
-        md  : true,
-      }
+    previewExts() {
+      return [
+        'jpg', 'jpeg',
+        'png',
+        'bmp',
+        'gif',
+        'mp3','mp4',
+        'pdf',
+        'txt',
+        'htm', 'html',
+        'json',
+        'md', 'markdown',
+      ]
     },
-    zipExtMap() {
-      return {
-        zip : true,
-        tar : true,
-        gz  : true,
-        bz  : true,
-        '7z': true,
-      }
+    zipExts() {
+      return [
+        'zip',
+        'tar',
+        'gz',
+        'bz',
+        '7z',
+      ]
     },
     currentFolder() {
       return this.dataFilter.folder || '/';
@@ -613,9 +639,6 @@ export default {
 </style>
 
 <style>
-.resource-navi .el-button span {
-  font-family: monospace !important;
-}
 .popover-input .el-input {
   width: 180px;
   display: block;
