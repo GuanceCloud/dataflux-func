@@ -119,7 +119,7 @@ class RedisHelper(object):
 
             self.logger.debug('[REDIS] Query `{} {}` {}'.format(command.upper(), key, options_dump))
 
-        return self.client.execute_command(*args, **options);
+        return self.client.execute_command(*args, **options)
 
     def run(self, *args, **kwargs):
         command      = args[0]
