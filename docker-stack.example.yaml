@@ -19,6 +19,8 @@ services:
   # MYSQL START
   mysql:
     image: <MYSQL_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - mysql
     logging:
@@ -40,6 +42,8 @@ services:
   # REDIS START
   redis:
     image: <REDIS_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - redis
     logging:
@@ -56,6 +60,8 @@ services:
   # WORKER DEFAULT START
   worker-0:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - worker-0
     volumes:
@@ -75,6 +81,8 @@ services:
 
   worker-1-6:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - worker-1-6
     volumes:
@@ -93,6 +101,8 @@ services:
 
   worker-7:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - worker-7
     volumes:
@@ -112,6 +122,8 @@ services:
 
   worker-8-9:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - worker-8-9
     volumes:
@@ -132,6 +144,8 @@ services:
   # WORKER MINI START
   worker:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 2
     labels:
       - worker
     volumes:
@@ -151,6 +165,8 @@ services:
 
   beat:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1 # beat 只能单副本运行，请勿修改此值
     labels:
       - beat
     volumes:
@@ -169,6 +185,8 @@ services:
 
   server:
     image: <DATAFLUX_FUNC_IMAGE>
+    deploy:
+      replicas: 1
     labels:
       - server
     volumes:
