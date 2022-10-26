@@ -2629,6 +2629,10 @@ connectorAPI:
             $desc     : SASL机制
             $allowNull: true
             $type     : string
+          multiSubClient:
+            $desc     : 多订阅器
+            $allowNull: true
+            $type     : boolean
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true
@@ -2750,6 +2754,10 @@ connectorAPI:
             $desc     : SASL机制
             $allowNull: true
             $type     : string
+          multiSubClient:
+            $desc     : 多订阅器
+            $allowNull: true
+            $type     : boolean
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true

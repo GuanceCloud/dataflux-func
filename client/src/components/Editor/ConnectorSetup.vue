@@ -19,6 +19,7 @@ Client ID          : 客户端 ID
 Group ID           : 分组 ID
 Security Protocol  : 安全协议
 SASL Mechanisms    : SASL 机制
+Multi Sub Client   : 多订阅器
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
@@ -222,6 +223,13 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                   <el-form-item :label="$t('Group ID')" v-if="hasConfigField(selectedType, 'groupId')" prop="configJSON.groupId">
                     <el-input
                       v-model="form.configJSON.groupId"></el-input>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Multi Sub Client')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
+                    <el-select v-model="form.configJSON.multiSubClient">
+                      <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
+                      <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
+                    </el-select>
                   </el-form-item>
 
                   <template v-if="hasConfigField(selectedType, 'topicHandlers')">
@@ -660,6 +668,13 @@ export default {
             required: false,
           },
         ],
+        'configJSON.token': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input token'),
+            required: false,
+          },
+        ],
         'configJSON.accessKey': [
           {
             trigger : 'change',
@@ -692,6 +707,20 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input security protocol'),
+            required: false,
+          },
+        ],
+        'configJSON.saslMechanisms': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input SASL Mechanisms'),
+            required: false,
+          },
+        ],
+        'configJSON.multiSubClient': [
+          {
+            trigger : 'change',
+            message : this.$t('Please select if Multi Sub Client allowed'),
             required: false,
           },
         ],

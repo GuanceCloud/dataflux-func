@@ -59,9 +59,7 @@ var RedisHelper = function(logger, config) {
   };
 
   if (config) {
-    var _retryStrategy = config.disableRetry
-                       ? null
-                       : self.retryStrategy;
+    var _retryStrategy = config.disableRetry ? null : self.retryStrategy;
 
     self.config = toolkit.noNullOrWhiteSpace(config);
 
@@ -119,16 +117,22 @@ RedisHelper.prototype.initSubClient = function() {
   if (self.subClient) return;
 
   self.subClient = self.client.duplicate();
+  self.subBuffer = toolkit.createLimitedBuffer(CONFIG._SUB_BUFFER_LIMIT);
 
   self.subClient.on('pmessage', function(_pattern, _channel, _message) {
-    var handler = self.topicHandlerMap[_pattern];
-    if (!handler) return;
+    if (!self.topicHandlerMap[_pattern]) return;
 
     if (!self.skipLog) {
       self.logger.debug('[REDIS] Receive <- `{0}`, Length: {1}', _channel, _message.length);
     }
 
-    return handler(_channel, _message);
+    // 进入缓冲区
+    var task = {
+      handlerKey: _pattern,
+      topic     : _channel,
+      message   : _message,
+    }
+    self.subBuffer.put(task);
   });
 
   self.subClient.on('error', function(err) {
@@ -578,6 +582,28 @@ RedisHelper.prototype.unsub = function(topic, callback) {
   delete this.topicHandlerMap[topic];
 
   return this.subClient.punsubscribe(topic, callback);
+};
+
+/**
+ * Comsume message from buffer
+ *
+ * @param  {Function}  callback
+ * @return {undefined}
+ */
+RedisHelper.prototype.consume = function(callback) {
+  for (var i = 0; i < this.subBuffer.length; i++) {
+    var task = this.subBuffer.get();
+    if (!task) return callback();
+
+    var handler = this.topicHandlerMap[task.handlerKey];
+    if (!handler) continue;
+
+    return handler(task.topic, task.message, null, function() {
+      return callback(null, true);
+    });
+  }
+
+  return callback();
 };
 
 /**
