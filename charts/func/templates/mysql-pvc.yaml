@@ -7,6 +7,7 @@ metadata:
   annotations:
     volume.beta.kubernetes.io/storage-class: "{{ .Values.storage.pvc.storageClass }}"
 spec:
+  storageClassName: "{{ .Values.storage.pvc.storageClass }}"
   accessModes:
     - ReadWriteMany
   resources:

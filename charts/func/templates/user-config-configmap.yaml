@@ -24,9 +24,6 @@ data:
     LOG_LEVEL:  {{ .Values.func.LOG_LEVEL }}
     LOG_FILE_FORMAT:  {{ .Values.func.LOG_FILE_FORMAT }}
     WEB_BASE_URL:  {{ .Values.func.WEB_BASE_URL }}
-    #TEST: ''
-    #
-    #_IS_INSTALLED: true
 kind: ConfigMap
 metadata:
   name: {{ include "func.fullname" . }}-user-config
