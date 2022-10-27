@@ -8,11 +8,29 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-function getConfig(c, autoGroupId) {
+function getConfigProducer(c) {
   var config = {
     'client.id'           : c.clientId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`,
     'metadata.broker.list': c.servers,
-    'auto.offset.reset'   : 'end',
+  };
+
+  if (c.securityProtocol) {
+    config['security.protocol'] = (c.securityProtocol || 'SASL_PLAINTEXT').toUpperCase();
+  }
+
+  if (c.password) {
+    config['sasl.mechanisms'] = (c.saslMechanisms || 'PLAIN').toUpperCase();
+    config['sasl.username']   = c.user || c.username;
+    config['sasl.password']   = c.password;
+  }
+
+  return config;
+};
+
+function getConfigConsumer(c, autoGroupId) {
+  var config = {
+    'client.id'           : c.clientId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`,
+    'metadata.broker.list': c.servers,
   };
 
   if (c.groupId) {
@@ -34,6 +52,14 @@ function getConfig(c, autoGroupId) {
   return config;
 };
 
+function getConfigConsumerTopic(c) {
+  var config = {
+    'auto.offset.reset': c.kafkaSubOffset || 'end',
+  };
+
+  return config;
+};
+
 /**
  * @constructor
  * @param  {Object} [logger=null]
@@ -48,12 +74,12 @@ var KafkaHelper = function(logger, config) {
   self.config = toolkit.noNullOrWhiteSpace(config);
 
   if (!config.disablePub) {
-    self.producer = new kafka.HighLevelProducer(getConfig(self.config))
+    self.producer = new kafka.HighLevelProducer(getConfigProducer(self.config));
     self.producer.connect();
   }
 
   if (!config.disableSub) {
-    self.consumer = new kafka.KafkaConsumer(getConfig(self.config, true))
+    self.consumer = new kafka.KafkaConsumer(getConfigConsumer(self.config, true), getConfigConsumerTopic(self.config));
     self.consumer.connect();
 
     // PUB-SUB 消息处理
@@ -62,30 +88,7 @@ var KafkaHelper = function(logger, config) {
 
     self.consumer.on('ready', function() {
       self.isReady = true;
-
-      if (self.consumerT) {
-        clearInterval(self.consumerT);
-      }
-
-      if (CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND > 0) {
-        self.consumerT = setInterval(function() {
-          var consumeCount = Math.ceil(CONFIG._SUB_KAFKA_COMSUME_INTERVAL * CONFIG._SUB_KAFKA_COMSUME_RATE_PER_SECOND);
-          self.consumer.consume(consumeCount);
-        }, CONFIG._SUB_KAFKA_COMSUME_INTERVAL * 1000);
-      }
-    }).on('data', function(_packet) {
-      var _topic   = _packet.topic;
-      var _message = _packet.value.toString();
-
-      var handler = self.topicHandlerMap[_topic];
-      if (!handler) return;
-
-      if (!self.skipLog) {
-        self.logger.debug('[KAFKA] Receive <- `{0}`, Length: {1}', _topic, _message.length);
-      }
-
-      return handler(_topic, _message);
-    })
+    });
   }
 };
 
@@ -169,16 +172,40 @@ KafkaHelper.prototype.unsub = function(topic, callback) {
 };
 
 /**
+ * Consume message from buffer
+ *
+ * @param  {Function}  callback
+ * @return {undefined}
+ */
+KafkaHelper.prototype.consume = function(callback) {
+  var self = this;
+  self.consumer.consume(1, function(err, _packets) {
+    if (toolkit.isNothing(_packets)) return callback();
+
+    var _packet = _packets[0];
+    var _topic   = _packet.topic;
+    var _message = _packet.value.toString();
+
+    var handler = self.topicHandlerMap[_topic];
+    if (!handler) return callback();
+
+    if (!self.skipLog) {
+      self.logger.debug('[KAFKA] Receive <- Topic: `{0}`, Length: {1}', _topic, _message.length);
+    }
+
+    return handler(_topic, _message, null, function() {
+      return callback(null, true);
+    });
+  });
+};
+
+/**
  * End client
  * @param  {Function} callback
  * @return {Undefined}
  */
 KafkaHelper.prototype.end = function() {
   this.logger.info(`[KAFKA] End`);
-
-  if (this.consumerT) {
-    clearInterval(this.consumerT);
-  }
 
   if (this.producer) {
     this.producer.disconnect();

@@ -16,20 +16,18 @@ var mainAPICtrl  = require('./controllers/mainAPICtrl');
 
 /* Configure */
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
-var SUB_CLIENT_LOCK_EXPIRES  = 5;
+var SUB_CLIENT_LOCK_EXPIRES  = 15;
 
 var CONNECTOR_HELPER_MAP = {
   redis: require('./utils/extraHelpers/redisHelper'),
-  // mqtt : require('./utils/extraHelpers/mqttHelper'),
-  // kafka: require('./utils/extraHelpers/kafkaHelper'),
+  mqtt : require('./utils/extraHelpers/mqttHelper'),
+  kafka: require('./utils/extraHelpers/kafkaHelper'),
 };
 
 var CONNECTOR_TOPIC_MAP = {};
 
 function createMessageHandler(locals, handlerFuncId) {
   return function(topic, message, packet, callback) {
-    console.log('>>>>>>> IN handler', topic, message, packet)
-
     // 发送任务
     var funcCallOptions = null;
     var funcResult      = null;
@@ -40,6 +38,7 @@ function createMessageHandler(locals, handlerFuncId) {
         var opt = {
           origin  : 'sub',
           originId: topic,
+          queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
           funcCallKwargs: {
             topic  : topic.toString(),
             message: message.toString(),
@@ -237,7 +236,7 @@ exports.runListener = function runListener(app) {
           if (err) return timesCallback(err);
 
           subWorkerCount = parseInt(cacheRes || 0) || 0;
-          console.log('>>>>>>> subWorkerCount', subWorkerCount)
+
           return asyncCallback();
         });
       },
@@ -245,37 +244,39 @@ exports.runListener = function runListener(app) {
       function(asyncCallback) {
         var skip = false;
 
-        // 无可用工作队列 / 无订阅对象时，等待 1 秒结束本轮处理
+        // 无可用工作队列 / 无订阅对象时，跳过本轮处理
         if (subWorkerCount <= 0 || toolkit.isNothing(CONNECTOR_TOPIC_MAP)) {
           skip = true;
         }
 
-        // 跳过本轮时需要等待 1 秒
+        // 跳过本轮时需要等待数秒
         if (skip === true) {
-          return setTimeout(function() { asyncCallback() }, 1000);
+          return setTimeout(function() { asyncCallback() }, 3 * 1000);
         }
 
-        var isAnyComsumed = false;
+        var isAnyConsumed = false;
         async.eachOf(CONNECTOR_TOPIC_MAP, function(connector, connTopicKey, eachCallback) {
           async.times(subWorkerCount, function(n, timesCallback) {
-            connector.client.consume(function(err, isComsumed){
-              app.locals.logger.debug('CONNECTOR: `{0}` -> comsumed', connTopicKey);
+            connector.client.consume(function(err, isConsumed){
               if (err) app.locals.logger.logError(err);
 
-              if (isComsumed) isAnyComsumed = true;
+              if (isConsumed) {
+                app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', connTopicKey);
+                isAnyConsumed = true;
+              }
 
               // 出错不停止
               return timesCallback();
             });
           }, eachCallback);
         }, function() {
-          if (isAnyComsumed) {
+          if (isAnyConsumed) {
             // 有任意消费，立刻进入下一轮
             return asyncCallback();
 
           } else {
-            // 没有任何消费，等待 1 秒进入下一轮
-            return setTimeout(function() { asyncCallback() }, 1000);
+            // 没有任何消费，等待数秒进入下一轮
+            return setTimeout(function() { asyncCallback() }, 3 * 1000);
           }
         });
       },

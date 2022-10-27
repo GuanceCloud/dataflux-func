@@ -123,7 +123,7 @@ RedisHelper.prototype.initSubClient = function() {
     if (!self.topicHandlerMap[_pattern]) return;
 
     if (!self.skipLog) {
-      self.logger.debug('[REDIS] Receive <- `{0}`, Length: {1}', _channel, _message.length);
+      self.logger.debug('[REDIS] Receive <- Topic: `{0}`, Length: {1}', _channel, _message.length);
     }
 
     // 进入缓冲区
@@ -585,7 +585,7 @@ RedisHelper.prototype.unsub = function(topic, callback) {
 };
 
 /**
- * Comsume message from buffer
+ * Consume message from buffer
  *
  * @param  {Function}  callback
  * @return {undefined}

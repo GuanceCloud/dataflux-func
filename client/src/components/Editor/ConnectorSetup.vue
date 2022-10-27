@@ -20,6 +20,7 @@ Group ID           : 分组 ID
 Security Protocol  : 安全协议
 SASL Mechanisms    : SASL 机制
 Multi Sub Client   : 多订阅器
+Kafka Sub Offset   : Kafka 订阅 Offset
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
@@ -229,6 +230,17 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                     <el-select v-model="form.configJSON.multiSubClient">
                       <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
                       <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
+                    </el-select>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Kafka Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
+                    <el-select v-model="form.configJSON.kafkaSubOffset">
+                      <el-option label="smallest" key="smallest" value="smallest"></el-option>
+                      <el-option label="earliest" key="earliest" value="earliest"></el-option>
+                      <el-option label="beginning" key="beginning" value="beginning"></el-option>
+                      <el-option label="largest" key="largest" value="largest"></el-option>
+                      <el-option label="latest" key="latest" value="latest"></el-option>
+                      <el-option label="end" key="end" value="end"></el-option>
                     </el-select>
                   </el-form-item>
 
@@ -721,6 +733,13 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please select if Multi Sub Client allowed'),
+            required: false,
+          },
+        ],
+        'configJSON.kafkaSubOffset': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input Kafka Sub Offset'),
             required: false,
           },
         ],

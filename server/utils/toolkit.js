@@ -698,16 +698,24 @@ var noFunctionReplacer = toolkit.noFunctionReplacer = function noFunctionReplace
  * @return {Boolean}
  */
 var isNothing = toolkit.isNothing = function isNothing(o) {
-  if (toolkit.isNullOrWhiteSpace(o) === true) {
+  if (isNullOrWhiteSpace(o) === true) {
     return true;
   }
 
-  if ('string' === typeof o && o.trim().length === 0) {
-    return true;
-  } else if (Array.isArray(o) && o.length === 0) {
-    return true;
-  } else if (JSON.stringify(o) === '{}') {
-    return true;
+  if ('number' === typeof o) {
+    return false;
+  } else if ('boolean' === typeof o) {
+    return false;
+  } else if ('string' === typeof o) {
+    return o.trim().length === 0;
+  } else if (Array.isArray(o)) {
+    return o.length === 0;
+  } else if ('object' === typeof o){
+    try {
+      return JSON.stringify(o) === '{}';
+    } catch(err) {
+      return false;
+    }
   }
 
   return false;

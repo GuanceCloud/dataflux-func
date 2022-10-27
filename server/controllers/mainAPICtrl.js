@@ -150,7 +150,7 @@ function _isFuncArgumentPlaceholder(v) {
 };
 
 function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
-  if (CONFIG.MODE === 'dev') {
+  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
     var _tmpOptions = toolkit.jsonCopy(options);
     _tmpOptions.httpRequest = '<...略>';
 
@@ -257,7 +257,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       // 调用时指定
       switch(funcCallOptions.origin) {
         case 'apiAuth':
-          case 'authLink':
+        case 'authLink':
           if (funcCallOptions.execMode !== 'sync') {
             return callback(new E('EClientBadRequest', 'Invalid options, execMode should be "sync" in Auth Link calling'));
           }
@@ -282,6 +282,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       // 默认值
       switch(funcCallOptions.origin) {
         case 'direct':
+        case 'sub':
         case 'apiAuth':
         case 'authLink':
           funcCallOptions.execMode = 'sync';
@@ -364,15 +365,24 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       }
     }
 
-    // 执行队列（优先级：函数配置 > 默认值）
-    if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    // 执行队列（优先级：直接指定 > 函数配置 > 默认值）
+    if (!toolkit.isNothing(funcCallOptions.queue)) {
+      // 直接指定
+      var queueNumber = parseInt(funcCallOptions.queue);
+      if (queueNumber < 1 || queueNumber > 9) {
+        return callback(new E('EClientBadRequest', 'Invalid options, queue should be an integer between 1 and 9'));
+      }
+
+      funcCallOptions.queue = '' + queueNumber;
+
+    } else if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
       // 函数配置
       var queueNumber = parseInt(func.extraConfigJSON.queue);
       if (queueNumber < 1 || queueNumber > 9) {
         return callback(new E('EClientBadRequest', 'Invalid options, queue should be an integer between 1 and 9'));
       }
 
-      funcCallOptions.queue = '' + func.extraConfigJSON.queue;
+      funcCallOptions.queue = '' + queueNumber;
 
     } else {
       // 默认值
@@ -396,7 +406,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       }
     }
 
-    if (CONFIG.MODE === 'dev') {
+    if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
       var _tmpOptions = toolkit.jsonCopy(funcCallOptions);
       _tmpOptions.httpRequest = '<...略>';
 
@@ -409,7 +419,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
 };
 
 function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) {
-  if (CONFIG.MODE === 'dev') {
+  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
     res.locals.logger.debug('_createFuncCallOptionsFromRequest:\nfuncId = {0}\noptions = {1}',
         funcId,
         JSON.stringify(options, null, 2));
@@ -488,7 +498,7 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
   }
 
   /*** 合并参数 ***/
-  if (CONFIG.MODE === 'dev') {
+  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
     res.locals.logger.debug('_mergeFuncCallKwargs:\nbase = {0}\ninput = {1}',
         JSON.stringify(options.funcCallKwargs, null, 2),
         JSON.stringify(reqCallKwargs, null, 2));
@@ -506,7 +516,7 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
     return callback(err);
   }
 
-  if (CONFIG.MODE === 'dev') {
+  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
     res.locals.logger.debug('_mergeFuncCallKwargs:\nresult = {0}',
         JSON.stringify(options.funcCallKwargs, null, 2));
   }
@@ -531,7 +541,7 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
 };
 
 function _createFuncCallOptionsForAPIAuth(req, res, funcId, options, callback) {
-  if (CONFIG.MODE === 'dev') {
+  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_FUNC_CALL_OPTIONS) {
     res.locals.logger.debug('_createFuncCallOptionsForAPIAuth:\nfuncId = {0}\noptions = {1}',
         funcId,
         JSON.stringify(options, null, 2));
@@ -659,7 +669,7 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
         if (err) return asyncCallback(err);
 
         var currentWorkerQueuePressure = parseInt(cacheRes);
-        locals.logger.debug('<<< QUEUE PRESSURE >>> WorkerQueue#{0}: {1} (+{2}, {3}%), Deny: {4}%',
+        locals.logger.debug('[QUEUE PRESSURE] WorkerQueue#{0}: {1} (+{2}, {3}%), Deny: {4}%',
             funcCallOptions.queue, currentWorkerQueuePressure, funcPressure,
             parseInt(currentWorkerQueuePressure / workerQueueMaxPressure * 100),
             parseInt(denyPercent * 100));

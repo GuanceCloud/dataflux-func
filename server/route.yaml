@@ -2633,6 +2633,11 @@ connectorAPI:
             $desc     : 多订阅器
             $allowNull: true
             $type     : boolean
+          kafkaSubOffset:
+            $desc     : Kafka 订阅 Offset
+            $allowNull: true
+            $type     : string
+            $example  : 'end'
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true
@@ -2758,6 +2763,11 @@ connectorAPI:
             $desc     : 多订阅器
             $allowNull: true
             $type     : boolean
+          kafkaSubOffset:
+            $desc     : Kafka 订阅 Offset
+            $allowNull: true
+            $type     : string
+            $example  : 'end'
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true

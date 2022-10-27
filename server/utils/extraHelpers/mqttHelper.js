@@ -39,23 +39,30 @@ var MQTTHelper = function(logger, config) {
 
   // PUB-SUB 消息处理
   self.topicHandlerMap = {};
+  self.subBuffer = toolkit.createLimitedBuffer(CONFIG._SUB_BUFFER_LIMIT);
 
   self.client.on('message', function(_topic, _message, _packet) {
     var handler = null;
     for (var matchTopic in self.topicHandlerMap) {
-      if (mqttWildcard(_topic, matchTopic)) {
-        handler = self.topicHandlerMap[matchTopic];
-        break;
-      }
+      if (!mqttWildcard(_topic, matchTopic)) continue;
+
+      handler = self.topicHandlerMap[matchTopic];
+      break;
     }
 
     if (!handler) return;
 
     if (!self.skipLog) {
-      self.logger.debug('[MQTT] Receive <- `{0}`, Length: {1}', _topic, _message.length);
+      self.logger.debug('[MQTT] Receive <- Topic: `{0}`, Length: {1}', _topic, _message.length);
     }
 
-    return handler(_topic, _message);
+    // 进入缓冲区
+    var task = {
+      handlerKey: matchTopic,
+      topic     : _topic,
+      message   : _message,
+    }
+    self.subBuffer.put(task);
   });
 
   self.client.on('error', function(err) {
@@ -131,6 +138,28 @@ MQTTHelper.prototype.unsub = function(topic, callback) {
   delete this.topicHandlerMap[topic];
 
   this.client.unsubscribe(topic, callback);
+};
+
+/**
+ * Consume message from buffer
+ *
+ * @param  {Function}  callback
+ * @return {undefined}
+ */
+MQTTHelper.prototype.consume = function(callback) {
+  for (var i = 0; i < this.subBuffer.length; i++) {
+    var task = this.subBuffer.get();
+    if (!task) return callback();
+
+    var handler = this.topicHandlerMap[task.handlerKey];
+    if (!handler) continue;
+
+    return handler(task.topic, task.message, null, function() {
+      return callback(null, true);
+    });
+  }
+
+  return callback();
 };
 
 /**
