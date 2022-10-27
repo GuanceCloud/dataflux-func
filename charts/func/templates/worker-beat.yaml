@@ -21,7 +21,7 @@ spec:
       containers:
       - args:
         - ./run-beat.sh
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion | default .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ include "func.fullname" . }}-worker-beat
         resources: {}

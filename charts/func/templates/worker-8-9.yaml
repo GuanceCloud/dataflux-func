@@ -23,7 +23,7 @@ spec:
         - ./run-worker-by-queue.sh
         - "8"
         - "9"
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion | default .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ include "func.fullname" . }}-worker-8-9
         resources: {}
