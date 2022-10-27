@@ -24,6 +24,7 @@ Kafka Sub Offset   : Kafka 订阅 Offset
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
+'Recent consume:'  : '最近消费：'
 'Add Topic/Handler': 添加主题/处理函数
 Test connection    : 测试连通性
 
@@ -262,10 +263,11 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                         <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                       </el-form-item>
                       <el-form-item
+                        class="func-cascader-input"
                         :key="`handler-${index}`"
                         :prop="`configJSON.topicHandlers.${index}.funcId`"
                         :rules="formRules_topic">
-                        <el-cascader class="func-cascader-input" ref="funcCascader"
+                        <el-cascader ref="funcCascader"
                           placeholder="--"
                           filterable
                           :filter-method="common.funcCascaderFilter"
@@ -273,6 +275,15 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                           v-model="topicHandler.funcId"
                           :options="funcCascader"
                           :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+
+                        <!-- 最近消费提示 -->
+                        <InfoBlock v-if="!T.isNothing(topicHandler.consumeInfo)"
+                          type="warning"
+                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(topicHandler.consumeInfo.timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(topicHandler.consumeInfo.timestampMs)}${')'}`"></InfoBlock>
+                      </el-form-item>
+                      <el-form-item
+
+                        :key="`consume-info-${index}`">
                       </el-form-item>
                     </template>
                     <el-form-item>
@@ -805,7 +816,8 @@ export default {
   margin-bottom: 0;
 }
 
-.func-cascader-input {
+.func-cascader-input .el-cascader,
+.func-cascader-input .form-tip {
   width: 420px;
 }
 .topic-handler .el-input {

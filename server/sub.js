@@ -156,7 +156,13 @@ exports.runListener = function runListener(app) {
 
             // 连接器信息加入待创建表
             d.configJSON.topicHandlers.forEach(function(th) {
-              var connTopicKey = sortedJSON.sortify({ 'id': d.id, 'topic': th.topic, 'funcId': th.funcId }, { stringify: true })
+              var connTopicKey = sortedJSON.sortify({
+                'id'    : d.id,
+                'topic' : th.topic,
+                'funcId': th.funcId,
+              }, {
+                stringify: true,
+              })
               nextConnectorTopicMap[connTopicKey] = toolkit.jsonCopy(d);
             });
           });
@@ -263,6 +269,17 @@ exports.runListener = function runListener(app) {
               if (isConsumed) {
                 app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', connTopicKey);
                 isAnyConsumed = true;
+
+                // 记录最近消费时间
+                var connTopicKeyObj = JSON.parse(connTopicKey);
+                var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
+                  'connectorId', connTopicKeyObj.id,
+                  'topic',       connTopicKeyObj.topic]);
+                var consumeInfo = JSON.stringify({
+                  funcId     : connTopicKeyObj.funcId,
+                  timestampMs: Date.now(),
+                });
+                app.locals.cacheDB.setex(cacheKey, CONFIG._SUB_RECENT_CONSUME_EXPIRE, consumeInfo);
               }
 
               // 出错不停止
