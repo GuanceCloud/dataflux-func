@@ -2868,6 +2868,19 @@ connectorAPI:
         $desc: 连接器ID
         $type: string
 
+  listSubInfo:
+    showInDoc    : true
+    name         : 获取订阅信息列表
+    method       : get
+    url          : /api/v1/connector-sub-info/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      connectorId:
+        $desc: 连接器ID
+        $type: string
+
 # 环境变量
 envVariableAPI:
   list:

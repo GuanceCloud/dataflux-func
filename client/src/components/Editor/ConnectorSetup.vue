@@ -277,9 +277,9 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                           :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
 
                         <!-- 最近消费提示 -->
-                        <InfoBlock v-if="!T.isNothing(topicHandler.consumeInfo)"
+                        <InfoBlock v-if="subInfoMap[topicHandler.topic]"
                           type="warning"
-                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(topicHandler.consumeInfo.timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(topicHandler.consumeInfo.timestampMs)}${')'}`"></InfoBlock>
+                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`"></InfoBlock>
                       </el-form-item>
                       <el-form-item
 
@@ -452,6 +452,9 @@ export default {
         this.testConnectorResult = null;
 
         this.updateValidator(this.data.type);
+
+        // 获取订阅信息
+        await this.updateSubInfo();
       }
 
       // 获取函数列表
@@ -461,6 +464,18 @@ export default {
       this.funcCascader = funcList.cascader;
 
       this.$store.commit('updateLoadStatus', true);
+    },
+    async updateSubInfo() {
+      if (!this.$route.params.id) return;
+
+      let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
+      if (!apiRes.ok) return;
+
+      let subInfoMap = apiRes.data.reduce((acc, x) => {
+        acc[x.topic] = x.consumeInfo;
+        return acc;
+      }, {});
+      this.subInfoMap = subInfoMap;
     },
     async submitData() {
       try {
@@ -792,6 +807,7 @@ export default {
   data() {
     return {
       data        : {},
+      subInfoMap  : {},
       funcMap     : {},
       funcCascader: [],
 
@@ -803,9 +819,17 @@ export default {
         configJSON : {},
       },
 
-      isSaving            : false,
+      isSaving           : false,
       testConnectorResult: null,
     }
+  },
+  mounted() {
+    this.autoRefreshTimer = setInterval(() => {
+      this.updateSubInfo();
+    }, 5 * 1000);
+  },
+  beforeDestroy() {
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>

@@ -223,65 +223,7 @@ var CONNECTOR_CHECK_CONFIG_FUNC_MAP = {
 /* Handlers */
 var crudHandler = exports.crudHandler = connectorMod.createCRUDHandler();
 
-exports.list = function(req, res, next) {
-  var connectors        = null;
-  var connectorPageInfo = null;
-
-  var connectorModel = connectorMod.createModel(res.locals);
-
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      connectorModel.list(opt, function(err, dbRes, pageInfo) {
-        if (err) return asyncCallback(err);
-
-        connectors        = dbRes;
-        connectorPageInfo = pageInfo;
-
-        return asyncCallback();
-      });
-    },
-    // 查询最近消费信息
-    function(asyncCallback) {
-      if (connectors.length <= 0) return asyncCallback();
-
-      var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
-        'connectorId', '*',
-        'topic',       '*']);
-      res.locals.cacheDB.getByPattern(cachePattern, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        // 生成映射表
-        var consumeInfoMap = {};
-        if (cacheRes) {
-          for (var key in cacheRes) {
-            var parsedKey = toolkit.parseCacheKey(key);
-            var consumeInfoKey = JSON.stringify([ parsedKey.tags.connectorId, parsedKey.tags.topic ]);
-            consumeInfoMap[consumeInfoKey] = JSON.parse(cacheRes[key]);
-          }
-        }
-
-        // 填入结果
-        connectors.forEach(function(c) {
-          if (toolkit.isNothing(c.configJSON.topicHandlers)) return;
-
-          c.configJSON.topicHandlers.forEach(function(th) {
-            var consumeInfoKey = JSON.stringify([ c.id, th.topic ]);
-            th.consumeInfo = consumeInfoMap[consumeInfoKey] || {};
-          });
-        })
-
-        return asyncCallback();
-      });
-    },
-    // TODO: 查询最近处理结果
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(connectors, connectorPageInfo);
-    res.locals.sendJSON(ret);
-  });
-};
+exports.list = crudHandler.createListHandler();
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
@@ -569,6 +511,43 @@ exports.test = function(req, res, next) {
       checkResult: 'OK',
     });
     return res.locals.sendJSON(ret);
+  });
+};
+
+exports.listSubInfo = function(req, res, next) {
+  var connectorId = req.query.connectorId;
+
+  var subInfoList = [];
+
+  async.series([
+    // 查询最近消费信息
+    function(asyncCallback) {
+      var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
+        'connectorId', connectorId || '*',
+        'topic',       '*']);
+      res.locals.cacheDB.getByPattern(cachePattern, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          for (var key in cacheRes) {
+            var parsedKey = toolkit.parseCacheKey(key);
+            subInfoList.push({
+              connectorId: parsedKey.tags.connectorId,
+              topic      : parsedKey.tags.topic,
+              consumeInfo: JSON.parse(cacheRes[key]),
+            });
+          }
+        }
+
+        return asyncCallback();
+      });
+    },
+    // TODO: 查询最近处理结果
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(subInfoList);
+    res.locals.sendJSON(ret);
   });
 };
 
