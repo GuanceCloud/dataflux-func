@@ -32,7 +32,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="40"

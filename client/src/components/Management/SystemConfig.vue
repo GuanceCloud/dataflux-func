@@ -29,7 +29,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form">
+              <el-form ref="form" label-width="135px" :model="form">
                 <!-- 网站标题 -->
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Title') }}</h3></el-divider>
 

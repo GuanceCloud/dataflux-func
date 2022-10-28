@@ -33,7 +33,7 @@ New password not matches                                         : 两次输入�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
                   <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in as a integrated user, please change your password in the origin system')"></InfoBlock>
                 </el-form-item>

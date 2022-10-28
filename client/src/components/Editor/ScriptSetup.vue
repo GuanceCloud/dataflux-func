@@ -35,7 +35,7 @@ This Script is locked by other user({user}): 当前脚本已被其他用户（{u
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="!isEditable" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
                 <el-form-item v-if="isLockedByMe">
                   <InfoBlock type="success" :title="$t('This Script is locked by you')"></InfoBlock>
                 </el-form-item>

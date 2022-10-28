@@ -19,8 +19,8 @@ Client ID          : 客户端 ID
 Group ID           : 分组 ID
 Security Protocol  : 安全协议
 SASL Mechanisms    : SASL 机制
-Multi Sub Client   : 多订阅器
-Kafka Sub Offset   : Kafka 订阅 Offset
+Multi Sub          : 多订阅器
+Sub Offset         : 订阅 Offset
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
@@ -76,7 +76,7 @@ This is a builtin Connector, please contact the admin to change the config: 当�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
                 <el-form-item v-if="data.isBuiltin">
                   <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
@@ -227,14 +227,14 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                       v-model="form.configJSON.groupId"></el-input>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Multi Sub Client')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
+                  <el-form-item :label="$t('Multi Sub')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
                     <el-select v-model="form.configJSON.multiSubClient">
                       <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
                       <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
                     </el-select>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Kafka Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
+                  <el-form-item :label="$t('Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
                     <el-select v-model="form.configJSON.kafkaSubOffset">
                       <el-option label="smallest" key="smallest" value="smallest"></el-option>
                       <el-option label="earliest" key="earliest" value="earliest"></el-option>
@@ -743,14 +743,14 @@ export default {
         'configJSON.multiSubClient': [
           {
             trigger : 'change',
-            message : this.$t('Please select if Multi Sub Client allowed'),
+            message : this.$t('Please select if Multi Sub allowed'),
             required: false,
           },
         ],
         'configJSON.kafkaSubOffset': [
           {
             trigger : 'change',
-            message : this.$t('Please input Kafka Sub Offset'),
+            message : this.$t('Please input Sub Offset'),
             required: false,
           },
         ],

@@ -43,7 +43,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="!isEditable" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
                 <el-form-item v-if="isLockedByMe">
                   <InfoBlock type="success" :title="$t('This Script Set is locked by you')"></InfoBlock>
                 </el-form-item>

@@ -29,7 +29,7 @@ Please input password: 请输入密码
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Username')" prop="username">
                   <el-input
                     maxlength="20"

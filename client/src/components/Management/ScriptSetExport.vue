@@ -23,7 +23,7 @@ Data exported: 数据已导出
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="export-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item label="脚本集" prop="scriptSetIds">
                   <el-select v-model="form.scriptSetIds" multiple filterable :filter-method="doScriptSetFilter" placeholder="请选择">
                     <el-option
