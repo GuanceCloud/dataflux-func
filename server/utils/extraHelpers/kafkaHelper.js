@@ -27,7 +27,7 @@ function getConfigProducer(c) {
   return config;
 };
 
-function getConfigConsumer(c, autoGroupId) {
+function getConfigConsumer(c) {
   var config = {
     'client.id'           : c.clientId || `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`,
     'metadata.broker.list': c.servers,
@@ -35,8 +35,8 @@ function getConfigConsumer(c, autoGroupId) {
 
   if (c.groupId) {
     config['group.id'] = c.groupId;
-  } else if (autoGroupId) {
-    config['group.id'] = `${CONFIG.APP_NAME}@${toolkit.genTimeSerialSeq()}`;
+  } else {
+    config['group.id'] = CONFIG.APP_NAME;
   }
 
   if (c.securityProtocol) {
@@ -79,7 +79,7 @@ var KafkaHelper = function(logger, config) {
   }
 
   if (!config.disableSub) {
-    self.consumer = new kafka.KafkaConsumer(getConfigConsumer(self.config, true), getConfigConsumerTopic(self.config));
+    self.consumer = new kafka.KafkaConsumer(getConfigConsumer(self.config), getConfigConsumerTopic(self.config));
     self.consumer.connect();
 
     // PUB-SUB 消息处理
