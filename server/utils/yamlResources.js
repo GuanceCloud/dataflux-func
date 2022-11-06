@@ -165,7 +165,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       case 'list':
         configObj[k] = v.toString();
         if (configObj[k].length > 0) {
-          configObj[k] = v.split(',').map(function(x) {
+          configObj[k] = v.trim().split(/[, \n]+/g).map(function(x) {
             return x.trim();
           });
 
