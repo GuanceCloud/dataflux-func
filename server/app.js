@@ -191,6 +191,7 @@ function startApplication() {
   require('./routers/funcStoreAPIRouter');
 
   require('./routers/blueprintAPIRouter');
+  require('./routers/scriptMarketAPIRouter');
 
   routeLoader.mount(app);
 

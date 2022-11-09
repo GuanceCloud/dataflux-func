@@ -1088,6 +1088,19 @@ var getSaltedPasswordHash = toolkit.getSaltedPasswordHash = function getSaltedPa
 };
 
 /**
+ * Get string sign
+ *
+ * @param  {String} s
+ * @param  {String} secret
+ * @return {String} string hash
+ */
+var getStringSign = toolkit.getStringSign = function getStringSign(s, secret) {
+  var strToHash = strf('~{0}~{1}~', s, secret);
+  var hash = getSha512(strToHash);
+  return hash;
+};
+
+/**
  * Get a random string.
  *
  * @param  {Number} len   - Length of random string

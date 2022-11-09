@@ -35,6 +35,7 @@ respCodeMap:
   EOuterSystem        : 500.60 ## Common outer system error.
   EOuterSystemNotFound: 500.61 # No such data in outer system.
 
+  ENotImplemented     : 500.98 # Not implemented
   EAssert             : 500.99 # For Assert
 
   ########## Content for YOUR project below ##########

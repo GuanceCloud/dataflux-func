@@ -5195,3 +5195,145 @@ blueprintAPI:
       id:
         $desc: 蓝图ID
         $type: string
+
+# 脚本市场
+scriptMarketAPI:
+  list:
+    showInDoc    : true
+    name         : 列出脚本市场
+    method       : get
+    url          : /api/v1/script-markets/do/list
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    paging       : false
+    fieldPicking : true
+    fieldKicking : true
+    orderFields:
+      name      : smkt.name
+      createTime: smkt.createTime
+      updateTime: smkt.updateTime
+    fuzzySearch:
+      - smkt.name
+      - smkt.url
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : smkt.id
+      name:
+        $desc      : 根据名称搜索
+        $type      : string
+        $searchType: like
+        $searchKey : smkt.name
+      url:
+        $desc      : 根据URL搜索
+        $type      : string
+        $searchType: like
+        $searchKey : smkt.url
+
+  add:
+    showInDoc    : true
+    name         : 添加脚本市场
+    method       : post
+    url          : /api/v1/script-markets/do/add
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
+        type:
+          $desc      : 类型
+          $isRequired: true
+          $type      : enum
+          $in:
+            - git
+            - aliyun_oss
+        url:
+          $desc      : URL地址
+          $isRequired: true
+          $type      : string
+        gitBranch:
+          $desc      : Git 库分支
+          $allowNull : true
+          $type      : string
+        authJSON:
+          $desc      : 认证信息
+          $allowNull : true
+          username:
+            $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          password:
+            $desc      : 密码
+            $allowNull : true
+            $type      : string
+          accessKeyId:
+            $desc      : Access Key ID
+            $allowNull : true
+            $type      : string
+          accessKeySecret:
+            $desc      : Access Key Secret
+            $allowNull : true
+            $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : 删除脚本市场
+    method       : get
+    url          : /api/v1/script-markets/:id/do/delete
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  listScriptSets:
+    showInDoc    : true
+    name         : 列出脚本市场脚本集
+    method       : get
+    url          : /api/v1/script-markets/:id/script-sets/do/list
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    paging       : false
+    fieldPicking : true
+    fieldKicking : true
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  setOwner:
+    showInDoc    : true
+    name         : 获取脚本市场拥有权
+    method       : get
+    url          : /api/v1/script-markets/:id/owner/do/set
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  unsetOwner:
+    showInDoc    : true
+    name         : 放弃脚本市场拥有权
+    method       : get
+    url          : /api/v1/script-markets/:id/owner/do/unset
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
