@@ -99,31 +99,41 @@ var SCRIPT_MARKET_LOAD_FUNC_MAP = {
     fs.emptyDirSync(localPath);
 
     // 操作 git
-    function doClone(cloneOpt, cloneCallback) {
-      simpleGit({ baseDir: localPath })
-      .clone(gitURL, localPath, cloneOpt)
-      .then(function() {
-        return cloneCallback();
-      })
-      .catch(function(err) {
-        return cloneCallback(new E('EBizCondition', 'Clone git repo failed', _genGitErrDetail(err)));
-      });
-    }
+    var git = simpleGit({ baseDir: localPath })
+    async.series([
+      // git clone
+      function(asyncCallback) {
+        var opt = {
+          '--depth': 1,
+        };
+        if (scriptMarket.gitBranch) {
+          opt['--branch'] = scriptMarket.gitBranch;
+        }
 
-    var cloneOpt = {
-      '--depth': 1,
-    };
-    if (scriptMarket.gitBranch) {
-      cloneOpt['--branch'] = scriptMarket.gitBranch;
-    }
-    doClone(cloneOpt, function(err) {
-      if (err && err.detail.message.indexOf('--depth=1') >= 0) {
-        delete cloneOpt['--depth'];
-        return doClone(cloneOpt, callback);
-      } else {
-        return callback(err);
+        git.clone(gitURL, localPath, opt, function(err) {
+          if (err) {
+            var errDetail = _genGitErrDetail(err);
+            if (errDetail.message.indexOf('--depth=1') >= 0) {
+              // 空库，重新尝试
+              delete opt['--depth'];
+              return git.clone(gitURL, localPath, opt, asyncCallback);
+
+            } else {
+              // 非空库，直接中断
+              return asyncCallback(err);
+            }
+          }
+
+          return asyncCallback();
+        });
+      },
+    ], function(err) {
+      if (err) {
+        return callback(new E('EBizCondition', 'Clone git repo failed', _genGitErrDetail(err)));
       }
-    })
+
+      return callback();
+    });
   },
   aliyun_oss: function(locals, scriptMarket, callback) {
     return callback(new E('ENotImplemented', 'This type of Script Market is not Implemented.'));
@@ -139,34 +149,62 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
 
     // 操作 git
-    simpleGit({ baseDir: localPath })
-    .reset(simpleGit.ResetMode.HARD)
-    .clean(simpleGit.CleanOptions.FORCE)
-    .pull()
-    .then(function() {
+    var git = simpleGit({ baseDir: localPath });
+    async.series([
+      // git reset
+      function(asyncCallback) {
+        git.reset(simpleGit.ResetMode.HARD, asyncCallback);
+      },
+      // git clean
+      function(asyncCallback) {
+        git.clean(simpleGit.CleanOptions.FORCE, asyncCallback);
+      },
+      // git pull
+      function(asyncCallback) {
+        git.pull(asyncCallback);
+      },
       // 检查 PublishToken
-      var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-      var meta = fs.readJsonSync(metaFilePath, { throws: false }) || {};
+      function(asyncCallback) {
+        var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
+        var meta = fs.readJsonSync(metaFilePath, { throws: false }) || {};
 
-      if (meta.publishToken !== publishToken) {
-        // 所有权已被其他 DataFlux Func 占据
-        return callback(new E('EClient', 'This Script Market is owned by others'));
+        if (meta.publishToken && meta.publishToken !== publishToken) {
+          // 所有权已被其他 DataFlux Func 占据
+          return asyncCallback(new E('EClient', 'This Script Market is owned by others'));
 
-      } else {
-        // 尚未确定所有者
-        meta.publishToken = publishToken;
-        return fs.outputJson(metaFilePath, meta);
+        } else {
+          // 尚未确定所有者，写入 PublishToken
+          meta.publishToken = publishToken;
+          fs.outputJson(metaFilePath, meta, asyncCallback);
+        }
+      },
+      // git add
+      function(asyncCallback) {
+        git.add('.', asyncCallback);
+      },
+      // git commit
+      function(asyncCallback) {
+        git.commit('Set Publish Token', asyncCallback);
+      },
+      // git push / reset
+      function(asyncCallback) {
+        git.push(function(err) {
+          if (err) {
+            return git.raw('git reset --hard HEAD~1', function() {
+              return asyncCallback(err);
+            })
+          }
+
+          return asyncCallback();
+        });
+      },
+    ], function(err) {
+      if (err) {
+        return callback(new E('EBizCondition', 'Set Publish Token failed', _genGitErrDetail(err)));
       }
-    })
-    .add('.')
-    .commit('Set Publish Token')
-    .push()
-    .then(function() {
+
       return callback();
-    })
-    .catch(function(err) {
-      return callback(err);
-    })
+    });
   },
   aliyun_oss: function(locals, scriptMarket, callback) {
     return callback(new E('ENotImplemented', 'This type of Script Market is not Implemented.'));
@@ -240,6 +278,7 @@ exports.add = function(req, res, next) {
       SCRIPT_MARKET_SET_OWNER_FUNC_MAP[data.type](req.locals, data, function(err, _publishToken) {
         if (err) {
           // 出错表示无法获取所有权，跳过
+          res.locals.logger.error(err);
 
         } else {
           // 成功获得所有权
