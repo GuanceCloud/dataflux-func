@@ -5315,7 +5315,7 @@ scriptMarketAPI:
   setOwner:
     showInDoc    : true
     name         : 获取脚本市场拥有权
-    method       : get
+    method       : post
     url          : /api/v1/script-markets/:id/owner/do/set
     response     : json
     requireSignIn: false
@@ -5328,7 +5328,7 @@ scriptMarketAPI:
   unsetOwner:
     showInDoc    : true
     name         : 放弃脚本市场拥有权
-    method       : get
+    method       : post
     url          : /api/v1/script-markets/:id/owner/do/unset
     response     : json
     requireSignIn: false

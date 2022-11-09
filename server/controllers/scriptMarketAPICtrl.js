@@ -150,7 +150,16 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
 
     // 操作 git
     var git = simpleGit({ baseDir: localPath });
+    var prevCommitId = null;
     async.series([
+      function(asyncCallback) {
+        git.revparse(['HEAD'], function(err, commitId) {
+          prevCommitId = commitId || null;
+
+          // 忽略空库报错
+          return asyncCallback();
+        })
+      },
       // git reset
       function(asyncCallback) {
         git.reset(simpleGit.ResetMode.HARD, asyncCallback);
@@ -161,6 +170,8 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
       },
       // git pull
       function(asyncCallback) {
+        if (!prevCommitId) return asyncCallback();
+
         git.pull(asyncCallback);
       },
       // 检查 PublishToken
@@ -168,14 +179,17 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
         var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
         var meta = fs.readJsonSync(metaFilePath, { throws: false }) || {};
 
-        if (meta.publishToken && meta.publishToken !== publishToken) {
+        if (meta.publishToken) {
+          // 已经获得所有权，中断处理
+          if (meta.publishToken === publishToken) return callback();
+
           // 所有权已被其他 DataFlux Func 占据
           return asyncCallback(new E('EClient', 'This Script Market is owned by others'));
 
         } else {
           // 尚未确定所有者，写入 PublishToken
           meta.publishToken = publishToken;
-          fs.outputJson(metaFilePath, meta, asyncCallback);
+          return fs.outputFile(metaFilePath, JSON.stringify(meta, null, 2), asyncCallback);
         }
       },
       // git add
@@ -190,7 +204,8 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
       function(asyncCallback) {
         git.push(function(err) {
           if (err) {
-            return git.raw('git reset --hard HEAD~1', function() {
+            return git.raw(['reset', '--hard', prevCommitId], function() {
+              // 保证错误依旧抛出
               return asyncCallback(err);
             })
           }
