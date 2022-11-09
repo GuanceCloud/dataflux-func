@@ -207,14 +207,14 @@ var CONNECTOR_CHECK_CONFIG_FUNC_MAP = {
     config.port = config.port || 1883;
 
     var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['user', 'password', 'clientId', 'topicHandlers'];
+    var OPTIONAL_FIELDS = ['user', 'password', 'clientId', 'multiSubClient', 'topicHandlers'];
 
     return _checkConnectorConfig(locals, 'mqtt', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
   kafka: function(locals, config, callback) {
     // 默认值
     var REQUIRED_FIELDS = ['servers'];
-    var OPTIONAL_FIELDS = ['user', 'password', 'groupId', 'securityProtocol', 'saslMechanisms'];
+    var OPTIONAL_FIELDS = ['user', 'password', 'groupId', 'securityProtocol', 'saslMechanisms', 'multiSubClient', 'kafkaOffset', 'topicHandlers'];
 
     return _checkConnectorConfig(locals, 'kafka', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
   },
@@ -511,6 +511,43 @@ exports.test = function(req, res, next) {
       checkResult: 'OK',
     });
     return res.locals.sendJSON(ret);
+  });
+};
+
+exports.listSubInfo = function(req, res, next) {
+  var connectorId = req.query.connectorId;
+
+  var subInfoList = [];
+
+  async.series([
+    // 查询最近消费信息
+    function(asyncCallback) {
+      var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
+        'connectorId', connectorId || '*',
+        'topic',       '*']);
+      res.locals.cacheDB.getByPattern(cachePattern, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          for (var key in cacheRes) {
+            var parsedKey = toolkit.parseCacheKey(key);
+            subInfoList.push({
+              connectorId: parsedKey.tags.connectorId,
+              topic      : parsedKey.tags.topic,
+              consumeInfo: JSON.parse(cacheRes[key]),
+            });
+          }
+        }
+
+        return asyncCallback();
+      });
+    },
+    // TODO: 查询最近处理结果
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(subInfoList);
+    res.locals.sendJSON(ret);
   });
 };
 

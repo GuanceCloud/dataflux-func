@@ -2629,6 +2629,15 @@ connectorAPI:
             $desc     : SASL机制
             $allowNull: true
             $type     : string
+          multiSubClient:
+            $desc     : 多订阅器
+            $allowNull: true
+            $type     : boolean
+          kafkaSubOffset:
+            $desc     : Kafka 订阅 Offset
+            $allowNull: true
+            $type     : string
+            $example  : 'end'
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true
@@ -2750,6 +2759,15 @@ connectorAPI:
             $desc     : SASL机制
             $allowNull: true
             $type     : string
+          multiSubClient:
+            $desc     : 多订阅器
+            $allowNull: true
+            $type     : boolean
+          kafkaSubOffset:
+            $desc     : Kafka 订阅 Offset
+            $allowNull: true
+            $type     : string
+            $example  : 'end'
           topicHandlers:
             $desc     : 主题处理函数
             $allowNull: true
@@ -2847,6 +2865,19 @@ connectorAPI:
     privilege    : general_w
     params:
       id:
+        $desc: 连接器ID
+        $type: string
+
+  listSubInfo:
+    showInDoc    : true
+    name         : 获取订阅信息列表
+    method       : get
+    url          : /api/v1/connector-sub-info/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      connectorId:
         $desc: 连接器ID
         $type: string
 

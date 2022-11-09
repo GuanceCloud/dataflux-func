@@ -15,6 +15,7 @@ paho-mqtt==1.6.1
 psutil==5.9.1
 psycopg2==2.9.3
 pycryptodomex==3.15.0
+pykafka==2.8.0
 pymongo==3.12.3
 pymssql==2.2.5
 PyMySQL[rsa,ed25519]==1.0.2

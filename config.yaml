@@ -34,6 +34,9 @@ SECRET: 'your_secret'
 #   NONE   : 不输出
 LOG_LEVEL: WARNING
 
+# 输出 Server 任务发送日志
+LOG_FUNC_FUNC_CALL_OPTIONS: false
+
 # 日志文件输出地址
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/logs/dataflux-func.log'
@@ -109,8 +112,10 @@ OFFICIAL_PACKAGE_INDEX_URL: https://static.guance.com/dataflux-func/market/pkg-i
 
 # 文件存储根目录
 FILE_STORE_ROOT_DIR: uploaded-files
-# 额外Python 包安装目录
+# 额外 Python 包安装目录
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
+# 额外 Python 包黑名单
+EXTRA_PYTHON_PACKAGE_BLACK_LIST: aliyunsdkcore
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false
@@ -190,8 +195,8 @@ _WEB_AK_NONCE_TTL          : 86400
 _WEB_PULL_LOG_TRACE_ID     : TRACE-PULLLOGS
 
 # 订阅模块一般作为常量的配置
-_SUB_KAFKA_COMSUME_RATE_PER_SECOND: 5
-_SUB_KAFKA_COMSUME_INTERVAL       : 3
+_SUB_BUFFER_LIMIT         : 5000
+_SUB_RECENT_CONSUME_EXPIRE: 604800
 
 # 本地临时认证令牌
 _WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER: X-Localhost-Temp-Auth-Token
@@ -242,6 +247,7 @@ _CRONTAB_RELOAD_DATA_MD5_CACHE      : '* * * * *'
 _FUNC_ARGUMENT_PLACEHOLDER_LIST: INPUT_BY_CALLER,FROM_PARAMETER
 
 _FUNC_TASK_DEFAULT_QUEUE                        : '1'
+_FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE            : '6'
 _FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
 _FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
 _FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'

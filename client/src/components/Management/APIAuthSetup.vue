@@ -41,7 +41,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Auth Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in C.API_AUTH" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>

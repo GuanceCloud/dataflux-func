@@ -25,7 +25,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item label="说明" prop="note">
                   <el-input
                     type="textarea"

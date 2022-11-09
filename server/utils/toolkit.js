@@ -698,16 +698,24 @@ var noFunctionReplacer = toolkit.noFunctionReplacer = function noFunctionReplace
  * @return {Boolean}
  */
 var isNothing = toolkit.isNothing = function isNothing(o) {
-  if (toolkit.isNullOrWhiteSpace(o) === true) {
+  if (isNullOrWhiteSpace(o) === true) {
     return true;
   }
 
-  if ('string' === typeof o && o.trim().length === 0) {
-    return true;
-  } else if (Array.isArray(o) && o.length === 0) {
-    return true;
-  } else if (JSON.stringify(o) === '{}') {
-    return true;
+  if ('number' === typeof o) {
+    return false;
+  } else if ('boolean' === typeof o) {
+    return false;
+  } else if ('string' === typeof o) {
+    return o.trim().length === 0;
+  } else if (Array.isArray(o)) {
+    return o.length === 0;
+  } else if ('object' === typeof o){
+    try {
+      return JSON.stringify(o) === '{}';
+    } catch(err) {
+      return false;
+    }
   }
 
   return false;
@@ -2226,4 +2234,60 @@ var waitFor = toolkit.waitFor = function waitFor(test, callback) {
   function() {
     return callback();
   });
+};
+
+/**
+ * @constructor
+ */
+var LimitedBuffer = function(limit) {
+  this._data = [];
+  this.limit = limit || 0;
+};
+
+/**
+ * Get something from buffer
+ *
+ * @return {Any}
+ */
+LimitedBuffer.prototype.get = function() {
+  return this._data.shift();
+};
+
+/**
+ * Put something into buffer
+ *
+ * @param  {Any} things
+ * @return {Any}
+ */
+LimitedBuffer.prototype.put = function() {
+  var self = this;
+
+  var args = Array.prototype.slice.call(arguments);
+  args.forEach(function(arg) {
+    if (self.limit > 0 && self._data.length >= self.limit) return;
+
+    self._data.push(arg);
+  });
+
+  return self;
+};
+
+/**
+ * List all things in buffer
+ *
+ * @return {Any}
+ */
+LimitedBuffer.prototype.list = function() {
+  return this._data;
+};
+
+Object.defineProperty(LimitedBuffer.prototype, 'length', {
+  get: function() {
+    return this._data.length;
+  }
+});
+
+toolkit.LimitedBuffer = LimitedBuffer;
+toolkit.createLimitedBuffer = function(limit) {
+  return new LimitedBuffer(limit);
 };

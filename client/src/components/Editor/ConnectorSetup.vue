@@ -19,9 +19,12 @@ Client ID          : 客户端 ID
 Group ID           : 分组 ID
 Security Protocol  : 安全协议
 SASL Mechanisms    : SASL 机制
+Multi Sub          : 多订阅器
+Sub Offset         : 订阅 Offset
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
+'Recent consume:'  : '最近消费：'
 'Add Topic/Handler': 添加主题/处理函数
 Test connection    : 测试连通性
 
@@ -73,7 +76,7 @@ This is a builtin Connector, please contact the admin to change the config: 当�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
                 <el-form-item v-if="data.isBuiltin">
                   <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
@@ -224,6 +227,24 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                       v-model="form.configJSON.groupId"></el-input>
                   </el-form-item>
 
+                  <el-form-item :label="$t('Multi Sub')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
+                    <el-select v-model="form.configJSON.multiSubClient">
+                      <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
+                      <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
+                    </el-select>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
+                    <el-select v-model="form.configJSON.kafkaSubOffset">
+                      <el-option label="smallest" key="smallest" value="smallest"></el-option>
+                      <el-option label="earliest" key="earliest" value="earliest"></el-option>
+                      <el-option label="beginning" key="beginning" value="beginning"></el-option>
+                      <el-option label="largest" key="largest" value="largest"></el-option>
+                      <el-option label="latest" key="latest" value="latest"></el-option>
+                      <el-option label="end" key="end" value="end"></el-option>
+                    </el-select>
+                  </el-form-item>
+
                   <template v-if="hasConfigField(selectedType, 'topicHandlers')">
                     <el-form-item class="config-divider" :label="$t('Topic/Handler')">
                       <el-divider></el-divider>
@@ -242,10 +263,11 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                         <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                       </el-form-item>
                       <el-form-item
+                        class="func-cascader-input"
                         :key="`handler-${index}`"
                         :prop="`configJSON.topicHandlers.${index}.funcId`"
                         :rules="formRules_topic">
-                        <el-cascader class="func-cascader-input" ref="funcCascader"
+                        <el-cascader ref="funcCascader"
                           placeholder="--"
                           filterable
                           :filter-method="common.funcCascaderFilter"
@@ -253,6 +275,15 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                           v-model="topicHandler.funcId"
                           :options="funcCascader"
                           :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+
+                        <!-- 最近消费提示 -->
+                        <InfoBlock v-if="subInfoMap[topicHandler.topic]"
+                          type="warning"
+                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`"></InfoBlock>
+                      </el-form-item>
+                      <el-form-item
+
+                        :key="`consume-info-${index}`">
                       </el-form-item>
                     </template>
                     <el-form-item>
@@ -421,6 +452,9 @@ export default {
         this.testConnectorResult = null;
 
         this.updateValidator(this.data.type);
+
+        // 获取订阅信息
+        await this.updateSubInfo();
       }
 
       // 获取函数列表
@@ -430,6 +464,18 @@ export default {
       this.funcCascader = funcList.cascader;
 
       this.$store.commit('updateLoadStatus', true);
+    },
+    async updateSubInfo() {
+      if (!this.$route.params.id) return;
+
+      let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
+      if (!apiRes.ok) return;
+
+      let subInfoMap = apiRes.data.reduce((acc, x) => {
+        acc[x.topic] = x.consumeInfo;
+        return acc;
+      }, {});
+      this.subInfoMap = subInfoMap;
     },
     async submitData() {
       try {
@@ -660,6 +706,13 @@ export default {
             required: false,
           },
         ],
+        'configJSON.token': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input token'),
+            required: false,
+          },
+        ],
         'configJSON.accessKey': [
           {
             trigger : 'change',
@@ -692,6 +745,27 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input security protocol'),
+            required: false,
+          },
+        ],
+        'configJSON.saslMechanisms': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input SASL Mechanisms'),
+            required: false,
+          },
+        ],
+        'configJSON.multiSubClient': [
+          {
+            trigger : 'change',
+            message : this.$t('Please select if Multi Sub allowed'),
+            required: false,
+          },
+        ],
+        'configJSON.kafkaSubOffset': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input Sub Offset'),
             required: false,
           },
         ],
@@ -733,6 +807,7 @@ export default {
   data() {
     return {
       data        : {},
+      subInfoMap  : {},
       funcMap     : {},
       funcCascader: [],
 
@@ -744,9 +819,17 @@ export default {
         configJSON : {},
       },
 
-      isSaving            : false,
+      isSaving           : false,
       testConnectorResult: null,
     }
+  },
+  mounted() {
+    this.autoRefreshTimer = setInterval(() => {
+      this.updateSubInfo();
+    }, 5 * 1000);
+  },
+  beforeDestroy() {
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>
@@ -757,7 +840,8 @@ export default {
   margin-bottom: 0;
 }
 
-.func-cascader-input {
+.func-cascader-input .el-cascader,
+.func-cascader-input .form-tip {
   width: 420px;
 }
 .topic-handler .el-input {

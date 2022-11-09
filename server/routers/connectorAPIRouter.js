@@ -29,3 +29,7 @@ routeLoader.load(ROUTE.connectorAPI.query, [
 routeLoader.load(ROUTE.connectorAPI.test, [
   connectorAPICtrl.test,
 ]);
+
+routeLoader.load(ROUTE.connectorAPI.listSubInfo, [
+  connectorAPICtrl.listSubInfo,
+]);

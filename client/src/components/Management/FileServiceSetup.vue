@@ -39,7 +39,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
                   <span class="text-main float-right">
