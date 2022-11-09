@@ -140,8 +140,10 @@ $ helm delete <RELEASE_NAME> -n func
 | `server.service.nodePort`           | Func server nodePort 端口号  | `31080`                                             |
 | `worker_0.enabled`                  | 是否启用Func worker_0服务    | `true`                                              |
 | `worker_0.replicas`                 | Func worker_0 副本数         | `1`                                                 |
-| `worker_1_6.enabled`                | 是否启用Func worker_1_6服务  | `true`                                              |
-| `worker_1_6.replicas`               | Func worker_1_6 副本数       | `1`                                                 |
+| `worker_1_5.enabled`                | 是否启用Func worker_1_5服务  | `true`                                              |
+| `worker_1_5.replicas`               | Func worker_1_5 副本数       | `1`                                                 |
+| `worker_6.enabled`                | 是否启用Func worker_6服务  | `true`                                              |
+| `worker_6.replicas`               | Func worker_6 副本数       | `2`                                                 |
 | `worker_7.enabled`                  | 是否启用Func worker_7服务    | `true`                                              |
 | `worker_7.replicas`                 | Func worker_7 副本数         | `1`                                                 |
 | `worker_8_9.enabled`                | 是否启用Func worker_8_9服务  | `true`                                              |

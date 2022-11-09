@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ include "func.fullname" . }}-worker-8-9
-  name: {{ include "func.fullname" . }}-worker-8-9
+    app: {{ include "func.fullname" . }}-worker-6
+  name: {{ include "func.fullname" . }}-worker-6
 spec:
-  replicas: {{ .Values.worker_8_9.replicas }}
+  replicas: {{ .Values.worker_6.replicas }}
   selector:
     matchLabels:
-      app: {{ include "func.fullname" . }}-worker-8-9
+      app: {{ include "func.fullname" . }}-worker-6
   template:
     metadata:
       labels:
-        app: {{ include "func.fullname" . }}-worker-8-9
+        app: {{ include "func.fullname" . }}-worker-6
     spec:
 {{/*      initContainers:*/}}
 {{/*      - name: init-service*/}}
@@ -21,11 +21,10 @@ spec:
       containers:
       - args:
         - ./run-worker-by-queue.sh
-        - "8"
-        - "9"
+        - "6"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ include "func.fullname" . }}-worker-8-9
+        name: {{ include "func.fullname" . }}-worker-6
         resources: {}
         volumeMounts:
         #- mountPath: /data/user-config.yaml
@@ -50,11 +49,11 @@ spec:
           hostPath:
             path: {{ .Values.storage.hostPath.path }}/resources
       {{- end }}
-        {{- if (eq .Values.timeZone "UTC") }}
+      {{- if (eq .Values.timeZone "UTC") }}
         - name: timezone
           hostPath:
             path: /usr/share/zoneinfo/UTC
-        {{- end}}
+      {{- end}}
       {{- with .Values.storage.hostPath.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
@@ -65,7 +64,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "func.fullname" . }}-worker-8-9
+  name: {{ include "func.fullname" . }}-worker-6
 spec:
   ports:
   - name: default
@@ -73,5 +72,6 @@ spec:
     protocol: TCP
     targetPort: 42
   selector:
-    app: {{ include "func.fullname" . }}-worker-8-9
+    app: {{ include "func.fullname" . }}-worker-6
   type: ClusterIP
+

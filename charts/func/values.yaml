@@ -13,7 +13,7 @@ image:
   ## Define the Cluster-Agent version to use.
   #
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "{{tag}}"
+  tag: ""
 
 ## @param timeZone - string - required
 ## Define the Func time zone
@@ -127,20 +127,23 @@ worker_0:
   enabled: true
   replicas: 2
 
-# work-1-6.yaml
-# Synchronous task processing
-worker_1_6:
+# work-1-5.yaml
+worker_1_5:
   enabled: true
   replicas: 2
 
+# work-6.yaml
+worker_6:
+  enabled: true
+  replicas: 2
+
+
 # work-7.yaml
-# UI interface debugging task processing
 worker_7:
   enabled: true
   replicas: 2
 
 # work-8-9.yaml
-# Asynchronous task processing
 worker_8_9:
   enabled: true
   replicas: 2

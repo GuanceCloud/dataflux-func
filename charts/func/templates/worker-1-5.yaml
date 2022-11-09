@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ include "func.fullname" . }}-worker-1-6
-  name: {{ include "func.fullname" . }}-worker-1-6
+    app: {{ include "func.fullname" . }}-worker-1-5
+  name: {{ include "func.fullname" . }}-worker-1-5
 spec:
-  replicas: {{ .Values.worker_1_6.replicas }}
+  replicas: {{ .Values.worker_1_5.replicas }}
   selector:
     matchLabels:
-      app: {{ include "func.fullname" . }}-worker-1-6
+      app: {{ include "func.fullname" . }}-worker-1-5
   template:
     metadata:
       labels:
-        app: {{ include "func.fullname" . }}-worker-1-6
+        app: {{ include "func.fullname" . }}-worker-1-5
     spec:
 {{/*      initContainers:*/}}
 {{/*      - name: init-service*/}}
@@ -26,10 +26,9 @@ spec:
         - "3"
         - "4"
         - "5"
-        - "6"
-        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion | default .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ include "func.fullname" . }}-worker-1-6
+        name: {{ include "func.fullname" . }}-worker-1-5
         resources: {}
         volumeMounts:
         #- mountPath: /data/user-config.yaml
@@ -69,7 +68,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "func.fullname" . }}-worker-1-6
+  name: {{ include "func.fullname" . }}-worker-1-5
 spec:
   ports:
   - name: default
@@ -77,6 +76,6 @@ spec:
     protocol: TCP
     targetPort: 42
   selector:
-    app: {{ include "func.fullname" . }}-worker-1-6
+    app: {{ include "func.fullname" . }}-worker-1-5
   type: ClusterIP
 

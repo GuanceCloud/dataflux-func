@@ -34,7 +34,7 @@ spec:
       containers:
       - args:
         - ./run-server.sh
-        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion | default .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ include "func.fullname" . }}-server
         ports:

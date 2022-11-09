@@ -1,5 +1,5 @@
 #!/bin/bash
-# 此脚步用于打包Func charts 包
+# 此脚本用于打包Func charts 包
 # 生产地址为 https://pubrepo.guance.com/chartrepo/func  func-prod-chart
 # 测试地址为 https://registry.jiagouyun.com/chartrepo/func-test  func-test-chart
 # param VERSION  1.6.7
@@ -15,7 +15,7 @@ helm_info(){
 }
 
 build_charts(){
-  sed -e "s,{{tag}},${IMAGETAG},g" charts/values.yaml > charts/func/values.yaml
+  #sed -e "s,{{tag}},${IMAGETAG},g" charts/values.yaml > charts/func/values.yaml
   helm package charts/func --app-version ${IMAGETAG} --version ${VERSION}
 }
 
