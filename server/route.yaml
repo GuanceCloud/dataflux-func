@@ -5337,3 +5337,29 @@ scriptMarketAPI:
       id:
         $desc: 脚本市场ID
         $type: string
+
+  publish:
+    showInDoc    : true
+    name         : 发布脚本至脚本市场
+    method       : post
+    url          : /api/v1/script-markets/:id/do/publish
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+    body:
+      scriptSetIds:
+        $desc      : 发布的脚本集ID列表
+        $isRequired: true
+        $minLength : 1
+        $:
+          $desc      : 脚本集ID
+          $isRequired: true
+          $type      : string
+      message:
+        $desc      : 发布信息
+        $isRequired: true
+        $type      : string

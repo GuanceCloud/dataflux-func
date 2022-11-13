@@ -163,6 +163,8 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         break;
 
       case 'list':
+        if (Array.isArray(v)) break;
+
         configObj[k] = v.toString();
         if (configObj[k].length > 0) {
           configObj[k] = v.trim().split(/[, \n]+/g).map(function(x) {
@@ -175,6 +177,8 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         break;
 
       case 'map':
+        if ('object' === typeof v) break;
+
         var itemMap = {};
         v.split(',').forEach(function(item) {
           var itemParts = item.split('=');

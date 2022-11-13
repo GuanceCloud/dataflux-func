@@ -29,3 +29,7 @@ routeLoader.load(ROUTE.scriptMarketAPI.setOwner, [
 routeLoader.load(ROUTE.scriptMarketAPI.unsetOwner, [
   scriptMarketAPICtrl.unsetOwner,
 ]);
+
+routeLoader.load(ROUTE.scriptMarketAPI.publish, [
+  scriptMarketAPICtrl.publish,
+]);
