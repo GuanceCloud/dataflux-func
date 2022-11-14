@@ -30,6 +30,10 @@ routeLoader.load(ROUTE.scriptMarketAPI.unsetOwner, [
   scriptMarketAPICtrl.unsetOwner,
 ]);
 
-routeLoader.load(ROUTE.scriptMarketAPI.publish, [
-  scriptMarketAPICtrl.publish,
+routeLoader.load(ROUTE.scriptMarketAPI.push, [
+  scriptMarketAPICtrl.push,
+]);
+
+routeLoader.load(ROUTE.scriptMarketAPI.pull, [
+  scriptMarketAPICtrl.pull,
 ]);

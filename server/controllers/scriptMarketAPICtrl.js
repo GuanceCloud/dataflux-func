@@ -7,6 +7,7 @@ var URL  = require('url').URL;
 /* 3rd-party Modules */
 var async     = require('async');
 var simpleGit = require('simple-git');
+var yaml      = require('js-yaml');
 var fs        = require('fs-extra');
 
 /* Project Modules */
@@ -19,6 +20,10 @@ var scriptSetMod    = require('../models/scriptSetMod');
 var scriptMod       = require('../models/scriptMod');
 
 /* Configure */
+var SCRIPT_TYPE_EXT_MAP = {
+  python  : 'py',
+  markdown: 'md',
+};
 
 function _checkScriptMarketAuth(locals, type, auth, requiredFields, optionalFields, callback) {
   // 检查字段
@@ -80,12 +85,94 @@ function _getRemoteTokenInfo(scriptMarket) {
   return info;
 };
 
-function _genGitErrDetail(err) {
+function _getGitErrDetail(err) {
   var errorMessage = err.toString().trim().split('\n').pop();
   var errDetail = {
     message: errorMessage,
   };
   return errDetail;
+};
+
+function _getDefaultReadmeContent(scriptSet) {
+  function toMarkdownTextBlock(s) {
+    if (toolkit.isNothing(s)) return '';
+    return s.split('\n').join('  \n');
+  }
+
+  function toHTMLTextBlock(s) {
+    if (toolkit.isNothing(s)) return '';
+    return s.split('\n').join('<br>');
+  }
+
+  // 脚本集信息
+  var content = [
+    `# ${scriptSet.title || scriptSet.id}`,
+    `| ID | 标题 / title | 推送时间 / Push Time |`
+    + `\n|---|---|---|`
+    + `\n| `
+    + [
+          `\`${scriptSet.id}\``,
+          `${scriptSet.title || '-'}`,
+          `${toolkit.getDateTimeStringCN()}`,
+      ].join(' | ') + ' |',
+
+    `## 1. 描述 / Description`,
+    `${toMarkdownTextBlock(scriptSet.description) || '*没有具体描述 / No description*'}`,
+
+    `## 2. 依赖包 / Dependency`,
+    toolkit.isNothing(scriptSet.requirements)
+      ? `*不需要任何依赖包 / No dependency required*`
+      : `~~~text\n${scriptSet.requirements.trim()}\n~~~`,
+  ].join('\n\n');
+
+  if (toolkit.isNothing(scriptSet.scripts)) return content;
+
+  // 脚本信息
+  content += [
+    `\n\n## 3. 脚本 / Scripts`,
+    `本脚本集包含以下脚本：  `,
+    `This Script Set contains the following Scripts:   `,
+  ].join('\n\n');
+
+  content += [
+    `\n\n| # | ID | 标题 / title | MD5 | 更新时间 / Update Time |`,
+    `|---|---|---|---|---|`,
+  ].join('\n');
+
+  var codeLines = 0;
+  var codeChars = 0;
+  scriptSet.scripts.forEach(function(s, index) {
+    content += `\n| `
+            + [
+              `${index + 1}`,
+              `\`${s.id}\``,
+              `${s.title || '-'}`,
+              `\`${s.codeMD5 || '-'}\``,
+              `${toolkit.getDateTimeStringCN(s.updateTime)}`,
+            ].join(' | ') + ' |';
+
+    if ('string' === typeof s.code) {
+      codeLines += s.code.split('\n').length;
+      codeChars += s.code.length;
+    }
+  });
+
+  // 统计
+  content += [
+    `\n\n## 4. 统计 / Statistics`,
+    `本脚本集统计信息如下：  `,
+    `The statistics of this Script Set are as follows:   `,
+  ].join('\n\n');
+
+  content += [
+    `\n\n| 项目 / Item | 结果 / Result |`,
+    `|---|---|`,
+    `| 脚本数量 / Script Count  | ${scriptSet.scripts.length} |`,
+    `| 脚本总行数 / Total Lines | ${codeLines} |`,
+    `| 脚本总字符数 / Total Characters | ${codeChars} |`,
+  ].join('\n');
+
+  return content;
 };
 
 function _prepareGitRepo(git, callback) {
@@ -164,7 +251,48 @@ var SCRIPT_MARKET_CHECK_AUTH_FUNC_MAP = {
 // 脚本市场 - 列出脚本集
 var SCRIPT_MARKET_LIST_SCRIPT_SETS_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
-    return callback()
+    var gitURL    = _getGitRepoAuthURL(scriptMarket);
+    var localPath = _getGitRepoLocalAbsPath(scriptMarket);
+
+    var scriptSets = [];
+
+    // 操作 git
+    var git = simpleGit({ baseDir: localPath });
+    async.series([
+      // 准备 Git 库
+      function(asyncCallback) {
+        _prepareGitRepo(git, asyncCallback);
+      },
+      // 读取脚本集目录
+      function(asyncCallback) {
+        var scriptSetBaseDir = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR);
+
+        fs.readdirSync(scriptSetBaseDir, { withFileTypes: true }).forEach(function(d) {
+          // 忽略非目录
+          if (!d.isDirectory()) return;
+
+          // 忽略不包含 META 信息的目录
+          var metaFilePath = path.join(scriptSetBaseDir, d.name, CONFIG.SCRIPT_MARKET_SCRIPT_SET_META_FILE);
+          var metaData = null;
+          try {
+            metaData = fs.readFileSync(metaFilePath).toString().trim();
+            metaData = yaml.load(metaData);
+
+          } catch(err) {
+            return;
+          }
+
+          if (metaData) {
+            scriptSets.push(metaData);
+          }
+        });
+
+        return asyncCallback();
+      },
+    ], function(err) {
+      if (err) return callback(err);
+      return callback(null, scriptSets);
+    });
   },
   aliyun_oss: function(locals, scriptMarket, callback) {
     return callback(new E('ENotImplemented', 'This type of Script Market is not Implemented.'));
@@ -194,7 +322,7 @@ var SCRIPT_MARKET_LOAD_FUNC_MAP = {
 
         git.clone(gitURL, localPath, opt, function(err) {
           if (err) {
-            var errDetail = _genGitErrDetail(err);
+            var errDetail = _getGitErrDetail(err);
             if (errDetail.message.indexOf('--depth=1') >= 0) {
               // 空库，重新尝试
               delete opt['--depth'];
@@ -291,11 +419,11 @@ var SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 发布脚本集
-var SCRIPT_MARKET_PUBLISH_FUNC_MAP = {
-  git: function(locals, scriptMarket, publishContent, message, callback) {
-    if (toolkit.isNothing(publishContent)) {
-      return callback(new E('EClient', 'Nothing to publish'));
+// 脚本市场 - 推送脚本集
+var SCRIPT_MARKET_PUSH_FUNC_MAP = {
+  git: function(locals, scriptMarket, pushContent, message, callback) {
+    if (toolkit.isNothing(pushContent)) {
+      return callback(new E('EClient', 'Nothing to push'));
     }
 
     var token     = _getToken(scriptMarket);
@@ -319,32 +447,53 @@ var SCRIPT_MARKET_PUBLISH_FUNC_MAP = {
 
         return asyncCallback();
       },
-      // 写入发布文件
+      // 写入待推送文件
       function(asyncCallback) {
         try {
           // 遍历脚本集
-          publishContent.scriptSets.forEach(function(scriptSet) {
-            var scriptSetBaseDir = path.join(localPath, 'script-set');
+          pushContent.scriptSets.forEach(function(scriptSet) {
+            var scriptSetBaseDir = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR);
 
             // 创建脚本集文件夹
             var scriptSetDir = path.join(scriptSetBaseDir, scriptSet.id);
             fs.emptyDirSync(scriptSetDir);
 
-            // 生成 META 信息
+            // 写入 README
+            var defaultReadmeData = _getDefaultReadmeContent(scriptSet);
+            var readmeFilePath    = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_SCRIPT_SET_README_FILE);
+            fs.outputFileSync(readmeFilePath, defaultReadmeData);
+
+            // 生成 META 内容
             var metaData = toolkit.jsonCopy(scriptSet);
 
             // 写入脚本文件
             metaData.scripts.forEach(function(script) {
-              var scriptFilePath = path.join(scriptSetDir, script.id);
-              fs.outputFileSync(scriptFilePath, script.code || '');
+              var filePath = null;
+              var scriptName = script.id.split('__').slice(1).join('__');
 
-              // META 中不需要保留代码
+              var specialType = CONFIG.SCRIPT_MARKET_SPECIAL_NAME_TYPE_MAP[scriptName];
+              if (specialType && specialType === script.type) {
+                // 特殊文件
+                filePath = path.join(scriptSetDir, scriptName);
+              } else {
+                // 普通文件
+                filePath = path.join(scriptSetDir, script.id);
+              }
+
+              var fileExt = SCRIPT_TYPE_EXT_MAP[script.type];
+              if (fileExt) {
+                filePath += '.' + fileExt;
+              }
+
+              fs.outputFileSync(filePath, script.code || '');
+
+              // 去除 META 中代码
               delete script.code;
             });
 
             // 写入 META 信息
             var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_SCRIPT_SET_META_FILE);
-            fs.outputFileSync(metaFilePath, JSON.stringify(metaData, null, 2));
+            fs.outputFileSync(metaFilePath, yaml.dump(metaData));
           });
 
           return asyncCallback();
@@ -356,6 +505,34 @@ var SCRIPT_MARKET_PUBLISH_FUNC_MAP = {
       // 同步至 Git
       function(asyncCallback) {
         _syncToGitRepo(git, message, asyncCallback);
+      },
+    ], callback);
+  },
+  aliyun_oss: function(locals, scriptMarket, scriptSets, message, callback) {
+    return callback(new E('ENotImplemented', 'This type of Script Market is not Implemented.'));
+  },
+};
+
+// 脚本市场 - 拉取脚本集
+var SCRIPT_MARKET_PULL_FUNC_MAP = {
+  git: function(locals, scriptMarket, pullScriptSetIds, callback) {
+    if (toolkit.isNothing(pullScriptSetIds)) {
+      return callback(new E('EClient', 'Nothing to pull'));
+    }
+
+    var token     = _getToken(scriptMarket);
+    var localPath = _getGitRepoLocalAbsPath(scriptMarket);
+
+    // 操作 git
+    var git = simpleGit({ baseDir: localPath });
+    async.series([
+      // 准备 Git 库
+      function(asyncCallback) {
+        _prepareGitRepo(git, asyncCallback);
+      },
+      // 拉取脚本集
+      function(asyncCallback) {
+
       },
     ], callback);
   },
@@ -567,7 +744,7 @@ exports.unsetOwner = function(req, res, next) {
   });
 };
 
-exports.publish = function(req, res, next) {
+exports.push = function(req, res, next) {
   var id           = req.params.id;
   var scriptSetIds = req.body.scriptSetIds;
   var message      = req.body.message;
@@ -576,8 +753,8 @@ exports.publish = function(req, res, next) {
   var scriptSetModel    = scriptSetMod.createModel(res.locals);
   var scriptModel       = scriptMod.createModel(res.locals);
 
-  var scriptMarket   = null;
-  var publishContent = {};
+  var scriptMarket = null;
+  var pushContent  = {};
 
   var _scriptSetMap = null;
   async.series([
@@ -599,6 +776,7 @@ exports.publish = function(req, res, next) {
           'sset.title',
           'sset.description',
           'sset.requirements',
+          'sset.updateTime',
         ],
         filters: {
           'sset.id': { in: scriptSetIds }
@@ -607,8 +785,8 @@ exports.publish = function(req, res, next) {
       scriptSetModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        publishContent.scriptSets = dbRes;
-        _scriptSetMap = publishContent.scriptSets.reduce(function(acc, x) {
+        pushContent.scriptSets = dbRes;
+        _scriptSetMap = pushContent.scriptSets.reduce(function(acc, x) {
           acc[x.id] = x;
           return acc;
         }, {});
@@ -627,6 +805,7 @@ exports.publish = function(req, res, next) {
           'scpt.type',
           'scpt.code',
           'scpt.codeMD5',
+          'scpt.updateTime',
         ],
         filters: {
           'scpt.scriptSetId': { in: scriptSetIds }
@@ -649,12 +828,64 @@ exports.publish = function(req, res, next) {
     },
     // 发布脚本集
     function(asyncCallback) {
-      SCRIPT_MARKET_PUBLISH_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, publishContent, message, asyncCallback);
+      SCRIPT_MARKET_PUSH_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, pushContent, message, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet();
     return res.locals.sendJSON(ret);
+  });
+};
+
+exports.pull = function(req, res, next) {
+  var id           = req.params.id;
+  var scriptSetIds = req.body.scriptSetIds;
+
+  var scriptMarketModel = scriptMarketMod.createModel(res.locals);
+  var scriptSetModel    = scriptSetMod.createModel(res.locals);
+  var scriptModel       = scriptMod.createModel(res.locals);
+
+  var scriptMarket = null;
+  var pullContent  = null;
+
+  var transScope = modelHelper.createTransScope(res.locals.db);
+  async.series([
+    // 获取脚本市场
+    function(asyncCallback) {
+      scriptMarketModel.getWithCheck(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        scriptMarket = dbRes;
+
+        return asyncCallback();
+      })
+    },
+    // 获取拉取数据数据
+    function(asyncCallback) {
+      SCRIPT_MARKET_PULL_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, scriptSetIds, function(err, _pullContent) {
+        if (err) return asyncCallback(err);
+
+        pullContent = _pullContent;
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      transScope.start(asyncCallback);
+    },
+    // 脚本集数据入库
+    function(asyncCallback) {
+    },
+    // 脚本数据入库
+    function(asyncCallback) {
+    },
+  ], function(err) {
+    transScope.end(err, function(scopeErr) {
+      if (scopeErr) return next(scopeErr);
+
+      var ret = toolkit.initRet();
+      return res.locals.sendJSON(ret);
+    });
   });
 };
