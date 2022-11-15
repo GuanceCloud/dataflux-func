@@ -5248,6 +5248,10 @@ scriptMarketAPI:
           $desc      : 名称
           $allowNull : true
           $type      : string
+        description:
+          $desc      : 描述
+          $allowNull : true
+          $type      : string
         type:
           $desc      : 类型
           $isRequired: true
@@ -5261,6 +5265,49 @@ scriptMarketAPI:
           $type      : string
         gitBranch:
           $desc      : Git 库分支
+          $allowNull : true
+          $type      : string
+        authJSON:
+          $desc      : 认证信息
+          $allowNull : true
+          username:
+            $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          password:
+            $desc      : 密码
+            $allowNull : true
+            $type      : string
+          accessKeyId:
+            $desc      : Access Key ID
+            $allowNull : true
+            $type      : string
+          accessKeySecret:
+            $desc      : Access Key Secret
+            $allowNull : true
+            $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : 修改脚本市场
+    method       : post
+    url          : /api/v1/script-markets/:id/do/modify
+    response     : json
+    requireSignIn: false
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
+        description:
+          $desc      : 描述
           $allowNull : true
           $type      : string
         authJSON:

@@ -122,15 +122,10 @@ SCRIPT_MARKET_GIT_REPO_DIR: script-market-git-repos
 SCRIPT_MARKET_TOKEN_FILE: TOKEN
 # 脚本市场脚本集目录名
 SCRIPT_MARKET_SCRIPT_SET_DIR: script-set
-# 脚本市场脚本集特殊文件名
-SCRIPT_MARKET_SPECIAL_NAME_TYPE_MAP: >
-  readme=markdown
-  ,document=markdown
-  ,changelog=markdown
 # 脚本市场 README 文件名
-SCRIPT_MARKET_SCRIPT_SET_README_FILE: README.md
-# 脚本市场脚本集 META 文件名
-SCRIPT_MARKET_SCRIPT_SET_META_FILE: META
+SCRIPT_MARKET_README_FILE: README.md
+# 脚本市场 META 文件名
+SCRIPT_MARKET_META_FILE: META
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false

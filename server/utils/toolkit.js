@@ -2134,6 +2134,28 @@ var toBytes = toolkit.toBytes = function toBytes(s) {
   return byteSize;
 };
 
+/**
+ * Convert text to Markdown text block with trailing space for line breaking
+ * @param  {String} s
+ * @return {String}
+ */
+
+var toMarkdownTextBlock = toolkit.toMarkdownTextBlock = function toMarkdownTextBlock(s) {
+  if (toolkit.isNothing(s)) return '';
+  return s.split('\n').join('  \n');
+}
+
+/**
+ * Convert text to HTML text block with <br> for line breaking
+ * @param  {String} s
+ * @return {String}
+ */
+
+var toHTMLTextBlock = toolkit.toHTMLTextBlock = function toHTMLTextBlock(s) {
+  if (toolkit.isNothing(s)) return '';
+  return s.split('\n').join('<br>');
+}
+
 var asNumberArr = toolkit.asNumberArr = function asNumberArr(arr) {
   return arr.map(function(x) {
     return parseFloat(x);
