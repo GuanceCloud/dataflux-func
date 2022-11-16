@@ -256,32 +256,23 @@ exports.clone = function(req, res, next) {
   });
 };
 
-/* 导出步骤
- *    1. 生成导出数据：大JSON，{"scripts": [<所有脚本信息及代码>], "scriptSets": [<所有脚本集信息>]}
- *    2. 压缩
- *    3. 使用importToken 进行AES对称加密
- * 导入步骤
- *    1. 使用importToken 进行AES对称解密
- *    3. 解压
- *    4. 反序列化大JSON，将数据导入数据库
- *    5. 【导入用户包，且指定立即发布时】发布脚本
- */
-
 exports.export = function(req, res, next) {
   var opt = req.body;
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
-  scriptSetModel.export(opt, function(err, fileBuf) {
+  scriptSetModel.getExportData(opt, function(err, exportData, summary) {
     if (err) return next(err);
 
-    // 文件名为固定开头+时间
-    var fileNameParts = [
-      CONFIG._FUNC_PKG_EXPORT_FILENAME,
-      moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
-    ];
-    var fileName = fileNameParts.join('-') + CONFIG._FUNC_PKG_EXPORT_EXT;
+    return res.locals.sendJSON({exportData, summary});
 
-    return res.locals.sendFile(fileBuf, fileName);
+    // // 文件名为固定开头+时间
+    // var fileNameParts = [
+    //   CONFIG._FUNC_PKG_EXPORT_FILENAME,
+    //   moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
+    // ];
+    // var fileName = fileNameParts.join('-') + CONFIG._FUNC_PKG_EXPORT_EXT;
+
+    // return res.locals.sendFile(fileBuf, fileName);
   });
 };
 

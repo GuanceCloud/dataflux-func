@@ -200,3 +200,38 @@ upgradeInfo:
       -- 扩充系统配置 value 字段
       ALTER TABLE wat_main_system_config
         MODIFY COLUMN `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '值';
+
+  - seq: 14
+      -- DataFlux Func 2.x
+      CREATE TABLE `biz_main_script_market` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本市场ID',
+        `name` varchar(256) DEFAULT NULL COMMENT '名称',
+        `description` text COMMENT '描述',
+        `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 git|aliyun_oss',
+        `url` text NOT NULL COMMENT 'URL地址',
+        `gitBranch` text COMMENT 'git分支',
+        `authJSON` json DEFAULT NULL COMMENT '认证信息JSON',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本市场'
+
+      -- 修改JSON字段类型为 json
+      ALTER TABLE biz_main_func
+        modify `kwargsJSON` json DEFAULT NULL COMMENT '命名参数JSON';
+
+      ALTER TABLE biz_main_auth_link
+        modify `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+      ALTER TABLE biz_main_crontab_config
+        modify `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+      ALTER TABLE biz_main_batch
+        modify `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
+
+      ALTER TABLE wat_main_task_result_example
+        modify `argsJSON` json DEFAULT NULL,
+        modify `kwargsJSON` json DEFAULT NULL,
+        modify `retvalJSON` json DEFAULT NULL;

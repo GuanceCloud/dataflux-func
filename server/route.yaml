@@ -1912,12 +1912,6 @@ scriptSetAPI:
     privilege    : general_w
     body:
       $isRequired: true
-      password:
-        $desc      : 指定密码
-        $isRequired: true
-        $allowNull : true
-        $type      : string
-        $maxLength : 24
       scriptSetIds:
         $desc      : 导出的脚本集ID列表
         $isRequired: true
@@ -1952,7 +1946,7 @@ scriptSetAPI:
         $type     : boolean
       note:
         $desc      : 备注
-        $isRequired: true
+        $allowNull : true
         $minLength : 1
 
   import:
@@ -5406,8 +5400,8 @@ scriptMarketAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
-      message:
-        $desc      : 发布信息
+      note:
+        $desc      : 备注
         $isRequired: true
         $type      : string
 

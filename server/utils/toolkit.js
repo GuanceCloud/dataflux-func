@@ -8,6 +8,8 @@ var urlparse    = require('url').parse;
 var querystring = require('querystring');
 
 /* 3rd-party Modules */
+var fs        = require('fs-extra');
+var yaml      = require('js-yaml');
 var uuid      = require('uuid');
 var iconv     = require('iconv-lite');
 var babyparse = require('babyparse');
@@ -2325,4 +2327,25 @@ Object.defineProperty(LimitedBuffer.prototype, 'length', {
 toolkit.LimitedBuffer = LimitedBuffer;
 toolkit.createLimitedBuffer = function(limit) {
   return new LimitedBuffer(limit);
+};
+
+var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
+  var data = '';
+  try {
+    data = fs.readFileSync(filePath).toString();
+  } catch(err) {
+    // Nope
+  }
+
+  switch(type) {
+    case 'json':
+      data = JSON.parse(data);
+      break;
+
+    case 'yaml':
+      data = yaml.load(data);
+      break;
+  }
+
+  return data;
 };
