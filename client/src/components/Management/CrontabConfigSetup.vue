@@ -31,12 +31,18 @@ THU              : 周四
 FRI              : 周五
 SAT              : 周六
 Every month      : 每月
+Every 3 months   : 每 3 个月
+Every 6 months   : 每 6 个月
 Every day        : 每天
 Every hour       : 每小时
+Every 2 hours    : 每 2 小时
+Every 3 hours    : 每 3 小时
+Every 6 hours    : 每 6 小时
+Every 12 hours   : 每 12 小时
 Every minute     : 每分钟
-Every 5 minutes  : 每5分钟
-Every 15 minutes : 每15分钟
-Every 30 minutes : 每30分钟
+Every 5 minutes  : 每 5 分钟
+Every 15 minutes : 每 15 分钟
+Every 30 minutes : 每 30 分钟
 
 'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
@@ -444,6 +450,13 @@ export default {
       let sortFunc = (a, b) => {
         return parseInt(a) - parseInt(b);
       }
+      let hasStarExpr = part => {
+        if (this.T.isNothing(part)) return false;
+        for (let i = 0; i < part.length; i++) {
+          if (part[i].indexOf('*') >= 0) return true;
+        }
+        return false;
+      }
 
       ['weeks', 'months', 'days', 'hours', 'minutes'].forEach(part => {
         let defaultExpr = this[part.toUpperCase()][0].expr;
@@ -454,12 +467,8 @@ export default {
 
         if (newPart.length <= 0) {
           this.formCrontab[part] = [defaultExpr];
-        } else if (newPart.length >= 2 && newPart.indexOf(defaultExpr) >= 0) {
-          if (oldPart.indexOf(defaultExpr) >= 0) {
-            this.formCrontab[part].splice(newPart.indexOf(defaultExpr), 1);
-          } else {
-            this.formCrontab[part] = [defaultExpr];
-          }
+        } else if (hasStarExpr(newPart)) {
+          this.formCrontab[part] = [newPart.pop()];
         }
 
         this.formCrontabCache[part].sort(sortFunc);
@@ -653,6 +662,9 @@ export default {
     const MONTHS = this.getNumberList([
         {expr: '*', name: this.$t('Every month')},
         'sep',
+        {expr: '*/3', name: this.$t('Every 3 months')},
+        {expr: '*/6', name: this.$t('Every 6 months')},
+        'sep',
       ], 1, 12, 1, 6);
     const DAYS = this.getNumberList([
         {expr: '*', name: this.$t('Every day')},
@@ -660,6 +672,10 @@ export default {
       ], 1, 31, 1, 5);
     const HOURS = this.getNumberList([
         {expr: '*', name: this.$t('Every hour')},
+        'sep',
+        {expr: '*/2', name: this.$t('Every 2 hours')},
+        {expr: '*/3', name: this.$t('Every 3 hours')},
+        {expr: '*/6', name: this.$t('Every 6 hours')},
         'sep',
       ], 0, 23, 1, 6);
     const MINUTES = this.getNumberList([
