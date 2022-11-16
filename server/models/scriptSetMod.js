@@ -775,7 +775,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     importData.scripts.forEach(function(script) {
       if (toolkit.isNothing(script.funcs)) return;
 
-      scripts.funcs.forEach(function(func) {
+      script.funcs.forEach(function(func) {
         func.scriptId    = script.id;
         func.scriptSetId = script.scriptSetId;
 

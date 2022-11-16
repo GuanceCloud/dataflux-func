@@ -45,6 +45,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,u.id');
   sql.append('  ,u.username');
   sql.append('  ,u.name');
+  sql.append('  ,u.email');
   sql.append('  ,u.mobile');
   sql.append('  ,u.markers');
   sql.append('  ,u.roles');

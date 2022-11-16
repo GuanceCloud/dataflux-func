@@ -38,6 +38,6 @@ routeLoader.load(ROUTE.scriptMarketAPI.push, [
   scriptMarketAPICtrl.push,
 ]);
 
-routeLoader.load(ROUTE.scriptMarketAPI.pull, [
-  scriptMarketAPICtrl.pull,
+routeLoader.load(ROUTE.scriptMarketAPI.install, [
+  scriptMarketAPICtrl.install,
 ]);

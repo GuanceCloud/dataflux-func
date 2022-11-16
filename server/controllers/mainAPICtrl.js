@@ -2211,6 +2211,7 @@ exports.integratedSignIn = function(req, res, next) {
     // 登录成功
     var userId          = username;
     var userDisplayName = username;
+    var userEmail       = null;
     switch(typeof funcRetval) {
       // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
       case 'string':
@@ -2229,15 +2230,31 @@ exports.integratedSignIn = function(req, res, next) {
           }
         }
         userId = pickField(funcRetval, [
-          'id', 'uid',
-          'userId', 'user_id',
+          'id',
+          'uid',
+          'userid',
+          'userId',
+          'user_id',
         ]);
         userDisplayName = pickField(funcRetval, [
-          'name', 'title',
-          'fullname', 'full_name',
-          'displayName', 'display_name',
-          'realName', 'real_name',
-          'showName', 'show_name',
+          'name',
+          'title',
+          'fullname',
+          'full_name',
+          'displayName',
+          'display_name',
+          'realName',
+          'real_name',
+          'showName',
+          'show_name',
+          'nickName',
+          'nick_name',
+        ]);
+        userEmail = pickField(funcRetval, [
+          'mail',
+          'email',
+          'useremail',
+          'user_email',
         ]);
         break;
     }
@@ -2250,6 +2267,7 @@ exports.integratedSignIn = function(req, res, next) {
     authTokenObj.ig = true;
     authTokenObj.un = username
     authTokenObj.nm = userDisplayName;
+    authTokenObj.em = userEmail;
 
     var cacheKey     = auth.getCacheKey(authTokenObj);
     var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
@@ -2361,6 +2379,7 @@ exports.integratedAuthMid = function(req, res, next) {
       id              : xAuthTokenObj.uid,
       username        : xAuthTokenObj.un,
       name            : xAuthTokenObj.nm,
+      email           : xAuthTokenObj.em,
       roles           : ['user'].join(','),
       customPrivileges: ['systemConfig_r'].join(','),
       isIntegratedUser: xAuthTokenObj.ig,

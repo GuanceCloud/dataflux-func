@@ -236,19 +236,9 @@ export function getBase64(str, uriSafe) {
     return Base64.encode(str);
   }
 };
-export function getBase64_old(str) {
-  return btoa(encodeURIComponent(str)).replace(/ /g, '+');
-};
 
-export function fromBase64(base64str, keepBuffer) {
-  if (keepBuffer) {
-    return Base64.atob(base64str);
-  } else {
-    return Base64.decode(base64str);
-  }
-};
-export function fromBase64_old(base64str) {
-  return decodeURIComponent(atob(base64str.replace(/ /g, '+')));
+export function fromBase64(base64str) {
+  return Base64.decode(base64str);
 };
 
 export function genRandString(len, chars) {

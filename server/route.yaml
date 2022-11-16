@@ -278,6 +278,7 @@ userAPI:
       - u.id
       - u.username
       - u.name
+      - u.email
       - u.mobile
     query:
       id:
@@ -295,6 +296,11 @@ userAPI:
         $type      : string
         $searchType: like
         $searchKey : u.name
+      email:
+        $desc      : Search by email
+        $type      : string
+        $searchType: like
+        $searchKey : u.email
       mobile:
         $desc      : Search by mobile number
         $type      : int
@@ -350,6 +356,12 @@ userAPI:
           $type      : string
           $maxLength : 50
           $example   : Tom White
+        email:
+          $desc      : Email
+          $allowNull : true
+          $type      : string
+          $maxLength : 100
+          $example   : tom.white@guance.com
         mobile:
           $desc     : Mobile number
           $type     : string
@@ -406,6 +418,12 @@ userAPI:
           $type      : string
           $maxLength : 50
           $example   : Tom White
+        email:
+          $desc      : Email
+          $allowNull : true
+          $type      : string
+          $maxLength : 100
+          $example   : tom.white@guance.com
         mobile:
           $desc     : Mobile number
           $type     : string
@@ -5400,16 +5418,27 @@ scriptMarketAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+      author:
+        $desc      : 作者
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $isRequired: true
+          $type      : string
+        email:
+          $desc      : 邮箱
+          $isRequired: true
+          $type      : string
       note:
         $desc      : 备注
         $isRequired: true
         $type      : string
 
-  pull:
+  install:
     showInDoc    : true
-    name         : 从脚本市场拉取脚本集
+    name         : 从脚本市场安装脚本集
     method       : post
-    url          : /api/v1/script-markets/:id/do/pull
+    url          : /api/v1/script-markets/:id/do/install
     response     : json
     requireSignIn: false
     privilege    : general_w

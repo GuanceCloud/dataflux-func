@@ -22,6 +22,7 @@
     "express-useragent": "1.0.15",
     "form-data": "4.0.0",
     "fs-extra": "10.1.0",
+    "gitlog": "^4.0.4",
     "http-auth-utils": "3.0.3",
     "iconv-lite": "0.6.3",
     "influx": "5.9.3",

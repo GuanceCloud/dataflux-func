@@ -1011,8 +1011,8 @@ var decipherByAES = toolkit.decipherByAES = function decipherByAES(data, key) {
 /**
  * Encode string by Base64.
  *
- * @param  {String} str - Target string
- * @return {String}     - Encoded string
+ * @param  {String} str - Origin string
+ * @return {String}     - base64 value
  */
 var getBase64 = toolkit.getBase64 = function getBase64(str, uriSafe) {
   if (uriSafe) {
@@ -1021,58 +1021,35 @@ var getBase64 = toolkit.getBase64 = function getBase64(str, uriSafe) {
     return Base64.encode(str);
   }
 };
-var getBase64_old = toolkit.getBase64_old = function getBase64_old(str) {
-  var b = Buffer.from(str);
-  var base64 = b.toString('base64').replace(/ /g, '+');
-  return base64;
+
+/**
+ * Decode string from Base64 value.
+ *
+ * @param  {String} base64str  - base64 string
+ * @return {String}            - Origin string
+ */
+var fromBase64 = toolkit.fromBase64 = function fromBase64(base64str) {
+  return Base64.decode(base64str);
 };
 
 /**
- * Decode string by Base64.
+ * Gzip string and return Base64 value.
  *
- * @param  {String} base64str  - Target string
- * @param  {String} keepBuffer - Target string
- * @return {String}            - Decoded string
+ * @param  {String} str - Origin string
+ * @return {String}     - base64 value
  */
-var fromBase64 = toolkit.fromBase64 = function fromBase64(base64str, keepBuffer) {
-  if (keepBuffer) {
-    return Base64.atob(base64str);
-  } else {
-    return Base64.decode(base64str);
-  }
-};
-var fromBase64_old = toolkit.fromBase64_old = function fromBase64_old(base64str, keepBuffer) {
-  base64str = base64str.replace(/ /g, '+');
-  var b = Buffer.from(base64str, 'base64');
-  if (keepBuffer) {
-    return b;
-  } else {
-    return b.toString();
-  }
+var getGzipBase64 = toolkit.getGzipBase64 = function getGzipBase64(str) {
+  return zlib.gzipSync(str).toString('base64');
 };
 
 /**
- * Encode string by Base64. (Compatible with browser)
+ * Gunzip string from Base64 value.
  *
- * @param  {String} str - Target string
- * @return {String}     - Encoded string
+ * @param  {String} base64str  - base64 string
+ * @return {String}            - Origin string
  */
-var getBase64_browser = toolkit.getBase64_browser = function getBase64_browser(str) {
-  var b = Buffer.from(querystring.escape(str));
-  var base64 = b.toString('base64').replace(/ /g, '+');
-  return base64;
-};
-
-/**
- * Decode string by Base64. (Compatible with browser)
- *
- * @param  {String} base64str  - Target string
- * @return {String}            - Decoded string
- */
-var fromBase64_browser = toolkit.fromBase64_browser = function fromBase64_browser(base64str) {
-  var b = Buffer.from(base64str.replace(/ /g, '+'), 'base64');
-  var str = querystring.unescape(b.toString());
-  return str;
+var fromGzipBase64 = toolkit.fromGzipBase64 = function fromGzipBase64(base64str) {
+  return zlib.gunzipSync(Buffer.from(base64str, 'base64')).toString();
 };
 
 /**
