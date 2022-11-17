@@ -344,15 +344,26 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var includeAuthLinks      = toolkit.toBoolean(options.includeAuthLinks);
   var includeCrontabConfigs = toolkit.toBoolean(options.includeCrontabConfigs);
   var includeBatches        = toolkit.toBoolean(options.includeBatches);
-  var note                  = options.note || `Exported at ${toolkit.getDateTimeStringCN()}`;
+
+  var note          = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
+  var exportTimeMs  = toolkit.getTimestampMs();
+  var exportTimeStr = toolkit.getDateTimeStringCN(exportTimeMs);
+  var exportUserStr = `@${self.locals.user.username || 'ANONYMOUS'}`;
+  if (self.locals.user.name) {
+    exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (@${self.locals.user.username || 'ANONYMOUS'})`;
+  }
 
   var exportData = {
-    note      : note,
-    scriptSets: [],
+    note        : note,
+    exportUser  : exportUserStr,
+    exportTimeMs: exportTimeMs,
+    scriptSets  : [],
   };
   var summary = {
-    note       : note,
-    summaryJSON: {},
+    note        : note,
+    exportUser  : exportUserStr,
+    exportTimeMs: exportTimeMs,
+    summaryJSON : {},
   }
 
   var scriptSetMap = {};
@@ -379,7 +390,6 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,sset.title');
       sql.append('  ,sset.description');
       sql.append('  ,sset.requirements');
-      sql.append('  ,sset.updateTime');
 
       sql.append('FROM biz_main_script_set AS sset');
 

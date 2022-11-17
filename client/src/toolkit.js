@@ -676,6 +676,13 @@ export function isExpired(dt) {
   return moment.utc(dt).unix() < moment().unix();
 };
 
+export function getTimestampMs() {
+  return Date.now();
+};
+export function getTimestamp() {
+  return parseInt(Date.now() / 1000);
+};
+
 export function getDateTimeString(dt, pattern) {
   dt = dt || new Date();
 

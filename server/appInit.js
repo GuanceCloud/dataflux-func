@@ -125,14 +125,14 @@ exports.beforeAppCreate = function(callback) {
 };
 
 exports.afterAppCreated = function(app, server) {
-  g.runUpTime = parseInt(Date.now() / 1000);
+  g.runUpTime = toolkit.getTimestamp();
 
   var hostname = os.hostname();
 
   // Sys Stats
   var startCPUUsage = process.cpuUsage();
   function recordSysStats() {
-    var currentTimestamp = parseInt(Date.now() / 1000);
+    var currentTimestamp = toolkit.getTimestamp();
 
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();

@@ -226,7 +226,7 @@ export default {
           e.preventDefault();
           app.$store.commit('updateShortcutAction', {
             action   : action,
-            timestamp: parseInt(Date.now() / 1000),
+            timestamp: app.T.getTimestamp(),
           });
         }
 

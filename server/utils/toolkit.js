@@ -740,6 +740,24 @@ var isJSON = toolkit.isJSON = function isJSON(o) {
 }
 
 /**
+ * Get current timestamp in ms.
+ *
+ * @return {Integer}
+ */
+var getTimestampMs = toolkit.getTimestampMs = function getTimestampMs() {
+  return Date.now();
+};
+
+/**
+ * Get current timestamp in s.
+ *
+ * @return {Integer}
+ */
+var getTimestamp = toolkit.getTimestamp = function getTimestamp() {
+  return parseInt(Date.now() / 1000);
+};
+
+/**
  * Get the date string.
  *
  * @param  {null|Number|String|Object} d                - Date Object, String or Number (Unix Timestamp)

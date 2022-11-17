@@ -680,7 +680,7 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
   }
 
   options = options || {};
-  var timestamp = options.timestamp || parseInt(Date.now() / 1000);
+  var timestamp = options.timestamp || toolkit.getTimestamp();
   var value     = options.value     || 0;
   var mode      = options.mode      || 'update';
 
@@ -736,7 +736,7 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
     function(asyncCallback) {
       if (!self.config.tsMaxPeriod) return asyncCallback();
 
-      var minTimestamp = parseInt(Date.now() / 1000) - self.config.tsMaxPeriod;
+      var minTimestamp = toolkit.getTimestamp() - self.config.tsMaxPeriod;
       self.client.zremrangebyscore(key, '-inf', minTimestamp, asyncCallback);
     },
   ], function(err) {

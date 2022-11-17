@@ -3097,7 +3097,7 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        var now = parseInt(Date.now() / 1000);
+        var now = toolkit.getTimestamp();
         var opt = {
           start    : now - interval * 2,
           groupTime: interval,

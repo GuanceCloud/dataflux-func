@@ -588,10 +588,15 @@ var SCRIPT_MARKET_PUSH_FUNC_MAP = {
             fs.outputFileSync(scriptSetChangelogFilePath, scriptSetChangelogData);
 
             // 生成 META 内容
-            var metaData = toolkit.jsonCopy(scriptSet);
+            var metaData = {
+              note        : pushContent.note,
+              exportUser  : pushContent.exportUser,
+              exportTimeMs: pushContent.exportTimeMs,
+              scriptSet   : toolkit.jsonCopy(scriptSet),
+            };
 
             // 写入脚本文件
-            metaData.scripts.forEach(function(script) {
+            metaData.scriptSet.scripts.forEach(function(script) {
               var filePath = path.join(scriptSetDir, _getScriptFilename(script));
               fs.outputFileSync(filePath, script.code || '');
 
