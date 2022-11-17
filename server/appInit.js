@@ -310,7 +310,7 @@ exports.afterAppCreated = function(app, server) {
         var funcPackagePath = path.join(__dirname, '../func-pkg/');
         var funcPackages = fs.readdirSync(funcPackagePath);
         funcPackages = funcPackages.filter(function(fileName) {
-          return toolkit.endsWith(fileName, CONFIG._FUNC_PKG_EXPORT_EXT);
+          return toolkit.endsWith(fileName, '.zip');
         });
 
         if (toolkit.isNothing(funcPackages)) return asyncCallback();

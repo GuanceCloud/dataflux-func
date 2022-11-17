@@ -1,6 +1,7 @@
 'use strict';
 
 /* Builtin Modules */
+var path = require('path');
 
 /* 3rd-party Modules */
 var fs      = require('fs-extra');
@@ -8,6 +9,7 @@ var async   = require('async');
 var request = require('request');
 var moment  = require('moment');
 var JSZip   = require('jszip');
+var yaml    = require('js-yaml');
 
 /* Project Modules */
 var E            = require('../utils/serverError');
@@ -16,6 +18,8 @@ var ROUTE        = require('../utils/yamlResources').get('ROUTE');
 var toolkit      = require('../utils/toolkit');
 var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+
+var scriptMarketAPICtrl = require('../controllers/scriptMarketAPICtrl');
 
 var scriptSetMod          = require('../models/scriptSetMod');
 var scriptMod             = require('../models/scriptMod');
@@ -263,16 +267,56 @@ exports.export = function(req, res, next) {
   scriptSetModel.getExportData(opt, function(err, exportData, summary) {
     if (err) return next(err);
 
-    return res.locals.sendJSON({exportData, summary});
+    // 生成 zip 包
+    var zip = new JSZip();
 
-    // // 文件名为固定开头+时间
-    // var fileNameParts = [
-    //   CONFIG._FUNC_PKG_EXPORT_FILENAME,
-    //   moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
-    // ];
-    // var fileName = fileNameParts.join('-') + CONFIG._FUNC_PKG_EXPORT_EXT;
+    // 导出脚本集 / 脚本
+    exportData.scriptSets.forEach(function(scriptSet) {
+      var scriptSetDir = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id);
 
-    // return res.locals.sendFile(fileBuf, fileName);
+      // 生成 META 内容
+      var metaData = {
+        scriptSet: toolkit.jsonCopy(scriptSet),
+      };
+
+      // 写入脚本文件
+      metaData.scriptSet.scripts.forEach(function(script) {
+        var filePath = path.join(scriptSetDir, scriptMarketAPICtrl._getScriptFilename(script));
+        zip.file(filePath, script.code || '');
+
+        // 去除 META 中代码
+        delete script.code;
+      });
+
+      // 写入 META 信息
+      var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_META_FILE);
+      var metaFileText = yaml.dump(metaData);
+      zip.file(metaFilePath, metaFileText);
+    });
+
+    // 导出连接器
+    // 导出环境变量
+    // 导出授权链接
+    // 导出自动触发配置
+    // 导出批处理
+
+    // 压缩配置
+    var zipOpt = {
+      type              : 'nodebuffer',
+      compression       : 'DEFLATE',
+      compressionOptions: { level: 6 },
+    }
+    zip.generateAsync(zipOpt).then(function(fileBuf) {
+      // 文件名为固定开头+时间
+      var fileNameParts = [
+        CONFIG._FUNC_PKG_EXPORT_FILENAME,
+        moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
+      ];
+      var fileName = fileNameParts.join('-') + '.zip';
+
+      // 下载文件
+      return res.locals.sendFile(fileBuf, fileName);
+    });
   });
 };
 

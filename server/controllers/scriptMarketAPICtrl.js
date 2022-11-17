@@ -7,7 +7,6 @@ var URL  = require('url').URL;
 /* 3rd-party Modules */
 var async         = require('async');
 var simpleGit     = require('simple-git');
-var gitlog        = require('gitlog').default;
 var yaml          = require('js-yaml');
 var fs            = require('fs-extra');
 var markdownTable = require('markdown-table');
@@ -1068,3 +1067,6 @@ exports.install = function(req, res, next) {
     return res.locals.sendJSON(ret);
   });
 };
+
+/* 允许其他模块调用 */
+exports._getScriptFilename = _getScriptFilename;
