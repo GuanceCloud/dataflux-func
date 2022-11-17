@@ -84,8 +84,9 @@ EntityModel.prototype.add = function(data, callback) {
     // 获取导出数据
     function(asyncCallback) {
       var opt = {
-        scriptSetIds: allScriptSetIds,
-        note        : 'Recover Point',
+        scriptSetIds : allScriptSetIds,
+        withCodeDraft: true,
+        note         : 'Recover Point',
       }
       scriptSetModel.getExportData(opt, function(err, exportData, summary) {
         if (err) return asyncCallback(err);

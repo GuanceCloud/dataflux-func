@@ -344,13 +344,14 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var includeAuthLinks      = toolkit.toBoolean(options.includeAuthLinks);
   var includeCrontabConfigs = toolkit.toBoolean(options.includeCrontabConfigs);
   var includeBatches        = toolkit.toBoolean(options.includeBatches);
+  var withCodeDraft         = toolkit.toBoolean(options.withCodeDraft);
 
   var note          = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
   var exportTimeMs  = toolkit.getTimestampMs();
   var exportTimeStr = toolkit.getDateTimeStringCN(exportTimeMs);
-  var exportUserStr = `@${self.locals.user.username || 'ANONYMOUS'}`;
+  var exportUserStr = `${self.locals.user.username || 'ANONYMOUS'}`;
   if (self.locals.user.name) {
-    exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (@${self.locals.user.username || 'ANONYMOUS'})`;
+    exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (${self.locals.user.username || 'ANONYMOUS'})`;
   }
 
   var exportData = {
@@ -429,6 +430,12 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,scpt.type');
       sql.append('  ,scpt.code');
       sql.append('  ,scpt.codeMD5');
+
+      if (withCodeDraft) {
+        sql.append('  ,scpt.codeDraft');
+        sql.append('  ,scpt.codeDraftMD5');
+      }
+
       sql.append('  ,scpt.updateTime');
 
       sql.append('FROM biz_main_script AS scpt');
@@ -496,7 +503,6 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        console.log(JSON.stringify(dbRes))
         funcMap = dbRes.reduce(function(acc, x) {
           acc[x.id] = x;
 
@@ -771,8 +777,17 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
 
     _scripts.forEach(function(script) {
       script.scriptSetId = scriptSet.id;
-      script.code        = script.code || '';          // 保证code字段不为NULL
-      script.codeMD5     = toolkit.getMD5(script.code) // 计算MD5值
+
+      script.code    = script.code || '';          // 保证code字段不为NULL
+      script.codeMD5 = toolkit.getMD5(script.code) // 计算MD5值
+
+      if (script.codeDraft) {
+        script.codeDraft    = script.codeDraft || '';          // 保证codeDraft字段不为NULL
+        script.codeDraftMD5 = toolkit.getMD5(script.codeDraft) // 计算MD5值
+      } else {
+        script.codeDraft    = script.code;
+        script.codeDraftMD5 = script.codeMD5;
+      }
 
       importData.scripts.push(script);
     });
@@ -792,8 +807,6 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
       importData.funcs.push(func);
     });
   });
-
-  console.log(JSON.stringify(importData))
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
@@ -902,22 +915,22 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         }, eachCallback);
       }, asyncCallback);
     },
-    // 更新脚本草稿、草稿 MD5（避免写入2倍数据量）
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+    // // 更新脚本草稿、草稿 MD5（避免写入2倍数据量）
+    // function(asyncCallback) {
+    //   if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
 
-      var sql = toolkit.createStringBuilder();
-      sql.append('UPDATE biz_main_script');
-      sql.append('SET');
-      sql.append('   codeDraft    = code');
-      sql.append('  ,codeDraftMD5 = codeMD5');
-      sql.append('WHERE');
-      sql.append('  scriptSetId IN (?)');
+    //   var sql = toolkit.createStringBuilder();
+    //   sql.append('UPDATE biz_main_script');
+    //   sql.append('SET');
+    //   sql.append('   codeDraft    = code');
+    //   sql.append('  ,codeDraftMD5 = codeMD5');
+    //   sql.append('WHERE');
+    //   sql.append('  scriptSetId IN (?)');
 
-      var sqlParams = [scriptSetIds];
+    //   var sqlParams = [scriptSetIds];
 
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
+    //   self.db.query(sql, sqlParams, asyncCallback);
+    // },
     // 记录导入历史
     function(asyncCallback) {
       var summary = toolkit.jsonCopy(importData);
