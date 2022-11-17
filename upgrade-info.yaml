@@ -202,6 +202,7 @@ upgradeInfo:
         MODIFY COLUMN `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '值';
 
   - seq: 14
+    database: |-
       -- DataFlux Func 2.x
       CREATE TABLE `biz_main_script_market` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -216,7 +217,7 @@ upgradeInfo:
         `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`seq`),
         UNIQUE KEY `ID` (`id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本市场'
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本市场';
 
       -- 用户支持配置邮箱
       ALTER TABLE wat_main_user

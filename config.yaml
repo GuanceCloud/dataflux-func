@@ -153,7 +153,7 @@ _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
 _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: 12,20
 
 # 示例代码
-_SAMPLE_SCRIPT: >
+_SAMPLE_SCRIPT: |-
   @DFF.API('Hello, world')
   def hello_world(name=''):
       '''
@@ -291,15 +291,15 @@ _RECENT_FUNC_RUNNING_STATUS_EXPIRES : 604800
 _RECENT_FUNC_RUNNING_STATUS_LIMIT   : 50
 
 # 数据量限制
-_DBDATA_TABLE_LIMIT_MAP: >
-  biz_main_task_result_dataflux_func=10000
-  ,biz_main_operation_record=50000
-  ,biz_main_script_recover_point=1000
-  ,biz_main_script_set_export_history=1000
-  ,biz_main_script_set_import_history=1000
-  ,biz_main_script_publish_history=1000
-_DBDATA_TABLE_EXPIRE_MAP: >
-  biz_main_task_info=7776000
+_DBDATA_TABLE_LIMIT_MAP:
+  biz_main_task_result_dataflux_func: 10000
+  biz_main_operation_record         : 50000
+  biz_main_script_recover_point     : 1000
+  biz_main_script_set_export_history: 1000
+  biz_main_script_set_import_history: 1000
+  biz_main_script_publish_history   : 1000
+_DBDATA_TABLE_EXPIRE_MAP:
+  biz_main_task_info: 7776000
 _UPLOAD_FILE_EXPIRES: 3600
 
 # 数据库自动备份

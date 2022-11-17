@@ -1004,6 +1004,10 @@ async function _doAxios(axiosOpt) {
   }
 
   try {
+    // if (axiosOpt.method.toLowerCase() === 'post' && isNothing(axiosOpt.body)) {
+    //   axiosOpt.body = {};
+    // }
+
     let axiosRes = await axios(axiosOpt);
     axiosRes = await _prepareAxiosRes(axiosRes);
     return axiosRes;

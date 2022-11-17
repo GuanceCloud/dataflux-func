@@ -720,7 +720,7 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       SCRIPT_MARKET_SET_OWNER_FUNC_MAP[data.type](req.locals, data, function(err, _publishToken) {
         // 出错表示无法获取所有权，跳过
-        if (err) res.locals.logger.error(err);
+        if (err) res.locals.logger.error(err.toString());
 
         return asyncCallback();
       });
@@ -1017,6 +1017,8 @@ exports.install = function(req, res, next) {
       });
     },
   ], function(err) {
+    if (err) return next(err);
+
     var ret = toolkit.initRet({
       requirements: requirements,
     });

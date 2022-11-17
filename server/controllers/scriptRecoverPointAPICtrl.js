@@ -21,14 +21,8 @@ var crudHandler = exports.crudHandler = scriptRecoverPointMod.createCRUDHandler(
 exports.list = crudHandler.createListHandler();
 exports.add  = crudHandler.createAddHandler();
 
-/*【注意】
- * 本方法已经过时，仅适用于旧数据的还原
- * 新还原方式为直接调用`POST /api/v1/script-sets/do/import`指定还原点来还原
- * 区分方式为判断`biz_main_script_recover_point.exportData`是否为NULL
- */
 exports.recover = function(req, res, next) {
-  var id   = req.params.id;
-  var data = req.body.data;
+  var id = req.params.id;
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -36,7 +30,7 @@ exports.recover = function(req, res, next) {
 
   async.series([
     function(asyncCallback) {
-      scriptRecoverPointModel.recover(id, data, asyncCallback);
+      scriptRecoverPointModel.recover(id, asyncCallback);
     },
     // 发送更新脚本代码MD5缓存任务
     function(asyncCallback) {

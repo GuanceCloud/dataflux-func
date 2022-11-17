@@ -120,11 +120,14 @@ function startApplication() {
   app.use(bodyParser.text({limit: '50mb'}));
   app.use(bodyParser.raw({limit: '50mb', type: function(req) {
     // 非文件上传的请求执行raw解析
-    return req.get('content-type').indexOf('multipart/form-data') < 0;
+    var isUpload = req.get('content-type') && req.get('content-type').indexOf('multipart/form-data') >= 0;
+    return !isUpload;
   }}));
 
   app.use(function(err, req, res, next) {
     if (err && res.locals.isBodyParsing) {
+      res.locals.logger.logError(err);
+
       // 解析错误时返回固定错误信息
       err = new E('EClientBadRequest', 'Invalid request body');
     }

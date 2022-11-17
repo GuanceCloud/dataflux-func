@@ -1039,7 +1039,8 @@ var fromBase64 = toolkit.fromBase64 = function fromBase64(base64str) {
  * @return {String}     - base64 value
  */
 var getGzipBase64 = toolkit.getGzipBase64 = function getGzipBase64(str) {
-  return zlib.gzipSync(str).toString('base64');
+  var stringToZip = JSON.stringify(str);
+  return zlib.gzipSync(stringToZip).toString('base64');
 };
 
 /**
@@ -1049,7 +1050,8 @@ var getGzipBase64 = toolkit.getGzipBase64 = function getGzipBase64(str) {
  * @return {String}            - Origin string
  */
 var fromGzipBase64 = toolkit.fromGzipBase64 = function fromGzipBase64(base64str) {
-  return zlib.gunzipSync(Buffer.from(base64str, 'base64')).toString();
+  var unzippedString = zlib.gunzipSync(Buffer.from(base64str, 'base64')).toString();
+  return JSON.parse(unzippedString);
 };
 
 /**

@@ -3,9 +3,8 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async  = require('async');
-var moment = require('moment');
-var JSZip  = require('jszip');
+var async     = require('async');
+var validator = require('validator');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -749,42 +748,42 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     importData = JSON.parse(importData);
   }
 
+  importData.scriptSets = importData.scriptSets || [];
+  importData.scripts    = importData.scripts    || [];
+  importData.funcs      = importData.funcs      || [];
+
   // 展开脚本数据
-  if (toolkit.isNothing(importData.scripts)
-  && !toolkit.isNothing(importData.scriptSets)) {
-    importData.scripts = [];
-    importData.scriptSets.forEach(function(scriptSet) {
-      if (toolkit.isNothing(scriptSet.scripts)) return;
+  importData.scriptSets.forEach(function(scriptSet) {
+    var _scripts = scriptSet.scripts;
+    delete scriptSet.scripts;
 
-      scriptSet.scripts.forEach(function(script) {
-        script.scriptSetId = scriptSet.id;
-        script.code        = script.code || '';          // 保证code字段不为NULL
-        script.codeMD5     = toolkit.getMD5(script.code) // 计算MD5值
+    if (toolkit.isNothing(_scripts)) return;
 
-        importData.scripts.push(script);
-      });
+    _scripts.forEach(function(script) {
+      script.scriptSetId = scriptSet.id;
+      script.code        = script.code || '';          // 保证code字段不为NULL
+      script.codeMD5     = toolkit.getMD5(script.code) // 计算MD5值
 
-      delete scriptSet.scripts;
+      importData.scripts.push(script);
     });
-  }
+  });
 
   // 展开函数数据
-  if (toolkit.isNothing(importData.funcs)
-  && !toolkit.isNothing(importData.scripts)) {
-    importData.funcs = [];
-    importData.scripts.forEach(function(script) {
-      if (toolkit.isNothing(script.funcs)) return;
+  importData.scripts.forEach(function(script) {
+    var _funcs = script.funcs;
+    delete script.funcs;
 
-      script.funcs.forEach(function(func) {
-        func.scriptId    = script.id;
-        func.scriptSetId = script.scriptSetId;
+    if (toolkit.isNothing(_funcs)) return;
 
-        importData.funcs.push(func);
-      });
+    _funcs.forEach(function(func) {
+      func.scriptId    = script.id;
+      func.scriptSetId = script.scriptSetId;
 
-      delete script.funcs;
+      importData.funcs.push(func);
     });
-  }
+  });
+
+  console.log(JSON.stringify(importData))
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
@@ -812,7 +811,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
       if (recoverPoint.type === 'recover') {
         // 恢复模式：清空所有脚本集、脚本、函数
         var sql = toolkit.createStringBuilder();
-        sql.append('DELETE FROM biz_main_script_set');
+        sql.append('DELETE FROM biz_main_script_set;');
         sql.append('DELETE FROM biz_main_script;');
         sql.append('DELETE FROM biz_main_func;');
 
@@ -832,8 +831,8 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
           { table: 'biz_main_script',     field: 'scriptSetId' },
           { table: 'biz_main_func',       field: 'scriptSetId' },
         ];
-        async.eachSeries(tables, function(table, eachCallback) {
-          var sqlParams = [deleteTargets.table, deleteTargets.field, scriptSetIds];
+        async.eachSeries(deleteTargets, function(t, eachCallback) {
+          var sqlParams = [t.table, t.field, scriptSetIds];
           self.db.query(sql, sqlParams, eachCallback);
         }, asyncCallback);
       }
@@ -854,10 +853,10 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         { table: 'biz_main_connector',      ids: connectorIds },
         { table: 'biz_main_env_variable',   ids: envVariableIds },
       ];
-      async.eachSeries(tables, function(table, eachCallback) {
-        if (toolkit.isNothing(deleteTargets.ids)) return eachCallback();
+      async.eachSeries(deleteTargets, function(t, eachCallback) {
+        if (toolkit.isNothing(t.ids)) return eachCallback();
 
-        var sqlParams = [deleteTargets.table, deleteTargets.ids];
+        var sqlParams = [t.table, t.ids];
         self.db.query(sql, sqlParams, eachCallback);
       }, asyncCallback);
     },
@@ -961,13 +960,16 @@ function _prepareImportData(data) {
     // NULL值不转换
     if (v === null) continue;
 
-    if (toolkit.endsWith(f, 'JSON') && 'string' !== typeof v) {
+    if (toolkit.endsWith(f, 'JSON')
+      && 'string' !== typeof v) {
       // JSON字段序列化
       data[f] = JSON.stringify(v);
 
-    } else if (f === 'expireTime') {
-      // 时间字段
-      data[f] = new Date(v);
+    } else if (toolkit.endsWith(f, 'Time')
+      // 时间类字段
+      && 'string' === typeof v
+      && validator.isISO8601(v, { strict: true, strictSeparator: true })) {
+          data[f] = new Date(v);
     }
   }
 

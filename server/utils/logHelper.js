@@ -354,18 +354,18 @@ LoggerHelper.prototype._log = function() {
  * @param {Object} err
  */
 LoggerHelper.prototype.logError = function(err) {
-  var strErr = err.toString();
-  this.error(strErr);
+  if (err.originError) {
+    this.logError(err.originError);
+    this.error('-'.repeat(20));
+  }
 
-  var stack = err.originError
-            ? err.originError.stack
-            : err.stack;
-
-  if (stack) {
-    var stackLines = stack.split('\n');
+  if (err.stack) {
+    var stackLines = err.stack.split('\n');
     for (var i = 0; i < stackLines.length; i++) {
       this.error(stackLines[i]);
     }
+  } else {
+    this.error(err.toString());
   }
 };
 

@@ -189,13 +189,13 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         configObj[k] = itemMap;
         break;
 
-        case 'string':
-          configObj[k] = v.toString();
-          break;
+      case 'string':
+        configObj[k] = v.toString();
+        break;
 
-        case 'boolean':
-          configObj[k] = toolkit.toBoolean(v);
-          break;
+      case 'boolean':
+        configObj[k] = toolkit.toBoolean(v);
+        break;
     }
   }
 
