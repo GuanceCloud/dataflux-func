@@ -21,18 +21,15 @@ RUN mkdir -p /data/extra-python-packages && \
     mkdir -p /data/logs && \
     mkdir -p /data/sqldump
 
-# 切换镜像源并更新
+# 设置系统时区
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+        echo "Asia/Shanghai" > /etc/timezone
+
+# 替换镜像源并安装常用工具
 RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     sed -i 's/ports.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
-    apt-get update
-
-# 设置时区
-# 安装必要工具、Python 3.8
-RUN DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y tzdata && \
-        ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-        dpkg-reconfigure --frontend noninteractive tzdata && \
-    apt-get install -y iputils-ping vim wget curl telnet zip unzip unar \
+    apt-get update && \
+    apt-get install -y vim tzdata telnet curl wget net-tools iputils-ping zip unzip unar snmp \
                 python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev libaio1 && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
