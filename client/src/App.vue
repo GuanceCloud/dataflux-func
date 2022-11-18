@@ -402,11 +402,11 @@ h3 {
   width: 100%;
 }
 .common-form .el-upload-dragger {
-  width: 500px;
+  width: 485px;
   height: unset;
 }
 .common-form .el-upload-dragger > .image-preview {
-  max-width: 500px;
+  max-width: 485px;
   padding: 10px;
 }
 .common-form .el-upload-dragger > .image-preview > img {

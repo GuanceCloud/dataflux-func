@@ -143,8 +143,6 @@ _LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE: 15
 
 # 函数包导出文件名
 _FUNC_PKG_EXPORT_FILENAME: dataflux-func
-# 函数包导出扩展名
-_FUNC_PKG_EXPORT_EXT: .func-pkg
 
 # 函数包导入确认超时
 _FUNC_PKG_IMPORT_CONFIRM_TIMEOUT: 900
@@ -342,9 +340,6 @@ _DISABLE_DB_AUTO_BACKUP: false
 _DISABLE_WORKER_LIMIT_PRESSURE: false
 # 是否禁用启动运行任务
 _DISABLE_STARTUP_TASKS: false
-
-# 是否禁用脚本包导入、安装等功能
-_DISABLE_SCRIPT_SET_IMPORT: false
 
 # 是否已安装完成
 _IS_INSTALLED: false

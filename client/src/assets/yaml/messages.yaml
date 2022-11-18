@@ -47,7 +47,6 @@ en: {}
   ID of file service already exists                                                                       : 文件服务ID已存在
   ID of script already exists                                                                             : 脚本ID已存在
   ID of script set already exists                                                                         : 脚本集ID已存在
-  Import source not specified                                                                             : 未指定导入源
   Importing data not found                                                                                : 找不到导入数据
   Importing from such recover point not supported                                                         : 不支持从此还原点导入
   Install Python package failed                                                                           : 安装Python包失败
@@ -55,6 +54,7 @@ en: {}
   Invalid captcha                                                                                         : 验证码无效
   Invalid captcha token                                                                                   : 验证码令牌无效
   Invalid config JSON                                                                                     : 配置无效
+  Invalid import file                                                                                     : 无效的导入文件
   Invalid kwargs, bad JSON format                                                                         : 函数参数无效，无法解析为JSON
   Invalid old password                                                                                    : 旧密码无效
   Invalid options, apiTimeout is too large                                                                : 配置错误，apiTimeout过大
@@ -91,7 +91,6 @@ en: {}
   Query timeout                                                                                           : 查询超时
   Read cache error                                                                                        : 缓存读取失败
   Script draft already changed                                                                            : 脚本草稿已发生变化
-  Script importing, installing, recovering is disabled, please contact your administrator.                : 脚本导入、安装、还原功能已被禁用，请联系管理员
   Script not edited                                                                                       : 脚本尚未修改
   Sign-in function returned False or nothing                                                              : 登录函数返回False或空内容
   Sign-in function timeout                                                                                : 登录函数超时

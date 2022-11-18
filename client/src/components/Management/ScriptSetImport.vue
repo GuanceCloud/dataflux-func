@@ -25,29 +25,20 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+              <el-form ref="form" label-width="135px">
                 <el-form-item label="导入脚本包" prop="upload">
                   <el-upload drag ref="upload" :class="uploadAreaBorderClass"
                     :limit="2"
                     :multiple="false"
                     :auto-upload="false"
                     :show-file-list="false"
-                    :accept="$store.getters.CONFIG('_FUNC_PKG_EXPORT_EXT')"
+                    accept=".zip"
                     :http-request="handleUpload"
                     :on-change="onUploadFileChange">
                     <i class="fa" :class="uploadAreaIconClass"></i>
                     <div class="el-upload__text">{{ uploadAreaIconText }}</div>
                   </el-upload>
-                </el-form-item>
-
-                <el-form-item label="导入令牌" prop="password">
-                  <el-input
-                    resize="none"
-                    maxlength="64"
-                    show-word-limit
-                    v-model="form.password"></el-input>
-                  <InfoBlock title="填写导出时提示的密码，无密码则留空即可"></InfoBlock>
-                  <InfoBlock type="warning" title="脚本包附带导入的连接器，密码等敏感信息需要重新输入"></InfoBlock>
+                  <InfoBlock type="warning" title="如脚本包附带导入连接器，密码等敏感信息需要重新输入"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
@@ -117,12 +108,6 @@ export default {
   },
   methods: {
     async submitData() {
-      try {
-        await this.$refs.form.validate();
-      } catch(err) {
-        return console.error(err);
-      }
-
       switch(this.T.setupPageMode()) {
         case 'import':
           return await this.$refs.upload.submit();
@@ -130,13 +115,6 @@ export default {
     },
     async handleUpload(req) {
       let bodyData = new FormData();
-
-      let _data = this.T.jsonCopy(this.form);
-      for (let k in _data) if (_data.hasOwnProperty(k)) {
-        let v = _data[k];
-        bodyData.append(k, v);
-      }
-
       bodyData.append('checkOnly', true);
       bodyData.append('files', req.file);
 
@@ -183,12 +161,7 @@ export default {
     alertOnError(apiRes) {
       if (apiRes.ok) return;
 
-      this.form.password = '';
       this.initFilePreview();
-
-      setImmediate(() => {
-        this.$refs.form.clearValidate();
-      });
     },
     initFilePreview() {
       this.$refs.upload.clearFiles();
@@ -241,12 +214,6 @@ export default {
       isImporting  : false,
 
       checkResult: {},
-
-      form: {
-        password: '',
-      },
-      formRules: {
-      },
     }
   },
   created() {

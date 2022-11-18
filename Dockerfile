@@ -62,7 +62,7 @@ RUN case ${TARGETARCH} in \
 # 安装 DataFlux Func 后端依赖包
 WORKDIR /usr/src/base
 COPY package.json package-lock.json requirements.txt requirements-arm64.txt ./
-RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist && \
+RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist && \
     case ${TARGETARCH} in \
         "amd64" ) \
             pip install -i https://pypi.mirrors.ustc.edu.cn/simple/ -r ./requirements.txt \
@@ -76,7 +76,7 @@ RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao
 # 安装 DataFlux Func 前端依赖包
 WORKDIR /usr/src/base/client
 COPY client/package.json client/package-lock.json ./
-RUN npm ci --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist --unsafe-perm
+RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist --unsafe-perm
 
 # 其他修改
 # COPY misc/openssl.cnf /etc/ssl/openssl.cnf

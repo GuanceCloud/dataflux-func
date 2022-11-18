@@ -1979,26 +1979,6 @@ scriptSetAPI:
       $limitSize   : 200M
       $allowedTypes: 'application/octet-stream'
     body:
-      packageInstallURL:
-        $desc      : 脚本包安装URL地址（指定后从脚本包URL导入）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      packageInstallId:
-        $desc      : 脚本包安装ID（备注用）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      scriptRecoverPointId:
-        $desc      : 脚本还原点ID（指定后从脚本还原点导入）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      password:
-        $desc      : 密码
-        $isRequired: false
-        $allowNull : true
-        $type      : string
       checkOnly:
         $desc      : 是否仅做检查（检查成功后会返回`confirmId`）
         $isRequired: false

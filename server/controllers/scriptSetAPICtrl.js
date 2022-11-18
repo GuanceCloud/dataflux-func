@@ -26,7 +26,10 @@ var scriptMod             = require('../models/scriptMod');
 var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
 /* Configure */
-var BUILTIN_SCRIPT_SET_IDS = null;
+var SCRIPT_TYPE_EXT_MAP = {
+  python  : 'py',
+  markdown: 'md',
+};
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
@@ -50,30 +53,8 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 查询内置记录
-    function(asyncCallback) {
-      if (BUILTIN_SCRIPT_SET_IDS) return asyncCallback();
-
-      var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
-      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (cacheRes) {
-          BUILTIN_SCRIPT_SET_IDS = JSON.parse(cacheRes);
-        } else {
-          BUILTIN_SCRIPT_SET_IDS = [];
-        }
-
-        return asyncCallback();
-      });
-    },
   ], function(err) {
     if (err) return next(err);
-
-    // 内置标记
-    scriptSets.forEach(function(scriptSet) {
-       scriptSet.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(scriptSet.id) >= 0);
-    });
 
     var ret = toolkit.initRet(scriptSets, scriptSetPageInfo);
     res.locals.sendJSON(ret);
@@ -294,11 +275,20 @@ exports.export = function(req, res, next) {
       zip.file(metaFilePath, metaFileText);
     });
 
-    // 导出连接器
-    // 导出环境变量
-    // 导出授权链接
-    // 导出自动触发配置
-    // 导出批处理
+    // 导出其他数据
+    [
+      'connectors',
+      'envVariables',
+      'authLinks',
+      'crontabConfigs',
+      'batches',
+    ].forEach(function(name) {
+      if (toolkit.isNothing(exportData[name])) return;
+
+      var filePath = `${name}.yaml`;
+      var fileData = yaml.dump(exportData[name]);
+      zip.file(filePath, fileData);
+    });
 
     // 压缩配置
     var zipOpt = {
@@ -321,160 +311,122 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
-  if (CONFIG._DISABLE_SCRIPT_SET_IMPORT) {
-    return next(new E('EBizCondition.Disabled', 'Script importing, installing, recovering is disabled, please contact your administrator.'));
-  }
-
-  var file                 = req.files ? req.files[0] : null;
-  var packageInstallURL    = req.body.packageInstallURL;
-  var packageInstallId     = req.body.packageInstallId;
-  var scriptRecoverPointId = req.body.scriptRecoverPointId;
-  var password             = req.body.password || '';
-  var checkOnly            = toolkit.toBoolean(req.body.checkOnly);
+  var file      = req.files ? req.files[0] : null;
+  var checkOnly = toolkit.toBoolean(req.body.checkOnly);
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
-  var fileBuf     = null;
-  var packageData = null;
-  var pkgs        = null;
+  var importData   = {};
+  var requirements = null;
 
   var confirmId = toolkit.genDataId('import');
-  var summary   = null;
-  var diff      = null;
 
-  var recoverPoint = null;
-  // 预处理
-  if (file) {
-    // 从文件导入
-    recoverPoint = {
-      type: 'import',
-      note: '系统：导入脚本包前自动创建的还原点',
-    };
+  var recoverPoint = {
+    type: 'import',
+    note: '系统：导入脚本包前自动创建的还原点',
+  };
 
-  } else if (packageInstallURL) {
-    // 从远端安装
-    // 脚本包安装不支持checkOnly操作
-    checkOnly = false;
-    recoverPoint = {
-      type: 'install',
-      note: '系统：安装脚本包前自动创建的还原点',
-    };
+  var zip = new JSZip();
 
-  } else if (scriptRecoverPointId) {
-    // 从还原点还原
-    // 还原脚本库不支持checkOnly操作
-    checkOnly = false;
-    recoverPoint = {
-      type: 'recover',
-      note: '系统：还原脚本库至还原点',
-    };
-
-  } else {
-    return next(new E('EBizCondition.PackageNotProvided', 'Import source not specified'));
-  }
-
-  var fileBuf = null;
+  var allFilePaths = null;
+  var scriptMap    = {};
   async.series([
-    // 获取包数据
+    // 加载 zip 文件
     function(asyncCallback) {
-      if (file) {
-        // 来自上传文件
-        fileBuf = fs.readFileSync(file.path).toString();
-        fs.removeSync(file.path);
+      var fileBuf = fs.readFileSync(file.path);
 
-        // 补充还原信息
-        recoverPoint.note += toolkit.strf(' (文件名: {0})', file.originalname);
-
-        return asyncCallback();
-
-      } else if (packageInstallURL) {
-        // 来自远端下载
-        var requestOptions = {
-          method : 'get',
-          url    : packageInstallURL,
-          timeout: 3 * 1000,
-        };
-        request(requestOptions, function(err, _res, _body) {
-          if (err) return asyncCallback(err);
-
-          fileBuf = _body;
-
-          // 补充还原信息
-          if (packageInstallId) {
-            recoverPoint.note += toolkit.strf(' (ID: {0})', packageInstallId);
-          }
-
-          return asyncCallback();
-        });
-
-      } else if (scriptRecoverPointId) {
-        // 来自脚本还原点
-        var scriptRecoverPointModel = scriptRecoverPointMod.createModel(res.locals);
-        scriptRecoverPointModel.getWithCheck(scriptRecoverPointId, ['seq', 'exportData'], function(err, dbRes) {
-          if (err) return asyncCallback(err);
-
-          if (toolkit.isNothing(dbRes.exportData)) {
-            return asyncCallback(new E('EClientUnsupported', 'Importing from such recover point not supported'));
-          }
-
-          fileBuf = dbRes.exportData;
-
-          // 补充还原信息
-          recoverPoint.note += toolkit.strf(' (# {0})', dbRes.seq);
-
-          return asyncCallback();
-        });
-
-      } else {
-        return asyncCallback(new E('EClientBadRequest', 'Importing data not found'));
-      }
-    },
-    // AES解密、JWT验签
-    function(asyncCallback) {
-      // AES解密
-      try {
-        fileBuf = toolkit.decipherByAES(fileBuf, password);
-        res.locals.logger.debug(toolkit.strf('File Data: MD5: {0}', toolkit.getMD5(fileBuf)));
-
-      } catch(err) {
-        res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password'));
-      }
-
-      return asyncCallback();
-    },
-    // zip解压
-    function(asyncCallback) {
-      var zipBuf = toolkit.fromBase64(fileBuf, true);
-
-      JSZip.loadAsync(zipBuf)
-      .then(function(z) {
-        return z.file(scriptSetMod.FILENAME_IN_ZIP).async('string');
-      })
-      .then(function(zipData) {
-        packageData = JSON.parse(zipData);
-
-        // 生成摘要
-        summary = toolkit.jsonCopy(packageData);
-        summary.scripts.forEach(function(d) {
-          delete d.code; // 摘要中不含代码
-        });
-
-        // 摘要中不需要具体脚本、函数信息
-        delete summary.scripts;
-        delete summary.funcs;
-
-        return asyncCallback();
+      zip
+      .loadAsync(fileBuf)
+      .then(function(zip) {
+        allFilePaths = Object.keys(zip.files);
+        return asyncCallback()
       })
       .catch(function(err) {
-        res.locals.logger.logError(err);
-        return asyncCallback(new E('EBizCondition.InvalidPassword', 'Invalid password, please check if the password is entered correctly'));
+        return asyncCallback(new E('EBizCondition.InvalidImportFile', 'Invalid import file', null, err));
       });
     },
+    // 加载脚本集 META
+    function(asyncCallback) {
+      var filePaths = allFilePaths.filter(function(p) {
+        return toolkit.endsWith(p, '/META');
+      });
+
+      async.eachSeries(filePaths, function(p, eachCallback) {
+        zip.file(p).async('string')
+        .then(function(data) {
+          if (!importData.scriptSets) importData.scriptSets = [];
+
+          var scriptSet = yaml.load(data).scriptSet;
+
+          importData.scriptSets.push(scriptSet);
+
+          if (scriptSet.scripts) {
+            scriptSet.scripts.forEach(function(script) {
+              scriptMap[script.id] = script;
+            });
+          }
+
+          return eachCallback();
+        })
+        .catch(function(err) {
+          return eachCallback(err);
+        })
+      }, asyncCallback);
+    },
+    // 加载代码文件
+    function(asyncCallback) {
+      var filePaths = allFilePaths.filter(function(p) {
+        return toolkit.endsWith(p, '.py');
+      });
+
+      async.eachSeries(filePaths, function(p, eachCallback) {
+        zip.file(p).async('string')
+        .then(function(data) {
+          var scriptId = p.split('/').slice(-2).join('__').replace(/\.py$/g, '');
+          var script = scriptMap[scriptId];
+
+          if (!script) return eachCallback();
+
+          script.code = data;
+
+          return eachCallback();
+        })
+        .catch(function(err) {
+          return eachCallback(err);
+        })
+      }, asyncCallback);
+    },
+    // 加载其他资源
+    function(asyncCallback) {
+      var resourceNames = [
+        'connectors',
+        'envVariables',
+        'authLinks',
+        'crontabConfigs',
+        'batches',
+      ];
+      async.eachSeries(resourceNames, function(name, eachCallback) {
+        var p = `${name}.yaml`;
+
+        if (allFilePaths.indexOf(p) < 0) return eachCallback();
+
+        zip.file(p).async('string')
+        .then(function(data) {
+          importData[name] = yaml.load(data);
+          return eachCallback();
+        })
+        .catch(function(err) {
+          return eachCallback(err);
+        })
+      }, asyncCallback);
+    },
+
     // 导入数据/暂存数据
     function(asyncCallback) {
+      return console.log(JSON.stringify(importData, null, 2));
+
       if (checkOnly) {
         // 仅检查时，数据暂存Redis，不进行实际导入操作
         var cacheKey = toolkit.getCacheKey('stage', 'importScriptSet', ['confirmId', confirmId]);
