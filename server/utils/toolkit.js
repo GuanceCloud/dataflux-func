@@ -511,13 +511,18 @@ var arrayElementValues = toolkit.arrayElementValues = function arrayElementValue
  * @param  {String} keyField
  * @return {Object}
  */
-var arrayElementMap = toolkit.arrayElementMap = function arrayElementMap(arr, keyField) {
+var arrayElementMap = toolkit.arrayElementMap = function arrayElementMap(arr, keyField, valueField) {
   if (!Array.isArray(arr)) return null;
 
   var mapped = {};
   arr.forEach(function(element) {
-    var value = element[keyField];
-    mapped[value] = element;
+    var key = element[keyField];
+
+    if (valueField) {
+      mapped[key] = element[valueField];
+    } else {
+      mapped[key] = element;
+    }
   });
 
   return mapped;

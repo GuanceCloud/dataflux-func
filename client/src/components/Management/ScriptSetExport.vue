@@ -190,7 +190,7 @@ export default {
 
       // 文件名为固定开头+时间
       let fileNameParts = [
-        this.$store.getters.CONFIG('_FUNC_PKG_EXPORT_FILENAME'),
+        this.$store.getters.CONFIG('_FUNC_EXPORT_FILENAME'),
         this.M().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
       ];
       let fileName = fileNameParts.join('-') + '.zip';

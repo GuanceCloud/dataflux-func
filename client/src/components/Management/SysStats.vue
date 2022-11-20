@@ -15,6 +15,17 @@
         </div>
       </el-header>
       <el-main>
+        <el-divider content-position="left"><h1>Tasks/Func</h1></el-divider>
+        <div id="workerQueueLength" class="chart"></div>
+        <div id="funcCallCount" class="chart"></div>
+        <div id="matchedRouteCount" class="chart"></div>
+
+        <el-divider content-position="left"><h1>Cache/Database</h1></el-divider>
+        <div id="cacheDBMemoryUsed" class="chart"></div>
+        <div id="cacheDBKeyUsed" class="chart"></div>
+        <div id="cacheDBKeyCountByPrefix" class="chart"></div>
+        <div id="dbDiskUsed" class="chart"></div>
+
         <el-divider content-position="left"><h1>Server</h1></el-divider>
         <div id="serverCPUPercent" class="chart"></div>
         <div id="serverMemoryRSS" class="chart"></div>
@@ -25,17 +36,6 @@
         <el-divider content-position="left"><h1>Worker</h1></el-divider>
         <div id="workerCPUPercent" class="chart"></div>
         <div id="workerMemoryPSS" class="chart"></div>
-        <div id="funcCallCount" class="chart"></div>
-        <div id="workerQueueLength" class="chart"></div>
-
-        <el-divider content-position="left"><h1>Database/Cache</h1></el-divider>
-        <div id="dbDiskUsed" class="chart"></div>
-        <div id="cacheDBMemoryUsed" class="chart"></div>
-        <div id="cacheDBKeyUsed" class="chart"></div>
-        <div id="cacheDBKeyCountByPrefix" class="chart"></div>
-
-        <el-divider content-position="left"><h1>API</h1></el-divider>
-        <div id="matchedRouteCount" class="chart"></div>
       </el-main>
     </el-container>
   </transition>
@@ -176,10 +176,12 @@ export default {
         // Prepare Series
         let series = null;
         switch(metric) {
-          case 'matchedRouteCount':
+          case 'workerQueueLength':
             series = this.genSeries(tsDataMap, {
-              dataConvert  : 'xyTranspose',
-              seriesOptions: { type: 'bar' },
+              seriesOptions: { type: 'line' },
+            });
+            series.forEach(s => {
+              s.name = '#' + s.name;
             });
             break;
 
@@ -192,12 +194,10 @@ export default {
             });
             break;
 
-          case 'workerQueueLength':
+          case 'matchedRouteCount':
             series = this.genSeries(tsDataMap, {
-              seriesOptions: { type: 'line' },
-            });
-            series.forEach(s => {
-              s.name = '#' + s.name;
+              dataConvert  : 'xyTranspose',
+              seriesOptions: { type: 'bar' },
             });
             break;
 

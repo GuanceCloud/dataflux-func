@@ -404,13 +404,13 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        exportData.scriptSets = dbRes;
-        scriptSetMap = dbRes.reduce(function(acc, x) {
-          x.scripts = [];
-          acc[x.id] = x;
+        scriptSetMap = toolkit.arrayElementMap(dbRes, 'id');
 
-          return acc;
-        }, {});
+        dbRes.forEach(function(d) {
+          d.scripts = [];
+        });
+
+        exportData.scriptSets = dbRes;
 
         return asyncCallback();
       });
@@ -453,15 +453,14 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        scriptMap = dbRes.reduce(function(acc, x) {
-          x.funcs = [];
-          acc[x.id] = x;
+        scriptMap = toolkit.arrayElementMap(dbRes, 'id');
 
-          scriptSetMap[x.scriptSetId].scripts.push(x);
-          delete x.scriptSetId;
+        dbRes.forEach(function(d) {
+          d.funcs = [];
 
-          return acc;
-        }, {});
+          scriptSetMap[d.scriptSetId].scripts.push(d);
+          delete d.scriptSetId;
+        });
 
         return asyncCallback();
       });
@@ -503,15 +502,13 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        funcMap = dbRes.reduce(function(acc, x) {
-          acc[x.id] = x;
+        funcMap = toolkit.arrayElementMap(dbRes, 'id');
 
-          scriptMap[x.scriptId].funcs.push(x);
-          delete x.scriptSetId;
-          delete x.scriptId;
-
-          return acc;
-        }, {});
+        dbRes.forEach(function(d) {
+          scriptMap[d.scriptId].funcs.push(d);
+          delete d.scriptSetId;
+          delete d.scriptId;
+        });
 
         return asyncCallback();
       });

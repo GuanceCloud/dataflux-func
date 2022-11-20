@@ -299,7 +299,7 @@ exports.export = function(req, res, next) {
     zip.generateAsync(zipOpt).then(function(fileBuf) {
       // 文件名为固定开头+时间
       var fileNameParts = [
-        CONFIG._FUNC_PKG_EXPORT_FILENAME,
+        CONFIG._FUNC_EXPORT_FILENAME,
         moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
       ];
       var fileName = fileNameParts.join('-') + '.zip';
@@ -314,24 +314,18 @@ exports.import = function(req, res, next) {
   var file      = req.files ? req.files[0] : null;
   var checkOnly = toolkit.toBoolean(req.body.checkOnly);
 
-  var celery = celeryHelper.createHelper(res.locals.logger);
-
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
-  var importData   = {};
   var requirements = null;
+  var confirmId    = toolkit.genDataId('import');
+  var diff         = null;
 
-  var confirmId = toolkit.genDataId('import');
-
-  var recoverPoint = {
-    type: 'import',
-    note: '系统：导入脚本包前自动创建的还原点',
-  };
+  var scriptMap  = {};
+  var importData = {};
 
   var zip = new JSZip();
-
   var allFilePaths = null;
-  var scriptMap    = {};
+
   async.series([
     // 加载 zip 文件
     function(asyncCallback) {
@@ -422,24 +416,25 @@ exports.import = function(req, res, next) {
         })
       }, asyncCallback);
     },
-
     // 导入数据/暂存数据
     function(asyncCallback) {
-      return console.log(JSON.stringify(importData, null, 2));
-
       if (checkOnly) {
         // 仅检查时，数据暂存Redis，不进行实际导入操作
         var cacheKey = toolkit.getCacheKey('stage', 'importScriptSet', ['confirmId', confirmId]);
-        var packageDataTEXT = JSON.stringify(packageData);
-        return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_PKG_IMPORT_CONFIRM_TIMEOUT, packageDataTEXT, asyncCallback);
+        return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_IMPORT_CONFIRM_TIMEOUT, JSON.stringify(importData), asyncCallback);
 
       } else {
         // 直接导入
-        return scriptSetModel.import(packageData, recoverPoint, function(err, _pkgs) {
+        var recoverPoint = {
+          type: 'import',
+          note: '系统：导入脚本集前自动创建的还原点',
+        };
+        return scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
           if (err) return asyncCallback(err);
 
-          pkgs = _pkgs;
+          requirements = _requirements;
 
+          var celery = celeryHelper.createHelper(res.locals.logger);
           reloadDataMD5Cache(celery, asyncCallback);
         });
       }
@@ -452,23 +447,22 @@ exports.import = function(req, res, next) {
       scriptSetModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        if (toolkit.isNothing(summary) || toolkit.isNothing(summary.scriptSets)) {
-          return asyncCallback();
-        }
-
-        var scriptSetMap = toolkit.arrayElementMap(dbRes, 'id');
+        var currentScriptSetMap = toolkit.arrayElementMap(dbRes, 'id');
 
         diff = {
           add    : [],
           replace: [],
         }
-        summary.scriptSets.forEach(function(d) {
-          var isExisted = !!scriptSetMap[d.id];
-
+        importData.scriptSets.forEach(function(d) {
+          var isExisted = !!currentScriptSetMap[d.id];
+          var diffInfo = {
+            id   : d.id,
+            title: d.title,
+          }
           if (isExisted) {
-            diff.replace.push(d);
+            diff.replace.push(diffInfo);
           } else {
-            diff.add.push(d);
+            diff.add.push(diffInfo);
           }
         });
 
@@ -479,10 +473,9 @@ exports.import = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      confirmId : confirmId,
-      summary   : summary,
-      diff      : diff,
-      pkgs      : pkgs,
+      requirements: requirements,
+      confirmId   : confirmId,
+      diff        : diff,
     });
     return res.locals.sendJSON(ret);
   });
@@ -491,13 +484,11 @@ exports.import = function(req, res, next) {
 exports.confirmImport = function(req, res, next) {
   var confirmId = req.body.confirmId;
 
-  var packageData = null;
-  var pkgs = null;
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
+  var requirements = null;
 
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
+  var importData = null;
   async.series([
     // 从缓存中读取导入数据
     function(asyncCallback) {
@@ -509,7 +500,7 @@ exports.confirmImport = function(req, res, next) {
           return asyncCallback(new E('EBizCondition.ConfirmingImportTimeout', 'Confirming import timeout'));
         }
 
-        packageData = JSON.parse(cacheRes);
+        importData = JSON.parse(cacheRes);
 
         return asyncCallback();
       });
@@ -519,13 +510,14 @@ exports.confirmImport = function(req, res, next) {
       var recoverPoint = {
         // 存在确认导入的，只有「导入脚本包」操作
         type: 'import',
-        note: '系统：导入脚本包前自动创建的还原点',
+        note: '系统：导入脚本集前自动创建的还原点',
       };
-      scriptSetModel.import(packageData, recoverPoint, function(err, _pkgs) {
+      scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
         if (err) return asyncCallback(err);
 
-        pkgs = _pkgs;
+        requirements = _requirements;
 
+        var celery = celeryHelper.createHelper(res.locals.logger);
         reloadDataMD5Cache(celery, asyncCallback);
       });
     },
@@ -533,7 +525,7 @@ exports.confirmImport = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      pkgs: pkgs,
+      requirements: requirements,
     });
     return res.locals.sendJSON(ret);
   });
