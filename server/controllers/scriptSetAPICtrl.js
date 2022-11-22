@@ -4,12 +4,11 @@
 var path = require('path');
 
 /* 3rd-party Modules */
-var fs      = require('fs-extra');
-var async   = require('async');
-var request = require('request');
-var moment  = require('moment');
-var JSZip   = require('jszip');
-var yaml    = require('js-yaml');
+var fs     = require('fs-extra');
+var async  = require('async');
+var moment = require('moment');
+var AdmZip = require("adm-zip");
+var yaml   = require('js-yaml');
 
 /* Project Modules */
 var E            = require('../utils/serverError');
@@ -21,9 +20,13 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 var scriptMarketAPICtrl = require('../controllers/scriptMarketAPICtrl');
 
-var scriptSetMod          = require('../models/scriptSetMod');
-var scriptMod             = require('../models/scriptMod');
-var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
+var scriptSetMod     = require('../models/scriptSetMod');
+var scriptMod        = require('../models/scriptMod');
+var connectorMod     = require('../models/connectorMod');
+var envVariableMod   = require('../models/envVariableMod');
+var authLinkMod      = require('../models/authLinkMod');
+var crontabConfigMod = require('../models/crontabConfigMod');
+var batchMod         = require('../models/batchMod');
 
 /* Configure */
 var SCRIPT_TYPE_EXT_MAP = {
@@ -248,31 +251,35 @@ exports.export = function(req, res, next) {
   scriptSetModel.getExportData(opt, function(err, exportData, summary) {
     if (err) return next(err);
 
-    // 生成 zip 包
-    var zip = new JSZip();
+    var zip = new AdmZip();
+
+    // 导出注释
+    if (!toolkit.isNothing(exportData.note)) {
+      zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
+    }
 
     // 导出脚本集 / 脚本
     exportData.scriptSets.forEach(function(scriptSet) {
-      var scriptSetDir = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id);
+      var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
 
-      // 生成 META 内容
+      // 导出 META 内容
       var metaData = {
         scriptSet: toolkit.jsonCopy(scriptSet),
       };
 
-      // 写入脚本文件
+      // 导出脚本文件
       metaData.scriptSet.scripts.forEach(function(script) {
         var filePath = path.join(scriptSetDir, scriptMarketAPICtrl._getScriptFilename(script));
-        zip.file(filePath, script.code || '');
+        zip.addFile(filePath, script.code || '');
 
         // 去除 META 中代码
         delete script.code;
       });
 
-      // 写入 META 信息
-      var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_META_FILE);
+      // 导出 META 信息
+      var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_EXPORT_META_FILE);
       var metaFileText = yaml.dump(metaData);
-      zip.file(metaFilePath, metaFileText);
+      zip.addFile(metaFilePath, metaFileText);
     });
 
     // 导出其他数据
@@ -287,26 +294,20 @@ exports.export = function(req, res, next) {
 
       var filePath = `${name}.yaml`;
       var fileData = yaml.dump(exportData[name]);
-      zip.file(filePath, fileData);
+      zip.addFile(filePath, fileData);
     });
 
-    // 压缩配置
-    var zipOpt = {
-      type              : 'nodebuffer',
-      compression       : 'DEFLATE',
-      compressionOptions: { level: 6 },
-    }
-    zip.generateAsync(zipOpt).then(function(fileBuf) {
-      // 文件名为固定开头+时间
-      var fileNameParts = [
-        CONFIG._FUNC_EXPORT_FILENAME,
-        moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
-      ];
-      var fileName = fileNameParts.join('-') + '.zip';
+    var fileBuf = zip.toBuffer();
 
-      // 下载文件
-      return res.locals.sendFile(fileBuf, fileName);
-    });
+    // 文件名为固定开头+时间
+    var fileNameParts = [
+      CONFIG._FUNC_EXPORT_FILENAME,
+      moment().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
+    ];
+    var fileName = fileNameParts.join('-') + '.zip';
+
+    // 下载文件
+    return res.locals.sendFile(fileBuf, fileName);
   });
 };
 
@@ -314,86 +315,74 @@ exports.import = function(req, res, next) {
   var file      = req.files ? req.files[0] : null;
   var checkOnly = toolkit.toBoolean(req.body.checkOnly);
 
-  var scriptSetModel = scriptSetMod.createModel(res.locals);
+  var scriptSetModel     = scriptSetMod.createModel(res.locals);
+  var connectorModel     = connectorMod.createModel(res.locals);
+  var envVariableModel   = envVariableMod.createModel(res.locals);
+  var authLinkModel      = authLinkMod.createModel(res.locals);
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var batchModel         = batchMod.createModel(res.locals);
 
   var requirements = null;
   var confirmId    = toolkit.genDataId('import');
-  var diff         = null;
+  var diff         = {};
 
-  var scriptMap  = {};
-  var importData = {};
-
-  var zip = new JSZip();
-  var allFilePaths = null;
+  var scriptMap   = {};
+  var importData  = {};
+  var allFileData = {};
 
   async.series([
     // 加载 zip 文件
     function(asyncCallback) {
       var fileBuf = fs.readFileSync(file.path);
+      var zip = new AdmZip(fileBuf);
 
-      zip
-      .loadAsync(fileBuf)
-      .then(function(zip) {
-        allFilePaths = Object.keys(zip.files);
-        return asyncCallback()
-      })
-      .catch(function(err) {
+      try {
+        zip.getEntries().forEach(function(zipEntry) {
+          if (zipEntry.isDirectory) return;
+          allFileData[zipEntry.entryName] = zipEntry.getData().toString("utf8");
+        });
+
+      } catch(err) {
         return asyncCallback(new E('EBizCondition.InvalidImportFile', 'Invalid import file', null, err));
-      });
-    },
-    // 加载脚本集 META
-    function(asyncCallback) {
-      var filePaths = allFilePaths.filter(function(p) {
-        return toolkit.endsWith(p, '/META');
-      });
+      }
 
-      async.eachSeries(filePaths, function(p, eachCallback) {
-        zip.file(p).async('string')
-        .then(function(data) {
-          if (!importData.scriptSets) importData.scriptSets = [];
+      // 提取数据
+      if (toolkit.isNothing(allFileData)) {
+        return asyncCallback(new E('EBizCondition.EmptyImportFile', 'Empty import file'));
+      }
 
-          var scriptSet = yaml.load(data).scriptSet;
+      // 提取 NOTE
+      importData.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
 
-          importData.scriptSets.push(scriptSet);
+      // 提取 META
+      for (var filePath in allFileData) if (toolkit.endsWith(filePath, '/META')) {
+        var data = allFileData[filePath];
 
-          if (scriptSet.scripts) {
-            scriptSet.scripts.forEach(function(script) {
-              scriptMap[script.id] = script;
-            });
-          }
+        var scriptSet = yaml.load(data).scriptSet;
 
-          return eachCallback();
-        })
-        .catch(function(err) {
-          return eachCallback(err);
-        })
-      }, asyncCallback);
-    },
-    // 加载代码文件
-    function(asyncCallback) {
-      var filePaths = allFilePaths.filter(function(p) {
-        return toolkit.endsWith(p, '.py');
-      });
+        if (!importData.scriptSets) importData.scriptSets = [];
+        importData.scriptSets.push(scriptSet);
 
-      async.eachSeries(filePaths, function(p, eachCallback) {
-        zip.file(p).async('string')
-        .then(function(data) {
-          var scriptId = p.split('/').slice(-2).join('__').replace(/\.py$/g, '');
-          var script = scriptMap[scriptId];
+        if (scriptSet.scripts) {
+          scriptSet.scripts.forEach(function(script) {
+            scriptMap[script.id] = script;
+          });
+        }
+      }
 
-          if (!script) return eachCallback();
+      // 提取脚本代码
+      for (var filePath in allFileData) if (toolkit.endsWith(filePath, '.py')) {
+        var data = allFileData[filePath];
 
+        var scriptId = filePath.split('/').slice(-2).join('__').replace(/\.py$/g, '');
+        var script = scriptMap[scriptId];
+
+        if (script) {
           script.code = data;
+        }
+      }
 
-          return eachCallback();
-        })
-        .catch(function(err) {
-          return eachCallback(err);
-        })
-      }, asyncCallback);
-    },
-    // 加载其他资源
-    function(asyncCallback) {
+      // 提取其他信息
       var resourceNames = [
         'connectors',
         'envVariables',
@@ -401,23 +390,15 @@ exports.import = function(req, res, next) {
         'crontabConfigs',
         'batches',
       ];
-      async.eachSeries(resourceNames, function(name, eachCallback) {
-        var p = `${name}.yaml`;
+      resourceNames.forEach(function(name) {
+        var filePath = `${name}.yaml`
+        var data = allFileData[filePath];
 
-        if (allFilePaths.indexOf(p) < 0) return eachCallback();
+        if (!data) return;
 
-        zip.file(p).async('string')
-        .then(function(data) {
-          importData[name] = yaml.load(data);
-          return eachCallback();
-        })
-        .catch(function(err) {
-          return eachCallback(err);
-        })
-      }, asyncCallback);
-    },
-    // 导入数据/暂存数据
-    function(asyncCallback) {
+        importData[name] = yaml.load(data);
+      });
+
       if (checkOnly) {
         // 仅检查时，数据暂存Redis，不进行实际导入操作
         var cacheKey = toolkit.getCacheKey('stage', 'importScriptSet', ['confirmId', confirmId]);
@@ -439,35 +420,46 @@ exports.import = function(req, res, next) {
         });
       }
     },
-    // 获取脚本集并计算差异（添加、替换）
+    // 获取当前数据信息
     function(asyncCallback) {
-      var opt = {
-        fields: ['sset.id', 'sset.title'],
-      };
-      scriptSetModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        var currentScriptSetMap = toolkit.arrayElementMap(dbRes, 'id');
-
-        diff = {
-          add    : [],
-          replace: [],
+      var currentDataOpts = [
+        { key: 'scriptSets',     model: scriptSetModel,     fields: [ 'id', 'title' ] },
+        { key: 'connectors',     model: connectorModel,     fields: [ 'id', 'title' ] },
+        { key: 'envVariables',   model: envVariableModel,   fields: [ 'id', 'title' ] },
+        { key: 'authLinks',      model: authLinkModel,      fields: [ 'id', 'funcId' ] },
+        { key: 'crontabConfigs', model: crontabConfigModel, fields: [ 'id', 'funcId' ] },
+        { key: 'batches',        model: batchModel,         fields: [ 'id', 'funcId' ] },
+      ]
+      async.eachSeries(currentDataOpts, function(dataOpt, eachCallback) {
+        var opt = {
+          fields: dataOpt.fields.map(function(f) {
+            return `${dataOpt.model.alias}.${f}`;
+          }),
         }
-        importData.scriptSets.forEach(function(d) {
-          var isExisted = !!currentScriptSetMap[d.id];
-          var diffInfo = {
-            id   : d.id,
-            title: d.title,
-          }
-          if (isExisted) {
-            diff.replace.push(diffInfo);
-          } else {
-            diff.add.push(diffInfo);
-          }
-        });
+        dataOpt.model.list(opt, function(err, dbRes) {
+          if (err) return eachCallback(err);
 
-        return asyncCallback();
-      });
+          if (toolkit.isNothing(importData[dataOpt.key])) return eachCallback();
+
+          var currentDataMap = toolkit.arrayElementMap(dbRes, 'id');
+          diff[dataOpt.key] = { add: [], replace: [] };
+
+          importData[dataOpt.key].forEach(function(d) {
+            var diffInfo = dataOpt.fields.reduce(function(acc, f) {
+              acc[f] = d[f];
+              return acc;
+            }, {});
+
+            if (!!currentDataMap[d.id]) {
+              diff[dataOpt.key].replace.push(diffInfo);
+            } else {
+              diff[dataOpt.key].add.push(diffInfo);
+            }
+          });
+
+          return eachCallback();
+        });
+      }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

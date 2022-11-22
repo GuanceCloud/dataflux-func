@@ -912,22 +912,6 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         }, eachCallback);
       }, asyncCallback);
     },
-    // // 更新脚本草稿、草稿 MD5（避免写入2倍数据量）
-    // function(asyncCallback) {
-    //   if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-
-    //   var sql = toolkit.createStringBuilder();
-    //   sql.append('UPDATE biz_main_script');
-    //   sql.append('SET');
-    //   sql.append('   codeDraft    = code');
-    //   sql.append('  ,codeDraftMD5 = codeMD5');
-    //   sql.append('WHERE');
-    //   sql.append('  scriptSetId IN (?)');
-
-    //   var sqlParams = [scriptSetIds];
-
-    //   self.db.query(sql, sqlParams, asyncCallback);
-    // },
     // 记录导入历史
     function(asyncCallback) {
       var summary = toolkit.jsonCopy(importData);

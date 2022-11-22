@@ -28,6 +28,8 @@ en:
   Pinned   : 已置顶
   Normal   : 正常
   Error    : 错误
+  Type     : 类型
+  Item     : 项目
 
   Very good: 非常好
   OK       : 了解
@@ -72,6 +74,7 @@ en:
   Enter   : 进入
   Move    : 移动
   Copy    : 复制
+  Replace : 替换
   Zip     : 压缩
   Unzip   : 解压
   Install : 安装
@@ -109,6 +112,7 @@ en:
   enter   : 进入
   move    : 移动
   copy    : 复制
+  replace : 替换
   zip     : 压缩
   unzip   : 解压
   install : 安装

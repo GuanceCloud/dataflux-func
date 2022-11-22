@@ -61,25 +61,45 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         :close-on-press-escape="false"
         :show-close="true"
         width="750px">
-        <span class="import-token-dialog-content">
-          <template v-if="checkResult && checkResult.diff">
-            <template v-if="!T.isNothing(checkResult.diff.add)">
-              <span class="text-good">新增脚本集：</span>
-              <el-tag size="medium" type="success" v-for="d in checkResult.diff.add" :key="d.id">{{ d.title || d.id }}</el-tag>
-              <hr class="br">
+        <span class="import-info-dialog-content">
+          <template v-if="importInfo && importInfo.diff">
+            <template v-if="!T.isNothing(importInfo.diff.scriptSets)">
+              <el-divider content-position="left">{{ $t('Script Set') }}</el-divider>
+              <template v-if="!T.isNothing(importInfo.diff.scriptSets.add)">
+                <span v-for="item in importInfo.diff.scriptSets.add">
+                  {{ $t('Add') }}{{ $t(':') }}
+                  {{ item.title || item.id }}<small>ID {{ item.id }}</small>
+                </span>
+              </template>
+              <template v-if="!T.isNothing(importInfo.diff.scriptSets.replace)">
+                <span v-for="item in importInfo.diff.scriptSets.replace">
+                  {{ $t('Replace') }}{{ $t(':') }}
+                  {{ item.title || item.id }}<small>ID {{ item.id }}</small>
+                </span>
+              </template>
             </template>
 
-            <template v-if="!T.isNothing(checkResult.diff.replace)">
-              <span class="text-watch">替换脚本集：</span>
-              <el-tag size="medium" type="warning" v-for="d in checkResult.diff.replace" :key="d.id">{{ d.title || d.id }}</el-tag>
-              <InfoBlock type="warning" title="被替换的脚本集下所有脚本文件会被完整替换为新版本，新版本中不存在的脚本文件会被删除"></InfoBlock>
-              <hr class="br">
-            </template>
+              <el-divider content-position="left">{{ $t('Connector') }}</el-divider>
+
+              <el-divider content-position="left">{{ $t('ENV') }}</el-divider>
+
+              <el-divider content-position="left">{{ $t('Auth Link') }}</el-divider>
+
+              <el-divider content-position="left">{{ $t('Crontab Config') }}</el-divider>
+
+              <el-divider content-position="left">{{ $t('Batch') }}</el-divider>
+
           </template>
 
-          <template v-if="checkResult && checkResult.summary && checkResult.summary.note">
+          <template v-if="importInfo && importInfo.requirements">
+            <span class="text-info">依赖：</span>
+            <pre class="import-note">{{ importInfo.requirements }}</pre>
+            <hr class="br">
+          </template>
+
+          <template v-if="importInfo && importInfo.note">
             <span class="text-info">备注：</span>
-            <pre class="import-note">{{ checkResult.summary.note }}</pre>
+            <pre class="import-note">{{ importInfo.note }}</pre>
             <hr class="br">
           </template>
         </span>
@@ -125,14 +145,15 @@ export default {
         return this.alertOnError(apiRes);
       }
 
+      this.importInfo = apiRes.data;
+
       // 打开确认对话框
       this.showConfirm = true;
-      this.checkResult = apiRes.data;
     },
     async confirmImport() {
       this.isImporting = true;
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', {
-        body : { confirmId: this.checkResult.confirmId },
+        body : { confirmId: this.importInfo.confirmId },
         alert: { okMessage: this.$t('Data imported') },
       });
       this.isImporting = false;
@@ -140,7 +161,7 @@ export default {
         return this.alertOnError(apiRes);
       }
 
-      if (this.T.isNothing(apiRes.data.pkgs)) {
+      if (this.T.isNothing(apiRes.data.requirements)) {
         this.goToHistory();
 
       } else {
@@ -150,10 +171,10 @@ export default {
           this.goToHistory();
 
         } else {
-          let pkgs = apiRes.data.pkgs.join(' ');
+          let requirements = apiRes.data.requirements.join(' ');
           this.$router.push({
             name: 'pip-tool',
-            query: { pkgs: this.T.getBase64(pkgs) },
+            query: { requirements: this.T.getBase64(requirements) },
           });
         }
       }
@@ -213,7 +234,7 @@ export default {
       showConfirm  : false,
       isImporting  : false,
 
-      checkResult: {},
+      importInfo: {},
     }
   },
   created() {
@@ -229,14 +250,6 @@ export default {
 }
 </style>
 <style scoped>
-.import-token-dialog-content {
-  display: block;
-  font-size: 18px;
-  line-height: 50px;
-}
-.import-token-dialog-content .el-tag+.el-tag {
-  margin-left: 10px;
-}
 .import-note {
   margin: 0;
   padding: 0;

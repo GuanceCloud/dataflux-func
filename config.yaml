@@ -116,20 +116,24 @@ FILE_STORE_ROOT_DIR: uploaded-files
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 # 额外 Python 包黑名单
 EXTRA_PYTHON_PACKAGE_BLACK_LIST: aliyunsdkcore
+
 # 脚本市场 Git 库保存目录
 SCRIPT_MARKET_GIT_REPO_DIR: script-market-git-repos
 # 脚本市场 TOKEN 文件名
 SCRIPT_MARKET_TOKEN_FILE: TOKEN
-# 脚本市场脚本集目录名
-SCRIPT_MARKET_SCRIPT_SET_DIR: script-sets
 # 脚本市场 README 文件名
-SCRIPT_MARKET_README_FILE: README.md
-# 脚本市场 CHANGELOG 信息文件名
+SCRIPT_EXPORT_README_FILE: README.md
+# 脚本市场 CHANGELOG-info 文件名
 SCRIPT_MARKET_CHANGELOG_INFO_FILE: CHANGELOG-info.yaml
 # 脚本市场 CHANGELOG 文件名
 SCRIPT_MARKET_CHANGELOG_FILE: CHANGELOG.md
-# 脚本市场 META 文件名
-SCRIPT_MARKET_META_FILE: META
+
+# 脚本导出脚本集目录名
+SCRIPT_EXPORT_SCRIPT_SET_DIR: script-sets
+# 脚本导出 META 文件名
+SCRIPT_EXPORT_META_FILE: META
+# 脚本导出 NOTE 文件名
+SCRIPT_EXPORT_NOTE_FILE: NOTE.txt
 
 # 是否停用鉴权（作为内部系统时打开）
 _IS_STREAKING: false

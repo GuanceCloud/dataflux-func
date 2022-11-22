@@ -39,6 +39,25 @@ exports.createModel = function(locals) {
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
 
+EntityModel.prototype.get = function(id, options, callback) {
+  var self = this;
+
+  return self._get(id, options, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 解密/隐藏相关字段
+    if (dbRes) {
+      if (self.decipher) {
+        _doDecipher(dbRes.authJSON);
+      } else {
+        _removeCipherFields(dbRes.authJSON);
+      }
+    }
+
+    return callback(null, dbRes);
+  });
+};
+
 EntityModel.prototype.list = function(options, callback) {
   var self = this;
   options = options || {};

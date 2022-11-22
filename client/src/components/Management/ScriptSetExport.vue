@@ -285,12 +285,6 @@ export default {
 .export-form {
   width: 620px;
 }
-.import-token-dialog-content {
-  text-align: center;
-  display: block;
-  font-size: 18px;
-  line-height: 50px;
-}
 .import-token {
   font-size: 24px;
   display: inline-block;

@@ -30,6 +30,7 @@ en: {}
   Current user has been disabled                                                                          : 当前用户已被禁用
   Data of Socket.io must be a JSON string                                                                 : Socket.io数据必须为JSON字符串
   Deleting builtin Connector is not allowed                                                               : 不允许删除内置连接器
+  Empty import file                                                                                       : 导入文件为空
   Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io事件必须满足格式"socketio.*"
   Export failed                                                                                           : 导出失败
   File not exists                                                                                         : 文件不存在
