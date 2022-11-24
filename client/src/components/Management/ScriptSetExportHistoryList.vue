@@ -4,11 +4,11 @@
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>脚本包导出历史</span>
+          <span>{{ $t('Script Set Export History') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'export')" size="small">
               <i class="fa fa-fw fa-cloud-download"></i>
-              导出脚本包
+              {{ $t('Export Script Sets') }}
             </el-button>
           </div>
         </div>

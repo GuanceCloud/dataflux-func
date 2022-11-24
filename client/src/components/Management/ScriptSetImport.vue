@@ -1,5 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
+Select a file: 选择一个文件
 Data imported: 数据已导入
+Importing: 即将导入
+Imported contents do not include sensitive data (such as password), please re-entered them after import: 导入内容不包含敏感数据，请在导入后重新输入
+Drag and drop the file here, or click here to upload: 将文件拖到此处，或点击此处上传
 
 Imported Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
 </i18n>
@@ -10,11 +14,11 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ modeName }}脚本包</span>
+          <span>{{ $t('Script Set Import') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
-              脚本包导入历史
+              {{ $t('Script Set Import History') }}
             </el-button>
           </div>
         </div>
@@ -26,7 +30,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px">
-                <el-form-item label="导入脚本包" prop="upload">
+                <el-form-item :label="$t('Select a file')" prop="upload">
                   <el-upload drag ref="upload" :class="uploadAreaBorderClass"
                     :limit="2"
                     :multiple="false"
@@ -36,14 +40,14 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                     :http-request="handleUpload"
                     :on-change="onUploadFileChange">
                     <i class="fa" :class="uploadAreaIconClass"></i>
-                    <div class="el-upload__text">{{ uploadAreaIconText }}</div>
+                    <div class="el-upload__text">{{ $t(uploadAreaIconText) }}</div>
                   </el-upload>
-                  <InfoBlock type="warning" title="如脚本包附带导入连接器，密码等敏感信息需要重新输入"></InfoBlock>
+                  <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -55,7 +59,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       </el-main>
 
       <el-dialog
-        title="即将导入"
+        :title="$t('Importing')"
         :visible.sync="showConfirm"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
@@ -97,9 +101,9 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
           </template>
         </span>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="showConfirm = false">取消</el-button>
+          <el-button @click="showConfirm = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" v-prevent-re-click @click="confirmImport" :loading="isImporting">
-            确认导入
+            {{ $t('Confirm') }}
           </el-button>
         </span>
       </el-dialog>
@@ -188,7 +192,7 @@ export default {
 
       this.uploadAreaBorderClass = [];
       this.uploadAreaIconClass   = ['fa-cloud-upload'];
-      this.uploadAreaIconText    = '将文件拖到此处，或点击此处上传';
+      this.uploadAreaIconText    = 'Drag and drop the file here, or click here to upload';
     },
     showFilePreview(filename) {
       this.uploadAreaBorderClass = ['upload-area-active'];
@@ -224,12 +228,6 @@ export default {
         }
       }
     },
-    modeName() {
-      const nameMap = {
-        import: '导入',
-      };
-      return nameMap[this.T.setupPageMode()];
-    },
   },
   props: {
   },
@@ -239,7 +237,7 @@ export default {
 
       uploadAreaBorderClass: [],
       uploadAreaIconClass  : ['fa-cloud-upload'],
-      uploadAreaIconText   : '将文件拖到此处，或点击此处上传',
+      uploadAreaIconText   : 'Drag and drop the file here, or click here to upload',
 
       disableUpload: true,
       showConfirm  : false,

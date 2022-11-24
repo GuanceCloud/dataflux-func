@@ -1,6 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Data exported: 数据已导出
 Related Contents: 关联内容
+Exporting with related contents: 导出并附带关联内容
+Exported Connectors will not include sensitive data (such as password), please re-entered them after import: 导出的连接器不包含敏感数据（如密码等），请在导入后重新输入
+Meaningful notes can provide a reliable reference for the future: 有意义的备注可以为将来提供可靠的参考
+Please select at least one Script Set: 请选择导出脚本包
+Please input note: 请填写备注
+Data exported: 数据已导出
 'Exported content has been downloaded as a zip file:': '导出内容已作为 zip 文件下载：'
 </i18n>
 
@@ -43,7 +48,7 @@ Related Contents: 关联内容
                   <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
                   <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
                   <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
-                  <InfoBlock title="系统会自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据"></InfoBlock>
+                  <InfoBlock :title="$t('Exporting with related contents')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Connector')" prop="connectorIds">
@@ -57,10 +62,10 @@ Related Contents: 关联内容
                       <code class="select-item-id">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
-                  <InfoBlock v-if="!T.isNothing(form.connectorIds)" type="warning" title="导出的连接器不包含密码等敏感信息，导入后需要重新输入这些内容"></InfoBlock>
+                  <InfoBlock v-if="!T.isNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="环境变量" prop="envVariableIds">
+                <el-form-item :label="$t('ENV')" prop="envVariableIds">
                   <el-select v-model="form.envVariableIds" multiple filterable :filter-method="doEnvVariableFilter" :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectEnvVariableOptions"
@@ -73,7 +78,7 @@ Related Contents: 关联内容
                   </el-select>
                 </el-form-item>
 
-                <el-form-item label="备注" prop="note">
+                <el-form-item :label="$t('Note')" prop="note">
                   <el-input
                     type="textarea"
                     resize="none"
@@ -81,7 +86,7 @@ Related Contents: 关联内容
                     maxlength="200"
                     show-word-limit
                     v-model="form.note"></el-input>
-                  <InfoBlock title="有意义的备注可以为将来提供可靠的参考"></InfoBlock>
+                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
@@ -248,14 +253,6 @@ export default {
       }
     },
   },
-  computed: {
-    modeName() {
-      const nameMap = {
-        export: '导出',
-      };
-      return nameMap[this.T.setupPageMode()];
-    },
-  },
   props: {
   },
   data() {
@@ -284,7 +281,7 @@ export default {
         scriptSetIds: [
           {
             trigger : 'change',
-            message : '请选择导出脚本包',
+            message : this.$t('Please select at least one Script Set'),
             required: true,
             type    : 'array',
             min     : 1,
@@ -293,7 +290,7 @@ export default {
         note: [
           {
             trigger : 'change',
-            message : '请填写备注',
+            message : this.$t('Please input note'),
             required: true,
             min     : 1,
           },
