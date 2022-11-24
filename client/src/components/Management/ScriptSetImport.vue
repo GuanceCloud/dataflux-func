@@ -55,7 +55,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       </el-main>
 
       <el-dialog
-        title="即将导入脚本包"
+        title="即将导入"
         :visible.sync="showConfirm"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
@@ -63,44 +63,37 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         width="750px">
         <span class="import-info-dialog-content">
           <template v-if="importInfo && importInfo.diff">
-            <template v-if="!T.isNothing(importInfo.diff.scriptSets)">
-              <el-divider content-position="left">{{ $t('Script Set') }}</el-divider>
-              <template v-if="!T.isNothing(importInfo.diff.scriptSets.add)">
-                <span v-for="item in importInfo.diff.scriptSets.add">
-                  {{ $t('Add') }}{{ $t(':') }}
-                  {{ item.title || item.id }}<small>ID {{ item.id }}</small>
-                </span>
-              </template>
-              <template v-if="!T.isNothing(importInfo.diff.scriptSets.replace)">
-                <span v-for="item in importInfo.diff.scriptSets.replace">
-                  {{ $t('Replace') }}{{ $t(':') }}
-                  {{ item.title || item.id }}<small>ID {{ item.id }}</small>
-                </span>
+            <template v-for="t in C.IMPORT_DATA_TYPE">
+              <template v-if="!T.isNothing(importInfo.diff[t.key])">
+                <el-divider content-position="left"><h3>{{ t.name }}</h3></el-divider>
+                <el-table :data="importInfo.diff[t.key]"
+                  :show-header="false">
+                  <el-table-column width="180" align="center">
+                    <template slot-scope="scope">
+                      <strong :class="DIFF_TYPE_MAP[scope.row.diffType].class">
+                        <i class="fa" :class="DIFF_TYPE_MAP[scope.row.diffType].icon"></i>
+                        {{ $t(scope.row.diffType) }}
+                      </strong>
+                    </template>
+                  </el-table-column>
+                  <el-table-column>
+                    <template slot-scope="scope">
+                      <span>{{ scope.row[t.showField] || scope.row.id }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column>
+                    <template slot-scope="scope">
+                      <small>ID <code class="text-code">{{ scope.row.id }}</code></small>
+                    </template>
+                  </el-table-column>
+                </el-table>
               </template>
             </template>
-
-              <el-divider content-position="left">{{ $t('Connector') }}</el-divider>
-
-              <el-divider content-position="left">{{ $t('ENV') }}</el-divider>
-
-              <el-divider content-position="left">{{ $t('Auth Link') }}</el-divider>
-
-              <el-divider content-position="left">{{ $t('Crontab Config') }}</el-divider>
-
-              <el-divider content-position="left">{{ $t('Batch') }}</el-divider>
-
-          </template>
-
-          <template v-if="importInfo && importInfo.requirements">
-            <span class="text-info">依赖：</span>
-            <pre class="import-note">{{ importInfo.requirements }}</pre>
-            <hr class="br">
           </template>
 
           <template v-if="importInfo && importInfo.note">
-            <span class="text-info">备注：</span>
+            <el-divider content-position="left"><h3>{{ $t('Note') }}</h3></el-divider>
             <pre class="import-note">{{ importInfo.note }}</pre>
-            <hr class="br">
           </template>
         </span>
         <span slot="footer" class="dialog-footer">
@@ -171,10 +164,16 @@ export default {
           this.goToHistory();
 
         } else {
-          let requirements = apiRes.data.requirements.join(' ');
+          let requirementsParts = [];
+          for (let pkg in apiRes.data.requirements) {
+            let ver = apiRes.data.requirements[pkg];
+            requirementsParts.push(ver ? `${pkg}==${ver}` : pkg);
+          };
+
+          let requirementsLine = requirementsParts.join(' ');
           this.$router.push({
             name: 'pip-tool',
-            query: { requirements: this.T.getBase64(requirements) },
+            query: { requirements: this.T.getBase64(requirementsLine) },
           });
         }
       }
@@ -213,6 +212,18 @@ export default {
     },
   },
   computed: {
+    DIFF_TYPE_MAP() {
+      return {
+        add: {
+          icon : 'fa-plus',
+          class: 'text-good',
+        },
+        replace: {
+          icon : 'fa-refresh',
+          class: 'text-bad',
+        }
+      }
+    },
     modeName() {
       const nameMap = {
         import: '导入',
@@ -253,7 +264,7 @@ export default {
 .import-note {
   margin: 0;
   padding: 0;
-  line-height: 1;
+  line-height: 1.5;
   font-size: 16px;
   padding-left: 20px;
 }

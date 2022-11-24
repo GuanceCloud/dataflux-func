@@ -76,7 +76,7 @@ export default {
     async loadData(pageNumber) {
       // 只加载近若干条
       let apiRes = await this.T.callAPI_get('/api/v1/script-recover-points/do/list', {
-        query: { pageSize: 50 },
+        query: { pageSize: 20 },
       });
       if (!apiRes.ok) return;
 

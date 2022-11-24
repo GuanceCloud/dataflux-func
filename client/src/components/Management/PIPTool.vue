@@ -202,9 +202,9 @@ export default {
     }
   },
   mounted() {
-    let pkgs = this.$route.query.pkgs;
-    if (pkgs) {
-      this.packageToInstall = this.T.fromBase64(pkgs);
+    let requirements = this.$route.query.requirements;
+    if (requirements) {
+      this.packageToInstall = this.T.fromBase64(requirements);
     }
   },
 }

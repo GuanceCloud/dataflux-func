@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Data exported: 数据已导出
+Related Contents: 关联内容
+'Exported content has been downloaded as a zip file:': '导出内容已作为 zip 文件下载：'
 </i18n>
 
 <template>
@@ -8,11 +10,11 @@ Data exported: 数据已导出
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ modeName }}脚本包</span>
+          <span>{{ $t('Export Script Sets') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
-              脚本包导出历史
+              {{ $t('Script Set Export History') }}
             </el-button>
           </div>
         </div>
@@ -24,8 +26,8 @@ Data exported: 数据已导出
           <el-col :span="15">
             <div class="export-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item label="脚本集" prop="scriptSetIds">
-                  <el-select v-model="form.scriptSetIds" multiple filterable :filter-method="doScriptSetFilter" placeholder="请选择">
+                <el-form-item :label="$t('Script Set')" prop="scriptSetIds">
+                  <el-select v-model="form.scriptSetIds" multiple filterable :filter-method="doScriptSetFilter" :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectScriptSetOptions"
                       :key="item.id"
@@ -37,15 +39,15 @@ Data exported: 数据已导出
                   </el-select>
                 </el-form-item>
 
-                <el-form-item label="脚本集关联数据">
-                  <el-checkbox size="medium" border v-model="form.includeAuthLinks" label="授权链接"></el-checkbox>
-                  <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" label="自动触发配置"></el-checkbox>
-                  <el-checkbox size="medium" border v-model="form.includeBatches" label="批处理"></el-checkbox>
+                <el-form-item :label="$t('Related Contents')">
+                  <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
+                  <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
+                  <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
                   <InfoBlock title="系统会自动查找导出脚本集相关的数据，并在导入时替换脚本集关联的所有数据"></InfoBlock>
                 </el-form-item>
 
-                <el-form-item label="连接器" prop="connectorIds">
-                  <el-select v-model="form.connectorIds" multiple filterable :filter-method="doConnectorFilter" placeholder="请选择">
+                <el-form-item :label="$t('Connector')" prop="connectorIds">
+                  <el-select v-model="form.connectorIds" multiple filterable :filter-method="doConnectorFilter" :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectConnectorOptions"
                       :key="item.id"
@@ -59,7 +61,7 @@ Data exported: 数据已导出
                 </el-form-item>
 
                 <el-form-item label="环境变量" prop="envVariableIds">
-                  <el-select v-model="form.envVariableIds" multiple filterable :filter-method="doEnvVariableFilter" placeholder="请选择">
+                  <el-select v-model="form.envVariableIds" multiple filterable :filter-method="doEnvVariableFilter" :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectEnvVariableOptions"
                       :key="item.id"
@@ -84,7 +86,7 @@ Data exported: 数据已导出
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -94,6 +96,22 @@ Data exported: 数据已导出
           </el-col>
         </el-row>
       </el-main>
+
+      <el-dialog
+        :title="$t('Data exported')"
+        :visible.sync="showDownloadFilename"
+        width="750px">
+        <span class="download-filename-dialog-content">
+          <span class="text-good">{{ $t('Data exported') }}</span>
+          <br><span>{{ $t('Exported content has been downloaded as a zip file:') }}</span>
+          <br><code class="download-filename">{{ downloadFilename }}</code>
+        </span>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="goToHistory">
+            {{ $t('Very good') }}
+          </el-button>
+        </span>
+      </el-dialog>
     </el-container>
   </transition>
 </template>
@@ -195,6 +213,9 @@ export default {
       ];
       let fileName = fileNameParts.join('-') + '.zip';
       FileSaver.saveAs(blob, fileName);
+
+      this.downloadFilename     = fileName;
+      this.showDownloadFilename = true;
     },
     goToHistory() {
       this.$router.push({
@@ -239,6 +260,9 @@ export default {
   },
   data() {
     return {
+      showDownloadFilename: false,
+      downloadFilename    : null,
+
       scriptSets  : [],
       connectors  : [],
       envVariables: [],
@@ -285,12 +309,18 @@ export default {
 .export-form {
   width: 620px;
 }
-.import-token {
-  font-size: 24px;
+.download-filename-dialog-content {
+  text-align: center;
+  display: block;
+  font-size: 18px;
+  line-height: 50px;
+}
+.download-filename {
+  font-size: 20px;
   display: inline-block;
   padding: 5px 20px;
   margin-top: 15px;
-  letter-spacing: 5px;
+  letter-spacing: 3px;
   border: 5px dashed lightgrey;
 }
 

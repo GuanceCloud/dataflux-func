@@ -10,6 +10,7 @@ var validator = require('validator');
 var E           = require('../utils/serverError');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
+var common      = require('../utils/common');
 var modelHelper = require('../utils/modelHelper');
 
 var scriptRecoverPointMod     = require('./scriptRecoverPointMod');
@@ -34,8 +35,6 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
     {field: 'sset.id',      method: 'ASC' },
   ],
 };
-
-var FILENAME_IN_ZIP = exports.FILENAME_IN_ZIP = 'dataflux-func.json';
 
 exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
@@ -757,53 +756,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
 EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
-  if ('string' === typeof importData) {
-    importData = JSON.parse(importData);
-  }
-
-  importData.scriptSets = importData.scriptSets || [];
-  importData.scripts    = importData.scripts    || [];
-  importData.funcs      = importData.funcs      || [];
-
-  // 展开脚本数据
-  importData.scriptSets.forEach(function(scriptSet) {
-    var _scripts = scriptSet.scripts;
-    delete scriptSet.scripts;
-
-    if (toolkit.isNothing(_scripts)) return;
-
-    _scripts.forEach(function(script) {
-      script.scriptSetId = scriptSet.id;
-
-      script.code    = script.code || '';          // 保证code字段不为NULL
-      script.codeMD5 = toolkit.getMD5(script.code) // 计算MD5值
-
-      if (script.codeDraft) {
-        script.codeDraft    = script.codeDraft || '';          // 保证codeDraft字段不为NULL
-        script.codeDraftMD5 = toolkit.getMD5(script.codeDraft) // 计算MD5值
-      } else {
-        script.codeDraft    = script.code;
-        script.codeDraftMD5 = script.codeMD5;
-      }
-
-      importData.scripts.push(script);
-    });
-  });
-
-  // 展开函数数据
-  importData.scripts.forEach(function(script) {
-    var _funcs = script.funcs;
-    delete script.funcs;
-
-    if (toolkit.isNothing(_funcs)) return;
-
-    _funcs.forEach(function(func) {
-      func.scriptId    = script.id;
-      func.scriptSetId = script.scriptSetId;
-
-      importData.funcs.push(func);
-    });
-  });
+  importData = common.flattenImportExportData(importData);
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
@@ -915,9 +868,11 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     // 记录导入历史
     function(asyncCallback) {
       var summary = toolkit.jsonCopy(importData);
-      summary.scripts.forEach(function(d) {
-        delete d.code; // 摘要中不含代码
-      });
+      if (!toolkit.isNothing(summary.scripts)) {
+        summary.scripts.forEach(function(d) {
+          delete d.code; // 摘要中不含代码
+        });
+      }
 
       var _data = {
         note       : importData.note,
@@ -935,8 +890,10 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         if (toolkit.isNothing(s.requirements)) return;
 
         s.requirements.split('\n').forEach(function(r) {
+          if (toolkit.isNothing(r)) return;
+
           var pkgVer = r.trim().split('==');
-          requirements[pkgVer[0]] = pkgVer[1];
+          requirements[pkgVer[0]] = pkgVer[1] || null;
         });
       });
       return callback(null, requirements);

@@ -15,24 +15,19 @@ var E            = require('../utils/serverError');
 var CONFIG       = require('../utils/yamlResources').get('CONFIG');
 var ROUTE        = require('../utils/yamlResources').get('ROUTE');
 var toolkit      = require('../utils/toolkit');
-var modelHelper  = require('../utils/modelHelper');
+var common       = require('../utils/common');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
-var scriptMarketAPICtrl = require('../controllers/scriptMarketAPICtrl');
-
-var scriptSetMod     = require('../models/scriptSetMod');
-var scriptMod        = require('../models/scriptMod');
-var connectorMod     = require('../models/connectorMod');
-var envVariableMod   = require('../models/envVariableMod');
-var authLinkMod      = require('../models/authLinkMod');
-var crontabConfigMod = require('../models/crontabConfigMod');
-var batchMod         = require('../models/batchMod');
+var scriptSetMod              = require('../models/scriptSetMod');
+var scriptMod                 = require('../models/scriptMod');
+var connectorMod              = require('../models/connectorMod');
+var envVariableMod            = require('../models/envVariableMod');
+var authLinkMod               = require('../models/authLinkMod');
+var crontabConfigMod          = require('../models/crontabConfigMod');
+var batchMod                  = require('../models/batchMod');
+var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
 /* Configure */
-var SCRIPT_TYPE_EXT_MAP = {
-  python  : 'py',
-  markdown: 'md',
-};
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
@@ -247,57 +242,89 @@ exports.clone = function(req, res, next) {
 exports.export = function(req, res, next) {
   var opt = req.body;
 
-  var scriptSetModel = scriptSetMod.createModel(res.locals);
-  scriptSetModel.getExportData(opt, function(err, exportData, summary) {
-    if (err) return next(err);
+  var scriptSetModel              = scriptSetMod.createModel(res.locals);
+  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
 
-    var zip = new AdmZip();
+  var exportData = null;
+  var fileBuf    = null;
+  async.series([
+    // 导出
+    function(asyncCallback) {
+      scriptSetModel.getExportData(opt, function(err, _exportData, summary) {
+        if (err) return asyncCallback(err);
 
-    // 导出注释
-    if (!toolkit.isNothing(exportData.note)) {
-      zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
-    }
+        exportData = _exportData;
 
-    // 导出脚本集 / 脚本
-    exportData.scriptSets.forEach(function(scriptSet) {
-      var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
+        // 生成 zip
+        var zip = new AdmZip();
 
-      // 导出 META 内容
-      var metaData = {
-        scriptSet: toolkit.jsonCopy(scriptSet),
-      };
+        // 导出注释
+        if (!toolkit.isNothing(exportData.note)) {
+          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
+        }
 
-      // 导出脚本文件
-      metaData.scriptSet.scripts.forEach(function(script) {
-        var filePath = path.join(scriptSetDir, scriptMarketAPICtrl._getScriptFilename(script));
-        zip.addFile(filePath, script.code || '');
+        // 导出脚本集 / 脚本
+        exportData.scriptSets.forEach(function(scriptSet) {
+          var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
 
-        // 去除 META 中代码
-        delete script.code;
+          // 导出 META 内容
+          var metaData = {
+            scriptSet: toolkit.jsonCopy(scriptSet),
+          };
+
+          // 导出脚本文件
+          metaData.scriptSet.scripts.forEach(function(script) {
+            var filePath = path.join(scriptSetDir, common.getScriptFilename(script));
+            zip.addFile(filePath, script.code || '');
+
+            // 去除 META 中代码
+            delete script.code;
+          });
+
+          // 导出 META 信息
+          var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_EXPORT_META_FILE);
+          var metaFileText = yaml.dump(metaData);
+          zip.addFile(metaFilePath, metaFileText);
+        });
+
+        // 导出其他数据
+        [
+          'connectors',
+          'envVariables',
+          'authLinks',
+          'crontabConfigs',
+          'batches',
+        ].forEach(function(name) {
+          if (toolkit.isNothing(exportData[name])) return;
+
+          var filePath = `${name}.yaml`;
+          var fileData = yaml.dump(exportData[name]);
+          zip.addFile(filePath, fileData);
+        });
+
+        fileBuf = zip.toBuffer();
+
+        return asyncCallback();
       });
+    },
+    // 记录导出历史
+    function(asyncCallback) {
+      // 生成摘要
+      var summary = common.flattenImportExportData(exportData);
+      if (!toolkit.isNothing(summary.scripts)) {
+        summary.scripts.forEach(function(d) {
+          delete d.code; // 摘要中不含代码
+        });
+      }
 
-      // 导出 META 信息
-      var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_EXPORT_META_FILE);
-      var metaFileText = yaml.dump(metaData);
-      zip.addFile(metaFilePath, metaFileText);
-    });
-
-    // 导出其他数据
-    [
-      'connectors',
-      'envVariables',
-      'authLinks',
-      'crontabConfigs',
-      'batches',
-    ].forEach(function(name) {
-      if (toolkit.isNothing(exportData[name])) return;
-
-      var filePath = `${name}.yaml`;
-      var fileData = yaml.dump(exportData[name]);
-      zip.addFile(filePath, fileData);
-    });
-
-    var fileBuf = zip.toBuffer();
+      var _data = {
+        note       : exportData.note,
+        summaryJSON: summary,
+      }
+      scriptSetExportHistoryModel.add(_data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
 
     // 文件名为固定开头+时间
     var fileNameParts = [
@@ -322,7 +349,7 @@ exports.import = function(req, res, next) {
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   var batchModel         = batchMod.createModel(res.locals);
 
-  var requirements = null;
+  var requirements = {};
   var confirmId    = toolkit.genDataId('import');
   var diff         = {};
 
@@ -360,9 +387,11 @@ exports.import = function(req, res, next) {
 
         var scriptSet = yaml.load(data).scriptSet;
 
+        // 脚本集信息
         if (!importData.scriptSets) importData.scriptSets = [];
         importData.scriptSets.push(scriptSet);
 
+        // 脚本信息
         if (scriptSet.scripts) {
           scriptSet.scripts.forEach(function(script) {
             scriptMap[script.id] = script;
@@ -442,7 +471,8 @@ exports.import = function(req, res, next) {
           if (toolkit.isNothing(importData[dataOpt.key])) return eachCallback();
 
           var currentDataMap = toolkit.arrayElementMap(dbRes, 'id');
-          diff[dataOpt.key] = { add: [], replace: [] };
+          var diffAdd     = [];
+          var diffReplace = [];
 
           importData[dataOpt.key].forEach(function(d) {
             var diffInfo = dataOpt.fields.reduce(function(acc, f) {
@@ -451,11 +481,16 @@ exports.import = function(req, res, next) {
             }, {});
 
             if (!!currentDataMap[d.id]) {
-              diff[dataOpt.key].replace.push(diffInfo);
+              diffInfo.diffType = 'replace';
+              diffReplace.push(diffInfo);
             } else {
-              diff[dataOpt.key].add.push(diffInfo);
+              diffInfo.diffType = 'add';
+              diffAdd.push(diffInfo);
             }
+
           });
+
+          diff[dataOpt.key] = diffAdd.concat(diffReplace);
 
           return eachCallback();
         });
@@ -468,6 +503,7 @@ exports.import = function(req, res, next) {
       requirements: requirements,
       confirmId   : confirmId,
       diff        : diff,
+      note        : importData.note,
     });
     return res.locals.sendJSON(ret);
   });

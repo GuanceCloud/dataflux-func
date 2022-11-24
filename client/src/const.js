@@ -943,4 +943,43 @@ kafka.publish(topic='some_topic', message='some_message')`,
   get ABNORMAL_REQUEST_TYPE_MAP() {
     return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE, 0);
   },
+
+  // 导入数据类型
+  get IMPORT_DATA_TYPE() {
+    return [
+      {
+        key       : 'scriptSets',
+        name      : $t('Script Set'),
+        showField : 'title',
+      },
+      {
+        key       : 'connectors',
+        name      : $t('Connector'),
+        showField : 'title',
+      },
+      {
+        key       : 'envVariables',
+        name      : $t('ENV'),
+        showField : 'title',
+      },
+      {
+        key       : 'authLinks',
+        name      : $t('Auth Link'),
+        showField : 'funcId',
+      },
+      {
+        key       : 'crontabConfigs',
+        name      : $t('Crontab Config'),
+        showField : 'funcId',
+      },
+      {
+        key       : 'batches',
+        name      : $t('Batch'),
+        showField : 'funcId',
+      },
+    ];
+  },
+  get IMPORT_DATA_TYPE_MAP() {
+    return new MAP_CONST(this.IMPORT_DATA_TYPE, 0);
+  },
 }
