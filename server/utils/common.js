@@ -3,6 +3,7 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
+var sortedJSON = require('sorted-json');
 
 /* Project Modules */
 var E           = require('./serverError');
@@ -15,6 +16,20 @@ var SCRIPT_TYPE_EXT_MAP = {
   python  : 'py',
   markdown: 'md',
 };
+
+var SCRIPT_SET_MD5_FIELDS = [
+  'id',
+  'title',
+  'description',
+  'requirements',
+];
+var SCRIPT_MD5_FIELDS = [
+  'id',
+  'title',
+  'description',
+  'type',
+  'codeMD5',
+];
 
 common.getScriptFilename = function(script) {
   var filename = script.id.split('__').slice(1).join('__');
@@ -74,4 +89,44 @@ common.flattenImportExportData = function(data) {
   });
 
   return data;
-}
+};
+
+common.getScriptSetMD5 = function(scriptSet, scripts) {
+  var dataToMD5 = {
+    scriptSet: {},
+    scripts  : [],
+  }
+
+  // 脚本集字段
+  SCRIPT_SET_MD5_FIELDS.forEach(function(f) {
+    if (!(f in scriptSet)) throw new Error(`Lack of Script Set field to compute Script Set MD5: ${f}`);
+
+    dataToMD5[f] = scriptSet[f];
+  });
+
+  // 脚本字段
+  if (!toolkit.isNothing(scripts)) {
+    scripts.forEach(function(script) {
+      var _script = {};
+
+      SCRIPT_MD5_FIELDS.forEach(function(f) {
+        if (!(f in script)) throw new Error(`Lack of Script field to compute Script Set MD5: ${f}`);
+
+        _script[f] = script[f];
+      });
+
+      dataToMD5.scripts.push(_script);
+    });
+
+    dataToMD5.scripts.sort(function compareFn(a, b) {
+      if (a.id < b.id)      return -1;
+      else if (a.id > b.id) return 1;
+      else                  return 0;
+    });
+  }
+
+  var strToMD5 = sortedJSON.sortify(dataToMD5, { stringify: true, sortArray: false});
+  var md5 = toolkit.getMD5(strToMD5);
+
+  return md5;
+};

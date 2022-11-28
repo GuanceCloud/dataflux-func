@@ -60,8 +60,8 @@ Crontab Config deleted: 自动触发配置已删除
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Invalid argument format: 参数格式不正确
 
-recentTaskCount: '{n}个近期任务'
-shortcutDays  : '{n}天'
+recentTaskCount: '{n} 个近期任务'
+shortcutDays  : '{n} 天'
 </i18n>
 
 <template>

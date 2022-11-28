@@ -280,7 +280,7 @@ export default {
 
           this.$router.push({
             name  : 'crontab-config-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           })
           break;
@@ -294,7 +294,7 @@ export default {
 
       this.$router.push({
         name  : 'task-info-list',
-        params: {id: d.id},
+        params: { id: d.id },
         query : nextRouteQuery,
       });
     },

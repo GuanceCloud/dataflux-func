@@ -118,6 +118,11 @@ const routes = [
         name: 'script-market-setup',
         component: () => import('../components/Management/ScriptMarketSetup.vue'),
       },
+      // {
+      //   path: 'script-market-detail/:id',
+      //   name: 'script-market-detail',
+      //   component: () => import('../components/Management/ScriptMarketDetail.vue'),
+      // },
 
       {
         path: 'api-auth-list',

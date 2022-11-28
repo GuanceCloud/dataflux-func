@@ -38,9 +38,9 @@ Batch deleted: 批处理已删除
 Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 Invalid argument format: 参数格式不正确
 
-parameterHint: '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
+parameterHint: '参数值指定为 "INPUT_BY_CALLER" 时表示允许调用时指定本参数'
 
-recentTaskCount: '{n}个近期任务'
+recentTaskCount: '{n} 个近期任务'
 </i18n>
 
 <template>

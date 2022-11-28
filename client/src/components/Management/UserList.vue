@@ -160,7 +160,7 @@ export default {
 
           this.$router.push({
             name  : 'user-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           });
           break;

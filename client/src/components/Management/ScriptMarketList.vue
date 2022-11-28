@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+scriptSetCount: 'No Script Set | Total {n} Script Set | Total {n} Script Set'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Branch: 分支
 
@@ -7,6 +11,8 @@ Script Market unpinned: 脚本市场已取消置顶
 
 No Script Market has ever been added: 从添加过任何脚本市场
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
+
+scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
 </i18n>
 
 <template>
@@ -58,30 +64,48 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                 {{ getScriptMarketName(scope.row) }}
               </strong>
 
-              <div v-if="scope.row.type === 'git'">
-                <code class="text-main">{{ scope.row.configJSON.url }}</code>
-                {{ $t('(') }}
-                  <i class="fa fa-code-fork"></i>
-                  {{ $t('Branch') }}{{ $t(':') }}
-                  <code class="text-main">{{ scope.row.gitBranch || $t('Default') }}</code>
-                {{ $t(')') }}
-              </div>
-              <div v-if="scope.row.type === 'aliyun_oss'">
-                <code class="text-main">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
+              <div>
+                <span v-if="scope.row.type === 'git'">
+                  <code class="text-main">{{ scope.row.configJSON.url }}</code>
+                  {{ $t('(') }}
+                    <i class="fa fa-code-fork"></i>
+                    {{ $t('Branch') }}{{ $t(':') }}
+                    <code class="text-main">{{ scope.row.gitBranch || $t('Default') }}</code>
+                  {{ $t(')') }}
+                </span>
+                <span v-if="scope.row.type === 'aliyun_oss'">
+                  <code class="text-main">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
+                </span>
+
+                <br>
+                &#12288;{{ $tc('scriptSetCount', scope.row.scriptSets.length ) }}
               </div>
             </template>
           </el-table-column>
 
           <el-table-column width="100">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.isOwner" type="primary">
+              <el-tag v-if="scope.row.isOwner" type="success" size="small">
                 <i class="fa fa-fw fa-key"></i>
                 {{ $t('Owner') }}
               </el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="300">
+          <el-table-column align="right" width="100">
+            <template slot-scope="scope">
+              <el-button
+                type="primary"
+                size="small"
+                plain
+                @click="openDetail(scope.row)">
+                <i class="fa fa-fw fa-th-large"></i>
+                {{ $t('Detail') }}
+              </el-button>
+            </template>
+          </el-table-column>
+
+          <el-table-column align="right" width="200">
             <template slot-scope="scope">
               <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
               <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>
@@ -187,11 +211,22 @@ export default {
 
           this.$router.push({
             name  : 'script-market-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           })
           break;
       }
+    },
+    openDetail(d) {
+      let nextRouteQuery = this.T.packRouteQuery();
+
+      this.$store.commit('updateHighlightedTableDataId', d.id);
+
+      this.$router.push({
+        name  : 'script-market-detail',
+        params: { id: d.id },
+        query : nextRouteQuery,
+      })
     },
     getScriptMarketIcon(scriptMarket) {
       if (scriptMarket.type === 'git') {

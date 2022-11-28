@@ -5418,6 +5418,13 @@ scriptMarketAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+      mode:
+        $desc      : 模式
+        $isRequired: true
+        $type      : enum
+        $in:
+          - add
+          - delete
       author:
         $desc      : 作者
         $isRequired: true

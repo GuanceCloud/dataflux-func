@@ -44,9 +44,9 @@ Auth Link deleted: 授权链接已删除
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 Invalid argument format: 参数格式不正确
 
-parameterHint  : '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
-shortcutDays   : '{n}天'
-recentTaskCount: '{n}个近期任务'
+parameterHint  : '参数值指定为 "INPUT_BY_CALLER" 时表示允许调用时指定本参数'
+shortcutDays   : '{n} 天'
+recentTaskCount: '{n} 个近期任务'
 </i18n>
 
 <template>

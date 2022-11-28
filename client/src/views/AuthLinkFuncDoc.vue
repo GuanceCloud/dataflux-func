@@ -160,7 +160,7 @@ export default {
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
         baseURL: true,
-        params : {id: d.id},
+        params : { id: d.id },
       });
 
       let funcCallKwargsJSON = {};

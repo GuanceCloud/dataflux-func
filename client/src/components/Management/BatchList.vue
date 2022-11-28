@@ -266,7 +266,7 @@ export default {
 
           this.$router.push({
             name  : 'batch-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           });
           break;
@@ -280,7 +280,7 @@ export default {
 
       this.$router.push({
         name  : 'task-info-list',
-        params: {id: d.id},
+        params: { id: d.id },
         query : nextRouteQuery,
       });
     },
@@ -294,7 +294,7 @@ export default {
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/bat/:id', {
         baseURL: true,
-        params : {id: d.id},
+        params : { id: d.id },
       });
 
       let funcCallKwargsJSON = {};
