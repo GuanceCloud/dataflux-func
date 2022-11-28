@@ -9,8 +9,8 @@ failureCount  : 'Failure {n}'
 <i18n locale="zh-CN" lang="yaml">
 Jump to...                                     : 跳转到...
 Refresh                                        : 刷新列表
-Add Script                                     : 添加脚本
-Add Script Set                                 : 添加脚本集
+New Script                                     : 新建脚本
+New Script Set                                 : 新建脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
 Locked by other user({user})                   : 被其他用户（{user}）锁定
@@ -144,7 +144,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
                 :disabled="!data.isEditable"
                 @click="openEntity(node, data, 'add')">
                 <i class="fa fa-fw fa-plus"></i>
-                {{ $t('Add Script') }}
+                {{ $t('New Script') }}
               </el-button>
 
               <!-- 快速查看 -->
@@ -211,7 +211,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
               <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
+                <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
               </el-link>
               <div v-else>
                 <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>

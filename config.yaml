@@ -140,8 +140,8 @@ _IS_STREAKING: false
 
 # 客户端冲突过期时间
 _CLIENT_CONFLICT_EXPIRES: 5
-# 脚本包自动安装锁定时间
-_FUNC_PKG_AUTO_INSTALL_LOCK_AGE: 60
+# 脚本集自动安装锁定时间
+_SCRIPT_SET_AUTO_INSTALL_LOCK_AGE: 60
 # DataKit自动添加锁定时间
 _LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE: 15
 
@@ -333,7 +333,7 @@ _HTTP_AUTH_NONCE_MAX_AGE      : 300
 # 是否禁用安装配置
 _DISABLE_SETUP: false
 # 是否禁用自动安装附带脚本
-_DISABLE_AUTO_INSTALL_FUNC_PKGS: false
+_DISABLE_AUTO_INSTALL_SCRIPT_SET: false
 # 是否禁用数据库自动备份
 _DISABLE_DB_AUTO_BACKUP: false
 # 是否禁用工作单元限制压力

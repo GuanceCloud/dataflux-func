@@ -19,8 +19,14 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   alias      : 'smkt',
 
   objectFields: {
-    authJSON: 'json',
-  }
+    configJSON: 'json',
+    isPinned  : 'boolean',
+  },
+
+  defaultOrders: [
+    {field: 'smkt.pinTime', method: 'DESC'},
+    {field: 'smkt.seq',     method: 'ASC' },
+  ],
 };
 
 var CIPHER_CONFIG_FIELDS = exports.CIPHER_CONFIG_FIELDS = [
@@ -48,9 +54,9 @@ EntityModel.prototype.get = function(id, options, callback) {
     // 解密/隐藏相关字段
     if (dbRes) {
       if (self.decipher) {
-        _doDecipher(dbRes.authJSON);
+        _doDecipher(dbRes.configJSON);
       } else {
-        _removeCipherFields(dbRes.authJSON);
+        _removeCipherFields(dbRes.configJSON);
       }
     }
 
@@ -65,6 +71,7 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   smkt.*');
+  sql.append('  ,NOT ISNULL(smkt.pinTime) AS isPinned');
 
   sql.append('FROM biz_main_script_market AS smkt');
 
@@ -76,9 +83,9 @@ EntityModel.prototype.list = function(options, callback) {
     // 解密/隐藏相关字段
     dbRes.forEach(function(d) {
       if (self.decipher) {
-        _doDecipher(d.authJSON);
+        _doDecipher(d.configJSON);
       } else {
-        _removeCipherFields(d.authJSON);
+        _removeCipherFields(d.configJSON);
       }
     });
 
@@ -120,57 +127,62 @@ EntityModel.prototype.modify = function(id, data, callback) {
   return this._modify(id, data, callback);
 };
 
-function _doCipher(authJSON) {
-  if (toolkit.isNothing(authJSON)) return authJSON;
+function _doCipher(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
 
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
 
-    if (authJSON[f]) {
-      authJSON[fCipher] = toolkit.cipherByAES(authJSON[f], CONFIG.SECRET);
-      delete authJSON[f];
+    if (configJSON[f]) {
+      configJSON[fCipher] = toolkit.cipherByAES(configJSON[f], CONFIG.SECRET);
+      delete configJSON[f];
     }
   });
 
-  return authJSON;
+  return configJSON;
 };
 
-function _doDecipher(authJSON) {
-  if (toolkit.isNothing(authJSON)) return authJSON;
+function _doDecipher(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
 
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
 
-    if (authJSON[fCipher]) {
+    if (configJSON[fCipher]) {
       try {
-        authJSON[f] = toolkit.decipherByAES(authJSON[fCipher], CONFIG.SECRET);
+        configJSON[f] = toolkit.decipherByAES(configJSON[fCipher], CONFIG.SECRET);
       } catch(err) {
-        authJSON[f] = '';
+        configJSON[f] = '';
       }
     }
   });
 
-  _removeCipherFields(authJSON);
+  _removeCipherFields(configJSON);
 
-  return authJSON;
+  return configJSON;
 };
 
-function _removeCipherFields(authJSON) {
-  if (toolkit.isNothing(authJSON)) return authJSON;
+function _removeCipherFields(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
 
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
-    delete authJSON[fCipher];
+    delete configJSON[fCipher];
   });
-  return authJSON;
+  return configJSON;
 };
 
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if (data.authJSON && 'object' === typeof data.authJSON) {
-    _doCipher(data.authJSON);
-    data.authJSON = JSON.stringify(data.authJSON);
+  if (data.configJSON && 'object' === typeof data.configJSON) {
+    _doCipher(data.configJSON);
+    data.configJSON = JSON.stringify(data.configJSON);
+  }
+
+  if ('boolean' === typeof data.isPinned) {
+    data.pinTime = data.isPinned ? new Date() : null;
+    delete data.isPinned;
   }
 
   return data;

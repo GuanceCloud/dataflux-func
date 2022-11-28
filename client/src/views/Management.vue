@@ -23,6 +23,13 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/script-market-list">
+              <span>
+                <i class="fa fa-fw fa-shopping-cart"></i>
+                {{ $t('Script Market') }}
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/api-auth-list">
               <span>
                 <i class="fa fa-fw fa-lock"></i>
@@ -98,13 +105,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('ScriptMarket')"
-              class="experimental-feature" index="/management/script-market">
-              <span>
-                <i class="fa fa-fw fa-shopping-cart"></i>
-                {{ $t('Script Market') }}
-              </span>
-            </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PIPTool')"
               class="experimental-feature" index="/management/pip-tool" >
               <span>

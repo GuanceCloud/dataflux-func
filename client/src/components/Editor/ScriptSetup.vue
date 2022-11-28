@@ -2,9 +2,6 @@
 Add Script  : 添加脚本
 Setup Script: 配置脚本
 
-Title      : 标题
-Description: 描述
-
 Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
 
 Please input ID: 请输入ID

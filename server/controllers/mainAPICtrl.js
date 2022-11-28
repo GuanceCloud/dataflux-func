@@ -2940,38 +2940,6 @@ exports.fileService = function(req, res, next) {
   });
 };
 
-// 获取脚本包索引
-exports.getScriptPackageIndex = function(req, res, next) {
-  var indexURL = req.query.indexURL || CONFIG.OFFICIAL_PACKAGE_INDEX_URL;
-
-  var requestOptions = {
-    forever: true,
-    timeout: 3 * 1000,
-    method : 'get',
-    url    : indexURL,
-    json   : true,
-  };
-  request(requestOptions, function(err, _res, _body) {
-    // 是否可以访问脚本市场
-    if (err) {
-      return next(new E('ESysNetwork', err.toString()));
-    }
-
-    // 简单检查是否有效
-    var isInvalidIndex = false;
-    if (!Array.isArray(_body)) {
-      isInvalidIndex = true;
-    }
-
-    if (isInvalidIndex) {
-      return next(new E('EBizBadData', 'Invalid package index'));
-    }
-
-    var ret = toolkit.initRet(_body);
-    return res.locals.sendJSON(ret);
-  });
-};
-
 // 拉取系统日志
 exports.pullSystemLogs = function(req, res, next) {
   var startPosition = parseInt(req.query.position);

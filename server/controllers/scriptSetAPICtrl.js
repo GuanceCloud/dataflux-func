@@ -536,7 +536,7 @@ exports.confirmImport = function(req, res, next) {
     // 执行导入
     function(asyncCallback) {
       var recoverPoint = {
-        // 存在确认导入的，只有「导入脚本包」操作
+        // 存在确认导入的，只有「导入脚本集」操作
         type: 'import',
         note: '系统：导入脚本集前自动创建的还原点',
       };

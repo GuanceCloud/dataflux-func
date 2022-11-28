@@ -2,8 +2,6 @@
 Add Script Set  : 添加脚本集
 Setup Script Set: 配置脚本集
 
-Title       : 标题
-Description : 描述
 Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分

@@ -1749,19 +1749,6 @@ mainAPI:
         $desc: 文件服务ID
         $type: string
 
-  getScriptPackageIndex:
-    name         : 获取脚本包索引
-    method       : get
-    url          : /api/v1/script-packages/index
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      indexURL:
-        $desc    : 脚本包索引URL地址
-        $required: false
-        $type    : string
-
   pullSystemLogs:
     name         : 拉取系统日志
     method       : get
@@ -1883,10 +1870,6 @@ scriptSetAPI:
           $desc      : 是否已置顶
           $allowNull : true
           $type      : boolean
-        color:
-          $desc      : 着色
-          $allowNull : true
-          $type      : string
 
   delete:
     showInDoc    : true
@@ -5198,7 +5181,7 @@ scriptMarketAPI:
     response     : json
     requireSignIn: false
     privilege    : general_r
-    paging       : false
+    paging       : true
     fieldPicking : true
     fieldKicking : true
     orderFields:
@@ -5207,7 +5190,9 @@ scriptMarketAPI:
       updateTime: smkt.updateTime
     fuzzySearch:
       - smkt.name
-      - smkt.url
+      - smkt.description
+      - smkt.type
+      - smkt.configJSON
     query:
       id:
         $desc      : 根据ID过滤
@@ -5219,11 +5204,14 @@ scriptMarketAPI:
         $type      : string
         $searchType: like
         $searchKey : smkt.name
-      url:
-        $desc      : 根据URL搜索
-        $type      : string
-        $searchType: like
-        $searchKey : smkt.url
+      type:
+        $desc      : 根据类型过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : smkt.type
+        $in:
+          - git
+          - aliyun_oss
 
   add:
     showInDoc    : true
@@ -5251,19 +5239,27 @@ scriptMarketAPI:
           $in:
             - git
             - aliyun_oss
-        url:
-          $desc      : URL地址
-          $isRequired: true
-          $type      : string
-        gitBranch:
-          $desc      : Git 库分支
+        configJSON:
+          $desc      : 配置信息
           $allowNull : true
-          $type      : string
-        authJSON:
-          $desc      : 认证信息
-          $allowNull : true
-          username:
+          url:
+            $desc      : URL地址
+            $allowNull : true
+            $type      : string
+          branch:
+            $desc      : Git 库分支
+            $allowNull : true
+            $type      : string
+          user:
             $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          region:
+            $desc      : 地域
+            $allowNull : true
+            $type      : string
+          bucket:
+            $desc      : Bucket
             $allowNull : true
             $type      : string
           password:
@@ -5278,6 +5274,10 @@ scriptMarketAPI:
             $desc      : Access Key Secret
             $allowNull : true
             $type      : string
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   modify:
     showInDoc    : true
@@ -5302,11 +5302,27 @@ scriptMarketAPI:
           $desc      : 描述
           $allowNull : true
           $type      : string
-        authJSON:
-          $desc      : 认证信息
+        configJSON:
+          $desc      : 配置信息
           $allowNull : true
-          username:
+          url:
+            $desc      : URL地址
+            $allowNull : true
+            $type      : string
+          branch:
+            $desc      : Git 库分支
+            $allowNull : true
+            $type      : string
+          user:
             $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          region:
+            $desc      : 地域
+            $allowNull : true
+            $type      : string
+          bucket:
+            $desc      : Bucket
             $allowNull : true
             $type      : string
           password:
@@ -5321,6 +5337,10 @@ scriptMarketAPI:
             $desc      : Access Key Secret
             $allowNull : true
             $type      : string
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
 
   delete:
     showInDoc    : true

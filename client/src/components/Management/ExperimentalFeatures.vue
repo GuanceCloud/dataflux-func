@@ -28,14 +28,6 @@
 
                 <br><br>
 
-                <el-form-item prop="ScriptMarket">
-                  <el-switch active-text="开启脚本市场模块" v-model="form.ScriptMarket"></el-switch>
-                  <div class="text-small form-item-tip">
-                    用于从市场直接安装脚本包
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「脚本市场」进入模块
-                  </div>
-                </el-form-item>
-
                 <el-form-item prop="PIPTool">
                   <el-switch active-text="开启PIP工具模块" v-model="form.PIPTool"></el-switch>
                   <div class="text-small form-item-tip">
@@ -177,7 +169,6 @@ export default {
   data() {
     return {
       form: {
-        ScriptMarket    : false,
         PIPTool         : false,
         Blueprint       : false,
         FileManager     : false,

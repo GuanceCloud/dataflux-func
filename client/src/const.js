@@ -409,7 +409,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ]
   },
   get TODO_TYPE_MAP() {
-    return new MAP_CONST(this.TODO_TYPE, 0);
+    return new MAP_CONST(this.TODO_TYPE);
   },
 
   // 主题
@@ -893,7 +893,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ];
   },
   get CODE_VIEWR_USER_OPERATION_MAP() {
-    return new MAP_CONST(this.CODE_VIEWR_USER_OPERATION, 0);
+    return new MAP_CONST(this.CODE_VIEWR_USER_OPERATION);
   },
   // 代码查看器展示模式
   get CODE_VIEWER_SHOW_MODE() {
@@ -941,7 +941,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ];
   },
   get ABNORMAL_REQUEST_TYPE_MAP() {
-    return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE, 0);
+    return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE);
   },
 
   // 导入数据类型
@@ -980,6 +980,38 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ];
   },
   get IMPORT_DATA_TYPE_MAP() {
-    return new MAP_CONST(this.IMPORT_DATA_TYPE, 0);
+    return new MAP_CONST(this.IMPORT_DATA_TYPE);
+  },
+
+  // 脚本市场类型
+  get SCRIPT_MARKET() {
+    return [
+      {
+        key   : 'git',
+        name  : 'git',
+        icon  : 'fa-git',
+        urlTip: 'https://gitee.com/xxxxx/yyyyy.git',
+        configFields: {
+          url     : { default: null, isRequired: true },
+          branch  : { default: null },
+          user    : { default: null },
+          password: { default: null },
+        },
+      },
+      // {
+      //   key : 'aliyun_oss',
+      //   name: $t('Alibaba Cloud OSS'),
+      //   icon: 'fa-cloud',
+      //   configFields: {
+      //     region         : { default: null, isRequired: true },
+      //     bucket         : { default: null, isRequired: true },
+      //     accessKeyId    : { default: null, isRequired: true },
+      //     accessKeySecret: { default: null, isRequired: true },
+      //   },
+      // },
+    ];
+  },
+  get SCRIPT_MARKET_MAP() {
+    return new MAP_CONST(this.SCRIPT_MARKET);
   },
 }

@@ -66,7 +66,7 @@ exports.list = function(req, res, next) {
 
     // 内置标记
     scripts.forEach(function(script) {
-       script.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(script.scriptSetId) >= 0);
+      script.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(script.scriptSetId) >= 0);
     });
 
     var ret = toolkit.initRet(scripts, scriptPageInfo);

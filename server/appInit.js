@@ -277,20 +277,20 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 自动导入脚本包
-  if (CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
-    // 不导入脚本包时，删除自动导入脚本包标记
+  // 自动导入脚本集
+  if (CONFIG._DISABLE_AUTO_INSTALL_SCRIPT_SET) {
+    // 不导入脚本集时，删除自动导入脚本集标记
     var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
     app.locals.cacheDB.del(cacheKey);
 
   } else {
-    // 导入脚本包时，记录脚本包ID方便后续标记自动导入的脚本包
+    // 导入脚本集时，记录脚本集ID方便后续标记自动导入的脚本集
     async.series([
       // 获取锁
       function(asyncCallback) {
         var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
         var lockValue = Date.now().toString();
-        var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
+        var lockAge   = CONFIG._SCRIPT_SET_AUTO_INSTALL_LOCK_AGE;
 
         app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
           if (err) return asyncCallback(err);
@@ -304,9 +304,9 @@ exports.afterAppCreated = function(app, server) {
           return asyncCallback();
         });
       },
-      // 安装脚本包
+      // 安装脚本集
       function(asyncCallback) {
-        // 获取脚本包列表
+        // 获取脚本集列表
         var funcPackagePath = path.join(__dirname, '../func-pkg/');
         var funcPackages = fs.readdirSync(funcPackagePath);
         funcPackages = funcPackages.filter(function(fileName) {

@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Add API Auth  : 添加API认证
-Setup API Auth: 配置API认证
+Add API Auth  : 添加 API 认证
+Setup API Auth: 配置 API 认证
 
 Auth Type  : 认证类型
 Auth Config: 认证配置
@@ -25,7 +25,7 @@ API Auth created: API认证已创建
 API Auth saved  : API认证已保存
 API Auth deleted: API认证已删除
 
-Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
+Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
 </i18n>
 
 <template>

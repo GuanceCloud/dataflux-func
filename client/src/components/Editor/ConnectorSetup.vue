@@ -2,10 +2,7 @@
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
-Type               : 类型
 Compatibility      : 兼容性
-Title              : 标题
-Description        : 描述
 Host               : 主机
 Port               : 端口
 Servers            : 服务器列表
@@ -183,7 +180,7 @@ This is a builtin Connector, please contact the admin to change the config: 当�
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
                     <div style="height: 0">
-                      <!-- Fake username/password -->
+                      <!-- Fake user/password -->
                       <input tabindex="-1" type="text" />
                       <input tabindex="-1" type="password" />
                     </div>

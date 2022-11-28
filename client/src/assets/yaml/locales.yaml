@@ -22,16 +22,10 @@ en:
   Please select: 请选择
 
   Administrator: 系统管理员
+  Owner        : 拥有者
+  Password     : 密码
 
-  Anonymity: 匿名
-  Unknow   : 未知
-  No Data  : 暂无数据
-  Pinned   : 已置顶
-  Normal   : 正常
-  Error    : 错误
-  Type     : 类型
-  Item     : 项目
-
+  # 通用-按钮/表单
   Very good: 非常好
   OK       : 了解
   Confirm  : 确定
@@ -83,6 +77,8 @@ en:
   Install : 安装
   More    : 更多
   Filter  : 过滤
+  Link    : 连接
+  Unlink  : 断开连接
   Restore Default: 恢复默认
 
   # 通用-操作（小写）
@@ -123,6 +119,8 @@ en:
   install : 安装
   more    : 更多
   filter  : 过滤
+  link    : 连接
+  unlink  : 断开连接
   restore default: 恢复默认
 
   # 通用-操作结果
@@ -140,6 +138,8 @@ en:
   Opened  : 已打开
   Closed  : 已关闭
   Cleared : 已清空
+  Linked  : 已连接
+  Unlinked: 已断开连接
 
   # 通用-操作结果（小写）
   added   : 已添加
@@ -156,28 +156,40 @@ en:
   opened  : 已打开
   closed  : 已关闭
   cleared : 已清空
+  linked  : 已连接
+  unlinked: 已断开连接
+
+  # 通用-数据/值
+  Anonymity            : 匿名
+  Unknow               : 未知
+  No Data              : 暂无数据
+  Pinned               : 已置顶
+  Normal               : 正常
+  Error                : 错误
+
+  # 通用表格-表头/标题
+  No matched data found: 当前过滤条件无匹配数据
+  Name                 : 名称
+  Title                : 标题
+  Description          : 描述
+  Type                 : 类型
+  Item                 : 项目
+  Value                : 值
+  Tags                 : 标签
+  Status               : 状态
+  Note                 : 备注
+  Folder               : 文件夹
+  File                 : 文件
+  Size                 : 大小
+  Create Time          : 创建时间
+  Update Time          : 更新时间
+  Example              : 示例
+  Username             : 登录账号
+  User                 : 用户
 
   # 通用表格-操作区
   Show all: 显示全部
   New     : 新建
-
-  # 通用表格-数据
-  No matched data found: 当前过滤条件无匹配数据
-
-  # 通用表格-表头/标题等
-  Name       : 名称
-  Title      : 标题
-  Tags       : 标签
-  Status     : 状态
-  Note       : 备注
-  Folder     : 文件夹
-  File       : 文件
-  Size       : 大小
-  Create Time: 创建时间
-  Update Time: 更新时间
-  Example    : 示例
-  Username   : 登录账号
-  User       : 用户
 
   # CopyButton
   Copied               : 已复制
@@ -347,6 +359,9 @@ en:
   Request Cost 5000ms+: 请求耗时 5000毫秒+
   Status Code 4xx     : 状态码 4xx
   Status Code 5xx     : 状态码 5xx
+
+  # const.js - SCRIPT_MARKET
+  Alibaba Cloud OSS: 阿里云 OSS
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题

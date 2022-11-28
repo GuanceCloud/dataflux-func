@@ -512,18 +512,24 @@ kbd {
   float: left;
 }
 .header-control {
-  float: right;
+  /* float: right;*/
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
 }
 .header-control-left {
-  float: left;
-  margin-left: 30px;
+  /* float: left; */
+  padding-left: 30px;
+  justify-content: flex-start;
 }
 .header-control > * {
-  margin-left: 5px !important;
+  margin-left: 15px !important;
 }
 .header-control .el-checkbox.is-bordered.el-checkbox--small {
   /* Magic Fix! */
-  padding-top: 6px;
+  /* padding-top: 6px; */
 }
 .no-data-area {
   text-align: center;

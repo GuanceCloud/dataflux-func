@@ -2,10 +2,7 @@
 Add ENV  : 添加环境变量
 Setup ENV: 配置环境变量
 
-Title      : 标题
-Description: 描述
-Value      : 值
-Value Type : 值类型
+Value Type: 值类型
 
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线

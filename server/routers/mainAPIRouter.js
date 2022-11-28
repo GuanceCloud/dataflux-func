@@ -136,11 +136,6 @@ routeLoader.load(ROUTE.mainAPI.fileService, [
   mainAPICtrl.fileService,
 ]);
 
-// 脚本包索引
-routeLoader.load(ROUTE.mainAPI.getScriptPackageIndex, [
-  mainAPICtrl.getScriptPackageIndex,
-]);
-
 // 系统日志
 routeLoader.load(ROUTE.mainAPI.pullSystemLogs, [
   mainAPICtrl.pullSystemLogs,

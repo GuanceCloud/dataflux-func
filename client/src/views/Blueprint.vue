@@ -2,8 +2,6 @@
 Deployed    : 已部署
 Not Deployed: 未部署
 
-Title: 标题
-
 Start       : 开始
 End         : 结束
 Process Step: 处理步骤
@@ -44,8 +42,6 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
       <el-header height="60px">
         <div class="page-header">
           <span>{{ $t('Blueprint') }} (WIP)</span>
-
-          &#12288;
           <div class="header-control header-control-left">
             <el-button @click="openAddBlueprint" type="primary" plain size="small">
               <i class="fa fa-fw fa-plus"></i>

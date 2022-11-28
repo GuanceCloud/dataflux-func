@@ -104,6 +104,22 @@ const routes = [
       },
 
       {
+        path: 'script-market-list',
+        name: 'script-market-list',
+        component: () => import('../components/Management/ScriptMarketList.vue'),
+      },
+      {
+        path: 'script-market-add',
+        name: 'script-market-add',
+        component: () => import('../components/Management/ScriptMarketSetup.vue'),
+      },
+      {
+        path: 'script-market-setup/:id',
+        name: 'script-market-setup',
+        component: () => import('../components/Management/ScriptMarketSetup.vue'),
+      },
+
+      {
         path: 'api-auth-list',
         name: 'api-auth-list',
         component: () => import('../components/Management/APIAuthList.vue'),
@@ -254,11 +270,6 @@ const routes = [
         path: 'experimental-features',
         name: 'experimental-features',
         component: () => import('../components/Management/ExperimentalFeatures.vue'),
-      },
-      {
-        path: 'script-market',
-        name: 'script-market',
-        component: () => import('../components/Management/ScriptMarket.vue'),
       },
 
       {
