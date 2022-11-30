@@ -1587,7 +1587,16 @@ export function getHighlightRowCSS({row, rowIndex}) {
 export function appendSearchKeywords(data, keys) {
   let searchKeywords = [];
   keys.forEach(k => {
-    searchKeywords.push(`${(data[k] || '').toLowerCase()}`);
+    let v = null;
+    try {
+      v = eval(`data.${k} || ''`);
+    } catch(err) {
+      // Nope
+    }
+
+    if (v) {
+      searchKeywords.push(v.toLowerCase());
+    }
   });
   data.searchKeywords = searchKeywords;
   return data;

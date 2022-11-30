@@ -1,5 +1,5 @@
 <i18n locale="en" lang="yaml">
-scriptSetCount: 'No Script Set | Total {n} Script Set | Total {n} Script Set'
+ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n} Script Sets'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -9,10 +9,10 @@ Script Market deleted: 脚本市场已删除
 Script Market pinned: 脚本市场已置顶
 Script Market unpinned: 脚本市场已取消置顶
 
-No Script Market has ever been added: 从添加过任何脚本市场
+No Script Market has ever been added: 从未添加过任何脚本市场
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
 
-scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
+ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
 </i18n>
 
 <template>
@@ -22,6 +22,7 @@ scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
       <el-header height="60px">
         <div class="page-header">
           <span>{{ $t('Script Market') }}</span>
+
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -65,25 +66,27 @@ scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
               </strong>
 
               <div>
-                <span v-if="scope.row.type === 'git'">
+                <template v-if="scope.row.type === 'git'">
+                  <span class="text-info">URL</span>
                   <code class="text-main">{{ scope.row.configJSON.url }}</code>
                   {{ $t('(') }}
                     <i class="fa fa-code-fork"></i>
                     {{ $t('Branch') }}{{ $t(':') }}
                     <code class="text-main">{{ scope.row.gitBranch || $t('Default') }}</code>
                   {{ $t(')') }}
-                </span>
-                <span v-if="scope.row.type === 'aliyun_oss'">
+                </template>
+                <template v-if="scope.row.type === 'aliyun_oss'">
+                  <span class="text-info">{{ $t('Endpoint') }}</span>
                   <code class="text-main">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
-                </span>
+                </template>
 
                 <br>
-                &#12288;{{ $tc('scriptSetCount', scope.row.scriptSets.length ) }}
+                &#12288;{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}
               </div>
             </template>
           </el-table-column>
 
-          <el-table-column width="100">
+          <el-table-column align="right" width="200">
             <template slot-scope="scope">
               <el-tag v-if="scope.row.isOwner" type="success" size="small">
                 <i class="fa fa-fw fa-key"></i>
@@ -92,7 +95,7 @@ scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="100">
+          <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <el-button
                 type="primary"
@@ -105,7 +108,7 @@ scriptSetCount: '暂无脚本集 | 共 {n} 个脚本集 | 共 {n} 个脚本集'
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="220">
             <template slot-scope="scope">
               <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
               <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>

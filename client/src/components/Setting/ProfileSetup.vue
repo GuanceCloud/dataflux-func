@@ -1,7 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 User Info                                                                              : 用户信息
 You are signed in as a integrated user, please change your profile in the origin system: 当前登录用户为集成登录用户，修改信息请前往原系统进行操作
-Username                                                                               : 用户名
 Show Name                                                                              : 显示名
 
 Please input display name: 请输入显示名
@@ -38,6 +37,18 @@ User Info saved: 用户信息已保存
                     maxlength="25"
                     show-word-limit
                     v-model="form.name"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Email')" prop="email">
+                  <el-input
+                    maxlength="50"
+                    v-model="form.email"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Mobile')" prop="mobile">
+                  <el-input
+                    maxlength="25"
+                    v-model="form.mobile"></el-input>
                 </el-form-item>
 
                 <el-form-item>
@@ -116,7 +127,9 @@ export default {
     return {
       data: {},
       form: {
-        name: null,
+        name  : null,
+        email : null,
+        mobile: null,
       },
     }
   },

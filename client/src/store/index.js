@@ -41,6 +41,7 @@ const STATE_CONFIG = {
   isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
   isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
+  lastestScriptMarketAuthor                : { persist: true,  syncXTab: true  },
 };
 const MUTATION_CONFIG = {
   updateSystemConfig                             : { persist: true  },
@@ -76,6 +77,7 @@ const MUTATION_CONFIG = {
   disableMonkeyPatchNotice                       : { persist: true  },
   resetMonkeyPatchNotice                         : { persist: true  },
   addFuzzySearchHistory                          : { persist: true  },
+  updateLastestScriptMarketAuthor                : { persist: true  },
 
   syncState: { persist: false },
 }
@@ -176,6 +178,9 @@ export default new Vuex.Store({
 
     // FuzzySearch控件搜索历史
     fuzzySearchHistoryMap: null,
+
+    // 最后脚本市场作者
+    lastestScriptMarketAuthor: null,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -474,6 +479,10 @@ export default new Vuex.Store({
       state.fuzzySearchHistoryMap[key].push({ value: queryString, timestamp: Date.now() });
       state.fuzzySearchHistoryMap[key].sort((a, b) => { return b.timestamp - a.timestamp })
       state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(0, 10);
+    },
+
+    updateLastestScriptMarketAuthor(state, author) {
+      state.lastestScriptMarketAuthor = author;
     },
 
     syncState(state, nextState) {

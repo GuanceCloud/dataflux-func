@@ -253,7 +253,6 @@ Crontab Config Task sent: 自动触发配置任务已发送
 
     <el-dialog
       :visible.sync="showRelEntity"
-      :close-on-click-modal="false"
       width="1050px">
       <div slot="title">
         <FuncInfo

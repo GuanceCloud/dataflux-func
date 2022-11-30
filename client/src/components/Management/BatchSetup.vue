@@ -90,7 +90,7 @@ recentTaskCount: '{n} 个近期任务'
                     type="textarea"
                     v-model="form.funcCallKwargsJSON"
                     resize="none"
-                    :autosize="true"></el-input>
+                    :autosize="{ minRows: 2 }"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 

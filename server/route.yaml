@@ -249,6 +249,10 @@ authAPI:
           $desc      : Name
           $type      : string
           $maxLength : 50
+        email:
+          $desc      : Email
+          $type      : string
+          $maxLength : 50
         mobile:
           $desc      : Mobile
           $allowNull : true
@@ -5397,11 +5401,11 @@ scriptMarketAPI:
         $desc: 脚本市场ID
         $type: string
 
-  push:
+  publish:
     showInDoc    : true
-    name         : 推送脚本集至脚本市场
+    name         : 发布脚本集至脚本市场
     method       : post
-    url          : /api/v1/script-markets/:id/do/push
+    url          : /api/v1/script-markets/:id/do/publish
     response     : json
     requireSignIn: false
     privilege    : general_w

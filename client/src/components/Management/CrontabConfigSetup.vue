@@ -94,7 +94,7 @@ shortcutDays  : '{n} 天'
                     type="textarea"
                     v-model="form.funcCallKwargsJSON"
                     resize="none"
-                    :autosize="true"></el-input>
+                    :autosize="{ minRows: 2 }"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
 
                   <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>

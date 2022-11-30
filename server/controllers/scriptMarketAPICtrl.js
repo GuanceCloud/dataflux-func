@@ -182,7 +182,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
       [ '#', 'ID', '标题 / Title', '目录 / Directory', '删除时间 / Delete Time' ],
     ];
     var deleteTimeCN = toolkit.getDateTimeStringCN();
-    pushContent.scriptSets.forEach(function(scriptSet, index) {
+    pushContent.deleteScriptSets.forEach(function(scriptSet, index) {
       _table.push([
         `${index + 1}`,
         `\`${scriptSet.id}\``,
@@ -210,7 +210,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
         `${scriptSet.title || '-'}`,
         `[${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id})`,
         `${pushContent.exportUser}`,
-        `${toolkit.getDateTimeStringCN(pushContent.exportTimeMs)}`,
+        `${toolkit.getDateTimeStringCN(pushContent.exportTime)}`,
       ])
     });
 
@@ -233,7 +233,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
       `${scriptSet.title || '-'}`,
       `[${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id})`,
       `${pushContent.exportUser}`,
-      `${toolkit.getDateTimeStringCN(pushContent.exportTimeMs)}`,
+      `${toolkit.getDateTimeStringCN(pushContent.exportTime)}`,
     ]);
   });
   content.push(_getMarkdownTable(_table));
@@ -251,7 +251,7 @@ function _getDefaultScriptSetReadmeContent(gitLocalPath, scriptSet, pushContent)
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
         `${pushContent.exportUser}`,
-        `${toolkit.getDateTimeStringCN(pushContent.exportTimeMs)}`,
+        `${toolkit.getDateTimeStringCN(pushContent.exportTime)}`,
       ],
     ]),
 
@@ -430,7 +430,9 @@ var SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP = {
       var metaData     = toolkit.safeReadFileSync(metaFilePath, 'yaml');
 
       if (metaData && metaData.scriptSet) {
-        metaData.scriptSet.md5 = common.getScriptSetMD5(metaData.scriptSet, metaData.scriptSet.scripts);
+        metaData.scriptSet.md5        = common.getScriptSetMD5(metaData.scriptSet, metaData.scriptSet.scripts);
+        metaData.scriptSet.exportUser = metaData.exportUser;
+        metaData.scriptSet.exportTime = metaData.exportTime;
         allMetaData.push(metaData.scriptSet);
       }
     });
@@ -604,7 +606,7 @@ var SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 推送脚本集
+// 脚本市场 - 推送
 var SCRIPT_MARKET_PUSH_FUNC_MAP = {
   git: function(locals, scriptMarket, pushContent, author, note, callback) {
     var token     = _getToken(scriptMarket);
@@ -682,10 +684,10 @@ var SCRIPT_MARKET_PUSH_FUNC_MAP = {
 
               // 生成 META 内容
               var metaData = {
-                note        : pushContent.note,
-                exportUser  : pushContent.exportUser,
-                exportTimeMs: pushContent.exportTimeMs,
-                scriptSet   : toolkit.jsonCopy(scriptSet),
+                note      : pushContent.note,
+                exportUser: pushContent.exportUser,
+                exportTime: pushContent.exportTime,
+                scriptSet : toolkit.jsonCopy(scriptSet),
               };
 
               // 写入脚本文件
@@ -728,7 +730,7 @@ var SCRIPT_MARKET_PUSH_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 拉取脚本集
+// 脚本市场 - 拉取
 var SCRIPT_MARKET_PULL_FUNC_MAP = {
   git: function(locals, scriptMarket, pullScriptSetIds, callback) {
     if (toolkit.isNothing(pullScriptSetIds)) {
@@ -1082,7 +1084,7 @@ exports.unsetOwner = function(req, res, next) {
   });
 };
 
-exports.push = function(req, res, next) {
+exports.publish = function(req, res, next) {
   var id           = req.params.id;
   var scriptSetIds = req.body.scriptSetIds;
   var mode         = req.body.mode;
@@ -1132,7 +1134,7 @@ exports.push = function(req, res, next) {
         return asyncCallback();
       }
     },
-    // 发布脚本集
+    // 推送数据
     function(asyncCallback) {
       SCRIPT_MARKET_PUSH_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, pushContent, author, note, asyncCallback);
     },

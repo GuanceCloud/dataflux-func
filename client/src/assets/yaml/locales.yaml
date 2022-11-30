@@ -67,7 +67,9 @@ en:
   Debug   : 调试
   Download: 下载
   Upload  : 上传
+  Publish : 发布
   Preview : 预览
+  Run     : 执行
   Refresh : 刷新
   Enter   : 进入
   Move    : 移动
@@ -109,8 +111,10 @@ en:
   debug   : 调试
   download: 下载
   upload  : 上传
+  publish : 发布
   preview : 预览
   refresh : 刷新
+  run     : 执行
   enter   : 进入
   move    : 移动
   copy    : 复制
@@ -161,12 +165,12 @@ en:
   unlinked: 已断开连接
 
   # 通用-数据/值
-  Anonymity            : 匿名
-  Unknow               : 未知
-  No Data              : 暂无数据
-  Pinned               : 已置顶
-  Normal               : 正常
-  Error                : 错误
+  Anonymity: 匿名
+  Unknow   : 未知
+  No Data  : 暂无数据
+  Pinned   : 已置顶
+  Normal   : 正常
+  Error    : 错误
 
   # 通用表格-表头/标题
   No matched data found: 当前过滤条件无匹配数据
@@ -187,6 +191,9 @@ en:
   Example              : 示例
   Username             : 登录账号
   User                 : 用户
+  Email                : 邮箱
+  Mobile               : 手机
+  Endpoint             : 访问地址
 
   # 通用表格-操作区
   Show all: 显示全部

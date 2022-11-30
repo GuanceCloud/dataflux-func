@@ -346,25 +346,25 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var includeBatches        = toolkit.toBoolean(options.includeBatches);
   var withCodeDraft         = toolkit.toBoolean(options.withCodeDraft);
 
-  var note          = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
-  var exportTimeMs  = toolkit.getTimestampMs();
-  var exportTimeStr = toolkit.getDateTimeStringCN(exportTimeMs);
+  var exportTime    = toolkit.getISO8601();
+  var exportTimeStr = toolkit.getDateTimeStringCN(exportTime);
   var exportUserStr = `${self.locals.user.username || 'ANONYMOUS'}`;
   if (self.locals.user.name) {
     exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (${self.locals.user.username || 'ANONYMOUS'})`;
   }
+  var note = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
 
   var exportData = {
-    note        : note,
-    exportUser  : exportUserStr,
-    exportTimeMs: exportTimeMs,
-    scriptSets  : [],
+    note      : note,
+    exportUser: exportUserStr,
+    exportTime: exportTime,
+    scriptSets: [],
   };
   var summary = {
-    note        : note,
-    exportUser  : exportUserStr,
-    exportTimeMs: exportTimeMs,
-    summaryJSON : {},
+    note       : note,
+    exportUser : exportUserStr,
+    exportTime : exportTime,
+    summaryJSON: {},
   }
 
   var scriptSetMap = {};

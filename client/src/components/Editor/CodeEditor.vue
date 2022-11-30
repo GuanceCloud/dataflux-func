@@ -20,12 +20,10 @@ Args                                                                            
 'Arguments (JSON)'                                                                   : 参数（JSON格式）
 Run selected Func                                                                    : 执行指定的函数
 Shortcut                                                                             : 快捷键
-Run                                                                                  : 执行
 Save Script draft                                                                    : 保存草稿
 Show code diff                                                                       : 查看差异
 DIFF                                                                                 : 差异
 Save and publish Script                                                              : 保存并发布
-Publish                                                                              : 发布
 Recover code to latest published version                                             : 恢复代码为上次发布的版本
 End editing                                                                          : 结束编辑
 Code Editor setting                                                                  : 代码编辑器设置
