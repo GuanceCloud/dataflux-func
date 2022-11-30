@@ -20,7 +20,7 @@ en:
   Auto         : 自动
   Follow System: 跟随系统
   Please select: 请选择
-
+  Timeout      : 超时
   Administrator: 系统管理员
   Owner        : 拥有者
   Password     : 密码
@@ -83,6 +83,7 @@ en:
   Link    : 连接
   Unlink  : 断开连接
   Restore Default: 恢复默认
+  Manage  : 管理
 
   # 通用-操作（小写）
   add     : 添加
@@ -127,6 +128,7 @@ en:
   link    : 连接
   unlink  : 断开连接
   restore default: 恢复默认
+  manage  : 管理
 
   # 通用-操作结果
   Added   : 已添加

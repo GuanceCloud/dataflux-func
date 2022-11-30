@@ -6,11 +6,11 @@ var URL  = require('url').URL;
 
 /* 3rd-party Modules */
 var async         = require('async');
-var simpleGit     = require('simple-git');
 var yaml          = require('js-yaml');
 var fs            = require('fs-extra');
 var markdownTable = require('markdown-table');
 var stringWidth   = require('string-width');
+var simpleGit     = require('simple-git');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -351,7 +351,13 @@ function _prepareGitRepo(git, callback) {
       git.pull(asyncCallback);
     },
   ], function(err) {
-    if (err) return callback(err);
+    if (err) {
+      if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+        return callback(new E('EClient', 'Accessing git repo timeout'));
+      } else {
+        return callback(err);
+      }
+    }
     return callback(null, prevCommitId);
   });
 };
@@ -393,7 +399,16 @@ function _syncToGitRepo(git, author, note, callback) {
         return asyncCallback();
       });
     },
-  ], callback);
+  ], function(err) {
+    if (err) {
+      if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+        return callback(new E('EClient', 'Accessing git repo timeout'));
+      } else {
+        return callback(err);
+      }
+    }
+    return callback();
+  });
 };
 
 var SCRIPT_MARKET_CHECK_CONFIG_FUNC_MAP = {
@@ -414,12 +429,12 @@ var SCRIPT_MARKET_CHECK_CONFIG_FUNC_MAP = {
 // 脚本市场 - 获取所有 META
 var SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP = {
   git: function(scriptMarket) {
-    var localPath = _getGitRepoLocalAbsPath(scriptMarket);
-    var allMetaData  = [];
+    var localPath   = _getGitRepoLocalAbsPath(scriptMarket);
+    var allMetaData = [];
 
     var scriptSetBaseDir = path.join(localPath, CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR);
 
-    if (!fs.existsSync(scriptSetBaseDir))  return null;
+    if (!fs.existsSync(scriptSetBaseDir)) return allMetaData;
 
     fs.readdirSync(scriptSetBaseDir, { withFileTypes: true }).forEach(function(d) {
       // 忽略非目录
@@ -444,6 +459,19 @@ var SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP = {
   },
 };
 
+// 脚本市场 - 获取远端数据
+var SCRIPT_MARKET_FETCH_FUNC_MAP = {
+  git: function(locals, scriptMarket, callback) {
+    var localPath = _getGitRepoLocalAbsPath(scriptMarket);
+
+    var git = toolkit.createGitHandler(localPath);
+    _prepareGitRepo(git, callback);
+  },
+  aliyun_oss: function(locals, scriptMarket, callback) {
+    return callback(new E('ENotImplemented', 'This type of Script Market is not Implemented.'));
+  },
+};
+
 // 脚本市场 - 列出脚本集
 var SCRIPT_MARKET_LIST_SCRIPT_SETS_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
@@ -451,7 +479,7 @@ var SCRIPT_MARKET_LIST_SCRIPT_SETS_FUNC_MAP = {
     var scriptSets = null;
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPath });
+    var git = toolkit.createGitHandler(localPath);
     async.series([
       // 准备 Git 库
       function(asyncCallback) {
@@ -475,8 +503,8 @@ var SCRIPT_MARKET_LIST_SCRIPT_SETS_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 加载
-var SCRIPT_MARKET_LOAD_FUNC_MAP = {
+// 脚本市场 - 初始化
+var SCRIPT_MARKET_INIT_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
     var gitURL       = _getGitRepoAuthURL(scriptMarket);
     var localPath    = _getGitRepoLocalAbsPath(scriptMarket);
@@ -486,7 +514,7 @@ var SCRIPT_MARKET_LOAD_FUNC_MAP = {
     fs.emptyDirSync(localPathTmp);
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPathTmp })
+    var git = toolkit.createGitHandler(localPathTmp);
     async.series([
       // git clone
       function(asyncCallback) {
@@ -538,7 +566,7 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPath });
+    var git = toolkit.createGitHandler(localPath);
     async.series([
       // 准备 Git 库
       function(asyncCallback) {
@@ -579,7 +607,7 @@ var SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP = {
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPath });
+    var git = toolkit.createGitHandler(localPath);
     async.series([
       // 准备 Git 库
       function(asyncCallback) {
@@ -613,7 +641,7 @@ var SCRIPT_MARKET_PUSH_FUNC_MAP = {
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPath });
+    var git = toolkit.createGitHandler(localPath);
     async.series([
       // 准备 Git 库
       function(asyncCallback) {
@@ -744,7 +772,7 @@ var SCRIPT_MARKET_PULL_FUNC_MAP = {
     };
 
     // 操作 git
-    var git = simpleGit({ baseDir: localPath });
+    var git = toolkit.createGitHandler(localPath);
     async.series([
       // 准备 Git 库
       function(asyncCallback) {
@@ -786,6 +814,8 @@ var SCRIPT_MARKET_PULL_FUNC_MAP = {
 var crudHandler = exports.crudHandler = scriptMarketMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
+  var fetch = toolkit.toBoolean(req.query._fetch);
+
   var scriptMarkets        = null;
   var scriptMarketPageInfo = null;
 
@@ -805,20 +835,32 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 获取脚本市场拥有者信息、脚本集 META 信息等
+    // 获取脚本市场最新数据
     function(asyncCallback) {
-      async.eachSeries(scriptMarkets, function(scriptMarket, eachCallback) {
-        // 获取 META 信息
-        scriptMarket.scriptSets = SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP[scriptMarket.type](scriptMarket) || [];
+      if (!fetch) return asyncCallback();
 
-        // 检查是否为拥有者
-        scriptMarket.isOwner = _getToken(scriptMarket) === _getRemoteTokenInfo(scriptMarket).value;
+      async.eachLimit(scriptMarkets, 3, function(scriptMarket, eachCallback) {
+        SCRIPT_MARKET_FETCH_FUNC_MAP[scriptMarket.type](res.locals, scriptMarket, function(err) {
+          // 报错仅记录
+          if (err) {
+            scriptMarket.isTimeout = true;
+          }
 
-        return eachCallback();
+          return eachCallback();
+        });
       }, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
+
+    // 获取脚本市场拥有者信息、脚本集 META 信息等
+    scriptMarkets.forEach(function(scriptMarket) {
+      // 获取 META 信息
+      scriptMarket.scriptSets = SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP[scriptMarket.type](scriptMarket) || [];
+
+      // 检查是否为拥有者
+      scriptMarket.isOwner = _getToken(scriptMarket) === _getRemoteTokenInfo(scriptMarket).value;
+    });
 
     var ret = toolkit.initRet(scriptMarkets, scriptMarketPageInfo);
     res.locals.sendJSON(ret);
@@ -876,7 +918,7 @@ exports.add = function(req, res, next) {
     },
     // 加载脚本市场
     function(asyncCallback) {
-      SCRIPT_MARKET_LOAD_FUNC_MAP[data.type](req.locals, data, asyncCallback);
+      SCRIPT_MARKET_INIT_FUNC_MAP[data.type](req.locals, data, asyncCallback);
     },
     // 尝试获取所有权
     function(asyncCallback) {
@@ -936,7 +978,7 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      SCRIPT_MARKET_LOAD_FUNC_MAP[scriptMarket.type](req.locals, data, asyncCallback);
+      SCRIPT_MARKET_INIT_FUNC_MAP[scriptMarket.type](req.locals, data, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {

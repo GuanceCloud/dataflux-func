@@ -4,7 +4,6 @@ ScriptCount: 'No Script included | Includes {n} Script | Includes {n} Script'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Market Detail: 脚本市场详情
 Install Script Set: 脚本集详情
 Publish Script Set: 发布脚本集
 Delete Script Set: 删除脚本集
@@ -14,12 +13,15 @@ Remote      : 远端
 Requirements: 依赖项
 Publisher   : 发布者
 Publish Time: 发布时间
+Not Published: 尚未发布
+Not Installed: 尚未安装
+No corresponding Script Set: 无对应脚本集
+
 Publish Info: 发布信息
 Author Name : 作者名称
 Author Email: 作者邮箱
 Publish Note: 发布说明
 Use Current User Profile: 使用当前用户信息
-No corresponding Script Set: 无对应脚本集
 
 Please input note: 请输入备注
 Please input author name: 请输入作者名称
@@ -41,11 +43,15 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
 <template>
   <transition name="fade">
+    <PageLoading v-if="!$store.state.isLoaded"></PageLoading>
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Market Detail') }}</span>
+          <span>
+            {{ $t('Script Market') }}
+            <code class="text-main">{{ common.getScriptMarketName(scriptMarket) }}</code>
+          </span>
 
           <div class="header-control" v-if="!T.isNothing(data)">
             <span class="text-main">{{ $tc('FoundScriptSetCount', filteredData.length) }}</span>
@@ -78,7 +84,11 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           :data="filteredData"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Local')">
+          <el-table-column>
+            <template slot="header" slot-scope="scope">
+              <i class="fa fa-fw fa-home"></i>
+              {{ $t('Local') }}
+            </template>
             <template slot-scope="scope">
               <template v-if="scope.row.local">
                 <strong class="script-set-name">
@@ -99,11 +109,15 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100">
             <template slot-scope="scope">
-              <i class="fa fa-fw fa-arrow-right fa-2x" :class="scope.row.remote && scope.row.local ? 'text-main': 'text-info'"></i>
+              <i class="fa fa-fw fa-2x" :class="getArrowIconClass(scope.row)"></i>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Remote')">
+          <el-table-column>
+            <template slot="header" slot-scope="scope">
+              <i class="fa fa-fw fa-cloud"></i>
+              {{ $t('Remote') }}
+            </template>
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
                 <strong class="script-set-name">
@@ -117,32 +131,37 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 </div>
               </template>
               <template v-else>
-                <i class="text-info">{{ $t('No corresponding Script Set') }}</i>
+                <i class="text-info" v-if="scriptMarket.isOwner">{{ $t('Not Published') }}</i>
+                <i class="text-info" v-else>{{ $t('No corresponding Script Set') }}</i>
               </template>
             </template>
           </el-table-column>
 
           <el-table-column :label="$t('Publisher')" width="200">
             <template slot-scope="scope">
-              <span>{{ scope.row.exportUser }}</span>
+              <template v-if="scope.row.remote">
+                <span>{{ scope.row.remote.exportUser }}</span>
+              </template>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Publish Time')" width="200">
             <template slot-scope="scope">
-              <span>{{ scope.row.exportTime | datetime }}</span>
-              <br>
-              <span class="text-info">{{ scope.row.exportTime | fromNow }}</span>
+              <template v-if="scope.row.remote">
+                <span>{{ scope.row.remote.exportTime | datetime }}</span>
+                <br>
+                <span class="text-info">{{ scope.row.remote.exportTime | fromNow }}</span>
+              </template>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="220">
+          <el-table-column align="right" width="150">
             <template slot-scope="scope">
               <template v-if="scriptMarket.isOwner">
-                <el-link @click="openDialog(scope.row, 'publish')">{{ $t('Publish') }}</el-link>
-                <el-link @click="openDialog(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
+                <el-link :disabled="!scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
+                <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else>
-                <el-link @click="openDialog(scope.row, 'install')">{{ $t('Install') }}</el-link>
+                <el-link v-if="scope.row.remote" @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -233,6 +252,12 @@ export default {
     },
   },
   methods: {
+    getArrowIconClass(data) {
+      return [
+        this.scriptMarket.isOwner ? 'fa-arrow-right' : 'fa-arrow-left',
+        data.remote && data.local ? 'text-main': 'text-info'
+      ]
+    },
     async loadData() {
       // 获取脚本市场信息
       let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
@@ -290,7 +315,7 @@ export default {
         let d = dataMap[x.id];
         if (d) {
           d.local = x;
-        } else {
+        } else if (this.scriptMarket.isOwner) {
           dataMap[x.id] = { local: x };
         }
       });
@@ -328,34 +353,29 @@ export default {
         email: userProfile.email,
       });
     },
-    async openDialog(scriptSet, operation) {
+    openDialog(scriptSet, operation) {
       this.form.note = null;
 
       switch(operation) {
         case 'publish':
-          let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', scriptSet.id);
-          if (!apiRes.ok) return;
-
           this.operationDialogTitle = this.$t('Publish Script Set');
           this.operationButtonTitle = this.$t('Publish');
-          this.scriptSetToOperate = apiRes.data;
           break;
 
         case 'delete':
           this.operationDialogTitle = this.$t('Delete Script Set');
           this.operationButtonTitle = this.$t('Delete');
-          this.scriptSetToOperate = scriptSet;
           break;
 
         case 'install':
           this.operationDialogTitle = this.$t('Install Script Set');
           this.operationButtonTitle = this.$t('Install');
-          this.scriptSetToOperate = scriptSet;
           break;
       }
 
-      this.operation     = operation;
-      this.showOperation = true;
+      this.operation          = operation;
+      this.scriptSetToOperate = scriptSet;
+      this.showOperation      = true;
     },
     async submitData(operation) {
       try {

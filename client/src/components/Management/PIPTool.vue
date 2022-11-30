@@ -1,5 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Loading           : 加载中
 PIP Tool          : PIP工具
 Mirror            : 镜像源
 Install Package   : 安装包
@@ -22,11 +21,7 @@ Are you sure you want to install the package now?    : 是否确定现在就安�
 
 <template>
   <transition name="fade">
-    <h1 class="loading" v-if="installedPackages.length <= 0">
-      <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-      {{ $t('Loading') }}
-    </h1>
-
+    <PageLoading v-if="!$store.state.isLoaded"></PageLoading>
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
@@ -211,12 +206,6 @@ export default {
 </script>
 
 <style scoped>
-.loading {
-  font-size: 40px;
-  text-align: center;
-  width: 100%;
-  margin-top: 50px;
-}
 .pip-install-tips {
   margin-left: 10px;
 }

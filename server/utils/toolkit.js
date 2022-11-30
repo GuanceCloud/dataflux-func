@@ -18,6 +18,7 @@ var nanoid    = require('nanoid').customAlphabet('0123456789abcdefghijklmnopqrst
 var moment    = require('moment');
 var Base64    = require('js-base64').Base64;
 var byteSize  = require('byte-size');
+var simpleGit = require('simple-git');
 
 var toolkit = exports;
 
@@ -2329,6 +2330,15 @@ Object.defineProperty(LimitedBuffer.prototype, 'length', {
 toolkit.LimitedBuffer = LimitedBuffer;
 toolkit.createLimitedBuffer = function(limit) {
   return new LimitedBuffer(limit);
+};
+
+var createGitHandler = toolkit.createGitHandler = function(baseDir) {
+  var git = simpleGit({
+    baseDir: baseDir,
+    timeout: { block: 5 * 1000 },
+  });
+
+  return git;
 };
 
 var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {

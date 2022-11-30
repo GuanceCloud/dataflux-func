@@ -4,6 +4,7 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 
 <i18n locale="zh-CN" lang="yaml">
 Branch: 分支
+Access Timeout: 访问超时
 
 Script Market deleted: 脚本市场已删除
 Script Market pinned: 脚本市场已置顶
@@ -17,6 +18,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
 
 <template>
   <transition name="fade">
+    <PageLoading v-if="!$store.state.isLoaded"></PageLoading>
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
@@ -51,7 +53,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
 
           <el-table-column :label="$t('Type')" width="100">
             <template slot-scope="scope">
-              <i class="fa fa-2x" :class="getScriptMarketIcon(scope.row)"></i>
+              <i class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
             </template>
           </el-table-column>
 
@@ -62,18 +64,20 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               </el-tooltip>
 
               <strong class="script-market-name" :class="scope.row.isPinned ? 'text-bad': ''">
-                {{ getScriptMarketName(scope.row) }}
+                {{ common.getScriptMarketName(scope.row) }}
               </strong>
+              <el-tag v-if="scope.row.isOwner" type="success" size="mini">
+                <i class="fa fa-fw fa-key"></i>
+                {{ $t('Owner') }}
+              </el-tag>
 
               <div>
                 <template v-if="scope.row.type === 'git'">
                   <span class="text-info">URL</span>
                   <code class="text-main">{{ scope.row.configJSON.url }}</code>
-                  {{ $t('(') }}
-                    <i class="fa fa-code-fork"></i>
-                    {{ $t('Branch') }}{{ $t(':') }}
-                    <code class="text-main">{{ scope.row.gitBranch || $t('Default') }}</code>
-                  {{ $t(')') }}
+                  <br>
+                  <span class="text-info">{{ $t('Branch') }}</span>
+                  <code class="text-main">{{ scope.row.configJSON.branch || $t('Default') }}</code>
                 </template>
                 <template v-if="scope.row.type === 'aliyun_oss'">
                   <span class="text-info">{{ $t('Endpoint') }}</span>
@@ -86,24 +90,19 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="center" width="120">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.isOwner" type="success" size="small">
-                <i class="fa fa-fw fa-key"></i>
-                {{ $t('Owner') }}
-              </el-tag>
-            </template>
-          </el-table-column>
-
-          <el-table-column align="right" width="120">
-            <template slot-scope="scope">
-              <el-button
+              <span v-if="scope.row.isTimeout"
+                class="text-bad">
+                {{ $t('Access Timeout') }}
+              </span>
+              <el-button v-else
                 type="primary"
                 size="small"
-                plain
+                :plain="scope.row.isOwner ? false : true"
                 @click="openDetail(scope.row)">
-                <i class="fa fa-fw fa-th-large"></i>
-                {{ $t('Detail') }}
+                <i class="fa fa-fw" :class="scope.row.isOwner ? 'fa-wrench' : 'fa-th-large'"></i>
+                {{ scope.row.isOwner ? $t('Manage') : $t('Detail') }}
               </el-button>
             </template>
           </el-table-column>
@@ -146,8 +145,11 @@ export default {
     },
   },
   methods: {
-    async loadData() {
+    async loadData(opt) {
+      opt = opt || { fetch: true };
+
       let _listQuery = this.dataFilter = this.T.createListQuery();
+      _listQuery._fetch = !!opt.fetch;
 
       let apiRes = await this.T.callAPI_get('/api/v1/script-markets/do/list', {
         query: _listQuery,
@@ -195,7 +197,7 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      await this.loadData();
+      await this.loadData({ fetch: false });
     },
     openSetup(d, target) {
       let nextRouteQuery = this.T.packRouteQuery();
@@ -230,37 +232,6 @@ export default {
         params: { id: d.id },
         query : nextRouteQuery,
       })
-    },
-    getScriptMarketIcon(scriptMarket) {
-      if (scriptMarket.type === 'git') {
-        let url = new URL(scriptMarket.configJSON.url);
-        switch(url.host) {
-          case 'github.com':
-            return 'fa-github';
-
-          case 'gitlab.com':
-          case 'jihulab.com':
-            return 'fa-gitlab';
-
-          case 'bitbucket.org':
-            return 'fa-bitbucket';
-          }
-      }
-
-      return this.C.SCRIPT_MARKET_MAP.get(scriptMarket.type).icon;
-    },
-    getScriptMarketName(scriptMarket) {
-      if (scriptMarket.name) {
-        return scriptMarket.name
-      } else {
-        switch(scriptMarket.type) {
-          case 'git':
-            return new URL(scriptMarket.configJSON.url).pathname.replace(/^\//g, '').replace(/\.git/g, '');
-
-          case 'aliyun_oss':
-            return `${scriptMarket.configJSON.bucket}.cn-${scriptMarket.configJSON.region}`;
-        }
-      }
     },
   },
   computed: {

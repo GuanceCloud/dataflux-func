@@ -1,5 +1,6 @@
 import store from './store'
 import * as T from '@/toolkit'
+import C from '@/const'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
@@ -109,4 +110,37 @@ export function containsFuncArgumentPlaceholder(s) {
     if (s.indexOf(FUNC_ARGUMENT_PLACEHOLDERS[i]) >= 0) return true;
   }
   return false;
+}
+
+export function getScriptMarketIcon(scriptMarket) {
+  if (scriptMarket.type === 'git') {
+    let url = new URL(scriptMarket.configJSON.url);
+    switch(url.host) {
+      case 'github.com':
+        return 'fa-github';
+
+      case 'gitlab.com':
+      case 'jihulab.com':
+        return 'fa-gitlab';
+
+      case 'bitbucket.org':
+        return 'fa-bitbucket';
+      }
+  }
+
+  return C.SCRIPT_MARKET_MAP.get(scriptMarket.type).icon;
+}
+
+export function getScriptMarketName(scriptMarket) {
+  if (scriptMarket.name) {
+    return scriptMarket.name
+  } else {
+    switch(scriptMarket.type) {
+      case 'git':
+        return new URL(scriptMarket.configJSON.url).pathname.replace(/^\//g, '').replace(/\.git/g, '');
+
+      case 'aliyun_oss':
+        return `${scriptMarket.configJSON.bucket}.cn-${scriptMarket.configJSON.region}`;
+    }
+  }
 }

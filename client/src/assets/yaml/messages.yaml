@@ -103,6 +103,7 @@ en: {}
   This script set is locked by other user                                                                 : 此脚本集已被其他用户锁定
   This username is already existed                                                                        : 此用户名已存在
   This username is used by others                                                                         : 此用户名已被其他用户使用
+  Accessing git repo timeout                                                                              : 访问 git 库超时
   Too many tasks in worker queue                                                                          : 工作队列中任务过多
   Unknow auth type                                                                                        : 认证类型未知
   Unknow event of Socket.io                                                                               : Socket.io事件未知
