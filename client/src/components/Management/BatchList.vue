@@ -84,7 +84,7 @@ failureCount  : '失败 {n}'
                 <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
+                <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>

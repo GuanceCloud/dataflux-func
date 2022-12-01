@@ -245,6 +245,8 @@ upgradeInfo:
         ADD COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源' AFTER `requirements`;
       ALTER TABLE biz_main_script_set
         ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+      ALTER TABLE biz_main_script_set
+        ADD KEY `ORIGIN_ID` (`originId`);
 
       ALTER TABLE biz_main_auth_link
         MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
@@ -252,12 +254,20 @@ upgradeInfo:
         MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
       ALTER TABLE biz_main_batch
         MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
+
       ALTER TABLE biz_main_auth_link
         ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
       ALTER TABLE biz_main_crontab_config
         ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
       ALTER TABLE biz_main_batch
         ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+
+      ALTER TABLE biz_main_auth_link
+        ADD KEY `ORIGIN_ID` (`originId`);
+      ALTER TABLE biz_main_crontab_config
+        ADD KEY `ORIGIN_ID` (`originId`);
+      ALTER TABLE biz_main_batch
+        ADD KEY `ORIGIN_ID` (`originId`);
 
       UPDATE biz_main_auth_link      SET origin = 'user'   WHERE origin = 'UI';
       UPDATE biz_main_auth_link      SET origin = 'UNKNOW' WHERE origin = 'API';

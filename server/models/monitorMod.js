@@ -249,10 +249,7 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        var userIdMap = dbRes.reduce(function(acc, x) {
-          acc[x.u_id] = x;
-          return acc;
-        }, {});
+        var userIdMap = toolkit.arrayElementMap(dbRes, 'u_id');
 
         abnormalRequests.forEach(function(d) {
           var user = userIdMap[d.userId];

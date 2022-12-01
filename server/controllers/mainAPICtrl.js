@@ -197,12 +197,12 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
 
     // 任务保留数量
-    if (!toolkit.isNothing(func.extraConfigJSON.fixedTaskInfoLimit)) {
+    if (toolkit.notNothing(func.extraConfigJSON.fixedTaskInfoLimit)) {
       funcCallOptions.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit;
     }
 
     // API超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
+    if (toolkit.notNothing(funcCallOptions.apiTimeout)) {
       // 调用时指定
       funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
 
@@ -213,7 +213,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
         return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
       }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.apiTimeout)) {
       // 函数配置
       funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
 
@@ -223,7 +223,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.timeout)) {
+    if (toolkit.notNothing(funcCallOptions.timeout)) {
       // 调用时指定
       funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
 
@@ -234,7 +234,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
         return callback(new E('EClientBadRequest', 'Invalid options, timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
       }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.timeout)) {
       // 函数配置
       funcCallOptions.timeout = func.extraConfigJSON.timeout;
 
@@ -253,7 +253,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 执行模式（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.execMode)) {
+    if (toolkit.notNothing(funcCallOptions.execMode)) {
       // 调用时指定
       switch(funcCallOptions.origin) {
         case 'apiAuth':
@@ -314,14 +314,14 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 是否永不过期
-    if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
+    if (toolkit.notNothing(funcCallOptions.neverExpire)) {
       funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
     } else {
       funcCallOptions.neverExpire = false;
     }
 
     // 返回类型（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.returnType)) {
+    if (toolkit.notNothing(funcCallOptions.returnType)) {
       // 调用时指定
       var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
       if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
@@ -334,7 +334,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 结果保存（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.saveResult)) {
+    if (toolkit.notNothing(funcCallOptions.saveResult)) {
       // 调用时指定
       funcCallOptions.saveResult = !!funcCallOptions.saveResult;
     } else {
@@ -343,7 +343,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 结果拆包（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.unfold)) {
+    if (toolkit.notNothing(funcCallOptions.unfold)) {
       // 调用时指定
       funcCallOptions.unfold = !!funcCallOptions.unfold;
 
@@ -359,14 +359,14 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 预约执行
-    if (!toolkit.isNothing(funcCallOptions.eta)) {
+    if (toolkit.notNothing(funcCallOptions.eta)) {
       if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
         return callback(new E('EClientBadRequest', 'Invalid options, eta should be a valid datetime value'));
       }
     }
 
     // 执行队列（优先级：直接指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.queue)) {
+    if (toolkit.notNothing(funcCallOptions.queue)) {
       // 直接指定
       var queueNumber = parseInt(funcCallOptions.queue);
       if (queueNumber < 1 || queueNumber > 9) {
@@ -375,7 +375,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
 
       funcCallOptions.queue = '' + queueNumber;
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.queue)) {
       // 函数配置
       var queueNumber = parseInt(func.extraConfigJSON.queue);
       if (queueNumber < 1 || queueNumber > 9) {
@@ -398,7 +398,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     funcCallOptions.triggerTime = parseInt(funcCallOptions.triggerTimeMs / 1000);
 
     // 结果缓存
-    if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (toolkit.notNothing(func.extraConfigJSON.cacheResult)) {
       if (!func.extraConfigJSON.cacheResult) {
         funcCallOptions.cacheResult = false;
       } else {
@@ -465,10 +465,10 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
   switch(format) {
     case 'normal':
       // 普通形式：函数参数、执行选项为JSON字符串形式
-      if (!toolkit.isNothing(reqOpt.kwargs)) {
+      if (toolkit.notNothing(reqOpt.kwargs)) {
         reqCallKwargs = reqOpt.kwargs;
       }
-      if (!toolkit.isNothing(reqOpt.options)) {
+      if (toolkit.notNothing(reqOpt.options)) {
         Object.assign(options, reqOpt.options);
       }
       break;
@@ -1349,7 +1349,7 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
-  if (!toolkit.isNothing(sections)) {
+  if (toolkit.notNothing(sections)) {
     sectionMap = {};
     sections.forEach(function(s) {
       sectionMap[s] = true;
@@ -1971,13 +1971,13 @@ exports.getFuncTagList = function(req, res, next) {
     funcTags.sort();
 
     // 过滤
-    if (!toolkit.isNothing(name)) {
+    if (toolkit.notNothing(name)) {
       funcTags = funcTags.filter(function(x) {
         return x.indexOf(name) >= 0;
       });
     }
 
-    if (!toolkit.isNothing(tagPattern)) {
+    if (toolkit.notNothing(tagPattern)) {
       funcTags = funcTags.filter(function(x) {
         return toolkit.matchWildcard(x, tagPattern);
       });
@@ -2118,7 +2118,7 @@ exports.getSystemConfig = function(req, res, next) {
 
         var variableConfigs = toolkit.jsonCopy(CONST.systemConfigs);
         dbRes.forEach(function(d) {
-          if (!toolkit.isNothing(d.value)) {
+          if (toolkit.notNothing(d.value)) {
             variableConfigs[d.id] = d.value;
           }
         });
@@ -2587,7 +2587,7 @@ exports.installPythonPackage = function(req, res, next) {
       ];
 
       // 启用镜像源
-      if (!toolkit.isNothing(mirror)) {
+      if (toolkit.notNothing(mirror)) {
         cmdArgs.push('-i', mirror);
       }
 

@@ -27,7 +27,7 @@ Input filter content: 输入过滤内容
 
       <!-- 列表区 -->
       <el-main class="common-table-container">
-        <el-table v-if="!T.isNothing(filteredData)"
+        <el-table v-if="T.notNothing(filteredData)"
           class="common-table" height="100%"
           size="mini"
           :show-header="false"

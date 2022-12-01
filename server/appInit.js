@@ -494,7 +494,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
 
   if (shouldRecordOperation) {
     var reqParams = null;
-    if (!toolkit.isNothing(req.params)) {
+    if (toolkit.notNothing(req.params)) {
       reqParams = toolkit.jsonCopy(req.params);
     }
 

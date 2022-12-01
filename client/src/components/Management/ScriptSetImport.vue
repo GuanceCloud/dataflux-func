@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Select a file: 选择一个文件
+Select a file: 选择文件
 Data imported: 数据已导入
 Importing: 即将导入
 Imported contents do not include sensitive data (such as password), please re-entered them after import: 导入内容不包含敏感数据，请在导入后重新输入
@@ -14,7 +14,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Set Import') }}</span>
+          <span>{{ $t('Import Script Sets') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
@@ -68,7 +68,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         <span class="import-info-dialog-content">
           <template v-if="importInfo && importInfo.diff">
             <template v-for="t in C.IMPORT_DATA_TYPE">
-              <template v-if="!T.isNothing(importInfo.diff[t.key])">
+              <template v-if="T.notNothing(importInfo.diff[t.key])">
                 <el-divider content-position="left"><h3>{{ t.name }}</h3></el-divider>
                 <el-table :data="importInfo.diff[t.key]"
                   :show-header="false">
@@ -164,21 +164,10 @@ export default {
       } else {
         this.showConfirm = false;
 
-        if (!await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
-          this.goToHistory();
-
+        if (await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
+          return this.common.goToPIPTools(apiRes.data.requirements);
         } else {
-          let requirementsParts = [];
-          for (let pkg in apiRes.data.requirements) {
-            let ver = apiRes.data.requirements[pkg];
-            requirementsParts.push(ver ? `${pkg}==${ver}` : pkg);
-          };
-
-          let requirementsLine = requirementsParts.join(' ');
-          this.$router.push({
-            name: 'pip-tool',
-            query: { requirements: this.T.getBase64(requirementsLine) },
-          });
+          this.goToHistory();
         }
       }
     },

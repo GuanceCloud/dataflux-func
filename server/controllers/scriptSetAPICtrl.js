@@ -30,6 +30,19 @@ var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 /* Configure */
 
 /* Handlers */
+function _createImportOriginReplaceFunc(origin, originId) {
+  return function(data) {
+    if (toolkit.isNothing(data)) return data;
+
+    data.forEach(function(d) {
+      d.origin   = origin;
+      d.originId = originId;
+    });
+
+    return data;
+  }
+};
+
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
@@ -259,7 +272,7 @@ exports.export = function(req, res, next) {
         var zip = new AdmZip();
 
         // 导出注释
-        if (!toolkit.isNothing(exportData.note)) {
+        if (toolkit.notNothing(exportData.note)) {
           zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
         }
 
@@ -311,7 +324,7 @@ exports.export = function(req, res, next) {
     function(asyncCallback) {
       // 生成摘要
       var summary = common.flattenImportExportData(exportData);
-      if (!toolkit.isNothing(summary.scripts)) {
+      if (toolkit.notNothing(summary.scripts)) {
         summary.scripts.forEach(function(d) {
           delete d.code; // 摘要中不含代码
         });
@@ -428,8 +441,17 @@ exports.import = function(req, res, next) {
         importData[name] = yaml.load(data);
       });
 
+      // 替换 origin, originId
+      var origin   = 'UNKNOW';
+      var originId = null;
+      if (res.locals.user && res.locals.user.isSignedIn) {
+        origin   = 'user';
+        originId = res.locals.user.id;
+      }
+      common.replaceImportDataOrigin(importData, origin, originId);
+
       if (checkOnly) {
-        // 仅检查时，数据暂存Redis，不进行实际导入操作
+        // 仅检查时，数据暂存 Redis，不进行实际导入操作
         var cacheKey = toolkit.getCacheKey('stage', 'importScriptSet', ['confirmId', confirmId]);
         return res.locals.cacheDB.setex(cacheKey, CONFIG._FUNC_IMPORT_CONFIRM_TIMEOUT, JSON.stringify(importData), asyncCallback);
 

@@ -90,7 +90,7 @@ export default {
           showSymbol: false,
         };
 
-        if (!this.T.isNothing(opt.seriesOptions)) {
+        if (this.T.notNothing(opt.seriesOptions)) {
           Object.assign(s, opt.seriesOptions);
         }
 

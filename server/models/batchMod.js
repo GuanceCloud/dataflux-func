@@ -117,6 +117,14 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
+  // 添加 origin, originId
+  data.origin   = 'UNKNOW';
+  data.originId = null;
+  if (this.locals.user && this.locals.user.isSignedIn) {
+    data.origin   = 'user';
+    data.originId = this.locals.user.id;
+  }
+
   return this._add(data, callback);
 };
 

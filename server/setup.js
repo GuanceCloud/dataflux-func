@@ -76,7 +76,7 @@ function _doInstall(config, callback) {
         return asyncCallback();
       }
 
-      if (!toolkit.isNothing(adminPasswordRepeat) && adminPassword !== adminPasswordRepeat) {
+      if (toolkit.notNothing(adminPasswordRepeat) && adminPassword !== adminPasswordRepeat) {
         setupErrorWrap.set('adminUser', 'Repeated administrator password not match');
         return asyncCallback();
       }

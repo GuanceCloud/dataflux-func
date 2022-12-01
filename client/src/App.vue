@@ -653,7 +653,8 @@ kbd {
 }
 
 .el-table .cell {
-  word-break: break-word;
+  word-break: break-word !important;
+  overflow: visible !important;
 }
 .el-table__row > .el-table__cell:last-child > .cell {
   padding-right: 5 !important;

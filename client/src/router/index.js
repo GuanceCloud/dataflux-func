@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
 
-import * as toolkit from '@/toolkit'
+import * as common from '@/common'
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
@@ -452,7 +452,7 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-
+  common.checkScriptMarketUpdate();
 });
 
 export default router

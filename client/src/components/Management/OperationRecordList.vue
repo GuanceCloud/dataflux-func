@@ -61,7 +61,7 @@ Response                      : 响应
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
 
-              <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
+              <template v-if="T.notNothing(scope.row.clientIPsJSON)">
                 <br>
                 <span class="text-info">&#12288;{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>

@@ -102,7 +102,7 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                     <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips"></InfoBlock>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
+                  <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
                     <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
                   </el-form-item>
 
@@ -375,7 +375,7 @@ export default {
         let opt = fieldMap[f];
         if (!opt) continue;
 
-        if (!this.T.isNothing(opt.default)) {
+        if (this.T.notNothing(opt.default)) {
           nextConfigJSON[f] = opt.default;
         }
       }

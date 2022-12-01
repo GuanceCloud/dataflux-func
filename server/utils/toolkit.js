@@ -495,13 +495,17 @@ var includeAny = toolkit.includeAny = function includeAny(o, keys) {
  * @param  {String} field
  * @return {Array}
  */
-var arrayElementValues = toolkit.arrayElementValues = function arrayElementValues(arr, field) {
+var arrayElementValues = toolkit.arrayElementValues = function arrayElementValues(arr, field, distinct) {
   if (!Array.isArray(arr)) return null;
 
   var picked = [];
   arr.forEach(function(element) {
     picked.push(element[field]);
   });
+
+  if (distinct) {
+    picked = noDuplication(picked);
+  }
 
   return picked;
 };
@@ -727,6 +731,9 @@ var isNothing = toolkit.isNothing = function isNothing(o) {
   }
 
   return false;
+};
+var notNothing = toolkit.notNothing = function notNothing(o) {
+  return !isNothing(o);
 };
 
 /**

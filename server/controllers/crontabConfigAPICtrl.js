@@ -57,14 +57,7 @@ exports.list = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  var origin   = 'UNKNOW';
-  var originId = null;
-  if (res.locals.user && res.locals.user.isSignedIn) {
-    origin   = 'user';
-    originId = res.locals.user.id;
-  }
-
-  _add(res.locals, data, origin, originId, function(err, addedId) {
+  _add(res.locals, data, function(err, addedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -91,13 +84,6 @@ exports.modify = function(req, res, next) {
 exports.addMany = function(req, res, next) {
   var data = req.body.data;
 
-  var origin   = 'UNKNOW';
-  var originId = null;
-  if (res.locals.user && res.locals.user.isSignedIn) {
-    origin   = 'user';
-    originId = res.locals.user.id;
-  }
-
   var addedIds = [];
 
   var transScope = modelHelper.createTransScope(res.locals.db);
@@ -107,7 +93,7 @@ exports.addMany = function(req, res, next) {
     },
     function(asyncCallback) {
       async.eachSeries(data, function(d, eachCallback) {
-        _add(res.locals, d, origin, originId, function(err, addedId) {
+        _add(res.locals, d, function(err, addedId) {
           if (err) return eachCallback(err);
 
           addedIds.push(addedId);
@@ -148,10 +134,7 @@ exports.modifyMany = function(req, res, next) {
       crontabConfigModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        modifiedIds = dbRes.reduce(function(acc, x) {
-          acc.push(x.id);
-          return acc;
-        }, []);
+        modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
 
         return asyncCallback();
       });
@@ -178,10 +161,7 @@ exports.modifyMany = function(req, res, next) {
   });
 };
 
-function _add(locals, data, origin, originId, callback) {
-  data.origin   = origin;
-  data.originId = originId;
-
+function _add(locals, data, callback) {
   // 默认范围
   data.scope = data.scope || GLOBAL_SCOPE;
 
@@ -243,7 +223,7 @@ function _modify(locals, id, data, opt, callback) {
 
         crontabConfig = dbRes;
 
-        if (opt.funcCallKwargs === 'merge' && !toolkit.isNothing(data.funcCallKwargsJSON)) {
+        if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
           var prevFuncCallKwargs = toolkit.jsonCopy(crontabConfig.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);

@@ -31,6 +31,13 @@ var SCRIPT_MD5_FIELDS = [
   'codeMD5',
 ];
 
+var IMPORT_DATA_KEYS_WITH_ORIGIN = [
+  'scriptSets',
+  'authLinks',
+  'crontabConfigs',
+  'batches',
+];
+
 common.getScriptFilename = function(script) {
   var filename = script.id.split('__').slice(1).join('__');
   var fileExt = SCRIPT_TYPE_EXT_MAP[script.type];
@@ -91,6 +98,25 @@ common.flattenImportExportData = function(data) {
   return data;
 };
 
+function _getScriptSetMD5Fields(fields, tableAlias) {
+  fields = toolkit.jsonCopy(fields);
+  if (tableAlias) {
+    fields = fields.map(function(f) {
+      return `${tableAlias}.${f}`;
+    });
+  }
+
+  return fields;
+};
+
+common.getScriptSetMD5Fields = function(tableAlias) {
+  return _getScriptSetMD5Fields(SCRIPT_SET_MD5_FIELDS, tableAlias);
+};
+
+common.getScriptMD5Fields = function(tableAlias) {
+  return _getScriptSetMD5Fields(SCRIPT_MD5_FIELDS, tableAlias);
+};
+
 common.getScriptSetMD5 = function(scriptSet, scripts) {
   var dataToMD5 = {
     scriptSet: {},
@@ -98,18 +124,18 @@ common.getScriptSetMD5 = function(scriptSet, scripts) {
   }
 
   // 脚本集字段
-  SCRIPT_SET_MD5_FIELDS.forEach(function(f) {
+  common.getScriptSetMD5Fields().forEach(function(f) {
     if (!(f in scriptSet)) throw new Error(`Lack of Script Set field to compute Script Set MD5: ${f}`);
 
     dataToMD5[f] = scriptSet[f];
   });
 
   // 脚本字段
-  if (!toolkit.isNothing(scripts)) {
+  if (toolkit.notNothing(scripts)) {
     scripts.forEach(function(script) {
       var _script = {};
 
-      SCRIPT_MD5_FIELDS.forEach(function(f) {
+      common.getScriptMD5Fields().forEach(function(f) {
         if (!(f in script)) throw new Error(`Lack of Script field to compute Script Set MD5: ${f}`);
 
         _script[f] = script[f];
@@ -130,3 +156,17 @@ common.getScriptSetMD5 = function(scriptSet, scripts) {
 
   return md5;
 };
+
+common.replaceImportDataOrigin = function(importData, origin, originId) {
+  IMPORT_DATA_KEYS_WITH_ORIGIN.forEach(function(key) {
+    var data = importData[key];
+    if (toolkit.isNothing(data)) return;
+
+    data.forEach(function(d) {
+      d.origin   = origin;
+      d.originId = originId;
+    });
+  });
+
+  return importData;
+}

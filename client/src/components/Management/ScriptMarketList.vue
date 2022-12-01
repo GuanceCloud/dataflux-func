@@ -32,6 +32,12 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               <i class="fa fa-fw fa-plus"></i>
               {{ $t('Add') }}
             </el-button>
+
+            <el-button @click="checkUpdate" type="primary" plain size="small" :disabled="isCheckingUpdate">
+              <i v-if="isCheckingUpdate" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              <i v-else class="fa fa-fw fa-refresh"></i>
+              {{ $t('Check Update') }}
+            </el-button>
           </div>
         </div>
       </el-header>
@@ -96,14 +102,17 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                 class="text-bad">
                 {{ $t('Access Timeout') }}
               </span>
-              <el-button v-else
-                type="primary"
-                size="small"
-                :plain="scope.row.isAdmin ? false : true"
-                @click="openDetail(scope.row)">
-                <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
-                {{ scope.row.isAdmin ? $t('Manage') : $t('Detail') }}
-              </el-button>
+
+              <el-badge v-else :value="common.getScriptMarketUpdateBadge(scope.row.id)">
+                <el-button
+                  type="primary"
+                  size="small"
+                  :plain="scope.row.isAdmin ? false : true"
+                  @click="openDetail(scope.row)">
+                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
+                  {{ scope.row.isAdmin ? $t('Manage') : $t('Detail') }}
+                </el-button>
+              </el-badge>
             </template>
           </el-table-column>
 
@@ -233,6 +242,13 @@ export default {
         query : nextRouteQuery,
       })
     },
+    async checkUpdate() {
+      this.isCheckingUpdate = true;
+      await this.common.checkScriptMarketUpdate();
+      setTimeout(() => {
+        this.isCheckingUpdate = false;
+      }, 500);
+    },
   },
   computed: {
   },
@@ -249,6 +265,8 @@ export default {
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
+
+      isCheckingUpdate: false,
     }
   },
 }

@@ -36,7 +36,7 @@
               :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
                 <template v-for="t in C.IMPORT_DATA_TYPE">
-                  <div class="history-summary" v-if="!T.isNothing(d.summaryJSON[t.key])">
+                  <div class="history-summary" v-if="T.notNothing(d.summaryJSON[t.key])">
                     <span class="text-info">{{ $t(t.name) }}{{ $t(':') }}</span>
                     <p>
                       <span v-for="item in d.summaryJSON[t.key]" :key="item.id">
@@ -48,7 +48,7 @@
                   </div>
                 </template>
 
-                <div class="history-note" v-if="!T.isNothing(d.note)">
+                <div class="history-note" v-if="T.notNothing(d.note)">
                   <span class="text-info">{{ $t('Note')}}{{ $t(':') }}</span>
                   <pre class="text-info text-small">{{ d.note }}</pre>
                 </div>

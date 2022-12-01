@@ -1,8 +1,12 @@
+import router from '@/router'
 import store from './store'
 import * as T from '@/toolkit'
 import C from '@/const'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
+
+let LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = 0;
+let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 30;
 
 export async function getAPIAuthList() {
   let apiAuthList = [];
@@ -142,5 +146,40 @@ export function getScriptMarketName(scriptMarket) {
       case 'aliyun_oss':
         return `${scriptMarket.configJSON.bucket}.cn-${scriptMarket.configJSON.region}`;
     }
+  }
+}
+
+export function goToPIPTools(requirements) {
+  let requirementsParts = [];
+  for (let pkg in requirements) {
+    let ver = requirements[pkg];
+    requirementsParts.push(ver ? `${pkg}==${ver}` : pkg);
+  };
+
+  let requirementsLine = requirementsParts.join(' ');
+  router.push({
+    name: 'pip-tool',
+    query: { requirements: T.getBase64(requirementsLine) },
+  });
+}
+
+export async function checkScriptMarketUpdate() {
+  let now = Date.now();
+  if (LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME + SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL * 1000 < now) {
+    await store.dispatch('checkScriptMarketUpdate');
+    LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = now;
+  }
+}
+export function getScriptMarketUpdateBadge(scriptMarketId) {
+  let result = store.state.scriptMarketCheckUpdateResult;
+
+  if (!result) {
+    return null;
+  } else if (!scriptMarketId) {
+    return result.length || null;
+  } else {
+    return result.filter(r => {
+      return scriptMarketId === r.scriptMarketId;
+    }).length || null;
   }
 }

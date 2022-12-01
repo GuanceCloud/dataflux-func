@@ -33,7 +33,9 @@ Are you sure you want to install the Script Set?: 是否确认安装此脚本集
 
 Script Set published to the Script Market: 脚本集已发布至脚本市场
 Script Set deleted from the Script Market: 脚本集已从脚本市场删除
-Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效
+Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效\
+
+Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
 
 No Script Set has ever been published: 尚未发布过任何脚本集到脚本市场
 
@@ -53,7 +55,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
             <code class="text-main">{{ common.getScriptMarketName(scriptMarket) }}</code>
           </span>
 
-          <div class="header-control" v-if="!T.isNothing(data)">
+          <div class="header-control" v-if="T.notNothing(data)">
             <span class="text-main">{{ $tc('FoundScriptSetCount', filteredData.length) }}</span>
             &#12288;
             <el-input :placeholder="$t('Filter')"
@@ -72,7 +74,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(filteredData)">
-          <h1 class="no-data-title" v-if="!T.isNothing(filterTEXT)"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-if="T.notNothing(filterTEXT)"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Set has ever been published') }}</h1>
 
           <p class="no-data-tip">
@@ -194,14 +196,14 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-form-item label="ID">
             <el-input disabled :value="scriptSetToOperate.id"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('Description')" v-if="!T.isNothing(scriptSetToOperate.description)">
+          <el-form-item :label="$t('Description')" v-if="T.notNothing(scriptSetToOperate.description)">
             <el-input disabled
               type="textarea"
               resize="none"
               :autosize="{ minRows: 2 }"
               :value="scriptSetToOperate.description"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('Requirements')" v-if="!T.isNothing(scriptSetToOperate.requirements)">
+          <el-form-item :label="$t('Requirements')" v-if="T.notNothing(scriptSetToOperate.requirements)">
             <el-input disabled
               type="textarea"
               resize="none"
@@ -447,6 +449,13 @@ export default {
       this.isProcessing  = false;
       this.showOperation = false;
       if (!apiRes || !apiRes.ok) return;
+
+      // 跳转 PIP 工具
+      if (operation === 'install' && this.T.notNothing(apiRes.data.requirements)) {
+        if (await this.T.confirm(this.$t('Installed Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
+          return this.common.goToPIPTools(apiRes.data.requirements);
+        }
+      }
 
       await this.loadData();
     },

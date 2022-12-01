@@ -241,7 +241,7 @@ export default {
         let opt = fieldMap[f];
         if (!opt) continue;
 
-        if (!this.T.isNothing(opt.default)) {
+        if (this.T.notNothing(opt.default)) {
           nextConfigJSON[f] = opt.default;
         }
       }

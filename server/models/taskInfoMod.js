@@ -81,10 +81,7 @@ EntityModel.prototype.list = function(options, callback) {
 EntityModel.prototype.appendTaskInfo = function(data, callback) {
   if (toolkit.isNothing(data)) return callback(null, data);
 
-  var originIds = data.reduce(function(acc, x) {
-    acc.push(x.id);
-    return acc;
-  }, []);
+  var originIds = toolkit.arrayElementValues(data, 'id');
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');

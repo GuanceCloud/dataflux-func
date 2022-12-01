@@ -322,6 +322,10 @@ export function isNothing(o) {
   return false;
 };
 
+export function notNothing(o) {
+  return !isNothing(o);
+};
+
 export function asArray(o) {
   if (isNullOrUndefined(o)) {
     return o;

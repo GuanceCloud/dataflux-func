@@ -80,6 +80,14 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
+  // 添加 origin, originId
+  data.origin   = 'UNKNOW';
+  data.originId = null;
+  if (this.locals.user && this.locals.user.isSignedIn) {
+    data.origin   = 'user';
+    data.originId = this.locals.user.id;
+  }
+
   return this._add(data, callback);
 };
 
@@ -161,12 +169,21 @@ EntityModel.prototype.clone = function(id, newId, callback) {
         if (err) return asyncCallback(err);
 
         var cloneData = [];
+
+        var origin   = 'UNKNOW';
+        var originId = null;
+        if (this.locals.user && this.locals.user.isSignedIn) {
+          origin   = 'user';
+          originId = this.locals.user.id;
+        }
         dbRes.forEach(function(d) {
           cloneData.push([
             newId, // id
             d.title,
             d.description,
             d.requirements,
+            origin,
+            originId,
           ]);
         })
 
@@ -177,6 +194,8 @@ EntityModel.prototype.clone = function(id, newId, callback) {
         sql.append('  ,title');
         sql.append('  ,description');
         sql.append('  ,requirements');
+        sql.append('  ,origin');
+        sql.append('  ,originId');
         sql.append(')');
         sql.append('VALUES');
         sql.append('  ?');
@@ -372,8 +391,8 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var funcMap      = {};
 
   // 连接器/环境变量
-  if (!toolkit.isNothing(connectorIds))   exportData.connectors   = [];
-  if (!toolkit.isNothing(envVariableIds)) exportData.envVariables = [];
+  if (toolkit.notNothing(connectorIds))   exportData.connectors   = [];
+  if (toolkit.notNothing(envVariableIds)) exportData.envVariables = [];
 
   // 脚本集相关数据
   if (includeAuthLinks)      exportData.authLinks      = [];
@@ -391,6 +410,8 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,sset.title');
       sql.append('  ,sset.description');
       sql.append('  ,sset.requirements');
+      sql.append('  ,sset.origin');
+      sql.append('  ,sset.originId');
 
       sql.append('FROM biz_main_script_set AS sset');
 
@@ -539,7 +560,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
 
         // 去除加密字段
         dbRes.forEach(function(d) {
-          if (!toolkit.isNothing(d.configJSON) && 'string' === typeof d.configJSON) {
+          if (toolkit.notNothing(d.configJSON) && 'string' === typeof d.configJSON) {
             d.configJSON = JSON.parse(d.configJSON);
           }
 
@@ -598,6 +619,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,auln.expireTime');
       sql.append('  ,auln.throttlingJSON');
       sql.append('  ,auln.origin');
+      sql.append('  ,auln.originId');
       sql.append('  ,auln.showInDoc');
       sql.append('  ,auln.isDisabled');
       sql.append('  ,auln.note');
@@ -641,6 +663,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,cron.scope');
       sql.append('  ,cron.expireTime');
       sql.append('  ,cron.origin');
+      sql.append('  ,cron.originId');
       sql.append('  ,cron.isDisabled');
       sql.append('  ,cron.note');
 
@@ -679,6 +702,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,bat.funcCallKwargsJSON');
       sql.append('  ,bat.tagsJSON');
       sql.append('  ,bat.origin');
+      sql.append('  ,bat.originId');
       sql.append('  ,bat.showInDoc');
       sql.append('  ,bat.isDisabled');
       sql.append('  ,bat.note');
@@ -869,7 +893,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     // 记录导入历史
     function(asyncCallback) {
       var summary = toolkit.jsonCopy(importData);
-      if (!toolkit.isNothing(summary.scripts)) {
+      if (toolkit.notNothing(summary.scripts)) {
         summary.scripts.forEach(function(d) {
           delete d.code; // 摘要中不含代码
         });
@@ -936,4 +960,4 @@ function _prepareImportData(data) {
   }
 
   return data;
-}
+};

@@ -35,10 +35,12 @@
         </el-menu-item>
 
         <el-menu-item index="/management/script-market-list">
-          <span>
-            <i class="fa fa-fw fa-shopping-cart"></i>
-            <span>{{ $t('Script Market') }}</span>
-          </span>
+          <el-badge :value="common.getScriptMarketUpdateBadge" is-dot>
+            <span>
+              <i class="fa fa-fw fa-shopping-cart"></i>
+              <span>{{ $t('Script Market') }}</span>
+            </span>
+          </el-badge>
         </el-menu-item>
       </template>
 

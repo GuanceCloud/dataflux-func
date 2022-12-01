@@ -99,7 +99,7 @@ EntityModel.prototype.modify = function(id, data, callback) {
     }
   }
 
-  if (!toolkit.isNothing(data.password)) {
+  if (toolkit.notNothing(data.password)) {
     // Get new password hash when changing password
     data.passwordHash = toolkit.getSaltedPasswordHash(
         id, data.password, CONFIG.SECRET);

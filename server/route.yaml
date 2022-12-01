@@ -1796,12 +1796,23 @@ scriptSetAPI:
       - sset.title
       - sset.description
       - sset.requirements
+      - sset.originId
     query:
       id:
         $desc      : 根据ID过滤
         $type      : commaArray
         $searchType: in
         $searchKey : sset.id
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sset.origin
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sset.originId
 
   add:
     showInDoc    : true
@@ -3205,6 +3216,7 @@ authLinkAPI:
       - auln.funcId
       - auln.funcCallKwargsJSON
       - auln.tagsJSON
+      - auln.originId
       - auln.note
       - func.title
       - func.description
@@ -3230,12 +3242,14 @@ authLinkAPI:
         $searchKey : auln.tagsJSON
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : auln.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3636,9 +3650,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3725,9 +3741,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3766,6 +3784,7 @@ crontabConfigAPI:
       - cron.funcId
       - cron.funcCallKwargsJSON
       - cron.tagsJSON
+      - cron.originId
       - cron.note
       - func.title
       - func.description
@@ -3796,12 +3815,14 @@ crontabConfigAPI:
         $searchKey : cron.scope
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : cron.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4072,9 +4093,11 @@ crontabConfigAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : cron.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4167,9 +4190,11 @@ crontabConfigAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : cron.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4207,6 +4232,7 @@ batchAPI:
       - bat.id
       - bat.funcId
       - bat.funcCallKwargsJSON
+      - bat.originId
       - bat.tagsJSON
       - bat.note
       - func.title
@@ -4233,12 +4259,14 @@ batchAPI:
         $searchKey : bat.tagsJSON
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : bat.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4503,9 +4531,11 @@ batchAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : bat.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4589,9 +4619,11 @@ batchAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : bat.origin
-        $commaArrayIn:
-          - user
-          - UNKNOW
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4636,7 +4668,7 @@ taskInfoAPI:
         $searchType: eq
         $searchKey : task.id
       originId:
-        $desc      : 按来源ID过滤
+        $desc      : 根据来源ID过滤
         $type      : string
         $searchType: eq
         $searchKey : task.originId
@@ -5159,7 +5191,7 @@ scriptMarketAPI:
     method       : get
     url          : /api/v1/script-markets/do/list
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_r
     paging       : true
     fieldPicking : true
@@ -5202,7 +5234,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/do/add
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     body:
       data:
@@ -5268,7 +5300,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/:id/do/modify
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5331,7 +5363,7 @@ scriptMarketAPI:
     method       : get
     url          : /api/v1/script-markets/:id/do/delete
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5344,7 +5376,7 @@ scriptMarketAPI:
     method       : get
     url          : /api/v1/script-markets/:id/script-sets/do/list
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_r
     paging       : false
     fieldPicking : true
@@ -5360,7 +5392,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/:id/admin/do/set
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5373,7 +5405,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/:id/admin/do/unset
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5386,7 +5418,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/:id/do/publish
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5430,7 +5462,7 @@ scriptMarketAPI:
     method       : post
     url          : /api/v1/script-markets/:id/do/install
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_w
     params:
       id:
@@ -5448,9 +5480,9 @@ scriptMarketAPI:
 
   checkUpdate:
     showInDoc    : true
-    name         : 教程脚本市场脚本集更新
+    name         : 检查脚本市场脚本集更新
     method       : get
     url          : /api/v1/script-markets/do/check-update
     response     : json
-    requireSignIn: false
+    requireSignIn: true
     privilege    : general_r

@@ -62,7 +62,7 @@ Data exported: 数据已导出
                       <code class="select-item-id">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
-                  <InfoBlock v-if="!T.isNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
+                  <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('ENV')" prop="envVariableIds">

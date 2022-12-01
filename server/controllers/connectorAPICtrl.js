@@ -430,7 +430,7 @@ exports.query = function(req, res, next) {
 
       // 指定数据库
       var connectorConfig = toolkit.jsonCopy(connector.configJSON);
-      if (!toolkit.isNothing(database)) {
+      if (toolkit.notNothing(database)) {
         switch(connector.type) {
           case 'influxdb':
             taskKwargs.commandKwargs.database = database;

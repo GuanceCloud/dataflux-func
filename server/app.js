@@ -291,7 +291,7 @@ function startApplication() {
           method: req.method,
           url   : req.originalUrl,
         }
-        if (!toolkit.isNothing(req.body)) {
+        if (toolkit.notNothing(req.body)) {
           var bodyDump = toolkit.jsonDumps(req.body, 2);
           bodyDump = toolkit.limitText(bodyDump, 1000, { showLength: 'newLine' });
           errorRet.reqDump.bodyDump = bodyDump;

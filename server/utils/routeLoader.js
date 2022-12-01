@@ -78,7 +78,7 @@ function routeMonitor(routeConfig) {
 // New version
 function fieldSelectingCondition(req, res, next) {
   var fieldSelecting = req.query.fields;
-  if (!toolkit.isNothing(fieldSelecting)) {
+  if (toolkit.notNothing(fieldSelecting)) {
     res.locals.fieldSelecting = fieldSelecting;
 
     delete req.query.fieldPicking;
@@ -91,7 +91,7 @@ function fieldSelectingCondition(req, res, next) {
 // Old version
 function fieldPickingCondition(req, res, next) {
   var fieldPicking = req.query.fieldPicking;
-  if (!toolkit.isNothing(fieldPicking)) {
+  if (toolkit.notNothing(fieldPicking)) {
     res.locals.fieldPicking = fieldPicking;
   }
 
@@ -99,7 +99,7 @@ function fieldPickingCondition(req, res, next) {
 };
 function fieldKickingCondition(req, res, next) {
   var fieldKicking = req.query.fieldKicking;
-  if (!toolkit.isNothing(fieldKicking)) {
+  if (toolkit.notNothing(fieldKicking)) {
     res.locals.fieldKicking = fieldKicking;
   }
 
