@@ -182,7 +182,6 @@ _WEB_CLIENT_APP_PATH       : /client-app
 _WEB_STATICS_PATH          : /statics
 _WEB_CLIENT_ID_COOKIE      : xDFFClientId
 _WEB_CLIENT_ID_HEADER      : X-Dff-Client-Id
-_WEB_ORIGIN_HEADER         : X-Dff-Origin
 _WEB_CLIENT_LOCALE_COOKIE  : xDFFClientLocale
 _WEB_CLIENT_LANGUAGE_COOKIE: xDFFClientLocaleLanguage
 _WEB_PAGE_SIZE_COOKIE      : xDFFPageSize

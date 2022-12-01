@@ -3234,8 +3234,8 @@ authLinkAPI:
         $searchType: in
         $searchKey : auln.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3359,14 +3359,6 @@ authLinkAPI:
             $type     : int
             $minValue : 1
             $example  : 10000
-        origin:
-          $desc        : 来源
-          $isDeprecated: true
-          $isRequired  : false
-          $type        : enum
-          $in:
-            - API
-            - UI
         showInDoc:
           $desc      : 是否显示于文档
           $isRequired: false
@@ -3582,14 +3574,6 @@ authLinkAPI:
               $type     : int
               $minValue : 1
               $example  : 10000
-          origin:
-            $desc        : 来源
-            $isDeprecated: true
-            $isRequired  : false
-            $type        : enum
-            $in:
-              - API
-              - UI
           showInDoc:
             $desc      : 是否显示于文档
             $isRequired: false
@@ -3653,8 +3637,8 @@ authLinkAPI:
         $searchType: in
         $searchKey : auln.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3742,8 +3726,8 @@ authLinkAPI:
         $searchType: in
         $searchKey : auln.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3816,8 +3800,8 @@ crontabConfigAPI:
         $searchType: in
         $searchKey : cron.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3887,14 +3871,6 @@ crontabConfigAPI:
           $type      : string
           $isISO8601 : true
           $example   : '2019-01-01T00:00:00Z'
-        origin:
-          $desc        : 来源
-          $isDeprecated: true
-          $isRequired  : false
-          $type        : enum
-          $in:
-            - API
-            - UI
         taskInfoLimit:
           $desc      : 近期任务保留数
           $isRequired: false
@@ -4097,8 +4073,8 @@ crontabConfigAPI:
         $searchType: in
         $searchKey : cron.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4192,8 +4168,8 @@ crontabConfigAPI:
         $searchType: in
         $searchKey : cron.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4261,8 +4237,8 @@ batchAPI:
         $searchType: in
         $searchKey : bat.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4528,8 +4504,8 @@ batchAPI:
         $searchType: in
         $searchKey : bat.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4614,8 +4590,8 @@ batchAPI:
         $searchType: in
         $searchKey : bat.origin
         $commaArrayIn:
-          - API
-          - UI
+          - user
+          - UNKNOW
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray

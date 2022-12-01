@@ -73,8 +73,8 @@ failureCount  : '失败 {n}'
                 :border="true"
                 size="small"
                 v-model="dataFilter.origin"
-                true-label="API,UI"
-                false-label=""
+                true-label=""
+                false-label="user"
                 @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
@@ -286,11 +286,11 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery({
+      let _listQuery = this.dataFilter = this.T.createListQuery({
         _withTaskInfo: true,
       });
-      if (this.T.isNothing(this.dataFilter.origin)) {
-        _listQuery.origin = 'UI';
+      if (this.T.isNothing(this.$route.query)) {
+        _listQuery.origin = 'user';
       }
 
       let apiRes = await this.T.callAPI_get('/api/v1/auth-links/do/list', {

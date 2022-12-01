@@ -56,7 +56,6 @@ class APIClient(object):
         self.client = requests.Session()
         self.client.headers.update({
             'X-Dff-Client-Id': 'c_ui_test',
-            'X-Dff-Origin'   : 'DFF-UI',
         })
 
         self.x_auth_token = None

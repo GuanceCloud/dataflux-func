@@ -225,13 +225,10 @@ upgradeInfo:
       -- 修改JSON字段类型为 json
       ALTER TABLE biz_main_func
         MODIFY COLUMN `kwargsJSON` json DEFAULT NULL COMMENT '命名参数JSON';
-
       ALTER TABLE biz_main_auth_link
         MODIFY COLUMN `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
-
       ALTER TABLE biz_main_crontab_config
         MODIFY COLUMN `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
-
       ALTER TABLE biz_main_batch
         MODIFY COLUMN `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)';
 
@@ -239,3 +236,32 @@ upgradeInfo:
         MODIFY COLUMN `argsJSON`   json DEFAULT NULL,
         MODIFY COLUMN `kwargsJSON` json DEFAULT NULL,
         MODIFY COLUMN `retvalJSON` json DEFAULT NULL;
+
+      -- 调整 origin, originId 处理
+      ALTER TABLE biz_main_task_info
+        MODIFY COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '任务来源ID';
+
+      ALTER TABLE biz_main_script_set
+        ADD COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源' AFTER `requirements`;
+      ALTER TABLE biz_main_script_set
+        ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+
+      ALTER TABLE biz_main_auth_link
+        MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
+      ALTER TABLE biz_main_crontab_config
+        MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
+      ALTER TABLE biz_main_batch
+        MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源';
+      ALTER TABLE biz_main_auth_link
+        ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+      ALTER TABLE biz_main_crontab_config
+        ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+      ALTER TABLE biz_main_batch
+        ADD COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID' AFTER `origin`;
+
+      UPDATE biz_main_auth_link      SET origin = 'user'   WHERE origin = 'UI';
+      UPDATE biz_main_auth_link      SET origin = 'UNKNOW' WHERE origin = 'API';
+      UPDATE biz_main_crontab_config SET origin = 'user'   WHERE origin = 'UI';
+      UPDATE biz_main_crontab_config SET origin = 'UNKNOW' WHERE origin = 'API';
+      UPDATE biz_main_batch          SET origin = 'user'   WHERE origin = 'UI';
+      UPDATE biz_main_batch          SET origin = 'UNKNOW' WHERE origin = 'API';

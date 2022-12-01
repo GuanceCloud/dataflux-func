@@ -55,10 +55,16 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data   = req.body.data;
-  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+  var data = req.body.data;
 
-  _add(res.locals, data, origin, function(err, addedId) {
+  var origin   = 'UNKNOW';
+  var originId = null;
+  if (res.locals.user && res.locals.user.isSignedIn) {
+    origin   = 'user';
+    originId = res.locals.user.id;
+  }
+
+  _add(res.locals, data, origin, originId, function(err, addedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -83,8 +89,14 @@ exports.modify = function(req, res, next) {
 };
 
 exports.addMany = function(req, res, next) {
-  var data   = req.body.data;
-  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+  var data = req.body.data;
+
+  var origin   = 'UNKNOW';
+  var originId = null;
+  if (res.locals.user && res.locals.user.isSignedIn) {
+    origin   = 'user';
+    originId = res.locals.user.id;
+  }
 
   var addedIds = [];
 
@@ -95,7 +107,7 @@ exports.addMany = function(req, res, next) {
     },
     function(asyncCallback) {
       async.eachSeries(data, function(d, eachCallback) {
-        _add(res.locals, d, origin, function(err, addedId) {
+        _add(res.locals, d, origin, originId, function(err, addedId) {
           if (err) return eachCallback(err);
 
           addedIds.push(addedId);
@@ -166,9 +178,9 @@ exports.modifyMany = function(req, res, next) {
   });
 };
 
-function _add(locals, data, origin, callback) {
-  // 自动记录操作界面
-  data.origin = origin;
+function _add(locals, data, origin, originId, callback) {
+  data.origin   = origin;
+  data.originId = originId;
 
   // 默认范围
   data.scope = data.scope || GLOBAL_SCOPE;

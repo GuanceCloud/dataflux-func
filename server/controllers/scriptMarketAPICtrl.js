@@ -201,7 +201,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
                   toolkit.toMarkdownTextBlock(pushContent.note));
 
     var _table = [
-      [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Author', '发布时间 / Publish Time' ],
+      [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Publisher', '发布时间 / Publish Time' ],
     ];
     pushContent.scriptSets.forEach(function(scriptSet, index) {
       _table.push([
@@ -223,7 +223,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
                 `此脚本市场包含以下脚本集：<br>This Script Market contains the following Scripts Sets:  `);
 
   var _table = [
-    [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Author', '发布时间 / Publish Time' ],
+    [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Publisher', '发布时间 / Publish Time' ],
   ];
   var scriptSets = SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP[scriptMarket.type](scriptMarket);
   scriptSets.forEach(function(scriptSet, index) {
@@ -232,8 +232,8 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
       `\`${scriptSet.id}\``,
       `${scriptSet.title || '-'}`,
       `[${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id})`,
-      `${pushContent.exportUser}`,
-      `${toolkit.getDateTimeStringCN(pushContent.exportTime)}`,
+      `${scriptSet.exportUser}`,
+      `${toolkit.getDateTimeStringCN(scriptSet.exportTime)}`,
     ]);
   });
   content.push(_getMarkdownTable(_table));
@@ -246,7 +246,7 @@ function _getDefaultScriptSetReadmeContent(gitLocalPath, scriptSet, pushContent)
   var content = [
     `# ${scriptSet.title || scriptSet.id}`,
     _getMarkdownTable([
-      [ 'ID', '标题 / Title', '发布者 / Author', '发布时间 / Publish Time' ],
+      [ 'ID', '标题 / Title', '发布者 / Publisher', '发布时间 / Publish Time' ],
       [
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,

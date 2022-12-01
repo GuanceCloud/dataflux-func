@@ -948,7 +948,6 @@ function _createAxiosOpt(method, pathPattern, options) {
     axiosOpt.headers = axiosOpt.headers || {};
 
     axiosOpt.headers[store.getters.CONFIG('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
-    axiosOpt.headers[store.getters.CONFIG('_WEB_ORIGIN_HEADER')]    = 'DFF-UI';
 
     let authHeaderField = store.getters.CONFIG('_WEB_AUTH_HEADER');
     if (store.state.xAuthToken) {
