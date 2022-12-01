@@ -26,12 +26,12 @@ routeLoader.load(ROUTE.scriptMarketAPI.listScriptSets, [
   scriptMarketAPICtrl.listScriptSets,
 ]);
 
-routeLoader.load(ROUTE.scriptMarketAPI.setOwner, [
-  scriptMarketAPICtrl.setOwner,
+routeLoader.load(ROUTE.scriptMarketAPI.setAdmin, [
+  scriptMarketAPICtrl.setAdmin,
 ]);
 
-routeLoader.load(ROUTE.scriptMarketAPI.unsetOwner, [
-  scriptMarketAPICtrl.unsetOwner,
+routeLoader.load(ROUTE.scriptMarketAPI.unsetAdmin, [
+  scriptMarketAPICtrl.unsetAdmin,
 ]);
 
 routeLoader.load(ROUTE.scriptMarketAPI.publish, [
@@ -40,4 +40,8 @@ routeLoader.load(ROUTE.scriptMarketAPI.publish, [
 
 routeLoader.load(ROUTE.scriptMarketAPI.install, [
   scriptMarketAPICtrl.install,
+]);
+
+routeLoader.load(ROUTE.scriptMarketAPI.checkUpdate, [
+  scriptMarketAPICtrl.checkUpdate,
 ]);

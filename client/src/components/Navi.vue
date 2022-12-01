@@ -1,15 +1,3 @@
-<i18n locale="zh-CN" lang="yaml">
-Development  : 开发
-Blueprint    : 蓝图
-Management   : 管理
-Docs         : 文档
-Profile      : 个人设置
-Sign Out     : 登出
-Not Signed In: 尚未登录
-Auth Link Doc: 授权链接文档
-Signed In    : 已登录
-</i18n>
-
 <template>
   <div class="navi-content">
     <el-menu
@@ -28,13 +16,13 @@ Signed In    : 已登录
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            <span>{{ $t('Development') }}</span>
+            <span>{{ $t('Dev') }}</span>
           </span>
         </el-menu-item>
 
         <el-menu-item index="/blueprint" v-if="$store.getters.isExperimentalFeatureEnabled('Blueprint')">
           <span>
-            <i class="fa fa-fw fa-th-large"></i>
+            <i class="fa fa-fw fa-sitemap"></i>
             <span>{{ $t('Blueprint') }}</span>
           </span>
         </el-menu-item>
@@ -43,6 +31,13 @@ Signed In    : 已登录
           <span>
             <i class="fa fa-fw fa-tasks"></i>
             <span>{{ $t('Management') }}</span>
+          </span>
+        </el-menu-item>
+
+        <el-menu-item index="/management/script-market-list">
+          <span>
+            <i class="fa fa-fw fa-shopping-cart"></i>
+            <span>{{ $t('Script Market') }}</span>
           </span>
         </el-menu-item>
       </template>
@@ -117,13 +112,6 @@ Signed In    : 已登录
           </span>
         </el-menu-item>
       </el-submenu>
-
-      <el-menu-item class="menu-right" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
-        <span>
-          <i class="fa fa-fw fa-link"></i>
-          <span>{{ $t('Auth Link Doc') }}</span>
-        </span>
-      </el-menu-item>
     </el-menu>
   </div>
 </template>

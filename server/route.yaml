@@ -5378,11 +5378,11 @@ scriptMarketAPI:
         $desc: 脚本市场ID
         $type: string
 
-  setOwner:
+  setAdmin:
     showInDoc    : true
-    name         : 获取脚本市场拥有权
+    name         : 成为脚本市场管理员
     method       : post
-    url          : /api/v1/script-markets/:id/owner/do/set
+    url          : /api/v1/script-markets/:id/admin/do/set
     response     : json
     requireSignIn: false
     privilege    : general_w
@@ -5391,11 +5391,11 @@ scriptMarketAPI:
         $desc: 脚本市场ID
         $type: string
 
-  unsetOwner:
+  unsetAdmin:
     showInDoc    : true
-    name         : 放弃脚本市场拥有权
+    name         : 放弃脚本市场管理员
     method       : post
-    url          : /api/v1/script-markets/:id/owner/do/unset
+    url          : /api/v1/script-markets/:id/admin/do/unset
     response     : json
     requireSignIn: false
     privilege    : general_w
@@ -5469,3 +5469,12 @@ scriptMarketAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+
+  checkUpdate:
+    showInDoc    : true
+    name         : 教程脚本市场脚本集更新
+    method       : get
+    url          : /api/v1/script-markets/do/check-update
+    response     : json
+    requireSignIn: false
+    privilege    : general_r

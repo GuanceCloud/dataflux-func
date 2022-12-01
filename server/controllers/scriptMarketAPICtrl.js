@@ -559,8 +559,8 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 设置所有权
-var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
+// 脚本市场 - 成为管理员
+var SCRIPT_MARKET_SET_ADMIN_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
     var token     = _getToken(scriptMarket);
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
@@ -585,8 +585,8 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
           return callback();
 
         } else {
-          // 所有权已被其他 DataFlux Func 占据
-          return asyncCallback(new E('EClient', 'The Script Market is not owned by current DataFlux Func'));
+          // 已有其他 DataFlux Func 为管理员
+          return asyncCallback(new E('EClient', 'Admin of the Script Market is already taken by other DataFlux Func'));
         }
       },
       // 同步至 Git
@@ -600,8 +600,8 @@ var SCRIPT_MARKET_SET_OWNER_FUNC_MAP = {
   },
 };
 
-// 脚本市场 - 放弃所有权
-var SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP = {
+// 脚本市场 - 放弃管理员
+var SCRIPT_MARKET_UNSET_ADMIN_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
     var token     = _getToken(scriptMarket);
     var localPath = _getGitRepoLocalAbsPath(scriptMarket);
@@ -651,9 +651,9 @@ var SCRIPT_MARKET_PUSH_FUNC_MAP = {
       function(asyncCallback) {
         var remoteTokenInfo = _getRemoteTokenInfo(scriptMarket);
 
-        // 所有权已被其他 DataFlux Func 占据
+        // 管理员为其他 DataFlux Func
         if (!remoteTokenInfo.value || remoteTokenInfo.value !== token) {
-          return asyncCallback(new E('EClient', 'The Script Market is not owned by current DataFlux Func'));
+          return asyncCallback(new E('EClient', 'This DataFlux Func is not admin of the Script Market'));
         }
 
         return asyncCallback();
@@ -853,13 +853,13 @@ exports.list = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    // 获取脚本市场拥有者信息、脚本集 META 信息等
+    // 获取脚本市场管理员信息、脚本集 META 信息等
     scriptMarkets.forEach(function(scriptMarket) {
       // 获取 META 信息
       scriptMarket.scriptSets = SCRIPT_MARKET_LIST_ALL_META_DATA_FUNC_MAP[scriptMarket.type](scriptMarket) || [];
 
-      // 检查是否为拥有者
-      scriptMarket.isOwner = _getToken(scriptMarket) === _getRemoteTokenInfo(scriptMarket).value;
+      // 检查是否为管理员
+      scriptMarket.isAdmin = _getToken(scriptMarket) === _getRemoteTokenInfo(scriptMarket).value;
     });
 
     var ret = toolkit.initRet(scriptMarkets, scriptMarketPageInfo);
@@ -922,7 +922,7 @@ exports.add = function(req, res, next) {
     },
     // 尝试获取所有权
     function(asyncCallback) {
-      SCRIPT_MARKET_SET_OWNER_FUNC_MAP[data.type](req.locals, data, function(err) {
+      SCRIPT_MARKET_SET_ADMIN_FUNC_MAP[data.type](req.locals, data, function(err) {
         // 出错表示无法获取所有权，跳过
         if (err) res.locals.logger.error(err.toString());
 
@@ -1010,7 +1010,7 @@ exports.delete = function(req, res, next) {
         scriptMarket = dbRes;
 
         // 放弃所有权（忽略错误）
-        SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, function(err) {
+        SCRIPT_MARKET_UNSET_ADMIN_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, function(err) {
           // 出错表示无法放弃所有权，忽略
           if (err) res.locals.logger.error(err.toString());
         });
@@ -1068,7 +1068,7 @@ exports.listScriptSets = function(req, res, next) {
   });
 };
 
-exports.setOwner = function(req, res, next) {
+exports.setAdmin = function(req, res, next) {
   var id = req.params.id;
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
@@ -1087,7 +1087,7 @@ exports.setOwner = function(req, res, next) {
     },
     // 获取所有权
     function(asyncCallback) {
-      SCRIPT_MARKET_SET_OWNER_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, asyncCallback);
+      SCRIPT_MARKET_SET_ADMIN_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -1097,7 +1097,7 @@ exports.setOwner = function(req, res, next) {
   });
 };
 
-exports.unsetOwner = function(req, res, next) {
+exports.unsetAdmin = function(req, res, next) {
   var id = req.params.id;
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
@@ -1116,7 +1116,7 @@ exports.unsetOwner = function(req, res, next) {
     },
     // 放弃所有权
     function(asyncCallback) {
-      SCRIPT_MARKET_UNSET_OWNER_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, asyncCallback);
+      SCRIPT_MARKET_UNSET_ADMIN_FUNC_MAP[scriptMarket.type](req.locals, scriptMarket, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
@@ -1242,4 +1242,7 @@ exports.install = function(req, res, next) {
     });
     return res.locals.sendJSON(ret);
   });
+};
+
+exports.checkUpdate = function(req, res, next) {
 };

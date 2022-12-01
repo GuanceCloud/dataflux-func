@@ -23,13 +23,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-market-list">
-              <span>
-                <i class="fa fa-fw fa-shopping-cart"></i>
-                {{ $t('Script Market') }}
-              </span>
-            </el-menu-item>
-
             <el-menu-item index="/management/api-auth-list">
               <span>
                 <i class="fa fa-fw fa-lock"></i>
@@ -147,6 +140,14 @@
               <span>
                 <i class="fa fa-fw fa-book"></i>
                 {{ $t('Func Doc') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
+              class="experimental-feature" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
+              <span>
+                <i class="fa fa-fw fa-link"></i>
+                {{ $t('Auth Link Doc') }}
               </span>
             </el-menu-item>
 

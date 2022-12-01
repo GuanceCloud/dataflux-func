@@ -66,7 +66,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               <strong class="script-market-name" :class="scope.row.isPinned ? 'text-bad': ''">
                 {{ common.getScriptMarketName(scope.row) }}
               </strong>
-              <el-tag v-if="scope.row.isOwner" type="success" size="mini">
+              <el-tag v-if="scope.row.isAdmin" type="success" size="mini">
                 <i class="fa fa-fw fa-key"></i>
                 {{ $t('Owner') }}
               </el-tag>
@@ -90,7 +90,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="center" width="120">
+          <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.isTimeout"
                 class="text-bad">
@@ -99,15 +99,15 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               <el-button v-else
                 type="primary"
                 size="small"
-                :plain="scope.row.isOwner ? false : true"
+                :plain="scope.row.isAdmin ? false : true"
                 @click="openDetail(scope.row)">
-                <i class="fa fa-fw" :class="scope.row.isOwner ? 'fa-wrench' : 'fa-th-large'"></i>
-                {{ scope.row.isOwner ? $t('Manage') : $t('Detail') }}
+                <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
+                {{ scope.row.isAdmin ? $t('Manage') : $t('Detail') }}
               </el-button>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="220">
+          <el-table-column align="right" width="180">
             <template slot-scope="scope">
               <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
               <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>

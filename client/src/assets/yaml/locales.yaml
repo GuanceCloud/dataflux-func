@@ -46,6 +46,7 @@ en:
   Setup   : 配置
   Edit    : 编辑
   Modify  : 修改
+  Update  : 更新
   Delete  : 删除
   Enable  : 启用
   Disable : 禁用
@@ -91,6 +92,7 @@ en:
   setup   : 配置
   edit    : 编辑
   modify  : 修改
+  update  : 更新
   delete  : 删除
   enable  : 启用
   disable : 禁用
@@ -238,11 +240,23 @@ en:
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
   # 业务实体/模块/ID
-  Script Set               : 脚本集
-  Script                   : 脚本
-  Func                     : 函数
-  Connector                : 连接器
-  ENV                      : 环境变量
+  Script Set: 脚本集
+  Script    : 脚本
+  Func      : 函数
+  Connector : 连接器
+  ENV       : 环境变量
+
+  Dev          : 开发
+  Development  : 开发
+  Blueprint    : 蓝图
+  Management   : 管理
+  Script Market: 脚本市场
+  Docs         : 文档
+  Profile      : 个人设置
+  Sign Out     : 登出
+  Not Signed In: 尚未登录
+  Signed In    : 已登录
+
   Overview                 : 总览
   About                    : 关于
   System Config            : 系统配置
@@ -260,18 +274,17 @@ en:
   Script Log               : 脚本日志
   Script Failure           : 脚本故障
   Experimental             : 实验性功能
-  Script Market            : 脚本市场
   Access Key               : AccessKey
   System Metric            : 系统指标
   PIP Tool                 : PIP工具
   File Manager             : 文件管理器
   File Service             : 文件服务
   Func Doc                 : 函数文档
+  Auth Link Doc            : 授权链接文档
   Func Cache Manager       : 函数缓存管理器
   Func Store Manager       : 函数存储管理器
   System Logs              : 系统日志
   Abnormal Reqs            : 异常请求
-  Blueprint                : 蓝图
 
   Script Set ID    : 脚本集ID
   Script ID        : 脚本ID

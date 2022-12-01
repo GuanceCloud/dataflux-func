@@ -109,7 +109,18 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100">
             <template slot-scope="scope">
-              <i class="fa fa-fw fa-2x" :class="getArrowIconClass(scope.row)"></i>
+              <span v-if="scriptMarket.isAdmin && scope.row.local"
+                :class="scope.row.local && scope.row.remote ? 'text-main' : 'text-info'">
+                <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
+                  class="fa fa-angle-right fa-2x"
+                  :style="{ opacity: opacity}"></i>
+              </span>
+              <span v-if="!scriptMarket.isAdmin && scope.row.remote"
+                :class="scope.row.local && scope.row.remote ? 'text-main' : 'text-info'">
+                <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
+                  class="fa fa-angle-left fa-2x"
+                  :style="{ opacity: opacity}"></i>
+              </span>
             </template>
           </el-table-column>
 
@@ -131,7 +142,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 </div>
               </template>
               <template v-else>
-                <i class="text-info" v-if="scriptMarket.isOwner">{{ $t('Not Published') }}</i>
+                <i class="text-info" v-if="scriptMarket.isAdmin">{{ $t('Not Published') }}</i>
                 <i class="text-info" v-else>{{ $t('No corresponding Script Set') }}</i>
               </template>
             </template>
@@ -156,7 +167,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <template v-if="scriptMarket.isOwner">
+              <template v-if="scriptMarket.isAdmin">
                 <el-link :disabled="!scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
                 <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
@@ -252,12 +263,6 @@ export default {
     },
   },
   methods: {
-    getArrowIconClass(data) {
-      return [
-        this.scriptMarket.isOwner ? 'fa-arrow-right' : 'fa-arrow-left',
-        data.remote && data.local ? 'text-main': 'text-info'
-      ]
-    },
     async loadData() {
       // 获取脚本市场信息
       let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
@@ -315,7 +320,7 @@ export default {
         let d = dataMap[x.id];
         if (d) {
           d.local = x;
-        } else if (this.scriptMarket.isOwner) {
+        } else if (this.scriptMarket.isAdmin) {
           dataMap[x.id] = { local: x };
         }
       });
