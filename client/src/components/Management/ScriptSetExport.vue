@@ -32,14 +32,19 @@ Data exported: 数据已导出
             <div class="export-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Script Set')" prop="scriptSetIds">
-                  <el-select v-model="form.scriptSetIds" multiple filterable :filter-method="doScriptSetFilter" :placeholder="$t('Please select')">
+                  <el-select
+                    v-model="form.scriptSetIds"
+                    multiple
+                    filterable
+                    :filter-method="doScriptSetFilter"
+                    :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectScriptSetOptions"
                       :key="item.id"
                       :label="item.title || item.id"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id">ID: {{ item.id }}</code>
+                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
                 </el-form-item>
@@ -59,7 +64,7 @@ Data exported: 数据已导出
                       :label="item.title || item.id"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id">ID: {{ item.id }}</code>
+                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
                   <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
@@ -73,7 +78,7 @@ Data exported: 数据已导出
                       :label="item.title || item.id"
                       :value="item.id">
                       <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id">ID: {{ item.id }}</code>
+                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
                 </el-form-item>

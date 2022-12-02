@@ -56,8 +56,8 @@ en: {}
   Invalid import file                                                                                     : 无效的导入文件
   Invalid kwargs, bad JSON format                                                                         : 函数参数无效，无法解析为JSON
   Invalid old password                                                                                    : 旧密码无效
-  Invalid options, apiTimeout is too large                                                                : 配置错误，apiTimeout过大
-  Invalid options, apiTimeout is too small                                                                : 配置错误，apitimeout过小
+  Invalid options, api_timeout is too large                                                               : 配置错误，api_timeout过大
+  Invalid options, api_timeout is too small                                                               : 配置错误，api_timeout过小
   Invalid options, bad JSON format                                                                        : 配置错误，无法解析为JSON
   Invalid options, eta should be a valid datetime value                                                   : 配置错误，eta必须为有效的日期-时间值
   Invalid options, execMode should be "async" in Crontab or Batch calling                                 : 配置错误，调用自动触发或批处理时，execMode必须为"async"

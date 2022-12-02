@@ -512,7 +512,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key : 'commaArray',
-        name: $t('String array with comma separators'),
+        name: $t('Comma separated string array'),
         tips: $t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
       },
     ];
@@ -966,16 +966,19 @@ kafka.publish(topic='some_topic', message='some_message')`,
         key       : 'authLinks',
         name      : $t('Auth Link'),
         showField : 'funcId',
+        showClass : 'text-main code-font',
       },
       {
         key       : 'crontabConfigs',
         name      : $t('Crontab Config'),
         showField : 'funcId',
+        showClass : 'text-main code-font',
       },
       {
         key       : 'batches',
         name      : $t('Batch'),
         showField : 'funcId',
+        showClass : 'text-main code-font',
       },
     ];
   },

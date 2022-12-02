@@ -40,7 +40,8 @@
                     <span class="text-info">{{ $t(t.name) }}{{ $t(':') }}</span>
                     <p>
                       <span v-for="item in d.summaryJSON[t.key]" :key="item.id">
-                        <span>{{ item[t.showField] || item.id }}</span>
+                        <span :class="t.showClass">{{ item[t.showField] || item.id }}</span>
+                        &#12288;
                         <small>{{ $t('(') }}ID <code class="text-code">{{ item.id }}</code>{{ $t(')') }}</small>
                         <br>
                       </span>

@@ -12,14 +12,14 @@ By Input       : 调用时指定
       <br>
       <template v-if="fullDefinition">
         <!-- 优先使用定义方式展示 -->
-        <code class="text-main">{{ fullDefinition }}</code>
+        <code class="code-font text-main">{{ fullDefinition }}</code>
       </template>
       <template v-else>
         <!-- 其次封装方式展示 -->
-        <code class="text-main">{{ id }}(</code
-        ><code v-if="!kwargsJSON">...</code
+        <code class="code-font text-main">{{ id }}(</code
+        ><code v-if="!kwargsJSON" class="code-font">...</code
         ><template v-else>
-          <div class="func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
+          <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
             <code class="func-kwargs-name">{{ name }}</code>
             <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)"><{{ $t('By Input') }}></code>
             <el-tooltip placement="top" v-else>
@@ -32,7 +32,7 @@ By Input       : 调用时指定
             <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
           </div>
         </template
-        ><code class="text-main">)</code>
+        ><code class="code-font text-main">)</code>
       </template>
     </template>
     <template v-else>

@@ -84,6 +84,7 @@ en:
   Link    : 连接
   Unlink  : 断开连接
   Manage  : 管理
+  Admin   : 管理
   Restore Default: 恢复默认
   Check Update   : 检查更新
 
@@ -131,6 +132,7 @@ en:
   link    : 连接
   unlink  : 断开连接
   manage  : 管理
+  admin   : 管理
   restore default: 恢复默认
   check update   : 检查更新
 
@@ -254,6 +256,7 @@ en:
   Management   : 管理
   Script Market: 脚本市场
   Docs         : 文档
+  Documents    : 文档
   Profile      : 个人设置
   Sign Out     : 登出
   Not Signed In: 尚未登录
@@ -309,7 +312,7 @@ en:
   'Boolean'                                                    : '布尔值'
   'Can be "true"/"false", "yes"/"no" or "on"/"off"'            : '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值'
   'Will be converted by json.loads() automatically'            : '将自动使用 json.loads() 进行转换'
-  'String array with comma separators'                         : '逗号分隔字符串数组'
+  'Comma separated string array'                               : '逗号分隔字符串数组'
   'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
 
   # const.js - API_AUTH

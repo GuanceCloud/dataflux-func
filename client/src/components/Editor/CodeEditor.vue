@@ -222,7 +222,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           v-prevent-re-click @click="saveScript()"
-                          :disabled="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-save"></i> <span class="hidden-lg-and-down">{{ $t('Save') }}</span>
@@ -235,7 +235,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           @click="showDiff()"
-                          :disabled="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-code"></i> <span class="hidden-lg-and-down">{{ $t('DIFF') }}</span>
@@ -248,7 +248,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           @click="publishScript"
-                          :disabled="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
@@ -264,7 +264,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                       <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                         <el-button
                           @click="resetScript"
-                          :disabled="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini"><i class="fa fa-fw fa-history"></i></el-button>
                       </el-tooltip>
@@ -273,7 +273,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     <el-tooltip :content="$t('End editing')" placement="bottom" :enterable="false">
                       <el-button
                         @click="endEdit"
-                        :disabled="!workerRunning"
+                        :disabled="workerRunning"
                         plain
                         size="mini"><i class="fa fa-fw fa-sign-out"></i> {{ $t('Exit') }}</el-button>
                     </el-tooltip>
@@ -285,7 +285,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
                       <el-button
                         @click="$refs.codeEditorSetting.open()"
-                        :disabled="!workerRunning"
+                        :disabled="workerRunning"
                         plain
                         size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
                     </el-tooltip>
@@ -1279,7 +1279,7 @@ export default {
         if (o.cost) {
           costInfo = `<span class="code-editor-output-info">${this.$t('Run Time')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
-            costInfo += `<br>&emsp;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
+            costInfo += `<br>&#12288;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }
         }
 

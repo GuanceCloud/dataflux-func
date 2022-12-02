@@ -1798,6 +1798,9 @@ scriptSetAPI:
       - sset.requirements
       - sset.originId
     query:
+      _withScripts:
+        $desc: 是否同时返回脚本列表
+        $type: bool
       id:
         $desc      : 根据ID过滤
         $type      : commaArray
@@ -5193,7 +5196,7 @@ scriptMarketAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
-    paging       : true
+    paging       : false
     fieldPicking : true
     fieldKicking : true
     orderFields:

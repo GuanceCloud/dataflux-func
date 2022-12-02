@@ -50,6 +50,7 @@ Saved Draft Code: 已保存的草稿代码
             <el-form-item>
               <el-select
                 style="width: 150px"
+                popper-class="code-font"
                 v-model="selectedItemId"
                 size="mini"
                 filterable

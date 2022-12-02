@@ -265,6 +265,7 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                         :prop="`configJSON.topicHandlers.${index}.funcId`"
                         :rules="formRules_topic">
                         <el-cascader ref="funcCascader"
+                          popper-class="code-font"
                           placeholder="--"
                           filterable
                           :filter-method="common.funcCascaderFilter"

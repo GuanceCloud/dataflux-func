@@ -29,7 +29,7 @@ ENV Variable unpinned: 环境变量已取消
         <span class="select-item-name">
           {{ item.label }}
         </span>
-        <code class="select-item-id">ID: {{ item.id }}</code>
+        <code class="select-item-id code-font">ID: {{ item.id }}</code>
       </el-option>
     </el-select>
 

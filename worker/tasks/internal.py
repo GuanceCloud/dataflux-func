@@ -18,6 +18,13 @@ def shutdown(self, *args, **kwargs):
     '''
     return app.control.broadcast('shutdown')
 
+@app.task(name='Internal.PoolRestart', bind=True, base=BaseTask, ignore_result=False)
+def shutdown(self, *args, **kwargs):
+    '''
+    Restart all worker execution pool
+    '''
+    return app.control.broadcast('pool_restart')
+
 @app.task(name='Internal.Ping', bind=True, base=BaseTask, ignore_result=False)
 def ping(self, *args, **kwargs):
     '''
@@ -25,12 +32,12 @@ def ping(self, *args, **kwargs):
     '''
     return app.control.ping(timeout=0.5)
 
-@app.task(name='Internal.Stats', bind=True, base=BaseTask, ignore_result=False)
-def stats(self, *args, **kwargs):
+@app.task(name='Internal.ActiveTasks', bind=True, base=BaseTask, ignore_result=False)
+def active_tasks(self, *args, **kwargs):
     '''
-    Get stats
+    Get active tasks
     '''
-    return app.control.inspect().stats()
+    return app.control.inspect().active()
 
 @app.task(name='Internal.ActiveQueues', bind=True, base=BaseTask, ignore_result=False)
 def active_queues(self, *args, **kwargs):
@@ -39,16 +46,16 @@ def active_queues(self, *args, **kwargs):
     '''
     return app.control.inspect().active_queues()
 
+@app.task(name='Internal.Stats', bind=True, base=BaseTask, ignore_result=False)
+def stats(self, *args, **kwargs):
+    '''
+    Get stats
+    '''
+    return app.control.inspect().stats()
+
 @app.task(name='Internal.Report', bind=True, base=BaseTask, ignore_result=False)
 def report(self, *args, **kwargs):
     '''
     Get task queue report
     '''
     return app.control.inspect().report()
-
-@app.task(name='Internal.GetImageInfo', bind=True, base=BaseTask)
-def get_image_info(self, *args, **kwargs):
-    '''
-    Get image info
-    '''
-    return IMAGE_INFO

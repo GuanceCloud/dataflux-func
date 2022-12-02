@@ -6,7 +6,7 @@ import C from '@/const'
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
 let LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = 0;
-let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 30;
+let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 15 * 60;
 
 export async function getAPIAuthList() {
   let apiAuthList = [];
@@ -163,23 +163,30 @@ export function goToPIPTools(requirements) {
   });
 }
 
-export async function checkScriptMarketUpdate() {
+export async function checkScriptMarketUpdate(opt) {
+  opt = opt || {};
+
   let now = Date.now();
-  if (LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME + SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL * 1000 < now) {
+  let isCheckTimeReached = LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME + SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL * 1000 < now;
+  if (opt.force || isCheckTimeReached) {
     await store.dispatch('checkScriptMarketUpdate');
     LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = now;
   }
 }
-export function getScriptMarketUpdateBadge(scriptMarketId) {
+export function getScriptMarketUpdateBadge(scriptMarketId, scriptSetId) {
   let result = store.state.scriptMarketCheckUpdateResult;
 
   if (!result) {
     return null;
   } else if (!scriptMarketId) {
     return result.length || null;
-  } else {
+  } else if (scriptMarketId && !scriptSetId) {
     return result.filter(r => {
       return scriptMarketId === r.scriptMarketId;
+    }).length || null;
+  } else if (scriptMarketId && scriptSetId) {
+    return result.filter(r => {
+      return scriptMarketId === r.scriptMarketId && scriptSetId === r.scriptSetId;
     }).length || null;
   }
 }

@@ -1,6 +1,6 @@
 <i18n locale="en" lang="yaml">
 FoundScriptSetCount: 'Scrpt Set not Found | Found {n} Script Set | Found {n} Script Sets'
-ScriptCount: 'No Script included | Includes {n} Script | Includes {n} Script'
+ScriptCount: 'No Script included | Includes {n} Script | Includes {n} Scripts'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -8,14 +8,16 @@ Install Script Set: 脚本集详情
 Publish Script Set: 发布脚本集
 Delete Script Set: 删除脚本集
 
-Local       : 本地
-Remote      : 远端
-Requirements: 依赖项
-Publisher   : 发布者
-Publish Time: 发布时间
-Not Published: 尚未发布
-Not Installed: 尚未安装
+Local                      : 本地
+Remote                     : 远端
+Requirements               : 依赖项
+Publisher                  : 发布者
+Publish Time               : 发布时间
+Not Published              : 尚未发布
+Not Installed              : 尚未安装
 No corresponding Script Set: 无对应脚本集
+Edited                     : 已修改
+New Version                : 新版本
 
 Publish Info: 发布信息
 Author Name : 作者名称
@@ -86,6 +88,17 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           :data="filteredData"
           :row-class-name="T.getHighlightRowCSS">
 
+          <el-table-column width="100" align="right" v-if="scriptMarket.isAdmin && hasAnyUpdated">
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.isUpdated"
+                effect="dark"
+                type="danger"
+                size="mini">
+                {{ $t('Edited') }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
           <el-table-column>
             <template slot="header" slot-scope="scope">
               <i class="fa fa-fw fa-home"></i>
@@ -98,31 +111,42 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 </strong>
                 <div>
                   <span class="text-info">ID</span>
-                  <code class="text-main">{{ scope.row.local.id }}</code>
+                  &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
               </template>
-              <template v-else>
+              <template v-else-if="!scriptMarket.isAdmin">
                 <i class="text-info">{{ $t('No corresponding Script Set') }}</i>
               </template>
             </template>
           </el-table-column>
 
-          <el-table-column width="100">
+          <el-table-column width="120">
             <template slot-scope="scope">
               <span v-if="scriptMarket.isAdmin && scope.row.local"
-                :class="scope.row.local && scope.row.remote ? 'text-main' : 'text-info'">
+                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
                 <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
                   class="fa fa-angle-right fa-2x"
                   :style="{ opacity: opacity}"></i>
               </span>
               <span v-if="!scriptMarket.isAdmin && scope.row.remote"
-                :class="scope.row.local && scope.row.remote ? 'text-main' : 'text-info'">
+                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
                 <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
                   class="fa fa-angle-left fa-2x"
                   :style="{ opacity: opacity}"></i>
               </span>
+            </template>
+          </el-table-column>
+
+          <el-table-column width="100" align="right" v-if="!scriptMarket.isAdmin && hasAnyUpdated">
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.remote"
+                effect="dark"
+                type="danger"
+                size="mini">
+                {{ scope.row.isUpdated ? $t('New Version') : '' }}
+              </el-tag>
             </template>
           </el-table-column>
 
@@ -136,9 +160,10 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <strong class="script-set-name">
                   {{ scope.row.remote.title || scope.row.remote.id }}
                 </strong>
+
                 <div>
                   <span class="text-info">ID</span>
-                  <code class="text-main">{{ scope.row.remote.id }}</code>
+                  &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.remote.scripts || []).length ) }}
                 </div>
@@ -189,7 +214,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
         close-on-press-escape="false"
         v-loading.fullscreen.lock="isProcessing"
         element-loading-background="rgba(0, 0, 0, 0.3)">
-        <el-form ref="form" label-width="100px" :model="form" :rules="formRules">
+        <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
           <el-form-item :label="$t('Name')">
             <el-input disabled :value="scriptSetToOperate.title"></el-input>
           </el-form-item>
@@ -233,7 +258,6 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
               <el-link type="primary" @click.prevent="useCurrentUserProfile">{{ $t('Use Current User Profile') }}</el-link>
             </el-form-item>
           </template>
-
         </el-form>
 
         <div slot="footer" class="dialog-footer">
@@ -283,42 +307,23 @@ export default {
         return acc;
       }, {});
 
-      // 获取本地脚本列表
-      apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
-        query: {
-          fields: [
-            'id',
-            'title',
-            'scriptSetId',
-          ]
-        },
-      });
-      if (!apiRes.ok) return;
-
-      let localScriptMap = apiRes.data.reduce((acc, x) => {
-        if (!acc[x.scriptSetId]) {
-          acc[x.scriptSetId] = [];
-        }
-        acc[x.scriptSetId].push(x);
-        return acc;
-      }, {});
-
       // 获取本地脚本集列表
       apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
         query: {
+          _withScripts: true,
           fields: [
             'id',
             'title',
             'description',
             'requirements',
+            'scripts',
+            'md5',
           ]
         },
       });
       if (!apiRes.ok) return;
 
       apiRes.data.forEach(x => {
-        x.scripts = localScriptMap[x.id] || [];
-
         let d = dataMap[x.id];
         if (d) {
           d.local = x;
@@ -329,19 +334,46 @@ export default {
 
       // 生成列表并排序
       var data = Object.values(dataMap);
+      data.forEach(d => {
+        d.isUpdated   = (d.local && d.remote && d.local.md5 !== d.remote.md5);
+        d.isIdMatched = (d.local && d.remote);
+      });
+
       data.sort((a, b) => {
-        if (a.remote && !b.remote) {
-          return -1;
-        } else if (!a.remote && b.remote) {
-          return 1;
-        } else if (a.remote && b.remote) {
-          if (a.remote.id < b.remote.id) return -1;
-          else if (a.remote.id === b.remote.id) return 0;
-          else return 1
+        if (a.isUpdated !== b.isUpdated) {
+          // 有更新的靠前
+          if (a.isUpdated) return -1;
+          else return 1;
+
         } else {
-          if (a.local.id < b.local.id) return -1;
-          else if (a.local.id === b.local.id) return 0;
-          else return 1
+          if (a.isIdMatched !== b.isIdMatched) {
+            // 本地、远端都有的靠前
+            if (a.isIdMatched) return -1;
+            else return 1;
+
+          } else {
+            if (this.scriptMarket.isAdmin) {
+              // 管理：本地靠前
+              if (a.local && !b.local) {
+                return -1;
+              } else if (!a.local && b.local) {
+                return 1;
+              }
+
+            } else {
+              // 非管理：远端靠前
+              if (a.remote && !b.remote) {
+                return -1;
+              } else if (!a.remote && b.remote) {
+                return 1;
+              }
+            }
+
+            // 默认，ID 排序
+            if ((a.local || a.remote).id < (b.local || b.remote).id) return -1;
+            else if ((a.local || a.remote).id === (b.local || b.remote).id) return 0;
+            else return 1;
+          }
         }
       });
       // 添加搜索关键字
@@ -470,6 +502,14 @@ export default {
         default:
           return false;
       }
+    },
+    hasAnyUpdated() {
+      for (let i = 0; i < this.data.length; i++) {
+        if (this.data[i].isUpdated) {
+          return true;
+        }
+      }
+      return false;
     },
     formRules() {
       return {

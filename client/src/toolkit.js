@@ -1639,3 +1639,22 @@ export function searchKeywords(s, l, minScore) {
   let result = listScore.map(x => x[1]);
   return result;
 };
+
+export function htmlSpace(count, lang) {
+  let s = null;
+  switch(lang) {
+    case 'zh':
+      s = '&#12288;';
+      break;
+
+    default:
+      s = '&ensp;';
+      break;
+  }
+
+  if ('number' !== typeof count) {
+    count = 1;
+  }
+  count = parseInt(count);
+  return s.repeat(count);
+};

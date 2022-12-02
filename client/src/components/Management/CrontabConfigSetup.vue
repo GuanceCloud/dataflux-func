@@ -80,6 +80,7 @@ shortcutDays  : '{n} 天'
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    popper-class="code-font"
                     placeholder="--"
                     filterable
                     :filter-method="common.funcCascaderFilter"
@@ -101,7 +102,7 @@ shortcutDays  : '{n} 天'
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
-                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
                   <el-input v-if="showAddTag" ref="newTag"
                     v-model="newTag"
                     size="mini"

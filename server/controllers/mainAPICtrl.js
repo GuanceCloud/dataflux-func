@@ -207,10 +207,10 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
 
       if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
+        return callback(new E('EClientBadRequest', 'Invalid options, api_timeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
       }
       if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
+        return callback(new E('EClientBadRequest', 'Invalid options, api_timeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
       }
 
     } else if (toolkit.notNothing(func.extraConfigJSON.apiTimeout)) {

@@ -20,7 +20,7 @@ Crontab Config enabled  : 自动触发配置已启用
 Crontab Config deleted  : 自动触发配置已删除
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Show all contents: 展示全部内容
 No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
@@ -49,7 +49,7 @@ failureCount  : '失败 {n}'
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
                 size="small"

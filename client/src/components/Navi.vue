@@ -16,7 +16,7 @@
         <el-menu-item index="/editor/intro">
           <span>
             <i class="fa fa-fw fa-edit"></i>
-            <span>{{ $t('Dev') }}</span>
+            <span>{{ $t('Development') }}</span>
           </span>
         </el-menu-item>
 
@@ -35,7 +35,7 @@
         </el-menu-item>
 
         <el-menu-item index="/management/script-market-list">
-          <el-badge :value="common.getScriptMarketUpdateBadge" is-dot>
+          <el-badge :hidden="!common.getScriptMarketUpdateBadge()" is-dot>
             <span>
               <i class="fa fa-fw fa-shopping-cart"></i>
               <span>{{ $t('Script Market') }}</span>
@@ -49,7 +49,7 @@
         :index="$root.variableConfig['NAVI_DOC_LINK_URL']">
         <span>
           <i class="fa fa-fw fa-book"></i>
-          <span>{{ $t('Docs') }}</span>
+          <span>{{ $t('Documents') }}</span>
         </span>
       </el-menu-item>
 
@@ -211,6 +211,7 @@ export default {
   line-height: 14px;
   text-align: center;
   font-size: 12px;
+  margin-top: 2px;
 }
 .selected-option,
 .selected-option * {

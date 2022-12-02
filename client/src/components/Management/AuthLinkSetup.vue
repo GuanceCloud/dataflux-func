@@ -1,7 +1,7 @@
 <i18n locale="en" lang="yaml">
 randomIDString: auln-{Random ID}
 
-parameterHint  : 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+parameterHint  : 'When the parameter value is specified as "INPUT_BY_CALLER", this parameter is allowed to be specified by the caller'
 shortcutDays   : '{n} day | {n} days'
 recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
@@ -44,7 +44,7 @@ Auth Link deleted: 授权链接已删除
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 Invalid argument format: 参数格式不正确
 
-parameterHint  : '参数值指定为 "INPUT_BY_CALLER" 时表示允许调用时指定本参数'
+parameterHint  : '参数值指定为 "INPUT_BY_CALLER" 时，允许调用时指定本参数'
 shortcutDays   : '{n} 天'
 recentTaskCount: '{n} 个近期任务'
 </i18n>
@@ -67,7 +67,7 @@ recentTaskCount: '{n} 个近期任务'
                   <el-switch v-model="useCustomId"></el-switch>
                   <span class="text-main float-right">
                     {{ $t('URL Preview') }}{{ $t(':') }}
-                    <code>{{ `/api/v1/al/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                    <code class="code-font">{{ `/api/v1/al/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
                   </span>
                 </el-form-item>
 
@@ -82,6 +82,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    popper-class="code-font"
                     placeholder="--"
                     filterable
                     :filter-method="common.funcCascaderFilter"
@@ -104,7 +105,7 @@ recentTaskCount: '{n} 个近期任务'
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
-                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
                   <el-input v-if="showAddTag" ref="newTag"
                     v-model="newTag"
                     size="mini"

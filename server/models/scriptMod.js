@@ -46,10 +46,11 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   scpt.seq');
   sql.append('  ,scpt.id');
+  sql.append('  ,scpt.scriptSetId');
   sql.append('  ,scpt.title');
   sql.append('  ,scpt.description');
-  sql.append('  ,scpt.scriptSetId');
   sql.append('  ,scpt.publishVersion');
+  sql.append('  ,scpt.type');
   sql.append('  ,scpt.codeMD5');
   sql.append('  ,scpt.codeDraftMD5');
   sql.append('  ,scpt.lockedByUserId');

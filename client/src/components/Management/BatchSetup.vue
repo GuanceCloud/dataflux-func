@@ -1,7 +1,7 @@
 <i18n locale="en" lang="yaml">
 randomIDString: bat-{Random ID}
 
-parameterHint: 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+parameterHint: 'When the parameter value is specified as "INPUT_BY_CALLER", this parameter is allowed to be specified by the caller'
 
 recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
@@ -61,7 +61,7 @@ recentTaskCount: '{n} 个近期任务'
                   <el-switch v-model="useCustomId"></el-switch>
                   <span class="text-main float-right">
                     {{ $t('URL Preview') }}{{ $t(':') }}
-                    <code>{{ `/api/v1/bat/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                    <code class="code-font">{{ `/api/v1/bat/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
                   </span>
                 </el-form-item>
 
@@ -76,6 +76,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    popper-class="code-font"
                     placeholder="--"
                     filterable
                     :filter-method="common.funcCascaderFilter"
@@ -98,7 +99,7 @@ recentTaskCount: '{n} 个近期任务'
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
-                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
                   <el-input v-if="showAddTag" ref="newTag"
                     v-model="newTag"
                     size="mini"

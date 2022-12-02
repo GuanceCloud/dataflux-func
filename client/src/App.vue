@@ -289,8 +289,14 @@ export default {
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
-  font-family: "Iosevka","PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
+  font-family: "PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
   outline: none !important;
+}
+input, textarea,
+pre, pre *
+.CodeMirror, .CodeMirror *,
+.code-font, .code-font * {
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
 }
 a {
   text-decoration: none;
@@ -461,6 +467,7 @@ h3 {
   color: rgb(255,0,0,.5) !important;
 }
 .text-code {
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
   padding: 1px 3px;
   background-color: #ffefe4;
   border-radius: 3px;

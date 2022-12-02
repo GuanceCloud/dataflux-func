@@ -76,7 +76,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
           <el-tag v-else-if="item.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
           {{ item.label }}
         </span>
-        <code class="select-item-id">ID: {{ item.id }}</code>
+        <code class="select-item-id code-font">ID: {{ item.id }}</code>
       </el-option>
     </el-select>
 

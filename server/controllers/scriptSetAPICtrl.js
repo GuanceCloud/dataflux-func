@@ -46,12 +46,16 @@ function _createImportOriginReplaceFunc(origin, originId) {
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
+  var withScripts = toolkit.toBoolean(req.query._withScripts);
+
   var scriptSets        = null;
   var scriptSetPageInfo = null;
 
+  var scriptModel    = scriptMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
+    // 获取脚本集
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
@@ -60,6 +64,33 @@ exports.list = function(req, res, next) {
 
         scriptSets        = dbRes;
         scriptSetPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 获取脚本
+    function(asyncCallback) {
+      if (!withScripts) return asyncCallback();
+
+      var scriptSetId = toolkit.arrayElementValues(scriptSets, 'id');
+      var opt = {
+        filters: {
+          scriptSetId: { in: scriptSetId }
+        }
+      }
+      scriptModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        var _map = dbRes.reduce(function(acc, x) {
+          if (!acc[x.scriptSetId]) acc[x.scriptSetId] = [];
+          acc[x.scriptSetId].push(x);
+          return acc;
+        }, {});
+
+        scriptSets.forEach(function(scriptSet) {
+          scriptSet.scripts = _map[scriptSet.id] || [];
+          scriptSet.md5     = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
+        });
 
         return asyncCallback();
       });

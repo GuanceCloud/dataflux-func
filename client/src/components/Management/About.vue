@@ -92,7 +92,10 @@ Log and Cache cleared: 日志与缓存表已清空
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>{{ $t('Clear Worker Queue') }}</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
+                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">
+                        队列 <span class="code-font">#{{ q.name }}</span>
+                        (存在 <span class="code-font">{{ q.value }}</span> 个待处理任务)
+                      </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-form-item>

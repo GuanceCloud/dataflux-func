@@ -72,22 +72,18 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               <strong class="script-market-name" :class="scope.row.isPinned ? 'text-bad': ''">
                 {{ common.getScriptMarketName(scope.row) }}
               </strong>
-              <el-tag v-if="scope.row.isAdmin" type="success" size="mini">
-                <i class="fa fa-fw fa-key"></i>
-                {{ $t('Owner') }}
-              </el-tag>
 
               <div>
                 <template v-if="scope.row.type === 'git'">
                   <span class="text-info">URL</span>
-                  <code class="text-main">{{ scope.row.configJSON.url }}</code>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
                   <br>
                   <span class="text-info">{{ $t('Branch') }}</span>
-                  <code class="text-main">{{ scope.row.configJSON.branch || $t('Default') }}</code>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
                 </template>
                 <template v-if="scope.row.type === 'aliyun_oss'">
                   <span class="text-info">{{ $t('Endpoint') }}</span>
-                  <code class="text-main">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
                 </template>
 
                 <br>
@@ -105,12 +101,13 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
 
               <el-badge v-else :value="common.getScriptMarketUpdateBadge(scope.row.id)">
                 <el-button
+                  style="width: 87px"
                   type="primary"
                   size="small"
                   :plain="scope.row.isAdmin ? false : true"
                   @click="openDetail(scope.row)">
                   <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
-                  {{ scope.row.isAdmin ? $t('Manage') : $t('Detail') }}
+                  {{ scope.row.isAdmin ? $t('Admin') : $t('Detail') }}
                 </el-button>
               </el-badge>
             </template>
@@ -128,9 +125,6 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           </el-table-column>
         </el-table>
       </el-main>
-
-      <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
     </el-container>
   </transition>
 </template>
@@ -166,7 +160,6 @@ export default {
       if (!apiRes.ok) return;
 
       this.data = apiRes.data;
-      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -244,7 +237,7 @@ export default {
     },
     async checkUpdate() {
       this.isCheckingUpdate = true;
-      await this.common.checkScriptMarketUpdate();
+      await this.common.checkScriptMarketUpdate({ force: true });
       setTimeout(() => {
         this.isCheckingUpdate = false;
       }, 500);
@@ -255,12 +248,10 @@ export default {
   props: {
   },
   data() {
-    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data    : [],
-      pageInfo: _pageInfo,
+      data: [],
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
