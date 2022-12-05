@@ -5272,12 +5272,16 @@ scriptMarketAPI:
             $desc      : 用户名
             $allowNull : true
             $type      : string
-          region:
-            $desc      : 地域
+          endpoint:
+            $desc      : 接入点
             $allowNull : true
             $type      : string
           bucket:
             $desc      : Bucket
+            $allowNull : true
+            $type      : string
+          folder:
+            $desc      : Folder
             $allowNull : true
             $type      : string
           password:
@@ -5335,12 +5339,16 @@ scriptMarketAPI:
             $desc      : 用户名
             $allowNull : true
             $type      : string
-          region:
-            $desc      : 地域
+          endpoint:
+            $desc      : 接入点
             $allowNull : true
             $type      : string
           bucket:
             $desc      : Bucket
+            $allowNull : true
+            $type      : string
+          folder:
+            $desc      : Folder
             $allowNull : true
             $type      : string
           password:

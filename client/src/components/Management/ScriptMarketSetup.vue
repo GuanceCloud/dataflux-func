@@ -13,8 +13,9 @@ Please input URL: 请输入 URL
 Please input Branch: 请输入分支
 Please input user: 请输入用户名
 Please input password: 请输入密码
-Please input region: 请输入地域
+Please input endpoint: 请输入访问地址
 Please input bucket: 请输入 Bucket
+Please input folder: 请输入文件夹
 Please input Access Key Id: 请输入 Access Key ID
 Please input Access Key Secret: 请输入 Access Key Secret
 
@@ -100,14 +101,19 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                     <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')"></InfoBlock>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Region')" v-if="hasConfigField(selectedType, 'region')" prop="configJSON.region">
+                  <el-form-item :label="$t('Endpoint')" v-if="hasConfigField(selectedType, 'endpoint')" prop="configJSON.endpoint">
                     <el-input
-                      v-model="form.configJSON.region"></el-input>
+                      v-model="form.configJSON.endpoint"></el-input>
                   </el-form-item>
 
                   <el-form-item label="Bucket" v-if="hasConfigField(selectedType, 'bucket')" prop="configJSON.bucket">
                     <el-input
                       v-model="form.configJSON.bucket"></el-input>
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Folder')" v-if="hasConfigField(selectedType, 'folder')" prop="configJSON.folder">
+                    <el-input
+                      v-model="form.configJSON.folder"></el-input>
                   </el-form-item>
 
                   <el-form-item label="Access Key ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
@@ -355,10 +361,10 @@ export default {
             required: false,
           },
         ],
-        'configJSON.region': [
+        'configJSON.endpoint': [
           {
             trigger : 'change',
-            message : this.$t('Please input region'),
+            message : this.$t('Please input endpoint'),
             required: true,
           },
         ],
@@ -366,6 +372,13 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input bucket'),
+            required: true,
+          },
+        ],
+        'configJSON.folder': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input folder'),
             required: true,
           },
         ],

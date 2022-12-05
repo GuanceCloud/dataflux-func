@@ -6,7 +6,7 @@ import C from '@/const'
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
 let LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = 0;
-let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 15 * 60;
+let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 30 * 60;
 
 export async function getAPIAuthList() {
   let apiAuthList = [];
@@ -170,7 +170,10 @@ export async function checkScriptMarketUpdate(opt) {
   let now = Date.now();
   let isCheckTimeReached = LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME + SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL * 1000 < now;
   if (opt.force || isCheckTimeReached) {
-    await store.dispatch('checkScriptMarketUpdate');
+    let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update');
+    if (!apiRes || !apiRes.ok) return;
+
+    store.commit('updateScriptMarketCheckUpdateResult', apiRes.data.updatedScriptSets);
     LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = now;
   }
 }

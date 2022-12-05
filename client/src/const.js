@@ -1001,17 +1001,18 @@ kafka.publish(topic='some_topic', message='some_message')`,
           password: { default: null },
         },
       },
-      // {
-      //   key : 'aliyun_oss',
-      //   name: $t('Alibaba Cloud OSS'),
-      //   icon: 'fa-cloud',
-      //   configFields: {
-      //     region         : { default: null, isRequired: true },
-      //     bucket         : { default: null, isRequired: true },
-      //     accessKeyId    : { default: null, isRequired: true },
-      //     accessKeySecret: { default: null, isRequired: true },
-      //   },
-      // },
+      {
+        key : 'aliyun_oss',
+        name: $t('Alibaba Cloud OSS'),
+        icon: 'fa-cloud',
+        configFields: {
+          endpoint       : { default: 'http://oss-cn-hangzhou.aliyuncs.com', isRequired: true },
+          bucket         : { default: null, isRequired: true },
+          folder         : { default: 'script-market', isRequired: true },
+          accessKeyId    : { default: null, isRequired: true },
+          accessKeySecret: { default: null, isRequired: true },
+        },
+      },
     ];
   },
   get SCRIPT_MARKET_MAP() {

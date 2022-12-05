@@ -2811,8 +2811,8 @@ exports.operateResource = function(req, res, next) {
     case 'mv':
       var newName = operationArgument;
       var newAbsPath = newName[0] === '/'
-                     ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
-                     : path.join(currentAbsDir, newName);
+                      ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
+                      : path.join(currentAbsDir, newName);
 
       if (fs.existsSync(newAbsPath)) {
         return next(new E('EBizCondition', 'Specified new file or folder name already existed'));
@@ -2835,8 +2835,13 @@ exports.operateResource = function(req, res, next) {
       break;
   }
 
-  var opt = { cwd: currentAbsDir };
-  childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
+  var cmdOpt = {
+    cwd  : currentAbsDir,
+    stdio: 'ignore',
+  };
+  childProcess.spawn(cmd, cmdArgs, cmdOpt).on('close', function(code) {
+    var err = code === 0 ? null : new E('EBizCondition', 'Resource operation Failed');
+
     if (err) return next(err);
     return res.locals.sendJSON();
   });
