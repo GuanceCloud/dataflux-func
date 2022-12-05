@@ -59,10 +59,12 @@ exports.list = function(req, res, next) {
     function(asyncCallback) {
       if (!withScripts) return asyncCallback();
 
-      var scriptSetId = toolkit.arrayElementValues(scriptSets, 'id');
+      var scriptSetIds = toolkit.arrayElementValues(scriptSets, 'id');
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+
       var opt = {
         filters: {
-          scriptSetId: { in: scriptSetId }
+          scriptSetId: { in: scriptSetIds }
         }
       }
       scriptModel.list(opt, function(err, dbRes) {

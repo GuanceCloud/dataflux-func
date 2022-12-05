@@ -5,19 +5,19 @@ Setup Script Market: 配置脚本市场
 Branch: 分支
 Region: 地域
 
-Password here is always required when the Script Market requires password         : 如脚本市场需要密码，则每次修改都必须重新输入密码
-Access Key Secret here is always required when the Script Market requires password: 如脚本市场需要 Access Key Secret，则每次修改都必须重新输入 Access Key Secret
+Password here is always required when the Script Market requires password : 如脚本市场需要密码，则每次修改都必须重新输入密码
+AK Secret here is always required when the Script Market requires password: 如脚本市场需要 AK Secret，则每次修改都必须重新输入 AK Secret
 
 Please input Script Market type: 请输入脚本市场类型
-Please input URL: 请输入 URL
-Please input Branch: 请输入分支
-Please input user: 请输入用户名
-Please input password: 请输入密码
-Please input endpoint: 请输入访问地址
-Please input bucket: 请输入 Bucket
-Please input folder: 请输入文件夹
-Please input Access Key Id: 请输入 Access Key ID
-Please input Access Key Secret: 请输入 Access Key Secret
+Please input URL               : 请输入 URL
+Please input Branch            : 请输入分支
+Please input user              : 请输入用户名
+Please input password          : 请输入密码
+Please input endpoint          : 请输入访问地址
+Please input bucket            : 请输入 Bucket
+Please input folder            : 请输入文件夹
+Please input AK Id             : 请输入 AK ID
+Please input AK Secret         : 请输入 AK Secret
 
 Script Market created: 脚本市场已创建
 Script Market saved  : 脚本市场已保存
@@ -116,15 +116,15 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                       v-model="form.configJSON.folder"></el-input>
                   </el-form-item>
 
-                  <el-form-item label="Access Key ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
+                  <el-form-item label="AK ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
                     <el-input
                       v-model="form.configJSON.accessKeyId"></el-input>
                   </el-form-item>
 
-                  <el-form-item label="Access Key Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
+                  <el-form-item label="AK Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
                     <el-input
                       v-model="form.configJSON.accessKeySecret" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Access Key Secret here is always required when the Script Market requires password')"></InfoBlock>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')"></InfoBlock>
                   </el-form-item>
                   <!-- 可变部分结束 -->
                 </template>
@@ -385,14 +385,14 @@ export default {
         'configJSON.accessKeyId': [
           {
             trigger : 'change',
-            message : this.$t('Please input Access Key Id'),
+            message : this.$t('Please input AK Id'),
             required: true,
           },
         ],
         'configJSON.accessKeySecret': [
           {
             trigger : 'change',
-            message : this.$t('Please input Access Key Secret'),
+            message : this.$t('Please input AK Secret'),
             required: true,
           },
         ],

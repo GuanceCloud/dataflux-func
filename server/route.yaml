@@ -5209,9 +5209,6 @@ scriptMarketAPI:
       - smkt.type
       - smkt.configJSON
     query:
-      _fetch:
-        $desc: 是否获取最新数据
-        $type: bool
       id:
         $desc      : 根据ID过滤
         $type      : commaArray

@@ -528,13 +528,6 @@ export default new Vuex.Store({
       commit('updateSocketIOStatus', false);
       commit('updateXAuthToken', null);
     },
-
-    async checkScriptMarketUpdate({ commit }) {
-      let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update');
-      if (!apiRes || !apiRes.ok) return;
-
-      commit('updateScriptMarketCheckUpdateResult', apiRes.data.updatedScriptSets);
-    },
   },
   modules: {
   },

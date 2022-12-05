@@ -57,9 +57,10 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Type')" width="100">
+          <el-table-column :label="$t('Type')" width="150" align="center">
             <template slot-scope="scope">
-              <i class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
+              <i v-if="common.getScriptMarketIcon(scope.row)" class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
+              <strong v-else>{{ C.SCRIPT_MARKET_MAP.get(scope.row.type).name }}</strong>
             </template>
           </el-table-column>
 
@@ -83,7 +84,13 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                 </template>
                 <template v-if="scope.row.type === 'aliyun_oss'">
                   <span class="text-info">{{ $t('Endpoint') }}</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}.oss-{{ scope.row.configJSON.region }}.aliyuncs.com</code>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
+                  <br>
+                  <span class="text-info">Bucket</span>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}</code>
+                  <br>
+                  <span class="text-info">{{ $t('Folder') }}</span>
+                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
                 </template>
 
                 <br>
@@ -148,12 +155,8 @@ export default {
     },
   },
   methods: {
-    async loadData(opt) {
-      opt = opt || { fetch: true };
-
+    async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery();
-      _listQuery._fetch = !!opt.fetch;
-
       let apiRes = await this.T.callAPI_get('/api/v1/script-markets/do/list', {
         query: _listQuery,
       });
@@ -199,7 +202,7 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      await this.loadData({ fetch: false });
+      await this.loadData();
     },
     openSetup(d, target) {
       let nextRouteQuery = this.T.packRouteQuery();

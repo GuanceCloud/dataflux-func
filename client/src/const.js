@@ -991,7 +991,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key   : 'git',
-        name  : 'git',
+        name  : 'git (HTTPS)',
         icon  : 'fa-git',
         urlTip: 'https://gitee.com/xxxxx/yyyyy.git',
         configFields: {
@@ -1004,7 +1004,6 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key : 'aliyun_oss',
         name: $t('Alibaba Cloud OSS'),
-        icon: 'fa-cloud',
         configFields: {
           endpoint       : { default: 'http://oss-cn-hangzhou.aliyuncs.com', isRequired: true },
           bucket         : { default: null, isRequired: true },

@@ -145,7 +145,8 @@ export function getScriptMarketName(scriptMarket) {
         return `${urlObj.hostname}${urlObj.pathname.replace(/\.git/g, '')}`;
 
       case 'aliyun_oss':
-        return `${scriptMarket.configJSON.bucket}.cn-${scriptMarket.configJSON.region}`;
+        var endpointObj = new URL(scriptMarket.configJSON.endpoint);
+        return `${scriptMarket.configJSON.bucket}.${endpointObj.hostname}/${scriptMarket.configJSON.folder}`;
     }
   }
 }

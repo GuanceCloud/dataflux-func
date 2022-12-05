@@ -141,11 +141,11 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100" align="right" v-if="!scriptMarket.isAdmin && hasAnyUpdated">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.remote"
+              <el-tag v-if="scope.row.remote && scope.row.isUpdated"
                 effect="dark"
                 type="danger"
                 size="mini">
-                {{ scope.row.isUpdated ? $t('New Version') : '' }}
+                {{ $t('New Version') }}
               </el-tag>
             </template>
           </el-table-column>

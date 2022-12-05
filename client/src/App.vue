@@ -740,6 +740,9 @@ kbd {
 .el-input__inner {
   border-radius: 3px !important;
 }
+
+.el-form-item__label {
+}
 .el-form-item__error {
   font-size: 14px !important;
 }
