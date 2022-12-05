@@ -141,7 +141,8 @@ export function getScriptMarketName(scriptMarket) {
   } else {
     switch(scriptMarket.type) {
       case 'git':
-        return new URL(scriptMarket.configJSON.url).pathname.replace(/^\//g, '').replace(/\.git/g, '');
+        var urlObj = new URL(scriptMarket.configJSON.url);
+        return `${urlObj.hostname}${urlObj.pathname.replace(/\.git/g, '')}`;
 
       case 'aliyun_oss':
         return `${scriptMarket.configJSON.bucket}.cn-${scriptMarket.configJSON.region}`;

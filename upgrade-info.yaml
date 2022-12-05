@@ -237,6 +237,11 @@ upgradeInfo:
         MODIFY COLUMN `kwargsJSON` json DEFAULT NULL,
         MODIFY COLUMN `retvalJSON` json DEFAULT NULL;
 
+      -- 调整脚本 MD5
+      ALTER TABLE biz_main_script
+        MODIFY COLUMN `codeMD5`      varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码MD5',
+        MODIFY COLUMN `codeDraftMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码（编辑中草稿）MD5';
+
       -- 调整 origin, originId 处理
       ALTER TABLE biz_main_task_info
         MODIFY COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '任务来源ID';

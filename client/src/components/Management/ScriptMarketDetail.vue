@@ -335,8 +335,8 @@ export default {
       // 生成列表并排序
       var data = Object.values(dataMap);
       data.forEach(d => {
-        d.isUpdated   = (d.local && d.remote && d.local.md5 !== d.remote.md5);
-        d.isIdMatched = (d.local && d.remote);
+        d.isIdMatched = !!(d.local && d.remote);
+        d.isUpdated   = !!(d.isIdMatched && d.local.md5 !== d.remote.md5);
       });
 
       data.sort((a, b) => {
@@ -346,12 +346,14 @@ export default {
           else return 1;
 
         } else {
+          // 都没有更新
           if (a.isIdMatched !== b.isIdMatched) {
-            // 本地、远端都有的靠前
+            // 有对应的靠前
             if (a.isIdMatched) return -1;
-            else return 1;
+            else if (b.isIdMatched) return 1;
 
           } else {
+            // 没有对应的
             if (this.scriptMarket.isAdmin) {
               // 管理：本地靠前
               if (a.local && !b.local) {
@@ -478,9 +480,10 @@ export default {
           break;
       }
 
-      this.isProcessing  = false;
-      this.showOperation = false;
       if (!apiRes || !apiRes.ok) return;
+
+      // 重新检查更新
+      await this.common.checkScriptMarketUpdate({ force: true });
 
       // 跳转 PIP 工具
       if (operation === 'install' && this.T.notNothing(apiRes.data.requirements)) {
@@ -490,6 +493,9 @@ export default {
       }
 
       await this.loadData();
+
+      this.isProcessing  = false;
+      this.showOperation = false;
     },
   },
   computed: {

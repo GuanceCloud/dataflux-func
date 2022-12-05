@@ -2339,10 +2339,10 @@ toolkit.createLimitedBuffer = function(limit) {
   return new LimitedBuffer(limit);
 };
 
-var createGitHandler = toolkit.createGitHandler = function(baseDir) {
+var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
   var git = simpleGit({
     baseDir: baseDir,
-    timeout: { block: 5 * 1000 },
+    timeout: { block: 15 * 1000 },
   });
 
   return git;
