@@ -61,6 +61,8 @@ EntityModel.prototype.list = function(options, callback) {
 
   sql.append('  ,sset.title          AS sset_title');
   sql.append('  ,sset.description    AS sset_description');
+  sql.append('  ,sset.origin         AS sset_origin');
+  sql.append('  ,sset.originId       AS sset_originId');
   sql.append('  ,sset.lockedByUserId AS sset_lockedByUserId');
   sql.append('  ,ssetLocker.username AS sset_lockedByUserUsername');
   sql.append('  ,ssetLocker.name     AS sset_lockedByUserName');
@@ -98,7 +100,9 @@ EntityModel.prototype.overview = function(options, callback) {
   sql.append('  ,scpt.createTime');
   sql.append('  ,scpt.updateTime');
 
-  sql.append('  ,sset.title AS scriptSetTitle');
+  sql.append('  ,sset.title    AS scriptSetTitle');
+  sql.append('  ,sset.origin   AS scriptSetOrigin');
+  sql.append('  ,sset.originId AS scriptSetOriginId');
 
   sql.append('  ,MAX(scph.createTime) AS latestPublishTime');
   sql.append('  ,COUNT(func.id)       AS funcCount');

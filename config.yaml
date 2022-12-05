@@ -335,8 +335,8 @@ _HTTP_AUTH_NONCE_MAX_AGE      : 300
 
 # 是否禁用安装配置
 _DISABLE_SETUP: false
-# 是否禁用自动安装附带脚本
-_DISABLE_AUTO_INSTALL_SCRIPT_SET: false
+# 是否禁用自动安装内置脚本集
+_DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET: false
 # 是否禁用数据库自动备份
 _DISABLE_DB_AUTO_BACKUP: false
 # 是否禁用工作单元限制压力

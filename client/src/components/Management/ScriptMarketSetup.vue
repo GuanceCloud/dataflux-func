@@ -97,7 +97,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')"></InfoBlock>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')"></InfoBlock>
                   </el-form-item>
 
                   <el-form-item :label="$t('Region')" v-if="hasConfigField(selectedType, 'region')" prop="configJSON.region">
@@ -118,7 +118,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   <el-form-item label="Access Key Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
                     <el-input
                       v-model="form.configJSON.accessKeySecret" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Access Key Secret here is always required when the Script Market requires password')"></InfoBlock>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Access Key Secret here is always required when the Script Market requires password')"></InfoBlock>
                   </el-form-item>
                   <!-- 可变部分结束 -->
                 </template>

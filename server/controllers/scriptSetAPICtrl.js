@@ -30,19 +30,6 @@ var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 /* Configure */
 
 /* Handlers */
-function _createImportOriginReplaceFunc(origin, originId) {
-  return function(data) {
-    if (toolkit.isNothing(data)) return data;
-
-    data.forEach(function(d) {
-      d.origin   = origin;
-      d.originId = originId;
-    });
-
-    return data;
-  }
-};
-
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
@@ -473,8 +460,8 @@ exports.import = function(req, res, next) {
       });
 
       // 替换 origin, originId
-      var origin   = 'UNKNOW';
-      var originId = null;
+      var origin   = 'builtin';
+      var originId = 'builtin';
       if (res.locals.user && res.locals.user.isSignedIn) {
         origin   = 'user';
         originId = res.locals.user.id;

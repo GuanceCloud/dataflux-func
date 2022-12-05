@@ -113,7 +113,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="180">
+          <el-table-column align="right" width="200">
             <template slot-scope="scope">
               <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
               <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>

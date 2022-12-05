@@ -206,7 +206,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
 
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
-            <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
+            <span :class="{'text-watch': data.origin === 'builtin', 'text-bad': data.isPinned}">
               <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
@@ -221,7 +221,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
                 <el-tag v-if="data.isCodeEdited"
                   type="danger"
                   size="mini">{{ $t('Edited') }}</el-tag>
-                <el-tag v-if="data.isBuiltin"
+                <el-tag v-if="data.origin === 'builtin'"
                   effect="dark"
                   :type="data.isPinned ? 'danger':'warning'"
                   size="mini">{{ $t('Builtin') }}</el-tag>
@@ -631,8 +631,9 @@ export default {
             'lockedByUserId',
             'lockedByUserUsername',
             'lockedByUserName',
+            'origin',
+            'originId',
             'pinTime',
-            'isBuiltin',
           ]
         },
       });
@@ -663,7 +664,8 @@ export default {
           isLocked       : isLocked,
           isPinned       : isPinned,
           pinTime        : d.pinTime,
-          isBuiltin      : d.isBuiltin,
+          origin         : d.origin,
+          originId       : d.originId,
 
           title      : d.title,
           description: d.description,
