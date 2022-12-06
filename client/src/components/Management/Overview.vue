@@ -121,11 +121,7 @@ Pressure                      : 压力
 
           <el-table-column :label="$t('Publish time')" sortable sort-by="latestPublishTimestamp" align="right" width="200">
             <template slot-scope="scope">
-              <template v-if="!scope.row.latestPublishTime">
-                <span v-if="scope.row.publishVersion === 0" class="text-info">{{ $t('Never published') }}</span>
-                <span v-else class="text-info">{{ $t('System builtin') }}</span>
-              </template>
-              <template v-else>
+              <template v-if="scope.row.latestPublishTime">
                 <span>{{ scope.row.latestPublishTime | datetime }}</span>
                 <br>
                 <span class="text-info">{{ scope.row.latestPublishTime | fromNow }}</span>
