@@ -28,7 +28,7 @@ File already existed                                                            
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded"
-      v-loading.fullscreen.lock="fullScreenLoading"
+      v-loading.fullscreen.lock="isProcessing"
       element-loading-spinner="el-icon-loading"
       :element-loading-text="progressTip || $t('Processing...')">
       <!-- 标题区 -->
@@ -400,7 +400,7 @@ export default {
 
       // 操作处理中
       let delayedLoadingT = setTimeout(() => {
-        this.fullScreenLoading = true;
+        this.isProcessing = true;
       }, 200);
 
       // 执行操作
@@ -414,7 +414,7 @@ export default {
 
       // 操作处理结束
       clearTimeout(delayedLoadingT);
-      this.fullScreenLoading = false;
+      this.isProcessing = false;
 
       if (!apiRes.ok) return this.loadData();
 
@@ -495,7 +495,7 @@ export default {
 
       // 操作处理中
       let delayedLoadingT = setTimeout(() => {
-        this.fullScreenLoading = true;
+        this.isProcessing = true;
       }, 200);
 
       // 执行上传
@@ -524,7 +524,7 @@ export default {
 
       // 操作处理结束
       clearTimeout(delayedLoadingT);
-      this.fullScreenLoading = false;
+      this.isProcessing = false;
       this.progressTip       = '';
 
       await this.loadData();
@@ -545,7 +545,7 @@ export default {
 
       // 操作处理中
       let delayedLoadingT = setTimeout(() => {
-        this.fullScreenLoading = true;
+        this.isProcessing = true;
       }, 200);
 
       let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
@@ -558,7 +558,7 @@ export default {
 
       // 操作处理结束
       clearTimeout(delayedLoadingT);
-      this.fullScreenLoading = false;
+      this.isProcessing = false;
       this.showInstallWheel  = false;
     },
   },
@@ -606,8 +606,8 @@ export default {
       wheelToInstall   : '',
       pypiMirror       : '',
 
-      fullScreenLoading: false,
-      progressTip      : '',
+      isProcessing: false,
+      progressTip : '',
 
       dataFilter: {
         folder: _dataFilter.folder,

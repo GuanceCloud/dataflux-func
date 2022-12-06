@@ -5227,7 +5227,7 @@ scriptMarketAPI:
         $in:
           - git
           - aliyunOSS
-          - httpServer
+          - httpService
 
   add:
     showInDoc    : true
@@ -5255,7 +5255,7 @@ scriptMarketAPI:
           $in:
             - git
             - aliyunOSS
-            - httpServer
+            - httpService
         configJSON:
           $desc      : 配置信息
           $allowNull : true

@@ -74,6 +74,12 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+                <!-- Fake user/password -->
+                <el-form-item style="height: 0; overflow: hidden">
+                  <input tabindex="-1" type="text" name="username" />
+                  <input tabindex="-1" type="password" name="password" />
+                </el-form-item>
+
                 <el-form-item v-if="data.isBuiltin">
                   <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
@@ -91,11 +97,7 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
 
                 <template v-if="selectedType">
                   <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).logo">
-                    <el-image
-                      class="connector-logo"
-                      :class="[`logo-${selectedType}`]"
-                      :src="C.CONNECTOR_MAP.get(selectedType).logo">
-                    </el-image>
+                    <el-image class="connector-logo" :class="[`logo-${selectedType}`]" :src="C.CONNECTOR_MAP.get(selectedType).logo"></el-image>
                   </el-form-item>
 
                   <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
@@ -179,11 +181,6 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                   </el-form-item>
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <div style="height: 0">
-                      <!-- Fake user/password -->
-                      <input tabindex="-1" type="text" />
-                      <input tabindex="-1" type="password" />
-                    </div>
                     <el-input
                       v-model="form.configJSON.user"></el-input>
                   </el-form-item>
@@ -858,40 +855,40 @@ export default {
 .connector-logo.logo-df_datakit {
 }
 .connector-logo.logo-influxdb {
-  height: 70px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-mysql {
   height: 100px !important;
 }
 .connector-logo.logo-redis {
-  height: 90px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-memcached {
-  height: 90px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-clickhouse {
-  height: 100px !important;
+  height: 90px !important;
 }
 .connector-logo.logo-oracle {
-  height: 40px !important;
+  height: 30px !important;
 }
 .connector-logo.logo-sqlserver {
   height: 60px !important;
 }
 .connector-logo.logo-postgresql {
-  height: 100px !important;
+  height: 80px !important;
 }
 .connector-logo.logo-mongodb {
-  height: 100px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-elasticsearch {
-  height: 70px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-nsq {
   height: 90px !important;
 }
 .connector-logo.logo-mqtt {
-  height: 90px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-kafka {
   height: 90px !important;

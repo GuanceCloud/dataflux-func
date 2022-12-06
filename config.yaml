@@ -186,7 +186,7 @@ _SAMPLE_SCRIPT: |-
 _OFFICIAL_SCRIPT_MARKET:
   id        : smkt-official
   name      : 官方脚本市场 / Official Script Market
-  type      : httpServer
+  type      : httpService
   configJSON: { "url": "https://func.guance.com/script-market/official" }
   isPinned  : true
 

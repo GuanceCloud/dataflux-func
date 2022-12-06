@@ -31,7 +31,7 @@ var OSSUTIL_CMD = path.join(__dirname, `../../tools/${process.arch === 'x64' ? '
 var SCRIPT_MARKET_RW_MAP = {
   git      : 'rw',
   aliyunOSS: 'rw',
-  httpServer: 'ro',
+  httpService: 'ro',
 }
 
 function _checkConfig(locals, data, callback) {
@@ -52,7 +52,7 @@ function _checkConfig(locals, data, callback) {
       optionalFields = ['accessKeyId', 'accessKeySecret'];
       break;
 
-    case 'httpServer':
+    case 'httpService':
       requiredFields = ['url'];
       optionalFields = [];
       break;
@@ -169,7 +169,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
   var addrValue = null;
   switch(scriptMarket.type) {
     case 'git':
-    case 'httpServer':
+    case 'httpService':
       addrTitle = '地址 / URL';
       addrValue = scriptMarket.configJSON.url;
       break;
@@ -394,10 +394,15 @@ function _downloadHTTPServerFolder(scriptMarket, localPath, callback) {
   request(requestOptions, function(err, _res, _body) {
     if (err) return callback(err);
 
+    if (_res.statusCode !== 200) {
+      return callback(new E('EClient', 'Load Script Market failed, not a Script Market'));
+    }
+
     // 依次下载文件
-    _body.split('\n').forEach(function(filePath) {
-      filePath = filePath.trim().replace(/^\.\//g, '');
-      if (!filePath) return;
+    var filePaths = _body.split('\n');
+    for (var i = 0; i < filePaths.length; i++) {
+      var filePath = filePaths[i].trim().replace(/^\.\//g, '');
+      if (!filePath) continue;
 
       var destPath = path.join(localPath, filePath);
       var destDir = destPath.split('/').slice(0, -1).join('/');
@@ -405,8 +410,13 @@ function _downloadHTTPServerFolder(scriptMarket, localPath, callback) {
       fs.ensureDirSync(destDir);
 
       var cmdArgs = [ baseURL + filePath, '-q', '-O', destPath ];
-      childProcess.execFileSync('wget', cmdArgs, { stdio: 'ignore' });
-    });
+
+      try {
+        childProcess.execFileSync('wget', cmdArgs, { stdio: 'ignore' });
+      } catch(err) {
+        return callback(err);
+      }
+    }
 
     return callback();
   });
@@ -484,7 +494,7 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
       return callback();
     });
   },
-  httpServer: function(locals, scriptMarket, callback) {
+  httpService: function(locals, scriptMarket, callback) {
     var localPath    = _getLocalAbsPath(scriptMarket);
     var localPathTmp = `${localPath}.tmp`;
 
@@ -497,7 +507,7 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
       // 下载失败
       if (err) {
         fs.removeSync(localPathTmp);
-        return callback(new E('EClient', 'Load Script Market failed', { message: err.toString() }));
+        return callback(err);
       }
 
       fs.moveSync(localPathTmp, localPath, { overwrite: true });
@@ -583,7 +593,7 @@ var SCRIPT_MARKET_PREAPRE_REPO_FUNC_MAP = {
       return callback(err);
     });
   },
-  httpServer: function(locals, scriptMarket, callback) {
+  httpService: function(locals, scriptMarket, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
 
     var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
@@ -714,8 +724,8 @@ var SCRIPT_MARKET_SYNC_REPO_FUNC_MAP = {
       return callback();
     });
   },
-  httpServer: function(locals, scriptMarket, author, note, callback) {
-    return callback(new E('EClient', 'Publishing is not supported on HTTP Server'));
+  httpService: function(locals, scriptMarket, author, note, callback) {
+    return callback(new E('EClient', 'Publishing is not supported on HTTP Service'));
   },
 };
 
@@ -739,7 +749,7 @@ function _getLocalAbsPath(scriptMarket) {
           `${scriptMarket.configJSON.bucket}.${endpointObj.hostname}/${scriptMarket.configJSON.folder}`);
       return localAbsPath;
 
-    case 'httpServer':
+    case 'httpService':
       var urlObj = new URL(scriptMarket.configJSON.url);
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,

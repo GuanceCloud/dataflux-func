@@ -17,6 +17,8 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 Official Script Market added: 官方脚本市场已添加
 
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
+
+'Checking Update...': '正在检查更新...'
 </i18n>
 
 <template>
@@ -44,7 +46,15 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               {{ $t('Add') }}
             </el-button>
 
-            <el-button @click="checkUpdate" type="primary" plain size="small" :disabled="isCheckingUpdate">
+            <el-button
+              @click="checkUpdate"
+              type="primary"
+              plain
+              size="small"
+              v-loading.fullscreen.lock="isCheckingUpdate"
+              element-loading-spinner="el-icon-loading"
+              :element-loading-text="$t('Checking Update...')"
+              :disabled="isCheckingUpdate">
               <i v-if="isCheckingUpdate" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
               <i v-else class="fa fa-fw fa-refresh"></i>
               {{ $t('Check Update') }}
@@ -68,11 +78,10 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Type')" width="150" align="center">
+          <el-table-column :label="$t('Type')" width="210" align="center">
             <template slot-scope="scope">
-              <i v-if="isOfficialScriptMarket(scope.row)" class="fa fa-fw fa-2x fa-star text-watch"></i>
-              <i v-else-if="common.getScriptMarketIcon(scope.row)" class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
-              <strong v-else>{{ C.SCRIPT_MARKET_MAP.get(scope.row.type).name }}</strong>
+              <i v-if="isOfficialScriptMarket(scope.row)" class="fa fa-fw fa-3x fa-star text-watch"></i>
+              <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
             </template>
           </el-table-column>
 
@@ -105,7 +114,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                     <span class="text-info">{{ $t('Folder') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
                   </template>
-                  <template v-if="scope.row.type === 'httpServer'">
+                  <template v-if="scope.row.type === 'httpService'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
                   </template>
@@ -318,6 +327,29 @@ export default {
   line-height: 25px;
 }
 </style>
-
 <style>
+.script-market-logo img {
+  width: auto;
+}
+.script-market-logo.logo-git {
+  height: 70px !important;
+}
+.script-market-logo.logo-github-com {
+  height: 70px !important;
+}
+.script-market-logo.logo-gitlab-com {
+  height: 80px !important;
+}
+.script-market-logo.logo-gitee-com {
+  height: 60px !important;
+}
+.script-market-logo.logo-bitbucket-org {
+  height: 50px !important;
+}
+.script-market-logo.logo-aliyunOSS {
+  height: 80px !important;
+}
+.script-market-logo.logo-httpService {
+  height: 70px !important;
+}
 </style>

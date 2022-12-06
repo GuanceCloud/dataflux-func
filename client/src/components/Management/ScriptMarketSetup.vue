@@ -41,6 +41,12 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+                <!-- Fake user/password -->
+                <el-form-item style="height: 0; overflow: hidden">
+                  <input tabindex="-1" type="text" name="username" />
+                  <input tabindex="-1" type="password" name="password" />
+                </el-form-item>
+
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
                     <el-option v-for="opt in C.SCRIPT_MARKET" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
@@ -53,6 +59,10 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                 </el-form-item>
 
                 <template v-if="selectedType">
+                  <el-form-item v-if="C.SCRIPT_MARKET_MAP.get(selectedType).logo">
+                    <el-image class="script-market-logo" :class="[`logo-${selectedType}`]" :src="C.SCRIPT_MARKET_MAP.get(selectedType).logo"></el-image>
+                  </el-form-item>
+
                   <el-form-item>
                     <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip"></InfoBlock>
                   </el-form-item>
@@ -91,11 +101,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   </el-form-item>
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <div style="height: 0">
-                      <!-- Fake user/password -->
-                      <input tabindex="-1" type="text" />
-                      <input tabindex="-1" type="password" />
-                    </div>
                     <el-input
                       v-model="form.configJSON.user"></el-input>
                   </el-form-item>
@@ -122,11 +127,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   </el-form-item>
 
                   <el-form-item label="AK ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
-                    <div style="height: 0">
-                      <!-- Fake user/password -->
-                      <input tabindex="-1" type="text" />
-                      <input tabindex="-1" type="password" />
-                    </div>
                     <el-input
                       v-model="form.configJSON.accessKeyId"></el-input>
                   </el-form-item>
@@ -456,4 +456,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+</style>
+<style>
+.script-market-logo img {
+  width: auto;
+}
+.script-market-logo.logo-git {
+  height: 60px !important;
+}
+.script-market-logo.logo-aliyunOSS {
+  height: 100px !important;
+}
+.script-market-logo.logo-httpService {
+  height: 70px !important;
+}
 </style>

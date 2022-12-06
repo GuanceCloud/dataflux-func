@@ -116,23 +116,28 @@ export function containsFuncArgumentPlaceholder(s) {
   return false;
 }
 
-export function getScriptMarketIcon(scriptMarket) {
+export function getScriptMarketLogo(scriptMarket) {
   if (scriptMarket.type === 'git') {
     let url = new URL(scriptMarket.configJSON.url);
-    switch(url.host) {
-      case 'github.com':
-        return 'fa-github';
 
-      case 'gitlab.com':
-      case 'jihulab.com':
-        return 'fa-gitlab';
-
-      case 'bitbucket.org':
-        return 'fa-bitbucket';
-      }
+    let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+    if (brandLogo) return brandLogo;
   }
 
-  return C.SCRIPT_MARKET_MAP.get(scriptMarket.type).icon;
+  return C.SCRIPT_MARKET_MAP.get(scriptMarket.type).logo;
+}
+
+export function getScriptMarketClass(scriptMarket) {
+  if (scriptMarket.type === 'git') {
+    let url = new URL(scriptMarket.configJSON.url);
+
+    let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+    if (brandLogo) {
+      return `logo-${url.host.replace('.', '-')}`;
+    }
+  }
+
+  return `logo-${scriptMarket.type}`;
 }
 
 export function getScriptMarketName(scriptMarket) {
@@ -141,7 +146,7 @@ export function getScriptMarketName(scriptMarket) {
   } else {
     switch(scriptMarket.type) {
       case 'git':
-      case 'httpServer':
+      case 'httpService':
         var urlObj = new URL(scriptMarket.configJSON.url);
         return `${urlObj.hostname}${urlObj.pathname}`;
 

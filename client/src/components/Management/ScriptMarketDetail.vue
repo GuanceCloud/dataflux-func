@@ -43,6 +43,8 @@ No Script Set has ever been published: 尚未发布过任何脚本集到脚本�
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
+
+'Processing...': '正在处理...'
 </i18n>
 
 <template>
@@ -216,7 +218,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
         :close-on-click-modal="false"
         close-on-press-escape="false"
         v-loading.fullscreen.lock="isProcessing"
-        element-loading-background="rgba(0, 0, 0, 0.3)">
+        element-loading-spinner="el-icon-loading"
+        :element-loading-text="$t('Processing...')">
         <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
           <el-form-item :label="$t('Name')">
             <el-input disabled :value="scriptSetToOperate.title"></el-input>

@@ -52,6 +52,15 @@ import logo_nsq           from '@/assets/img/logo-nsq.png'
 import logo_mqtt          from '@/assets/img/logo-mqtt.png'
 import logo_kafka         from '@/assets/img/logo-kafka.png'
 
+// 脚本市场
+import logo_git         from '@/assets/img/logo-git.png'
+import logo_aliyunOSS   from '@/assets/img/logo-aliyun-oss.png'
+import logo_httpService from '@/assets/img/logo-http.png'
+import logo_github      from '@/assets/img/logo-github.png'
+import logo_gitlab      from '@/assets/img/logo-gitlab.png'
+import logo_gitee       from '@/assets/img/logo-gitee.png'
+import logo_bitbucket   from '@/assets/img/logo-bitbucket.png'
+
 export default {
   get NOPE() {
     return '-';
@@ -992,7 +1001,14 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key   : 'git',
         name  : 'git (HTTPS)',
-        icon  : 'fa-git',
+        logo  : logo_git,
+        brandLogo: {
+          'github.com'   : logo_github,
+          'gitlab.com'   : logo_gitlab,
+          'jihulab.com'  : logo_gitlab,
+          'gitee.com'    : logo_gitee,
+          'bitbucket.org': logo_bitbucket,
+        },
         tip   : $t('Script Market on git supports HTTPS only'),
         configFields: {
           url     : { default: null, isRequired: true },
@@ -1004,6 +1020,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key : 'aliyunOSS',
         name: $t('Alibaba Cloud OSS'),
+        logo  : logo_aliyunOSS,
         configFields: {
           endpoint       : { default: 'http://oss-cn-hangzhou.aliyuncs.com', isRequired: true },
           bucket         : { default: null, isRequired: true },
@@ -1013,9 +1030,10 @@ kafka.publish(topic='some_topic', message='some_message')`,
         },
       },
       {
-        key : 'httpServer',
-        name: $t('HTTP Server'),
-        tip : $t('Script Market on HTTP Server is readonly'),
+        key : 'httpService',
+        name: $t('HTTP Service'),
+        logo  : logo_httpService,
+        tip : $t('Script Market on HTTP Service is readonly'),
         configFields: {
           url: { default: null, isRequired: true },
         },
