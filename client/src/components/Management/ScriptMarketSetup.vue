@@ -60,7 +60,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 
                 <template v-if="selectedType">
                   <el-form-item v-if="C.SCRIPT_MARKET_MAP.get(selectedType).logo">
-                    <el-image class="script-market-logo" :class="[`logo-${selectedType}`]" :src="C.SCRIPT_MARKET_MAP.get(selectedType).logo"></el-image>
+                    <el-image class="script-market-logo" :class="common.getScriptMarketClass(form)" :src="common.getScriptMarketLogo(form)"></el-image>
                   </el-form-item>
 
                   <el-form-item>
@@ -463,6 +463,18 @@ export default {
 }
 .script-market-logo.logo-git {
   height: 60px !important;
+}
+.script-market-logo.logo-github-com {
+  height: 70px !important;
+}
+.script-market-logo.logo-gitlab-com {
+  height: 80px !important;
+}
+.script-market-logo.logo-gitee-com {
+  height: 60px !important;
+}
+.script-market-logo.logo-bitbucket-org {
+  height: 50px !important;
 }
 .script-market-logo.logo-aliyunOSS {
   height: 80px !important;
