@@ -465,7 +465,7 @@ export default {
   height: 60px !important;
 }
 .script-market-logo.logo-aliyunOSS {
-  height: 100px !important;
+  height: 80px !important;
 }
 .script-market-logo.logo-httpService {
   height: 70px !important;
