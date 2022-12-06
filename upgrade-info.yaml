@@ -203,13 +203,19 @@ upgradeInfo:
 
   - seq: 14
     database: |-
+      -- 旧版遗漏
+      ALTER TABLE biz_main_connector
+        COMMENT = '连接器';
+      ALTER TABLE biz_main_connector
+        MODIFY COLUMN `isBuiltin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否为内建连接器';
+
       -- DataFlux Func 2.x
       CREATE TABLE `biz_main_script_market` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本市场ID',
         `name` varchar(256) DEFAULT NULL COMMENT '名称',
         `description` text COMMENT '描述',
-        `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 git|aliyun_oss',
+        `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 git|aliyunOSS|httpServer',
         `configJSON` json DEFAULT NULL COMMENT '配置信息JSON',
         `pinTime` datetime DEFAULT NULL COMMENT '置顶时间',
         `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

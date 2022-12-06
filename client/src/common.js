@@ -141,10 +141,11 @@ export function getScriptMarketName(scriptMarket) {
   } else {
     switch(scriptMarket.type) {
       case 'git':
+      case 'httpServer':
         var urlObj = new URL(scriptMarket.configJSON.url);
-        return `${urlObj.hostname}${urlObj.pathname.replace(/\.git/g, '')}`;
+        return `${urlObj.hostname}${urlObj.pathname}`;
 
-      case 'aliyun_oss':
+      case 'aliyunOSS':
         var endpointObj = new URL(scriptMarket.configJSON.endpoint);
         return `${scriptMarket.configJSON.bucket}.${endpointObj.hostname}/${scriptMarket.configJSON.folder}`;
     }

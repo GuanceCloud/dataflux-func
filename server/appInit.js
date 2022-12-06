@@ -278,7 +278,10 @@ exports.afterAppCreated = function(app, server) {
   }
 
   // 自动安装脚本集
-  if (!CONFIG._DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET) {
+  if (CONFIG._DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET) {
+      app.locals.logger.warning('Script Set auto installing is disabled.');
+
+  } else {
     async.series([
       // 获取锁
       function(asyncCallback) {

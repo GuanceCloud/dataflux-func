@@ -993,7 +993,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
         key   : 'git',
         name  : 'git (HTTPS)',
         icon  : 'fa-git',
-        urlTip: 'https://gitee.com/xxxxx/yyyyy.git',
+        tip   : $t('Script Market on git supports HTTPS only'),
         configFields: {
           url     : { default: null, isRequired: true },
           branch  : { default: null },
@@ -1002,7 +1002,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
         },
       },
       {
-        key : 'aliyun_oss',
+        key : 'aliyunOSS',
         name: $t('Alibaba Cloud OSS'),
         configFields: {
           endpoint       : { default: 'http://oss-cn-hangzhou.aliyuncs.com', isRequired: true },
@@ -1010,6 +1010,14 @@ kafka.publish(topic='some_topic', message='some_message')`,
           folder         : { default: 'script-market', isRequired: true },
           accessKeyId    : { default: null, isRequired: true },
           accessKeySecret: { default: null, isRequired: true },
+        },
+      },
+      {
+        key : 'httpServer',
+        name: $t('HTTP Server'),
+        tip : $t('Script Market on HTTP Server is readonly'),
+        configFields: {
+          url: { default: null, isRequired: true },
         },
       },
     ];

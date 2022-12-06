@@ -5226,7 +5226,8 @@ scriptMarketAPI:
         $searchKey : smkt.type
         $in:
           - git
-          - aliyun_oss
+          - aliyunOSS
+          - httpServer
 
   add:
     showInDoc    : true
@@ -5253,7 +5254,8 @@ scriptMarketAPI:
           $type      : enum
           $in:
             - git
-            - aliyun_oss
+            - aliyunOSS
+            - httpServer
         configJSON:
           $desc      : 配置信息
           $allowNull : true

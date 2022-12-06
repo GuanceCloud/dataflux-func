@@ -75,14 +75,14 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               </strong>
 
               <div>
-                <template v-if="scope.row.type === 'git'">
+                <template v-if="scope.row.type === 'git' || scope.row.type === 'httpServer'">
                   <span class="text-info">URL</span>
                   &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
                   <br>
                   <span class="text-info">{{ $t('Branch') }}</span>
                   &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
                 </template>
-                <template v-if="scope.row.type === 'aliyun_oss'">
+                <template v-if="scope.row.type === 'aliyunOSS'">
                   <span class="text-info">{{ $t('Endpoint') }}</span>
                   &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
                   <br>

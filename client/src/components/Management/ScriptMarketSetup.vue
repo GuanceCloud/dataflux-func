@@ -18,6 +18,7 @@ Please input bucket            : 请输入 Bucket
 Please input folder            : 请输入文件夹
 Please input AK Id             : 请输入 AK ID
 Please input AK Secret         : 请输入 AK Secret
+'Should start with http:// or https://': '必须以 http:// 或 https://开头'
 
 Script Market created: 脚本市场已创建
 Script Market saved  : 脚本市场已保存
@@ -52,6 +53,10 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                 </el-form-item>
 
                 <template v-if="selectedType">
+                  <el-form-item>
+                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip"></InfoBlock>
+                  </el-form-item>
+
                   <el-form-item :label="$t('Name')">
                     <el-input :placeholder="$t('Optional')"
                       maxlength="25"
@@ -71,7 +76,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 
                   <!-- 可变区域 -->
                   <el-form-item label="URL" v-if="hasConfigField(selectedType, 'url')" prop="configJSON.url">
-                    <el-input :placeholder="C.SCRIPT_MARKET_MAP.get(selectedType).urlTip"
+                    <el-input
                       type="textarea"
                       resize="none"
                       :autosize="{minRows: 2}"
@@ -117,6 +122,11 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   </el-form-item>
 
                   <el-form-item label="AK ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
+                    <div style="height: 0">
+                      <!-- Fake user/password -->
+                      <input tabindex="-1" type="text" />
+                      <input tabindex="-1" type="password" />
+                    </div>
                     <el-input
                       v-model="form.configJSON.accessKeyId"></el-input>
                   </el-form-item>
@@ -339,6 +349,11 @@ export default {
             message : this.$t('Please input URL'),
             required: false,
           },
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: /^(http:\/\/|https:\/\/)/g,
+          },
         ],
         'configJSON.branch': [
           {
@@ -366,6 +381,11 @@ export default {
             trigger : 'change',
             message : this.$t('Please input endpoint'),
             required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: /^(http:\/\/|https:\/\/)/g,
           },
         ],
         'configJSON.bucket': [

@@ -177,6 +177,13 @@ function _prepareData(data) {
 
   if (data.configJSON && 'object' === typeof data.configJSON) {
     _doCipher(data.configJSON);
+
+    ['url', 'endpoint', 'folder'].forEach(function(f) {
+      if (data.configJSON[f]) {
+        data.configJSON[f] = data.configJSON[f].replace(/\/*$/g, '').replace(/^\/*/g, '');
+      }
+    });
+
     data.configJSON = JSON.stringify(data.configJSON);
   }
 

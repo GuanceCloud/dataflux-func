@@ -15,7 +15,7 @@ Publisher                  : 发布者
 Publish Time               : 发布时间
 Not Published              : 尚未发布
 Not Installed              : 尚未安装
-No corresponding Script Set: 无对应脚本集
+No Corresponding Script Set: 无对应脚本集
 Edited                     : 已修改
 New Version                : 新版本
 
@@ -54,7 +54,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
         <div class="page-header">
           <span>
             {{ $t('Script Market') }}
-            <code class="text-main">{{ common.getScriptMarketName(scriptMarket) }}</code>
+            <code class="text-main script-market-name">{{ common.getScriptMarketName(scriptMarket) }}</code>
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">
@@ -116,8 +116,11 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
               </template>
-              <template v-else-if="!scriptMarket.isAdmin">
-                <i class="text-info">{{ $t('No corresponding Script Set') }}</i>
+              <template v-if="scriptMarket.isAdmin">
+                <i class="text-info">{{ $t('No Corresponding Script Set') }}</i>
+              </template>
+              <template v-else>
+                <i class="text-info">{{ $t('Not Installed') }}</i>
               </template>
             </template>
           </el-table-column>
@@ -170,7 +173,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
               </template>
               <template v-else>
                 <i class="text-info" v-if="scriptMarket.isAdmin">{{ $t('Not Published') }}</i>
-                <i class="text-info" v-else>{{ $t('No corresponding Script Set') }}</i>
+                <i class="text-info" v-else>{{ $t('No Corresponding Script Set') }}</i>
               </template>
             </template>
           </el-table-column>
@@ -588,6 +591,15 @@ export default {
 </script>
 
 <style scoped>
+.script-market-name {
+  display: inline-block;
+  vertical-align: bottom;
+  max-width: 500px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 18px;
+}
 .filter-input {
   width: 260px;
   display: inline-block;

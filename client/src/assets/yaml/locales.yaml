@@ -390,6 +390,9 @@ en:
 
   # const.js - SCRIPT_MARKET
   Alibaba Cloud OSS: 阿里云 OSS
+  HTTP Server      : HTTP 服务
+  Script Market on git supports HTTPS only: 使用 git 搭建的脚本市场仅支持 HTTPS
+  Script Market on HTTP Server is readonly: 使用 HTTP 服务搭建的脚本市场为只读
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题

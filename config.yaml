@@ -118,9 +118,14 @@ EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
 EXTRA_PYTHON_PACKAGE_BLACK_LIST: aliyunsdkcore
 
 # 脚本市场 Git 库保存目录
-SCRIPT_MARKET_GIT_REPO_DIR: script-market-git-repos
+SCRIPT_MARKET_GIT_REPO_DIR: script-market/git
 # 脚本市场 阿里云OSS 库保存目录
-SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR: script-market-aliyun-oss-repos
+SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR: script-market/aliyun-oss
+# 脚本市场 阿里云OSS 库保存目录
+SCRIPT_MARKET_HTTP_SERVER_REPO_DIR: script-market/http-server
+
+# 脚本市场 FILE_INDEX 文件名
+SCRIPT_MARKET_FILE_INDEX_FILE: FILE_INDEX
 # 脚本市场 TOKEN 文件名
 SCRIPT_MARKET_TOKEN_FILE: TOKEN
 # 脚本市场 README 文件名
