@@ -155,7 +155,7 @@ export default {
       // 获取关联数据
       // 脚本集
       let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let scriptSets = apiRes.data;
       scriptSets.forEach(x => {
@@ -167,7 +167,7 @@ export default {
 
       // 连接器
       apiRes = await this.T.callAPI_getAll('/api/v1/connectors/do/list', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let connectors = apiRes.data;
       connectors.forEach(x => {
@@ -179,7 +179,7 @@ export default {
 
       // 环境变量
       apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let envVariables = apiRes.data;
       envVariables.forEach(x => {
@@ -212,7 +212,7 @@ export default {
       };
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/export', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let blob = new Blob([apiRes.data], {type: apiRes.extra.contentType});
 

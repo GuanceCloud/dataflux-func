@@ -52,10 +52,10 @@ def load_config(config_file_path, print_detail=False):
             config_type_map[k] = 'float'
 
         else:
-            if k.endswith('_LIST'):
+            if k.endswith('_LIST') or isinstance(v, (list, tuple)):
                 config_type_map[k] = 'list'
 
-            elif k.endswith('_MAP'):
+            elif k.endswith('_MAP') or isinstance(v, dict):
                 config_type_map[k] = 'map'
 
             else:

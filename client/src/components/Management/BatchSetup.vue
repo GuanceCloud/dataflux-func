@@ -193,7 +193,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -256,7 +256,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/batches/do/add', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -287,7 +287,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/batches/:id/do/modify', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
@@ -303,7 +303,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('Batch deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'batch-list',

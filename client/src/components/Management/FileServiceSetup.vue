@@ -126,7 +126,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -160,7 +160,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('File Service created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -179,7 +179,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('File Service saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
@@ -195,7 +195,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('File Service deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'file-service-list',
@@ -266,7 +266,7 @@ export default {
           let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
             query: { folder: node.value, type: 'folder' },
           });
-          if (!apiRes.ok) return;
+          if (!apiRes || !apiRes.ok) return;
 
           let baseFolder = node.value || '';
           if (baseFolder && !this.T.endsWith(baseFolder, '/')) {

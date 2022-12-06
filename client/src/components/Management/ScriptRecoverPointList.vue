@@ -78,7 +78,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/script-recover-points/do/list', {
         query: { pageSize: 20 },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 

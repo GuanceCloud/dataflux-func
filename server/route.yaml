@@ -5300,6 +5300,15 @@ scriptMarketAPI:
           $allowNull : true
           $type      : boolean
 
+  addOfficial:
+    showInDoc    : true
+    name         : 添加官方脚本市场
+    method       : post
+    url          : /api/v1/script-markets/do/add-official
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
   modify:
     showInDoc    : true
     name         : 修改脚本市场

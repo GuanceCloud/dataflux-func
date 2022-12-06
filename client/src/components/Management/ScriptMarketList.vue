@@ -6,12 +6,15 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 Branch: 分支
 Access Timeout: 访问超时
 
+Add Official Script Market: 添加官方脚本市场
+
 Script Market deleted: 脚本市场已删除
 Script Market pinned: 脚本市场已置顶
 Script Market unpinned: 脚本市场已取消置顶
 
 No Script Market has ever been added: 从未添加过任何脚本市场
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
+Official Script Market added: 官方脚本市场已添加
 
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
 </i18n>
@@ -26,6 +29,12 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           <span>{{ $t('Script Market') }}</span>
 
           <div class="header-control">
+            <el-link v-if="!hasOfficialScriptMarket" @click="createOfficialScriptMarket">
+              <i class="fa fa-fw fa-star"></i>
+              {{ $t('Add Official Script Market') }}
+            </el-link>
+            &#12288;
+
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
@@ -59,7 +68,8 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
 
           <el-table-column :label="$t('Type')" width="150" align="center">
             <template slot-scope="scope">
-              <i v-if="common.getScriptMarketIcon(scope.row)" class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
+              <i v-if="isOfficialScriptMarket(scope.row)" class="fa fa-fw fa-2x fa-star text-watch"></i>
+              <i v-else-if="common.getScriptMarketIcon(scope.row)" class="fa fa-fw fa-2x" :class="common.getScriptMarketIcon(scope.row)"></i>
               <strong v-else>{{ C.SCRIPT_MARKET_MAP.get(scope.row.type).name }}</strong>
             </template>
           </el-table-column>
@@ -75,25 +85,30 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               </strong>
 
               <div>
-                <template v-if="scope.row.type === 'git' || scope.row.type === 'httpServer'">
-                  <span class="text-info">URL</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
+                <template v-if="!isOfficialScriptMarket(scope.row)">
+                  <template v-if="scope.row.type === 'git'">
+                    <span class="text-info">URL</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
+                    <br>
+                    <span class="text-info">{{ $t('Branch') }}</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
+                  </template>
+                  <template v-if="scope.row.type === 'aliyunOSS'">
+                    <span class="text-info">{{ $t('Endpoint') }}</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
+                    <br>
+                    <span class="text-info">Bucket</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}</code>
+                    <br>
+                    <span class="text-info">{{ $t('Folder') }}</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
+                  </template>
+                  <template v-if="scope.row.type === 'httpServer'">
+                    <span class="text-info">URL</span>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
+                  </template>
                   <br>
-                  <span class="text-info">{{ $t('Branch') }}</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
                 </template>
-                <template v-if="scope.row.type === 'aliyunOSS'">
-                  <span class="text-info">{{ $t('Endpoint') }}</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
-                  <br>
-                  <span class="text-info">Bucket</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}</code>
-                  <br>
-                  <span class="text-info">{{ $t('Folder') }}</span>
-                  &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
-                </template>
-
-                <br>
                 &#12288;{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}
               </div>
             </template>
@@ -125,7 +140,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
               <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>
 
-              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
+              <el-link v-if="!isOfficialScriptMarket(scope.row)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
 
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
@@ -160,7 +175,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/script-markets/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -245,8 +260,32 @@ export default {
         this.isCheckingUpdate = false;
       }, 500);
     },
+    async createOfficialScriptMarket() {
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add-official', {
+        alert: { okMessage: this.$t('Official Script Market added') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+
+      await this.loadData();
+    },
+    isOfficialScriptMarket(d) {
+      if (!this.officialScriptMarket) return false;
+      return d.id === this.officialScriptMarket.id || d.configJSON.url === this.officialScriptMarket.configJSON.url;
+    },
   },
   computed: {
+    officialScriptMarket() {
+      return this.$store.getters.CONFIG('_OFFICIAL_SCRIPT_MARKET');
+    },
+    hasOfficialScriptMarket() {
+      if (!this.officialScriptMarket) return true;
+      for (let i = 0; i < this.data.length; i++) {
+        if (this.isOfficialScriptMarket(this.data[i])) return true;
+      }
+      return false;
+    }
   },
   props: {
   },

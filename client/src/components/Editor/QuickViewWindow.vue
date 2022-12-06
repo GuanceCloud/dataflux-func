@@ -62,7 +62,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/scripts/:id/do/get', {
         params: { id: scriptId },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       if (!this.show) {
         this.$message({

@@ -295,7 +295,7 @@ export default {
     async loadData() {
       // 获取脚本市场信息
       let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.scriptMarket = apiRes.data;
 
@@ -303,7 +303,7 @@ export default {
       apiRes = await this.T.callAPI_get('/api/v1/script-markets/:id/script-sets/do/list', {
         params: { id: this.$route.params.id },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let dataMap = apiRes.data.reduce((acc, x) => {
         acc[x.id] = { remote: x };
@@ -324,7 +324,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(x => {
         let d = dataMap[x.id];
@@ -480,6 +480,9 @@ export default {
             },
             alert : { okMessage: this.$t('Script Set installed, new Script Set is in effect immediately') },
           });
+
+          this.$store.commit('updateScriptListSyncTime');
+
           break;
       }
 

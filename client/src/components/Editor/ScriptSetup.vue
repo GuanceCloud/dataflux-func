@@ -112,7 +112,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -150,7 +150,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('Script created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
 
@@ -170,7 +170,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('Script saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
@@ -184,7 +184,7 @@ export default {
         params: { id: this.scriptId },
         alert : { okMessage: this.$t('Script deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',

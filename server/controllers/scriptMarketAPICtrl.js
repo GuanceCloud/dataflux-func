@@ -1111,6 +1111,30 @@ exports.add = function(req, res, next) {
   });
 };
 
+exports.addOfficial = function(req, res, next) {
+  var data = CONFIG._OFFICIAL_SCRIPT_MARKET;
+
+  var scriptMarketModel = scriptMarketMod.createModel(res.locals);
+
+  async.series([
+    // 加载脚本市场
+    function(asyncCallback) {
+      SCRIPT_MARKET_INIT_FUNC_MAP[data.type](res.locals, data, asyncCallback);
+    },
+    // 数据入库
+    function(asyncCallback) {
+      scriptMarketModel.add(data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: data.id,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
 exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;

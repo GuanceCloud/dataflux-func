@@ -14,7 +14,7 @@ export async function getAPIAuthList() {
   let apiRes = await T.callAPI_getAll('/api/v1/api-auth/do/list', {
     query: { fields: ['id', 'name', 'type'] },
   });
-  if (!apiRes.ok) return;
+  if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
     apiAuthList.push(d);
@@ -33,7 +33,7 @@ export async function getFuncList() {
   let apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
     query: { fields: ['id', 'title'] },
   });
-  if (!apiRes.ok) return;
+  if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
     scriptSetMap[d.id] = {
@@ -49,7 +49,7 @@ export async function getFuncList() {
   apiRes = await T.callAPI_getAll('/api/v1/scripts/do/list', {
     query: { fields: ['id', 'title', 'scriptSetId'] },
   });
-  if (!apiRes.ok) return;
+  if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
     scriptMap[d.id] = {
@@ -70,7 +70,7 @@ export async function getFuncList() {
   apiRes = await T.callAPI_getAll('/api/v1/funcs/do/list', {
     query: { fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON'] },
   });
-  if (!apiRes.ok) return;
+  if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
     funcMap[d.id] = {

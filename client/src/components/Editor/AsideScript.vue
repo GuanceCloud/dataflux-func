@@ -649,7 +649,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(d => {
         // 记录节点
@@ -706,7 +706,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       window._DFF_scriptIds = [];
       apiRes.data.forEach(d => {
@@ -776,7 +776,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       window._DFF_funcIds = [];
       apiRes.data.forEach(d => {
@@ -888,7 +888,7 @@ export default {
         body  : { data: { isPinned: isPinned } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
     },
@@ -915,7 +915,7 @@ export default {
         body  : { data: { isLocked: isLocked } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
     },
@@ -1075,7 +1075,7 @@ export default {
     async showAPI(d, urlPattern) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
 

@@ -2073,6 +2073,8 @@ exports.getSystemConfig = function(req, res, next) {
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
 
+    _OFFICIAL_SCRIPT_MARKET: CONFIG._OFFICIAL_SCRIPT_MARKET,
+
     _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.mainAPI.uploadResource.files.$limitSize),
     _ARCH: process.arch, // x64|arm64
   };

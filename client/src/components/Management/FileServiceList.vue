@@ -114,7 +114,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/file-services/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // 补齐打开路径
       apiRes.data.forEach(d => {

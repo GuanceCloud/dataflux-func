@@ -230,7 +230,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let files = apiRes.data;
       let fileNameMap = {};

@@ -248,7 +248,7 @@ export default {
           params: { id: id },
           body  : { data: { value: value } },
         });
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
       }
 
       if (!apiRes || apiRes.ok) {

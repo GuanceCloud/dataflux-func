@@ -259,7 +259,7 @@ export default {
     async loadData(selectBlueprintId) {
       // 获取蓝图列表
       let apiRes = await this.T.callAPI_getAll('/api/v1/blueprints/do/list');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.blueprints = apiRes.data;
 
@@ -326,7 +326,7 @@ export default {
             },
             alert: { okMessage: this.$t('Blueprint created') },
           });
-          if (!apiRes.ok) return;
+          if (!apiRes || !apiRes.ok) return;
 
           // 成功后展示的蓝图
           nextBlueprintId = apiRes.data.id;
@@ -343,7 +343,7 @@ export default {
             },
             alert : { okMessage: this.$t('Blueprint saved') },
           });
-          if (!apiRes.ok) return;
+          if (!apiRes || !apiRes.ok) return;
 
           // 成功后展示的蓝图
           nextBlueprintId = this.data.id;
@@ -363,7 +363,7 @@ export default {
 
       // 创建脚本集
       let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', blueprintScriptSetId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
       if (!apiRes.data) {
         apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/add', {
           body : {
@@ -373,12 +373,12 @@ export default {
             }
           },
         });
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
       }
 
       // 创建脚本
       apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', blueprintScriptId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
       if (!apiRes.data) {
         // 未创建时创建
         apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
@@ -390,7 +390,7 @@ export default {
             }
           },
         });
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
       } else {
         // 已创建时更新
@@ -402,7 +402,7 @@ export default {
             }
           },
         });
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
       }
 
       // 发布脚本
@@ -410,7 +410,7 @@ export default {
         params: { id: blueprintScriptId },
         body  : { force: true, wait : true },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // 标记为已部署
       apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
@@ -422,7 +422,7 @@ export default {
         },
         alert : { okMessage: this.$t('Blueprint deployed') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.goToStartFunc(this.data.id);
     },

@@ -182,6 +182,14 @@ _SAMPLE_SCRIPT: |-
       assert hello_world('Tom') == "Hello, world! Tom"
       return 'OK'
 
+# 官方脚本市场
+_OFFICIAL_SCRIPT_MARKET:
+  id        : smkt-official
+  name      : 官方脚本市场 / Official Script Market
+  type      : httpServer
+  configJSON: { "url": "https://func.guance.com/script-market/official" }
+  isPinned  : true
+
 # MySQL一般作为常量的配置
 _MYSQL_CONNECTION_LIMIT: 30
 _MYSQL_CONNECT_TIMEOUT : 60000

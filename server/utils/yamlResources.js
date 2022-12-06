@@ -50,7 +50,8 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
   // Collect config field type map
   var configTypeMap = {};
   for (var k in configObj) {
-    switch(typeof configObj[k]) {
+    var v = configObj[k];
+    switch(typeof v) {
       case 'number':
         if (configObj[k].toString().match(/^\d+$/)) {
           configTypeMap[k] = 'integer';
@@ -65,10 +66,10 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
         break;
 
       default:
-        if (toolkit.endsWith(k, '_LIST')) {
+        if (toolkit.endsWith(k, '_LIST') || Array.isArray(v)) {
           configTypeMap[k] = 'list';
 
-        } else if (toolkit.endsWith(k, '_MAP')) {
+        } else if (toolkit.endsWith(k, '_MAP') || 'object' === typeof v) {
           configTypeMap[k] = 'map';
 
         } else {
@@ -126,7 +127,6 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
     if (!type) continue;
 
-    // Set
     if (v === null) {
       switch(type) {
         case 'integer':

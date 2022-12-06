@@ -439,7 +439,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -467,7 +467,7 @@ export default {
       if (!this.$route.params.id) return;
 
       let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let subInfoMap = apiRes.data.reduce((acc, x) => {
         acc[x.topic] = x.consumeInfo;
@@ -522,7 +522,7 @@ export default {
         body : { data: _formData },
         alert: { okMessage: this.$t('Connector created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
@@ -539,7 +539,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('Connector saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateConnectorListSyncTime');
     },
@@ -550,7 +550,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('Connector deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',

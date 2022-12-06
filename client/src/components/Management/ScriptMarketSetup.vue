@@ -20,9 +20,9 @@ Please input AK Id             : 请输入 AK ID
 Please input AK Secret         : 请输入 AK Secret
 'Should start with http:// or https://': '必须以 http:// 或 https://开头'
 
-Script Market created: 脚本市场已创建
+Script Market added  : 脚本市场已添加
 Script Market saved  : 脚本市场已保存
-Script Market deleted: 脚本市场已删除
+Script Market removed: 脚本市场已删除
 
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
 </i18n>
@@ -228,7 +228,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -281,9 +281,9 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add', {
         body : { data: _formData },
-        alert: { okMessage: this.$t('Script Market created') },
+        alert: { okMessage: this.$t('Script Market added') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -303,7 +303,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('Script Market saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
@@ -317,9 +317,9 @@ export default {
 
       let apiRes = await this.T.callAPI('/api/v1/script-markets/:id/do/delete', {
         params: { id: this.$route.params.id },
-        alert : { okMessage: this.$t('Script Market deleted') },
+        alert : { okMessage: this.$t('Script Market removed') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'script-market-list',

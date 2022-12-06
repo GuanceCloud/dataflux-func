@@ -81,7 +81,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/script-set-import-history/do/list', {
         query: { pageSize: 20 }
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let data = apiRes.data;
 

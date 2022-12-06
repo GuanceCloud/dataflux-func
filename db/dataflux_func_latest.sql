@@ -56,12 +56,13 @@ CREATE TABLE `biz_main_auth_link` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
-  `funcCallKwargsJSON` text NOT NULL COMMENT '函数调用参数JSON (kwargs)',
+  `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
   `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON',
   `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
   `expireTime` datetime DEFAULT NULL COMMENT '过期时间（NULL表示永不过期）',
   `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON（value="<From Parameter>"表示从参数获取）',
-  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'API' COMMENT '来源 API|UI',
+  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源',
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID',
   `showInDoc` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在文档中显示',
   `taskInfoLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
   `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',
@@ -70,8 +71,9 @@ CREATE TABLE `biz_main_auth_link` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
-  KEY `ORIGIN` (`origin`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='授权链接';
+  KEY `ORIGIN` (`origin`),
+  KEY `ORIGIN_ID` (`originId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='授权链接';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +82,6 @@ CREATE TABLE `biz_main_auth_link` (
 
 LOCK TABLES `biz_main_auth_link` WRITE;
 /*!40000 ALTER TABLE `biz_main_auth_link` DISABLE KEYS */;
-INSERT INTO `biz_main_auth_link` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `tagsJSON`, `apiAuthId`, `expireTime`, `throttlingJSON`, `origin`, `showInDoc`, `taskInfoLimit`, `isDisabled`, `note`, `createTime`, `updateTime`) VALUES (1,'auln-plus','demo__basic.plus','{\"x\":\"INPUT_BY_CALLER\",\"y\":\"INPUT_BY_CALLER\"}',NULL,NULL,NULL,'{}','UI',0,NULL,0,NULL,'2021-07-19 18:13:18','2021-07-19 18:13:18');
 /*!40000 ALTER TABLE `biz_main_auth_link` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,10 +96,11 @@ CREATE TABLE `biz_main_batch` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
-  `funcCallKwargsJSON` text NOT NULL COMMENT '函数调用参数JSON (kwargs)',
+  `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
   `tagsJSON` json DEFAULT NULL COMMENT '批处理标签JSON',
   `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
-  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'API' COMMENT '来源 API|UI',
+  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源',
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID',
   `showInDoc` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在文档中显示',
   `taskInfoLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
   `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',
@@ -107,7 +109,8 @@ CREATE TABLE `biz_main_batch` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
-  KEY `ORIGIN` (`origin`)
+  KEY `ORIGIN` (`origin`),
+  KEY `ORIGIN_ID` (`originId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='批处理';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -188,6 +191,38 @@ LOCK TABLES `biz_main_blueprint` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `biz_main_connector`
+--
+
+DROP TABLE IF EXISTS `biz_main_connector`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `biz_main_connector` (
+  `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `title` varchar(256) DEFAULT NULL COMMENT '标题',
+  `description` text COMMENT '描述',
+  `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 influxdb|mysql|redis|..',
+  `configJSON` json NOT NULL COMMENT '配置JSON',
+  `isBuiltin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否为内建连接器',
+  `pinTime` datetime DEFAULT NULL COMMENT '置顶时间',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`seq`),
+  UNIQUE KEY `ID` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='连接器';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_connector`
+--
+
+LOCK TABLES `biz_main_connector` WRITE;
+/*!40000 ALTER TABLE `biz_main_connector` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_connector` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `biz_main_crontab_config`
 --
 
@@ -198,14 +233,15 @@ CREATE TABLE `biz_main_crontab_config` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
-  `funcCallKwargsJSON` text NOT NULL COMMENT '函数调用参数JSON (kwargs)',
+  `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
   `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
   `tagsJSON` json DEFAULT NULL COMMENT '自动触发配置标签JSON',
   `saveResult` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否需要保存结果',
   `scope` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'GLOBAL' COMMENT '范围',
   `configMD5` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '配置MD5',
   `expireTime` timestamp NULL DEFAULT NULL COMMENT '过期时间',
-  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'API' COMMENT '来源 API|UI',
+  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源',
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID',
   `taskInfoLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
   `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已禁用',
   `note` text COMMENT '备注',
@@ -214,8 +250,9 @@ CREATE TABLE `biz_main_crontab_config` (
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
   UNIQUE KEY `SCOPE_CONFIG` (`scope`,`configMD5`),
-  KEY `ORIGIN` (`origin`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='自动触发配置';
+  KEY `ORIGIN` (`origin`),
+  KEY `ORIGIN_ID` (`originId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='自动触发配置';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,7 +261,6 @@ CREATE TABLE `biz_main_crontab_config` (
 
 LOCK TABLES `biz_main_crontab_config` WRITE;
 /*!40000 ALTER TABLE `biz_main_crontab_config` DISABLE KEYS */;
-INSERT INTO `biz_main_crontab_config` (`seq`, `id`, `funcId`, `funcCallKwargsJSON`, `crontab`, `tagsJSON`, `saveResult`, `scope`, `configMD5`, `expireTime`, `origin`, `taskInfoLimit`, `isDisabled`, `note`, `createTime`, `updateTime`) VALUES (1,'cron-iLDUFCMlMDRT','demo__basic.plus','{\"x\":1,\"y\":2}','*/5 * * * *','[]',0,'GLOBAL',NULL,NULL,'UI',NULL,0,NULL,'2021-07-19 18:29:09','2021-07-19 18:29:09');
 /*!40000 ALTER TABLE `biz_main_crontab_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -264,38 +300,6 @@ CREATE TABLE `biz_main_crontab_task_info` (
 LOCK TABLES `biz_main_crontab_task_info` WRITE;
 /*!40000 ALTER TABLE `biz_main_crontab_task_info` DISABLE KEYS */;
 /*!40000 ALTER TABLE `biz_main_crontab_task_info` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `biz_main_connector`
---
-
-DROP TABLE IF EXISTS `biz_main_connector`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `biz_main_connector` (
-  `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `title` varchar(256) DEFAULT NULL COMMENT '标题',
-  `description` text COMMENT '描述',
-  `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 influxdb|mysql|redis|..',
-  `configJSON` json NOT NULL COMMENT '配置JSON',
-  `isBuiltin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否为内建连接器',
-  `pinTime` datetime DEFAULT NULL COMMENT '置顶时间',
-  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`seq`),
-  UNIQUE KEY `ID` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='连接器';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `biz_main_connector`
---
-
-LOCK TABLES `biz_main_connector` WRITE;
-/*!40000 ALTER TABLE `biz_main_connector` DISABLE KEYS */;
-/*!40000 ALTER TABLE `biz_main_connector` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -375,7 +379,7 @@ CREATE TABLE `biz_main_func` (
   `description` text COMMENT '描述（函数文档）',
   `definition` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '定义（函数签名）',
   `argsJSON` json DEFAULT NULL COMMENT '位置参数JSON',
-  `kwargsJSON` text COMMENT '命名参数JSON',
+  `kwargsJSON` json DEFAULT NULL COMMENT '命名参数JSON',
   `extraConfigJSON` json DEFAULT NULL COMMENT '函数额外配置JSON',
   `category` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'general' COMMENT '类别 general|prediction|transformation|action|command|query|check',
   `integration` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '集成',
@@ -399,7 +403,7 @@ CREATE TABLE `biz_main_func` (
 
 LOCK TABLES `biz_main_func` WRITE;
 /*!40000 ALTER TABLE `biz_main_func` DISABLE KEYS */;
-INSERT INTO `biz_main_func` (`seq`, `id`, `scriptSetId`, `scriptId`, `name`, `title`, `description`, `definition`, `argsJSON`, `kwargsJSON`, `extraConfigJSON`, `category`, `integration`, `tagsJSON`, `defOrder`, `createTime`, `updateTime`) VALUES (1,'demo__basic.plus','demo','demo__basic','plus','两数相加','两数相加\n输入参数 x, y 均为数字类型，返回结果为两者之和','plus(x, y)','[\"x\", \"y\"]','{\"x\":{},\"y\":{}}','{\"timeout\": 10, \"cacheResult\": 300}','math',NULL,'[\"math\", \"simple\"]',0,'2021-07-19 18:13:01','2021-07-19 18:16:10.043246');
+INSERT INTO `biz_main_func` (`seq`, `id`, `scriptSetId`, `scriptId`, `name`, `title`, `description`, `definition`, `argsJSON`, `kwargsJSON`, `extraConfigJSON`, `category`, `integration`, `tagsJSON`, `defOrder`, `createTime`, `updateTime`) VALUES (1,'demo__basic.plus','demo','demo__basic','plus','两数相加','两数相加\n输入参数 x, y 均为数字类型，返回结果为两者之和','plus(x, y)','[\"x\", \"y\"]','{\"x\": {}, \"y\": {}}','{\"timeout\": 10, \"cacheResult\": 300}','math',NULL,'[\"math\", \"simple\"]',0,'2021-07-19 18:13:01','2021-07-19 18:16:10.043246');
 /*!40000 ALTER TABLE `biz_main_func` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -496,9 +500,9 @@ CREATE TABLE `biz_main_script` (
   `publishVersion` bigint(20) NOT NULL DEFAULT '0' COMMENT '发布版本',
   `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'python' COMMENT '类型 python',
   `code` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '代码',
-  `codeMD5` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码MD5',
+  `codeMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码MD5',
   `codeDraft` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '代码（编辑中草稿）',
-  `codeDraftMD5` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码（编辑中草稿）MD5',
+  `codeDraftMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '代码（编辑中草稿）MD5',
   `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -587,6 +591,37 @@ LOCK TABLES `biz_main_script_log` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `biz_main_script_market`
+--
+
+DROP TABLE IF EXISTS `biz_main_script_market`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `biz_main_script_market` (
+  `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本市场ID',
+  `name` varchar(256) DEFAULT NULL COMMENT '名称',
+  `description` text COMMENT '描述',
+  `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '类型 git|aliyunOSS|httpServer',
+  `configJSON` json DEFAULT NULL COMMENT '配置信息JSON',
+  `pinTime` datetime DEFAULT NULL COMMENT '置顶时间',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`seq`),
+  UNIQUE KEY `ID` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本市场';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `biz_main_script_market`
+--
+
+LOCK TABLES `biz_main_script_market` WRITE;
+/*!40000 ALTER TABLE `biz_main_script_market` DISABLE KEYS */;
+/*!40000 ALTER TABLE `biz_main_script_market` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `biz_main_script_publish_history`
 --
 
@@ -659,12 +694,15 @@ CREATE TABLE `biz_main_script_set` (
   `title` varchar(256) DEFAULT NULL COMMENT '标题',
   `description` text COMMENT '描述',
   `requirements` text COMMENT '依赖包',
+  `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源',
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '来源ID',
   `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID',
   `pinTime` datetime DEFAULT NULL COMMENT '置顶时间',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`),
-  UNIQUE KEY `ID` (`id`)
+  UNIQUE KEY `ID` (`id`),
+  KEY `ORIGIN_ID` (`originId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='脚本集';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -674,7 +712,7 @@ CREATE TABLE `biz_main_script_set` (
 
 LOCK TABLES `biz_main_script_set` WRITE;
 /*!40000 ALTER TABLE `biz_main_script_set` DISABLE KEYS */;
-INSERT INTO `biz_main_script_set` (`seq`, `id`, `title`, `description`, `requirements`, `lockedByUserId`, `pinTime`, `createTime`, `updateTime`) VALUES (1,'demo','示例',NULL,NULL,NULL,NULL,'2020-09-19 09:36:57','2020-09-29 13:40:21');
+INSERT INTO `biz_main_script_set` (`seq`, `id`, `title`, `description`, `requirements`, `origin`, `originId`, `lockedByUserId`, `pinTime`, `createTime`, `updateTime`) VALUES (1,'demo','示例',NULL,NULL,'user','u-admin',NULL,NULL,'2020-09-19 09:36:57','2020-09-29 13:40:21');
 /*!40000 ALTER TABLE `biz_main_script_set` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -744,7 +782,7 @@ DROP TABLE IF EXISTS `biz_main_task_info`;
 CREATE TABLE `biz_main_task_info` (
   `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务来源ID',
+  `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '任务来源ID',
   `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID',
   `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
   `execMode` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '执行模式 sync|async|crontab',
@@ -922,9 +960,9 @@ CREATE TABLE `wat_main_task_result_example` (
   `origin` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `startTime` int(11) DEFAULT NULL,
   `endTime` int(11) DEFAULT NULL,
-  `argsJSON` text,
-  `kwargsJSON` text,
-  `retvalJSON` text,
+  `argsJSON` json DEFAULT NULL,
+  `kwargsJSON` json DEFAULT NULL,
+  `retvalJSON` json DEFAULT NULL,
   `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `einfoTEXT` text,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -958,6 +996,7 @@ CREATE TABLE `wat_main_user` (
   `username` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `passwordHash` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   `name` varchar(256) DEFAULT NULL,
+  `email` varchar(256) DEFAULT NULL COMMENT '邮箱',
   `mobile` varchar(32) DEFAULT NULL,
   `markers` text,
   `roles` text,
@@ -977,7 +1016,7 @@ CREATE TABLE `wat_main_user` (
 
 LOCK TABLES `wat_main_user` WRITE;
 /*!40000 ALTER TABLE `wat_main_user` DISABLE KEYS */;
-INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`) VALUES (1,'u-admin','admin',NULL,'Administrator',NULL,NULL,'sa','*',0,'2022-06-14 04:39:53','2022-06-14 04:39:53');
+INSERT INTO `wat_main_user` (`seq`, `id`, `username`, `passwordHash`, `name`, `email`, `mobile`, `markers`, `roles`, `customPrivileges`, `isDisabled`, `createTime`, `updateTime`) VALUES (1,'u-admin','admin',NULL,'Administrator',NULL,NULL,NULL,'sa','*',0,'2022-12-06 12:04:12','2022-12-06 12:04:12');
 /*!40000 ALTER TABLE `wat_main_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -990,4 +1029,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-06-14 12:48:34
+-- Dump completed on 2022-12-06 20:06:16

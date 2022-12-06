@@ -201,6 +201,7 @@ upgradeInfo:
       ALTER TABLE wat_main_system_config
         MODIFY COLUMN `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '值';
 
+  # 于观测云SaaS 2022-12-15 迭代中实装
   - seq: 14
     database: |-
       -- 旧版遗漏

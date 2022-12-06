@@ -107,7 +107,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/access-keys/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;

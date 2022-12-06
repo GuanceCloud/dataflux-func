@@ -68,7 +68,7 @@ export default {
         headers: headers,
         query  : { position: this.nextPosition },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       if (options.append) {
         this.data = this.data.concat(apiRes.data.logs);

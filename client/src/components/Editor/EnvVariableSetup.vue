@@ -119,7 +119,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -149,7 +149,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('ENV Variable created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name  : 'env-variable-setup',
@@ -166,7 +166,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('ENV Variable saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // await this.loadData();
       this.$store.commit('updateEnvVariableListSyncTime');
@@ -178,7 +178,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('ENV Variable deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',

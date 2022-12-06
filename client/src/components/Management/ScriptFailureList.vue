@@ -99,7 +99,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/script-failures/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // 缩减行数
       apiRes.data.forEach(d => {

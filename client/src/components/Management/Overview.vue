@@ -231,7 +231,7 @@ export default {
         query: _query,
         alert: { muteError: options.mute },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       if (apiRes.data.scriptOverview) {
         apiRes.data.scriptOverview.forEach(d => {

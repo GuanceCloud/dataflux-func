@@ -31,7 +31,6 @@ const STATE_CONFIG = {
   Editor_splitPanePercent                  : { persist: false, syncXTab: false },
   TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
-  scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
   connectorListSyncTime                    : { persist: true,  syncXTab: true  },
   envVariableListSyncTime                  : { persist: true,  syncXTab: true  },
   pageFilterSettings                       : { persist: true,  syncXTab: true  },
@@ -158,7 +157,6 @@ export default new Vuex.Store({
 
     // 列表同步时间
     scriptListSyncTime     : null,
-    scriptSetListSyncTime  : null,
     connectorListSyncTime  : null,
     envVariableListSyncTime: null,
 

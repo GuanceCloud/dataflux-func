@@ -14,6 +14,10 @@ routeLoader.load(ROUTE.scriptMarketAPI.add, [
   scriptMarketAPICtrl.add,
 ]);
 
+routeLoader.load(ROUTE.scriptMarketAPI.addOfficial, [
+  scriptMarketAPICtrl.addOfficial,
+]);
+
 routeLoader.load(ROUTE.scriptMarketAPI.modify, [
   scriptMarketAPICtrl.modify,
 ]);

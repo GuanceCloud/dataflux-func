@@ -81,7 +81,7 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/auth/profile/do/get');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -102,7 +102,7 @@ export default {
         body  : { data: this.T.jsonCopy(this.form) },
         alert : { okMessage: this.$t('User Info saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       await this.loadData();
       this.$store.dispatch('reloadUserProfile');

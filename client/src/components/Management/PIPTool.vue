@@ -103,7 +103,7 @@ export default {
       options = options || {};
 
       let apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.installedPackages = apiRes.data;
       if (!options.isReload) {
@@ -115,7 +115,7 @@ export default {
     async installPackage() {
       // 检查当前安装状态
       let apiRes = await this.T.callAPI_get('/api/v1/python-packages/install-status');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       if (apiRes.data && apiRes.data.status === 'RUNNING') {
         // 尚处于安装中
