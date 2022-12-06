@@ -109,3 +109,5 @@ systemConfigs:
   # 监控数据上传地址
   MONITOR_DATA_UPLOAD_URL: null
 
+  # 是否启用官方脚本市场
+  OFFICIAL_SCRIPT_MARKET_ENABLED: true

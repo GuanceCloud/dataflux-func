@@ -29,11 +29,13 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           <span>{{ $t('Script Market') }}</span>
 
           <div class="header-control">
-            <el-link v-if="!hasOfficialScriptMarket" @click="createOfficialScriptMarket">
-              <i class="fa fa-fw fa-star"></i>
-              {{ $t('Add Official Script Market') }}
-            </el-link>
-            &#12288;
+            <template v-if="$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']">
+              <el-link v-if="!hasOfficialScriptMarket" @click="createOfficialScriptMarket">
+                <i class="fa fa-fw fa-star"></i>
+                {{ $t('Add Official Script Market') }}
+              </el-link>
+              &#12288;
+            </template>
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -176,6 +178,11 @@ export default {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
+
+      // 隐藏官方脚本市场
+      if (!this.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']) {
+        apiRes.data = apiRes.data.filter(x => !this.isOfficialScriptMarket(x));
+      }
 
       this.data = apiRes.data;
 
