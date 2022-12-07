@@ -54,7 +54,7 @@ failureCount  : '失败 {n}'
                 :border="true"
                 size="small"
                 v-model="dataFilter.origin"
-                true-label=""
+                true-label="_ALL"
                 false-label="user"
                 @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>

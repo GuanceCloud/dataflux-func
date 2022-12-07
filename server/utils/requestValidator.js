@@ -12,14 +12,27 @@ function convertQueryValues(req, queryConfig) {
   if (!req || !req.query) return;
   if (!queryConfig)       return;
 
-  // Convert array
+
   for (var k in queryConfig) if (queryConfig.hasOwnProperty(k)) {
     var c = queryConfig[k];
+    var v = req.query[k];
 
-    if (c.$type && c.$type !== 'array' || !c.$)       continue;
-    if (!req.query[k] || Array.isArray(req.query[k])) continue;
+    // Convert _ALL, _NULL
+    switch(v) {
+      case '_ALL':
+        delete req.query[k]
+        continue;
 
-    req.query[k] = [req.query[k]];
+      case '_NULL':
+        req.query[k] = null;
+        break;
+    }
+
+    // Convert array
+    if (c.$type && c.$type === 'array' && !c.$ && Array.isArray(v)) {
+      req.query[k] = [ v ];
+    }
+
   };
 };
 
