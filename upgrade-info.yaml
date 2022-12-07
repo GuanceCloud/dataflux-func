@@ -211,6 +211,7 @@ upgradeInfo:
         MODIFY COLUMN `isBuiltin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否为内建连接器';
 
       -- DataFlux Func 2.x
+      DROP TABLE IF EXISTS `biz_main_script_market`;
       CREATE TABLE `biz_main_script_market` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本市场ID',
