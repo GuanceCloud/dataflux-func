@@ -23,6 +23,8 @@ Some fixed Celery configs
 '''
 
 # Worker
+worker_pool_restarts = True
+
 worker_concurrency = CONFIG['_WORKER_CONCURRENCY']
 if worker_concurrency == 'auto':
     memory_gb = math.ceil(psutil.virtual_memory().total / 1024 / 1024 / 1024)

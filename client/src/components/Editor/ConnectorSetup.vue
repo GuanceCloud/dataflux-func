@@ -2,10 +2,7 @@
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
-Type               : 类型
 Compatibility      : 兼容性
-Title              : 标题
-Description        : 描述
 Host               : 主机
 Port               : 端口
 Servers            : 服务器列表
@@ -77,6 +74,12 @@ This is a builtin Connector, please contact the admin to change the config: 当�
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+                <!-- Fake user/password -->
+                <el-form-item style="height: 0; overflow: hidden">
+                  <input tabindex="-1" type="text" name="username" />
+                  <input tabindex="-1" type="password" name="password" />
+                </el-form-item>
+
                 <el-form-item v-if="data.isBuiltin">
                   <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
@@ -94,18 +97,14 @@ This is a builtin Connector, please contact the admin to change the config: 当�
 
                 <template v-if="selectedType">
                   <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).logo">
-                    <el-image
-                      class="connector-logo"
-                      :class="[`logo-${selectedType}`]"
-                      :src="C.CONNECTOR_MAP.get(selectedType).logo">
-                    </el-image>
+                    <el-image class="connector-logo" :class="[`logo-${selectedType}`]" :src="C.CONNECTOR_MAP.get(selectedType).logo"></el-image>
                   </el-form-item>
 
                   <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
                     <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips"></InfoBlock>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Compatibility')" v-if="!T.isNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
+                  <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
                     <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
                   </el-form-item>
 
@@ -182,11 +181,6 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                   </el-form-item>
 
                   <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <div style="height: 0">
-                      <!-- Fake username/password -->
-                      <input tabindex="-1" type="text" />
-                      <input tabindex="-1" type="password" />
-                    </div>
                     <el-input
                       v-model="form.configJSON.user"></el-input>
                   </el-form-item>
@@ -268,6 +262,7 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                         :prop="`configJSON.topicHandlers.${index}.funcId`"
                         :rules="formRules_topic">
                         <el-cascader ref="funcCascader"
+                          popper-class="code-font"
                           placeholder="--"
                           filterable
                           :filter-method="common.funcCascaderFilter"
@@ -378,7 +373,7 @@ export default {
         let opt = fieldMap[f];
         if (!opt) continue;
 
-        if (!this.T.isNothing(opt.default)) {
+        if (this.T.notNothing(opt.default)) {
           nextConfigJSON[f] = opt.default;
         }
       }
@@ -441,7 +436,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -469,7 +464,7 @@ export default {
       if (!this.$route.params.id) return;
 
       let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let subInfoMap = apiRes.data.reduce((acc, x) => {
         acc[x.topic] = x.consumeInfo;
@@ -524,7 +519,7 @@ export default {
         body : { data: _formData },
         alert: { okMessage: this.$t('Connector created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
@@ -541,7 +536,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('Connector saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateConnectorListSyncTime');
     },
@@ -552,7 +547,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('Connector deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
@@ -860,40 +855,40 @@ export default {
 .connector-logo.logo-df_datakit {
 }
 .connector-logo.logo-influxdb {
-  height: 70px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-mysql {
   height: 100px !important;
 }
 .connector-logo.logo-redis {
-  height: 90px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-memcached {
-  height: 90px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-clickhouse {
-  height: 100px !important;
+  height: 90px !important;
 }
 .connector-logo.logo-oracle {
-  height: 40px !important;
+  height: 30px !important;
 }
 .connector-logo.logo-sqlserver {
   height: 60px !important;
 }
 .connector-logo.logo-postgresql {
-  height: 100px !important;
+  height: 80px !important;
 }
 .connector-logo.logo-mongodb {
-  height: 100px !important;
+  height: 70px !important;
 }
 .connector-logo.logo-elasticsearch {
-  height: 70px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-nsq {
   height: 90px !important;
 }
 .connector-logo.logo-mqtt {
-  height: 90px !important;
+  height: 60px !important;
 }
 .connector-logo.logo-kafka {
   height: 90px !important;

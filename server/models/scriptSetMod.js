@@ -3,18 +3,17 @@
 /* Builtin Modules */
 
 /* 3rd-party Modules */
-var async  = require('async');
-var moment = require('moment');
-var JSZip  = require('jszip');
+var async     = require('async');
+var validator = require('validator');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
+var common      = require('../utils/common');
 var modelHelper = require('../utils/modelHelper');
 
 var scriptRecoverPointMod     = require('./scriptRecoverPointMod');
-var scriptSetExportHistoryMod = require('./scriptSetExportHistoryMod');
 var scriptSetImportHistoryMod = require('./scriptSetImportHistoryMod');
 
 var connectorMod = require('./connectorMod');
@@ -37,8 +36,6 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   ],
 };
 
-var FILENAME_IN_ZIP = exports.FILENAME_IN_ZIP = 'dataflux-func.json';
-
 exports.createCRUDHandler = function() {
   return modelHelper.createCRUDHandler(EntityModel);
 };
@@ -55,8 +52,9 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   sset.*');
-  sql.append('  ,locker.username AS lockedByUserUsername');
-  sql.append('  ,locker.name     AS lockedByUserName');
+  sql.append('  ,NOT ISNULL(sset.pinTime) AS isPinned');
+  sql.append('  ,locker.username          AS lockedByUserUsername');
+  sql.append('  ,locker.name              AS lockedByUserName');
 
   sql.append('FROM biz_main_script_set AS sset');
 
@@ -80,6 +78,14 @@ EntityModel.prototype.add = function(data, callback) {
         error: err.toString(),
       }));
     }
+  }
+
+  // 添加 origin, originId
+  data.origin   = 'UNKNOW';
+  data.originId = null;
+  if (this.locals.user && this.locals.user.isSignedIn) {
+    data.origin   = 'user';
+    data.originId = this.locals.user.id;
   }
 
   return this._add(data, callback);
@@ -163,12 +169,21 @@ EntityModel.prototype.clone = function(id, newId, callback) {
         if (err) return asyncCallback(err);
 
         var cloneData = [];
+
+        var origin   = 'UNKNOW';
+        var originId = null;
+        if (this.locals.user && this.locals.user.isSignedIn) {
+          origin   = 'user';
+          originId = this.locals.user.id;
+        }
         dbRes.forEach(function(d) {
           cloneData.push([
             newId, // id
             d.title,
             d.description,
             d.requirements,
+            origin,
+            originId,
           ]);
         })
 
@@ -179,6 +194,8 @@ EntityModel.prototype.clone = function(id, newId, callback) {
         sql.append('  ,title');
         sql.append('  ,description');
         sql.append('  ,requirements');
+        sql.append('  ,origin');
+        sql.append('  ,originId');
         sql.append(')');
         sql.append('VALUES');
         sql.append('  ?');
@@ -336,50 +353,52 @@ EntityModel.prototype.clone = function(id, newId, callback) {
   });
 };
 
-EntityModel.prototype.export = function(options, callback) {
+EntityModel.prototype.getExportData = function(options, callback) {
   var self = this;
 
-  var exportTime = moment().utcOffset('+08:00');
-
   options = options || {};
-  var password              = options.password;
   var scriptSetIds          = options.scriptSetIds;
   var connectorIds          = options.connectorIds;
   var envVariableIds        = options.envVariableIds;
-  var includeAuthLinks      = options.includeAuthLinks      || false;
-  var includeCrontabConfigs = options.includeCrontabConfigs || false;
-  var includeBatches        = options.includeBatches        || false;
-  var note                  = options.note;
+  var includeAuthLinks      = toolkit.toBoolean(options.includeAuthLinks);
+  var includeCrontabConfigs = toolkit.toBoolean(options.includeCrontabConfigs);
+  var includeBatches        = toolkit.toBoolean(options.includeBatches);
+  var withCodeDraft         = toolkit.toBoolean(options.withCodeDraft);
 
-  if (toolkit.isNothing(password)) {
-    password = '';
+  var exportTime    = toolkit.getISO8601();
+  var exportTimeStr = toolkit.getDateTimeStringCN(exportTime);
+  var exportUserStr = `${self.locals.user.username || 'ANONYMOUS'}`;
+  if (self.locals.user.name) {
+    exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (${self.locals.user.username || 'ANONYMOUS'})`;
+  }
+  var note = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
+
+  var exportData = {
+    note      : note,
+    exportUser: exportUserStr,
+    exportTime: exportTime,
+    scriptSets: [],
+  };
+  var summary = {
+    note       : note,
+    exportUser : exportUserStr,
+    exportTime : exportTime,
+    summaryJSON: {},
   }
 
-  var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
-  var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(self.locals);
-
-  var packageData = {
-    scriptSets: [],
-    scripts   : [],
-    funcs     : [],
-    note      : note,
-  };
-
-  // 脚本集相关数据
-  if (includeAuthLinks)      packageData.authLinks      = [];
-  if (includeCrontabConfigs) packageData.crontabConfigs = [];
-  if (includeBatches)        packageData.batches        = [];
+  var scriptSetMap = {};
+  var scriptMap    = {};
+  var funcMap      = {};
 
   // 连接器/环境变量
-  if (!toolkit.isNothing(connectorIds)) {
-    packageData.connectors  = [];
-    packageData.dataSources = []; // 兼容旧版
-  }
-  if (!toolkit.isNothing(envVariableIds)) {
-    packageData.envVariables = [];
-  }
+  if (toolkit.notNothing(connectorIds))   exportData.connectors   = [];
+  if (toolkit.notNothing(envVariableIds)) exportData.envVariables = [];
 
-  var fileBuf = null;
+  // 脚本集相关数据
+  if (includeAuthLinks)      exportData.authLinks      = [];
+  if (includeCrontabConfigs) exportData.crontabConfigs = [];
+  if (includeBatches)        exportData.batches        = [];
+
   async.series([
     // 获取脚本集
     function(asyncCallback) {
@@ -391,6 +410,8 @@ EntityModel.prototype.export = function(options, callback) {
       sql.append('  ,sset.title');
       sql.append('  ,sset.description');
       sql.append('  ,sset.requirements');
+      sql.append('  ,sset.origin');
+      sql.append('  ,sset.originId');
 
       sql.append('FROM biz_main_script_set AS sset');
 
@@ -404,7 +425,13 @@ EntityModel.prototype.export = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        packageData.scriptSets = dbRes;
+        scriptSetMap = toolkit.arrayElementMap(dbRes, 'id');
+
+        dbRes.forEach(function(d) {
+          d.scripts = [];
+        });
+
+        exportData.scriptSets = dbRes;
 
         return asyncCallback();
       });
@@ -415,13 +442,22 @@ EntityModel.prototype.export = function(options, callback) {
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
-      sql.append('   scpt.id');
-      sql.append('  ,scpt.scriptSetId');
+      sql.append('   scpt.scriptSetId');
+
+      sql.append('  ,scpt.id');
       sql.append('  ,scpt.title');
       sql.append('  ,scpt.description');
       sql.append('  ,scpt.publishVersion');
       sql.append('  ,scpt.type');
       sql.append('  ,scpt.code');
+      sql.append('  ,scpt.codeMD5');
+
+      if (withCodeDraft) {
+        sql.append('  ,scpt.codeDraft');
+        sql.append('  ,scpt.codeDraftMD5');
+      }
+
+      sql.append('  ,scpt.updateTime');
 
       sql.append('FROM biz_main_script AS scpt');
 
@@ -438,7 +474,14 @@ EntityModel.prototype.export = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        packageData.scripts = dbRes;
+        scriptMap = toolkit.arrayElementMap(dbRes, 'id');
+
+        dbRes.forEach(function(d) {
+          d.funcs = [];
+
+          scriptSetMap[d.scriptSetId].scripts.push(d);
+          delete d.scriptSetId;
+        });
 
         return asyncCallback();
       });
@@ -449,9 +492,10 @@ EntityModel.prototype.export = function(options, callback) {
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
-      sql.append('   func.id');
-      sql.append('  ,func.scriptSetId');
+      sql.append('   func.scriptSetId');
       sql.append('  ,func.scriptId');
+
+      sql.append('  ,func.id');
       sql.append('  ,func.name');
       sql.append('  ,func.title');
       sql.append('  ,func.description');
@@ -479,128 +523,13 @@ EntityModel.prototype.export = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        packageData.funcs = dbRes;
+        funcMap = toolkit.arrayElementMap(dbRes, 'id');
 
-        return asyncCallback();
-      });
-    },
-    // 获取授权链接
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeAuthLinks) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('SELECT');
-      sql.append('   auln.id');
-      sql.append('  ,auln.funcId');
-      sql.append('  ,auln.funcCallKwargsJSON');
-      sql.append('  ,auln.expireTime');
-      sql.append('  ,auln.throttlingJSON');
-      sql.append('  ,auln.origin');
-      sql.append('  ,auln.showInDoc');
-      sql.append('  ,auln.isDisabled');
-      sql.append('  ,auln.note');
-
-      sql.append('FROM biz_main_auth_link AS auln')
-
-      sql.append('LEFT JOIN biz_main_func AS func');
-      sql.append('  ON func.id = auln.funcId');
-
-      sql.append('LEFT JOIN biz_main_script_set AS sset');
-      sql.append('  ON sset.id = func.scriptSetId');
-
-      sql.append('WHERE');
-      sql.append('  sset.id IN (?)');
-
-      sql.append('ORDER BY');
-      sql.append('  auln.id ASC');
-
-      var sqlParams = [scriptSetIds];
-      self.db.query(sql, sqlParams, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.authLinks = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取自动触发配置
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeCrontabConfigs) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('SELECT');
-      sql.append('   cron.id');
-      sql.append('  ,cron.funcId');
-      sql.append('  ,cron.funcCallKwargsJSON');
-      sql.append('  ,cron.crontab');
-      sql.append('  ,cron.tagsJSON');
-      sql.append('  ,cron.saveResult');
-      sql.append('  ,cron.scope');
-      sql.append('  ,cron.expireTime');
-      sql.append('  ,cron.origin');
-      sql.append('  ,cron.isDisabled');
-      sql.append('  ,cron.note');
-
-      sql.append('FROM biz_main_crontab_config AS cron')
-
-      sql.append('LEFT JOIN biz_main_func AS func');
-      sql.append('  ON func.id = cron.funcId');
-
-      sql.append('LEFT JOIN biz_main_script_set AS sset');
-      sql.append('  ON sset.id = func.scriptSetId');
-
-      sql.append('WHERE');
-      sql.append('  sset.id IN (?)');
-
-      sql.append('ORDER BY');
-      sql.append('  cron.id ASC');
-
-      var sqlParams = [scriptSetIds];
-      self.db.query(sql, sqlParams, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.crontabConfigs = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取批处理
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeBatches) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('SELECT');
-      sql.append('   bat.id');
-      sql.append('  ,bat.funcId');
-      sql.append('  ,bat.funcCallKwargsJSON');
-      sql.append('  ,bat.tagsJSON');
-      sql.append('  ,bat.origin');
-      sql.append('  ,bat.showInDoc');
-      sql.append('  ,bat.isDisabled');
-      sql.append('  ,bat.note');
-
-      sql.append('FROM biz_main_batch AS bat')
-
-      sql.append('LEFT JOIN biz_main_func AS func');
-      sql.append('  ON func.id = bat.funcId');
-
-      sql.append('LEFT JOIN biz_main_script_set AS sset');
-      sql.append('  ON sset.id = func.scriptSetId');
-
-      sql.append('WHERE');
-      sql.append('  sset.id IN (?)');
-
-      sql.append('ORDER BY');
-      sql.append('  bat.id ASC');
-
-      var sqlParams = [scriptSetIds];
-      self.db.query(sql, sqlParams, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        packageData.batches = dbRes;
+        dbRes.forEach(function(d) {
+          scriptMap[d.scriptId].funcs.push(d);
+          delete d.scriptSetId;
+          delete d.scriptId;
+        });
 
         return asyncCallback();
       });
@@ -631,7 +560,7 @@ EntityModel.prototype.export = function(options, callback) {
 
         // 去除加密字段
         dbRes.forEach(function(d) {
-          if (!toolkit.isNothing(d.configJSON) && 'string' === typeof d.configJSON) {
+          if (toolkit.notNothing(d.configJSON) && 'string' === typeof d.configJSON) {
             d.configJSON = JSON.parse(d.configJSON);
           }
 
@@ -643,8 +572,7 @@ EntityModel.prototype.export = function(options, callback) {
           });
         });
 
-        packageData.connectors  = dbRes;
-        packageData.dataSources = dbRes; // 兼容旧版
+        exportData.connectors = dbRes;
 
         return asyncCallback();
       });
@@ -673,71 +601,197 @@ EntityModel.prototype.export = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        packageData.envVariables = dbRes;
+        exportData.envVariables = dbRes;
 
         return asyncCallback();
       });
     },
-    // 创建压缩包
+    // 获取授权链接
     function(asyncCallback) {
-      var z = new JSZip();
-      z.file(FILENAME_IN_ZIP, JSON.stringify(packageData));
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+      if (!includeAuthLinks) return asyncCallback();
 
-      z.generateAsync({
-        type              : 'nodebuffer',
-        compression       : 'DEFLATE',
-        compressionOptions: { level: 9 },
-      })
-      .then(function(zipBuf) {
-        // Base64
-        fileBuf = toolkit.getBase64(zipBuf);
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   auln.id');
+      sql.append('  ,auln.funcId');
+      sql.append('  ,auln.funcCallKwargsJSON');
+      sql.append('  ,auln.expireTime');
+      sql.append('  ,auln.throttlingJSON');
+      sql.append('  ,auln.origin');
+      sql.append('  ,auln.originId');
+      sql.append('  ,auln.showInDoc');
+      sql.append('  ,auln.isDisabled');
+      sql.append('  ,auln.note');
 
-        // AES加密
-        fileBuf = toolkit.cipherByAES(fileBuf, password);
+      sql.append('FROM biz_main_auth_link AS auln')
+
+      sql.append('LEFT JOIN biz_main_func AS func');
+      sql.append('  ON func.id = auln.funcId');
+
+      sql.append('LEFT JOIN biz_main_script_set AS sset');
+      sql.append('  ON sset.id = func.scriptSetId');
+
+      sql.append('WHERE');
+      sql.append('  sset.id IN (?)');
+
+      sql.append('ORDER BY');
+      sql.append('  auln.id ASC');
+
+      var sqlParams = [scriptSetIds];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        exportData.authLinks = dbRes;
 
         return asyncCallback();
-      })
-      .catch(function(err) {
-        return asyncCallback(err);
       });
     },
-    // 记录导出历史
+    // 获取自动触发配置
     function(asyncCallback) {
-      // 生成摘要
-      var summary = toolkit.jsonCopy(packageData);
-      summary.scripts.forEach(function(d) {
-        delete d.code; // 摘要中不含代码
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+      if (!includeCrontabConfigs) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   cron.id');
+      sql.append('  ,cron.funcId');
+      sql.append('  ,cron.funcCallKwargsJSON');
+      sql.append('  ,cron.crontab');
+      sql.append('  ,cron.tagsJSON');
+      sql.append('  ,cron.saveResult');
+      sql.append('  ,cron.scope');
+      sql.append('  ,cron.expireTime');
+      sql.append('  ,cron.origin');
+      sql.append('  ,cron.originId');
+      sql.append('  ,cron.isDisabled');
+      sql.append('  ,cron.note');
+
+      sql.append('FROM biz_main_crontab_config AS cron')
+
+      sql.append('LEFT JOIN biz_main_func AS func');
+      sql.append('  ON func.id = cron.funcId');
+
+      sql.append('LEFT JOIN biz_main_script_set AS sset');
+      sql.append('  ON sset.id = func.scriptSetId');
+
+      sql.append('WHERE');
+      sql.append('  sset.id IN (?)');
+
+      sql.append('ORDER BY');
+      sql.append('  cron.id ASC');
+
+      var sqlParams = [scriptSetIds];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        exportData.crontabConfigs = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取批处理
+    function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+      if (!includeBatches) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   bat.id');
+      sql.append('  ,bat.funcId');
+      sql.append('  ,bat.funcCallKwargsJSON');
+      sql.append('  ,bat.tagsJSON');
+      sql.append('  ,bat.origin');
+      sql.append('  ,bat.originId');
+      sql.append('  ,bat.showInDoc');
+      sql.append('  ,bat.isDisabled');
+      sql.append('  ,bat.note');
+
+      sql.append('FROM biz_main_batch AS bat')
+
+      sql.append('LEFT JOIN biz_main_func AS func');
+      sql.append('  ON func.id = bat.funcId');
+
+      sql.append('LEFT JOIN biz_main_script_set AS sset');
+      sql.append('  ON sset.id = func.scriptSetId');
+
+      sql.append('WHERE');
+      sql.append('  sset.id IN (?)');
+
+      sql.append('ORDER BY');
+      sql.append('  bat.id ASC');
+
+      var sqlParams = [scriptSetIds];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        exportData.batches = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 生成摘要
+    function(asyncCallback) {
+      // 脚本集摘要
+      summary.summaryJSON.scriptSets = Object.values(scriptSetMap).map(function(x) {
+        return {
+          id     : x.id,
+          titie  : x.title,
+          scripts: x.scripts.map(function(y) {
+            return {
+              id   : y.id,
+              title: y.title,
+            }
+          })
+        }
       });
 
-      var _data = {
-        note       : note,
-        summaryJSON: summary,
-      }
-      scriptSetExportHistoryModel.add(_data, asyncCallback);
+      // 连接器、环境变量摘要
+      [ 'connectors', 'envVariables' ].forEach(function(name) {
+        if (toolkit.isNothing(exportData[name])) return;
+
+        summary.summaryJSON[name] = exportData[name].map(function(x) {
+          return {
+            id    : x.id,
+            title : x.title,
+          }
+        });
+      });
+
+      // 授权链接、自动触发配置、批处理摘要
+      [ 'authLinks', 'crontabConfigs', 'batches' ].forEach(function(name) {
+        if (toolkit.isNothing(exportData[name])) return;
+
+        summary.summaryJSON[name] = exportData[name].map(function(x) {
+          return {
+            id    : x.id,
+            title : x.title,
+          }
+        });
+      });
+
+      return asyncCallback()
     },
   ], function(err) {
     if (err) return next(err);
-
-    return callback(null, fileBuf);
+    return callback(null, exportData, summary);
   });
 };
 
-EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
+EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
-  if ('string' === typeof packageData) {
-    packageData = JSON.parse(packageData);
-  }
+  importData = common.flattenImportExportData(importData);
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds     = toolkit.arrayElementValues(packageData.scriptSets                            || [], 'id');
-  var authLinkIds      = toolkit.arrayElementValues(packageData.authLinks                             || [], 'id');
-  var crontabConfigIds = toolkit.arrayElementValues(packageData.crontabConfigs                        || [], 'id');
-  var batchIds         = toolkit.arrayElementValues(packageData.batches                               || [], 'id');
-  var connectorIds     = toolkit.arrayElementValues(packageData.connectors || packageData.dataSources || [], 'id'); // 兼容旧版
-  var envVariableIds   = toolkit.arrayElementValues(packageData.envVariables                          || [], 'id');
+  var scriptSetIds     = toolkit.arrayElementValues(importData.scriptSets     || [], 'id');
+  var authLinkIds      = toolkit.arrayElementValues(importData.authLinks      || [], 'id');
+  var crontabConfigIds = toolkit.arrayElementValues(importData.crontabConfigs || [], 'id');
+  var batchIds         = toolkit.arrayElementValues(importData.batches        || [], 'id');
+  var connectorIds     = toolkit.arrayElementValues(importData.connectors     || [], 'id');
+  var envVariableIds   = toolkit.arrayElementValues(importData.envVariables   || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -750,128 +804,63 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
 
       scriptRecoverPointModel.add(recoverPoint, asyncCallback);
     },
-    // 删除所有涉及的脚本集
+    // 删除所有涉及的脚本集、脚本、函数
     function(asyncCallback) {
       if (recoverPoint.type === 'recover') {
-        // 恢复模式
+        // 恢复模式：清空所有脚本集、脚本、函数
         var sql = toolkit.createStringBuilder();
-        sql.append('DELETE FROM biz_main_script_set');
-
-        self.db.query(sql, null, asyncCallback);
-
-      } else {
-        // 正常导入模式
-        if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-
-        var sql = toolkit.createStringBuilder();
-        sql.append('DELETE FROM biz_main_script_set');
-        sql.append('WHERE');
-        sql.append('   id IN (?)');
-
-        var sqlParams = [scriptSetIds];
-        self.db.query(sql, sqlParams, asyncCallback);
-      }
-    },
-    // 删除相关数据（脚本/函数）
-    function(asyncCallback) {
-      if (recoverPoint.type === 'recover') {
-        // 恢复模式
-        var sql = toolkit.createStringBuilder();
+        sql.append('DELETE FROM biz_main_script_set;');
         sql.append('DELETE FROM biz_main_script;');
         sql.append('DELETE FROM biz_main_func;');
 
         self.db.query(sql, null, asyncCallback);
 
       } else {
-        // 正常导入模式
+        // 正常导入模式：只删除相关的脚本集、脚本、函数
         if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
 
         var sql = toolkit.createStringBuilder();
         sql.append('DELETE FROM ??');
         sql.append('WHERE');
-        sql.append('  scriptSetId IN (?)');
+        sql.append('  ?? IN (?)');
 
-        var tables = [
-          'biz_main_script',
-          'biz_main_func',
+        var deleteTargets = [
+          { table: 'biz_main_script_set', field: 'id' },
+          { table: 'biz_main_script',     field: 'scriptSetId' },
+          { table: 'biz_main_func',       field: 'scriptSetId' },
         ];
-        async.eachSeries(tables, function(table, eachCallback) {
-          var sqlParams = [table, scriptSetIds];
-
+        async.eachSeries(deleteTargets, function(t, eachCallback) {
+          var sqlParams = [t.table, t.field, scriptSetIds];
           self.db.query(sql, sqlParams, eachCallback);
         }, asyncCallback);
       }
     },
-    // 删除所有涉及的授权链接
+    // 删除所有涉及的授权链接、自动触发配置、批处理、连接器、环境变量
     function(asyncCallback) {
       if (toolkit.isNothing(authLinkIds)) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_auth_link');
+      sql.append('DELETE FROM ??');
       sql.append('WHERE');
       sql.append('   id IN (?)');
 
-      var sqlParams = [authLinkIds];
-      self.db.query(sql, sqlParams, asyncCallback);
+      var deleteTargets = [
+        { table: 'biz_main_auth_link',      ids: authLinkIds },
+        { table: 'biz_main_crontab_config', ids: crontabConfigIds },
+        { table: 'biz_main_batch',          ids: batchIds },
+        { table: 'biz_main_connector',      ids: connectorIds },
+        { table: 'biz_main_env_variable',   ids: envVariableIds },
+      ];
+      async.eachSeries(deleteTargets, function(t, eachCallback) {
+        if (toolkit.isNothing(t.ids)) return eachCallback();
+
+        var sqlParams = [t.table, t.ids];
+        self.db.query(sql, sqlParams, eachCallback);
+      }, asyncCallback);
     },
-    // 删除所有涉及的自动触发配置
-    function(asyncCallback) {
-      if (toolkit.isNothing(crontabConfigIds)) return asyncCallback();
 
-      var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_crontab_config');
-      sql.append('WHERE');
-      sql.append('   id IN (?)');
-
-      var sqlParams = [crontabConfigIds];
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
-    // 删除所有涉及的批处理
-    function(asyncCallback) {
-      if (toolkit.isNothing(batchIds)) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_batch');
-      sql.append('WHERE');
-      sql.append('   id IN (?)');
-
-      var sqlParams = [batchIds];
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
-    // 删除所有涉及的连接器
-    function(asyncCallback) {
-      if (toolkit.isNothing(connectorIds)) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_connector');
-      sql.append('WHERE');
-      sql.append('   id IN (?)');
-
-      var sqlParams = [connectorIds];
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
-    // 删除所有涉及的环境变量
-    function(asyncCallback) {
-      if (toolkit.isNothing(envVariableIds)) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('DELETE FROM biz_main_env_variable');
-      sql.append('WHERE');
-      sql.append('   id IN (?)');
-
-      var sqlParams = [envVariableIds];
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
     // 插入数据
     function(asyncCallback) {
-      // 预处理
-      if (packageData.scripts) {
-        packageData.scripts.forEach(function(s) {
-          s.code    = s.code || '';          // 保证code字段不为NULL
-          s.codeMD5 = toolkit.getMD5(s.code) // 计算MD5值
-        });
-      }
-
       // 插入规则
       var _rules = [
         { name: 'scriptSets',     table: 'biz_main_script_set' },
@@ -881,11 +870,10 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
         { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
         { name: 'batches',        table: 'biz_main_batch' },
         { name: 'connectors',     table: 'biz_main_connector' },
-        { name: 'dataSources',    table: 'biz_main_connector' }, // 旧版兼容
         { name: 'envVariables',   table: 'biz_main_env_variable' },
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {
-        var _dataSet = packageData[_rule.name];
+        var _dataSet = importData[_rule.name];
         if (toolkit.isNothing(_dataSet)) return eachCallback();
 
         async.eachSeries(_dataSet, function(_data, innerEachCallback) {
@@ -902,31 +890,17 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
         }, eachCallback);
       }, asyncCallback);
     },
-    // 脚本计算MD5并发布
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('UPDATE biz_main_script');
-      sql.append('SET');
-      sql.append('   codeDraft    = code');
-      sql.append('  ,codeDraftMD5 = codeMD5');
-      sql.append('WHERE');
-      sql.append('  scriptSetId IN (?)');
-
-      var sqlParams = [scriptSetIds];
-
-      self.db.query(sql, sqlParams, asyncCallback);
-    },
     // 记录导入历史
     function(asyncCallback) {
-      var summary = toolkit.jsonCopy(packageData);
-      summary.scripts.forEach(function(d) {
-        delete d.code; // 摘要中不含代码
-      });
+      var summary = toolkit.jsonCopy(importData);
+      if (toolkit.notNothing(summary.scripts)) {
+        summary.scripts.forEach(function(d) {
+          delete d.code; // 摘要中不含代码
+        });
+      }
 
       var _data = {
-        note       : packageData.note,
+        note       : importData.note,
         summaryJSON: summary,
       }
       scriptSetImportHistoryModel.add(_data, asyncCallback);
@@ -936,18 +910,18 @@ EntityModel.prototype.import = function(packageData, recoverPoint, callback) {
       if (scopeErr) return callback(scopeErr);
 
       // 提取依赖包
-      var pkgs = []
-      packageData.scriptSets.forEach(function(s) {
-        if (!s.requirements) return;
-        pkgs = pkgs.concat(s.requirements.split('\n'));
+      var requirements = {};
+      importData.scriptSets.forEach(function(s) {
+        if (toolkit.isNothing(s.requirements)) return;
+
+        s.requirements.split('\n').forEach(function(r) {
+          if (toolkit.isNothing(r)) return;
+
+          var pkgVer = r.trim().split('==');
+          requirements[pkgVer[0]] = pkgVer[1] || null;
+        });
       });
-
-      pkgs = toolkit.noDuplication(pkgs);
-      if (toolkit.isNothing(pkgs)) {
-        pkgs = null;
-      }
-
-      return callback(null, pkgs);
+      return callback(null, requirements);
     });
   });
 };
@@ -972,15 +946,18 @@ function _prepareImportData(data) {
     // NULL值不转换
     if (v === null) continue;
 
-    if (toolkit.endsWith(f, 'JSON') && 'string' !== typeof v) {
+    if (toolkit.endsWith(f, 'JSON')
+      && 'string' !== typeof v) {
       // JSON字段序列化
       data[f] = JSON.stringify(v);
 
-    } else if (f === 'expireTime') {
-      // 时间字段
-      data[f] = new Date(v);
+    } else if (toolkit.endsWith(f, 'Time')
+      // 时间类字段
+      && 'string' === typeof v
+      && validator.isISO8601(v, { strict: true, strictSeparator: true })) {
+          data[f] = new Date(v);
     }
   }
 
   return data;
-}
+};

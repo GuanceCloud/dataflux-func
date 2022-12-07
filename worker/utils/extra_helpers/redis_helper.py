@@ -30,8 +30,8 @@ def get_config(c):
 LIMIT_ARGS_DUMP = 200
 
 # LUA
-LUA_UNLOCK_KEY_KEY_NUMBER = 1;
-LUA_UNLOCK_KEY = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
+LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
+LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
 CLIENT_CONFIG = None
 CLIENT        = None
@@ -328,7 +328,7 @@ class RedisHelper(object):
         self.run('expire', lock_key, max_lock_time)
 
     def unlock(self, lock_key, lock_value):
-        return self.run('eval', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lock_key, lock_value)
+        return self.run('eval', LUA_UNLOCK_SCRIPT, LUA_UNLOCK_SCRIPT_KEY_COUNT, lock_key, lock_value)
 
     def ts_parse_point(self, point):
         timestamp, value = six.ensure_str(point).split(',', 1)

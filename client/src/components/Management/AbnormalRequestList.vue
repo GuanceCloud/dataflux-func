@@ -148,7 +148,7 @@ export default {
         params: { type: this.type },
         query : _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;

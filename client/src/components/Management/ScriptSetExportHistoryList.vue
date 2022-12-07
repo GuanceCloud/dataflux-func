@@ -4,11 +4,11 @@
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>脚本包导出历史</span>
+          <span>{{ $t('Script Set Export History') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'export')" size="small">
               <i class="fa fa-fw fa-cloud-download"></i>
-              导出脚本包
+              {{ $t('Export Script Sets') }}
             </el-button>
           </div>
         </div>
@@ -18,11 +18,11 @@
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>从未导出或安装过脚本包</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>从未导出过脚本集</h1>
 
           <p class="no-data-tip">
             如需备份、分发脚本集，可以使用导出功能
-            <br>导出后的文件，可在系统的「脚本包导入」功能中进行导入
+            <br>导出后的文件，可在系统的「脚本集导入」功能中进行导入
           </p>
         </div>
         <template v-else>
@@ -35,28 +35,22 @@
               type="primary"
               :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
-                <div class="history-summary">
-                  <span class="text-info">脚本集：</span>
-                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.scriptSets" :key="item.id">
-                    <code>{{ item.title || item.id }}</code>
-                  </el-tag>
-                </div>
+                <template v-for="t in C.IMPORT_DATA_TYPE">
+                  <div class="history-summary" v-if="T.notNothing(d.summaryJSON[t.key])">
+                    <span class="text-info">{{ $t(t.name) }}{{ $t(':') }}</span>
+                    <p>
+                      <span v-for="item in d.summaryJSON[t.key]" :key="item.id">
+                        <span :class="t.showClass">{{ item[t.showField] || item.id }}</span>
+                        &#12288;
+                        <small>{{ $t('(') }}ID <code class="text-code">{{ item.id }}</code>{{ $t(')') }}</small>
+                        <br>
+                      </span>
+                    </p>
+                  </div>
+                </template>
 
-                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.connectors)">
-                  <span class="text-info">连接器：</span>
-                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.connectors" :key="item.id">
-                    <code>{{ item.title || item.id }}</code>
-                  </el-tag>
-                </div>
-                <div class="history-summary" v-if="!T.isNothing(d.summaryJSON.envVariables)">
-                  <span class="text-info">环境变量：</span>
-                  <el-tag size="medium" type="info" v-for="item in d.summaryJSON.envVariables" :key="item.id">
-                    <code>{{ item.title || item.id }}</code>
-                  </el-tag>
-                </div>
-
-                <div class="history-note" v-if="d.note">
-                  <span class="text-info">备注:</span>
+                <div class="history-note" v-if="T.notNothing(d.note)">
+                  <span class="text-info">{{ $t('Note')}}{{ $t(':') }}</span>
                   <pre class="text-info text-small">{{ d.note }}</pre>
                 </div>
               </el-card>
@@ -85,9 +79,9 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/script-set-export-history/do/list', {
-        query: { pageSize: 50 },
+        query: { pageSize: 20 },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -116,20 +110,26 @@ export default {
 </script>
 
 <style scoped>
-.history-summary {
-  margin-bottom: 5px;
-}
 .history-title {
   font-size: x-large;
 }
 .history-card {
   width: 620px;
 }
+.history-summary {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+.history-summary > p {
+  margin: 10px 0 0 10px;
+  line-height: 1.8;
+}
 .history-note {
 }
 .history-note pre {
-  margin: 5px 0 0 10px;
+  margin: 10px 0 0 10px;
   font-weight: normal;
+  line-height: 1.5;
 }
 </style>
 

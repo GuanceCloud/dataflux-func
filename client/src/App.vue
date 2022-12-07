@@ -226,7 +226,7 @@ export default {
           e.preventDefault();
           app.$store.commit('updateShortcutAction', {
             action   : action,
-            timestamp: parseInt(Date.now() / 1000),
+            timestamp: app.T.getTimestamp(),
           });
         }
 
@@ -289,8 +289,14 @@ export default {
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
-  font-family: "Iosevka","PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
+  font-family: "PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
   outline: none !important;
+}
+input, textarea,
+pre, pre *
+.CodeMirror, .CodeMirror *,
+.code-font, .code-font * {
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
 }
 a {
   text-decoration: none;
@@ -402,11 +408,11 @@ h3 {
   width: 100%;
 }
 .common-form .el-upload-dragger {
-  width: 500px;
+  width: 485px;
   height: unset;
 }
 .common-form .el-upload-dragger > .image-preview {
-  max-width: 500px;
+  max-width: 485px;
   padding: 10px;
 }
 .common-form .el-upload-dragger > .image-preview > img {
@@ -461,6 +467,7 @@ h3 {
   color: rgb(255,0,0,.5) !important;
 }
 .text-code {
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
   padding: 1px 3px;
   background-color: #ffefe4;
   border-radius: 3px;
@@ -512,18 +519,24 @@ kbd {
   float: left;
 }
 .header-control {
-  float: right;
+  /* float: right;*/
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
 }
 .header-control-left {
-  float: left;
-  margin-left: 30px;
+  /* float: left; */
+  padding-left: 30px;
+  justify-content: flex-start;
 }
 .header-control > * {
-  margin-left: 5px !important;
+  margin-left: 15px !important;
 }
 .header-control .el-checkbox.is-bordered.el-checkbox--small {
   /* Magic Fix! */
-  padding-top: 6px;
+  /* padding-top: 6px; */
 }
 .no-data-area {
   text-align: center;
@@ -647,7 +660,8 @@ kbd {
 }
 
 .el-table .cell {
-  word-break: break-word;
+  word-break: break-word !important;
+  overflow: visible !important;
 }
 .el-table__row > .el-table__cell:last-child > .cell {
   padding-right: 5 !important;
@@ -725,6 +739,9 @@ kbd {
 }
 .el-input__inner {
   border-radius: 3px !important;
+}
+
+.el-form-item__label {
 }
 .el-form-item__error {
   font-size: 14px !important;

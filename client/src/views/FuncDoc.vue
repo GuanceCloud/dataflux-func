@@ -23,15 +23,15 @@
                 :definition="scope.row.definition"
                 :title="scope.row.title"></FuncInfo>
 
-              <div v-if="!T.isNothing(scope.row.category) || !T.isNothing(scope.row.integration) || !T.isNothing(scope.row.tagsJSON)">
-                <template v-if="!T.isNothing(scope.row.category)">
+              <div v-if="T.notNothing(scope.row.category) || T.notNothing(scope.row.integration) || T.notNothing(scope.row.tagsJSON)">
+                <template v-if="T.notNothing(scope.row.category)">
                   <span class="text-info">&#12288;分类:</span>
                   <el-tag size="mini">
                     <code>{{ scope.row.category }}</code>
                   </el-tag>
                 </template>
 
-                <template v-if="!T.isNothing(scope.row.integration)">
+                <template v-if="T.notNothing(scope.row.integration)">
                   <br>
                   <span class="text-info">&#12288;集成:</span>
                   <el-tag size="mini" type="success">
@@ -40,7 +40,7 @@
                   </el-tag>
                 </template>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON)">
+                <template v-if="T.notNothing(scope.row.tagsJSON)">
                   <br>
                   <span class="text-info">&#12288;标签:</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.tagsJSON" :key="t"><code>{{ t }}</code></el-tag>
@@ -94,7 +94,7 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/func-list');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -103,7 +103,7 @@ export default {
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.id);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
 

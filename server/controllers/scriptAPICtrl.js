@@ -18,7 +18,6 @@ var funcMod                 = require('../models/funcMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
 /* Configure */
-var BUILTIN_SCRIPT_SET_IDS = null;
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptMod.createCRUDHandler();
@@ -44,30 +43,8 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 查询内置记录
-    function(asyncCallback) {
-      if (BUILTIN_SCRIPT_SET_IDS) return asyncCallback();
-
-      var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
-      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        if (cacheRes) {
-          BUILTIN_SCRIPT_SET_IDS = JSON.parse(cacheRes);
-        } else {
-          BUILTIN_SCRIPT_SET_IDS = [];
-        }
-
-        return asyncCallback();
-      });
-    },
   ], function(err) {
     if (err) return next(err);
-
-    // 内置标记
-    scripts.forEach(function(script) {
-       script.isBuiltin = (BUILTIN_SCRIPT_SET_IDS.indexOf(script.scriptSetId) >= 0);
-    });
 
     var ret = toolkit.initRet(scripts, scriptPageInfo);
     res.locals.sendJSON(ret);

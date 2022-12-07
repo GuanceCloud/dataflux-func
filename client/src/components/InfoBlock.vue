@@ -1,5 +1,5 @@
 <template>
-  <div class="form-tip" v-if="!T.isNothing(title)">
+  <div class="form-tip" v-if="T.notNothing(title)">
     <el-alert
       :show-icon="true"
       :closable="false"

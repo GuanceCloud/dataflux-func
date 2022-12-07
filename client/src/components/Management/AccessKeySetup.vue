@@ -77,7 +77,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -105,7 +105,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('Access Key created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'access-key-list',

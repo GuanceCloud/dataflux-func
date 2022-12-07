@@ -155,7 +155,7 @@ exports.createRequestWhereCondition = function(routeConfig) {
     if (routeConfig.fulltextSearchAsLIKE) {
       var fulltextSearchField = reqQuery['_fulltextSearchField'];
       var asLikeFields = toolkit.asArray(routeConfig.fulltextSearchAsLIKE[fulltextSearchField]);
-      if (asLikeFields && !toolkit.isNothing(reqQuery['_fulltextSearchWord'])) {
+      if (asLikeFields && toolkit.notNothing(reqQuery['_fulltextSearchWord'])) {
         asLikeFields.forEach(function(f) {
           filters[f] = {like: reqQuery['_fulltextSearchWord']}
         });
@@ -473,7 +473,7 @@ Model.prototype._list = Model.prototype.list = function(options, callback) {
       options.paging.availablePageMarkerFields = [toolkit.strf('{0}.seq', self.alias)];
     }
 
-    if (!toolkit.isNothing(options.orders)) {
+    if (toolkit.notNothing(options.orders)) {
       for (var i = 0; i < options.orders.length; i++) {
         var o = options.orders[i];
         if (options.paging.availablePageMarkerFields.indexOf(o.field) > -1) {
@@ -515,18 +515,18 @@ Model.prototype._list = Model.prototype.list = function(options, callback) {
 
   // Generate `WHERE` statement
   var whereStatement = '';
-  if (!toolkit.isNothing(options.filters) || !toolkit.isNothing(options.paging)) {
+  if (toolkit.notNothing(options.filters) || toolkit.notNothing(options.paging)) {
     whereStatement = self.genWhereStatement(options.filters, {whereToken: true});
   }
 
   // Generate `GROUP BY` statement
   var groupStatement = '';
-  if (!toolkit.isNothing(options.groups)) {
+  if (toolkit.notNothing(options.groups)) {
     groupStatement = self.genGroupByStatement(options.groups, {groupToken: true});
   }
 
   // Generate `ORDER BY` statement
-  if (options.distinct && !toolkit.isNothing(options.orders) && !toolkit.isNothing(options.fields)) {
+  if (options.distinct && toolkit.notNothing(options.orders) && toolkit.notNothing(options.fields)) {
     var washedOrders = [];
     options.orders.forEach(function(order) {
       if (options.fields.indexOf(order.field) >= 0) {
@@ -631,7 +631,7 @@ Model.prototype._countByGroup = Model.prototype.countByGroup = function(options,
   }
 
   var groupBy = null;
-  if (!toolkit.isNothing(options.extra.groupBy)) {
+  if (toolkit.notNothing(options.extra.groupBy)) {
     groupBy = options.extra.groupBy;
   }
 

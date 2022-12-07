@@ -37,7 +37,7 @@ Auth Link disabled: 授权链接已禁用
 Auth Link enabled : 授权链接已启用
 Auth Link deleted : 授权链接已删除
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Show all contents: 展示全部内容
 No Auth Link has ever been added: 从未添加过任何授权链接
 Auth Link only supports synchronous calling: 授权链接只支持同步调用
 
@@ -68,13 +68,13 @@ failureCount  : '失败 {n}'
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
                 size="small"
                 v-model="dataFilter.origin"
-                true-label="API,UI"
-                false-label=""
+                true-label=""
+                false-label="user"
                 @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
@@ -112,7 +112,7 @@ failureCount  : '失败 {n}'
                 <span class="text-info">&#12288;ID</span>
                 <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
+                <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
@@ -286,17 +286,17 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery({
+      let _listQuery = this.dataFilter = this.T.createListQuery({
         _withTaskInfo: true,
       });
-      if (this.T.isNothing(this.dataFilter.origin)) {
-        _listQuery.origin = 'UI';
+      if (this.T.isNothing(this.$route.query)) {
+        _listQuery.origin = 'user';
       }
 
       let apiRes = await this.T.callAPI_get('/api/v1/auth-links/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
@@ -362,7 +362,7 @@ export default {
 
           this.$router.push({
             name  : 'auth-link-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           })
           break;
@@ -376,21 +376,21 @@ export default {
 
       this.$router.push({
         name  : 'task-info-list',
-        params: {id: d.id},
+        params: { id: d.id },
         query : nextRouteQuery,
       });
     },
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
         baseURL: true,
-        params : {id: d.id},
+        params : { id: d.id },
       });
 
       let funcCallKwargsJSON = {};

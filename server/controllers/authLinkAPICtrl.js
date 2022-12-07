@@ -138,10 +138,9 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data   = req.body.data;
-  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+  var data = req.body.data;
 
-  _add(res.locals, data, origin, function(err, addedId) {
+  _add(res.locals, data, function(err, addedId) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
@@ -170,8 +169,7 @@ exports.modify = function(req, res, next) {
 };
 
 exports.addMany = function(req, res, next) {
-  var data   = req.body.data;
-  var origin = req.get('X-Dff-Origin') === 'DFF-UI' ? 'UI' : 'API';
+  var data = req.body.data;
 
   var addedIds = [];
 
@@ -182,7 +180,7 @@ exports.addMany = function(req, res, next) {
     },
     function(asyncCallback) {
       async.eachSeries(data, function(d, eachCallback) {
-        _add(res.locals, d, origin, function(err, addedId) {
+        _add(res.locals, d, function(err, addedId) {
           if (err) return eachCallback(err);
 
           addedIds.push(addedId);
@@ -223,10 +221,7 @@ exports.modifyMany = function(req, res, next) {
       authLinkModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        modifiedIds = dbRes.reduce(function(acc, x) {
-          acc.push(x.id);
-          return acc;
-        }, []);
+        modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
 
         return asyncCallback();
       });
@@ -253,10 +248,7 @@ exports.modifyMany = function(req, res, next) {
   });
 };
 
-function _add(locals, data, origin, callback) {
-  // 自动记录操作界面
-  data.origin = origin;
-
+function _add(locals, data, callback) {
   var funcModel     = funcMod.createModel(locals);
   var authLinkModel = authLinkMod.createModel(locals);
 
@@ -303,7 +295,7 @@ function _modify(locals, id, data, opt, callback) {
 
         authLink = dbRes;
 
-        if (opt.funcCallKwargs === 'merge' && !toolkit.isNothing(data.funcCallKwargsJSON)) {
+        if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
           var prevFuncCallKwargs = toolkit.jsonCopy(authLink.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);

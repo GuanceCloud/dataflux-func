@@ -20,12 +20,10 @@ Args                                                                            
 'Arguments (JSON)'                                                                   : 参数（JSON格式）
 Run selected Func                                                                    : 执行指定的函数
 Shortcut                                                                             : 快捷键
-Run                                                                                  : 执行
 Save Script draft                                                                    : 保存草稿
 Show code diff                                                                       : 查看差异
 DIFF                                                                                 : 差异
 Save and publish Script                                                              : 保存并发布
-Publish                                                                              : 发布
 Recover code to latest published version                                             : 恢复代码为上次发布的版本
 End editing                                                                          : 结束编辑
 Code Editor setting                                                                  : 代码编辑器设置
@@ -224,7 +222,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           v-prevent-re-click @click="saveScript()"
-                          :disalbed="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-save"></i> <span class="hidden-lg-and-down">{{ $t('Save') }}</span>
@@ -237,7 +235,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           @click="showDiff()"
-                          :disalbed="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-code"></i> <span class="hidden-lg-and-down">{{ $t('DIFF') }}</span>
@@ -250,7 +248,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                         </div>
                         <el-button
                           @click="publishScript"
-                          :disalbed="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini">
                           <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
@@ -266,7 +264,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                       <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
                         <el-button
                           @click="resetScript"
-                          :disalbed="!workerRunning"
+                          :disabled="workerRunning"
                           plain
                           size="mini"><i class="fa fa-fw fa-history"></i></el-button>
                       </el-tooltip>
@@ -275,7 +273,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     <el-tooltip :content="$t('End editing')" placement="bottom" :enterable="false">
                       <el-button
                         @click="endEdit"
-                        :disalbed="!workerRunning"
+                        :disabled="workerRunning"
                         plain
                         size="mini"><i class="fa fa-fw fa-sign-out"></i> {{ $t('Exit') }}</el-button>
                     </el-tooltip>
@@ -287,7 +285,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                     <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
                       <el-button
                         @click="$refs.codeEditorSetting.open()"
-                        :disalbed="!workerRunning"
+                        :disabled="workerRunning"
                         plain
                         size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
                     </el-tooltip>
@@ -297,7 +295,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             </div>
 
             <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
-            <InfoBlock v-if="data.isBuiltin" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
+            <InfoBlock v-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
           </el-header>
 
           <!-- 代码区 -->
@@ -1281,7 +1279,7 @@ export default {
         if (o.cost) {
           costInfo = `<span class="code-editor-output-info">${this.$t('Run Time')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
-            costInfo += `<br>&emsp;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
+            costInfo += `<br>&#12288;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }
         }
 

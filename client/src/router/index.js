@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
 
-import * as toolkit from '@/toolkit'
+import * as common from '@/common'
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
@@ -101,6 +101,27 @@ const routes = [
         path: 'about',
         name: 'about',
         component: () => import('../components/Management/About.vue'),
+      },
+
+      {
+        path: 'script-market-list',
+        name: 'script-market-list',
+        component: () => import('../components/Management/ScriptMarketList.vue'),
+      },
+      {
+        path: 'script-market-add',
+        name: 'script-market-add',
+        component: () => import('../components/Management/ScriptMarketSetup.vue'),
+      },
+      {
+        path: 'script-market-setup/:id',
+        name: 'script-market-setup',
+        component: () => import('../components/Management/ScriptMarketSetup.vue'),
+      },
+      {
+        path: 'script-market-detail/:id',
+        name: 'script-market-detail',
+        component: () => import('../components/Management/ScriptMarketDetail.vue'),
       },
 
       {
@@ -254,11 +275,6 @@ const routes = [
         path: 'experimental-features',
         name: 'experimental-features',
         component: () => import('../components/Management/ExperimentalFeatures.vue'),
-      },
-      {
-        path: 'script-market',
-        name: 'script-market',
-        component: () => import('../components/Management/ScriptMarket.vue'),
       },
 
       {
@@ -436,7 +452,7 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-
+  common.checkScriptMarketUpdate();
 });
 
 export default router

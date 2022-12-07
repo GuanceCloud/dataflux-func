@@ -20,7 +20,7 @@ Crontab Config enabled  : 自动触发配置已启用
 Crontab Config deleted  : 自动触发配置已删除
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Check to show the contents created by outside systems: 勾选后展示由其他系统自动创建的内容
+Show all contents: 展示全部内容
 No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
@@ -49,13 +49,13 @@ failureCount  : '失败 {n}'
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-tooltip :content="$t('Check to show the contents created by outside systems')" placement="bottom" :enterable="false">
+            <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
               <el-checkbox
                 :border="true"
                 size="small"
                 v-model="dataFilter.origin"
-                true-label="API,UI"
-                false-label=""
+                true-label=""
+                false-label="user"
                 @change="T.changePageFilter(dataFilter)">{{ $t('Show all') }}</el-checkbox>
             </el-tooltip>
             <el-button @click="openSetup(null, 'add')" type="primary" size="small">
@@ -94,7 +94,7 @@ failureCount  : '失败 {n}'
                 <span class="text-info">&#12288;ID</span>
                 <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.func_tagsJSON)">
+                <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.func_tagsJSON" :key="t">{{ t }}</el-tag>
@@ -204,17 +204,17 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.T.createListQuery({
+      let _listQuery = this.dataFilter = this.T.createListQuery({
         _withTaskInfo: true,
       });
-      if (this.T.isNothing(this.dataFilter.origin)) {
-        _listQuery.origin = 'UI';
+      if (this.T.isNothing(this.$route.query)) {
+        _listQuery.origin = 'user';
       }
 
       let apiRes = await this.T.callAPI_get('/api/v1/crontab-configs/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
@@ -280,7 +280,7 @@ export default {
 
           this.$router.push({
             name  : 'crontab-config-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           })
           break;
@@ -294,7 +294,7 @@ export default {
 
       this.$router.push({
         name  : 'task-info-list',
-        params: {id: d.id},
+        params: { id: d.id },
         query : nextRouteQuery,
       });
     },

@@ -197,23 +197,23 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     funcCallOptions.scriptPublishVersion = func.scpt_publishVersion;
 
     // 任务保留数量
-    if (!toolkit.isNothing(func.extraConfigJSON.fixedTaskInfoLimit)) {
+    if (toolkit.notNothing(func.extraConfigJSON.fixedTaskInfoLimit)) {
       funcCallOptions.taskInfoLimit = func.extraConfigJSON.fixedTaskInfoLimit;
     }
 
     // API超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.apiTimeout)) {
+    if (toolkit.notNothing(funcCallOptions.apiTimeout)) {
       // 调用时指定
       funcCallOptions.apiTimeout = parseInt(funcCallOptions.apiTimeout);
 
       if (funcCallOptions.apiTimeout < CONFIG._FUNC_TASK_MIN_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
+        return callback(new E('EClientBadRequest', 'Invalid options, api_timeout is too small', { min: CONFIG._FUNC_TASK_MIN_API_TIMEOUT }));
       }
       if (funcCallOptions.apiTimeout > CONFIG._FUNC_TASK_MAX_API_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, apiTimeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
+        return callback(new E('EClientBadRequest', 'Invalid options, api_timeout is too large', { max: CONFIG._FUNC_TASK_MAX_API_TIMEOUT }));
       }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.apiTimeout)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.apiTimeout)) {
       // 函数配置
       funcCallOptions.apiTimeout = func.extraConfigJSON.apiTimeout;
 
@@ -223,7 +223,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 函数执行超时（优先级：调用时指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.timeout)) {
+    if (toolkit.notNothing(funcCallOptions.timeout)) {
       // 调用时指定
       funcCallOptions.timeout = parseInt(funcCallOptions.timeout);
 
@@ -234,7 +234,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
         return callback(new E('EClientBadRequest', 'Invalid options, timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
       }
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.timeout)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.timeout)) {
       // 函数配置
       funcCallOptions.timeout = func.extraConfigJSON.timeout;
 
@@ -253,7 +253,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 执行模式（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.execMode)) {
+    if (toolkit.notNothing(funcCallOptions.execMode)) {
       // 调用时指定
       switch(funcCallOptions.origin) {
         case 'apiAuth':
@@ -314,14 +314,14 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 是否永不过期
-    if (!toolkit.isNothing(funcCallOptions.neverExpire)) {
+    if (toolkit.notNothing(funcCallOptions.neverExpire)) {
       funcCallOptions.neverExpire = !!funcCallOptions.neverExpire;
     } else {
       funcCallOptions.neverExpire = false;
     }
 
     // 返回类型（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.returnType)) {
+    if (toolkit.notNothing(funcCallOptions.returnType)) {
       // 调用时指定
       var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
       if (_RETURN_TYPES.indexOf(funcCallOptions.returnType) < 0) {
@@ -334,7 +334,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 结果保存（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.saveResult)) {
+    if (toolkit.notNothing(funcCallOptions.saveResult)) {
       // 调用时指定
       funcCallOptions.saveResult = !!funcCallOptions.saveResult;
     } else {
@@ -343,7 +343,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 结果拆包（优先级：调用时指定 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.unfold)) {
+    if (toolkit.notNothing(funcCallOptions.unfold)) {
       // 调用时指定
       funcCallOptions.unfold = !!funcCallOptions.unfold;
 
@@ -359,14 +359,14 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     }
 
     // 预约执行
-    if (!toolkit.isNothing(funcCallOptions.eta)) {
+    if (toolkit.notNothing(funcCallOptions.eta)) {
       if ('Invalid Date' === new Date('funcCallOptions.eta').toString()) {
         return callback(new E('EClientBadRequest', 'Invalid options, eta should be a valid datetime value'));
       }
     }
 
     // 执行队列（优先级：直接指定 > 函数配置 > 默认值）
-    if (!toolkit.isNothing(funcCallOptions.queue)) {
+    if (toolkit.notNothing(funcCallOptions.queue)) {
       // 直接指定
       var queueNumber = parseInt(funcCallOptions.queue);
       if (queueNumber < 1 || queueNumber > 9) {
@@ -375,7 +375,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
 
       funcCallOptions.queue = '' + queueNumber;
 
-    } else if (!toolkit.isNothing(func.extraConfigJSON.queue)) {
+    } else if (toolkit.notNothing(func.extraConfigJSON.queue)) {
       // 函数配置
       var queueNumber = parseInt(func.extraConfigJSON.queue);
       if (queueNumber < 1 || queueNumber > 9) {
@@ -398,7 +398,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     funcCallOptions.triggerTime = parseInt(funcCallOptions.triggerTimeMs / 1000);
 
     // 结果缓存
-    if (!toolkit.isNothing(func.extraConfigJSON.cacheResult)) {
+    if (toolkit.notNothing(func.extraConfigJSON.cacheResult)) {
       if (!func.extraConfigJSON.cacheResult) {
         funcCallOptions.cacheResult = false;
       } else {
@@ -465,10 +465,10 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
   switch(format) {
     case 'normal':
       // 普通形式：函数参数、执行选项为JSON字符串形式
-      if (!toolkit.isNothing(reqOpt.kwargs)) {
+      if (toolkit.notNothing(reqOpt.kwargs)) {
         reqCallKwargs = reqOpt.kwargs;
       }
-      if (!toolkit.isNothing(reqOpt.options)) {
+      if (toolkit.notNothing(reqOpt.options)) {
         Object.assign(options, reqOpt.options);
       }
       break;
@@ -1349,7 +1349,7 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 exports.overview = function(req, res, next) {
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
-  if (!toolkit.isNothing(sections)) {
+  if (toolkit.notNothing(sections)) {
     sectionMap = {};
     sections.forEach(function(s) {
       sectionMap[s] = true;
@@ -1971,13 +1971,13 @@ exports.getFuncTagList = function(req, res, next) {
     funcTags.sort();
 
     // 过滤
-    if (!toolkit.isNothing(name)) {
+    if (toolkit.notNothing(name)) {
       funcTags = funcTags.filter(function(x) {
         return x.indexOf(name) >= 0;
       });
     }
 
-    if (!toolkit.isNothing(tagPattern)) {
+    if (toolkit.notNothing(tagPattern)) {
       funcTags = funcTags.filter(function(x) {
         return toolkit.matchWildcard(x, tagPattern);
       });
@@ -2046,15 +2046,12 @@ exports.getSystemConfig = function(req, res, next) {
     _PIP_INSTALL_DIR: path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR),
 
     _WEB_CLIENT_ID_HEADER : CONFIG._WEB_CLIENT_ID_HEADER,
-    _WEB_ORIGIN_HEADER    : CONFIG._WEB_ORIGIN_HEADER,
     _WEB_AUTH_HEADER      : CONFIG._WEB_AUTH_HEADER,
     _WEB_AUTH_QUERY       : CONFIG._WEB_AUTH_QUERY,
     _WEB_TRACE_ID_HEADER  : CONFIG._WEB_TRACE_ID_HEADER,
     _WEB_PULL_LOG_TRACE_ID: CONFIG._WEB_PULL_LOG_TRACE_ID,
 
-    _FUNC_PKG_EXPORT_FILENAME           : CONFIG._FUNC_PKG_EXPORT_FILENAME,
-    _FUNC_PKG_EXPORT_EXT                : CONFIG._FUNC_PKG_EXPORT_EXT,
-    _FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST: CONFIG._FUNC_PKG_PASSWORD_LENGTH_RANGE_LIST,
+    _FUNC_EXPORT_FILENAME: CONFIG._FUNC_EXPORT_FILENAME,
 
     _FUNC_ARGUMENT_PLACEHOLDER_LIST: CONFIG._FUNC_ARGUMENT_PLACEHOLDER_LIST,
 
@@ -2076,7 +2073,7 @@ exports.getSystemConfig = function(req, res, next) {
     _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
     _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
 
-    _DISABLE_SCRIPT_SET_IMPORT: CONFIG._DISABLE_SCRIPT_SET_IMPORT,
+    _OFFICIAL_SCRIPT_MARKET: CONFIG._OFFICIAL_SCRIPT_MARKET,
 
     _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.mainAPI.uploadResource.files.$limitSize),
     _ARCH: process.arch, // x64|arm64
@@ -2123,7 +2120,7 @@ exports.getSystemConfig = function(req, res, next) {
 
         var variableConfigs = toolkit.jsonCopy(CONST.systemConfigs);
         dbRes.forEach(function(d) {
-          if (!toolkit.isNothing(d.value)) {
+          if (toolkit.notNothing(d.value)) {
             variableConfigs[d.id] = d.value;
           }
         });
@@ -2211,6 +2208,7 @@ exports.integratedSignIn = function(req, res, next) {
     // 登录成功
     var userId          = username;
     var userDisplayName = username;
+    var userEmail       = null;
     switch(typeof funcRetval) {
       // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
       case 'string':
@@ -2229,15 +2227,31 @@ exports.integratedSignIn = function(req, res, next) {
           }
         }
         userId = pickField(funcRetval, [
-          'id', 'uid',
-          'userId', 'user_id',
+          'id',
+          'uid',
+          'userid',
+          'userId',
+          'user_id',
         ]);
         userDisplayName = pickField(funcRetval, [
-          'name', 'title',
-          'fullname', 'full_name',
-          'displayName', 'display_name',
-          'realName', 'real_name',
-          'showName', 'show_name',
+          'name',
+          'title',
+          'fullname',
+          'full_name',
+          'displayName',
+          'display_name',
+          'realName',
+          'real_name',
+          'showName',
+          'show_name',
+          'nickName',
+          'nick_name',
+        ]);
+        userEmail = pickField(funcRetval, [
+          'mail',
+          'email',
+          'useremail',
+          'user_email',
         ]);
         break;
     }
@@ -2250,6 +2264,7 @@ exports.integratedSignIn = function(req, res, next) {
     authTokenObj.ig = true;
     authTokenObj.un = username
     authTokenObj.nm = userDisplayName;
+    authTokenObj.em = userEmail;
 
     var cacheKey     = auth.getCacheKey(authTokenObj);
     var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
@@ -2361,6 +2376,7 @@ exports.integratedAuthMid = function(req, res, next) {
       id              : xAuthTokenObj.uid,
       username        : xAuthTokenObj.un,
       name            : xAuthTokenObj.nm,
+      email           : xAuthTokenObj.em,
       roles           : ['user'].join(','),
       customPrivileges: ['systemConfig_r'].join(','),
       isIntegratedUser: xAuthTokenObj.ig,
@@ -2573,7 +2589,7 @@ exports.installPythonPackage = function(req, res, next) {
       ];
 
       // 启用镜像源
-      if (!toolkit.isNothing(mirror)) {
+      if (toolkit.notNothing(mirror)) {
         cmdArgs.push('-i', mirror);
       }
 
@@ -2797,8 +2813,8 @@ exports.operateResource = function(req, res, next) {
     case 'mv':
       var newName = operationArgument;
       var newAbsPath = newName[0] === '/'
-                     ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
-                     : path.join(currentAbsDir, newName);
+                      ? path.join(CONFIG.RESOURCE_ROOT_PATH, newName)
+                      : path.join(currentAbsDir, newName);
 
       if (fs.existsSync(newAbsPath)) {
         return next(new E('EBizCondition', 'Specified new file or folder name already existed'));
@@ -2821,8 +2837,13 @@ exports.operateResource = function(req, res, next) {
       break;
   }
 
-  var opt = { cwd: currentAbsDir };
-  childProcess.execFile(cmd, cmdArgs, opt, function(err, stdout, stderr) {
+  var cmdOpt = {
+    cwd  : currentAbsDir,
+    stdio: 'ignore',
+  };
+  childProcess.spawn(cmd, cmdArgs, cmdOpt).on('close', function(code) {
+    var err = code === 0 ? null : new E('EBizCondition', 'Resource operation Failed');
+
     if (err) return next(err);
     return res.locals.sendJSON();
   });
@@ -2922,38 +2943,6 @@ exports.fileService = function(req, res, next) {
         return res.locals.render('file-service', pageData);
       }
     });
-  });
-};
-
-// 获取脚本包索引
-exports.getScriptPackageIndex = function(req, res, next) {
-  var indexURL = req.query.indexURL || CONFIG.OFFICIAL_PACKAGE_INDEX_URL;
-
-  var requestOptions = {
-    forever: true,
-    timeout: 3 * 1000,
-    method : 'get',
-    url    : indexURL,
-    json   : true,
-  };
-  request(requestOptions, function(err, _res, _body) {
-    // 是否可以访问脚本市场
-    if (err) {
-      return next(new E('ESysNetwork', err.toString()));
-    }
-
-    // 简单检查是否有效
-    var isInvalidIndex = false;
-    if (!Array.isArray(_body)) {
-      isInvalidIndex = true;
-    }
-
-    if (isInvalidIndex) {
-      return next(new E('EBizBadData', 'Invalid package index'));
-    }
-
-    var ret = toolkit.initRet(_body);
-    return res.locals.sendJSON(ret);
   });
 };
 
@@ -3078,7 +3067,7 @@ exports.metrics = function(req, res, next) {
           METRIC_MAP[metric] = promMetric;
         }
 
-        var now = parseInt(Date.now() / 1000);
+        var now = toolkit.getTimestamp();
         var opt = {
           start    : now - interval * 2,
           groupTime: interval,

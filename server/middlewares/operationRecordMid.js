@@ -14,7 +14,7 @@ exports.prepare = function(req, res, next) {
   // Query部分
   var reqQuery = null;
   try {
-    if (!toolkit.isNothing(req.query)) {
+    if (toolkit.notNothing(req.query)) {
       reqQuery = toolkit.jsonCopy(req.query);
     }
 
@@ -25,7 +25,7 @@ exports.prepare = function(req, res, next) {
   // Params部分
   var reqParams = null;
   try {
-    if (!toolkit.isNothing(req.query)) {
+    if (toolkit.notNothing(req.query)) {
       reqParams = toolkit.jsonCopy(req.query);
     }
 
@@ -36,7 +36,7 @@ exports.prepare = function(req, res, next) {
   // Body部分
   var reqBody = null;
   try {
-    if (!toolkit.isNothing(req.body)) {
+    if (toolkit.notNothing(req.body)) {
       if (Buffer.isBuffer(req.body)) {
         reqBody = JSON.stringify(toolkit.strf('<Buffer, size={0}>', req.body.length));
       } else if ('string' === typeof req.body) {
@@ -56,7 +56,7 @@ exports.prepare = function(req, res, next) {
 
   var reqFileInfo = null;
   try {
-    if (!toolkit.isNothing(req.files)) {
+    if (toolkit.notNothing(req.files)) {
       reqFileInfo = []
       req.files.forEach(function(f) {
         reqFileInfo.push({

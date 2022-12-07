@@ -199,7 +199,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/task-info/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(d => {
         // 判断是否存在主、子任务

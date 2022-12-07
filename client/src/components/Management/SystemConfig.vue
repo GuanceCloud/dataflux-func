@@ -1,10 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Custom Site Title  : 自定义网站标题
-Custom Site Favicon: 自定义网站 Favicon
-Custom Site Logo   : 自定义网站 Logo
-Notice Bar         : 顶部提示栏
-Navi Bar Doc Link  : 导航栏文档链接
-Monitor Data Upload: 监控数据上报
+Custom Site Title     : 自定义网站标题
+Custom Site Favicon   : 自定义网站 Favicon
+Custom Site Logo      : 自定义网站 Logo
+Notice Bar            : 顶部提示栏
+Navi Bar Doc Link     : 导航栏文档链接
+Monitor Data Upload   : 监控数据上报
+Official Script Market: 官方脚本市场
 
 Enable: 启用
 Text  : 文案
@@ -183,6 +184,16 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                     v-model="form['MONITOR_DATA_UPLOAD_URL']"></el-input>
                 </el-form-item>
 
+                <!-- 官方脚本市场 -->
+                <el-divider content-position="left"><h3>{{ $t('Official Script Market') }}</h3></el-divider>
+
+                <el-form-item :label="$t('Enable')" prop="OFFICIAL_SCRIPT_MARKET_ENABLED">
+                  <el-select v-model="form['OFFICIAL_SCRIPT_MARKET_ENABLED']" :class="enableClass(form['OFFICIAL_SCRIPT_MARKET_ENABLED'])">
+                    <el-option :label="$t('Enabled')" key="true"   :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
                 <el-form-item>
                   <div class="setup-right">
                     <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
@@ -248,7 +259,7 @@ export default {
           params: { id: id },
           body  : { data: { value: value } },
         });
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
       }
 
       if (!apiRes || apiRes.ok) {

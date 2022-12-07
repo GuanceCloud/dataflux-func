@@ -121,14 +121,14 @@ Welcome: 欢迎
                 可以指定函数执行长耗时任务
               </li>
               <li>
-                <i class="fa fa-fw fa-cloud-download"></i> 脚本包导出&#12288;
+                <i class="fa fa-fw fa-cloud-download"></i> 脚本集导出&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以指定脚本包进行导出，用于备份、分发脚本包等用途
+                可以指定脚本集进行导出，用于备份、分发脚本集等用途
               </li>
               <li>
-                <i class="fa fa-fw fa-cloud-upload"></i> 脚本包导入&#12288;
+                <i class="fa fa-fw fa-cloud-upload"></i> 脚本集导入&#12288;
                 <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以导入从之前导出的脚本包
+                可以导入从之前导出的脚本集
               </li>
               <li>
                 <i class="fa fa-fw fa-history"></i> 脚本库还原&#12288;

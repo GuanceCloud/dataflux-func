@@ -287,7 +287,7 @@ export default {
         return apiBody;
       }
 
-      if (!this.T.isNothing(apiBody.kwargs)) {
+      if (this.T.notNothing(apiBody.kwargs)) {
         for (let k in apiBody.kwargs) {
           // 不展示**kwargs、files
           if (k.indexOf('**') === 0 || k === 'files') {
@@ -408,7 +408,7 @@ export default {
           url = this.apiURLExample;
           headerOpt = `-H "Content-Type: application/json"`;
 
-          if (!this.T.isNothing(apiBody)) {
+          if (this.T.notNothing(apiBody)) {
             dataOpt = `-d '${JSON.stringify(apiBody)}'`;
           }
 
@@ -420,7 +420,7 @@ export default {
           if (this.supportFileUpload) {
             headerOpt = `-H "Content-Type: multipart/form-data"`;
 
-            if (!this.T.isNothing(apiBody.kwargs)) {
+            if (this.T.notNothing(apiBody.kwargs)) {
               for (let k in apiBody.kwargs) {
                 dataOpt += ` -F '${k}=${apiBody.kwargs[k]}'`;
               }
@@ -430,7 +430,7 @@ export default {
           } else {
             headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
 
-            if (!this.T.isNothing(apiBody.kwargs)) {
+            if (this.T.notNothing(apiBody.kwargs)) {
               dataOpt += ` -d '${this.T.formatQuery(apiBody.kwargs)}'`;
             }
           }
@@ -441,13 +441,13 @@ export default {
           url = `${this.apiURLExample}/${format}`;
           headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
 
-          if (!this.T.isNothing(apiBody.kwargs)) {
+          if (this.T.notNothing(apiBody.kwargs)) {
             for (let k in apiBody.kwargs) {
               dataOpt += ` -F kwargs_${k}=${apiBody.kwargs[k]}`;
             }
           }
 
-          if (!this.T.isNothing(apiBody.options)) {
+          if (this.T.notNothing(apiBody.options)) {
             for (let k in apiBody.options) {
               dataOpt += ` -F options_${k}=${apiBody.options[k]}`;
             }

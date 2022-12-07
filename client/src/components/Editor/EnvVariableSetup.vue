@@ -2,10 +2,7 @@
 Add ENV  : 添加环境变量
 Setup ENV: 配置环境变量
 
-Title      : 标题
-Description: 描述
-Value      : 值
-Value Type : 值类型
+Value Type: 值类型
 
 Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
@@ -122,7 +119,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -152,7 +149,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('ENV Variable created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name  : 'env-variable-setup',
@@ -169,7 +166,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('ENV Variable saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // await this.loadData();
       this.$store.commit('updateEnvVariableListSyncTime');
@@ -181,7 +178,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('ENV Variable deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',

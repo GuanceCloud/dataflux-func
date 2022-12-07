@@ -22,7 +22,7 @@ Publish time                  : 发布时间
 Never published               : 从未发布
 System builtin                : 系统内置
 Recent operations             : 最近操作记录
-recentOperationCount          : 最近{n}条
+recentOperationCount          : 最近 {n} 条
 Time                          : 时间
 Client                        : 客户端
 Client ID                     : 客户端ID
@@ -121,11 +121,7 @@ Pressure                      : 压力
 
           <el-table-column :label="$t('Publish time')" sortable sort-by="latestPublishTimestamp" align="right" width="200">
             <template slot-scope="scope">
-              <template v-if="!scope.row.latestPublishTime">
-                <span v-if="scope.row.publishVersion === 0" class="text-info">{{ $t('Never published') }}</span>
-                <span v-else class="text-info">{{ $t('System builtin') }}</span>
-              </template>
-              <template v-else>
+              <template v-if="scope.row.latestPublishTime">
                 <span>{{ scope.row.latestPublishTime | datetime }}</span>
                 <br>
                 <span class="text-info">{{ scope.row.latestPublishTime | fromNow }}</span>
@@ -155,7 +151,7 @@ Pressure                      : 压力
                 <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
               </template>
 
-              <template v-if="!T.isNothing(scope.row.clientIPsJSON)">
+              <template v-if="T.notNothing(scope.row.clientIPsJSON)">
                 <br>
                 <span class="text-info">&#12288;{{ $t('IP Address') }}{{ $t(':') }}</span>
                 <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
@@ -228,14 +224,14 @@ export default {
       options = options || {};
 
       let _query = null;
-      if (!this.T.isNothing(sections)) {
+      if (this.T.notNothing(sections)) {
         _query = { sections: sections.join(',') };
       }
       let apiRes = await this.T.callAPI_get('/api/v1/func/overview', {
         query: _query,
         alert: { muteError: options.mute },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       if (apiRes.data.scriptOverview) {
         apiRes.data.scriptOverview.forEach(d => {

@@ -2,8 +2,6 @@
 Add Script Set  : 添加脚本集
 Setup Script Set: 配置脚本集
 
-Title       : 标题
-Description : 描述
 Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
@@ -137,7 +135,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -175,7 +173,7 @@ export default {
         body : { data: this.T.jsonCopy(this.form) },
         alert: { okMessage: this.$t('Script Set created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
@@ -193,7 +191,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('Script Set saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       // await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
@@ -207,7 +205,7 @@ export default {
         params: { id: this.scriptSetId },
         alert : { okMessage: this.$t('Script Set deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name: 'intro',
@@ -244,7 +242,7 @@ export default {
         body  : { newId: newScriptSetId },
         alert : { okMessage: this.$t('Script Set cloned') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
     },

@@ -30,6 +30,7 @@ en: {}
   Current user has been disabled                                                                          : 当前用户已被禁用
   Data of Socket.io must be a JSON string                                                                 : Socket.io数据必须为JSON字符串
   Deleting builtin Connector is not allowed                                                               : 不允许删除内置连接器
+  Empty import file                                                                                       : 导入文件为空
   Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io事件必须满足格式"socketio.*"
   Export failed                                                                                           : 导出失败
   File not exists                                                                                         : 文件不存在
@@ -47,18 +48,16 @@ en: {}
   ID of file service already exists                                                                       : 文件服务ID已存在
   ID of script already exists                                                                             : 脚本ID已存在
   ID of script set already exists                                                                         : 脚本集ID已存在
-  Import source not specified                                                                             : 未指定导入源
-  Importing data not found                                                                                : 找不到导入数据
-  Importing from such recover point not supported                                                         : 不支持从此还原点导入
   Install Python package failed                                                                           : 安装Python包失败
   Invalid Auth Token                                                                                      : 认证令牌无效
   Invalid captcha                                                                                         : 验证码无效
   Invalid captcha token                                                                                   : 验证码令牌无效
   Invalid config JSON                                                                                     : 配置无效
+  Invalid import file                                                                                     : 无效的导入文件
   Invalid kwargs, bad JSON format                                                                         : 函数参数无效，无法解析为JSON
   Invalid old password                                                                                    : 旧密码无效
-  Invalid options, apiTimeout is too large                                                                : 配置错误，apiTimeout过大
-  Invalid options, apiTimeout is too small                                                                : 配置错误，apitimeout过小
+  Invalid options, api_timeout is too large                                                               : 配置错误，api_timeout过大
+  Invalid options, api_timeout is too small                                                               : 配置错误，api_timeout过小
   Invalid options, bad JSON format                                                                        : 配置错误，无法解析为JSON
   Invalid options, eta should be a valid datetime value                                                   : 配置错误，eta必须为有效的日期-时间值
   Invalid options, execMode should be "async" in Crontab or Batch calling                                 : 配置错误，调用自动触发或批处理时，execMode必须为"async"
@@ -69,7 +68,6 @@ en: {}
   Invalid options, timeout is too large                                                                   : 配置错误，timeout过大
   Invalid options, timeout is too small                                                                   : 配置错误，timeout过小
   Invalid package index                                                                                   : 包索引无效
-  Invalid password, please check if the password is entered correctly                                     : 密码错误，请检查密码是否输入正确
   Invalid request body                                                                                    : 请求体无效
   Invalid request post data                                                                               : 请求体数据无效
   Invalid request query                                                                                   : 请求参数无效
@@ -91,7 +89,6 @@ en: {}
   Query timeout                                                                                           : 查询超时
   Read cache error                                                                                        : 缓存读取失败
   Script draft already changed                                                                            : 脚本草稿已发生变化
-  Script importing, installing, recovering is disabled, please contact your administrator.                : 脚本导入、安装、还原功能已被禁用，请联系管理员
   Script not edited                                                                                       : 脚本尚未修改
   Sign-in function returned False or nothing                                                              : 登录函数返回False或空内容
   Sign-in function timeout                                                                                : 登录函数超时
@@ -106,6 +103,7 @@ en: {}
   This script set is locked by other user                                                                 : 此脚本集已被其他用户锁定
   This username is already existed                                                                        : 此用户名已存在
   This username is used by others                                                                         : 此用户名已被其他用户使用
+  Accessing git repo timeout                                                                              : 访问 git 库超时
   Too many tasks in worker queue                                                                          : 工作队列中任务过多
   Unknow auth type                                                                                        : 认证类型未知
   Unknow event of Socket.io                                                                               : Socket.io事件未知

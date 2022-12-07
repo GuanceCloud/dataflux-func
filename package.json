@@ -1,12 +1,13 @@
 {
   "name": "dataflux-func",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": ""
   },
   "dependencies": {
+    "adm-zip": "0.5.9",
     "async": "2.6.4",
     "babyparse": "0.4.6",
     "body-parser": "1.20.0",
@@ -30,6 +31,7 @@
     "jsonwebtoken": "8.5.1",
     "jszip": "3.10.1",
     "lru-cache": "6.0.0",
+    "markdown-table": "2.0.0",
     "marked": "4.0.18",
     "micromatch": "4.0.5",
     "moment": "2.29.4",
@@ -45,12 +47,14 @@
     "redis": "3.1.2",
     "request": "2.88.2",
     "serve-favicon": "2.5.0",
+    "simple-git": "3.14.1",
     "socket.io": "2.5.0",
     "socket.io-redis": "5.4.0",
     "sorted-json": "0.2.6",
     "splitargs": "0.0.7",
     "sqlstring": "2.3.3",
     "sqlstring-sqlite": "0.1.1",
+    "string-width": "4.2.3",
     "svg-captcha": "1.4.0",
     "uuid": "8.3.2",
     "validator": "10.11.0",

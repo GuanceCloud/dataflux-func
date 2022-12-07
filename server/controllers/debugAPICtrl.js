@@ -27,10 +27,10 @@ exports.putTask = function(req, res, next) {
 
   var taskOptions = req.body.task.options || {};
 
-  if (!toolkit.isNothing(taskOptions.eta)) {
+  if (toolkit.notNothing(taskOptions.eta)) {
     taskOptions.eta = toolkit.getISO8601(taskOptions.eta);
   }
-  if (!toolkit.isNothing(taskOptions.expires)) {
+  if (toolkit.notNothing(taskOptions.expires)) {
     taskOptions.expires = toolkit.getISO8601(taskOptions.expires);
   }
 

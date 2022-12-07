@@ -37,23 +37,23 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
                 <span class="text-info">&#12288;ID</span>
                 <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="!T.isNothing(scope.row.tagsJSON) || !T.isNothing(scope.row.funcTagsJSON)">
+                <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.funcTagsJSON)">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Tags') }}</span>
                   <el-tag size="mini" type="info" v-for="t in scope.row.funcTagsJSON" :key="t">{{ t }}</el-tag>
                   <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
 
-                <template v-if="!T.isNothing(scope.row.funcCategory) || !T.isNothing(scope.row.funcIntegration) || !T.isNothing(scope.row.funcTagsJSON)">
+                <template v-if="T.notNothing(scope.row.funcCategory) || T.notNothing(scope.row.funcIntegration) || T.notNothing(scope.row.funcTagsJSON)">
                   <br>
-                  <template v-if="!T.isNothing(scope.row.funcCategory)">
+                  <template v-if="T.notNothing(scope.row.funcCategory)">
                     <span class="text-info">&#12288;分类</span>
                     <el-tag size="mini">
                       <code>{{ scope.row.funcCategory }}</code>
                     </el-tag>
                   </template>
 
-                  <template v-if="!T.isNothing(scope.row.funcIntegration)">
+                  <template v-if="T.notNothing(scope.row.funcIntegration)">
                     <span class="text-info">&#12288;集成</span>
                     <el-tag size="mini">
                       <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
@@ -144,7 +144,7 @@ export default {
   methods: {
     async loadData() {
       let apiRes = await this.T.callAPI_get('/api/v1/auth-link-func-list');
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -153,14 +153,14 @@ export default {
     async showAPI(d) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
         baseURL: true,
-        params : {id: d.id},
+        params : { id: d.id },
       });
 
       let funcCallKwargsJSON = {};

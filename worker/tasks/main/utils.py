@@ -727,14 +727,14 @@ class AutoCleanTask(BaseTask):
             self.db.non_query(sql, sql_params)
 
     def clear_deprecated_data(self):
-        self.clear_table('biz_main_script_log')
-        self.clear_table('biz_main_script_failure')
-        self.clear_table('biz_main_batch_task_info')
-        self.clear_table('biz_main_crontab_task_info')
-        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptFailure'))
-        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'scriptLog'))
-        self.clear_cache_key(toolkit.get_cache_key('syncCache', 'taskInfo'))
-        self.clear_cache_key_pattern(toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', '*' ]))
+        for table in CONFIG['_DEPRECATED_TABLE_LIST']:
+            self.clear_table(table)
+
+        for cache in CONFIG['_DEPRECATED_CACHE_KEY_LIST']:
+            self.clear_cache_key(toolkit.get_cache_key(**cache))
+
+        for cache in CONFIG['_DEPRECATED_CACHE_KEY_PATTERN_LIST']:
+            self.clear_cache_key_pattern(toolkit.get_cache_key(**cache))
 
 @app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):

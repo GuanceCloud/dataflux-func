@@ -1,5 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
+Select a file: 选择文件
 Data imported: 数据已导入
+Importing: 即将导入
+Imported contents do not include sensitive data (such as password), please re-entered them after import: 导入内容不包含敏感数据，请在导入后重新输入
+Drag and drop the file here, or click here to upload: 将文件拖到此处，或点击此处上传
 
 Imported Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
 </i18n>
@@ -10,11 +14,11 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ modeName }}脚本包</span>
+          <span>{{ $t('Import Script Sets') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
-              脚本包导入历史
+              {{ $t('Script Set Import History') }}
             </el-button>
           </div>
         </div>
@@ -25,34 +29,25 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item label="导入脚本包" prop="upload">
+              <el-form ref="form" label-width="135px">
+                <el-form-item :label="$t('Select a file')" prop="upload">
                   <el-upload drag ref="upload" :class="uploadAreaBorderClass"
                     :limit="2"
                     :multiple="false"
                     :auto-upload="false"
                     :show-file-list="false"
-                    :accept="$store.getters.CONFIG('_FUNC_PKG_EXPORT_EXT')"
+                    accept=".zip"
                     :http-request="handleUpload"
                     :on-change="onUploadFileChange">
                     <i class="fa" :class="uploadAreaIconClass"></i>
-                    <div class="el-upload__text">{{ uploadAreaIconText }}</div>
+                    <div class="el-upload__text">{{ $t(uploadAreaIconText) }}</div>
                   </el-upload>
-                </el-form-item>
-
-                <el-form-item label="导入令牌" prop="password">
-                  <el-input
-                    resize="none"
-                    maxlength="64"
-                    show-word-limit
-                    v-model="form.password"></el-input>
-                  <InfoBlock title="填写导出时提示的密码，无密码则留空即可"></InfoBlock>
-                  <InfoBlock type="warning" title="脚本包附带导入的连接器，密码等敏感信息需要重新输入"></InfoBlock>
+                  <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item>
                   <div class="setup-right">
-                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -64,38 +59,51 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       </el-main>
 
       <el-dialog
-        title="即将导入脚本包"
+        :title="$t('Importing')"
         :visible.sync="showConfirm"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         :show-close="true"
         width="750px">
-        <span class="import-token-dialog-content">
-          <template v-if="checkResult && checkResult.diff">
-            <template v-if="!T.isNothing(checkResult.diff.add)">
-              <span class="text-good">新增脚本集：</span>
-              <el-tag size="medium" type="success" v-for="d in checkResult.diff.add" :key="d.id">{{ d.title || d.id }}</el-tag>
-              <hr class="br">
-            </template>
-
-            <template v-if="!T.isNothing(checkResult.diff.replace)">
-              <span class="text-watch">替换脚本集：</span>
-              <el-tag size="medium" type="warning" v-for="d in checkResult.diff.replace" :key="d.id">{{ d.title || d.id }}</el-tag>
-              <InfoBlock type="warning" title="被替换的脚本集下所有脚本文件会被完整替换为新版本，新版本中不存在的脚本文件会被删除"></InfoBlock>
-              <hr class="br">
+        <span class="import-info-dialog-content">
+          <template v-if="importInfo && importInfo.diff">
+            <template v-for="t in C.IMPORT_DATA_TYPE">
+              <template v-if="T.notNothing(importInfo.diff[t.key])">
+                <el-divider content-position="left"><h3>{{ t.name }}</h3></el-divider>
+                <el-table :data="importInfo.diff[t.key]"
+                  :show-header="false">
+                  <el-table-column width="180" align="center">
+                    <template slot-scope="scope">
+                      <strong :class="DIFF_TYPE_MAP[scope.row.diffType].class">
+                        <i class="fa" :class="DIFF_TYPE_MAP[scope.row.diffType].icon"></i>
+                        {{ $t(scope.row.diffType) }}
+                      </strong>
+                    </template>
+                  </el-table-column>
+                  <el-table-column>
+                    <template slot-scope="scope">
+                      <span>{{ scope.row[t.showField] || scope.row.id }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column>
+                    <template slot-scope="scope">
+                      <small>ID <code class="text-code">{{ scope.row.id }}</code></small>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </template>
             </template>
           </template>
 
-          <template v-if="checkResult && checkResult.summary && checkResult.summary.note">
-            <span class="text-info">备注：</span>
-            <pre class="import-note">{{ checkResult.summary.note }}</pre>
-            <hr class="br">
+          <template v-if="importInfo && importInfo.note">
+            <el-divider content-position="left"><h3>{{ $t('Note') }}</h3></el-divider>
+            <pre class="import-note">{{ importInfo.note }}</pre>
           </template>
         </span>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="showConfirm = false">取消</el-button>
+          <el-button @click="showConfirm = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" v-prevent-re-click @click="confirmImport" :loading="isImporting">
-            确认导入
+            {{ $t('Confirm') }}
           </el-button>
         </span>
       </el-dialog>
@@ -117,12 +125,6 @@ export default {
   },
   methods: {
     async submitData() {
-      try {
-        await this.$refs.form.validate();
-      } catch(err) {
-        return console.error(err);
-      }
-
       switch(this.T.setupPageMode()) {
         case 'import':
           return await this.$refs.upload.submit();
@@ -130,13 +132,6 @@ export default {
     },
     async handleUpload(req) {
       let bodyData = new FormData();
-
-      let _data = this.T.jsonCopy(this.form);
-      for (let k in _data) if (_data.hasOwnProperty(k)) {
-        let v = _data[k];
-        bodyData.append(k, v);
-      }
-
       bodyData.append('checkOnly', true);
       bodyData.append('files', req.file);
 
@@ -147,14 +142,15 @@ export default {
         return this.alertOnError(apiRes);
       }
 
+      this.importInfo = apiRes.data;
+
       // 打开确认对话框
       this.showConfirm = true;
-      this.checkResult = apiRes.data;
     },
     async confirmImport() {
       this.isImporting = true;
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/confirm-import', {
-        body : { confirmId: this.checkResult.confirmId },
+        body : { confirmId: this.importInfo.confirmId },
         alert: { okMessage: this.$t('Data imported') },
       });
       this.isImporting = false;
@@ -162,40 +158,30 @@ export default {
         return this.alertOnError(apiRes);
       }
 
-      if (this.T.isNothing(apiRes.data.pkgs)) {
+      if (this.T.isNothing(apiRes.data.requirements)) {
         this.goToHistory();
 
       } else {
         this.showConfirm = false;
 
-        if (!await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
-          this.goToHistory();
-
+        if (await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
+          return this.common.goToPIPTools(apiRes.data.requirements);
         } else {
-          let pkgs = apiRes.data.pkgs.join(' ');
-          this.$router.push({
-            name: 'pip-tool',
-            query: { pkgs: this.T.getBase64(pkgs) },
-          });
+          this.goToHistory();
         }
       }
     },
     alertOnError(apiRes) {
       if (apiRes.ok) return;
 
-      this.form.password = '';
       this.initFilePreview();
-
-      setImmediate(() => {
-        this.$refs.form.clearValidate();
-      });
     },
     initFilePreview() {
       this.$refs.upload.clearFiles();
 
       this.uploadAreaBorderClass = [];
       this.uploadAreaIconClass   = ['fa-cloud-upload'];
-      this.uploadAreaIconText    = '将文件拖到此处，或点击此处上传';
+      this.uploadAreaIconText    = 'Drag and drop the file here, or click here to upload';
     },
     showFilePreview(filename) {
       this.uploadAreaBorderClass = ['upload-area-active'];
@@ -219,11 +205,17 @@ export default {
     },
   },
   computed: {
-    modeName() {
-      const nameMap = {
-        import: '导入',
-      };
-      return nameMap[this.T.setupPageMode()];
+    DIFF_TYPE_MAP() {
+      return {
+        add: {
+          icon : 'fa-plus',
+          class: 'text-good',
+        },
+        replace: {
+          icon : 'fa-refresh',
+          class: 'text-bad',
+        }
+      }
     },
   },
   props: {
@@ -234,19 +226,13 @@ export default {
 
       uploadAreaBorderClass: [],
       uploadAreaIconClass  : ['fa-cloud-upload'],
-      uploadAreaIconText   : '将文件拖到此处，或点击此处上传',
+      uploadAreaIconText   : 'Drag and drop the file here, or click here to upload',
 
       disableUpload: true,
       showConfirm  : false,
       isImporting  : false,
 
-      checkResult: {},
-
-      form: {
-        password: '',
-      },
-      formRules: {
-      },
+      importInfo: {},
     }
   },
   created() {
@@ -262,18 +248,10 @@ export default {
 }
 </style>
 <style scoped>
-.import-token-dialog-content {
-  display: block;
-  font-size: 18px;
-  line-height: 50px;
-}
-.import-token-dialog-content .el-tag+.el-tag {
-  margin-left: 10px;
-}
 .import-note {
   margin: 0;
   padding: 0;
-  line-height: 1;
+  line-height: 1.5;
   font-size: 16px;
   padding-left: 20px;
 }

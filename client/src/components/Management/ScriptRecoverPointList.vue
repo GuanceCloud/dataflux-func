@@ -76,9 +76,9 @@ export default {
     async loadData(pageNumber) {
       // 只加载近若干条
       let apiRes = await this.T.callAPI_get('/api/v1/script-recover-points/do/list', {
-        query: { pageSize: 50 },
+        query: { pageSize: 20 },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
 
@@ -97,20 +97,10 @@ export default {
       let apiRes = null;
       switch(operation) {
         case 'recover':
-          if (d.hasExportData) {
-            // 新版还原点，通过导入方式还原
-            apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/import', {
-              body : { scriptRecoverPointId: d.id },
-              alert: { okMessage: this.$t('Script Lib recovered') },
-            });
-
-          } else if (d.hasTableDumpJSON) {
-            // 旧版还原点，通过JSON数据还原
-            apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/:id/do/recover', {
-              params: { id: d.id },
-              alert : { okMessage: this.$t('Script Lib recovered') },
-            });
-          }
+          apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/:id/do/recover', {
+            params: { id: d.id },
+            alert : { okMessage: this.$t('Script Lib recovered') },
+          });
           break;
       }
       if (!apiRes || !apiRes.ok) return;

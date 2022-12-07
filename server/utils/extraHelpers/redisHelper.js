@@ -11,8 +11,8 @@ var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
 /* Lua */
-var LUA_UNLOCK_KEY_KEY_NUMBER = 1;
-var LUA_UNLOCK_KEY = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
+var LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
+var LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
 /* Configure */
 var LIMIT_ARGS_DUMP = 500;
@@ -621,6 +621,40 @@ RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback)
 };
 
 /**
+ * Lock by key (blocking)
+ *
+ * @param  {String}    lockKey
+ * @param  {String}    lockValue
+ * @param  {Integer}   maxLockTime
+ * @param  {Function}  callback
+ * @return {undefined}
+ */
+RedisHelper.prototype.lockWait = function(lockKey, lockValue, maxLockTime, maxWaitTime, callback) {
+  var self = this;
+
+  if (maxLockTime <= 0) maxLockTime = 1;
+  if (maxWaitTime <= 0) maxWaitTime = 1;
+
+  var interval = 300;
+  var times    = Math.ceil(maxWaitTime * 1000 / interval);
+
+  async.retry({ times: times, interval: interval }, function(asyncCallback) {
+    self.run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', function(err, cacheRes) {
+      if (err) return asyncCallback(err);
+
+      if (!cacheRes) {
+        return asyncCallback(new Error('Lock holded by other'));
+      } else {
+        return asyncCallback(null, 'OK');
+      }
+    });
+  }, function(err) {
+    if (err) return callback(new Error('Wait Lock timeout.'));
+    return callback();
+  });
+};
+
+/**
  * Extend lock time
  *
  * @param  {String}    lockKey
@@ -653,7 +687,7 @@ RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime,
  * @return {undefined}
  */
 RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
-  return this.run('EVAL', LUA_UNLOCK_KEY, LUA_UNLOCK_KEY_KEY_NUMBER, lockKey, lockValue, callback);
+  return this.run('EVAL', LUA_UNLOCK_SCRIPT, LUA_UNLOCK_SCRIPT_KEY_COUNT, lockKey, lockValue, callback);
 };
 
 /**
@@ -680,7 +714,7 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
   }
 
   options = options || {};
-  var timestamp = options.timestamp || parseInt(Date.now() / 1000);
+  var timestamp = options.timestamp || toolkit.getTimestamp();
   var value     = options.value     || 0;
   var mode      = options.mode      || 'update';
 
@@ -736,7 +770,7 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
     function(asyncCallback) {
       if (!self.config.tsMaxPeriod) return asyncCallback();
 
-      var minTimestamp = parseInt(Date.now() / 1000) - self.config.tsMaxPeriod;
+      var minTimestamp = toolkit.getTimestamp() - self.config.tsMaxPeriod;
       self.client.zremrangebyscore(key, '-inf', minTimestamp, asyncCallback);
     },
   ], function(err) {

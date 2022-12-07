@@ -129,6 +129,8 @@ EntityModel.prototype.modify = function(id, data, callback) {
 };
 
 function _doCipher(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
+
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
 
@@ -142,6 +144,8 @@ function _doCipher(configJSON) {
 };
 
 function _doDecipher(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
+
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
 
@@ -160,6 +164,8 @@ function _doDecipher(configJSON) {
 };
 
 function _removeCipherFields(configJSON) {
+  if (toolkit.isNothing(configJSON)) return configJSON;
+
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
     delete configJSON[fCipher];

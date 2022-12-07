@@ -92,7 +92,10 @@ Log and Cache cleared: 日志与缓存表已清空
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>{{ $t('Clear Worker Queue') }}</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">队列 #{{ q.name }} (存在 {{ q.value }} 个待处理任务)</el-dropdown-item>
+                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">
+                        队列 <span class="code-font">#{{ q.name }}</span>
+                        (存在 <span class="code-font">{{ q.value }}</span> 个待处理任务)
+                      </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-form-item>
@@ -124,7 +127,7 @@ export default {
     // 镜像信息
     async _getVersion() {
       let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
-      if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+      if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         this.about = {
           version         : apiRes.data.CI_COMMIT_REF_NAME,
           architecture    : apiRes.data.ARCHITECTURE,
@@ -173,7 +176,7 @@ export default {
       this.workerQueueLengthInfoTEXT = '';
 
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
-      if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+      if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         let _getInfo = (tsDataMap, unit, prefix) => {
           unit   = unit   || '';
           prefix = prefix || '';
@@ -248,7 +251,7 @@ export default {
       this.nodesStatsInfoTEXT = '';
 
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-stats');
-      if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+      if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
           let nodeShortName = d.node.split('@')[1];
@@ -277,7 +280,7 @@ export default {
       this.nodesActiveQueuesInfoTEXT = '';
 
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/nodes/do/get-active-queues');
-      if (apiRes.ok && !this.T.isNothing(apiRes.data)) {
+      if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         let infoLines = [];
         apiRes.data.forEach(d => {
           let nodeShortName = d.node.split('@')[1];

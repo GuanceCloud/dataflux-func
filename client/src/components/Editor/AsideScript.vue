@@ -9,8 +9,8 @@ failureCount  : 'Failure {n}'
 <i18n locale="zh-CN" lang="yaml">
 Jump to...                                     : 跳转到...
 Refresh                                        : 刷新列表
-Add Script                                     : 添加脚本
-Add Script Set                                 : 添加脚本集
+New Script                                     : 新建脚本
+New Script Set                                 : 新建脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
 Locked by other user({user})                   : 被其他用户（{user}）锁定
@@ -27,12 +27,14 @@ Code edited but not published yet              : 代码已修改但尚未发布
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
 
-Script Set pinned  : 脚本集已置顶
-Script Set unpinned: 脚本集已取消
-Script Set locked  : 脚本集已上锁
-Script Set unlocked: 脚本集已解锁
-Script locked      : 脚本已上锁
-Script unlocked    : 脚本已解锁
+Builtin Script Set          : 系统内置脚本集
+Installed form Script Market: 从脚本市场安装的脚本集
+Script Set pinned           : 脚本集已置顶
+Script Set unpinned         : 脚本集已取消
+Script Set locked           : 脚本集已上锁
+Script Set unlocked         : 脚本集已解锁
+Script locked               : 脚本已上锁
+Script unlocked             : 脚本已解锁
 
 Config    : 配置
 Auth      : 认证
@@ -76,7 +78,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
           <el-tag v-else-if="item.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
           {{ item.label }}
         </span>
-        <code class="select-item-id">ID: {{ item.id }}</code>
+        <code class="select-item-id code-font">ID: {{ item.id }}</code>
       </el-option>
     </el-select>
 
@@ -110,6 +112,9 @@ Crontab Config Task sent: 自动触发配置任务已发送
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
+            <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Builtin Script Set')"></InfoBlock>
+            <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')"></InfoBlock>
+
             <CopyButton :content="data.id" tip-placement="left"></CopyButton>
             ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
 
@@ -144,7 +149,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
                 :disabled="!data.isEditable"
                 @click="openEntity(node, data, 'add')">
                 <i class="fa fa-fw fa-plus"></i>
-                {{ $t('Add Script') }}
+                {{ $t('New Script') }}
               </el-button>
 
               <!-- 快速查看 -->
@@ -201,30 +206,37 @@ Crontab Config Task sent: 自动触发配置任务已发送
                 {{ $t('Batch') }}
               </el-button>
 
+              <!-- 前往脚本市场 -->
+              <el-button v-if="data.origin === 'scriptMarket' && data.originId"
+                size="mini"
+                @click="openEntity(node, data, 'scriptMarket')">
+                <i class="fa fa-fw fa-shopping-cart"></i>
+                {{ $t('Script Market') }}
+              </el-button>
             </el-button-group>
           </template>
 
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
-            <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
+            <span :class="{'text-watch': data.origin === 'builtin', 'text-main': data.origin === 'scriptMarket', 'text-bad': data.isPinned}">
               <el-link v-if="data.type === 'refresh'" type="primary">
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
               <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Script Set') }}
+                <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
               </el-link>
               <div v-else>
-                <i v-if="data.type === 'scriptSet'" class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
+                <template v-if="data.type === 'scriptSet'">
+                  <i v-if="data.origin === 'builtin'" class="fa fa-fw fa-microchip"></i>
+                  <i v-else-if="data.origin === 'scriptMarket'" class="fa fa-fw fa-shopping-cart"></i>
+                  <i v-else class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
+                </template>
                 <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
                 <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
 
                 <el-tag v-if="data.isCodeEdited"
                   type="danger"
                   size="mini">{{ $t('Edited') }}</el-tag>
-                <el-tag v-if="data.isBuiltin"
-                  effect="dark"
-                  :type="data.isPinned ? 'danger':'warning'"
-                  size="mini">{{ $t('Builtin') }}</el-tag>
                 <span>{{ node.label }}</span>
               </div>
             </span>
@@ -253,7 +265,6 @@ Crontab Config Task sent: 自动触发配置任务已发送
 
     <el-dialog
       :visible.sync="showRelEntity"
-      :close-on-click-modal="false"
       width="1050px">
       <div slot="title">
         <FuncInfo
@@ -632,12 +643,13 @@ export default {
             'lockedByUserId',
             'lockedByUserUsername',
             'lockedByUserName',
+            'origin',
+            'originId',
             'pinTime',
-            'isBuiltin',
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(d => {
         // 记录节点
@@ -664,7 +676,8 @@ export default {
           isLocked       : isLocked,
           isPinned       : isPinned,
           pinTime        : d.pinTime,
-          isBuiltin      : d.isBuiltin,
+          origin         : d.origin,
+          originId       : d.originId,
 
           title      : d.title,
           description: d.description,
@@ -693,7 +706,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       window._DFF_scriptIds = [];
       apiRes.data.forEach(d => {
@@ -763,7 +776,7 @@ export default {
           ]
         },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       window._DFF_funcIds = [];
       apiRes.data.forEach(d => {
@@ -875,7 +888,7 @@ export default {
         body  : { data: { isPinned: isPinned } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
     },
@@ -902,7 +915,7 @@ export default {
         body  : { data: { isLocked: isLocked } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
     },
@@ -948,6 +961,13 @@ export default {
             this.$router.push({
               name  : 'script-set-setup',
               params: {id: data.id},
+            });
+
+          } else if (target === 'scriptMarket') {
+            // 前往脚本市场
+            this.$router.push({
+              name  : 'script-market-detail',
+              params: {id: data.originId},
             });
 
           } else {
@@ -1055,14 +1075,14 @@ export default {
     async showAPI(d, urlPattern) {
       // 获取函数详情
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let funcKwargs = apiRes.data.kwargsJSON;
 
       // 生成API请求示例
       let apiURLExample = this.T.formatURL(urlPattern, {
         baseURL: true,
-        params : {id: d.id},
+        params : { id: d.id },
       });
 
       let funcCallKwargsJSON = {};

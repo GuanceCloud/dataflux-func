@@ -4,7 +4,7 @@ import createPersistedState from 'vuex-persistedstate'
 import router from '@/router'
 
 import C from '@/const'
-import * as toolkit from '@/toolkit'
+import * as T from '@/toolkit'
 
 const STATE_CONFIG = {
   isSystemConfigLoaded                     : { persist: false, syncXTab: false },
@@ -31,7 +31,6 @@ const STATE_CONFIG = {
   Editor_splitPanePercent                  : { persist: false, syncXTab: false },
   TableList_scrollY                        : { persist: false, syncXTab: false },
   scriptListSyncTime                       : { persist: true,  syncXTab: true  },
-  scriptSetListSyncTime                    : { persist: true,  syncXTab: true  },
   connectorListSyncTime                    : { persist: true,  syncXTab: true  },
   envVariableListSyncTime                  : { persist: true,  syncXTab: true  },
   pageFilterSettings                       : { persist: true,  syncXTab: true  },
@@ -41,6 +40,8 @@ const STATE_CONFIG = {
   isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
   isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
+  lastestScriptMarketAuthor                : { persist: true,  syncXTab: true  },
+  scriptMarketCheckUpdateResult            : { persist: false, syncXTab: false },
 };
 const MUTATION_CONFIG = {
   updateSystemConfig                             : { persist: true  },
@@ -76,6 +77,8 @@ const MUTATION_CONFIG = {
   disableMonkeyPatchNotice                       : { persist: true  },
   resetMonkeyPatchNotice                         : { persist: true  },
   addFuzzySearchHistory                          : { persist: true  },
+  updateLastestScriptMarketAuthor                : { persist: true  },
+  updateScriptMarketCheckUpdateResult            : { persist: false },
 
   syncState: { persist: false },
 }
@@ -154,7 +157,6 @@ export default new Vuex.Store({
 
     // 列表同步时间
     scriptListSyncTime     : null,
-    scriptSetListSyncTime  : null,
     connectorListSyncTime  : null,
     envVariableListSyncTime: null,
 
@@ -176,6 +178,12 @@ export default new Vuex.Store({
 
     // FuzzySearch控件搜索历史
     fuzzySearchHistoryMap: null,
+
+    // 最后脚本市场作者
+    lastestScriptMarketAuthor: null,
+
+    // 脚本市场更新检查结果
+    scriptMarketCheckUpdateResult: null,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -199,7 +207,7 @@ export default new Vuex.Store({
     },
     clientId: state => {
       if (!state.clientId) {
-        state.clientId = 'c_ui_' + toolkit.genRandString(8);
+        state.clientId = 'c_ui_' + T.genRandString(8);
       }
 
       return state.clientId;
@@ -328,7 +336,7 @@ export default new Vuex.Store({
     updateConflictedRoute(state, payload) {
       let routeKey = getRouteKey(payload.routeInfo);
 
-      let nextConflictedRouteMap = toolkit.jsonCopy(state.conflictedRouteMap);
+      let nextConflictedRouteMap = T.jsonCopy(state.conflictedRouteMap);
       if (payload.isConflict) {
         nextConflictedRouteMap[routeKey] = payload.conflictId;
       } else {
@@ -409,7 +417,7 @@ export default new Vuex.Store({
         key = router.currentRoute.name;
       }
 
-      let y = toolkit.getTableScrollY();
+      let y = T.getTableScrollY();
       if (!state.TableList_scrollY) {
         let _map = {}
         _map[key] = y || 0;
@@ -476,6 +484,14 @@ export default new Vuex.Store({
       state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(0, 10);
     },
 
+    updateLastestScriptMarketAuthor(state, author) {
+      state.lastestScriptMarketAuthor = author;
+    },
+
+    updateScriptMarketCheckUpdateResult(state, updatedScriptSets) {
+      state.scriptMarketCheckUpdateResult = updatedScriptSets;
+    },
+
     syncState(state, nextState) {
       if (!nextState) return;
 
@@ -490,8 +506,8 @@ export default new Vuex.Store({
   },
   actions: {
     async reloadSystemConfig({ commit }) {
-      let apiRes = await toolkit.callAPI_get('/api/v1/func-system-config');
-      if (!apiRes.ok) return;
+      let apiRes = await T.callAPI_get('/api/v1/func-system-config');
+      if (!apiRes || !apiRes.ok) return;
 
       await commit('updateSystemConfig', apiRes.data);
       window._DFF_isSystemConfigLoaded = true;
@@ -499,13 +515,13 @@ export default new Vuex.Store({
     async reloadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;
 
-      let apiRes = await toolkit.callAPI_get('/api/v1/auth/profile/do/get');
-      if (!apiRes.ok) return;
+      let apiRes = await T.callAPI_get('/api/v1/auth/profile/do/get');
+      if (!apiRes || !apiRes.ok) return;
 
       commit('updateUserProfile', apiRes.data);
     },
     async signOut({ commit }) {
-      await toolkit.callAPI_get('/api/v1/auth/do/sign-out');
+      await T.callAPI_get('/api/v1/auth/do/sign-out');
 
       commit('updateSocketIOStatus', false);
       commit('updateXAuthToken', null);

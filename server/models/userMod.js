@@ -45,6 +45,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,u.id');
   sql.append('  ,u.username');
   sql.append('  ,u.name');
+  sql.append('  ,u.email');
   sql.append('  ,u.mobile');
   sql.append('  ,u.markers');
   sql.append('  ,u.roles');
@@ -98,7 +99,7 @@ EntityModel.prototype.modify = function(id, data, callback) {
     }
   }
 
-  if (!toolkit.isNothing(data.password)) {
+  if (toolkit.notNothing(data.password)) {
     // Get new password hash when changing password
     data.passwordHash = toolkit.getSaltedPasswordHash(
         id, data.password, CONFIG.SECRET);

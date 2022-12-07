@@ -125,14 +125,14 @@ exports.beforeAppCreate = function(callback) {
 };
 
 exports.afterAppCreated = function(app, server) {
-  g.runUpTime = parseInt(Date.now() / 1000);
+  g.runUpTime = toolkit.getTimestamp();
 
   var hostname = os.hostname();
 
   // Sys Stats
   var startCPUUsage = process.cpuUsage();
   function recordSysStats() {
-    var currentTimestamp = parseInt(Date.now() / 1000);
+    var currentTimestamp = toolkit.getTimestamp();
 
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();
@@ -277,26 +277,23 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 自动导入脚本包
-  if (CONFIG._DISABLE_AUTO_INSTALL_FUNC_PKGS) {
-    // 不导入脚本包时，删除自动导入脚本包标记
-    var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
-    app.locals.cacheDB.del(cacheKey);
+  // 自动安装脚本集
+  if (CONFIG._DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET) {
+      app.locals.logger.warning('Script Set auto installing is disabled.');
 
   } else {
-    // 导入脚本包时，记录脚本包ID方便后续标记自动导入的脚本包
     async.series([
       // 获取锁
       function(asyncCallback) {
-        var lockKey   = toolkit.getCacheKey('lock', 'autoImportPackage');
+        var lockKey   = toolkit.getCacheKey('lock', 'autoInstallScriptSet');
         var lockValue = Date.now().toString();
-        var lockAge   = CONFIG._FUNC_PKG_AUTO_INSTALL_LOCK_AGE;
+        var lockAge   = CONFIG._SCRIPT_SET_AUTO_INSTALL_LOCK_AGE;
 
         app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
           if (!cacheRes) {
-            var e = new Error('Function package auto importing is just launched');
+            var e = new Error('Script Set auto installing is just launched');
             e.isWarning = true;
             return asyncCallback(e);
           }
@@ -304,28 +301,26 @@ exports.afterAppCreated = function(app, server) {
           return asyncCallback();
         });
       },
-      // 安装脚本包
+      // 安装脚本集
       function(asyncCallback) {
-        // 获取脚本包列表
-        var funcPackagePath = path.join(__dirname, '../func-pkg/');
-        var funcPackages = fs.readdirSync(funcPackagePath);
-        funcPackages = funcPackages.filter(function(fileName) {
-          return toolkit.endsWith(fileName, CONFIG._FUNC_PKG_EXPORT_EXT);
+        // 获取内置脚本集列表
+        var builtinScriptSetDir = path.join(__dirname, '../builtin-script-sets/');
+        var filenamesToInstall  = fs.readdirSync(builtinScriptSetDir);
+        filenamesToInstall = filenamesToInstall.filter(function(fileName) {
+          return toolkit.endsWith(fileName, '.zip');
         });
 
-        if (toolkit.isNothing(funcPackages)) return asyncCallback();
+        if (toolkit.isNothing(filenamesToInstall)) return asyncCallback();
 
-        // 依次导入
+        // 初始化
         var watClient = new WATClient({ host: 'localhost', port: CONFIG.WEB_PORT });
-
-        // 本地临时认证令牌
         app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
 
-        var builtinScriptSetIds = [];
-        async.eachSeries(funcPackages, function(funcPackage, eachCallback) {
-          app.locals.logger.info('Auto install function package: {0}', funcPackage);
+        // 依次导入
+        async.eachSeries(filenamesToInstall, function(filename, eachCallback) {
+          app.locals.logger.info('Auto install Builtin Script Set: {0}', filename);
 
-          var filePath = path.join(funcPackagePath, funcPackage);
+          var filePath = path.join(builtinScriptSetDir, filename);
           var fileBuffer = fs.readFileSync(path.join(filePath));
 
           // 使用本地临时认证令牌认证
@@ -339,29 +334,19 @@ exports.afterAppCreated = function(app, server) {
             headers   : headers,
             path      : '/api/v1/script-sets/do/import',
             fileBuffer: fileBuffer,
-            filename  : funcPackage,
+            filename  : filename,
           }
           watClient.upload(opt, function(err, apiRes) {
             if (err) return eachCallback(err);
 
             if (!apiRes.ok) {
-              return eachCallback(new Error('Auto import package failed: ' + apiRes.message));
+              app.locals.cacheDB.lock(lockKey, lockValue);
+              return eachCallback(new Error('Auto install Script Set failed: ' + apiRes.message));
             }
-
-            apiRes.data.summary.scriptSets.forEach(function(scriptSet) {
-              builtinScriptSetIds.push(scriptSet.id);
-            });
 
             return eachCallback();
           });
-        }, function(err) {
-          if (err) return asyncCallback(err);
-
-          var cacheKey = toolkit.getCacheKey('cache', 'builtinScriptSetIds');
-          app.locals.cacheDB.set(cacheKey, JSON.stringify(builtinScriptSetIds));
-
-          return asyncCallback();
-        });
+        }, asyncCallback);
       },
     ], printError);
   }
@@ -494,7 +479,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
 
   if (shouldRecordOperation) {
     var reqParams = null;
-    if (!toolkit.isNothing(req.params)) {
+    if (toolkit.notNothing(req.params)) {
       reqParams = toolkit.jsonCopy(req.params);
     }
 

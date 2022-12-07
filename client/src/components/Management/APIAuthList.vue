@@ -13,9 +13,9 @@ andMoreUsers: '以及其他 {n} 个用户'
 
 API Auth deleted: API认证已删除
 
-No API Auth has ever been added: 从未添加过任何API认证
+No API Auth has ever been added: 从未添加过任何 API 认证
 
-Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
+Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
 </i18n>
 
 <template>
@@ -148,7 +148,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/api-auth/do/list', {
         query: _listQuery,
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
@@ -194,7 +194,7 @@ export default {
 
           this.$router.push({
             name  : 'api-auth-setup',
-            params: {id: d.id},
+            params: { id: d.id },
             query : nextRouteQuery,
           })
           break;

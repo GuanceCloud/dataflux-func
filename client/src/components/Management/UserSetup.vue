@@ -94,7 +94,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -132,7 +132,7 @@ export default {
         body : { data: _formData },
         alert: { okMessage: this.$t('User created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'user-list',
@@ -150,7 +150,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('User saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'user-list',

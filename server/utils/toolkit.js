@@ -8,6 +8,8 @@ var urlparse    = require('url').parse;
 var querystring = require('querystring');
 
 /* 3rd-party Modules */
+var fs        = require('fs-extra');
+var yaml      = require('js-yaml');
 var uuid      = require('uuid');
 var iconv     = require('iconv-lite');
 var babyparse = require('babyparse');
@@ -16,6 +18,7 @@ var nanoid    = require('nanoid').customAlphabet('0123456789abcdefghijklmnopqrst
 var moment    = require('moment');
 var Base64    = require('js-base64').Base64;
 var byteSize  = require('byte-size');
+var simpleGit = require('simple-git');
 
 var toolkit = exports;
 
@@ -492,13 +495,17 @@ var includeAny = toolkit.includeAny = function includeAny(o, keys) {
  * @param  {String} field
  * @return {Array}
  */
-var arrayElementValues = toolkit.arrayElementValues = function arrayElementValues(arr, field) {
+var arrayElementValues = toolkit.arrayElementValues = function arrayElementValues(arr, field, distinct) {
   if (!Array.isArray(arr)) return null;
 
   var picked = [];
   arr.forEach(function(element) {
     picked.push(element[field]);
   });
+
+  if (distinct) {
+    picked = noDuplication(picked);
+  }
 
   return picked;
 };
@@ -509,13 +516,18 @@ var arrayElementValues = toolkit.arrayElementValues = function arrayElementValue
  * @param  {String} keyField
  * @return {Object}
  */
-var arrayElementMap = toolkit.arrayElementMap = function arrayElementMap(arr, keyField) {
+var arrayElementMap = toolkit.arrayElementMap = function arrayElementMap(arr, keyField, valueField) {
   if (!Array.isArray(arr)) return null;
 
   var mapped = {};
   arr.forEach(function(element) {
-    var value = element[keyField];
-    mapped[value] = element;
+    var key = element[keyField];
+
+    if (valueField) {
+      mapped[key] = element[valueField];
+    } else {
+      mapped[key] = element;
+    }
   });
 
   return mapped;
@@ -720,6 +732,9 @@ var isNothing = toolkit.isNothing = function isNothing(o) {
 
   return false;
 };
+var notNothing = toolkit.notNothing = function notNothing(o) {
+  return !isNothing(o);
+};
 
 /**
  * Check if the value is an JSON object,
@@ -736,6 +751,24 @@ var isJSON = toolkit.isJSON = function isJSON(o) {
 
   return false;
 }
+
+/**
+ * Get current timestamp in ms.
+ *
+ * @return {Integer}
+ */
+var getTimestampMs = toolkit.getTimestampMs = function getTimestampMs() {
+  return Date.now();
+};
+
+/**
+ * Get current timestamp in s.
+ *
+ * @return {Integer}
+ */
+var getTimestamp = toolkit.getTimestamp = function getTimestamp() {
+  return parseInt(Date.now() / 1000);
+};
 
 /**
  * Get the date string.
@@ -1009,8 +1042,8 @@ var decipherByAES = toolkit.decipherByAES = function decipherByAES(data, key) {
 /**
  * Encode string by Base64.
  *
- * @param  {String} str - Target string
- * @return {String}     - Encoded string
+ * @param  {String} str - Origin string
+ * @return {String}     - base64 value
  */
 var getBase64 = toolkit.getBase64 = function getBase64(str, uriSafe) {
   if (uriSafe) {
@@ -1019,58 +1052,37 @@ var getBase64 = toolkit.getBase64 = function getBase64(str, uriSafe) {
     return Base64.encode(str);
   }
 };
-var getBase64_old = toolkit.getBase64_old = function getBase64_old(str) {
-  var b = Buffer.from(str);
-  var base64 = b.toString('base64').replace(/ /g, '+');
-  return base64;
+
+/**
+ * Decode string from Base64 value.
+ *
+ * @param  {String} base64str  - base64 string
+ * @return {String}            - Origin string
+ */
+var fromBase64 = toolkit.fromBase64 = function fromBase64(base64str) {
+  return Base64.decode(base64str);
 };
 
 /**
- * Decode string by Base64.
+ * Gzip string and return Base64 value.
  *
- * @param  {String} base64str  - Target string
- * @param  {String} keepBuffer - Target string
- * @return {String}            - Decoded string
+ * @param  {String} str - Origin string
+ * @return {String}     - base64 value
  */
-var fromBase64 = toolkit.fromBase64 = function fromBase64(base64str, keepBuffer) {
-  if (keepBuffer) {
-    return Base64.atob(base64str);
-  } else {
-    return Base64.decode(base64str);
-  }
-};
-var fromBase64_old = toolkit.fromBase64_old = function fromBase64_old(base64str, keepBuffer) {
-  base64str = base64str.replace(/ /g, '+');
-  var b = Buffer.from(base64str, 'base64');
-  if (keepBuffer) {
-    return b;
-  } else {
-    return b.toString();
-  }
+var getGzipBase64 = toolkit.getGzipBase64 = function getGzipBase64(str) {
+  var stringToZip = JSON.stringify(str);
+  return zlib.gzipSync(stringToZip).toString('base64');
 };
 
 /**
- * Encode string by Base64. (Compatible with browser)
+ * Gunzip string from Base64 value.
  *
- * @param  {String} str - Target string
- * @return {String}     - Encoded string
+ * @param  {String} base64str  - base64 string
+ * @return {String}            - Origin string
  */
-var getBase64_browser = toolkit.getBase64_browser = function getBase64_browser(str) {
-  var b = Buffer.from(querystring.escape(str));
-  var base64 = b.toString('base64').replace(/ /g, '+');
-  return base64;
-};
-
-/**
- * Decode string by Base64. (Compatible with browser)
- *
- * @param  {String} base64str  - Target string
- * @return {String}            - Decoded string
- */
-var fromBase64_browser = toolkit.fromBase64_browser = function fromBase64_browser(base64str) {
-  var b = Buffer.from(base64str.replace(/ /g, '+'), 'base64');
-  var str = querystring.unescape(b.toString());
-  return str;
+var fromGzipBase64 = toolkit.fromGzipBase64 = function fromGzipBase64(base64str) {
+  var unzippedString = zlib.gunzipSync(Buffer.from(base64str, 'base64')).toString();
+  return JSON.parse(unzippedString);
 };
 
 /**
@@ -1083,6 +1095,19 @@ var fromBase64_browser = toolkit.fromBase64_browser = function fromBase64_browse
  */
 var getSaltedPasswordHash = toolkit.getSaltedPasswordHash = function getSaltedPasswordHash(salt, password, secret) {
   var strToHash = strf('~{0}~{1}~{2}~', salt, password, secret);
+  var hash = getSha512(strToHash);
+  return hash;
+};
+
+/**
+ * Get string sign
+ *
+ * @param  {String} s
+ * @param  {String} secret
+ * @return {String} string hash
+ */
+var getStringSign = toolkit.getStringSign = function getStringSign(s, secret) {
+  var strToHash = strf('~{0}~{1}~', s, secret);
   var hash = getSha512(strToHash);
   return hash;
 };
@@ -2121,6 +2146,28 @@ var toBytes = toolkit.toBytes = function toBytes(s) {
   return byteSize;
 };
 
+/**
+ * Convert text to Markdown text block with trailing space for line breaking
+ * @param  {String} s
+ * @return {String}
+ */
+
+var toMarkdownTextBlock = toolkit.toMarkdownTextBlock = function toMarkdownTextBlock(s) {
+  if (toolkit.isNothing(s)) return '';
+  return s.split('\n').join('  \n');
+}
+
+/**
+ * Convert text to HTML text block with <br> for line breaking
+ * @param  {String} s
+ * @return {String}
+ */
+
+var toHTMLTextBlock = toolkit.toHTMLTextBlock = function toHTMLTextBlock(s) {
+  if (toolkit.isNothing(s)) return '';
+  return s.split('\n').join('<br>');
+}
+
 var asNumberArr = toolkit.asNumberArr = function asNumberArr(arr) {
   return arr.map(function(x) {
     return parseFloat(x);
@@ -2290,4 +2337,34 @@ Object.defineProperty(LimitedBuffer.prototype, 'length', {
 toolkit.LimitedBuffer = LimitedBuffer;
 toolkit.createLimitedBuffer = function(limit) {
   return new LimitedBuffer(limit);
+};
+
+var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
+  var git = simpleGit({
+    baseDir: baseDir,
+    timeout: { block: 15 * 1000 },
+  });
+
+  return git;
+};
+
+var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
+  var data = '';
+  try {
+    data = fs.readFileSync(filePath).toString();
+  } catch(err) {
+    // Nope
+  }
+
+  switch(type) {
+    case 'json':
+      data = JSON.parse(data);
+      break;
+
+    case 'yaml':
+      data = yaml.load(data);
+      break;
+  }
+
+  return data;
 };

@@ -19,7 +19,138 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 /* Configure */
 var RESERVED_REF_NAME = 'dataflux_';
 
-function _checkConnectorConfig(locals, type, config, requiredFields, optionalFields, callback) {
+function _checkConfig(locals, data, callback) {
+  var type   = data.type;
+  var config = data.configJSON;
+
+  var requiredFields = [];
+  var optionalFields = [];
+
+  switch(type) {
+    case 'df_dataway':
+      config.port     = config.port     || 9528;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host', 'port'];
+      optionalFields = ['protocol', 'token', 'accessKey', 'secretKey'];
+      break;
+
+    case 'df_datakit':
+      config.port     = config.port     || 9529;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host', 'port'];
+      optionalFields = ['protocol', 'source'];
+      break;
+
+    case 'dff_sidecar':
+      config.host     = config.host     || '172.17.0.1';
+      config.port     = config.port     || 8099;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host', 'port', 'secretKey'];
+      optionalFields = ['protocol'];
+      break;
+
+    case 'influxdb':
+      config.port     = config.port     || 8086;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host'];
+      optionalFields = ['port', 'protocol', 'database', 'user', 'password'];
+      break;
+
+    case 'mysql':
+      config.port    = config.port    || 3306;
+      config.charset = config.charset || 'utf8mb4';
+
+      requiredFields = ['host', 'database', 'user', 'password', 'charset'];
+      optionalFields = ['port'];
+      break;
+
+    case 'redis':
+      config.port     = config.port     || 6379;
+      config.password = config.password || null;
+      config.database = config.database || 0;
+
+      requiredFields = ['host', 'database'];
+      optionalFields = ['port', 'password', 'topicHandlers'];
+      break;
+
+    case 'memcached':
+      config.port = config.port || 11211;
+
+      requiredFields = ['servers'];
+      optionalFields = [];
+      break;
+
+    case 'clickhouse':
+      config.port = config.port || 9000;
+      config.user = config.user || 'default';
+
+      requiredFields = ['host', 'database'];
+      optionalFields = ['port', 'user', 'password'];
+      break;
+
+    case 'oracle':
+      config.port    = config.port    || 1521;
+      config.charset = config.charset || 'utf8';
+
+      requiredFields = ['host', 'database', 'user', 'password', 'charset'];
+      optionalFields = ['port'];
+      break;
+
+    case 'sqlserver':
+      config.port    = config.port    || 1433;
+      config.charset = config.charset || 'utf8';
+
+      requiredFields = ['host', 'database', 'user', 'password', 'charset'];
+      optionalFields = ['port'];
+      break;
+
+    case 'postgresql':
+      config.port    = config.port    || 5432;
+      config.charset = config.charset || 'utf8';
+
+      requiredFields = ['host', 'database', 'user', 'password', 'charset'];
+      optionalFields = ['port'];
+      break;
+
+    case 'mongodb':
+      config.port = config.port || 27017;
+
+      requiredFields = ['host'];
+      optionalFields = ['port', 'user', 'password', 'database'];
+      break;
+
+    case 'elasticsearch':
+      config.port     = config.port     || 9200;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host'];
+      optionalFields = ['port', 'protocol', 'user', 'password'];
+      break;
+
+    case 'nsq':
+      config.port = config.port || 4161;
+
+      requiredFields = [];
+      optionalFields = ['host', 'port', 'protocol', 'servers'];
+      break;
+
+    case 'mqtt':
+      config.port = config.port || 1883;
+
+      requiredFields = ['host', 'port'];
+      optionalFields = ['user', 'password', 'clientId', 'multiSubClient', 'topicHandlers'];
+      break;
+
+    case 'kafka':
+      requiredFields = ['servers'];
+      optionalFields = ['user', 'password', 'groupId', 'securityProtocol', 'saslMechanisms', 'multiSubClient', 'kafkaOffset', 'topicHandlers'];
+      break;
+  }
+
   // 检查字段
   for (var i = 0; i < requiredFields.length; i++) {
     var f = requiredFields[i];
@@ -36,10 +167,7 @@ function _checkConnectorConfig(locals, type, config, requiredFields, optionalFie
   // 尝试连接
   var celery = celeryHelper.createHelper(locals.logger);
 
-  var kwargs = {
-    type  : type,
-    config: config,
-  };
+  var kwargs = { type: type, config: config };
   celery.putTask('Main.CheckConnector', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
     if (err) return callback(err);
 
@@ -60,164 +188,6 @@ function _checkConnectorConfig(locals, type, config, requiredFields, optionalFie
 
     return callback();
   });
-}
-
-var CONNECTOR_CHECK_CONFIG_FUNC_MAP = {
-  df_dataway: function(locals, config, callback) {
-    // 默认值
-    config.port     = config.port     || 9528;
-    config.protocol = config.protocol || 'http';
-
-    var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['protocol', 'token', 'accessKey', 'secretKey'];
-
-    return _checkConnectorConfig(locals, 'df_dataway', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  df_datakit: function(locals, config, callback) {
-    // 默认值
-    config.port     = config.port     || 9529;
-    config.protocol = config.protocol || 'http';
-
-    var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['protocol', 'source'];
-
-    return _checkConnectorConfig(locals, 'df_datakit', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  dff_sidecar: function(locals, config, callback) {
-    // 默认值
-    config.host     = config.host     || '172.17.0.1';
-    config.port     = config.port     || 8099;
-    config.protocol = config.protocol || 'http';
-
-    var REQUIRED_FIELDS = ['host', 'port', 'secretKey'];
-    var OPTIONAL_FIELDS = ['protocol'];
-
-    return _checkConnectorConfig(locals, 'dff_sidecar', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  influxdb: function(locals, config, callback) {
-    // 默认值
-    config.port     = config.port     || 8086;
-    config.protocol = config.protocol || 'http';
-
-    var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'protocol', 'database', 'user', 'password'];
-
-    return _checkConnectorConfig(locals, 'influxdb', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  mysql: function(locals, config, callback) {
-    // 默认值
-    config.port    = config.port    || 3306;
-    config.charset = config.charset || 'utf8mb4';
-
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    return _checkConnectorConfig(locals, 'mysql', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  redis: function(locals, config, callback) {
-    // 默认值
-    config.port     = config.port     || 6379;
-    config.password = config.password || null;
-    config.database = config.database || 0;
-
-    var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'password', 'topicHandlers'];
-
-    return _checkConnectorConfig(locals, 'redis', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  memcached: function(locals, config, callback) {
-    // 默认值
-    config.port = config.port || 11211;
-
-    var REQUIRED_FIELDS = ['servers'];
-    var OPTIONAL_FIELDS = [];
-
-    return _checkConnectorConfig(locals, 'memcached', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  clickhouse: function(locals, config, callback) {
-    // 默认值
-    config.port = config.port || 9000;
-    config.user = config.user || 'default';
-
-    var REQUIRED_FIELDS = ['host', 'database'];
-    var OPTIONAL_FIELDS = ['port', 'user', 'password'];
-
-    return _checkConnectorConfig(locals, 'clickhouse', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  oracle: function(locals, config, callback) {
-    // 默认值
-    config.port    = config.port    || 1521;
-    config.charset = config.charset || 'utf8';
-
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    return _checkConnectorConfig(locals, 'oracle', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  sqlserver: function(locals, config, callback) {
-    // 默认值
-    config.port    = config.port    || 1433;
-    config.charset = config.charset || 'utf8';
-
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    return _checkConnectorConfig(locals, 'sqlserver', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  postgresql: function(locals, config, callback) {
-    // 默认值
-    config.port    = config.port    || 5432;
-    config.charset = config.charset || 'utf8';
-
-    var REQUIRED_FIELDS = ['host', 'database', 'user', 'password', 'charset'];
-    var OPTIONAL_FIELDS = ['port'];
-
-    return _checkConnectorConfig(locals, 'postgresql', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  mongodb: function(locals, config, callback) {
-    // 默认值
-    config.port = config.port || 27017;
-
-    var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'user', 'password', 'database'];
-
-    return _checkConnectorConfig(locals, 'mongodb', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  elasticsearch: function(locals, config, callback) {
-    // 默认值
-    config.port     = config.port     || 9200;
-    config.protocol = config.protocol || 'http';
-
-    var REQUIRED_FIELDS = ['host'];
-    var OPTIONAL_FIELDS = ['port', 'protocol', 'user', 'password'];
-
-    return _checkConnectorConfig(locals, 'elasticsearch', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  nsq: function(locals, config, callback) {
-    // 默认值
-    config.port = config.port || 4161;
-
-    var REQUIRED_FIELDS = [];
-    var OPTIONAL_FIELDS = ['host', 'port', 'protocol', 'servers'];
-
-    return _checkConnectorConfig(locals, 'nsq', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  mqtt: function(locals, config, callback) {
-    // 默认值
-    config.port = config.port || 1883;
-
-    var REQUIRED_FIELDS = ['host', 'port'];
-    var OPTIONAL_FIELDS = ['user', 'password', 'clientId', 'multiSubClient', 'topicHandlers'];
-
-    return _checkConnectorConfig(locals, 'mqtt', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
-  kafka: function(locals, config, callback) {
-    // 默认值
-    var REQUIRED_FIELDS = ['servers'];
-    var OPTIONAL_FIELDS = ['user', 'password', 'groupId', 'securityProtocol', 'saslMechanisms', 'multiSubClient', 'kafkaOffset', 'topicHandlers'];
-
-    return _checkConnectorConfig(locals, 'kafka', config, REQUIRED_FIELDS, OPTIONAL_FIELDS, callback);
-  },
 };
 
 /* Handlers */
@@ -260,7 +230,7 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      CONNECTOR_CHECK_CONFIG_FUNC_MAP[data.type](res.locals, data.configJSON, asyncCallback);
+      return _checkConfig(res.locals, data, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -309,7 +279,7 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      CONNECTOR_CHECK_CONFIG_FUNC_MAP[connector.type](res.locals, data.configJSON, asyncCallback);
+      return _checkConfig(res.locals, data, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -430,7 +400,7 @@ exports.query = function(req, res, next) {
 
       // 指定数据库
       var connectorConfig = toolkit.jsonCopy(connector.configJSON);
-      if (!toolkit.isNothing(database)) {
+      if (toolkit.notNothing(database)) {
         switch(connector.type) {
           case 'influxdb':
             taskKwargs.commandKwargs.database = database;
@@ -502,7 +472,7 @@ exports.test = function(req, res, next) {
     },
     // 检查连接器配置
     function(asyncCallback) {
-      CONNECTOR_CHECK_CONFIG_FUNC_MAP[connector.type](res.locals, connector.configJSON, asyncCallback);
+      return _checkConfig(res.locals, connector, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

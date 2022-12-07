@@ -249,6 +249,10 @@ authAPI:
           $desc      : Name
           $type      : string
           $maxLength : 50
+        email:
+          $desc      : Email
+          $type      : string
+          $maxLength : 50
         mobile:
           $desc      : Mobile
           $allowNull : true
@@ -278,6 +282,7 @@ userAPI:
       - u.id
       - u.username
       - u.name
+      - u.email
       - u.mobile
     query:
       id:
@@ -295,6 +300,11 @@ userAPI:
         $type      : string
         $searchType: like
         $searchKey : u.name
+      email:
+        $desc      : Search by email
+        $type      : string
+        $searchType: like
+        $searchKey : u.email
       mobile:
         $desc      : Search by mobile number
         $type      : int
@@ -350,6 +360,12 @@ userAPI:
           $type      : string
           $maxLength : 50
           $example   : Tom White
+        email:
+          $desc      : Email
+          $allowNull : true
+          $type      : string
+          $maxLength : 100
+          $example   : tom.white@guance.com
         mobile:
           $desc     : Mobile number
           $type     : string
@@ -406,6 +422,12 @@ userAPI:
           $type      : string
           $maxLength : 50
           $example   : Tom White
+        email:
+          $desc      : Email
+          $allowNull : true
+          $type      : string
+          $maxLength : 100
+          $example   : tom.white@guance.com
         mobile:
           $desc     : Mobile number
           $type     : string
@@ -1731,19 +1753,6 @@ mainAPI:
         $desc: 文件服务ID
         $type: string
 
-  getScriptPackageIndex:
-    name         : 获取脚本包索引
-    method       : get
-    url          : /api/v1/script-packages/index
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      indexURL:
-        $desc    : 脚本包索引URL地址
-        $required: false
-        $type    : string
-
   pullSystemLogs:
     name         : 拉取系统日志
     method       : get
@@ -1787,12 +1796,26 @@ scriptSetAPI:
       - sset.title
       - sset.description
       - sset.requirements
+      - sset.originId
     query:
+      _withScripts:
+        $desc: 是否同时返回脚本列表
+        $type: bool
       id:
         $desc      : 根据ID过滤
         $type      : commaArray
         $searchType: in
         $searchKey : sset.id
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sset.origin
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sset.originId
 
   add:
     showInDoc    : true
@@ -1865,10 +1888,6 @@ scriptSetAPI:
           $desc      : 是否已置顶
           $allowNull : true
           $type      : boolean
-        color:
-          $desc      : 着色
-          $allowNull : true
-          $type      : string
 
   delete:
     showInDoc    : true
@@ -1912,12 +1931,6 @@ scriptSetAPI:
     privilege    : general_w
     body:
       $isRequired: true
-      password:
-        $desc      : 指定密码
-        $isRequired: true
-        $allowNull : true
-        $type      : string
-        $maxLength : 24
       scriptSetIds:
         $desc      : 导出的脚本集ID列表
         $isRequired: true
@@ -1952,7 +1965,7 @@ scriptSetAPI:
         $type     : boolean
       note:
         $desc      : 备注
-        $isRequired: true
+        $allowNull : true
         $minLength : 1
 
   import:
@@ -1967,26 +1980,6 @@ scriptSetAPI:
       $limitSize   : 200M
       $allowedTypes: 'application/octet-stream'
     body:
-      packageInstallURL:
-        $desc      : 脚本包安装URL地址（指定后从脚本包URL导入）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      packageInstallId:
-        $desc      : 脚本包安装ID（备注用）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      scriptRecoverPointId:
-        $desc      : 脚本还原点ID（指定后从脚本还原点导入）
-        $isRequired: false
-        $allowNull : true
-        $type      : string
-      password:
-        $desc      : 密码
-        $isRequired: false
-        $allowNull : true
-        $type      : string
       checkOnly:
         $desc      : 是否仅做检查（检查成功后会返回`confirmId`）
         $isRequired: false
@@ -3226,6 +3219,7 @@ authLinkAPI:
       - auln.funcId
       - auln.funcCallKwargsJSON
       - auln.tagsJSON
+      - auln.originId
       - auln.note
       - func.title
       - func.description
@@ -3251,12 +3245,14 @@ authLinkAPI:
         $searchKey : auln.tagsJSON
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : auln.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3380,14 +3376,6 @@ authLinkAPI:
             $type     : int
             $minValue : 1
             $example  : 10000
-        origin:
-          $desc        : 来源
-          $isDeprecated: true
-          $isRequired  : false
-          $type        : enum
-          $in:
-            - API
-            - UI
         showInDoc:
           $desc      : 是否显示于文档
           $isRequired: false
@@ -3603,14 +3591,6 @@ authLinkAPI:
               $type     : int
               $minValue : 1
               $example  : 10000
-          origin:
-            $desc        : 来源
-            $isDeprecated: true
-            $isRequired  : false
-            $type        : enum
-            $in:
-              - API
-              - UI
           showInDoc:
             $desc      : 是否显示于文档
             $isRequired: false
@@ -3673,9 +3653,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3762,9 +3744,11 @@ authLinkAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : auln.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : auln.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3803,6 +3787,7 @@ crontabConfigAPI:
       - cron.funcId
       - cron.funcCallKwargsJSON
       - cron.tagsJSON
+      - cron.originId
       - cron.note
       - func.title
       - func.description
@@ -3833,12 +3818,14 @@ crontabConfigAPI:
         $searchKey : cron.scope
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : cron.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -3908,14 +3895,6 @@ crontabConfigAPI:
           $type      : string
           $isISO8601 : true
           $example   : '2019-01-01T00:00:00Z'
-        origin:
-          $desc        : 来源
-          $isDeprecated: true
-          $isRequired  : false
-          $type        : enum
-          $in:
-            - API
-            - UI
         taskInfoLimit:
           $desc      : 近期任务保留数
           $isRequired: false
@@ -4117,9 +4096,11 @@ crontabConfigAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : cron.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4212,9 +4193,11 @@ crontabConfigAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : cron.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4252,6 +4235,7 @@ batchAPI:
       - bat.id
       - bat.funcId
       - bat.funcCallKwargsJSON
+      - bat.originId
       - bat.tagsJSON
       - bat.note
       - func.title
@@ -4278,12 +4262,14 @@ batchAPI:
         $searchKey : bat.tagsJSON
       origin:
         $desc      : 根据来源过滤
-        $type      : commaArray
-        $searchType: in
+        $type      : string
+        $searchType: eq
         $searchKey : bat.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4548,9 +4534,11 @@ batchAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : bat.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4634,9 +4622,11 @@ batchAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : bat.origin
-        $commaArrayIn:
-          - API
-          - UI
+      originId:
+        $desc      : 根据来源ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : bat.originId
       func_scriptSetId:
         $desc      : 根据脚本集ID过滤
         $type      : commaArray
@@ -4681,7 +4671,7 @@ taskInfoAPI:
         $searchType: eq
         $searchKey : task.id
       originId:
-        $desc      : 按来源ID过滤
+        $desc      : 根据来源ID过滤
         $type      : string
         $searchType: eq
         $searchKey : task.originId
@@ -5195,3 +5185,323 @@ blueprintAPI:
       id:
         $desc: 蓝图ID
         $type: string
+
+# 脚本市场
+scriptMarketAPI:
+  list:
+    showInDoc    : true
+    name         : 列出脚本市场
+    method       : get
+    url          : /api/v1/script-markets/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    paging       : false
+    fieldPicking : true
+    fieldKicking : true
+    orderFields:
+      name      : smkt.name
+      createTime: smkt.createTime
+      updateTime: smkt.updateTime
+    fuzzySearch:
+      - smkt.name
+      - smkt.description
+      - smkt.type
+      - smkt.configJSON
+    query:
+      id:
+        $desc      : 根据ID过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : smkt.id
+      name:
+        $desc      : 根据名称搜索
+        $type      : string
+        $searchType: like
+        $searchKey : smkt.name
+      type:
+        $desc      : 根据类型过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : smkt.type
+        $in:
+          - git
+          - aliyunOSS
+          - httpService
+
+  add:
+    showInDoc    : true
+    name         : 添加脚本市场
+    method       : post
+    url          : /api/v1/script-markets/do/add
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
+        description:
+          $desc      : 描述
+          $allowNull : true
+          $type      : string
+        type:
+          $desc      : 类型
+          $isRequired: true
+          $type      : enum
+          $in:
+            - git
+            - aliyunOSS
+            - httpService
+        configJSON:
+          $desc      : 配置信息
+          $allowNull : true
+          url:
+            $desc      : URL地址
+            $allowNull : true
+            $type      : string
+          branch:
+            $desc      : Git 库分支
+            $allowNull : true
+            $type      : string
+          user:
+            $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          endpoint:
+            $desc      : 接入点
+            $allowNull : true
+            $type      : string
+          bucket:
+            $desc      : Bucket
+            $allowNull : true
+            $type      : string
+          folder:
+            $desc      : Folder
+            $allowNull : true
+            $type      : string
+          password:
+            $desc      : 密码
+            $allowNull : true
+            $type      : string
+          accessKeyId:
+            $desc      : Access Key ID
+            $allowNull : true
+            $type      : string
+          accessKeySecret:
+            $desc      : Access Key Secret
+            $allowNull : true
+            $type      : string
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
+
+  addOfficial:
+    showInDoc    : true
+    name         : 添加官方脚本市场
+    method       : post
+    url          : /api/v1/script-markets/do/add-official
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
+  modify:
+    showInDoc    : true
+    name         : 修改脚本市场
+    method       : post
+    url          : /api/v1/script-markets/:id/do/modify
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $allowNull : true
+          $type      : string
+        description:
+          $desc      : 描述
+          $allowNull : true
+          $type      : string
+        configJSON:
+          $desc      : 配置信息
+          $allowNull : true
+          url:
+            $desc      : URL地址
+            $allowNull : true
+            $type      : string
+          branch:
+            $desc      : Git 库分支
+            $allowNull : true
+            $type      : string
+          user:
+            $desc      : 用户名
+            $allowNull : true
+            $type      : string
+          endpoint:
+            $desc      : 接入点
+            $allowNull : true
+            $type      : string
+          bucket:
+            $desc      : Bucket
+            $allowNull : true
+            $type      : string
+          folder:
+            $desc      : Folder
+            $allowNull : true
+            $type      : string
+          password:
+            $desc      : 密码
+            $allowNull : true
+            $type      : string
+          accessKeyId:
+            $desc      : Access Key ID
+            $allowNull : true
+            $type      : string
+          accessKeySecret:
+            $desc      : Access Key Secret
+            $allowNull : true
+            $type      : string
+        isPinned:
+          $desc      : 是否已置顶
+          $allowNull : true
+          $type      : boolean
+
+  delete:
+    showInDoc    : true
+    name         : 删除脚本市场
+    method       : get
+    url          : /api/v1/script-markets/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  listScriptSets:
+    showInDoc    : true
+    name         : 列出脚本市场脚本集
+    method       : get
+    url          : /api/v1/script-markets/:id/script-sets/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    paging       : false
+    fieldPicking : true
+    fieldKicking : true
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  setAdmin:
+    showInDoc    : true
+    name         : 成为脚本市场管理员
+    method       : post
+    url          : /api/v1/script-markets/:id/admin/do/set
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  unsetAdmin:
+    showInDoc    : true
+    name         : 放弃脚本市场管理员
+    method       : post
+    url          : /api/v1/script-markets/:id/admin/do/unset
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+
+  publish:
+    showInDoc    : true
+    name         : 发布脚本集至脚本市场
+    method       : post
+    url          : /api/v1/script-markets/:id/do/publish
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+    body:
+      scriptSetIds:
+        $desc      : 需要推送的脚本集ID列表
+        $isRequired: true
+        $minLength : 1
+        $:
+          $desc      : 脚本集ID
+          $isRequired: true
+          $type      : string
+      mode:
+        $desc      : 模式
+        $isRequired: true
+        $type      : enum
+        $in:
+          - add
+          - delete
+      author:
+        $desc      : 作者
+        $isRequired: true
+        name:
+          $desc      : 名称
+          $isRequired: true
+          $type      : string
+        email:
+          $desc      : 邮箱
+          $isRequired: true
+          $type      : string
+      note:
+        $desc      : 备注
+        $isRequired: true
+        $type      : string
+
+  install:
+    showInDoc    : true
+    name         : 从脚本市场安装脚本集
+    method       : post
+    url          : /api/v1/script-markets/:id/do/install
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本市场ID
+        $type: string
+    body:
+      scriptSetIds:
+        $desc      : 需要拉取的脚本集ID列表
+        $isRequired: true
+        $minLength : 1
+        $:
+          $desc      : 脚本集ID
+          $isRequired: true
+          $type      : string
+
+  checkUpdate:
+    showInDoc    : true
+    name         : 检查脚本市场脚本集更新
+    method       : get
+    url          : /api/v1/script-markets/do/check-update
+    response     : json
+    requireSignIn: true
+    privilege    : general_r

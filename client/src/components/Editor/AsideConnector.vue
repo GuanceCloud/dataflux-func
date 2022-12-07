@@ -34,7 +34,7 @@ Connector unpinned: 连接器已取消
             size="mini">{{ C.CONNECTOR_MAP.get(item.connectorType).name }}</el-tag>
           {{ item.label }}
         </span>
-        <code class="select-item-id">ID: {{ item.id }}</code>
+        <code class="select-item-id code-font">ID: {{ item.id }}</code>
       </el-option>
     </el-select>
 
@@ -221,7 +221,7 @@ export default {
       let apiRes = await this.T.callAPI_getAll('/api/v1/connectors/do/list', {
         query: { fields: ['id', 'title', 'description', 'type', 'configJSON', 'isBuiltin', 'isPinned', 'pinTime'] },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let treeData = [];
       window._DFF_connectorIds = [];
@@ -289,7 +289,7 @@ export default {
         body  : { data: { isPinned: isPinned } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateConnectorListSyncTime');
     },

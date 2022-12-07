@@ -52,6 +52,15 @@ import logo_nsq           from '@/assets/img/logo-nsq.png'
 import logo_mqtt          from '@/assets/img/logo-mqtt.png'
 import logo_kafka         from '@/assets/img/logo-kafka.png'
 
+// 脚本市场
+import logo_git         from '@/assets/img/logo-git.png'
+import logo_aliyunOSS   from '@/assets/img/logo-aliyun-oss.png'
+import logo_httpService from '@/assets/img/logo-http.png'
+import logo_github      from '@/assets/img/logo-github.png'
+import logo_gitlab      from '@/assets/img/logo-gitlab.png'
+import logo_gitee       from '@/assets/img/logo-gitee.png'
+import logo_bitbucket   from '@/assets/img/logo-bitbucket.png'
+
 export default {
   get NOPE() {
     return '-';
@@ -409,7 +418,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ]
   },
   get TODO_TYPE_MAP() {
-    return new MAP_CONST(this.TODO_TYPE, 0);
+    return new MAP_CONST(this.TODO_TYPE);
   },
 
   // 主题
@@ -512,7 +521,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key : 'commaArray',
-        name: $t('String array with comma separators'),
+        name: $t('Comma separated string array'),
         tips: $t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
       },
     ];
@@ -893,7 +902,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ];
   },
   get CODE_VIEWR_USER_OPERATION_MAP() {
-    return new MAP_CONST(this.CODE_VIEWR_USER_OPERATION, 0);
+    return new MAP_CONST(this.CODE_VIEWR_USER_OPERATION);
   },
   // 代码查看器展示模式
   get CODE_VIEWER_SHOW_MODE() {
@@ -941,6 +950,97 @@ kafka.publish(topic='some_topic', message='some_message')`,
     ];
   },
   get ABNORMAL_REQUEST_TYPE_MAP() {
-    return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE, 0);
+    return new MAP_CONST(this.ABNORMAL_REQUEST_TYPE);
+  },
+
+  // 导入数据类型
+  get IMPORT_DATA_TYPE() {
+    return [
+      {
+        key       : 'scriptSets',
+        name      : $t('Script Set'),
+        showField : 'title',
+      },
+      {
+        key       : 'connectors',
+        name      : $t('Connector'),
+        showField : 'title',
+      },
+      {
+        key       : 'envVariables',
+        name      : $t('ENV'),
+        showField : 'title',
+      },
+      {
+        key       : 'authLinks',
+        name      : $t('Auth Link'),
+        showField : 'funcId',
+        showClass : 'text-main code-font',
+      },
+      {
+        key       : 'crontabConfigs',
+        name      : $t('Crontab Config'),
+        showField : 'funcId',
+        showClass : 'text-main code-font',
+      },
+      {
+        key       : 'batches',
+        name      : $t('Batch'),
+        showField : 'funcId',
+        showClass : 'text-main code-font',
+      },
+    ];
+  },
+  get IMPORT_DATA_TYPE_MAP() {
+    return new MAP_CONST(this.IMPORT_DATA_TYPE);
+  },
+
+  // 脚本市场类型
+  get SCRIPT_MARKET() {
+    return [
+      {
+        key   : 'git',
+        name  : 'git (HTTPS)',
+        logo  : logo_git,
+        brandLogo: {
+          'github.com'   : logo_github,
+          'gitlab.com'   : logo_gitlab,
+          'jihulab.com'  : logo_gitlab,
+          'gitee.com'    : logo_gitee,
+          'bitbucket.org': logo_bitbucket,
+        },
+        tip   : $t('Script Market on git supports HTTPS only'),
+        configFields: {
+          url     : { default: null, isRequired: true },
+          branch  : { default: null },
+          user    : { default: null },
+          password: { default: null },
+        },
+      },
+      {
+        key : 'aliyunOSS',
+        name: $t('Alibaba Cloud OSS'),
+        logo  : logo_aliyunOSS,
+        configFields: {
+          endpoint       : { default: 'http://oss-cn-hangzhou.aliyuncs.com', isRequired: true },
+          bucket         : { default: null, isRequired: true },
+          folder         : { default: 'script-market', isRequired: true },
+          accessKeyId    : { default: null, isRequired: true },
+          accessKeySecret: { default: null, isRequired: true },
+        },
+      },
+      {
+        key : 'httpService',
+        name: $t('HTTP Service'),
+        logo  : logo_httpService,
+        tip : $t('Script Market on HTTP Service is readonly'),
+        configFields: {
+          url: { default: null, isRequired: true },
+        },
+      },
+    ];
+  },
+  get SCRIPT_MARKET_MAP() {
+    return new MAP_CONST(this.SCRIPT_MARKET);
   },
 }

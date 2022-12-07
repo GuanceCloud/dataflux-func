@@ -10,6 +10,7 @@ en:
   timePerYear  : '{n} time / year | {n} times / year'
 
 'zh-CN':
+  # 通用
   ':': '：'
   '(': '（'
   ')': '）'
@@ -18,17 +19,13 @@ en:
   Dark Mode    : 黑暗模式
   Auto         : 自动
   Follow System: 跟随系统
-
-  # 通用
+  Please select: 请选择
+  Timeout      : 超时
   Administrator: 系统管理员
+  Owner        : 拥有者
+  Password     : 密码
 
-  Anonymity: 匿名
-  Unknow   : 未知
-  No Data  : 暂无数据
-  Pinned   : 已置顶
-  Normal   : 正常
-  Error    : 错误
-
+  # 通用-按钮/表单
   Very good: 非常好
   OK       : 了解
   Confirm  : 确定
@@ -39,6 +36,7 @@ en:
   'OFF'    : 关闭
   'None'   : 无
   Default  : 默认
+  Detail   : 详情
   Official : 官方
   Optional : 可选
 
@@ -48,11 +46,14 @@ en:
   Setup   : 配置
   Edit    : 编辑
   Modify  : 修改
+  Update  : 更新
   Delete  : 删除
   Enable  : 启用
   Disable : 禁用
   Rename  : 重命名
   Save    : 保存
+  Export  : 导出
+  Import  : 导入
   Deploy  : 部署
   Hide    : 隐藏
   Show    : 显示
@@ -67,17 +68,25 @@ en:
   Debug   : 调试
   Download: 下载
   Upload  : 上传
+  Publish : 发布
   Preview : 预览
+  Run     : 执行
   Refresh : 刷新
   Enter   : 进入
   Move    : 移动
   Copy    : 复制
+  Replace : 替换
   Zip     : 压缩
   Unzip   : 解压
   Install : 安装
   More    : 更多
   Filter  : 过滤
+  Link    : 连接
+  Unlink  : 断开连接
+  Manage  : 管理
+  Admin   : 管理
   Restore Default: 恢复默认
+  Check Update   : 检查更新
 
   # 通用-操作（小写）
   add     : 添加
@@ -85,11 +94,14 @@ en:
   setup   : 配置
   edit    : 编辑
   modify  : 修改
+  update  : 更新
   delete  : 删除
   enable  : 启用
   disable : 禁用
   rename  : 重命名
   save    : 保存
+  export  : 导出
+  import  : 导入
   deploy  : 部署
   hide    : 隐藏
   show    : 显示
@@ -104,17 +116,25 @@ en:
   debug   : 调试
   download: 下载
   upload  : 上传
+  publish : 发布
   preview : 预览
   refresh : 刷新
+  run     : 执行
   enter   : 进入
   move    : 移动
   copy    : 复制
+  replace : 替换
   zip     : 压缩
   unzip   : 解压
   install : 安装
   more    : 更多
   filter  : 过滤
+  link    : 连接
+  unlink  : 断开连接
+  manage  : 管理
+  admin   : 管理
   restore default: 恢复默认
+  check update   : 检查更新
 
   # 通用-操作结果
   Added   : 已添加
@@ -131,6 +151,8 @@ en:
   Opened  : 已打开
   Closed  : 已关闭
   Cleared : 已清空
+  Linked  : 已连接
+  Unlinked: 已断开连接
 
   # 通用-操作结果（小写）
   added   : 已添加
@@ -147,28 +169,43 @@ en:
   opened  : 已打开
   closed  : 已关闭
   cleared : 已清空
+  linked  : 已连接
+  unlinked: 已断开连接
+
+  # 通用-数据/值
+  Anonymity: 匿名
+  Unknow   : 未知
+  No Data  : 暂无数据
+  Pinned   : 已置顶
+  Normal   : 正常
+  Error    : 错误
+
+  # 通用表格-表头/标题
+  No matched data found: 当前过滤条件无匹配数据
+  Name                 : 名称
+  Title                : 标题
+  Description          : 描述
+  Type                 : 类型
+  Item                 : 项目
+  Value                : 值
+  Tags                 : 标签
+  Status               : 状态
+  Note                 : 备注
+  Folder               : 文件夹
+  File                 : 文件
+  Size                 : 大小
+  Create Time          : 创建时间
+  Update Time          : 更新时间
+  Example              : 示例
+  Username             : 登录账号
+  User                 : 用户
+  Email                : 邮箱
+  Mobile               : 手机
+  Endpoint             : 访问地址
 
   # 通用表格-操作区
   Show all: 显示全部
   New     : 新建
-
-  # 通用表格-数据
-  No matched data found: 当前过滤条件无匹配数据
-
-  # 通用表格-表头/标题等
-  Name       : 名称
-  Title      : 标题
-  Tags       : 标签
-  Status     : 状态
-  Note       : 备注
-  Folder     : 文件夹
-  File       : 文件
-  Size       : 大小
-  Create Time: 创建时间
-  Update Time: 更新时间
-  Example    : 示例
-  Username   : 登录账号
-  User       : 用户
 
   # CopyButton
   Copied               : 已复制
@@ -207,38 +244,52 @@ en:
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
   # 业务实体/模块/ID
-  Script Set        : 脚本集
-  Script            : 脚本
-  Func              : 函数
-  Connector         : 连接器
-  ENV               : 环境变量
-  Overview          : 总览
-  About             : 关于
-  System Config     : 系统配置
-  API Auth          : API认证
-  Auth Link         : 授权链接
-  Crontab Config    : 自动触发配置
-  Batch             : 批处理
-  Export Script Sets: 脚本包导出
-  Import Script Sets: 脚本包导入
-  Recover Script Lib: 脚本库还原
-  User Manager      : 成员管理
-  Access Log        : 操作记录
-  Script Log        : 脚本日志
-  Script Failure    : 脚本故障
-  Experimental      : 实验性功能
-  Script Market     : 脚本市场
-  Access Key        : AccessKey
-  System Metric     : 系统指标
-  PIP Tool          : PIP工具
-  File Manager      : 文件管理器
-  File Service      : 文件服务
-  Func Doc          : 函数文档
-  Func Cache Manager: 函数缓存管理器
-  Func Store Manager: 函数存储管理器
-  System Logs       : 系统日志
-  Abnormal Reqs     : 异常请求
-  Blueprint         : 蓝图
+  Script Set: 脚本集
+  Script    : 脚本
+  Func      : 函数
+  Connector : 连接器
+  ENV       : 环境变量
+
+  Dev          : 开发
+  Development  : 开发
+  Blueprint    : 蓝图
+  Management   : 管理
+  Script Market: 脚本市场
+  Docs         : 文档
+  Documents    : 文档
+  Profile      : 个人设置
+  Sign Out     : 登出
+  Not Signed In: 尚未登录
+  Signed In    : 已登录
+
+  Overview                 : 总览
+  About                    : 关于
+  System Config            : 系统配置
+  API Auth                 : API认证
+  Auth Link                : 授权链接
+  Crontab Config           : 自动触发配置
+  Batch                    : 批处理
+  Export Script Sets       : 脚本集导出
+  Script Set Export History: 脚本集导出历史
+  Import Script Sets       : 脚本集导入
+  Script Set Import History: 脚本集导入历史
+  Recover Script Lib       : 脚本库还原
+  User Manager             : 成员管理
+  Access Log               : 操作记录
+  Script Log               : 脚本日志
+  Script Failure           : 脚本故障
+  Experimental             : 实验性功能
+  Access Key               : AccessKey
+  System Metric            : 系统指标
+  PIP Tool                 : PIP工具
+  File Manager             : 文件管理器
+  File Service             : 文件服务
+  Func Doc                 : 函数文档
+  Auth Link Doc            : 授权链接文档
+  Func Cache Manager       : 函数缓存管理器
+  Func Store Manager       : 函数存储管理器
+  System Logs              : 系统日志
+  Abnormal Reqs            : 异常请求
 
   Script Set ID    : 脚本集ID
   Script ID        : 脚本ID
@@ -261,7 +312,7 @@ en:
   'Boolean'                                                    : '布尔值'
   'Can be "true"/"false", "yes"/"no" or "on"/"off"'            : '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值'
   'Will be converted by json.loads() automatically'            : '将自动使用 json.loads() 进行转换'
-  'String array with comma separators'                         : '逗号分隔字符串数组'
+  'Comma separated string array'                               : '逗号分隔字符串数组'
   'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
 
   # const.js - API_AUTH
@@ -287,8 +338,8 @@ en:
   Failed   : 已失败
 
   # const.js - SCRIPT_RECOVER_POINT
-  Before package import    : 脚本包导入前
-  Before package install   : 脚本包安装前
+  Before package import    : 脚本集导入前
+  Before package install   : 脚本集安装前
   Before Script Lib recover: 脚本库还原前
   Created by user manually : 用户手动创建
 
@@ -336,6 +387,12 @@ en:
   Request Cost 5000ms+: 请求耗时 5000毫秒+
   Status Code 4xx     : 状态码 4xx
   Status Code 5xx     : 状态码 5xx
+
+  # const.js - SCRIPT_MARKET
+  Alibaba Cloud OSS: 阿里云 OSS
+  HTTP Service     : HTTP 服务
+  Script Market on git supports HTTPS only : 使用 git 搭建的脚本市场仅支持 HTTPS
+  Script Market on HTTP Service is readonly: 使用 HTTP 服务搭建的脚本市场为只读
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题

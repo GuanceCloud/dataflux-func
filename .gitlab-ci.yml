@@ -111,10 +111,10 @@ guanceSaaS:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    # 下载观测云内置库
-    - mkdir -p func-pkg
-    - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版
-    - wget ${FUNC_PKG_URL_GUANCE}   -O func-pkg/guance.func-pkg;   # 新版
+    # 下载观测云内置脚本集
+    - mkdir -p builtin-script-sets
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
     # 构建/推送多架构版本
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -133,10 +133,10 @@ guancePaaS_prev:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    # 下载观测云内置库
-    - mkdir -p func-pkg
-    - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版
-    - wget ${FUNC_PKG_URL_GUANCE}   -O func-pkg/guance.func-pkg;   # 新版
+    # 下载观测云内置脚本集
+    - mkdir -p builtin-script-sets
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
@@ -159,10 +159,10 @@ guancePaaS_prod:
   script:
     - docker buildx ls # 确认可用平台
     - python echo-image-info.py > image-info.json
-    # 下载观测云内置库
-    - mkdir -p func-pkg
-    - wget ${FUNC_PKG_URL_DATAFLUX} -O func-pkg/dataflux.func-pkg; # 旧版
-    - wget ${FUNC_PKG_URL_GUANCE}   -O func-pkg/guance.func-pkg;   # 新版
+    # 下载观测云内置脚本集
+    - mkdir -p builtin-script-sets
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}

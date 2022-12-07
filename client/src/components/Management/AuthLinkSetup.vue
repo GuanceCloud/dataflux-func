@@ -1,7 +1,7 @@
 <i18n locale="en" lang="yaml">
 randomIDString: auln-{Random ID}
 
-parameterHint  : 'When a parameter is set to "INPUT_BY_CALLER" means the parameter can be specified by the caller'
+parameterHint  : 'When the parameter value is specified as "INPUT_BY_CALLER", this parameter is allowed to be specified by the caller'
 shortcutDays   : '{n} day | {n} days'
 recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
@@ -44,9 +44,9 @@ Auth Link deleted: 授权链接已删除
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 Invalid argument format: 参数格式不正确
 
-parameterHint  : '参数值指定为"INPUT_BY_CALLER"时表示允许调用时指定本参数'
-shortcutDays   : '{n}天'
-recentTaskCount: '{n}个近期任务'
+parameterHint  : '参数值指定为 "INPUT_BY_CALLER" 时，允许调用时指定本参数'
+shortcutDays   : '{n} 天'
+recentTaskCount: '{n} 个近期任务'
 </i18n>
 
 <template>
@@ -67,7 +67,7 @@ recentTaskCount: '{n}个近期任务'
                   <el-switch v-model="useCustomId"></el-switch>
                   <span class="text-main float-right">
                     {{ $t('URL Preview') }}{{ $t(':') }}
-                    <code>{{ `/api/v1/al/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+                    <code class="code-font">{{ `/api/v1/al/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
                   </span>
                 </el-form-item>
 
@@ -82,6 +82,7 @@ recentTaskCount: '{n}个近期任务'
 
                 <el-form-item :label="$t('Func')" prop="funcId">
                   <el-cascader class="func-cascader-input" ref="funcCascader"
+                    popper-class="code-font"
                     placeholder="--"
                     filterable
                     :filter-method="common.funcCascaderFilter"
@@ -96,7 +97,7 @@ recentTaskCount: '{n}个近期任务'
                     type="textarea"
                     v-model="form.funcCallKwargsJSON"
                     resize="none"
-                    :autosize="true"></el-input>
+                    :autosize="{ minRows: 2 }"></el-input>
                   <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
                   <InfoBlock :title="$t('parameterHint')"></InfoBlock>
 
@@ -104,7 +105,7 @@ recentTaskCount: '{n}个近期任务'
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">
-                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="mini" closable @close="removeTag(t)">{{ t }}</el-tag>
+                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
                   <el-input v-if="showAddTag" ref="newTag"
                     v-model="newTag"
                     size="mini"
@@ -229,7 +230,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/auth-links/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -288,7 +289,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/auth-links/do/add', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -317,7 +318,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/auth-links/:id/do/modify', opt);
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
@@ -333,7 +334,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('Auth Link deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'auth-link-list',
@@ -386,7 +387,7 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (!this.T.isNothing(value)) {
+              if (this.T.notNothing(value)) {
                 if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                   return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
                 }

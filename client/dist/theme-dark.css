@@ -52,7 +52,8 @@ a {
 .sign-out {
   background-color: #222 !important;
 }
-.connector-logo {
+.connector-logo,
+.script-market-logo {
   background-color: white;
   padding: 5px;
   border: grey solid 10px;

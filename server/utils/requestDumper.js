@@ -18,7 +18,7 @@ exports.dumpRequest = function(req, res, next) {
     toolkit.strf('{0}=`{1}`', 'url',            toolkit.limitText(path.join(req.baseUrl, req.path), 1000, { showLength: true })),
     toolkit.strf('{0}=`{1}`', 'query',          toolkit.limitText(JSON.stringify(req.query),        1000, { showLength: true })),
     toolkit.strf('{0}=`{1}`', 'originalUrl',    toolkit.limitText(req.originalUrl,                  1000, { showLength: true })),
-    toolkit.strf('{0}=`{1}`', 'content-length', byteSize(parseInt(req.get('content-length')))),
+    toolkit.strf('{0}=`{1}`', 'content-length', byteSize(parseInt(req.get('content-length') || 0))),
   ];
 
   res.locals.logger._log('info', '{0} {1}', '[REQUEST]', dumpList.join(', '));

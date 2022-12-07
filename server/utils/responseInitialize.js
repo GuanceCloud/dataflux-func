@@ -208,7 +208,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       respStatusCode: res.statusCode,
     };
 
-    if (!toolkit.isNothing(req.body)) {
+    if (toolkit.notNothing(req.body)) {
       var reqBodyDump = toolkit.jsonDumps(req.body, 2);
       reqInfo.reqBodyDump = toolkit.limitText(reqBodyDump, 1000, { showLength: 'newLine' });
     }
@@ -336,7 +336,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       ret = toolkit.initRet();
     }
 
-    if (!toolkit.isNothing(res.locals.fieldSelecting) && !toolkit.isNothing(ret.data)) {
+    if (toolkit.notNothing(res.locals.fieldSelecting) && toolkit.notNothing(ret.data)) {
       // Field selecting (New version)
       var selectingFunc = toolkit.jsonPick;
       if (toolkit.startsWith(res.locals.fieldSelecting[0], '-')) {
@@ -360,7 +360,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
     } else {
       // Field picking (Old version)
-      if (!toolkit.isNothing(res.locals.fieldPicking) && !toolkit.isNothing(ret.data)) {
+      if (toolkit.notNothing(res.locals.fieldPicking) && toolkit.notNothing(ret.data)) {
         if (Array.isArray(ret.data)) {
           for (var i = 0; i < ret.data.length; i++) {
             ret.data[i] = toolkit.jsonPick(ret.data[i], res.locals.fieldPicking);
@@ -371,7 +371,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
       }
 
       // Field kicking (Old version)
-      if (!toolkit.isNothing(res.locals.fieldKicking) && !toolkit.isNothing(ret.data)) {
+      if (toolkit.notNothing(res.locals.fieldKicking) && toolkit.notNothing(ret.data)) {
         if (Array.isArray(ret.data)) {
           for (var i = 0; i < ret.data.length; i++) {
             ret.data[i] = toolkit.jsonKick(ret.data[i], res.locals.fieldKicking);

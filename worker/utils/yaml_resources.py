@@ -52,10 +52,10 @@ def load_config(config_file_path, print_detail=False):
             config_type_map[k] = 'float'
 
         else:
-            if k.endswith('_LIST'):
+            if k.endswith('_LIST') or isinstance(v, (list, tuple)):
                 config_type_map[k] = 'list'
 
-            elif k.endswith('_MAP'):
+            elif k.endswith('_MAP') or isinstance(v, dict):
                 config_type_map[k] = 'map'
 
             else:
@@ -143,14 +143,14 @@ def load_config(config_file_path, print_detail=False):
         elif type_ == 'float':
             config_obj[k] = float(v)
 
-        elif type_ == 'list':
+        elif type_ == 'list' and not isinstance(v, (tuple, list)):
             v = str(v)
             if len(v) > 0:
                 config_obj[k] = list(map(lambda x: x.strip(), v.split(',')))
             else:
                 config_obj[k] = []
 
-        elif type_ == 'map':
+        elif type_ == 'map' and not isinstance(v, dict):
             item_map = {}
             for item in v.split(','):
                 item_parts = item.split('=')

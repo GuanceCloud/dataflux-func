@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Jump to...    : 跳转到...
 Refresh       : 刷新列表
-Add ENV       : 添加环境变量
+New ENV       : 新建环境变量
 Setup         : 配置
 Example       : 示例
 Copy example  : 复制示例
@@ -29,7 +29,7 @@ ENV Variable unpinned: 环境变量已取消
         <span class="select-item-name">
           {{ item.label }}
         </span>
-        <code class="select-item-id">ID: {{ item.id }}</code>
+        <code class="select-item-id code-font">ID: {{ item.id }}</code>
       </el-option>
     </el-select>
 
@@ -100,7 +100,7 @@ ENV Variable unpinned: 环境变量已取消
                 <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
               </el-link>
               <el-link v-else-if="data.type === 'addEnvVariable'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('Add ENV') }}
+                <i class="fa fa-fw fa-plus"></i> {{ $t('New ENV') }}
               </el-link>
               <div v-else>
                 <span>{{ node.label }}</span>
@@ -190,7 +190,7 @@ export default {
       let apiRes = await this.T.callAPI_getAll('/api/v1/env-variables/do/list', {
         query: { fields: ['id', 'title', 'description', 'isPinned', 'pinTime'] },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       let treeData = [];
       window._DFF_envVariableIds = [];
@@ -254,7 +254,7 @@ export default {
         body  : { data: { isPinned: isPinned } },
         alert : { okMessage: okMessage },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateEnvVariableListSyncTime');
     },

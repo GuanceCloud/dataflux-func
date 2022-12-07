@@ -236,19 +236,9 @@ export function getBase64(str, uriSafe) {
     return Base64.encode(str);
   }
 };
-export function getBase64_old(str) {
-  return btoa(encodeURIComponent(str)).replace(/ /g, '+');
-};
 
-export function fromBase64(base64str, keepBuffer) {
-  if (keepBuffer) {
-    return Base64.atob(base64str);
-  } else {
-    return Base64.decode(base64str);
-  }
-};
-export function fromBase64_old(base64str) {
-  return decodeURIComponent(atob(base64str.replace(/ /g, '+')));
+export function fromBase64(base64str) {
+  return Base64.decode(base64str);
 };
 
 export function genRandString(len, chars) {
@@ -330,6 +320,10 @@ export function isNothing(o) {
   }
 
   return false;
+};
+
+export function notNothing(o) {
+  return !isNothing(o);
 };
 
 export function asArray(o) {
@@ -686,6 +680,13 @@ export function isExpired(dt) {
   return moment.utc(dt).unix() < moment().unix();
 };
 
+export function getTimestampMs() {
+  return Date.now();
+};
+export function getTimestamp() {
+  return parseInt(Date.now() / 1000);
+};
+
 export function getDateTimeString(dt, pattern) {
   dt = dt || new Date();
 
@@ -951,7 +952,6 @@ function _createAxiosOpt(method, pathPattern, options) {
     axiosOpt.headers = axiosOpt.headers || {};
 
     axiosOpt.headers[store.getters.CONFIG('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
-    axiosOpt.headers[store.getters.CONFIG('_WEB_ORIGIN_HEADER')]    = 'DFF-UI';
 
     let authHeaderField = store.getters.CONFIG('_WEB_AUTH_HEADER');
     if (store.state.xAuthToken) {
@@ -1014,6 +1014,10 @@ async function _doAxios(axiosOpt) {
   }
 
   try {
+    // if (axiosOpt.method.toLowerCase() === 'post' && isNothing(axiosOpt.body)) {
+    //   axiosOpt.body = {};
+    // }
+
     let axiosRes = await axios(axiosOpt);
     axiosRes = await _prepareAxiosRes(axiosRes);
     return axiosRes;
@@ -1586,7 +1590,16 @@ export function getHighlightRowCSS({row, rowIndex}) {
 export function appendSearchKeywords(data, keys) {
   let searchKeywords = [];
   keys.forEach(k => {
-    searchKeywords.push(`${(data[k] || '').toLowerCase()}`);
+    let v = null;
+    try {
+      v = eval(`data.${k} || ''`);
+    } catch(err) {
+      // Nope
+    }
+
+    if (v) {
+      searchKeywords.push(v.toLowerCase());
+    }
   });
   data.searchKeywords = searchKeywords;
   return data;
@@ -1625,4 +1638,23 @@ export function searchKeywords(s, l, minScore) {
 
   let result = listScore.map(x => x[1]);
   return result;
+};
+
+export function htmlSpace(count, lang) {
+  let s = null;
+  switch(lang) {
+    case 'zh':
+      s = '&#12288;';
+      break;
+
+    default:
+      s = '&ensp;';
+      break;
+  }
+
+  if ('number' !== typeof count) {
+    count = 1;
+  }
+  count = parseInt(count);
+  return s.repeat(count);
 };

@@ -111,5 +111,5 @@ client/public/theme-dark.min.css
 
 # Other
 docker-stack.yaml
-func-pkg/*.func-pkg
+builtin-script-sets/*.zip
 client/report.*.json

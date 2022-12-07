@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Add API Auth  : 添加API认证
-Setup API Auth: 配置API认证
+Add API Auth  : 添加 API 认证
+Setup API Auth: 配置 API 认证
 
 Auth Type  : 认证类型
 Auth Config: 认证配置
@@ -25,7 +25,7 @@ API Auth created: API认证已创建
 API Auth saved  : API认证已保存
 API Auth deleted: API认证已删除
 
-Are you sure you want to delete the API Auth?: 是否确认删除此API认证？
+Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
 </i18n>
 
 <template>
@@ -241,7 +241,7 @@ export default {
         let opt = fieldMap[f];
         if (!opt) continue;
 
-        if (!this.T.isNothing(opt.default)) {
+        if (this.T.notNothing(opt.default)) {
           nextConfigJSON[f] = opt.default;
         }
       }
@@ -255,7 +255,7 @@ export default {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
         let apiRes = await this.T.callAPI_getOne('/api/v1/api-auth/do/list', this.$route.params.id);
-        if (!apiRes.ok) return;
+        if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
 
@@ -305,7 +305,7 @@ export default {
         body : { data: _formData },
         alert: { okMessage: this.$t('API Auth created') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -325,7 +325,7 @@ export default {
         body  : { data: _formData },
         alert : { okMessage: this.$t('API Auth saved') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
@@ -341,7 +341,7 @@ export default {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('API Auth deleted') },
       });
-      if (!apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
         name : 'api-auth-list',
