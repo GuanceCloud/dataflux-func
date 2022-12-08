@@ -121,8 +121,8 @@ EXTRA_PYTHON_PACKAGE_BLACK_LIST: aliyunsdkcore
 SCRIPT_MARKET_GIT_REPO_DIR: script-market/git
 # 脚本市场 阿里云OSS 库保存目录
 SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR: script-market/aliyun-oss
-# 脚本市场 阿里云OSS 库保存目录
-SCRIPT_MARKET_HTTP_SERVER_REPO_DIR: script-market/http-server
+# 脚本市场 HTTP服务 库保存目录
+SCRIPT_MARKET_HTTP_SERVICE_REPO_DIR: script-market/http-service
 
 # 脚本市场 FILE_INDEX 文件名
 SCRIPT_MARKET_FILE_INDEX_FILE: FILE_INDEX

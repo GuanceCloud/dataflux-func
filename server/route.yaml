@@ -5459,17 +5459,6 @@ scriptMarketAPI:
         $in:
           - add
           - delete
-      author:
-        $desc      : 作者
-        $isRequired: true
-        name:
-          $desc      : 名称
-          $isRequired: true
-          $type      : string
-        email:
-          $desc      : 邮箱
-          $isRequired: true
-          $type      : string
       note:
         $desc      : 备注
         $isRequired: true

@@ -62,6 +62,13 @@ import logo_gitee       from '@/assets/img/logo-gitee.png'
 import logo_bitbucket   from '@/assets/img/logo-bitbucket.png'
 
 export default {
+  get RE_PATTERN() {
+    return  {
+      email  : /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/g,
+      httpURL: /^(http:\/\/|https:\/\/)/g,
+    }
+  },
+
   get NOPE() {
     return '-';
   },

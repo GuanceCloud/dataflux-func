@@ -18,16 +18,9 @@ Not Installed              : 尚未安装
 No Corresponding Script Set: 无对应脚本集
 Edited                     : 已修改
 New Version                : 新版本
+Publish Note               : 发布说明
 
-Publish Info: 发布信息
-Author Name : 作者名称
-Author Email: 作者邮箱
-Publish Note: 发布说明
-Use Current User Profile: 使用当前用户信息
-
-Please input note: 请输入备注
-Please input author name: 请输入作者名称
-Please input author email: 请输入作者邮箱
+Please input note: 请输入发布说明
 
 Are you sure you want to publish the Script Set to the Script Market?: 是否确认发布脚本集到此脚本市场？
 Are you sure you want to delete the Script Set from the Script Market?: 是否确认从脚本市场删除此脚本集？
@@ -35,7 +28,7 @@ Are you sure you want to install the Script Set?: 是否确认安装此脚本集
 
 Script Set published to the Script Market: 脚本集已发布至脚本市场
 Script Set deleted from the Script Market: 脚本集已从脚本市场删除
-Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效\
+Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效
 
 Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
 
@@ -216,7 +209,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
         class="operation-detail"
         :visible.sync="showOperation"
         :close-on-click-modal="false"
-        close-on-press-escape="false"
+        :close-on-press-escape="false"
         v-loading.fullscreen.lock="isProcessing"
         element-loading-spinner="el-icon-loading"
         :element-loading-text="$t('Processing...')">
@@ -242,28 +235,13 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
               :value="scriptSetToOperate.requirements"></el-input>
           </el-form-item>
 
-          <template v-if="isWriteOperation">
-            <el-divider content-position="left"><h3>{{ $t('Publish Info') }}</h3></el-divider>
-
-            <el-form-item :label="$t('Author Name')" prop="author.name">
-              <el-input v-model="form.author.name"></el-input>
-            </el-form-item>
-            <el-form-item :label="$t('Author Email')" prop="author.email">
-              <el-input v-model="form.author.email"></el-input>
-            </el-form-item>
-
-            <el-form-item :label="$t('Publish Note')" prop="note">
-              <el-input
-                type="textarea"
-                resize="none"
-                :autosize="{ minRows: 2 }"
-                v-model="form.note"></el-input>
-            </el-form-item>
-
-            <el-form-item>
-              <el-link type="primary" @click.prevent="useCurrentUserProfile">{{ $t('Use Current User Profile') }}</el-link>
-            </el-form-item>
-          </template>
+          <el-form-item v-if="isWriteOperation" :label="$t('Publish Note')" prop="note">
+            <el-input
+              type="textarea"
+              resize="none"
+              :autosize="{ minRows: 2 }"
+              v-model="form.note"></el-input>
+          </el-form-item>
         </el-form>
 
         <div slot="footer" class="dialog-footer">
@@ -285,12 +263,6 @@ export default {
       immediate: true,
       async handler(to, from) {
         await this.loadData();
-      }
-    },
-    author: {
-      deep: true,
-      handler(val) {
-        this.$store.commit('updateLastestScriptMarketAuthor', val);
       }
     },
   },
@@ -393,13 +365,6 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    useCurrentUserProfile() {
-      let userProfile = this.$store.state.userProfile;
-      this.form.author = this.T.jsonCopy({
-        name : userProfile.name || userProfile.username,
-        email: userProfile.email,
-      });
-    },
     openDialog(scriptSet, operation) {
       this.form.note = null;
 
@@ -455,7 +420,6 @@ export default {
             body  : {
               scriptSetIds: [ this.scriptSetToOperate.id ],
               mode        : 'add',
-              author      : this.form.author,
               note        : this.form.note,
             },
             alert : { okMessage: this.$t('Script Set published to the Script Market') },
@@ -468,7 +432,6 @@ export default {
             body  : {
               scriptSetIds: [ this.scriptSetToOperate.id ],
               mode        : 'delete',
-              author      : this.form.author,
               note        : this.form.note,
             },
             alert : { okMessage: this.$t('Script Set deleted from the Script Market') },
@@ -534,21 +497,7 @@ export default {
             message : this.$t('Please input note'),
             required: true,
           },
-        ],
-        'author.name': [
-          {
-            trigger : 'change',
-            message : this.$t('Please input author name'),
-            required: true,
-          },
-        ],
-        'author.email': [
-          {
-            trigger : 'change',
-            message : this.$t('Please input author email'),
-            required: true,
-          },
-        ],
+        ]
       }
     },
     filteredData() {
@@ -563,12 +512,6 @@ export default {
   props: {
   },
   data() {
-    let userProfile = this.$store.state.userProfile;
-    let pervAuthor = this.T.jsonCopy(this.$store.state.lastestScriptMarketAuthor || {
-      name : userProfile.name || userProfile.username,
-      email: userProfile.email,
-    });
-
     return {
       data        : [],
       scriptMarket: {},
@@ -576,8 +519,7 @@ export default {
       showLocalScriptSets: false,
 
       form: {
-        note  : null,
-        author: pervAuthor,
+        note: null,
       },
 
       filterTEXT : '',

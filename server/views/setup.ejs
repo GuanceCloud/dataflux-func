@@ -780,7 +780,13 @@
             this.showLongTimeWaitTip = true;
 
             let axiosRes = null;
-            try { axiosRes = await axios.get('/api/v1/do/ping') } catch(err) { return; }
+            try {
+              axiosRes = await axios.get('/api/v1/do/ping');
+            } catch(err) {
+              return;
+            }
+
+            if (!axiosRes.status || axiosRes.status !== 200) return;
 
             // 成功，立即跳转
             clearInterval(pingT);

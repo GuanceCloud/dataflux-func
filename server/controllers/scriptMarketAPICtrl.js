@@ -34,6 +34,16 @@ var SCRIPT_MARKET_RW_MAP = {
   httpService: 'ro',
 }
 
+function _prepareConfig(data) {
+  ['url', 'endpoint', 'folder'].forEach(function(f) {
+    if (data.configJSON[f]) {
+      data.configJSON[f] = data.configJSON[f].replace(/\/*$/g, '').replace(/^\/*/g, '');
+    }
+  });
+
+  return data;
+};
+
 function _checkConfig(locals, data, callback) {
   var type   = data.type;
   var config = data.configJSON;
@@ -619,7 +629,7 @@ var SCRIPT_MARKET_PREAPRE_REPO_FUNC_MAP = {
 
 // 脚本市场 - 同步
 var SCRIPT_MARKET_SYNC_REPO_FUNC_MAP = {
-  git: function(locals, scriptMarket, author, note, callback) {
+  git: function(locals, scriptMarket, note, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
     var git = toolkit.createGitHandler(localPath);
 
@@ -649,11 +659,9 @@ var SCRIPT_MARKET_SYNC_REPO_FUNC_MAP = {
       },
       // git commit
       function(asyncCallback) {
-        var opt = {};
-        if (author && author.name && author.email) {
-          opt['--author'] = `"${author.name} <${author.email}>"`;
-        }
-        git.commit(note, opt, asyncCallback);
+        git.addConfig('user.name', locals.user.name)
+        git.addConfig('user.email', locals.user.email)
+        git.commit(note, asyncCallback);
       },
       // git push / reset
       function(asyncCallback) {
@@ -682,7 +690,7 @@ var SCRIPT_MARKET_SYNC_REPO_FUNC_MAP = {
       return callback();
     });
   },
-  aliyunOSS: function(locals, scriptMarket, author, note, callback) {
+  aliyunOSS: function(locals, scriptMarket, note, callback) {
     var localPath   = _getLocalAbsPath(scriptMarket);
     var ossPath     = `oss://${scriptMarket.configJSON.bucket}/${scriptMarket.configJSON.folder}/`;
     var ossEndpoint = scriptMarket.configJSON.endpoint;
@@ -724,7 +732,7 @@ var SCRIPT_MARKET_SYNC_REPO_FUNC_MAP = {
       return callback();
     });
   },
-  httpService: function(locals, scriptMarket, author, note, callback) {
+  httpService: function(locals, scriptMarket, note, callback) {
     return callback(new E('EClient', 'Publishing is not supported on HTTP Service'));
   },
 };
@@ -753,7 +761,7 @@ function _getLocalAbsPath(scriptMarket) {
       var urlObj = new URL(scriptMarket.configJSON.url);
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
-          CONFIG.SCRIPT_MARKET_HTTP_SERVER_REPO_DIR,
+          CONFIG.SCRIPT_MARKET_HTTP_SERVICE_REPO_DIR,
           `${urlObj.hostname}${urlObj.pathname}`);
       return localAbsPath;
   }
@@ -836,7 +844,7 @@ function _setAdmin(locals, scriptMarket, callback) {
     },
     // 同步
     function(asyncCallback) {
-      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, null, 'Set Token', asyncCallback);
+      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, 'Set Token', asyncCallback);
     },
   ], callback);
 };
@@ -861,13 +869,13 @@ function _unsetAdmin(locals, scriptMarket, callback) {
     },
     // 同步
     function(asyncCallback) {
-      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, null, 'Unset Token', asyncCallback);
+      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, 'Unset Token', asyncCallback);
     },
   ], callback);
 };
 
 // 脚本市场 - 推送
-function _pushToScriptMarket(locals, scriptMarket, pushContent, author, note, callback) {
+function _pushToScriptMarket(locals, scriptMarket, pushContent, note, callback) {
   var localPath = _getLocalAbsPath(scriptMarket);
 
   async.series([
@@ -978,7 +986,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, author, note, ca
     },
     // 同步
     function(asyncCallback) {
-      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, author, note, asyncCallback);
+      SCRIPT_MARKET_SYNC_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, note, asyncCallback);
     },
   ], callback);
 };
@@ -1070,7 +1078,7 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data = req.body.data;
+  var data = _prepareConfig(req.body.data);
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
 
@@ -1147,7 +1155,7 @@ exports.addOfficial = function(req, res, next) {
 
 exports.modify = function(req, res, next) {
   var id   = req.params.id;
-  var data = req.body.data;
+  var data = _prepareConfig(req.body.data);
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
 
@@ -1341,7 +1349,6 @@ exports.publish = function(req, res, next) {
   var id           = req.params.id;
   var scriptSetIds = req.body.scriptSetIds;
   var mode         = req.body.mode;
-  var author       = req.body.author;
   var note         = req.body.note;
 
   var scriptSetModel    = scriptSetMod.createModel(res.locals);
@@ -1394,7 +1401,7 @@ exports.publish = function(req, res, next) {
     },
     // 推送数据
     function(asyncCallback) {
-      _pushToScriptMarket(res.locals, scriptMarket, pushContent, author, note, asyncCallback);
+      _pushToScriptMarket(res.locals, scriptMarket, pushContent, note, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

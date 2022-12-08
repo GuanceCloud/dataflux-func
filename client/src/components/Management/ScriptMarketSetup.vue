@@ -352,7 +352,7 @@ export default {
           {
             trigger: 'change',
             message: this.$t('Should start with http:// or https://'),
-            pattern: /^(http:\/\/|https:\/\/)/g,
+            pattern: this.C.RE_PATTERN.httpURL,
           },
         ],
         'configJSON.branch': [
@@ -385,7 +385,7 @@ export default {
           {
             trigger: 'change',
             message: this.$t('Should start with http:// or https://'),
-            pattern: /^(http:\/\/|https:\/\/)/g,
+            pattern: this.C.RE_PATTERN.httpURL,
           },
         ],
         'configJSON.bucket': [

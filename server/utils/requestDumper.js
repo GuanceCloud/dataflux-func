@@ -72,10 +72,11 @@ exports.dumpUserInformation = function(req, res, next) {
     );
 
   } else {
-    res.locals.logger.info('{0} {1}({2})',
+    res.locals.logger.info('{0} {1}: id=`{2}`; email=`{3}`',
       '[REQUEST USER]',
       res.locals.user.name,
       res.locals.user.id,
+      res.locals.user.email || '<NONE>',
     );
   }
 
