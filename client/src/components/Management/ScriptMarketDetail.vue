@@ -532,9 +532,6 @@ export default {
       isProcessing        : false,
     }
   },
-  mounted() {
-    window.vmc = this;
-  }
 }
 </script>
 

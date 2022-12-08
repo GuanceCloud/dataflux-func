@@ -63,6 +63,8 @@ RUN case ${TARGETARCH} in \
 WORKDIR /usr/src/base
 COPY package.json package-lock.json requirements.txt requirements-arm64.txt ./
 RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist && \
+        rm -rf /usr/src/base/node_modules/node-rdkafka/examples && \
+        rm -rf /usr/src/base/node_modules/node-rdkafka/deps     && \
     case ${TARGETARCH} in \
         "amd64" ) \
             pip install -i https://pypi.mirrors.ustc.edu.cn/simple/ -r ./requirements.txt \

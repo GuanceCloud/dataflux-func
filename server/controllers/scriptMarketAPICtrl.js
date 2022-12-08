@@ -1534,11 +1534,13 @@ exports.checkUpdate = function(req, res, next) {
 
       async.eachSeries(scriptMarkets, function(scriptMarket, eachCallback) {
         _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
-          _scriptSets.forEach(function(_scriptSet) {
-            var keyObj = { scriptMarketId: scriptMarket.id, scriptSetId: _scriptSet.id };
-            var key    = sortedJSON.sortify(keyObj, { stringify: true });
-            remoteScriptSetMap[key] = _scriptSet.md5;
-          });
+          if (toolkit.notNothing(_scriptSets)) {
+            _scriptSets.forEach(function(_scriptSet) {
+              var keyObj = { scriptMarketId: scriptMarket.id, scriptSetId: _scriptSet.id };
+              var key    = sortedJSON.sortify(keyObj, { stringify: true });
+              remoteScriptSetMap[key] = _scriptSet.md5;
+            });
+          }
           return eachCallback();
         });
       }, asyncCallback);
