@@ -8,8 +8,6 @@ ARG TARGETARCH
 
 ENV TARGETARCH ${TARGETARCH}
 
-RUN apt-get update && apt-get install -y git
-
 # 构建项目
 #   由于 buildx 在 qemu-arm64 下执行 npm run build 速度太慢
 #   因此改为本机执行 npm run build，并把 dist 目录也提交到 git 库中，不再由服务器进行构建
