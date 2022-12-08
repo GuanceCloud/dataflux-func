@@ -29,7 +29,7 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
 RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     sed -i 's/ports.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y vim tzdata telnet curl wget net-tools iputils-ping zip unzip unar snmp \
+    apt-get install -y vim tzdata telnet curl wget net-tools iputils-ping zip unzip unar snmp git \
                 python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev libaio1 && \
                 update-alternatives --install /usr/bin/python python /usr/bin/python3.8 100
 
