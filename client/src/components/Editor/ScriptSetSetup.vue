@@ -52,7 +52,6 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="32"
-                    show-word-limit
                     v-model="form.id"></el-input>
                   <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')"></InfoBlock>
                 </el-form-item>
@@ -60,7 +59,6 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
                     maxlength="25"
-                    show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
@@ -70,7 +68,6 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="5000"
-                    show-word-limit
                     v-model="form.description"></el-input>
                 </el-form-item>
 
@@ -80,7 +77,6 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="5000"
-                    show-word-limit
                     v-model="form.requirements"></el-input>
                   <InfoBlock :title="$t('requirements.txt format, one for each line')"></InfoBlock>
                   <div class="setup-right">

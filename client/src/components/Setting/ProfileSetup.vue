@@ -35,7 +35,6 @@ User Profile saved: 用户信息已保存
                 <el-form-item :label="$t('Name')" prop="name">
                   <el-input
                     maxlength="25"
-                    show-word-limit
                     v-model="form.name"></el-input>
                 </el-form-item>
 

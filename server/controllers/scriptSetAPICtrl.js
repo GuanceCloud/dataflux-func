@@ -291,37 +291,26 @@ exports.export = function(req, res, next) {
         // 生成 zip
         var zip = new AdmZip();
 
-        // 导出注释
-        if (toolkit.notNothing(exportData.note)) {
-          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
-        }
-
-        // 导出脚本集 / 脚本
+        // 导出脚本集数据 / 脚本文件
         exportData.scriptSets.forEach(function(scriptSet) {
+          if (toolkit.isNothing(scriptSet.scripts)) return;
+
           var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
-
-          // 导出 META 内容
-          var metaData = {
-            scriptSet: toolkit.jsonCopy(scriptSet),
-          };
-
-          // 导出脚本文件
-          metaData.scriptSet.scripts.forEach(function(script) {
+          scriptSet.scripts.forEach(function(script) {
+            // 导出脚本文件
             var filePath = path.join(scriptSetDir, common.getScriptFilename(script));
             zip.addFile(filePath, script.code || '');
 
-            // 去除 META 中代码
+            // 导出数据中不含脚本
             delete script.code;
+            delete script.codeDraft;
           });
-
-          // 导出 META 信息
-          var metaFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_EXPORT_META_FILE);
-          var metaFileText = yaml.dump(metaData);
-          zip.addFile(metaFilePath, metaFileText);
         });
+        zip.addFile(`scriptSets.yaml`, yaml.dump(exportData.scriptSets));
 
         // 导出其他数据
         [
+          'scriptSets',
           'connectors',
           'envVariables',
           'authLinks',
@@ -330,10 +319,13 @@ exports.export = function(req, res, next) {
         ].forEach(function(name) {
           if (toolkit.isNothing(exportData[name])) return;
 
-          var filePath = `${name}.yaml`;
-          var fileData = yaml.dump(exportData[name]);
-          zip.addFile(filePath, fileData);
+          zip.addFile(`${name}.yaml`, yaml.dump(exportData[name]));
         });
+
+        // 导出注释
+        if (toolkit.notNothing(exportData.note)) {
+          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
+        }
 
         fileBuf = zip.toBuffer();
 
@@ -396,6 +388,7 @@ exports.import = function(req, res, next) {
       var fileBuf = fs.readFileSync(file.path);
       var zip = new AdmZip(fileBuf);
 
+      // 解压缩
       try {
         zip.getEntries().forEach(function(zipEntry) {
           if (zipEntry.isDirectory) return;
@@ -406,43 +399,23 @@ exports.import = function(req, res, next) {
         return asyncCallback(new E('EBizCondition.InvalidImportFile', 'Invalid import file', null, err));
       }
 
-      // 提取数据
       if (toolkit.isNothing(allFileData)) {
         return asyncCallback(new E('EBizCondition.EmptyImportFile', 'Empty import file'));
       }
 
-      // 提取 NOTE
-      importData.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
+      // 提取脚本数据 / 脚本代码
+      importData.scriptSets = yaml.load(allFileData[`scriptSets.yaml`]);
+      importData.scriptSets.forEach(function(scriptSet) {
+        if (toolkit.isNothing(scriptSet.scripts)) return;
 
-      // 提取 META
-      for (var filePath in allFileData) if (toolkit.endsWith(filePath, '/META')) {
-        var data = allFileData[filePath];
+        scriptSet.scripts.forEach(function(script) {
+          scriptMap[script.id] = script;
 
-        var scriptSet = yaml.load(data).scriptSet;
-
-        // 脚本集信息
-        if (!importData.scriptSets) importData.scriptSets = [];
-        importData.scriptSets.push(scriptSet);
-
-        // 脚本信息
-        if (scriptSet.scripts) {
-          scriptSet.scripts.forEach(function(script) {
-            scriptMap[script.id] = script;
-          });
-        }
-      }
-
-      // 提取脚本代码
-      for (var filePath in allFileData) if (toolkit.endsWith(filePath, '.py')) {
-        var data = allFileData[filePath];
-
-        var scriptId = filePath.split('/').slice(-2).join('__').replace(/\.py$/g, '');
-        var script = scriptMap[scriptId];
-
-        if (script) {
-          script.code = data;
-        }
-      }
+          // 读取代码
+          var scriptZipPath = `${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}/${common.getScriptFilename(script)}`;
+          script.code = allFileData[scriptZipPath] || '';
+        });
+      });
 
       // 提取其他信息
       var resourceNames = [
@@ -453,13 +426,14 @@ exports.import = function(req, res, next) {
         'batches',
       ];
       resourceNames.forEach(function(name) {
-        var filePath = `${name}.yaml`
-        var data = allFileData[filePath];
-
+        var data = allFileData[`${name}.yaml`];
         if (!data) return;
 
         importData[name] = yaml.load(data);
       });
+
+      // 提取 NOTE
+      importData.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
 
       // 替换 origin, originId
       var origin   = 'builtin';

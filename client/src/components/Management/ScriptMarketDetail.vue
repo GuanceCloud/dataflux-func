@@ -4,33 +4,38 @@ ScriptCount: 'No Script included | Includes {n} Script | Includes {n} Scripts'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Install Script Set: 脚本集详情
 Publish Script Set: 发布脚本集
-Delete Script Set: 删除脚本集
+Delete Script Set : 删除脚本集
+Install Script Set: 脚本集详情
+Upgrade Script Set: 脚本集详情
 
-Local                      : 本地
-Remote                     : 远端
-Requirements               : 依赖项
-Publisher                  : 发布者
-Publish Time               : 发布时间
-Not Published              : 尚未发布
-Not Installed              : 尚未安装
-No Corresponding Script Set: 无对应脚本集
-Edited                     : 已修改
-New Version                : 新版本
-Publish Note               : 发布说明
+Local                         : 本地
+Remote                        : 远端
+Requirements                  : 依赖项
+Publisher                     : 发布者
+Publish Time                  : 发布时间
+Not Published                 : 尚未发布
+Not Installed                 : 尚未安装
+No Corresponding Script Set   : 无对应脚本集
+Edited                        : 已修改
+New Version                   : 新版本
+Publish Note                  : 发布说明
+
+This local Script Set is not from the current Script Market: 本地脚本集并非来自当前的脚本市场
 
 Please input note: 请输入发布说明
 
 Are you sure you want to publish the Script Set to the Script Market?: 是否确认发布脚本集到此脚本市场？
 Are you sure you want to delete the Script Set from the Script Market?: 是否确认从脚本市场删除此脚本集？
 Are you sure you want to install the Script Set?: 是否确认安装此脚本集？
+Are you sure you want to upgrade the Script Set?: 是否确认升级此脚本集？
 
 Script Set published to the Script Market: 脚本集已发布至脚本市场
 Script Set deleted from the Script Market: 脚本集已从脚本市场删除
 Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效
+Script Set upgraded, new Script Set is in effect immediately: 脚本集已升级，新脚本集立即生效
 
-Installed Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
+This Script Set requires 3rd party Python packages, do you want to open PIP tool now?: 此脚本集依赖第三方 Python 包，是否现在前往PIP工具？
 
 No Script Set has ever been published: 尚未发布过任何脚本集到脚本市场
 
@@ -111,29 +116,40 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
               </template>
-              <template v-if="scriptMarket.isAdmin">
-                <i class="text-info">{{ $t('No Corresponding Script Set') }}</i>
-              </template>
               <template v-else>
-                <i class="text-info">{{ $t('Not Installed') }}</i>
+                <template v-if="scriptMarket.isAdmin">
+                  <i class="text-info">{{ $t('No Corresponding Script Set') }}</i>
+                </template>
+                <template v-else>
+                  <i class="text-info">{{ $t('Not Installed') }}</i>
+                </template>
               </template>
             </template>
           </el-table-column>
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <span v-if="scriptMarket.isAdmin && scope.row.local"
-                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
-                  class="fa fa-angle-right fa-2x"
-                  :style="{ opacity: opacity}"></i>
-              </span>
-              <span v-if="!scriptMarket.isAdmin && scope.row.remote"
-                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
-                  class="fa fa-angle-left fa-2x"
-                  :style="{ opacity: opacity}"></i>
-              </span>
+              <el-tooltip v-if="scope.row.inConflict"
+                effect="dark"
+                :content="$t('This local Script Set is not from the current Script Market')"
+                placement="top"
+                :enterable="false">
+                <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
+              </el-tooltip>
+              <template v-else>
+                <span v-if="scriptMarket.isAdmin && scope.row.local"
+                  :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
+                  <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
+                    class="fa fa-angle-right fa-2x"
+                    :style="{ opacity: opacity}"></i>
+                </span>
+                <span v-if="!scriptMarket.isAdmin && scope.row.remote"
+                  :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
+                  <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
+                    class="fa fa-angle-left fa-2x"
+                    :style="{ opacity: opacity}"></i>
+                </span>
+              </template>
             </template>
           </el-table-column>
 
@@ -176,28 +192,29 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-table-column :label="$t('Publisher')" width="200">
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
-                <span>{{ scope.row.remote.exportUser }}</span>
+                <span>{{ scope.row.remote._exportUser }}</span>
               </template>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Publish Time')" width="200">
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
-                <span>{{ scope.row.remote.exportTime | datetime }}</span>
+                <span>{{ scope.row.remote._exportTime | datetime }}</span>
                 <br>
-                <span class="text-info">{{ scope.row.remote.exportTime | fromNow }}</span>
+                <span class="text-info">{{ scope.row.remote._exportTime | fromNow }}</span>
               </template>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="150">
+          <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <template v-if="scriptMarket.isAdmin">
                 <el-link :disabled="!scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
                 <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
-              <template v-else>
-                <el-link v-if="scope.row.remote" @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+              <template v-else-if="scope.row.remote">
+                <el-link v-if="scope.row.local" :disabled="scope.row.inConflict" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link v-else :disabled="scope.row.inConflict" @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -296,6 +313,8 @@ export default {
             'requirements',
             'scripts',
             'md5',
+            'origin',
+            'originId',
           ]
         },
       });
@@ -314,7 +333,13 @@ export default {
       var data = Object.values(dataMap);
       data.forEach(d => {
         d.isIdMatched = !!(d.local && d.remote);
-        d.isUpdated   = !!(d.isIdMatched && d.local.md5 !== d.remote.md5);
+        if (d.isIdMatched) {
+          if (d.local.origin !== 'scriptMarket' || d.local.originId !== this.scriptMarket.id) {
+            d.inConflict = true;
+          } else if (d.local.md5 !== d.remote._md5) {
+            d.isUpdated = true;
+          }
+        }
       });
 
       data.sort((a, b) => {
@@ -391,6 +416,11 @@ export default {
           this.operationDialogTitle = this.$t('Install Script Set');
           this.operationButtonTitle = this.$t('Install');
           break;
+
+        case 'upgrade':
+          this.operationDialogTitle = this.$t('Upgrade Script Set');
+          this.operationButtonTitle = this.$t('Upgrade');
+          break;
       }
 
       this.operation          = operation;
@@ -415,6 +445,10 @@ export default {
 
         case 'install':
           if (!await this.T.confirm(this.$t('Are you sure you want to install the Script Set?'))) return;
+          break;
+
+        case 'upgrade':
+          if (!await this.T.confirm(this.$t('Are you sure you want to upgrade the Script Set?'))) return;
           break;
       }
 
@@ -458,6 +492,19 @@ export default {
           this.$store.commit('updateScriptListSyncTime');
 
           break;
+
+        case 'upgrade':
+          apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
+            params: { id: this.scriptMarket.id },
+            body  : {
+              scriptSetIds: [ this.scriptSetToOperate.id ],
+            },
+            alert : { okMessage: this.$t('Script Set upgraded, new Script Set is in effect immediately') },
+          });
+
+          this.$store.commit('updateScriptListSyncTime');
+
+          break;
       }
 
       if (!apiRes || !apiRes.ok) return;
@@ -466,10 +513,15 @@ export default {
       await this.common.checkScriptMarketUpdate({ force: true });
 
       // 跳转 PIP 工具
-      if (operation === 'install' && this.T.notNothing(apiRes.data.requirements)) {
-        if (await this.T.confirm(this.$t('Installed Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
-          return this.common.goToPIPTools(apiRes.data.requirements);
-        }
+      switch(operation) {
+        case 'install':
+        case 'upgrade':
+          if (this.T.notNothing(apiRes.data.requirements)) {
+            if (await this.T.confirm(this.$t('This Script Set requires 3rd party Python packages, do you want to open PIP tool now?'))) {
+              return this.common.goToPIPTools(apiRes.data.requirements);
+            }
+          }
+          break;
       }
 
       await this.loadData();

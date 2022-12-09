@@ -111,14 +111,12 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                   <el-form-item label="ID" prop="id">
                     <el-input :disabled="T.setupPageMode() === 'setup'"
                       maxlength="40"
-                      show-word-limit
                       v-model="form.id"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Title')">
                     <el-input :placeholder="$t('Optional')"
                       maxlength="25"
-                      show-word-limit
                       v-model="form.title"></el-input>
                   </el-form-item>
 
@@ -128,7 +126,6 @@ This is a builtin Connector, please contact the admin to change the config: å½“å
                       resize="none"
                       :autosize="{minRows: 2}"
                       maxlength="5000"
-                      show-word-limit
                       v-model="form.description"></el-input>
                   </el-form-item>
 

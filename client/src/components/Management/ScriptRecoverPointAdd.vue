@@ -32,7 +32,6 @@ Script Lib Recover Point created: 脚本库还原点已创建
                     resize="none"
                     :autosize="{minRows: 5}"
                     maxlength="200"
-                    show-word-limit
                     v-model="form.note"></el-input>
                   <InfoBlock title="有意义的备注可以为将来提供可靠的参考"></InfoBlock>
                 </el-form-item>

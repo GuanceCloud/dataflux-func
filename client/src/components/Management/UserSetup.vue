@@ -33,14 +33,12 @@ Please input password: 请输入密码
                 <el-form-item :label="$t('Username')" prop="username">
                   <el-input
                     maxlength="20"
-                    show-word-limit
                     v-model="form.username"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Name')" prop="name">
                   <el-input
                     maxlength="40"
-                    show-word-limit
                     v-model="form.name"></el-input>
                 </el-form-item>
 

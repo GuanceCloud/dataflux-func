@@ -74,7 +74,6 @@ recentTaskCount: '{n} 个近期任务'
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-input
                     maxlength="50"
-                    show-word-limit
                     v-model="form.id">
                   </el-input>
                   <InfoBlock :title="$t('ID will be a part of the calling URL')"></InfoBlock>
@@ -172,7 +171,6 @@ recentTaskCount: '{n} 个近期任务'
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="200"
-                    show-word-limit
                     v-model="form.note"></el-input>
                 </el-form-item>
 

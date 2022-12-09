@@ -365,23 +365,19 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var includeBatches        = toolkit.toBoolean(options.includeBatches);
   var withCodeDraft         = toolkit.toBoolean(options.withCodeDraft);
 
-  var exportTime    = toolkit.getISO8601();
-  var exportTimeStr = toolkit.getDateTimeStringCN(exportTime);
-  var exportUserStr = `${self.locals.user.username || 'ANONYMOUS'}`;
-  if (self.locals.user.name) {
-    exportUserStr = `${self.locals.user.name || 'ANONYMOUS'} (${self.locals.user.username || 'ANONYMOUS'})`;
-  }
-  var note = options.note || `Exported by ${exportUserStr} at ${exportTimeStr}`;
+  var exportUser = common.getExportUser(self.locals);
+  var exportTime = toolkit.getISO8601();
+  var note       = options.note || `Exported by ${exportUser} at ${toolkit.getDateTimeStringCN(exportTime)}`;
 
   var exportData = {
     note      : note,
-    exportUser: exportUserStr,
+    exportUser: exportUser,
     exportTime: exportTime,
     scriptSets: [],
   };
   var summary = {
     note       : note,
-    exportUser : exportUserStr,
+    exportUser : exportUser,
     exportTime : exportTime,
     summaryJSON: {},
   }
@@ -774,7 +770,20 @@ EntityModel.prototype.getExportData = function(options, callback) {
     },
   ], function(err) {
     if (err) return next(err);
-    return callback(null, exportData, summary);
+
+    if (toolkit.notNothing(exportData.scriptSets)) {
+      exportData.scriptSets.forEach(function(scriptSet) {
+        // 计算脚本集 MD5 信息
+        scriptSet._md5 = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
+
+        // 添加导出人等信息
+        scriptSet._note       = note;
+        scriptSet._exportUser = exportUser;
+        scriptSet._exportTime = exportTime;
+      });
+
+      return callback(null, exportData, summary);
+    }
   });
 };
 
@@ -782,6 +791,17 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
   importData = common.flattenImportExportData(importData);
+
+  // 删除额外信息
+  if (toolkit.notNothing(importData.scriptSets)) {
+    importData.scriptSets.forEach(function(scriptSet) {
+      for (var k in scriptSet) {
+        if (toolkit.startsWith(k, '_')) {
+          delete scriptSet[k];
+        }
+      }
+    });
+  }
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);

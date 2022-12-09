@@ -43,7 +43,6 @@ This Script is locked by other user({user}): 当前脚本已被其他用户（{u
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="64"
-                    show-word-limit
                     v-model="form.id"></el-input>
                   <InfoBlock :title="$t('Script ID will be a part of the Func ID')"></InfoBlock>
                 </el-form-item>
@@ -51,7 +50,6 @@ This Script is locked by other user({user}): 当前脚本已被其他用户（{u
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
                     maxlength="25"
-                    show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
@@ -61,7 +59,6 @@ This Script is locked by other user({user}): 当前脚本已被其他用户（{u
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="5000"
-                    show-word-limit
                     v-model="form.description"></el-input>
                 </el-form-item>
 

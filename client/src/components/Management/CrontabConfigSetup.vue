@@ -217,7 +217,6 @@ shortcutDays  : '{n} 天'
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="200"
-                    show-word-limit
                     v-model="form.note"></el-input>
                 </el-form-item>
 

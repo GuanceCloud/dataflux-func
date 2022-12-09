@@ -70,7 +70,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   <el-form-item :label="$t('Name')">
                     <el-input :placeholder="$t('Optional')"
                       maxlength="25"
-                      show-word-limit
                       v-model="form.name"></el-input>
                   </el-form-item>
 
@@ -80,7 +79,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                       resize="none"
                       :autosize="{minRows: 2}"
                       maxlength="5000"
-                      show-word-limit
                       v-model="form.description"></el-input>
                   </el-form-item>
 
@@ -91,7 +89,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                       resize="none"
                       :autosize="{minRows: 2}"
                       maxlength="5000"
-                      show-word-limit
                       v-model="form.configJSON.url"></el-input>
                   </el-form-item>
 

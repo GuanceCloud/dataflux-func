@@ -61,7 +61,6 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
                   <el-form-item :label="$t('Name')">
                     <el-input :placeholder="$t('Optional')"
                       maxlength="25"
-                      show-word-limit
                       v-model="form.name"></el-input>
                   </el-form-item>
 
@@ -162,7 +161,6 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
                       resize="none"
                       :autosize="{minRows: 2}"
                       maxlength="200"
-                      show-word-limit
                       v-model="form.note"></el-input>
                   </el-form-item>
                 </template>

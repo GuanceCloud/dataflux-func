@@ -25,7 +25,6 @@ Access Key created: Access Key 已创建
                 <el-form-item :label="$t('Name')" prop="name">
                   <el-input
                     maxlength="40"
-                    show-word-limit
                     v-model="form.name"></el-input>
                 </el-form-item>
 

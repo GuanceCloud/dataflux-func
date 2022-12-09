@@ -89,7 +89,6 @@ Data exported: 数据已导出
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="200"
-                    show-word-limit
                     v-model="form.note"></el-input>
                   <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')"></InfoBlock>
                 </el-form-item>

@@ -38,6 +38,14 @@ var IMPORT_DATA_KEYS_WITH_ORIGIN = [
   'batches',
 ];
 
+common.getExportUser = function(locals) {
+  var exportUser = `${locals.user.username || 'ANONYMOUS'}`;
+  if (locals.user.name) {
+    exportUser = `${locals.user.name || 'ANONYMOUS'} (${locals.user.username || 'ANONYMOUS'})`;
+  }
+  return exportUser;
+};
+
 common.getScriptFilename = function(script) {
   var filename = script.id.split('__').slice(1).join('__');
   var fileExt = SCRIPT_TYPE_EXT_MAP[script.type];

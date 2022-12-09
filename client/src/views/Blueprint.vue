@@ -139,14 +139,12 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
           <el-form-item label="ID" prop="id" v-if="blueprintPanelMode === 'add'">
             <el-input :disabled="T.setupPageMode() === 'setup'"
               maxlength="80"
-              show-word-limit
               v-model="form.id"></el-input>
           </el-form-item>
 
           <el-form-item :label="$t('Title')">
             <el-input :placeholder="$t('Optional')"
               maxlength="25"
-              show-word-limit
               v-model="form.title"></el-input>
           </el-form-item>
 

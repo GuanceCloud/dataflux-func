@@ -33,14 +33,12 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="40"
-                    show-word-limit
                     v-model="form.id"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
                     maxlength="25"
-                    show-word-limit
                     v-model="form.title"></el-input>
                 </el-form-item>
 
@@ -50,7 +48,6 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="5000"
-                    show-word-limit
                     v-model="form.description"></el-input>
                 </el-form-item>
 
@@ -60,7 +57,6 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="5000"
-                    show-word-limit
                     v-model="form.valueTEXT"></el-input>
                 </el-form-item>
 

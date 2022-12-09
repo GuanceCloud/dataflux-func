@@ -146,7 +146,7 @@ File already existed                                                            
                   target="_blank">{{ $t('Download') }}</el-link>
 
                 <el-link
-                  v-if="previewExts.includes(scope.row.ext)"
+                  v-if="previewExts.includes(scope.row.ext) || !scope.row.ext"
                   :href="scope.row.previewURL"
                   target="_blank">{{ $t('Open') }}</el-link>
 
@@ -244,7 +244,10 @@ export default {
 
           case 'file':
             f.icon = 'file-o';
-            f.ext  = f.name.split('.').pop();
+            f.ext  = null;
+            if (f.name.indexOf('.') > 0) {
+              f.ext = f.name.split('.').pop();
+            }
 
             if (f.size) {
               f.sizeHuman = this.T.byteSizeHuman(f.size);

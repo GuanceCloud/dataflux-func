@@ -624,6 +624,9 @@ export default {
 
       // 刷新侧边栏
       this._refreshAside();
+
+      // 同步已发布 / 草稿
+      this.data.code = this.data.codeDraft;
     },
     async resetScript() {
       if (!this.isEditable) return;

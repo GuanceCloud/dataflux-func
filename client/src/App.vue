@@ -27,7 +27,6 @@
         <el-form-item :label="$t('Name')" prop="name">
           <el-input
             maxlength="25"
-            show-word-limit
             v-model="form.name"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Email')" prop="email">

@@ -51,7 +51,6 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-input
                     maxlength="50"
-                    show-word-limit
                     v-model="form.id">
                   </el-input>
                   <InfoBlock :title="$t('ID is used in the access URL')"></InfoBlock>
@@ -71,7 +70,6 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                     resize="none"
                     :autosize="{minRows: 2}"
                     maxlength="200"
-                    show-word-limit
                     v-model="form.note"></el-input>
                 </el-form-item>
 
