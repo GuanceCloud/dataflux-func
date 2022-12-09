@@ -190,7 +190,7 @@ const app = new Vue({
     },
 
     checkUserProfileForGit() {
-      let userProfile = this.$store.state.userProfile;
+      let userProfile = this.$store.state.userProfile || {};
 
       if (!userProfile.name || !userProfile.email) {
         this.$store.commit('updateShowCompleteUserProfile', true);

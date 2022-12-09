@@ -277,7 +277,10 @@ export default {
       return _formData;
     },
     async addData() {
-      if (this.form.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+      if (this.form.type === 'git'
+        && this.form.configJSON.user
+        && this.form.configJSON.password
+        && !this.$root.checkUserProfileForGit()) return;
 
       let _formData = this._getFromData();
 
@@ -296,8 +299,6 @@ export default {
       });
     },
     async modifyData() {
-      if (this.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
-
       let _formData = this._getFromData();
 
       delete _formData.id;
@@ -318,7 +319,9 @@ export default {
       });
     },
     async deleteData() {
-      if (this.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+      if (this.data.type === 'git'
+        && this.data.isAdmin
+        && !this.$root.checkUserProfileForGit()) return;
 
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Market?'))) return;
 
@@ -373,14 +376,14 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input user'),
-            required: false,
+            required: !!this.form.configJSON.password,
           },
         ],
         'configJSON.password': [
           {
             trigger : 'change',
             message : this.$t('Please input password'),
-            required: false,
+            required: !!this.form.configJSON.user,
           },
         ],
         'configJSON.endpoint': [

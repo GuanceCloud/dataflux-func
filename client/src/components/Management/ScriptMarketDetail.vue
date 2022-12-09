@@ -371,7 +371,8 @@ export default {
       switch(operation) {
         case 'publish':
         case 'delete':
-          if (this.scriptMarket.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+          if (this.scriptMarket.type === 'git'
+            && !this.$root.checkUserProfileForGit()) return;
           break;
       }
 

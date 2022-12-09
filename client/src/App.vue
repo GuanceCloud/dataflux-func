@@ -225,6 +225,7 @@ export default {
   props: {
   },
   data() {
+    let userProfile = this.$store.state.userProfile || {};
     return {
       fullscreenLoading: false,
 
@@ -233,8 +234,8 @@ export default {
       heartbeatTimer: null,
 
       form: {
-        name : this.$store.state.userProfile.name  || '',
-        email: this.$store.state.userProfile.email || '',
+        name : userProfile.name  || '',
+        email: userProfile.email || '',
       },
     }
   },

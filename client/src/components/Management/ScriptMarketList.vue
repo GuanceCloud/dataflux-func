@@ -204,7 +204,10 @@ export default {
           apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', d.id);
           if (!apiRes || !apiRes.ok) return;
 
-          if (apiRes.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+          if (apiRes.data.type === 'git'
+            && apiRes.data.isAdmin
+            && !this.$root.checkUserProfileForGit()) return;
+
           break;
       }
 
