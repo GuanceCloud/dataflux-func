@@ -143,7 +143,9 @@ Vue.prototype.$alert = (message, title, options) => {
 }
 
 // LocalStorage 监听
-window.addEventListener('storage', function (ev) {
+window.addEventListener('storage', function(ev) {
+  if (ev.key !== 'vuex') return;
+
   let nextState = null;
   try {
     nextState = JSON.parse(ev.newValue);
@@ -185,6 +187,16 @@ const app = new Vue({
     },
     setUITheme(uiTheme) {
       this.$store.commit('updateUITheme', uiTheme);
+    },
+
+    checkUserProfileForGit() {
+      let userProfile = this.$store.state.userProfile;
+
+      if (!userProfile.name || !userProfile.email) {
+        this.$store.commit('updateShowCompleteUserProfile', true);
+        return false;
+      }
+      return true;
     },
   }
 }).$mount('#app');

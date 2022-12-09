@@ -40,8 +40,8 @@ const STATE_CONFIG = {
   isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
   isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
-  lastestScriptMarketAuthor                : { persist: true,  syncXTab: true  },
   scriptMarketCheckUpdateResult            : { persist: false, syncXTab: false },
+  showCompleteUserProfile                  : { persist: false, syncXTab: false },
 };
 const MUTATION_CONFIG = {
   updateSystemConfig                             : { persist: true  },
@@ -50,7 +50,7 @@ const MUTATION_CONFIG = {
   endProcessing                                  : { persist: false },
   updateSocketIOStatus                           : { persist: false },
   updateConflictedRoute                          : { persist: false },
-  updateUserProfile                              : { persist: false },
+  updateUserProfile                              : { persist: true  },
   updateXAuthToken                               : { persist: true  },
   updateUILocale                                 : { persist: true  },
   updateUITheme                                  : { persist: true  },
@@ -77,8 +77,8 @@ const MUTATION_CONFIG = {
   disableMonkeyPatchNotice                       : { persist: true  },
   resetMonkeyPatchNotice                         : { persist: true  },
   addFuzzySearchHistory                          : { persist: true  },
-  updateLastestScriptMarketAuthor                : { persist: true  },
   updateScriptMarketCheckUpdateResult            : { persist: false },
+  updateShowCompleteUserProfile                  : { persist: false },
 
   syncState: { persist: false },
 }
@@ -179,11 +179,11 @@ export default new Vuex.Store({
     // FuzzySearch控件搜索历史
     fuzzySearchHistoryMap: null,
 
-    // 最后脚本市场作者
-    lastestScriptMarketAuthor: null,
-
     // 脚本市场更新检查结果
     scriptMarketCheckUpdateResult: null,
+
+    // 脚本市场 git 用户补全弹框
+    showCompleteUserProfile: null,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -484,12 +484,12 @@ export default new Vuex.Store({
       state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(0, 10);
     },
 
-    updateLastestScriptMarketAuthor(state, author) {
-      state.lastestScriptMarketAuthor = author;
-    },
-
     updateScriptMarketCheckUpdateResult(state, updatedScriptSets) {
       state.scriptMarketCheckUpdateResult = updatedScriptSets;
+    },
+
+    updateShowCompleteUserProfile(state, show) {
+      state.showCompleteUserProfile = show;
     },
 
     syncState(state, nextState) {

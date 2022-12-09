@@ -416,6 +416,15 @@ en:
   Missing branch for False  : 缺少判断为假的分支
   Incomplete processing flow: 处理流程不完整
 
+  # 脚本市场 git 用户信息补全
+  Complete User Profile for git repo: 补全用于 git 的用户信息
+  Please input name : 请输入名称
+  Please input email: 请输入邮箱
+
+  Please complete User Profile before managing the Script Market based on git repo: 对基于 git 的脚本市场执行管理操作前，请先补全用户信息
+
+  User Profile saved: 用户信息已保存
+
 'zh-HK': {}
 
 'zh-TW': {}

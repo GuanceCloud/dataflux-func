@@ -12,6 +12,37 @@
     <div id="View" :style="{top: viewTop}">
       <router-view />
     </div>
+
+    <el-dialog
+      id="CompleteUserProfile"
+      :title="$t('Complete User Profile for git repo')"
+      :visible.sync="$store.state.showCompleteUserProfile"
+      :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false">
+      <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
+        <el-form-item>
+          <InfoBlock type="warning" :title="$t('Please complete User Profile before managing the Script Market based on git repo')"></InfoBlock>
+        </el-form-item>
+        <el-form-item :label="$t('Name')" prop="name">
+          <el-input
+            maxlength="25"
+            show-word-limit
+            v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item :label="$t('Email')" prop="email">
+          <el-input
+            maxlength="50"
+            v-model="form.email"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button size="small" @click="$store.commit('updateShowCompleteUserProfile', false)">{{ $t('Cancel') }}</el-button>
+        <el-button size="small" type="primary" @click="updateUserProfile()">{{ $t('Save') }}</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -122,8 +153,45 @@ export default {
         }
       });
     },
+
+    async updateUserProfile() {
+      try {
+        await this.$refs.form.validate();
+      } catch(err) {
+        return console.error(err);
+      }
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/auth/profile/do/modify', {
+        body  : { data: this.T.jsonCopy(this.form) },
+        alert : { okMessage: this.$t('User Profile saved') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$store.commit('updateShowCompleteUserProfile', false);
+      this.$store.dispatch('reloadUserProfile');
+    },
   },
   computed: {
+    formRules() {
+      return {
+        name: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input name'),
+            required: true,
+          },
+        ],
+        email: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input email'),
+            required: true,
+            pattern: this.C.RE_PATTERN.email,
+          },
+        ]
+      }
+    },
+
     showNavi() {
       switch(this.$route.name) {
         case 'index':
@@ -163,6 +231,11 @@ export default {
       prevReportAndCheckClientConflictResData: null,
 
       heartbeatTimer: null,
+
+      form: {
+        name : this.$store.state.userProfile.name  || '',
+        email: this.$store.state.userProfile.email || '',
+      },
     }
   },
   mounted() {
@@ -393,6 +466,10 @@ h3 {
   bottom: 0;
   min-width: 1280px;
   width: 100%;
+}
+
+#CompleteUserProfile > .el-dialog {
+  width: 620px;
 }
 
 .common-form {

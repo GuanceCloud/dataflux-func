@@ -12,15 +12,9 @@ Script Market deleted: 脚本市场已删除
 Script Market pinned: 脚本市场已置顶
 Script Market unpinned: 脚本市场已取消置顶
 
-Complete User Profile: 补全用户信息
-Please input name : 请输入名称
-Please input email: 请输入邮箱
-
 No Script Market has ever been added: 从未添加过任何脚本市场
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
 Official Script Market added: 官方脚本市场已添加
-Please complete User Profile before using the Script Market: 使用脚本市场前，请先补全用户信息
-User Profile saved: 用户信息已保存
 
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
 
@@ -164,36 +158,6 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           </el-table-column>
         </el-table>
       </el-main>
-
-      <el-dialog
-        :title="$t('Complete User Profile')"
-        class="complete-user-profile"
-        :visible.sync="showCompleteUserProfile"
-        :show-close="false"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false">
-        <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
-          <el-form-item>
-            <InfoBlock type="warning" :title="$t('Please complete User Profile before using the Script Market')"></InfoBlock>
-          </el-form-item>
-          <el-form-item :label="$t('Name')" prop="name">
-            <el-input
-              maxlength="25"
-              show-word-limit
-              v-model="form.name"></el-input>
-          </el-form-item>
-          <el-form-item :label="$t('Email')" prop="email">
-            <el-input
-              maxlength="50"
-              v-model="form.email"></el-input>
-          </el-form-item>
-        </el-form>
-
-        <div slot="footer" class="dialog-footer">
-          <el-button size="small" type="primary" @click="updateUserProfile()">{{ $t('Save') }}</el-button>
-        </div>
-      </el-dialog>
-
     </el-container>
   </transition>
 </template>
@@ -234,13 +198,22 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
+      let apiRes = null;
+      switch(operation) {
+        case 'delete':
+          apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', d.id);
+          if (!apiRes || !apiRes.ok) return;
+
+          if (apiRes.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+          break;
+      }
+
       switch(operation) {
         case 'delete':
           if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Market?'))) return;
           break;
       }
 
-      let apiRes = null;
       switch(operation) {
         case 'pin':
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
@@ -272,8 +245,6 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      if (!this.checkUserProfile()) return;
-
       let nextRouteQuery = this.T.packRouteQuery();
 
       this.$store.commit('updateTableList_scrollY');
@@ -297,8 +268,6 @@ export default {
       }
     },
     openDetail(d) {
-      if (!this.checkUserProfile()) return;
-
       let nextRouteQuery = this.T.packRouteQuery();
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
@@ -331,56 +300,8 @@ export default {
       return d.id === this.officialScriptMarket.id || d.configJSON.url === this.officialScriptMarket.configJSON.url;
     },
 
-    checkUserProfile() {
-      let userProfile = this.$store.state.userProfile;
-
-      if (!userProfile.name || !userProfile.email) {
-        this.form.name  = userProfile.name  || '';
-        this.form.email = userProfile.email || '';
-        this.showCompleteUserProfile = true;
-
-        return false;
-      }
-
-      return true;
-    },
-    async updateUserProfile() {
-      try {
-        await this.$refs.form.validate();
-      } catch(err) {
-        return console.error(err);
-      }
-
-      let apiRes = await this.T.callAPI('post', '/api/v1/auth/profile/do/modify', {
-        body  : { data: this.T.jsonCopy(this.form) },
-        alert : { okMessage: this.$t('User Profile saved') },
-      });
-      if (!apiRes || !apiRes.ok) return;
-
-      this.showCompleteUserProfile = false;
-      this.$store.dispatch('reloadUserProfile');
-    },
   },
   computed: {
-    formRules() {
-      return {
-        name: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input name'),
-            required: true,
-          },
-        ],
-        email: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input email'),
-            required: true,
-            pattern: this.C.RE_PATTERN.email,
-          },
-        ]
-      }
-    },
     officialScriptMarket() {
       return this.$store.getters.CONFIG('_OFFICIAL_SCRIPT_MARKET');
     },
@@ -405,16 +326,7 @@ export default {
       },
 
       isCheckingUpdate: false,
-
-      form: {
-        name : null,
-        email: null,
-      },
-      showCompleteUserProfile: false,
     }
-  },
-  mounted() {
-    this.checkUserProfile();
   },
 }
 </script>
@@ -449,9 +361,5 @@ export default {
 }
 .script-market-logo.logo-httpService {
   height: 70px !important;
-}
-
-.complete-user-profile > .el-dialog {
-  width: 620px;
 }
 </style>

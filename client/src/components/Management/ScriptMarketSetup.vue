@@ -277,6 +277,8 @@ export default {
       return _formData;
     },
     async addData() {
+      if (this.form.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+
       let _formData = this._getFromData();
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add', {
@@ -294,7 +296,10 @@ export default {
       });
     },
     async modifyData() {
+      if (this.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+
       let _formData = this._getFromData();
+
       delete _formData.id;
       delete _formData.type;
 
@@ -313,6 +318,8 @@ export default {
       });
     },
     async deleteData() {
+      if (this.data.type === 'git' && !this.$root.checkUserProfileForGit()) return;
+
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Market?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/script-markets/:id/do/delete', {
