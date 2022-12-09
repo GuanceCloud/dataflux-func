@@ -376,13 +376,25 @@ export default {
 
     showAuthFuncSampleCode() {
       let sampleCode = `@DFF.API('My Auth Func')
-def my_auth_func(req):
-    is_valid_header = req['headers'].get('x-some-field') == '<Header Field>'
-    is_valid_query  = req['query'].get('some_field')     == '<Query Field>'
-    is_valid_body   = req['body'].get('some_field')      == '<Body Field>'
+def my_auth_func():
+    # 获取/检查 Header 中字段
+    try:
+        is_valid_header = _DFF_HTTP_REQUEST['headers']['x-auth-token'] == 'TOKEN'
+    except Exception as e:
+        raise Exception('Missing \`x-auth-token\` in header')
 
-    is_authed = is_valid_header and is_valid_query and is_valid_body
-    return is_authed`;
+    # 获取/检查 Query 中字段（如：http://you_domain/?auth-token=TOKEN）
+    try:
+        is_valid_query = _DFF_HTTP_REQUEST['query']['auth-token'] == 'TOKEN'
+    except Exception as e:
+        raise Exception('Missing \`auth-token\` in query')
+
+    # 认证失败时，抛出 Exception 即可
+    if not (is_valid_header and is_valid_query):
+        raise Exception('Bad Auth Token')
+
+    # 认证成功时，返回 True 即可
+    return True`;
       this.$refs.longTextDialog.update(sampleCode);
     },
   },
