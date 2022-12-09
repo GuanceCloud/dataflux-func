@@ -35,6 +35,8 @@ var SCRIPT_MARKET_RW_MAP = {
 }
 
 function _prepareConfig(data) {
+  if (toolkit.isNothing(data.configJSON)) return data;
+
   ['url', 'endpoint', 'folder'].forEach(function(f) {
     if (data.configJSON[f]) {
       data.configJSON[f] = data.configJSON[f].replace(/\/*$/g, '').replace(/^\/*/g, '');
