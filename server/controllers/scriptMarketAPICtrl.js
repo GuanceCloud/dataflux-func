@@ -836,7 +836,7 @@ function _listScriptSets(locals, scriptMarket, callback) {
       SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, function(err, _metaData) {
         if (err) return asyncCallback(err);
 
-        metaData = _metaData;
+        metaData = _metaData || {};
 
         return asyncCallback();
       });
@@ -930,7 +930,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
       SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, function(err, _metaData) {
         if (err) return asyncCallback(err);
 
-        metaData = _metaData;
+        metaData = _metaData || {};
 
         // 添加推送信息
         metaData.note       = pushContent.note;
@@ -1067,7 +1067,7 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
       SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, function(err, _metaData) {
         if (err) return asyncCallback(err);
 
-        metaData        = _metaData;
+        metaData        = _metaData || {};
         tmpScriptSetMap = toolkit.arrayElementMap(metaData.scriptSets || [], 'id');
 
         return asyncCallback();

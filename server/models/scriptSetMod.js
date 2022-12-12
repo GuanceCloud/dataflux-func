@@ -160,6 +160,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
       sql.append('   title');
       sql.append('  ,description');
       sql.append('  ,requirements');
+      sql.append('  ,originMD5');
       sql.append('FROM biz_main_script_set');
       sql.append('WHERE');
       sql.append('   id = ?');
@@ -184,6 +185,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
             d.requirements,
             origin,
             originId,
+            d.originMD5,
           ]);
         })
 
@@ -196,6 +198,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
         sql.append('  ,requirements');
         sql.append('  ,origin');
         sql.append('  ,originId');
+        sql.append('  ,originMD5');
         sql.append(')');
         sql.append('VALUES');
         sql.append('  ?');
@@ -408,6 +411,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,sset.requirements');
       sql.append('  ,sset.origin');
       sql.append('  ,sset.originId');
+      sql.append('  ,sset.originMD5');
 
       sql.append('FROM biz_main_script_set AS sset');
 

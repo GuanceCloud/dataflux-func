@@ -129,27 +129,25 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <el-tooltip v-if="scope.row.inConflict"
+              <el-tooltip v-if="!scriptMarket.isAdmin && scope.row.inConflict"
                 effect="dark"
                 :content="$t('This local Script Set is not from the current Script Market')"
                 placement="top"
                 :enterable="false">
                 <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
               </el-tooltip>
-              <template v-else>
-                <span v-if="scriptMarket.isAdmin && scope.row.local"
-                  :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                  <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
-                    class="fa fa-angle-right fa-2x"
-                    :style="{ opacity: opacity}"></i>
-                </span>
-                <span v-if="!scriptMarket.isAdmin && scope.row.remote"
-                  :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                  <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
-                    class="fa fa-angle-left fa-2x"
-                    :style="{ opacity: opacity}"></i>
-                </span>
-              </template>
+              <span v-else-if="scriptMarket.isAdmin && scope.row.local"
+                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
+                <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
+                  class="fa fa-angle-right fa-2x"
+                  :style="{ opacity: opacity}"></i>
+              </span>
+              <span v-else-if="!scriptMarket.isAdmin && scope.row.remote"
+                :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
+                <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
+                  class="fa fa-angle-left fa-2x"
+                  :style="{ opacity: opacity}"></i>
+              </span>
             </template>
           </el-table-column>
 

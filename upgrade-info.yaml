@@ -288,3 +288,10 @@ upgradeInfo:
       UPDATE biz_main_crontab_config SET origin = 'UNKNOW' WHERE origin = 'API';
       UPDATE biz_main_batch          SET origin = 'user'   WHERE origin = 'UI';
       UPDATE biz_main_batch          SET origin = 'UNKNOW' WHERE origin = 'API';
+
+  # 于观测云SaaS 2022-12-15 迭代中实装
+  - seq: 15
+    database: |-
+      -- 脚本集增加和导入、安装时对比
+      ALTER TABLE biz_main_script_set
+        ADD COLUMN `originMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '来源MD5' AFTER `originId`;
