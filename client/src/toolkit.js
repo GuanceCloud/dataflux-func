@@ -1590,7 +1590,7 @@ export function getHighlightRowCSS({row, rowIndex}) {
 export function appendSearchKeywords(data, keys) {
   let searchKeywords = [];
   keys.forEach(k => {
-    let v = null;
+    let v = '';
     try {
       v = eval(`data.${k} || ''`);
     } catch(err) {
@@ -1598,45 +1598,76 @@ export function appendSearchKeywords(data, keys) {
     }
 
     if (v) {
-      searchKeywords.push(v.toLowerCase());
+      searchKeywords.push('' + v);
     }
   });
   data.searchKeywords = searchKeywords;
   return data;
 };
 
-export function searchKeywords(s, l, minScore) {
-  minScore = minScore || 0.1;
+export function searchKeywords(s, l) {
+  let searchTexts = s
+  .replace(/[.-_ \(\)（）]/g, ' ')
+  .toLowerCase()
+  .split(' ')
+  .filter(x => notNothing(x));
+  searchTexts.push(s);
 
+  console.log(searchTexts)
+
+  let maxSearchKeywordsLength = 0;
   let listScore = l.reduce((acc, x) => {
-    let score = 0;
-    x.searchKeywords.forEach((keyword, index) => {
-      let _score = stringSimilar(s, keyword);
-      if (_score < minScore) return;
+    let subScore = 0;
+    let simScore = 0;
 
-      score = Math.max(score, _score);
+    maxSearchKeywordsLength = Math.max(maxSearchKeywordsLength, x.searchKeywords.length);
+
+    x.searchKeywords.forEach(keyword => {
+      keyword = keyword.toLowerCase();
+
+      searchTexts.forEach(searchText => {
+        // 字符串查询
+        if (searchText === keyword) {
+          // 存在完全相同的
+          subScore += 10;
+        } else if (keyword.indexOf(searchText) >= 0) {
+          // 子字符串
+          subScore += searchText.length * 2;
+        }
+
+        // 相似度匹配
+        simScore += parseInt(stringSimilar(searchText, keyword) * 10);
+      });
     });
 
-    x.stringSimilarScore = score;
-    acc.push([ score, x ])
+    acc.push({
+      totalScore: subScore + simScore,
+      subScore  : subScore,
+      simScore  : simScore,
+      item      : x,
+    })
     return acc;
   }, []);
 
-  listScore = listScore.filter(x => {
-    return x[0] > 0;
+  listScore.forEach(x => {
+    x.finalScore = parseInt(x.totalScore * maxSearchKeywordsLength / x.item.searchKeywords.length) * 1000 + x.subScore * 100 + x.simScore;
   });
 
   listScore.sort((a, b) => {
-    if (a[0] > b[0]) {
-      return -1;
-    } else if (a[0] < b[0]) {
-      return 1;
-    } else {
-      return 0;
-    }
+    if (a.finalScore > b.finalScore) return -1;
+    else if (a.finalScore < b.finalScore) return 1;
+    else return 0;
   });
 
-  let result = listScore.map(x => x[1]);
+  // console.log('-----------------')
+  // listScore.forEach(x => {
+  //   console.log(`Final: ${x.finalScore} / Total: ${x.totalScore} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
+  // })
+  // listScore = listScore.filter(x => {
+  //   return x.subScore >= 1 || x.simScore >= 50;
+  // });
+
+  let result = listScore.map(x => x.item);
   return result;
 };
 
