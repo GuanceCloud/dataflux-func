@@ -1596,7 +1596,7 @@ exports.checkUpdate = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(scriptMarkets)) return asyncCallback();
 
-      async.eachSeries(scriptMarkets, function(scriptMarket, eachCallback) {
+      async.eachLimit(scriptMarkets, 5, function(scriptMarket, eachCallback) {
         _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
           // 检查更新不报错
           if (err) return asyncCallback();

@@ -129,17 +129,16 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <span v-if="scriptMarket.isAdmin && scope.row.local"
+              <el-tooltip v-if="scope.row.isConflict" effect="dark" :content="$t('This local Script Set is not from the current Script Market')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
+              </el-tooltip>
+              <span v-else-if="scriptMarket.isAdmin && scope.row.local"
                 :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
-                  class="fa fa-angle-right fa-2x"
-                  :style="{ opacity: opacity}"></i>
+                <i v-for="opacity in [ 0.3, 0.5, 1.0 ]" class="fa fa-angle-right fa-2x" :style="{ opacity: opacity}"></i>
               </span>
               <span v-else-if="!scriptMarket.isAdmin && scope.row.remote"
                 :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
-                <i v-for="opacity in [ 1.0, 0.5, 0.3 ]"
-                  class="fa fa-angle-left fa-2x"
-                  :style="{ opacity: opacity}"></i>
+                <i v-for="opacity in [ 1.0, 0.5, 0.3 ]" class="fa fa-angle-left fa-2x" :style="{ opacity: opacity}"></i>
               </span>
             </template>
           </el-table-column>
@@ -204,8 +203,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else-if="scope.row.remote">
-                <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                <el-link :disabled="scope.row.isConflict" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link :disabled="scope.row.isConflict" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -331,6 +330,10 @@ export default {
         if (d.isIdMatched) {
           if (d.local.md5 !== d.remote._md5) {
             d.isUpdated = true;
+          }
+          if (!this.scriptMarket.isAdmin
+              && (d.local.origin !== 'scriptMarket' || d.local.originId !== this.scriptMarket.id)) {
+            d.isConflict = true;
           }
         }
       });
