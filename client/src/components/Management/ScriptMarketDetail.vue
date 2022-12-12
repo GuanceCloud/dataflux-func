@@ -129,14 +129,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <el-tooltip v-if="!scriptMarket.isAdmin && scope.row.inConflict"
-                effect="dark"
-                :content="$t('This local Script Set is not from the current Script Market')"
-                placement="top"
-                :enterable="false">
-                <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
-              </el-tooltip>
-              <span v-else-if="scriptMarket.isAdmin && scope.row.local"
+              <span v-if="scriptMarket.isAdmin && scope.row.local"
                 :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
                 <i v-for="opacity in [ 0.3, 0.5, 1.0 ]"
                   class="fa fa-angle-right fa-2x"
@@ -211,8 +204,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else-if="scope.row.remote">
-                <el-link v-if="scope.row.local" :disabled="scope.row.inConflict" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link v-else :disabled="scope.row.inConflict" @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -293,7 +286,11 @@ export default {
       apiRes = await this.T.callAPI_get('/api/v1/script-markets/:id/script-sets/do/list', {
         params: { id: this.$route.params.id },
       });
-      if (!apiRes || !apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) {
+        return this.$router.push({
+          name: 'script-market-list',
+        });
+      };
 
       let dataMap = apiRes.data.reduce((acc, x) => {
         acc[x.id] = { remote: x };
@@ -332,9 +329,7 @@ export default {
       data.forEach(d => {
         d.isIdMatched = !!(d.local && d.remote);
         if (d.isIdMatched) {
-          if (d.local.origin !== 'scriptMarket' || d.local.originId !== this.scriptMarket.id) {
-            d.inConflict = true;
-          } else if (d.local.md5 !== d.remote._md5) {
+          if (d.local.md5 !== d.remote._md5) {
             d.isUpdated = true;
           }
         }

@@ -1328,7 +1328,11 @@ exports.listScriptSets = function(req, res, next) {
     // 列出脚本市场脚本集
     function(asyncCallback) {
       _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
-        if (err) return asyncCallback(err);
+        if (err) {
+          return asyncCallback(new E('EBizCondition.FetchScriptMarketFailed', 'Fetch Script Market Script Set list Failed', {
+            message: err.toString(),
+          }));
+        }
 
         scriptSets = _scriptSets;
 
@@ -1594,7 +1598,8 @@ exports.checkUpdate = function(req, res, next) {
 
       async.eachSeries(scriptMarkets, function(scriptMarket, eachCallback) {
         _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
-          if (err) return asyncCallback(err);
+          // 检查更新不报错
+          if (err) return asyncCallback();
 
           if (toolkit.notNothing(_scriptSets)) {
             _scriptSets.forEach(function(_scriptSet) {
