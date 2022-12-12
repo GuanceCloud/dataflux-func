@@ -1555,6 +1555,14 @@ exports.install = function(req, res, next) {
 
         scriptMarket = dbRes;
 
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.InstallingScriptSetFromScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
+
         return asyncCallback();
       })
     },

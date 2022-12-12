@@ -132,7 +132,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="50">
+          <el-table-column align="left" width="50">
             <template slot-scope="scope">
               <el-tooltip effect="dark" :content="scope.row.isLockedByOther ? $t('Locked by other user ({user})', { user: scope.row.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
                 <i class="fa fa-fw fa-2x" :class="[ scope.row.isLocked ? 'fa-lock':'', scope.row.isLockedByOther ? 'text-bad':'text-good' ]"></i>
@@ -140,7 +140,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="left" width="120">
+          <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.isTimeout"
                 class="text-bad">
@@ -152,42 +152,37 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                   style="width: 87px"
                   type="primary"
                   size="small"
-                  :plain="scope.row.isAdmin && scope.row.isEditable ? false : true"
+                  :plain="scope.row.isAdmin ? false : true"
                   @click="openDetail(scope.row)">
-                  <i class="fa fa-fw" :class="scope.row.isAdmin && scope.row.isEditable ? 'fa-wrench' : 'fa-th-large'"></i>
-                  {{ scope.row.isAdmin && scope.row.isEditable ? $t('Admin') : $t('Detail') }}
+                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
+                  {{ scope.row.isAdmin ? $t('Admin') : $t('Detail') }}
                 </el-button>
               </el-badge>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="220">
+          <el-table-column align="right" width="240">
             <template slot-scope="scope">
-              <el-link v-if="scope.row.isPinned"
-                :disabled="!scope.row.isEditable"
-                v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">
-                {{ $t('Unpin') }}
-              </el-link>
-              <el-link v-else
-                :disabled="!scope.row.isEditable"
-                v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">
-                {{ $t('Pin') }}
+              <el-link
+                :disabled="!scope.row.isAccessible"
+                v-prevent-re-click @click="quickSubmitData(scope.row, scope.row.isPinned ? 'unpin' : 'pin')">
+                {{ scope.row.isPinned ? $t('Unpin') : $t('Pin') }}
               </el-link>
 
-              <el-link v-if="scope.row.isAdmin"
-                :disabled="!scope.row.isEditable"
+              <el-link
+                :disabled="!scope.row.isAccessible"
                 v-prevent-re-click @click="lockData(scope.row.id, !scope.row.isLocked)">
                 {{ scope.row.isLocked ? $t('Unlock') : $t('Lock') }}
               </el-link>
 
-              <el-link v-if="!isOfficialScriptMarket(scope.row)"
-                :disabled="!scope.row.isEditable"
+              <el-link
+                :disabled="isOfficialScriptMarket(scope.row) || !scope.row.isAccessible"
                 @click="openSetup(scope.row, 'setup')">
                 {{ $t('Setup') }}
               </el-link>
 
               <el-link
-                :disabled="!scope.row.isEditable"
+                :disabled="!scope.row.isAccessible"
                 @click="quickSubmitData(scope.row, 'delete')">
                 {{ $t('Delete') }}
               </el-link>
@@ -237,7 +232,7 @@ export default {
         d.lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW') }`;
         d.isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
         d.isLockedByOther = d.lockedByUserId && !d.isLockedByMe;
-        d.isEditable      = this.$store.getters.isAdmin || !d.isLockedByOther;
+        d.isAccessible      = this.$store.getters.isAdmin || !d.isLockedByOther;
         d.isLocked        = d.isLockedByMe || d.isLockedByOther;
       });
 

@@ -80,7 +80,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
       <!-- 横幅 -->
       <div v-if="isLockedByMe || isLockedByOther" style="padding: 0 30px">
         <InfoBlock v-if="isLockedByMe" type="success" :title="$t('This Script Market is locked by you')"></InfoBlock>
-        <InfoBlock v-else-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Market is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
+        <InfoBlock v-else-if="isLockedByOther" :type="isAccessible ? 'warning' : 'error'" :title="$t('This Script Market is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
       </div>
 
       <!-- 列表区 -->
@@ -212,12 +212,12 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <template v-if="scriptMarket.isAdmin">
-                <el-link :disabled="!isEditable || !scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
-                <el-link :disabled="!isEditable || !scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
+                <el-link :disabled="!isAccessible || !scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
+                <el-link :disabled="!isAccessible || !scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else-if="scope.row.remote">
-                <el-link :disabled="scope.row.isConflict || scope.row.isLocalEdited" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link :disabled="scope.row.isConflict || scope.row.isLocalEdited" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                <el-link :disabled="!isAccessible ||scope.row.isConflict || scope.row.isLocalEdited" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link :disabled="!isAccessible ||scope.row.isConflict || scope.row.isLocalEdited" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -564,7 +564,7 @@ export default {
     isLockedByOther() {
       return this.scriptMarket.lockedByUserId && !this.isLockedByMe;
     },
-    isEditable() {
+    isAccessible() {
       // 超级管理员不受限制
       if (this.$store.getters.isAdmin) return true;
       return !this.isLockedByOther;
