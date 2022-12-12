@@ -239,6 +239,7 @@ export default {
     }
   },
   mounted() {
+    // 初始化Socket.io
     const connectSocketIO = () => {
       if (this.$store.getters.isSocketIOReady) return;
 
@@ -271,9 +272,7 @@ export default {
         console.error(err)
       }
     }
-
     this.$nextTick(() => {
-      // 初始化Socket.io
       this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL, { transports: ['websocket'] });
       this.socketIO
         .on('connect', connectSocketIO)
@@ -290,8 +289,8 @@ export default {
       }, 1 * 1000);
     });
 
+    // 监听快捷键
     setImmediate(() => {
-      // 监听快捷键
       var app = this;
 
       document.onkeydown = function(e) {

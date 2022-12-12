@@ -341,16 +341,23 @@ export default {
       var data = Object.values(dataMap);
       data.forEach(d => {
         if (d.local) {
+          // 本地是否编辑过
           d.isLocalEdited = d.local.originMD5 && d.local.md5 !== d.local.originMD5;
         }
 
+        // 是否有对应 ID 的脚本集
         d.isIdMatched = !!(d.local && d.remote);
         if (d.isIdMatched) {
-          if (d.local.originMD5 !== d.remote.originMD5) {
+          // 远端是否更新
+          if (d.local.origin === 'scriptMarket'
+              && d.local.originId === this.scriptMarket.id
+              && d.local.originMD5 !== d.remote.originMD5) {
             d.isUpdated = true;
           }
+          // 是否和本地冲突
           if (!this.scriptMarket.isAdmin
-              && (d.local.origin !== 'scriptMarket' || d.local.originId !== this.scriptMarket.id)) {
+              && (d.local.origin !== 'scriptMarket'
+                  || d.local.originId !== this.scriptMarket.id)) {
             d.isConflict = true;
           }
         }

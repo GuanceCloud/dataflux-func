@@ -21,8 +21,6 @@ IMAGE_INFO.ARCHITECTURE   = childProcess.execSync('uname -m').toString().trim();
 IMAGE_INFO.PYTHON_VERSION = childProcess.execSync('python --version').toString().split(' ').pop();
 IMAGE_INFO.NODE_VERSION   = childProcess.execSync('node --version').toString().replace('v', '');
 
-var WORKER_IMAGE_INFO = null;
-
 /* Handlers */
 exports.index = function(req, res, next) {
   var ret = toolkit.initRet(ROUTE);
