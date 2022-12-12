@@ -100,7 +100,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100" align="right" v-if="hasLocalMarker">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.isLocalEdited || scriptMarket.isAdmin && scope.row.isUpdated"
+              <el-tag v-if="scope.row.isLocalEdited"
                 effect="dark"
                 type="danger"
                 size="mini">
@@ -139,7 +139,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <el-tooltip v-if="scope.row.isConflict" effect="dark" :content="$t('This Script Set is not from current Script Market')" placement="top" :enterable="false">
+              <el-tooltip v-if="!scriptMarket.isAdmin && scope.row.local && !scope.row.isScriptMarketMatched" effect="dark" :content="$t('This Script Set is not from current Script Market')" placement="top" :enterable="false">
                 <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
               </el-tooltip>
               <el-tooltip v-else-if="scope.row.isLocalEdited" effect="dark" :content="$t('This Script Set is edited locally')" placement="top" :enterable="false">
@@ -158,7 +158,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100" align="right" v-if="hasRemoteMarker">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.remote && scope.row.isUpdated && !scope.row.isConflict"
+              <el-tag v-if="scope.row.isRemoteUpdated"
                 effect="dark"
                 type="danger"
                 size="mini">
@@ -212,12 +212,12 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <template v-if="scriptMarket.isAdmin">
-                <el-link :disabled="!isAccessible || !scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
-                <el-link :disabled="!isAccessible || !scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
+                <el-link :disabled="!scope.row.isPublishable" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
+                <el-link :disabled="!scope.row.isDeletable" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
-              <template v-else-if="scope.row.remote">
-                <el-link :disabled="!isAccessible ||scope.row.isConflict || scope.row.isLocalEdited" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link :disabled="!isAccessible ||scope.row.isConflict || scope.row.isLocalEdited" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+              <template v-else>
+                <el-link :disabled="!scope.row.isInstallable" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link :disabled="!scope.row.isInstallable" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -340,67 +340,71 @@ export default {
       // 生成列表并排序
       var data = Object.values(dataMap);
       data.forEach(d => {
-        if (d.local) {
-          // 本地是否编辑过
-          d.isLocalEdited = d.local.originMD5 && d.local.md5 !== d.local.originMD5;
-        }
-
         // 是否有对应 ID 的脚本集
         d.isIdMatched = !!(d.local && d.remote);
-        if (d.isIdMatched) {
-          // 远端是否更新
-          if (d.local.origin === 'scriptMarket'
-              && d.local.originId === this.scriptMarket.id
-              && d.local.originMD5 !== d.remote.originMD5) {
-            d.isUpdated = true;
-          }
-          // 是否和本地冲突
-          if (!this.scriptMarket.isAdmin
-              && (d.local.origin !== 'scriptMarket'
-                  || d.local.originId !== this.scriptMarket.id)) {
-            d.isConflict = true;
+
+        if (this.scriptMarket.isAdmin) {
+          // 发布模式
+
+          // 本地是否编辑过（有匹配，但本地 MD5 与远端 Origin MD5 不同）
+          d.isLocalEdited = !!(d.isIdMatched && d.local.md5 != d.remote.originMD5);
+
+          // 是否可以发布（有本地，可操作）
+          d.isPublishable = !!(d.local && this.isAccessible);
+          // 是否可以删除（有远端，可操作）
+          d.isDeletable = !!(d.remote && this.isAccessible);
+
+        } else {
+          // 安装模式
+
+          // 是否从本脚本市场安装
+          d.isScriptMarket        = !!(d.local && d.local.origin === 'scriptMarket');
+          d.isScriptMarketMatched = !!(d.local && d.local.origin === 'scriptMarket' && d.local.originId === this.scriptMarket.id);
+
+          if (!d.isIdMatched) {
+            // 无对应
+            // 是否可以安装（有远端即可）
+            d.isInstallable = !!d.remote;
+
+          } else if (d.isIdMatched && d.isScriptMarket && !d.isScriptMarketMatched) {
+            // 有对应，但来自不同脚本市场
+            // 是否可以安装（不可）
+            d.isInstallable = false;
+
+          } else if (d.isIdMatched && d.isScriptMarket && d.isScriptMarketMatched) {
+            // 有对应，来自相同脚本市场
+
+            // 本地是否编辑（本地MD5 与本地 Origin MD5 不同）
+            d.isLocalEdited = d.local.md5 !== d.local.originMD5;
+
+            // 远端是否更新
+            d.isRemoteUpdated = !!(d.local.originMD5 !== d.remote.originMD5);
+
+            // 是否可以安装（本地未修改、可操作）
+            d.isInstallable = !d.isLocalEdited && this.isAccessible;
           }
         }
       });
 
       data.sort((a, b) => {
-        if (a.isUpdated !== b.isUpdated) {
-          // 有更新的靠前
-          if (a.isUpdated) return -1;
-          else return 1;
+        let getScore = x => {
+          let score = 0;
+          if (x.isRemoteUpdated) score += 1000;
+          if (x.isLocalEdited)   score += 100;
+          if (x.isIdMatched)     score += 10;
 
-        } else {
-          // 都没有更新
-          if (a.isIdMatched !== b.isIdMatched) {
-            // 有对应的靠前
-            if (a.isIdMatched) return -1;
-            else if (b.isIdMatched) return 1;
-
+          if (this.scriptMarket.isAdmin) {
+            if (x.local) score += 1;
           } else {
-            // 没有对应的
-            if (this.scriptMarket.isAdmin) {
-              // 管理：本地靠前
-              if (a.local && !b.local) {
-                return -1;
-              } else if (!a.local && b.local) {
-                return 1;
-              }
-
-            } else {
-              // 非管理：远端靠前
-              if (a.remote && !b.remote) {
-                return -1;
-              } else if (!a.remote && b.remote) {
-                return 1;
-              }
-            }
-
-            // 默认，ID 排序
-            if ((a.local || a.remote).id < (b.local || b.remote).id) return -1;
-            else if ((a.local || a.remote).id === (b.local || b.remote).id) return 0;
-            else return 1;
+            if (x.remote) score += 1;
           }
+
+          return score;
         }
+        let aScore = getScore(a);
+        let bScore = getScore(b);
+
+        return bScore - aScore;
       });
       // 添加搜索关键字
       data.forEach(d => {
@@ -579,7 +583,7 @@ export default {
     hasLocalMarker() {
       for (let i = 0; i < this.data.length; i++) {
         let d = this.data[i];
-        if (d.isLocalEdited || this.scriptMarket.isAdmin && d.isUpdated) {
+        if (d.isLocalEdited) {
           return true;
         }
       }
@@ -588,7 +592,7 @@ export default {
     hasRemoteMarker() {
       for (let i = 0; i < this.data.length; i++) {
         let d = this.data[i];
-        if (d.remote && d.isUpdated && !d.isConflict) {
+        if (d.isRemoteUpdated) {
           return true;
         }
       }
