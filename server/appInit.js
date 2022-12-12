@@ -286,7 +286,7 @@ exports.afterAppCreated = function(app, server) {
       // 获取锁
       function(asyncCallback) {
         var lockKey   = toolkit.getCacheKey('lock', 'autoInstallScriptSet');
-        var lockValue = Date.now().toString();
+        var lockValue = toolkit.genRandString();
         var lockAge   = CONFIG._SCRIPT_SET_AUTO_INSTALL_LOCK_AGE;
 
         app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
@@ -365,7 +365,7 @@ exports.afterAppCreated = function(app, server) {
       // 获取锁
       function(asyncCallback) {
         var lockKey   = toolkit.getCacheKey('lock', 'autoCreateDataKit');
-        var lockValue = Date.now().toString();
+        var lockValue = toolkit.genRandString();
         var lockAge   = CONFIG._LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE;
 
         app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {

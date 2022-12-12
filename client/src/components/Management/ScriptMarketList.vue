@@ -122,6 +122,8 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                 </template>
                 &#12288;{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}
               </div>
+
+              <InfoBlock v-if="scope.row.error" :title="scope.row.error" type="error" ></InfoBlock>
             </template>
           </el-table-column>
 
@@ -182,6 +184,8 @@ export default {
   },
   methods: {
     async loadData() {
+      await this.T.callAPI_get('/api/v1/script-markets/do/check-update');
+
       let _listQuery = this.dataFilter = this.T.createListQuery();
       let apiRes = await this.T.callAPI_get('/api/v1/script-markets/do/list', {
         query: _listQuery,

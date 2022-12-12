@@ -438,41 +438,18 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
           CONFIG.SCRIPT_MARKET_META_FILE,
           CONFIG.SCRIPT_MARKET_TOKEN_FILE,
         ];
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP.aliyunOSS(scriptMarket, localPathTmp, files, asyncCallback);
+        async.eachSeries(files, function(file, eachCallback) {
+          SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, file, function(err) {
+            // 初始化时下载文件失败不报错
+            return eachCallback();
+          });
+        }, asyncCallback);
       },
     ], function(err) {
-      // 下载失败
+      // 初始化失败
       if (err) {
         fs.removeSync(localPathTmp);
-        return callback(new E('EClient', 'Load Script Market failed', { message: err.toString() }));
-      }
-
-      fs.moveSync(localPathTmp, localPath, { overwrite: true });
-      fs.removeSync(localPathTmp);
-      return callback();
-    });
-  },
-  httpService: function(locals, scriptMarket, callback) {
-    var localPath    = _getLocalAbsPath(scriptMarket);
-    var localPathTmp = `${localPath}.tmp`;
-
-    // 清理目录
-    fs.emptyDirSync(localPathTmp);
-
-    async.series([
-      // 下载初始化文件
-      function(asyncCallback) {
-        var files = [
-          CONFIG.SCRIPT_MARKET_META_FILE,
-          CONFIG.SCRIPT_MARKET_TOKEN_FILE,
-        ];
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP.httpService(scriptMarket, localPathTmp, files, asyncCallback);
-      },
-    ], function(err) {
-      // 下载失败
-      if (err) {
-        fs.removeSync(localPathTmp);
-        return callback(err);
+        return callback(new E('EClient', 'Init Script Market failed', { message: err.toString() }));
       }
 
       fs.moveSync(localPathTmp, localPath, { overwrite: true });
@@ -481,6 +458,7 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
     });
   },
 };
+SCRIPT_MARKET_INIT_FUNC_MAP.httpService = SCRIPT_MARKET_INIT_FUNC_MAP.aliyunOSS;
 
 // 脚本市场 - 重置
 var SCRIPT_MARKET_RESET_FUNC_MAP = {
@@ -491,7 +469,7 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
     var prevCommitId = null;
 
     var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
-    var lockValue   = Date.now().toString();
+    var lockValue   = toolkit.genRandString();
     var lockAge     = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_AGE;
     var lockWaitAge = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_WAIT_AGE;
     async.series([
@@ -524,27 +502,27 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
       },
     ], function(err) {
       // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue);
-
-      if (err) {
-        if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
-          return callback(new E('EClient', 'Accessing git repo timeout'));
-        } else {
-          return callback(err);
+      locals.cacheDB.unlock(lockKey, lockValue, function() {
+        if (err) {
+          if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+            return callback(new E('EClient', 'Accessing git repo timeout'));
+          } else {
+            return callback(err);
+          }
         }
-      }
 
-      // 读取 META
-      var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-      var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
-      return callback(null, metaData);
+        // 读取 META
+        var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
+        var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
+        return callback(null, metaData);
+      });
     });
   },
   aliyunOSS: function(locals, scriptMarket, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
 
     var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
-    var lockValue   = Date.now().toString();
+    var lockValue   = toolkit.genRandString();
     var lockAge     = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_AGE;
     var lockWaitAge = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_WAIT_AGE;
     async.series([
@@ -552,51 +530,33 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
       function(asyncCallback) {
         locals.cacheDB.lockWait(lockKey, lockValue, lockAge, lockWaitAge, asyncCallback);
       },
-      // 重新下载 META
+      // 重新下载 META、TOKEN
       function(asyncCallback) {
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP.aliyunOSS(scriptMarket, localPath, CONFIG.SCRIPT_MARKET_META_FILE, asyncCallback);
+        var files = [
+          CONFIG.SCRIPT_MARKET_META_FILE,
+          CONFIG.SCRIPT_MARKET_TOKEN_FILE,
+        ];
+        async.eachSeries(files, function(file, eachCallback) {
+          SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, function(err) {
+            // 初始化时下载文件失败不报错
+            return eachCallback();
+          });
+        }, asyncCallback);
       },
     ], function(err) {
       // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue);
+      locals.cacheDB.unlock(lockKey, lockValue, function() {
+        if (err) return callback(err);
 
-      if (err) return callback(err);
-
-      // 读取 META
-      var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-      var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml');
-      return callback(null, metaData);
-    });
-  },
-  httpService: function(locals, scriptMarket, callback) {
-    var localPath = _getLocalAbsPath(scriptMarket);
-
-    var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
-    var lockValue   = Date.now().toString();
-    var lockAge     = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_AGE;
-    var lockWaitAge = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_WAIT_AGE;
-    async.series([
-      // 上锁
-      function(asyncCallback) {
-        locals.cacheDB.lockWait(lockKey, lockValue, lockAge, lockWaitAge, asyncCallback);
-      },
-      // 重新下载 META
-      function(asyncCallback) {
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP.httpService(scriptMarket, localPath, CONFIG.SCRIPT_MARKET_META_FILE, asyncCallback);
-      },
-    ], function(err) {
-      // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue);
-
-      if (err) return callback(err);
-
-      // 读取 META
-      var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-      var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml');
-      return callback(null, metaData);
+        // 读取 META
+        var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
+        var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
+        return callback(null, metaData);
+      });
     });
   },
 };
+SCRIPT_MARKET_RESET_FUNC_MAP.httpService = SCRIPT_MARKET_RESET_FUNC_MAP.aliyunOSS;
 
 // 脚本市场 - 下载
 var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
@@ -604,47 +564,58 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     // Git 库通过重置实现下载
     return callback();
   },
-  aliyunOSS: function(scriptMarket, localSavePath, files, callback) {
-    files = toolkit.asArray(files);
-    async.eachLimit(files, 5, function(file, eachCallback) {
-      var ossFilePath   = `oss://${scriptMarket.configJSON.bucket}/${scriptMarket.configJSON.folder}/${file}`;
-      var localFilePath = path.join(localSavePath, file);
-      var ossEndpoint   = scriptMarket.configJSON.endpoint;
+  aliyunOSS: function(scriptMarket, localSavePath, file, callback) {
+    var ossFilePath   = `oss://${scriptMarket.configJSON.bucket}/${scriptMarket.configJSON.folder}/${file}`;
+    var localFilePath = path.join(localSavePath, file);
+    var ossEndpoint   = scriptMarket.configJSON.endpoint;
 
-      // 确保文件夹
-      fs.ensureDirSync(path.dirname(localFilePath));
+    // 确保文件夹
+    fs.ensureDirSync(path.dirname(localFilePath));
 
-      // 下载文件
-      var cmdArgs = [
-        'cp', ossFilePath, localFilePath, '-f',
-        '-e', ossEndpoint,
-        '-i', scriptMarket.configJSON.accessKeyId,
-        '-k', scriptMarket.configJSON.accessKeySecret,
-      ]
-      if (toolkit.endsWith(file, '/')) cmdArgs.push('-r');
+    // 删除原文件
+    fs.removeSync(localFilePath);
 
-      childProcess.execFile(OSSUTIL_CMD, cmdArgs, function(err, stdout, stderr) {
-        // 忽略报错
-        return eachCallback();
-      });
-    }, callback);
+    // 下载文件
+    var cmdArgs = [
+      'cp', ossFilePath, localFilePath, '-f',
+      '-e', ossEndpoint,
+      '-i', scriptMarket.configJSON.accessKeyId,
+      '-k', scriptMarket.configJSON.accessKeySecret,
+    ]
+    if (toolkit.endsWith(file, '/')) cmdArgs.push('-r');
+
+    var t = Date.now()
+    childProcess.execFile(OSSUTIL_CMD, cmdArgs, function(err, stdout, stderr) {
+      if (err) return callback(err);
+
+      if (!fs.existsSync(localFilePath)) {
+        return callback(new Error('Fetch file from Aliyun OSS failed.'))
+      }
+      return callback();
+    })
   },
-  httpService: function(scriptMarket, localSavePath, files, callback) {
-    files = toolkit.asArray(files);
-    async.eachLimit(files, 5, function(file, eachCallback) {
-      var fileURL       = `${scriptMarket.configJSON.url}/${file}`;
-      var localFilePath = path.join(localSavePath, file);
+  httpService: function(scriptMarket, localSavePath, file, callback) {
+    var fileURL       = `${scriptMarket.configJSON.url}/${file}`;
+    var localFilePath = path.join(localSavePath, file);
 
-      // 确保文件夹
-      fs.ensureDirSync(path.dirname(localFilePath));
+    // 确保文件夹
+    fs.ensureDirSync(path.dirname(localFilePath));
 
-      // 下载文件
-      var cmdArgs = [ fileURL, '-q', '-O', localFilePath ];
-      childProcess.execFile('wget', cmdArgs, function(err, stdout, stderr) {
-        // 忽略报错
-        return eachCallback();
-      });
-    }, callback);
+    // 删除原文件
+    fs.removeSync(localFilePath);
+
+    // 下载文件
+    var cmdArgs = [ fileURL, '-q', '-O', localFilePath ];
+
+    var t = Date.now()
+    childProcess.execFile('wget', cmdArgs, function(err, stdout, stderr) {
+      if (err) return callback(err);
+
+      if (!fs.existsSync(localFilePath)) {
+        return callback(new Error('Fetch file from HTTP Service failed.'))
+      }
+      return callback();
+    });
   },
 }
 
@@ -657,7 +628,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
     var prevCommitId = null;
 
     var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
-    var lockValue   = Date.now().toString();
+    var lockValue   = toolkit.genRandString();
     var lockAge     = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_AGE;
     var lockWaitAge = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_WAIT_AGE;
     async.series([
@@ -699,16 +670,16 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       },
     ], function(err) {
       // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue);
-
-      if (err) {
-        if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
-          return callback(new E('EClient', 'Accessing git repo timeout'));
-        } else {
-          return callback(err);
+      locals.cacheDB.unlock(lockKey, lockValue, function() {
+        if (err) {
+          if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+            return callback(new E('EClient', 'Accessing git repo timeout'));
+          } else {
+            return callback(err);
+          }
         }
-      }
-      return callback();
+        return callback();
+      });
     });
   },
   aliyunOSS: function(locals, scriptMarket, pushContent, callback) {
@@ -719,7 +690,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
     var ossEndpoint = scriptMarket.configJSON.endpoint;
 
     var lockKey     = toolkit.getCacheKey('lock', 'scriptMarketOperation');
-    var lockValue   = Date.now().toString();
+    var lockValue   = toolkit.genRandString();
     var lockAge     = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_AGE;
     var lockWaitAge = CONFIG._SCRIPT_MARKET_OPERATION_LOCK_WAIT_AGE;
     async.series([
@@ -734,7 +705,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
           CONFIG.SCRIPT_MARKET_TOKEN_FILE,
           CONFIG.SCRIPT_EXPORT_README_FILE,
         ]
-        async.eachLimit(files, 5, function(file, eachCallback) {
+        async.eachSeries(files, function(file, eachCallback) {
           var localFilePath = path.join(localPath, file);
           var ossFilePath   = ossPath + file;
           var cmdArgs = [
@@ -755,7 +726,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       function(asyncCallback) {
         if (toolkit.isNothing(pushContent.scriptSets)) return asyncCallback();
 
-        async.eachLimit(pushContent.scriptSets, 5, function(scriptSet, eachCallback) {
+        async.eachSeries(pushContent.scriptSets, function(scriptSet, eachCallback) {
           var localFolderPath = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id) + '/';
           var ossFolderPath   = ossPath + `${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/`;
           var cmdArgs = [
@@ -773,10 +744,10 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       },
     ], function(err) {
       // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue);
-
-      if (err) return callback(err);
-      return callback();
+      locals.cacheDB.unlock(lockKey, lockValue, function() {
+        if (err) return callback(err);
+        return callback();
+      });
     });
   },
   httpService: function(locals, scriptMarket, pushContent, callback) {
@@ -828,26 +799,18 @@ function _getMetaData(scriptMarket) {
 
 // 脚本市场 - 列出脚本集
 function _listScriptSets(locals, scriptMarket, callback) {
-  var scriptSets = null;
-
-  var metaData = null;
+  var scriptSets = [];
   async.series([
     function(asyncCallback) {
-      SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, function(err, _metaData) {
+      SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, function(err, metaData) {
         if (err) return asyncCallback(err);
 
-        metaData = _metaData || {};
+        if (toolkit.notNothing(metaData)) {
+          scriptSets = metaData.scriptSets || [];
+        }
 
         return asyncCallback();
       });
-    },
-    function(asyncCallback) {
-      try {
-        scriptSets = metaData.scriptSets || [];
-        return asyncCallback();
-      } catch(err) {
-        return asyncCallback(err);
-      }
     },
   ], function(err) {
     if (err) return callback(err);
@@ -1120,6 +1083,8 @@ exports.list = function(req, res, next) {
   var scriptMarketPageInfo = null;
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
+  var scriptMarketModelForFetch = scriptMarketMod.createModel(res.locals);
+  scriptMarketModelForFetch.decipher = true;
 
   async.series([
     // 获取脚本市场列表
@@ -1613,16 +1578,9 @@ exports.checkUpdate = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 获取脚本市场（仅涉及安装的）
+    // 获取脚本市场
     function(asyncCallback) {
-      if (toolkit.isNothing(scriptMarketIds)) return asyncCallback();
-
-      var opt = {
-        filters: {
-          id: { in: scriptMarketIds },
-        }
-      }
-      scriptMarketModel.list(opt, function(err, dbRes) {
+      scriptMarketModel.list(null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         scriptMarkets = dbRes;
@@ -1636,6 +1594,8 @@ exports.checkUpdate = function(req, res, next) {
 
       async.eachSeries(scriptMarkets, function(scriptMarket, eachCallback) {
         _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
+          if (err) return asyncCallback(err);
+
           if (toolkit.notNothing(_scriptSets)) {
             _scriptSets.forEach(function(_scriptSet) {
               var keyObj = { scriptMarketId: scriptMarket.id, scriptSetId: _scriptSet.id };

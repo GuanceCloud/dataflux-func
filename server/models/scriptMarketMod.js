@@ -44,7 +44,6 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
-
 EntityModel.prototype.get = function(id, options, callback) {
   var self = this;
 
