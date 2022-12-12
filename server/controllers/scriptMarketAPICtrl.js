@@ -1052,7 +1052,9 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
         })
       });
 
-      SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, files, asyncCallback);
+      async.eachLimit(files, 5, function(file, eachCallback) {
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, asyncCallback);
+      }, asyncCallback);
     },
     // 生成导入信息
     function(asyncCallback) {
