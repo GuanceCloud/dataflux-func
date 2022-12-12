@@ -145,7 +145,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="100" align="right" v-if="!scriptMarket.isAdmin && hasAnyUpdated">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.remote && scope.row.isUpdated"
+              <el-tag v-if="scope.row.remote && scope.row.isUpdated && !scope.row.isConflict"
                 effect="dark"
                 type="danger"
                 size="mini">
@@ -328,7 +328,7 @@ export default {
       data.forEach(d => {
         d.isIdMatched = !!(d.local && d.remote);
         if (d.isIdMatched) {
-          if (d.local.md5 !== d.remote._md5) {
+          if (d.local.md5 !== d.remote.originMD5) {
             d.isUpdated = true;
           }
           if (!this.scriptMarket.isAdmin
@@ -539,7 +539,7 @@ export default {
     },
     hasAnyUpdated() {
       for (let i = 0; i < this.data.length; i++) {
-        if (this.data[i].isUpdated) {
+        if (this.data[i].isUpdated && !this.data[i].isConflict) {
           return true;
         }
       }

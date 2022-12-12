@@ -1634,7 +1634,7 @@ exports.checkUpdate = function(req, res, next) {
           if (err) return eachCallback(err);
 
           var localMD5 = common.getScriptSetMD5(localScriptSet, dbRes);
-          var remoteMD5 = remoteScriptSet._md5;
+          var remoteMD5 = remoteScriptSet.originMD5;
           if (localMD5 !== remoteMD5) {
             // 脚本集 MD5 不一致，记录更新信息
             updatedScriptSets.push(keyObj);

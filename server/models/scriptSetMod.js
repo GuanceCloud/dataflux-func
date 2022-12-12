@@ -411,7 +411,6 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,sset.requirements');
       sql.append('  ,sset.origin');
       sql.append('  ,sset.originId');
-      sql.append('  ,sset.originMD5');
 
       sql.append('FROM biz_main_script_set AS sset');
 
@@ -778,7 +777,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
     if (toolkit.notNothing(exportData.scriptSets)) {
       exportData.scriptSets.forEach(function(scriptSet) {
         // 计算脚本集 MD5 信息
-        scriptSet._md5 = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
+        scriptSet.originMD5 = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
 
         // 添加导出人等信息
         scriptSet._note       = note;
