@@ -138,7 +138,7 @@ exports.modify = function(req, res, next) {
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
-    // 检查脚本集锁定状态
+    // 锁定状态
     function(asyncCallback) {
       // 超级管理员不受限制
       if (res.locals.user.is('sa')) return asyncCallback();
@@ -147,7 +147,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptSetNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptSetNotAllowed', 'This Script Set is locked by other user'));
         }
 
         return asyncCallback();
@@ -190,7 +190,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptSetNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptSetNotAllowed', 'This Script Set is locked by other user'));
         }
 
         return asyncCallback();

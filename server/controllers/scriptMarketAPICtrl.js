@@ -1225,6 +1225,14 @@ exports.modify = function(req, res, next) {
 
         scriptMarket = dbRes;
 
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.ModifyingScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
+
         return asyncCallback();
       });
     },
@@ -1243,6 +1251,14 @@ exports.modify = function(req, res, next) {
     },
     // 数据入库
     function(asyncCallback) {
+      // 锁定状态
+      if (data.isLocked === true) {
+        data.lockedByUserId = res.locals.user.id;
+      } else if (data.isLocked === false) {
+        data.lockedByUserId = null;
+      }
+      delete data.isLocked;
+
       scriptMarketModel.modify(id, data, asyncCallback);
     },
   ], function(err) {
@@ -1270,6 +1286,14 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         scriptMarket = dbRes;
+
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.DeletingScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
 
         // 非读写库，跳过
         if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') return asyncCallback();
@@ -1364,6 +1388,15 @@ exports.setAdmin = function(req, res, next) {
 
         scriptMarket = dbRes;
 
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.SettingScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
+
+        // 禁止只读库进行写入操作
         if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
           return asyncCallback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
         }
@@ -1398,6 +1431,15 @@ exports.unsetAdmin = function(req, res, next) {
 
         scriptMarket = dbRes;
 
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.SettingScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
+
+        // 禁止只读库进行写入操作
         if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
           return asyncCallback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
         }
@@ -1438,6 +1480,15 @@ exports.publish = function(req, res, next) {
 
         scriptMarket = dbRes;
 
+        // 检查锁定状态
+        if (!res.locals.user.is('sa')) {
+          // 超级管理员不受限制
+          if (scriptMarket.lockedByUserId && scriptMarket.lockedByUserId !== res.locals.user.id) {
+            return asyncCallback(new E('EBizCondition.PublishingScriptMarketNotAllowed', 'This Script Market is locked by other'));
+          }
+        }
+
+        // 禁止只读库进行写入操作
         if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
           return asyncCallback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
         }

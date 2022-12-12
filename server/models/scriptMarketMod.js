@@ -20,6 +20,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     configJSON: 'json',
+    isLocked  : 'boolean',
     isPinned  : 'boolean',
   },
 
@@ -71,8 +72,13 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   smkt.*');
   sql.append('  ,NOT ISNULL(smkt.pinTime) AS isPinned');
+  sql.append('  ,locker.username          AS lockedByUserUsername');
+  sql.append('  ,locker.name              AS lockedByUserName');
 
   sql.append('FROM biz_main_script_market AS smkt');
+
+  sql.append('LEFT JOIN wat_main_user AS locker');
+  sql.append('  ON locker.id = smkt.lockedByUserId');
 
   options.baseSQL = sql.toString();
 

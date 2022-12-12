@@ -87,7 +87,7 @@ exports.add = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.AddingScriptNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.AddingScriptNotAllowed', 'This Script Set is locked by other user'));
         }
 
         return asyncCallback();
@@ -128,7 +128,7 @@ exports.modify = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This Script Set is locked by other user'));
         }
 
         return asyncCallback();
@@ -141,7 +141,7 @@ exports.modify = function(req, res, next) {
 
         if (!res.locals.user.is('sa') // 超级管理员不受限制
             && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This script is locked by other user'));
+          return asyncCallback(new E('EBizCondition.ModifyingScriptNotAllowed', 'This Script is locked by other user'));
         }
 
         if (prevCodeDraftMD5 && prevCodeDraftMD5 !== dbRes.codeDraftMD5) {
@@ -197,7 +197,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This Script Set is locked by other user'));
         }
 
         return asyncCallback();
@@ -212,7 +212,7 @@ exports.delete = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This script is locked by other user'));
+          return asyncCallback(new E('EBizCondition.DeletingScriptNotAllowed', 'This Script is locked by other user'));
         }
 
         return asyncCallback();
@@ -264,7 +264,7 @@ exports.publish = function(req, res, next) {
 
         if (!res.locals.user.is('sa') // 超级管理员不受限制
             && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This script is locked by other user'));
+          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This Script is locked by other user'));
         }
 
         // 没有修改的脚本不允许发布
@@ -286,7 +286,7 @@ exports.publish = function(req, res, next) {
 
         if (!res.locals.user.is('sa') // 超级管理员不受限制
             && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
-          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This script set is locked by other user'));
+          return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This Script Set is locked by other user'));
         }
 
         scriptSet = dbRes;

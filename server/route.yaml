@@ -5371,6 +5371,10 @@ scriptMarketAPI:
             $desc      : Access Key Secret
             $allowNull : true
             $type      : string
+        isLocked:
+          $desc     : 是否锁定
+          $allowNull: true
+          $type     : boolean
         isPinned:
           $desc      : 是否已置顶
           $allowNull : true

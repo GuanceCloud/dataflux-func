@@ -24,6 +24,7 @@ en:
   Administrator: 系统管理员
   Owner        : 拥有者
   Password     : 密码
+  UNKNOW       : 未知
 
   # 通用-按钮/表单
   Very good: 非常好

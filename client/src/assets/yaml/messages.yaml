@@ -99,8 +99,9 @@ en: {}
   This Batch is disabled                                                                                  : 此批处理已被禁用
   This captcha token is already used                                                                      : 此验证码令牌已被使用
   This File Service is disabled                                                                           : 此文件服务已被禁用
-  This script is locked by other user                                                                     : 此脚本已被其他用户锁定
-  This script set is locked by other user                                                                 : 此脚本集已被其他用户锁定
+  This Script is locked by other user                                                                     : 此脚本已被其他用户锁定
+  This Script Set is locked by other user                                                                 : 此脚本集已被其他用户锁定
+  This Script Market is locked by other user                                                              : 此脚本市场已被其他用户锁定
   This username is already existed                                                                        : 此用户名已存在
   This username is used by others                                                                         : 此用户名已被其他用户使用
   Accessing git repo timeout                                                                              : 访问 git 库超时

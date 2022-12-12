@@ -22,7 +22,7 @@ Script Set cloned  : 脚本集已克隆
 Are you sure you want to delete the Script Set?: 是否确认删除此脚本集？
 
 This Script Set is locked by you: 当前脚本已被您锁定
-This Script Set is locked by other user({user}): 当前脚本已被其他用户（{user}）锁定
+This Script Set is locked by other user ({user}): 当前脚本已被其他用户（{user}）锁定
 
 Please input new Script Set ID: 请输入新脚本集ID
 Inputed Script Set ID already exists: 输入的脚本集ID已经存在
@@ -46,7 +46,7 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                   <InfoBlock type="success" :title="$t('This Script Set is locked by you')"></InfoBlock>
                 </el-form-item>
                 <el-form-item v-else-if="isLockedByOther">
-                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
+                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">

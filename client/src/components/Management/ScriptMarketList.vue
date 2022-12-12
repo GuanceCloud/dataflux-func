@@ -6,11 +6,16 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 Branch: 分支
 Access Timeout: 访问超时
 
+Locked by other user ({user}): 被其他用户（{user}）锁定
+Locked by you                : 被您锁定
+
 Add Official Script Market: 添加官方脚本市场
 
-Script Market deleted: 脚本市场已删除
-Script Market pinned: 脚本市场已置顶
+Script Market deleted : 脚本市场已删除
+Script Market pinned  : 脚本市场已置顶
 Script Market unpinned: 脚本市场已取消置顶
+Script Market locked  : 脚本市场已上锁
+Script Market unlocked: 脚本市场已解锁
 
 No Script Market has ever been added: 从未添加过任何脚本市场
 Are you sure you want to delete the Script Market?: 是否确认删除此脚本市场？
@@ -127,7 +132,15 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="120">
+          <el-table-column align="right" width="50">
+            <template slot-scope="scope">
+              <el-tooltip effect="dark" :content="scope.row.isLockedByOther ? $t('Locked by other user ({user})', { user: scope.row.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-2x" :class="[ scope.row.isLocked ? 'fa-lock':'', scope.row.isLockedByOther ? 'text-bad':'text-good' ]"></i>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+
+          <el-table-column align="left" width="120">
             <template slot-scope="scope">
               <span v-if="scope.row.isTimeout"
                 class="text-bad">
@@ -139,23 +152,45 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                   style="width: 87px"
                   type="primary"
                   size="small"
-                  :plain="scope.row.isAdmin ? false : true"
+                  :plain="scope.row.isAdmin && scope.row.isEditable ? false : true"
                   @click="openDetail(scope.row)">
-                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
-                  {{ scope.row.isAdmin ? $t('Admin') : $t('Detail') }}
+                  <i class="fa fa-fw" :class="scope.row.isAdmin && scope.row.isEditable ? 'fa-wrench' : 'fa-th-large'"></i>
+                  {{ scope.row.isAdmin && scope.row.isEditable ? $t('Admin') : $t('Detail') }}
                 </el-button>
               </el-badge>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="220">
             <template slot-scope="scope">
-              <el-link v-if="scope.row.isPinned" v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">{{ $t('Unpin') }}</el-link>
-              <el-link v-else v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">{{ $t('Pin') }}</el-link>
+              <el-link v-if="scope.row.isPinned"
+                :disabled="!scope.row.isEditable"
+                v-prevent-re-click @click="quickSubmitData(scope.row, 'unpin')">
+                {{ $t('Unpin') }}
+              </el-link>
+              <el-link v-else
+                :disabled="!scope.row.isEditable"
+                v-prevent-re-click @click="quickSubmitData(scope.row, 'pin')">
+                {{ $t('Pin') }}
+              </el-link>
 
-              <el-link v-if="!isOfficialScriptMarket(scope.row)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
+              <el-link v-if="scope.row.isAdmin"
+                :disabled="!scope.row.isEditable"
+                v-prevent-re-click @click="lockData(scope.row.id, !scope.row.isLocked)">
+                {{ scope.row.isLocked ? $t('Unlock') : $t('Lock') }}
+              </el-link>
 
-              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
+              <el-link v-if="!isOfficialScriptMarket(scope.row)"
+                :disabled="!scope.row.isEditable"
+                @click="openSetup(scope.row, 'setup')">
+                {{ $t('Setup') }}
+              </el-link>
+
+              <el-link
+                :disabled="!scope.row.isEditable"
+                @click="quickSubmitData(scope.row, 'delete')">
+                {{ $t('Delete') }}
+              </el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -196,6 +231,15 @@ export default {
       if (!this.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']) {
         apiRes.data = apiRes.data.filter(x => !this.isOfficialScriptMarket(x));
       }
+
+      // 锁定状态
+      apiRes.data.forEach(d => {
+        d.lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW') }`;
+        d.isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
+        d.isLockedByOther = d.lockedByUserId && !d.isLockedByMe;
+        d.isEditable      = this.$store.getters.isAdmin || !d.isLockedByOther;
+        d.isLocked        = d.isLockedByMe || d.isLockedByOther;
+      });
 
       this.data = apiRes.data;
 
@@ -307,6 +351,19 @@ export default {
       return d.id === this.officialScriptMarket.id || d.configJSON.url === this.officialScriptMarket.configJSON.url;
     },
 
+    async lockData(dataId, isLocked) {
+      let okMessage = isLocked
+                    ? this.$t('Script Market locked')
+                    : this.$t('Script Market unlocked');
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
+        params: { id: dataId },
+        body  : { data: { isLocked: isLocked } },
+        alert : { okMessage: okMessage },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      await this.loadData();
+    },
   },
   computed: {
     officialScriptMarket() {

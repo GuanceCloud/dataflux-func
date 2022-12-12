@@ -13,7 +13,7 @@ New Script                                     : 新建脚本
 New Script Set                                 : 新建脚本集
 Edited                                         : 已修改
 Builtin                                        : 内置
-Locked by other user({user})                   : 被其他用户（{user}）锁定
+Locked by other user ({user})                  : 被其他用户（{user}）锁定
 Locked by you                                  : 被您锁定
 Quick View                                     : 快速查看
 View                                           : 查看
@@ -243,7 +243,7 @@ Crontab Config Task sent: 自动触发配置任务已发送
 
             <!-- 状态图标 -->
             <div>
-              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user ({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
                 <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', (data.isLockedByOther ? 'text-bad':'text-good') + (data.isLockedByScriptSet ? '-fade text-small':'') ]"></i>
               </el-tooltip>
               <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
@@ -659,7 +659,7 @@ export default {
         d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
-        let lockedByUser    = `${d.lockedByUserName || d.lockedByUsername}`
+        let lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW')}`;
         let isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
         let isLockedByOther = d.lockedByUserId && !isLockedByMe;
         let isEditable      = this.$store.getters.isAdmin || !isLockedByOther;
@@ -726,8 +726,8 @@ export default {
         let isCodeEdited   = d.codeMD5 !== d.codeDraftMD5;
         let lockedByUserId = d.sset_lockedByUserId || d.lockedByUserId;
         let lockedByUser   = d.sset_lockedByUserId
-                           ? `${d.sset_lockedByUserName || d.sset_lockedByUsername}`
-                           : `${d.lockedByUserName || d.lockedByUsername}`
+                            ? `${d.sset_lockedByUserName || d.sset_lockedByUsername || this.$t('UNKNOW')}`
+                            : `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW')}`;
         let isLockedByMe        = lockedByUserId === this.$store.getters.userId;
         let isLockedByOther     = lockedByUserId && !isLockedByMe;
         let isLocked            = isLockedByMe || isLockedByOther;

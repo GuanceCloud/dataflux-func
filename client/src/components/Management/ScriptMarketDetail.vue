@@ -31,6 +31,9 @@ Are you sure you want to delete the Script Set from the Script Market?: 是否�
 Are you sure you want to install the Script Set?: 是否确认安装此脚本集？
 Are you sure you want to upgrade the Script Set?: 是否确认升级此脚本集？
 
+This Script Market is locked by you: 当前脚本市场已被您锁定
+This Script Market is locked by other user ({user}): 当前脚本市场已被其他用户（{user}）锁定
+
 Script Set published to the Script Market: 脚本集已发布至脚本市场
 Script Set deleted from the Script Market: 脚本集已从脚本市场删除
 Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效
@@ -73,6 +76,12 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           </div>
         </div>
       </el-header>
+
+      <!-- 横幅 -->
+      <div v-if="isLockedByMe || isLockedByOther" style="padding: 0 30px">
+        <InfoBlock v-if="isLockedByMe" type="success" :title="$t('This Script Market is locked by you')"></InfoBlock>
+        <InfoBlock v-else-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Market is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
+      </div>
 
       <!-- 列表区 -->
       <el-main class="common-table-container">
@@ -203,8 +212,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-table-column align="right" width="120">
             <template slot-scope="scope">
               <template v-if="scriptMarket.isAdmin">
-                <el-link :disabled="!scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
-                <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
+                <el-link :disabled="!isEditable || !scope.row.local" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
+                <el-link :disabled="!isEditable || !scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else-if="scope.row.remote">
                 <el-link :disabled="scope.row.isConflict || scope.row.isLocalEdited" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
@@ -545,6 +554,20 @@ export default {
         default:
           return false;
       }
+    },
+    lockedByUser() {
+        return `${this.scriptMarket.lockedByUserName || this.scriptMarket.lockedByUsername}`
+    },
+    isLockedByMe() {
+      return this.scriptMarket.lockedByUserId === this.$store.getters.userId
+    },
+    isLockedByOther() {
+      return this.scriptMarket.lockedByUserId && !this.isLockedByMe;
+    },
+    isEditable() {
+      // 超级管理员不受限制
+      if (this.$store.getters.isAdmin) return true;
+      return !this.isLockedByOther;
     },
     hasLocalMarker() {
       for (let i = 0; i < this.data.length; i++) {

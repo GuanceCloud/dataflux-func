@@ -16,7 +16,7 @@ Script deleted : 脚本已删除
 Are you sure you want to delete the Script?: 是否确认删除此脚本？
 
 This Script is locked by you: 当前脚本已被您锁定
-This Script is locked by other user({user}): 当前脚本已被其他用户（{user}）锁定
+This Script is locked by other user ({user}): 当前脚本已被其他用户（{user}）锁定
 </i18n>
 
 <template>
@@ -37,7 +37,7 @@ This Script is locked by other user({user}): 当前脚本已被其他用户（{u
                   <InfoBlock type="success" :title="$t('This Script is locked by you')"></InfoBlock>
                 </el-form-item>
                 <el-form-item v-else-if="isLockedByOther">
-                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
+                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">

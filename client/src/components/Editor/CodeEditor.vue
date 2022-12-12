@@ -28,7 +28,7 @@ Recover code to latest published version                                        
 End editing                                                                          : 结束编辑
 Code Editor setting                                                                  : 代码编辑器设置
 This is a builtin Script, code will be reset when the system restarts                : 这是一个内置脚本，代码会在系统重启后复位
-This Script is locked by other user({user})                                          : 当前脚本被其他用户（{user}）锁定
+This Script is locked by other user ({user})                                         : 当前脚本被其他用户（{user}）锁定
 addedLines                                                                           : '新增 {n} 行'
 removedLines                                                                         : '，删除 {n} 行'
 codeLines                                                                            : '共 {n} 行代码'
@@ -294,7 +294,7 @@ Do NOT use monkey patch: 请勿使用猴子补丁
               </el-form>
             </div>
 
-            <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user({user})', { user: lockedByUser })"></InfoBlock>
+            <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
             <InfoBlock v-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
           </el-header>
 

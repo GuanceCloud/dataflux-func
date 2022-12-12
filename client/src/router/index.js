@@ -452,7 +452,9 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-  common.checkScriptMarketUpdate();
+  if (to.name !== 'script-market-list') {
+    common.checkScriptMarketUpdate();
+  }
 });
 
 export default router
