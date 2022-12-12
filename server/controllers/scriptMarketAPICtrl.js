@@ -1563,6 +1563,7 @@ exports.checkUpdate = function(req, res, next) {
     function(asyncCallback) {
       var fields = common.getScriptSetMD5Fields('sset');
       fields.push('sset.originId');
+      fields.push('sset.originMD5');
 
       var opt = {
         fields: fields,
@@ -1624,24 +1625,15 @@ exports.checkUpdate = function(req, res, next) {
         if (!localScriptSet) return eachCallback();
 
         var keyObj = JSON.parse(key);
-        var opt = {
-          fields: common.getScriptMD5Fields('scpt'),
-          filters: {
-            scriptSetId: { eq: keyObj.scriptSetId }
-          }
+        keyObj.localMD5 =  localScriptSet.originMD5;
+        keyObj.remoteMD5 = remoteScriptSet.originMD5;
+        if (keyObj.localMD5 !== keyObj.remoteMD5) {
+          // 脚本集 MD5 不一致，记录更新信息
+          updatedScriptSets.push(keyObj);
         }
-        scriptModel.list(opt, function(err, dbRes) {
-          if (err) return eachCallback(err);
 
-          var localMD5 = common.getScriptSetMD5(localScriptSet, dbRes);
-          var remoteMD5 = remoteScriptSet.originMD5;
-          if (localMD5 !== remoteMD5) {
-            // 脚本集 MD5 不一致，记录更新信息
-            updatedScriptSets.push(keyObj);
-          }
+        return eachCallback();
 
-          return eachCallback();
-        });
       }, asyncCallback);
     },
   ], function(err) {

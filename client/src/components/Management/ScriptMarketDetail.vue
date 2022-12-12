@@ -21,7 +21,8 @@ Edited                        : 已修改
 New Version                   : 新版本
 Publish Note                  : 发布说明
 
-This local Script Set is not from the current Script Market: 本地脚本集并非来自当前的脚本市场
+This Script Set is not from current Script Market: 此脚本集并非来自本脚本市场
+This Script Set is edited locally: 此脚本集已在本地被修改
 
 Please input note: 请输入发布说明
 
@@ -88,9 +89,9 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           :data="filteredData"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column width="100" align="right" v-if="scriptMarket.isAdmin && hasAnyUpdated">
+          <el-table-column width="100" align="right" v-if="hasLocalMarker">
             <template slot-scope="scope">
-              <el-tag v-if="scope.row.isUpdated"
+              <el-tag v-if="scope.row.isLocalEdited || scriptMarket.isAdmin && scope.row.isUpdated"
                 effect="dark"
                 type="danger"
                 size="mini">
@@ -129,8 +130,11 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column width="120">
             <template slot-scope="scope">
-              <el-tooltip v-if="scope.row.isConflict" effect="dark" :content="$t('This local Script Set is not from the current Script Market')" placement="top" :enterable="false">
+              <el-tooltip v-if="scope.row.isConflict" effect="dark" :content="$t('This Script Set is not from current Script Market')" placement="top" :enterable="false">
                 <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
+              </el-tooltip>
+              <el-tooltip v-else-if="scope.row.isLocalEdited" effect="dark" :content="$t('This Script Set is edited locally')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-pencil-square-o fa-2x text-bad"></i>
               </el-tooltip>
               <span v-else-if="scriptMarket.isAdmin && scope.row.local"
                 :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
@@ -143,7 +147,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
             </template>
           </el-table-column>
 
-          <el-table-column width="100" align="right" v-if="!scriptMarket.isAdmin && hasAnyUpdated">
+          <el-table-column width="100" align="right" v-if="hasRemoteMarker">
             <template slot-scope="scope">
               <el-tag v-if="scope.row.remote && scope.row.isUpdated && !scope.row.isConflict"
                 effect="dark"
@@ -203,8 +207,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <el-link :disabled="!scope.row.remote" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else-if="scope.row.remote">
-                <el-link :disabled="scope.row.isConflict" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link :disabled="scope.row.isConflict" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                <el-link :disabled="scope.row.isConflict || scope.row.isLocalEdited" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                <el-link :disabled="scope.row.isConflict || scope.row.isLocalEdited" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
               </template>
             </template>
           </el-table-column>
@@ -309,6 +313,7 @@ export default {
             'md5',
             'origin',
             'originId',
+            'originMD5',
           ]
         },
       });
@@ -326,9 +331,13 @@ export default {
       // 生成列表并排序
       var data = Object.values(dataMap);
       data.forEach(d => {
+        if (d.local) {
+          d.isLocalEdited = d.local.originMD5 && d.local.md5 !== d.local.originMD5;
+        }
+
         d.isIdMatched = !!(d.local && d.remote);
         if (d.isIdMatched) {
-          if (d.local.md5 !== d.remote.originMD5) {
+          if (d.local.originMD5 !== d.remote.originMD5) {
             d.isUpdated = true;
           }
           if (!this.scriptMarket.isAdmin
@@ -537,9 +546,19 @@ export default {
           return false;
       }
     },
-    hasAnyUpdated() {
+    hasLocalMarker() {
       for (let i = 0; i < this.data.length; i++) {
-        if (this.data[i].isUpdated && !this.data[i].isConflict) {
+        let d = this.data[i];
+        if (d.isLocalEdited || this.scriptMarket.isAdmin && d.isUpdated) {
+          return true;
+        }
+      }
+      return false;
+    },
+    hasRemoteMarker() {
+      for (let i = 0; i < this.data.length; i++) {
+        let d = this.data[i];
+        if (d.remote && d.isUpdated && !d.isConflict) {
           return true;
         }
       }
