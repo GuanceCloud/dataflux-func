@@ -775,6 +775,7 @@ kbd {
 .el-tooltip__popper * {
   z-index: 3002 !important;
   line-height: 1.5;
+  font-size: 14px;
 }
 .el-popover {
   z-index: 3001 !important;

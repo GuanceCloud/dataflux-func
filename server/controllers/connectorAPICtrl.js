@@ -19,7 +19,7 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 /* Configure */
 var RESERVED_REF_NAME = 'dataflux_';
 
-function _checkConfig(locals, data, callback) {
+function _checkConfig(locals, data, skipTest, callback) {
   var type   = data.type;
   var config = data.configJSON;
 
@@ -165,6 +165,8 @@ function _checkConfig(locals, data, callback) {
   }
 
   // 尝试连接
+  if (skipTest) return callback();
+
   var celery = celeryHelper.createHelper(locals.logger);
 
   var kwargs = { type: type, config: config };
@@ -196,7 +198,8 @@ var crudHandler = exports.crudHandler = connectorMod.createCRUDHandler();
 exports.list = crudHandler.createListHandler();
 
 exports.add = function(req, res, next) {
-  var data = req.body.data;
+  var data     = req.body.data;
+  var skipTest = toolkit.toBoolean(req.body.skipTest) || false;
 
   if (toolkit.startsWith(data.id, RESERVED_REF_NAME)) {
     return next(new E('EBizCondition.ReservedConnectorIDPrefix', 'Cannot use a ID of reserved prefix'));
@@ -230,7 +233,7 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      return _checkConfig(res.locals, data, asyncCallback);
+      return _checkConfig(res.locals, data, skipTest, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -253,8 +256,9 @@ exports.add = function(req, res, next) {
 };
 
 exports.modify = function(req, res, next) {
-  var id   = req.params.id;
-  var data = req.body.data;
+  var id       = req.params.id;
+  var data     = req.body.data;
+  var skipTest = toolkit.toBoolean(req.body.skipTest) || false;
 
   var connectorModel = connectorMod.createModel(res.locals);
   connectorModel.decipher = true;
@@ -279,7 +283,7 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      return _checkConfig(res.locals, data, asyncCallback);
+      return _checkConfig(res.locals, data, skipTest, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -472,7 +476,7 @@ exports.test = function(req, res, next) {
     },
     // 检查连接器配置
     function(asyncCallback) {
-      return _checkConfig(res.locals, connector, asyncCallback);
+      return _checkConfig(res.locals, connector, false, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

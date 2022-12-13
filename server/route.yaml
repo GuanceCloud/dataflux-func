@@ -2508,6 +2508,10 @@ connectorAPI:
     requireSignIn: true
     privilege    : general_w
     body:
+      skipTest:
+        $desc     : 是否跳过连通性测试
+        $allowNull: true
+        $type     : boolean
       data:
         $isRequired: true
         id:
@@ -2665,6 +2669,10 @@ connectorAPI:
         $desc: 连接器ID
         $type: string
     body:
+      skipTest:
+        $desc     : 是否跳过连通性测试
+        $allowNull: true
+        $type     : boolean
       data:
         $isRequired: true
         title:

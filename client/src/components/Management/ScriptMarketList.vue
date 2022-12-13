@@ -24,12 +24,16 @@ Official Script Market added: 官方脚本市场已添加
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
 
 'Checking Update...': '正在检查更新...'
+'Deleting...'       : '正在删除...'
 </i18n>
 
 <template>
   <transition name="fade">
     <PageLoading v-if="!$store.state.isLoaded"></PageLoading>
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
+    <el-container direction="vertical" v-show="$store.state.isLoaded"
+      v-loading.fullscreen.lock="isProcessing"
+      element-loading-spinner="el-icon-loading"
+      :element-loading-text="processingText">
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
@@ -56,11 +60,8 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
               type="primary"
               plain
               size="small"
-              v-loading.fullscreen.lock="isCheckingUpdate"
-              element-loading-spinner="el-icon-loading"
-              :element-loading-text="$t('Checking Update...')"
-              :disabled="isCheckingUpdate">
-              <i v-if="isCheckingUpdate" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              :disabled="isProcessing">
+              <i v-if="isProcessing" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
               <i v-else class="fa fa-fw fa-refresh"></i>
               {{ $t('Check Update') }}
             </el-button>
@@ -213,8 +214,11 @@ export default {
     },
   },
   methods: {
-    async loadData() {
-      await this.T.callAPI_get('/api/v1/script-markets/do/check-update');
+    async loadData(opt) {
+      opt = opt || {};
+      if (!opt.skipCheckUpdate) {
+        await this.T.callAPI_get('/api/v1/script-markets/do/check-update');
+      }
 
       let _listQuery = this.dataFilter = this.T.createListQuery();
       let apiRes = await this.T.callAPI_get('/api/v1/script-markets/do/list', {
@@ -260,8 +264,11 @@ export default {
           break;
       }
 
+      let skipCheckUpdate = null;
       switch(operation) {
         case 'pin':
+          skipCheckUpdate = true;
+
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { isPinned: true } },
@@ -270,6 +277,8 @@ export default {
           break;
 
         case 'unpin':
+          skipCheckUpdate = true;
+
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
             params: { id: d.id },
             body  : { data: { isPinned: false } },
@@ -278,6 +287,10 @@ export default {
           break;
 
         case 'delete':
+          skipCheckUpdate = false;
+
+          this.processingText = this.$t('Deleting...');
+          this.isProcessing = true;
           apiRes = await this.T.callAPI('/api/v1/script-markets/:id/do/delete', {
             params: { id: d.id },
             alert : { okMessage: this.$t('Script Market deleted') },
@@ -288,7 +301,9 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      await this.loadData();
+      await this.loadData({ skipCheckUpdate: skipCheckUpdate });
+
+      this.isProcessing = false;
     },
     openSetup(d, target) {
       let nextRouteQuery = this.T.packRouteQuery();
@@ -325,10 +340,12 @@ export default {
       })
     },
     async checkUpdate() {
-      this.isCheckingUpdate = true;
+      this.processingText = this.$t('Checking Update...');
+      this.isProcessing = true;
+
       await this.common.checkScriptMarketUpdate({ force: true });
       setTimeout(() => {
-        this.isCheckingUpdate = false;
+        this.isProcessing = false;
       }, 500);
     },
     async createOfficialScriptMarket() {
@@ -384,7 +401,8 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
 
-      isCheckingUpdate: false,
+      isProcessing: false,
+      processingText: null,
     }
   },
 }

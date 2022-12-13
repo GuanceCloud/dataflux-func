@@ -24,6 +24,7 @@ Handler Func       : 处理函数
 'Recent consume:'  : '最近消费：'
 'Add Topic/Handler': 添加主题/处理函数
 Test connection    : 测试连通性
+Save without connection test: 保存并跳过连通性测试
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
@@ -300,11 +301,15 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                       {{ $t('Test connection') }}
                     </el-button>
 
-                    <el-button v-if="!data.isBuiltin" type="primary" @click="submitData"
+                    &nbsp;
+                    <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
                       :disabled="isSaving">
                       <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
                       {{ $t('Save') }}
-                    </el-button>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </el-dropdown>
                   </div>
                 </el-form-item>
               </el-form>
@@ -469,7 +474,7 @@ export default {
       }, {});
       this.subInfoMap = subInfoMap;
     },
-    async submitData() {
+    async submitData(opt) {
       try {
         await this.$refs.form.validate();
       } catch(err) {
@@ -480,11 +485,11 @@ export default {
 
       switch(this.T.setupPageMode()) {
         case 'add':
-          await this.addData();
+          await this.addData(opt);
           break;
 
         case 'setup':
-          await this.modifyData();
+          await this.modifyData(opt);
           break;
 
       }
@@ -504,7 +509,9 @@ export default {
       }
       return _formData;
     },
-    async addData() {
+    async addData(opt) {
+      opt = opt || {};
+
       let _formData = this._getFromData();
 
       // 服务器列表字段自动合并换行
@@ -513,7 +520,7 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/connectors/do/add', {
-        body : { data: _formData },
+        body : { data: _formData, skipTest: !!opt.skipTest },
         alert: { okMessage: this.$t('Connector created') },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -523,14 +530,16 @@ export default {
       });
       this.$store.commit('updateConnectorListSyncTime');
     },
-    async modifyData() {
+    async modifyData(opt) {
+      opt = opt || {};
+
       let _formData = this._getFromData();
       delete _formData.id;
       delete _formData.type;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/connectors/:id/do/modify', {
         params: { id: this.$route.params.id },
-        body  : { data: _formData },
+        body  : { data: _formData, skipTest: !!opt.skipTest },
         alert : { okMessage: this.$t('Connector saved') },
       });
       if (!apiRes || !apiRes.ok) return;
