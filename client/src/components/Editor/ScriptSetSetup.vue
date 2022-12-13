@@ -8,24 +8,20 @@ Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一�
 requirements.txt format, one for each line : requirements.txt 文件格式，一行一个
 Go to PIP tool to install                  : 前往PIP工具安装
 
-Please input ID: 请输入ID
-Script Set ID too long: 脚本集ID过长
+Please input ID                                   : 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number: 不得以数字开头
+Cannot not starts with a number                   : 不得以数字开头
+
 'ID cannot contains double underscore "__"': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
 
 Script Set created : 脚本集已创建
 Script Set saved   : 脚本集已保存
 Script Set deleted : 脚本集已删除
-Script Set cloned  : 脚本集已克隆
 
 Are you sure you want to delete the Script Set?: 是否确认删除此脚本集？
 
 This Script Set is locked by you: 当前脚本已被您锁定
 This Script Set is locked by other user ({user}): 当前脚本已被其他用户（{user}）锁定
-
-Please input new Script Set ID: 请输入新脚本集ID
-Inputed Script Set ID already exists: 输入的脚本集ID已经存在
 </i18n>
 
 <template>
@@ -87,9 +83,6 @@ Inputed Script Set ID already exists: 输入的脚本集ID已经存在
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
-                    <template v-if="T.setupPageMode() === 'setup'">
-                      <el-button @click="cloneData">{{ $t('Clone') }}</el-button>
-                    </template>
                     <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
                   </div>
                 </el-form-item>
@@ -206,40 +199,6 @@ export default {
       this.$router.push({
         name: 'intro',
       });
-      this.$store.commit('updateScriptListSyncTime');
-    },
-    async cloneData() {
-      let promptOpt = {
-        inputValidator: v => {
-          if (v.length <= 0) {
-            return this.$t('Please input ID');
-          } else if (v.length > 32) {
-            return this.$t('Script Set ID too long');
-          } else if (!v.match(/^[a-zA-Z0-9_]*$/g)) {
-            return this.$t('Only alphabets, numbers and underscore are allowed');
-          } else if (!v.match(/^[^0-9]/g)) {
-            return this.$t('Cannot not starts with a number');
-          }
-          return true;
-        }
-      }
-      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${this.scriptSetId}_2`, promptOpt);
-      if (!newScriptSetId) return;
-
-      // 检查重名
-      let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', newScriptSetId);
-      if (apiRes.data) {
-        return this.T.alert(this.$t('Inputed Script Set ID already exists'));
-      }
-
-      // 执行克隆
-      apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/clone', {
-        params: { id: this.scriptSetId },
-        body  : { newId: newScriptSetId },
-        alert : { okMessage: this.$t('Script Set cloned') },
-      });
-      if (!apiRes || !apiRes.ok) return;
-
       this.$store.commit('updateScriptListSyncTime');
     },
     goToPIPTool() {

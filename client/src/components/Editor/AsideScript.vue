@@ -27,12 +27,20 @@ Code edited but not published yet              : 代码已修改但尚未发布
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
 
+Please input ID                                   : 请输入ID
+Script Set ID too long                            : 脚本集ID过长
+Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
+Cannot not starts with a number                   : 不得以数字开头
+Please input new Script Set ID                    : 请输入新脚本集ID
+Inputed Script Set ID already exists              : 输入的脚本集ID已经存在
+
 Builtin Script Set          : 系统内置脚本集
 Installed form Script Market: 从脚本市场安装的脚本集
 Script Set pinned           : 脚本集已置顶
 Script Set unpinned         : 脚本集已取消
 Script Set locked           : 脚本集已上锁
 Script Set unlocked         : 脚本集已解锁
+Script Set cloned           : 脚本集已克隆
 Script locked               : 脚本已上锁
 Script unlocked             : 脚本已解锁
 
@@ -55,6 +63,11 @@ failureCount  : '失败 {n}'
 
 Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
 Crontab Config Task sent: 自动触发配置任务已发送
+
+Show Auth Links     : 显示授权链接列表
+Show Crontab Configs: 显示自动触发配置列表
+Show Batches        : 显示批处理列表
+Go to Script Market : 前往脚本市场
 </i18n>
 
 <template>
@@ -140,80 +153,88 @@ Crontab Config Task sent: 自动触发配置任务已发送
           </template>
 
           <!-- 操作 -->
-          <template v-if="data.type === 'scriptSet' || data.type === 'script' || data.type === 'func'">
-            <br>
-            <el-button-group>
-              <!-- 添加脚本集 -->
-              <el-button v-if="data.type === 'scriptSet'"
-                size="mini"
-                :disabled="!data.isEditable"
-                @click="openEntity(node, data, 'add')">
-                <i class="fa fa-fw fa-plus"></i>
-                {{ $t('New Script') }}
-              </el-button>
+          <template v-if="[ 'scriptSet', 'script', 'func' ].indexOf(data.type) >= 0">
+            <template v-if="[ 'scriptSet', 'script' ].indexOf(data.type) >= 0">
+              <br>
+              <el-button-group>
+                <!-- 添加脚本集 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="mini"
+                  :disabled="!data.isEditable"
+                  @click="openEntity(node, data, 'add')">
+                  <i class="fa fa-fw fa-plus"></i>
+                  {{ $t('New Script') }}
+                </el-button>
 
-              <!-- 快速查看 -->
-              <el-button v-if="data.type === 'script'"
-                size="mini"
-                @click="showQuickViewWindow(data.id)">
-                <i class="fa fa-fw fa-window-restore"></i>
-                {{ $t('Quick View') }}
-              </el-button>
+                <!-- 快速查看 -->
+                <el-button v-if="data.type === 'script'"
+                  size="mini"
+                  @click="showQuickViewWindow(data.id)">
+                  <i class="fa fa-fw fa-window-restore"></i>
+                  {{ $t('Quick View') }}
+                </el-button>
 
-              <!-- 置顶 -->
-              <el-button v-if="data.type === 'scriptSet'"
-                size="mini"
-                :disabled="!data.isEditable"
-                v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
-                <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
-                {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
-              </el-button>
+                <!-- 置顶 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="mini"
+                  :disabled="!data.isEditable"
+                  v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
+                  <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+                  {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+                </el-button>
 
-              <!-- 锁定/解锁脚本/脚本集 -->
-              <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                size="mini"
-                :disabled="!data.isEditable || (data.type === 'script' && data.isLockedByScriptSet)"
-                v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
-                <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
-                {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
-              </el-button>
+                <!-- 锁定/解锁脚本/脚本集 -->
+                <el-button
+                  size="mini"
+                  :disabled="!data.isEditable || (data.type === 'script' && data.isLockedByScriptSet)"
+                  v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
+                  <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
+                  {{ data.isLocked ? $t('Unlock') : $t('Lock') }}
+                </el-button>
 
-              <!-- 配置 -->
-              <el-button v-if="data.type === 'scriptSet' || data.type === 'script'"
-                size="mini"
-                @click="openEntity(node, data, 'setup')">
-                <i class="fa fa-fw fa-wrench"></i>
-                {{ $t('Setup') }}
-              </el-button>
+                <!-- 克隆 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="mini"
+                  @click="cloneData(data.id)">
+                  <i class="fa fa-fw fa-files-o"></i>
+                  {{ $t('Clone') }}
+                </el-button>
 
+                <!-- 配置 -->
+                <el-button
+                  size="mini"
+                  @click="openEntity(node, data, 'setup')">
+                  <i class="fa fa-fw fa-wrench"></i>
+                  {{ $t('Setup') }}
+                </el-button>
+              </el-button-group>
+            </template>
+
+            <div class="goto-links">
               <!-- 关联配置 -->
-              <el-button v-if="data.type === 'func'"
-                size="mini"
+              <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'authLink')">
                 <i class="fa fa-fw fa-link"></i>
-                {{ $t('Auth Link') }}
-              </el-button>
-              <el-button v-if="data.type === 'func'"
-                size="mini"
+                {{ $t('Show Auth Links') }}
+              </el-link>
+              <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'crontabConfig')">
                 <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Crontab Config') }}
-              </el-button>
-              <el-button v-if="data.type === 'func'"
-                size="mini"
+                {{ $t('Show Crontab Configs') }}
+              </el-link>
+              <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'batch')">
                 <i class="fa fa-fw fa-tasks"></i>
-                {{ $t('Batch') }}
-              </el-button>
+                {{ $t('Show Batches') }}
+              </el-link>
 
               <!-- 前往脚本市场 -->
-              <el-button v-if="data.origin === 'scriptMarket' && data.originId"
-                size="mini"
+              <el-link v-if="data.origin === 'scriptMarket' && data.originId"
                 @click="openEntity(node, data, 'scriptMarket')">
                 <i class="fa fa-fw fa-shopping-cart"></i>
-                {{ $t('Script Market') }}
-              </el-button>
-            </el-button-group>
+                {{ $t('Go to Script Market') }}
+              </el-link>
+            </div>
           </template>
 
           <div slot="reference" class="aside-item">
@@ -919,6 +940,40 @@ export default {
 
       this.$store.commit('updateScriptListSyncTime');
     },
+    async cloneData(dataId) {
+      let promptOpt = {
+        inputValidator: v => {
+          if (v.length <= 0) {
+            return this.$t('Please input ID');
+          } else if (v.length > 32) {
+            return this.$t('Script Set ID too long');
+          } else if (!v.match(/^[a-zA-Z0-9_]*$/g)) {
+            return this.$t('Only alphabets, numbers and underscore are allowed');
+          } else if (!v.match(/^[^0-9]/g)) {
+            return this.$t('Cannot not starts with a number');
+          }
+          return true;
+        }
+      }
+      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${dataId}_2`, promptOpt);
+      if (!newScriptSetId) return;
+
+      // 检查重名
+      let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', newScriptSetId);
+      if (apiRes.data) {
+        return this.T.alert(this.$t('Inputed Script Set ID already exists'));
+      }
+
+      // 执行克隆
+      apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/clone', {
+        params: { id: dataId },
+        body  : { newId: newScriptSetId },
+        alert : { okMessage: this.$t('Script Set cloned') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$store.commit('updateScriptListSyncTime');
+    },
     showQuickViewWindow(scriptId) {
       this.$refs.quickViewWindow.showWindow(scriptId);
     },
@@ -1155,6 +1210,17 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.goto-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 10px;
+}
+.goto-links > a {
+  font-size: 12px;
+  padding-top: 5px;
+  display: inline-block;
+}
 .jump-to-select {
   position: absolute;
   left: 5px;

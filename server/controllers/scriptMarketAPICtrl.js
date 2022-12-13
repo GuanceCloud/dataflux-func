@@ -13,6 +13,7 @@ var markdownTable = require('markdown-table');
 var stringWidth   = require('string-width');
 var simpleGit     = require('simple-git');
 var sortedJSON    = require('sorted-json');
+var request       = require('request');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -607,9 +608,15 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     // 下载文件
     var cmdArgs = [ fileURL, '-q', '-O', localFilePath ];
 
-    var t = Date.now()
-    childProcess.execFile('wget', cmdArgs, function(err, stdout, stderr) {
+    var requestOptions = {
+      forever: true,
+      method : 'get',
+      url    : fileURL,
+    };
+    request(requestOptions, function(err, _res, _body) {
       if (err) return callback(err);
+
+      fs.outputFileSync(localFilePath, _body.toString());
 
       if (!fs.existsSync(localFilePath)) {
         return callback(new Error('Fetch file from HTTP Service failed.'))
@@ -1661,7 +1668,10 @@ exports.checkUpdate = function(req, res, next) {
       async.eachLimit(scriptMarkets, 5, function(scriptMarket, eachCallback) {
         _listScriptSets(res.locals, scriptMarket, function(err, _scriptSets) {
           // 检查更新不报错
-          if (err) return asyncCallback();
+          if (err) {
+            res.locals.logger.logError(err);
+            return asyncCallback();
+          }
 
           if (toolkit.notNothing(_scriptSets)) {
             _scriptSets.forEach(function(_scriptSet) {
@@ -1671,6 +1681,7 @@ exports.checkUpdate = function(req, res, next) {
             });
           }
           return eachCallback();
+
         });
       }, asyncCallback);
     },

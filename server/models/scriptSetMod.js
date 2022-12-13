@@ -173,9 +173,9 @@ EntityModel.prototype.clone = function(id, newId, callback) {
 
         var origin   = 'UNKNOW';
         var originId = null;
-        if (this.locals.user && this.locals.user.isSignedIn) {
+        if (self.locals.user && self.locals.user.isSignedIn) {
           origin   = 'user';
-          originId = this.locals.user.id;
+          originId = self.locals.user.id;
         }
         dbRes.forEach(function(d) {
           cloneData.push([

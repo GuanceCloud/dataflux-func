@@ -20,9 +20,14 @@ No Corresponding Script Set   : 无对应脚本集
 Edited                        : 已修改
 New Version                   : 新版本
 Publish Note                  : 发布说明
+Force Mode                    : 强制模式
+Force Upgrade                 : 强制升级
+Force Install                 : 强制安装
 
-This Script Set is not from current Script Market: 此脚本集并非来自本脚本市场
-This Script Set is edited locally: 此脚本集已在本地被修改
+'This Script Set is not from current Script Market, you can:'         : 此脚本集并非来自【当前】脚本市场，您可以：
+'This Script Set is edited locally, you can:'                         : 此脚本集已在本地被修改，您可以：
+1. Remove the local Script Set and install from the Script Market     : 1. 删除本地脚本集后再从脚本市场安装
+2. Enable the Force Mode and install / upgrade the Script Set directly: 2. 开启强制模式并直接安装、升级脚本集
 
 Please input note: 请输入发布说明
 
@@ -57,7 +62,6 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
       <el-header height="60px">
         <div class="page-header">
           <span>
-            {{ $t('Script Market') }}
             <code class="text-main script-market-name">{{ common.getScriptMarketName(scriptMarket) }}</code>
           </span>
 
@@ -137,15 +141,26 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
             </template>
           </el-table-column>
 
-          <el-table-column width="120">
+          <el-table-column width="120" align="center" class-name="arrow-icon-cell">
             <template slot-scope="scope">
-              <el-tooltip v-if="!scriptMarket.isAdmin && scope.row.local && !scope.row.isScriptMarketMatched" effect="dark" :content="$t('This Script Set is not from current Script Market')" placement="top" :enterable="false">
-                <i class="fa fa-fw fa-ban fa-2x text-bad"></i>
+              <el-tooltip v-if="!scriptMarket.isAdmin && scope.row.local && !scope.row.isScriptMarketMatched" effect="dark" placement="top" :enterable="false">
+                <div slot="content">
+                  {{ $t('This Script Set is not from current Script Market, you can:') }}
+                  <br>{{ $t('1. Remove the local Script Set and install from the Script Market') }}
+                  <br>{{ $t('2. Enable the Force Mode and install / upgrade the Script Set directly') }}
+                </div>
+                <i class="fa fa-fw fa-exclamation fa-3x text-bad arrow-icon-cover"></i>
               </el-tooltip>
-              <el-tooltip v-else-if="scope.row.isLocalEdited" effect="dark" :content="$t('This Script Set is edited locally')" placement="top" :enterable="false">
-                <i class="fa fa-fw fa-pencil-square-o fa-2x text-bad"></i>
+              <el-tooltip v-else-if="!scriptMarket.isAdmin && scope.row.isLocalEdited" effect="dark" placement="top" :enterable="false">
+                <div slot="content" class="xxx">
+                  {{ $t('This Script Set is edited locally, you can:') }}
+                  <br>{{ $t('1. Remove the local Script Set and install from the Script Market') }}
+                  <br>{{ $t('2. Enable the Force Mode and install / upgrade the Script Set directly') }}
+                </div>
+                <i class="fa fa-fw fa-exclamation fa-3x text-bad arrow-icon-cover"></i>
               </el-tooltip>
-              <span v-else-if="scriptMarket.isAdmin && scope.row.local"
+
+              <span v-if="scriptMarket.isAdmin && scope.row.local"
                 :class="scope.row.isIdMatched ? 'text-main' : 'text-info'">
                 <i v-for="opacity in [ 0.3, 0.5, 1.0 ]" class="fa fa-angle-right fa-2x" :style="{ opacity: opacity}"></i>
               </span>
@@ -209,15 +224,44 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="120">
+          <el-table-column align="right" width="180">
+            <template slot="header" slot-scope="scope">
+              <el-switch v-if="!scriptMarket.isAdmin && hasNonInstallable"
+                v-model="forceModeEnabled"
+                active-color="#FF0000"
+                :active-text="$t('Force Mode')">
+              </el-switch>
+            </template>
             <template slot-scope="scope">
               <template v-if="scriptMarket.isAdmin">
                 <el-link :disabled="!scope.row.isPublishable" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
                 <el-link :disabled="!scope.row.isDeletable" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else>
-                <el-link :disabled="!scope.row.isInstallable" v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
-                <el-link :disabled="!scope.row.isInstallable" v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                <template v-if="scope.row.isInstallable">
+                  <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                  <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
+                </template>
+                <template v-else-if="!forceModeEnabled">
+                  <el-link v-if="scope.row.local" disabled>{{ $t('Upgrade') }}</el-link>
+                  <el-link v-else disabled>{{ $t('Install') }}</el-link>
+                </template>
+                <template v-else>
+                  <el-button v-if="scope.row.local"
+                    size="mini"
+                    type="danger"
+                    @click="openDialog(scope.row.remote, 'upgrade')">
+                    <i v-if="!scope.row.isInstallable" class="fa fa-fw fa-exclamation-triangle"></i>
+                    {{ scope.row.isInstallable ? $t('Upgrade') : $t('Force Upgrade') }}
+                  </el-button>
+                  <el-button v-else
+                    size="mini"
+                    type="danger"
+                    @click="openDialog(scope.row.remote, 'install')">
+                    <i v-if="!scope.row.isInstallable" class="fa fa-fw fa-exclamation-triangle"></i>
+                    {{ scope.row.isInstallable ? $t('Install') : $t('Force Install') }}
+                  </el-button>
+                </template>
               </template>
             </template>
           </el-table-column>
@@ -598,6 +642,15 @@ export default {
       }
       return false;
     },
+    hasNonInstallable() {
+      for (let i = 0; i < this.data.length; i++) {
+        let d = this.data[i];
+        if (!this.scriptMarket.isAdmin && !d.isInstallable) {
+          return true;
+        }
+      }
+      return false;
+    },
     formRules() {
       return {
         note: [
@@ -639,12 +692,18 @@ export default {
       operationDialogTitle: null,
       operationButtonTitle: null,
       isProcessing        : false,
+
+      forceModeEnabled: false,
     }
   },
 }
 </script>
 
 <style scoped>
+.arrow-icon-cover {
+  position: absolute;
+  z-index: 9;
+}
 .script-market-name {
   display: inline-block;
   vertical-align: bottom;
@@ -673,7 +732,16 @@ export default {
 </style>
 
 <style>
+.arrow-icon-cell > .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .operation-detail > .el-dialog {
   width: 620px;
+}
+.el-table th .el-switch {
+  display: inline-flex;
+  line-height: 20px;
 }
 </style>
