@@ -226,7 +226,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
           <el-table-column align="right" width="180">
             <template slot="header" slot-scope="scope">
-              <el-switch v-if="!scriptMarket.isAdmin && hasNonInstallable"
+              <el-switch v-if="!scriptMarket.isAdmin && hasNonInstallable && isAccessible"
                 v-model="forceModeEnabled"
                 active-color="#FF0000"
                 :active-text="$t('Force Mode')">
@@ -238,7 +238,11 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <el-link :disabled="!scope.row.isDeletable" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <template v-else>
-                <template v-if="scope.row.isInstallable">
+                <template v-if="!isAccessible">
+                  <el-link v-if="scope.row.local" disabled>{{ $t('Upgrade') }}</el-link>
+                  <el-link v-else disabled>{{ $t('Install') }}</el-link>
+                </template>
+                <template v-else-if="scope.row.isInstallable">
                   <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
                   <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
                 </template>
