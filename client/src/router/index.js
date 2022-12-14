@@ -452,9 +452,10 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-  if (!store.getters.isScriptMarketCheckUpdatedRecently) {
-    common.checkScriptMarketUpdate();
-    store.commit('updateScriptMarketCheckUpdateStamp');
+  if (store.getters.isSignedIn && !store.getters.isScriptMarketCheckUpdatedRecently) {
+    common.checkScriptMarketUpdate().then(() => {
+      store.commit('updateScriptMarketCheckUpdateStamp');
+    });
   }
 });
 

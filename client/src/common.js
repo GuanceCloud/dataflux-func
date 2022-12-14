@@ -197,6 +197,7 @@ export async function checkScriptMarketUpdate(scriptMarketId) {
 
   store.commit('updateScriptMarketCheckUpdateResult', nextResult);
 }
+
 export function getScriptMarketUpdateBadge(scriptMarketId, scriptSetId) {
   let result = store.state.scriptMarketCheckUpdateResult || [];
 
