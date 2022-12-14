@@ -19,6 +19,7 @@ Please input folder            : 请输入文件夹
 Please input AK Id             : 请输入 AK ID
 Please input AK Secret         : 请输入 AK Secret
 'Should start with http:// or https://': '必须以 http:// 或 https://开头'
+Manage this Script Market      : 管理此脚本市场
 
 Script Market added  : 脚本市场已添加
 Script Market saved  : 脚本市场已保存
@@ -133,6 +134,13 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                       v-model="form.configJSON.accessKeySecret" show-password></el-input>
                     <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')"></InfoBlock>
                   </el-form-item>
+
+                  <el-form-item v-if="T.setupPageMode() === 'add' && !C.SCRIPT_MARKET_MAP.get(selectedType).isReadonly">
+                    <el-switch
+                      v-model="setAdmin"
+                      :active-text="$t('Manage this Script Market')">
+                    </el-switch>
+                  </el-form-item>
                   <!-- 可变部分结束 -->
                 </template>
 
@@ -225,6 +233,7 @@ export default {
       this.form.configJSON = nextConfigJSON;
     },
     switchType(type) {
+      this.setAdmin = false;
       this.fillDefault(type);
       this.updateValidator(type);
     },
@@ -288,7 +297,7 @@ export default {
       let _formData = this._getFromData();
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add', {
-        body : { data: _formData },
+        body : { data: _formData, setAdmin: this.setAdmin },
         alert: { okMessage: this.$t('Script Market added') },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -460,6 +469,8 @@ export default {
   data() {
     return {
       data: {},
+
+      setAdmin: false,
 
       form: {
         name       : null,

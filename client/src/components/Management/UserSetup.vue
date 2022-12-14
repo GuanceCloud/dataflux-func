@@ -30,6 +30,12 @@ Please input password: 请输入密码
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+                <!-- Fake user/password -->
+                <el-form-item style="height: 0; overflow: hidden">
+                  <input tabindex="-1" type="text" name="username" />
+                  <input tabindex="-1" type="password" name="password" />
+                </el-form-item>
+
                 <el-form-item :label="$t('Username')" prop="username">
                   <el-input
                     maxlength="20"
@@ -40,6 +46,11 @@ Please input password: 请输入密码
                   <el-input
                     maxlength="40"
                     v-model="form.name"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Email')" prop="email">
+                  <el-input
+                    v-model="form.email"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Password')" prop="password">
@@ -210,6 +221,7 @@ export default {
       form: {
         username: null,
         name    : null,
+        email   : null,
         password: null,
       },
     }

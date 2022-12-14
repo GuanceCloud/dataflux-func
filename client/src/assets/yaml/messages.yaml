@@ -4,6 +4,7 @@ en: {}
 
 'zh-CN':
   Admin user cannot been modified directly                                                                : 管理员用户无法直接修改
+  Admin of the Script Market is already taken by other DataFlux Func                                      : 管理权已经被其他 DataFlux Func 获取
   Async task failed                                                                                       : 异步任务失败
   At least one condition should been specified                                                            : 至少需要指定一个条件
   Auth Token expired                                                                                      : 认证令牌已过期
@@ -42,6 +43,7 @@ en: {}
   Func Auth failed                                                                                        : 函数认证失败
   Func ID not specified                                                                                   : 函数ID未指定
   Func result is not standard JSON                                                                        : 函数结果无法解析为标准JSON
+  Failed to setting Admin                                                                                 : 获取管理权失败
   ID of Connector already exists                                                                          : 连接器ID已存在
   ID of cloned Script will be too long                                                                    : 脚本ID将在克隆后会变得过长
   ID of ENV Variable already exists                                                                       : 环境变量ID已存在

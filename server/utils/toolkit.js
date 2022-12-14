@@ -38,6 +38,9 @@ var TRANSMISSION_RATE_RADIX = toolkit.TRANSMISSION_RATE_RADIX = Math.pow(2, 10);
 var TRANSMISSION_RATE_UNITS_IN_BYTE = toolkit.TRANSMISSION_RATE_UNITS_IN_BYTE = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
 var TRANSMISSION_RATE_RADIX_IN_BYTE = toolkit.TRANSMISSION_RATE_RADIX_IN_BYTE = Math.pow(2, 10);
 
+var RE_HTTP_BASIC_AUTH_MASK         = /:\/\/.+:.+@/g;
+var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@';
+
 var ensureFn = toolkit.ensureFn = function ensureFn(fn) {
   if ('function' === typeof fn) {
     return fn;
@@ -2340,6 +2343,8 @@ toolkit.createLimitedBuffer = function(limit) {
 };
 
 var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
+  fs.ensureDirSync(baseDir);
+
   var git = simpleGit({
     baseDir: baseDir,
     timeout: { block: 15 * 1000 },
@@ -2353,18 +2358,32 @@ var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
   try {
     data = fs.readFileSync(filePath).toString();
   } catch(err) {
-    // Nope
+    console.log(`Reading ${filePath} failed. Origin error:\n${err.toString()}`);
   }
 
-  switch(type) {
-    case 'json':
-      data = JSON.parse(data);
-      break;
+  try {
+    switch(type) {
+      case 'json':
+        data = JSON.parse(data);
+        break;
 
-    case 'yaml':
-      data = yaml.load(data);
-      break;
+      case 'yaml':
+        data = yaml.load(data);
+        break;
+    }
+
+  } catch(err) {
+    console.log(`Parsing ${filePath} as ${type} failed. Origin error:\n${err.toString()}`);
+    return null;
   }
 
   return data;
+};
+
+var maskSensitiveInfo = toolkit.maskSensitiveInfo = function(s) {
+  try {
+    return s.replace(RE_HTTP_BASIC_AUTH_MASK, RE_HTTP_BASIC_AUTH_MASK_REPLACE);
+  } catch(err) {
+    return s;
+  }
 };

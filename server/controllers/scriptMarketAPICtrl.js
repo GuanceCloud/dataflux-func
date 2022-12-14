@@ -606,8 +606,6 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     fs.removeSync(localFilePath);
 
     // 下载文件
-    var cmdArgs = [ fileURL, '-q', '-O', localFilePath ];
-
     var requestOptions = {
       forever: true,
       method : 'get',
@@ -616,7 +614,26 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     request(requestOptions, function(err, _res, _body) {
       if (err) return callback(err);
 
-      fs.outputFileSync(localFilePath, _body.toString());
+      var fileContent = _body.toString();
+      var fileExt = fileURL.split('.').pop();
+
+      try {
+        // 检查文件格式正确性
+        switch(fileExt) {
+          case 'json':
+            JSON.parse(fileContent);
+            break;
+
+          case 'yaml':
+            yaml.load(fileContent);
+            break;
+        }
+
+      } catch(err) {
+        return callback(new Error('Fetch file from HTTP Service failed.'))
+      }
+
+      fs.outputFileSync(localFilePath, fileContent);
 
       if (!fs.existsSync(localFilePath)) {
         return callback(new Error('Fetch file from HTTP Service failed.'))
@@ -680,7 +697,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       locals.cacheDB.unlock(lockKey, lockValue, function() {
         if (err) {
           if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
-            return callback(new E('EClient', 'Accessing git repo timeout'));
+            return callback(new Error('Accessing git repo timeout'));
           } else {
             return callback(err);
           }
@@ -715,6 +732,9 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
         async.eachSeries(files, function(file, eachCallback) {
           var localFilePath = path.join(localPath, file);
           var ossFilePath   = ossPath + file;
+
+          if (!fs.existsSync(localFilePath)) return eachCallback();
+
           var cmdArgs = [
             'cp', localFilePath, ossFilePath, '-f',
             '-e', ossEndpoint,
@@ -827,6 +847,11 @@ function _listScriptSets(locals, scriptMarket, callback) {
 
 // 脚本市场 - 成为管理员
 function _setAdmin(locals, scriptMarket, callback) {
+  // 禁止只读库进行写入操作
+  if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
+    return callback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
+  }
+
   async.series([
     // 准备
     function(asyncCallback) {
@@ -842,7 +867,7 @@ function _setAdmin(locals, scriptMarket, callback) {
         return fs.outputFile(remoteTokenInfo.path, token, asyncCallback);
 
       } else if (remoteTokenInfo.value === token) {
-        // 已经获得所有权，中断处理
+        // 已经获得管理权，中断处理
         return callback();
 
       } else {
@@ -855,7 +880,16 @@ function _setAdmin(locals, scriptMarket, callback) {
       var pushContent = {
         note: 'Set Token',
       }
-      SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, asyncCallback);
+      SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, function(err) {
+        if (err) {
+          locals.logger.logError(err);
+
+          return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
+            message: toolkit.maskSensitiveInfo(err.message),
+          }));
+        }
+        return asyncCallback();
+      });
     },
   ], callback);
 };
@@ -872,10 +906,10 @@ function _unsetAdmin(locals, scriptMarket, callback) {
       var token           = _getToken(scriptMarket);
       var remoteTokenInfo = _getRemoteTokenInfo(scriptMarket);
 
-      // 尚未获得所有权，中断处理
+      // 尚未获得管理权，中断处理
       if (!remoteTokenInfo.value || remoteTokenInfo.value !== token) return callback();
 
-      // 已经获得所有权，删除 Token
+      // 已经获得管理权，删除 Token
       return fs.remove(remoteTokenInfo.path, asyncCallback);
     },
     // 上传
@@ -959,7 +993,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
 
             // 生成脚本集 CHANGELOG 信息
             var scriptSetChangelogInfoFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_CHANGELOG_INFO_FILE);
-            var changelogInfoData = toolkit.safeReadFileSync(scriptSetChangelogInfoFilePath, 'yaml');
+            var changelogInfoData = toolkit.safeReadFileSync(scriptSetChangelogInfoFilePath, 'yaml') || {};
             changelogInfoData = _addChangelogInfo(changelogInfoData, scriptSet);
 
             var scriptSetChangelogFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_CHANGELOG_FILE);
@@ -1129,7 +1163,8 @@ exports.list = function(req, res, next) {
 };
 
 exports.add = function(req, res, next) {
-  var data = _prepareConfig(req.body.data);
+  var setAdmin = toolkit.toBoolean(req.body.setAdmin);
+  var data     = _prepareConfig(req.body.data);
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
 
@@ -1149,28 +1184,11 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       SCRIPT_MARKET_INIT_FUNC_MAP[data.type](res.locals, data, asyncCallback);
     },
-    // 尝试获取所有权
+    // 获取管理权
     function(asyncCallback) {
-      // 非读写库，跳过
-      if (SCRIPT_MARKET_RW_MAP[data.type] !== 'rw') return asyncCallback();
+      if (!setAdmin) return asyncCallback();
 
-      // 未填写平台账号，跳过
-      switch(data.type) {
-        case 'git':
-          if (!data.configJSON
-              || !data.configJSON.user
-              || !data.configJSON.password) {
-            return asyncCallback();
-          }
-          break;
-      }
-
-      _setAdmin(res.locals, data, function(err) {
-        // 出错表示无法获取所有权，跳过
-        if (err) res.locals.logger.error(err.toString());
-
-        return asyncCallback();
-      });
+      return _setAdmin(res.locals, data, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -1316,9 +1334,9 @@ exports.delete = function(req, res, next) {
             break;
         }
 
-        // 放弃所有权（忽略错误）
+        // 放弃管理权（忽略错误）
         _unsetAdmin(res.locals, scriptMarket, function(err) {
-          // 出错表示无法放弃所有权，忽略
+          // 出错表示无法放弃管理权，忽略
           if (err) res.locals.logger.error(err.toString());
         });
 
@@ -1403,15 +1421,10 @@ exports.setAdmin = function(req, res, next) {
           }
         }
 
-        // 禁止只读库进行写入操作
-        if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
-          return asyncCallback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
-        }
-
         return asyncCallback();
       })
     },
-    // 获取所有权
+    // 获取管理权
     function(asyncCallback) {
       return _setAdmin(res.locals, scriptMarket, asyncCallback);
     },
@@ -1454,7 +1467,7 @@ exports.unsetAdmin = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 放弃所有权
+    // 放弃管理权
     function(asyncCallback) {
       return _unsetAdmin(res.locals, scriptMarket, asyncCallback);
     },

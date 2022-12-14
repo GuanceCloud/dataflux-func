@@ -5246,6 +5246,10 @@ scriptMarketAPI:
     requireSignIn: true
     privilege    : general_w
     body:
+      setAdmin:
+        $desc      : 获取管理权
+        $allowNull : true
+        $type      : boolean
       data:
         $isRequired: true
         name:
@@ -5421,7 +5425,7 @@ scriptMarketAPI:
     showInDoc    : true
     name         : 成为脚本市场管理员
     method       : post
-    url          : /api/v1/script-markets/:id/admin/do/set
+    url          : /api/v1/script-markets/:id/do/set-admin
     response     : json
     requireSignIn: true
     privilege    : general_w
@@ -5434,7 +5438,7 @@ scriptMarketAPI:
     showInDoc    : true
     name         : 放弃脚本市场管理员
     method       : post
-    url          : /api/v1/script-markets/:id/admin/do/unset
+    url          : /api/v1/script-markets/:id/do/unset-admin
     response     : json
     requireSignIn: true
     privilege    : general_w

@@ -216,7 +216,7 @@ export default {
   methods: {
     async loadData(opt) {
       opt = opt || {};
-      if (!opt.skipCheckUpdate) {
+      if (opt.runCheckUpdate) {
         await this.T.callAPI_get('/api/v1/script-markets/do/check-update');
       }
 
@@ -264,10 +264,10 @@ export default {
           break;
       }
 
-      let skipCheckUpdate = null;
+      let runCheckUpdate = null;
       switch(operation) {
         case 'pin':
-          skipCheckUpdate = true;
+          runCheckUpdate = false;
 
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
             params: { id: d.id },
@@ -277,7 +277,7 @@ export default {
           break;
 
         case 'unpin':
-          skipCheckUpdate = true;
+          runCheckUpdate = false;
 
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
             params: { id: d.id },
@@ -287,7 +287,7 @@ export default {
           break;
 
         case 'delete':
-          skipCheckUpdate = false;
+          runCheckUpdate = true;
 
           this.processingText = this.$t('Deleting...');
           this.isProcessing = true;
@@ -301,7 +301,7 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      await this.loadData({ skipCheckUpdate: skipCheckUpdate });
+      await this.loadData({ runCheckUpdate: runCheckUpdate });
 
       this.isProcessing = false;
     },

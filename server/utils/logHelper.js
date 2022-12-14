@@ -105,9 +105,6 @@ var LOG_JSON_FIELD_MAP = {
 };
 var MAX_STAGED_LOGS = 3000;
 
-var RE_HTTP_BASIC_AUTH_MASK         = /:\/\/.+:.+@/g
-var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
-
 var createWinstonFormatter = function(opt) {
   opt = opt || {};
 
@@ -302,12 +299,7 @@ LoggerHelper.prototype._log = function() {
                 : nowMs;
 
   var message = toolkit.strf.apply(null, args)
-
-  try {
-    message = message.replace(RE_HTTP_BASIC_AUTH_MASK, RE_HTTP_BASIC_AUTH_MASK_REPLACE)
-  } catch(err) {
-    // nope
-  }
+  message = toolkit.maskSensitiveInfo(message);
 
   var fixedMessage = message.replace(/%([sdj%])/g, '%%$1'); // Fix winston 2.4.2
   var logLine = {

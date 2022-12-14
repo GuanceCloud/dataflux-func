@@ -120,9 +120,6 @@ LOG_JSON_FIELD_MAP = {
 }
 MAX_STAGED_LOGS = 3000
 
-RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
-RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
-
 class LoggingFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, **options):
         super(LoggingFormatter, self).__init__(fmt, datefmt)
@@ -241,10 +238,7 @@ class LogHelper(object):
             _queue   = self.task.request.delivery_info['routing_key']
             _origin  = self.task.request.origin
 
-        try:
-            message = RE_HTTP_BASIC_AUTH_MASK.sub(RE_HTTP_BASIC_AUTH_MASK_REPLACE, message)
-        except Exception as e:
-            pass
+        message = toolkit.mask_sensitive_info(message)
 
         log_line = {
             'message': message,

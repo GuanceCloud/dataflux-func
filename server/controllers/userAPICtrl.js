@@ -17,6 +17,7 @@ var GET_FIELDS = [
   'id',
   'username',
   'name',
+  'email',
   'mobile',
   'roles',
   'customPrivileges',

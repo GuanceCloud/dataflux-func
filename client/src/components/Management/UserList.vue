@@ -40,16 +40,25 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Username')">
+          <el-table-column :label="$t('Username')" width="300">
             <template slot-scope="scope">
               <code class="text-code text-small">{{ scope.row.username }}</code><CopyButton :content="scope.row.username"></CopyButton>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Name')">
+          <el-table-column :label="$t('Name')" width="300">
             <template slot-scope="scope">
               <span>{{ scope.row.name }}</span>
             </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Email')" width="300">
+            <template slot-scope="scope">
+              <span>{{ scope.row.email }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column>
           </el-table-column>
 
           <el-table-column :label="$t('Status')" width="100">
