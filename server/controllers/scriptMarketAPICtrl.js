@@ -94,8 +94,8 @@ function _getGitRepoAuthURL(scriptMarket, masked) {
   var config = scriptMarket.configJSON || {};
   var urlObj = new URL(config.url);
   if (masked) {
-    urlObj.username = '***';
-    urlObj.password = '***';
+    urlObj.username = '';
+    urlObj.password = '';
   } else {
     urlObj.username = config.user     || 'anonymity';
     urlObj.password = config.password || 'anonymity';
