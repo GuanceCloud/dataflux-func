@@ -90,13 +90,36 @@ function _checkConfig(locals, data, callback) {
   return callback();
 };
 
-function _getGitRepoAuthURL(scriptMarket) {
+function _getGitRepoAuthURL(scriptMarket, masked) {
   var config = scriptMarket.configJSON || {};
   var urlObj = new URL(config.url);
-  urlObj.username = config.user     || 'anonymity';
-  urlObj.password = config.password || 'anonymity';
+  if (masked) {
+    urlObj.username = '***';
+    urlObj.password = '***';
+  } else {
+    urlObj.username = config.user     || 'anonymity';
+    urlObj.password = config.password || 'anonymity';
+  }
 
   return urlObj.toString();
+};
+
+function _maskGitConfig(localPath, scriptMarket, callback) {
+  var gitconfigPath = path.join(localPath, '.git/config');
+  var gitconfig     = toolkit.safeReadFileSync(gitconfigPath);
+
+  var maskedGitconfig = gitconfig.replace(`url = ${_getGitRepoAuthURL(scriptMarket)}`, `url = ${_getGitRepoAuthURL(scriptMarket, true)}`);
+
+  fs.outputFile(gitconfigPath, maskedGitconfig, callback);
+};
+
+function _unmaskGitConfig(localPath, scriptMarket, callback) {
+  var gitconfigPath   = path.join(localPath, '.git/config');
+  var maskedGitconfig = toolkit.safeReadFileSync(gitconfigPath);
+
+  var gitconfig = maskedGitconfig.replace(`url = ${_getGitRepoAuthURL(scriptMarket, true)}`, `url = ${_getGitRepoAuthURL(scriptMarket)}`);
+
+  fs.outputFile(gitconfigPath, gitconfig, callback);
 };
 
 function _getToken(scriptMarket) {
@@ -413,6 +436,10 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
           return asyncCallback();
         });
       },
+      // 保护密码
+      function(asyncCallback) {
+        _maskGitConfig(localPathTmp, scriptMarket, asyncCallback);
+      },
     ], function(err) {
       // 克隆失败
       if (err) {
@@ -478,6 +505,10 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
       function(asyncCallback) {
         locals.cacheDB.lockWait(lockKey, lockValue, lockAge, lockWaitAge, asyncCallback);
       },
+      // 取回密码
+      function(asyncCallback) {
+        _unmaskGitConfig(localPath, scriptMarket, asyncCallback);
+      },
       // 获取 Commit ID
       function(asyncCallback) {
         git.revparse(['HEAD'], function(err, commitId) {
@@ -500,6 +531,10 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
         if (!prevCommitId) return asyncCallback();
 
         git.pull(asyncCallback);
+      },
+      // 保护密码
+      function(asyncCallback) {
+        _maskGitConfig(localPath, scriptMarket, asyncCallback);
       },
     ], function(err) {
       // 解锁
@@ -660,6 +695,10 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       function(asyncCallback) {
         locals.cacheDB.lockWait(lockKey, lockValue, lockAge, lockWaitAge, asyncCallback);
       },
+      // 取回密码
+      function(asyncCallback) {
+        _unmaskGitConfig(localPath, scriptMarket, asyncCallback);
+      },
       // 获取 Commit ID
       function(asyncCallback) {
         git.revparse(['HEAD'], function(err, commitId) {
@@ -691,6 +730,10 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
 
           return asyncCallback();
         });
+      },
+      // 保护密码
+      function(asyncCallback) {
+        _maskGitConfig(localPath, scriptMarket, asyncCallback);
       },
     ], function(err) {
       // 解锁
