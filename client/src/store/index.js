@@ -6,6 +6,8 @@ import router from '@/router'
 import C from '@/const'
 import * as T from '@/toolkit'
 
+import moment from 'moment'
+
 const STATE_CONFIG = {
   isSystemConfigLoaded                     : { persist: false, syncXTab: false },
   systemConfig                             : { persist: true,  syncXTab: true  },
@@ -41,6 +43,7 @@ const STATE_CONFIG = {
   isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
   scriptMarketCheckUpdateResult            : { persist: false, syncXTab: false },
+  scriptMarketCheckUpdateStamp             : { persist: true,  syncXTab: true  },
   showCompleteUserProfile                  : { persist: false, syncXTab: false },
 };
 const MUTATION_CONFIG = {
@@ -78,6 +81,7 @@ const MUTATION_CONFIG = {
   resetMonkeyPatchNotice                         : { persist: true  },
   addFuzzySearchHistory                          : { persist: true  },
   updateScriptMarketCheckUpdateResult            : { persist: false },
+  updateScriptMarketCheckUpdateStamp             : { persist: true  },
   updateShowCompleteUserProfile                  : { persist: false },
 
   syncState: { persist: false },
@@ -302,8 +306,12 @@ export default new Vuex.Store({
     isExperimentalFeatureEnabled: state => key => {
       return !!(state.enabledExperimentalFeatureMap && state.enabledExperimentalFeatureMap[key]);
     },
-    showMonkeyPatchNotice: (state) => {
+    showMonkeyPatchNotice: state => {
       return !state.isMonkeyPatchNoticeDismissed && !state.isMonkeyPatchNoticeDisabled;
+    },
+
+    isScriptMarketCheckUpdatedRecently: state => {
+      return state.scriptMarketCheckUpdateStamp === moment.utc().format('YYYY-MM-DD');
     },
   },
   mutations: {
@@ -486,6 +494,10 @@ export default new Vuex.Store({
 
     updateScriptMarketCheckUpdateResult(state, updatedScriptSets) {
       state.scriptMarketCheckUpdateResult = updatedScriptSets;
+    },
+
+    updateScriptMarketCheckUpdateStamp(state) {
+      state.scriptMarketCheckUpdateStamp = moment.utc().format('YYYY-MM-DD');
     },
 
     updateShowCompleteUserProfile(state, show) {

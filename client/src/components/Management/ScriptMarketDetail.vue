@@ -346,6 +346,9 @@ export default {
         if (!apiRes || !apiRes.ok) return;
 
         this.scriptMarket = apiRes.data;
+
+        // 检查更新
+        this.common.checkScriptMarketUpdate(this.scriptMarket.id);
       }
 
       // 获取远端脚本集列表
