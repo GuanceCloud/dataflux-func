@@ -5,9 +5,6 @@ import C from '@/const'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
-let LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = 0;
-let SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL = 30 * 60;
-
 export async function getAPIAuthList() {
   let apiAuthList = [];
 
@@ -179,21 +176,29 @@ export function goToPIPTools(requirements) {
   });
 }
 
-export async function checkScriptMarketUpdate(opt) {
-  opt = opt || {};
+export async function checkScriptMarketUpdate(scriptMarketId) {
+  let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update', {
+    query: { scriptMarketId: scriptMarketId },
+  });
+  if (!apiRes || !apiRes.ok) return;
 
-  let now = Date.now();
-  let isCheckTimeReached = LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME + SCRIPT_MARKET_CHECK_UPDATE_MIN_INTERVAL * 1000 < now;
-  if (opt.force || isCheckTimeReached) {
-    let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update');
-    if (!apiRes || !apiRes.ok) return;
-
-    store.commit('updateScriptMarketCheckUpdateResult', apiRes.data.updatedScriptSets);
-    LASTEST_SCRIPT_MARKET_CHECK_UPDATE_TIME = now;
+  let nextResult = null;
+  if (!scriptMarketId) {
+    // 检查全部脚本市场更新
+    nextResult = apiRes.data;
+  } else {
+    // 检查部分脚本市场更新
+    nextResult = T.jsonCopy(store.state.scriptMarketCheckUpdateResult || [])
+      .filter(r => {
+        return scriptMarketId !== r.scriptMarketId;
+      })
+      .concat(apiRes.data);
   }
+
+  store.commit('updateScriptMarketCheckUpdateResult', nextResult);
 }
 export function getScriptMarketUpdateBadge(scriptMarketId, scriptSetId) {
-  let result = store.state.scriptMarketCheckUpdateResult;
+  let result = store.state.scriptMarketCheckUpdateResult || [];
 
   if (!result) {
     return null;

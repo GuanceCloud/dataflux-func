@@ -335,58 +335,74 @@ export default {
     },
   },
   methods: {
-    async loadData() {
-      // 获取脚本市场信息
-      let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
-      if (!apiRes || !apiRes.ok) return;
+    async loadData(opt) {
+      opt = opt || {};
 
-      this.scriptMarket = apiRes.data;
+      let apiRes = null;
+
+      // 获取脚本市场信息
+      if (this.T.isNothing(this.scriptMarket)) {
+        apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
+        if (!apiRes || !apiRes.ok) return;
+
+        this.scriptMarket = apiRes.data;
+      }
 
       // 获取远端脚本集列表
-      apiRes = await this.T.callAPI_get('/api/v1/script-markets/:id/script-sets/do/list', {
-        params: { id: this.$route.params.id },
-      });
-      if (!apiRes || !apiRes.ok) {
-        return this.$router.push({
-          name: 'script-market-list',
+      if (!opt.skipLoadRemote) {
+        apiRes = await this.T.callAPI_get('/api/v1/script-markets/:id/script-sets/do/list', {
+          params: { id: this.$route.params.id },
         });
-      };
+        if (!apiRes || !apiRes.ok) {
+          return this.$router.push({
+            name: 'script-market-list',
+          });
+        };
 
-      let dataMap = apiRes.data.reduce((acc, x) => {
-        acc[x.id] = { remote: x };
-        return acc;
-      }, {});
+        let dataMap = apiRes.data.reduce((acc, x) => {
+          acc[x.id] = { remote: x };
+          return acc;
+        }, {});
+
+        this.remoteScriptSetMap = dataMap;
+      }
 
       // 获取本地脚本集列表
-      apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
-        query: {
-          _withScripts: true,
-          fields: [
-            'id',
-            'title',
-            'description',
-            'requirements',
-            'scripts',
-            'md5',
-            'origin',
-            'originId',
-            'originMD5',
-          ]
-        },
-      });
-      if (!apiRes || !apiRes.ok) return;
+      if (!opt.skipLoadLocal) {
+        apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
+          query: {
+            _withScripts: true,
+            fields: [
+              'id',
+              'title',
+              'description',
+              'requirements',
+              'scripts',
+              'md5',
+              'origin',
+              'originId',
+              'originMD5',
+            ]
+          },
+        });
+        if (!apiRes || !apiRes.ok) return;
 
-      apiRes.data.forEach(x => {
-        let d = dataMap[x.id];
+        this.localScriptSets = apiRes.data;
+      }
+
+      let remoteScriptSetMap = this.T.jsonCopy(this.remoteScriptSetMap);
+      let localScriptSets    = this.T.jsonCopy(this.localScriptSets);
+      localScriptSets.forEach(x => {
+        let d = remoteScriptSetMap[x.id];
         if (d) {
           d.local = x;
         } else if (this.scriptMarket.isAdmin) {
-          dataMap[x.id] = { local: x };
+          remoteScriptSetMap[x.id] = { local: x };
         }
       });
 
       // 生成列表并排序
-      var data = Object.values(dataMap);
+      var data = Object.values(remoteScriptSetMap);
       data.forEach(d => {
         // 是否有对应 ID 的脚本集
         d.isIdMatched = !!(d.local && d.remote);
@@ -582,8 +598,30 @@ export default {
 
       if (!apiRes || !apiRes.ok) return;
 
+      // 后续操作
+      let skipCheckUpdate = null; // 跳过检查更新
+      let skipLoadLocal   = null; // 跳过加载本地数据
+      let skipLoadRemote  = null; // 跳过加载远端数据
+      switch(operation) {
+        case 'publish':
+        case 'delete':
+          skipCheckUpdate = true;
+          skipLoadLocal   = true;
+          skipLoadRemote  = false;
+          break;
+
+        case 'install':
+        case 'upgrade':
+          skipCheckUpdate = false;
+          skipLoadLocal   = false;
+          skipLoadRemote  = true;
+          break;
+      }
+
       // 重新检查更新
-      await this.common.checkScriptMarketUpdate({ force: true });
+      if (!skipCheckUpdate) {
+        this.common.checkScriptMarketUpdate(this.scriptMarket.id);
+      }
 
       // 跳转 PIP 工具
       switch(operation) {
@@ -597,7 +635,10 @@ export default {
           break;
       }
 
-      await this.loadData();
+      await this.loadData({
+        skipLoadLocal : skipLoadLocal,
+        skipLoadRemote: skipLoadRemote,
+      });
 
       this.isProcessing  = false;
       this.showOperation = false;
@@ -679,10 +720,10 @@ export default {
   },
   data() {
     return {
-      data        : [],
-      scriptMarket: {},
+      data: [],
 
-      showLocalScriptSets: false,
+      scriptMarket      : {},
+      remoteScriptSetMap: {},
 
       form: {
         note: null,

@@ -343,10 +343,18 @@ export default {
       this.processingText = this.$t('Checking Update...');
       this.isProcessing = true;
 
-      await this.common.checkScriptMarketUpdate({ force: true });
-      setTimeout(() => {
+      let minLoadingTime = 1000;
+      let startTime = Date.now();
+      await this.common.checkScriptMarketUpdate();
+      let endTime = Date.now();
+      let processedTime = endTime - startTime;
+      if (processedTime > minLoadingTime) {
         this.isProcessing = false;
-      }, 500);
+      } else {
+        setTimeout(() => {
+          this.isProcessing = false;
+        }, minLoadingTime - processedTime);
+      }
     },
     async createOfficialScriptMarket() {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add-official', {

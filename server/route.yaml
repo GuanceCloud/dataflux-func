@@ -5506,3 +5506,7 @@ scriptMarketAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
+    query:
+      scriptMarketId:
+        $desc: 脚本市场ID
+        $type: string

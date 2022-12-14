@@ -180,7 +180,7 @@ export default new Vuex.Store({
     fuzzySearchHistoryMap: null,
 
     // 脚本市场更新检查结果
-    scriptMarketCheckUpdateResult: null,
+    scriptMarketCheckUpdateResult: [],
 
     // 脚本市场 git 用户补全弹框
     showCompleteUserProfile: null,

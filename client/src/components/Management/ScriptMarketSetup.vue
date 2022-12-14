@@ -198,7 +198,13 @@ export default {
 
         let rule = this.formRules[`configJSON.${f}`];
         if (rule) {
-          rule[0].required = !!opt.isRequired;
+
+          if (type === 'git' && [ 'user', 'password' ].indexOf(f) >= 0) {
+            // git 库的 user, password 需要特殊处理
+            rule[0].required = this.isUserPasswordRequired;
+          } else {
+            rule[0].required = !!opt.isRequired;
+          }
         }
       }
     },
@@ -341,6 +347,13 @@ export default {
     },
   },
   computed: {
+    isUserPasswordRequired() {
+      let configJSON = this.T.setupPageMode() === 'setup'
+                    ? this.data.configJSON
+                    : this.form.configJSON;
+      configJSON = configJSON || {};
+      return !!(configJSON.user || configJSON.password);
+    },
     formRules() {
       return {
         type: [
@@ -373,14 +386,14 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input user'),
-            required: !!this.form.configJSON.password,
+            required: this.isUserPasswordRequired,
           },
         ],
         'configJSON.password': [
           {
             trigger : 'change',
             message : this.$t('Please input password'),
-            required: !!this.form.configJSON.user,
+            required: this.isUserPasswordRequired,
           },
         ],
         'configJSON.endpoint': [

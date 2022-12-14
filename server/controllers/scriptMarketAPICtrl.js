@@ -1611,7 +1611,8 @@ exports.install = function(req, res, next) {
 };
 
 exports.checkUpdate = function(req, res, next) {
-  var scriptModel       = scriptMod.createModel(res.locals);
+  var scriptMarketId = req.query.scriptMarketId;
+
   var scriptSetModel    = scriptSetMod.createModel(res.locals);
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
   scriptMarketModel.decipher = true;
@@ -1622,7 +1623,7 @@ exports.checkUpdate = function(req, res, next) {
   var scriptMarketIds = null;
   var scriptMarkets   = null;
 
-  var updatedScriptSets = [];
+  var checkUpdateResult = [];
 
   async.series([
     // 获取本地脚本集（仅涉及脚本市场的）
@@ -1634,9 +1635,14 @@ exports.checkUpdate = function(req, res, next) {
       var opt = {
         fields: fields,
         filters: {
-          origin: { eq: 'scriptMarket' },
+          'sset.origin': { eq: 'scriptMarket' },
         }
       }
+
+      if (scriptMarketId) {
+        opt.filters['sset.originId'] = { eq: scriptMarketId };
+      }
+
       scriptSetModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -1651,9 +1657,16 @@ exports.checkUpdate = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 获取脚本市场
+    // 获取脚本市场（仅涉及脚本市场的）
     function(asyncCallback) {
-      scriptMarketModel.list(null, function(err, dbRes) {
+      if (toolkit.isNothing(scriptMarketIds)) return asyncCallback();
+
+      var opt = {
+        filters: {
+          'smkt.id': { in: scriptMarketIds }
+        }
+      }
+      scriptMarketModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         scriptMarkets = dbRes;
@@ -1699,7 +1712,7 @@ exports.checkUpdate = function(req, res, next) {
         keyObj.remoteMD5 = remoteScriptSet.originMD5;
         if (keyObj.localMD5 !== keyObj.remoteMD5) {
           // 脚本集 MD5 不一致，记录更新信息
-          updatedScriptSets.push(keyObj);
+          checkUpdateResult.push(keyObj);
         }
 
         return eachCallback();
@@ -1709,9 +1722,7 @@ exports.checkUpdate = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet({
-      updatedScriptSets: updatedScriptSets,
-    });
+    var ret = toolkit.initRet(checkUpdateResult);
     return res.locals.sendJSON(ret);
   });
 };
