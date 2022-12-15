@@ -64,8 +64,9 @@ export default {
 <style scoped>
 .logo-container {
   display: flex;
-  text-align: center;
+  flex-wrap: wrap;
   align-content: center;
+  text-align: center;
 }
 
 .custom-logo-img {

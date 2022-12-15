@@ -17,13 +17,14 @@ var HTTPAuthUtils = require('http-auth-utils');
 var promClient    = require('prom-client');
 
 /* Project Modules */
-var E       = require('../utils/serverError');
-var CONFIG  = require('../utils/yamlResources').get('CONFIG');
-var CONST   = require('../utils/yamlResources').get('CONST');
-var ROUTE   = require('../utils/yamlResources').get('ROUTE');
-var toolkit = require('../utils/toolkit');
-var urlFor  = require('../utils/routeLoader').urlFor;
-var auth    = require('../utils/auth');
+var E          = require('../utils/serverError');
+var CONFIG     = require('../utils/yamlResources').get('CONFIG');
+var CONST      = require('../utils/yamlResources').get('CONST');
+var ROUTE      = require('../utils/yamlResources').get('ROUTE');
+var toolkit    = require('../utils/toolkit');
+var urlFor     = require('../utils/routeLoader').urlFor;
+var auth       = require('../utils/auth');
+var IMAGE_INFO = require('../../image-info.json');
 
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
@@ -2038,6 +2039,8 @@ exports.getSystemConfig = function(req, res, next) {
 
   // 配置文件（部分）
   var configFile = {
+    VERSION: IMAGE_INFO.CI_COMMIT_REF_NAME,
+
     MODE              : CONFIG.MODE,
     WEB_BASE_URL      : CONFIG.WEB_BASE_URL,
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
