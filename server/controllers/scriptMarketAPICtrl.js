@@ -1137,7 +1137,7 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
       });
 
       async.eachLimit(files, 5, function(file, eachCallback) {
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, asyncCallback);
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, eachCallback);
       }, asyncCallback);
     },
     // 生成导入信息
