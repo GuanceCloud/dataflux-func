@@ -4,7 +4,7 @@
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          <Logo type="auto" style="margin: auto 10px -8px 5px;"></Logo>
+          <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
           函数文档
           <small>仅限内部调用的函数</small>
           <span class="text-info title-tip">本文档没有翻页，按 <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd> 开始搜索</span>
@@ -23,27 +23,25 @@
                 :definition="scope.row.definition"
                 :title="scope.row.title"></FuncInfo>
 
-              <div v-if="T.notNothing(scope.row.category) || T.notNothing(scope.row.integration) || T.notNothing(scope.row.tagsJSON)">
+              <div>
                 <template v-if="T.notNothing(scope.row.category)">
-                  <span class="text-info">&#12288;分类:</span>
-                  <el-tag size="mini">
-                    <code>{{ scope.row.category }}</code>
-                  </el-tag>
+                  <span class="text-info">{{ $t('Category') }}</span>
+                  &nbsp;<code class="text-main">{{ scope.row.category }}</code>
+                  <br>
                 </template>
 
                 <template v-if="T.notNothing(scope.row.integration)">
+                  <span class="text-info">{{ $t('Integration') }}</span>
+                  &nbsp;
+                  <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.integration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.integration).name }}</code>
+                  <code v-else>{{ scope.row.integration }}</code>
                   <br>
-                  <span class="text-info">&#12288;集成:</span>
-                  <el-tag size="mini" type="success">
-                    <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.integration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.integration).name }}</code>
-                    <code v-else>{{ scope.row.integration }}</code>
-                  </el-tag>
                 </template>
 
                 <template v-if="T.notNothing(scope.row.tagsJSON)">
+                  <span class="text-info">{{ $t('Tags') }}</span>
+                  &nbsp;<el-tag size="mini" type="info" v-for="t in scope.row.tagsJSON" :key="t"><code>{{ t }}</code></el-tag>
                   <br>
-                  <span class="text-info">&#12288;标签:</span>
-                  <el-tag size="mini" type="info" v-for="t in scope.row.tagsJSON" :key="t"><code>{{ t }}</code></el-tag>
                 </template>
               </div>
             </template>
@@ -134,6 +132,11 @@ export default {
 </script>
 
 <style scoped>
+.doc-logo {
+  display: inline-block;
+  position: relative;
+  top: 10px;
+}
 .title-tip {
   font-size: 14px;
   float: right;

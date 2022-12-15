@@ -33,8 +33,8 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Func Cache data has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            可以使用<code>DFF.CACHE.set('key', 'value', scope='scope', expire=3600)</code>和<code>DFF.CACHE('key', scope='scope')</code>来存取函数缓存数据
-            <br><code>scope</code>参数为可选。未指定时则默认为代码所在的脚本ID
+            可以使用 <code>DFF.CACHE.set('key', 'value', scope='scope', expire=3600)</code> 和 <code>DFF.CACHE('key', scope='scope')</code> 来存取函数缓存数据
+            <br><code>scope</code> 参数为可选。未指定时则默认为代码所在的脚本ID
           </p>
         </div>
         <el-table v-else
@@ -49,13 +49,15 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
 
           <el-table-column label="Key">
             <template slot-scope="scope">
-              <code class="text-code">{{ scope.row.key }}</code><CopyButton :content="scope.row.key"></CopyButton>
+              <code class="text-main">{{ scope.row.key }}</code>
+              <CopyButton :content="scope.row.key"></CopyButton>
             </template>
           </el-table-column>
 
           <el-table-column label="Scope">
             <template slot-scope="scope">
-              <code class="text-code">{{ scope.row.scope }}</code><CopyButton :content="scope.row.scope"></CopyButton>
+              <code class="text-main">{{ scope.row.scope }}</code>
+              <CopyButton :content="scope.row.scope"></CopyButton>
             </template>
           </el-table-column>
 
@@ -129,8 +131,8 @@ export default {
     },
     async quickSubmitData(d, operation) {
       let extraInfo = `<small>
-          <br>Key: <code class="text-code">${d.key}</code>
-          <br>Scope: <code class="text-code">${d.scope}</code>
+          <br>Key: <code class="text-main">${d.key}</code>
+          <br>Scope: <code class="text-main">${d.scope}</code>
         <small>`;
 
       switch(operation) {

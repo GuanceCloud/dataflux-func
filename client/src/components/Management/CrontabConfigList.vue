@@ -69,7 +69,7 @@ failureCount  : '失败 {n}'
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: '_ALL' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Crontab Config has ever been added') }}</h1>
 
           <p class="no-data-tip">
@@ -91,8 +91,9 @@ failureCount  : '失败 {n}'
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
-                <span class="text-info">&#12288;ID</span>
-                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
 
                 <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
@@ -114,10 +115,10 @@ failureCount  : '失败 {n}'
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                <code class="text-code">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
                 <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
               </template>
-              <code v-else-if="scope.row.crontab" class="text-code">{{ scope.row.crontab }}</code>
+              <code v-else-if="scope.row.crontab" class="text-main">{{ scope.row.crontab }}</code>
               <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
               <br>

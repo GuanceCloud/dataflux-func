@@ -68,8 +68,9 @@ Connector unpinned: 连接器已取消
                 size="mini">{{ C.CONNECTOR_MAP.get(data.connectorType).name }}</el-tag>
             </div>
 
-            <CopyButton :content="data.id" tip-placement="left"></CopyButton>
-            ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+            <span class="text-info">ID</span>
+            &nbsp;<code class="text-main">{{ data.id }}</code>
+            <CopyButton :content="data.id"></CopyButton>
 
             <pre v-if="data.description">{{ data.description }}</pre>
           </div>
@@ -77,8 +78,8 @@ Connector unpinned: 连接器已取消
           <!-- 示例代码 -->
           <template v-if="data.sampleCode">
             <div class="aside-tree-node-sample-code">
-              <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
-              {{ $t('Example') }}{{ $t(':') }}
+              <span class="text-info">{{ $t('Example') }}</span>
+              <CopyButton :content="data.sampleCode"></CopyButton>
 
               <pre>{{ data.sampleCode }}</pre>
             </div>
@@ -250,7 +251,7 @@ export default {
 
           connector: d,
         };
-        this.T.appendSearchKeywords(treeNode, ['id', 'title'])
+        this.T.appendSearchFields(treeNode, ['id', 'title'])
 
         treeData.push(treeNode);
       });

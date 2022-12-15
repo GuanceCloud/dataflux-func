@@ -39,7 +39,7 @@ export async function getFuncList() {
       title   : d.title,
       children: [],
     };
-    T.appendSearchKeywords(scriptSetMap[d.id], ['id', 'title']);
+    T.appendSearchFields(scriptSetMap[d.id], ['id', 'title']);
   });
 
   // 脚本
@@ -55,7 +55,7 @@ export async function getFuncList() {
       title   : d.title,
       children: [],
     };
-    T.appendSearchKeywords(scriptMap[d.id], ['id', 'title']);
+    T.appendSearchFields(scriptMap[d.id], ['id', 'title']);
 
     // 插入上一层"children"
     if (scriptSetMap[d.scriptSetId]) {
@@ -78,7 +78,7 @@ export async function getFuncList() {
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
     };
-    T.appendSearchKeywords(funcMap[d.id], ['id', 'title']);
+    T.appendSearchFields(funcMap[d.id], ['id', 'title']);
 
     // 插入上一层"children"
     if (scriptMap[d.scriptId]) {

@@ -106,6 +106,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                   <template v-if="scope.row.type === 'git'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
+                    <CopyButton :content="scope.row.configJSON.url"></CopyButton>
                     <br>
                     <span class="text-info">{{ $t('Branch') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
@@ -113,16 +114,20 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                   <template v-if="scope.row.type === 'aliyunOSS'">
                     <span class="text-info">{{ $t('Endpoint') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
+                    <CopyButton :content="scope.row.configJSON.endpoint"></CopyButton>
                     <br>
                     <span class="text-info">Bucket</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}</code>
+                    <CopyButton :content="scope.row.configJSON.bucket"></CopyButton>
                     <br>
                     <span class="text-info">{{ $t('Folder') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
+                    <CopyButton :content="scope.row.configJSON.folder"></CopyButton>
                   </template>
                   <template v-if="scope.row.type === 'httpService'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
+                    <CopyButton :content="scope.row.configJSON.url"></CopyButton>
                   </template>
                   <br>
                 </template>

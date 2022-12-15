@@ -87,7 +87,10 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                   </el-table-column>
                   <el-table-column>
                     <template slot-scope="scope">
-                      <small>ID <code class="text-code">{{ scope.row.id }}</code></small>
+                      <small>
+                        <span class="text-info">ID</span>
+                        &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                      </small>
                     </template>
                   </el-table-column>
                 </el-table>

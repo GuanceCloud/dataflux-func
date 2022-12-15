@@ -385,6 +385,9 @@ pre {
   word-break: break-all;
   white-space: pre-wrap;
 }
+code {
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
+}
 #app, .el-container {
   height: 100%;
 }
@@ -541,12 +544,6 @@ h3 {
 }
 .text-bad-fade {
   color: rgb(255,0,0,.5) !important;
-}
-.text-code {
-  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
-  padding: 1px 3px;
-  background-color: #ffefe4;
-  border-radius: 3px;
 }
 .text-small {
   font-size: small;

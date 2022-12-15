@@ -42,7 +42,8 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
 
           <el-table-column :label="$t('Username')" width="300">
             <template slot-scope="scope">
-              <code class="text-code text-small">{{ scope.row.username }}</code><CopyButton :content="scope.row.username"></CopyButton>
+              <code class="text-main">{{ scope.row.username }}</code>
+              <CopyButton :content="scope.row.username"></CopyButton>
             </template>
           </el-table-column>
 

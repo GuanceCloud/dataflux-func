@@ -147,14 +147,16 @@ Pressure                      : 压力
 
               <template v-if="scope.row.userId">
                 <br>
-                <span class="text-info">&#12288;{{ $t('User ID') }}{{ $t(':') }}</span>
-                <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
+                <span class="text-info">{{ $t('User ID') }}</span>
+                &nbsp;<code class="text-main">{{ scope.row.userId }}</code>
+                <CopyButton :content="scope.row.userId"></CopyButton>
               </template>
 
               <template v-if="T.notNothing(scope.row.clientIPsJSON)">
                 <br>
-                <span class="text-info">&#12288;{{ $t('IP Address') }}{{ $t(':') }}</span>
-                <code class="text-code text-small">{{ scope.row.clientIPsJSON.join(', ') }}</code><CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+                <span class="text-info">{{ $t('IP Address') }}</span>
+                &nbsp;<code class="text-main">{{ scope.row.clientIPsJSON.join(', ') }}</code>
+                <CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
               </template>
             </template>
           </el-table-column>
@@ -177,8 +179,10 @@ Pressure                      : 压力
 
               <template v-if="scope.row._operationEntityId">
                 <br>
-                <span class="text-info">&#12288;{{ $t('Data ID') }}{{ $t(':') }}</span>
-                <code class="text-code text-small">{{ scope.row._operationEntityId }}</code><CopyButton :content="scope.row._operationEntityId"></CopyButton>
+                <i class="fa fa-fw"></i>
+                <span class="text-info">{{ $t('Data ID') }}</span>
+                &nbsp;<code class="text-main">{{ scope.row._operationEntityId }}</code>
+                <CopyButton :content="scope.row._operationEntityId"></CopyButton>
               </template>
             </template>
           </el-table-column>

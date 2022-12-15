@@ -1587,7 +1587,20 @@ export function getHighlightRowCSS({row, rowIndex}) {
   return (store.state.highlightedTableDataId === row.id) ? 'hl-row' : '';
 };
 
-export function appendSearchKeywords(data, keys) {
+export function appendSearchKeywords(data, searchKeywords) {
+  searchKeywords = asArray(searchKeywords);
+
+  if (isNothing(data.searchKeywords)) {
+    data.searchKeywords = [];
+  }
+
+  data.searchKeywords = data.searchKeywords.concat(searchKeywords);
+  return data;
+};
+
+export function appendSearchFields(data, keys) {
+  keys = asArray(keys);
+
   let searchKeywords = [];
   keys.forEach(k => {
     let v = '';
@@ -1601,36 +1614,41 @@ export function appendSearchKeywords(data, keys) {
       searchKeywords.push('' + v);
     }
   });
-  data.searchKeywords = searchKeywords;
+
+  if (isNothing(data.searchKeywords)) {
+    data.searchKeywords = [];
+  }
+
+  data.searchKeywords = data.searchKeywords.concat(searchKeywords);
   return data;
 };
 
 export function searchKeywords(s, l) {
   let searchTexts = s
-  .replace(/[.-_ \(\)（）]/g, ' ')
+  .replace(/[.\-_ \(\)（）]/g, ' ')
   .toLowerCase()
   .split(' ')
   .filter(x => notNothing(x));
-  searchTexts.push(s);
 
-  console.log(searchTexts)
 
   let maxSearchKeywordsLength = 0;
   let listScore = l.reduce((acc, x) => {
-    let subScore = 0;
-    let simScore = 0;
+    let exactlyMatch = false;
+    let subScore     = 0;
+    let simScore     = 0;
 
     maxSearchKeywordsLength = Math.max(maxSearchKeywordsLength, x.searchKeywords.length);
 
     x.searchKeywords.forEach(keyword => {
       keyword = keyword.toLowerCase();
 
+      if (keyword === s) {
+        exactlyMatch = true;
+      }
+
       searchTexts.forEach(searchText => {
         // 字符串查询
-        if (searchText === keyword) {
-          // 存在完全相同的
-          subScore += 10;
-        } else if (keyword.indexOf(searchText) >= 0) {
+        if (searchText.length >= 2 && keyword.indexOf(searchText) >= 0) {
           // 子字符串
           subScore += searchText.length * 2;
         }
@@ -1641,31 +1659,45 @@ export function searchKeywords(s, l) {
     });
 
     acc.push({
-      totalScore: subScore + simScore,
-      subScore  : subScore,
-      simScore  : simScore,
-      item      : x,
+      exactlyMatch: exactlyMatch,
+      score       : (subScore + simScore) * maxSearchKeywordsLength / x.searchKeywords.length,
+      subScore    : subScore,
+      simScore    : simScore,
+      item        : x,
     })
     return acc;
   }, []);
 
+  let maxScore = 0;
   listScore.forEach(x => {
-    x.finalScore = parseInt(x.totalScore * maxSearchKeywordsLength / x.item.searchKeywords.length) * 1000 + x.subScore * 100 + x.simScore;
+    maxScore = Math.max(maxScore, x.score);
   });
-
+  listScore = listScore.filter(x => {
+    if (x.exactlyMatch) {
+      return true;
+    } else {
+      return x.score > maxScore * 0.5;
+    }
+  });
   listScore.sort((a, b) => {
-    if (a.finalScore > b.finalScore) return -1;
-    else if (a.finalScore < b.finalScore) return 1;
-    else return 0;
+    if (a.exactlyMatch && !b.exactlyMatch) return -1;
+    else if (!a.exactlyMatch && b.exactlyMatch) return 1;
+    else {
+      if (a.score > b.score) return -1;
+      else if (a.score < b.score) return 1;
+      else return 0;
+    }
   });
 
-  // console.log('-----------------')
-  // listScore.forEach(x => {
-  //   console.log(`Final: ${x.finalScore} / Total: ${x.totalScore} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
-  // })
-  // listScore = listScore.filter(x => {
-  //   return x.subScore >= 1 || x.simScore >= 50;
-  // });
+  listScore = listScore.filter(x => {
+    return x.subScore >= 1 || x.simScore >= 50;
+  });
+
+  console.log('-----------------')
+  console.log(searchTexts.toString())
+  listScore.slice(0, 10).forEach(x => {
+    console.log(`Score: ${x.score} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
+  })
 
   let result = listScore.map(x => x.item);
   return result;

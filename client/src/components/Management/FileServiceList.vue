@@ -50,8 +50,9 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
               <code class="file-service-title">{{ scope.row.root }}</code>
 
               <div>
-                <span class="text-info">&#12288;ID</span>
-                <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
 
                 <template v-if="scope.row.note">
                   <br>

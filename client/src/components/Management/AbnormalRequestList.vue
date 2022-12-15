@@ -74,8 +74,9 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
 
               <template v-if="scope.row.userId">
                 <br>
-                <span class="text-info">{{ $t('User ID') }}{{ $t(':') }}</span>
-                <code class="text-code text-small">{{ scope.row.userId }}</code><CopyButton :content="scope.row.userId"></CopyButton>
+                <span class="text-info">{{ $t('User ID') }}</span>
+                &nbsp;<code class="text-main text-small">{{ scope.row.userId }}</code>
+                <CopyButton :content="scope.row.userId"></CopyButton>
               </template>
             </template>
           </el-table-column>
@@ -83,7 +84,8 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
           <el-table-column :label="$t('Request')">
             <template slot-scope="scope">
               <strong v-if="scope.row.reqRouteName">{{ scope.row.reqRouteName }}<br></strong>
-              <code class="text-code">{{ scope.row.reqMethod }} {{ decodeURI(scope.row.reqURL) }}</code><CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`"></CopyButton>
+              <code class="text-main">{{ scope.row.reqMethod }} {{ decodeURI(scope.row.reqURL) }}</code>
+              <CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`"></CopyButton>
             </template>
           </el-table-column>
 

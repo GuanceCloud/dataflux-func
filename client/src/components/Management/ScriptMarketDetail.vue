@@ -126,6 +126,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
+                  <CopyButton :content="scope.row.local.id"></CopyButton>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
@@ -196,6 +197,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
+                  <CopyButton :content="scope.row.remote.id"></CopyButton>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.remote.scripts || []).length ) }}
                 </div>
@@ -475,7 +477,14 @@ export default {
       });
       // 添加搜索关键字
       data.forEach(d => {
-        this.T.appendSearchKeywords(d, ['local.id', 'local.title', 'remote.id', 'remote.title'])
+        let local  = d.local  || {};
+        let remote = d.remote || {};
+        this.T.appendSearchKeywords(d, [
+          local.id     || remote.id,
+          local.title  || remote.title,
+          remote.id    || local.id,
+          remote.title || local.title,
+        ]);
       });
 
       this.data = data;

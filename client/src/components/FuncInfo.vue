@@ -10,6 +10,7 @@ By Input       : 调用时指定
       <strong class="func-title">{{ title || name }}</strong>
       <GotoFuncButton v-if="!hideGotoFunc" :funcId="id"></GotoFuncButton>
       <br>
+      <span class="text-info">def</span>&nbsp;
       <template v-if="fullDefinition">
         <!-- 优先使用定义方式展示 -->
         <code class="code-font text-main">{{ fullDefinition }}</code>

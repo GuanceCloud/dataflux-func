@@ -128,8 +128,9 @@ Go to Script Market : 前往脚本市场
             <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Builtin Script Set')"></InfoBlock>
             <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')"></InfoBlock>
 
-            <CopyButton :content="data.id" tip-placement="left"></CopyButton>
-            ID{{ $t(':') }}<code class="text-code">{{ data.id }}</code>
+            <span class="text-info">ID</span>
+            &nbsp;<code class="text-main">{{ data.id }}</code>
+            <CopyButton :content="data.id"></CopyButton>
 
             <pre v-if="(data.type === 'scriptSet' || data.type === 'script') && data.description">{{ data.description }}</pre>
           </div>
@@ -137,8 +138,8 @@ Go to Script Market : 前往脚本市场
           <!-- 示例代码 -->
           <template v-if="data.sampleCode">
             <div class="aside-tree-node-sample-code">
-              <CopyButton v-if="data.sampleCode" :content="data.sampleCode" tip-placement="left"></CopyButton>
-              {{ $t('Example') }}{{ $t(':') }}
+              <span class="text-info">{{ $t('Example') }}</span>
+              <CopyButton :content="data.sampleCode"></CopyButton>
 
               <pre>{{ data.sampleCode }}</pre>
             </div>
@@ -305,7 +306,9 @@ Go to Script Market : 前往脚本市场
             <el-table-column :label="$t('Auth Link')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
-                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
+
                 <template v-if="scope.row.note">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
@@ -392,7 +395,9 @@ Go to Script Market : 前往脚本市场
             <el-table-column :label="$t('Crontab Config')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
-                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
+
                 <template v-if="scope.row.note">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
@@ -405,10 +410,10 @@ Go to Script Market : 前往脚本市场
               <template slot-scope="scope">
                 <span class="text-info">Crontab{{ $t(':') }}</span>
                 <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                  <code class="text-code">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                  <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
                   <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
                 </template>
-                <code v-else-if="scope.row.crontab" class="text-code">{{ scope.row.crontab }}</code>
+                <code v-else-if="scope.row.crontab" class="text-main">{{ scope.row.crontab }}</code>
                 <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
                 <br>
@@ -477,7 +482,9 @@ Go to Script Market : 前往脚本市场
             <el-table-column :label="$t('Batch')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
-                <code class="text-code">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
+
                 <template v-if="scope.row.note">
                   <br>
                   <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
@@ -705,7 +712,7 @@ export default {
 
           children: [],
         };
-        this.T.appendSearchKeywords(scriptSetMap[d.id], ['id', 'title'])
+        this.T.appendSearchFields(scriptSetMap[d.id], ['id', 'title'])
       });
 
       /***** 脚本 *****/
@@ -773,7 +780,7 @@ export default {
 
           children: [],
         };
-        this.T.appendSearchKeywords(scriptMap[d.id], ['id', 'title'])
+        this.T.appendSearchFields(scriptMap[d.id], ['id', 'title'])
 
         // 插入上一层节点"children"
         if (scriptSetMap[d.scriptSetId]) {
@@ -831,7 +838,7 @@ export default {
           integration    : d.integration,
           extraConfigJSON: d.extraConfigJSON,
         };
-        this.T.appendSearchKeywords(funcMap[d.id], ['id', 'title'])
+        this.T.appendSearchFields(funcMap[d.id], ['id', 'title'])
 
         // 插入上一层节点"children"
         if (scriptMap[d.scriptId]) {
@@ -1095,7 +1102,7 @@ export default {
       let listOpt = {
         query: {
           _withTaskInfo: true,
-          origin       : 'UI',
+          origin       : 'user',
           funcId       : funcId,
           pageSize     : 100,
         }

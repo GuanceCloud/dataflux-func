@@ -77,7 +77,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
                 </span>
                 <span v-else>
                   {{ C.API_AUTH_FIXED_FIELD_LOCATION_MAP.get(scope.row.configJSON.fields[0].location).name }}
-                  <code class="text-code">{{ scope.row.configJSON.fields[0].name }}</code>
+                  <code class="text-main">{{ scope.row.configJSON.fields[0].name }}</code>
 
                   <span class="more-configs-tip" v-if="scope.row.configJSON.fields.length > 1">
                     <br>&#12288;
@@ -92,7 +92,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
                 </span>
                 <span v-else>
                   {{ $t('User') }}
-                  <code class="text-code">{{ scope.row.configJSON.users[0].username }}</code>
+                  <code class="text-main">{{ scope.row.configJSON.users[0].username }}</code>
                   <span class="more-configs-tip" v-if="scope.row.configJSON.users.length > 1">
                     <br>&#12288;
                     {{ $tc('andMoreUsers', scope.row.configJSON.users.length - 1) }}

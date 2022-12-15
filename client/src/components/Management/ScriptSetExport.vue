@@ -158,7 +158,7 @@ export default {
 
       let scriptSets = apiRes.data;
       scriptSets.forEach(x => {
-        this.T.appendSearchKeywords(x, ['id', 'title'])
+        this.T.appendSearchFields(x, ['id', 'title'])
       });
 
       this.scriptSets             = scriptSets;
@@ -170,7 +170,7 @@ export default {
 
       let connectors = apiRes.data;
       connectors.forEach(x => {
-        this.T.appendSearchKeywords(x, ['id', 'title'])
+        this.T.appendSearchFields(x, ['id', 'title'])
       });
 
       this.connectors             = connectors;
@@ -182,7 +182,7 @@ export default {
 
       let envVariables = apiRes.data;
       envVariables.forEach(x => {
-        this.T.appendSearchKeywords(x, ['id', 'title'])
+        this.T.appendSearchFields(x, ['id', 'title'])
       });
 
       this.envVariables             = envVariables;

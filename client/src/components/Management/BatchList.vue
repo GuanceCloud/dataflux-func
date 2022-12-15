@@ -59,7 +59,7 @@ failureCount  : '失败 {n}'
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: 'API,UI' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: '_ALL' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Batch has ever been added') }}</h1>
 
           <p class="no-data-tip">
@@ -81,8 +81,9 @@ failureCount  : '失败 {n}'
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
-                <span class="text-info">&#12288;ID</span>
-                <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
 
                 <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>

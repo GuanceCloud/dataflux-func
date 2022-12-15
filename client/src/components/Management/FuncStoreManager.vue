@@ -48,13 +48,15 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
 
           <el-table-column label="Key">
             <template slot-scope="scope">
-              <code class="text-code">{{ scope.row.key }}</code><CopyButton :content="scope.row.key"></CopyButton>
+              <code class="text-main">{{ scope.row.key }}</code>
+              <CopyButton :content="scope.row.key"></CopyButton>
             </template>
           </el-table-column>
 
           <el-table-column label="Scope">
             <template slot-scope="scope">
-              <code class="text-code">{{ scope.row.scope }}</code><CopyButton :content="scope.row.scope"></CopyButton>
+              <code class="text-main">{{ scope.row.scope }}</code>
+              <CopyButton :content="scope.row.scope"></CopyButton>
             </template>
           </el-table-column>
 
@@ -134,8 +136,8 @@ export default {
     },
     async quickSubmitData(d, operation) {
       let extraInfo = `<small>
-          <br>Key: <code class="text-code">${d.key}</code>
-          <br>Scope: <code class="text-code">${d.scope}</code>
+          <br>Key: <code class="text-main">${d.key}</code>
+          <br>Scope: <code class="text-main">${d.scope}</code>
         <small>`;
 
       switch(operation) {

@@ -361,7 +361,7 @@ export default {
                     ? this.data.configJSON
                     : this.form.configJSON;
       configJSON = configJSON || {};
-      return !!(configJSON.user || configJSON.password);
+      return !!(configJSON.user || configJSON.password) || this.setAdmin;
     },
     formRules() {
       return {

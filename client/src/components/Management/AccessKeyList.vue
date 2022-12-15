@@ -47,7 +47,8 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
 
           <el-table-column label="Access Key ID">
             <template slot-scope="scope">
-              <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+              <code class="text-main text-small">{{ scope.row.id }}</code>
+              <CopyButton :content="scope.row.id"></CopyButton>
             </template>
           </el-table-column>
 
@@ -57,7 +58,8 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
                 <el-button @click="showSecret(scope.row)" type="text">{{ $t('Show') }}</el-button>
               </template>
               <template v-else>
-                <code class="text-code text-small">{{ scope.row.secret }}</code><CopyButton :content="scope.row.secret"></CopyButton>
+                <code class="text-main text-small">{{ scope.row.secret }}</code>
+                <CopyButton :content="scope.row.secret"></CopyButton>
               </template>
             </template>
           </el-table-column>

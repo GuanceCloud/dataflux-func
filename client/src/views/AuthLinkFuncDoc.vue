@@ -13,7 +13,7 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          <Logo type="auto" style="margin: auto 10px -8px 5px;"></Logo>
+          <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
           授权链接函数文档
           <small>可被外部调用的函数</small>
           <span class="text-info title-tip">本文档没有翻页，按 <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd> 开始搜索</span>
@@ -34,32 +34,34 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
                 :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
 
               <div>
-                <span class="text-info">&#12288;ID</span>
-                <code class="text-code text-small">{{ scope.row.id }}</code><CopyButton :content="scope.row.id"></CopyButton>
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
 
-                <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.funcTagsJSON)">
+                <template v-if="T.notNothing(scope.row.funcCategory)">
+                  <span class="text-info">{{ $t('Category') }}</span>
+                  &nbsp;<code>{{ scope.row.funcCategory }}</code>
                   <br>
-                  <span class="text-info">&#12288;{{ $t('Tags') }}</span>
-                  <el-tag size="mini" type="info" v-for="t in scope.row.funcTagsJSON" :key="t">{{ t }}</el-tag>
-                  <el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
                 </template>
 
-                <template v-if="T.notNothing(scope.row.funcCategory) || T.notNothing(scope.row.funcIntegration) || T.notNothing(scope.row.funcTagsJSON)">
+                <template v-if="T.notNothing(scope.row.funcIntegration)">
+                  <span class="text-info">{{ $t('Integration') }}</span>
+                  &nbsp;
+                  <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
+                  <code v-else>{{ scope.row.funcIntegration }}</code>
                   <br>
-                  <template v-if="T.notNothing(scope.row.funcCategory)">
-                    <span class="text-info">&#12288;分类</span>
-                    <el-tag size="mini">
-                      <code>{{ scope.row.funcCategory }}</code>
-                    </el-tag>
-                  </template>
+                </template>
 
-                  <template v-if="T.notNothing(scope.row.funcIntegration)">
-                    <span class="text-info">&#12288;集成</span>
-                    <el-tag size="mini">
-                      <code v-if="C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration)">{{ C.FUNC_INTEGRATION_MAP.get(scope.row.funcIntegration).name }}</code>
-                      <code v-else>{{ scope.row.funcIntegration }}</code>
-                    </el-tag>
-                  </template>
+                <template v-if="T.notNothing(scope.row.tagsJSON)">
+                  <span class="text-info">{{ $t('Tags') }}</span>
+                  &nbsp;<el-tag size="mini" type="warning" v-for="t in scope.row.tagsJSON" :key="t">{{ t }}</el-tag>
+                  <br>
+                </template>
+
+                <template v-if="T.notNothing(scope.row.funcTagsJSON)">
+                  <span class="text-info">{{ $t('Func Tags') }}</span>
+                  &nbsp;<el-tag size="mini" type="info" v-for="t in scope.row.funcTagsJSON" :key="t">{{ t }}</el-tag>
+                  <br>
                 </template>
               </div>
             </template>
@@ -187,6 +189,11 @@ export default {
 </script>
 
 <style scoped>
+.doc-logo {
+  display: inline-block;
+  position: relative;
+  top: 10px;
+}
 .func-list {
   /* scroll-behavior: smooth; */
   padding: 0 30px;
