@@ -305,13 +305,27 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
               :value="scriptSetToOperate.requirements"></el-input>
           </el-form-item>
 
-          <el-form-item v-if="isWriteOperation" :label="$t('Publish Note')" prop="note">
-            <el-input
-              type="textarea"
-              resize="none"
-              :autosize="{ minRows: 2 }"
-              v-model="form.note"></el-input>
-          </el-form-item>
+          <template v-if="isWriteOperation">
+            <el-form-item class="config-divider">
+              <el-divider></el-divider>
+            </el-form-item>
+
+            <el-form-item :label="$t('User Name')">
+              <el-input disabled :value="$store.state.userProfile.name"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="$t('Email')">
+              <el-input disabled :value="$store.state.userProfile.email"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="$t('Publish Note')" prop="note">
+              <el-input
+                type="textarea"
+                resize="none"
+                :autosize="{ minRows: 2 }"
+                v-model="form.note"></el-input>
+            </el-form-item>
+          </template>
         </el-form>
 
         <div slot="footer" class="dialog-footer">
@@ -344,7 +358,9 @@ export default {
 
       // 获取脚本市场信息
       if (this.T.isNothing(this.scriptMarket)) {
-        apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
+        apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id, {
+          alert: true,
+        });
         if (!apiRes || !apiRes.ok) return;
 
         this.scriptMarket = apiRes.data;
@@ -789,6 +805,9 @@ export default {
 </style>
 
 <style>
+.commit-divider {
+  margin-bottom: 0;
+}
 .arrow-icon-cell > .cell {
   display: flex;
   align-items: center;

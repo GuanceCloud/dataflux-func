@@ -26,8 +26,9 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   alias      : 'sset',
 
   objectFields: {
-    isLocked: 'boolean',
-    isPinned: 'boolean',
+    isPinned       : 'boolean',
+    isLocked       : 'boolean',
+    smkt_configJSON: 'json',
   },
 
   defaultOrders: [
@@ -52,14 +53,24 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   sset.*');
-  sql.append('  ,NOT ISNULL(sset.pinTime) AS isPinned');
-  sql.append('  ,locker.username          AS lockedByUserUsername');
-  sql.append('  ,locker.name              AS lockedByUserName');
+  sql.append('  ,NOT ISNULL(sset.pinTime)    AS isPinned');
+  sql.append('  ,NOT ISNULL(locker.username) AS isLocked');
+  sql.append('  ,locker.id                   AS lockedByUserId');
+  sql.append('  ,locker.username             AS lockedByUserUsername');
+  sql.append('  ,locker.name                 AS lockedByUserName');
+  sql.append('  ,smkt.id                     AS smkt_id');
+  sql.append('  ,smkt.name                   AS smkt_name');
+  sql.append('  ,smkt.type                   AS smkt_type');
+  sql.append('  ,smkt.configJSON             AS smkt_configJSON');
 
   sql.append('FROM biz_main_script_set AS sset');
 
   sql.append('LEFT JOIN wat_main_user AS locker');
   sql.append('  ON locker.id = sset.lockedByUserId');
+
+  sql.append('LEFT JOIN biz_main_script_market AS smkt');
+  sql.append("  ON  sset.origin = 'scriptMarket'");
+  sql.append('  AND smkt.id = sset.originId');
 
   options.baseSQL = sql.toString();
 

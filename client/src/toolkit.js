@@ -1169,6 +1169,8 @@ export async function callAPI_getOne(pathPattern, id, options) {
     let alert = options.alert;
 
     if (isNothing(apiRes.data)) {
+      apiRes.ok = false;
+
       // 无数据提示
       if (!alert.muteError) {
         setTimeout(() => {

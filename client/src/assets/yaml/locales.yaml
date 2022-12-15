@@ -186,6 +186,7 @@ en:
   # 通用表格-表头/标题
   No matched data found: 当前过滤条件无匹配数据
   Name                 : 名称
+  User Name            : 用户名
   Title                : 标题
   Description          : 描述
   Type                 : 类型
@@ -394,8 +395,8 @@ en:
   # const.js - SCRIPT_MARKET
   Alibaba Cloud OSS: 阿里云 OSS
   HTTP Service     : HTTP 服务
-  Script Market on git supports HTTPS only : 使用 git 搭建的脚本市场仅支持 HTTPS
-  Script Market on HTTP Service is readonly: 使用 HTTP 服务搭建的脚本市场为只读
+  Script Market based on git supports HTTPS only : 基于 git 的脚本市场仅支持 HTTPS
+  Script Market based on HTTP Service is readonly: 基于 HTTP 服务的脚本市场为只读
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题
@@ -420,11 +421,12 @@ en:
   Incomplete processing flow: 处理流程不完整
 
   # 脚本市场 git 用户信息补全
-  Complete User Profile for git repo: 补全用于 git 的用户信息
+  Complete User Profile for git committing: 补全用于 git 提交的用户信息
   Please input name : 请输入名称
   Please input email: 请输入邮箱
 
-  Please complete User Profile before managing the Script Market based on git repo: 对基于 git 的脚本市场执行管理操作前，请先补全用户信息
+  Managing Script Market based on git requires your user NAME and EMAIL.: 管理基于 git 的脚本市场需要你的用户名称与邮箱。
+  This information will be used as the user information for git commits.: 此信息将作为 git 提交时的用户信息。
 
   User Profile saved: 用户信息已保存
 

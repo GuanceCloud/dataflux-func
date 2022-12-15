@@ -15,16 +15,18 @@
 
     <el-dialog
       id="CompleteUserProfile"
-      :title="$t('Complete User Profile for git repo')"
+      :title="$t('Complete User Profile for git committing')"
       :visible.sync="$store.state.showCompleteUserProfile"
       :show-close="false"
       :close-on-click-modal="false"
       :close-on-press-escape="false">
+      <p class="text-main">
+        {{ $t('Managing Script Market based on git requires your user NAME and EMAIL.') }}
+        <br>{{ $t('This information will be used as the user information for git commits.') }}
+      </p>
+      <br>
       <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
-        <el-form-item>
-          <InfoBlock type="warning" :title="$t('Please complete User Profile before managing the Script Market based on git repo')"></InfoBlock>
-        </el-form-item>
-        <el-form-item :label="$t('Name')" prop="name">
+        <el-form-item :label="$t('User Name')" prop="name">
           <el-input
             maxlength="25"
             v-model="form.name"></el-input>
@@ -373,6 +375,10 @@ pre, pre *
 a {
   text-decoration: none;
 }
+p {
+  word-break: break-word;
+  line-height: 1.5;
+}
 html {
   min-width: 1280px;
 }
@@ -470,6 +476,13 @@ h3 {
   width: 100%;
 }
 
+#CompleteUserProfile .el-dialog__body {
+  padding: 5px 20px;
+}
+#CompleteUserProfile p {
+  padding: 10px 30px;
+  text-align: center;
+}
 #CompleteUserProfile > .el-dialog {
   width: 620px;
 }
@@ -769,8 +782,10 @@ kbd {
 .el-notification__content {
   margin-top: 0 !important;
 }
-.el-tooltip__popper * {
+.el-tooltip__popper {
   z-index: 3002 !important;
+}
+.el-tooltip__popper * {
   line-height: 1.5;
   font-size: 14px;
 }
@@ -856,7 +871,7 @@ kbd {
   margin-right: 0px !important;
 }
 .el-divider--horizontal:not(:first-of-type) {
-  margin-top: 80px !important;
+  margin-top: 50px !important;
 }
 
 .el-drawer__wrapper {

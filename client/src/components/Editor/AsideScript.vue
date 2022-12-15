@@ -34,15 +34,17 @@ Cannot not starts with a number                   : 不得以数字开头
 Please input new Script Set ID                    : 请输入新脚本集ID
 Inputed Script Set ID already exists              : 输入的脚本集ID已经存在
 
-Builtin Script Set          : 系统内置脚本集
-Installed form Script Market: 从脚本市场安装的脚本集
-Script Set pinned           : 脚本集已置顶
-Script Set unpinned         : 脚本集已取消
-Script Set locked           : 脚本集已上锁
-Script Set unlocked         : 脚本集已解锁
-Script Set cloned           : 脚本集已克隆
-Script locked               : 脚本已上锁
-Script unlocked             : 脚本已解锁
+Builtin Script Set : 系统内置脚本集
+Script Set pinned  : 脚本集已置顶
+Script Set unpinned: 脚本集已取消
+Script Set locked  : 脚本集已上锁
+Script Set unlocked: 脚本集已解锁
+Script Set cloned  : 脚本集已克隆
+Script locked      : 脚本已上锁
+Script unlocked    : 脚本已解锁
+
+Installed form Script Market      : 从脚本市场安装的脚本集
+The Script Market has been removed: 脚本市场已被删除
 
 Config    : 配置
 Auth      : 认证
@@ -230,11 +232,14 @@ Go to Script Market : 前往脚本市场
               </el-link>
 
               <!-- 前往脚本市场 -->
-              <el-link v-if="data.origin === 'scriptMarket' && data.originId"
-                @click="openEntity(node, data, 'scriptMarket')">
-                <i class="fa fa-fw fa-shopping-cart"></i>
-                {{ $t('Go to Script Market') }}
-              </el-link>
+              <el-tooltip effect="dark" :disabled="!!data.scriptMarketId" :content="$t('The Script Market has been removed')" placement="right">
+                <el-link v-if="data.origin === 'scriptMarket' && data.originId"
+                  :disabled="!data.scriptMarketId"
+                  @click="openEntity(node, data, 'scriptMarket')">
+                  <i class="fa fa-fw fa-shopping-cart"></i>
+                  {{ $t('Go to Script Market') }}
+                </el-link>
+              </el-tooltip>
             </div>
           </template>
 
@@ -674,6 +679,7 @@ export default {
             'origin',
             'originId',
             'pinTime',
+            'smkt_id',
           ]
         },
       });
@@ -706,6 +712,7 @@ export default {
           pinTime        : d.pinTime,
           origin         : d.origin,
           originId       : d.originId,
+          scriptMarketId : d.smkt_id,
 
           title      : d.title,
           description: d.description,
