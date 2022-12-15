@@ -794,7 +794,19 @@
               location.href = this.redirectURL;
             }, 3 * 1000);
           }, 1 * 1000);
-        }
+        },
+        genRandomSecret() {
+          var len     = 16;
+          var samples = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+          var randString = '';
+          for (var i = 0; i < len; i++) {
+            var randIndex = Math.floor(Math.random() * samples.length);
+            randString += samples[randIndex];
+          }
+
+          return randString;
+        },
       },
       computed: {
         redirectURL() {
@@ -836,7 +848,7 @@
           },
 
           userConfigs: {
-            SECRET               : currentConfig.SECRET,
+            SECRET               : this.genRandomSecret(),
             LOG_LEVEL            : currentConfig.LOG_LEVEL,
             LOG_FILE_FORMAT      : currentConfig.LOG_FILE_FORMAT,
             WEB_BASE_URL         : currentConfig.WEB_BASE_URL,
