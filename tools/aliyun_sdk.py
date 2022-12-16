@@ -5,7 +5,10 @@ import hashlib
 import hmac
 import time
 import uuid
-from urllib.parse import quote
+try:
+    from urllib import quote
+except ImportError:
+    from urllib.parse import quote
 
 import six
 import requests
