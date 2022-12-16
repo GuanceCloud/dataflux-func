@@ -204,7 +204,7 @@ guancePaaS_release:
 
 # ========== 携带版文件上传到 OSS ==========
 
-portable_dev:
+portableFile_dev:
   stage: uploadToOSS
   only:
     - dev
@@ -226,7 +226,7 @@ portable_dev:
   tags:
     - cloudcare-multiarch
 
-portable_release:
+portableFile_release:
   stage: uploadToOSS
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
@@ -256,7 +256,7 @@ guanceK8s_testing:
     - dev
   script:
     - for workload in ${WORKLOADS}; do
-        curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}"${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy;
+        curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}" ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy;
       done
   tags:
     - cloudcare-multiarch
