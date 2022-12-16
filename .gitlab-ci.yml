@@ -1,5 +1,4 @@
 stages:
-  - prepare
   - build
   - uploadToOSS
   - deploy
@@ -26,16 +25,6 @@ variables:
 
   PROJECT: dataflux-func
 
-# ========== 准备 ==========
-init:
-  stage: prepare
-  script:
-    - docker buildx ls
-    - python echo-image-info.py > image-info.json
-    - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
-  tags:
-    - cloudcare-multiarch
-
 # ========== 构建镜像 ==========
 portable_dev:
   stage: build
@@ -43,12 +32,18 @@ portable_dev:
     - dev
   script:
     # 开发版只需支持amd64
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}:latest
       -f Dockerfile-singleton .
       --load
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}-amd64
+    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    - tools/ossutil64 cp
+      ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_GZIP_FILE} -f
+      -e ${ZY_STATIC_OSS_ENDPOINT}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET};
   tags:
     - cloudcare-multiarch
 
@@ -58,12 +53,18 @@ portable_amd64:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 单独构建amd64版本用于导出
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}:latest
       -f Dockerfile-singleton .
       --load
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}-amd64
+    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}
+      ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_GZIP_FILE} -f
+      -e ${ZY_STATIC_OSS_ENDPOINT}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET};
   tags:
     - cloudcare-multiarch
 
@@ -73,12 +74,18 @@ portable_arm64:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 单独构建arm64版本用于导出
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/arm64
       -t ${IMAGE_PUBLIC}-arm64:latest
       -f Dockerfile-singleton .
       --load
-    - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}-arm64
+    - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    - tools/ossutil64 cp ${IMAGE_GZIP_FILE}
+      ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_GZIP_FILE} -f
+      -e ${ZY_STATIC_OSS_ENDPOINT}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET};
   tags:
     - cloudcare-multiarch
 
@@ -93,6 +100,7 @@ singleton_release:
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
     # 构建/推送多架构版本
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}:latest
@@ -116,6 +124,7 @@ guance_testing:
     - dev
   script:
     # 开发版只需支持amd64
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
@@ -135,6 +144,7 @@ guance_release:
     - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
     - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
     # 构建/推送多架构版本
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
@@ -159,6 +169,7 @@ guancePaaS_preview:
     - REPO=dataflux-prev/$VDIR
     - TAG=${PROJECT}-${V[4]}
     # 构建/推送多架构版本
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
@@ -182,6 +193,7 @@ guancePaaS_release:
     - REPO=dataflux/$VDIR
     - TAG=${PROJECT}-${V[3]}-${V[4]}
     # 构建/推送多架构版本
+    - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
@@ -197,6 +209,8 @@ portable_dev:
   only:
     - dev
   script:
+    # 输出版本号
+    - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
     - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
@@ -204,12 +218,11 @@ portable_dev:
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_DEV}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - if [ -f ${IMAGE_GZIP_FILE}-amd64 ]; then
-        tools/ossutil64 cp ${IMAGE_GZIP_FILE}-amd64 ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_GZIP_FILE}  -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
-      fi
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH_DEV} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH_DEV}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - cloudcare-multiarch
 
@@ -218,6 +231,8 @@ portable_release:
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
+    # 输出版本号
+    - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
     - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
@@ -226,15 +241,11 @@ portable_release:
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_AARCH64}    ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - if [ -f ${IMAGE_GZIP_FILE}-amd64 ]; then
-        tools/ossutil64 cp ${IMAGE_GZIP_FILE}-amd64 ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_GZIP_FILE}  -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
-      fi
-    - if [ -f ${IMAGE_GZIP_FILE}-arm64 ]; then
-        tools/ossutil64 cp ${IMAGE_GZIP_FILE}-arm64 ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_GZIP_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
-      fi
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - cloudcare-multiarch
 
@@ -245,7 +256,7 @@ guanceK8s_testing:
     - dev
   script:
     - for workload in ${WORKLOADS}; do
-        curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}" ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy;
+        curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}"${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy;
       done
   tags:
     - cloudcare-multiarch
