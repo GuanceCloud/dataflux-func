@@ -36,7 +36,7 @@ Data exported: 数据已导出
                     v-model="form.scriptSetIds"
                     multiple
                     filterable
-                    :filter-method="doScriptSetFilter"
+                    :filter-method="T.debounce(doScriptSetFilter)"
                     :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectScriptSetOptions"
@@ -57,7 +57,12 @@ Data exported: 数据已导出
                 </el-form-item>
 
                 <el-form-item :label="$t('Connector')" prop="connectorIds">
-                  <el-select v-model="form.connectorIds" multiple filterable :filter-method="doConnectorFilter" :placeholder="$t('Please select')">
+                  <el-select
+                    v-model="form.connectorIds"
+                    multiple
+                    filterable
+                    :filter-method="T.debounce(doConnectorFilter)"
+                    :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectConnectorOptions"
                       :key="item.id"
@@ -71,7 +76,12 @@ Data exported: 数据已导出
                 </el-form-item>
 
                 <el-form-item :label="$t('ENV')" prop="envVariableIds">
-                  <el-select v-model="form.envVariableIds" multiple filterable :filter-method="doEnvVariableFilter" :placeholder="$t('Please select')">
+                  <el-select
+                    v-model="form.envVariableIds"
+                    multiple
+                    filterable
+                    :filter-method="T.debounce(doEnvVariableFilter)"
+                    :placeholder="$t('Please select')">
                     <el-option
                       v-for="item in selectEnvVariableOptions"
                       :key="item.id"

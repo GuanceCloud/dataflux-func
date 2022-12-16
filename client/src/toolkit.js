@@ -163,7 +163,7 @@ export function getShiftKeyName() {
 };
 
 export function debounce(fn, delay) {
-  delay = delay || 500;
+  delay = delay || 300;
   let T;
 
   return function() {
@@ -1596,7 +1596,10 @@ export function appendSearchKeywords(data, searchKeywords) {
     data.searchKeywords = [];
   }
 
-  data.searchKeywords = data.searchKeywords.concat(searchKeywords);
+  searchKeywords.forEach(v => {
+    if (v) data.searchKeywords.push('' + v);
+  })
+
   return data;
 };
 
@@ -1633,7 +1636,9 @@ export function searchKeywords(s, l) {
   .filter(x => notNothing(x));
 
 
+  let maxScore                = 0;
   let maxSearchKeywordsLength = 0;
+
   let listScore = l.reduce((acc, x) => {
     let exactlyMatch = false;
     let subScore     = 0;
@@ -1650,7 +1655,7 @@ export function searchKeywords(s, l) {
 
       searchTexts.forEach(searchText => {
         // 字符串查询
-        if (searchText.length >= 2 && keyword.indexOf(searchText) >= 0) {
+        if (keyword.indexOf(searchText) >= 0) {
           // 子字符串
           subScore += searchText.length * 2;
         }
@@ -1660,27 +1665,18 @@ export function searchKeywords(s, l) {
       });
     });
 
-    acc.push({
+    let item = {
       exactlyMatch: exactlyMatch,
       score       : (subScore + simScore) * maxSearchKeywordsLength / x.searchKeywords.length,
       subScore    : subScore,
       simScore    : simScore,
       item        : x,
-    })
+    };
+    maxScore = Math.max(maxScore, item.score);
+    acc.push(item);
     return acc;
   }, []);
 
-  let maxScore = 0;
-  listScore.forEach(x => {
-    maxScore = Math.max(maxScore, x.score);
-  });
-  listScore = listScore.filter(x => {
-    if (x.exactlyMatch) {
-      return true;
-    } else {
-      return x.score > maxScore * 0.5;
-    }
-  });
   listScore.sort((a, b) => {
     if (a.exactlyMatch && !b.exactlyMatch) return -1;
     else if (!a.exactlyMatch && b.exactlyMatch) return 1;
@@ -1691,15 +1687,21 @@ export function searchKeywords(s, l) {
     }
   });
 
-  listScore = listScore.filter(x => {
-    return x.subScore >= 1 || x.simScore >= 50;
-  });
+  // console.log('-----------------')
+  // console.log(searchTexts.toString())
+  // listScore.slice(0, 10).forEach(x => {
+  //   console.log(`Score: ${x.score} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
+  // })
 
-  console.log('-----------------')
-  console.log(searchTexts.toString())
-  listScore.slice(0, 10).forEach(x => {
-    console.log(`Score: ${x.score} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
-  })
+  listScore = listScore.filter(x => {
+    if (x.exactlyMatch) {
+      return true;
+    } else if (s.length === 1) {
+      return x.score > 0;
+    } else {
+      return x.score > maxScore * 0.5;
+    }
+  });
 
   let result = listScore.map(x => x.item);
   return result;

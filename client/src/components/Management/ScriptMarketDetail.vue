@@ -62,7 +62,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
       <el-header height="60px">
         <div class="page-header">
           <span>
-            <code class="text-main script-market-name">{{ common.getScriptMarketName(scriptMarket) }}</code>
+            <span class="text-main script-market-name">{{ common.getScriptMarketName(scriptMarket) }}</span>
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">
@@ -71,11 +71,12 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
             <el-input :placeholder="$t('Filter')"
               size="small"
               class="filter-input"
-              v-model="filterTEXT">
+              v-model="filterInput"
+              @input="onFilterChange">
               <i slot="prefix"
                 class="el-input__icon el-icon-close text-main"
-                v-if="filterTEXT"
-                @click="filterTEXT = ''"></i>
+                v-if="filterInput"
+                @click="filterInput = ''; onFilterChange()"></i>
             </el-input>
           </div>
         </div>
@@ -318,7 +319,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
               <el-input disabled :value="$store.state.userProfile.email"></el-input>
             </el-form-item>
 
-            <el-form-item :label="$t('Publish Note')" prop="note">
+            <el-form-item v-if="operation === 'publish'" :label="$t('Publish Note')" prop="note">
               <el-input
                 type="textarea"
                 resize="none"
@@ -338,6 +339,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 </template>
 
 <script>
+import { debounce } from '@/toolkit'
 export default {
   name: 'ScriptMarketDetail',
   components: {
@@ -591,7 +593,7 @@ export default {
             body  : {
               scriptSetIds: [ this.scriptSetToOperate.id ],
               mode        : 'delete',
-              note        : this.form.note,
+              note        : `Delete Script Set: ${this.scriptSetToOperate.id}`,
             },
             alert : { okMessage: this.$t('Script Set deleted from the Script Market') },
           });
@@ -671,6 +673,9 @@ export default {
       this.isProcessing  = false;
       this.showOperation = false;
     },
+    onFilterChange: debounce(function(val) {
+      this.filterTEXT = val;
+    }),
   },
   computed: {
     isWriteOperation() {
@@ -757,6 +762,7 @@ export default {
         note: null,
       },
 
+      filterInput: '',
       filterTEXT : '',
 
       scriptSetToOperate: {},

@@ -21,7 +21,7 @@ Connector unpinned: 连接器已取消
       size="small"
       :filterable="true"
       :clearable="true"
-      :filter-method="doFilter"
+      :filter-method="T.debounce(doFilter)"
       v-model="selectFilterText">
       <el-option
         v-for="item in selectShowOptions"

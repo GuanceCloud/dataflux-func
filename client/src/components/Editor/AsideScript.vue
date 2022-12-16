@@ -80,7 +80,7 @@ Go to Script Market : 前往脚本市场
       size="small"
       :filterable="true"
       :clearable="true"
-      :filter-method="doFilter"
+      :filter-method="T.debounce(doFilter)"
       v-model="selectFilterText">
       <el-option
         v-for="item in selectShowOptions"
