@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-META_PATH=/etc/dataflux-func
-if [ -f ${META_PATH} ]; then
-    source ${META_PATH}
+ETC_PATH=/etc/dataflux-func
+if [ -f ${ETC_PATH} ]; then
+    source ${ETC_PATH}
 fi
 
 # 本脚本参考了docker官方文档，以及以下文章
@@ -36,10 +36,6 @@ OPT_INSTALL_DIR=DEFAULT
 OPT_NO_MYSQL=FALSE
 OPT_NO_REDIS=FALSE
 
-# 处理选项（在线安装专用）
-OPT_DEV=FALSE
-OPT_IMAGE=DEFAULT
-
 while [ $# -ge 1 ]; do
     case $1 in
         --mini )
@@ -47,6 +43,10 @@ while [ $# -ge 1 ]; do
             shift
             ;;
 
+        --port=* )
+            OPT_PORT="${1#*=}"
+            shift
+            ;;
         --port )
             OPT_PORT=$2
             shift 2
@@ -71,20 +71,6 @@ while [ $# -ge 1 ]; do
             shift
             ;;
 
-        --dev )
-            OPT_DEV=TRUE
-            shift
-            ;;
-
-        --image=* )
-            OPT_IMAGE="${1#*=}"
-            shift
-            ;;
-        --image )
-            OPT_IMAGE=$2
-            shift 2
-            ;;
-
         * )
             shift
             ;;
@@ -93,6 +79,7 @@ done
 
 # 配置
 __PREV_DIR=${PWD}
+__PORTABLE_DIR=$(cd `dirname $0`; pwd)
 __SERVER_SECRET=`openssl rand -hex 8`
 __MYSQL_PASSWORD=`openssl rand -hex 8`
 
@@ -102,35 +89,14 @@ __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 
 __PROJECT_NAME=dataflux-func
 
-__RESOURCE_BASE_URL=https://static.guance.com/dataflux-func/resource
+__DOCKER_BIN_FILE=docker-20.10.8.tgz
+__SYSTEMD_FILE=docker.service
 
-MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
-REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:latest
-
-# 根据当前架构自动选择镜像
-case `uname -m` in
-    'x86_64' )
-        MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
-        REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7
-        ;;
-
-    'aarch64' )
-        MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mariadb-arm64:10.4.21
-        REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis-arm64:5.0.7
-        ;;
-
-    * )
-        shift
-        ;;
-esac
-
-# 启用dev 部署时，项目名/资源等改为dev 专用版
-if [ ${OPT_DEV} = "TRUE" ]; then
-    __PROJECT_NAME=dataflux-func-dev
-    __RESOURCE_BASE_URL=https://static.guance.com/dataflux-func/resource-dev
-    DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func:dev
-fi
+__DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
+__MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
+__REDIS_IMAGE_GZIP_FILE=redis.tar.gz
+__IMAGE_LIST_FILE=image-list
+__VERSION_FILE=version
 
 _PORT=8088
 if [ ${OPT_PORT} != "DEFAULT" ]; then
@@ -144,26 +110,21 @@ if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
 else
     # 默认安装位置，并优先使用上次安装位置
     if [ ${INSTALLED_DIR} ]; then
-        log "Found previous install directory: ${INSTALLED_DIR}"
+        log "* Found previous install directory: ${INSTALLED_DIR}"
         _INSTALL_DIR=${INSTALLED_DIR}
     fi
-fi
-
-if [ ${OPT_IMAGE} != "DEFAULT" ]; then
-    DATAFLUX_FUNC_IMAGE=${OPT_IMAGE}
 fi
 
 log "Project name: ${__PROJECT_NAME}"
 log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
-log "Image       : ${DATAFLUX_FUNC_IMAGE}"
+log "Version     : `cat ${__PORTABLE_DIR}/${__VERSION_FILE}`"
 
-
-# 安装前根据Meta检查
-if [ ${INSTALLED_DIR} -a ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
+# 安装前根据etc检查
+if [ ${INSTALLED_DIR} ] && [ ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
     log ""
     log "You are reinstalling/upgrading DataFlux Func into a different directory by mistake."
-    log "  Previous (from ${META_PATH}):"
+    log "  Previous (from ${ETC_PATH}):"
     log "    -> ${INSTALLED_DIR}"
     log "  Current:"
     log "    -> ${_INSTALL_DIR} "
@@ -171,24 +132,57 @@ if [ ${INSTALLED_DIR} -a ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
     exit 1
 fi
 
+# 加载镜像信息
+source ${__PORTABLE_DIR}/${__IMAGE_LIST_FILE}
+
+# 检查架构是否匹配
+if [ `uname -m` != ${IMAGE_ARCH} ]; then
+    log ""
+    log "Arch not match:"
+    log "  current : `uname -m`"
+    log "  portable: ${IMAGE_ARCH}"
+    exit 1
+fi
+
+# 进入脚本所在目录
+cd ${__PORTABLE_DIR}
+
+# 安装Docker
+if [ ! `command -v docker` ]; then
+    # 安装Docker
+    log "Install and prepare docker"
+    tar -zxvf ${__DOCKER_BIN_FILE}
+    cp docker/* /usr/bin/
+
+    # 添加systemd 配置
+    cp ${__SYSTEMD_FILE} /etc/systemd/system/${__SYSTEMD_FILE}
+    chmod 666 /etc/systemd/system/${__SYSTEMD_FILE}
+    systemctl daemon-reload
+    systemctl start docker
+    systemctl enable ${__SYSTEMD_FILE}
+
+    # 准备docker swarm
+    docker swarm init --advertise-addr=127.0.0.1 --default-addr-pool=10.255.0.0/16
+fi
+
 # 关闭之前的Stack
 stopPrevStack ${__PROJECT_NAME}
 
-# 拉取必要镜像
+# 导入必要镜像
 blankLine
-log "Pulling image: ${DATAFLUX_FUNC_IMAGE}"
-docker pull ${DATAFLUX_FUNC_IMAGE}
+log "Loading image: ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}"
+docker load < ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}
 
-# 未关闭MySQL 时，需要拉取镜像
+# 未关闭MySQL 时，需要加载镜像
 if [ ${OPT_NO_MYSQL} = "FALSE" ]; then
-    log "Pulling image: ${MYSQL_IMAGE}"
-    docker pull ${MYSQL_IMAGE}
+    log "Loading image: ${__MYSQL_IMAGE_GZIP_FILE}"
+    docker load < ${__MYSQL_IMAGE_GZIP_FILE}
 fi
 
-# 未关闭Redis 时，需要拉取镜像
+# 未关闭Redis 时，需要加载镜像
 if [ ${OPT_NO_REDIS} = "FALSE" ]; then
-    log "Pulling image: ${REDIS_IMAGE}"
-    docker pull ${REDIS_IMAGE}
+    log "Loading image: ${__REDIS_IMAGE_GZIP_FILE}"
+    docker load < ${__REDIS_IMAGE_GZIP_FILE}
 fi
 
 # 创建运行环境目录并前往
@@ -198,20 +192,8 @@ mkdir -p ${_INSTALL_DIR}/{data,data/resources/extra-python-packages,data/logs,da
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
 
-# 下载docker stack 示例文件
-blankLine
-log "Downloading docker stack example file"
-
-if [ `command -v wget` ]; then
-    wget ${__RESOURCE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE} -O ${__DOCKER_STACK_EXAMPLE_FILE}
-
-elif [ `command -v curl` ]; then
-    curl -o ${__DOCKER_STACK_EXAMPLE_FILE} ${__RESOURCE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE}
-
-else
-    echo 'No `curl` or `wget`, abort.'
-    exit 1
-fi
+# 拷贝docker stack 示例文件
+cp ${__PORTABLE_DIR}/${__DOCKER_STACK_EXAMPLE_FILE} ${_INSTALL_DIR}/${__DOCKER_STACK_EXAMPLE_FILE}
 
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 blankLine
@@ -289,7 +271,7 @@ log "  ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
 # 创建logrotate配置
 blankLine
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
-    echo -e "${_INSTALL_DIR}/data/logs/${__PROJECT_NAME}.log { \
+    echo -e "${_INSTALL_DIR}/data/logs/dataflux-func.log { \
 \n    missingok \
 \n    copytruncate \
 \n    compress \
@@ -305,7 +287,7 @@ log "  /etc/logrotate.d/${__PROJECT_NAME}"
 # 执行部署
 blankLine
 log "Deploying: ${__PROJECT_NAME}"
-docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE}
+docker stack deploy ${__PROJECT_NAME} -c ${__DOCKER_STACK_FILE} --resolve-image never
 
 # 等待完成
 blankLine
@@ -318,17 +300,8 @@ cd ${__PREV_DIR}
 
 # 提示信息
 blankLine
-if [ ${OPT_DEV} = "TRUE" ]; then
-    log "Notice: A DEV version is deployed"
-fi
 if [ ${OPT_MINI} = "TRUE" ]; then
     log "Notice: DataFlux Func is running in MINI mode"
-fi
-if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
-    log "Notice: DataFlux Func is deployed using a custom install dir: ${_INSTALL_DIR}"
-fi
-if [ ${OPT_IMAGE} != "DEFAULT" ]; then
-    log "Notice: DataFlux Func is deployed using a custom image: ${DATAFLUX_FUNC_IMAGE}"
 fi
 if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
     log "Notice: Builtin MySQL is NOT deployed, please specify your MySQL server configs in setup page."
@@ -343,18 +316,18 @@ log "    ${_PORT}"
 log "Installed dir:"
 log "    ${_INSTALL_DIR}"
 log "To shutdown:"
-log "    $ docker stack remove ${__PROJECT_NAME}"
+log "    sudo docker stack remove ${__PROJECT_NAME}"
 log "To start:"
-log "    $ docker stack deploy ${__PROJECT_NAME} -c ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
+log "    sudo docker stack deploy ${__PROJECT_NAME} -c ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
 log "To uninstall:"
-log "    $ docker stack remove ${__PROJECT_NAME}"
-log "    $ rm -rf ${_INSTALL_DIR}"
-log "    $ rm -f /etc/logrotate.d/${__PROJECT_NAME}"
+log "    sudo docker stack remove ${__PROJECT_NAME}"
+log "    sudo rm -rf ${_INSTALL_DIR}"
+log "    sudo rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 
 blankLine
 log "Now open http://<IP or Hostname>:${_PORT}/ and have fun!"
 
-# 写入Meta信息
-if [ ! -f ${META_PATH} ]; then
-    echo "INSTALLED_DIR=${_INSTALL_DIR}" > ${META_PATH}
+# 写入ETC信息
+if [ ! -f ${ETC_PATH} ]; then
+    echo "INSTALLED_DIR=${_INSTALL_DIR}" > ${ETC_PATH}
 fi
