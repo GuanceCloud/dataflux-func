@@ -33,9 +33,11 @@ init:
     - docker buildx ls
     - python echo-image-info.py > image-info.json
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
+  tags:
+    - cloudcare-multiarch
 
 # ========== 构建镜像 ==========
-singletonPortable_dev:
+portable_dev:
   stage: build
   only:
     - dev
@@ -50,7 +52,7 @@ singletonPortable_dev:
   tags:
     - cloudcare-multiarch
 
-singletonPortable_amd64:
+portable_amd64:
   stage: build
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
@@ -65,7 +67,7 @@ singletonPortable_amd64:
   tags:
     - cloudcare-multiarch
 
-singletonPortable_arm64:
+portable_arm64:
   stage: build
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
@@ -108,7 +110,7 @@ singleton_release:
   tags:
     - cloudcare-multiarch
 
-guanceSaaS_testing:
+guance_testing:
   stage: build
   only:
     - dev
@@ -122,7 +124,7 @@ guanceSaaS_testing:
   tags:
     - cloudcare-multiarch
 
-guanceSaaS_release:
+guance_release:
   stage: build
   only:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
@@ -201,17 +203,15 @@ portable_dev:
     - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE_DEV} ${OSS_PORTABLE_BASE_URL_DEV}/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_DEV}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_AARCH64}    ${OSS_PORTABLE_BASE_URL_DEV}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - if [ -f ${IMAGE_GZIP_FILE}-amd64 ]; then
         tools/ossutil64 cp ${IMAGE_GZIP_FILE}-amd64 ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_GZIP_FILE}  -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
       fi
-    - if [ -f ${IMAGE_GZIP_FILE}-arm64 ]; then
-        tools/ossutil64 cp ${IMAGE_GZIP_FILE}-arm64 ${OSS_PORTABLE_BASE_URL_DEV}/aarch64/${IMAGE_GZIP_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
-      fi
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH_DEV} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+  tags:
+    - cloudcare-multiarch
 
 portable_release:
   stage: uploadToOSS
@@ -232,13 +232,14 @@ portable_release:
     - if [ -f ${IMAGE_GZIP_FILE}-arm64 ]; then
         tools/ossutil64 cp ${IMAGE_GZIP_FILE}-arm64 ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_GZIP_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET};
       fi
-
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+  tags:
+    - cloudcare-multiarch
 
 # ========== 部署 ==========
-deploy_guanceSaaS_testing:
+guanceK8s_testing:
   stage: deploy
   only:
     - dev
@@ -249,7 +250,7 @@ deploy_guanceSaaS_testing:
   tags:
     - cloudcare-multiarch
 
-deploy_guanceSaaS_release:
+guanceK8s_release:
   stage: deploy
   only:
     - /^deploy_\d+$/
