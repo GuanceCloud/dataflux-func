@@ -31,15 +31,14 @@ portable_dev:
   only:
     - dev
   script:
-    echo ${CI_COMMIT_REF_NAME}
     # 开发版只需支持amd64
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}:latest
+      -t ${IMAGE_PUBLIC}-dev:latest
       -f Dockerfile-singleton .
       --load
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-dev:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_GZIP_FILE} -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
