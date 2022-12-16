@@ -31,6 +31,7 @@ portable_dev:
   only:
     - dev
   script:
+    echo ${CI_COMMIT_REF_NAME}
     # 开发版只需支持amd64
     - python echo-image-info.py > image-info.json
     - docker buildx build
