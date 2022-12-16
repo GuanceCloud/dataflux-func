@@ -19,6 +19,7 @@ variables:
   DOWNLOAD_PORTABLE_FILE_DEV: download-portable-dev.sh
   RUN_PORTABLE_FILE         : run-portable.sh
   IMAGE_LIST_FILE           : image-list
+  IMAGE_LIST_FILE_DEV       : image-list-dev
   IMAGE_LIST_FILE_X86_64    : image-list-x86_64
   IMAGE_LIST_FILE_AARCH64   : image-list-aarch64
   VERSION_FILE              : version
@@ -216,7 +217,7 @@ portableFile_dev:
     - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE_DEV} ${OSS_PORTABLE_BASE_URL_DEV}/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_DEV}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_DEV}        ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
