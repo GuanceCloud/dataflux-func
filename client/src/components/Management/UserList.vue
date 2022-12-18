@@ -13,7 +13,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('User Manager') }}</span>
+          <span>{{ $t('User Managment') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 

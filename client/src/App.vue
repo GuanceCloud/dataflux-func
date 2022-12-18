@@ -588,8 +588,10 @@ hr.br {
   margin: 3px auto;
 }
 kbd {
-  padding: 2px 4px;
-  font-size: 90%;
+  padding: 2px 8px;
+  font-size: 14px;
+  font-family: Iosevka;
+  text-transform: uppercase;
   color: #fff;
   background-color: #333;
   border-radius: 3px;

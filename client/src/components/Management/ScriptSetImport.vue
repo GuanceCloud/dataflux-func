@@ -14,11 +14,11 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Import Script Sets') }}</span>
+          <span>{{ $t('Script Sets Importing') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
-              {{ $t('Script Set Import History') }}
+              {{ $t('Script Set Importing History') }}
             </el-button>
           </div>
         </div>

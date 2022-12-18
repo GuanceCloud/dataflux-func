@@ -18,7 +18,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Func Cache Manager') }}</span>
+          <span>{{ $t('Func Cache Managment') }}</span>
           <div class="header-control">
             <small class="text-info">{{ $t('Search for more data') }}</small>
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>

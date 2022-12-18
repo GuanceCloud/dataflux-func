@@ -4,11 +4,11 @@
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Set Import History') }}</span>
+          <span>{{ $t('Script Set Importing History') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>
-              {{ $t('Import Script Sets') }}
+              {{ $t('Script Sets Importing') }}
             </el-button>
           </div>
         </div>

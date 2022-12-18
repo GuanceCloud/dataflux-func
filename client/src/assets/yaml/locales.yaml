@@ -237,16 +237,16 @@ en:
 
   # const.js - CONNECTOR
   'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）
-  'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库InfluxDB 版
+  'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库 InfluxDB 版
   'MySQL (And other compatible Databases)'                                : MySQL（及兼容数据库）
-  'Aliyun PolarDB for MySQL'                                              : 阿里云PolarDB MySQL
-  'Aliyun OceanBase'                                                      : 阿里云OceanBase
+  'Aliyun PolarDB for MySQL'                                              : 阿里云 PolarDB MySQL
+  'Aliyun OceanBase'                                                      : 阿里云 OceanBase
   'ADB for MySQL'                                                         : 阿里云分析型数据库(ADB) MySQL 版
-  'Oracle Database'                                                       : Oracle数据库
+  'Oracle Database'                                                       : Oracle 数据库
   'PostgreSQL (And other compatible Databases)'                           : PostgreSQL（及兼容数据库）
-  'Aliyun PolarDB for PostgreSQL'                                         : 阿里云PolarDB MySQL
+  'Aliyun PolarDB for PostgreSQL'                                         : 阿里云 PolarDB MySQL
   'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
-  'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
+  'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持 MQTTv5 协议的 Broker，并使用共享订阅
 
   # 业务实体/模块/ID
   Script Lib: 脚本库
@@ -271,46 +271,46 @@ en:
   Not Signed In: 尚未登录
   Signed In    : 已登录
 
-  Overview                 : 总览
-  About                    : 关于
-  System Config            : 系统配置
-  API Auth                 : API认证
-  Auth Link                : 授权链接
-  Crontab Config           : 自动触发配置
-  Batch                    : 批处理
-  Export Script Sets       : 脚本集导出
-  Script Set Export History: 脚本集导出历史
-  Import Script Sets       : 脚本集导入
-  Script Set Import History: 脚本集导入历史
-  Recover Script Lib       : 脚本库还原
-  User Manager             : 成员管理
-  Access Log               : 操作记录
-  Script Log               : 脚本日志
-  Script Failure           : 脚本故障
-  Experimental             : 实验性功能
-  Access Key               : AccessKey
-  System Metric            : 系统指标
-  PIP Tool                 : PIP工具
-  File Manager             : 文件管理器
-  File Service             : 文件服务
-  Func Doc                 : 函数文档
-  Auth Link Doc            : 授权链接文档
-  Func Cache Manager       : 函数缓存管理器
-  Func Store Manager       : 函数存储管理器
-  System Logs              : 系统日志
-  Abnormal Reqs            : 异常请求
+  Overview                    : 总览
+  About                       : 关于
+  API Auth                    : API 认证
+  Auth Link                   : 授权链接
+  Crontab Config              : 自动触发配置
+  Batch                       : 批处理
+  Script Set Exporting        : 脚本集导出
+  Script Sets Importing       : 脚本集导入
+  Script Set Exporting History: 脚本集导出历史
+  Script Set Importing History: 脚本集导入历史
+  Script Lib Recovering       : 脚本库还原
+  User Managment              : 成员管理
+  System Config               : 系统配置
+  Operation Logs              : 操作记录
+  Script Logs                 : 脚本日志
+  Script Failure              : 脚本故障
+  Experimental Features       : 实验性功能
+  Access Key                  : Access Key
+  System Metric               : 系统指标
+  PIP Tool                    : PIP工具
+  File Manager                : 文件管理器
+  File Service                : 文件服务
+  Func Documents              : 函数文档
+  Auth Link Documents         : 授权链接文档
+  Func Cache Managment        : 函数缓存管理器
+  Func Store Managment        : 函数存储管理器
+  System Logs                 : 系统日志
+  Abnormal Accesses           : 异常请求
 
-  Script Set ID    : 脚本集ID
-  Script ID        : 脚本ID
-  Func ID          : 函数ID
-  Connector ID     : 连接器ID
-  ENV ID           : 环境变量ID
-  Auth Link ID     : 授权链接ID
-  Crontab Config ID: 自动触发配置ID
-  Batch ID         : 批处理ID
-  File Service ID  : 文件服务ID
-  User ID          : 用户ID
-  Blueprint ID     : 蓝图ID
+  Script Set ID    : 脚本集 ID
+  Script ID        : 脚本 ID
+  Func ID          : 函数 ID
+  Connector ID     : 连接器 ID
+  ENV ID           : 环境变量 ID
+  Auth Link ID     : 授权链接 ID
+  Crontab Config ID: 自动触发配置 ID
+  Batch ID         : 批处理 ID
+  File Service ID  : 文件服务 ID
+  User ID          : 用户 ID
+  Blueprint ID     : 蓝图 ID
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'
@@ -319,10 +319,10 @@ en:
   'Float'                                                      : '浮点数'
   'Will be converted by float() automatically'                 : '将自动使用 float() 进行转换'
   'Boolean'                                                    : '布尔值'
-  'Can be "true"/"false", "yes"/"no" or "on"/"off"'            : '可用"true"/"false", "yes"/"no", "on"/"off"表示对应的布尔值'
+  'Can be "true"/"false", "yes"/"no" or "on"/"off"'            : '可用 "true"/"false", "yes"/"no", "on"/"off" 表示对应的布尔值'
   'Will be converted by json.loads() automatically'            : '将自动使用 json.loads() 进行转换'
   'Comma separated string array'                               : '逗号分隔字符串数组'
-  'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与CSV类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
+  'Like CSV. "apple,pie" will be converted to ["apple", "pie"]': '与 CSV 类似，如 "apple,pie"，将转换为 ["apple", "pie"]'
 
   # const.js - API_AUTH
   'Fixed Field': '固定字段'
@@ -392,8 +392,8 @@ en:
   DIFF     : 差异
 
   # const.js - ABNORMAL_REQUEST_TYPE
-  Request Cost 1000ms+: 请求耗时 1000毫秒+
-  Request Cost 5000ms+: 请求耗时 5000毫秒+
+  Request Cost 1000ms+: 请求耗时 1000 毫秒+
+  Request Cost 5000ms+: 请求耗时 5000 毫秒+
   Status Code 4xx     : 状态码 4xx
   Status Code 5xx     : 状态码 5xx
 
@@ -406,8 +406,8 @@ en:
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题
 
-  Invalid request query    : 请求中的Query参数不正确
-  Invalid request body     : 请求中的Body参数不正确
+  Invalid request query    : 请求中的 Query 参数不正确
+  Invalid request body     : 请求中的 Body 参数不正确
   Invalid request post data: 提交数据不正确
 
   Cannot not access file out of resource folder           : 无法访问资源目录以外的文件
@@ -415,8 +415,8 @@ en:
   Cannot not operate file or folder out of resource folder: 无法操作资源目录以外的文件或目录
   File or folder not existed                              : 文件或目录不存在
   File or folder already existed                          : 文件或目录已经存在
-  Zip file already existed                                : ZIP文件已经存在
-  Unzip destination already existed                       : 解压ZIP文件的目标目录已经存在
+  Zip file already existed                                : ZIP 文件已经存在
+  Unzip destination already existed                       : 解压 ZIP 文件的目标目录已经存在
   Specified new file or folder name already existed       : 指定的名称已经存在
   Unsupported resource operation                          : 不支持的资源操作
 

@@ -1,20 +1,96 @@
+<i18n locale="en" lang="yaml">
+codeExample: |-
+  # Export function as an HTTP API
+  @DFF.API('API Name')
+  def hello_world():
+      # Query data from connector
+      db = DFF.CONN('db')
+      db.query('SELECT * FROM table LIMIT 3', database='my_database')
+
+      # Get environment variable
+      company_name = DFF.ENV('my_env')
+
+      # Print logs
+      DFF.log('Hello, world!')
+      print('Hello, world')
+
+      # Return data
+      ret = {
+        'msg': 'Hello, world'
+      }
+      return ret
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 Welcome: 欢迎
 
 Before you start, please read the following: 在开始之前，请阅读以下内容
 
-Editor: 编辑器
+Left Sidebar: 编辑器左侧栏
 'In the left sidebar you can find the core module entrance of the Editor:' : 在左边侧栏可以找到编辑器的核心模块入口：
-Edit and manage Script Sets, Scripts and Functions                         : 进行脚本集、脚本以及内函数的编辑和管理
+Edit and manage Script Sets and Scripts                                    : 进行脚本集和脚本的编辑和管理
 Manage the various external systems available within the Script            : 管理脚本内可用的各外部系统
 Manage the environment variables available within the Script               : 管理脚本内可用的环境变量
 
-Editor Left Sidebar: 编辑器左侧栏
-Every tab supports quick jumping. Enter ID or name and select it to jump to the item                          : 每个标签页都支持快速跳转。输入目标ID或名称并选择，即可定位到项目
-Information about the item and the actions that can be performed will be displayed after hovering over it     : 将鼠标悬停在项目上，可展示项目的相关信息以及可进行的操作
-The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width: 拖动左侧栏与编辑区的灰色分割线，可以调整左侧栏宽度
+Every tab supports quick jumping. Enter ID or name and select it to jump to the item.                          : 每个标签页都支持快速跳转。输入目标ID或名称并选择，即可定位到项目。
+Information about the item and the actions that can be performed will be displayed after hovering over it.     : 将鼠标悬停在项目上，可展示项目的相关信息以及可进行的操作。
+The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width.: 拖动左侧栏与编辑区的灰色分割线，可以调整左侧栏宽度。
 
 Built-in Features: 内置功能
+Some built-in objects are pre-injected into the context of the Script and can be accessed directly without importing. : 脚本的上下文环境预先注入了一些内置对象，无需导入即可直接使用。
+codeExample: |-
+  # 导出函数为 HTTP API 接口
+  @DFF.API('API 名称')
+  def hello_world():
+      # 从连接器查询数据
+      db = DFF.CONN('db')
+      db.query('SELECT * FROM table LIMIT 3', database='my_database')
+
+      # 使用环境变量
+      company_name = DFF.ENV('my_env')
+
+      # 日志输出
+      DFF.log('Hello, world!')
+      print('Hello, world')
+
+      # 数据返回
+      ret = {
+        'msg': 'Hello, world'
+      }
+      return ret
+
+Code Editor: 代码编辑器
+Select the Script in the left sidebar to enter the Code Editor.        : 在左边侧栏中选择脚本进入此脚本的代码编辑器
+'The common shortcuts for the Code Editor are similar to Sublime Text:': 代码编辑器的基本快捷键与 Sublime Text 类似：
+Prompt when typing                  : 键入时提示
+Auto-completion                     : 自动补全
+Toggle comments                     : 注释/取消注释
+Add selection to next find match    : 将下一个查找匹配项添加到选择
+When no characters are selected     : 未选中字符时
+Cut whole line                      : 剪切整行
+Copy whole line                     : 复制整行
+Indent lines                        : 增加行缩进
+Outdent lines                       : 减少行缩进
+When multiple lines are selected    : 选中多行时
+When the focus is in the Code Editor: 焦点在编辑器内时
+Open search bar                     : 打开搜索栏
+
+Features built on the Script are located in the management page.: 建立在脚本之上的各项功能位于管理页面。
+Usage overview                                            : 使用概况
+System version and status                                 : 系统版本和状态
+API authentication for Auth Links and Batches             : 用于授权链接和批处理的 API 认证
+Allow Python functions be called as HTTP APIs             : 允许 Python 函数作为 HTTP API 调用
+Calling Python functions at regular intervals             : 定时调用 Python 函数
+Allow Python functions be called as asynchronous HTTP APIs: 允许 Python 函数作为异步 HTTP API 调用
+Export Script Sets as zip files                           : 将脚本集导出为 zip 文件
+Import Script Sets from zip files                         : 从 zip 文件导入将脚本集
+Recover Script Lib to a previous moment                   : 将脚本库恢复到以前的某个时刻
+Manage the users who use the system                       : 管理使用本系统的用户
+Some customization options for the system                 : 一些客制化选项
+Some key operation logs                                   : 一些关键操作记录
+Toggling experimental features                            : 打开/关闭实验性功能
+
+Distribute and share code by publishing and installing Script Sets using git repositories, Alibaba Cloud OSS, file services etc.: 使用 git 库、阿里云 OSS、文件服务等进行脚本集的发布、安装，实现代码的分发和共享。
 </i18n>
 
 <template>
@@ -32,46 +108,37 @@ Built-in Features: 内置功能
         <div class="intro-content">
           <InfoBlock type="warning" :title="$t('Before you start, please read the following')"></InfoBlock>
 
-          <!-- 编辑器 -->
+          <!-- 编辑器左侧栏 -->
           <el-divider content-position="left">
             <h1>
-              <i>{{ $t('Editor') }}</i>
+              <i>{{ $t('Left Sidebar') }}</i>
             </h1>
           </el-divider>
           <p>
             {{ $t('In the left sidebar you can find the core module entrance of the Editor:') }}
-            <ul>
-              <li>
-                <span class="intro-editor-list">{{ $t('Script Lib') }}</span>
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                {{ $t('Edit and manage Script Sets, Scripts and Functions') }}
-              </li>
-              <li>
-                <span class="intro-editor-list">{{ $t('Connector') }}</span>
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                {{ $t('Manage the various external systems available within the Script') }}
-              </li>
-              <li>
-                <span class="intro-editor-list">{{ $t('ENV') }}</span>
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                {{ $t('Manage the environment variables available within the Script') }}
-              </li>
-            </ul>
+            <table class="intro-feature-table">
+              <tbody>
+                <tr>
+                  <td>{{ $t('Script Lib') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Edit and manage Script Sets and Scripts') }}</td>
+                </tr>
+                <tr>
+                  <td>{{ $t('Connector') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Manage the various external systems available within the Script') }}</td>
+                </tr>
+                <tr>
+                  <td>{{ $t('ENV') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Manage the environment variables available within the Script') }}</td>
+                </tr>
+              </tbody>
+            </table>
           </p>
-
-          <!-- 编辑器左侧栏 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Editor Left Sidebar') }}</i>
-            </h1>
-          </el-divider>
-          <p>
-            <ul>
-              <li>{{ $t('Every tab supports quick jumping. Enter ID or name and select it to jump to the item') }}</li>
-              <li>{{ $t('Information about the item and the actions that can be performed will be displayed after hovering over it') }}</li>
-              <li>{{ $t('The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width') }}</li>
-            </ul>
-          </p>
+          <p>{{ $t('Every tab supports quick jumping. Enter ID or name and select it to jump to the item.') }}</p>
+          <p>{{ $t('Information about the item and the actions that can be performed will be displayed after hovering over it.') }}</p>
+          <p>{{ $t('The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width.') }}</p>
 
           <!-- 内置功能 -->
           <el-divider content-position="left">
@@ -79,126 +146,123 @@ Built-in Features: 内置功能
               <i>{{ $t('Built-in Features') }}</i>
             </h1>
           </el-divider>
-          <p>脚本的上下文环境预先注入了一些内置功能，无需导入即可直接调用。</p>
+          <p>{{ $t('Some built-in objects are pre-injected into the context of the Script and can be accessed directly without importing.') }}</p>
           <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSetting.style">
-            <textarea id="editor_Intro">{{ codeExample }}</textarea>
+            <textarea id="editor_Intro">{{ $t('codeExample') }}</textarea>
           </div>
 
           <!-- 编写代码 -->
           <el-divider content-position="left">
             <h1>
-              <i>编写代码</i>
+              <i>{{ $t('Code Editor') }}</i>
             </h1>
           </el-divider>
           <p>
-            左边侧栏中选择脚本或函数项目可进入此脚本的代码编辑器<br>
-            代码编辑器的基本快捷键与 Sublime Text 类似，如：
+            {{ $t('Select the Script in the left sidebar to enter the Code Editor.') }}<br>
+            {{ $t('The common shortcuts for the Code Editor are similar to Sublime Text:') }}
             <ul>
-              <li>随键入提示 <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>：自动补全上屏</li>
-              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>/</kbd>：注释/取消注释（支持多行操作）</li>
-              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>d</kbd>：选中整个单词</li>
-              <li>光标未选中字符 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>x</kbd>：剪切整行</li>
-              <li>光标未选中字符 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>c</kbd>：复制整行</li>
-              <li>剪切或复制整行 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>v</kbd>：粘贴整行</li>
-              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>]</kbd>：增加缩进（支持多行操作）</li>
-              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>[</kbd>：减少缩进（支持多行操作）</li>
-              <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>：增加缩进</li>
-              <li>选中多行 <i class="fa fa-fw fa-caret-right"></i> <kbd>Shift</kbd> + <kbd>Tab</kbd>：减少缩进</li>
-              <li>焦点在编辑器内 <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd>：搜索</li>
+              <li>{{ $t('Prompt when typing') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Auto-completion') }}</li>
+              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>/</kbd>{{ $t(':') }} {{ $t('Toggle comments') }}</li>
+              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>D</kbd>{{ $t(':') }} {{ $t('Add selection to next find match') }}</li>
+              <li>{{ $t('When no characters are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>X</kbd>{{ $t(':') }} {{ $t('Cut whole line') }}</li>
+              <li>{{ $t('When no characters are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>C</kbd>{{ $t(':') }} {{ $t('Copy whole line') }}</li>
+              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>]</kbd>{{ $t(':') }} {{ $t('Indent lines') }}</li>
+              <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>[</kbd>{{ $t(':') }} {{ $t('Outdent lines') }}</li>
+              <li>{{ $t('When multiple lines are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Indent lines') }}</li>
+              <li>{{ $t('When multiple lines are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>Shift</kbd> + <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Outdent lines') }}</li>
+              <li>{{ $t('When the focus is in the Code Editor') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd>{{ $t(':') }} {{ $t('Open search bar') }}</li>
             </ul>
           </p>
 
           <!-- 管理 -->
           <el-divider content-position="left">
             <h1>
-              <i>管理</i>
+              <i>{{ $t('Management') }}</i>
             </h1>
           </el-divider>
           <p>
-            管理界面可以对系统的特定功能进行配置，包括：
-            <ul>
-              <li>
-                <i class="fa fa-fw fa-dashboard"></i> 总览&#12288;&#12288;&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                展示当前系统的使用信息
-              </li>
-              <li>
-                <i class="fa fa-fw fa-info-circle"></i> 关于&#12288;&#12288;&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                展示当前系统的版本、系统信息
-              </li>
-              <li>
-                <i class="fa fa-fw fa-lock"></i> API认证&#12288;&#12288;&nbsp;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以为授权链接创建认证处理
-              </li>
-              <li>
-                <i class="fa fa-fw fa-link"></i> 授权链接&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以将指定的函数在公网暴露，供外部系统调用
-              </li>
-              <li>
-                <i class="fa fa-fw fa-clock-o"></i> 自动触发配置
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以指定函数按照 Crontab 语法自动触发执行
-              </li>
-              <li>
-                <i class="fa fa-fw fa-tasks"></i> 批处理&#12288;&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以指定函数执行长耗时任务
-              </li>
-              <li>
-                <i class="fa fa-fw fa-cloud-download"></i> 脚本集导出&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以指定脚本集进行导出，用于备份、分发脚本集等用途
-              </li>
-              <li>
-                <i class="fa fa-fw fa-cloud-upload"></i> 脚本集导入&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以导入从之前导出的脚本集
-              </li>
-              <li>
-                <i class="fa fa-fw fa-history"></i> 脚本库还原&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以将脚本库还原至以前的某个时刻，在脚本发生问题时及时回滚
-              </li>
-              <li>
-                <i class="fa fa-fw fa-users"></i> 成员管理&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以添加和管理本系统等登录用户
-              </li>
-              <li>
-                <i class="fa fa-fw fa-cog"></i> 系统配置&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以对系统进行一些个性化配置
-              </li>
-              <li>
-                <i class="fa fa-fw fa-keyboard-o"></i> 操作记录&#12288;&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以查看用户在系统内的关键操作
-              </li>
-              <li>
-                <i class="fa fa-fw fa-flask"></i> 实验性功能&#12288;
-                <i class="fa fa-fw fa-long-arrow-right"></i>
-                可以开启/关闭实验性功能的入口
-              </li>
-            </ul>
+            {{ $t('Features built on the Script are located in the management page.') }}
+            <table class="intro-feature-table">
+              <tbody>
+                <tr>
+                  <td><i class="fa fa-fw fa-dashboard"></i> {{ $t('Overview') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Usage overview') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-info-circle"></i> {{ $t('About') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('System version and status') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-lock"></i> {{ $t('API Auth') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('API authentication for Auth Links and Batches') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-link"></i> {{ $t('Auth Link') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Allow Python functions be called as HTTP APIs') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Config') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Calling Python functions at regular intervals') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-tasks"></i> {{ $t('Batch') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Allow Python functions be called as asynchronous HTTP APIs') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-cloud-download"></i> {{ $t('Script Set Exporting') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Export Script Sets as zip files') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-cloud-upload"></i> {{ $t('Script Sets Importing') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Import Script Sets from zip files') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-history"></i> {{ $t('Script Lib Recovering') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Recover Script Lib to a previous moment') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-users"></i> {{ $t('User Managment') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Manage the users who use the system') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-cog"></i> {{ $t('System Config') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Some customization options for the system') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-keyboard-o"></i> {{ $t('Operation Logs') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Some key operation logs') }}</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-fw fa-flask"></i> {{ $t('Experimental Features') }}</td>
+                  <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
+                  <td>{{ $t('Toggling experimental features') }}</td>
+                </tr>
+              </tbody>
+            </table>
           </p>
 
-          <!-- 授权链接函数文档 -->
+          <!-- 脚本市场 -->
           <el-divider content-position="left">
             <h1>
-              <i>授权链接函数文档</i>
+              <i>{{ $t('Script Market') }}</i>
             </h1>
           </el-divider>
           <p>
-            授权链接函数文档列出了所有<span>可公开访问</span>的函数，以及其参数、文档等。这些函数可以被外部系统调用以实现集成功能。
-            <br>
-            <a class="text-main" href="/#/auth-link-func-doc" target="_blank">
-              <i class="fa fa-fw fa-link"></i>
-              前往授权链接函数文档
-            </a>
+            {{ $t('Distribute and share code by publishing and installing Script Sets using git repositories, Alibaba Cloud OSS, file services etc.') }}
           </p>
+          <el-image :src="img_introScriptMarket"></el-image>
         </div>
       </el-main>
     </el-container>
@@ -206,6 +270,8 @@ Built-in Features: 内置功能
 </template>
 
 <script>
+import img_introScriptMarket from '@/assets/img/intro-script-market.png'
+
 export default {
   name: 'Intro',
   components: {
@@ -215,7 +281,12 @@ export default {
       this.codeMirror.setOption('theme', val);
     },
     '$store.state.uiLocale'(val) {
-      this.T.resetCodeMirrorPhrases(this.codeMirror);
+      if (this.codeMirror) {
+        setImmediate(() => {
+          this.codeMirror.setValue(this.$t('codeExample'));
+          this.T.resetCodeMirrorPhrases(this.codeMirror);
+        })
+      }
     },
   },
   methods: {
@@ -240,27 +311,26 @@ export default {
     codeMirrorTheme() {
       return this.T.getCodeMirrorThemeName();
     },
-    codeExample() {
-      return `
-# 导出函数为HTTP API接口
-@DFF.API('API名称')
-def hello_world():
-    # 从连接器读取数据
-    db = DFF.CONN('db')
-    db.query('SELECT * FROM table LIMIT 3', database='my_database')
 
-    # 使用环境变量
-    company_name = DFF.ENV('my_env')
+    featureNameWidth_leftSidebar() {
+      switch(this.$store.state.uiLocale) {
+        case 'en':
+          return '90px';
 
-    # 日志输出
-    DFF.log('Hello, world!')
-    print('Hello, world')
+        case 'zh-CN':
+        default:
+          return '70px';
+      }
+    },
+    featureNameWidth_management() {
+      switch(this.$store.state.uiLocale) {
+        case 'en':
+          return '200px';
 
-    # 数据返回
-    ret = {
-      'msg': 'Hello, world'
-    }
-    return ret`.trim();
+        case 'zh-CN':
+        default:
+          return '130px';
+      }
     },
   },
   props: {
@@ -268,6 +338,8 @@ def hello_world():
   data() {
     return {
       codeMirror: null,
+
+      img_introScriptMarket: img_introScriptMarket,
     }
   },
   created() {
@@ -308,9 +380,15 @@ span, p, ul li {
   margin-top: 60px;
 }
 
-.intro-editor-list {
-  display: inline-block;
-  width: 90px;
+.intro-feature-table {
+  padding: 10px;
+}
+.intro-feature-table td {
+  padding: 0 6px;
+  vertical-align: baseline;
+}
+.intro-feature-table td:first-child {
+  white-space: nowrap;
 }
 </style>
 

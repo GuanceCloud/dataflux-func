@@ -22,7 +22,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Abnormal Reqs') }}</span>
+          <span>{{ $t('Abnormal Accesses') }}</span>
           <div class="header-control">
             <el-button @click="refresh" size="small">
               <i class="fa fa-fw fa-refresh"></i>

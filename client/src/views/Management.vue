@@ -54,26 +54,26 @@
             <el-menu-item index="/management/script-set-export">
               <span>
                 <i class="fa fa-fw fa-cloud-download"></i>
-                {{ $t('Export Script Sets') }}
+                {{ $t('Script Set Exporting') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-set-import">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
-                {{ $t('Import Script Sets') }}
+                {{ $t('Script Sets Importing') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-recover-point-add">
               <span>
                 <i class="fa fa-fw fa-history"></i>
-                {{ $t('Recover Script Lib') }}
+                {{ $t('Script Lib Recovering') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/user-list" v-if="$store.getters.isAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
-                {{ $t('User Manager') }}
+                {{ $t('User Managment') }}
               </span>
             </el-menu-item>
 
@@ -87,14 +87,14 @@
             <el-menu-item index="/management/operation-record-list">
               <span>
                 <i class="fa fa-fw fa-keyboard-o"></i>
-                {{ $t('Access Log') }}
+                {{ $t('Operation Logs') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
-                {{ $t('Experimental') }}
+                {{ $t('Experimental Features') }}
               </span>
             </el-menu-item>
 
@@ -124,14 +124,14 @@
               class="experimental-feature" index="/management/func-cache-manager">
               <span>
                 <i class="fa fa-fw fa-dot-circle-o"></i>
-                {{ $t('Func Cache Manager') }}
+                {{ $t('Func Cache Managment') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManager')"
               class="experimental-feature" index="/management/func-store-manager">
               <span>
                 <i class="fa fa-fw fa-database"></i>
-                {{ $t('Func Store Manager') }}
+                {{ $t('Func Store Managment') }}
               </span>
             </el-menu-item>
 
@@ -139,7 +139,7 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
               <span>
                 <i class="fa fa-fw fa-book"></i>
-                {{ $t('Func Doc') }}
+                {{ $t('Func Documents') }}
               </span>
             </el-menu-item>
 
@@ -147,7 +147,7 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
               <span>
                 <i class="fa fa-fw fa-link"></i>
-                {{ $t('Auth Link Doc') }}
+                {{ $t('Auth Link Documents') }}
               </span>
             </el-menu-item>
 
@@ -169,14 +169,14 @@
               class="experimental-feature" index="/management/abnormal-request-list">
               <span>
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
-                {{ $t('Abnormal Reqs') }}
+                {{ $t('Abnormal Accesses') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
-                {{ $t('Script Log') }}
+                {{ $t('Script Logs') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>

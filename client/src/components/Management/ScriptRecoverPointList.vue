@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Recover Script Lib: 还原脚本库
+Script Lib Recovering: 还原脚本库
 
 Script Lib recovered: 脚本库已还原
 </i18n>

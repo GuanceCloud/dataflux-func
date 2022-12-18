@@ -15,11 +15,11 @@ Data exported: 数据已导出
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Export Script Sets') }}</span>
+          <span>{{ $t('Script Set Exporting') }}</span>
           <div class="header-control">
             <el-button @click="goToHistory" size="small">
               <i class="fa fa-fw fa-history"></i>
-              {{ $t('Script Set Export History') }}
+              {{ $t('Script Set Exporting History') }}
             </el-button>
           </div>
         </div>
