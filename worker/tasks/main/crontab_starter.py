@@ -2,10 +2,10 @@
 
 '''
 定时处理任务启动器
-主要根据自动触发配置加载任务，然后启动func_runner
+主要根据自动触发配置加载任务，然后启动 func_runner
 '''
 
-# Builtin Modules
+# Built-in Modules
 import time
 import traceback
 

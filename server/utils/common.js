@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 
 /* 3rd-party Modules */
 var sortedJSON = require('sorted-json');

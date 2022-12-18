@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var path         = require('path');
 var URL          = require('url').URL;
 var childProcess = require('child_process');

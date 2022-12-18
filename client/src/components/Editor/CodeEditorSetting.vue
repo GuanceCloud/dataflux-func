@@ -75,8 +75,8 @@ export default {
         this.$store.commit('updateCodeMirrorSetting', _formData);
 
         setImmediate(() => {
-          if (this.instance) {
-            this.instance.refresh();
+          if (this.codeMirror) {
+            this.codeMirror.refresh();
           }
         })
       }
@@ -124,7 +124,7 @@ export default {
     },
   },
   props: {
-    instance: Object,
+    codeMirror: Object,
   },
   data() {
     let _formData = this.T.jsonCopy({

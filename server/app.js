@@ -3,7 +3,7 @@
 /* Monkey patch */
 require('./monkeyPatch');
 
-/* Builtin Modules */
+/* Built-in Modules */
 var path = require('path');
 var http = require('http');
 

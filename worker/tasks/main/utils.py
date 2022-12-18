@@ -2,10 +2,10 @@
 
 '''
 杂项任务
-包含各类清理类任务、AutoCleanTask各类数据定时同步任务、连接器检查/调试任务等
+包含各类清理类任务、AutoCleanTask 各类数据定时同步任务、连接器检查/调试任务等
 '''
 
-# Builtin Modules
+# Built-in Modules
 import traceback
 import pprint
 import os

@@ -3,17 +3,17 @@ codeLines: '{n} line | {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                                         : 脚本设置
-'Script is under editing mode in other browser tab, please wait...'  : '其他标签页或窗口正在编辑此脚本，请稍后...'
-'Script is under editing mode in other client, please wait...'       : '其他客户端正在编辑此脚本，请稍后...'
-Shortcut                                                             : 快捷键
-Select Target                                                        : 选择跳转目标
-Download {type}                                                      : 下载{type}
-Code Editor setting                                                  : 代码编辑器设置
-This is a builtin Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
-This Script is locked by other user ({user})                         : 当前脚本被其他用户（{user}）锁定
-Currently in view mode, click Edit button to enter edit mode         : 当前为查看模式，点击「编辑」按钮进入编辑模式
-View Mode                                                            : 查看模式
+Script Setup                                                          : 脚本设置
+'Script is under editing mode in other browser tab, please wait...'   : '其他标签页或窗口正在编辑此脚本，请稍后...'
+'Script is under editing mode in other client, please wait...'        : '其他客户端正在编辑此脚本，请稍后...'
+Shortcut                                                              : 快捷键
+Select Target                                                         : 选择跳转目标
+Download {type}                                                       : 下载{type}
+Code Editor setting                                                   : 代码编辑器设置
+This is a built-in Script, code will be reset when the system restarts: 这是一个内置脚本，代码会在系统重启后复位
+This Script is locked by other user ({user})                          : 当前脚本被其他用户（{user}）锁定
+Currently in view mode, click Edit button to enter edit mode          : 当前为查看模式，点击「编辑」按钮进入编辑模式
+View Mode                                                             : 查看模式
 
 Published Code  : 已发布的代码
 Saved Draft Code: 已保存的草稿代码
@@ -112,7 +112,7 @@ Saved Draft Code: 已保存的草稿代码
         </div>
 
         <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
-        <InfoBlock v-else-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a builtin Script, code will be reset when the system restarts')"></InfoBlock>
+        <InfoBlock v-else-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a built-in Script, code will be reset when the system restarts')"></InfoBlock>
         <InfoBlock v-else type="warning" :title="$t('Currently in view mode, click Edit button to enter edit mode')"></InfoBlock>
       </el-header>
 
@@ -122,7 +122,7 @@ Saved Draft Code: 已保存的草稿代码
         <h1 id="viewModeHint">{{ $t('View Mode') }}</h1>
       </el-main>
 
-      <CodeEditorSetting :instance="codeMirror" ref="codeEditorSetting" />
+      <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
     </el-container>
   </transition>
 </template>

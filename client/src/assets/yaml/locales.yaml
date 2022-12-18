@@ -25,6 +25,7 @@ en:
   Owner        : 拥有者
   Password     : 密码
   UNKNOW       : 未知
+  Built-in     : 内置
 
   # 通用-按钮/表单
   Very good: 非常好
@@ -248,11 +249,15 @@ en:
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持MQTTv5 协议的Broker，并使用共享订阅
 
   # 业务实体/模块/ID
+  Script Lib: 脚本库
   Script Set: 脚本集
   Script    : 脚本
   Func      : 函数
   Connector : 连接器
   ENV       : 环境变量
+
+  Built-in Script Set: 内置脚本集
+  Built-in Connector : 内置连接器
 
   Dev          : 开发
   Development  : 开发

@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 
 /* 3rd-party Modules */
 var async     = require('async');
@@ -273,7 +273,7 @@ exports.modify = function(req, res, next) {
 
         connector = dbRes;
         if (connector.isBuiltin) {
-          return asyncCallback(new E('EBizCondition.ModifyingBuiltinConnectorNotAllowed', 'Modifying builtin Connector is not allowed, please edit the config instead'));
+          return asyncCallback(new E('EBizCondition.ModifyingBuiltinConnectorNotAllowed', 'Modifying built-in Connector is not allowed, please edit the config instead'));
         }
 
         return asyncCallback();
@@ -317,7 +317,7 @@ exports.delete = function(req, res, next) {
 
         connector = dbRes;
         if (connector.isBuiltin) {
-          return asyncCallback(new E('EBizCondition.DeletingBuiltinConnectorNotAllowed', 'Deleting builtin Connector is not allowed'));
+          return asyncCallback(new E('EBizCondition.DeletingBuiltinConnectorNotAllowed', 'Deleting built-in Connector is not allowed'));
         }
 
         return asyncCallback();

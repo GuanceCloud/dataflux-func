@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */

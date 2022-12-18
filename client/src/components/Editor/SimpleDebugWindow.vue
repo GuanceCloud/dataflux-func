@@ -43,7 +43,7 @@ Result  : 结果
     <div @mousedown="startDrag" class="simple-debug-header">
       <span class="simple-debug-title">
         <el-tag :type="CONNECTOR_DEBUGGER_META_MAP[connector.type].tagType" size="mini"><span>{{ CONNECTOR_DEBUGGER_META_MAP[connector.type].name }}</span></el-tag>
-        <span :class="{builtin: connector.isBuiltin}">{{ connector.title || connector.id }}</span>
+        <span :class="{ builtin: connector.isBuiltin }">{{ connector.title || connector.id }}</span>
       </span>
       <el-link class="simple-debug-close" @mousedown.native.stop @click.stop="hideWindow()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
     </div>

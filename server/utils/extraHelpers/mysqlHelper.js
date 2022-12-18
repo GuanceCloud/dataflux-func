@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var path = require('path');
 
 /* 3rd-party Modules */

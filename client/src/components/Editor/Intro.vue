@@ -1,5 +1,20 @@
 <i18n locale="zh-CN" lang="yaml">
 Welcome: 欢迎
+
+Before you start, please read the following: 在开始之前，请阅读以下内容
+
+Editor: 编辑器
+'In the left sidebar you can find the core module entrance of the Editor:' : 在左边侧栏可以找到编辑器的核心模块入口：
+Edit and manage Script Sets, Scripts and Functions                         : 进行脚本集、脚本以及内函数的编辑和管理
+Manage the various external systems available within the Script            : 管理脚本内可用的各外部系统
+Manage the environment variables available within the Script               : 管理脚本内可用的环境变量
+
+Editor Left Sidebar: 编辑器左侧栏
+Every tab supports quick jumping. Enter ID or name and select it to jump to the item                          : 每个标签页都支持快速跳转。输入目标ID或名称并选择，即可定位到项目
+Information about the item and the actions that can be performed will be displayed after hovering over it     : 将鼠标悬停在项目上，可展示项目的相关信息以及可进行的操作
+The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width: 拖动左侧栏与编辑区的灰色分割线，可以调整左侧栏宽度
+
+Built-in Features: 内置功能
 </i18n>
 
 <template>
@@ -15,41 +30,53 @@ Welcome: 欢迎
       <!-- 正文区 -->
       <el-main>
         <div class="intro-content">
-          <InfoBlock type="warning" title="在开始之前，请大致阅读以下介绍"></InfoBlock>
+          <InfoBlock type="warning" :title="$t('Before you start, please read the following')"></InfoBlock>
 
           <!-- 编辑器 -->
           <el-divider content-position="left">
             <h1>
-              <i>编辑器</i>
+              <i>{{ $t('Editor') }}</i>
             </h1>
           </el-divider>
           <p>
-            在左边侧栏可以找到本编辑器的核心模块入口：
+            {{ $t('In the left sidebar you can find the core module entrance of the Editor:') }}
             <ul>
-              <li>脚本库&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以进行脚本集、脚本以及脚本内函数的编辑管理</li>
-              <li>连接器&#12288; <i class="fa fa-fw fa-long-arrow-right"></i> 可以维护脚本内所需各数据库的管理</li>
-              <li>环境变量 <i class="fa fa-fw fa-long-arrow-right"></i> 可以配置在全局范围内可以引用的变量</li>
+              <li>
+                <span class="intro-editor-list">{{ $t('Script Lib') }}</span>
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                {{ $t('Edit and manage Script Sets, Scripts and Functions') }}
+              </li>
+              <li>
+                <span class="intro-editor-list">{{ $t('Connector') }}</span>
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                {{ $t('Manage the various external systems available within the Script') }}
+              </li>
+              <li>
+                <span class="intro-editor-list">{{ $t('ENV') }}</span>
+                <i class="fa fa-fw fa-long-arrow-right"></i>
+                {{ $t('Manage the environment variables available within the Script') }}
+              </li>
             </ul>
           </p>
 
-          <!-- 脚本编辑器左侧栏 -->
+          <!-- 编辑器左侧栏 -->
           <el-divider content-position="left">
             <h1>
-              <i>脚本编辑器左侧栏</i>
+              <i>{{ $t('Editor Left Sidebar') }}</i>
             </h1>
           </el-divider>
           <p>
-            将鼠标悬停在项目上，即可展示项目的相关信息以及可进行的操作。<br>
-            左侧栏每一页都可以进行过快速项目跳转，输入需要跳转的ID或名称并选择，即可定位到项目。
-          </p>
-          <p>
-            此外，如果左侧栏中的标题过长导致无法完全展示，可以拖动中间的灰色分割线调整左侧栏宽度。<br>
+            <ul>
+              <li>{{ $t('Every tab supports quick jumping. Enter ID or name and select it to jump to the item') }}</li>
+              <li>{{ $t('Information about the item and the actions that can be performed will be displayed after hovering over it') }}</li>
+              <li>{{ $t('The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width') }}</li>
+            </ul>
           </p>
 
           <!-- 内置功能 -->
           <el-divider content-position="left">
             <h1>
-              <i>内置功能</i>
+              <i>{{ $t('Built-in Features') }}</i>
             </h1>
           </el-divider>
           <p>脚本的上下文环境预先注入了一些内置功能，无需导入即可直接调用。</p>
@@ -279,6 +306,11 @@ span, p, ul li {
 }
 .el-divider {
   margin-top: 60px;
+}
+
+.intro-editor-list {
+  display: inline-block;
+  width: 90px;
 }
 </style>
 

@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var os   = require('os');
 var fs   = require('fs-extra');
 var path = require('path');

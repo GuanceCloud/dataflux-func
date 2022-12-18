@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var os = require('os');
 
 /* 3rd-party Modules */
@@ -318,7 +318,7 @@ exports.afterAppCreated = function(app, server) {
 
         // 依次导入
         async.eachSeries(filenamesToInstall, function(filename, eachCallback) {
-          app.locals.logger.info('Auto install Builtin Script Set: {0}', filename);
+          app.locals.logger.info('Auto install built-in Script Set: {0}', filename);
 
           var filePath = path.join(builtinScriptSetDir, filename);
           var fileBuffer = fs.readFileSync(path.join(filePath));

@@ -20,7 +20,6 @@ Code size                     : 代码大小
 Publish ver.                  : 发布版本
 Publish time                  : 发布时间
 Never published               : 从未发布
-System builtin                : 系统内置
 Recent operations             : 最近操作记录
 recentOperationCount          : 最近 {n} 条
 Time                          : 时间

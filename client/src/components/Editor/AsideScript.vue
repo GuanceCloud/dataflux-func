@@ -12,7 +12,6 @@ Refresh                                        : 刷新列表
 New Script                                     : 新建脚本
 New Script Set                                 : 新建脚本集
 Edited                                         : 已修改
-Builtin                                        : 内置
 Locked by other user ({user})                  : 被其他用户（{user}）锁定
 Locked by you                                  : 被您锁定
 Quick View                                     : 快速查看
@@ -34,7 +33,6 @@ Cannot not starts with a number                   : 不得以数字开头
 Please input new Script Set ID                    : 请输入新脚本集ID
 Inputed Script Set ID already exists              : 输入的脚本集ID已经存在
 
-Builtin Script Set : 系统内置脚本集
 Script Set pinned  : 脚本集已置顶
 Script Set unpinned: 脚本集已取消
 Script Set locked  : 脚本集已上锁
@@ -127,7 +125,7 @@ Go to Script Market : 前往脚本市场
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
-            <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Builtin Script Set')"></InfoBlock>
+            <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')"></InfoBlock>
             <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')"></InfoBlock>
 
             <span class="text-info">ID</span>

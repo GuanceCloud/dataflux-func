@@ -58,7 +58,7 @@ Connector deleted: 连接器已删除
 
 Are you sure you want to delete the Connector?: 是否确认删除此连接器？
 
-This is a builtin Connector, please contact the admin to change the config: 当前连接器为内置连接器，请联系管理员调整集群配置
+This is a built-in Connector, please contact the admin to change the config: 当前连接器为内置连接器，请联系管理员调整集群配置
 </i18n>
 
 <template>
@@ -82,7 +82,7 @@ This is a builtin Connector, please contact the admin to change the config: 当�
                 </el-form-item>
 
                 <el-form-item v-if="data.isBuiltin">
-                  <InfoBlock type="error" :title="$t('This is a builtin Connector, please contact the admin to change the config')"></InfoBlock>
+                  <InfoBlock type="error" :title="$t('This is a built-in Connector, please contact the admin to change the config')"></InfoBlock>
                 </el-form-item>
 
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">

@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var os = require('os');
 
 /* 3rd-party Modules */

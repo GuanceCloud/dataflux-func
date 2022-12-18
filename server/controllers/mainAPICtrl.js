@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var fs           = require('fs-extra');
 var path         = require('path');
 var childProcess = require('child_process');

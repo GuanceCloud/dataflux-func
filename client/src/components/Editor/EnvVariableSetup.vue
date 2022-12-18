@@ -164,7 +164,6 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      // await this.loadData();
       this.$store.commit('updateEnvVariableListSyncTime');
     },
     async deleteData() {

@@ -51,7 +51,7 @@ exports.add = function(req, res, next) {
       return next(new E('EClientDuplicated.username', 'This username is already existed'));
     }
 
-    // Call the builtin handler
+    // Call the built-in handler
     var handler = crudHandler.createAddHandler();
     return handler(req, res, next);
   });
@@ -104,7 +104,7 @@ exports.modify = function(req, res, next) {
       res.locals.cacheDB.delByPattern(cachePattern);
     }
 
-    // Call the builtin handler
+    // Call the built-in handler
     var handler = crudHandler.createModifyHandler();
     return handler(req, res, next);
   });

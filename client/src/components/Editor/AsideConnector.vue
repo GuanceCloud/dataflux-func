@@ -129,7 +129,7 @@ Connector unpinned: 连接器已取消
                 <el-tag v-if="data.isBuiltin"
                   effect="dark"
                   type="warning"
-                  size="mini">{{ $t('Builtin') }}</el-tag>
+                  size="mini">{{ $t('Built-in') }}</el-tag>
                 <span>{{ node.label }}</span>
               </div>
             </span>
@@ -405,10 +405,6 @@ export default {
 }
 .aside-tree-node-simple-debug {
   margin-left: 5px;
-}
-.builtin {
-  color: orangered;
-  text-shadow: #ffa5004d 0 0 10px;
 }
 
 .aside-tree-node > span {

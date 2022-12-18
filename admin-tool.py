@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Builtin Modules
+# Built-in Modules
 import sys
 import textwrap
 import getpass

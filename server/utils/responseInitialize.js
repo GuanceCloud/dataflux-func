@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var path = require('path');
 
 /* 3rd-party Modules */
@@ -389,7 +389,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     // Return JSON data
     res.type('json');
 
-    // Convert response JSON data before sending (except on builtin pages).
+    // Convert response JSON data before sending (except on built-in pages).
     if ('function' === typeof appInit.convertJSONResponse) {
       ret = appInit.convertJSONResponse(ret);
     }

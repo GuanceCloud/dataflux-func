@@ -1,6 +1,6 @@
 'use strict';
 
-/* Builtin Modules */
+/* Built-in Modules */
 var os          = require('os');
 var crypto      = require('crypto');
 var zlib        = require('zlib');

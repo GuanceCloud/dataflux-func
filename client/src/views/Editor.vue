@@ -1,9 +1,3 @@
-<i18n locale="zh-CN" lang="yaml">
-Script Lib : 脚本库
-Connector  : 连接器
-Env        : 环境变量
-</i18n>
-
 <template>
   <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="20" split="vertical">
     <!-- 边栏导航区 -->

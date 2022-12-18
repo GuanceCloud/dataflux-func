@@ -27,7 +27,7 @@
                         'not', 'or', 'pass', 'raise', 'return', 'True', 'try',
                         'while', 'with', 'yield'];
 
-  // Python builtins
+  // Python built-ins
   var PYTHON_BUILTINS = ['abs', 'all', 'any', 'ascii', 'bin', 'breakpoint', 'callable',
                         'chr', 'compile', 'delattr', 'dir', 'divmod', 'eval', 'exec', 'format',
                         'getattr', 'globals', 'hasattr', 'hash', 'hex', 'id', 'input', 'isinstance',
@@ -67,7 +67,7 @@
     var _lowCurLine = 'string' === typeof curLine ? curLine.toLowerCase() : '';
     var _lowCurWord = 'string' === typeof curWord ? curWord.toLowerCase() : '';
 
-    // Add Python keywords/builtins
+    // Add Python keywords/built-ins
     function addKeyword(keywords) {
       keywords.forEach(function(kw) {
         if (kw.toLowerCase().indexOf(_lowCurWord) < 0) return;

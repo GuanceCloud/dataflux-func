@@ -30,7 +30,7 @@ en: {}
   Current user does not exists                                                                            : 当前用户不存在
   Current user has been disabled                                                                          : 当前用户已被禁用
   Data of Socket.io must be a JSON string                                                                 : Socket.io数据必须为JSON字符串
-  Deleting builtin Connector is not allowed                                                               : 不允许删除内置连接器
+  Deleting built-in Connector is not allowed                                                              : 不允许删除内置连接器
   Empty import file                                                                                       : 导入文件为空
   Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io事件必须满足格式"socketio.*"
   Export failed                                                                                           : 导出失败
@@ -75,7 +75,7 @@ en: {}
   Invalid request query                                                                                   : 请求参数无效
   Invalid username or password                                                                            : 用户名或密码无效
   Maximum calling rate exceeded                                                                           : 达到最大调用频率
-  Modifying builtin Connector is not allowed, please edit the config instead                              : 不允许修改内置连接器，请修改系统配置
+  Modifying built-in Connector is not allowed, please edit the config instead                             : 不允许修改内置连接器，请修改系统配置
   No such Auth Link                                                                                       : 不存在此授权链接
   No such Batch                                                                                           : 不存在批处理
   No such Crontab Config                                                                                  : 不存在自动触发配置

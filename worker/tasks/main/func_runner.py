@@ -2,10 +2,10 @@
 
 '''
 脚本执行处理任务
-主要用于直接调用函数、通过授权链接调用函数、Crontab触发调用函数
+主要用于直接调用函数、通过授权链接调用函数、Crontab 触发调用函数
 '''
 
-# Builtin Modules
+# Built-in Modules
 import time
 import traceback
 import pprint

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Builtin Modules
+# Built-in Modules
 import os
 import sys
 import socket

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Builtin Modules
+# Built-in Modules
 
 # 3rd-party Modules
 

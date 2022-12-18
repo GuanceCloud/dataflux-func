@@ -304,10 +304,10 @@ if [ ${OPT_MINI} = "TRUE" ]; then
     log "Notice: DataFlux Func is running in MINI mode"
 fi
 if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
-    log "Notice: Builtin MySQL is NOT deployed, please specify your MySQL server configs in setup page."
+    log "Notice: Built-in MySQL is NOT deployed, please specify your MySQL server configs in setup page."
 fi
 if [ ${OPT_NO_REDIS} = "TRUE" ]; then
-    log "Notice: Builtin Redis is NOT deployed, please specify your Redis server configs in setup page."
+    log "Notice: Built-in Redis is NOT deployed, please specify your Redis server configs in setup page."
 fi
 
 blankLine
