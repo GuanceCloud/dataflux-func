@@ -204,43 +204,16 @@ function _getMarkdownTable(body) {
 };
 
 function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
-  var addrTitle = null;
-  var addrValue = null;
-  switch(scriptMarket.type) {
-    case 'git':
-    case 'httpService':
-      addrTitle = '地址 / URL';
-      addrValue = scriptMarket.configJSON.url;
-      break;
-
-    case 'aliyunOSS':
-      addrTitle = '地址 / Endpoint';
-
-      var endpointObj = new URL(scriptMarket.configJSON.endpoint);
-      addrValue = `${scriptMarket.configJSON.bucket}.${endpointObj.hostname}/${scriptMarket.configJSON.folder}`;
-      break;
-  }
-
   // 脚本市场信息
   var content = [
     `# 脚本市场 / Script Market${scriptMarket.name ? ' - ' + scriptMarket.name : ''}`,
-    _getMarkdownTable([
-      [ '名称 / Name', addrTitle ],
-      [
-        `${scriptMarket.name || '-'}`,
-        `\`${addrValue}\``,
-      ],
-    ]),
-
-    `<br>`,
-    `## 1. 描述 / Description`,
     `${toolkit.toMarkdownTextBlock(scriptMarket.description) || '*没有具体描述*<br>*No description*'}`,
   ];
 
   // 脚本集信息
   if (toolkit.notNothing(pushContent.deleteScriptSets)) {
     content.push(`<br>`,
-                  `## 2. 最近删除 / Recent Deleted`,
+                  `## 1. 最近删除 / Recent Deleted`,
                   toolkit.toMarkdownTextBlock(pushContent.note));
     var _table = [
       [ '#', 'ID', '标题 / Title', '目录 / Directory', '删除时间 / Delete Time' ],
@@ -261,7 +234,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
 
   if (toolkit.notNothing(pushContent.scriptSets)) {
     content.push(`<br>`,
-                  `## 2. 最近发布 / Recent Published`,
+                  `## 1. 最近发布 / Recent Published`,
                   toolkit.toMarkdownTextBlock(pushContent.note));
 
     var _table = [
@@ -285,7 +258,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
   var scriptSets = _getMetaData(scriptMarket).scriptSets || [];
   if (scriptSets.length > 0) {
     content.push(`<br>`,
-                  `## 3. 总览 / Overview`,
+                  `## 2. 总览 / Overview`,
                   `此脚本市场包含以下脚本集：<br>This Script Market contains the following Scripts Sets:  `);
 
     var _table = [
@@ -305,7 +278,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
 
   } else {
     content.push(`<br>`,
-                  `## 3. 总览 / Overview`,
+                  `## 2. 总览 / Overview`,
                   `此脚本市场暂不包含任何脚本集：<br>This Script Market does not contains any Scripts Set.  `);
   }
 

@@ -167,7 +167,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="240">
+          <el-table-column align="right" width="270">
             <template slot-scope="scope">
               <el-link
                 :disabled="!scope.row.isAccessible"
