@@ -781,7 +781,9 @@
 
             let axiosRes = null;
             try {
-              axiosRes = await axios.get('/api/v1/do/ping');
+              axiosRes = await axios.get('/api/v1/do/ping', {
+                timeout: 1000,
+              });
             } catch(err) {
               return;
             }
