@@ -795,9 +795,9 @@ EntityModel.prototype.getExportData = function(options, callback) {
         scriptSet._exportUser = exportUser;
         scriptSet._exportTime = exportTime;
       });
-
-      return callback(null, exportData, summary);
     }
+
+    return callback(null, exportData, summary);
   });
 };
 
