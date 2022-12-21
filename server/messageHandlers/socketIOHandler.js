@@ -30,7 +30,7 @@ module.exports = function(app, server) {
     socket.use(function(packet, next) {
       var event       = packet[0];
       var xAuthToken  = packet[1];
-      var ackCallback = packet[2];
+      var respCallback = packet[2];
 
       if (event !== 'auth') return next();
 
@@ -99,16 +99,16 @@ module.exports = function(app, server) {
           clientId   : socket.id,
           joinedRooms: joinedRooms,
         });
-        var ackData = JSON.stringify(ret);
+        var respData = JSON.stringify(ret);
 
-        if ('function' === typeof ackCallback) {
+        if ('function' === typeof respCallback) {
           try {
-            ackCallback(ackData); // Socket.io 2.0 ACK 返回
+            respCallback(respData); // Socket.io 2.0 ACK 返回
           } catch(err) {
             app.locals.logger.error(ex);
           }
         }
-        socket.emit(event + '.ack', ackData); // 普通消息返回
+        socket.emit(event + '.resp', respData); // 普通消息返回
       });
     });
 
@@ -167,24 +167,24 @@ module.exports = function(app, server) {
 
       var event       = packet[0];
       var data        = packet[1];
-      var ackCallback = packet[2];
+      var respCallback = packet[2];
 
-      // ACK标志ID
-      var ackId = null;
+      // REQ标志ID
+      var reqId = null;
 
       // 为避免混淆，Socket.io的事件必须以`socketio`开头
       var eventParts = event.split('.');
       if (eventParts[0] !== 'socketio') {
-        return next(new E('ESocketIOEvent', 'Event of Socket.io must match pattern "socketio.*"').forSocketIO(ackId));
+        return next(new E('ESocketIOEvent', 'Event of Socket.io must match pattern "socketio.*"').forSocketIO(reqId));
       }
 
       // 为统一处理，Socket.io的数据必须为JSON字符串
       try {
         data  = JSON.parse(data);
-        ackId = data.ackId || undefined;
+        reqId = data.reqId || undefined;
 
       } catch(err) {
-        return next(new E('ESocketIOData', 'Data of Socket.io must be a JSON string').forSocketIO(ackId));
+        return next(new E('ESocketIOData', 'Data of Socket.io must be a JSON string').forSocketIO(reqId));
       }
 
       var retData        = null;
@@ -220,7 +220,7 @@ module.exports = function(app, server) {
               break;
 
             default:
-              return asyncCallback(new E('ESocketIOEvent', 'Unknow event of Socket.io').forSocketIO(ackId));
+              return asyncCallback(new E('ESocketIOEvent', 'Unknow event of Socket.io').forSocketIO(reqId));
           }
 
           return asyncCallback();
@@ -258,18 +258,18 @@ module.exports = function(app, server) {
         if (err) return next(err);
 
         var ret   = toolkit.initRet(retData);
-        ret.ackId = ackId;
+        ret.reqId = reqId;
 
-        var ackData = JSON.stringify(ret);
+        var respData = JSON.stringify(ret);
 
-        if ('function' === typeof ackCallback) {
+        if ('function' === typeof respCallback) {
           try {
-            ackCallback(ackData); // Socket.io 2.0 ACK 返回
+            respCallback(respData); // Socket.io 2.0 ACK 返回
           } catch(err) {
             app.locals.logger.error(ex);
           }
         }
-        socket.emit(event + '.ack', ackData); // 普通消息返回
+        socket.emit(event + '.resp', respData); // 普通消息返回
       });
     });
 

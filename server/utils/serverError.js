@@ -45,9 +45,9 @@ ServerError.prototype.toHTML = function() {
   <strong>Info:</strong><pre>${JSON.stringify(this, null, 2)}<pre>`
 };
 
-ServerError.prototype.forSocketIO = function(ackId) {
+ServerError.prototype.forSocketIO = function(reqId) {
   var errorJSON = this.toJSON();
-  if (ackId) errorJSON.ackId = ackId || undefined;
+  if (reqId) errorJSON.reqId = reqId || undefined;
 
   return new Error(JSON.stringify(errorJSON));
 };

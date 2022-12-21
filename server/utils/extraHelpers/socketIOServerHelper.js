@@ -3,7 +3,7 @@
 /* 3rd-party Modules */
 var socketIO     = require('socket.io');
 var redis        = require('redis');
-var redisAdapter = require('socket.io-redis');
+var redisAdapter = require('@socket.io/redis-adapter');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
@@ -101,12 +101,8 @@ var SocketIOServerHelper = function(server, logger, config) {
     self.pubClient = PUB_CLIENT;
   }
 
-  self.server = socketIO(server);
-  self.adapter = redisAdapter({
-    pubClient: self.pubClient,
-    subClient: self.subClient,
-  });
-  self.server.adapter(self.adapter);
+  self.server = new socketIO.Server(server);
+  self.server.adapter(redisAdapter.createAdapter(self.pubClient, self.subClient));
 };
 
 exports.SocketIOServerHelper = SocketIOServerHelper;

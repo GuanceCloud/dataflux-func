@@ -51,7 +51,7 @@
 import 'element-ui/lib/theme-chalk/display.css';
 import Navi from '@/components/Navi'
 
-import io from 'socket.io-client'
+import { io } from 'socket.io-client';
 
 export default {
   name: 'App',
@@ -280,8 +280,8 @@ export default {
         .on('connect', connectSocketIO)
         .on('reconnect', connectSocketIO)
         .on('disconnect', handleDisconnect)
-        .on('auth.ack', handleAuth)
-        .on('ftAuth.ack', handleAuth)
+        .on('auth.resp', handleAuth)
+        .on('ftAuth.resp', handleAuth)
         .on('error', handleError);
 
       // 定期报告当前页面
