@@ -1,3 +1,8 @@
+<i18n locale="zh-CN" lang="yaml">
+Python functions that can only be called internally: 只能被内部调用的 Python 函数
+Press {0} to search: 按 {0} 开始搜索
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
@@ -5,9 +10,14 @@
       <el-header height="60px">
         <h1>
           <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
-          函数文档
-          <small>仅限内部调用的函数</small>
-          <span class="text-info title-tip">本文档没有翻页，按 <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd> 开始搜索</span>
+          {{ $t('Func Documents') }}
+          &nbsp;
+          <small>{{ $t('Python functions that can only be called internally') }}</small>
+          <span class="text-info title-tip">
+            <i18n path="Press {0} to search">
+              <span><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd></span>
+            </i18n>
+          </span>
         </h1>
       </el-header>
 
@@ -16,7 +26,7 @@
         <el-table class="common-table" height="100%"
           :data="data">
 
-          <el-table-column label="函数">
+          <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.id"
@@ -24,6 +34,11 @@
                 :title="scope.row.title"></FuncInfo>
 
               <div>
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id"></CopyButton>
+                <br>
+
                 <template v-if="T.notNothing(scope.row.category)">
                   <span class="text-info">{{ $t('Category') }}</span>
                   &nbsp;<code class="text-main">{{ scope.row.category }}</code>
@@ -47,15 +62,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="函数文档">
+          <el-table-column :label="$t('Document')">
             <template slot-scope="scope">
-              <pre class="func-doc">{{ T.limitLines(scope.row.description, 10) }}</pre>
+              <pre class="func-doc">{{ scope.row.description }}</pre>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="80">
+          <el-table-column align="right" width="100">
             <template slot-scope="scope">
-              <el-link @click="showAPI(scope.row)">示例</el-link>
+              <el-link @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

@@ -2007,21 +2007,21 @@ exports.getAuthLinkFuncList = function(req, res, next) {
         }),
 
         id                : d.id,
-        funcId            : d.funcId,
         funcCallKwargsJSON: d.funcCallKwargsJSON,
         expireTime        : d.expireTime,
         throttlingJSON    : d.throttlingJSON,
         isDisabled        : d.isDisabled,
 
-        funcName       : d.func_name,
-        funcTitle      : d.func_title,
-        funcDescription: d.func_description,
-        funcDefinition : d.func_definition,
-        funcArgsJSON   : d.func_argsJSON,
-        funcKwargsJSON : d.func_kwargsJSON,
-        funcCategory   : d.func_category,
-        funcIntegration: d.func_integration,
-        funcTagsJSON   : d.func_tagsJSON,
+        funcId            : d.func_id,
+        funcName          : d.func_name,
+        funcTitle         : d.func_title,
+        funcDescription   : d.func_description,
+        funcDefinition    : d.func_definition,
+        funcArgsJSON      : d.func_argsJSON,
+        funcKwargsJSON    : d.func_kwargsJSON,
+        funcCategory      : d.func_category,
+        funcIntegration   : d.func_integration,
+        funcTagsJSON      : d.func_tagsJSON,
 
         apiAuthId  : d.apia_id,
         apiAuthName: d.apia_name,
@@ -2663,7 +2663,7 @@ exports.listResources = function(req, res, next) {
       };
 
       var stat = fs.statSync(path.join(absPath, x.name));
-      f.createTime = stat.birthtimeMs;
+      f.createTime = stat.birthtimeMs || null;
       f.updateTime = stat.ctimeMs;
 
       if (x.isDirectory()) {

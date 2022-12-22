@@ -1,8 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Config         : 配置
-Auth           : 认证
-Expires        : 过期
-Throttling     : 限流
+Config    : 配置
+Auth      : 认证
+Expires   : 过期
+Throttling: 限流
+
+Python functions that can be called externally: 可被外部调用的 Python 函数
+Press {0} to search: 按 {0} 开始搜索
 
 Auth Link only supports synchronous calling: 授权链接只支持同步调用
 </i18n>
@@ -14,9 +17,14 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
       <el-header height="60px">
         <h1>
           <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
-          授权链接函数文档
-          <small>可被外部调用的函数</small>
-          <span class="text-info title-tip">本文档没有翻页，按 <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd> 开始搜索</span>
+          {{ $t('Auth Link Documents') }}
+          &nbsp;
+          <small>{{ $t('Python functions that can be called externally') }}</small>
+          <span class="text-info title-tip">
+            <i18n path="Press {0} to search">
+              <span><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd></span>
+            </i18n>
+          </span>
         </h1>
       </el-header>
 
@@ -37,6 +45,7 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
                 <CopyButton :content="scope.row.id"></CopyButton>
+                <br>
 
                 <template v-if="T.notNothing(scope.row.funcCategory)">
                   <span class="text-info">{{ $t('Category') }}</span>
@@ -67,7 +76,7 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
             </template>
           </el-table-column>
 
-          <el-table-column label="函数文档">
+          <el-table-column :label="$t('Document')">
             <template slot-scope="scope">
               <pre class="func-doc">{{ scope.row.funcDescription }}</pre>
             </template>
@@ -109,9 +118,9 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="80">
+          <el-table-column align="right" width="100">
             <template slot-scope="scope">
-              <el-link @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
+              <el-link :disabled="!!!scope.row.funcId" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
             </template>
           </el-table-column>
         </el-table>

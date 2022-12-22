@@ -1,7 +1,7 @@
 <template>
   <el-container direction="horizontal">
     <!-- 二级导航 -->
-    <el-aside width="200px">
+    <el-aside width="auto">
       <div class="aside">
         <div class="aside-content">
           <el-menu

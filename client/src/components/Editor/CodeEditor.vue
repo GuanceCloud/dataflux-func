@@ -9,8 +9,8 @@ seconds      : '{n} second | {n} seconds'
 
 <i18n locale="zh-CN" lang="yaml">
 Script Setup                                                                         : 脚本设置
-'Script is under editing mode in other browser tab, please wait...'                  : '其他标签页或窗口正在编辑此脚本，请稍后...'
-'Script is under editing mode in other client, please wait...'                       : '其他客户端正在编辑此脚本，请稍后...'
+'Script is under editing in other tab, please wait...'                               : '其他标签页或窗口正在编辑此脚本，请稍后...'
+'Script is under editing in other client, please wait...'                            : '其他客户端正在编辑此脚本，请稍后...'
 Select Target                                                                        : 选择跳转目标
 Viewport are too narrow                                                              : 当前可视宽度太窄
 Writing test cases to test your Func is recommended                                  : 建议编写测试用例来测试您的函数
@@ -134,8 +134,8 @@ Do NOT use monkey patch: 请勿使用猴子补丁
             <div class="code-editor-action-right">
               <el-form :inline="true">
                 <el-form-item v-show="conflictStatus">
-                  <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing mode in other browser tab, please wait...') }}</span>
-                  <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing mode in other client, please wait...') }}</span>
+                  <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
+                  <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
                 </el-form-item>
 
                 <el-form-item>

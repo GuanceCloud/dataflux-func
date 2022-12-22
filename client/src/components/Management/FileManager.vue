@@ -115,9 +115,14 @@ File already existed                                                            
 
           <el-table-column :label="$t('Create time')" sortable sort-by="createTime" width="200">
             <template slot-scope="scope">
-              <span>{{ scope.row.createTime | datetime }}</span>
-              <br>
-              <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
+              <template v-if="scope.row.createTime">
+                <span>{{ scope.row.createTime | datetime }}</span>
+                <br>
+                <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
+              </template>
+              <template v-else>
+                -
+              </template>
             </template>
           </el-table-column>
 

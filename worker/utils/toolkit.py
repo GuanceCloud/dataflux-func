@@ -385,6 +385,12 @@ def get_sha1(s):
 
     return h.hexdigest()
 
+def get_sha256(s):
+    h = hashlib.sha256()
+    h.update(six.ensure_binary(s))
+
+    return h.hexdigest()
+
 def get_sha512(s):
     h = hashlib.sha512()
     h.update(six.ensure_binary(s))

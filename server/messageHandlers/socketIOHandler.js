@@ -24,7 +24,7 @@ module.exports = function(app, server) {
     app.locals.logger.debug('[SOCKET IO] Client connected. id=`{0}`', socket.id);
 
     // 欢迎消息
-    socket.emit('hello', 'Welcome, please send X-Core-Stone-Auth-Token string by event `auth` for authentication.')
+    socket.emit('hello', 'Welcome, please send X-Auth-Token string by event `auth` for authentication.')
 
     // 接受认证中间件
     socket.use(function(packet, next) {
@@ -285,6 +285,21 @@ module.exports = function(app, server) {
       app.locals.logger.debug('[SOCKET IO] Client disconnected. id=`{0}`, userId=`{1}`, reason=`{2}`', socket.id, userId, reason);
 
       delete AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
+    });
+
+    // 错误处理
+    socket.on("error", function(err) {
+      var reason = null;
+      try {
+        reason = JSON.parse(err.message);
+      } catch(err) {
+        // Nope
+      }
+
+      socket.emit('error', err.message);
+      if (reason === 'ESocketIOAuth') {
+        socket.disconnect();
+      }
     });
   });
 
