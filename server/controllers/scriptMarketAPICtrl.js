@@ -1782,7 +1782,7 @@ exports.checkUpdate = function(req, res, next) {
           // 检查更新不报错
           if (err) {
             res.locals.logger.logError(err);
-            return asyncCallback();
+            return eachCallback();
           }
 
           if (toolkit.notNothing(_scriptSets)) {
