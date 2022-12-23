@@ -136,10 +136,10 @@ Open Script Market Homepage: 打开脚本市场主页
                 <div class="script-market-extra-info">
                   <span>{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}</span>
 
-                  <template v-if="scope.row.extra.homepageURL">
+                  <template v-if="scope.row.extra.homepageURL || scope.row.type === 'git'">
                     &nbsp;
                     <el-button type="primary" round plain size="mini"
-                      @click="T.openURL(scope.row.extra.homepageURL)">
+                      @click="T.openURL(scope.row.extra.homepageURL || scope.row.configJSON.url)">
                       {{ $t('Open Script Market Homepage') }}
                     </el-button>
                   </template>
