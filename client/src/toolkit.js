@@ -1725,3 +1725,7 @@ export function htmlSpace(count, lang) {
   count = parseInt(count);
   return s.repeat(count);
 };
+
+export function openURL(url) {
+  window.open(url);
+};

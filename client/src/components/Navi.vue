@@ -130,7 +130,7 @@ export default {
       if (this.T.startsWith(index, '/')) {
         this.$router.push({ path: index });
       } else {
-        window.open(index);
+        this.T.openURL(index);
       }
     },
   },

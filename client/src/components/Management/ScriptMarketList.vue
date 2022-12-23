@@ -22,6 +22,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 Official Script Market added: 官方脚本市场已添加
 
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
+Open Script Market Homepage: 打开脚本市场主页
 
 'Checking Update...': '正在检查更新...'
 'Deleting...'       : '正在删除...'
@@ -131,7 +132,18 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
                   </template>
                   <br>
                 </template>
-                &#12288;{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}
+
+                <div class="script-market-extra-info">
+                  <span>{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}</span>
+
+                  <template v-if="scope.row.extra.homepageURL">
+                    &nbsp;
+                    <el-button type="primary" round plain size="mini"
+                      @click="T.openURL(scope.row.extra.homepageURL)">
+                      {{ $t('Open Script Market Homepage') }}
+                    </el-button>
+                  </template>
+                </div>
               </div>
 
               <InfoBlock v-if="scope.row.error" :title="scope.row.error" type="error" ></InfoBlock>
@@ -350,7 +362,10 @@ export default {
 
       let minLoadingTime = 1000;
       let startTime = Date.now();
+
       await this.common.checkScriptMarketUpdate();
+      await this.loadData();
+
       let endTime = Date.now();
       let processedTime = endTime - startTime;
       if (processedTime > minLoadingTime) {
@@ -425,6 +440,9 @@ export default {
 .script-market-name {
   font-size: 18px;
   line-height: 25px;
+}
+.script-market-extra-info {
+  padding-left: 20px;
 }
 </style>
 <style>

@@ -37,6 +37,10 @@ var SCRIPT_MARKET_RW_MAP = {
   httpService: 'ro',
 }
 
+var SCRIPT_MARKET_META_EXTRA_FIELDS = [
+  'homepageURL',
+]
+
 function _prepareConfig(data) {
   if (toolkit.isNothing(data.configJSON)) return data;
 
@@ -521,8 +525,7 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
         }
 
         // 读取 META
-        var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-        var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
+        var metaData = _getMetaData(scriptMarket);
         return callback(null, metaData);
       });
     });
@@ -558,8 +561,7 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
         if (err) return callback(err);
 
         // 读取 META
-        var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
-        var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
+        var metaData = _getMetaData(scriptMarket);
         return callback(null, metaData);
       });
     });
@@ -802,28 +804,26 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
 function _getLocalAbsPath(scriptMarket) {
   switch(scriptMarket.type) {
     case 'git':
-      var urlObj = new URL(scriptMarket.configJSON.url);
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
           CONFIG.SCRIPT_MARKET_GIT_REPO_DIR,
-          `${urlObj.hostname}${urlObj.pathname}`);
+          scriptMarket.id);
 
       return localAbsPath;
 
     case 'aliyunOSS':
-      var endpointObj = new URL(scriptMarket.configJSON.endpoint);
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
           CONFIG.SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR,
-          `${scriptMarket.configJSON.bucket}.${endpointObj.hostname}/${scriptMarket.configJSON.folder}`);
+          scriptMarket.id);
       return localAbsPath;
 
     case 'httpService':
-      var urlObj = new URL(scriptMarket.configJSON.url);
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
           CONFIG.SCRIPT_MARKET_HTTP_SERVICE_REPO_DIR,
-          `${urlObj.hostname}${urlObj.pathname}`);
+          scriptMarket.id);
+
       return localAbsPath;
   }
 };
@@ -838,6 +838,12 @@ function _getMetaData(scriptMarket) {
 
   var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
   return metaData;
+};
+
+// 脚本市场 - 写入 META 数据
+function _setMetaData(scriptMarket, metaData) {
+  var localPath = _getLocalAbsPath(scriptMarket);
+  fs.outputFileSync(path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE), yaml.dump(metaData));
 };
 
 // 脚本市场 - 列出脚本集
@@ -894,7 +900,7 @@ function _setAdmin(locals, scriptMarket, callback) {
     // 上传
     function(asyncCallback) {
       var pushContent = {
-        note: 'Set Token',
+        note: 'Set Admin',
       }
       SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, function(err) {
         if (err) {
@@ -931,9 +937,61 @@ function _unsetAdmin(locals, scriptMarket, callback) {
     // 上传
     function(asyncCallback) {
       var pushContent = {
-        note: 'Unset Token',
+        note: 'Unset Admin',
       }
       SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, asyncCallback);
+    },
+  ], callback);
+};
+
+// 脚本市场 - 设置额外信息
+function _setMetaExtra(locals, scriptMarket, callback) {
+  // 禁止只读库进行写入操作
+  if (SCRIPT_MARKET_RW_MAP[scriptMarket.type] !== 'rw') {
+    return callback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
+  }
+
+  // 没有配置的跳过
+  if (!scriptMarket.configJSON) return callback();
+
+  async.series([
+    // 准备
+    function(asyncCallback) {
+      SCRIPT_MARKET_RESET_FUNC_MAP[scriptMarket.type](locals, scriptMarket, asyncCallback);
+    },
+    // 检查并修改 Meta.extra
+    function(asyncCallback) {
+      var metaData = _getMetaData(scriptMarket);
+
+      metaData = metaData || {};
+      metaData.extra = metaData.extra || {};
+
+      SCRIPT_MARKET_META_EXTRA_FIELDS.forEach(function(f) {
+        if (toolkit.isNothing(scriptMarket.configJSON[f])) {
+          metaData.extra[f] = null;
+        } else {
+          metaData.extra[f] = scriptMarket.configJSON[f];
+        }
+      });
+
+      _setMetaData(scriptMarket, metaData);
+      return asyncCallback();
+    },
+    // 上传
+    function(asyncCallback) {
+      var pushContent = {
+        note: 'Set Meta Extra',
+      }
+      SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, function(err) {
+        if (err) {
+          locals.logger.logError(err);
+
+          return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
+            message: toolkit.maskSensitiveInfo(err.message),
+          }));
+        }
+        return asyncCallback();
+      });
     },
   ], callback);
 };
@@ -1045,7 +1103,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
 
         // 重建并写入 META
         metaData.scriptSets = Object.values(tmpScriptSetMap);
-        fs.outputFileSync(path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE), yaml.dump(metaData));
+        _setMetaData(scriptMarket, metaData);
 
         // 写入脚本市场 README 文件
         var scriptMarketReadmeFilePath = path.join(localPath, CONFIG.SCRIPT_EXPORT_README_FILE);
@@ -1165,7 +1223,11 @@ exports.list = function(req, res, next) {
     // 获取脚本市场管理员信息、脚本集 META 信息等
     scriptMarkets.forEach(function(scriptMarket) {
       // 获取 META 信息
-      scriptMarket.scriptSets = _getMetaData(scriptMarket).scriptSets || [];
+      var metaData = _getMetaData(scriptMarket);
+
+      // 脚本集、额外信息
+      scriptMarket.scriptSets = metaData.scriptSets || [];
+      scriptMarket.extra      = metaData.extra      || {};
 
       // 检查是否为管理员
       var token       = _getToken(scriptMarket);
@@ -1205,6 +1267,12 @@ exports.add = function(req, res, next) {
       if (!setAdmin) return asyncCallback();
 
       return _setAdmin(res.locals, data, asyncCallback);
+    },
+    // 设置额外信息
+    function(asyncCallback) {
+      if (!setAdmin) return asyncCallback();
+
+      return _setMetaExtra(res.locals, data, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -1289,6 +1357,15 @@ exports.modify = function(req, res, next) {
 
       Object.assign(scriptMarket, data);
       SCRIPT_MARKET_INIT_FUNC_MAP[scriptMarket.type](res.locals, scriptMarket, asyncCallback);
+    },
+    // 设置额外信息
+    function(asyncCallback) {
+      // 检查是否为管理员
+      var token       = _getToken(scriptMarket);
+      var remoteToken = _getRemoteTokenInfo(scriptMarket).value;
+      if (token !== remoteToken) return asyncCallback();
+
+      return _setMetaExtra(res.locals, scriptMarket, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -1688,14 +1765,7 @@ exports.checkUpdate = function(req, res, next) {
     },
     // 获取脚本市场（仅涉及脚本市场的）
     function(asyncCallback) {
-      if (toolkit.isNothing(scriptMarketIds)) return asyncCallback();
-
-      var opt = {
-        filters: {
-          'smkt.id': { in: scriptMarketIds }
-        }
-      }
-      scriptMarketModel.list(opt, function(err, dbRes) {
+      scriptMarketModel.list(null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         scriptMarkets = dbRes;
