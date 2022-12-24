@@ -39,17 +39,17 @@ This Script Set is locked by other user ({user}): 当前脚本已被其他用户
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
                 <el-form-item v-if="isLockedByMe">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you')"></InfoBlock>
+                  <InfoBlock type="success" :title="$t('This Script Set is locked by you')" />
                 </el-form-item>
                 <el-form-item v-else-if="isLockedByOther">
-                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
+                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user ({user})', { user: lockedByUser })" />
                 </el-form-item>
 
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="32"
                     v-model="form.id"></el-input>
-                  <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')"></InfoBlock>
+                  <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
@@ -74,7 +74,7 @@ This Script Set is locked by other user ({user}): 当前脚本已被其他用户
                     :autosize="{minRows: 2}"
                     maxlength="5000"
                     v-model="form.requirements"></el-input>
-                  <InfoBlock :title="$t('requirements.txt format, one for each line')"></InfoBlock>
+                  <InfoBlock :title="$t('requirements.txt format, one for each line')" />
                   <div class="setup-right">
                     <el-button v-if="requirementsTEXT" type="text" @click="goToPIPTool">{{ $t('Go to PIP tool to install') }}</el-button>
                   </div>

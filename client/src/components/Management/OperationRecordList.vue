@@ -59,14 +59,14 @@ Response                      : 响应
                 <br>
                 <span class="text-info">{{ $t('User ID') }}</span>
                 &nbsp;<code class="text-main">{{ scope.row.userId }}</code>
-                <CopyButton :content="scope.row.userId"></CopyButton>
+                <CopyButton :content="scope.row.userId" />
               </template>
 
               <template v-if="T.notNothing(scope.row.clientIPsJSON)">
                 <br>
                 <span class="text-info">{{ $t('IP Address') }}</span>
                 &nbsp;<code class="text-main">{{ scope.row.clientIPsJSON.join(', ') }}</code>
-                <CopyButton :content="scope.row.clientIPsJSON.join(', ')"></CopyButton>
+                <CopyButton :content="scope.row.clientIPsJSON.join(', ')" />
               </template>
             </template>
           </el-table-column>
@@ -92,7 +92,7 @@ Response                      : 响应
                 <i class="fa fa-fw"></i>
                 <span class="text-info">{{ $t('Data ID') }}</span>
                 &nbsp;<code class="text-main">{{ scope.row._operationEntityId }}</code>
-                <CopyButton :content="scope.row._operationEntityId"></CopyButton>
+                <CopyButton :content="scope.row._operationEntityId" />
               </template>
             </template>
           </el-table-column>
@@ -112,9 +112,9 @@ Response                      : 响应
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

@@ -62,7 +62,7 @@
           </el-input>
         </el-col>
         <el-col :span="2">
-          <CopyButton :content="apiURLExample"></CopyButton>
+          <CopyButton :content="apiURLExample" />
         </el-col>
       </el-row>
       <el-row :gutter="20" v-if="apiBodyExample || supportCustomKwargs">
@@ -73,13 +73,13 @@
             resize="none"
             v-model="apiBodyExample">
           </el-input>
-          <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json"></InfoBlock>
-          <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改"></InfoBlock>
-          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数（**kwargs 语法）"></InfoBlock>
-          <InfoBlock v-if="supportFileUpload" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;"></InfoBlock>
+          <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json" />
+          <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改" />
+          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数（**kwargs 语法）" />
+          <InfoBlock v-if="supportFileUpload" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;" />
         </el-col>
         <el-col :span="2">
-          <CopyButton :content="apiBodyExample"></CopyButton>
+          <CopyButton :content="apiBodyExample" />
         </el-col>
       </el-row>
 
@@ -100,11 +100,11 @@
               </el-link>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串，且不支持 options 参数"></InfoBlock>
+                title="此方式参数值只支持字符串，且不支持 options 参数" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
-                :content="apiURLWithQueryExample_simplified"></CopyButton>
+                :content="apiURLWithQueryExample_simplified" />
             </el-col>
           </el-row>
         </template>
@@ -120,11 +120,11 @@
                 class="api-url-with-query">
                 <code v-html="apiURLWithQueryExampleText"></code>
               </el-link>
-              <InfoBlock type="info" title="kwargs 参数为 POST 方式中对 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串"></InfoBlock>
-              <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))"></InfoBlock>
+              <InfoBlock type="info" title="kwargs 参数为 POST 方式中对 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串" />
+              <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))" />
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample"></CopyButton>
+              <CopyButton :content="apiURLWithQueryExample" />
             </el-col>
           </el-row>
         </template>
@@ -142,11 +142,11 @@
               </el-link>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串"></InfoBlock>
+                title="此方式参数值只支持字符串" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
-                :content="apiURLWithQueryExample_flattened"></CopyButton>
+                :content="apiURLWithQueryExample_flattened" />
             </el-col>
           </el-row>
         </template>
@@ -163,14 +163,14 @@
                 :value="apiCallByCurlExample_simplified"></el-input>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式不支持 options 参数"></InfoBlock>
-              <InfoBlock type="info" title="表单形式提交时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串"></InfoBlock>
-              <InfoBlock type="info" title="JSON 形式提交时，Content-Type 可以指定为 &quot;application/json&quot;，配合 def f(**kwargs) 形式的函数，此时 Body 可以为任意 JSON 数据"></InfoBlock>
-              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
+                title="此方式不支持 options 参数" />
+              <InfoBlock type="info" title="表单形式提交时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串" />
+              <InfoBlock type="info" title="JSON 形式提交时，Content-Type 可以指定为 &quot;application/json&quot;，配合 def f(**kwargs) 形式的函数，此时 Body 可以为任意 JSON 数据" />
+              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
-                :content="apiCallByCurlExample_simplified"></CopyButton>
+                :content="apiCallByCurlExample_simplified" />
             </el-col>
           </el-row>
         </template>
@@ -186,10 +186,10 @@
                 resize="none"
                 :value="apiCallByCurlExample">
               </el-input>
-              <InfoBlock type="info" title="此方式不支持文件上传"></InfoBlock>
+              <InfoBlock type="info" title="此方式不支持文件上传" />
             </el-col>
             <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample"></CopyButton>
+              <CopyButton :content="apiCallByCurlExample" />
             </el-col>
           </el-row>
         </template>
@@ -208,13 +208,13 @@
               </el-input>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串"></InfoBlock>
-              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;"></InfoBlock>
-              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;"></InfoBlock>
+                title="此方式参数值只支持字符串" />
+              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;" />
+              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
-                :content="apiCallByCurlExample_flattened"></CopyButton>
+                :content="apiCallByCurlExample_flattened" />
             </el-col>
           </el-row>
         </template>

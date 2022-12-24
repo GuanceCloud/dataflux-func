@@ -48,7 +48,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
           <el-table-column label="Access Key ID">
             <template slot-scope="scope">
               <code class="text-main text-small">{{ scope.row.id }}</code>
-              <CopyButton :content="scope.row.id"></CopyButton>
+              <CopyButton :content="scope.row.id" />
             </template>
           </el-table-column>
 
@@ -59,7 +59,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
               </template>
               <template v-else>
                 <code class="text-main text-small">{{ scope.row.secret }}</code>
-                <CopyButton :content="scope.row.secret"></CopyButton>
+                <CopyButton :content="scope.row.secret" />
               </template>
             </template>
           </el-table-column>
@@ -81,7 +81,7 @@ Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey�
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
     </el-container>
   </transition>
 </template>

@@ -55,7 +55,7 @@ Are you sure you want to install the package now?    : 是否确定现在就安�
             <br>
             &#12288;
             <code class="text-main">{{ pipShell }}</code>
-            <CopyButton :content="pipShell"></CopyButton>
+            <CopyButton :content="pipShell" />
           </template>
         </p>
 

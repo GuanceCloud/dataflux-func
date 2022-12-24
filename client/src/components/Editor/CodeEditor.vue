@@ -101,10 +101,7 @@ Publishing Script, it will be finished in a few seconds. If the page is not resp
 Func is running. If it is not responding for a long time, please try refreshing.                                                : 函数执行中，长时间无响应后再尝试刷新页面
 Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing. : 函数执行中，执行最多等待 {seconds}，长时间无响应后再尝试刷新页面
 
-Do NOT use monkey patch: 请勿使用猴子补丁
-'For performance reasons, the script does not run in a sandbox or isolated environment.': 出于性能考虑，脚本并非运行在沙盒或隔离环境中。
-'Using monkey patches may cause problems to the entire system.'                         : 使用猴子补丁可能导致系统整体出现问题。
-'Therefore, please avoid using monkey patches in scripts.'                              : 因此，请避免在脚本中使用猴子补丁。
+"Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.": 请避免在脚本中使用猴子补丁<br><br>出于性能考虑，脚本并非运行在沙盒或隔离环境中，使用猴子补丁可能导致系统整体出现问题。
 </i18n>
 
 <template>
@@ -181,9 +178,9 @@ Do NOT use monkey patch: 请勿使用猴子补丁
                           v-model="funcCallKwargsJSON"
                           class="code-editor-call-func-kwargs-json">
                         </el-input>
-                        <InfoBlock type="error" v-if="!isValidFuncCallKwargsJSON" :title="$t('Invalid argument format')"></InfoBlock>
-                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}.') + '\n' + $t('Leave blank or {} when no argument')"></InfoBlock>
-                        <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')"></InfoBlock>
+                        <InfoBlock type="error" v-if="!isValidFuncCallKwargsJSON" :title="$t('Invalid argument format')" />
+                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}.') + '\n' + $t('Leave blank or {} when no argument')" />
+                        <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')" />
                       </div>
                       <el-input slot="reference"
                         style="width: 150px; text-overflow: ellipsis;"
@@ -294,8 +291,8 @@ Do NOT use monkey patch: 请勿使用猴子补丁
               </el-form>
             </div>
 
-            <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
-            <InfoBlock v-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a built-in Script, code will be reset when the system restarts')"></InfoBlock>
+            <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
+            <InfoBlock v-if="data.sset_origin === 'builtin'" type="warning" :title="$t('This is a built-in Script, code will be reset when the system restarts')" />
           </el-header>
 
           <!-- 代码区 -->
@@ -304,38 +301,12 @@ Do NOT use monkey patch: 请勿使用猴子补丁
           </el-main>
 
           <!-- 猴子补丁提示 -->
-          <el-dialog
-            :visible.sync="showMonkeyPatchNotice"
-            :show-close="false"
-            :close-on-click-modal="false"
-            :close-on-press-escape="false"
-            width="650px">
-            <div class="monkey-patch-notice-container">
-              <el-image :src="img_monkeyPatchNotice"></el-image>
-              <el-card class="monkey-patch-notice-content">
-                <i class="fa fa-fw fa-warning monkey-patch-notice-icon"></i>
-                <p>
-                  {{ $t('For performance reasons, the script does not run in a sandbox or isolated environment.') }}
-                  {{ $t('Using monkey patches may cause problems to the entire system.') }}
-                </p>
-                <p>
-                  {{ $t('Therefore, please avoid using monkey patches in scripts.') }}
-                </p>
-              </el-card>
-            </div>
-            <span slot="title">
-              <div class="monkey-patch-notice-title text-bad">
-                <i class="fa fa-fw fa-warning"></i>
-                {{ $t('Do NOT use monkey patch') }}
-              </div>
-            </span>
-            <span slot="footer">
-              <el-button type="text" @click="closeMonkeyPatchNotice(true)">{{ $t("Don't prompt again") }}</el-button>
-              <el-button type="primary" size="small" @click="closeMonkeyPatchNotice()">{{ $t('OK') }}</el-button>
-            </span>
-          </el-dialog>
+          <FeatureNoticeDialog
+            featureKey="codeEditor.monkeyPatch"
+            :description="$t(`Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.`)"
+            :image="img_monkeyPatchNotice" />
 
-          <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog"></LongTextDialog>
+          <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog" />
           <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
         </el-container>
       </template>
@@ -367,11 +338,13 @@ import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 import * as htmlEscaper from 'html-escaper';
 
+import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_monkeyPatchNotice from '@/assets/img/monkey-patch-notice.png'
 
 export default {
   name: 'CodeEditor',
   components: {
+    FeatureNoticeDialog,
     CodeEditorSetting,
     LongTextDialog,
   },
@@ -1187,13 +1160,6 @@ export default {
         backgroundClass: 'current-func-background highlight-code-line-blink',
       });
     },
-    closeMonkeyPatchNotice(disable) {
-      this.showMonkeyPatchNotice = false;
-      this.$store.commit('dismissMonkeyPatchNotice');
-      if (disable) {
-        this.$store.commit('disableMonkeyPatchNotice');
-      }
-    },
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1413,7 +1379,6 @@ export default {
 
       // 猴子补丁提示
       img_monkeyPatchNotice: img_monkeyPatchNotice,
-      showMonkeyPatchNotice: false,
 
       // 代码编辑器设置
       showEditorSetting: false,
@@ -1469,11 +1434,6 @@ export default {
         }
 
         this.codeMirror.on('change', autoSaveFuncCreator(this.scriptId));
-      }
-
-      // 猴子补丁提示
-      if (this.$store.getters.showMonkeyPatchNotice) {
-        this.showMonkeyPatchNotice = true;
       }
     });
   },
@@ -1556,35 +1516,6 @@ export default {
   padding-left: 10px;
   position: relative;
   white-space: nowrap;
-}
-.monkey-patch-notice-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-.monkey-patch-notice-title {
-  display: block;
-  width: 100%;
-  text-align: center;
-}
-.monkey-patch-notice-content {
-  width: 350px;
-  border-radius: 20px;
-  position: relative;
-}
-.monkey-patch-notice-content p {
-  font-size: 16px;
-  word-break: break-word;
-  position: relative;
-}
-.monkey-patch-notice-icon {
-  position: absolute;
-  font-size: 200px;
-  left: 130px;
-  top: 40px;
-  color: #ff660030;
-  line-height: 200px;
-  z-index: 0;
 }
 </style>
 <style>

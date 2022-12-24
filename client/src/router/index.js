@@ -454,7 +454,7 @@ router.beforeEach((to, from, next) => {
 router.afterEach((to, from) => {
   if (store.getters.isSignedIn && !store.getters.isScriptMarketCheckUpdatedRecently) {
     common.checkScriptMarketUpdate().then(() => {
-      store.commit('updateScriptMarketCheckUpdateStamp');
+      store.commit('updateScriptMarketCheckUpdateDate');
     });
   }
 });

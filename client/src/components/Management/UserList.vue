@@ -43,7 +43,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
           <el-table-column :label="$t('Username')" width="300">
             <template slot-scope="scope">
               <code class="text-main">{{ scope.row.username }}</code>
-              <CopyButton :content="scope.row.username"></CopyButton>
+              <CopyButton :content="scope.row.username" />
             </template>
           </el-table-column>
 
@@ -84,7 +84,7 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
     </el-container>
   </transition>
 </template>

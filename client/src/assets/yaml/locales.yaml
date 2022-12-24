@@ -233,7 +233,6 @@ en:
   Operation succeeded                     : 操作成功
   Operation failed                        : 操作失败
   Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除
-  Don't prompt again                      : 不再提示
 
   # const.js - CONNECTOR
   'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）

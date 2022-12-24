@@ -113,10 +113,10 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
               <FuncInfo
                 :id="scope.row.funcId"
                 :title="scope.row.func_title"
-                :name="scope.row.func_name"></FuncInfo>
+                :name="scope.row.func_name" />
               <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
                 :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
-                type="error" ></InfoBlock>
+                type="error"  />
             </template>
           </el-table-column>
 
@@ -163,9 +163,9 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="完整内容如下" ref="longTextDialog" :showDownload="true"></LongTextDialog>
+      <LongTextDialog title="完整内容如下" ref="longTextDialog" :showDownload="true" />
     </el-container>
   </transition>
 </template>

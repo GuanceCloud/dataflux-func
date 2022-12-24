@@ -125,12 +125,12 @@ Go to Script Market : 前往脚本市场
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
-            <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')"></InfoBlock>
-            <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')"></InfoBlock>
+            <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')" />
+            <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')" />
 
             <span class="text-info">ID</span>
             &nbsp;<code class="text-main">{{ data.id }}</code>
-            <CopyButton :content="data.id"></CopyButton>
+            <CopyButton :content="data.id" />
 
             <pre v-if="(data.type === 'scriptSet' || data.type === 'script') && data.description">{{ data.description }}</pre>
           </div>
@@ -139,7 +139,7 @@ Go to Script Market : 前往脚本市场
           <template v-if="data.sampleCode">
             <div class="aside-tree-node-sample-code">
               <span class="text-info">{{ $t('Example') }}</span>
-              <CopyButton :content="data.sampleCode"></CopyButton>
+              <CopyButton :content="data.sampleCode" />
 
               <pre>{{ data.sampleCode }}</pre>
             </div>
@@ -296,7 +296,7 @@ Go to Script Market : 前往脚本市场
           :id="relEntityFunc.id"
           :title="relEntityFunc.title"
           :definition="relEntityFunc.definition"
-          :hideGotoFunc="true"></FuncInfo>
+          :hideGotoFunc="true" />
       </div>
       <el-tabs v-model="relEntityTarget">
         <el-tab-pane name="authLink">
@@ -310,7 +310,7 @@ Go to Script Market : 前往脚本市场
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="scope.row.note">
                   <br>
@@ -332,7 +332,7 @@ Go to Script Market : 前往脚本市场
                 <span v-if="!scope.row.expireTime">-</span>
                 <template v-else>
                   <RelativeDateTime :datetime="scope.row.expireTime"
-                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
                 </template>
 
                 <br>
@@ -399,7 +399,7 @@ Go to Script Market : 前往脚本市场
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="scope.row.note">
                   <br>
@@ -421,14 +421,14 @@ Go to Script Market : 前往脚本市场
 
                 <br>
                 <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
-                <RelativeDateTime :datetime="scope.row.createTime"></RelativeDateTime>
+                <RelativeDateTime :datetime="scope.row.createTime" />
 
                 <br>
                 <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
                 <span v-if="!scope.row.expireTime">-</span>
                 <template v-else>
                   <RelativeDateTime :datetime="scope.row.expireTime"
-                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
                 </template>
               </template>
             </el-table-column>
@@ -486,7 +486,7 @@ Go to Script Market : 前往脚本市场
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="scope.row.note">
                   <br>

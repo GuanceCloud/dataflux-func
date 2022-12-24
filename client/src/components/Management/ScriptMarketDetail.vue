@@ -50,8 +50,11 @@ No Script Set has ever been published: 尚未发布过任何脚本集到脚本�
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
+Open Script Market Homepage: 打开脚本市场主页
 
 'Processing...': '正在处理...'
+
+"This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.": 这个脚本市场有主页可供访问。<br><br>如果你不了解如何使用这个脚本市场中的脚本集，请先查看主页。
 </i18n>
 
 <template>
@@ -66,6 +69,15 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">
+            <template v-if="scriptMarket.extra.homepageURL || scriptMarket.type === 'git'">
+              <el-button
+                type="primary" round plain size="mini"
+                @click="T.openURL(scriptMarket.extra.homepageURL || scriptMarket.configJSON.url)">
+                {{ $t('Open Script Market Homepage') }}
+              </el-button>
+              &#12288;
+            </template>
+
             <span class="text-main">{{ $tc('FoundScriptSetCount', filteredData.length) }}</span>
             &#12288;
             <el-input :placeholder="$t('Filter')"
@@ -84,8 +96,8 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
 
       <!-- 横幅 -->
       <div v-if="isLockedByMe || isLockedByOther" style="padding: 0 30px">
-        <InfoBlock v-if="isLockedByMe" type="success" :title="$t('This Script Market is locked by you')"></InfoBlock>
-        <InfoBlock v-else-if="isLockedByOther" :type="isAccessible ? 'warning' : 'error'" :title="$t('This Script Market is locked by other user ({user})', { user: lockedByUser })"></InfoBlock>
+        <InfoBlock v-if="isLockedByMe" type="success" :title="$t('This Script Market is locked by you')" />
+        <InfoBlock v-else-if="isLockedByOther" :type="isAccessible ? 'warning' : 'error'" :title="$t('This Script Market is locked by other user ({user})', { user: lockedByUser })" />
       </div>
 
       <!-- 列表区 -->
@@ -127,7 +139,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
-                  <CopyButton :content="scope.row.local.id"></CopyButton>
+                  <CopyButton :content="scope.row.local.id" />
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
@@ -198,7 +210,7 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
-                  <CopyButton :content="scope.row.remote.id"></CopyButton>
+                  <CopyButton :content="scope.row.remote.id" />
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.remote.scripts || []).length ) }}
                 </div>
@@ -275,15 +287,16 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
         </el-table>
       </el-main>
 
+      <!-- 操作确认 -->
       <el-dialog
         :title="operationDialogTitle"
-        class="operation-detail"
         :visible.sync="showOperation"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         v-loading.fullscreen.lock="isProcessing"
         element-loading-spinner="el-icon-loading"
-        :element-loading-text="$t('Processing...')">
+        :element-loading-text="$t('Processing...')"
+        width="650px">
         <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
           <el-form-item :label="$t('Name')">
             <el-input disabled :value="scriptSetToOperate.title"></el-input>
@@ -334,15 +347,28 @@ ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚�
           <el-button size="small" type="primary" @click="submitData(operation)" :loading="isProcessing">{{ operationButtonTitle }}</el-button>
         </div>
       </el-dialog>
+
+      <!-- 主页提示 -->
+      <FeatureNoticeDialog
+        featureKey="scriptMarket.homepage"
+        :disabled="!scriptMarket.extra.homepageURL && scriptMarket.type !== 'git'"
+        :description="$t(`This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.`)"
+        :image="img_scriptMarketHomepageNotice" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
 import { debounce } from '@/toolkit'
+
+import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
+import img_scriptMarketHomepageNotice from '@/assets/img/script-market-homepage-notice.png'
+
 export default {
   name: 'ScriptMarketDetail',
   components: {
+    FeatureNoticeDialog,
   },
   watch: {
     $route: {
@@ -773,6 +799,9 @@ export default {
       isProcessing        : false,
 
       forceModeEnabled: false,
+
+      // 主页提示
+      img_scriptMarketHomepageNotice: img_scriptMarketHomepageNotice,
     }
   },
 }
@@ -818,9 +847,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.operation-detail > .el-dialog {
-  width: 620px;
 }
 .el-table th .el-switch {
   display: inline-flex;

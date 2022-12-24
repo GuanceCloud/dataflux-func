@@ -82,7 +82,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                 </el-form-item>
 
                 <el-form-item v-if="data.isBuiltin">
-                  <InfoBlock type="error" :title="$t('This is a built-in Connector, please contact the admin to change the config')"></InfoBlock>
+                  <InfoBlock type="error" :title="$t('This is a built-in Connector, please contact the admin to change the config')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
@@ -102,7 +102,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   </el-form-item>
 
                   <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
-                    <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips"></InfoBlock>
+                    <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
@@ -147,7 +147,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       resize="none"
                       :autosize="{minRows: 2}"
                       v-model="form.configJSON.servers"></el-input>
-                    <InfoBlock type="info" :title="$t('Servers to connect (e.g. host1:80,host2:81)')"></InfoBlock>
+                    <InfoBlock type="info" :title="$t('Servers to connect (e.g. host1:80,host2:81)')" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Protocol')" v-if="hasConfigField(selectedType, 'protocol')" prop="configJSON.protocol">
@@ -186,7 +186,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')"></InfoBlock>
+                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
@@ -272,7 +272,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                         <!-- 最近消费提示 -->
                         <InfoBlock v-if="subInfoMap[topicHandler.topic]"
                           type="warning"
-                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`"></InfoBlock>
+                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
                       </el-form-item>
                       <el-form-item
 

@@ -26,7 +26,7 @@ By Input       : 调用时指定
             <el-tooltip placement="top" v-else>
               <div slot="content">
                 <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
-                <CopyButton :content="JSON.stringify(value, null, 2)" :title="$t('Copy')" font-size="12px"></CopyButton>
+                <CopyButton :content="JSON.stringify(value, null, 2)" :title="$t('Copy')" font-size="12px" />
               </div>
               <code class="func-kwargs-value"><{{ $t('Fixed') }}></code>
             </el-tooltip>

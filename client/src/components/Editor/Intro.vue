@@ -106,7 +106,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
       <!-- 正文区 -->
       <el-main>
         <div class="intro-content">
-          <InfoBlock type="warning" :title="$t('Before you start, please read the following')"></InfoBlock>
+          <InfoBlock type="warning" :title="$t('Before you start, please read the following')" />
 
           <!-- 编辑器左侧栏 -->
           <el-divider content-position="left">

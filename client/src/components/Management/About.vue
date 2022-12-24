@@ -77,8 +77,8 @@ Log and Cache cleared: 日志与缓存表已清空
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="info" :title="`节点完整名称为：\n&quot;celery@{编号}&quot;`"></InfoBlock>
-                    <InfoBlock type="info" :title="`工作队列完整 Key 格式为：\n&quot;DataFluxFunc-worker#workerQueue@{序号}&quot;`"></InfoBlock>
+                    <InfoBlock type="info" :title="`节点完整名称为：\n&quot;celery@{编号}&quot;`" />
+                    <InfoBlock type="info" :title="`工作队列完整 Key 格式为：\n&quot;DataFluxFunc-worker#workerQueue@{序号}&quot;`" />
                   </el-form-item>
                 </template>
 

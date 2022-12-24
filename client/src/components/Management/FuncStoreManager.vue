@@ -49,14 +49,14 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
           <el-table-column label="Key">
             <template slot-scope="scope">
               <code class="text-main">{{ scope.row.key }}</code>
-              <CopyButton :content="scope.row.key"></CopyButton>
+              <CopyButton :content="scope.row.key" />
             </template>
           </el-table-column>
 
           <el-table-column label="Scope">
             <template slot-scope="scope">
               <code class="text-main">{{ scope.row.scope }}</code>
-              <CopyButton :content="scope.row.scope"></CopyButton>
+              <CopyButton :content="scope.row.scope" />
             </template>
           </el-table-column>
 
@@ -87,9 +87,9 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

@@ -65,7 +65,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     <el-option v-for="opt in C.ENV_VARIABLE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
                   <InfoBlock v-if="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting)"
-                    :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips"></InfoBlock>
+                    :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips" />
                 </el-form-item>
 
                 <el-form-item>

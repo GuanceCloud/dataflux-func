@@ -168,7 +168,7 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
 
           <!-- 代码 -->
           <el-form-item :label="$t('Code')" v-show="hasConfig(currentItem.meta.type, 'code')">
-            <InfoBlock type="info" :title="$t('Function &quot;entry_func(prev_result)&quot; is the main func of the node')"></InfoBlock>
+            <InfoBlock type="info" :title="$t('Function &quot;entry_func(prev_result)&quot; is the main func of the node')" />
 
             <div id="codeStageContainer_Blueprint" :style="$store.getters.codeMirrorSetting.style">
               <textarea id="codeStage_Blueprint"></textarea>

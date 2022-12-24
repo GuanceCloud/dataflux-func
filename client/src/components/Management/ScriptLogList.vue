@@ -69,9 +69,9 @@
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="完整日志输出如下" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog title="完整日志输出如下" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

@@ -39,12 +39,12 @@ const STATE_CONFIG = {
   enabledExperimentalFeatureMap            : { persist: true,  syncXTab: true  },
   highlightedTableDataId                   : { persist: false, syncXTab: false },
   shortcutAction                           : { persist: false, syncXTab: false },
-  isMonkeyPatchNoticeDismissed             : { persist: false, syncXTab: true  },
-  isMonkeyPatchNoticeDisabled              : { persist: true,  syncXTab: true  },
   fuzzySearchHistoryMap                    : { persist: true,  syncXTab: true  },
+  scriptMarketCheckUpdateDate              : { persist: true,  syncXTab: true  },
   scriptMarketCheckUpdateResult            : { persist: false, syncXTab: false },
-  scriptMarketCheckUpdateStamp             : { persist: true,  syncXTab: true  },
   showCompleteUserProfile                  : { persist: false, syncXTab: false },
+  featureNoticeDismissedMap                : { persist: false, syncXTab: true  },
+  featureNoticeDisabledMap                 : { persist: true,  syncXTab: true  },
 };
 const MUTATION_CONFIG = {
   updateSystemConfig                             : { persist: true  },
@@ -76,13 +76,13 @@ const MUTATION_CONFIG = {
   updateEnabledExperimentalFeatures              : { persist: true  },
   updateHighlightedTableDataId                   : { persist: false },
   updateShortcutAction                           : { persist: false },
-  dismissMonkeyPatchNotice                       : { persist: false },
-  disableMonkeyPatchNotice                       : { persist: true  },
-  resetMonkeyPatchNotice                         : { persist: true  },
   addFuzzySearchHistory                          : { persist: true  },
+  updateScriptMarketCheckUpdateDate              : { persist: true  },
   updateScriptMarketCheckUpdateResult            : { persist: false },
-  updateScriptMarketCheckUpdateStamp             : { persist: true  },
   updateShowCompleteUserProfile                  : { persist: false },
+  dismissFeatureNotice                           : { persist: false },
+  disableFeatureNotice                           : { persist: true  },
+  resetFeatureNotice                             : { persist: true  },
 
   syncState: { persist: false },
 }
@@ -170,24 +170,28 @@ export default new Vuex.Store({
     // 开启的实验性功能
     enabledExperimentalFeatureMap: null,
 
-    // 高亮表格行数据ID
+    // 高亮表格行数据 ID
     highlightedTableDataId: null,
 
     // 快捷动作
     shortcutAction: null,
 
-    // 隐藏MonkeyPatch提示
-    isMonkeyPatchNoticeDismissed: false,
-    isMonkeyPatchNoticeDisabled : false,
-
     // FuzzySearch控件搜索历史
     fuzzySearchHistoryMap: null,
+
+    // 隐藏脚本市场主页提示
+    isScriptMarketHomepageNoticeDismissed: false,
+    isScriptMarketHomepageNoticeDisabled : false,
 
     // 脚本市场更新检查结果
     scriptMarketCheckUpdateResult: [],
 
     // 脚本市场 git 用户补全弹框
     showCompleteUserProfile: null,
+
+    // 隐藏功能提示
+    featureNoticeDismissedMap: {},
+    featureNoticeDisabledMap : {},
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -306,12 +310,12 @@ export default new Vuex.Store({
     isExperimentalFeatureEnabled: state => key => {
       return !!(state.enabledExperimentalFeatureMap && state.enabledExperimentalFeatureMap[key]);
     },
-    showMonkeyPatchNotice: state => {
-      return !state.isMonkeyPatchNoticeDismissed && !state.isMonkeyPatchNoticeDisabled;
+    showFeatureNotice: state => key =>{
+      return !state.featureNoticeDismissedMap[key] && !state.featureNoticeDisabledMap[key];
     },
 
     isScriptMarketCheckUpdatedRecently: state => {
-      return state.scriptMarketCheckUpdateStamp === moment.utc().format('YYYY-MM-DD');
+      return state.scriptMarketCheckUpdateDate === moment.utc().format('YYYY-MM-DD');
     },
   },
   mutations: {
@@ -460,17 +464,6 @@ export default new Vuex.Store({
       state.shortcutAction = value;
     },
 
-    dismissMonkeyPatchNotice(state) {
-      state.isMonkeyPatchNoticeDismissed = true;
-    },
-    disableMonkeyPatchNotice(state) {
-      state.isMonkeyPatchNoticeDisabled = true;
-    },
-    resetMonkeyPatchNotice(state) {
-      state.isMonkeyPatchNoticeDisabled  = false;
-      state.isMonkeyPatchNoticeDismissed = false;
-    },
-
     clearFuzzySearchHistory(state) {
       state.fuzzySearchHistoryMap = {};
     },
@@ -492,16 +485,26 @@ export default new Vuex.Store({
       state.fuzzySearchHistoryMap[key] = state.fuzzySearchHistoryMap[key].slice(0, 10);
     },
 
+    updateScriptMarketCheckUpdateDate(state) {
+      state.scriptMarketCheckUpdateDate = moment.utc().format('YYYY-MM-DD');
+    },
     updateScriptMarketCheckUpdateResult(state, updatedScriptSets) {
       state.scriptMarketCheckUpdateResult = updatedScriptSets;
     },
 
-    updateScriptMarketCheckUpdateStamp(state) {
-      state.scriptMarketCheckUpdateStamp = moment.utc().format('YYYY-MM-DD');
-    },
-
     updateShowCompleteUserProfile(state, show) {
       state.showCompleteUserProfile = show;
+    },
+
+    dismissFeatureNotice(state, key) {
+      state.featureNoticeDismissedMap[key] = true;
+    },
+    disableFeatureNotice(state, key) {
+      state.featureNoticeDisabledMap[key] = true;
+    },
+    resetFeatureNotice(state) {
+      state.featureNoticeDismissedMap = {};
+      state.featureNoticeDisabledMap  = {};
     },
 
     syncState(state, nextState) {

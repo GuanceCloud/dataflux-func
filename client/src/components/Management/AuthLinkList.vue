@@ -106,12 +106,12 @@ failureCount  : '失败 {n}'
               <FuncInfo
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
-                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
+                :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
@@ -142,7 +142,7 @@ failureCount  : '失败 {n}'
                 <span v-if="!scope.row.expireTime">-</span>
                 <template v-else>
                   <RelativeDateTime :datetime="scope.row.expireTime"
-                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
                 </template>
 
                 <br>
@@ -251,7 +251,7 @@ failureCount  : '失败 {n}'
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
       <APIExampleDialog ref="apiExampleDialog"
         :description="$t('Auth Link only supports synchronous calling')"

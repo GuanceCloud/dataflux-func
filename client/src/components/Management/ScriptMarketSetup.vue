@@ -66,7 +66,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip"></InfoBlock>
+                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Name')">
@@ -107,7 +107,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')"></InfoBlock>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Endpoint')" v-if="hasConfigField(selectedType, 'endpoint')" prop="configJSON.endpoint">
@@ -133,7 +133,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   <el-form-item label="AK Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
                     <el-input
                       v-model="form.configJSON.accessKeySecret" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')"></InfoBlock>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')" />
                   </el-form-item>
 
                   <el-form-item v-if="T.setupPageMode() === 'add' && !C.SCRIPT_MARKET_MAP.get(selectedType).isReadonly">

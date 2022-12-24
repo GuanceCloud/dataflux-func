@@ -35,7 +35,7 @@ New password not matches                                         : 两次输入�
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
-                  <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in as a integrated user, please change your password in the origin system')"></InfoBlock>
+                  <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in as a integrated user, please change your password in the origin system')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Old password')" prop="oldPassword" :error="respError.oldPassword">
@@ -73,7 +73,7 @@ New password not matches                                         : 两次输入�
                   <CaptchaImage
                     captcha-category='changePassword'
                     :captcha-token="form.captchaToken"
-                    @click.native="refreshCaptcha()"></CaptchaImage>
+                    @click.native="refreshCaptcha()" />
                 </el-form-item>
 
                 <el-form-item>

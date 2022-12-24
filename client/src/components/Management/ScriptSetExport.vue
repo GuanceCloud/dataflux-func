@@ -53,7 +53,7 @@ Data exported: 数据已导出
                   <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
                   <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
                   <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
-                  <InfoBlock :title="$t('Exporting with related contents')"></InfoBlock>
+                  <InfoBlock :title="$t('Exporting with related contents')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Connector')" prop="connectorIds">
@@ -72,7 +72,7 @@ Data exported: 数据已导出
                       <code class="select-item-id code-font">ID: {{ item.id }}</code>
                     </el-option>
                   </el-select>
-                  <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
+                  <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('ENV')" prop="envVariableIds">
@@ -100,7 +100,7 @@ Data exported: 数据已导出
                     :autosize="{minRows: 2}"
                     maxlength="200"
                     v-model="form.note"></el-input>
-                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')"></InfoBlock>
+                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>
 
                 <el-form-item>

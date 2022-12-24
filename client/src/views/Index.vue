@@ -66,7 +66,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
             <CaptchaImage
               captcha-category='signIn'
               :captcha-token="form.captchaToken"
-              @click.native="refreshCaptcha()"></CaptchaImage>
+              @click.native="refreshCaptcha()" />
           </el-form-item>
             <el-button tabindex="4" type="primary" @click="submitData">{{ $t('Sign In')}}</el-button>
           <el-form-item>

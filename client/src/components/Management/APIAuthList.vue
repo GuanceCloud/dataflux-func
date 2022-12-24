@@ -103,7 +103,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
               <FuncInfo v-else-if="scope.row.type === 'func'"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
-                :name="scope.row.func_name"></FuncInfo>
+                :name="scope.row.func_name" />
             </template>
           </el-table-column>
 
@@ -118,7 +118,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
     </el-container>
   </transition>
 </template>

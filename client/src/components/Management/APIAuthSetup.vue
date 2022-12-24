@@ -55,7 +55,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
 
                 <template v-if="selectedType">
                   <el-form-item v-if="C.API_AUTH_MAP.get(selectedType).tips">
-                    <InfoBlock type="info" :title="C.API_AUTH_MAP.get(selectedType).tips"></InfoBlock>
+                    <InfoBlock type="info" :title="C.API_AUTH_MAP.get(selectedType).tips" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Name')">
@@ -148,7 +148,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
                         :options="funcCascader"
                         :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
 
-                      <InfoBlock type="info" :title="$t('Func with a specific format is required')"></InfoBlock>
+                      <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
                       <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Sample Code') }}</el-button>
                     </el-form-item>
                   </template>
@@ -179,7 +179,7 @@ Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证�
         </el-row>
       </el-main>
 
-      <LongTextDialog :title="$t('Sample Code')" mode="python" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('Sample Code')" mode="python" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

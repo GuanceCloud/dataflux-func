@@ -70,7 +70,7 @@ recentTaskCount: '{n} 个近期任务'
                     maxlength="50"
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock :title="$t('ID will be a part of the calling URL')"></InfoBlock>
+                  <InfoBlock :title="$t('ID will be a part of the calling URL')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Func')" prop="funcId">
@@ -91,10 +91,10 @@ recentTaskCount: '{n} 个近期任务'
                     v-model="form.funcCallKwargsJSON"
                     resize="none"
                     :autosize="{ minRows: 2 }"></el-input>
-                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')"></InfoBlock>
-                  <InfoBlock :title="$t('parameterHint')"></InfoBlock>
+                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')" />
+                  <InfoBlock :title="$t('parameterHint')" />
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')"></InfoBlock>
+                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Tags')" prop="tagsJSON">

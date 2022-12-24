@@ -53,7 +53,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                     maxlength="50"
                     v-model="form.id">
                   </el-input>
-                  <InfoBlock :title="$t('ID is used in the access URL')"></InfoBlock>
+                  <InfoBlock :title="$t('ID is used in the access URL')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Root')" prop="root">

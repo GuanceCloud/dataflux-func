@@ -107,7 +107,7 @@ Open Script Market Homepage: 打开脚本市场主页
                   <template v-if="scope.row.type === 'git'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
-                    <CopyButton :content="scope.row.configJSON.url"></CopyButton>
+                    <CopyButton :content="scope.row.configJSON.url" />
                     <br>
                     <span class="text-info">{{ $t('Branch') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
@@ -115,20 +115,20 @@ Open Script Market Homepage: 打开脚本市场主页
                   <template v-if="scope.row.type === 'aliyunOSS'">
                     <span class="text-info">{{ $t('Endpoint') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.endpoint }}</code>
-                    <CopyButton :content="scope.row.configJSON.endpoint"></CopyButton>
+                    <CopyButton :content="scope.row.configJSON.endpoint" />
                     <br>
                     <span class="text-info">Bucket</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.bucket }}</code>
-                    <CopyButton :content="scope.row.configJSON.bucket"></CopyButton>
+                    <CopyButton :content="scope.row.configJSON.bucket" />
                     <br>
                     <span class="text-info">{{ $t('Folder') }}</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.folder }}</code>
-                    <CopyButton :content="scope.row.configJSON.folder"></CopyButton>
+                    <CopyButton :content="scope.row.configJSON.folder" />
                   </template>
                   <template v-if="scope.row.type === 'httpService'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
-                    <CopyButton :content="scope.row.configJSON.url"></CopyButton>
+                    <CopyButton :content="scope.row.configJSON.url" />
                   </template>
                   <br>
                 </template>
@@ -146,7 +146,7 @@ Open Script Market Homepage: 打开脚本市场主页
                 </div>
               </div>
 
-              <InfoBlock v-if="scope.row.error" :title="scope.row.error" type="error" ></InfoBlock>
+              <InfoBlock v-if="scope.row.error" :title="scope.row.error" type="error"  />
             </template>
           </el-table-column>
 

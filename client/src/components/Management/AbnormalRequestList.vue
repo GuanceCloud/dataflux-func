@@ -76,7 +76,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
                 <br>
                 <span class="text-info">{{ $t('User ID') }}</span>
                 &nbsp;<code class="text-main text-small">{{ scope.row.userId }}</code>
-                <CopyButton :content="scope.row.userId"></CopyButton>
+                <CopyButton :content="scope.row.userId" />
               </template>
             </template>
           </el-table-column>
@@ -85,7 +85,7 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
             <template slot-scope="scope">
               <strong v-if="scope.row.reqRouteName">{{ scope.row.reqRouteName }}<br></strong>
               <code class="text-main">{{ scope.row.reqMethod }} {{ decodeURI(scope.row.reqURL) }}</code>
-              <CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`"></CopyButton>
+              <CopyButton :content="`${scope.row.reqMethod} ${ scope.row.reqURL }`" />
             </template>
           </el-table-column>
 
@@ -117,9 +117,9 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog"></LongTextDialog>
+      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

@@ -15,7 +15,7 @@
             <div class="common-form">
               <el-form ref="form" :model="form"  label-width="0px">
                 <el-form-item>
-                  <InfoBlock type="info" :title="'一些尚未正式公开的实验性功能可在本页面开启\n本页面配置仅保存在浏览器本地'"></InfoBlock>
+                  <InfoBlock type="info" :title="'一些尚未正式公开的实验性功能可在本页面开启\n本页面配置仅保存在浏览器本地'" />
                 </el-form-item>
 
                 <el-form-item prop="Blueprint">

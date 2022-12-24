@@ -41,7 +41,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
             <div class="common-form">
               <el-form ref="form" :model="form" label-width="0px">
                 <el-form-item>
-                  <InfoBlock type="info" :title="$t('If you got trouble with UI or Code Editor, please try to clear cache')"></InfoBlock>
+                  <InfoBlock type="info" :title="$t('If you got trouble with UI or Code Editor, please try to clear cache')" />
                 </el-form-item>
 
                 <el-form-item>
@@ -114,7 +114,7 @@ export default {
         this.$store.commit('updateEditor_selectedItemId', null);
         this.$store.commit('updateEditor_splitPanePercent', null);
         this.$store.commit('updateTableList_scrollY', null);
-        this.$store.commit('resetMonkeyPatchNotice');
+        this.$store.commit('resetFeatureNotice');
         this.$store.commit('clearFuzzySearchHistory');
       }
 

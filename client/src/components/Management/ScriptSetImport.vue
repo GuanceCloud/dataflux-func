@@ -42,7 +42,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                     <i class="fa" :class="uploadAreaIconClass"></i>
                     <div class="el-upload__text">{{ $t(uploadAreaIconText) }}</div>
                   </el-upload>
-                  <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')"></InfoBlock>
+                  <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')" />
                 </el-form-item>
 
                 <el-form-item>

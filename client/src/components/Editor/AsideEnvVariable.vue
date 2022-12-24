@@ -59,7 +59,7 @@ ENV Variable unpinned: 环境变量已取消
           <div class="aside-tree-node-description">
             <span class="text-info">ID</span>
             &nbsp;<code class="text-main">{{ data.id }}</code>
-            <CopyButton :content="data.id"></CopyButton>
+            <CopyButton :content="data.id" />
 
             <pre v-if="data.description">{{ data.description }}</pre>
           </div>
@@ -68,7 +68,7 @@ ENV Variable unpinned: 环境变量已取消
           <template v-if="data.sampleCode">
             <div class="aside-tree-node-sample-code">
               <span class="text-info">{{ $t('Example') }}</span>
-              <CopyButton :content="data.sampleCode"></CopyButton>
+              <CopyButton :content="data.sampleCode" />
 
               <pre>{{ data.sampleCode }}</pre>
             </div>

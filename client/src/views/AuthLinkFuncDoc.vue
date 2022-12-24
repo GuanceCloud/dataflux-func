@@ -39,12 +39,12 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
                 :id="scope.row.funcId"
                 :title="scope.row.funcTitle"
                 :name="scope.row.funcName"
-                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
+                :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
                 <br>
 
                 <template v-if="T.notNothing(scope.row.funcCategory)">
@@ -94,7 +94,7 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
               <span v-if="!scope.row.expireTime">-</span>
               <template v-else>
                 <RelativeDateTime :datetime="scope.row.expireTime"
-                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
               </template>
 
               <br>

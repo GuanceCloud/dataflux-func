@@ -35,7 +35,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Title') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置文案后，会使用指定的文案作为网站标题"></InfoBlock>
+                  <InfoBlock title="启用并配置文案后，会使用指定的文案作为网站标题" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_SITE_TITLE_ENABLED">
@@ -53,7 +53,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Favicon') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Favicon"></InfoBlock>
+                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Favicon" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_FAVICON_ENABLED">
@@ -85,7 +85,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Logo') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Logo"></InfoBlock>
+                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Logo" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_LOGO_ENABLED">
@@ -117,7 +117,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Notice Bar') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置文案后，会在整个 DataFlux Func UI 界面顶部展示固定的提示栏"></InfoBlock>
+                  <InfoBlock title="启用并配置文案后，会在整个 DataFlux Func UI 界面顶部展示固定的提示栏" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="NOTICE_BAR_ENABLED">
@@ -146,7 +146,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Navi Bar Doc Link') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并指定 URL 地址后，导航栏会出现「文档」，并可以跳转至指定的 URL 地址"></InfoBlock>
+                  <InfoBlock title="启用并指定 URL 地址后，导航栏会出现「文档」，并可以跳转至指定的 URL 地址" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="NAVI_DOC_LINK_ENABLED">
@@ -167,7 +167,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Monitor Data Upload') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置上报地址（DataWay 或 DataKit）后，会将任务执行信息上报"></InfoBlock>
+                  <InfoBlock title="启用并配置上报地址（DataWay 或 DataKit）后，会将任务执行信息上报" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="MONITOR_DATA_UPLOAD_ENABLED">

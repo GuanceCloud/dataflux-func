@@ -31,12 +31,12 @@ Press {0} to search: 按 {0} 开始搜索
               <FuncInfo
                 :id="scope.row.id"
                 :definition="scope.row.definition"
-                :title="scope.row.title"></FuncInfo>
+                :title="scope.row.title" />
 
               <div>
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
                 <br>
 
                 <template v-if="T.notNothing(scope.row.category)">

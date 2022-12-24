@@ -94,7 +94,7 @@ Result  : 结果
               </div>
               <CopyButton class="simple-debug-browser-example-code-copy"
                 v-show="browserCascaderExampleCode"
-                :content="browserCascaderExampleCode"></CopyButton>
+                :content="browserCascaderExampleCode" />
             </el-form-item>
           </el-form>
         </div>
@@ -128,11 +128,11 @@ Result  : 结果
                 <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
               </el-button>
               <div class="simple-debug-copy-content" v-if="latestQueryResultMap[connector.id] && latestQueryResultMap[connector.id].ok">
-                <CopyButton tipPlacement="bottom" :title="$t('Query')" :content="latestQueryOptionsMap[connector.id].queryStatement"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Query')" :content="latestQueryOptionsMap[connector.id].queryStatement" />
                 &nbsp;
-                <CopyButton tipPlacement="bottom" :title="$t('Code')" :content="latestQueryOptionsMap[connector.id].queryCode"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Code')" :content="latestQueryOptionsMap[connector.id].queryCode" />
                 &nbsp;
-                <CopyButton tipPlacement="bottom" :title="$t('Result')" :content="latestQueryResultMap[connector.id].data"></CopyButton>
+                <CopyButton tipPlacement="bottom" :title="$t('Result')" :content="latestQueryResultMap[connector.id].data" />
               </div>
             </el-form-item>
             <el-form-item>

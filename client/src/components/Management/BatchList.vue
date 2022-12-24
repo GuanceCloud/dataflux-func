@@ -78,12 +78,12 @@ failureCount  : '失败 {n}'
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"
-                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
+                :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
@@ -154,7 +154,7 @@ failureCount  : '失败 {n}'
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
 
       <APIExampleDialog ref="apiExampleDialog"
         :description="$t('Batch only supports asynchronous calling')"

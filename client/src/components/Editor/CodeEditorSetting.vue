@@ -21,7 +21,7 @@ Line height should be a number between 1 and 2    : 行高设置范围为 1-2 �
       <i class="fa fa-fw fa-cog"></i> {{ $t('Code Editor setting') }}
     </div>
     <div class="code-editor-setting">
-      <InfoBlock type="warning" :title="$t('Setting of Code Editor only effect current browser')"></InfoBlock>
+      <InfoBlock type="warning" :title="$t('Setting of Code Editor only effect current browser')" />
       <br>
       <el-form ref="form" label-width="100px" :model="form" :rules="formRules">
         <el-form-item :label="$t('Theme')">

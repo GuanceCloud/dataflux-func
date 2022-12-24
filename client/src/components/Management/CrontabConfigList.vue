@@ -88,12 +88,12 @@ failureCount  : '失败 {n}'
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :name="scope.row.func_name"
-                :kwargsJSON="scope.row.funcCallKwargsJSON"></FuncInfo>
+                :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id"></CopyButton>
+                <CopyButton :content="scope.row.id" />
 
                 <template v-if="T.notNothing(scope.row.tagsJSON) || T.notNothing(scope.row.func_tagsJSON)">
                   <br>
@@ -123,14 +123,14 @@ failureCount  : '失败 {n}'
 
               <br>
               <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
-              <RelativeDateTime :datetime="scope.row.createTime"></RelativeDateTime>
+              <RelativeDateTime :datetime="scope.row.createTime" />
 
               <br>
               <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
               <span v-if="!scope.row.expireTime">-</span>
               <template v-else>
                 <RelativeDateTime :datetime="scope.row.expireTime"
-                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'"></RelativeDateTime>
+                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
               </template>
             </template>
           </el-table-column>
@@ -179,7 +179,7 @@ failureCount  : '失败 {n}'
       </el-main>
 
       <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo"></Pager>
+      <Pager :pageInfo="pageInfo" />
     </el-container>
   </transition>
 </template>
