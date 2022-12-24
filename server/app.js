@@ -61,8 +61,7 @@ function startApplication() {
   });
 
   // Favicon
-  var faviconFile = CONFIG.MODE === 'prod' ? 'wat-logo.jpg' : 'wat-logo-warning.jpg';
-  var faviconPath = 'statics/img/' + faviconFile;
+  var faviconPath = 'statics/favicon.ico';
   app.use(favicon(path.join(__dirname, faviconPath)));
 
   // Logger

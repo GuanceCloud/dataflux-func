@@ -54,7 +54,7 @@ Open Script Market Homepage: 打开脚本市场主页
 
 'Processing...': '正在处理...'
 
-"This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.": 这个脚本市场有主页可供访问。<br><br>如果你不了解如何使用这个脚本市场中的脚本集，请先查看主页。
+"This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.": 这个脚本市场有主页可供访问。<br><br>如果你不了解如何使用这个脚本市场中的脚本集，请先查看脚本市场主页。
 </i18n>
 
 <template>
@@ -351,7 +351,7 @@ Open Script Market Homepage: 打开脚本市场主页
       <!-- 主页提示 -->
       <FeatureNoticeDialog
         featureKey="scriptMarket.homepage"
-        :disabled="!scriptMarket.extra.homepageURL && scriptMarket.type !== 'git'"
+        :disabled="scriptMarket.isAdmin || !scriptMarket.extra.homepageURL && scriptMarket.type !== 'git'"
         :description="$t(`This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.`)"
         :image="img_scriptMarketHomepageNotice" />
 
