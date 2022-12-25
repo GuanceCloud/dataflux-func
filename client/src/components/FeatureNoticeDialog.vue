@@ -86,7 +86,7 @@ export default {
   height: 270px;
   border-radius: 20px;
   position: absolute;
-  top: 30px;
+  top: 60px;
   right: 30px;
 }
 .feature-notice-content p {
