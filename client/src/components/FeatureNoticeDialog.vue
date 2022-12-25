@@ -11,16 +11,16 @@ Don't prompt again: 不再提示
     :close-on-press-escape="false"
     width="850px">
     <div class="feature-notice-container">
-      <el-image style="width: 300px" :src="image"></el-image>
+      <el-image style="width: 500px; left: -30px;" :src="image"></el-image>
       <el-card class="feature-notice-content">
         <i class="fa fa-fw feature-notice-icon" :class="icon"></i>
         <p v-html="description"></p>
       </el-card>
+      <div class="feature-notice-buttons">
+        <el-button type="text" @click="close(true)">{{ $t("Don't prompt again") }}</el-button>
+        <el-button type="primary" size="small" @click="close()">{{ $t('OK') }}</el-button>
+      </div>
     </div>
-    <span slot="footer">
-      <el-button type="text" @click="close(true)">{{ $t("Don't prompt again") }}</el-button>
-      <el-button type="primary" size="small" @click="close()">{{ $t('OK') }}</el-button>
-    </span>
   </el-dialog>
 </template>
 
@@ -79,16 +79,15 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .feature-notice-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+
 }
 .feature-notice-content {
   width: 460px;
   height: 240px;
   border-radius: 20px;
-  position: relative;
-  padding: 15px;
+  position: absolute;
+  top: 50px;
+  right: 30px;
 }
 .feature-notice-content p {
   font-size: 18px;
@@ -96,8 +95,10 @@ export default {
   word-break: break-word;
   position: relative;
 }
-.feature-notice-content br {
-  margin-top: 20px;
+.feature-notice-buttons {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
 }
 .feature-notice-icon {
   position: absolute;
