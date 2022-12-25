@@ -11,7 +11,7 @@ Don't prompt again: 不再提示
     :close-on-press-escape="false"
     width="850px">
     <div class="feature-notice-container">
-      <el-image style="width: 500px; left: -30px;" :src="image"></el-image>
+      <el-image style="width: 600px; left: -50px;" :src="image"></el-image>
       <el-card class="feature-notice-content">
         <i class="fa fa-fw feature-notice-icon" :class="icon"></i>
         <p v-html="description"></p>
@@ -82,11 +82,11 @@ export default {
 
 }
 .feature-notice-content {
-  width: 460px;
-  height: 240px;
+  width: 480px;
+  height: 270px;
   border-radius: 20px;
   position: absolute;
-  top: 50px;
+  top: 30px;
   right: 30px;
 }
 .feature-notice-content p {

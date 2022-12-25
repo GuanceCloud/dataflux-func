@@ -304,6 +304,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
           <FeatureNoticeDialog
             featureKey="codeEditor.monkeyPatch"
             :description="$t(`Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.`)"
+            icon="fa-warning"
             :image="img_monkeyPatchNotice" />
 
           <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog" />
