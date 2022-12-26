@@ -14,6 +14,9 @@ omitted.                     : 略
 Abnormal Request data cleared: 异常请求数据已清空
 
 Are you sure you want to clear the abnormal Request data?: 是否确认清空异常请求数据？
+
+No recent Abnormal Request: 尚无任何近期异常请求
+All abnormal requests will be collected and shown here: 所有异常的请求会被搜集，并展示在此
 </i18n>
 
 <template>
@@ -49,10 +52,10 @@ Are you sure you want to clear the abnormal Request data?: 是否确认清空异
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title">尚无任何近期异常请求</h1>
+          <h1 class="no-data-title">{{ $t('No recent Abnormal Request') }}</h1>
 
           <p class="no-data-tip">
-            所有异常的请求会被系统搜集，并展示在此
+            {{ $t('All abnormal requests will be collected and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -242,5 +245,4 @@ export default {
 </style>
 
 <style>
-
 </style>

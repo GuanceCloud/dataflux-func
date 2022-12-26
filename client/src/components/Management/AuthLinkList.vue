@@ -49,6 +49,9 @@ lastFailed    : '{t}调用失败'
 lastRan       : '{t}调用'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
+
+If you need to access the Python function from an external system,                                              : 如需要从外部系统访问 Python 函数，
+you must first create an Auth Link for the Python function and access the Python function through the Auth Link.: 必须先为 Python 函数创建授权链接，通过授权链接访问 Python 函数
 </i18n>
 
 <template>
@@ -92,8 +95,8 @@ failureCount  : '失败 {n}'
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Auth Link has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            出于安全性考虑，函数默认只能从内部网络访问
-            <br>如需从外部访问，必须先为函数创建授权链接，通过授权链接访问函数
+            {{ $t('If you need to access the Python function from an external system,') }}
+            <br>{{ $t('you must first create an Auth Link for the Python function and access the Python function through the Auth Link.') }}
           </p>
         </div>
         <el-table v-else

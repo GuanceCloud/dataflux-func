@@ -34,6 +34,8 @@ lastFailed    : '{t}执行失败'
 lastRan       : '{t}执行'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
+
+Using Crontab Config, you can have functions executed at regular intervals: 使用自动触发配置，可以让函数定时执行
 </i18n>
 
 <template>
@@ -73,8 +75,7 @@ failureCount  : '失败 {n}'
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Crontab Config has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            使用自动触发配置，可以让函数定时执行
-            <br>可灵活运用于数据检测、数据搜集、定时播报等应用场景
+            {{ $t('Using Crontab Config, you can have functions executed at regular intervals') }}
           </p>
         </div>
         <el-table v-else

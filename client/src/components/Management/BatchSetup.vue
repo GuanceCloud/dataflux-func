@@ -383,8 +383,57 @@ export default {
         return d;
       });
     },
-  },
-  props: {
+    formRules() {
+      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
+
+      return {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (this.T.notNothing(value)) {
+                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
+                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+                }
+                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
+                }
+              }
+              return callback();
+            },
+          }
+        ],
+        funcId: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Func'),
+            required: true,
+          },
+        ],
+        funcCallKwargsJSON: [
+          {
+            trigger : 'change',
+            message : errorMessage_funcCallKwargsJSON,
+            required: true,
+          },
+          {
+            trigger  : 'change',
+            validator: (rule, value, callback) => {
+              try {
+                let j = JSON.parse(value);
+                if (Array.isArray(j)) {
+                  return callback(new Error(errorMessage_funcCallKwargsJSON));
+                }
+                return callback();
+
+              } catch(err) {
+                return callback(new Error(errorMessage_funcCallKwargsJSON));
+              }
+            },
+          }
+        ],
+      }
+    },
   },
   data() {
     return {
@@ -406,54 +455,6 @@ export default {
         taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH'),
         note              : null,
       },
-      formRules: {
-        id: [
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (this.T.notNothing(value)) {
-                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
-                  return callback(new Error(`ID必须以"${this.ID_PREFIX}"开头`));
-                }
-                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
-                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
-                }
-              }
-              return callback();
-            },
-          }
-        ],
-        funcId: [
-          {
-            trigger : 'change',
-            message : '请选择执行函数',
-            required: true,
-          },
-        ],
-        funcCallKwargsJSON: [
-          {
-            trigger : 'change',
-            message : '请输入调用参数，无参数的直接填写 {}',
-            required: true,
-          },
-          {
-            trigger  : 'change',
-            message  : '调用参数需要以 JSON 形式填写',
-            validator: (rule, value, callback) => {
-              try {
-                let j = JSON.parse(value);
-                if (Array.isArray(j)) {
-                  return callback(new Error('调用参数需要以 JSON 形式填写，如 {"arg1": "value1"}'));
-                }
-                return callback();
-
-              } catch(err) {
-                return callback(new Error('调用参数需要以 JSON 形式填写，无参数的直接填写 {}'));
-              }
-            },
-          }
-        ],
-      },
     }
   },
 }
@@ -462,7 +463,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 500px;
+  width: 485px;
 }
 .task-info-limit-input {
   width: 180px;

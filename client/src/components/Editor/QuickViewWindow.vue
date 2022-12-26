@@ -1,5 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Drag to place: 调整位置
+
+The Quick View window is only shown when the Script Lib is active, drag and drop the title bar to move the position: 快速查看窗口仅在脚本库激活时显示，拖拽标题栏可以移动位置
 </i18n>
 
 <template>
@@ -68,7 +70,7 @@ export default {
         this.$message({
           type    : 'warning',
           duration: 3000,
-          message : '快速查看窗口仅在脚本侧边栏激活时显示，拖拽标题栏可以移动位置',
+          message : this.$t('The Quick View window is only shown when the Script Lib is active, drag and drop the title bar to move the position'),
         });
       }
 

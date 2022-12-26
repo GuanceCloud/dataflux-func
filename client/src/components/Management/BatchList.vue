@@ -27,6 +27,8 @@ lastFailed    : '{t}调用失败'
 lastRan       : '{t}调用'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
+
+Using Batches, you can execute long and time-consuming Python functions: 使用批处理，可以执行长耗时的 Python 函数
 </i18n>
 
 <template>
@@ -63,8 +65,7 @@ failureCount  : '失败 {n}'
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Batch has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            使用批处理，可以执行长耗时的函数
-            <br>可运用于数据清洗、数据提取等应用场景
+            {{ $t('Using Batches, you can execute long and time-consuming Python functions') }}
           </p>
         </div>
         <el-table v-else

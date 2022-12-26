@@ -524,7 +524,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .func-cascader-input {
-  width: 500px;
+  width: 485px;
 }
 .task-info-limit-input {
   width: 180px;

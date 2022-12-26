@@ -801,8 +801,8 @@ export default {
                             title         : this.$t('Tags'),
                             type          : 'query',
                             query         : 'SHOW TAG KEYS ON "{database}" FROM "{measurement}"',
-                            example       : 'SELECT * FROM "{database}".."{measurement}" WHERE "{tagKey}" = \'标签值\'',
-                            defaultExample: 'SELECT * FROM "{measurement}" WHERE "{tagKey}" = \'标签值\'',
+                            example       : 'SELECT * FROM "{database}".."{measurement}" WHERE "{tagKey}" = \'tagValue\'',
+                            defaultExample: 'SELECT * FROM "{measurement}" WHERE "{tagKey}" = \'tagValue\'',
                             ref           : 'tagKey',
                           }
                         },
@@ -831,7 +831,7 @@ export default {
                     title  : this.$t('Retention Policies'),
                     type   : 'query',
                     query  : 'SHOW RETENTION POLICIES ON "{database}"',
-                    example: 'SELECT * FROM "{database}"."{retentionPolicy}"."指标"',
+                    example: 'SELECT * FROM "{database}"."{retentionPolicy}"."measurement"',
                     ref    : 'retentionPolicy',
                   }
                 },

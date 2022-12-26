@@ -26,6 +26,12 @@ API Auth saved  : API认证已保存
 API Auth deleted: API认证已删除
 
 Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
+
+
+'Get / Check fields in Header': '获取/检查 Header 中字段'
+'Get / Check fields in Query (e.g. http://you_domain/?auth-token=TOKEN)': '获取/检查 Query 中字段（如：http://you_domain/?auth-token=TOKEN）'
+Throw Exception when authentication fails: 认证失败时，抛出 Exception 即可
+Return True when authentication succeeds: 认证成功时，返回 True 即可
 </i18n>
 
 <template>
@@ -375,23 +381,23 @@ export default {
     showAuthFuncSampleCode() {
       let sampleCode = `@DFF.API('My Auth Func')
 def my_auth_func():
-    # 获取/检查 Header 中字段
+    # ${this.$t('Get / Check fields in Header')}
     try:
         is_valid_header = _DFF_HTTP_REQUEST['headers']['x-auth-token'] == 'TOKEN'
     except Exception as e:
         raise Exception('Missing \`x-auth-token\` in header')
 
-    # 获取/检查 Query 中字段（如：http://you_domain/?auth-token=TOKEN）
+    # ${this.$t('Get / Check fields in Query (e.g. http://you_domain/?auth-token=TOKEN)')}
     try:
         is_valid_query = _DFF_HTTP_REQUEST['query']['auth-token'] == 'TOKEN'
     except Exception as e:
         raise Exception('Missing \`auth-token\` in query')
 
-    # 认证失败时，抛出 Exception 即可
+    # ${this.$t('Throw Exception when authentication fails')}
     if not (is_valid_header and is_valid_query):
         raise Exception('Bad Auth Token')
 
-    # 认证成功时，返回 True 即可
+    # ${this.$t('Return True when authentication succeeds')}
     return True`;
       this.$refs.longTextDialog.update(sampleCode);
     },
@@ -493,7 +499,7 @@ def my_auth_func():
 }
 
 .func-cascader-input {
-  width: 500px;
+  width: 485px;
 }
 
 .fixed-field-location .el-select {

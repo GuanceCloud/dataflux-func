@@ -1,3 +1,7 @@
+<i18n locale="en" lang="yaml">
+taskRemain: 'remain {n} task to process | remain {n} tasks to process'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
 About             : 关于
 System Information: 系统信息
@@ -16,8 +20,30 @@ Clear Log and Cache: 清空日志与缓存表
 
 Worker Queue cleared : 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
+Please note that there may be a delay in the system reporting: 请注意系统报告数据可能存在延迟
 
 'You are using {browser} (engine: {engine}) browser': 您正在使用 {browser}（{engine}）浏览器
+
+'Full Node name is celery@{Number}'                                 : 完整节点名称为 celery@{编号}
+'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
+
+taskRemain: （存在 {n} 个待处理任务）
+
+Are you sure you want to clear the Worker Queue?: 是否确认清空此工作队列？
+Are you sure you want to clear the Log and Cache?: 是否确认清空日志与缓存表？
+
+DB Schema Version        : 数据库结构版本
+Web Server CPU Usage     : Web 服务 CPU 使用率
+Web Server Memory Usage  : Web 服务内存使用量
+Worker CPU Usage         : Worker CPU 使用率
+Worker Memory Usage      : Worker 内存使用量
+DB Disk Usage            : 数据库磁盘使用量
+Cache DB Number          : 缓存数据库序号
+Cache Key Count          : 缓存键数量
+Cache Memory Usage       : 缓存内存使用量
+Worker Node Status       : Worker 节点状态
+Wroker Queue Distribution: Worker 队列分布
+Wroker Queue Length      : Worker 队列长度
 </i18n>
 
 <template>
@@ -77,8 +103,8 @@ Log and Cache cleared: 日志与缓存表已清空
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="info" :title="`节点完整名称为：\n&quot;celery@{编号}&quot;`" />
-                    <InfoBlock type="info" :title="`工作队列完整 Key 格式为：\n&quot;DataFluxFunc-worker#workerQueue@{序号}&quot;`" />
+                    <InfoBlock type="info" :title="$t('Full node name is celery@{Number}')" />
+                    <InfoBlock type="info" :title="$t('Full worker queue name is DataFluxFunc-worker#workerQueue@{Number}')" />
                   </el-form-item>
                 </template>
 
@@ -93,8 +119,8 @@ Log and Cache cleared: 日志与缓存表已清空
                     <el-button>{{ $t('Clear Worker Queue') }}</el-button>
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">
-                        队列 <span class="code-font">#{{ q.name }}</span>
-                        (存在 <span class="code-font">{{ q.value }}</span> 个待处理任务)
+                        {{ $t('Clear Worker Queue') }} <span class="code-font">#{{ q.name }}</span>
+                        {{ $tc('taskRemain', q.value ) }}
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
@@ -311,41 +337,41 @@ export default {
       this._getNodesActiveQueues();
     },
     async clearWorkerQueue(queue) {
-      if (!await this.T.confirm(`是否确认清空队列 "#${queue}" ？`)) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to clear the Worker Queue?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/monitor/worker-queues/do/clear', {
         body : { workerQueues: [queue] },
-        alert: { okMessage: `工作队列 "#${queue}" 已被清空
-            <br><small>请注意系统报告内数据可能存在延迟<small>` },
+        alert: { okMessage: `${this.$t('Worker Queue cleared')}
+            <br><small>${this.$t('Please note that there may be a delay in the system reporting')}<small>` },
       });
     },
     async clearLogCacheTables() {
-      if (!await this.T.confirm(`是否确认清空日志/缓存表？`)) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to clear the Log and Cache?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/log-cache-tables/do/clear', {
-        alert: { okMessage: `日志/缓存表已被清空
-            <br><small>请注意系统报告内数据可能存在延迟<small>` },
+        alert: { okMessage: `${this.$t('Log and Cache cleared')}
+            <br><small>${this.$t('Please note that there may be a delay in the system reporting')}<small>` },
       });
     },
   },
   computed: {
     NO_INFO_TEXT() {
-      return '暂无数据';
+      return this.$t('No Data');
     },
     systemReportTEXT() {
       return [
-          '[数据库结构版本]',     this.dbSchemaVersionInfoTEXT,
-        '\n[Web服务CPU使用率]',   this.serverCPUPercentInfoTEXT,
-        '\n[Web服务内存使用量]',  this.serverMemoryRSSInfoTEXT,
-        '\n[Worker CPU使用率]',   this.workerCPUPercentInfoTEXT,
-        '\n[Worker内存使用量]',   this.workerMemoryPSSInfoTEXT,
-        '\n[数据库磁盘使用量]',   this.dbDiskUsedInfoTEXT,
-        '\n[缓存数据库序号]',     this.cacheDBNumberInfoTEXT,
-        '\n[缓存键数量]',         this.cacheDBKeyUsedInfoTEXT,
-        '\n[缓存内存使用量]',     this.cacheDBMemoryUsedInfoTEXT,
-        '\n[Worker节点状态]',     this.nodesStatsInfoTEXT,
-        '\n[Worker队列分布]',     this.nodesActiveQueuesInfoTEXT,
-        '\n[Worker队列长度]',     this.workerQueueLengthInfoTEXT,
+          `[${this.$t('DB Schema Version')}]`,         this.dbSchemaVersionInfoTEXT,
+        `\n[${this.$t('Web Server CPU Usage')}]`,      this.serverCPUPercentInfoTEXT,
+        `\n[${this.$t('Web Server Memory Usage')}]`,   this.serverMemoryRSSInfoTEXT,
+        `\n[${this.$t('Worker CPU Usage')}]`,          this.workerCPUPercentInfoTEXT,
+        `\n[${this.$t('Worker Memory Usage')}]`,       this.workerMemoryPSSInfoTEXT,
+        `\n[${this.$t('DB Disk Usage')}]`,             this.dbDiskUsedInfoTEXT,
+        `\n[${this.$t('Cache DB Number')}]`,           this.cacheDBNumberInfoTEXT,
+        `\n[${this.$t('Cache Key Count')}]`,           this.cacheDBKeyUsedInfoTEXT,
+        `\n[${this.$t('Cache Memory Usage')}]`,        this.cacheDBMemoryUsedInfoTEXT,
+        `\n[${this.$t('Worker Node Status')}]`,        this.nodesStatsInfoTEXT,
+        `\n[${this.$t('Wroker Queue Distribution')}]`, this.nodesActiveQueuesInfoTEXT,
+        `\n[${this.$t('Wroker Queue Length')}]`,       this.workerQueueLengthInfoTEXT,
       ].join('\n');
     },
     releaseDateTEXT() {
