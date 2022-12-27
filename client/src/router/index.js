@@ -284,9 +284,9 @@ const routes = [
       },
 
       {
-        path: 'file-manager',
-        name: 'file-manager',
-        component: () => import('../components/Management/FileManager.vue'),
+        path: 'file-manage',
+        name: 'file-manage',
+        component: () => import('../components/Management/FileManage.vue'),
       },
       {
         path: 'file-service-list',
@@ -304,14 +304,14 @@ const routes = [
         component: () => import('../components/Management/FileServiceSetup.vue'),
       },
       {
-        path: 'func-cache-manager',
-        name: 'func-cache-manager',
-        component: () => import('../components/Management/FuncCacheManager.vue'),
+        path: 'func-cache-manage',
+        name: 'func-cache-manage',
+        component: () => import('../components/Management/FuncCacheManage.vue'),
       },
       {
-        path: 'func-store-manager',
-        name: 'func-store-manager',
-        component: () => import('../components/Management/FuncStoreManager.vue'),
+        path: 'func-store-manage',
+        name: 'func-store-manage',
+        component: () => import('../components/Management/FuncStoreManage.vue'),
       },
 
       {

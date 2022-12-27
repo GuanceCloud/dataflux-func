@@ -18,7 +18,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Func Store Managment') }}</span>
+          <span>{{ $t('Func Store Manage') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
@@ -98,7 +98,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
-  name: 'FuncStoreManager',
+  name: 'FuncStoreManage',
   components: {
     LongTextDialog,
   },

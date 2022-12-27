@@ -230,7 +230,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
                   <td>{{ $t('Recover Script Lib to a previous moment') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-users"></i> {{ $t('User Managment') }}</td>
+                  <td><i class="fa fa-fw fa-users"></i> {{ $t('User Manage') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Manage the users who use the system') }}</td>
                 </tr>

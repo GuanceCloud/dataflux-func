@@ -54,26 +54,26 @@
             <el-menu-item index="/management/script-set-export">
               <span>
                 <i class="fa fa-fw fa-cloud-download"></i>
-                {{ $t('Script Set Exporting') }}
+                {{ $t('Script Set Export') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-set-import">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
-                {{ $t('Script Sets Importing') }}
+                {{ $t('Script Sets Import') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-recover-point-add">
               <span>
                 <i class="fa fa-fw fa-history"></i>
-                {{ $t('Script Lib Recovering') }}
+                {{ $t('Script Lib Recover') }}
               </span>
             </el-menu-item>
 
             <el-menu-item index="/management/user-list" v-if="$store.getters.isAdmin">
               <span>
                 <i class="fa fa-fw fa-users"></i>
-                {{ $t('User Managment') }}
+                {{ $t('User Manage') }}
               </span>
             </el-menu-item>
 
@@ -106,11 +106,11 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileManager')"
-              class="experimental-feature" index="/management/file-manager">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileManage')"
+              class="experimental-feature" index="/management/file-manage">
               <span>
                 <i class="fa fa-fw fa-file"></i>
-                {{ $t('File Manager') }}
+                {{ $t('File Manage') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileService')"
@@ -120,18 +120,18 @@
                 {{ $t('File Service') }}
               </span>
             </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManager')"
-              class="experimental-feature" index="/management/func-cache-manager">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManage')"
+              class="experimental-feature" index="/management/func-cache-manage">
               <span>
                 <i class="fa fa-fw fa-dot-circle-o"></i>
-                {{ $t('Func Cache Managment') }}
+                {{ $t('Func Cache Manage') }}
               </span>
             </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManager')"
-              class="experimental-feature" index="/management/func-store-manager">
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManage')"
+              class="experimental-feature" index="/management/func-store-manage">
               <span>
                 <i class="fa fa-fw fa-database"></i>
-                {{ $t('Func Store Managment') }}
+                {{ $t('Func Store Manage') }}
               </span>
             </el-menu-item>
 
@@ -139,7 +139,7 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
               <span>
                 <i class="fa fa-fw fa-book"></i>
-                {{ $t('Func Documents') }}
+                {{ $t('Func Docs') }}
               </span>
             </el-menu-item>
 
@@ -147,7 +147,7 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
               <span>
                 <i class="fa fa-fw fa-link"></i>
-                {{ $t('Auth Link Documents') }}
+                {{ $t('Auth Link Docs') }}
               </span>
             </el-menu-item>
 
@@ -155,7 +155,7 @@
               class="experimental-feature" index="/management/sys-stats">
               <span>
                 <i class="fa fa-fw fa-line-chart"></i>
-                {{ $t('System Metric') }}
+                {{ $t('System Status') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SystemLogs')"
@@ -169,30 +169,30 @@
               class="experimental-feature" index="/management/abnormal-request-list">
               <span>
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
-                {{ $t('Abnormal Accesses') }}
+                {{ $t('Abnormal Requests') }}
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLog')">
+            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLogs')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
                 {{ $t('Script Logs') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailure')">
+            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailures')">
               <span>
                 <i class="fa fa-fw fa-bug"></i>
-                {{ $t('Script Failure') }}
+                {{ $t('Script Failures') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKey')"
+            <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKeys')"
               class="experimental-feature" index="/management/access-key-list">
               <span>
                 <i class="fa fa-fw fa-key"></i>
-                {{ $t('Access Key') }}
+                {{ $t('Access Keys') }}
               </span>
             </el-menu-item>
           </el-menu>
@@ -244,7 +244,10 @@ export default {
 .aside-content {
   height: 100%;
 }
-.experimental-feature {
-  margin-left: 10px;
+.aside .el-menu-item {
+  padding-right: 40px;
+}
+.aside .experimental-feature.el-menu-item {
+  padding-left: 40px !important;
 }
 </style>

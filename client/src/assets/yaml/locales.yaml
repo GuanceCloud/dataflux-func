@@ -277,28 +277,28 @@ en:
   Auth Link                   : 授权链接
   Crontab Config              : 自动触发配置
   Batch                       : 批处理
-  Script Set Exporting        : 脚本集导出
-  Script Sets Importing       : 脚本集导入
+  Script Set Export           : 脚本集导出
+  Script Sets Import          : 脚本集导入
   Script Set Exporting History: 脚本集导出历史
   Script Set Importing History: 脚本集导入历史
-  Script Lib Recovering       : 脚本库还原
-  User Managment              : 成员管理
+  Script Lib Recover          : 脚本库还原
+  User Manage                 : 成员管理
   System Config               : 系统配置
   Operation Logs              : 操作记录
   Script Logs                 : 脚本日志
-  Script Failure              : 脚本故障
+  Script Failures             : 脚本故障
   Experimental Features       : 实验性功能
-  Access Key                  : Access Key
-  System Metric               : 系统指标
+  Access Keys                 : Access Key
+  System Status               : 系统状态
   PIP Tool                    : PIP工具
-  File Manager                : 文件管理器
+  File Manage                 : 文件管理
   File Service                : 文件服务
-  Func Documents              : 函数文档
-  Auth Link Documents         : 授权链接文档
-  Func Cache Managment        : 函数缓存管理器
-  Func Store Managment        : 函数存储管理器
+  Func Docs                   : 函数文档
+  Auth Link Docs              : 授权链接文档
+  Func Cache Manage           : 函数缓存管理
+  Func Store Manage           : 函数存储管理
   System Logs                 : 系统日志
-  Abnormal Accesses           : 异常请求
+  Abnormal Requests           : 异常请求
 
   Script Set ID    : 脚本集 ID
   Script ID        : 脚本 ID

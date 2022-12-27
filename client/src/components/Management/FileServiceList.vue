@@ -9,6 +9,8 @@ No File Service has ever been added: 从未添加过任何文件服务
 
 Are you sure you want to disable the File Service?: 是否确认禁用此文件服务？
 Are you sure you want to delete the File Service?: 是否确认删除此文件服务？
+
+Expose folders in the Resource as File Services to allow external systems to access files directly: 将资源目录下的文件夹创建为文件服务，即可在系统外部直接访问文件
 </i18n>
 
 <template>
@@ -36,8 +38,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No File Service has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            出于安全性考虑，资源目录文件默认不对外提供
-            <br>如需从外部直接访问资源目录下文件，必须先为资源目录下的某个文件夹创建文件服务，通过文件服务接口进行访问
+            {{ $t('Expose folders in the Resource as File Services to allow external systems to access files directly') }}
           </p>
         </div>
         <el-table v-else

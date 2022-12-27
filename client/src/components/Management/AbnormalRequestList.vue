@@ -25,7 +25,7 @@ All abnormal requests will be collected and shown here: 所有异常的请求会
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Abnormal Accesses') }}</span>
+          <span>{{ $t('Abnormal Requests') }}</span>
           <div class="header-control">
             <el-button @click="refresh" size="small">
               <i class="fa fa-fw fa-refresh"></i>

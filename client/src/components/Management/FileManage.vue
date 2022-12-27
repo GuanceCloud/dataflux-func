@@ -1,11 +1,10 @@
 <i18n locale="zh-CN" lang="yaml">
-File Manager      : 文件管理器
-Go Top            : 返回顶层
-Go Up             : 向上
-File size limit   : 文件大小限制
-Path              : 路径
-Create time       : 创建时间
-Update time       : 更新时间
+Go Top         : 返回顶层
+Go Up          : 向上
+File size limit: 文件大小限制
+Path           : 路径
+Create time    : 创建时间
+Update time    : 更新时间
 
 Package: Wheel包
 Mirror : PIP镜像
@@ -34,7 +33,7 @@ File already existed                                                            
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('File Manager') }}</span>
+          <span>{{ $t('File Manage') }}</span>
 
           &#12288;
           <el-tooltip :content="$t('Go Up')">
@@ -204,7 +203,7 @@ File already existed                                                            
 import * as pathTool from '@/pathTool'
 
 export default {
-  name: 'FileManager',
+  name: 'FileManage',
   components: {
   },
   watch: {

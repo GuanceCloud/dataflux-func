@@ -1,10 +1,66 @@
+<i18n locale="zh-CN" lang="yaml">
+Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.: 一些尚未正式公开的实验性功能可在本页面开启，本页面配置仅保存在浏览器本地
+
+Enable Blueprint: 开启蓝图
+For developing Scripts graphically: 用于图形化方式开发脚本
+Once opened, it can be accessed from Navigation Bar {0} Blueprint: 开启后，可在顶部「导航栏」{0}「蓝图」进入
+
+Enable PIP Tool: 开启 PIP 工具
+For installing 3rd-party Python package: 用于安装第三方 Python 包
+Once opened, it can be accessed from Management page {0} PIP tool: 开启后，可在「管理」{0}「PIP 工具」进入
+
+Enable File Manage: 开启文件管理
+For managing files on the server side: 用于管理服务器端文件
+Once opened, it can be accessed from Management page {0} File Manage: 开启后，可在「管理」{0}「文件管理」进入
+
+Enable File Service: 开启文件服务
+For serving resource directories as file services: 用于将资源目录提供为文件服务
+Once opened, it can be accessed from Management page {0} File Service: 开启后，可在「管理」{0}「文件服务」进入
+
+Enable Func Cache Manage: 开启函数缓存管理
+For managing cached data from Scripts: 用于管理脚本产生的缓存数据
+Once opened, it can be accessed from Management page {0} Func Cache Manage: 开启后，可在「管理」{0}「函数缓存管理」进入
+
+Enable Func Store Manage: 开启函数存储管理
+For managing stored data from Scripts: 用于管理脚本产生的存储数据
+Once opened, it can be accessed from Management page {0} Func Store Manage: 开启后，可在「管理」{0}「函数存储管理」进入
+
+Enable Func Doc: 开启函数文档
+Document page for all exported Python functions: 函数的文档，包含所有导出的 Python 函数
+Once opened, it can be accessed from Management page {0} Func Doc: 开启后，可在「管理」{0}「函数文档」进入
+
+Enable System Status Page: 开启系统状态查看页面
+Status Page for current system: 本系统状态查看页面
+Once opened, it can be accessed from Management page {0} System Status: 开启后，可在「管理」{0}「系统状态」进入
+
+Enable System Log Page: 开启系统日志查看页面
+Log Page for current system: 本系统日志查看页面
+Once opened, it can be accessed from Management page {0} System Logs: 开启后，可在「管理」{0}「系统日志」进入
+
+Enable Abnormal Request Page: 开启异常请求查看页面
+Abnormal Request Page for current system: 本系统异常请求查看页面
+Once opened, it can be accessed from Management page {0} Abnormal Requests: 开启后，可在「管理」{0}「异常请求」进入
+
+Enable Script Log Page: 开启脚本日志查看页面
+Log Page for Script runtime: 脚本运行时日志查看页面
+Once opened, it can be accessed from Management page {0} Script Logs: 开启后，可在「管理」{0}「脚本日志」进入
+
+Enable Script Failure Page: 开启脚本故障查看页面
+Failure Page for Script runtime: 脚本运行时故障查看页面
+Once opened, it can be accessed from Management page {0} Script Failures: 开启后，可在「管理」{0}「脚本故障」进入
+
+Enable Access Key Manage: 开启 Access Key 管理
+For allowing external systems to call DataFlux Func APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
+Once opened, it can be accessed from Management page {0} Access Keys: 开启后，可在「管理」{0}「Access Keys」进入
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <h1>
-          实验性功能
+          {{ $t('Experimental Features') }}
         </h1>
       </el-header>
 
@@ -13,111 +69,111 @@
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="common-form">
-              <el-form ref="form" :model="form"  label-width="0px">
+              <el-form ref="form" :model="form" label-width="0px">
                 <el-form-item>
-                  <InfoBlock type="info" :title="'一些尚未正式公开的实验性功能可在本页面开启\n本页面配置仅保存在浏览器本地'" />
+                  <InfoBlock type="info" :title="$t('Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.')" />
                 </el-form-item>
 
                 <el-form-item prop="Blueprint">
-                  <el-switch active-text="开启蓝图模块" v-model="form.Blueprint"></el-switch>
+                  <el-switch :active-text="$t('Enable Blueprint')" v-model="form.Blueprint"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于图形化方式开发脚本
-                    <br>开启后，可在顶部「导航栏」<i class="fa fa-fw fa-long-arrow-right"></i>「蓝图」进入模块
+                    {{ $t('For developing Scripts graphically') }}
+                    <br><i18n path="Once opened, it can be accessed from Navigation Bar {0} Blueprint"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
                 <br><br>
 
                 <el-form-item prop="PIPTool">
-                  <el-switch active-text="开启PIP工具模块" v-model="form.PIPTool"></el-switch>
+                  <el-switch :active-text="$t('Enable PIP Tool')" v-model="form.PIPTool"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于安装脚本所需的额外第三方Python包（PIP）
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「PIP工具」进入模块
+                    {{ $t('For installing 3rd-party Python package') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} PIP tool"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="FileManager">
-                  <el-switch active-text="开启文件管理器模块" v-model="form.FileManager"></el-switch>
+                <el-form-item prop="FileManage">
+                  <el-switch :active-text="$t('Enable File Manage')" v-model="form.FileManage"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于在服务器端处理/保存文件
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件管理器」进入模块
+                    {{ $t('For managing files on the server side') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} File Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
                 <el-form-item prop="FileService">
-                  <el-switch active-text="开启文件服务模块" v-model="form.FileService"></el-switch>
+                  <el-switch :active-text="$t('Enable File Service')" v-model="form.FileService"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于将资源目录提供为文件服务的功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「文件服务」进入模块
+                    {{ $t('For serving resource directories as file services') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} File Service"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="FuncCacheManager">
-                  <el-switch active-text="开启函数缓存管理器模块" v-model="form.FuncCacheManager"></el-switch>
+                <el-form-item prop="FuncCacheManage">
+                  <el-switch :active-text="$t('Enable Func Cache Manage')" v-model="form.FuncCacheManage"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于展示、管理当前函数缓存数据的功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数缓存管理器」进入模块
+                    {{ $t('For managing cached data from Scripts') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Cache Management"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
-                <el-form-item prop="FuncStoreManager">
-                  <el-switch active-text="开启函数存储管理器模块" v-model="form.FuncStoreManager"></el-switch>
+                <el-form-item prop="FuncStoreManage">
+                  <el-switch :active-text="$t('Enable Func Store Manage')" v-model="form.FuncStoreManage"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于展示、管理当前函数存储数据的功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数存储管理器」进入模块
+                    {{ $t('For managing stored data from Scripts') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Store Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
                 <el-form-item prop="FuncDoc">
-                  <el-switch active-text="开启函数文档模块" v-model="form.FuncDoc"></el-switch>
+                  <el-switch :active-text="$t('Enable Func Doc')" v-model="form.FuncDoc"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于展示所有可用函数的文档功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「函数文档」进入模块
+                    {{ $t('Document page for all exported Python functions') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
                 <el-form-item prop="SysStat">
-                  <el-switch active-text="开启系统指标查看模块" v-model="form.SysStat"></el-switch>
+                  <el-switch :active-text="$t('Enable System Status Page')" v-model="form.SysStat"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看本系统的一些运行指标信息
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统指标」进入模块
+                    {{ $t('Status Page for current system') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} System Status"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
                 <el-form-item prop="SystemLogs">
-                  <el-switch active-text="开启系统日志查看模块" v-model="form.SystemLogs"></el-switch>
+                  <el-switch :active-text="$t('Enable System Log Page')" v-model="form.SystemLogs"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看当前系统日志的功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「系统日志」进入模块
+                    {{ $t('Log Page for current system') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} System Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
                 <el-form-item prop="AbnormalReqs">
-                  <el-switch active-text="开启异常请求查看模块" v-model="form.AbnormalReqs"></el-switch>
+                  <el-switch :active-text="$t('Enable Abnormal Request Page')" v-model="form.AbnormalReqs"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看当前系统异常请求的功能
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「异常请求」进入模块
+                    {{ $t('Abnormal Request Page for current system') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Abnormal Requests"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptLog" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG')">
-                  <el-switch active-text="开启脚本日志查看模块" v-model="form.ScriptLog"></el-switch>
+                <el-form-item prop="ScriptLogs" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG')">
+                  <el-switch :active-text="$t('Enable Script Log Page')" v-model="form.ScriptLogs"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看脚本运行时，通过<code>print()</code>函数输出的内容。每次运行产生一条记录，并包含所有输出内容
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「脚本日志」进入模块
+                    {{ $t('Log Page for Script runtime') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Script Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptFailure" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE')">
-                  <el-switch active-text="开启脚本故障查看模块" v-model="form.ScriptFailure"></el-switch>
+                <el-form-item prop="ScriptFailures" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE')">
+                  <el-switch :active-text="$t('Enable Script Failure Page')" v-model="form.ScriptFailures"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于查看脚本运行时，最终由平台处理的报错信息。每次报错产生一条记录，并包含了完整错误堆栈
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「脚本故障」进入模块
+                    {{ $t('Failure Page for Script runtime') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Script Failures"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="AccessKey" v-if="$store.getters.isAdmin">
-                  <el-switch active-text="开启AccessKey 管理模块" v-model="form.AccessKey"></el-switch>
+                <el-form-item prop="AccessKeys" v-if="$store.getters.isAdmin">
+                  <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
-                    用于管理允许外部系统调用本平台接口的认证信息
-                    <br>开启后，可在「管理」<i class="fa fa-fw fa-long-arrow-right"></i>「AccessKey」进入模块
+                    {{ $t('For allowing external systems to call DataFlux Func APIs') }}
+                    <br><i18n path="Once opened, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
               </el-form>
@@ -169,19 +225,19 @@ export default {
   data() {
     return {
       form: {
-        PIPTool         : false,
-        Blueprint       : false,
-        FileManager     : false,
-        FileService     : false,
-        FuncCacheManager: false,
-        FuncStoreManager: false,
-        FuncDoc         : false,
-        SysStat         : false,
-        SystemLogs      : false,
-        AbnormalReqs    : false,
-        ScriptLog       : false,
-        ScriptFailure   : false,
-        AccessKey       : false,
+        PIPTool        : false,
+        Blueprint      : false,
+        FileManage     : false,
+        FileService    : false,
+        FuncCacheManage: false,
+        FuncStoreManage: false,
+        FuncDoc        : false,
+        SysStat        : false,
+        SystemLogs     : false,
+        AbnormalReqs   : false,
+        ScriptLogs     : false,
+        ScriptFailures : false,
+        AccessKeys     : false,
       },
     }
   },
