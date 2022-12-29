@@ -532,7 +532,7 @@ export default {
       // 操作处理结束
       clearTimeout(delayedLoadingT);
       this.isProcessing = false;
-      this.progressTip       = '';
+      this.progressTip  = '';
 
       await this.loadData();
 
@@ -565,8 +565,8 @@ export default {
 
       // 操作处理结束
       clearTimeout(delayedLoadingT);
-      this.isProcessing = false;
-      this.showInstallWheel  = false;
+      this.isProcessing     = false;
+      this.showInstallWheel = false;
     },
   },
   computed: {

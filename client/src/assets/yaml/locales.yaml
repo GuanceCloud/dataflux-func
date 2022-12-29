@@ -199,6 +199,7 @@ en:
   Folder               : 文件夹
   File                 : 文件
   Size                 : 大小
+  Time                 : 时间
   Create Time          : 创建时间
   Update Time          : 更新时间
   Example              : 示例
@@ -284,9 +285,9 @@ en:
   Script Lib Recover          : 脚本库还原
   User Manage                 : 成员管理
   System Config               : 系统配置
-  Operation Logs              : 操作记录
-  Script Logs                 : 脚本日志
+  Operation Records           : 操作记录
   Script Failures             : 脚本故障
+  Script Logs                 : 脚本日志
   Experimental Features       : 实验性功能
   Access Keys                 : Access Key
   System Status               : 系统状态
@@ -425,7 +426,8 @@ en:
   Missing branch for False  : 缺少判断为假的分支
   Incomplete processing flow: 处理流程不完整
 
-  # 脚本市场 git 用户信息补全
+  # 脚本市场
+  Official Script Market: 官方脚本市场
   Complete User Profile for git committing: 补全用于 git 提交的用户信息
   Please input name : 请输入名称
   Please input email: 请输入邮箱

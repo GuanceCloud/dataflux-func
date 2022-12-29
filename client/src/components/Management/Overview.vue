@@ -22,12 +22,9 @@ Publish time                  : 发布时间
 Never published               : 从未发布
 Recent operations             : 最近操作记录
 recentOperationCount          : 最近 {n} 条
-Time                          : 时间
 Client                        : 客户端
 Client ID                     : 客户端ID
 IP Address                    : IP地址
-User                          : 用户
-User ID                       : 用户ID
 Operation                     : 操作
 Data ID                       : 数据ID
 MODIFY                        : 修改操作

@@ -7,12 +7,12 @@ recentTaskCount: 'recent {n} task | recent {n} tasks'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-randomIDString: auln-{随机ID}
+randomIDString: auln-{随机 ID}
 
 Add Auth Link  : 添加授权链接
 Setup Auth Link: 配置授权链接
 
-Customize ID: 定制ID
+Customize ID: 定制 ID
 Func        : 执行函数
 Arguments   : 参数指定
 Task Info   : 任务信息
@@ -25,11 +25,11 @@ Limiting    : 限流
 Note        : 备注
 
 URL Preview: URL预览
-ID will be a part of the calling URL: 此ID用于生成调用时的URL
-'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
+ID will be a part of the calling URL: 此 ID 用于生成调用时的 URL
+'JSON formated arguments (**kwargs)': 'JSON 格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
 
-'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+'ID must starts with "{prefix}"': 'ID 必须以"{prefix}"开头'
 'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select Func: 请选择执行函数
 'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'

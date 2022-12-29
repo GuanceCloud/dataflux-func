@@ -17,7 +17,7 @@ No API Auth has ever been added: 从未添加过任何 API 认证
 
 Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
 
-Auth Links, Batches can be accessed without authentication by default: 授权链接、批处理的API在默认情况下不需要认证即可访问
+Auth Links, Batches can be accessed without authentication by default: 授权链接、批处理的 API 在默认情况下不需要认证即可访问
 If you need to enhance security, you can create API Auth for Auth Links and Batches. : 如需要增强安全性，可以为授权链接、批处理创建 API 认证
 </i18n>
 

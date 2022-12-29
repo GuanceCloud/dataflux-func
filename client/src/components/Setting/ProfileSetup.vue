@@ -1,8 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
-User Profile                                                                           : 用户信息
+User Profile: 用户信息
+
 You are signed in as a integrated user, please change your profile in the origin system: 当前登录用户为集成登录用户，修改信息请前往原系统进行操作
 
-Please input name: 请输入名称
+Please input name : 请输入名称
 Please input email: 请输入邮箱
 
 User Profile saved: 用户信息已保存

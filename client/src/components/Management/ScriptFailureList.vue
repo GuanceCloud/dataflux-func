@@ -1,10 +1,16 @@
+<i18n locale="zh-CN" lang="yaml">
+Exec Mode: 执行方式
+
+No recent Script Failures: 无近期脚本故障
+All Exceptions throwed from Script will be collected by the system and shown here: 脚本运行时抛出的错误会被系统搜集并展示在此
+</i18n>
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>近期脚本故障</span>
+          <span>{{ $t('Script Failures') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
@@ -15,11 +21,10 @@
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>尚无任何近期脚本故障</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Script Failures') }}</h1>
 
           <p class="no-data-tip">
-            脚本运行时可能产生各种问题，如未在函数内部处理，则会抛出到系统层
-            <br>抛出的错误会被系统搜集，并展示在此
+            {{ $t('All Exceptions throwed from Script will be collected by the system and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -27,7 +32,7 @@
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column label="执行方式" width="150">
+          <el-table-column :label="$t('Exec Mode')" width="150">
             <template slot-scope="scope">
               <span :class="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).textClass">
                 {{ C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).name }}
@@ -35,7 +40,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="时间" width="200">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -43,7 +48,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="函数">
+          <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
               <template v-if="scope.row.func_id">
                 <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>

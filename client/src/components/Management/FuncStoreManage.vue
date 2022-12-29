@@ -10,6 +10,9 @@ Func Store data deleted: 函数缓存数据已删除
 No Func Store data has ever been added: 从未添加过任何函数存储数据
 
 Are you sure you want to delete the Func Store data?: 是否确认删除此函数存储数据？
+
+Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 和 {1} 在脚本中存取数据
+See {0} for more information: 查看 {0} 来获取更多信息
 </i18n>
 
 <template>
@@ -32,8 +35,17 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Func Store data has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            可以使用<code>DFF.STORE.set('key', 'value', scope='scope', expire=3600)</code>和<code>DFF.STORE('key', scope='scope')</code>来存取函数存储数据
-            <br><code>scope</code>参数为可选。未指定时则默认为代码所在的脚本ID
+            <i18n path="Using {0} and {1} to setting and getting store data in Script">
+              <code class="code-font">DFF.STORE.set('key', 'value')</code>
+              <code class="code-font">DFF.STORE('key')</code>
+            </i18n>
+            <br>
+            <i18n path="See {0} for more information">
+              <el-link href="https://func.guance.com/doc/development-guide-builtin-features-dff-store/" target="_blank">
+                <i class="fa fa-fw fa-book"></i>
+                {{ $t('Document') }}
+              </el-link>
+            </i18n>
           </p>
         </div>
         <el-table v-else
@@ -89,7 +101,7 @@ Are you sure you want to delete the Func Store data?: 是否确认删除此函�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog" />
+      <LongTextDialog :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

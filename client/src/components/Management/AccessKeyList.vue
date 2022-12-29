@@ -1,9 +1,9 @@
 <i18n locale="zh-CN" lang="yaml">
-Access Key deleted: AccessKey已删除
+Access Key deleted: Access Key 已删除
 
 No Access Key has ever been added: 从未添加过任何授权链接
 
-Are you sure you want to delete the Access Key?: 是否确认删除此AccessKey？
+Are you sure you want to delete the Access Key?: 是否确认删除此 Access Key？
 
 Add Access Key to allow external systems to call DataFlux Func APIs: 添加 Access Key，允许外部系统调用 DataFlux Func 的 API
 </i18n>

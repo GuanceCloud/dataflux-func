@@ -87,7 +87,7 @@ Open Script Market Homepage: 打开脚本市场主页
 
           <el-table-column :label="$t('Type')" width="210" align="center">
             <template slot-scope="scope">
-              <i v-if="isOfficialScriptMarket(scope.row)" class="fa fa-fw fa-3x fa-star text-watch"></i>
+              <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
               <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
             </template>
           </el-table-column>
@@ -99,11 +99,12 @@ Open Script Market Homepage: 打开脚本市场主页
               </el-tooltip>
 
               <strong class="script-market-name" :class="scope.row.isPinned ? 'text-bad': ''">
-                {{ common.getScriptMarketName(scope.row) }}
+                <span v-if="scope.row.isOfficial">{{ $t('Official Script Market') }}</span>
+                <span v-else>{{ common.getScriptMarketName(scope.row) }}</span>
               </strong>
 
               <div>
-                <template v-if="!isOfficialScriptMarket(scope.row)">
+                <template v-if="!scope.row.isOfficial">
                   <template v-if="scope.row.type === 'git'">
                     <span class="text-info">URL</span>
                     &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.url }}</code>
@@ -194,7 +195,7 @@ Open Script Market Homepage: 打开脚本市场主页
               </el-link>
 
               <el-link
-                :disabled="isOfficialScriptMarket(scope.row) || !scope.row.isAccessible"
+                :disabled="scope.row.isOfficial || !scope.row.isAccessible"
                 @click="openSetup(scope.row, 'setup')">
                 {{ $t('Setup') }}
               </el-link>
@@ -245,7 +246,7 @@ export default {
 
       // 隐藏官方脚本市场
       if (!this.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']) {
-        apiRes.data = apiRes.data.filter(x => !this.isOfficialScriptMarket(x));
+        apiRes.data = apiRes.data.filter(x => !x.isOfficial);
       }
 
       // 锁定状态
@@ -386,10 +387,6 @@ export default {
 
       await this.loadData();
     },
-    isOfficialScriptMarket(d) {
-      if (!this.officialScriptMarket) return false;
-      return d.id === this.officialScriptMarket.id || d.configJSON.url === this.officialScriptMarket.configJSON.url;
-    },
 
     async lockData(dataId, isLocked) {
       let okMessage = isLocked
@@ -406,13 +403,9 @@ export default {
     },
   },
   computed: {
-    officialScriptMarket() {
-      return this.$store.getters.CONFIG('_OFFICIAL_SCRIPT_MARKET');
-    },
     hasOfficialScriptMarket() {
-      if (!this.officialScriptMarket) return true;
       for (let i = 0; i < this.data.length; i++) {
-        if (this.isOfficialScriptMarket(this.data[i])) return true;
+        if (this.data[i].isOfficial) return true;
       }
       return false;
     }

@@ -37,7 +37,7 @@ Are you sure you want to install the package now?    : 是否确定现在就安�
           v-model="pypiMirror">
           <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
         </el-select>
-        <el-input placeholder="package or package==1.0.0"
+        <el-input placeholder="package or package==1.2.3"
           style="width: 500px"
           v-model="packageToInstall">
         </el-input>

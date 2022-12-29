@@ -3,19 +3,19 @@ randomIDString: fsvc-{Random ID}
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-randomIDString: fsvc-{随机ID}
+randomIDString: fsvc-{随机 ID}
 
 Add File Service  : 添加文件服务
 Setup File Service: 配置文件服务
 
-Customize ID: 定制ID
+Customize ID: 定制 ID
 Root        : 根目录
 Note        : 备注
 
 URL Preview: URL预览
-ID is used in the access URL: 此ID用于生成访问时的URL
+ID is used in the access URL: 此 ID 用于生成访问时的 URL
 
-'ID must starts with "{prefix}"': 'ID必须以"{prefix}"开头'
+'ID must starts with "{prefix}"': 'ID 必须以"{prefix}"开头'
 'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select root: 请选择根目录
 

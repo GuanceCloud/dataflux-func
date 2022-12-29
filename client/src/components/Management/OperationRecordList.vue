@@ -1,7 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Time                          : 时间
-User                          : 用户
-User ID                       : 用户ID
 IP Address                    : IP地址
 Operation                     : 操作
 Data ID                       : 数据ID
@@ -13,6 +10,9 @@ Show detail                   : 显示请求详情
 The full content is following : 完整内容如下
 Request                       : 请求
 Response                      : 响应
+
+No recent Operation Records: 无近期操作记录
+All important operations will be collected by the system and shown here: 所有重要的操作会被系统搜集并展示在此
 </i18n>
 
 <template>
@@ -21,7 +21,7 @@ Response                      : 响应
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>近期操作记录</span>
+          <span>{{ $t('Operation Records') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
@@ -32,10 +32,10 @@ Response                      : 响应
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>尚无任何近期操作记录</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Operation Records') }}</h1>
 
           <p class="no-data-tip">
-            所有重要的操作会被系统搜集，并展示在此
+            {{ $t('All important operations will be collected by the system and shown here') }}
           </p>
         </div>
         <el-table v-else

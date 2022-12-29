@@ -1,7 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Time                         : 时间
-User                         : 用户
-User ID                      : 用户ID
 Request                      : 请求
 Response                     : 响应
 Status Code                  : 状态码

@@ -77,7 +77,6 @@ Press {0} to search: 按 {0} 开始搜索
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        description="直接调用函数仅支持使用POST方式通过内部接口调用，不允许公开调用"
         :descriptionClass="{'text-bad': true}"
         :showExecModeOption="true"
         :showSaveResultOption="true"

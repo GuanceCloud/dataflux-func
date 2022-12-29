@@ -1,6 +1,13 @@
+<i18n locale="zh-CN" lang="yaml">
+Processing, please wait...: 正在处理中，请稍后...
+
+Multiple Editing: 多重编辑
+This page does not support multiple users or multiple tabs for editing at the same time, to avoid the possible problem of data overwriting each other, please confirm before operation: 本功能不支持多人或多窗口同时编辑。为避免可能出现的数据相互覆盖等问题，请确认后再进行操作
+</i18n>
+
 <template>
   <div id="app"
-    element-loading-text="正在处理中，请稍后..."
+    :element-loading-text="$t('Processing, please wait...')"
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
     <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: $root.variableConfig['NOTICE_BAR_COLOR'] }">
@@ -147,8 +154,8 @@ export default {
               break;
 
             default:
-              this.T.notify(`<span class="text-bad">本系统不支持多人或多窗口同时编辑</span>。
-                <br>为避免可能出现的数据相互覆盖等问题，请确认后再进行操作`);
+              this.T.notify(`<span class="text-bad">${this.$t('Multiple Editing')}</span>
+                <br>${this.$t('This page does not support multiple users or multiple tabs for editing at the same time, to avoid the possible problem of data overwriting each other, please confirm before operation')}`, 'warning');
               break;
           }
         }

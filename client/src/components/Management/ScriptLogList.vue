@@ -1,10 +1,14 @@
+<i18n locale="zh-CN" lang="yaml">
+No recent Script Logs: 无近期脚本日志
+All log printed by {0} in Script will be collected by the system and shown here: 脚本运行时使用 {0} 打印的日志会被系统搜集并展示在此
+</i18n>
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>近期脚本日志</span>
+          <span>{{ $t('Script Logs') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>
@@ -15,11 +19,12 @@
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>尚无任何近期脚本日志</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Script Logs') }}</h1>
 
           <p class="no-data-tip">
-            在脚本中可以使用<code>print()</code>输出日志
-            <br>输出的日志会被系统搜集，并展示在此
+            <i18n path="All log printed by {0} in Script will be collected by the system and shown here">
+              <code class="code-font">print('...')</code>
+            </i18n>
           </p>
         </div>
         <el-table v-else

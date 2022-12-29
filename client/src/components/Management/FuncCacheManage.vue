@@ -10,6 +10,9 @@ Search for more data: 搜索以查看更多内容
 No Func Cache data has ever been added: 从未添加过任何函数缓存数据
 
 Are you sure you want to delete the Func Cache data?: 是否确认删除此函数缓存数据？
+
+Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 和 {1} 在脚本中存取缓存数据
+See {0} for more information: 查看 {0} 来获取更多信息
 </i18n>
 
 <template>
@@ -33,8 +36,17 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Func Cache data has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            可以使用 <code>DFF.CACHE.set('key', 'value', scope='scope', expire=3600)</code> 和 <code>DFF.CACHE('key', scope='scope')</code> 来存取函数缓存数据
-            <br><code>scope</code> 参数为可选。未指定时则默认为代码所在的脚本ID
+            <i18n path="Using {0} and {1} to setting and getting cache data in Script">
+              <code class="code-font">DFF.CACHE.set('key', 'value')</code>
+              <code class="code-font">DFF.CACHE('key')</code>
+            </i18n>
+            <br>
+            <i18n path="See {0} for more information">
+              <el-link href="https://func.guance.com/doc/development-guide-builtin-features-dff-cache/" target="_blank">
+                <i class="fa fa-fw fa-book"></i>
+                {{ $t('Document') }}
+              </el-link>
+            </i18n>
           </p>
         </div>
         <el-table v-else
@@ -87,7 +99,7 @@ Are you sure you want to delete the Func Cache data?: 是否确认删除此函�
         </el-table>
       </el-main>
 
-      <LongTextDialog title="内容如下" :showDownload="true" ref="longTextDialog" />
+      <LongTextDialog  :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

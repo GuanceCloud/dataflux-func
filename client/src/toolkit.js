@@ -900,6 +900,18 @@ export async function prompt(message, defaultValue, options) {
 export function notify(message, type) {
   type = type || 'success';
 
+  let duration = null;
+  switch(type) {
+    case 'success':
+    case 'info':
+      duration = 3 * 1000;
+      break
+
+    default:
+      duration = 10 * 1000;
+      break;
+  }
+
   // 简单提示，不需要区分标题和内容
   return Notification({
     title                   : null,
@@ -907,7 +919,7 @@ export function notify(message, type) {
     dangerouslyUseHTMLString: true,
     type                    : type,
     position                : 'top-right',
-    duration                : 3000,
+    duration                : duration,
     offset                  : 80,
   });
 };

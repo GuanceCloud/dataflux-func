@@ -65,7 +65,10 @@ Open Script Market Homepage: 打开脚本市场主页
       <el-header height="60px">
         <div class="page-header">
           <span>
-            <span class="text-main script-market-name">{{ common.getScriptMarketName(scriptMarket) }}</span>
+            <span class="text-main script-market-name">
+              <span v-if="scriptMarket.isOfficial"><i class="fa fa-fw fa-star text-watch"></i> {{ $t('Official Script Market') }}</span>
+              <span v-else>{{ common.getScriptMarketName(scriptMarket) }}</span>
+            </span>
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">

@@ -49,8 +49,8 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                     <strong>{{ $t('Code Editor Setting') }}</strong>
                   </el-checkbox>
                   <div class="text-small form-item-tip">{{ $t('Including') }}{{ $t(':') }}
-                    <br/>&#12288;{{ $t('Selected UI theme')}}
-                    <br/>&#12288;{{ $t('Font size, line height')}}
+                    <br/>&emsp;{{ $t('Selected UI theme')}}
+                    <br/>&emsp;{{ $t('Font size, line height')}}
                   </div>
                 </el-form-item>
 
@@ -59,14 +59,14 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                     <strong>{{ $t('UI Status') }}</strong>
                   </el-checkbox>
                   <div class="text-small form-item-tip">{{ $t('Including') }}{{ $t(':') }}
-                    <br/>&#12288;{{ $t('Expanded items in Code Editor Aside') }}
-                    <br/>&#12288;{{ $t('Position of Aside separator, output box') }}
-                    <br/>&#12288;{{ $t('Position of Simple Debug Panel') }}
-                    <br/>&#12288;{{ $t('Position of Quick View Panel') }}
-                    <br/>&#12288;{{ $t('Selected Func, Highlighted line or error line') }}
-                    <br/>&#12288;{{ $t('Position of scroll in Management') }}
-                    <br/>&#12288;{{ $t('Notice messages or dialogs') }}
-                    <br/>&#12288;{{ $t('Search history') }}
+                    <br/>&emsp;{{ $t('Expanded items in Code Editor Aside') }}
+                    <br/>&emsp;{{ $t('Position of Aside separator, output box') }}
+                    <br/>&emsp;{{ $t('Position of Simple Debug Panel') }}
+                    <br/>&emsp;{{ $t('Position of Quick View Panel') }}
+                    <br/>&emsp;{{ $t('Selected Func, Highlighted line or error line') }}
+                    <br/>&emsp;{{ $t('Position of scroll in Management') }}
+                    <br/>&emsp;{{ $t('Notice messages or dialogs') }}
+                    <br/>&emsp;{{ $t('Search history') }}
                   </div>
                 </el-form-item>
 

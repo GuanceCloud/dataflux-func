@@ -21,9 +21,9 @@ Please select Func: 请选择认证函数
 Func with a specific format is required: 必须指定特定格式的函数作为认证函数
 Sample Code: 示例代码
 
-API Auth created: API认证已创建
-API Auth saved  : API认证已保存
-API Auth deleted: API认证已删除
+API Auth created: API 认证已创建
+API Auth saved  : API 认证已保存
+API Auth deleted: API 认证已删除
 
 Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
 

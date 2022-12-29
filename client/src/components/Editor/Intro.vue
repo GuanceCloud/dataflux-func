@@ -87,7 +87,7 @@ Import Script Sets from zip files                         : 从 zip 文件导入
 Recover Script Lib to a previous moment                   : 将脚本库恢复到以前的某个时刻
 Manage the users who use the system                       : 管理使用本系统的用户
 Some customization options for the system                 : 一些客制化选项
-Some key operation logs                                   : 一些关键操作记录
+Some key operation records                                : 一些关键操作记录
 Toggling experimental features                            : 打开/关闭实验性功能
 
 Distribute and share code by publishing and installing Script Sets using git repositories, Alibaba Cloud OSS, file services etc.: 使用 git 库、阿里云 OSS、文件服务等进行脚本集的发布、安装，实现代码的分发和共享。
@@ -240,9 +240,9 @@ Distribute and share code by publishing and installing Script Sets using git rep
                   <td>{{ $t('Some customization options for the system') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-keyboard-o"></i> {{ $t('Operation Logs') }}</td>
+                  <td><i class="fa fa-fw fa-keyboard-o"></i> {{ $t('Operation Records') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
-                  <td>{{ $t('Some key operation logs') }}</td>
+                  <td>{{ $t('Some key operation records') }}</td>
                 </tr>
                 <tr>
                   <td><i class="fa fa-fw fa-flask"></i> {{ $t('Experimental Features') }}</td>

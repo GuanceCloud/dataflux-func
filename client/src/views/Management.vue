@@ -87,7 +87,7 @@
             <el-menu-item index="/management/operation-record-list">
               <span>
                 <i class="fa fa-fw fa-keyboard-o"></i>
-                {{ $t('Operation Logs') }}
+                {{ $t('Operation Records') }}
               </span>
             </el-menu-item>
 
