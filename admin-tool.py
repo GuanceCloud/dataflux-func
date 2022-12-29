@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 3rd-party Modules
+import requests
+
 # Built-in Modules
 import sys
 import textwrap
@@ -176,12 +179,19 @@ def run_sql():
     执行 SQL
     '''
     # 等待用户输入数据
-    filepath = input('Enter SQL file path: ')
+    filepath = input('Enter SQL file path or URL: ')
 
     # 获取 SQL 文件
     sql = None
-    with open(filepath, 'r') as f:
-        sql = f.read()
+
+    if filepath.startswith('http://') or filepath.startswith('https://'):
+        resp = requests.get(filepath)
+        resp.raise_for_status()
+        sql = resp.text
+
+    else:
+        with open(filepath, 'r') as f:
+            sql = f.read()
 
     # 数据入库
     run_db_sql(sql)
