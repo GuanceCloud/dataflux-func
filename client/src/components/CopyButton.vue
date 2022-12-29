@@ -1,7 +1,3 @@
-<!-- # NOTE: i18n 翻译在 locales.yaml 中定义
-<i18n locale="zh-CN" lang="yaml">
-</i18n>
--->
 <template>
   <div class="copy-button">
     <el-tooltip
@@ -62,13 +58,13 @@ export default {
     tipContent() {
       switch (this.tipStatus) {
         case 'ready':
-          return this.$root.i18n.t('Click to Copy');
+          return this.$t('Click to Copy');
 
         case 'ok':
-          return this.$root.i18n.t('Copied');
+          return this.$t('Copied');
 
         case 'error':
-          return this.$root.i18n.t('Browser not supported');
+          return this.$t('Browser not supported');
       }
     }
   },

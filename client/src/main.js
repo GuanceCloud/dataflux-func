@@ -32,6 +32,7 @@ ElementUI.Popover.props.transition.default = false;
 ElementUI.Popover.props.openDelay.default  = 100;
 ElementUI.Link.props.underline.default     = true;
 ElementUI.Link.props.type.default          = 'primary';
+ElementUI.Form.props.validateOnRuleChange  = false;
 Vue.use(ElementUI);
 
 // 国际化

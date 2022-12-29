@@ -1,6 +1,51 @@
+<i18n locale="en" lang="yaml">
+seconds: Second | Seconds
+</i18n>
+
+<i18n locale="zh-CN" lang="yaml">
+API Example: API 调用示例
+
+Request Options: 请求选项
+Async       : 异步执行
+Save Result : 保留结果
+Func Timeout: 函数超时
+API Timeout : API 超时
+
+Build Request: 构建请求
+'HTTP Header &quot;Content-Type&quot; should be &quot;application/json&quot; when using POST'                 : 'POST请求时，&quot;Content-Type&quot; 应设置为 &quot;application/json&quot;'
+'&quot;INPUT_BY_CALLER&quot; is the argument of the Python function, please modify it according to your needs': '&quot;INPUT_BY_CALLER&quot;为 Python 函数的参数，请根据需要进行修改'
+'This Python function allows additional parameters (**kwargs syntax)'                                         : '本 Python 函数允许传递额外的参数（**kwargs 语法）'
+'This Python function allows uploading files, field name of the uploading file is &quot;files&quot;'          : '本 Python 函数支持文件上传，文件字段名为&quot;files&quot;'
+
+'Invalid Body content. Examples require a valid Body content': 'Body 内容填写存在错误，正确填写后将展示示例'
+
+Simplified Form for GET: GET 简化形式
+'Only string arguments are allowed in this from. And parameter &quot;options&quot; are not supported': '此方式参数值只支持字符串，且不支持 &quot;options&quot; 参数'
+
+Normal Form for GET: GET 标准形式
+'Parameter &quot;kwargs&quot; should be URL encoded in HTTP request': '发送请求时，&quot;kwargs&quot; 参数需要进行 URL encode 编码'
+
+Flattened Form for GET: GET 扁平形式请求
+'Only string arguments are allowed in this from': '此方式参数值只支持字符串'
+
+Simplified Form for POST: POST 简化形式请求
+'Parameter &quot;options&quot; are not supported in this from'                                                                                                                                       : '此方式不支持 &quot;options&quot; 参数'
+'When posting form data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;, and the values of the fields support string value only': '表单形式提交时，&quot;Content-Type&quot; 必须指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串'
+'When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;, together with the Python function containing **kwargs parameter, Body can be any JSON data'                : 'JSON 形式提交时，&quot;Content-Type&quot; 必须指定为 &quot;application/json&quot;，配合包含 **kwargs 的 Python 函数，此时 Body 可以为任意 JSON 数据'
+'When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;'                                                                                                           : '上传文件时，&quot;Content-Type&quot; 必须指定为 &quot;multipart/form-data&quot;'
+
+Normal Form for POST: POST 标准形式
+'File uploading is not supported in this this form': '此方式不支持文件上传'
+
+Flattened Form for POST: POST 扁平形式请求
+'When posting data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;' : '提交数据时，&quot;Content-Type&quot; 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;'
+
+seconds: 秒
+</i18n>
+
 <template>
   <el-dialog
-    :title="title || 'API调用示例'"
+    :title="title || $t('API Example')"
     :visible.sync="show"
     :close-on-click-modal="false"
     width="750px">
@@ -8,9 +53,9 @@
       <span :class="descriptionClass">{{ description }}</span>
 
       <template v-if="showOptions">
-        <el-divider content-position="left">请求选项</el-divider>
-        <el-form class="call-options" label-width="80px">
-          <el-form-item label="异步执行" v-if="showExecModeOption">
+        <el-divider content-position="left">{{ $t('Request Options') }}</el-divider>
+        <el-form class="call-options" label-width="120px">
+          <el-form-item :label="$t('Async')" v-if="showExecModeOption">
             <el-switch
               v-model="callOptions.execMode"
               inactive-value="sync"
@@ -18,7 +63,7 @@
             </el-switch>
           </el-form-item>
 
-          <el-form-item label="保留结果" v-if="showSaveResultOption">
+          <el-form-item :label="$t('Save Result')" v-if="showSaveResultOption">
             <el-switch
               v-model="callOptions.saveResult"
               :inactive-value="false"
@@ -26,7 +71,7 @@
             </el-switch>
           </el-form-item>
 
-          <el-form-item label="执行超时" v-if="showTimeoutOption">
+          <el-form-item :label="$t('Func Timeout')" v-if="showTimeoutOption">
             <el-input-number
               v-model="callOptions.timeout"
               size="mini"
@@ -34,10 +79,10 @@
               :step="1"
               :precision="0"
               :min="$store.getters.CONFIG('_FUNC_TASK_MIN_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_TIMEOUT')">
-            </el-input-number>&#12288;秒
+            </el-input-number>&emsp;{{ $tc('seconds', callOptions.timeout) }}
           </el-form-item>
 
-          <el-form-item label="API超时" v-if="showAPITimeoutOption">
+          <el-form-item :label="$t('API Timeout')" v-if="showAPITimeoutOption">
             <el-input-number
               v-model="callOptions.apiTimeout"
               size="mini"
@@ -45,12 +90,12 @@
               :step="1"
               :precision="0"
               :min="$store.getters.CONFIG('_FUNC_TASK_MIN_API_TIMEOUT')" :max="$store.getters.CONFIG('_FUNC_TASK_MAX_API_TIMEOUT')">
-            </el-input-number>&#12288;秒
+            </el-input-number>&emsp;{{ $tc('seconds', callOptions.apiTimeout) }}
           </el-form-item>
         </el-form>
       </template>
 
-      <el-divider content-position="left">编辑请求</el-divider>
+      <el-divider content-position="left">{{ $t('Build Request') }}</el-divider>
       <el-row :gutter="20">
         <el-col :span="22">
           <el-input
@@ -73,10 +118,14 @@
             resize="none"
             v-model="apiBodyExample">
           </el-input>
-          <InfoBlock type="info" title="POST请求时，Content-Type 应设置为 application/json" />
-          <InfoBlock v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0" type="info" title="&quot;INPUT_BY_CALLER&quot;为需要填写的参数，请根据需要进行修改" />
-          <InfoBlock v-if="supportCustomKwargs" type="success" title="本函数允许传递额外的自定义函数参数（**kwargs 语法）" />
-          <InfoBlock v-if="supportFileUpload" type="success" title="本函数支持文件上传，文件字段名为&quot;files&quot;" />
+          <InfoBlock type="info"
+            :title="$t('HTTP Header &quot;Content-Type&quot; should be &quot;application/json&quot; when using POST')" />
+          <InfoBlock type="info" v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0"
+            :title="$t('&quot;INPUT_BY_CALLER&quot; is the argument of the Python function, please modify it according to your needs')" />
+          <InfoBlock type="success" v-if="supportCustomKwargs"
+            :title="$t('This Python function allows additional parameters (**kwargs syntax)')" />
+          <InfoBlock type="success" v-if="supportFileUpload"
+            :title="$t('This Python function allows uploading files, field name of the uploading file is &quot;files&quot;')" />
         </el-col>
         <el-col :span="2">
           <CopyButton :content="apiBodyExample" />
@@ -84,11 +133,11 @@
       </el-row>
 
       <template v-if="!apiBody">
-        <span class="text-bad">Body内容填写存在错误，正确填写后将展示示例</span>
+        <span class="text-bad">{{ $t('Invalid Body content. Examples require a valid Body content') }}</span>
       </template>
       <template v-else>
         <template v-if="showGetExampleSimplified">
-          <el-divider content-position="left">GET 简化形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Simplified Form for GET') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link v-if="stringParametersOnly"
@@ -100,7 +149,7 @@
               </el-link>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串，且不支持 options 参数" />
+                :title="$t('Only string arguments are allowed in this from. And parameter &quot;options&quot; are not supported')" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
@@ -110,7 +159,7 @@
         </template>
 
         <template v-if="showGetExample">
-          <el-divider content-position="left">GET 标准形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Normal Form for GET') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link
@@ -120,8 +169,7 @@
                 class="api-url-with-query">
                 <code v-html="apiURLWithQueryExampleText"></code>
               </el-link>
-              <InfoBlock type="info" title="kwargs 参数为 POST 方式中对 kwargs 参数进行 JSON 序列化，再进行 URL 编码后的字符串" />
-              <InfoBlock type="info" title="kwargs 参数处理代码参考：encodeURIComponent(JSON.stringify(kwargs))" />
+              <InfoBlock type="info" :title="$t('Parameter &quot;kwargs&quot; should be URL encoded in HTTP request')" />
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiURLWithQueryExample" />
@@ -130,7 +178,7 @@
         </template>
 
         <template v-if="showGetExampleFlattened">
-          <el-divider content-position="left">GET 扁平形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Flattened Form for GET') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-link v-if="stringParametersOnly"
@@ -142,7 +190,7 @@
               </el-link>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串" />
+                :title="$t('Only string arguments are allowed in this from')" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
@@ -152,7 +200,7 @@
         </template>
 
         <template v-if="showPostExampleSimplified">
-          <el-divider content-position="left">POST 简化形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Simplified Form for POST') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input v-if="stringParametersOnly"
@@ -163,10 +211,10 @@
                 :value="apiCallByCurlExample_simplified"></el-input>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式不支持 options 参数" />
-              <InfoBlock type="info" title="表单形式提交时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串" />
-              <InfoBlock type="info" title="JSON 形式提交时，Content-Type 可以指定为 &quot;application/json&quot;，配合 def f(**kwargs) 形式的函数，此时 Body 可以为任意 JSON 数据" />
-              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;" />
+                :title="$t('Parameter &quot;options&quot; are not supported in this from')" />
+              <InfoBlock type="info" :title="$t('When posting form data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;, and the values of the fields support string value only')" />
+              <InfoBlock type="info" :title="$t('When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;, together with the Python function containing **kwargs parameter, Body can be any JSON data')" />
+              <InfoBlock type="info" :title="$t('When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;')" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
@@ -176,7 +224,7 @@
         </template>
 
         <template v-if="showPostExample">
-          <el-divider content-position="left">POST 标准形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Normal Form for POST') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input
@@ -186,7 +234,7 @@
                 resize="none"
                 :value="apiCallByCurlExample">
               </el-input>
-              <InfoBlock type="info" title="此方式不支持文件上传" />
+              <InfoBlock type="info" :title="$t('File uploading is not supported in this this form')" />
             </el-col>
             <el-col :span="2">
               <CopyButton :content="apiCallByCurlExample" />
@@ -195,7 +243,7 @@
         </template>
 
         <template v-if="showPostExampleFlattened">
-          <el-divider content-position="left">POST 扁平形式请求</el-divider>
+          <el-divider content-position="left">{{ $t('Flattened Form for POST') }}</el-divider>
           <el-row :gutter="20">
             <el-col :span="22">
               <el-input
@@ -208,9 +256,9 @@
               </el-input>
               <InfoBlock
                 :type="stringParametersOnly ? 'info' : 'error'"
-                title="此方式参数值只支持字符串" />
-              <InfoBlock type="info" title="单纯提交数据时，Content-Type 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;" />
-              <InfoBlock type="info" title="上传文件时，Content-Type 需要指定为 &quot;multipart/form-data&quot;" />
+                :title="$t('Only string arguments are allowed in this from')" />
+              <InfoBlock type="info" :title="$t('When posting data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;')" />
+              <InfoBlock type="info" :title="$t('When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;')" />
             </el-col>
             <el-col :span="2">
               <CopyButton v-if="stringParametersOnly"
