@@ -7,6 +7,7 @@ import traceback
 # 3rd-party Modules
 import pymysql
 from pymysql.cursors import DictCursor
+from pymysql.constants import CLIENT as CLIENT_FLAG
 from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
@@ -29,6 +30,8 @@ def get_config(c):
         'cursorclass' : DictCursor,
         'charset'     : _charset,
         'init_command': 'SET NAMES "{0}"'.format(_charset),
+
+        'client_flag': CLIENT_FLAG.MULTI_STATEMENTS,
     }
     return config
 

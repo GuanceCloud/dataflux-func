@@ -197,7 +197,7 @@ def run_sql():
     run_db_sql(sql)
 
 def main(options):
-    if not CONFIG.get('_IS_INSTALLED'):
+    if not CONFIG.get('_IS_INSTALLED') and not CONFIG.get('_DISABLE_SETUP'):
         raise Exception(f"This DataFlux Func is not installed yet, please complete the installation first.\n Default URL is http(s)://<Domain or IP>:{CONFIG.get('WEB_PORT')}/")
 
     command = options.get('command')
