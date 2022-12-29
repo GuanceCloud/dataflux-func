@@ -84,6 +84,24 @@ def reset_db_data(table, data):
     else:
         DB.commit(trans_conn)
 
+def run_db_sql(sql):
+    try:
+        trans_conn = DB.start_trans()
+
+        # 执行 SQL
+        db_res = DB.trans_query(trans_conn, sql)
+
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            logging.error(line)
+
+        DB.rollback(trans_conn)
+
+        raise
+
+    else:
+        DB.commit(trans_conn)
+
 @command
 def reset_admin():
     '''
@@ -152,6 +170,22 @@ def clear_redis():
     # 清空数据库
     CACHE_DB.client.flushdb()
 
+@command
+def run_sql():
+    '''
+    执行 SQL
+    '''
+    # 等待用户输入数据
+    filepath = input('Enter SQL file path: ')
+
+    # 获取 SQL 文件
+    sql = None
+    with open(filepath, 'r') as f:
+        sql = f.read()
+
+    # 数据入库
+    run_db_sql(sql)
+
 def main(options):
     if not CONFIG.get('_IS_INSTALLED'):
         raise Exception(f"This DataFlux Func is not installed yet, please complete the installation first.\n Default URL is http(s)://<Domain or IP>:{CONFIG.get('WEB_PORT')}/")
@@ -177,6 +211,7 @@ def get_options_by_command_line():
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_admin'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_upgrade_db_seq'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py clear_redis'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py run_sql'
         '''))
 
     # 执行操作
