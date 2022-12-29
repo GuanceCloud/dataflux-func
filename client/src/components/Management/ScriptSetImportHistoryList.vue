@@ -8,7 +8,7 @@
           <div class="header-control">
             <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>
-              {{ $t('Script Sets Importing') }}
+              {{ $t('Script Sets Import') }}
             </el-button>
           </div>
         </div>

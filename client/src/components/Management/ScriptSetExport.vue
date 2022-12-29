@@ -15,13 +15,7 @@ Data exported: 数据已导出
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Set Exporting') }}</span>
-          <div class="header-control">
-            <el-button @click="goToHistory" size="small">
-              <i class="fa fa-fw fa-history"></i>
-              {{ $t('Script Set Exporting History') }}
-            </el-button>
-          </div>
+          <span>{{ $t('Script Set Export') }}</span>
         </div>
       </el-header>
 
@@ -104,6 +98,11 @@ Data exported: 数据已导出
                 </el-form-item>
 
                 <el-form-item>
+                  <el-button @click="goToHistory">
+                    <i class="fa fa-fw fa-history"></i>
+                    {{ $t('Script Set Exporting History') }}
+                  </el-button>
+
                   <div class="setup-right">
                     <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
                   </div>

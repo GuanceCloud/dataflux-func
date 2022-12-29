@@ -8,7 +8,7 @@
           <div class="header-control">
             <el-button @click="openSetup(null, 'export')" size="small">
               <i class="fa fa-fw fa-cloud-download"></i>
-              {{ $t('Script Set Exporting') }}
+              {{ $t('Script Set Export') }}
             </el-button>
           </div>
         </div>

@@ -14,13 +14,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Sets Importing') }}</span>
-          <div class="header-control">
-            <el-button @click="goToHistory" size="small">
-              <i class="fa fa-fw fa-history"></i>
-              {{ $t('Script Set Importing History') }}
-            </el-button>
-          </div>
+          <span>{{ $t('Script Sets Import') }}</span>
         </div>
       </el-header>
 
@@ -46,6 +40,11 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                 </el-form-item>
 
                 <el-form-item>
+                  <el-button @click="goToHistory">
+                    <i class="fa fa-fw fa-history"></i>
+                    {{ $t('Script Set Importing History') }}
+                  </el-button>
+
                   <div class="setup-right">
                     <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
                   </div>

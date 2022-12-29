@@ -11,12 +11,6 @@ Script Lib Recover Point created: 脚本库还原点已创建
       <el-header height="60px">
         <div class="page-header">
           <span>{{ modeName }}脚本库还原点</span>
-          <div class="header-control">
-            <el-button @click="goToHistory" size="small">
-              <i class="fa fa-fw fa-history"></i>
-              脚本库还原点
-            </el-button>
-          </div>
         </div>
       </el-header>
 
@@ -37,6 +31,11 @@ Script Lib Recover Point created: 脚本库还原点已创建
                 </el-form-item>
 
                 <el-form-item>
+                  <el-button @click="goToHistory">
+                    <i class="fa fa-fw fa-history"></i>
+                    脚本库还原点
+                  </el-button>
+
                   <div class="setup-right">
                     <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
                   </div>
