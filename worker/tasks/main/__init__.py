@@ -866,9 +866,8 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class BaseFuncResponse(object):
-    def __init__(self, data=None, data_dumps=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
+    def __init__(self, data=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
         self.data             = data             # 返回数据
-        self.data_dumps       = data_dumps       # 序列化后的数据
         self.file_path        = file_path        # 返回文件（资源目录下相对路径）
         self.status_code      = status_code      # HTTP响应码
         self.content_type     = content_type     # HTTP响应体类型
@@ -900,23 +899,21 @@ class BaseFuncResponse(object):
 
 class FuncResponse(BaseFuncResponse):
     def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False, download=False):
-        # 尝试序列化返回值
-        data_dumps = None
         try:
-            data_dumps = toolkit.json_dumps(data, indent=None)
+            # 尝试序列化返回值
+            toolkit.json_dumps(data, indent=None)
         except Exception as e:
             data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
 
         kwargs = {
             'data'         : data,
-            'data_dumps'   : data_dumps,
             'status_code'  : status_code,
             'content_type' : content_type,
             'headers'      : headers,
             'allow_304'    : allow_304,
             'download_file': download,
         }
-        super(FuncResponse, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 class FuncResponseFile(BaseFuncResponse):
     def __init__(self, file_path, status_code=None, headers=None, allow_304=False, auto_delete=False, download=True):
@@ -928,7 +925,7 @@ class FuncResponseFile(BaseFuncResponse):
             'auto_delete_file': auto_delete,
             'download_file'   : download,
         }
-        super(FuncResponseFile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 class FuncResponseLargeData(BaseFuncResponse):
     def __init__(self, data, content_type=None):
@@ -948,7 +945,7 @@ class FuncResponseLargeData(BaseFuncResponse):
             'auto_delete_file': True,
             'download_file'   : False,
         }
-        super(FuncResponseLargeData, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def cache_to_file(self, auto_delete=True, cache_expires=0):
         cache_expires = cache_expires or 0
@@ -963,6 +960,17 @@ class FuncResponseLargeData(BaseFuncResponse):
 
         self.file_path        = file_path
         self.auto_delete_file = auto_delete
+
+class FuncRedirect(FuncResponse):
+    def __init__(self, url):
+        html = f'<a href="{url}">Redirect</a>'
+        kwargs = {
+            'data'        : html,
+            'status_code' : 302,
+            'content_type': 'html',
+            'headers'     : { 'Location': url }
+        }
+        super().__init__(**kwargs)
 
 class ScriptBaseTask(BaseTask):
     def __call__(self, *args, **kwargs):
@@ -1583,6 +1591,7 @@ class ScriptBaseTask(BaseTask):
             'RESP'           : FuncResponse,          # 函数响应体
             'RESP_FILE'      : FuncResponseFile,      # 函数响应体（返回文件）
             'RESP_LARGE_DATA': FuncResponseLargeData, # 函数响应题（大量数据）
+            'REDIRECT'       : FuncRedirect,          # 重定向响应体
 
             'FUNC'  : __call_func,     # 调用函数（产生新Task）
             'THREAD': __thread_helper, # 多线程处理模块

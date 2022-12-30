@@ -147,7 +147,7 @@ class BaseTask(app.Task):
 
             self.logger.debug('[CALL] {}'.format(task_info))
 
-            return super(BaseTask, self).__call__(*args, **kwargs)
+            return super().__call__(*args, **kwargs)
 
         except TaskInLockedException as e:
             # 任务重复运行错误，认为正常结束即可
@@ -258,7 +258,7 @@ class BaseResultSavingTask(app.Task):
 
         # Run
         try:
-            return super(BaseResultSavingTask, self).__call__(*args, **kwargs)
+            return super().__call__(*args, **kwargs)
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():

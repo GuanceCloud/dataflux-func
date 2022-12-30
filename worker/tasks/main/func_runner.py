@@ -25,7 +25,7 @@ from worker.tasks import BaseResultSavingTask
 from worker.tasks import BaseTask
 from worker.tasks.main import NotFoundException
 from worker.tasks.main import ScriptBaseTask
-from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseFile, FuncResponseLargeData
+from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseLargeData
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -284,7 +284,7 @@ def func_runner(self, *args, **kwargs):
                 # 未开启缓存，默认方式缓存为文件
                 func_resp.cache_to_file(auto_delete=True)
             else:
-                # 开启缓存，则指定缓存事件
+                # 开启缓存，则指定缓存时间
                 func_resp.cache_to_file(auto_delete=False, cache_expires=cache_result_expires)
 
     except Exception as e:

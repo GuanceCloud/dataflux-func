@@ -634,20 +634,20 @@ class IgnoreCaseDict(dict):
             self[k] = v
 
     def __setitem__(self, key, value):
-        super(IgnoreCaseDict, self).__setitem__(self.__lower_key(key), value)
+        super().__setitem__(self.__lower_key(key), value)
 
     def __getitem__(self, item):
-        return super(IgnoreCaseDict, self).__getitem__(self.__lower_key(item))
+        return super().__getitem__(self.__lower_key(item))
 
     def __delitem__(self, key):
-        super(IgnoreCaseDict, self).__delitem__(self.__lower_key(key))
+        super().__delitem__(self.__lower_key(key))
 
     def update(self, another=None, **kwargs):
         for k, v in another.items():
             self.__setitem__(k, v)
 
     def __repr__(self):
-        return '{0}({1})'.format(type(self).__name__, super(IgnoreCaseDict, self).__repr__())
+        return '{0}({1})'.format(type(self).__name__, super().__repr__())
 
 class LocalCache(object):
     def __init__(self, expires=None, clean_interval=60):

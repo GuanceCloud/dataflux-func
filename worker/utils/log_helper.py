@@ -122,7 +122,7 @@ MAX_STAGED_LOGS = 3000
 
 class LoggingFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, **options):
-        super(LoggingFormatter, self).__init__(fmt, datefmt)
+        super().__init__(fmt, datefmt)
 
         self.options = options or {}
 
