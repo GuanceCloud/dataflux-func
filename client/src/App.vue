@@ -182,6 +182,7 @@ export default {
   computed: {
     showNavi() {
       switch(this.$route.name) {
+        case null:
         case 'index':
         case 'func-doc':
         case 'auth-link-func-doc':
