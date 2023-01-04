@@ -105,8 +105,7 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
 
               <FuncInfo v-else-if="scope.row.type === 'func'"
                 :id="scope.row.func_id"
-                :title="scope.row.func_title"
-                :name="scope.row.func_name" />
+                :title="scope.row.func_title" />
             </template>
           </el-table-column>
 

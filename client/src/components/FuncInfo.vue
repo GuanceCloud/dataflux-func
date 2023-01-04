@@ -65,9 +65,9 @@ export default {
   },
   props: {
     mode        : String,
+    id          : String,
     title       : String,
     definition  : String,
-    id          : String,
     kwargsJSON  : Object,
     hideGotoFunc: Boolean,
   },

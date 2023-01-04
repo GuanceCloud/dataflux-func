@@ -88,7 +88,6 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
               <FuncInfo
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
-                :name="scope.row.func_name"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>

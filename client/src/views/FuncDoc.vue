@@ -30,8 +30,8 @@ Press {0} to search: 按 {0} 开始搜索
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.id"
-                :definition="scope.row.definition"
-                :title="scope.row.title" />
+                :title="scope.row.title"
+                :definition="scope.row.definition" />
 
               <div>
                 <span class="text-info">ID</span>

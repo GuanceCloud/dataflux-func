@@ -1,19 +1,27 @@
 <i18n locale="en" lang="yaml">
-taskRemain: 'remain {n} task to process | remain {n} tasks to process'
+taskRemain: '(remain {n} task to process) | (remain {n} tasks to process)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-About             : 关于
-System Information: 系统信息
-System Report     : 系统报告
-Infomation        : 信息
-Version           : 版本号
-Architecture      : 架构
-Node Version      : Node 版本
-Python Version    : Python 版本
-Release date      : 发布日期
-'Loading...'      : '加载中...'
-Get System Report : 获取系统报告
+About: 关于
+
+'You are using {0} browser'      : 您正在使用 {0} 浏览器
+'In this system:'                : '在本系统中：'
+'Monospaced font is from {0}'    : '等宽字体来自 {0}'
+'Icons used are from {0}'        : '图标来自 {0}'
+'Illustrations used are from {0}': '插图来自 {0}'
+
+
+Version Information: 版本信息
+System Report      : 系统报告
+Version            : 版本
+Architecture       : 架构
+Vue Version        : Vue 版本
+Node Version       : Node 版本
+Python Version     : Python 版本
+Release date       : 发布日期
+'Loading...'       : '加载中...'
+Get System Report  : 获取系统报告
 
 Clear Worker Queue : 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
@@ -21,8 +29,6 @@ Clear Log and Cache: 清空日志与缓存表
 Worker Queue cleared : 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
 Please note that there may be a delay in the system reporting: 请注意系统报告数据可能存在延迟
-
-'You are using {browser} (engine: {engine}) browser': 您正在使用 {browser}（{engine}）浏览器
 
 'Full Node name is celery@{Number}'                                 : 完整节点名称为 celery@{编号}
 'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
@@ -59,11 +65,45 @@ Wroker Queue Length      : Worker 队列长度
         <el-row :gutter="20">
           <el-col :span="15">
             <div class="about-form">
-              <p class="text-main browser-detect">{{ $t('You are using {browser} (engine: {engine}) browser', { browser: T.getBrowser(), engine: T.getEngine() }) }}</p>
-              <br>
+              <div class="announce">
+                <p>
+                  <i18n path="You are using {0} browser">
+                    <span class="text-main">{{ T.getBrowser() }} ({{ T.getEngine() }})</span>
+                  </i18n>
+                </p>
+                <p>
+                  {{ $t('In this system:') }}
+                  <ul>
+                    <li>
+                      <i18n path="Monospaced font is from {0}">
+                        <el-link href="https://typeof.net/Iosevka/"  target="_blank">
+                          <i class="fa fa-fw fa-external-link"></i>
+                          Iosevka
+                        </el-link>
+                      </i18n>
+                    </li>
+                    <li>
+                      <i18n path="Icons used are from {0}">
+                        <el-link href="https://fontawesome.com/v4/"  target="_blank">
+                          <i class="fa fa-fw fa-external-link"></i>
+                          Font Awesome (v4)
+                        </el-link>
+                      </i18n>
+                    </li>
+                    <li>
+                      <i18n path="Illustrations used are from {0}">
+                        <el-link href="https://flexiple.com/illustrations/"  target="_blank">
+                          <i class="fa fa-fw fa-external-link"></i>
+                          Scale by flexiple
+                        </el-link>
+                      </i18n>
+                    </li>
+                  </ul>
+                </p>
+              </div>
 
               <!-- DataFlux Func Server -->
-              <el-divider content-position="left"><h1>{{ $t('System Information') }}</h1></el-divider>
+              <el-divider content-position="left"><h1>{{ $t('Version Information') }}</h1></el-divider>
 
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
@@ -74,16 +114,22 @@ Wroker Queue Length      : Worker 队列长度
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.architecture"></el-input>
                 </el-form-item>
 
+                <el-form-item :label="$t('Release date')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="releaseDateTEXT"></el-input>
+                </el-form-item>
+
+                <br>
+
+                <el-form-item :label="$t('Vue Version')">
+                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.vueVersion"></el-input>
+                </el-form-item>
+
                 <el-form-item :label="$t('Node Version')">
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.nodeVersion"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Python Version')">
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.pythonVersion"></el-input>
-                </el-form-item>
-
-                <el-form-item :label="$t('Release date')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="releaseDateTEXT"></el-input>
                 </el-form-item>
               </el-form>
 
@@ -103,8 +149,8 @@ Wroker Queue Length      : Worker 队列长度
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="info" :title="$t('Full node name is celery@{Number}')" />
-                    <InfoBlock type="info" :title="$t('Full worker queue name is DataFluxFunc-worker#workerQueue@{Number}')" />
+                    <InfoBlock type="info" :title="$t('Full Node name is celery@{Number}')" />
+                    <InfoBlock type="info" :title="$t('Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}')" />
                   </el-form-item>
                 </template>
 
@@ -118,9 +164,12 @@ Wroker Queue Length      : Worker 队列长度
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>{{ $t('Clear Worker Queue') }}</el-button>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="q in workerQueues" :key="q.name" :command="q.name">
-                        {{ $t('Clear Worker Queue') }} <span class="code-font">#{{ q.name }}</span>
-                        {{ $tc('taskRemain', q.value ) }}
+                      <el-dropdown-item disabled>
+                        {{ $t('Clear Worker Queue') }}
+                      </el-dropdown-item>
+                      <el-dropdown-item v-for="q, i in workerQueues" :key="q.name" :command="q.name" :divided="i === 0">
+                        &emsp;<span class="code-font">#{{ q.name }}</span>
+                        <small class="text-info">{{ $tc('taskRemain', q.value ) }}</small>
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
@@ -137,6 +186,8 @@ Wroker Queue Length      : Worker 队列长度
 </template>
 
 <script>
+import Vue from 'vue'
+
 export default {
   name: 'About',
   components: {
@@ -157,6 +208,7 @@ export default {
         this.about = {
           version         : apiRes.data.CI_COMMIT_REF_NAME,
           architecture    : apiRes.data.ARCHITECTURE,
+          vueVersion      : Vue.version,
           nodeVersion     : apiRes.data.NODE_VERSION,
           pythonVersion   : apiRes.data.PYTHON_VERSION,
           releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
@@ -166,6 +218,7 @@ export default {
         this.about = {
           version      : this.NO_INFO_TEXT,
           architecture : this.NO_INFO_TEXT,
+          vueVersion   : this.NO_INFO_TEXT,
           nodeVersion  : this.NO_INFO_TEXT,
           pythonVersion: this.NO_INFO_TEXT,
           releaseDate  : this.NO_INFO_TEXT,
@@ -418,10 +471,13 @@ export default {
 </script>
 
 <style scoped>
-.browser-detect {
+.announce {
   position: relative;
   left: 45px;
   top: -20px;
+}
+.announce li {
+  margin-top: 10px;
 }
 .about-form {
   width: 600px;

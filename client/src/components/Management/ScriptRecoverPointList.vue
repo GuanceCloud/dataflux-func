@@ -1,7 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
-Script Lib Recovering: 还原脚本库
+Script Lib Recover: 脚本库还原
+Create Recover Point: 创建还原点
 
 Script Lib recovered: 脚本库已还原
+
+No Recover Point has ever been created: 从未创建过任何还原点
+
 </i18n>
 
 <template>
@@ -10,11 +14,11 @@ Script Lib recovered: 脚本库已还原
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>脚本库还原点</span>
+          <span>{{ $t('Script Lib Recover') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'add')" size="small">
               <i class="fa fa-fw fa-camera"></i>
-              创建还原点
+              {{ $t('Create Recover Point') }}
             </el-button>
           </div>
         </div>
@@ -24,11 +28,9 @@ Script Lib recovered: 脚本库已还原
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>当前未全新安装系统，尚无任何还原点</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recover Point has ever been created') }}</h1>
 
           <p class="no-data-tip">
-            在进行发布脚本、导入脚本集、安装官方脚本集等操作之前，系统会自动创建还原点，保存整个脚本库状态
-            <br>如您在某项操作之后，函数遇到无法解决的问题，可以尝试恢复到执行操作时的还原点
           </p>
         </div>
         <el-timeline v-else>

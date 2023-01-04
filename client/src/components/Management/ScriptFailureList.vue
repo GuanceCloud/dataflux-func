@@ -1,6 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Exec Mode: 执行方式
 
+Show Detail: 显示详情
+
 No recent Script Failures: 无近期脚本故障
 All Exceptions throwed from Script will be collected by the system and shown here: 脚本运行时抛出的错误会被系统搜集并展示在此
 </i18n>
@@ -50,24 +52,19 @@ All Exceptions throwed from Script will be collected by the system and shown her
 
           <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
-
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-                <br>
-              </template>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :kwargsJSON="scope.row.func_kwargsJSON" />
+              <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
+                :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
+                type="error"  />
             </template>
           </el-table-column>
 
-          <el-table-column label="故障内容">
+          <el-table-column>
             <template slot-scope="scope">
-              <pre class="text-data">{{ scope.row.einfoSample }}</pre>
-              <el-button @click="showDetail(scope.row)" type="text">显示故障详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show Detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -76,7 +73,7 @@ All Exceptions throwed from Script will be collected by the system and shown her
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="调用栈如下" ref="longTextDialog" />
+      <LongTextDialog ref="longTextDialog" />
     </el-container>
   </transition>
 </template>
@@ -105,11 +102,6 @@ export default {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
-
-      // 缩减行数
-      apiRes.data.forEach(d => {
-        d.einfoSample = this.T.limitLines(d.einfoTEXT, -3, 100);
-      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;

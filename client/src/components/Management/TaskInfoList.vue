@@ -112,8 +112,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
             <template slot-scope="scope">
               <FuncInfo
                 :id="scope.row.funcId"
-                :title="scope.row.func_title"
-                :name="scope.row.func_name" />
+                :title="scope.row.func_title" />
               <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
                 :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
                 type="error"  />

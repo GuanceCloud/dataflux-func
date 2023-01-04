@@ -78,7 +78,6 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
               <FuncInfo
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
-                :name="scope.row.func_name"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>

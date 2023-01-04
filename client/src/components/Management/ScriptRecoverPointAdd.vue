@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Create Script Lib Recover Point: 创建脚本库还原点
+Create Recover Point: 创建还原点
 
 Script Lib Recover Point created: 脚本库还原点已创建
 </i18n>
@@ -10,7 +10,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ modeName }}脚本库还原点</span>
+          <span>{{ $t('Create Recover Point') }}</span>
         </div>
       </el-header>
 
@@ -37,7 +37,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
                   </el-button>
 
                   <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ modeName }}</el-button>
+                    <el-button type="primary" @click="submitData">{{ $t('Create') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -84,14 +84,6 @@ export default {
       this.$router.push({
         name: 'script-recover-point-list',
       });
-    },
-  },
-  computed: {
-    modeName() {
-      const nameMap = {
-        add: '创建',
-      };
-      return nameMap[this.T.setupPageMode()];
     },
   },
   props: {

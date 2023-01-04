@@ -165,7 +165,7 @@ File already existed                                                            
                   <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'cp' }">{{ $t('Copy') }}</el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">{{ $t('Move') }}</el-dropdown-item>
-                  <el-dropdown-item :command="{ data: scope.row, operation: 'rm' }">{{ $t('Delete') }}</el-dropdown-item>
+                  <el-dropdown-item class="text-bad" divided :command="{ data: scope.row, operation: 'rm' }">{{ $t('Delete') }}</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </template>

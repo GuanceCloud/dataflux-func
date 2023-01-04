@@ -63,7 +63,7 @@
                 {{ $t('Script Sets Import') }}
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-recover-point-add">
+            <el-menu-item index="/management/script-recover-point-list">
               <span>
                 <i class="fa fa-fw fa-history"></i>
                 {{ $t('Script Lib Recover') }}

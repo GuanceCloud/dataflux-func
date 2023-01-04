@@ -204,9 +204,9 @@ const app = new Vue({
 window.app = app;
 
 // 全局配置
-Vue.config.devtools = true;
+Vue.config.devtools      = true;
 Vue.config.productionTip = false;
-Vue.config.silent = true;
+Vue.config.silent        = true;
 
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;

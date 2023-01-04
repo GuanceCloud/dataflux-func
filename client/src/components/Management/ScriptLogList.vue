@@ -1,4 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
+Exec Mode: 执行方式
+
 No recent Script Logs: 无近期脚本日志
 All log printed by {0} in Script will be collected by the system and shown here: 脚本运行时使用 {0} 打印的日志会被系统搜集并展示在此
 </i18n>
@@ -32,7 +34,7 @@ All log printed by {0} in Script will be collected by the system and shown here:
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column label="执行方式" width="150">
+          <el-table-column :label="$t('Exec Mode')" width="150">
             <template slot-scope="scope">
               <span :class="C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).textClass">
                 {{ C.FUNC_EXEC_MODE_MAP.get(scope.row.execMode).name }}
@@ -40,7 +42,7 @@ All log printed by {0} in Script will be collected by the system and shown here:
             </template>
           </el-table-column>
 
-          <el-table-column label="时间" width="200">
+          <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
@@ -48,26 +50,18 @@ All log printed by {0} in Script will be collected by the system and shown here:
             </template>
           </el-table-column>
 
-          <el-table-column label="函数">
+          <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
-              <template v-if="scope.row.func_id">
-                <strong class="func-title">{{ scope.row.func_title || scope.row.func_name }}</strong>
-
-                <br>
-                <el-tag type="info" size="mini"><code>def</code></el-tag>
-                <code class="text-main text-small">{{ `${scope.row.func_id}(${T.isNothing(scope.row.func_kwargsJSON) ? '' : '...'})` }}</code>
-              </template>
-              <template v-else>
-                <div class="text-bad">函数已不存在</div>
-                <br>
-              </template>
+              <FuncInfo
+                :id="scope.row.func_id"
+                :title="scope.row.func_title"
+                :kwargsJSON="scope.row.func_kwargsJSON" />
             </template>
           </el-table-column>
 
-          <el-table-column label="日志内容">
+          <el-table-column>
             <template slot-scope="scope">
-              <pre class="text-data">{{ scope.row.messageSample }}</pre>
-              <el-button @click="showDetail(scope.row)" type="text">显示日志详情</el-button>
+              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show Detail') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -76,7 +70,7 @@ All log printed by {0} in Script will be collected by the system and shown here:
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="完整日志输出如下" ref="longTextDialog" />
+      <LongTextDialog ref="longTextDialog" />
     </el-container>
   </transition>
 </template>
@@ -105,11 +99,6 @@ export default {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
-
-      // 缩减行数
-      apiRes.data.forEach(d => {
-        d.messageSample = this.T.limitLines(d.messageTEXT, -3, 100);
-      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;

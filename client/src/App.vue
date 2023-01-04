@@ -418,6 +418,9 @@ h3 {
   font-size: small;
   font-weight: normal;
 }
+ul {
+  list-style-type: square;
+}
 .main-text {
   color: #303133;
 }

@@ -38,7 +38,6 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
               <FuncInfo
                 :id="scope.row.funcId"
                 :title="scope.row.funcTitle"
-                :name="scope.row.funcName"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />
 
               <div>
