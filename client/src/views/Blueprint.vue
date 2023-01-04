@@ -230,16 +230,6 @@ export default {
         await this.loadData();
       },
     },
-    '$store.state.uiLocale': function() {
-      // 修复切换语言后，连接描述文字由于是cavas绘制导致无法同步更新的问题
-      // 解决方案：修改`updateTime`诱使GraphLink触发watch动作
-      // 注意点：切换语言后，需要等待i18n插件也切换语言后才能重新获取文案
-      setImmediate(() => {
-        this.$refs.superFlow.graph.linkList.forEach(link => {
-          link.meta.updateTime = new Date().toISOString();
-        });
-      });
-    },
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
@@ -716,37 +706,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
-        id: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input ID'),
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Only alphabets, numbers and underscore are allowed'),
-            pattern: /^[a-zA-Z0-9_]*$/g,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Cannot not starts with a number'),
-            pattern: /^[^0-9]/g,
-          },
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (value.indexOf('__') >= 0) {
-                let _message = this.$t('ID cannot contains double underscore "__"');
-                return callback(new Error(_message));
-              }
-              return callback();
-            },
-          },
-        ],
-      }
-    },
     graphMenu() {
       return [
         [
@@ -866,6 +825,35 @@ export default {
       form: {
         id   : null,
         title: null,
+      },
+      formRules: {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value.indexOf('__') >= 0) {
+                let _message = this.$t('ID cannot contains double underscore "__"');
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
       },
 
       blueprints: [],

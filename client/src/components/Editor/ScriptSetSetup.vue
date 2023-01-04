@@ -209,37 +209,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
-        id: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input ID'),
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Only alphabets, numbers and underscore are allowed'),
-            pattern: /^[a-zA-Z0-9_]*$/g,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Cannot not starts with a number'),
-            pattern: /^[^0-9]/g,
-          },
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (value.indexOf('__') >= 0) {
-                let _message = this.$t('ID cannot contains double underscore "__"');
-                return callback(new Error(_message));
-              }
-              return callback();
-            },
-          },
-        ],
-      }
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Script Set'),
@@ -288,6 +257,35 @@ export default {
         title       : null,
         description : null,
         requirements: null,
+      },
+      formRules: {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value.indexOf('__') >= 0) {
+                let _message = this.$t('ID cannot contains double underscore "__"');
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
       },
     }
   },

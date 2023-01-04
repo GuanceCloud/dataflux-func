@@ -1,5 +1,12 @@
 <i18n locale="zh-CN" lang="yaml">
 Create Recover Point: 创建还原点
+Script Lib Recover Points: 脚本库还原点
+
+'Recover Point created by {userName}': '{userName} 创建的还原点'
+
+Meaningful notes can provide a reliable reference for the future: 有意义的备注可以为将来提供可靠的参考
+
+Please input note: 请输入备注
 
 Script Lib Recover Point created: 脚本库还原点已创建
 </i18n>
@@ -20,20 +27,20 @@ Script Lib Recover Point created: 脚本库还原点已创建
           <el-col :span="15">
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item label="说明" prop="note">
+                <el-form-item :label="$t('Note')" prop="note">
                   <el-input
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 5}"
                     maxlength="200"
                     v-model="form.note"></el-input>
-                  <InfoBlock title="有意义的备注可以为将来提供可靠的参考" />
+                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>
 
                 <el-form-item>
                   <el-button @click="goToHistory">
                     <i class="fa fa-fw fa-history"></i>
-                    脚本库还原点
+                    {{ $t('Script Lib Recover Points' )}}
                   </el-button>
 
                   <div class="setup-right">
@@ -89,28 +96,22 @@ export default {
   props: {
   },
   data() {
-    let userInfoTEXT = this.$store.state.userProfile.name || this.$store.state.userProfile.username;
+    let userName = this.$store.state.userProfile.name || this.$store.state.userProfile.username;
+    let defaultNote = this.$t('Recover Point created by {userName}', { userName: userName });
     return {
       form: {
-        note: `${userInfoTEXT} 创建的还原点`,
+        note: defaultNote,
       },
       formRules: {
-        type: [
-          {
-            trigger : 'change',
-            message : '请选择还原点类型',
-            required: true,
-          },
-        ],
         note: [
           {
             trigger : 'change',
-            message : '请填写操作备注',
+            message : this.$t('Please input note'),
             required: true,
             min     : 1,
-          },
-        ],
-      },
+          }
+        ]
+      }
     }
   },
   created() {

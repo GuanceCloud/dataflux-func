@@ -69,12 +69,6 @@ export default {
         });
       }
     },
-    '$store.state.uiLocale': function() {
-      // 修复切换语言后，连接描述文字由于是cavas绘制导致无法同步更新的问题
-      setImmediate(() => {
-        this.updateChart();
-      });
-    },
   },
   methods: {
     async loadData() {

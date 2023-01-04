@@ -26,6 +26,17 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
       <Logo type="auto" class="logo" width="400px" height="70px"></Logo>
 
       <div class="sign-in-panel">
+        <el-dropdown class="ui-local-select" @command="$root.setUILocale">
+          <span><i class="fa fa-fw fa-globe"></i> {{ uiLocaleDetail.name }}</span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item v-for="_locale in C.UI_LOCALE" :key="_locale.key" :command="_locale.key">
+              <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
+                {{ _locale.name }}
+              </span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+
         <el-form ref="form" :model="form" :rules="formRules" class="sign-in-form">
           <el-form-item prop="funcId" v-if="signInFuncs && signInFuncs.length > 0">
             <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
@@ -183,8 +194,26 @@ export default {
     isBuiltInSignIn() {
       return this.T.isNothing(this.signInFuncs) || this.form.funcId === this.BUILTIN_SIGN_IN_FUNC_ID;
     },
-    formRules() {
-      return {
+    uiLocaleDetail() {
+      return this.C.UI_LOCALE_MAP.get(this.$store.getters.uiLocale);
+    },
+  },
+  props: {
+  },
+  data() {
+    return {
+      respError: {
+        password: null,
+        captcha : null,
+      },
+      form: {
+        captchaToken: null,
+        captcha     : null,
+        funcId      : 'builtIn', // 集成登录专用
+        username    : null,
+        password    : null,
+      },
+      formRules: {
         username: [
           {
             trigger : 'change',
@@ -212,24 +241,8 @@ export default {
             pattern : /^\d{4}$/g
           },
         ],
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      respError: {
-        password: null,
-        captcha : null,
       },
-      form: {
-        captchaToken: null,
-        captcha     : null,
-        funcId      : 'builtIn', // 集成登录专用
-        username    : null,
-        password    : null,
-      },
+
       submitFailed: false,
     }
   },
@@ -260,7 +273,17 @@ export default {
 .sign-in-panel {
   width: 554px;
   background-color: #fff;
+  position: relative;
 }
+.sign-in-panel .ui-local-select {
+  position: absolute;
+  right: 50px;
+  bottom: 25px;
+  font-size: 16px;
+  color: #FF6600;
+  cursor: pointer;
+}
+
 .sign-in-form {
   padding: 40px 54px;
   padding-bottom: 60px;

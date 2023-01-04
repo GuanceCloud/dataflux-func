@@ -93,36 +93,6 @@ export default {
       });
     },
   },
-  computed: {
-    formRules() {
-      return {
-        'style.fontSize': [
-          {
-            trigger : 'change',
-            message : this.$t('Please input font size'),
-            required: true,
-          },
-          {
-            trigger : 'change',
-            message : this.$t('Font size should be a integer between 12 and 36'),
-            type   : 'integer', min: 12, max: 36,
-          },
-        ],
-        'style.lineHeight': [
-          {
-            trigger : 'change',
-            message : this.$t('Please input line height'),
-            required: true,
-          },
-          {
-            trigger : 'change',
-            message : this.$t('Line height should be a number between 1 and 2'),
-            type   : 'number', min: 1, max: 2,
-          },
-        ],
-      }
-    },
-  },
   props: {
     codeMirror: Object,
   },
@@ -139,6 +109,32 @@ export default {
       show: false,
 
       form: _formData,
+      formRules: {
+        'style.fontSize': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input font size'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Font size should be a integer between 12 and 36'),
+            type   : 'integer', min: 12, max: 36,
+          },
+        ],
+        'style.lineHeight': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input line height'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Line height should be a number between 1 and 2'),
+            type   : 'number', min: 1, max: 2,
+          },
+        ],
+      }
     }
   },
 }

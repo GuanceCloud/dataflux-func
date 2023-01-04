@@ -258,7 +258,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                         class="func-cascader-input"
                         :key="`handler-${index}`"
                         :prop="`configJSON.topicHandlers.${index}.funcId`"
-                        :rules="formRules_topic">
+                        :rules="formRules_topicHandler">
                         <el-cascader ref="funcCascader"
                           popper-class="code-font"
                           placeholder="--"
@@ -604,8 +604,40 @@ export default {
         }
       });
     },
-    formRules() {
-      return {
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Setup Connector'),
+        add  : this.$t('Add Connector'),
+      };
+      return _map[this.T.setupPageMode()];
+    },
+    selectedType() {
+      switch(this.T.setupPageMode()) {
+        case 'add':
+          return this.form.type;
+
+        case 'setup':
+          return this.data.type;
+      }
+    },
+  },
+  props: {
+  },
+  data() {
+    return {
+      data        : {},
+      subInfoMap  : {},
+      funcMap     : {},
+      funcCascader: [],
+
+      form: {
+        id         : null,
+        title      : null,
+        type       : null,
+        description: null,
+        configJSON : {},
+      },
+      formRules: {
         id: [
           {
             trigger : 'change',
@@ -770,54 +802,16 @@ export default {
             required: false,
           },
         ],
-      }
-    },
-    formRules_topic() {
-      return {
+      },
+      formRules_topic: {
         trigger: 'change',
         message : this.$t('Please input topic'),
         required: true,
-      }
-    },
-    formRules_topicHandler() {
-      return {
+      },
+      formRules_topicHandler: {
         trigger: 'change',
         message : this.$t('Please select handler Func'),
         required: true,
-      }
-    },
-    pageTitle() {
-      const _map = {
-        setup: this.$t('Setup Connector'),
-        add  : this.$t('Add Connector'),
-      };
-      return _map[this.T.setupPageMode()];
-    },
-    selectedType() {
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          return this.form.type;
-
-        case 'setup':
-          return this.data.type;
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data        : {},
-      subInfoMap  : {},
-      funcMap     : {},
-      funcCascader: [],
-
-      form: {
-        id         : null,
-        title      : null,
-        type       : null,
-        description: null,
-        configJSON : {},
       },
 
       isSaving           : false,

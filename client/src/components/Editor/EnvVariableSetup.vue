@@ -182,8 +182,27 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Setup ENV'),
+        add  : this.$t('Add ENV'),
+      };
+      return _map[this.T.setupPageMode()];
+    },
+  },
+  props: {
+  },
+  data() {
+    return {
+      data: {},
+      form: {
+        id             : null,
+        title          : null,
+        description    : null,
+        valueTEXT      : null,
+        autoTypeCasting: null,
+      },
+      formRules: {
         id: [
           {
             trigger : 'change',
@@ -208,27 +227,6 @@ export default {
             required: true,
           },
         ]
-      }
-    },
-    pageTitle() {
-      const _map = {
-        setup: this.$t('Setup ENV'),
-        add  : this.$t('Add ENV'),
-      };
-      return _map[this.T.setupPageMode()];
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data: {},
-      form: {
-        id             : null,
-        title          : null,
-        description    : null,
-        valueTEXT      : null,
-        autoTypeCasting: null,
       },
     }
   },

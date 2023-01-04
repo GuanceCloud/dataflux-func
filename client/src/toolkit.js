@@ -117,6 +117,15 @@ export function getBaseURL() {
   return baseURL;
 };
 
+let CURRENT_UI_LOCALE = null;
+export function getUILocale() {
+  if (!CURRENT_UI_LOCALE) {
+    CURRENT_UI_LOCALE = jsonCopy(store.getters.uiLocale);
+  }
+
+  return CURRENT_UI_LOCALE;
+};
+
 export function autoScrollTable() {
   let key = router.currentRoute.name;
   let y = (app.$store.state.TableList_scrollY || {})[key];
@@ -690,8 +699,9 @@ export function getTimestamp() {
 export function getDateTimeString(dt, pattern) {
   dt = dt || new Date();
 
+  let uiLocale = getUILocale();
   let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
-  let inputTime = moment.utc(dt).locale(store.getters.uiLocale).utcOffset(utcOffset);
+  let inputTime = moment.utc(dt).locale(uiLocale).utcOffset(utcOffset);
 
   if (!pattern) {
     pattern = 'YYYY-MM-DD HH:mm:ss';
@@ -700,11 +710,13 @@ export function getDateTimeString(dt, pattern) {
 };
 
 export function fromNow(dt) {
-  return moment.utc(dt).locale(store.getters.uiLocale).fromNow();
+  let uiLocale = getUILocale();
+  return moment.utc(dt).locale(uiLocale).fromNow();
 };
 
 export function duration(d, humanized) {
-  let duration = moment.duration(d).locale(store.getters.uiLocale);
+  let uiLocale = getUILocale();
+  let duration = moment.duration(d).locale(uiLocale);
   return humanized ? duration.humanize() : duration;
 };
 

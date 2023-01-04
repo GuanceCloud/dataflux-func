@@ -168,8 +168,33 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Setup User'),
+        add  : this.$t('Add User'),
+      };
+      return _map[this.T.setupPageMode()];
+    },
+    passwordPlaceholder() {
+      if (this.T.setupPageMode() === 'add') {
+        return '';
+      } else {
+        return this.$t('Leave blank when not changing');
+      }
+    },
+  },
+  props: {
+  },
+  data() {
+    return {
+      data: {},
+      form: {
+        username: null,
+        name    : null,
+        email   : null,
+        password: null,
+      },
+      formRules: {
         username: [
           {
             trigger : 'change',
@@ -196,33 +221,6 @@ export default {
             required: false,
           }
         ],
-      }
-    },
-    pageTitle() {
-      const _map = {
-        setup: this.$t('Setup User'),
-        add  : this.$t('Add User'),
-      };
-      return _map[this.T.setupPageMode()];
-    },
-    passwordPlaceholder() {
-      if (this.T.setupPageMode() === 'add') {
-        return '';
-      } else {
-        return this.$t('Leave blank when not changing');
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data: {},
-      form: {
-        username: null,
-        name    : null,
-        email   : null,
-        password: null,
       },
     }
   },

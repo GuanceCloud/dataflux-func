@@ -66,6 +66,14 @@ export default {
     Navi,
   },
   watch: {
+    $route: {
+      immediate: true,
+      handler(to, from) {
+        if (to && to.name) {
+          this.reportAndCheckClientConflict(true);
+        }
+      }
+    },
     isSignedIn(val) {
       if (val) {
         // 登录后
@@ -90,14 +98,6 @@ export default {
       let $uiThemeLink = document.getElementById('uiTheme');
       let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
-    },
-    $route: {
-      immediate: true,
-      handler(to, from) {
-        if (to && to.name) {
-          this.reportAndCheckClientConflict(true);
-        }
-      }
     },
   },
   methods: {
@@ -180,26 +180,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
-        name: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input name'),
-            required: true,
-          },
-        ],
-        email: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input email'),
-            required: true,
-            pattern: this.C.RE_PATTERN.email,
-          },
-        ]
-      }
-    },
-
     showNavi() {
       switch(this.$route.name) {
         case 'index':
@@ -234,9 +214,8 @@ export default {
   },
   data() {
     let userProfile = this.$store.state.userProfile || {};
-    return {
-      fullscreenLoading: false,
 
+    return {
       prevReportAndCheckClientConflictResData: null,
 
       heartbeatTimer: null,
@@ -244,6 +223,23 @@ export default {
       form: {
         name : userProfile.name  || '',
         email: userProfile.email || '',
+      },
+      formRules: {
+        name: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input name'),
+            required: true,
+          },
+        ],
+        email: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input email'),
+            required: true,
+            pattern: this.C.RE_PATTERN.email,
+          },
+        ]
       },
     }
   },
@@ -635,6 +631,10 @@ kbd {
 .header-control .el-checkbox.is-bordered.el-checkbox--small {
   /* Magic Fix! */
   /* padding-top: 6px; */
+}
+.el-menu--horizontal > .el-submenu .el-submenu__icon-arrow {
+  /* Magic Fix! */
+  margin-top: 3px !important;
 }
 .no-data-area {
   text-align: center;

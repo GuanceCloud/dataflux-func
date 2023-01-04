@@ -403,59 +403,6 @@ def my_auth_func():
     },
   },
   computed: {
-    formRules() {
-      return {
-        type: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input API Auth type'),
-            required: true,
-          },
-        ],
-        funcId: [
-          {
-            trigger : 'change',
-            message : this.$t('Please select Func'),
-            required: true,
-          },
-        ],
-      }
-    },
-    formRules_fixedFieldLocation() {
-      return {
-        trigger: 'change',
-        message : this.$t('Please input location'),
-        required: true,
-      }
-    },
-    formRules_fixedFieldName() {
-      return {
-        trigger: 'change',
-        message : this.$t('Please input field name'),
-        required: true,
-      }
-    },
-    formRules_fixedFieldValue() {
-      return {
-        trigger: 'change',
-        message : this.$t('Please input field value'),
-        required: true,
-      }
-    },
-    formRules_httpAuthUsername() {
-      return {
-        trigger: 'change',
-        message : this.$t('Please input HTTP Auth username'),
-        required: true,
-      }
-    },
-    formRules_httpAuthPassword() {
-      return {
-        trigger: 'change',
-        message : this.$t('Please input HTTP Auth password'),
-        required: false,
-      }
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup API Auth'),
@@ -486,6 +433,47 @@ def my_auth_func():
         type      : null,
         configJSON: {},
         note      : null,
+      },
+      formRules: {
+        type: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input API Auth type'),
+            required: true,
+          },
+        ],
+        funcId: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Func'),
+            required: true,
+          },
+        ],
+      },
+      formRules_fixedFieldLocation: {
+        trigger: 'change',
+        message : this.$t('Please input location'),
+        required: true,
+      },
+      formRules_fixedFieldName: {
+        trigger: 'change',
+        message : this.$t('Please input field name'),
+        required: true,
+      },
+      formRules_fixedFieldValue: {
+        trigger: 'change',
+        message : this.$t('Please input field value'),
+        required: true,
+      },
+      formRules_httpAuthUsername: {
+        trigger: 'change',
+        message : this.$t('Please input HTTP Auth username'),
+        required: true,
+      },
+      formRules_httpAuthPassword: {
+        trigger: 'change',
+        message : this.$t('Please input HTTP Auth password'),
+        required: false,
       },
     }
   },

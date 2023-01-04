@@ -5,7 +5,10 @@ Create Recover Point: 创建还原点
 Script Lib recovered: 脚本库已还原
 
 No Recover Point has ever been created: 从未创建过任何还原点
+System automatically creates Script Lib Recover Points before importing, installing Script Sets.: 在导入、安装脚本集前，系统会自动创建还原点。
+Recover Points can also be created manually.                                                    : 也可以手动创建脚本库还原点。
 
+'After recovery, the entire Script Lib will be reset to the state at the time the Recover Point was created and will take effect immediately.<hr class="br">Are you sure you want to recover?': '执行恢复后，整个脚本库将重置到还原点创建时的状态且立即生效。<hr class="br">是否确认恢复？'
 </i18n>
 
 <template>
@@ -31,6 +34,8 @@ No Recover Point has ever been created: 从未创建过任何还原点
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recover Point has ever been created') }}</h1>
 
           <p class="no-data-tip">
+            {{ $t('System automatically creates Script Lib Recover Points before importing, installing Script Sets.' )}}
+            <br>{{ $t('Recover Points can also be created manually.') }}
           </p>
         </div>
         <el-timeline v-else>
@@ -47,7 +52,9 @@ No Recover Point has ever been created: 从未创建过任何还原点
               <span class="recover-point-title" :class="C.SCRIPT_RECOVER_POINT_MAP.get(d.type).textClass">{{ C.SCRIPT_RECOVER_POINT_MAP.get(d.type).name }}</span>
 
               <div class="recover-point-operation">
-                <el-button :type="d.nodeType" plain @click="quickSubmitData(d, 'recover')" size="small">还原至此状态</el-button>
+                <el-button :type="d.nodeType" plain @click="quickSubmitData(d, 'recover')" size="small">
+                  {{ $t('Recover') }}
+                </el-button>
               </div>
 
               <div class="recover-point-note" v-if="d.note">
@@ -87,12 +94,9 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
-      let operationName = this.OP_NAME_MAP[operation];
-
       switch(operation) {
         case 'recover':
-          if (!await this.T.confirm(`执行恢复后，脚本集、脚本、函数等数据将完整恢复到还原点创建时刻的状态且立即生效
-                <hr class="br">是否确认恢复？`)) return;
+          if (!await this.T.confirm(this.$t('After recovery, the entire Script Lib will be reset to the state at the time the Recover Point was created and will take effect immediately.<hr class="br">Are you sure you want to recover?'))) return;
           break;
       }
 
@@ -117,13 +121,6 @@ export default {
           })
           break;
       }
-    },
-  },
-  computed: {
-    OP_NAME_MAP() {
-      return {
-        recover: '还原',
-      };
     },
   },
   props: {

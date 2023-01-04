@@ -4,7 +4,7 @@ Exporting with related contents: 导出并附带关联内容
 Exported Connectors will not include sensitive data (such as password), please re-entered them after import: 导出的连接器不包含敏感数据（如密码等），请在导入后重新输入
 Meaningful notes can provide a reliable reference for the future: 有意义的备注可以为将来提供可靠的参考
 Please select at least one Script Set: 请选择导出脚本集
-Please input note: 请填写备注
+Please input note: 请输入备注
 Data exported: 数据已导出
 'Exported content has been downloaded as a zip file:': '导出内容已作为 zip 文件下载：'
 </i18n>

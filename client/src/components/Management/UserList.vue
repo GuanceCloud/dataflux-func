@@ -5,6 +5,8 @@ User enabled : 用户已启用
 No User has ever been added: 从未添加过任何用户
 
 Are you sure you want to disable the User?: 是否确认禁用此用户？
+
+Add members to allow other users to use the platform: 添加成员，允许其他用户使用本平台
 </i18n>
 
 <template>
@@ -32,10 +34,10 @@ Are you sure you want to disable the User?: 是否确认禁用此用户？
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No User has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            添加成员，允许其他用户使用本平台
+            {{ $t('Add members to allow other users to use the platform') }}
           </p>
         </div>
-        <el-table
+        <el-table v-else
           class="common-table" height="100%"
           :data="data"
           :row-class-name="T.getHighlightRowCSS">

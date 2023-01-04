@@ -112,9 +112,13 @@ export default {
       });
     },
   },
-  computed: {
-    formRules() {
-      return {
+  data() {
+    return {
+      data: {},
+      form: {
+        name: null,
+      },
+      formRules: {
         name: [
           {
             trigger : 'change',
@@ -123,16 +127,6 @@ export default {
           }
         ],
       }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data: {},
-      form: {
-        name: null,
-      },
     }
   },
 }

@@ -187,7 +187,7 @@ you must first create an Auth Link for the Python function and access the Python
               </template>
             </el-table-column>
 
-            <el-table-column align="right" width="350">
+            <el-table-column align="right" width="380">
               <template slot-scope="scope">
                 <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
                   {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>

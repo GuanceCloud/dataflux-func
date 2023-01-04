@@ -108,9 +108,15 @@ export default {
       this.$store.dispatch('reloadUserProfile');
     },
   },
-  computed: {
-    formRules() {
-      return {
+  data() {
+    return {
+      data: {},
+      form: {
+        name  : null,
+        email : null,
+        mobile: null,
+      },
+      formRules: {
         name: [
           {
             trigger : 'change',
@@ -126,18 +132,6 @@ export default {
             pattern: this.C.RE_PATTERN.email,
           },
         ],
-      }
-    }
-  },
-  props: {
-  },
-  data() {
-    return {
-      data: {},
-      form: {
-        name  : null,
-        email : null,
-        mobile: null,
       },
     }
   },
@@ -145,5 +139,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

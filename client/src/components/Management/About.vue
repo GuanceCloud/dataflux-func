@@ -19,7 +19,7 @@ Architecture       : 架构
 Vue Version        : Vue 版本
 Node Version       : Node 版本
 Python Version     : Python 版本
-Release date       : 发布日期
+Release Date       : 发布日期
 'Loading...'       : '加载中...'
 Get System Report  : 获取系统报告
 
@@ -114,7 +114,7 @@ Wroker Queue Length      : Worker 队列长度
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.architecture"></el-input>
                 </el-form-item>
 
-                <el-form-item :label="$t('Release date')">
+                <el-form-item :label="$t('Release Date')">
                   <el-input :placeholder="$t('Loading...')" :readonly="true" :value="releaseDateTEXT"></el-input>
                 </el-form-item>
 
@@ -430,11 +430,13 @@ export default {
     releaseDateTEXT() {
       let releaseDate    = '';
       let releaseFromNow = '';
+      let releaseTimestamp = Date.now();
       if (this.about.releaseTimestamp > 0) {
-        let _t = this.about.releaseTimestamp * 1000;
-        releaseDate    = this.M.utc(_t).locale(this.$store.getters.uiLocale).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
-        releaseFromNow = this.M.utc(_t).locale(this.$store.getters.uiLocale).fromNow();
+        let releaseTimestamp = this.about.releaseTimestamp * 1000;
       }
+
+      releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
+      releaseFromNow = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).fromNow();
 
       if (releaseDate && releaseFromNow) {
         return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`

@@ -182,8 +182,13 @@ const app = new Vue({
     setUILocale(uiLocale) {
       this.$store.commit('updateUILocale', uiLocale);
 
-      this.$nextTick(() => {
-        this.$i18n.locale = this.$store.getters.uiLocale;
+      // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
+      // this.$nextTick(() => {
+      //   this.$i18n.locale = this.$store.getters.uiLocale;
+      // });
+      this.$loading();
+      setImmediate(() => {
+        location.reload();
       });
     },
     setUITheme(uiTheme) {

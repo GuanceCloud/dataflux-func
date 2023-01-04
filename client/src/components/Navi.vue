@@ -146,17 +146,11 @@ export default {
         return '*' + this.$t('Signed In');
       }
     },
-    uiTheme() {
-      return this.$store.getters.uiTheme;
-    },
-    uiLocale() {
-      return this.$store.getters.uiLocale;
-    },
     uiThemeDetail() {
-      return this.C.UI_THEME_MAP.get(this.uiTheme);
+      return this.C.UI_THEME_MAP.get(this.$store.getters.uiTheme);
     },
     uiLocaleDetail() {
-      return this.C.UI_LOCALE_MAP.get(this.uiLocale);
+      return this.C.UI_LOCALE_MAP.get(this.$store.getters.uiLocale);
     },
   },
   props: {

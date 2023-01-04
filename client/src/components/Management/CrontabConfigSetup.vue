@@ -497,56 +497,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
-
-      return {
-        funcId: [
-          {
-            trigger : 'change',
-            message : this.$t('Please select Func'),
-            required: true,
-          },
-        ],
-        expireTime: [
-          {
-            trigger: 'change',
-            message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
-            validator: (rule, value, callback) => {
-              let ts = this.M(value).unix();
-              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
-                return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
-              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
-                return callback(new Error(this.$t('Date-time cannot later than 2037')));
-              }
-              return callback();
-            },
-          }
-        ],
-        funcCallKwargsJSON: [
-          {
-            trigger : 'change',
-            message : errorMessage_funcCallKwargsJSON,
-            required: true,
-          },
-          {
-            trigger  : 'change',
-            validator: (rule, value, callback) => {
-              try {
-                let j = JSON.parse(value);
-                if (Array.isArray(j)) {
-                  return callback(new Error(errorMessage_funcCallKwargsJSON));
-                }
-                return callback();
-
-              } catch(err) {
-                return callback(new Error(errorMessage_funcCallKwargsJSON));
-              }
-            },
-          }
-        ],
-      }
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Crontab Config'),
@@ -640,6 +590,8 @@ export default {
   props: {
   },
   data() {
+    let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
+
     const CRONTAB_PARTS_MAP = {
       0: 'minutes',
       1: 'hours',
@@ -726,6 +678,53 @@ export default {
         hours  : [],
         minutes: [],
       },
+
+      formRules: {
+        funcId: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Func'),
+            required: true,
+          },
+        ],
+        expireTime: [
+          {
+            trigger: 'change',
+            message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
+            validator: (rule, value, callback) => {
+              let ts = this.M(value).unix();
+              if (ts < this.T.MIN_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
+              } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
+                return callback(new Error(this.$t('Date-time cannot later than 2037')));
+              }
+              return callback();
+            },
+          }
+        ],
+        funcCallKwargsJSON: [
+          {
+            trigger : 'change',
+            message : errorMessage_funcCallKwargsJSON,
+            required: true,
+          },
+          {
+            trigger  : 'change',
+            validator: (rule, value, callback) => {
+              try {
+                let j = JSON.parse(value);
+                if (Array.isArray(j)) {
+                  return callback(new Error(errorMessage_funcCallKwargsJSON));
+                }
+                return callback();
+
+              } catch(err) {
+                return callback(new Error(errorMessage_funcCallKwargsJSON));
+              }
+            },
+          }
+        ],
+      }
     }
   },
 }

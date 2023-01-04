@@ -190,38 +190,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
-        id: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input ID'),
-            required: true,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Only alphabets, numbers and underscore are allowed'),
-            pattern: /^[a-zA-Z0-9_]*$/g,
-          },
-          {
-            trigger: 'change',
-            message: this.$t('Cannot not starts with a number'),
-            pattern: /^[^0-9]/g,
-          },
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              let prefix = `${this.scriptSetId}__`;
-              if (value.indexOf(prefix) < 0 || value === prefix) {
-                let _message = this.$t('Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
-                return callback(new Error(_message));
-              }
-              return callback();
-            },
-          },
-        ],
-      }
-    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Script'),
@@ -278,6 +246,36 @@ export default {
         title      : null,
         description: null,
       },
+      formRules: {
+        id: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Only alphabets, numbers and underscore are allowed'),
+            pattern: /^[a-zA-Z0-9_]*$/g,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Cannot not starts with a number'),
+            pattern: /^[^0-9]/g,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              let prefix = `${this.scriptSetId}__`;
+              if (value.indexOf(prefix) < 0 || value === prefix) {
+                let _message = this.$t('Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
+      }
     }
   },
 }

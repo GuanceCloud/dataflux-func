@@ -280,14 +280,6 @@ export default {
     codeMirrorTheme(val) {
       this.codeMirror.setOption('theme', val);
     },
-    '$store.state.uiLocale'(val) {
-      if (this.codeMirror) {
-        setImmediate(() => {
-          this.codeMirror.setValue(this.$t('codeExample'));
-          this.T.resetCodeMirrorPhrases(this.codeMirror);
-        })
-      }
-    },
   },
   methods: {
     onCollapseChange(activeNames) {

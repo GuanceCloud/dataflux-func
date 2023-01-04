@@ -378,8 +378,38 @@ export default {
       configJSON = configJSON || {};
       return !!(configJSON.user || configJSON.password) || this.setAdmin;
     },
-    formRules() {
-      return {
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Setup Script Market'),
+        add  : this.$t('Add Script Market'),
+      };
+      return _map[this.T.setupPageMode()];
+    },
+    selectedType() {
+      switch(this.T.setupPageMode()) {
+        case 'add':
+          return this.form.type;
+
+        case 'setup':
+          return this.data.type;
+      }
+    },
+  },
+  props: {
+  },
+  data() {
+    return {
+      data: {},
+
+      setAdmin: false,
+
+      form: {
+        name       : null,
+        type       : null,
+        description: null,
+        configJSON : {},
+      },
+      formRules: {
         type: [
           {
             trigger : 'change',
@@ -467,38 +497,6 @@ export default {
             pattern: this.C.RE_PATTERN.httpURL,
           },
         ],
-      }
-    },
-    pageTitle() {
-      const _map = {
-        setup: this.$t('Setup Script Market'),
-        add  : this.$t('Add Script Market'),
-      };
-      return _map[this.T.setupPageMode()];
-    },
-    selectedType() {
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          return this.form.type;
-
-        case 'setup':
-          return this.data.type;
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data: {},
-
-      setAdmin: false,
-
-      form: {
-        name       : null,
-        type       : null,
-        description: null,
-        configJSON : {},
       },
 
       isSaving: false,

@@ -383,10 +383,30 @@ export default {
         return d;
       });
     },
-    formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
+  },
+  data() {
+    let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
 
-      return {
+    return {
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
+      apiAuthList : [],
+
+      useCustomId: false,
+      showAddTag : false,
+      newTag     : '',
+
+      form: {
+        id                : null,
+        funcId            : null,
+        funcCallKwargsJSON: null,
+        tagsJSON          : [],
+        apiAuthId         : null,
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH'),
+        note              : null,
+      },
+      formRules: {
         id: [
           {
             trigger: 'change',
@@ -432,28 +452,6 @@ export default {
             },
           }
         ],
-      }
-    },
-  },
-  data() {
-    return {
-      data        : {},
-      funcMap     : {},
-      funcCascader: [],
-      apiAuthList : [],
-
-      useCustomId: false,
-      showAddTag : false,
-      newTag     : '',
-
-      form: {
-        id                : null,
-        funcId            : null,
-        funcCallKwargsJSON: null,
-        tagsJSON          : [],
-        apiAuthId         : null,
-        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_BATCH'),
-        note              : null,
       },
     }
   },

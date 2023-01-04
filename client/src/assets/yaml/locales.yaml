@@ -44,6 +44,7 @@ en:
 
   # 通用-操作
   Add     : 添加
+  Create  : 创建
   Clone   : 克隆
   Setup   : 配置
   Edit    : 编辑
@@ -56,6 +57,7 @@ en:
   Save    : 保存
   Export  : 导出
   Import  : 导入
+  Recover : 还原
   Deploy  : 部署
   Hide    : 隐藏
   Show    : 显示
@@ -93,6 +95,7 @@ en:
 
   # 通用-操作（小写）
   add     : 添加
+  create  : 创建
   clone   : 克隆
   setup   : 配置
   edit    : 编辑
@@ -105,6 +108,7 @@ en:
   save    : 保存
   export  : 导出
   import  : 导入
+  recover : 还原
   deploy  : 部署
   hide    : 隐藏
   show    : 显示

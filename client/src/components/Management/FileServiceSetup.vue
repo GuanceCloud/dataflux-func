@@ -202,33 +202,6 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      return {
-        id: [
-          {
-            trigger: 'change',
-            validator: (rule, value, callback) => {
-              if (this.T.notNothing(value)) {
-                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
-                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
-                }
-                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
-                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
-                }
-              }
-              return callback();
-            },
-          }
-        ],
-        root: [
-          {
-            trigger : 'change',
-            message : this.$t('Please select root'),
-            required: true,
-          },
-        ],
-      }
-    },
     ID_PREFIX() {
       return 'fsvc-';
     },
@@ -252,6 +225,31 @@ export default {
         id  : null,
         root: null,
         note: null,
+      },
+      formRules: {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (this.T.notNothing(value)) {
+                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
+                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+                }
+                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
+                }
+              }
+              return callback();
+            },
+          }
+        ],
+        root: [
+          {
+            trigger : 'change',
+            message : this.$t('Please select root'),
+            required: true,
+          },
+        ],
       },
 
       rootCascaderProps: {

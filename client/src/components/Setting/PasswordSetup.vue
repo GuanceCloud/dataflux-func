@@ -149,9 +149,20 @@ export default {
       this.form.captcha = '';
     },
   },
-  computed: {
-    formRules() {
-      return {
+  data() {
+    return {
+      respError: {
+        oldPassword: null,
+        captcha    : null,
+      },
+      form: {
+        captchaToken      : null,
+        captcha           : null,
+        oldPassword       : null,
+        newPassword       : null,
+        confirmNewPassword: null,
+      },
+      formRules: {
         oldPassword: [
           {
             trigger : 'change',
@@ -205,23 +216,6 @@ export default {
             required: true,
           },
         ],
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      respError: {
-        oldPassword: null,
-        captcha    : null,
-      },
-      form: {
-        captchaToken      : null,
-        captcha           : null,
-        oldPassword       : null,
-        newPassword       : null,
-        confirmNewPassword: null,
       },
     }
   },

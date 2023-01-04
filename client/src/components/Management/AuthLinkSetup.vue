@@ -377,10 +377,83 @@ export default {
     },
   },
   computed: {
-    formRules() {
-      let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
+    ID_PREFIX() {
+      return 'auln-';
+    },
+    pageTitle() {
+      const _map = {
+        setup: this.$t('Setup Auth Link'),
+        add  : this.$t('Add Auth Link'),
+      };
+      return _map[this.T.setupPageMode()];
+    },
+    apiCustomKwargsSupport() {
+      let funcId = this.form.funcId;
+      if (!funcId) return false;
+      if (!this.funcMap[funcId]) return false;
+
+      for (let k in this.funcMap[funcId].kwargsJSON) {
+        if (k.indexOf('**') === 0) return true;
+      }
+      return false;
+    },
+    apiAuthOptions() {
+      return this.apiAuthList.map(d => {
+        let _typeName = this.C.API_AUTH_MAP.get(d.type).name;
+        d.label = `[${_typeName}] ${d.name || ''}`;
+        return d;
+      });
+    },
+    datetimePickerOptions() {
+      const now = new Date().getTime();
+      const shortcutDaysList = [1, 3, 7, 30, 90, 365];
+      let shortcuts = [];
+      shortcutDaysList.forEach((days) => {
+        const date = new Date();
+        date.setTime(now + 3600 * 24 * days * 1000);
+
+        shortcuts.push({
+          text: this.$tc('shortcutDays', days),
+          onClick(picker) {
+            picker.$emit('pick', date)
+          }
+        });
+      });
 
       return {
+        shortcuts: shortcuts
+      }
+    },
+  },
+  props: {
+  },
+  data() {
+    let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
+
+    return {
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
+      apiAuthList : [],
+
+      useCustomId: false,
+      showAddTag : false,
+      newTag     : '',
+
+      form: {
+        id                : null,
+        funcId            : null,
+        funcCallKwargsJSON: null,
+        tagsJSON          : [],
+        apiAuthId         : null,
+        expireTime        : null,
+        throttlingJSON    : {},
+        showInDoc         : false,
+        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'),
+        note              : null,
+      },
+
+      formRules: {
         id: [
           {
             trigger: 'change',
@@ -441,80 +514,6 @@ export default {
             },
           }
         ],
-      }
-    },
-    ID_PREFIX() {
-      return 'auln-';
-    },
-    pageTitle() {
-      const _map = {
-        setup: this.$t('Setup Auth Link'),
-        add  : this.$t('Add Auth Link'),
-      };
-      return _map[this.T.setupPageMode()];
-    },
-    apiCustomKwargsSupport() {
-      let funcId = this.form.funcId;
-      if (!funcId) return false;
-      if (!this.funcMap[funcId]) return false;
-
-      for (let k in this.funcMap[funcId].kwargsJSON) {
-        if (k.indexOf('**') === 0) return true;
-      }
-      return false;
-    },
-    apiAuthOptions() {
-      return this.apiAuthList.map(d => {
-        let _typeName = this.C.API_AUTH_MAP.get(d.type).name;
-        d.label = `[${_typeName}] ${d.name || ''}`;
-        return d;
-      });
-    },
-    datetimePickerOptions() {
-      const now = new Date().getTime();
-      const shortcutDaysList = [1, 3, 7, 30, 90, 365];
-      let shortcuts = [];
-      shortcutDaysList.forEach((days) => {
-        const date = new Date();
-        date.setTime(now + 3600 * 24 * days * 1000);
-
-        shortcuts.push({
-          text: this.$tc('shortcutDays', days),
-          onClick(picker) {
-            picker.$emit('pick', date)
-          }
-        });
-      });
-
-      return {
-        shortcuts: shortcuts
-      }
-    },
-  },
-  props: {
-  },
-  data() {
-    return {
-      data        : {},
-      funcMap     : {},
-      funcCascader: [],
-      apiAuthList : [],
-
-      useCustomId: false,
-      showAddTag : false,
-      newTag     : '',
-
-      form: {
-        id                : null,
-        funcId            : null,
-        funcCallKwargsJSON: null,
-        tagsJSON          : [],
-        apiAuthId         : null,
-        expireTime        : null,
-        throttlingJSON    : {},
-        showInDoc         : false,
-        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'),
-        note              : null,
       },
     }
   },

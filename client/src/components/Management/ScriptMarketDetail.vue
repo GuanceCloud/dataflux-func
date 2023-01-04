@@ -758,17 +758,6 @@ export default {
       }
       return false;
     },
-    formRules() {
-      return {
-        note: [
-          {
-            trigger : 'change',
-            message : this.$t('Please input note'),
-            required: true,
-          },
-        ]
-      }
-    },
     filteredData() {
       let q = (this.filterTEXT || '').toLowerCase().trim();
       if (!q) {
@@ -789,6 +778,15 @@ export default {
 
       form: {
         note: null,
+      },
+      formRules: {
+        note: [
+          {
+            trigger : 'change',
+            message : this.$t('Please input note'),
+            required: true,
+          },
+        ]
       },
 
       filterInput: '',
