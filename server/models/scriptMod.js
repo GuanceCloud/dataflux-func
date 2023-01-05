@@ -134,7 +134,9 @@ EntityModel.prototype.add = function(data, callback) {
   data.scriptSetId = data.id.split('__')[0];
 
   // 自动填入示例代码
-  data.codeDraft = data.codeDraft || CONFIG._SAMPLE_SCRIPT;
+  data.codeDraft = toolkit.isNullOrUndefined(data.codeDraft)
+                 ? CONFIG._SAMPLE_SCRIPT
+                 : data.codeDraft;
 
   try {
     data = _prepareData(data);

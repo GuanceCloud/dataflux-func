@@ -2049,6 +2049,11 @@ scriptAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : scpt.scriptSetId
+      scriptName:
+        $desc      : 根据脚本名称过滤
+        $type      : string
+        $searchType: prelike
+        $searchKey : SUBSTR(scpt.id, LENGTH(sset.id) + 3)
 
   get:
     showInDoc    : true

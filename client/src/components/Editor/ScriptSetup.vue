@@ -2,6 +2,10 @@
 Add Script  : 添加脚本
 Setup Script: 配置脚本
 
+Template     : 模板
+Basic Example: 基础示例
+Blank Script : 空白脚本
+
 Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
 
 Please input ID: 请输入ID
@@ -62,6 +66,14 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
                     v-model="form.description"></el-input>
                 </el-form-item>
 
+                <el-form-item :label="$t('Template')">
+                  <el-select v-model="templateScriptId" clearable>
+                    <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
+                    <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
+                    <el-option v-for="s in exampleScripts" :label="s.label" :key="s.id" :value="s.id"></el-option>
+                  </el-select>
+                </el-form-item>
+
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                   <div class="setup-right">
@@ -107,15 +119,41 @@ export default {
   },
   methods: {
     async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
-        if (!apiRes || !apiRes.ok) return;
+      let apiRes = null;
+      switch(this.T.setupPageMode()) {
+        case 'add':
+          apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
+            query: {
+              fields    : [ 'id', 'title', 'scriptSetId', 'sset_title', 'code' ],
+              _withCode : true,
+              scriptName: 'example',
+            },
+          });
+          if (!apiRes || !apiRes.ok) return;
 
-        this.data = apiRes.data;
+          apiRes.data.forEach(d => {
+            let shortScriptId = d.id.split('__').slice(1).join('__');
+            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || shortScriptId}`
+          });
 
-        let nextForm = {};
-        Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
-        this.form = nextForm;
+          this.exampleScripts   = apiRes.data;
+          this.exampleScriptMap = apiRes.data.reduce((acc, x) => {
+            acc[x.id] = x;
+            return acc;
+          }, {});
+
+          break;
+
+        case 'setup':
+          apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
+          if (!apiRes || !apiRes.ok) return;
+
+          this.data = apiRes.data;
+
+          let nextForm = {};
+          Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
+          this.form = nextForm;
+          break;
       }
 
       this.$store.commit('updateLoadStatus', true);
@@ -143,8 +181,27 @@ export default {
       }
     },
     async addData() {
+      let _data = this.T.jsonCopy(this.form);
+
+      switch(this.templateScriptId) {
+        case '_basicExample':
+          delete _data.codeDraft;
+          break;
+
+        case '_blankScript':
+          _data.codeDraft = '';
+          break;
+
+        default:
+          let exampleScript = this.exampleScriptMap[this.templateScriptId];
+          _data.codeDraft = exampleScript && exampleScript.code
+                          ? exampleScript.code
+                          : '';
+          break;
+      }
+
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
-        body : { data: this.T.jsonCopy(this.form) },
+        body : { data: _data },
         alert: { okMessage: this.$t('Script created') },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -241,10 +298,17 @@ export default {
   data() {
     return {
       data: {},
+
+      templateScriptId: '_basicExample',
+
+      exampleScripts  : [],
+      exampleScriptMap: {},
+
       form: {
         id         : null,
         title      : null,
         description: null,
+        codeDraft  : null,
       },
       formRules: {
         id: [

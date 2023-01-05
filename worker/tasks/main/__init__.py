@@ -1502,11 +1502,9 @@ class ScriptBaseTask(BaseTask):
         funcs = self.db.query(sql, sql_params)
 
         # 编译脚本
-        if script.get('code'):
-            script_code = script['code']
-            script_code_obj = compile(script_code, script_id, 'exec')
-
-            script['codeObj'] = script_code_obj
+        script_code = script.get('code') or ''
+        script_code_obj = compile(script_code, script_id, 'exec')
+        script['codeObj'] = script_code_obj
 
         # 函数配置表
         script['funcExtraConfig'] = {}
