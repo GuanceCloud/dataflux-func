@@ -15,12 +15,12 @@ en: {}
   Can not found captcha token                                                                             : 验证码令牌无效
   Cannot generate SQL for a Model without a table name                                                    : 数据模型没有对应表名，无法自动生成SQL语句
   Cannot generate SQL for a Model without a view name                                                     : 数据模型没有对应视图名，无法自动生成SQL语句
-  Cannot generate SQL for non-SQL database                                                                : 无法针对非SQL数据库生成SQL语句
+  Cannot generate SQL for non-SQL database                                                                : 无法针对非 SQL 数据库生成 SQL 语句
   Cannot not access file out of resource folder                                                           : 无法访问资源目录外的文件
   Cannot not fetch folder out of resource folder                                                          : 无法查询资源目录外的目录
   Cannot not operate file or folder out of resource folder                                                : 无法操作资源目录外的文件或目录
-  Cannot use a ID of reserved prefix                                                                      : 无法使用系统保留前缀作为ID开头部分
-  Client not send X-Auth-Token yet                                                                        : 客户端尚未发送X-Auth-Token
+  Cannot use a ID of reserved prefix                                                                      : 无法使用系统保留前缀作为 ID 开头部分
+  Client not send X-Auth-Token yet                                                                        : 客户端尚未发送 X-Auth-Token
   Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again: 代码预检查失败。脚本未能在合理时间内执行结束，请检查代码后再试一次
   Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again: 代码预检查失败。脚本在执行期间产生了异常错误，请检查代码后再试一次
   Code pre-check failed. Script TIMEOUT during executing, please check your code and try again            : 代码预检查失败。脚本在执行超时，请检查代码后再试一次
@@ -29,10 +29,10 @@ en: {}
   Connecting to Connector timeout                                                                         : 连接到连接器超时
   Current user does not exists                                                                            : 当前用户不存在
   Current user has been disabled                                                                          : 当前用户已被禁用
-  Data of Socket.io must be a JSON string                                                                 : Socket.io数据必须为JSON字符串
+  Data of Socket.io must be a JSON string                                                                 : Socket.io 数据必须为 JSON 字符串
   Deleting built-in Connector is not allowed                                                              : 不允许删除内置连接器
   Empty import file                                                                                       : 导入文件为空
-  Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io事件必须满足格式"socketio.*"
+  Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io 事件必须满足格式 "socketio.*"
   Export failed                                                                                           : 导出失败
   File not exists                                                                                         : 文件不存在
   File or folder already existed                                                                          : 文件或目录已存在
@@ -41,34 +41,34 @@ en: {}
   Folder not exists                                                                                       : 目录不存在
   Found duplicated func names in script                                                                   : 脚本中发现重复的函数名
   Func Auth failed                                                                                        : 函数认证失败
-  Func ID not specified                                                                                   : 函数ID未指定
+  Func ID not specified                                                                                   : 函数 ID 未指定
   Func result is not standard JSON                                                                        : 函数结果无法解析为标准JSON
   Failed to setting Admin                                                                                 : 获取管理权失败
-  ID of Connector already exists                                                                          : 连接器ID已存在
+  ID of Connector already exists                                                                          : 连接器 ID 已存在
   ID of cloned Script will be too long                                                                    : 脚本ID将在克隆后会变得过长
-  ID of ENV Variable already exists                                                                       : 环境变量ID已存在
-  ID of file service already exists                                                                       : 文件服务ID已存在
-  ID of script already exists                                                                             : 脚本ID已存在
-  ID of script set already exists                                                                         : 脚本集ID已存在
-  Install Python package failed                                                                           : 安装Python包失败
+  ID of ENV Variable already exists                                                                       : 环境变量 ID 已存在
+  ID of file service already exists                                                                       : 文件服务 ID 已存在
+  ID of script already exists                                                                             : 脚本 ID 已存在
+  ID of script set already exists                                                                         : 脚本集 ID 已存在
+  Install Python package failed                                                                           : 安装 Python 包失败
   Invalid Auth Token                                                                                      : 认证令牌无效
   Invalid captcha                                                                                         : 验证码无效
   Invalid captcha token                                                                                   : 验证码令牌无效
   Invalid config JSON                                                                                     : 配置无效
   Invalid import file                                                                                     : 无效的导入文件
-  Invalid kwargs, bad JSON format                                                                         : 函数参数无效，无法解析为JSON
+  Invalid kwargs, bad JSON format                                                                         : 函数参数无效，无法解析为 JSON
   Invalid old password                                                                                    : 旧密码无效
-  Invalid options, api_timeout is too large                                                               : 配置错误，api_timeout过大
-  Invalid options, api_timeout is too small                                                               : 配置错误，api_timeout过小
-  Invalid options, bad JSON format                                                                        : 配置错误，无法解析为JSON
-  Invalid options, eta should be a valid datetime value                                                   : 配置错误，eta必须为有效的日期-时间值
-  Invalid options, execMode should be "async" in Crontab or Batch calling                                 : 配置错误，调用自动触发或批处理时，execMode必须为"async"
-  Invalid options, execMode should be "sync" in Auth Link calling                                         : 配置错误，调用授权链接时，execMode必须为"sync"
-  Invalid options, invalid execMode                                                                       : 配置错误，execMode值无效
-  Invalid options, invalid returnType                                                                     : 配置错误，returnType值无效
-  Invalid options, queue should be an integer between 1 and 9                                             : 配置错误，队列必须为1到9之间的整数
-  Invalid options, timeout is too large                                                                   : 配置错误，timeout过大
-  Invalid options, timeout is too small                                                                   : 配置错误，timeout过小
+  Invalid options, api_timeout is too large                                                               : 配置错误，api_timeout 过大
+  Invalid options, api_timeout is too small                                                               : 配置错误，api_timeout 过小
+  Invalid options, bad JSON format                                                                        : 配置错误，无法解析为 JSON
+  Invalid options, eta should be a valid datetime value                                                   : 配置错误，eta 必须为有效的日期-时间值
+  Invalid options, execMode should be "async" in Crontab or Batch calling                                 : 配置错误，调用自动触发或批处理时，execMode 必须为 "async"
+  Invalid options, execMode should be "sync" in Auth Link calling                                         : 配置错误，调用授权链接时，execMode 必须为 "sync"
+  Invalid options, invalid execMode                                                                       : 配置错误，execMode 值无效
+  Invalid options, invalid returnType                                                                     : 配置错误，returnType 值无效
+  Invalid options, queue should be an integer between 1 and 9                                             : 配置错误，队列必须为 1 到 9 之间的整数
+  Invalid options, timeout is too large                                                                   : 配置错误，timeout 过大
+  Invalid options, timeout is too small                                                                   : 配置错误，timeout 过小
   Invalid package index                                                                                   : 包索引无效
   Invalid request body                                                                                    : 请求体无效
   Invalid request post data                                                                               : 请求体数据无效
@@ -81,20 +81,20 @@ en: {}
   No such Crontab Config                                                                                  : 不存在自动触发配置
   No such data                                                                                            : 不存在数据
   No such Func                                                                                            : 不存在函数
-  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL          : 不存在路由，请检查HTTP请求方法以及URL拼写是否正确
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL          : 不存在路由，请检查 HTTP 请求方法以及 URL 拼写是否正确
   Operation Record cannot be deleted                                                                      : 操作记录无法删除
   Operation Record cannot be modified                                                                     : 操作记录无法修改
   Please input captcha                                                                                    : 请输入验证码
-  Preparing Python package failed                                                                         : 准备Python包失败
+  Preparing Python package failed                                                                         : 准备 Python 包失败
   Privilege is not satisfied                                                                              : 权限不足
   Query failed                                                                                            : 查询失败
   Query timeout                                                                                           : 查询超时
   Read cache error                                                                                        : 缓存读取失败
   Script draft already changed                                                                            : 脚本草稿已发生变化
   Script not edited                                                                                       : 脚本尚未修改
-  Sign-in function returned False or nothing                                                              : 登录函数返回False或空内容
+  Sign-in function returned False or nothing                                                              : 登录函数返回 False 或空内容
   Sign-in function timeout                                                                                : 登录函数超时
-  Socket.io connection gone                                                                               : Socket.io连接已断开
+  Socket.io connection gone                                                                               : Socket.io 连接已断开
   Specified new file or folder name already existed                                                       : 指定的新文件名或目录名已存在
   This Auth Link is already expired                                                                       : 此授权链接已过期
   This Auth Link is disabled                                                                              : 此授权链接已被禁用
@@ -109,12 +109,12 @@ en: {}
   Accessing git repo timeout                                                                              : 访问 git 库超时
   Too many tasks in worker queue                                                                          : 工作队列中任务过多
   Unknow auth type                                                                                        : 认证类型未知
-  Unknow event of Socket.io                                                                               : Socket.io事件未知
+  Unknow event of Socket.io                                                                               : Socket.io 事件未知
   Unsupported resource operation                                                                          : 资源不支持进行此操作
   Unzip destination already existed                                                                       : 解压目标地址已经存在
   User not signed in                                                                                      : 用户尚未登录
-  Wait async task result timeout, but task is still running. Use task ID to fetch result later            : 等待异步任务结果超时，但任务可能依然正在运行。后续可以使用任务ID查询结果
-  Waiting Func result timeout, but task is still running. Use task ID to fetch result later               : 等待函数结果超时，但任务可能依然正在运行。后续可以使用任务ID查询结果
+  Wait async task result timeout, but task is still running. Use task ID to fetch result later            : 等待异步任务结果超时，但任务可能依然正在运行。后续可以使用任务 ID 查询结果
+  Waiting Func result timeout, but task is still running. Use task ID to fetch result later               : 等待函数结果超时，但任务可能依然正在运行。后续可以使用任务 ID 查询结果
   Worker no response                                                                                      : 工作单元无响应
-  X-Auth-Token not sent                                                                                   : X-Auth-Token尚未发送
+  X-Auth-Token not sent                                                                                   : X-Auth-Token 尚未发送
   Zip file already existed                                                                                : 压缩文件已经存在

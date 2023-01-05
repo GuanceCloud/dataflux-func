@@ -2606,8 +2606,7 @@ exports.installPythonPackage = function(req, res, next) {
 
             return asyncCallback(new E('ESys', 'Install Python package failed', {
               package: pkg,
-              stderr : stderr,
-              message: stderr.split('\n')[0],
+              message: stderr,
             }));
           });
 

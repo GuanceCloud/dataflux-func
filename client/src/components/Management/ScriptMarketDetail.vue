@@ -72,10 +72,10 @@ Open Script Market Homepage: 打开脚本市场主页
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">
-            <template v-if="scriptMarket.extra.homepageURL || scriptMarket.type === 'git'">
+            <template v-if="homepageURL || scriptMarket.type === 'git'">
               <el-button
                 type="primary" round plain size="mini"
-                @click="T.openURL(scriptMarket.extra.homepageURL || scriptMarket.configJSON.url)">
+                @click="T.openURL(homepageURL || scriptMarket.configJSON.url)">
                 {{ $t('Open Script Market Homepage') }}
               </el-button>
               &#12288;
@@ -354,7 +354,7 @@ Open Script Market Homepage: 打开脚本市场主页
       <!-- 主页提示 -->
       <FeatureNoticeDialog
         featureKey="scriptMarket.homepage"
-        :disabled="scriptMarket.isAdmin || !scriptMarket.extra.homepageURL && scriptMarket.type !== 'git'"
+        :disabled="scriptMarket.isAdmin || !homepageURL && scriptMarket.type !== 'git'"
         :description="$t(`This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.`)"
         :image="img_scriptMarketHomepageNotice" />
 
@@ -730,6 +730,10 @@ export default {
       // 超级管理员不受限制
       if (this.$store.getters.isAdmin) return true;
       return !this.isLockedByOther;
+    },
+    homepageURL() {
+      if (!this.scriptMarket || !this.scriptMarket.extra) return null;
+      return this.scriptMarket.extra.homepageURL;
     },
     hasLocalMarker() {
       for (let i = 0; i < this.data.length; i++) {
