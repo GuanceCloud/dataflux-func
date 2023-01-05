@@ -521,6 +521,7 @@ export default {
         if (this.$store.state.Editor_selectedItemId) {
           // 选中函数定位
           this.selectedItemId = this.$store.state.Editor_selectedItemId;
+          this.highlightQuickSelectItem();
         } else {
           // 上次活跃位置定位
           let cursor = this.$store.state.Editor_scriptCursorMap[this.scriptId];
@@ -1057,9 +1058,6 @@ export default {
 
       options = options || {};
 
-      // 跳转位置
-      this.T.jumpToCodeMirrorLine(this.codeMirror, options.line);
-
       // 添加样式
       if (options.textClass) {
         this.codeMirror.addLineClass(options.line, 'text', options.textClass);
@@ -1094,6 +1092,9 @@ export default {
           this.codeMirror.addLineWidget(options.line, div);
         }
       }
+
+      // 跳转位置
+      this.T.jumpToCodeMirrorLine(this.codeMirror, options.line);
 
       return this.codeMirror.lineInfo(options.line);
     },
@@ -1437,7 +1438,6 @@ export default {
   },
   beforeDestroy() {
     this.T.destoryCodeMirror(this.codeMirror);
-    this.$store.commit('updateEditor_selectedItemId', null);
   },
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮

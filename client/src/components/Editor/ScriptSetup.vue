@@ -2,9 +2,11 @@
 Add Script  : 添加脚本
 Setup Script: 配置脚本
 
-Template     : 模板
-Basic Example: 基础示例
-Blank Script : 空白脚本
+Script Template     : 脚本模板
+Show Script Template: 显示脚本模板
+Basic Example       : 基础示例
+Blank Script        : 空白脚本
+From Example Script : 来自示例脚本
 
 Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
 
@@ -66,12 +68,20 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
                     v-model="form.description"></el-input>
                 </el-form-item>
 
-                <el-form-item :label="$t('Template')">
-                  <el-select v-model="templateScriptId" clearable>
-                    <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
-                    <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
-                    <el-option v-for="s in exampleScripts" :label="s.label" :key="s.id" :value="s.id"></el-option>
+                <el-form-item :label="$t('Script Template')">
+                  <el-select v-model="templateScriptId" @change="showScriptTemplate">
+                    <el-option-group>
+                      <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
+                      <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
+                    </el-option-group>
+                    <el-option-group :label="$t('From Example Script')">
+                      <el-option v-for="s in templateScripts" :label="s.label" :key="s.id" :value="s.id">
+                        <span class="example-script">{{ s.label }}</span>
+                      </el-option>
+                    </el-option-group>
                   </el-select>
+
+                  <el-button v-if="!!templateScript" @click="showScriptTemplate" type="text">{{ $t('Show Script Template') }}</el-button>
                 </el-form-item>
 
                 <el-form-item>
@@ -87,14 +97,19 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
           </el-col>
         </el-row>
       </el-main>
+
+      <LongTextDialog :title="$t('Script Template')" mode="python" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>
 
 <script>
+import LongTextDialog from '@/components/LongTextDialog'
+
 export default {
   name: 'ScriptSetup',
   components: {
+    LongTextDialog,
   },
   watch: {
     $route: {
@@ -133,11 +148,11 @@ export default {
 
           apiRes.data.forEach(d => {
             let shortScriptId = d.id.split('__').slice(1).join('__');
-            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || shortScriptId}`
+            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || shortScriptId}`;
           });
 
-          this.exampleScripts   = apiRes.data;
-          this.exampleScriptMap = apiRes.data.reduce((acc, x) => {
+          this.templateScripts   = apiRes.data;
+          this.templateScriptMap = apiRes.data.reduce((acc, x) => {
             acc[x.id] = x;
             return acc;
           }, {});
@@ -193,7 +208,7 @@ export default {
           break;
 
         default:
-          let exampleScript = this.exampleScriptMap[this.templateScriptId];
+          let exampleScript = this.templateScriptMap[this.templateScriptId];
           _data.codeDraft = exampleScript && exampleScript.code
                           ? exampleScript.code
                           : '';
@@ -245,6 +260,11 @@ export default {
       });
       this.$store.commit('updateScriptListSyncTime');
     },
+    showScriptTemplate() {
+      if (this.templateScript) {
+        this.$refs.longTextDialog.update(this.templateScript);
+      }
+    },
   },
   computed: {
     pageTitle() {
@@ -292,6 +312,16 @@ export default {
       if (this.$store.getters.isAdmin) return true;
       return !this.isLockedByOther;
     },
+
+    templateScript() {
+      if (!this.templateScriptId
+        || this.T.isNothing(this.templateScriptMap)
+        || !this.templateScriptMap[this.templateScriptId]) {
+        return '';
+      } else {
+        return this.templateScriptMap[this.templateScriptId].code || '';
+      }
+    },
   },
   props: {
   },
@@ -301,8 +331,8 @@ export default {
 
       templateScriptId: '_basicExample',
 
-      exampleScripts  : [],
-      exampleScriptMap: {},
+      templateScripts  : [],
+      templateScriptMap: {},
 
       form: {
         id         : null,
@@ -347,4 +377,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.example-script {
+  padding-left: 20px;
+}
 </style>

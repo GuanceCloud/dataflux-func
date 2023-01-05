@@ -9,13 +9,15 @@ Download as text file: 作为文本文件下载
     :close-on-click-modal="false"
     width="70%">
     <template slot="title">
-      <el-link type="primary" v-if="showDownload && fileName && content" @click="download">
-        {{ $t('Download as text file') }}
-        <i class="fa fa-fw fa-download"></i>
-      </el-link>
+      {{ title }}
     </template>
     <div>
-      <p>{{ title }}</p>
+      <div class="download-link" v-if="showDownload && fileName && content">
+        <el-link type="primary" @click="download">
+          {{ $t('Download as text file') }}
+          <i class="fa fa-fw fa-download"></i>
+        </el-link>
+      </div>
       <textarea id="longTextDialogContent"></textarea>
     </div>
   </el-dialog>
@@ -53,6 +55,8 @@ export default {
         // 载入代码
         this.codeMirror.setValue(this.content || '');
         this.codeMirror.refresh();
+
+        this.codeMirror.focus();
       });
     },
     download() {
@@ -86,6 +90,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.download-link {
+  margin-bottom: 10px;
+}
 </style>
 <style>
 #LongTextDialog .el-dialog__body {

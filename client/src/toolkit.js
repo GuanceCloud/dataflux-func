@@ -1576,13 +1576,14 @@ export function jumpToCodeMirrorLine(codeMirror, cursor) {
   codeMirror.setCursor({line: codeMirror.lineCount() - 1});
   codeMirror.setCursor(cursor);
 
-  let $target = document.querySelector(`.CodeMirror-scroll`);
-  let _scollHeight = -parseInt($target.clientHeight * 0.2);
-  if ($target.scrollTop + $target.clientHeight + _scollHeight < $target.scrollHeight) {
-    setImmediate(() => {
-      $target.scrollTo(0, $target.scrollTop + _scollHeight);
-    })
-  }
+  setImmediate(() => {
+    let $target    = document.querySelector('.CodeMirror-scroll');
+    let $highlight = document.querySelector('.highlight-text');
+    if (!$target || !$highlight) return;
+
+    let _scrollTo = $highlight.clientHeight * cursor.line - $target.clientHeight * 0.15;
+    $target.scrollTo(0, _scrollTo);
+  });
 };
 
 export function getEchartTextStyle() {

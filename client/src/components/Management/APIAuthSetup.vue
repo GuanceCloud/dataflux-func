@@ -17,16 +17,16 @@ Username       : 用户名
 
 'Password (leave blank when not changing)': 密码（不修改时请留空）
 
-Please select Func: 请选择认证函数
+Please select Func                     : 请选择认证函数
 Func with a specific format is required: 必须指定特定格式的函数作为认证函数
-Sample Code: 示例代码
+Sample Code                            : 示例代码
+Show Sample Code                       : 显示示例代码
 
 API Auth created: API 认证已创建
 API Auth saved  : API 认证已保存
 API Auth deleted: API 认证已删除
 
 Are you sure you want to delete the API Auth?: 是否确认删除此 API 认证？
-
 
 'Get / Check fields in Header': '获取/检查 Header 中字段'
 'Get / Check fields in Query (e.g. http://you_domain/?auth-token=TOKEN)': '获取/检查 Query 中字段（如：http://you_domain/?auth-token=TOKEN）'
@@ -155,7 +155,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                         :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
 
                       <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
-                      <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Sample Code') }}</el-button>
+                      <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Show Sample Code') }}</el-button>
                     </el-form-item>
                   </template>
 
