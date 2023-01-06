@@ -88,7 +88,7 @@ EntityModel.prototype.add = function(data, callback) {
         withCodeDraft: true,
         note         : 'Recover Point',
       }
-      scriptSetModel.getExportData(opt, function(err, exportData, summary) {
+      scriptSetModel.getExportData(opt, function(err, exportData) {
         if (err) return asyncCallback(err);
 
         data.exportData = toolkit.getGzipBase64(exportData);

@@ -38,6 +38,44 @@ var IMPORT_DATA_KEYS_WITH_ORIGIN = [
   'batches',
 ];
 
+common.IMPORT_EXPORT_DATA_SCHEMA_VERSION = 2;
+
+common.convertImportExportDataSchema = function(data) {
+  data.version = data.version || 1;
+
+  // v1 => v2
+  if (data.version === 1) {
+    // 转换脚本集中额外信息
+    if (toolkit.notNothing(data.scriptSets)) {
+      data.scriptSets.forEach(function(scriptSet) {
+        scriptSet._extra = scriptSet._extra || {};
+        if ('_exportUser' in scriptSet) scriptSet._extra.exportUser = scriptSet._exportUser;
+        if ('_exportTime' in scriptSet) scriptSet._extra.exportTime = scriptSet._exportTime;
+        if ('_note'       in scriptSet) scriptSet._extra.note       = scriptSet._note;
+
+        delete scriptSet._exportUser;
+        delete scriptSet._exportTime;
+        delete scriptSet._note;
+      })
+    }
+
+    // 转换 extra 信息
+    data.extra = data.extra || {};
+    if ('exportUser' in data) data.extra.exportUser = data.exportUser;
+    if ('exportTime' in data) data.extra.exportTime = data.exportTime;
+    if ('note'       in data) data.extra.note       = data.note;
+
+    delete data.exportUser;
+    delete data.exportTime;
+    delete data.note;
+
+    // 更新版本
+    data.version = 2;
+  }
+
+  return data;
+};
+
 common.getExportUser = function(locals) {
   var exportUser = `${locals.user.username || 'ANONYMOUS'}`;
   if (locals.user.name) {

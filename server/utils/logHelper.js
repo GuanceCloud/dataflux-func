@@ -299,7 +299,9 @@ LoggerHelper.prototype._log = function() {
                 : nowMs;
 
   var message = toolkit.strf.apply(null, args)
-  message = toolkit.maskSensitiveInfo(message);
+  if (CONFIG.MODE !== 'dev') {
+    message = toolkit.maskSensitiveInfo(message);
+  }
 
   var fixedMessage = message.replace(/%([sdj%])/g, '%%$1'); // Fix winston 2.4.2
   var logLine = {

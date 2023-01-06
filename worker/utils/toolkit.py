@@ -155,6 +155,9 @@ def json_find(j, path, safe=False):
 
     return sub_j
 
+def json_find_safe(j, path):
+    return json_find(j, path, safe=True)
+
 def json_smart_find(j, key, safe=False):
     if j is None:
         if safe:

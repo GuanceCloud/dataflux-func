@@ -537,9 +537,7 @@ ul {
 }
 .common-table-container {
   /* scroll-behavior: smooth; */
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 5px 0 0 0 !important;
 }
 
 .text-main {

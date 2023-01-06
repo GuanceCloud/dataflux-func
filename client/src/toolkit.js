@@ -431,6 +431,9 @@ export function jsonFind(j, path, safe) {
 
   return subJ;
 };
+export function jsonFindSafe(j, path) {
+  return jsonFind(j, path, true);
+}
 
 export function jsonCopy(j) {
   return JSON.parse(JSON.stringify(j));

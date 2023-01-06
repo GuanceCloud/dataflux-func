@@ -9,20 +9,19 @@ Delete Script Set : 删除脚本集
 Install Script Set: 脚本集详情
 Upgrade Script Set: 脚本集详情
 
-Local                         : 本地
-Remote                        : 远端
-Requirements                  : 依赖项
-Publisher                     : 发布者
-Publish Time                  : 发布时间
-Not Published                 : 尚未发布
-Not Installed                 : 尚未安装
-No Corresponding Script Set   : 无对应脚本集
-Edited                        : 已修改
-New Version                   : 新版本
-Publish Note                  : 发布说明
-Force Mode                    : 强制模式
-Force Upgrade                 : 强制升级
-Force Install                 : 强制安装
+Local                      : 本地
+Remote                     : 远端
+Requirements               : 依赖项
+Publisher                  : 发布者
+Not Published              : 尚未发布
+Not Installed              : 尚未安装
+No Corresponding Script Set: 无对应脚本集
+Edited                     : 已修改
+New Version                : 新版本
+Publish Note               : 发布说明
+Force Mode                 : 强制模式
+Force Upgrade              : 强制升级
+Force Install              : 强制安装
 
 'This Script Set is not from current Script Market, you can:'         : 此脚本集并非来自【当前】脚本市场，您可以：
 'This Script Set is edited locally, you can:'                         : 此脚本集已在本地被修改，您可以：
@@ -50,7 +49,7 @@ No Script Set has ever been published: 尚未发布过任何脚本集到脚本�
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
-Open Script Market Homepage: 打开脚本市场主页
+Go to Homepage: 前往主页
 
 'Processing...': '正在处理...'
 
@@ -76,7 +75,8 @@ Open Script Market Homepage: 打开脚本市场主页
               <el-button
                 type="primary" round plain size="mini"
                 @click="T.openURL(homepageURL || scriptMarket.configJSON.url)">
-                {{ $t('Open Script Market Homepage') }}
+                <i class="fa fa-fw fa-external-link"></i>
+                {{ $t('Go to Homepage') }}
               </el-button>
               &#12288;
             </template>
@@ -136,9 +136,7 @@ Open Script Market Homepage: 打开脚本市场主页
             </template>
             <template slot-scope="scope">
               <template v-if="scope.row.local">
-                <strong class="script-set-name">
-                  {{ scope.row.local.title || scope.row.local.id }}
-                </strong>
+                <strong class="script-set-name">{{ scope.row.local.title || scope.row.local.id }}</strong>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
@@ -206,10 +204,7 @@ Open Script Market Homepage: 打开脚本市场主页
             </template>
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
-                <strong class="script-set-name">
-                  {{ scope.row.remote.title || scope.row.remote.id }}
-                </strong>
-
+                <strong class="script-set-name">{{ scope.row.remote.title || scope.row.remote.id }}</strong>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
@@ -227,18 +222,15 @@ Open Script Market Homepage: 打开脚本市场主页
 
           <el-table-column :label="$t('Publisher')" width="200">
             <template slot-scope="scope">
-              <template v-if="scope.row.remote">
-                <span>{{ scope.row.remote._exportUser }}</span>
-              </template>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('Publish Time')" width="200">
-            <template slot-scope="scope">
-              <template v-if="scope.row.remote">
-                <span>{{ scope.row.remote._exportTime | datetime }}</span>
+              <div v-if="scope.row.remote">
+                <span>{{ scope.row.remote._extra.exportUser }}</span>
+              </div>
+
+              <div v-if="scope.row.remote" class="publish-time">
+                <span>{{ scope.row.remote._extra.exportTime | datetime }}</span>
                 <br>
-                <span class="text-info">{{ scope.row.remote._exportTime | fromNow }}</span>
-              </template>
+                <span class="text-info">{{ scope.row.remote._extra.exportTime | fromNow }}</span>
+              </div>
             </template>
           </el-table-column>
 
@@ -302,20 +294,20 @@ Open Script Market Homepage: 打开脚本市场主页
         width="650px">
         <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
           <el-form-item :label="$t('Name')">
-            <el-input disabled :value="scriptSetToOperate.title"></el-input>
+            <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="scriptSetToOperate.title"></el-input>
           </el-form-item>
           <el-form-item label="ID">
-            <el-input disabled :value="scriptSetToOperate.id"></el-input>
+            <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="scriptSetToOperate.id"></el-input>
           </el-form-item>
           <el-form-item :label="$t('Description')" v-if="T.notNothing(scriptSetToOperate.description)">
-            <el-input disabled
+            <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation"
               type="textarea"
               resize="none"
               :autosize="{ minRows: 2 }"
               :value="scriptSetToOperate.description"></el-input>
           </el-form-item>
           <el-form-item :label="$t('Requirements')" v-if="T.notNothing(scriptSetToOperate.requirements)">
-            <el-input disabled
+            <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation"
               type="textarea"
               resize="none"
               :autosize="{ minRows: 2 }"
@@ -323,16 +315,16 @@ Open Script Market Homepage: 打开脚本市场主页
           </el-form-item>
 
           <template v-if="isWriteOperation">
-            <el-form-item class="config-divider">
-              <el-divider></el-divider>
+            <el-form-item>
+              <el-divider class="commit-divider"></el-divider>
             </el-form-item>
 
             <el-form-item :label="$t('User Name')">
-              <el-input disabled :value="$store.state.userProfile.name"></el-input>
+              <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="$store.state.userProfile.name"></el-input>
             </el-form-item>
 
             <el-form-item :label="$t('Email')">
-              <el-input disabled :value="$store.state.userProfile.email"></el-input>
+              <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="$store.state.userProfile.email"></el-input>
             </el-form-item>
 
             <el-form-item v-if="operation === 'publish'" :label="$t('Publish Note')" prop="note">
@@ -341,6 +333,11 @@ Open Script Market Homepage: 打开脚本市场主页
                 resize="none"
                 :autosize="{ minRows: 2 }"
                 v-model="form.note"></el-input>
+            </el-form-item>
+          </template>
+          <template v-else>
+            <el-form-item :label="$t('Publish Note')" v-if="scriptSetToOperate._extra">
+              <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="scriptSetToOperate._extra.note"></el-input>
             </el-form-item>
           </template>
         </el-form>
@@ -839,14 +836,16 @@ export default {
 }
 
 .script-set-name {
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 16px;
+}
+.publish-time {
+  padding-left: 20px;
 }
 </style>
 
 <style>
 .commit-divider {
-  margin-bottom: 0;
+  margin: 1px 0;
 }
 .arrow-icon-cell > .cell {
   display: flex;

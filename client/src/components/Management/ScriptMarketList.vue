@@ -3,6 +3,7 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+Homepage: 前往主页
 Branch: 分支
 Access Timeout: 访问超时
 
@@ -22,7 +23,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 Official Script Market added: 官方脚本市场已添加
 
 ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n} 个脚本集'
-Open Script Market Homepage: 打开脚本市场主页
 
 'Checking Update...': '正在检查更新...'
 'Deleting...'       : '正在删除...'
@@ -85,7 +85,7 @@ Open Script Market Homepage: 打开脚本市场主页
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Type')" width="210" align="center">
+          <el-table-column :label="$t('Type')" width="150" align="center">
             <template slot-scope="scope">
               <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
               <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
@@ -136,14 +136,6 @@ Open Script Market Homepage: 打开脚本市场主页
 
                 <div class="script-market-extra-info">
                   <span>{{ $tc('ScriptSetCount', (scope.row.scriptSets || []).length ) }}</span>
-
-                  <template v-if="scope.row.extra.homepageURL || scope.row.type === 'git'">
-                    &nbsp;
-                    <el-button type="primary" round plain size="mini"
-                      @click="T.openURL(scope.row.extra.homepageURL || scope.row.configJSON.url)">
-                      {{ $t('Open Script Market Homepage') }}
-                    </el-button>
-                  </template>
                 </div>
               </div>
 
@@ -151,11 +143,13 @@ Open Script Market Homepage: 打开脚本市场主页
             </template>
           </el-table-column>
 
-          <el-table-column align="left" width="50">
+          <el-table-column align="right" width="140">
             <template slot-scope="scope">
-              <el-tooltip effect="dark" :content="scope.row.isLockedByOther ? $t('Locked by other user ({user})', { user: scope.row.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
-                <i class="fa fa-fw fa-2x" :class="[ scope.row.isLocked ? 'fa-lock':'', scope.row.isLockedByOther ? 'text-bad':'text-good' ]"></i>
-              </el-tooltip>
+              <el-link v-if="scope.row.extra.homepageURL || scope.row.type === 'git'"
+                :href="scope.row.extra.homepageURL || scope.row.configJSON.url" target="_blank">
+                <i class="fa fa-fw fa-external-link"></i>
+                {{ $t('Homepage') }}
+              </el-link>
             </template>
           </el-table-column>
 
@@ -165,7 +159,6 @@ Open Script Market Homepage: 打开脚本市场主页
                 class="text-bad">
                 {{ $t('Access Timeout') }}
               </span>
-
               <el-badge v-else :value="common.getScriptMarketUpdateBadge(scope.row.id)">
                 <el-button
                   style="width: 87px"
@@ -180,7 +173,15 @@ Open Script Market Homepage: 打开脚本市场主页
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="270">
+          <el-table-column width="50">
+            <template slot-scope="scope">
+              <el-tooltip effect="dark" :content="scope.row.isLockedByOther ? $t('Locked by other user ({user})', { user: scope.row.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-2x" :class="[ scope.row.isLocked ? 'fa-lock' : '', scope.row.isLockedByOther ? 'text-bad':'text-good' ]"></i>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+
+          <el-table-column align="right" width="260">
             <template slot-scope="scope">
               <el-link
                 :disabled="!scope.row.isAccessible"
@@ -254,7 +255,7 @@ export default {
         d.lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW') }`;
         d.isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
         d.isLockedByOther = d.lockedByUserId && !d.isLockedByMe;
-        d.isAccessible      = this.$store.getters.isAdmin || !d.isLockedByOther;
+        d.isAccessible    = this.$store.getters.isAdmin || !d.isLockedByOther;
         d.isLocked        = d.isLockedByMe || d.isLockedByOther;
       });
 
@@ -431,8 +432,7 @@ export default {
 
 <style scoped>
 .script-market-name {
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 16px;
 }
 .script-market-extra-info {
   padding-left: 20px;
@@ -448,7 +448,8 @@ export default {
 .script-market-logo.logo-github-com {
   height: 70px !important;
 }
-.script-market-logo.logo-gitlab-com {
+.script-market-logo.logo-gitlab-com,
+.script-market-logo.logo-jihulab-com {
   height: 80px !important;
 }
 .script-market-logo.logo-gitee-com {

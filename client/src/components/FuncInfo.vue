@@ -10,31 +10,32 @@ By Input       : 调用时指定
       <strong class="func-title">{{ title || name }}</strong>
       <GotoFuncButton v-if="!hideGotoFunc" :funcId="id"></GotoFuncButton>
       <br>
-      <span class="text-info">def</span>&nbsp;
-      <template v-if="fullDefinition">
-        <!-- 优先使用定义方式展示 -->
-        <code class="code-font text-main">{{ fullDefinition }}</code>
-      </template>
-      <template v-else>
-        <!-- 其次封装方式展示 -->
-        <code class="code-font text-main">{{ id }}(</code
-        ><code v-if="!kwargsJSON" class="code-font">...</code
-        ><template v-else>
-          <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
-            <code class="func-kwargs-name">{{ name }}</code>
-            <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)"><{{ $t('By Input') }}></code>
-            <el-tooltip placement="top" v-else>
-              <div slot="content">
-                <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
-                <CopyButton :content="JSON.stringify(value, null, 2)" :title="$t('Copy')" font-size="12px" />
-              </div>
-              <code class="func-kwargs-value"><{{ $t('Fixed') }}></code>
-            </el-tooltip>
-            <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
-          </div>
-        </template
-        ><code class="code-font text-main">)</code>
-      </template>
+      <span class="text-info">def&nbsp;
+        <template v-if="fullDefinition">
+          <!-- 优先使用定义方式展示 -->
+          <code class="code-font text-main">{{ fullDefinition }}</code>
+        </template>
+        <template v-else>
+          <!-- 其次封装方式展示 -->
+          <code class="code-font text-main">{{ id }}(</code
+          ><code v-if="!kwargsJSON" class="code-font">...</code
+          ><template v-else>
+            <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
+              <code class="func-kwargs-name">{{ name }}</code>
+              <code class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)"><{{ $t('By Input') }}></code>
+              <el-tooltip placement="top" v-else>
+                <div slot="content">
+                  <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
+                  <CopyButton :content="JSON.stringify(value, null, 2)" :title="$t('Copy')" font-size="12px" />
+                </div>
+                <code class="func-kwargs-value"><{{ $t('Fixed') }}></code>
+              </el-tooltip>
+              <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
+            </div>
+          </template
+          ><code class="code-font text-main">)</code>
+        </template>
+      </span>
     </template>
     <template v-else>
       <span class="text-bad">{{ $t('Func not exists') }}</span>
@@ -79,12 +80,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.func-info {
+.func-title {
   font-size: 16px;
 }
-.func-title {
-  font-size: 18px;
-  line-height: 25px;
+.func-info {
+  font-size: 16px;
 }
 .func-kwargs-block {
   display: inline-block;

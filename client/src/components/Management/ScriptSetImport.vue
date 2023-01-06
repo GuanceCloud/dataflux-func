@@ -97,7 +97,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
             </template>
           </template>
 
-          <template v-if="importInfo && importInfo.note">
+          <template v-if="importInfo && importInfo && importInfo.note">
             <el-divider content-position="left"><h3>{{ $t('Note') }}</h3></el-divider>
             <pre class="import-note">{{ importInfo.note }}</pre>
           </template>

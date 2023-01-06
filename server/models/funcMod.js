@@ -75,7 +75,7 @@ EntityModel.prototype.list = function(options, callback) {
   return this._list(options, function(err, dbRes, pageInfo) {
     if (err) return callback(err);
 
-    // [兼容] 补全`argsJSON`,`kwargsJSON`
+    /* 兼容处理 */
     dbRes.forEach(function(d) {
       // 无函数定义不需要补全
       if (!d.description) return;
@@ -83,6 +83,7 @@ EntityModel.prototype.list = function(options, callback) {
       // 已存在不需要补全
       if (d.argsJSON && d.kwargsJSON) return;
 
+      // 补全`argsJSON`,`kwargsJSON`
       var parsedFuncArgs = parseFuncArgs(d.definition);
       d.argsJSON   = d.argsJSON   || parsedFuncArgs.args;
       d.kwargsJSON = d.kwargsJSON || parsedFuncArgs.kwargs;

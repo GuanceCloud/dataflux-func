@@ -346,7 +346,7 @@ var Model = function(locals, options) {
 
   // Auto field filling
   // Field value to fill
-  self.userId = toolkit.jsonFind(self, (options.userIdPath || 'locals.user.id'), true) || null;
+  self.userId = toolkit.jsonFindSafe(self, (options.userIdPath || 'locals.user.id')) || null;
 
   // Field name for ADD data
   self.userIdField = options.userIdField || null;

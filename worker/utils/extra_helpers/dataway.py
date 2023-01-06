@@ -641,7 +641,8 @@ class DataWay(object):
                 # 接收到非 JSON 响应，无法翻页，直接返回
                 return status_code, _dql_res
 
-            # 【兼容】确保`series`为数组
+            # 兼容处理 #
+            # 确保`series`为数组
             _dql_res['content'][0]['series'] = _dql_res['content'][0].get('series') or []
 
             # 合并结果集

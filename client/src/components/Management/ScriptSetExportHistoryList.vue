@@ -88,8 +88,20 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.data = apiRes.data;
+      /* 兼容处理 */
+      apiRes.data.forEach(d => {
+        // 数据源 -> 连接器
+        if (d.summaryJSON && d.summaryJSON.dataSources) {
+          d.summaryJSON.connectors = d.summaryJSON.dataSources;
+        }
 
+        // 备注
+        if (this.T.isNothing(d.note)) {
+          d.note = this.T.jsonFindSafe(d, 'summaryJSON.extra.note');
+        }
+      });
+
+      this.data = apiRes.data;
       this.$store.commit('updateLoadStatus', true);
     },
     openSetup(d, target) {

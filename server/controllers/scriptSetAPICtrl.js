@@ -26,6 +26,7 @@ var authLinkMod               = require('../models/authLinkMod');
 var crontabConfigMod          = require('../models/crontabConfigMod');
 var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
+const { fileLoader } = require('ejs');
 
 /* Configure */
 
@@ -283,7 +284,7 @@ exports.export = function(req, res, next) {
   async.series([
     // 导出
     function(asyncCallback) {
-      scriptSetModel.getExportData(opt, function(err, _exportData, summary) {
+      scriptSetModel.getExportData(opt, function(err, _exportData) {
         if (err) return asyncCallback(err);
 
         exportData = _exportData;
@@ -291,40 +292,32 @@ exports.export = function(req, res, next) {
         // 生成 zip
         var zip = new AdmZip();
 
-        // 导出脚本集数据 / 脚本文件
+        // 写入脚本集数据 / 脚本文件
         exportData.scriptSets.forEach(function(scriptSet) {
           if (toolkit.isNothing(scriptSet.scripts)) return;
 
+          // 导出脚本集数据中不含 extra
+          delete scriptSet._extra;
+
           var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
           scriptSet.scripts.forEach(function(script) {
-            // 导出脚本文件
+            // 写入脚本文件
             var filePath = path.join(scriptSetDir, common.getScriptFilename(script));
             zip.addFile(filePath, script.code || '');
 
-            // 导出数据中不含脚本
+            // 导出脚本数据中不含脚本
             delete script.code;
             delete script.codeDraft;
           });
         });
-        zip.addFile(`scriptSets.yaml`, yaml.dump(exportData.scriptSets));
 
-        // 导出其他数据
-        [
-          'scriptSets',
-          'connectors',
-          'envVariables',
-          'authLinks',
-          'crontabConfigs',
-          'batches',
-        ].forEach(function(name) {
-          if (toolkit.isNothing(exportData[name])) return;
+        // 写入 META 文件
+        zip.addFile(CONFIG.SCRIPT_EXPORT_META_FILE, yaml.dump(exportData));
 
-          zip.addFile(`${name}.yaml`, yaml.dump(exportData[name]));
-        });
-
-        // 导出注释
-        if (toolkit.notNothing(exportData.note)) {
-          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, exportData.note)
+        // 单独生成备注文件
+        var note = toolkit.jsonFindSafe(exportData, 'extra.note');
+        if (note) {
+          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, note);
         }
 
         fileBuf = zip.toBuffer();
@@ -336,14 +329,17 @@ exports.export = function(req, res, next) {
     function(asyncCallback) {
       // 生成摘要
       var summary = common.flattenImportExportData(exportData);
+
+      // 摘要中不含代码
       if (toolkit.notNothing(summary.scripts)) {
         summary.scripts.forEach(function(d) {
-          delete d.code; // 摘要中不含代码
+          delete d.code;
+          delete d.codeDraft;
         });
       }
 
       var _data = {
-        note       : exportData.note,
+        note       : toolkit.jsonFindSafe(summary, 'extra.note'),
         summaryJSON: summary,
       }
       scriptSetExportHistoryModel.add(_data, asyncCallback);
@@ -403,8 +399,56 @@ exports.import = function(req, res, next) {
         return asyncCallback(new E('EBizCondition.EmptyImportFile', 'Empty import file'));
       }
 
-      // 提取脚本数据 / 脚本代码
-      importData.scriptSets = yaml.load(allFileData[`scriptSets.yaml`]);
+      // 提升目录级别：xxx/yyy/zzz/* -> *
+      var realMetaPath = Object.keys(allFileData).filter(function(filePath) {
+        return toolkit.endsWith(filePath, `/${CONFIG.SCRIPT_EXPORT_META_FILE}`);
+      })[0];
+
+      if (realMetaPath) {
+        var rootDir = realMetaPath.split('/').slice(0, -1).join('/');
+        for (var filePath in allFileData) {
+          if (!toolkit.startsWith(filePath, rootDir)) continue;
+
+          var nextFilePath = filePath.slice(rootDir.length + 1);
+          if (nextFilePath === filePath) continue;
+
+          allFileData[nextFilePath] = allFileData[filePath];
+          delete allFileData[filePath];
+        }
+      }
+
+      // 提取数据
+      if (allFileData[CONFIG.SCRIPT_EXPORT_META_FILE]) {
+        importData = yaml.load(allFileData[CONFIG.SCRIPT_EXPORT_META_FILE]) || {};
+
+      } else {
+        /* 兼容处理 */
+        importData = {};
+
+        // 提取脚本数据
+        importData.scriptSets = yaml.load(allFileData[`scriptSets.yaml`]);
+
+        // 提取其他信息
+        var resourceNames = [
+          'connectors',
+          'envVariables',
+          'authLinks',
+          'crontabConfigs',
+          'batches',
+        ];
+        resourceNames.forEach(function(name) {
+          var data = allFileData[`${name}.yaml`];
+          if (!data) return;
+
+          importData[name] = yaml.load(data);
+        });
+
+        // 从 NOTE 文件提取备注
+        importData.extra = importData.extra || {};
+        importData.extra.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
+      }
+
+      // 提取脚本代码
       importData.scriptSets.forEach(function(scriptSet) {
         if (toolkit.isNothing(scriptSet.scripts)) return;
 
@@ -416,24 +460,6 @@ exports.import = function(req, res, next) {
           script.code = allFileData[scriptZipPath] || '';
         });
       });
-
-      // 提取其他信息
-      var resourceNames = [
-        'connectors',
-        'envVariables',
-        'authLinks',
-        'crontabConfigs',
-        'batches',
-      ];
-      resourceNames.forEach(function(name) {
-        var data = allFileData[`${name}.yaml`];
-        if (!data) return;
-
-        importData[name] = yaml.load(data);
-      });
-
-      // 提取 NOTE
-      importData.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
 
       // 替换 origin, originId
       var origin   = 'builtin';
@@ -519,7 +545,7 @@ exports.import = function(req, res, next) {
       requirements: requirements,
       confirmId   : confirmId,
       diff        : diff,
-      note        : importData.note,
+      note        : toolkit.jsonFindSafe(importData, 'extra.note'),
     });
     return res.locals.sendJSON(ret);
   });
@@ -577,5 +603,5 @@ exports.confirmImport = function(req, res, next) {
 
 function reloadDataMD5Cache(celery, callback) {
   var taskKwargs = { all: true };
-  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, callback);
 };

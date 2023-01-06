@@ -384,21 +384,18 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var note       = options.note || `Exported by ${exportUser} at ${toolkit.getDateTimeStringCN(exportTime)}`;
 
   var exportData = {
-    note      : note,
-    exportUser: exportUser,
-    exportTime: exportTime,
+    version: common.IMPORT_EXPORT_DATA_SCHEMA_VERSION,
+
     scriptSets: [],
+    extra: {
+      exportUser: exportUser,
+      exportTime: exportTime,
+      note      : note,
+    }
   };
-  var summary = {
-    note       : note,
-    exportUser : exportUser,
-    exportTime : exportTime,
-    summaryJSON: {},
-  }
 
   var scriptSetMap = {};
   var scriptMap    = {};
-  var funcMap      = {};
 
   // 连接器/环境变量
   if (toolkit.notNothing(connectorIds))   exportData.connectors   = [];
@@ -532,8 +529,6 @@ EntityModel.prototype.getExportData = function(options, callback) {
       var sqlParams = [scriptSetIds];
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
-
-        funcMap = toolkit.arrayElementMap(dbRes, 'id');
 
         dbRes.forEach(function(d) {
           scriptMap[d.scriptId].funcs.push(d);
@@ -740,82 +735,36 @@ EntityModel.prototype.getExportData = function(options, callback) {
         return asyncCallback();
       });
     },
-    // 生成摘要
-    function(asyncCallback) {
-      // 脚本集摘要
-      summary.summaryJSON.scriptSets = Object.values(scriptSetMap).map(function(x) {
-        return {
-          id     : x.id,
-          titie  : x.title,
-          scripts: x.scripts.map(function(y) {
-            return {
-              id   : y.id,
-              title: y.title,
-            }
-          })
-        }
-      });
-
-      // 连接器、环境变量摘要
-      [ 'connectors', 'envVariables' ].forEach(function(name) {
-        if (toolkit.isNothing(exportData[name])) return;
-
-        summary.summaryJSON[name] = exportData[name].map(function(x) {
-          return {
-            id    : x.id,
-            title : x.title,
-          }
-        });
-      });
-
-      // 授权链接、自动触发配置、批处理摘要
-      [ 'authLinks', 'crontabConfigs', 'batches' ].forEach(function(name) {
-        if (toolkit.isNothing(exportData[name])) return;
-
-        summary.summaryJSON[name] = exportData[name].map(function(x) {
-          return {
-            id    : x.id,
-            title : x.title,
-          }
-        });
-      });
-
-      return asyncCallback()
-    },
   ], function(err) {
     if (err) return next(err);
 
+    // 为脚本集数据添加额外信息
     if (toolkit.notNothing(exportData.scriptSets)) {
       exportData.scriptSets.forEach(function(scriptSet) {
         // 计算脚本集 MD5 信息
         scriptSet.originMD5 = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
 
-        // 添加导出人等信息
-        scriptSet._note       = note;
-        scriptSet._exportUser = exportUser;
-        scriptSet._exportTime = exportTime;
+        // 添加额外信息
+        scriptSet._extra = {
+          exportUser: exportUser,
+          exportTime: exportTime,
+          note      : note,
+        }
       });
     }
 
-    return callback(null, exportData, summary);
+    return callback(null, exportData);
   });
 };
 
 EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
-  importData = common.flattenImportExportData(importData);
+  /* 兼容处理 */
+  importData = common.convertImportExportDataSchema(importData);
 
-  // 删除额外信息
-  if (toolkit.notNothing(importData.scriptSets)) {
-    importData.scriptSets.forEach(function(scriptSet) {
-      for (var k in scriptSet) {
-        if (toolkit.startsWith(k, '_')) {
-          delete scriptSet[k];
-        }
-      }
-    });
-  }
+  // 数据扁平化
+  importData = common.flattenImportExportData(importData);
 
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
@@ -911,7 +860,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         if (toolkit.isNothing(_dataSet)) return eachCallback();
 
         async.eachSeries(_dataSet, function(_data, innerEachCallback) {
-          var _data = _prepareImportData(_data);
+          var _data = _prepareTableDataToImport(_data);
 
           var sql = toolkit.createStringBuilder();
           sql.append('REPLACE INTO ??');
@@ -927,14 +876,18 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     // 记录导入历史
     function(asyncCallback) {
       var summary = toolkit.jsonCopy(importData);
+
+      // 摘要中不包含代码
       if (toolkit.notNothing(summary.scripts)) {
         summary.scripts.forEach(function(d) {
-          delete d.code; // 摘要中不含代码
+          delete d.code;
+          delete d.codeDraft;
         });
       }
 
+      // 数据入库
       var _data = {
-        note       : importData.note,
+        note       : toolkit.jsonFindSafe(importData, 'extra.note'),
         summaryJSON: summary,
       }
       scriptSetImportHistoryModel.add(_data, asyncCallback);
@@ -971,11 +924,16 @@ function _prepareData(data) {
   return data;
 };
 
-function _prepareImportData(data) {
+function _prepareTableDataToImport(data) {
   data = toolkit.jsonCopy(data);
 
   for (var f in data) {
     var v = data[f];
+
+    // 删除 "_" 开头的字段
+    if (toolkit.startsWith(f, '_')) {
+      delete data[f];
+    }
 
     // NULL值不转换
     if (v === null) continue;

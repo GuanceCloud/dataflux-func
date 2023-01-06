@@ -133,6 +133,9 @@ EntityModel.prototype.add = function(data, callback) {
   // 自动填入脚本集ID
   data.scriptSetId = data.id.split('__')[0];
 
+  // 保证空代码为空字符串
+  data.code = data.code || '';
+
   // 自动填入示例代码
   data.codeDraft = toolkit.isNullOrUndefined(data.codeDraft)
                  ? CONFIG._SAMPLE_SCRIPT

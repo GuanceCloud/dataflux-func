@@ -37,7 +37,7 @@ var SCRIPT_MARKET_RW_MAP = {
   httpService: 'ro',
 }
 
-var SCRIPT_MARKET_META_EXTRA_FIELDS = [
+var SCRIPT_MARKET_CONFIG_TO_META_EXTRA_FIELDS = [
   'homepageURL',
 ]
 
@@ -183,10 +183,12 @@ function _addChangelogInfo(changelogInfo, scriptSet) {
     }
   }
 
+  var scriptSetExtra = scriptSet._extra || [];
+
   changelogInfo.changelogs.push({
-    time: scriptSet._exportTime,
-    by  : scriptSet._exportUser,
-    note: scriptSet._note,
+    time: scriptSetExtra.exportTime || null,
+    by  : scriptSetExtra.exportUser || null,
+    note: scriptSetExtra.note       || null,
   });
 
   return changelogInfo;
@@ -214,13 +216,25 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
     `${toolkit.toMarkdownTextBlock(scriptMarket.description) || '*没有具体描述*<br>*No description*'}`,
   ];
 
-  // 脚本集信息
+  var pushExtra = pushContent.extra || {};
+
+  // 最近操作
   if (toolkit.notNothing(pushContent.deleteScriptSets)) {
     content.push(`<br>`,
-                  `## 1. 最近删除 / Recent Deleted`,
-                  toolkit.toMarkdownTextBlock(pushContent.note));
+                  `## 1. 最近删除 / Recent Deleted`);
+
+    if (pushExtra.note) {
+      content.push(toolkit.toMarkdownTextBlock(pushExtra.note));
+    }
+
     var _table = [
-      [ '#', 'ID', '标题 / Title', '目录 / Directory', '删除时间 / Delete Time' ],
+      [
+        '#',
+        'ID',
+        '标题<br>Title',
+        '目录<br>Directory',
+        '删除时间<br>Delete Time'
+      ],
     ];
     var deleteTimeCN = toolkit.getDateTimeStringCN();
     pushContent.deleteScriptSets.forEach(function(scriptSet, index) {
@@ -238,20 +252,31 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
 
   if (toolkit.notNothing(pushContent.scriptSets)) {
     content.push(`<br>`,
-                  `## 1. 最近发布 / Recent Published`,
-                  toolkit.toMarkdownTextBlock(pushContent.note));
+                  `## 1. 最近发布 / Recent Published`);
+
+    if (pushExtra.note) {
+      content.push(toolkit.toMarkdownTextBlock(pushExtra.note));
+    }
 
     var _table = [
-      [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Publisher', '发布时间 / Publish Time' ],
+      [
+        '#',
+        'ID',
+        '标题<br>Title',
+        '目录<br>Directory',
+        '发布者<br>Publisher',
+        '变更日志<br>Changelog',
+      ],
     ];
     pushContent.scriptSets.forEach(function(scriptSet, index) {
+      var exportTimeCN = pushExtra.exportTime ? toolkit.getDateTimeStringCN(pushExtra.exportTime) : '-';
       _table.push([
         `${index + 1}`,
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
         `[${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
-        `${pushContent.exportUser}`,
-        `${toolkit.getDateTimeStringCN(pushContent.exportTime)}`,
+        `${pushExtra.exportUser || '-'}<br>${exportTimeCN}`,
+        `[查看 / Show](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
       ])
     });
 
@@ -266,16 +291,25 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
                   `此脚本市场包含以下脚本集：<br>This Script Market contains the following Scripts Sets:  `);
 
     var _table = [
-      [ '#', 'ID', '标题 / Title', '目录 / Directory', '发布者 / Publisher', '发布时间 / Publish Time' ],
+      [
+        '#',
+        'ID',
+        '标题<br>Title',
+        '目录<br>Directory',
+        '发布者<br>Publisher',
+        '变更日志<br>Changelog',
+      ],
     ];
     scriptSets.forEach(function(scriptSet, index) {
+      var scriptSetExtra = scriptSet._extra || {};
+      var exportTimeCN = scriptSetExtra.exportTime ? toolkit.getDateTimeStringCN(scriptSetExtra.exportTime) : '-';
       _table.push([
         `${index + 1}`,
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
         `[${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
-        `${scriptSet._exportUser}`,
-        `${toolkit.getDateTimeStringCN(scriptSet._exportTime)}`,
+        `${scriptSetExtra.exportUser || '-'}<br>${exportTimeCN}`,
+        `[查看 / Show](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
       ]);
     });
     content.push(_getMarkdownTable(_table));
@@ -290,16 +324,24 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
 };
 
 function _getDefaultScriptSetReadmeContent(scriptSet) {
+  var scriptSetExtra = scriptSet._extra || {};
+  var exportTimeCN = scriptSetExtra.exportTime ? toolkit.getDateTimeStringCN(scriptSetExtra.exportTime) : '-';
+
   // 脚本集信息
   var content = [
     `# ${scriptSet.title || scriptSet.id}`,
     _getMarkdownTable([
-      [ 'ID', '标题 / Title', '发布者 / Publisher', '发布时间 / Publish Time' ],
+      [
+        'ID',
+        '标题<br>Title',
+        '发布者<br>Publisher',
+        '变更日志<br>Changelog',
+      ],
       [
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
-        `${scriptSet._exportUser}`,
-        `${toolkit.getDateTimeStringCN(scriptSet._exportTime)}`,
+        `${scriptSetExtra.exportUser || '-'}<br>${exportTimeCN}`,
+        `[查看 / Show](CHANGELOG.md)`,
       ],
     ]),
 
@@ -321,23 +363,35 @@ function _getDefaultScriptSetReadmeContent(scriptSet) {
                   `此脚本集包含以下脚本：<br>This Script Set contains the following Scripts:  `);
 
     var _table = [
-      [ '#', 'ID', '标题 / Title', '行数 / Lines', '更新时间 / Update Time' ],
+      [
+        '#',
+        'ID',
+        '标题<br>Title',
+        '行数<br>Lines',
+        '更新时间<br>Update Time',
+      ],
     ];
     var codeLines = 0;
     scriptSet.scripts.forEach(function(s, index) {
+      // 文件名
+      var filename = common.getScriptFilename(s);
+
+      // 代码行数
       var lines = 0;
       if ('string' === typeof s.code) {
         lines = s.code.split('\n').length;
         codeLines += lines;
       }
 
-      var filename = common.getScriptFilename(s);
+      // 更新时间
+      var updateTimeCN = s.updateTime ? toolkit.getDateTimeStringCN(s.updateTime) : '-';
+
       _table.push([
         `${index + 1}`,
         `[\`${s.id}\`](${filename})`,
         `${s.title || '-'}`,
         lines,
-        `${toolkit.getDateTimeStringCN(s.updateTime)}`,
+        updateTimeCN,
       ]);
     });
     content.push(_getMarkdownTable(_table));
@@ -348,9 +402,9 @@ function _getDefaultScriptSetReadmeContent(scriptSet) {
                   `此脚本集统计信息如下：<br>The statistics of this Script Set are as follows:   `);
 
     content.push(_getMarkdownTable([
-      [ '项目 / Item', '结果 / Result' ],
-      [ '脚本数量 / Script Count', scriptSet.scripts.length ],
-      [ '脚本总行数 / Total Lines', codeLines ],
+      [ '项目<br>Item', '结果<br>Result' ],
+      [ '脚本数量<br>Script Count', scriptSet.scripts.length ],
+      [ '脚本总行数<br>Total Lines', codeLines ],
     ]));
   }
 
@@ -365,7 +419,7 @@ function _getDefaultScriptSetChangelogContent(changelogInfo) {
     var changelog = changelogInfo.changelogs[i];
 
     content.push(`<br>`,
-                  `## ${toolkit.getDateStringCN(changelog.time || changelog.date)}`,
+                  `## ${toolkit.getDateTimeStringCN(changelog.time || changelog.date)}`,
                   '<br>',
                   `> BY ${changelog.by}`);
     content.push(toolkit.toMarkdownTextBlock(changelog.note));
@@ -440,7 +494,7 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
       // 下载初始化文件
       function(asyncCallback) {
         var files = [
-          CONFIG.SCRIPT_MARKET_META_FILE,
+          CONFIG.SCRIPT_EXPORT_META_FILE,
           CONFIG.SCRIPT_MARKET_TOKEN_FILE,
         ];
         async.eachSeries(files, function(file, eachCallback) {
@@ -545,7 +599,7 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
       // 重新下载 META、TOKEN
       function(asyncCallback) {
         var files = [
-          CONFIG.SCRIPT_MARKET_META_FILE,
+          CONFIG.SCRIPT_EXPORT_META_FILE,
           CONFIG.SCRIPT_MARKET_TOKEN_FILE,
         ];
         async.eachSeries(files, function(file, eachCallback) {
@@ -691,7 +745,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       function(asyncCallback) {
         git.addConfig('user.name', locals.user.name)
         git.addConfig('user.email', locals.user.email)
-        git.commit(pushContent.note, asyncCallback);
+        git.commit(pushContent.extra.note, asyncCallback);
       },
       // git push / reset
       function(asyncCallback) {
@@ -743,7 +797,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       // 上传固定文件
       function(asyncCallback) {
         var files = [
-          CONFIG.SCRIPT_MARKET_META_FILE,
+          CONFIG.SCRIPT_EXPORT_META_FILE,
           CONFIG.SCRIPT_MARKET_TOKEN_FILE,
           CONFIG.SCRIPT_EXPORT_README_FILE,
         ]
@@ -833,17 +887,21 @@ function _getMetaData(scriptMarket) {
   var localPath = _getLocalAbsPath(scriptMarket);
   var metaData  = {};
 
-  var metaFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE);
+  var metaFilePath = path.join(localPath, CONFIG.SCRIPT_EXPORT_META_FILE);
   if (!fs.existsSync(metaFilePath)) return metaData;
 
   var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
+
+  /* 兼容处理 */
+  metaData = common.convertImportExportDataSchema(metaData);
+
   return metaData;
 };
 
 // 脚本市场 - 写入 META 数据
-function _setMetaData(scriptMarket, metaData) {
+function _writeMetaData(scriptMarket, metaData) {
   var localPath = _getLocalAbsPath(scriptMarket);
-  fs.outputFileSync(path.join(localPath, CONFIG.SCRIPT_MARKET_META_FILE), yaml.dump(metaData));
+  fs.outputFileSync(path.join(localPath, CONFIG.SCRIPT_EXPORT_META_FILE), yaml.dump(metaData));
 };
 
 // 脚本市场 - 列出脚本集
@@ -907,7 +965,7 @@ function _setAdmin(locals, scriptMarket, callback) {
           locals.logger.logError(err);
 
           return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
-            message: toolkit.maskSensitiveInfo(err.message),
+            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskSensitiveInfo(err.message),
           }));
         }
         return asyncCallback();
@@ -966,7 +1024,7 @@ function _setMetaExtra(locals, scriptMarket, callback) {
       metaData = metaData || {};
       metaData.extra = metaData.extra || {};
 
-      SCRIPT_MARKET_META_EXTRA_FIELDS.forEach(function(f) {
+      SCRIPT_MARKET_CONFIG_TO_META_EXTRA_FIELDS.forEach(function(f) {
         if (toolkit.isNothing(scriptMarket.configJSON[f])) {
           metaData.extra[f] = null;
         } else {
@@ -974,7 +1032,7 @@ function _setMetaExtra(locals, scriptMarket, callback) {
         }
       });
 
-      _setMetaData(scriptMarket, metaData);
+      _writeMetaData(scriptMarket, metaData);
       return asyncCallback();
     },
     // 上传
@@ -987,7 +1045,7 @@ function _setMetaExtra(locals, scriptMarket, callback) {
           locals.logger.logError(err);
 
           return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
-            message: toolkit.maskSensitiveInfo(err.message),
+            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskSensitiveInfo(err.message),
           }));
         }
         return asyncCallback();
@@ -1010,10 +1068,9 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
 
         metaData = _metaData || {};
 
-        // 添加推送信息
-        metaData.note       = pushContent.note;
-        metaData.exportUser = pushContent.exportUser;
-        metaData.exportTime = pushContent.exportTime;
+        // 添加 extra 信息
+        metaData.extra = metaData.extra || {};
+        Object.assign(metaData.extra, pushContent.extra || {});
 
         // 临时脚本集索引
         if (toolkit.notNothing(metaData.scriptSets)) {
@@ -1103,7 +1160,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
 
         // 重建并写入 META
         metaData.scriptSets = Object.values(tmpScriptSetMap);
-        _setMetaData(scriptMarket, metaData);
+        _writeMetaData(scriptMarket, metaData);
 
         // 写入脚本市场 README 文件
         var scriptMarketReadmeFilePath = path.join(localPath, CONFIG.SCRIPT_EXPORT_README_FILE);
@@ -1360,6 +1417,8 @@ exports.modify = function(req, res, next) {
     },
     // 设置额外信息
     function(asyncCallback) {
+      if (toolkit.isNothing(data.configJSON)) return asyncCallback();
+
       // 检查是否为管理员
       var token       = _getToken(scriptMarket);
       var remoteToken = _getRemoteTokenInfo(scriptMarket).value;
@@ -1617,7 +1676,7 @@ exports.publish = function(req, res, next) {
           scriptSetIds: scriptSetIds,
           note        : note,
         }
-        scriptSetModel.getExportData(opt, function(err, exportData, summary) {
+        scriptSetModel.getExportData(opt, function(err, exportData) {
           if (err) return asyncCallback(err);
 
           pushContent = exportData;
@@ -1629,9 +1688,11 @@ exports.publish = function(req, res, next) {
         // 删除模式
         pushContent = {
           deleteScriptSetIds: scriptSetIds,
-          exportUser        : common.getExportUser(res.locals),
-          exportTime        : toolkit.getISO8601(),
-          note              : note,
+          extra: {
+            exportUser: common.getExportUser(res.locals),
+            exportTime: toolkit.getISO8601(),
+            note      : note,
+          }
         }
         return asyncCallback();
       }

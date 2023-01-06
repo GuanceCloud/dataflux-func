@@ -311,6 +311,9 @@ var jsonFind = toolkit.jsonFind = function jsonFind(j, path, safe) {
 
   return subJ;
 };
+var jsonFindSafe = toolkit.jsonFindSafe = function jsonFindSafe(j, path) {
+  return jsonFind(j, path, true);
+}
 
 /**
  * Override the values from source JSON Object

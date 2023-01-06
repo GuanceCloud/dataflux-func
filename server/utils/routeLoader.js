@@ -388,7 +388,7 @@ exports.load = function(config, middlewares) {
     if (topNode === '$CONFIG' || topNode === '$NOT_CONFIG') {
       var nodePath = parts.slice(1).join('.');
 
-      var requireSignIn = toolkit.jsonFind(CONFIG, nodePath, true) || false;
+      var requireSignIn = toolkit.jsonFindSafe(CONFIG, nodePath) || false;
       config.requireSignIn = toolkit.toBoolean(requireSignIn);
 
       if (topNode === '$NOT_CONFIG') {
