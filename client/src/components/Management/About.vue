@@ -208,10 +208,10 @@ export default {
         this.about = {
           version         : apiRes.data.CI_COMMIT_REF_NAME,
           architecture    : apiRes.data.ARCHITECTURE,
+          releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
           vueVersion      : Vue.version,
           nodeVersion     : apiRes.data.NODE_VERSION,
           pythonVersion   : apiRes.data.PYTHON_VERSION,
-          releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
         };
 
       } else {
@@ -430,13 +430,12 @@ export default {
     releaseDateTEXT() {
       let releaseDate    = '';
       let releaseFromNow = '';
-      let releaseTimestamp = Date.now();
       if (this.about.releaseTimestamp > 0) {
         let releaseTimestamp = this.about.releaseTimestamp * 1000;
-      }
 
-      releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
-      releaseFromNow = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).fromNow();
+        releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
+        releaseFromNow = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).fromNow();
+      }
 
       if (releaseDate && releaseFromNow) {
         return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`
