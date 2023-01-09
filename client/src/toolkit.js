@@ -347,6 +347,27 @@ export function asArray(o) {
   }
 };
 
+export function limitText(text, maxLength, options) {
+  text      = text      || '';
+  maxLength = maxLength || 30;
+  options   = options   || {};
+
+  if (text.length <= maxLength) {
+    return text;
+  } else {
+    var limited = text.slice(0, maxLength - 3) + '...';
+
+    if (options.showLength) {
+      if (options.showLength === 'newLine') {
+        limited += `\n <Length: ${text.length}>`;
+      } else {
+        limited += ` <Length: ${text.length}>`;
+      }
+    }
+    return limited;
+  }
+};
+
 export function limitLines(text, lineLimit, columnLimit) {
   if (!text) return text;
 

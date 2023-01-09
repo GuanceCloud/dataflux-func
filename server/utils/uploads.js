@@ -47,10 +47,6 @@ module.exports = function(options) {
 
   // 返回中间件
   return function(req, res, next) {
-    // HACK - react-native generates FormData with an invalid boundary that might contain '/'
-    // we need to wrap the boundary value with quotes to fix it
-    // TODO - remove this when react-native releases the fix
-    //
     // 针对iOS生成带`/`的boundary，但是没有使用引号导致无法正确接受上传文件的问题
     // `https://github.com/facebook/react-native/issues/7564`
     // `https://github.com/expressjs/multer/issues/462`

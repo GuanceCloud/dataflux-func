@@ -113,8 +113,8 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
               <FuncInfo
                 :id="scope.row.funcId"
                 :title="scope.row.func_title" />
-              <InfoBlock v-if="scope.row.edumpTEXT || scope.row.einfoTEXT"
-                :title="scope.row.edumpTEXT || scope.row.einfoTEXT.split('\n').pop()"
+              <InfoBlock v-if="scope.row.einfoSummary"
+                :title="scope.row.einfoSummary"
                 type="error"  />
             </template>
           </el-table-column>
@@ -204,6 +204,12 @@ export default {
         // 判断是否存在主、子任务
         if (d.subTaskCount > 0 || d.rootTaskId !== 'ROOT') {
           this.hasTaskType = true;
+        }
+
+        // 简要错误信息
+        if (d.edumpTEXT || d.einfoTEXT) {
+          d.einfoSummary = d.edumpTEXT || d.einfoTEXT.split('\n').pop();
+          d.einfoSummary = this.T.limitText(d.einfoSummary, 500);
         }
 
         // 日志长度
