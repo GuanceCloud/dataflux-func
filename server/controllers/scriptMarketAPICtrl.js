@@ -958,7 +958,7 @@ function _setAdmin(locals, scriptMarket, callback) {
     // 上传
     function(asyncCallback) {
       var pushContent = {
-        note: 'Set Admin',
+        extra: { note: 'Set Admin' },
       }
       SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, function(err) {
         if (err) {
@@ -995,7 +995,7 @@ function _unsetAdmin(locals, scriptMarket, callback) {
     // 上传
     function(asyncCallback) {
       var pushContent = {
-        note: 'Unset Admin',
+        extra: { note: 'Unset Admin' },
       }
       SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, asyncCallback);
     },
@@ -1038,7 +1038,7 @@ function _setMetaExtra(locals, scriptMarket, callback) {
     // 上传
     function(asyncCallback) {
       var pushContent = {
-        note: 'Set Meta Extra',
+        extra: { note: 'Set Meta Extra' },
       }
       SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP[scriptMarket.type](locals, scriptMarket, pushContent, function(err) {
         if (err) {
