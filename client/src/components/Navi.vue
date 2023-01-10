@@ -92,6 +92,7 @@
           <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
             <span class="ui-locale-short-title">{{ _locale.shortName }}</span>
             {{ _locale.name }}
+            <span class="ui-locale-tip" v-if="_locale.tip">{{ _locale.tip }}</span>
           </span>
         </el-menu-item>
       </el-submenu>
@@ -206,6 +207,17 @@ export default {
   text-align: center;
   font-size: 12px;
   margin-top: 2px;
+}
+.navi-content .ui-locale-tip {
+  margin-left: 5px;
+  padding: 4px;
+  border-radius: 3px;
+  background: #FF6600;
+  display: inline-block;
+  font-size: 12px;
+  color: white !important;
+  font-weight: normal !important;
+  line-height: 1;
 }
 .selected-option,
 .selected-option * {

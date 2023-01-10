@@ -456,8 +456,9 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key      : 'en',
-        name     : 'English (WIP)',
+        name     : 'English',
         shortName: 'EN',
+        tip      : 'Beta',
       },
       {
         key      : 'zh-CN',

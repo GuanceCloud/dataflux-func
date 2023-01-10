@@ -32,6 +32,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
             <el-dropdown-item v-for="_locale in C.UI_LOCALE" :key="_locale.key" :command="_locale.key">
               <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
                 {{ _locale.name }}
+                <span class="ui-locale-tip" v-if="_locale.tip">{{ _locale.tip }}</span>
               </span>
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -277,7 +278,7 @@ export default {
 }
 .sign-in-panel .ui-local-select {
   position: absolute;
-  right: 50px;
+  right: 55px;
   bottom: 25px;
   font-size: 16px;
   color: #FF6600;
@@ -323,6 +324,18 @@ export default {
 }
 </style>
 <style>
+.ui-locale-tip {
+  margin-left: 5px;
+  padding: 4px;
+  border-radius: 3px;
+  background: #FF6600;
+  display: inline-block;
+  font-size: 12px;
+  color: white !important;
+  font-weight: normal !important;
+  line-height: 1;
+}
+
 .sign-in-form input {
   height: 47px;
   font-size: 16px;
