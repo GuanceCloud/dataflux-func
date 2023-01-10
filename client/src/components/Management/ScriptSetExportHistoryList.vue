@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+No Script Set has ever been exported: 从未导出过任何脚本集
+Exporting Script Sets for backup or sharing Script Sets: 使用脚本集导出功能备份或分享脚本集
+</i18n>
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
@@ -18,11 +22,10 @@
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>从未导出过脚本集</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Set has ever been exported') }}</h1>
 
           <p class="no-data-tip">
-            如需备份、分发脚本集，可以使用导出功能
-            <br>导出后的文件，可在系统的「脚本集导入」功能中进行导入
+            {{ $t('Exporting Script Sets for backup or sharing Script Sets') }}
           </p>
         </div>
         <template v-else>

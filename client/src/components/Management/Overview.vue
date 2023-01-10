@@ -7,35 +7,34 @@ recentOperationCount: '(latest {n} operation) | (latest {n} operations)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Overview                      : 总览
-Biz Entity                    : 业务实体
-Worker Queue Info             : 队列信息
-Queue                         : 队列
-overviewCountUnit             : 个
-workerCount                   : '工作单元 {n} 个'
-taskCount                     : '请求排队 {n} 个'
-Script overview               : 脚本总览
-scriptOverviewCount           : '{n} 个'
-Code size                     : 代码大小
-Publish ver.                  : 发布版本
-Publish time                  : 发布时间
-Never published               : 从未发布
-Recent operations             : 最近操作记录
-recentOperationCount          : 最近 {n} 条
-Client                        : 客户端
-Client ID                     : 客户端ID
-IP Address                    : IP地址
-Operation                     : 操作
-Data ID                       : 数据ID
-MODIFY                        : 修改操作
-DELETE                        : 删除操作
-Cost                          : 耗时
-ms                            : 毫秒
-Show detail                   : 显示请求详情
-The full content is as follows: 完整内容如下
-Request                       : 请求
-Response                      : 响应
-Pressure                      : 压力
+Overview            : 总览
+Biz Entity          : 业务实体
+Worker Queue Info   : 队列信息
+Queue               : 队列
+overviewCountUnit   : 个
+workerCount         : '工作单元 {n} 个'
+taskCount           : '请求排队 {n} 个'
+Script overview     : 脚本总览
+scriptOverviewCount : '{n} 个'
+Code size           : 代码大小
+Publish ver.        : 发布版本
+Publish time        : 发布时间
+Never published     : 从未发布
+Recent operations   : 最近操作记录
+recentOperationCount: 最近 {n} 条
+Client              : 客户端
+Client ID           : 客户端ID
+IP Address          : IP地址
+Operation           : 操作
+Data ID             : 数据ID
+MODIFY              : 修改操作
+DELETE              : 删除操作
+Cost                : 耗时
+ms                  : 毫秒
+Show detail         : 显示请求详情
+Request             : 请求
+Response            : 响应
+Pressure            : 压力
 </i18n>
 
 <template>
@@ -198,7 +197,7 @@ Pressure                      : 压力
         </el-table>
       </el-main>
 
-      <LongTextDialog :title="$t('The full content is as follows')" :showDownload="true" ref="longTextDialog" />
+      <LongTextDialog :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

@@ -1,39 +1,62 @@
+<i18n locale="zh-CN" lang="yaml">
+System Status: 系统指标
+Tasks / Func: 任务 / 函数
+Cache / Database: 缓存 / 数据库
+Server: Server（服务）
+Worker: Worker（工作单元）
+
+Server CPU Percent         : Server CPU 使用率
+Server Memory RSS          : Server 内存 RSS
+Server Memory Heap Total   : Server 内存 Heap 总量
+Server Memory Heap Used    : Server 内存 Heap 用量
+Server Memory Heap External: Server 内存 Heap 外部对象用量
+Worker CPU Percent         : Worker CPU 使用率
+Worker Memory PSS          : Worker 内存 PSS
+Func Call Count            : 函数调用次数
+Worker Queue Length        : 工作队列长度
+Database Disk Used         : 数据库磁盘用量
+Cache Memory Used          : 缓存数据库内存用量
+Cache Key Used             : 缓存数据库 Key 数量
+Cache Key Count by Prefix  : 缓存数据库 Key 数量（按前缀区分）
+Matched Route Count        : 接口访问次数（按路由区分）
+</i18n>
+
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>系统指标</span>
+          <span>{{ $t('System Status') }}</span>
           <div class="header-control">
             <el-button @click="updateChart" type="primary" plain size="small" :disabled="isRefreshing">
               <i v-if="isRefreshing" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
               <i v-else class="fa fa-fw fa-refresh"></i>
-              刷新
+              {{ $t('Refresh') }}
             </el-button>
           </div>
         </div>
       </el-header>
       <el-main>
-        <el-divider content-position="left"><h1>Tasks/Func</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Tasks / Func') }}</h1></el-divider>
         <div id="workerQueueLength" class="chart"></div>
         <div id="funcCallCount" class="chart"></div>
         <div id="matchedRouteCount" class="chart"></div>
 
-        <el-divider content-position="left"><h1>Cache/Database</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Cache / Database') }}</h1></el-divider>
         <div id="cacheDBMemoryUsed" class="chart"></div>
         <div id="cacheDBKeyUsed" class="chart"></div>
         <div id="cacheDBKeyCountByPrefix" class="chart"></div>
         <div id="dbDiskUsed" class="chart"></div>
 
-        <el-divider content-position="left"><h1>Server</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Server') }}</h1></el-divider>
         <div id="serverCPUPercent" class="chart"></div>
         <div id="serverMemoryRSS" class="chart"></div>
         <div id="serverMemoryHeapTotal" class="chart"></div>
         <div id="serverMemoryHeapUsed" class="chart"></div>
         <div id="serverMemoryHeapExternal" class="chart"></div>
 
-        <el-divider content-position="left"><h1>Worker</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Worker') }}</h1></el-divider>
         <div id="workerCPUPercent" class="chart"></div>
         <div id="workerMemoryPSS" class="chart"></div>
       </el-main>
@@ -378,7 +401,7 @@ export default {
       return {
         serverCPUPercent: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Server CPU 使用率'),
+          title  : this.createTitleOpt(this.$t('Server CPU Percent')),
           tooltip: this.createTSTooltipOpt({ unit: '%'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -386,7 +409,7 @@ export default {
         },
         serverMemoryRSS: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Server 内存RSS'),
+          title  : this.createTitleOpt(this.$t('Server Memory RSS')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -394,7 +417,7 @@ export default {
         },
         serverMemoryHeapTotal: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Server 内存Heap总量'),
+          title  : this.createTitleOpt(this.$t('Server Memory Heap Total')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -402,7 +425,7 @@ export default {
         },
         serverMemoryHeapUsed: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Server 内存Heap用量'),
+          title  : this.createTitleOpt(this.$t('Server Memory Heap Used')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -410,7 +433,7 @@ export default {
         },
         serverMemoryHeapExternal: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Server 内存Heap外部对象用量'),
+          title  : this.createTitleOpt(this.$t('Server Memory Heap External')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -419,7 +442,7 @@ export default {
 
         workerCPUPercent: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Worker CPU 使用率'),
+          title  : this.createTitleOpt(this.$t('Worker CPU Percent')),
           tooltip: this.createTSTooltipOpt({ unit: '%'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -427,7 +450,7 @@ export default {
         },
         workerMemoryPSS: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('Worker 内存PSS'),
+          title  : this.createTitleOpt(this.$t('Worker Memory PSS')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -435,7 +458,7 @@ export default {
         },
         funcCallCount: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('函数调用次数'),
+          title  : this.createTitleOpt(this.$t('Func Call Count')),
           tooltip: this.createTSTooltipOpt({ unit: ['Times', 'Time']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -443,7 +466,7 @@ export default {
         },
         workerQueueLength: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('工作队列长度'),
+          title  : this.createTitleOpt(this.$t('Worker Queue Length')),
           tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -452,7 +475,7 @@ export default {
 
         dbDiskUsed: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('数据库磁盘用量'),
+          title  : this.createTitleOpt(this.$t('Database Disk Used')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -461,7 +484,7 @@ export default {
 
         cacheDBMemoryUsed: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('缓存数据库内存用量'),
+          title  : this.createTitleOpt(this.$t('Cache Memory Used')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -469,7 +492,7 @@ export default {
         },
         cacheDBKeyUsed: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('缓存数据库Key数量'),
+          title  : this.createTitleOpt(this.$t('Cache Key Used')),
           tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -477,7 +500,7 @@ export default {
         },
         cacheDBKeyCountByPrefix: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('缓存数据库Key数量（按前缀区分）'),
+          title  : this.createTitleOpt(this.$t('Cache Key Count by Prefix')),
           tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
@@ -485,7 +508,7 @@ export default {
         },
         matchedRouteCount: {
           textStyle: textStyle,
-          title  : this.createTitleOpt('接口访问次数（按路由区分）'),
+          title  : this.createTitleOpt(this.$t('Matched Route Count')),
           tooltip: this.createCommonTooltipOpt(),
           grid   : this.createCountGridOpt(),
           xAxis  : this.createCountXAxisOpt(),

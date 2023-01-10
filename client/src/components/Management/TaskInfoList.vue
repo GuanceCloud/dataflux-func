@@ -36,6 +36,9 @@ Related Tasks : 相关任务
 Task Info cleared: 任务信息已清空
 
 Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
+
+No Recent Task Info: 尚无任何近期任务信息
+All recent Task Info will be collected and shown here: 所有近期任务信息会被搜集，并展示在此
 </i18n>
 
 <template>
@@ -72,10 +75,10 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>尚无任何近期任务信息</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Task Info') }}</h1>
 
           <p class="no-data-tip">
-            执行的任务信息会被系统搜集，并展示在此
+            {{ $t('All recent Task Info will be collected and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -164,7 +167,7 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog title="完整内容如下" ref="longTextDialog" :showDownload="true" />
+      <LongTextDialog ref="longTextDialog" :showDownload="true" />
     </el-container>
   </transition>
 </template>

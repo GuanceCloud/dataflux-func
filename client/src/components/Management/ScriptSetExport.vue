@@ -119,11 +119,14 @@ Data exported: 数据已导出
         :title="$t('Data exported')"
         :visible.sync="showDownloadFilename"
         width="750px">
-        <span class="download-filename-dialog-content">
-          <span class="text-good">{{ $t('Data exported') }}</span>
-          <br><span>{{ $t('Exported content has been downloaded as a zip file:') }}</span>
-          <br><code class="download-filename">{{ downloadFilename }}</code>
-        </span>
+        <div class="download-filename-dialog-content">
+          <p class="text-good">{{ $t('Data exported') }}</p>
+          <p>{{ $t('Exported content has been downloaded as a zip file:') }}</p>
+          <p class="download-filename">
+            <i class="fa fa-fw fa-3x fa-file-archive-o"></i>
+            <code>{{ downloadFilename }}</code>
+          </p>
+        </div>
         <span slot="footer" class="dialog-footer">
           <el-button type="primary" @click="goToHistory">
             {{ $t('Very good') }}
@@ -326,12 +329,15 @@ export default {
   line-height: 50px;
 }
 .download-filename {
-  font-size: 20px;
-  display: inline-block;
-  padding: 5px 20px;
-  margin-top: 15px;
-  letter-spacing: 3px;
-  border: 5px dashed lightgrey;
+  margin-top: 50px;
+  font-size: 18px;
+  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.download-filename > code {
+  margin-top: 20px;
 }
 
 .el-checkbox.is-bordered {

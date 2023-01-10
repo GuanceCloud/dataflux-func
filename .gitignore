@@ -110,6 +110,7 @@ client/public/theme-light.min.css
 client/public/theme-dark.min.css
 
 # Other
+.ossutil_checkpoint
 docker-stack.yaml
 builtin-script-sets/*.zip
 client/report.*.json

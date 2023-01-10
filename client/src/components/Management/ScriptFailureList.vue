@@ -3,8 +3,8 @@ Exec Mode: 执行方式
 
 Show Detail: 显示详情
 
-No recent Script Failures: 无近期脚本故障
-All Exceptions throwed from Script will be collected by the system and shown here: 脚本运行时抛出的错误会被系统搜集并展示在此
+No Recent Script Failures: 无近期脚本故障
+All recent Exceptions throwed from Script will be collected by the system and shown here: 脚本运行时抛出的错误会被系统搜集并展示在此
 </i18n>
 <template>
   <transition name="fade">
@@ -23,10 +23,10 @@ All Exceptions throwed from Script will be collected by the system and shown her
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Script Failures') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Script Failures') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('All Exceptions throwed from Script will be collected by the system and shown here') }}
+            {{ $t('All recent Exceptions throwed from Script will be collected by the system and shown here') }}
           </p>
         </div>
         <el-table v-else

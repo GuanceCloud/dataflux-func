@@ -1,19 +1,18 @@
 <i18n locale="zh-CN" lang="yaml">
-Request                      : 请求
-Response                     : 响应
-Status Code                  : 状态码
-Cost                         : 耗时
-ms                           : 毫秒
-Show detail                  : 显示请求详情
-The full content is following: 完整内容如下
-omitted.                     : 略
+Request    : 请求
+Response   : 响应
+Status Code: 状态码
+Cost       : 耗时
+ms         : 毫秒
+Show detail: 显示请求详情
+omitted.   : 略
 
 Abnormal Request data cleared: 异常请求数据已清空
 
 Are you sure you want to clear the abnormal Request data?: 是否确认清空异常请求数据？
 
-No recent Abnormal Request: 尚无任何近期异常请求
-All abnormal requests will be collected and shown here: 所有异常的请求会被搜集，并展示在此
+No Recent Abnormal Request: 尚无任何近期异常请求
+All recent abnormal requests will be collected and shown here: 所有异常的请求会被搜集，并展示在此
 </i18n>
 
 <template>
@@ -49,10 +48,10 @@ All abnormal requests will be collected and shown here: 所有异常的请求会
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
-          <h1 class="no-data-title">{{ $t('No recent Abnormal Request') }}</h1>
+          <h1 class="no-data-title">{{ $t('No Recent Abnormal Request') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('All abnormal requests will be collected and shown here') }}
+            {{ $t('All recent abnormal requests will be collected and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -119,7 +118,7 @@ All abnormal requests will be collected and shown here: 所有异常的请求会
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog" />
+      <LongTextDialog :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>

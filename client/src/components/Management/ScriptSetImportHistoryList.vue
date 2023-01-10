@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+No Script Set has ever been imported: 从未导入过任何脚本集
+Add external Script Sets by importing Script Sets: 使用脚本集导入功能添加外部脚本集
+</i18n>
 <template>
   <transition name="fade">
     <el-container direction="vertical" v-show="$store.state.isLoaded">
@@ -18,11 +22,10 @@
       <el-main>
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>从未导入或安装过脚本集</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Set has ever been imported') }}</h1>
 
           <p class="no-data-tip">
-            如需从外部引入脚本集，可以使用导入功能
-            <br>导入用的文件，可在系统的「脚本集导出」功能中导出并下载
+            {{ $t('Add external Script Sets by importing Script Sets') }}
           </p>
         </div>
         <template v-else>

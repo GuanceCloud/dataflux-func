@@ -1,8 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
 Exec Mode: 执行方式
 
-No recent Script Logs: 无近期脚本日志
-All log printed by {0} in Script will be collected by the system and shown here: 脚本运行时使用 {0} 打印的日志会被系统搜集并展示在此
+No Recent Script Logs: 无近期脚本日志
+All recent log printed by {0} in Script will be collected by the system and shown here: 脚本运行时使用 {0} 打印的日志会被系统搜集并展示在此
 </i18n>
 <template>
   <transition name="fade">
@@ -21,10 +21,10 @@ All log printed by {0} in Script will be collected by the system and shown here:
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Script Logs') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Script Logs') }}</h1>
 
           <p class="no-data-tip">
-            <i18n path="All log printed by {0} in Script will be collected by the system and shown here">
+            <i18n path="All recent log printed by {0} in Script will be collected by the system and shown here">
               <code class="code-font">print('...')</code>
             </i18n>
           </p>

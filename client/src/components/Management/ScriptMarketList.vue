@@ -26,6 +26,8 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
 
 'Checking Update...': '正在检查更新...'
 'Deleting...'       : '正在删除...'
+
+After adding the Script Market, you can install Script Sets from the Script Market or push the local Script Sets to the Script Market.: 添加脚本市场后，可以从脚本市场安装脚本集，或将本地脚本集推送到市场
 </i18n>
 
 <template>
@@ -77,7 +79,7 @@ ScriptSetCount: '不包含任何脚本集 | 包含 {n} 个脚本集 | 包含 {n}
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Market has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            添加脚本市场后，可以从脚本市场安装现成脚本集，或将本地脚本集推送到市场
+            {{ $t('After adding the Script Market, you can install Script Sets from the Script Market or push the local Script Sets to the Script Market.') }}
           </p>
         </div>
         <el-table v-else

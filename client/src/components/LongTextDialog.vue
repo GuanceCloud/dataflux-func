@@ -91,7 +91,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .download-link {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 </style>
 <style>

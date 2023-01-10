@@ -3,8 +3,8 @@ Custom Site Title     : 自定义网站标题
 Custom Site Favicon   : 自定义网站 Favicon
 Custom Site Logo      : 自定义网站 Logo
 Notice Bar            : 顶部提示栏
-Navi Bar Doc Link     : 导航栏文档链接
-Monitor Data Upload   : 监控数据上报
+Doc Link in Navi Bar  : 导航栏文档链接
+Monitor Data Report   : 监控数据上报
 Official Script Market: 官方脚本市场
 
 Enable: 启用
@@ -12,9 +12,18 @@ Text  : 文案
 Color : 颜色
 Image : 图片
 URL   : URL 地址
+DataKit / DataWay URL: DataKit / DataWay URL 地址
 
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
 'System Config Saved. Page will be refreshed soon...': '系统配置已保存，页面即将刷新...'
+
+Use the specified text as the site title: 使用指定的文案作为网站标题
+Use the specified image as the site icon (favicon): 使用指定的图片作为网站图标（favicon）
+Use the specified image as the system Logo: 使用指定的图片作为网站 Logo
+Show a fixed alert bar at the top of all pages: 在所有页面顶部展示固定的提示栏
+Show a Document Link to the specified URL in the Navi Bar: 在导航栏展示文档链接，点击后可以跳转至指定的 URL 地址
+Report the monitor data of DataFlux Func to the specified URL: 将 DataFlux Func 的监控数据上报到指定 URL
+Show quick creation button for Official Script Market: 显示官方脚本市场快捷创建按钮
 </i18n>
 
 <template>
@@ -35,7 +44,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Title') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置文案后，会使用指定的文案作为网站标题" />
+                  <InfoBlock :title="$t('Use the specified text as the site title')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_SITE_TITLE_ENABLED">
@@ -53,7 +62,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Favicon') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Favicon" />
+                  <InfoBlock :title="$t('Use the specified image as the site icon (favicon)')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_FAVICON_ENABLED">
@@ -85,7 +94,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Custom Site Logo') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并选择图片后，会使用指定的图片作为网站 Logo" />
+                  <InfoBlock :title="$t('Use the specified image as the system Logo')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="CUSTOM_LOGO_ENABLED">
@@ -117,7 +126,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 <el-divider content-position="left"><h3>{{ $t('Notice Bar') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置文案后，会在整个 DataFlux Func UI 界面顶部展示固定的提示栏" />
+                  <InfoBlock :title="$t('Show a fixed alert bar at the top of all pages')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="NOTICE_BAR_ENABLED">
@@ -143,10 +152,10 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 </el-form-item>
 
                 <!-- 导航栏文档链接 -->
-                <el-divider content-position="left"><h3>{{ $t('Navi Bar Doc Link') }}</h3></el-divider>
+                <el-divider content-position="left"><h3>{{ $t('Doc Link in Navi Bar') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并指定 URL 地址后，导航栏会出现「文档」，并可以跳转至指定的 URL 地址" />
+                  <InfoBlock :title="$t('Show a Document Link to the specified URL in the Navi Bar')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="NAVI_DOC_LINK_ENABLED">
@@ -164,10 +173,10 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 </el-form-item>
 
                 <!-- 监控数据上传 -->
-                <el-divider content-position="left"><h3>{{ $t('Monitor Data Upload') }}</h3></el-divider>
+                <el-divider content-position="left"><h3>{{ $t('Monitor Data Report') }}</h3></el-divider>
 
                 <el-form-item>
-                  <InfoBlock title="启用并配置上报地址（DataWay 或 DataKit）后，会将任务执行信息上报" />
+                  <InfoBlock :title="$t('Report the monitor data of DataFlux Func to the specified URL')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="MONITOR_DATA_UPLOAD_ENABLED">
@@ -178,7 +187,7 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
                 </el-form-item>
 
                 <el-form-item :label="$t('URL')" prop="MONITOR_DATA_UPLOAD_URL">
-                  <el-input
+                  <el-input placeholder="http(s)://<DataKit / DataWay Domain>:<Port>?token=<Token>"
                     type="textarea"
                     :autosize="{ minRows: 2 }"
                     v-model="form['MONITOR_DATA_UPLOAD_URL']"></el-input>
@@ -186,6 +195,10 @@ Drag file to here, or click here to upload: 将文件拖到此处，或点击此
 
                 <!-- 官方脚本市场 -->
                 <el-divider content-position="left"><h3>{{ $t('Official Script Market') }}</h3></el-divider>
+
+                <el-form-item>
+                  <InfoBlock :title="$t('Show quick creation button for Official Script Market')" />
+                </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="OFFICIAL_SCRIPT_MARKET_ENABLED">
                   <el-select v-model="form['OFFICIAL_SCRIPT_MARKET_ENABLED']" :class="enableClass(form['OFFICIAL_SCRIPT_MARKET_ENABLED'])">

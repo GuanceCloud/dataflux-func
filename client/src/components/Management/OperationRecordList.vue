@@ -1,18 +1,17 @@
 <i18n locale="zh-CN" lang="yaml">
-IP Address                    : IP地址
-Operation                     : 操作
-Data ID                       : 数据ID
-MODIFY                        : 修改操作
-DELETE                        : 删除操作
-Cost                          : 耗时
-ms                            : 毫秒
-Show detail                   : 显示请求详情
-The full content is following : 完整内容如下
-Request                       : 请求
-Response                      : 响应
+IP Address : IP地址
+Operation  : 操作
+Data ID    : 数据ID
+MODIFY     : 修改操作
+DELETE     : 删除操作
+Cost       : 耗时
+ms         : 毫秒
+Show detail: 显示请求详情
+Request    : 请求
+Response   : 响应
 
-No recent Operation Records: 无近期操作记录
-All important operations will be collected by the system and shown here: 所有重要的操作会被系统搜集并展示在此
+No Recent Operation Records: 无近期操作记录
+All recent important operations will be collected by the system and shown here: 所有重要的操作会被系统搜集并展示在此
 </i18n>
 
 <template>
@@ -32,10 +31,10 @@ All important operations will be collected by the system and shown here: 所有�
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No recent Operation Records') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Operation Records') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('All important operations will be collected by the system and shown here') }}
+            {{ $t('All recent important operations will be collected by the system and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -114,7 +113,7 @@ All important operations will be collected by the system and shown here: 所有�
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
 
-      <LongTextDialog :title="$t('The full content is following')" :showDownload="true" ref="longTextDialog" />
+      <LongTextDialog :showDownload="true" ref="longTextDialog" />
     </el-container>
   </transition>
 </template>
