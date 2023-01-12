@@ -37,21 +37,25 @@ Vue.use(ElementUI);
 
 // 国际化
 import VueI18n from 'vue-i18n'
-import ElementLocale from 'element-ui/lib/locale';
-import elementUILocale_en from 'element-ui/lib/locale/lang/en'
-import elementUILocale_zhCN from 'element-ui/lib/locale/lang/zh-CN'
-import elementUILocale_zhTW from 'element-ui/lib/locale/lang/zh-TW'
-import elementUILocale_ja from 'element-ui/lib/locale/lang/ja'
-
-import locales from '@/assets/yaml/locales.yaml'
-import messages from '@/assets/yaml/messages.yaml'
-
 Vue.use(VueI18n);
 
-Object.assign(locales.en,       messages.en);
-Object.assign(locales.en,       elementUILocale_en);
-Object.assign(locales['zh-CN'], messages['zh-CN']);
-Object.assign(locales['zh-CN'], elementUILocale_zhCN);
+import elementUILocale_en   from 'element-ui/lib/locale/lang/en'
+import elementUILocale_zhCN from 'element-ui/lib/locale/lang/zh-CN'
+const elementUILocales = {
+  en     : elementUILocale_en,
+  'zh-CN': elementUILocale_zhCN,
+}
+
+import locales  from '@/assets/yaml/locales.yaml'
+import messages from '@/assets/yaml/messages.yaml'
+import apiNames from '@/assets/yaml/api-names.yaml'
+const_.UI_LOCALE.forEach(_locale => {
+  let lang = _locale.key;
+  [ elementUILocales, messages, apiNames ].forEach( localeSrc => {
+    if (!localeSrc || !localeSrc[lang]) return;
+    Object.assign(locales[lang], localeSrc[lang]);
+  })
+});
 
 const i18n = new VueI18n({
   // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
@@ -63,12 +67,13 @@ const i18n = new VueI18n({
   messages              : locales,
 });
 
+import ElementLocale from 'element-ui/lib/locale';
 // 参考 https://blog.csdn.net/songhsia/article/details/104800966
 ElementLocale.i18n((key, value) => i18n.t(key, value));
 Vue.prototype.i18n = i18n;
 
 // 时间处理
-import moment from 'moment'
+import moment, { locale } from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
 Vue.filter('datetime', function(dt, pattern) {

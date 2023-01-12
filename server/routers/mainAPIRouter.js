@@ -39,8 +39,8 @@ routeLoader.load(ROUTE.mainAPI.callAuthLinkByPostWithFormat, [
 ]);
 
 // 通过自动触发配置调用（手动执行）
-routeLoader.load(ROUTE.mainAPI.callCrontabConfig, [
-  mainAPICtrl.callCrontabConfig,
+routeLoader.load(ROUTE.mainAPI.manualRunCrontabConfig, [
+  mainAPICtrl.manualRunCrontabConfig,
 ]);
 
 // 通过批处理调用

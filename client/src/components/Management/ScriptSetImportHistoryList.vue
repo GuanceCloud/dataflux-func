@@ -8,7 +8,7 @@ Add external Script Sets by importing Script Sets: 使用脚本集导入功能�
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('Script Set Importing History') }}</span>
+          <span>{{ $t('Script Set Import History') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>

@@ -42,7 +42,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                 <el-form-item>
                   <el-button @click="goToHistory">
                     <i class="fa fa-fw fa-history"></i>
-                    {{ $t('Script Set Importing History') }}
+                    {{ $t('Script Set Import History') }}
                   </el-button>
 
                   <div class="setup-right">

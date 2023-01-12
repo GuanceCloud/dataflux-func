@@ -15,19 +15,20 @@ en:
   '(': '（'
   ')': '）'
 
-  Light Mode   : 明亮模式
-  Dark Mode    : 黑暗模式
-  Auto         : 自动
-  Follow System: 跟随系统
-  Please select: 请选择
-  Timeout      : 超时
-  Administrator: 系统管理员
-  Owner        : 拥有者
-  Password     : 密码
-  UNKNOW       : 未知
-  Built-in     : 内置
+  Light Mode        : 明亮模式
+  Dark Mode         : 黑暗模式
+  Auto              : 自动
+  Follow System     : 跟随系统
+  Please select     : 请选择
+  Timeout           : 超时
+  Administrator     : 系统管理员
+  Owner             : 拥有者
+  Password          : 密码
+  UNKNOW            : 未知
+  Built-in          : 内置
+  Press ESC to close:  按 ECS 关闭
 
-  # 通用-按钮/表单
+  # 通用 - 按钮 / 表单
   Very good: 非常好
   OK       : 了解
   Confirm  : 确定
@@ -42,7 +43,7 @@ en:
   Official : 官方
   Optional : 可选
 
-  # 通用-操作
+  # 通用 - 操作
   Add     : 添加
   Create  : 创建
   Clone   : 克隆
@@ -93,7 +94,7 @@ en:
   Restore Default: 恢复默认
   Check Update   : 检查更新
 
-  # 通用-操作（小写）
+  # 通用 - 操作（小写）
   add     : 添加
   create  : 创建
   clone   : 克隆
@@ -144,7 +145,7 @@ en:
   restore default: 恢复默认
   check update   : 检查更新
 
-  # 通用-操作结果
+  # 通用 - 操作结果
   Added   : 已添加
   Edited  : 已编辑
   Modified: 已修改
@@ -162,7 +163,7 @@ en:
   Linked  : 已连接
   Unlinked: 已断开连接
 
-  # 通用-操作结果（小写）
+  # 通用 - 操作结果（小写）
   added   : 已添加
   edited  : 已编辑
   modified: 已修改
@@ -180,7 +181,7 @@ en:
   linked  : 已连接
   unlinked: 已断开连接
 
-  # 通用-数据/值
+  # 通用 - 数据 / 值
   Anonymity: 匿名
   Unknow   : 未知
   No Data  : 暂无数据
@@ -188,7 +189,7 @@ en:
   Normal   : 正常
   Error    : 错误
 
-  # 通用表格-表头/标题
+  # 通用表格 - 表头 / 标题
   No matched data found: 当前过滤条件无匹配数据
   Name                 : 名称
   User Name            : 用户名
@@ -213,7 +214,7 @@ en:
   Mobile               : 手机
   Endpoint             : 访问地址
 
-  # 通用表格-操作区
+  # 通用表格 - 操作区
   Show all: 显示全部
   New     : 新建
 
@@ -252,7 +253,7 @@ en:
   'ADB for PostgreSQL'                                                    : 阿里云分析型数据库(ADB) PostgreSQL 版
   'A Broker with MQTTv5 support and use share subscription is recommended': 建议使用支持 MQTTv5 协议的 Broker，并使用共享订阅
 
-  # 业务实体/模块/ID
+  # 业务实体 / 模块 / ID
   Script Lib: 脚本库
   Script Set: 脚本集
   Script    : 脚本
@@ -276,34 +277,34 @@ en:
   Not Signed In: 尚未登录
   Signed In    : 已登录
 
-  Overview                    : 总览
-  About                       : 关于
-  API Auth                    : API 认证
-  Auth Link                   : 授权链接
-  Crontab Config              : 自动触发配置
-  Batch                       : 批处理
-  Script Set Export           : 脚本集导出
-  Script Sets Import          : 脚本集导入
-  Script Set Exporting History: 脚本集导出历史
-  Script Set Importing History: 脚本集导入历史
-  Script Lib Recover          : 脚本库还原
-  User Manage                 : 成员管理
-  System Config               : 系统配置
-  Operation Records           : 操作记录
-  Script Failures             : 脚本故障
-  Script Logs                 : 脚本日志
-  Experimental Features       : 实验性功能
-  Access Keys                 : Access Key
-  System Status               : 系统状态
-  PIP Tool                    : PIP工具
-  File Manage                 : 文件管理
-  File Service                : 文件服务
-  Func Docs                   : 函数文档
-  Auth Link Docs              : 授权链接文档
-  Func Cache Manage           : 函数缓存管理
-  Func Store Manage           : 函数存储管理
-  System Logs                 : 系统日志
-  Abnormal Requests           : 异常请求
+  Overview                 : 总览
+  About                    : 关于
+  API Auth                 : API 认证
+  Auth Link                : 授权链接
+  Crontab Config           : 自动触发配置
+  Batch                    : 批处理
+  Script Set Export        : 脚本集导出
+  Script Sets Import       : 脚本集导入
+  Script Set Export History: 脚本集导出历史
+  Script Set Import History: 脚本集导入历史
+  Script Lib Recover       : 脚本库还原
+  User Manage              : 成员管理
+  System Config            : 系统配置
+  Operation Records        : 操作记录
+  Script Failures          : 脚本故障
+  Script Logs              : 脚本日志
+  Experimental Features    : 实验性功能
+  Access Keys              : Access Key
+  System Status            : 系统状态
+  PIP Tool                 : PIP工具
+  File Manage              : 文件管理
+  File Service             : 文件服务
+  Func Docs                : 函数文档
+  Auth Link Docs           : 授权链接文档
+  Func Cache Manage        : 函数缓存管理
+  Func Store Manage        : 函数存储管理
+  System Logs              : 系统日志
+  Abnormal Requests        : 异常请求
 
   Script Set ID    : 脚本集 ID
   Script ID        : 脚本 ID
@@ -440,9 +441,3 @@ en:
   This information will be used as the user information for git commits.: 此信息将作为 git 提交时的用户信息。
 
   User Profile saved: 用户信息已保存
-
-'zh-HK': {}
-
-'zh-TW': {}
-
-ja: {}

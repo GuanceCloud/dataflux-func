@@ -25,7 +25,7 @@ No Crontab Config has ever been added: 从未添加过任何自动触发配置
 
 Are you sure you want to disable the Crontab Config?: 是否确认禁用此自动触发配置？
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
-Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
+Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 
 Integration Func Tasks: 集成函数任务
 
@@ -300,9 +300,9 @@ export default {
       });
     },
     async runTask(d) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to send a task of the Crontab Config?'))) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Config manually?'))) return;
 
-      let apiRes = await this.T.callAPI_get('/api/v1/cron/:id', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/cron/:id', {
         params: { id: d.id },
         alert : { okMessage: this.$t('Crontab Config Task sent') },
       });

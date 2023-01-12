@@ -10,6 +10,7 @@ Download as text file: 作为文本文件下载
     width="70%">
     <template slot="title">
       {{ title }}
+      <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
     </template>
     <div>
       <div class="download-link" v-if="showDownload && fileName && content">
@@ -90,6 +91,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.press-esc-to-close-tip {
+  font-size: 14px;
+  position: absolute;
+  right: 45px;
+  top: 20px;
+}
 .download-link {
   margin-bottom: 15px;
 }

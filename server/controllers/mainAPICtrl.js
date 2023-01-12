@@ -1695,7 +1695,7 @@ exports.callAuthLink = function(req, res, next) {
   });
 };
 
-exports.callCrontabConfig = function(req, res, next) {
+exports.manualRunCrontabConfig = function(req, res, next) {
   var id = req.params.id;
 
   async.series([

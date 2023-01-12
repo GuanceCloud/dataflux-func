@@ -164,7 +164,7 @@ Pressure            : 压力
               <span class="text-bad" v-else>
                 <i class="fa fa-fw fa-times"></i>
               </span>
-              <span>{{ scope.row.reqRouteName }}</span>
+              <span>{{ $t(scope.row.reqRouteName) }}</span>
               <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
                 （{{ $t('MODIFY') }}）
               </strong>

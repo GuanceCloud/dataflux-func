@@ -332,7 +332,7 @@ userAPI:
         $type: string
 
   add:
-    name         : Add User
+    name         : Add user
     method       : post
     url          : /api/v1/users/do/add
     response     : json
@@ -469,7 +469,7 @@ userAPI:
 # Access Key
 accessKeyAPI:
   list:
-    name         : List access key
+    name         : List Access Keys
     method       : get
     url          : /api/v1/access-keys/do/list
     response     : json
@@ -498,7 +498,7 @@ accessKeyAPI:
         $searchKey : ak.name
 
   get:
-    name         : Get access key
+    name         : Get Access Key
     method       : get
     url          : /api/v1/access-keys/:id/do/get
     response     : json
@@ -513,7 +513,7 @@ accessKeyAPI:
         $type: string
 
   add:
-    name         : Add access key
+    name         : Add Access Key
     method       : post
     url          : /api/v1/access-keys/do/add
     response     : json
@@ -542,7 +542,7 @@ accessKeyAPI:
           $type     : boolean
 
   modify:
-    name         : Modify access key
+    name         : Modify Access Key
     method       : post
     url          : /api/v1/access-keys/:id/do/modify
     response     : json
@@ -569,7 +569,7 @@ accessKeyAPI:
           $type: boolean
 
   delete:
-    name         : Delete access key
+    name         : Delete Access Key
     method       : get
     url          : /api/v1/access-keys/:id/do/delete
     response     : json
@@ -582,7 +582,7 @@ accessKeyAPI:
         $type: string
 
   testWebhook:
-    name         : Test webhook
+    name         : Test webhook of Access Key
     method       : get
     url          : /api/v1/access-keys/:id/do/test-webhook
     response     : json
@@ -693,7 +693,7 @@ monitorAPI:
           - PENDING
 
   pingNodes:
-    name         : Get worker node ping
+    name         : Ping worker node
     method       : get
     url          : /api/v1/monitor/nodes/do/ping
     response     : json
@@ -744,7 +744,7 @@ monitorAPI:
 # System Config
 systemConfigAPI:
   list:
-    name         : List System Config
+    name         : List System Configs
     method       : get
     url          : /api/v1/system-configs/do/list
     response     : json
@@ -889,7 +889,7 @@ debugAPI:
 mainAPI:
   overview:
     showInDoc    : true
-    name         : 获取总览
+    name         : Get Overview
     method       : get
     url          : /api/v1/func/overview
     response     : json
@@ -897,12 +897,12 @@ mainAPI:
     privilege    : general_r
     query:
       sections:
-        $desc: 总览小节
+        $desc: Overview Sections
         $type: commaArray
 
   describeFunc:
     showInDoc    : true
-    name         : 获取函数描述
+    name         : Describe Func
     method       : get
     url          : /api/v1/func/:funcId
     response     : json
@@ -910,16 +910,14 @@ mainAPI:
     privilege    : general_r
     params:
       funcId:
-        $desc: 函数ID（如：lib__demo.hello_world）
+        $desc: Func ID (e.g. lib__demo.hello_world）
         $type: string
 
   callFunc:
     showInDoc    : true
-    name         : 调用函数
+    name         : Call Func
     descType: markdown
     desc: |
-      调用函数
-
       函数参数`kwargs`以字典`dict`方式传递（即`func(**kwargs)`）
 
       - 当不指定，或指定同步模式`options.execMode="sync"`时，接口会等待函数返回，并直接将结果返回给调用者，*但一定时间后API接口依然会超时*。
@@ -994,11 +992,11 @@ mainAPI:
     privilege    : general_r
     params:
       funcId:
-        $desc: 函数ID（如：lib__demo.hello_world）
+        $desc: Func ID (e.g. lib__demo.hello_world)
         $type: string
     body:
       kwargs:
-        $desc: 函数调用字典参数（**kwargs）
+        $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
       options:
@@ -1010,7 +1008,7 @@ mainAPI:
           $maxValue: 30
           $example : 5
         returnType:
-          $desc: 返回类型（默认raw）
+          $desc: Return type (default "raw")
           $type: enum
           $in:
             - ALL
@@ -1038,7 +1036,7 @@ mainAPI:
 
   callAuthLinkByGet:
     showInDoc    : true
-    name         : 调用授权链接（GET方式）
+    name         : Call Auth Link (GET)
     method       : get
     url          : /api/v1/al/:id
     response     : json
@@ -1049,17 +1047,17 @@ mainAPI:
         $type: string
     query:
       kwargs:
-        $desc   : 函数调用字典参数（**kwargs）
+        $desc   : Func calling arguments in dict format (**kwargs)
         $type   : jsonstring
         $example: {"msg": "Tom"}
       options:
-        $desc   : 选项（详细参考POST方式描述）
+        $desc   : 选项（详细参考POST 方式描述）
         $type   : jsonstring
         $example: {"execMode": "async"}
 
   callAuthLinkByGetWithFormat:
     showInDoc    : true
-    name         : 调用授权链接（GET方式，指定形式）
+    name         : Call Auth Link (GET with specified format)
     descType: markdown
     desc: |
       在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
@@ -1112,7 +1110,7 @@ mainAPI:
 
   callAuthLinkByPost:
     showInDoc    : true
-    name         : 调用授权链接（POST方式）
+    name         : Call Auth Link (POST)
     method       : post
     url          : /api/v1/al/:id
     response     : json
@@ -1124,13 +1122,13 @@ mainAPI:
         $type: string
     body:
       kwargs:
-        $desc: 函数调用字典参数（**kwargs）
+        $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
       options:
         $desc: 选项
         returnType:
-          $desc: 返回类型（默认raw）
+          $desc: Return type (default "raw")
           $type: enum
           $in:
             - ALL
@@ -1149,7 +1147,7 @@ mainAPI:
 
   callAuthLinkByPostWithFormat:
     showInDoc    : true
-    name         : 调用授权链接（POST方式，指定形式）
+    name         : Call Auth Link (POST with specified format)
     descType: markdown
     desc: |
       在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
@@ -1217,10 +1215,10 @@ mainAPI:
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
-  callCrontabConfig:
+  manualRunCrontabConfig:
     showInDoc    : true
-    name         : 调用自动触发配置（手动执行）
-    method       : get
+    name         : Run Crontab Config manually
+    method       : post
     url          : /api/v1/cron/:id
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
@@ -1232,7 +1230,7 @@ mainAPI:
 
   callBatchByGet:
     showInDoc    : true
-    name         : 调用批处理（GET方式）
+    name         : Call Batch (GET)
     method       : get
     url          : /api/v1/bat/:id
     response     : json
@@ -1244,13 +1242,13 @@ mainAPI:
         $type: string
     query:
       kwargs:
-        $desc   : 函数调用字典参数（**kwargs）
+        $desc   : Func calling arguments in dict format (**kwargs)
         $type   : jsonstring
         $example: {"msg": "Tom"}
 
   callBatchByGetWithFormat:
     showInDoc    : true
-    name         : 调用批处理（GET方式，指定形式）
+    name         : Call Batch (GET with specified format)
     descType: markdown
     desc: |
       在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
@@ -1295,7 +1293,7 @@ mainAPI:
 
   callBatchByPost:
     showInDoc    : true
-    name         : 调用批处理（POST方式）
+    name         : Call Batch (POST)
     method       : post
     url          : /api/v1/bat/:id
     response     : json
@@ -1307,13 +1305,13 @@ mainAPI:
         $type: string
     body:
       kwargs:
-        $desc: 函数调用字典参数（**kwargs）
+        $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
 
   callBatchByPostWithFormat:
     showInDoc    : true
-    name         : 调用批处理（POST方式，指定形式）
+    name         : Call Batch (POST with specified format)
     descType: markdown
     desc: |
       在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
@@ -1383,7 +1381,7 @@ mainAPI:
 
   callFuncDraft:
     showInDoc    : true
-    name         : 调用函数（以草稿运行）
+    name         : Call Func in draft
     descType: markdown
     desc: |
       以草稿调用函数
@@ -1397,17 +1395,17 @@ mainAPI:
     privilege    : general_r
     params:
       funcId:
-        $desc: 函数ID（如：lib__demo.hello_world）
+        $desc: Func ID (e.g. lib__demo.hello_world)
         $type: string
     body:
       kwargs:
-        $desc: 函数调用字典参数（**kwargs）
+        $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
 
   getFuncResult:
     showInDoc    : true
-    name         : 获取函数结果
+    name         : Get Func result
     method       : get
     url          : /api/v1/func-result
     response     : json
@@ -1419,7 +1417,7 @@ mainAPI:
         $isRequired: true
         $type      : string
       returnType:
-        $desc: 返回类型（默认raw）
+        $desc: Return type (default "raw")
         $type: enum
         $in:
           - ALL
@@ -1432,7 +1430,7 @@ mainAPI:
 
   getFuncList:
     showInDoc    : true
-    name         : 函数文档（JSON文档）
+    name         : Func list
     method       : get
     url          : /api/v1/func-list
     response     : json
@@ -1486,7 +1484,7 @@ mainAPI:
 
   getFuncTagList:
     showInDoc    : true
-    name         : 函数标签列表
+    name         : Func tag list
     method       : get
     url          : /api/v1/func-tag-list
     response     : json
@@ -1512,7 +1510,7 @@ mainAPI:
 
   getAuthLinkFuncList:
     showInDoc    : true
-    name         : 授权链接函数文档（JSON文档）
+    name         : Auth Link list
     method       : get
     url          : /api/v1/auth-link-func-list
     response     : json
@@ -1554,13 +1552,13 @@ mainAPI:
         $searchKey : sset.id
 
   getSystemConfig:
-    name    : 获取系统配置
+    name    : Get system configs
     method  : get
     url     : /api/v1/func-system-config
     response: json
 
   getUpgradeInfo:
-    name         : 获取升级信息
+    name         : Get upgrade info
     method       : get
     url          : /api/v1/upgrade-info
     response     : json
@@ -1571,7 +1569,7 @@ mainAPI:
         $type: int
 
   integratedSignIn:
-    name    : 集成用户登录
+    name    : Integrated sign in
     method  : post
     url     : /api/v1/func/integration/sign-in
     response: json
@@ -1607,7 +1605,7 @@ mainAPI:
           $example   : 'Abc123'
 
   clearLogCacheTables:
-    name         : 清空日志/缓存表
+    name         : Clear Log and Cache tables
     method       : post
     url          : /api/v1/log-cache-tables/do/clear
     response     : json
@@ -1615,7 +1613,7 @@ mainAPI:
     privilege    : general_w
 
   listInstalledPythonPackages:
-    name         : 列出已安装的Python包
+    name         : List installed Python packages
     method       : get
     url          : /api/v1/python-packages/installed
     response     : json
@@ -1623,7 +1621,7 @@ mainAPI:
     privilege    : general_r
 
   getPythonPackageInstallStatus:
-    name         : 获取Python包安装状态
+    name         : Get Python package installing status
     method       : get
     url          : /api/v1/python-packages/install-status
     response     : json
@@ -1631,7 +1629,7 @@ mainAPI:
     privilege    : general_r
 
   installPythonPackage:
-    name         : 安装Python包
+    name         : Install Python package
     method       : post
     url          : /api/v1/python-packages/install
     response     : json
@@ -1648,7 +1646,7 @@ mainAPI:
         $minLength : 1
 
   listResources:
-    name         : 列出资源文件
+    name         : List resource files
     method       : get
     url          : /api/v1/resources/dir
     response     : json
@@ -1666,7 +1664,7 @@ mainAPI:
           - file
 
   getResources:
-    name         : 获取资源文件信息
+    name         : Get resource file info
     method       : get
     url          : /api/v1/resources/get
     response     : blob
@@ -1679,7 +1677,7 @@ mainAPI:
         $type    : string
 
   downloadResources:
-    name         : 下载资源文件
+    name         : Download resource file
     method       : get
     url          : /api/v1/resources
     response     : blob
@@ -1696,7 +1694,7 @@ mainAPI:
         $type    : boolean
 
   uploadResource:
-    name         : 上传资源文件
+    name         : Upload resource file
     method       : post
     url          : /api/v1/resources
     response     : json
@@ -1714,7 +1712,7 @@ mainAPI:
         $type: string
 
   operateResource:
-    name         : 操作资源文件
+    name         : Operate resource file
     method       : post
     url          : /api/v1/resources/operate
     response     : json
@@ -1743,7 +1741,7 @@ mainAPI:
         $type     : string
 
   fileService:
-    name         : 文件服务
+    name         : File Service
     method       : get
     url          : /api/v1/fs/:id/*
     response     : any
@@ -1754,7 +1752,7 @@ mainAPI:
         $type: string
 
   pullSystemLogs:
-    name         : 拉取系统日志
+    name         : Pull system logs
     method       : get
     url          : /api/v1/system-logs
     response     : json
@@ -1767,7 +1765,7 @@ mainAPI:
         $type    : integer
 
   metrics:
-    name         : 获取指标数据（OpenMetric）
+    name         : Metric data (OpenMetric)
     method       : get
     url          : /api/v1/metrics
     response     : text
@@ -1778,7 +1776,7 @@ mainAPI:
 scriptSetAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本集
+    name         : List Script Sets
     method       : get
     url          : /api/v1/script-sets/do/list
     response     : json
@@ -1819,7 +1817,7 @@ scriptSetAPI:
 
   add:
     showInDoc    : true
-    name         : 添加脚本集
+    name         : Add Script Set
     method       : post
     url          : /api/v1/script-sets/do/add
     response     : json
@@ -1855,7 +1853,7 @@ scriptSetAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改脚本集
+    name         : Modify Script Set
     method       : post
     url          : /api/v1/script-sets/:id/do/modify
     response     : json
@@ -1891,7 +1889,7 @@ scriptSetAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除脚本集
+    name         : Delete Script Set
     method       : get
     url          : /api/v1/script-sets/:id/do/delete
     response     : json
@@ -1904,7 +1902,7 @@ scriptSetAPI:
 
   clone:
     showInDoc    : true
-    name         : 克隆脚本集
+    name         : Clone Script Set
     method       : post
     url          : /api/v1/script-sets/:id/do/clone
     response     : json
@@ -1923,7 +1921,7 @@ scriptSetAPI:
 
   export:
     showInDoc    : true
-    name         : 导出脚本集
+    name         : Export Script Sets
     method       : post
     url          : /api/v1/script-sets/do/export
     response     : blob
@@ -1970,7 +1968,7 @@ scriptSetAPI:
 
   import:
     showInDoc    : true
-    name         : 导入脚本集
+    name         : Import Script Sets
     method       : post
     url          : /api/v1/script-sets/do/import
     response     : json
@@ -1988,7 +1986,7 @@ scriptSetAPI:
 
   confirmImport:
     showInDoc    : true
-    name         : 确认导入脚本集
+    name         : Confirm importing Script Sets
     method       : post
     url          : /api/v1/script-sets/do/confirm-import
     response     : json
@@ -2005,7 +2003,7 @@ scriptSetAPI:
 scriptAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本
+    name         : List Scripts
     method       : get
     url          : /api/v1/scripts/do/list
     response     : json
@@ -2057,7 +2055,7 @@ scriptAPI:
 
   get:
     showInDoc    : true
-    name         : 脚本详情
+    name         : Script detail
     method       : get
     url          : /api/v1/scripts/:id/do/get
     response     : json
@@ -2070,7 +2068,7 @@ scriptAPI:
 
   add:
     showInDoc    : true
-    name         : 添加脚本
+    name         : Add Script
     method       : post
     url          : /api/v1/scripts/do/add
     response     : json
@@ -2101,7 +2099,7 @@ scriptAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改脚本
+    name         : Modify Script
     method       : post
     url          : /api/v1/scripts/:id/do/modify
     response     : json
@@ -2137,7 +2135,7 @@ scriptAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除脚本
+    name         : Delete Script
     method       : get
     url          : /api/v1/scripts/:id/do/delete
     response     : json
@@ -2150,7 +2148,7 @@ scriptAPI:
 
   publish:
     showInDoc    : true
-    name         : 发布脚本
+    name         : Publish Script
     method       : post
     url          : /api/v1/scripts/:id/do/publish
     response     : json
@@ -2180,7 +2178,7 @@ scriptAPI:
 funcAPI:
   list:
     showInDoc    : true
-    name         : 列出函数
+    name         : List Func
     method       : get
     url          : /api/v1/funcs/do/list
     response     : json
@@ -2236,7 +2234,7 @@ funcAPI:
 scriptLogAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本日志
+    name         : List Script logs
     method       : get
     url          : /api/v1/script-logs/do/list
     response     : json
@@ -2268,7 +2266,7 @@ scriptLogAPI:
 scriptFailureAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本故障
+    name         : List Script failures
     method       : get
     url          : /api/v1/script-failures/do/list
     response     : json
@@ -2300,7 +2298,7 @@ scriptFailureAPI:
 scriptRecoverPointAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本还原点
+    name         : List Script recover points
     method       : get
     url          : /api/v1/script-recover-points/do/list
     response     : json
@@ -2337,7 +2335,7 @@ scriptRecoverPointAPI:
 
   add:
     showInDoc    : true
-    name         : 添加脚本还原点
+    name         : Create Script recover point
     method       : post
     url          : /api/v1/script-recover-points/do/add
     response     : json
@@ -2354,7 +2352,7 @@ scriptRecoverPointAPI:
 
   recover:
     showInDoc    : true
-    name         : 还原至脚本还原点
+    name         : Recover Script Lib
     method       : post
     url          : /api/v1/script-recover-points/:id/do/recover
     response     : json
@@ -2369,7 +2367,7 @@ scriptRecoverPointAPI:
 scriptPublishHistoryAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本发布历史
+    name         : List Script publish history
     method       : get
     url          : /api/v1/script-publish-history/do/list
     response     : json
@@ -2408,7 +2406,7 @@ scriptPublishHistoryAPI:
 scriptSetExportHistoryAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本集导出历史
+    name         : List Script Set export history
     method       : get
     url          : /api/v1/script-set-export-history/do/list
     response     : json
@@ -2433,7 +2431,7 @@ scriptSetExportHistoryAPI:
 scriptSetImportHistoryAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本集导入历史
+    name         : List Script Set import history
     method       : get
     url          : /api/v1/script-set-import-history/do/list
     response     : json
@@ -2458,7 +2456,7 @@ scriptSetImportHistoryAPI:
 connectorAPI:
   list:
     showInDoc    : true
-    name         : 列出连接器
+    name         : List Connectors
     method       : get
     url          : /api/v1/connectors/do/list
     response     : json
@@ -2506,7 +2504,7 @@ connectorAPI:
 
   add:
     showInDoc    : true
-    name         : 添加连接器
+    name         : Add Connector
     method       : post
     url          : /api/v1/connectors/do/add
     response     : json
@@ -2663,7 +2661,7 @@ connectorAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改连接器
+    name         : Modify Connector
     method       : post
     url          : /api/v1/connectors/:id/do/modify
     response     : json
@@ -2797,7 +2795,7 @@ connectorAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除连接器
+    name         : Delete Connector
     method       : get
     url          : /api/v1/connectors/:id/do/delete
     response     : json
@@ -2810,7 +2808,7 @@ connectorAPI:
 
   query:
     showInDoc    : true
-    name         : 查询连接器
+    name         : Run query by Connector
     descType: markdown
     desc: |
       查询语句根据连接器类型不同而不同：
@@ -2863,7 +2861,7 @@ connectorAPI:
 
   test:
     showInDoc    : true
-    name         : 测试连接器
+    name         : Test Connector
     method       : get
     url          : /api/v1/connectors/:id/do/test
     response     : json
@@ -2876,7 +2874,7 @@ connectorAPI:
 
   listSubInfo:
     showInDoc    : true
-    name         : 获取订阅信息列表
+    name         : List subscription info
     method       : get
     url          : /api/v1/connector-sub-info/do/list
     response     : json
@@ -2891,7 +2889,7 @@ connectorAPI:
 envVariableAPI:
   list:
     showInDoc    : true
-    name         : 列出环境变量
+    name         : List ENV Variables
     method       : get
     url          : /api/v1/env-variables/do/list
     response     : json
@@ -2918,7 +2916,7 @@ envVariableAPI:
 
   add:
     showInDoc    : true
-    name         : 添加环境变量
+    name         : Add ENV Variable
     method       : post
     url          : /api/v1/env-variables/do/add
     response     : json
@@ -2962,7 +2960,7 @@ envVariableAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改环境变量
+    name         : Modify ENV Variable
     method       : post
     url          : /api/v1/env-variables/:id/do/modify
     response     : json
@@ -3005,7 +3003,7 @@ envVariableAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除环境变量
+    name         : Delete ENV Variable
     method       : get
     url          : /api/v1/env-variables/:id/do/delete
     response     : json
@@ -3020,7 +3018,7 @@ envVariableAPI:
 apiAuthAPI:
   list:
     showInDoc    : true
-    name         : 列出API认证
+    name         : List API Auth
     method       : get
     url          : /api/v1/api-auth/do/list
     response     : json
@@ -3067,7 +3065,7 @@ apiAuthAPI:
 
   add:
     showInDoc    : true
-    name         : 添加API认证
+    name         : Add API Auth
     method       : post
     url          : /api/v1/api-auth/do/add
     response     : json
@@ -3136,7 +3134,7 @@ apiAuthAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改API认证
+    name         : Modify API Auth
     method       : post
     url          : /api/v1/api-auth/:id/do/modify
     response     : json
@@ -3199,7 +3197,7 @@ apiAuthAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除API认证
+    name         : Delete API Auth
     method       : get
     url          : /api/v1/api-auth/:id/do/delete
     response     : json
@@ -3214,7 +3212,7 @@ apiAuthAPI:
 authLinkAPI:
   list:
     showInDoc    : true
-    name         : 列出授权链接
+    name         : List Auth Links
     method       : get
     url          : /api/v1/auth-links/do/list
     response     : json
@@ -3284,7 +3282,7 @@ authLinkAPI:
 
   add:
     showInDoc    : true
-    name         : 添加授权链接
+    name         : Add Auth Link
     descType: markdown
     desc: |
       可以通过`data.funcCallKwargsJSON`限制最终调用方传递参数。
@@ -3411,7 +3409,7 @@ authLinkAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改授权链接
+    name         : Modify Auth Link
     method       : post
     url          : /api/v1/auth-links/:id/do/modify
     response     : json
@@ -3511,7 +3509,7 @@ authLinkAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除授权链接
+    name         : Delete Auth Link
     method       : get
     url          : /api/v1/auth-links/:id/do/delete
     response     : json
@@ -3524,7 +3522,7 @@ authLinkAPI:
 
   addMany:
     showInDoc    : true
-    name         : 批量添加授权链接
+    name         : Add many Auth Links
     method       : post
     url          : /api/v1/auth-links/do/add-many
     response     : json
@@ -3626,7 +3624,7 @@ authLinkAPI:
 
   modifyMany:
     showInDoc    : true
-    name         : 批量修改授权链接
+    name         : Modify many Auth Links
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
@@ -3727,7 +3725,7 @@ authLinkAPI:
 
   deleteMany:
     showInDoc    : true
-    name         : 批量删除授权链接
+    name         : Delete many Auth Links
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
@@ -3782,7 +3780,7 @@ authLinkAPI:
 crontabConfigAPI:
   list:
     showInDoc    : true
-    name         : 列出自动触发配置
+    name         : List Crontab Configs
     method       : get
     url          : /api/v1/crontab-configs/do/list
     response     : json
@@ -3857,7 +3855,7 @@ crontabConfigAPI:
 
   add:
     showInDoc    : true
-    name         : 添加自动触发配置
+    name         : Add Crontab Config
     descType: markdown
     desc: |
       自动触发配置根据`scope`字段划分不同范围（默认为`"GLOBAL"`表示全局），
@@ -3926,7 +3924,7 @@ crontabConfigAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改自动触发配置
+    name         : Modify Crontab Config
     method       : post
     url          : /api/v1/crontab-configs/:id/do/modify
     response     : json
@@ -3990,7 +3988,7 @@ crontabConfigAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除自动触发配置
+    name         : Delete Crontab Config
     method       : get
     url          : /api/v1/crontab-configs/:id/do/delete
     response     : json
@@ -4003,7 +4001,7 @@ crontabConfigAPI:
 
   addMany:
     showInDoc    : true
-    name         : 批量添加自动触发配置
+    name         : Add many Crontab Configs
     method       : post
     url          : /api/v1/crontab-configs/do/add-many
     response     : json
@@ -4064,7 +4062,7 @@ crontabConfigAPI:
 
   modifyMany:
     showInDoc    : true
-    name         : 批量修改自动触发配置
+    name         : Modify many Crontab Configs
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
@@ -4171,7 +4169,7 @@ crontabConfigAPI:
 
   deleteMany:
     showInDoc    : true
-    name         : 批量删除自动触发配置
+    name         : Delete many Crontab Configs
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
@@ -4231,7 +4229,7 @@ crontabConfigAPI:
 batchAPI:
   list:
     showInDoc    : true
-    name         : 列出批处理
+    name         : List Batches
     method       : get
     url          : /api/v1/batches/do/list
     response     : json
@@ -4301,7 +4299,7 @@ batchAPI:
 
   add:
     showInDoc    : true
-    name         : 添加批处理
+    name         : Add Batch
     descType: markdown
     desc: |
       可以通过`data.funcCallKwargsJSON`限制最终调用方传递参数。
@@ -4383,7 +4381,7 @@ batchAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改批处理
+    name         : Modify Batch
     method       : post
     url          : /api/v1/batches/:id/do/modify
     response     : json
@@ -4438,7 +4436,7 @@ batchAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除批处理
+    name         : Delete Batch
     method       : get
     url          : /api/v1/batches/:id/do/delete
     response     : json
@@ -4451,7 +4449,7 @@ batchAPI:
 
   addMany:
     showInDoc    : true
-    name         : 批量添加批处理
+    name         : Add many Batches
     method       : post
     url          : /api/v1/batches/do/add-many
     response     : json
@@ -4508,7 +4506,7 @@ batchAPI:
 
   modifyMany:
     showInDoc    : true
-    name         : 批量修改批处理
+    name         : Modify many Batches
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
@@ -4608,7 +4606,7 @@ batchAPI:
 
   deleteMany:
     showInDoc    : true
-    name         : 批量删除批处理
+    name         : Delete many Batches
     method       : get
     url          : /api/v1/batches/do/delete-many
     response     : json
@@ -4660,7 +4658,7 @@ batchAPI:
 taskInfoAPI:
   list:
     showInDoc    : true
-    name         : 列出任务信息
+    name         : List task info
     method       : get
     url          : /api/v1/task-info/do/list
     response     : json
@@ -4709,7 +4707,7 @@ taskInfoAPI:
 
   clear:
     showInDoc    : true
-    name         : 清空任务信息
+    name         : Clear task info
     method       : get
     url          : /api/v1/task-info/:originId/do/clear
     response     : json
@@ -4720,10 +4718,10 @@ taskInfoAPI:
         $desc: 来源ID
         $type: string
 
-# 函数调用任务结果
+# DataFlux Func 函数调用任务结果
 datafluxFuncTaskResultAPI:
   list:
-    name         : 列出函数调用任务结果
+    name         : List Func task result
     method       : get
     url          : /api/v1/dataflux-func-task-results/do/list
     response     : json
@@ -4765,7 +4763,7 @@ datafluxFuncTaskResultAPI:
           - crontab
 
   get:
-    name         : 获取函数调用任务结果
+    name         : Get Func task result
     method       : get
     url          : /api/v1/dataflux-func-task-results/:id/do/get
     response     : json
@@ -4782,7 +4780,7 @@ datafluxFuncTaskResultAPI:
 operationRecordAPI:
   list:
     showInDoc    : true
-    name         : 列出操作记录
+    name         : List Operation Records
     method       : get
     url          : /api/v1/operation-records/do/list
     response     : json
@@ -4872,7 +4870,7 @@ operationRecordAPI:
 fileServiceAPI:
   list:
     showInDoc    : true
-    name         : 列出文件服务
+    name         : List File Service
     method       : get
     url          : /api/v1/file-services/do/list
     response     : json
@@ -4905,7 +4903,7 @@ fileServiceAPI:
 
   add:
     showInDoc    : true
-    name         : 添加文件服务
+    name         : Add  File Service
     method       : post
     url          : /api/v1/file-services/do/add
     response     : json
@@ -4934,7 +4932,7 @@ fileServiceAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改文件服务
+    name         : Modify File Service
     method       : post
     url          : /api/v1/file-services/:id/do/modify
     response     : json
@@ -4962,7 +4960,7 @@ fileServiceAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除文件服务
+    name         : Delete File Service
     method       : get
     url          : /api/v1/file-services/:id/do/delete
     response     : json
@@ -4977,7 +4975,7 @@ fileServiceAPI:
 funcCacheAPI:
   list:
     showInDoc    : true
-    name         : 列出函数缓存（DFF.CACHE）
+    name         : List Func Cache (DFF.CACHE)
     method       : get
     url          : /api/v1/func-caches/do/list
     response     : json
@@ -4996,7 +4994,7 @@ funcCacheAPI:
 
   get:
     showInDoc    : true
-    name         : 获取函数缓存（DFF.CACHE）
+    name         : Get Func Cache (DFF.CACHE)
     method       : get
     url          : /api/v1/func-caches/:scope/:key/do/get
     response     : json
@@ -5012,7 +5010,7 @@ funcCacheAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除函数缓存（DFF.CACHE）
+    name         : Delete Func Cache (DFF.CACHE)
     method       : get
     url          : /api/v1/func-caches/:scope/:key/do/delete
     response     : json
@@ -5030,7 +5028,7 @@ funcCacheAPI:
 funcStoreAPI:
   list:
     showInDoc    : true
-    name         : 列出函数存储（DFF.STORE）
+    name         : List Func Store (DFF.STORE)
     method       : get
     url          : /api/v1/func-stores/do/list
     response     : json
@@ -5066,7 +5064,7 @@ funcStoreAPI:
 
   get:
     showInDoc    : true
-    name         : 获取函数存储（DFF.STORE）
+    name         : Get Func Store (DFF.STORE)
     method       : get
     url          : /api/v1/func-stores/:id/do/get
     response     : json
@@ -5079,7 +5077,7 @@ funcStoreAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除函数存储（DFF.STORE）
+    name         : Delete Func Store (DFF.STORE)
     method       : get
     url          : /api/v1/func-stores/:id/do/delete
     response     : json
@@ -5094,7 +5092,7 @@ funcStoreAPI:
 blueprintAPI:
   list:
     showInDoc    : true
-    name         : 列出蓝图
+    name         : List Blueprints
     method       : get
     url          : /api/v1/blueprints/do/list
     response     : json
@@ -5129,7 +5127,7 @@ blueprintAPI:
 
   add:
     showInDoc    : true
-    name         : 添加蓝图
+    name         : Add Blueprint
     method       : post
     url          : /api/v1/blueprints/do/add
     response     : json
@@ -5160,7 +5158,7 @@ blueprintAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改蓝图
+    name         : Modify Blueprint
     method       : post
     url          : /api/v1/blueprints/:id/do/modify
     response     : json
@@ -5188,7 +5186,7 @@ blueprintAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除蓝图
+    name         : Delete Blueprint
     method       : get
     url          : /api/v1/blueprints/:id/do/delete
     response     : json
@@ -5203,7 +5201,7 @@ blueprintAPI:
 scriptMarketAPI:
   list:
     showInDoc    : true
-    name         : 列出脚本市场
+    name         : List Script Markets
     method       : get
     url          : /api/v1/script-markets/do/list
     response     : json
@@ -5244,7 +5242,7 @@ scriptMarketAPI:
 
   add:
     showInDoc    : true
-    name         : 添加脚本市场
+    name         : Add Script Market
     method       : post
     url          : /api/v1/script-markets/do/add
     response     : json
@@ -5323,7 +5321,7 @@ scriptMarketAPI:
 
   addOfficial:
     showInDoc    : true
-    name         : 添加官方脚本市场
+    name         : Add Official Script Market
     method       : post
     url          : /api/v1/script-markets/do/add-official
     response     : json
@@ -5332,7 +5330,7 @@ scriptMarketAPI:
 
   modify:
     showInDoc    : true
-    name         : 修改脚本市场
+    name         : Modify Script Market
     method       : post
     url          : /api/v1/script-markets/:id/do/modify
     response     : json
@@ -5407,7 +5405,7 @@ scriptMarketAPI:
 
   delete:
     showInDoc    : true
-    name         : 删除脚本市场
+    name         : Delete Script Market
     method       : get
     url          : /api/v1/script-markets/:id/do/delete
     response     : json
@@ -5420,7 +5418,7 @@ scriptMarketAPI:
 
   listScriptSets:
     showInDoc    : true
-    name         : 列出脚本市场脚本集
+    name         : List Script Sets in Script Market
     method       : get
     url          : /api/v1/script-markets/:id/script-sets/do/list
     response     : json
@@ -5436,7 +5434,7 @@ scriptMarketAPI:
 
   setAdmin:
     showInDoc    : true
-    name         : 成为脚本市场管理员
+    name         : Set admin to Script Market
     method       : post
     url          : /api/v1/script-markets/:id/do/set-admin
     response     : json
@@ -5449,7 +5447,7 @@ scriptMarketAPI:
 
   unsetAdmin:
     showInDoc    : true
-    name         : 放弃脚本市场管理员
+    name         : Unset admin to Script Market
     method       : post
     url          : /api/v1/script-markets/:id/do/unset-admin
     response     : json
@@ -5462,7 +5460,7 @@ scriptMarketAPI:
 
   publish:
     showInDoc    : true
-    name         : 发布脚本集至脚本市场
+    name         : Publish Script Set to Script Market
     method       : post
     url          : /api/v1/script-markets/:id/do/publish
     response     : json
@@ -5495,7 +5493,7 @@ scriptMarketAPI:
 
   install:
     showInDoc    : true
-    name         : 从脚本市场安装脚本集
+    name         : Install Script Set from Script Market
     method       : post
     url          : /api/v1/script-markets/:id/do/install
     response     : json
@@ -5517,7 +5515,7 @@ scriptMarketAPI:
 
   checkUpdate:
     showInDoc    : true
-    name         : 检查脚本市场脚本集更新
+    name         : Check Update of Script Sets from Script Markets
     method       : get
     url          : /api/v1/script-markets/do/check-update
     response     : json

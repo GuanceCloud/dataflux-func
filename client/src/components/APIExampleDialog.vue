@@ -48,6 +48,7 @@ seconds: 秒
     :title="title || $t('API Example')"
     :visible.sync="show"
     :close-on-click-modal="false"
+    :close-on-press-escape="false"
     width="750px">
     <span>
       <span :class="descriptionClass">{{ description }}</span>

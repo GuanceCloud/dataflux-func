@@ -61,7 +61,7 @@ lastRan       : '{t}调用'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
 
-Are you sure you want to send a task of the Crontab Config?: 是否确认立刻发送此自动触发配置的任务？
+Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 Crontab Config Task sent: 自动触发配置任务已发送
 
 Show Auth Links     : 显示授权链接列表
@@ -297,6 +297,7 @@ Go to Script Market : 前往脚本市场
           :title="relEntityFunc.title"
           :definition="relEntityFunc.definition"
           :hideGotoFunc="true" />
+        <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
       </div>
       <el-tabs v-model="relEntityTarget">
         <el-tab-pane name="authLink">
@@ -1163,9 +1164,9 @@ export default {
       this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
     async runCrontabTask(d) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to send a task of the Crontab Config?'))) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Config manually?'))) return;
 
-      let apiRes = await this.T.callAPI_get('/api/v1/cron/:id', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/cron/:id', {
         params: { id: d.id },
         alert : { okMessage: this.$t('Crontab Config Task sent') },
       });
@@ -1222,6 +1223,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.press-esc-to-close-tip {
+  font-size: 14px;
+  position: absolute;
+  right: 45px;
+  top: 20px;
+}
 .goto-links {
   display: flex;
   flex-direction: column;

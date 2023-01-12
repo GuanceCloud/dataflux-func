@@ -100,7 +100,7 @@ Data exported: 数据已导出
                 <el-form-item>
                   <el-button @click="goToHistory">
                     <i class="fa fa-fw fa-history"></i>
-                    {{ $t('Script Set Exporting History') }}
+                    {{ $t('Script Set Export History') }}
                   </el-button>
 
                   <div class="setup-right">
