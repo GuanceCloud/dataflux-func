@@ -12,33 +12,33 @@ Func Timeout: 函数超时
 API Timeout : API 超时
 
 Build Request: 构建请求
-'HTTP Header &quot;Content-Type&quot; should be &quot;application/json&quot; when using POST'                 : 'POST请求时，&quot;Content-Type&quot; 应设置为 &quot;application/json&quot;'
-'&quot;INPUT_BY_CALLER&quot; is the argument of the Python function, please modify it according to your needs': '&quot;INPUT_BY_CALLER&quot;为 Python 函数的参数，请根据需要进行修改'
-'This Python function allows additional parameters (**kwargs syntax)'                                         : '本 Python 函数允许传递额外的参数（**kwargs 语法）'
-'This Python function allows uploading files, field name of the uploading file is &quot;files&quot;'          : '本 Python 函数支持文件上传，文件字段名为&quot;files&quot;'
+'HTTP Header "Content-Type" should be "application/json" when using POST'                           : 'POST请求时，"Content-Type" 应设置为 "application/json"'
+'"INPUT_BY_CALLER" is the argument of the Python function, please modify it according to your needs': '"INPUT_BY_CALLER"为 Python 函数的参数，请根据需要进行修改'
+'This Python function allows additional parameters (**kwargs syntax)'                               : '本 Python 函数允许传递额外的参数（**kwargs 语法）'
+'This Python function allows uploading files, field name of the uploading file is "files"'          : '本 Python 函数支持文件上传，文件字段名为"files"'
 
 'Invalid Body content. Examples require a valid Body content': 'Body 内容填写存在错误，正确填写后将展示示例'
 
 Simplified Form for GET: GET 简化形式
-'Only string arguments are allowed in this from. And parameter &quot;options&quot; are not supported': '此方式参数值只支持字符串，且不支持 &quot;options&quot; 参数'
+'Only string arguments are allowed in this from. And parameter "options" are not supported': '此方式参数值只支持字符串，且不支持 "options" 参数'
 
 Normal Form for GET: GET 标准形式
-'Parameter &quot;kwargs&quot; should be URL encoded in HTTP request': '发送请求时，&quot;kwargs&quot; 参数需要进行 URL encode 编码'
+'Parameter "kwargs" should be URL encoded in HTTP request': '发送请求时，"kwargs" 参数需要进行 URL encode 编码'
 
 Flattened Form for GET: GET 扁平形式请求
 'Only string arguments are allowed in this from': '此方式参数值只支持字符串'
 
 Simplified Form for POST: POST 简化形式请求
-'Parameter &quot;options&quot; are not supported in this from'                                                                                                                                       : '此方式不支持 &quot;options&quot; 参数'
-'When posting form data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;, and the values of the fields support string value only': '表单形式提交时，&quot;Content-Type&quot; 必须指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;，此时 Body 中参数值只支持字符串'
-'When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;, together with the Python function containing **kwargs parameter, Body can be any JSON data'                : 'JSON 形式提交时，&quot;Content-Type&quot; 必须指定为 &quot;application/json&quot;，配合包含 **kwargs 的 Python 函数，此时 Body 可以为任意 JSON 数据'
-'When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;'                                                                                                           : '上传文件时，&quot;Content-Type&quot; 必须指定为 &quot;multipart/form-data&quot;'
+'Parameter "options" are not supported in this from'                                                                                                                   : '此方式不支持 "options" 参数'
+'When posting form data, "Content-Type" should be "multipart/form-data" or "application/x-www-form-urlencoded", and the values of the fields support string value only': '表单形式提交时，"Content-Type" 必须指定为 "multipart/form-data" 或 "application/x-www-form-urlencoded"，此时 Body 中参数值只支持字符串'
+'When posting JSON data, "Content-Type" should be "application/json", together with the Python function containing **kwargs parameter, Body can be any JSON data'      : 'JSON 形式提交时，"Content-Type" 必须指定为 "application/json"，配合包含 **kwargs 的 Python 函数，此时 Body 可以为任意 JSON 数据'
+'When uploading files, "Content-Type" should be "multipart/form-data"'                                                                                                 : '上传文件时，"Content-Type" 必须指定为 "multipart/form-data"'
 
 Normal Form for POST: POST 标准形式
 'File uploading is not supported in this this form': '此方式不支持文件上传'
 
 Flattened Form for POST: POST 扁平形式请求
-'When posting data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;' : '提交数据时，&quot;Content-Type&quot; 可以指定为 &quot;multipart/form-data&quot; 或 &quot;application/x-www-form-urlencoded&quot;'
+'When posting data, "Content-Type" should be "multipart/form-data" or "application/x-www-form-urlencoded"': '提交数据时，"Content-Type" 可以指定为 "multipart/form-data" 或 "application/x-www-form-urlencoded"'
 
 seconds: 秒
 </i18n>
