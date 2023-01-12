@@ -5,6 +5,93 @@ import C from '@/const'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
+export function getSelectableItems(pythonCode, scriptId) {
+  if (!pythonCode) [];
+
+  let todoItems    = [];
+  let codeItems    = [];
+  let commentStack = [];
+  pythonCode.split('\n').forEach((l, i) => {
+    let first3chars = l.slice(0, 3);
+    if ([ '"""', "'''" ].indexOf(first3chars) >= 0) {
+      let lastBlockCommentIndex = commentStack.lastIndexOf(first3chars);
+      if (lastBlockCommentIndex >= 0) {
+        commentStack = commentStack.slice(0, lastBlockCommentIndex);
+      } else {
+        commentStack.push(first3chars);
+      }
+    }
+
+    // 位于注释内部时跳过
+    console.log(l, commentStack)
+    if (commentStack.length > 0) return;
+
+    try {
+      // 注释项目
+      C.TODO_TYPE.forEach(x => {
+        let _tag = `# ${x.key}`;
+        let _pos = l.indexOf(_tag);
+        if (_pos >= 0) {
+          let id   = `${scriptId}.__L${i}`;
+          let name = (l.slice(_pos + _tag.length) || '').trim() || x.key;
+          todoItems.push({
+            id      : id,
+            type    : 'todo',
+            todoType: x.key,
+            name    : name,
+            line    : i,
+          })
+        }
+      })
+
+      // 代码项目
+      if (l.indexOf('def ') === 0 && l.indexOf('def _') < 0) {
+        // 函数定义
+        let _parts = l.slice(4).split('(');
+
+        let name = _parts[0];
+        let id   = `${scriptId}.${name}`;
+
+        let kwargs = _parts[1].slice(0, -2).split(',').reduce((acc, x) => {
+          let k = x.trim().split('=')[0];
+          if (k && k.indexOf('*') < 0) {
+            acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
+          }
+          return acc;
+        }, {});
+
+        codeItems.push({
+          id    : id,
+          type  : 'def',
+          name  : name,
+          kwargs: kwargs,
+          line  : i,
+        });
+
+      } else if (l.indexOf('class ') === 0 && l.indexOf('class _') < 0) {
+        // 类定义
+        let _parts = l.slice(6).split('(');
+
+        let name = _parts[0];
+        let id   = `${scriptId}.${name}`;
+
+        codeItems.push({
+          id    : id,
+          type  : 'class',
+          name  : name,
+          line  : i,
+        });
+      }
+
+    } catch(e) {
+      // 忽略解析错误
+    }
+  });
+
+  let selectableItems = todoItems.concat(codeItems);
+  return selectableItems;
+}
+
 export async function getAPIAuthList() {
   let apiAuthList = [];
 

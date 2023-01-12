@@ -903,75 +903,7 @@ export default {
       this.debouncedUpdatePanePercent(this.$store, percent);
     },
     updateSelectableItems() {
-      if (!this.data.codeDraft) return;
-
-      let todoItems = [];
-      let codeItems = [];
-      this.data.codeDraft.split('\n').forEach((l, i) => {
-        try {
-          // 注释项目
-          this.C.TODO_TYPE.forEach(x => {
-            let _tag = `# ${x.key}`;
-            let _pos = l.indexOf(_tag);
-            if (_pos >= 0) {
-              let id   = `${this.scriptId}.__L${i}`;
-              let name = (l.slice(_pos + _tag.length) || '').trim() || x.key;
-              todoItems.push({
-                id      : id,
-                type    : 'todo',
-                todoType: x.key,
-                name    : name,
-                line    : i,
-              })
-            }
-          })
-
-          // 代码项目
-          if (l.indexOf('def ') === 0 && l.indexOf('def _') < 0) {
-            // 函数定义
-            let _parts = l.slice(4).split('(');
-
-            let name = _parts[0];
-            let id   = `${this.scriptId}.${name}`;
-
-            let kwargs = _parts[1].slice(0, -2).split(',').reduce((acc, x) => {
-              let k = x.trim().split('=')[0];
-              if (k && k.indexOf('*') < 0) {
-                acc[k] = `${k.toUpperCase()}`; // 自动填充调用参数
-              }
-              return acc;
-            }, {});
-
-            codeItems.push({
-              id    : id,
-              type  : 'def',
-              name  : name,
-              kwargs: kwargs,
-              line  : i,
-            });
-
-          } else if (l.indexOf('class ') === 0 && l.indexOf('class _') < 0) {
-            // 类定义
-            let _parts = l.slice(6).split('(');
-
-            let name = _parts[0];
-            let id   = `${this.scriptId}.${name}`;
-
-            codeItems.push({
-              id    : id,
-              type  : 'class',
-              name  : name,
-              line  : i,
-            });
-          }
-
-        } catch(e) {
-          // 忽略解析错误
-        }
-      });
-
-      let nextSelectableItems = todoItems.concat(codeItems);
-      this.selectableItems = nextSelectableItems;
+      this.selectableItems = this.common.getSelectableItems(this.data.codeDraft, this.scriptId);
     },
     openVueSplitPane() {
       this.$refs.vueSplitPane.percent = this.splitPanePercent;
