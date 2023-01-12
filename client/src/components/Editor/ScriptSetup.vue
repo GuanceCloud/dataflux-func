@@ -69,13 +69,17 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
                 </el-form-item>
 
                 <el-form-item :label="$t('Script Template')">
-                  <el-select v-model="templateScriptId" @change="showScriptTemplate">
+                  <el-select
+                    v-model="templateScriptId"
+                    @change="showScriptTemplate"
+                    filterable
+                    :filter-method="T.debounce(doFilter)">
                     <el-option-group>
                       <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
                       <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
                     </el-option-group>
-                    <el-option-group :label="$t('From Example Script')">
-                      <el-option v-for="s in templateScripts" :label="s.label" :key="s.id" :value="s.id">
+                    <el-option-group :label="$t('From Example Script')" v-if="templateScriptShowOptions.length > 0">
+                      <el-option v-for="s in templateScriptShowOptions" :label="s.label" :key="s.id" :value="s.id">
                         <span class="example-script">{{ s.label }}</span>
                       </el-option>
                     </el-option-group>
@@ -133,6 +137,15 @@ export default {
     },
   },
   methods: {
+    doFilter(q) {
+      q = (q || '').toLowerCase().trim();
+      if (!q || q[0] === '_') {
+        this.templateScriptShowOptions = this.templateScripts;
+      } else {
+        this.templateScriptShowOptions = this.T.searchKeywords(q, this.templateScripts);
+      }
+    },
+
     async loadData() {
       let apiRes = null;
       switch(this.T.setupPageMode()) {
@@ -146,13 +159,17 @@ export default {
           });
           if (!apiRes || !apiRes.ok) return;
 
-          apiRes.data.forEach(d => {
-            let shortScriptId = d.id.split('__').slice(1).join('__');
-            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || shortScriptId}`;
+          let templateScripts = apiRes.data;
+
+          templateScripts.forEach(d => {
+            d.shortScriptId = d.id.split('__').slice(1).join('__');
+            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || d.shortScriptId}`;
+            this.T.appendSearchFields(d, ['sset_title', 'scriptSetId', 'title', 'shortScriptId'])
           });
 
-          this.templateScripts   = apiRes.data;
-          this.templateScriptMap = apiRes.data.reduce((acc, x) => {
+          this.templateScripts           = templateScripts;
+          this.templateScriptShowOptions = templateScripts;
+          this.templateScriptMap = templateScripts.reduce((acc, x) => {
             acc[x.id] = x;
             return acc;
           }, {});
@@ -331,8 +348,9 @@ export default {
 
       templateScriptId: '_basicExample',
 
-      templateScripts  : [],
-      templateScriptMap: {},
+      templateScripts          : [],
+      templateScriptShowOptions: [],
+      templateScriptMap        : {},
 
       form: {
         id         : null,

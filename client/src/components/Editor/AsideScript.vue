@@ -76,8 +76,8 @@ Go to Script Market : 前往脚本市场
       :placeholder="$t('Jump to...')"
       :no-data-text="$t('No Data')"
       size="small"
-      :filterable="true"
-      :clearable="true"
+      clearable
+      filterable
       :filter-method="T.debounce(doFilter)"
       v-model="selectFilterText">
       <el-option
