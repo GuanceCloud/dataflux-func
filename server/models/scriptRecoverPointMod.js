@@ -135,7 +135,7 @@ EntityModel.prototype.recover = function(id, callback) {
       var importData = toolkit.fromGzipBase64(scriptRecoverPoint.exportData);
       var recoverPoint = {
         type: 'recover',
-        note: '系统：还原脚本至还原点 #' + scriptRecoverPoint.seq,
+        note: `System: Before recovering Script Lib to #${scriptRecoverPoint.seq}`,
       }
       scriptSetModel.import(importData, recoverPoint, asyncCallback);
     },

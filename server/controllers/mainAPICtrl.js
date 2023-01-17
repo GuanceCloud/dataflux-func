@@ -1382,10 +1382,10 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    bizEntityCount  : [],
-    workerQueueInfo : [],
-    scriptOverview  : null,
-    latestOperations: [],
+    bizEntityCount   : [],
+    workerQueueInfo  : [],
+    scriptSetOverview: [],
+    latestOperations : [],
   };
 
   async.series([
@@ -1464,14 +1464,14 @@ exports.overview = function(req, res, next) {
         });
       }, asyncCallback);
     },
-    // 脚本总览
+    // 脚本集总览
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.scriptOverview) return asyncCallback();
+      if (sectionMap && !sectionMap.scriptSetOverview) return asyncCallback();
 
-      scriptModel.overview(null, function(err, dbRes) {
+      scriptSetModel.overview(null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        overview.scriptOverview = dbRes;
+        overview.scriptSetOverview = dbRes;
 
         return asyncCallback();
       });

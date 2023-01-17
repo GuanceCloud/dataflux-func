@@ -20,6 +20,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     isLocked: 'boolean',
+    codeSize: 'integer',
   },
 
   defaultOrders: [
@@ -87,6 +88,8 @@ EntityModel.prototype.list = function(options, callback) {
 };
 
 EntityModel.prototype.overview = function(options, callback) {
+  var self = this;
+
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   scpt.seq');
@@ -126,7 +129,13 @@ EntityModel.prototype.overview = function(options, callback) {
   sql.append('   sset.id ASC');
   sql.append('  ,scpt.id ASC');
 
-  this.db.query(sql, null, callback);
+  self.db.query(sql, null, function(err, dbRes) {
+    if (err) return callback(err);
+
+    dbRes = self.convertObject(dbRes);
+
+    return callback(null, dbRes);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {

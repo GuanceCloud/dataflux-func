@@ -1,40 +1,41 @@
 <i18n locale="en" lang="yaml">
-overviewCountUnit   : ''
-workerCount         : 'NO worker | {n} worker | {n} workers'
-taskCount           : 'NO task | {n} task | {n} tasks'
-scriptOverviewCount : '(NO script) | ({n} script) | ({n} scripts)'
-recentOperationCount: '(latest {n} operation) | (latest {n} operations)'
+overviewCountUnit     : ''
+workerCount           : 'NO Worker | {n} Worker | {n} Workers'
+taskCount             : 'NO Queued Task | {n} Queued Task | {n} Queued Tasks'
+scriptSetOverviewCount: '(NO Script Set) | ({n} Script Set) | ({n} Script Sets)'
+recentOperationCount  : '(Latest {n} Operation) | (Latest {n} Operations)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Overview            : 总览
-Biz Entity          : 业务实体
-Worker Queue Info   : 队列信息
-Queue               : 队列
-overviewCountUnit   : 个
-workerCount         : '工作单元 {n} 个'
-taskCount           : '请求排队 {n} 个'
-Script overview     : 脚本总览
-scriptOverviewCount : '{n} 个'
-Code size           : 代码大小
-Publish ver.        : 发布版本
-Publish time        : 发布时间
-Never published     : 从未发布
-Recent operations   : 最近操作记录
-recentOperationCount: 最近 {n} 条
-Client              : 客户端
-Client ID           : 客户端ID
-IP Address          : IP地址
-Operation           : 操作
-Data ID             : 数据ID
-MODIFY              : 修改操作
-DELETE              : 删除操作
-Cost                : 耗时
-ms                  : 毫秒
-Show detail         : 显示请求详情
-Request             : 请求
-Response            : 响应
-Pressure            : 压力
+overviewCountUnit     : 个
+workerCount           : '工作单元 {n} 个'
+taskCount             : '排队任务 {n} 个'
+scriptSetOverviewCount: '（{n} 个）'
+recentOperationCount  : 最近 {n} 条
+
+Overview         : 总览
+Biz Entity       : 业务实体
+Worker Queue Info: 队列信息
+Script overview  : 脚本总览
+Origin           : 来源
+Code size        : 代码大小
+Publish ver.     : 发布版本
+Publish time     : 发布时间
+Never published  : 从未发布
+Recent operations: 最近操作记录
+Client           : 客户端
+Client ID        : 客户端ID
+IP Address       : IP地址
+Operation        : 操作
+Data ID          : 数据ID
+MODIFY           : 修改操作
+DELETE           : 删除操作
+Cost             : 耗时
+ms               : 毫秒
+Show detail      : 显示请求详情
+Request          : 请求
+Response         : 响应
+Pressure         : 压力
 </i18n>
 
 <template>
@@ -67,30 +68,64 @@ Pressure            : 压力
           shadow="hover"
           v-for="workerQueue, i in workerQueueInfo"
           :key="i">
-          <el-progress type="dashboard" width="100"
+          <div class="worker-queue-info">
+            <span class="worker-queue-number">#{{ i }}</span>
+            <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
+            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}
+          </div>
+
+          <el-progress type="circle" width="110"
             :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
             :format="workerQueuePressureFormat"
             :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
-
-          <span class="worker-queue-info">
-            <span class="worker-queue-number">#{{ i }}</span> {{ $t('Queue') }}
-            <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}
-          </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Script overview') }} {{ $tc('scriptOverviewCount', scriptOverview.length) }}</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Script overview') }} {{ $tc('scriptSetOverviewCount', scriptSetOverview.length) }}</h1></el-divider>
 
-        <el-table :data="scriptOverview" stripe>
+        <el-table :data="scriptSetOverview">
           <el-table-column :label="$t('Script Set')" sortable>
             <template slot-scope="scope">
-              <span>{{ scope.row.scriptSetTitle || scope.row.scriptSetId }}</span>
+              <span>{{ scope.row.title || scope.row.id }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Script')" sortable :sort-by="['title', 'id']">
+          <el-table-column :label="$t('ID')" sortable>
             <template slot-scope="scope">
-              <span>{{ scope.row.title || scope.row.id }}</span>
+              <code class="text-main">{{ scope.row.id }}</code>
+              <CopyButton :content="scope.row.id" />
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Origin')" sortable sort-by="origin" width="150">
+            <template slot-scope="scope">
+              <span v-if="!scope.row.origin">-</span>
+              <span v-else-if="scope.row.origin === 'user'">
+                <i class="fa fa-fw fa-user"></i>
+                {{ $t('User') }}
+              </span>
+              <span v-else-if="scope.row.origin === 'builtin'" class="text-watch">
+                <i class="fa fa-fw fa-microchip"></i>
+                {{ $t('Built-in') }}
+              </span>
+              <span v-else-if="scope.row.origin === 'scriptMarket'" class="text-main">
+                <i class="fa fa-fw fa-shopping-cart"></i>
+                {{ $t('Script Market') }}
+              </span>
+              <span v-else-if="scope.row.origin === 'UNKNOW'" class="text-info">
+                <i class="fa fa-fw fa-question-circle"></i>
+                {{ $t('UNKNOW') }}
+              </span>
+              <span v-else class="text-info">
+                <i class="fa fa-fw fa-question-circle"></i>
+                {{ $t('UNKNOW') }}({{ scope.row.origin }})
+              </span>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Script')" sortable sort-by="scriptCount" align="right" width="120">
+            <template slot-scope="scope">
+              <code v-if="!scope.row.scriptCount">-</code>
+              <code v-else>{{ scope.row.scriptCount }}</code>
             </template>
           </el-table-column>
 
@@ -101,16 +136,9 @@ Pressure            : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="120">
+          <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="140">
             <template slot-scope="scope">
               <code v-if="scope.row.codeSize">{{ scope.row.codeSizeHuman }}</code>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Publish ver.')" sortable sort-by="publishVersion" align="right" width="150">
-            <template slot-scope="scope">
-              <code v-if="!scope.row.publishVersion">-</code>
-              <code v-else>v{{ `${scope.row.publishVersion}` }}</code>
             </template>
           </el-table-column>
 
@@ -127,7 +155,7 @@ Pressure            : 压力
 
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
 
-        <el-table :data="latestOperations" stripe>
+        <el-table :data="latestOperations">
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
@@ -232,8 +260,12 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      if (apiRes.data.scriptOverview) {
-        apiRes.data.scriptOverview.forEach(d => {
+      if (apiRes.data.scriptSetOverview) {
+        apiRes.data.scriptSetOverview.forEach(d => {
+          if (d.codeSize) {
+            d.codeSizeHuman = this.T.byteSizeHuman(d.codeSize);
+          }
+
           d.latestPublishTimestamp = 0;
           if (d.latestPublishTime) {
             d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
@@ -244,12 +276,6 @@ export default {
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
       });
-
-      this.scriptOverview.forEach(d => {
-        if (d.codeSize) {
-          d.codeSizeHuman = this.T.byteSizeHuman(d.codeSize);
-        }
-      })
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -305,15 +331,15 @@ export default {
       return [
         'bizEntityCount',
         'workerQueueInfo',
-        'scriptOverview',
+        'scriptSetOverview',
         'latestOperations',
       ];
     },
     WORKER_QUEUE_PRESSURE_COLORS() {
       return [
-        {color: '#00aa00', percentage: 50},
-        {color: '#ff6600', percentage: 80},
-        {color: '#ff0000', percentage: 100}
+        { color: '#00aa00', percentage: 50 },
+        { color: '#ff6600', percentage: 80 },
+        { color: '#ff0000', percentage: 100 }
       ];
     },
   },
@@ -321,10 +347,10 @@ export default {
   },
   data() {
     return {
-      bizEntityCount  : [],
-      workerQueueInfo : [],
-      scriptOverview  : [],
-      latestOperations: [],
+      bizEntityCount   : [],
+      workerQueueInfo  : [],
+      scriptSetOverview: [],
+      latestOperations : [],
 
       autoRefreshTimer: null,
     }
@@ -390,7 +416,7 @@ export default {
 }
 .worker-queue-card {
   width: 260px;
-  height: 130px;
+  height: 150px;
   display: inline-block;
   margin: 10px 20px;
   position: relative;
@@ -399,21 +425,20 @@ export default {
   color: #FF6600;
   border-color: #FF6600;
 }
-.worker-queue-card .progressbar {
-  display: inline-block;
-}
 .worker-queue-info {
   font-size: 12px;
-  position: absolute;
-  top: 25px;
-  right: 20px;
-  text-align: right;
+  text-align: left;
 }
 .worker-queue-info .worker-queue-number {
-  font-size: 30px;
+  font-size: 40px;
+  letter-spacing: 5px;
 }
 </style>
 
 <style>
-
+.worker-queue-card .el-card__body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 </style>

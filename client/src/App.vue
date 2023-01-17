@@ -677,7 +677,7 @@ kbd {
   display: block;
   position: absolute;
   color: grey;
-  padding: 8px 2px;
+  padding: 15px 2px;
   top: 50%;
   left: 0px;
   border-bottom-right-radius: 5px;
@@ -690,7 +690,7 @@ kbd {
   display: block;
   position: absolute;
   color: grey;
-  padding: 0px 8px;
+  padding: 0px 15px;
   left: 50%;
   top: -10px;
   border-top-left-radius: 5px;

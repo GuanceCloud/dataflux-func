@@ -1757,7 +1757,7 @@ exports.install = function(req, res, next) {
     function(asyncCallback) {
       var recoverPoint = {
         type: 'install',
-        note: '系统：安装脚本集前自动创建的还原点',
+        note: 'System: Before installing Script Sets',
       };
       scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
         if (err) return asyncCallback(err);

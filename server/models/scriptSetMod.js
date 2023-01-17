@@ -28,6 +28,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   objectFields: {
     isPinned       : 'boolean',
     isLocked       : 'boolean',
+    codeSize       : 'integer',
     smkt_configJSON: 'json',
   },
 
@@ -75,6 +76,47 @@ EntityModel.prototype.list = function(options, callback) {
   options.baseSQL = sql.toString();
 
   return this._list(options, callback);
+};
+
+EntityModel.prototype.overview = function(options, callback) {
+  var self = this;
+
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('   sset.id');
+  sql.append('  ,sset.title');
+  sql.append('  ,sset.origin');
+
+  sql.append('  ,SUM(LENGTH(scpt.code)) AS codeSize');
+  sql.append('  ,MAX(scph.createTime)   AS latestPublishTime');
+  sql.append('  ,COUNT(scpt.id)         AS scriptCount');
+  sql.append('  ,COUNT(func.id)         AS funcCount');
+
+  sql.append('FROM biz_main_script_set AS sset');
+
+  sql.append('LEFT JOIN biz_main_script AS scpt');
+  sql.append('  ON scpt.scriptSetId = sset.id');
+
+  sql.append('LEFT JOIN biz_main_script_publish_history as scph');
+  sql.append('  ON  scph.scriptId             = scpt.id');
+  sql.append('  AND scph.scriptPublishVersion = scpt.publishVersion');
+
+  sql.append('LEFT JOIN biz_main_func as func');
+  sql.append('  ON func.scriptId = scpt.id');
+
+  sql.append('GROUP BY');
+  sql.append('  sset.id');
+
+  sql.append('ORDER BY');
+  sql.append('   sset.id ASC');
+
+  self.db.query(sql, null, function(err, dbRes) {
+    if (err) return callback(err);
+
+    dbRes = self.convertObject(dbRes);
+
+    return callback(null, dbRes);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {

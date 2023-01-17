@@ -23,7 +23,6 @@ export function getSelectableItems(pythonCode, scriptId) {
     }
 
     // 位于注释内部时跳过
-    console.log(l, commentStack)
     if (commentStack.length > 0) return;
 
     try {

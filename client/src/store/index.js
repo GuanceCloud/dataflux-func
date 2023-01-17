@@ -268,7 +268,7 @@ export default new Vuex.Store({
       let uiLocale = state.uiLocale || window.navigator.language;
       let uiLocaleParts = uiLocale.split('.')[0].split(/[_-]/);
 
-      // 英文不分类
+      // 英文不区分国家
       if (uiLocaleParts[0] == 'en') uiLocale = 'en';
 
       return C.UI_LOCALE_MAP.get(uiLocale).key;

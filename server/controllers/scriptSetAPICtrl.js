@@ -479,7 +479,7 @@ exports.import = function(req, res, next) {
         // 直接导入
         var recoverPoint = {
           type: 'import',
-          note: '系统：导入脚本集前自动创建的还原点',
+          note: 'System: Before importing Script Sets',
         };
         return scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
           if (err) return asyncCallback(err);
@@ -580,7 +580,7 @@ exports.confirmImport = function(req, res, next) {
       var recoverPoint = {
         // 存在确认导入的，只有「导入脚本集」操作
         type: 'import',
-        note: '系统：导入脚本集前自动创建的还原点',
+        note: 'System: Before importing Script Sets',
       };
       scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
         if (err) return asyncCallback(err);
