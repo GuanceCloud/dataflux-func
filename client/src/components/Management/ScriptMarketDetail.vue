@@ -49,7 +49,7 @@ No Script Set has ever been published: 尚未发布过任何脚本集到脚本�
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
-Go to Homepage: 前往主页
+Homepage: 前往主页
 
 'Processing...': '正在处理...'
 
@@ -72,12 +72,10 @@ Go to Homepage: 前往主页
 
           <div class="header-control" v-if="T.notNothing(data)">
             <template v-if="homepageURL || scriptMarket.type === 'git'">
-              <el-button
-                type="primary" round plain size="mini"
-                @click="T.openURL(homepageURL || scriptMarket.configJSON.url)">
+              <el-link :href="homepageURL || scriptMarket.configJSON.url">
                 <i class="fa fa-fw fa-external-link"></i>
-                {{ $t('Go to Homepage') }}
-              </el-button>
+                {{ $t('Homepage') }}
+              </el-link>
               &#12288;
             </template>
 

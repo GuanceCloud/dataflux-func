@@ -110,24 +110,22 @@ Vue.config.productionTip = false
 // 常用业务组件
 import Logo             from '@/components/Logo'
 import InfoBlock        from '@/components/InfoBlock'
-import CopyButton       from '@/components/CopyButton'
 import RelativeDateTime from '@/components/RelativeDateTime'
 import FuncInfo         from '@/components/FuncInfo'
 import FuzzySearchInput from '@/components/FuzzySearchInput'
 import Pager            from '@/components/Pager'
 import PageLoading      from '@/components/PageLoading'
+import GotoFuncButton   from '@/components/GotoFuncButton'
+import CopyButton       from '@/components/CopyButton'
 Vue.component('Logo', Logo);
 Vue.component('InfoBlock', InfoBlock);
-Vue.component('CopyButton', CopyButton);
 Vue.component('RelativeDateTime', RelativeDateTime);
 Vue.component('FuncInfo', FuncInfo);
 Vue.component('FuzzySearchInput', FuzzySearchInput);
 Vue.component('Pager', Pager);
 Vue.component('PageLoading', PageLoading);
-
-// 项目业务组件
-import GotoFuncButton from '@/components/GotoFuncButton'
 Vue.component('GotoFuncButton', GotoFuncButton);
+Vue.component('CopyButton', CopyButton);
 
 // 全局异常处理
 const apiRespErrorHandler = (err, vm) => {
