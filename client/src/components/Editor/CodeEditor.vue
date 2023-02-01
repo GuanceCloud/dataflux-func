@@ -138,6 +138,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                 <el-form-item>
                   <el-select
                     style="width: 150px"
+                    popper-class="code-font"
                     v-model="selectedItemId"
                     size="mini"
                     filterable

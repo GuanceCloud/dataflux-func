@@ -374,7 +374,7 @@ input, textarea,
 pre, pre *
 .CodeMirror, .CodeMirror *,
 .code-font, .code-font * {
-  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
+  font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
 }
 a {
   text-decoration: none;

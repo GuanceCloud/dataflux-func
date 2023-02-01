@@ -280,7 +280,7 @@ export default {
   data() {
     return {
       pypiMirror      : '',
-      packageToInstall: 'prettytable requests==2.28.1 arrow==0.17.0',
+      packageToInstall: '',
 
       showInstallStatus: false,
       nowMs            : Date.now(),
