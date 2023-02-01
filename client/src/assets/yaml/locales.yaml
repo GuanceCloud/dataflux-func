@@ -15,6 +15,10 @@ en:
   '(': '（'
   ')': '）'
 
+  ms     : 毫秒
+  s      : 秒
+  seconds: 秒
+
   Light Mode        : 明亮模式
   Dark Mode         : 黑暗模式
   Auto              : 自动
@@ -31,6 +35,8 @@ en:
   # 通用 - 按钮 / 表单
   Very good: 非常好
   OK       : 了解
+  Finish   : 完成
+  Load     : 加载
   Confirm  : 确定
   Cancel   : 取消
   'Yes'    : 是
@@ -91,6 +97,7 @@ en:
   Unlink  : 断开连接
   Manage  : 管理
   Admin   : 管理
+  Reset   : 复位
   Restore Default: 恢复默认
   Check Update   : 检查更新
 
@@ -142,26 +149,32 @@ en:
   unlink  : 断开连接
   manage  : 管理
   admin   : 管理
+  reset   : 复位
   restore default: 恢复默认
   check update   : 检查更新
 
+  # 通用 - 操作中
+  Loading   : 正在加载
+  Installing: 正在安装
+
   # 通用 - 操作结果
-  Added   : 已添加
-  Edited  : 已编辑
-  Modified: 已修改
-  Deleted : 已删除
-  Enabled : 已启用
-  Disabled: 已禁用
-  Saved   : 已保存
-  Hidden  : 已隐藏
-  Shown   : 已显示
-  Locked  : 已锁定
-  Unlockel: 已解锁
-  Opened  : 已打开
-  Closed  : 已关闭
-  Cleared : 已清空
-  Linked  : 已连接
-  Unlinked: 已断开连接
+  Added    : 已添加
+  Edited   : 已编辑
+  Modified : 已修改
+  Deleted  : 已删除
+  Enabled  : 已启用
+  Disabled : 已禁用
+  Saved    : 已保存
+  Hidden   : 已隐藏
+  Shown    : 已显示
+  Locked   : 已锁定
+  Unlockel : 已解锁
+  Opened   : 已打开
+  Closed   : 已关闭
+  Cleared  : 已清空
+  Linked   : 已连接
+  Unlinked : 已断开连接
+  Installed: 已安装
 
   # 通用 - 操作结果（小写）
   added   : 已添加
@@ -180,6 +193,7 @@ en:
   cleared : 已清空
   linked  : 已连接
   unlinked: 已断开连接
+  installed: 已安装
 
   # 通用 - 数据 / 值
   Anonymity: 匿名
@@ -369,11 +383,10 @@ en:
   Sign in: 登录
 
   # const.js - PIP_MIRROR
-  BFSU mirror               : 北京外国语大学
   Tsinghua University mirror: 清华大学镜像
   Alibaba Cloud mirror      : 阿里云镜像
   Douban mirror             : 豆瓣镜像
-  Pypi Official             : Pypi 官方原版
+  PyPI Official             : PyPI 官方原版
 
   # const.js - CODE_MIRROR_THEME
   'Auto: Default'             : 自动切换：默认

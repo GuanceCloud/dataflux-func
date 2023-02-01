@@ -3,7 +3,6 @@ Request    : 请求
 Response   : 响应
 Status Code: 状态码
 Cost       : 耗时
-ms         : 毫秒
 Show detail: 显示请求详情
 omitted.   : 略
 

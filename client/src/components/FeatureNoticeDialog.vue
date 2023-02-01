@@ -67,11 +67,11 @@ export default {
     }
   },
   mounted() {
-    setImmediate(() => {
+    setTimeout(() => {
       if (this.$store.getters.showFeatureNotice(this.featureKey)) {
         this.show = true;
       }
-    })
+    }, 500);
   }
 }
 </script>

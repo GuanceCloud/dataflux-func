@@ -1,11 +1,12 @@
 'use strict';
 
 /* Built-in Modules */
-var os          = require('os');
-var crypto      = require('crypto');
-var zlib        = require('zlib');
-var urlparse    = require('url').parse;
-var querystring = require('querystring');
+var os           = require('os');
+var crypto       = require('crypto');
+var zlib         = require('zlib');
+var urlparse     = require('url').parse;
+var querystring  = require('querystring');
+var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var fs        = require('fs-extra');
@@ -2389,4 +2390,37 @@ var maskSensitiveInfo = toolkit.maskSensitiveInfo = function(s) {
   } catch(err) {
     return s;
   }
+};
+
+var childProcessSpawn = toolkit.childProcessSpawn = function(cmd, cmdArgs, cmdOpt, callback) {
+  cmdOpt = cmdOpt || {};
+
+  var _p = childProcess.spawn(cmd, cmdArgs, cmdOpt);
+
+  var cmdOut = '';
+  if (_p.stdout) {
+    _p.stdout.setEncoding('utf8');
+    _p.stdout.on('data', function(chunk) {
+      cmdOut += chunk;
+    });
+  }
+
+  var cmdErr = '';
+  if (_p.stderr) {
+    _p.stderr.setEncoding('utf8');
+    _p.stderr.on('data', function(chunk) {
+      cmdErr += chunk;
+    });
+  }
+
+  _p.on('error', function(err) {
+    return callback(err);
+  });
+  _p.on('exit', function(code) {
+    if (code > 0) {
+      return callback(new Error(cmdErr || cmdOut || `Command [${cmd}] exited with code [${code}]`));
+    }
+
+    return callback(null, cmdOut);
+  });
 };

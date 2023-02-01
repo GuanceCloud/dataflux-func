@@ -91,17 +91,14 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.press-esc-to-close-tip {
-  font-size: 14px;
-  position: absolute;
-  right: 45px;
-  top: 20px;
-}
 .download-link {
   margin-bottom: 15px;
 }
 </style>
 <style>
+#LongTextDialog .el-dialog__header {
+  min-height: 20px
+}
 #LongTextDialog .el-dialog__body {
   padding: 5px 20px;
 }

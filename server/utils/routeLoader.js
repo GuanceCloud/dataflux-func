@@ -6,7 +6,6 @@ var path = require('path');
 /* 3rd-party Modules */
 var async  = require('async');
 var Router = require('express').Router;
-var marked = require('marked');
 
 /* Project Modules */
 var E                = require('./serverError');

@@ -1,9 +1,8 @@
 'use strict';
 
 /* Built-in Modules */
-var path         = require('path');
-var URL          = require('url').URL;
-var childProcess = require('child_process');
+var path = require('path');
+var URL  = require('url').URL;
 
 /* 3rd-party Modules */
 var async         = require('async');
@@ -649,15 +648,15 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     ]
     if (toolkit.endsWith(file, '/')) cmdArgs.push('-r');
 
-    var t = Date.now()
-    childProcess.execFile(OSSUTIL_CMD, cmdArgs, function(err, stdout, stderr) {
+    toolkit.childProcessSpawn(OSSUTIL_CMD, cmdArgs, null, function(err, stdout) {
       if (err) return callback(err);
 
       if (!fs.existsSync(localFilePath)) {
         return callback(new Error('Fetch file from Aliyun OSS failed.'))
       }
+
       return callback();
-    })
+    });
   },
   httpService: function(scriptMarket, localSavePath, file, callback) {
     var fileURL       = `${scriptMarket.configJSON.url}/${file}`;
@@ -815,8 +814,8 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
           ];
           if (toolkit.endsWith(file, '/')) cmdArgs.push('-r');
 
-          childProcess.execFile(OSSUTIL_CMD, cmdArgs, function(err, stdout, stderr) {
-            if (err) return eachCallback(stderr.toString() || stdout.toString());
+          toolkit.childProcessSpawn(OSSUTIL_CMD, cmdArgs, null, function(err, stdout) {
+            if (err) return eachCallback(err);
             return eachCallback();
           });
         }, asyncCallback);
@@ -835,8 +834,8 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
             '-k', scriptMarket.configJSON.accessKeySecret
           ];
 
-          childProcess.execFile(OSSUTIL_CMD, cmdArgs, function(err, stdout, stderr) {
-            if (err) return eachCallback(stderr.toString() || stdout.toString());
+          toolkit.childProcessSpawn(OSSUTIL_CMD, cmdArgs, null, function(err, stdout) {
+            if (err) return eachCallback(err);
             return eachCallback();
           });
         }, asyncCallback);

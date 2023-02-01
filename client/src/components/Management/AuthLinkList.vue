@@ -22,7 +22,6 @@ Today          : 今天
 Times          : 次
 Response       : 响应速度
 No info        : 暂无信息
-ms             : 毫秒
 Percentage     : 比例
 Result         : 执行结果
 Success        : 成功执行

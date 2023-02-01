@@ -1,7 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-s : 秒
-ms: 毫秒
-
 Exec Mode   : 执行模式
 Trigger Time: 触发时间
 Start Time  : 启动时间

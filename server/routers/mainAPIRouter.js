@@ -109,6 +109,9 @@ routeLoader.load(ROUTE.mainAPI.listInstalledPythonPackages, [
 routeLoader.load(ROUTE.mainAPI.getPythonPackageInstallStatus, [
   mainAPICtrl.getPythonPackageInstallStatus,
 ]);
+routeLoader.load(ROUTE.mainAPI.clearPythonPackageInstallStatus, [
+  mainAPICtrl.clearPythonPackageInstallStatus,
+]);
 routeLoader.load(ROUTE.mainAPI.installPythonPackage, [
   mainAPICtrl.installPythonPackage,
 ]);

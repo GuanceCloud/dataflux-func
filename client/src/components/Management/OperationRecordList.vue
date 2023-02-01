@@ -5,7 +5,6 @@ Data ID    : 数据ID
 MODIFY     : 修改操作
 DELETE     : 删除操作
 Cost       : 耗时
-ms         : 毫秒
 Show detail: 显示请求详情
 Request    : 请求
 Response   : 响应

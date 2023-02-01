@@ -118,3 +118,4 @@ en: {}
   Worker no response                                                                                      : 工作单元无响应
   X-Auth-Token not sent                                                                                   : X-Auth-Token 尚未发送
   Zip file already existed                                                                                : 压缩文件已经存在
+  Resource operation Failed                                                                               : 资源操作失败

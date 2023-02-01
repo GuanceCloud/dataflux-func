@@ -581,6 +581,12 @@ ul {
 .float-right {
   float: right;
 }
+.press-esc-to-close-tip {
+  font-size: 14px;
+  position: absolute;
+  right: 45px;
+  top: 21px;
+}
 tr.hl-row td {
   background-color: #ffefe480;
   /*background-image: linear-gradient(to right, #FFF, #ffefe4);*/
@@ -882,7 +888,10 @@ kbd {
   margin-right: 0px !important;
 }
 .el-divider--horizontal:not(:first-of-type) {
-  margin-top: 50px !important;
+  margin-top: 60px !important;
+}
+.el-divider--horizontal {
+  margin-bottom: 35px !important;
 }
 
 .el-drawer__wrapper {

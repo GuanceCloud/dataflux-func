@@ -1628,6 +1628,14 @@ mainAPI:
     requireSignIn: true
     privilege    : general_r
 
+  clearPythonPackageInstallStatus:
+    name         : Clear Python package installing status
+    method       : delete
+    url          : /api/v1/python-packages/install-status
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
   installPythonPackage:
     name         : Install Python package
     method       : post
@@ -1637,10 +1645,10 @@ mainAPI:
     privilege    : general_w
     body:
       mirror:
-        $desc: 镜像源（如：https://pypi.tuna.tsinghua.edu.cn/simple/）
+        $desc: PIP Mirror (e.g. https://pypi.tuna.tsinghua.edu.cn/simple/)
         $type: string
-      pkg:
-        $desc      : Python包（如：requests 或 requests==1.0.0）
+      packages:
+        $desc      : Python Packages (e.g. prettytable requests==1.0.0)
         $isRequired: true
         $type      : string
         $minLength : 1

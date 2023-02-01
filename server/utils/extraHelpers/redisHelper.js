@@ -381,6 +381,11 @@ RedisHelper.prototype.lrange = function(key, start, stop, callback) {
   return this.run('lrange', key, start, stop, callback);
 };
 
+RedisHelper.prototype.lset = function(key, index, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+  return this.run('lset', key, index, value, callback);
+};
+
 RedisHelper.prototype.ltrim = function(key, start, stop, callback) {
   if (this.isDryRun) return callback(null, 'OK');
   return this.run('ltrim', key, start, stop, callback);

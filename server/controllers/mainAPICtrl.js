@@ -63,10 +63,10 @@ var FUNC_CACHE_OPT = {
   max   : CONFIG._LRU_FUNC_CACHE_MAX,
   maxAge: CONFIG._LRU_FUNC_CACHE_MAX_AGE * 1000,
 };
-var FUNC_LRU      = new LRU(FUNC_CACHE_OPT); // 仅LRU
-var AUTH_LINK_LRU = new LRU(FUNC_CACHE_OPT); // 仅LRU
-var BATCH_LRU     = new LRU(FUNC_CACHE_OPT); // 仅LRU
-var API_AUTH_LRU  = new LRU(FUNC_CACHE_OPT); // 仅LRU
+var FUNC_LRU      = new LRU(FUNC_CACHE_OPT);
+var AUTH_LINK_LRU = new LRU(FUNC_CACHE_OPT);
+var BATCH_LRU     = new LRU(FUNC_CACHE_OPT);
+var API_AUTH_LRU  = new LRU(FUNC_CACHE_OPT);
 
  // LRU + Redis
 var FUNC_RESULT_LRU = new LRU({
@@ -841,11 +841,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
             function(asyncCallback) {
               var status = 'OK';
               if (err) {
-                if (err.info && err.info.reason) {
-                  status = err.info.reason;
-                } else {
-                  status = 'UnknowError';
-                }
+                status = err.reason || 'UnknowError';
               } else if (celeryRes.id === 'CACHED') {
                 status = 'cached';
               }
@@ -2426,12 +2422,12 @@ exports.listInstalledPythonPackages = function(req, res, next) {
 
   var packageVersionMap = {};
 
-  var BUILTIN_PACKAGE_CMD = 'pip freeze';
-  var EXTRA_PACKAGE_CMD   = BUILTIN_PACKAGE_CMD + toolkit.strf(' --path {0}', packageInstallPath);
-
-  var cmds = [EXTRA_PACKAGE_CMD, BUILTIN_PACKAGE_CMD]
-  async.eachSeries(cmds, function(cmd, asyncCallback) {
-    childProcess.exec(cmd, function(err, stdout, stderr) {
+  var pipFreezes = [
+    { isBuiltin: true,  cmd: 'pip', cmdArgs: [ 'freeze' ] },
+    { isBuiltin: false, cmd: 'pip', cmdArgs: [ 'freeze', '--path', packageInstallPath] },
+  ]
+  async.eachSeries(pipFreezes, function(pipFreeze, asyncCallback) {
+    toolkit.childProcessSpawn(pipFreeze.cmd, pipFreeze.cmdArgs, null, function(err, stdout) {
       if (err) return asyncCallback(err);
 
       stdout.trim().split('\n').forEach(function(pkg) {
@@ -2441,7 +2437,7 @@ exports.listInstalledPythonPackages = function(req, res, next) {
         packageVersionMap[parts[0]] = {
           name     : parts[0],
           version  : parts[1],
-          isBuiltin: cmd === BUILTIN_PACKAGE_CMD,
+          isBuiltin: pipFreeze.isBuiltin,
         };
       });
 
@@ -2467,159 +2463,225 @@ exports.listInstalledPythonPackages = function(req, res, next) {
 };
 
 exports.getPythonPackageInstallStatus = function(req, res, next) {
-  var cacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
-  res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+  var cacheKey = toolkit.getCacheKey('cache', 'pythonPackageInstallStatus');
+  res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
     if (err) return next(err);
 
-    var installingStatus = null;
+    var installStatus = [];
     if (cacheRes) {
-      installingStatus = JSON.parse(cacheRes);
+      installStatus = Object.values(cacheRes) || [];
+      installStatus = installStatus.map(function(x) {
+        return JSON.parse(x);
+      });
+
+      // 排序
+      installStatus = installStatus.sort(function(a, b) {
+        if (a.order < b.order) return -1;
+        else if (a.order > b.order) return 1;
+        else return 0;
+      });
     }
 
-    var ret = toolkit.initRet(installingStatus);
+    var ret = toolkit.initRet(installStatus);
     return res.locals.sendJSON(ret);
   });
 };
 
+exports.clearPythonPackageInstallStatus = function(req, res, next) {
+  var cacheKey = toolkit.getCacheKey('cache', 'pythonPackageInstallStatus');
+  res.locals.cacheDB.del(cacheKey, function(err) {
+    if (err) return next(err);
+    return res.locals.sendJSON();
+  });
+};
+
 exports.installPythonPackage = function(req, res, next) {
-  var pkg     = req.body.pkg;
-  var mirror  = req.body.mirror;
-  var isWheel = false;
+  var mirror   = req.body.mirror;
+  var packages = req.body.packages.trim().split(/\s+/);
 
-  // 适配Wheel包
-  if (toolkit.endsWith(pkg, '.whl')) {
-    pkg = path.join(CONFIG.RESOURCE_ROOT_PATH, pkg);
-    isWheel = true;
-  }
+  // 安装进度
+  var installStatusCacheKey = toolkit.getCacheKey('cache', 'pythonPackageInstallStatus');
+  var installStatus         = [];
 
-  // Python包安装路径
+  // Python 包安装路径
   var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
   fs.ensureDirSync(packageInstallPath);
 
-  // 安装状态缓存
-  var statusCacheKey = toolkit.getCacheKey('cache', 'installPythonPackage');
-  var statusAge = 3600;
+  // 单个包安装处理
+  function _installPackage(packageInfo, callback) {
+    async.series([
+      // 记录安装中状态
+      function(asyncCallback) {
+        packageInfo.startTimeMs = Date.now();
+        packageInfo.status      = 'installing';
+        return res.locals.cacheDB.hset(installStatusCacheKey, packageInfo.package, JSON.stringify(packageInfo), asyncCallback);
+      },
+      // 清空之前安装的内容
+      function(asyncCallback) {
+        // Wheel 包无需删除原始目录
+        if (toolkit.endsWith(packageInfo.package, '.whl')) return asyncCallback();
 
-  function createInstallStatus(status, stderr) {
-    var installStatus = {
-      pkg      : pkg,
-      status   : status,
-      message  : stderr || null,
-      timestamp: new Date(),
-    }
-    installStatus = JSON.stringify(installStatus);
-    return installStatus;
+        var packageName = packageInfo.package.split('=')[0].replace(/-/g, '_');
+
+        var cmd = 'rm';
+        var cmdArgs = [ '-rf' ];
+
+        // 读取需要删除的目录
+        fs.readdirSync(packageInstallPath).forEach(function(folderName) {
+          var absFolderPath   = path.join(packageInstallPath, folderName);
+          var absMetaPath     = path.join(absFolderPath, 'METADATA');
+          var absTopLevelPath = path.join(absFolderPath, 'top_level.txt');
+
+          // 非dist-info目录，跳过
+          if (!toolkit.startsWith(folderName, packageName + '-') || !toolkit.endsWith(folderName, '.dist-info')) return;
+          // 不存在METADATA文件，跳过
+          if (!fs.existsSync(absMetaPath)) return;
+
+          // 提取METADATA中名称
+          var metaName = null;
+          var metaLines = fs.readFileSync(absMetaPath).toString().split('\n');
+          for (var i = 0; i < metaLines.length; i++) {
+            if (toolkit.startsWith(metaLines[i], 'Name: ')) {
+              metaName = metaLines[i].split(':')[1].trim();
+              break;
+            }
+          }
+
+          // METADATA中名称与包名不同，跳过
+          if (metaName !== packageName) return;
+
+          // 需要删除的目录
+          cmdArgs.push(absFolderPath);
+
+          // 提取top_level.txt内容
+          // 不存在top_level.txt文件，跳过
+          if (!fs.existsSync(absTopLevelPath)) return;
+          var topLevelName = fs.readFileSync(absTopLevelPath).toString().trim();
+
+          // 需要删除的目录
+          var absTopLevelFolderPath = path.join(packageInstallPath, topLevelName);
+          cmdArgs.push(absTopLevelFolderPath);
+        });
+        toolkit.childProcessSpawn(cmd, cmdArgs, null, function(err) {
+          if (err) {
+            return asyncCallback(new E('ESys', 'Preparing Python package failed', {
+              package: packageInfo.package,
+              message: err.toString(),
+            }));
+          }
+          return asyncCallback();
+        });
+      },
+      // 执行 PIP 命令
+      function(asyncCallback) {
+        var cmd = 'pip';
+        var cmdArgs = [
+          'install',
+          '--no-cache-dir',
+          '--default-timeout', '60',
+          '-t', packageInstallPath,
+        ];
+
+        // 启用镜像源
+        if (toolkit.notNothing(mirror)) {
+          cmdArgs.push('-i', mirror);
+        }
+
+        if (toolkit.endsWith(packageInfo.package, '.whl')) {
+          // Wheel 包
+          var wheelFilePath = path.join(CONFIG.RESOURCE_ROOT_PATH, packageInfo.package);
+          cmdArgs.push(wheelFilePath);
+
+        } else {
+          // PIP 包
+          cmdArgs.push(packageInfo.package);
+        }
+
+        toolkit.childProcessSpawn(cmd, cmdArgs, null, function(err) {
+          if (err) {
+            // 安装失败
+            return asyncCallback(new E('ESys', 'Install Python package failed', {
+              package: packageInfo.package,
+              message: err.toString(),
+            }));
+          }
+
+          return asyncCallback();
+        });
+      },
+    ], function(err) {
+      // 等待数秒后记录结果
+      setTimeout(function() {
+        // 安装状态 / 错误信息
+        packageInfo.endTimeMs = Date.now();
+        if (err) {
+          packageInfo.status = 'failure';
+          packageInfo.error = err.detail ? err.detail.message : err.message;
+        } else {
+          packageInfo.status = 'success';
+        }
+
+        return res.locals.cacheDB.hset(installStatusCacheKey, packageInfo.package, JSON.stringify(packageInfo), callback);
+      }, 3 * 1000);
+    });
   }
 
   async.series([
-    // 记录安装信息
+    // 检查 / 清理安装状态信息
     function(asyncCallback) {
-      var installStatus = createInstallStatus('RUNNING');
-      res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
-    },
-    // 清空之前安装的内容
-    function(asyncCallback) {
-      if (isWheel) return asyncCallback();
+      res.locals.cacheDB.hgetall(installStatusCacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
-      var pkgName = pkg.split('=')[0].replace(/-/g, '_');
+        var waitingPackages = [];
+        if (cacheRes) {
+          waitingPackages = Object.values(cacheRes) || [];
+          waitingPackages = waitingPackages.filter(function(packageInfo) {
+            if ('string' === typeof packageInfo) {
+              packageInfo = JSON.parse(packageInfo);
+            }
 
-      var cmd = 'rm';
-      var cmdArgs = [ '-rf'];
-
-      // 读取需要删除的目录
-      fs.readdirSync(packageInstallPath).forEach(function(folderName) {
-        var absFolderPath   = path.join(packageInstallPath, folderName);
-        var absMetaPath     = path.join(absFolderPath, 'METADATA');
-        var absTopLevelPath = path.join(absFolderPath, 'top_level.txt');
-
-        // 非dist-info目录，跳过
-        if (!toolkit.startsWith(folderName, pkgName + '-') || !toolkit.endsWith(folderName, '.dist-info')) return;
-        // 不存在METADATA文件，跳过
-        if (!fs.existsSync(absMetaPath)) return;
-
-        // 提取METADATA中名称
-        var metaName = null;
-        var metaLines = fs.readFileSync(absMetaPath).toString().split('\n');
-        for (var i = 0; i < metaLines.length; i++) {
-          if (toolkit.startsWith(metaLines[i], 'Name: ')) {
-            metaName = metaLines[i].split(':')[1].trim();
-            break;
-          }
+            return packageInfo.status === 'waiting';
+          });
         }
 
-        // METADATA中名称与包名不同，跳过
-        if (metaName !== pkgName) return;
-
-        // 需要删除的目录
-        cmdArgs.push(absFolderPath);
-
-        // 提取top_level.txt内容
-        // 不存在top_level.txt文件，跳过
-        if (!fs.existsSync(absTopLevelPath)) return;
-        var topLevelName = fs.readFileSync(absTopLevelPath).toString().trim();
-
-        // 需要删除的目录
-        var absTopLevelFolderPath = path.join(packageInstallPath, topLevelName);
-        cmdArgs.push(absTopLevelFolderPath);
-      })
-      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
-        if (err) {
-          // 安装失败
-          var installStatus = createInstallStatus('FAILURE', stderr);
-          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
-            if (err) return asyncCallback(err);
-
-            return asyncCallback(new E('ESys', 'Preparing Python package failed', {
-              package: pkg,
-              stderr : stderr,
-            }));
-          });
+        if (waitingPackages.length > 0) {
+          // 之前的安装仍在进行
+          return asyncCallback(new E('EBizRequestConflict', 'Previous Python package installing is not finished.'));
 
         } else {
-          return asyncCallback();
+          // 清理安装状态缓存
+          return res.locals.cacheDB.del(installStatusCacheKey, asyncCallback);
         }
       });
     },
+    // 初始化安装状态
     function(asyncCallback) {
-      var cmd = 'pip';
-      var cmdArgs = [
-        'install',
-        '--no-cache-dir',
-        '--default-timeout', '60',
-        '-t', packageInstallPath,
-      ];
-
-      // 启用镜像源
-      if (toolkit.notNothing(mirror)) {
-        cmdArgs.push('-i', mirror);
-      }
-
-      cmdArgs.push(pkg);
-
-      res.locals.logger.info('PIP: {0} {1}', cmd, cmdArgs.join(' '));
-      childProcess.execFile(cmd, cmdArgs, function(err, stdout, stderr) {
-        if (err) {
-          // 安装失败
-          var installStatus = createInstallStatus('FAILURE', stderr);
-          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, function(err) {
-            if (err) return asyncCallback(err);
-
-            return asyncCallback(new E('ESys', 'Install Python package failed', {
-              package: pkg,
-              message: stderr,
-            }));
-          });
-
-        } else {
-          // 安装成功
-          var installStatus = createInstallStatus('SUCCESS', stderr);
-          res.locals.cacheDB.setex(statusCacheKey, statusAge, installStatus, asyncCallback);
-        }
+      installStatus = packages.map(function(pkg, i) {
+        var packageInfo = {
+          order      : i,
+          package    : pkg,
+          status     : 'waiting',
+          startTimeMs: null,
+          endTimeMs  : null,
+          error      : null,
+        };
+        return packageInfo;
       });
+
+      var installStatusForCache = installStatus.reduce(function(acc, x) {
+        acc[x.package] = JSON.stringify(x);
+        return acc;
+      }, {});
+
+      return res.locals.cacheDB.hmset(installStatusCacheKey, installStatusForCache, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);
-    return res.locals.sendJSON();
+
+    // 执行安装
+    async.eachSeries(installStatus, _installPackage);
+
+    res.locals.sendJSON();
   });
 };
 
@@ -2800,12 +2862,12 @@ exports.operateResource = function(req, res, next) {
       }
 
       cmd = 'zip';
-      cmdArgs.push('-r', zipFileName, targetName); // 在当前目录执行
+      cmdArgs.push('-q', '-r', zipFileName, targetName); // 在当前目录执行
       break;
 
     case 'unzip':
       cmd = 'unar';
-      cmdArgs.push('-d', '-r', targetName);
+      cmdArgs.push('-q', '-d', '-r', targetName);
       break;
 
     case 'cp':
@@ -2838,15 +2900,16 @@ exports.operateResource = function(req, res, next) {
   }
 
   var cmdOpt = {
-    cwd  : currentAbsDir,
-    stdio: 'ignore',
+    cwd: currentAbsDir,
   };
-  childProcess.spawn(cmd, cmdArgs, cmdOpt).on('close', function(code) {
-    var err = code === 0 ? null : new E('EBizCondition', 'Resource operation Failed');
-
-    if (err) return next(err);
+  toolkit.childProcessSpawn(cmd, cmdArgs, cmdOpt, function(err, stdout) {
+    if (err) {
+      return next(new E('EBizCondition', 'Resource operation Failed', {
+        message: err.toString(),
+      }));
+    }
     return res.locals.sendJSON();
-  });
+  })
 };
 
 // 文件服务

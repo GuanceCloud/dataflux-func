@@ -134,10 +134,13 @@ Wroker Queue Length      : Worker 队列长度
               </el-form>
 
               <!-- 系统报告 -->
-              <br>
               <el-divider content-position="left"><h1>{{ $t('System Report') }}</h1></el-divider>
 
               <el-form label-width="120px">
+                <el-form-item>
+                  <el-button @click="getSystemReport">{{ $t('Get System Report') }}</el-button>
+                </el-form-item>
+
                 <template v-if="showSystemReport">
                   <el-form-item>
                     <el-input :placeholder="$t('Loading...')"
@@ -153,10 +156,6 @@ Wroker Queue Length      : Worker 队列长度
                     <InfoBlock type="info" :title="$t('Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}')" />
                   </el-form-item>
                 </template>
-
-                <el-form-item>
-                  <el-button @click="getSystemReport">{{ $t('Get System Report') }}</el-button>
-                </el-form-item>
 
                 <el-form-item>
                   <el-button @click="clearLogCacheTables" v-if="dbDiskUsedInfoTEXT">{{ $t('Clear Log and Cache') }}</el-button>

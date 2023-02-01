@@ -12,12 +12,9 @@ var CONST = require('./yamlResources').get('CONST');
 var ServerError = function(respCodeName, message, detail, originError) {
   var mainRespCodeName = respCodeName.split('.')[0];
 
-  this.info = {
-    error  : CONST.respCodeMap[mainRespCodeName],
-    reason : respCodeName,
-    message: message,
-  };
-
+  this.error       = CONST.respCodeMap[mainRespCodeName],
+  this.reason      = respCodeName,
+  this.message     = message,
   this.detail      = detail;
   this.originError = originError;
   this.status      = parseInt(CONST.respCodeMap[mainRespCodeName]);
@@ -28,10 +25,11 @@ ServerError.prototype = new Error();
 ServerError.prototype.toJSON = function() {
   return {
     ok     : this.status < 400 ? true : false,
-    error  : this.info.error,
-    message: this.info.message,
-    reason : this.info.reason,
+    error  : this.error,
+    reason : this.reason,
+    message: this.message,
     detail : this.detail,
+    status : this.status,
   };
 };
 
@@ -40,8 +38,8 @@ ServerError.prototype.toString = function() {
 };
 
 ServerError.prototype.toHTML = function() {
-  return `<h1>Error (${this.info.error} - ${this.info.reason})</h1><hr>
-  <strong>Message:</strong><p>${this.info.message}<p>
+  return `<h1>Error (${this.error} - ${this.reason})</h1><hr>
+  <strong>Message:</strong><p>${this.message}<p>
   <strong>Info:</strong><pre>${JSON.stringify(this, null, 2)}<pre>`
 };
 
