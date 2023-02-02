@@ -54,24 +54,30 @@
       </el-menu-item>
 
       <el-submenu v-if="isSignedIn"
-        class="menu-right"
+        class="menu-right menu-compact"
         index="user"
         popper-class="navi-content"
         :show-timeout="0"
         :hide-timeout="0">
         <template slot="title">
           <span>
-            <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
-            <i v-else class="fa fa-fw fa-user-md"></i>
-            <span>{{ userProfileName }}</span>
+            <el-badge :hidden="!common.hasNewVersion()" is-dot>
+              <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
+              <i v-else class="fa fa-fw fa-user-md"></i>
+              <span>{{ userProfileName }}</span>
+            </el-badge>
           </span>
         </template>
+
+        <el-menu-item v-if="common.hasNewVersion()" index="https://func.guance.com/">
+          <strong class="text-bad">{{ $t('New Version') }}{{ $t(':') }} {{ $store.state.latestVersion }}</strong>
+        </el-menu-item>
         <el-menu-item index="/setting/profile-setup">{{ $t('Profile') }}</el-menu-item>
         <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
       </el-submenu>
 
       <el-menu-item v-else
-        class="menu-right"
+        class="menu-right menu-compact"
         index="">
         <span>
           <i class="fa fa-fw fa-user-times"></i>
@@ -172,6 +178,9 @@ export default {
 <style>
 .menu-compact .el-submenu__title {
   padding-right: 0;
+}
+.navi-content .el-menu {
+  padding-right: 10px;
 }
 .navi-content .el-menu-item i,
 .navi-content .el-submenu__title i {

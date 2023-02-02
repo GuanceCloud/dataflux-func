@@ -45,6 +45,7 @@ const STATE_CONFIG = {
   showCompleteUserProfile                  : { persist: false, syncXTab: false },
   featureNoticeDismissedMap                : { persist: false, syncXTab: true  },
   featureNoticeDisabledMap                 : { persist: true,  syncXTab: true  },
+  latestVersion                            : { persist: false, syncXTab: false },
 };
 const MUTATION_CONFIG = {
   updateSystemConfig                             : { persist: true  },
@@ -192,6 +193,9 @@ export default new Vuex.Store({
     // 隐藏功能提示
     featureNoticeDismissedMap: {},
     featureNoticeDisabledMap : {},
+
+    // 最新版本
+    latestVersion: null,
   },
   getters: {
     DEFAULT_STATE: state => {
@@ -505,6 +509,10 @@ export default new Vuex.Store({
     resetFeatureNotice(state) {
       state.featureNoticeDismissedMap = {};
       state.featureNoticeDisabledMap  = {};
+    },
+
+    updateLatestVersion(state, latestVersion) {
+      state.latestVersion = latestVersion;
     },
 
     syncState(state, nextState) {

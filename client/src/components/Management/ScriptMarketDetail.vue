@@ -17,7 +17,6 @@ Not Published              : 尚未发布
 Not Installed              : 尚未安装
 No Corresponding Script Set: 无对应脚本集
 Edited                     : 已修改
-New Version                : 新版本
 Publish Note               : 发布说明
 Force Mode                 : 强制模式
 Force Upgrade              : 强制升级

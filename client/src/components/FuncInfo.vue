@@ -48,7 +48,7 @@ Get from the arguments when calling: 在调用时从参数中获取
       </span>
     </template>
     <template v-else>
-      <span class="text-bad">{{ $t('Func not exists') }}</span>
+      <span class="func-not-exists text-bad">{{ $t('Func not exists') }}</span>
     </template>
   </div>
 </template>
@@ -95,6 +95,9 @@ export default {
 }
 .func-info {
   font-size: 16px;
+}
+.func-not-exists {
+  font-size: 14px;
 }
 .func-kwargs-block {
   display: inline-block;

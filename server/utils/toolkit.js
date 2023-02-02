@@ -1597,45 +1597,41 @@ var splitArray = toolkit.splitArray = function splitArray(arr, size) {
 };
 
 /**
+ * Parse Version to array
+ * @param  {String} ver
+ * @return {Integer|false}
+ */
+ var parseVersion = toolkit.parseVersion = function parseVersion(ver) {
+  let m = ('' + ver).trim().match(/^\d+(\.\d+)+$/g);
+  if (!m) {
+    return false;
+  } else {
+    return m[0].split('.').map(x => parseInt(x));
+  }
+};
+
+/**
  * Compare Version
  * @param  {String} a
  * @param  {String} b
  * @return {Integer}
  */
 var compareVersion = toolkit.compareVersion = function compareVersion(a, b) {
-  var _parseInt = function(x) {
-    return parseInt(x) || 0;
-  };
-  var _getVersionString = function(x) {
-    var m = x.match(/^\d+(\.\d+)+/g);
-    if (m) return m[0];
-    return '0';
+  let aParts = parseVersion(a);
+  let bParts = parseVersion(b);
+
+  if (!aParts && bParts) return -1;
+  else if (aParts && !bParts) return 1;
+  else if (!aParts && !bParts) return 0;
+
+  for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+    if (aParts[i] < bParts[i]) return -1;
+    else if (aParts[i] > bParts[i]) return 1;
   }
 
-  a = a || '0';
-  b = b || '0';
-  var _a = _getVersionString(a);
-  var _b = _getVersionString(b);
-
-  if (_a === _b && _a === '0') {
-    if (a == b) return 0;
-    return a < b ? -1 : 1;
-  }
-
-  var aParts = _a.split('.').map(_parseInt);
-  var bParts = _b.split('.').map(_parseInt);
-
-  for (var i = 0; i < Math.max(aParts.length, bParts.length); i++) {
-    aParts[i] = aParts[i] || -1;
-    bParts[i] = bParts[i] || -1;
-
-    if (aParts[i] > bParts[i]) {
-      return 1;
-    } else if (aParts[i] < bParts[i]) {
-      return -1;
-    }
-  }
-  return 0;
+  if (aParts.length < bParts.length) return -1;
+  else if (aParts.length > bParts.length) return -1;
+  else return 0;
 };
 
 /**

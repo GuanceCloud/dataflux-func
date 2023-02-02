@@ -301,3 +301,11 @@ export function getScriptMarketUpdateBadge(scriptMarketId, scriptSetId) {
     }).length || null;
   }
 }
+
+export function hasNewVersion() {
+  let version       = store.getters.CONFIG('VERSION');
+  let latestVersion = store.state.latestVersion;
+  if (!T.parseVersion(version) || !T.parseVersion(latestVersion)) return;
+
+  return T.compareVersion(version, latestVersion) < 0 ? 1 : null;
+}

@@ -59,6 +59,7 @@ import 'element-ui/lib/theme-chalk/display.css';
 import Navi from '@/components/Navi'
 
 import { io } from 'socket.io-client';
+import axios from 'axios';
 
 export default {
   name: 'App',
@@ -177,6 +178,20 @@ export default {
 
       this.$store.commit('updateShowCompleteUserProfile', false);
       this.$store.dispatch('reloadUserProfile');
+    },
+
+    async checkNewVersion() {
+      if (!this.T.parseVersion(this.$store.getters.CONFIG('VERSION'))) return;
+
+      try {
+        let resp = await axios.get('https://static.guance.com/dataflux-func/portable/version');
+        let latestVersion = ('' + resp.data).trim();
+        if (this.T.parseVersion(latestVersion)) {
+          this.$store.commit('updateLatestVersion', latestVersion);
+        }
+      } catch(_) {
+        // 忽略错误
+      }
     },
   },
   computed: {
@@ -354,6 +369,9 @@ export default {
         }
       };
     });
+
+    // 检查更新
+    this.checkNewVersion();
   },
   beforeDestroy() {
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);

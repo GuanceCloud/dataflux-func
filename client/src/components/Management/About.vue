@@ -11,6 +11,7 @@ About: 关于
 'Icons used are from {0}'        : '图标来自 {0}'
 'Illustrations used are from {0}': '插图来自 {0}'
 
+'The latest version is {ver}, click here to go to the official website': '最新版为 {ver}，点击此处前往官方网站'
 
 Version Information: 版本信息
 System Report      : 系统报告
@@ -76,7 +77,7 @@ Wroker Queue Length      : Worker 队列长度
                   <ul>
                     <li>
                       <i18n path="Monospaced font is from {0}">
-                        <el-link href="https://typeof.net/Iosevka/"  target="_blank">
+                        <el-link href="https://typeof.net/Iosevka/" target="_blank">
                           <i class="fa fa-fw fa-external-link"></i>
                           Iosevka
                         </el-link>
@@ -84,7 +85,7 @@ Wroker Queue Length      : Worker 队列长度
                     </li>
                     <li>
                       <i18n path="Icons used are from {0}">
-                        <el-link href="https://fontawesome.com/v4/"  target="_blank">
+                        <el-link href="https://fontawesome.com/v4/" target="_blank">
                           <i class="fa fa-fw fa-external-link"></i>
                           Font Awesome (v4)
                         </el-link>
@@ -92,7 +93,7 @@ Wroker Queue Length      : Worker 队列长度
                     </li>
                     <li>
                       <i18n path="Illustrations used are from {0}">
-                        <el-link href="https://flexiple.com/illustrations/"  target="_blank">
+                        <el-link href="https://flexiple.com/illustrations/" target="_blank">
                           <i class="fa fa-fw fa-external-link"></i>
                           Scale by flexiple
                         </el-link>
@@ -107,7 +108,10 @@ Wroker Queue Length      : Worker 队列长度
 
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
-                  <el-input :placeholder="$t('Loading...')" :readonly="true" :value="about.version"></el-input>
+                  <el-input :readonly="true" :value="$store.getters.CONFIG('VERSION')"></el-input>
+                  <el-link href="https://func.guance.com/" target="_blank" v-if="common.hasNewVersion()">
+                    {{ $t('The latest version is {ver}, click here to go to the official website', { ver: $store.state.latestVersion }) }}
+                  </el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('Architecture')">
@@ -205,7 +209,6 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/image-info/do/get');
       if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         this.about = {
-          version         : apiRes.data.CI_COMMIT_REF_NAME,
           architecture    : apiRes.data.ARCHITECTURE,
           releaseTimestamp: apiRes.data.CREATE_TIMESTAMP,
           vueVersion      : Vue.version,
@@ -215,7 +218,6 @@ export default {
 
       } else {
         this.about = {
-          version      : this.NO_INFO_TEXT,
           architecture : this.NO_INFO_TEXT,
           vueVersion   : this.NO_INFO_TEXT,
           nodeVersion  : this.NO_INFO_TEXT,
