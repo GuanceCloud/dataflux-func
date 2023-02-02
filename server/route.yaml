@@ -1215,7 +1215,7 @@ mainAPI:
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
-  manualRunCrontabConfig:
+  runCrontabConfigManually:
     showInDoc    : true
     name         : Run Crontab Config manually
     method       : post
@@ -1612,142 +1612,6 @@ mainAPI:
     requireSignIn: true
     privilege    : general_w
 
-  listInstalledPythonPackages:
-    name         : List installed Python packages
-    method       : get
-    url          : /api/v1/python-packages/installed
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  getPythonPackageInstallStatus:
-    name         : Get Python package installing status
-    method       : get
-    url          : /api/v1/python-packages/install-status
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  clearPythonPackageInstallStatus:
-    name         : Clear Python package installing status
-    method       : delete
-    url          : /api/v1/python-packages/install-status
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-
-  installPythonPackage:
-    name         : Install Python package
-    method       : post
-    url          : /api/v1/python-packages/install
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-    body:
-      mirror:
-        $desc: PIP Mirror (e.g. https://pypi.tuna.tsinghua.edu.cn/simple/)
-        $type: string
-      packages:
-        $desc      : Python Packages (e.g. prettytable requests==1.0.0)
-        $isRequired: true
-        $type      : string
-        $minLength : 1
-
-  listResources:
-    name         : List resource files
-    method       : get
-    url          : /api/v1/resources/dir
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      folder:
-        $desc: 文件夹
-        $type: string
-      type:
-        $desc: 根据类型过滤
-        $type: commaArray
-        $commaArrayIn:
-          - folder
-          - file
-
-  getResources:
-    name         : Get resource file info
-    method       : get
-    url          : /api/v1/resources/get
-    response     : blob
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      filePath:
-        $desc    : 文件路径
-        $required: true
-        $type    : string
-
-  downloadResources:
-    name         : Download resource file
-    method       : get
-    url          : /api/v1/resources
-    response     : blob
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      filePath:
-        $desc    : 文件路径
-        $required: true
-        $type    : string
-      preview:
-        $desc    : 预览模式
-        $required: false
-        $type    : boolean
-
-  uploadResource:
-    name         : Upload resource file
-    method       : post
-    url          : /api/v1/resources
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-    files:
-      $limitSize   : 10GB
-      $allowedTypes: '*/*'
-    body:
-      folder:
-        $desc: 文件夹
-        $type: string
-      rename:
-        $desc: 文件重命名
-        $type: string
-
-  operateResource:
-    name         : Operate resource file
-    method       : post
-    url          : /api/v1/resources/operate
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-    body:
-      targetPath:
-        $desc    : 操作目标路径（文件/目录）
-        $required: true
-        $type    : string
-      operation:
-        $desc    : 执行操作
-        $required: true
-        $type    : enum
-        $in:
-          - mkdir
-          - zip
-          - unzip
-          - cp
-          - mv
-          - rm
-      operationArgument:
-        $desc     : 执行操作参数
-        $allowNull: true
-        $required : false
-        $type     : string
-
   fileService:
     name         : File Service
     method       : get
@@ -1779,6 +1643,146 @@ mainAPI:
     response     : text
     requireSignIn: false
     privilege    : general_r
+
+# Python 包处理 API
+pythonPackageAPI:
+  listInstalled:
+    name         : List installed Python packages
+    method       : get
+    url          : /api/v1/python-packages/installed/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  getInstallStatus:
+    name         : Get Python package installing status
+    method       : get
+    url          : /api/v1/python-packages/install-status/do/get
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
+  clearInstallStatus:
+    name         : Clear Python package installing status
+    method       : get
+    url          : /api/v1/python-packages/install-status/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
+  install:
+    name         : Install Python package
+    method       : post
+    url          : /api/v1/python-packages/do/install
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      mirror:
+        $desc: PIP Mirror (e.g. https://pypi.tuna.tsinghua.edu.cn/simple/)
+        $type: string
+      packages:
+        $desc      : Python Packages (e.g. prettytable requests==1.0.0)
+        $isRequired: true
+        $type      : string
+        $minLength : 1
+
+# 资源文件 API
+resourceAPI:
+  list:
+    name         : List resource files
+    method       : get
+    url          : /api/v1/resources/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      folder:
+        $desc: 文件夹
+        $type: string
+      type:
+        $desc: 根据类型过滤
+        $type: commaArray
+        $commaArrayIn:
+          - folder
+          - file
+
+  get:
+    name         : Get resource file info
+    method       : get
+    url          : /api/v1/resources/do/get
+    response     : blob
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+
+  download:
+    name         : Download resource file
+    method       : get
+    url          : /api/v1/resources/do/download
+    response     : blob
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      filePath:
+        $desc    : 文件路径
+        $required: true
+        $type    : string
+      preview:
+        $desc    : 预览模式
+        $required: false
+        $type    : boolean
+
+  upload:
+    name         : Upload resource file
+    method       : post
+    url          : /api/v1/resources/do/upload
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    files:
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+    body:
+      folder:
+        $desc: 文件夹
+        $type: string
+      rename:
+        $desc: 文件重命名
+        $type: string
+
+  operate:
+    name         : Operate resource file
+    method       : post
+    url          : /api/v1/resources/do/operate
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      targetPath:
+        $desc    : 操作目标路径（文件/目录）
+        $required: true
+        $type    : string
+      operation:
+        $desc    : 执行操作
+        $required: true
+        $type    : enum
+        $in:
+          - mkdir
+          - zip
+          - unzip
+          - cp
+          - mv
+          - rm
+      operationArgument:
+        $desc     : 执行操作参数
+        $allowNull: true
+        $required : false
+        $type     : string
 
 # 脚本集
 scriptSetAPI:

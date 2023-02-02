@@ -259,7 +259,7 @@ export default {
         checkStrictly: true,
         lazy         : true,
         lazyLoad: async (node, resolve) => {
-          let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
+          let apiRes = await this.T.callAPI_get('/api/v1/resources/do/list', {
             query: { folder: node.value, type: 'folder' },
           });
           if (!apiRes || !apiRes.ok) return;

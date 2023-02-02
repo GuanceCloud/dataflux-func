@@ -66,6 +66,7 @@
     Clear Log and Cache tables                     : 清空日志和缓存表
     List installed Python packages                 : 列出已安装的 Python 包
     Get Python package installing status           : 获取 Python 包安装状态
+    Clear Python package installing status         : 清除 Python 包安装状态
     Install Python package                         : 安装 Python 包
     List resource files                            : 列出资源文件
     Get resource file info                         : 获取资源文件信息

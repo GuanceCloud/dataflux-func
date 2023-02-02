@@ -106,8 +106,13 @@ File already existed                                                            
               </el-link>
 
               <template v-else>
-                <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
-                <code>{{ scope.row.name }}</code>
+                <el-link type="default"
+                  :href="scope.row.downloadURL"
+                  :download="scope.row.name"
+                  target="_blank">
+                  <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
+                  <code>{{ scope.row.name }}</code>
+                  </el-link>
               </template>
             </template>
           </el-table-column>
@@ -139,15 +144,11 @@ File already existed                                                            
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="260">
+          <el-table-column align="right" width="180">
             <template slot-scope="scope">
-              <el-link v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)">{{ $t('Enter') }}</el-link>
-
-              <template v-else-if="scope.row.type === 'file'">
-                <el-link
-                  :href="scope.row.downloadURL"
-                  :download="scope.row.name"
-                  target="_blank">{{ $t('Download') }}</el-link>
+              <template v-if="scope.row.type === 'file'">
+                <el-link v-if="zipExts.includes(scope.row.ext)"
+                  @click="resourceOperation(scope.row.name, 'unzip')">{{ $t('Unzip') }}</el-link>
 
                 <el-link
                   v-if="previewExts.includes(scope.row.ext) || !scope.row.ext"
@@ -161,11 +162,18 @@ File already existed                                                            
               <el-dropdown @command="resourceOperationCmd">
                 <el-link :underline="false">{{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i></el-link>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="zipExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'unzip' }">{{ $t('Unzip') }}</el-dropdown-item>
-                  <el-dropdown-item v-else :command="{ data: scope.row, operation: 'zip' }">{{ $t('Zip') }}</el-dropdown-item>
-                  <el-dropdown-item :command="{ data: scope.row, operation: 'cp' }">{{ $t('Copy') }}</el-dropdown-item>
-                  <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">{{ $t('Move') }}</el-dropdown-item>
-                  <el-dropdown-item class="text-bad" divided :command="{ data: scope.row, operation: 'rm' }">{{ $t('Delete') }}</el-dropdown-item>
+                  <el-dropdown-item v-if="!zipExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'zip' }">
+                    {{ $t('Zip') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item divided :command="{ data: scope.row, operation: 'cp' }">
+                    {{ $t('Copy') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">
+                    {{ $t('Move') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item divided class="text-bad" :command="{ data: scope.row, operation: 'rm' }">
+                    {{ $t('Delete') }}
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </template>
@@ -231,7 +239,7 @@ export default {
       };
 
       let _listQuery = this.dataFilter = this.T.createListQuery();
-      let apiRes = await this.T.callAPI_get('/api/v1/resources/dir', {
+      let apiRes = await this.T.callAPI_get('/api/v1/resources/do/list', {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
@@ -257,12 +265,12 @@ export default {
               f.sizeHuman = this.T.byteSizeHuman(f.size);
             }
 
-            f.previewURL = this.T.formatURL(`/api/v1/resources`, {
+            f.previewURL = this.T.formatURL(`/api/v1/resources/do/download`, {
               baseURL: true,
               auth   : true,
               query  : { preview: true, filePath: this.getPath(f.name) },
             });
-            f.downloadURL = this.T.formatURL(`/api/v1/resources`, {
+            f.downloadURL = this.T.formatURL(`/api/v1/resources/do/download`, {
               baseURL: true,
               auth   : true,
               query  : { filePath: this.getPath(f.name) },
@@ -411,7 +419,7 @@ export default {
       }, 200);
 
       // 执行操作
-      let apiRes = await this.T.callAPI('post', '/api/v1/resources/operate', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/resources/do/operate', {
         body : {
           targetPath       : this.getPath(name),
           operation        : operation,
@@ -511,7 +519,7 @@ export default {
       let _updateProgressTipFunc = this.T.throttle((progressTip) => {
         this.progressTip = progressTip;
       }, 500);
-      let apiRes = await this.T.callAPI('post', '/api/v1/resources', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/resources/do/upload', {
         body : bodyData,
         alert: { okMessage: this.$t('File uploaded') },
         onUploadProgress: (event) => {
@@ -555,7 +563,7 @@ export default {
         this.isProcessing = true;
       }, 200);
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/do/install', {
         body : {
           mirror: this.pypiMirror,
           pkg   : this.getPath(name),

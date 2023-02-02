@@ -1,57 +1,57 @@
 <i18n locale="zh-CN" lang="yaml">
 Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.: 一些尚未正式公开的实验性功能可在本页面开启，本页面配置仅保存在浏览器本地
 
-Enable Blueprint: 开启蓝图
+Enable Blueprint: 启用蓝图
 For developing Scripts graphically: 用于图形化方式开发脚本
-Once opened, it can be accessed from Navigation Bar {0} Blueprint: 开启后，可在顶部「导航栏」{0}「蓝图」进入
+Once enabled, it can be accessed from Navigation Bar {0} Blueprint: 启用后，可在顶部「导航栏」{0}「蓝图」进入
 
-Enable PIP Tool: 开启 PIP 工具
+Enable PIP Tool: 启用 PIP 工具
 For installing 3rd-party Python package: 用于安装第三方 Python 包
-Once opened, it can be accessed from Management page {0} PIP tool: 开启后，可在「管理」{0}「PIP 工具」进入
+Once enabled, it can be accessed from Management page {0} PIP tool: 启用后，可在「管理」{0}「PIP 工具」进入
 
-Enable File Manage: 开启文件管理
+Enable File Manage: 启用文件管理
 For managing files on the server side: 用于管理服务器端文件
-Once opened, it can be accessed from Management page {0} File Manage: 开启后，可在「管理」{0}「文件管理」进入
+Once enabled, it can be accessed from Management page {0} File Manage: 启用后，可在「管理」{0}「文件管理」进入
 
-Enable File Service: 开启文件服务
+Enable File Service: 启用文件服务
 For serving resource directories as file services: 用于将资源目录提供为文件服务
-Once opened, it can be accessed from Management page {0} File Service: 开启后，可在「管理」{0}「文件服务」进入
+Once enabled, it can be accessed from Management page {0} File Service: 启用后，可在「管理」{0}「文件服务」进入
 
-Enable Func Cache Manage: 开启函数缓存管理
+Enable Func Cache Manage: 启用函数缓存管理
 For managing cached data from Scripts: 用于管理脚本产生的缓存数据
-Once opened, it can be accessed from Management page {0} Func Cache Manage: 开启后，可在「管理」{0}「函数缓存管理」进入
+Once enabled, it can be accessed from Management page {0} Func Cache Manage: 启用后，可在「管理」{0}「函数缓存管理」进入
 
-Enable Func Store Manage: 开启函数存储管理
+Enable Func Store Manage: 启用函数存储管理
 For managing stored data from Scripts: 用于管理脚本产生的存储数据
-Once opened, it can be accessed from Management page {0} Func Store Manage: 开启后，可在「管理」{0}「函数存储管理」进入
+Once enabled, it can be accessed from Management page {0} Func Store Manage: 启用后，可在「管理」{0}「函数存储管理」进入
 
-Enable Func Doc: 开启函数文档
+Enable Func Doc: 启用函数文档
 Document page for all exported Python functions: 函数的文档，包含所有导出的 Python 函数
-Once opened, it can be accessed from Management page {0} Func Doc: 开启后，可在「管理」{0}「函数文档」进入
+Once enabled, it can be accessed from Management page {0} Func Doc: 启用后，可在「管理」{0}「函数文档」进入
 
-Enable System Status Page: 开启系统状态查看页面
+Enable System Status Page: 启用系统状态查看页面
 Status Page for current system: 本系统状态查看页面
-Once opened, it can be accessed from Management page {0} System Status: 开启后，可在「管理」{0}「系统状态」进入
+Once enabled, it can be accessed from Management page {0} System Status: 启用后，可在「管理」{0}「系统状态」进入
 
-Enable System Log Page: 开启系统日志查看页面
+Enable System Log Page: 启用系统日志查看页面
 Log Page for current system: 本系统日志查看页面
-Once opened, it can be accessed from Management page {0} System Logs: 开启后，可在「管理」{0}「系统日志」进入
+Once enabled, it can be accessed from Management page {0} System Logs: 启用后，可在「管理」{0}「系统日志」进入
 
-Enable Abnormal Request Page: 开启异常请求查看页面
+Enable Abnormal Request Page: 启用异常请求查看页面
 Abnormal Request Page for current system: 本系统异常请求查看页面
-Once opened, it can be accessed from Management page {0} Abnormal Requests: 开启后，可在「管理」{0}「异常请求」进入
+Once enabled, it can be accessed from Management page {0} Abnormal Requests: 启用后，可在「管理」{0}「异常请求」进入
 
-Enable Script Log Page: 开启脚本日志查看页面
+Enable Script Log Page: 启用脚本日志查看页面
 Log Page for Script runtime: 脚本运行时日志查看页面
-Once opened, it can be accessed from Management page {0} Script Logs: 开启后，可在「管理」{0}「脚本日志」进入
+Once enabled, it can be accessed from Management page {0} Script Logs: 启用后，可在「管理」{0}「脚本日志」进入
 
-Enable Script Failure Page: 开启脚本故障查看页面
+Enable Script Failure Page: 启用脚本故障查看页面
 Failure Page for Script runtime: 脚本运行时故障查看页面
-Once opened, it can be accessed from Management page {0} Script Failures: 开启后，可在「管理」{0}「脚本故障」进入
+Once enabled, it can be accessed from Management page {0} Script Failures: 启用后，可在「管理」{0}「脚本故障」进入
 
-Enable Access Key Manage: 开启 Access Key 管理
+Enable Access Key Manage: 启用 Access Key 管理
 For allowing external systems to call DataFlux Func APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
-Once opened, it can be accessed from Management page {0} Access Keys: 开启后，可在「管理」{0}「Access Keys」进入
+Once enabled, it can be accessed from Management page {0} Access Keys: 启用后，可在「管理」{0}「Access Keys」进入
 </i18n>
 
 <template>
@@ -78,7 +78,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Blueprint')" v-model="form.Blueprint"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For developing Scripts graphically') }}
-                    <br><i18n path="Once opened, it can be accessed from Navigation Bar {0} Blueprint"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Navigation Bar {0} Blueprint"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -88,7 +88,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable PIP Tool')" v-model="form.PIPTool"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For installing 3rd-party Python package') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} PIP tool"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} PIP tool"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -96,7 +96,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable File Manage')" v-model="form.FileManage"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For managing files on the server side') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} File Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} File Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -104,7 +104,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable File Service')" v-model="form.FileService"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For serving resource directories as file services') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} File Service"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} File Service"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -112,14 +112,14 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Func Cache Manage')" v-model="form.FuncCacheManage"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For managing cached data from Scripts') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Cache Management"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Cache Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
                 <el-form-item prop="FuncStoreManage">
                   <el-switch :active-text="$t('Enable Func Store Manage')" v-model="form.FuncStoreManage"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For managing stored data from Scripts') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Store Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Store Manage"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -127,7 +127,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Func Doc')" v-model="form.FuncDoc"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Document page for all exported Python functions') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Func Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -135,21 +135,21 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable System Status Page')" v-model="form.SysStat"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Status Page for current system') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} System Status"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} System Status"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
                 <el-form-item prop="SystemLogs">
                   <el-switch :active-text="$t('Enable System Log Page')" v-model="form.SystemLogs"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Log Page for current system') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} System Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} System Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
                 <el-form-item prop="AbnormalReqs">
                   <el-switch :active-text="$t('Enable Abnormal Request Page')" v-model="form.AbnormalReqs"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Abnormal Request Page for current system') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Abnormal Requests"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Abnormal Requests"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -157,7 +157,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Script Log Page')" v-model="form.ScriptLogs"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Log Page for Script runtime') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Script Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Script Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -165,7 +165,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Script Failure Page')" v-model="form.ScriptFailures"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Failure Page for Script runtime') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Script Failures"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Script Failures"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -173,7 +173,7 @@ Once opened, it can be accessed from Management page {0} Access Keys: 开启后�
                   <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('For allowing external systems to call DataFlux Func APIs') }}
-                    <br><i18n path="Once opened, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
               </el-form>

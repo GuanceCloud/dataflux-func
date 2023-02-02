@@ -4,10 +4,8 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var routeLoader = require('../utils/routeLoader');
-var captcha     = require('../utils/captcha');
 
-var operationRecordMid = require('../middlewares/operationRecordMid');
-var mainAPICtrl        = require('../controllers/mainAPICtrl');
+var mainAPICtrl = require('../controllers/mainAPICtrl');
 
 // 总览
 routeLoader.load(ROUTE.mainAPI.overview, [
@@ -39,8 +37,8 @@ routeLoader.load(ROUTE.mainAPI.callAuthLinkByPostWithFormat, [
 ]);
 
 // 通过自动触发配置调用（手动执行）
-routeLoader.load(ROUTE.mainAPI.manualRunCrontabConfig, [
-  mainAPICtrl.manualRunCrontabConfig,
+routeLoader.load(ROUTE.mainAPI.runCrontabConfigManually, [
+  mainAPICtrl.runCrontabConfigManually,
 ]);
 
 // 通过批处理调用
@@ -100,38 +98,6 @@ routeLoader.load(ROUTE.mainAPI.integratedSignIn, [
 // 清空日志/缓存表
 routeLoader.load(ROUTE.mainAPI.clearLogCacheTables, [
   mainAPICtrl.clearLogCacheTables,
-]);
-
-// Python包
-routeLoader.load(ROUTE.mainAPI.listInstalledPythonPackages, [
-  mainAPICtrl.listInstalledPythonPackages,
-]);
-routeLoader.load(ROUTE.mainAPI.getPythonPackageInstallStatus, [
-  mainAPICtrl.getPythonPackageInstallStatus,
-]);
-routeLoader.load(ROUTE.mainAPI.clearPythonPackageInstallStatus, [
-  mainAPICtrl.clearPythonPackageInstallStatus,
-]);
-routeLoader.load(ROUTE.mainAPI.installPythonPackage, [
-  mainAPICtrl.installPythonPackage,
-]);
-
-// 资源文件
-routeLoader.load(ROUTE.mainAPI.listResources, [
-  mainAPICtrl.listResources,
-]);
-routeLoader.load(ROUTE.mainAPI.getResources, [
-  mainAPICtrl.getResources,
-]);
-routeLoader.load(ROUTE.mainAPI.downloadResources, [
-  mainAPICtrl.downloadResources,
-]);
-routeLoader.load(ROUTE.mainAPI.uploadResource, [
-  operationRecordMid.prepare,
-  mainAPICtrl.uploadResource,
-]);
-routeLoader.load(ROUTE.mainAPI.operateResource, [
-  mainAPICtrl.operateResource,
 ]);
 
 // 文件服务

@@ -187,7 +187,7 @@ export default {
       this.isLoadingInstalldPackages = true;
       this.installedPackages = [];
 
-      let apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed');
+      let apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed/do/list');
       this.isLoadingInstalldPackages = false;
 
       if (!apiRes || !apiRes.ok) return;
@@ -202,7 +202,7 @@ export default {
       }
 
       // 正常启动安装
-      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/install', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/do/install', {
         body: {
           mirror  : this.pypiMirror,
           packages: this.packageToInstall,
@@ -215,13 +215,13 @@ export default {
       this.showInstallStatus = true;
     },
     async updateInstallStatus() {
-      let apiRes = await this.T.callAPI_get('/api/v1/python-packages/install-status');
+      let apiRes = await this.T.callAPI_get('/api/v1/python-packages/install-status/do/get');
       if (!apiRes || !apiRes.ok) return;
 
       this.installStatus = apiRes.data;
     },
     async clearInstallStatus() {
-      let apiRes = await this.T.callAPI('delete', '/api/v1/python-packages/install-status');
+      let apiRes = await this.T.callAPI_get('/api/v1/python-packages/install-status/do/clear');
       if (!apiRes || !apiRes.ok) return;
 
       this.showInstallStatus = false;

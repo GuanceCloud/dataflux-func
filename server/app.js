@@ -160,6 +160,8 @@ function startApplication() {
 
   /***** DataFlux Func *****/
   require('./routers/mainAPIRouter');
+  require('./routers/pythonPackageAPIRouter');
+  require('./routers/resourceAPIRouter');
 
   require('./routers/scriptSetAPIRouter');
   require('./routers/scriptAPIRouter');
