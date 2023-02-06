@@ -278,7 +278,7 @@ export default {
       this.$store.commit('updateSocketIOStatus', true);
     }
     const handleError = err => {
-      console.error(err)
+      console.error(err);
 
       try {
         err = JSON.parse(err);
@@ -290,7 +290,7 @@ export default {
         }
 
       } catch(err) {
-        console.error(err)
+        console.error(err);
       }
     }
     this.$nextTick(() => {
