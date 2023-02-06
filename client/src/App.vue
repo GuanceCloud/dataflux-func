@@ -278,7 +278,7 @@ export default {
       this.$store.commit('updateSocketIOStatus', true);
     }
     const handleError = err => {
-      console.error(err)
+      console.error(err);
 
       try {
         err = JSON.parse(err);
@@ -290,7 +290,7 @@ export default {
         }
 
       } catch(err) {
-        console.error(err)
+        console.error(err);
       }
     }
     this.$nextTick(() => {
@@ -389,9 +389,9 @@ export default {
   outline: none !important;
 }
 input, textarea,
-pre, pre *
-.CodeMirror, .CodeMirror *,
-.code-font, .code-font * {
+pre, pre *:not(.fa)
+.CodeMirror, .CodeMirror *:not(.fa),
+.code-font, .code-font *:not(.fa) {
   font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif";
 }
 a {
