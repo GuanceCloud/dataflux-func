@@ -9,6 +9,7 @@ Delete Script Set : 删除脚本集
 Install Script Set: 脚本集详情
 Upgrade Script Set: 脚本集详情
 
+Exactly Match              : 完全匹配
 Local                      : 本地
 Remote                     : 远端
 Requirements               : 依赖项
@@ -134,10 +135,14 @@ Homepage: 前往主页
             <template slot-scope="scope">
               <template v-if="scope.row.local">
                 <strong class="script-set-name">{{ scope.row.local.title || scope.row.local.id }}</strong>
+                &#12288;
+                <el-tag v-if="scope.row.local.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
                   <CopyButton :content="scope.row.local.id" />
+                  &#12288;
+                  <el-tag v-if="scope.row.local.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
@@ -202,10 +207,14 @@ Homepage: 前往主页
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
                 <strong class="script-set-name">{{ scope.row.remote.title || scope.row.remote.id }}</strong>
+                &#12288;
+                <el-tag v-if="scope.row.remote.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
                   <CopyButton :content="scope.row.remote.id" />
+                  &#12288;
+                  <el-tag v-if="scope.row.remote.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.remote.scripts || []).length ) }}
                 </div>
