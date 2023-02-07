@@ -54,6 +54,7 @@ Homepage: 前往主页
 'Processing...': '正在处理...'
 
 "This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.": 这个脚本市场有主页可供访问。<br><br>如果你不了解如何使用这个脚本市场中的脚本集，请先查看脚本市场主页。
+The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 </i18n>
 
 <template>
@@ -108,7 +109,7 @@ Homepage: 前往主页
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Set has ever been published') }}</h1>
 
           <p class="no-data-tip">
-            发布后的脚本集将在此展示，可以挑选需要的脚本集安装到本地
+            {{ $t('The published Script Set will be shown here, you can find and install the ones you need' )}}
           </p>
         </div>
         <el-table v-else
