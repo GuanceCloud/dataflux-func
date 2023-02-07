@@ -837,6 +837,9 @@ kbd {
 .el-message-box__status {
   top: 22px !important;
 }
+.el-message-box__headerbtn {
+  z-index: 1000;
+}
 .el-notification__content {
   text-align: start !important;
 }

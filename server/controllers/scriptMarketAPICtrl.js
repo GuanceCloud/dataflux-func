@@ -562,24 +562,23 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
 
         git.pull(asyncCallback);
       },
-      // 保护密码
-      function(asyncCallback) {
-        _maskGitConfig(localPath, scriptMarket, asyncCallback);
-      },
     ], function(err) {
-      // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue, function() {
-        if (err) {
-          if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
-            return callback(new E('EClient', 'Accessing git repo timeout'));
-          } else {
-            return callback(err);
+      // 保护密码
+      _maskGitConfig(localPath, scriptMarket, function() {
+        // 解锁
+        locals.cacheDB.unlock(lockKey, lockValue, function() {
+          if (err) {
+            if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+              return callback(new E('EClient', 'Accessing git repo timeout'));
+            } else {
+              return callback(err);
+            }
           }
-        }
 
-        // 读取 META
-        var metaData = _getMetaData(scriptMarket);
-        return callback(null, metaData);
+          // 读取 META
+          var metaData = _getMetaData(scriptMarket);
+          return callback(null, metaData);
+        });
       });
     });
   },
@@ -742,9 +741,13 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       },
       // git commit
       function(asyncCallback) {
-        git.addConfig('user.name', locals.user.name)
-        git.addConfig('user.email', locals.user.email)
-        git.commit(pushContent.extra.note, asyncCallback);
+        // git.raw(['config', '-l'], function(err, data) {
+          // console.log('>>>>>>', err, data);
+          git
+          .addConfig('user.name', locals.user.name)
+          .addConfig('user.email', locals.user.email)
+          .commit(pushContent.extra.note, asyncCallback);
+        // })
       },
       // git push / reset
       function(asyncCallback) {
@@ -759,21 +762,20 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
           return asyncCallback();
         });
       },
-      // 保护密码
-      function(asyncCallback) {
-        _maskGitConfig(localPath, scriptMarket, asyncCallback);
-      },
     ], function(err) {
-      // 解锁
-      locals.cacheDB.unlock(lockKey, lockValue, function() {
-        if (err) {
-          if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
-            return callback(new Error('Accessing git repo timeout'));
-          } else {
-            return callback(err);
+      // 保护密码
+      _maskGitConfig(localPath, scriptMarket, function() {
+        // 解锁
+        locals.cacheDB.unlock(lockKey, lockValue, function() {
+          if (err) {
+            if (err instanceof simpleGit.GitPluginError && err.plugin === 'timeout') {
+              return callback(new Error('Accessing git repo timeout'));
+            } else {
+              return callback(err);
+            }
           }
-        }
-        return callback();
+          return callback();
+        });
       });
     });
   },
