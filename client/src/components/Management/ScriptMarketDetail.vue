@@ -72,7 +72,7 @@ Homepage: 前往主页
 
           <div class="header-control" v-if="T.notNothing(data)">
             <template v-if="homepageURL || scriptMarket.type === 'git'">
-              <el-link :href="homepageURL || scriptMarket.configJSON.url">
+              <el-link :href="homepageURL || scriptMarket.configJSON.url" target="_blank">
                 <i class="fa fa-fw fa-external-link"></i>
                 {{ $t('Homepage') }}
               </el-link>
