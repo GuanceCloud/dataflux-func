@@ -67,11 +67,11 @@ RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.c
         rm -rf /usr/src/base/node_modules/node-rdkafka/deps     && \
     case ${TARGETARCH} in \
         "amd64" ) \
-            pip install -i https://pypi.mirrors.ustc.edu.cn/simple/ -r ./requirements.txt \
+            pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements.txt \
             ;; \
 
         "arm64" ) \
-            pip install -i https://pypi.mirrors.ustc.edu.cn/simple/ -r ./requirements-arm64.txt \
+            pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements-arm64.txt \
             ;; \
     esac
 
