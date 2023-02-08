@@ -12,40 +12,39 @@ Get from the arguments when calling: 在调用时从参数中获取
       <strong class="func-title">{{ title || name }}</strong>
       <GotoFuncButton v-if="!hideGotoFunc" :funcId="id"></GotoFuncButton>
       <br>
-      <span class="text-info">def&nbsp;
-        <template v-if="fullDefinition">
-          <!-- 优先使用定义方式展示 -->
-          <code class="code-font text-main">{{ fullDefinition }}</code>
-        </template>
-        <template v-else>
-          <!-- 其次封装方式展示 -->
-          <code class="code-font text-main">{{ id }}(</code
-          ><code v-if="!kwargsJSON" class="code-font">...</code
-          ><template v-else>
-            <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
-              <code class="func-kwargs-name">{{ name }}</code>
+      <span class="code-font text-info">def</span>
+      <template v-if="fullDefinition">
+        <!-- 优先使用定义方式展示 -->
+        <code class="code-font text-main">{{ fullDefinition }}</code>
+      </template>
+      <template v-else>
+        <!-- 其次封装方式展示 -->
+        <code class="code-font text-main">{{ id }}(</code
+        ><code v-if="!kwargsJSON" class="code-font">...</code
+        ><template v-else>
+          <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
+            <code class="func-kwargs-name">{{ name }}</code>
 
-              <el-tooltip placement="top" v-if="common.isFuncArgumentPlaceholder(value)">
+            <el-tooltip placement="top" v-if="common.isFuncArgumentPlaceholder(value)">
+              <div slot="content">
+                <pre class="func-kwargs-value">{{ $t('Get from the arguments when calling') }}</pre>
+              </div>
+              <code>{{ $t('By Input') }}</code>
+            </el-tooltip>
+            <template v-else>
+              <el-tooltip placement="top">
                 <div slot="content">
-                  <pre class="func-kwargs-value">{{ $t('Get from the arguments when calling') }}</pre>
+                  <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
                 </div>
-                <code>{{ $t('By Input') }}</code>
-              </el-tooltip>
-              <template v-else>
-                <el-tooltip placement="top">
-                  <div slot="content">
-                    <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
-                  </div>
-                  <code>{{ $t('Fixed') }}</code>
-                </el-tooltip><CopyButton :content="JSON.stringify(value, null, 2)" />
-              </template>
+                <code>{{ $t('Fixed') }}</code>
+              </el-tooltip><CopyButton :content="JSON.stringify(value, null, 2)" />
+            </template>
 
-              <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
-            </div>
-          </template
-          ><code class="code-font text-main">)</code>
-        </template>
-      </span>
+            <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
+          </div>
+        </template
+        ><code class="code-font text-main">)</code>
+      </template>
     </template>
     <template v-else>
       <span class="func-not-exists text-bad">{{ $t('Func not exists') }}</span>
