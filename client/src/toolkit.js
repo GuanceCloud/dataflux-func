@@ -1650,7 +1650,7 @@ export function appendSearchFields(data, keys) {
   keys.forEach(k => {
     let v = '';
     try {
-      v = eval(`data.${k} || ''`);
+      v = jsonFindSafe(data, k) || '';
     } catch(err) {
       // Nope
     }

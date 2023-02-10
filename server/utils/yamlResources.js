@@ -228,7 +228,7 @@ exports.get = function get(key) {
  * @param {Any}    value
  */
 exports.set = function set(key, path, value) {
-  eval(toolkit.strf('FILE_CACHE["{0}"].{1} = {2}', key, path, JSON.stringify(value)));
+  FILE_CACHE[key][path] = value;
 };
 
 /**
