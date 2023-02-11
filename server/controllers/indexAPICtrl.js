@@ -17,9 +17,9 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
 var IMAGE_INFO = require('../../image-info.json');
-IMAGE_INFO.ARCHITECTURE   = childProcess.execSync('uname -m').toString().trim();
-IMAGE_INFO.PYTHON_VERSION = childProcess.execSync('python --version').toString().trim().split(' ').pop();
-IMAGE_INFO.NODE_VERSION   = childProcess.execSync('node --version').toString().trim().replace('v', '');
+IMAGE_INFO.ARCHITECTURE   = childProcess.execFileSync('uname', [ '-m' ]).toString().trim();
+IMAGE_INFO.PYTHON_VERSION = childProcess.execFileSync('python', [ '--version' ]).toString().trim().split(' ').pop();
+IMAGE_INFO.NODE_VERSION   = childProcess.execFileSync('node', [ '--version' ]).toString().trim().replace('v', '');
 
 /* Handlers */
 exports.index = function(req, res, next) {
