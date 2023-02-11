@@ -70,7 +70,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/user-list" v-if="$store.getters.isAdmin">
+            <el-menu-item index="/management/user-list">
               <span>
                 <i class="fa fa-fw fa-users"></i>
                 {{ $t('User Manage') }}

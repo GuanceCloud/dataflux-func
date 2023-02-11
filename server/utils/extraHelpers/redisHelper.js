@@ -395,6 +395,10 @@ RedisHelper.prototype.ttl = function(key, callback) {
   return this.run('ttl', key, callback);
 };
 
+RedisHelper.prototype.pttl = function(key, callback) {
+  return this.run('pttl', key, callback);
+};
+
 RedisHelper.prototype.type = function(key, callback) {
   return this.run('type', key, callback);
 };

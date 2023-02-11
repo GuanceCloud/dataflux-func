@@ -1305,14 +1305,14 @@ var CRUDHandler = function(modelProto) {
 /**
  * Create a `/data/do/list` handler
  *
- * @param  {String[]}      fields
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {String[]}      options.fields
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createListHandler = function(fields, hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createListHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1320,8 +1320,8 @@ CRUDHandler.prototype.createListHandler = function(fields, hooks) {
 
     var opt = res.locals.getQueryOptions();
 
-    if (fields) {
-      opt.fields = fields;
+    if (options.fields) {
+      opt.fields = options.fields;
     }
 
     model.list(opt, function(err, dbRes, pageInfo, extraDBRes) {
@@ -1335,9 +1335,9 @@ CRUDHandler.prototype.createListHandler = function(fields, hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1350,8 +1350,8 @@ CRUDHandler.prototype.createListHandler = function(fields, hooks) {
 
         res.locals.sendData(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1433,14 +1433,14 @@ CRUDHandler.prototype.createGetStatsHandler = function() {
 /**
  * Create a `/data/:id/do/get` handler
  *
- * @param  {String[]}      fields
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {String[]}      options.fields
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createGetHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1448,8 +1448,8 @@ CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
     var id = req.params.id;
 
     var opt = res.locals.getQueryOptions();
-    if (fields) {
-      opt.fields = fields;
+    if (options.fields) {
+      opt.fields = options.fields;
     }
 
     model.getWithCheck(id, opt, function(err, dbRes) {
@@ -1463,9 +1463,9 @@ CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1478,8 +1478,8 @@ CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1489,13 +1489,13 @@ CRUDHandler.prototype.createGetHandler = function(fields, hooks) {
 /**
  * Create a `data/do/add` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createAddHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createAddHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1515,9 +1515,9 @@ CRUDHandler.prototype.createAddHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1530,8 +1530,8 @@ CRUDHandler.prototype.createAddHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1541,13 +1541,13 @@ CRUDHandler.prototype.createAddHandler = function(hooks) {
 /**
  * Create a `/data/:id/do/modify` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createModifyHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createModifyHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1594,9 +1594,9 @@ CRUDHandler.prototype.createModifyHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1609,8 +1609,8 @@ CRUDHandler.prototype.createModifyHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1620,13 +1620,13 @@ CRUDHandler.prototype.createModifyHandler = function(hooks) {
 /**
  * Create a `/partial/data/:id/do/set` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createPartialSetHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createPartialSetHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1673,9 +1673,9 @@ CRUDHandler.prototype.createPartialSetHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1688,8 +1688,8 @@ CRUDHandler.prototype.createPartialSetHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1699,13 +1699,13 @@ CRUDHandler.prototype.createPartialSetHandler = function(hooks) {
 /**
  * Create a `/data/:id/do/delete` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createDeleteHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createDeleteHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1748,9 +1748,9 @@ CRUDHandler.prototype.createDeleteHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1763,8 +1763,8 @@ CRUDHandler.prototype.createDeleteHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1774,13 +1774,13 @@ CRUDHandler.prototype.createDeleteHandler = function(hooks) {
 /**
  * Create a `/data/:id/do/delete-many` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createDeleteManyHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createDeleteManyHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1813,9 +1813,9 @@ CRUDHandler.prototype.createDeleteManyHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1828,8 +1828,8 @@ CRUDHandler.prototype.createDeleteManyHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1839,13 +1839,13 @@ CRUDHandler.prototype.createDeleteManyHandler = function(hooks) {
 /**
  * Create a `/data/:id/do/delete` handler (soft)
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createSoftDeleteHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createSoftDeleteHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1892,9 +1892,9 @@ CRUDHandler.prototype.createSoftDeleteHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1907,8 +1907,8 @@ CRUDHandler.prototype.createSoftDeleteHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });
@@ -1918,13 +1918,13 @@ CRUDHandler.prototype.createSoftDeleteHandler = function(hooks) {
 /**
  * Create a `/partial/data/:id/do/delete` handler
  *
- * @param  {Object=null}   hooks
- * @param  {Function=null} hooks.beforeResp
- * @param  {Function=null} hooks.afterResp
+ * @param  {Object=null}   options
+ * @param  {Function=null} options.beforeResp
+ * @param  {Function=null} options.afterResp
  * @return {Function}
  */
-CRUDHandler.prototype.createPartialDeleteHandler = function(hooks) {
-  hooks = hooks || {};
+CRUDHandler.prototype.createPartialDeleteHandler = function(options) {
+  options = options || {};
 
   var self = this;
   return function(req, res, next) {
@@ -1957,9 +1957,9 @@ CRUDHandler.prototype.createPartialDeleteHandler = function(hooks) {
 
       async.series([
         function(asyncCallback) {
-          if ('function' !== typeof hooks.beforeResp) return asyncCallback();
+          if ('function' !== typeof options.beforeResp) return asyncCallback();
 
-          hooks.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
+          options.beforeResp(req, res, ret, hookExtra, function(err, nextRet) {
             if (err) return asyncCallback(err);
 
             ret = nextRet;
@@ -1972,8 +1972,8 @@ CRUDHandler.prototype.createPartialDeleteHandler = function(hooks) {
 
         res.locals.sendJSON(ret);
 
-        if ('function' === typeof hooks.afterResp) {
-          hooks.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
+        if ('function' === typeof options.afterResp) {
+          options.afterResp(req, res, toolkit.jsonCopy(ret), hookExtra);
         }
       });
     });

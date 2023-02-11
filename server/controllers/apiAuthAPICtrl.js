@@ -18,7 +18,7 @@ var apiAuthMod = require('../models/apiAuthMod');
 /* Handlers */
 var crudHandler = exports.crudHandler = apiAuthMod.createCRUDHandler();
 
-exports.list   = crudHandler.createListHandler(null, {beforeResp: hidePassword});
+exports.list   = crudHandler.createListHandler({ beforeResp: hidePassword });
 exports.add    = crudHandler.createAddHandler();
 exports.modify = crudHandler.createModifyHandler();
 exports.delete = crudHandler.createDeleteHandler();

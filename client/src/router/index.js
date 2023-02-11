@@ -404,8 +404,7 @@ const noAuthRoutes = [
   'auth-link-func-doc',
   'dream',
 ];
-const superAdminRoutes = [
-  'user-list',
+const adminOnlyRoutes = [
   'user-add',
   'user-setup',
   'access-key-list',
@@ -429,7 +428,8 @@ router.beforeEach((to, from, next) => {
   }
 
   // SA权限控制跳转
-  if (superAdminRoutes.indexOf(to.name) >= 0 && !store.getters.isAdmin) {
+  if (adminOnlyRoutes.indexOf(to.name) >= 0 && !store.getters.isAdmin) {
+    console.warn('This page is only accessabel by Admin:', to.name);
     return next({ name: 'index' });
   }
 

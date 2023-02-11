@@ -41,6 +41,7 @@ exports.getCacheKey = function(xAuthTokenObj) {
  * @return {String} - Cache key pattern
  */
 exports.getCachePattern = function(options) {
+  options = options || {};
   var tags = [
     'xAuthTokenId', options.xAuthTokenId || '*',
     'userId'      , options.userId       || '*',

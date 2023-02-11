@@ -11,6 +11,7 @@ en:
 
 'zh-CN':
   # 通用
+  ',': '，'
   ':': '：'
   '(': '（'
   ')': '）'
@@ -203,6 +204,8 @@ en:
   Pinned   : 已置顶
   Normal   : 正常
   Error    : 错误
+  Online   : 在线
+  Offline  : 离线
 
   # 通用表格 - 表头 / 标题
   No matched data found: 当前过滤条件无匹配数据

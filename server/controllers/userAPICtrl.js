@@ -29,9 +29,56 @@ var GET_FIELDS = [
 /* Handlers */
 var crudHandler = exports.crudHandler = userMod.createCRUDHandler();
 
-exports.list   = crudHandler.createListHandler();
-exports.get    = crudHandler.createGetHandler(GET_FIELDS);
+exports.list   = crudHandler.createListHandler({ beforeResp: appendOnlineStatus });
+exports.get    = crudHandler.createGetHandler({ fields: GET_FIELDS });
 exports.delete = crudHandler.createDeleteHandler();
+
+function appendOnlineStatus(req, res, ret, hookExtra, callback) {
+  if (!ret.data) return callback(null, ret);
+
+  // 初始化
+  ret.data.forEach(function(d) {
+    d.sessions = [];
+  });
+
+  var userMap = toolkit.arrayElementMap(ret.data, 'id');
+
+  // 获取所有 Key
+  var cachePattern = auth.getCachePattern();
+  res.locals.cacheDB.keys(cachePattern, function(err, keys) {
+    if (err) return asyncCallback();
+
+    // 获取所有 TTL
+    async.each(keys, function(key, eachCallback) {
+      var parsedKey = toolkit.parseCacheKey(key);
+
+      var user = userMap[parsedKey.tags.userId];
+      if (!user) return eachCallback();
+
+      res.locals.cacheDB.pttl(key, function(err, ttl) {
+        if (!err) {
+          user.sessions.push({
+            ttl          : ttl,
+            astAccessTime: new Date(Date.now() - CONFIG._WEB_AUTH_EXPIRES * 1000 + ttl),
+          });
+        }
+        return eachCallback();
+      });
+
+    }, function() {
+      // 排序
+      ret.data.forEach(function(d) {
+        d.sessions.sort(function(a, b) {
+          if (a.ttl > b.ttl) return -1;
+          else if (a.ttl < b.ttl) return 1;
+          else return 0;
+        });
+      });
+
+      return callback(null, ret);
+    });
+  });
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data || {};

@@ -1,4 +1,11 @@
+<i18n locale="en" lang="yaml">
+sessionCount: '{n} session | {n} sessions'
+lastAccess : 'Accessed {t}'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
+Session: 会话
+
 User disabled: 用户已禁用
 User enabled : 用户已启用
 
@@ -7,6 +14,9 @@ No User has ever been added: 从未添加过任何用户
 Are you sure you want to disable the User?: 是否确认禁用此用户？
 
 Add members to allow other users to use the platform: 添加成员，允许其他用户使用本平台
+
+sessionCount: '{n} 个会话'
+lastAccess : '{t}访问'
 </i18n>
 
 <template>
@@ -19,7 +29,8 @@ Add members to allow other users to use the platform: 添加成员，允许其�
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
-            <el-button @click="openSetup(null, 'add')" type="primary" size="small">
+            <el-button v-if="$store.getters.isAdmin"
+              @click="openSetup(null, 'add')" type="primary" size="small">
               <i class="fa fa-fw fa-plus"></i>
               {{ $t('New') }}
             </el-button>
@@ -64,17 +75,41 @@ Add members to allow other users to use the platform: 添加成员，允许其�
           <el-table-column>
           </el-table-column>
 
+          <el-table-column :label="$t('Session')" width="300">
+            <template slot-scope="scope">
+              <template v-if="scope.row.sessions.length > 0">
+                <span class="text-good">
+                  <i class="fa fa-fw fa-circle"></i>
+                  {{ $t('Online') }}
+                </span>
+                <span class="text-info">
+                  {{ $t('(') }}{{ $tc('sessionCount', scope.row.sessions.length) }}{{ $t(')') }}
+                </span>
+
+                <br>
+                <i class="fa fa-fw fa-mouse-pointer"></i>
+                {{ $t('lastAccess', { t: T.fromNow(scope.row.sessions[0].lastAccessTime) }) }}
+              </template>
+              <template v-else>
+                <span class="text-info">
+                  <i class="fa fa-fw fa-circle"></i>
+                  {{ $t('Offline') }}
+                </span>
+              </template>
+            </template>
+          </el-table-column>
+
           <el-table-column :label="$t('Status')" width="100">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad">{{ $t('Disabled') }}</span>
-              <span v-else class="text-good">{{ $t('Enabled') }}</span>
+              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
               <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">{{ $t('Administrator') }}</span>
-              <template v-else>
+              <template v-else-if="$store.getters.isAdmin">
                 <el-link v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
                 <el-link v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
 
