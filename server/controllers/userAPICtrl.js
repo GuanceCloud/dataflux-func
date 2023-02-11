@@ -55,11 +55,13 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
       var user = userMap[parsedKey.tags.userId];
       if (!user) return eachCallback();
 
-      res.locals.cacheDB.pttl(key, function(err, ttl) {
+      res.locals.cacheDB.pttl(key, function(err, ttlMs) {
         if (!err) {
+          var idleMs = CONFIG._WEB_AUTH_EXPIRES * 1000 - ttlMs;
           user.sessions.push({
-            ttl          : ttl,
-            astAccessTime: new Date(Date.now() - CONFIG._WEB_AUTH_EXPIRES * 1000 + ttl),
+            ttlMs           : ttlMs,
+            idleMs          : idleMs,
+            lastAccessTime: new Date(Date.now() - idleMs),
           });
         }
         return eachCallback();
@@ -69,8 +71,8 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
       // 排序
       ret.data.forEach(function(d) {
         d.sessions.sort(function(a, b) {
-          if (a.ttl > b.ttl) return -1;
-          else if (a.ttl < b.ttl) return 1;
+          if (a.ttlMs > b.ttlMs) return -1;
+          else if (a.ttlMs < b.ttlMs) return 1;
           else return 0;
         });
       });
