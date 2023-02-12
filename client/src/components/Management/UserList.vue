@@ -25,7 +25,7 @@ lastAccess : '{t}访问'
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ $t('User Management') }}</span>
+          <span>{{ $t('User Manage') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -125,9 +125,6 @@ lastAccess : '{t}访问'
           </el-table-column>
         </el-table>
       </el-main>
-
-      <!-- 翻页区 -->
-      <Pager :pageInfo="pageInfo" />
     </el-container>
   </transition>
 </template>
@@ -162,7 +159,6 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
-      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -225,12 +221,10 @@ export default {
   props: {
   },
   data() {
-    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data    : [],
-      pageInfo: _pageInfo,
+      data: [],
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

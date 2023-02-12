@@ -68,13 +68,25 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
       });
 
     }, function() {
-      // 排序
+      // Session 排序
       ret.data.forEach(function(d) {
         d.sessions.sort(function(a, b) {
           if (a.ttlMs > b.ttlMs) return -1;
           else if (a.ttlMs < b.ttlMs) return 1;
           else return 0;
         });
+      });
+
+      // 用户排序
+      ret.data.sort(function(a, b) {
+        if (a.sessions.length > 0 && b.sessions.length <= 0) return -1;
+        else if (a.sessions.length <= 0 && b.sessions.length > 0) return 1;
+        else if (a.sessions.length <= 0 && b.sessions.length <= 0) return b.seq - a.seq;
+        else {
+          if (a.sessions[0].ttlMs > b.sessions[0].ttlMs) return -1;
+          else if (a.sessions[0].ttlMs < b.sessions[0].ttlMs) return 1;
+          else return b.seq - a.seq;
+        }
       });
 
       return callback(null, ret);

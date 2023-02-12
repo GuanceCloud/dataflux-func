@@ -271,7 +271,7 @@ userAPI:
     authType     : builtin.byXAuthToken
     privilege    : user_r
     export       : true
-    paging       : true
+    paging       : false
     fieldPicking : true
     fieldKicking : true
     orderFields:
