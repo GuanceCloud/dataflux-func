@@ -306,7 +306,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
             featureKey="codeEditor.monkeyPatch"
             :description="$t(`Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.`)"
             icon="fa-warning"
-            :image="img_monkeyPatchNotice" />
+            :image="img_noticeMonkeyPatch" />
 
           <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog" />
           <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
@@ -341,7 +341,7 @@ import FileSaver from 'file-saver';
 import * as htmlEscaper from 'html-escaper';
 
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
-import img_monkeyPatchNotice from '@/assets/img/monkey-patch-notice.png'
+import img_noticeMonkeyPatch from '@/assets/img/notice-monkey-patch.png'
 
 export default {
   name: 'CodeEditor',
@@ -1310,7 +1310,7 @@ export default {
       isSavingCodeDraft: false,
 
       // 猴子补丁提示
-      img_monkeyPatchNotice: img_monkeyPatchNotice,
+      img_noticeMonkeyPatch: img_noticeMonkeyPatch,
 
       // 代码编辑器设置
       showEditorSetting: false,

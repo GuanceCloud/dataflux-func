@@ -1,6 +1,6 @@
 {
   "ARCHITECTURE"      : "local",
-  "CI_COMMIT_REF_NAME": "local",
+  "CI_COMMIT_REF_NAME": "0.0.0",
   "CI_PIPELINE_ID"    : "-",
   "CI_JOB_ID"         : "-",
   "CI_BUILD_ID"       : "-",

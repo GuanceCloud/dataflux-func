@@ -360,7 +360,7 @@ The published Script Set will be shown here, you can find and install the ones y
         featureKey="scriptMarket.homepage"
         :disabled="scriptMarket.isAdmin || !homepageURL && scriptMarket.type !== 'git'"
         :description="$t(`This Script Market has a homepage<br><br>If you don't know how to use the Script Sets in this Script Market, please check the homepage first.`)"
-        :image="img_scriptMarketHomepageNotice" />
+        :image="img_noticeScriptMarketHomepage" />
 
     </el-container>
   </transition>
@@ -370,7 +370,7 @@ The published Script Set will be shown here, you can find and install the ones y
 import { debounce } from '@/toolkit'
 
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
-import img_scriptMarketHomepageNotice from '@/assets/img/script-market-homepage-notice.png'
+import img_noticeScriptMarketHomepage from '@/assets/img/notice-script-market-homepage.png'
 
 export default {
   name: 'ScriptMarketDetail',
@@ -810,7 +810,7 @@ export default {
       forceModeEnabled: false,
 
       // 主页提示
-      img_scriptMarketHomepageNotice: img_scriptMarketHomepageNotice,
+      img_noticeScriptMarketHomepage: img_noticeScriptMarketHomepage,
     }
   },
 }

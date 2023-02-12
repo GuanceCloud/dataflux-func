@@ -1,3 +1,9 @@
+<i18n locale="zh-CN" lang="yaml">
+Current version of DataFlux Func is {0}: 当前 DataFlux Func 版本为 {0}
+Latest version {0} has been released   : 最新版 {0} 已经发布
+Click here to visit the official website: 点击此处前往官方网站查看
+</i18n>
+
 <template>
   <div class="navi-content">
     <el-menu
@@ -69,8 +75,11 @@
           </span>
         </template>
 
-        <el-menu-item v-if="common.hasNewVersion()" index="https://func.guance.com/">
-          <strong class="text-bad">{{ $t('New Version') }}{{ $t(':') }} {{ $store.state.latestVersion }}</strong>
+        <el-menu-item v-if="common.hasNewVersion()" @click="showNewVersionDialog = true">
+          <span class="text-bad">
+            {{ $t('New Version') }}{{ $t(':') }}
+            {{ $store.getters.CONFIG('VERSION') }} &#10132; {{ $store.state.latestVersion }}
+          </span>
         </el-menu-item>
         <el-menu-item index="/setting/profile-setup">{{ $t('Profile') }}</el-menu-item>
         <el-menu-item @click="$root.goToSignOut">{{ $t('Sign Out') }}</el-menu-item>
@@ -122,10 +131,42 @@
         </el-menu-item>
       </el-submenu>
     </el-menu>
+
+    <el-dialog :visible.sync="showNewVersionDialog" width="850px">
+      <div slot="title">
+        <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
+      </div>
+      <div class="notice-new-version-container">
+        <el-image style="width: 550px; left: -50px;" :src="img_noticeNewVersion"></el-image>
+        <el-card class="notice-new-version-content">
+          <p class="new-version-tip">
+            <i18n path="Current version of DataFlux Func is {0}">
+              <span class="text-main">{{ $store.getters.CONFIG('VERSION') }}</span>
+            </i18n>
+
+            <br>
+            <i18n path="Latest version {0} has been released">
+              <span class="text-main">{{ $store.state.latestVersion }}</span>
+            </i18n>
+
+            <br>
+            <el-link href="https://func.guance.com/" target="_blank">
+              <i class="fa fa-fw fa-external-link"></i>
+              {{ $t('Click here to visit the official website') }}
+            </el-link>
+          </p>
+        </el-card>
+        <div class="notice-new-version-buttons">
+          <el-button type="primary" size="small" @click="showNewVersionDialog = false">{{ $t('OK') }}</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import img_noticeNewVersion from '@/assets/img/notice-new-version.png'
+
 export default {
   name: 'Navi',
   components: {
@@ -163,7 +204,10 @@ export default {
   props: {
   },
   data() {
-    return {}
+    return {
+      showNewVersionDialog: false,
+      img_noticeNewVersion: img_noticeNewVersion,
+    }
   },
 }
 </script>
@@ -233,5 +277,35 @@ export default {
   color: #FF6600 !important;
   font-weight: bold !important;
   border-color: #FF6600 !important;
+}
+
+.notice-new-version-container {
+
+}
+.notice-new-version-content {
+  width: 420px;
+  height: 260px;
+  border-radius: 20px;
+  position: absolute;
+  top: 60px;
+  right: 30px;
+}
+.notice-new-version-content p {
+  font-size: 18px;
+  line-height: 1.8;
+  word-break: break-word;
+  position: relative;
+}
+.notice-new-version-buttons {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+
+.new-version-tip,
+.new-version-tip * {
+  font-size: 18px;
+  line-height: 60px;
+  text-align: center;
 }
 </style>

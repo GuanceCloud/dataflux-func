@@ -10,13 +10,13 @@ Don't prompt again: 不再提示
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     width="850px">
-    <div class="feature-notice-container">
-      <el-image style="width: 600px; left: -50px;" :src="image"></el-image>
-      <el-card class="feature-notice-content">
-        <i class="fa fa-fw feature-notice-icon" :class="icon"></i>
+    <div class="notice-feature-container">
+      <el-image style="width: 550px; left: -50px;" :src="image"></el-image>
+      <el-card class="notice-feature-content">
+        <i class="fa fa-fw notice-feature-icon" :class="icon"></i>
         <p v-html="description"></p>
       </el-card>
-      <div class="feature-notice-buttons">
+      <div class="notice-feature-buttons">
         <el-button type="text" @click="close(true)">{{ $t("Don't prompt again") }}</el-button>
         <el-button type="primary" size="small" @click="close()">{{ $t('OK') }}</el-button>
       </div>
@@ -26,7 +26,7 @@ Don't prompt again: 不再提示
 
 <script>
 
-import img_featureNotice from '@/assets/img/feature-notice.png'
+import img_noticeFeature from '@/assets/img/notice-feature.png'
 
 export default {
   name: 'FeatureNoticeDialog',
@@ -54,7 +54,7 @@ export default {
     },
     image: {
       type: Object,
-      default: img_featureNotice,
+      default: img_noticeFeature,
     },
     disabled: {
       type   : Boolean,
@@ -78,29 +78,29 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.feature-notice-container {
+.notice-feature-container {
 
 }
-.feature-notice-content {
-  width: 480px;
-  height: 270px;
+.notice-feature-content {
+  width: 420px;
+  height: 260px;
   border-radius: 20px;
   position: absolute;
   top: 60px;
   right: 30px;
 }
-.feature-notice-content p {
+.notice-feature-content p {
   font-size: 18px;
   line-height: 1.8;
   word-break: break-word;
   position: relative;
 }
-.feature-notice-buttons {
+.notice-feature-buttons {
   position: absolute;
   bottom: 30px;
   right: 30px;
 }
-.feature-notice-icon {
+.notice-feature-icon {
   position: absolute;
   font-size: 245px;
   right: -15%;

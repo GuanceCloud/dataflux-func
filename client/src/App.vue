@@ -184,7 +184,10 @@ export default {
       if (!this.T.parseVersion(this.$store.getters.CONFIG('VERSION'))) return;
 
       try {
-        let resp = await axios.get('https://static.guance.com/dataflux-func/portable/version');
+        let axiosOpt = {
+          headers: { 'Cache-Control': 'no-cache' }
+        };
+        let resp = await axios.get('https://static.guance.com/dataflux-func/portable/version', axiosOpt);
         let latestVersion = ('' + resp.data).trim();
         if (this.T.parseVersion(latestVersion)) {
           this.$store.commit('updateLatestVersion', latestVersion);
@@ -464,21 +467,6 @@ ul {
   opacity: 1;
 }
 
-/*
-#Navi {
-  position: absolute;
-  height: 30px;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2000;
-}
-#View {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}*/
 #NoticeBar {
   background-color: #ff6600cc;
   font-size: 12px;

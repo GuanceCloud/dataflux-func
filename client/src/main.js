@@ -33,6 +33,8 @@ ElementUI.Popover.props.openDelay.default  = 100;
 ElementUI.Link.props.underline.default     = true;
 ElementUI.Link.props.type.default          = 'primary';
 ElementUI.Form.props.validateOnRuleChange  = false;
+ElementUI.Dialog.props.modalAppendToBody   = true;
+ElementUI.Dialog.props.appendToBody        = true;
 Vue.use(ElementUI);
 
 // 国际化
