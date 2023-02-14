@@ -610,9 +610,9 @@ kbd {
   font-family: Iosevka;
   color: #fff;
   background-color: #333;
+  border: 1px darkgrey solid;
   border-radius: 3px;
-  -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
+  box-shadow: 2px 2px 0 darkgrey;
 }
 .page-header {
   padding: 20px 10px 10px 10px;

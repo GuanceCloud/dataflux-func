@@ -199,7 +199,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
                         {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + B</code>
+                        {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
                       </div>
                       <el-button
                         v-prevent-re-click @click="callFuncDraft"
@@ -216,7 +216,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft') }}<br>
-                          {{ $t('Shortcut') }}{{ $t(':') }} <code>{{ T.getSuperKeyName() }} + S</code>
+                          {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
                         </div>
                         <el-button
                           v-prevent-re-click @click="saveScript()"
