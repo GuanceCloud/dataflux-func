@@ -256,6 +256,8 @@ class CrontabStarterTask(BaseTask):
         return str(queue)
 
     def send_task(self, crontab_config, current_time, trigger_time, exec_mode=None):
+        exec_mode = exec_mode or crontab_config['execMode']
+
         # 确定超时时间
         soft_time_limit, time_limit = self._get_time_limit(crontab_config)
 
@@ -274,11 +276,13 @@ class CrontabStarterTask(BaseTask):
             lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
                     'crontabConfigId', crontab_config['id'],
                     'funcId',          crontab_config['funcId'],
+                    'execMode',        exec_mode,
                     'crontabDelay',    delay])
 
             lock_value = toolkit.gen_uuid()
             if not self.cache_db.lock(lock_key, lock_value, time_limit):
                 # 触发任务前上锁，失败则跳过
+                self.logger.warning('Crontab Config in lock, skip...')
                 continue
 
             # 任务ID
@@ -303,7 +307,7 @@ class CrontabStarterTask(BaseTask):
                 'origin'        : crontab_config['taskOrigin'],
                 'originId'      : crontab_config['id'],
                 'saveResult'    : crontab_config['saveResult'],
-                'execMode'      : exec_mode or crontab_config['execMode'],
+                'execMode'      : exec_mode,
                 'triggerTime'   : (trigger_time + delay),
                 'triggerTimeMs' : (trigger_time + delay) * 1000,
                 'crontab'       : crontab_config['crontab'],
