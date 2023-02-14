@@ -32,7 +32,7 @@ Edit and manage Script Sets and Scripts                                    : 进
 Manage the various external systems available within the Script            : 管理脚本内可用的各外部系统
 Manage the environment variables available within the Script               : 管理脚本内可用的环境变量
 
-Every tab supports quick jumping. Enter ID or name and select it to jump to the item.                          : 每个标签页都支持快速跳转。输入目标ID或名称并选择，即可定位到项目。
+Every tab supports quick jumping. Enter ID or name and select it to jump to the item.                          : 每个标签页都支持快速跳转。输入目标 ID 或名称并选择，即可定位到项目。
 Information about the item and the actions that can be performed will be displayed after hovering over it.     : 将鼠标悬停在项目上，可展示项目的相关信息以及可进行的操作。
 The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width.: 拖动左侧栏与编辑区的灰色分割线，可以调整左侧栏宽度。
 
@@ -215,17 +215,17 @@ Distribute and share code by publishing and installing Script Sets using git rep
                   <td>{{ $t('Allow Python functions be called as asynchronous HTTP APIs') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-cloud-download"></i> {{ $t('Script Set Exporting') }}</td>
+                  <td><i class="fa fa-fw fa-cloud-download"></i> {{ $t('Script Set Export') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Export Script Sets as zip files') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-cloud-upload"></i> {{ $t('Script Sets Importing') }}</td>
+                  <td><i class="fa fa-fw fa-cloud-upload"></i> {{ $t('Script Sets Import') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Import Script Sets from zip files') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-history"></i> {{ $t('Script Lib Recovering') }}</td>
+                  <td><i class="fa fa-fw fa-history"></i> {{ $t('Script Lib Recover') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Recover Script Lib to a previous moment') }}</td>
                 </tr>
