@@ -162,13 +162,13 @@ export function isMac() {
 };
 
 export function getSuperKeyName() {
-  return isMac() ? 'cmd' : 'CTRL';
+  return isMac() ? 'command' : 'Ctrl';
 };
 export function getAltKeyName() {
-  return isMac() ? 'opt' : 'ALT';
+  return isMac() ? 'option' : 'Alt';
 };
 export function getShiftKeyName() {
-  return isMac() ? 'shift' : 'SHIFT';
+  return isMac() ? 'shift' : 'Shift';
 };
 
 export function debounce(fn, delay) {

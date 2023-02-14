@@ -169,7 +169,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
               <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>]</kbd>{{ $t(':') }} {{ $t('Indent lines') }}</li>
               <li><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>[</kbd>{{ $t(':') }} {{ $t('Outdent lines') }}</li>
               <li>{{ $t('When multiple lines are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Indent lines') }}</li>
-              <li>{{ $t('When multiple lines are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>Shift</kbd> + <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Outdent lines') }}</li>
+              <li>{{ $t('When multiple lines are selected') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getShiftKeyName() }}</kbd> + <kbd>Tab</kbd>{{ $t(':') }} {{ $t('Outdent lines') }}</li>
               <li>{{ $t('When the focus is in the Code Editor') }} <i class="fa fa-fw fa-caret-right"></i> <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd>{{ $t(':') }} {{ $t('Open search bar') }}</li>
             </ul>
           </p>
