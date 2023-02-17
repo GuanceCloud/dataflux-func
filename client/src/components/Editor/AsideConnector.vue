@@ -50,7 +50,7 @@ Connector unpinned: 连接器已取消
         slot-scope="{node, data}"
         class="aside-tree-node"
         :entry-id="data.id"
-        @click="openEntity(node, data)">
+        @click="openEntity(data)">
 
         <!-- 菜单 -->
         <el-popover
@@ -58,7 +58,7 @@ Connector unpinned: 连接器已取消
           trigger="hover"
           popper-class="aside-tip"
           :disabled="!!!data.id"
-          :value="showPopoverId === data.id">
+          v-model="data.showPopover">
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
@@ -91,7 +91,7 @@ Connector unpinned: 连接器已取消
             <!-- 简易调试 -->
             <el-button v-if="C.CONNECTOR_MAP.get(data.connectorType).debugSupported"
               size="small"
-              @click="showSimpleDebugWindow(data.connector)">
+              @click="showSimpleDebugWindow(data)">
               <i class="fa fa-fw fa-window-restore"></i>
               {{ $t('Simple Debug') }}
             </el-button>
@@ -107,7 +107,7 @@ Connector unpinned: 连接器已取消
             <!-- 配置/查看 -->
             <el-button
               size="small"
-              @click="openEntity(node, data, 'setup')">
+              @click="openEntity(data, 'setup')">
               <i class="fa fa-fw" :class="[data.isBuiltin ? 'fa-search' : 'fa-wrench']"></i>
               {{ data.isBuiltin ? $t('View') : $t('Setup') }}
             </el-button>
@@ -158,15 +158,12 @@ export default {
     SimpleDebugWindow,
   },
   watch: {
-    $route() {
-      this.showPopoverId = null;
-    },
     selectFilterText(val) {
       if (!val) return;
       if (!this.$refs.tree) return;
 
       let node = this.$refs.tree.getNode(val);
-      this.openEntity(node, node.data);
+      this.openEntity(node.data);
     },
     '$store.state.connectorListSyncTime': function() {
       this.loadData();
@@ -250,6 +247,8 @@ export default {
           sampleCode : sampleCode,
 
           connector: d,
+
+          showPopover: false,
         };
         this.T.appendSearchFields(treeNode, ['id', 'title'])
 
@@ -294,10 +293,14 @@ export default {
 
       this.$store.commit('updateConnectorListSyncTime');
     },
-    showSimpleDebugWindow(connector) {
-      this.$refs.simpleDebugWindow.showWindow(connector);
+    showSimpleDebugWindow(data) {
+      data.showPopover = false;
+
+      this.$refs.simpleDebugWindow.showWindow(data.connector);
     },
-    openEntity(node, data, target) {
+    openEntity(data, target) {
+      data.showPopover = false;
+
       switch(data.type) {
         // 刷新
         case 'refresh':
@@ -337,8 +340,6 @@ export default {
       selectFilterText : '',
       selectOptions    : [],
       selectShowOptions: [],
-
-      showPopoverId: null,
     };
   },
   created() {

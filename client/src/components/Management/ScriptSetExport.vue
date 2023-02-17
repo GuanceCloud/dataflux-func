@@ -219,7 +219,6 @@ export default {
         respType: 'blob',
         packResp: true,
         body    : this.T.jsonCopy(this.form),
-        alert   : { okMessage: this.$t('Data exported') },
       };
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/export', opt);

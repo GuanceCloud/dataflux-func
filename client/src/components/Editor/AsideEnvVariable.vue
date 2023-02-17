@@ -45,7 +45,7 @@ ENV Variable unpinned: 环境变量已取消
         slot-scope="{node, data}"
         class="aside-tree-node"
         :entry-id="data.id"
-        @click="openEntity(node, data)">
+        @click="openEntity(data)">
 
         <!-- 菜单 -->
         <el-popover
@@ -53,7 +53,7 @@ ENV Variable unpinned: 环境变量已取消
           trigger="hover"
           popper-class="aside-tip"
           :disabled="!!!data.id"
-          :value="showPopoverId === data.id">
+          v-model="data.showPopover">
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
@@ -88,7 +88,7 @@ ENV Variable unpinned: 环境变量已取消
             <!-- 配置/查看 -->
             <el-button
               size="small"
-              @click="openEntity(node, data, 'setup')">
+              @click="openEntity(data, 'setup')">
               <i class="fa fa-fw fa-wrench"></i>
               {{ $t('Setup') }}
             </el-button>
@@ -127,15 +127,12 @@ export default {
   components: {
   },
   watch: {
-    $route() {
-      this.showPopoverId = null;
-    },
     selectFilterText(val) {
       if (!val) return;
       if (!this.$refs.tree) return;
 
       let node = this.$refs.tree.getNode(val);
-      this.openEntity(node, node.data);
+      this.openEntity(node.data);
     },
     '$store.state.envVariableListSyncTime': function() {
       this.loadData();
@@ -215,6 +212,8 @@ export default {
           title      : d.title,
           description: d.description,
           sampleCode : sampleCode,
+
+          showPopover: false,
         };
         this.T.appendSearchFields(treeNode, ['id', 'title'])
 
@@ -259,7 +258,9 @@ export default {
 
       this.$store.commit('updateEnvVariableListSyncTime');
     },
-    openEntity(node, data, target) {
+    openEntity(data, target) {
+      data.showPopover = false;
+
       switch(data.type) {
         // 刷新
         case 'refresh':
@@ -299,8 +300,6 @@ export default {
       selectFilterText : '',
       selectOptions    : [],
       selectShowOptions: [],
-
-      showPopoverId: null,
     };
   },
   created() {

@@ -38,6 +38,7 @@ Script Set unpinned: 脚本集已取消
 Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script Set cloned  : 脚本集已克隆
+Script Set exported: 脚本集已导出
 Script locked      : 脚本已上锁
 Script unlocked    : 脚本已解锁
 
@@ -68,6 +69,7 @@ Show Auth Links     : 显示授权链接列表
 Show Crontab Configs: 显示自动触发配置列表
 Show Batches        : 显示批处理列表
 Go to Script Market : 前往脚本市场
+Export Script Set   : 导出脚本集
 </i18n>
 
 <template>
@@ -113,7 +115,7 @@ Go to Script Market : 前往脚本市场
         slot-scope="{node, data}"
         class="aside-tree-node"
         :entry-id="data.id"
-        @click="openEntity(node, data)">
+        @click="openEntity(data)">
 
         <!-- 菜单 -->
         <el-popover
@@ -121,7 +123,7 @@ Go to Script Market : 前往脚本市场
           trigger="hover"
           popper-class="aside-tip"
           :disabled="!!!data.id"
-          :value="showPopoverId === data.id">
+          v-model="data.showPopover">
 
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
@@ -162,7 +164,7 @@ Go to Script Market : 前往脚本市场
                 <el-button v-if="data.type === 'scriptSet'"
                   size="mini"
                   :disabled="!data.isEditable"
-                  @click="openEntity(node, data, 'add')">
+                  @click="openEntity(data, 'add')">
                   <i class="fa fa-fw fa-plus"></i>
                   {{ $t('New Script') }}
                 </el-button>
@@ -170,7 +172,7 @@ Go to Script Market : 前往脚本市场
                 <!-- 快速查看 -->
                 <el-button v-if="data.type === 'script'"
                   size="mini"
-                  @click="showQuickViewWindow(data.id)">
+                  @click="showQuickViewWindow(data)">
                   <i class="fa fa-fw fa-window-restore"></i>
                   {{ $t('Quick View') }}
                 </el-button>
@@ -196,15 +198,23 @@ Go to Script Market : 前往脚本市场
                 <!-- 克隆 -->
                 <el-button v-if="data.type === 'scriptSet'"
                   size="mini"
-                  @click="cloneData(data.id)">
+                  @click="cloneData(data)">
                   <i class="fa fa-fw fa-files-o"></i>
                   {{ $t('Clone') }}
+                </el-button>
+
+                <!-- 克隆 -->
+                <el-button v-if="data.type === 'scriptSet'"
+                  size="mini"
+                  @click="exportData(data)">
+                  <i class="fa fa-fw fa-cloud-download"></i>
+                  {{ $t('Export') }}
                 </el-button>
 
                 <!-- 配置 -->
                 <el-button
                   size="mini"
-                  @click="openEntity(node, data, 'setup')">
+                  @click="openEntity(data, 'setup')">
                   <i class="fa fa-fw fa-wrench"></i>
                   {{ $t('Setup') }}
                 </el-button>
@@ -233,7 +243,7 @@ Go to Script Market : 前往脚本市场
               <el-tooltip effect="dark" :disabled="!!data.scriptMarketId" :content="$t('The Script Market has been removed')" placement="right">
                 <el-link v-if="data.origin === 'scriptMarket' && data.originId"
                   :disabled="!data.scriptMarketId"
-                  @click="openEntity(node, data, 'scriptMarket')">
+                  @click="openEntity(data, 'scriptMarket')">
                   <i class="fa fa-fw fa-shopping-cart"></i>
                   {{ $t('Go to Script Market') }}
                 </el-link>
@@ -554,6 +564,8 @@ Go to Script Market : 前往脚本市场
 import QuickViewWindow from '@/components/Editor/QuickViewWindow'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
+import FileSaver from 'file-saver';
+
 export default {
   name: 'AsideScript',
   components: {
@@ -561,15 +573,12 @@ export default {
     APIExampleDialog,
   },
   watch: {
-    $route() {
-      this.showPopoverId = null;
-    },
     selectFilterText(val) {
       if (!val) return;
       if (!this.$refs.tree) return;
 
       let node = this.$refs.tree.getNode(val);
-      this.openEntity(node, node.data);
+      this.openEntity(node.data);
     },
     '$store.state.scriptListSyncTime': function() {
       this.loadData();
@@ -651,7 +660,6 @@ export default {
         }, 300);
       });
     },
-
     async loadData() {
       if (this.T.isNothing(this.data)) {
         this.loading = true;
@@ -716,7 +724,8 @@ export default {
           title      : d.title,
           description: d.description,
 
-          children: [],
+          children   : [],
+          showPopover: false,
         };
         this.T.appendSearchFields(scriptSetMap[d.id], ['id', 'title'])
       });
@@ -784,7 +793,8 @@ export default {
           description: d.description,
           sampleCode : sampleCode,
 
-          children: [],
+          children   : [],
+          showPopover: false,
         };
         this.T.appendSearchFields(scriptMap[d.id], ['id', 'title'])
 
@@ -843,6 +853,8 @@ export default {
 
           integration    : d.integration,
           extraConfigJSON: d.extraConfigJSON,
+
+          showPopover: false,
         };
         this.T.appendSearchFields(funcMap[d.id], ['id', 'title'])
 
@@ -953,7 +965,9 @@ export default {
 
       this.$store.commit('updateScriptListSyncTime');
     },
-    async cloneData(dataId) {
+    async cloneData(data) {
+      data.showPopover = false;
+
       let promptOpt = {
         inputValidator: v => {
           if (v.length <= 0) {
@@ -968,7 +982,7 @@ export default {
           return true;
         }
       }
-      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${dataId}_2`, promptOpt);
+      let newScriptSetId = await this.T.prompt(this.$t('Please input new Script Set ID'), `${data.id}_2`, promptOpt);
       if (!newScriptSetId) return;
 
       // 检查重名
@@ -979,7 +993,7 @@ export default {
 
       // 执行克隆
       apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/clone', {
-        params: { id: dataId },
+        params: { id: data.id },
         body  : { newId: newScriptSetId },
         alert : { okMessage: this.$t('Script Set cloned') },
       });
@@ -987,11 +1001,39 @@ export default {
 
       this.$store.commit('updateScriptListSyncTime');
     },
-    showQuickViewWindow(scriptId) {
-      this.$refs.quickViewWindow.showWindow(scriptId);
+    async exportData(data) {
+      data.showPopover = false;
+
+      let opt = {
+        respType: 'blob',
+        packResp: true,
+        body    : { scriptSetIds: [ data.id ], note: this.$t('Export Script Set') },
+      };
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/do/export', opt);
+      if (!apiRes || !apiRes.ok) return;
+
+      let blob = new Blob([apiRes.data], {type: apiRes.extra.contentType});
+
+      // 文件名为固定开头+时间
+      let fileNameParts = [
+        data.id,
+        this.M().utcOffset('+08:00').format('YYYYMMDD_HHmmss'),
+      ];
+      let fileName = fileNameParts.join('-') + '.zip';
+      FileSaver.saveAs(blob, fileName);
+
+      await this.T.alert(this.$t('Script Set exported'), 'success');
+    },
+    showQuickViewWindow(data) {
+      data.showPopover = false;
+
+      this.$refs.quickViewWindow.showWindow(data.id);
     },
 
-    openEntity(node, data, target) {
+    openEntity(data, target) {
+      data.showPopover = false;
+
       let setCodeLoading = (nextScriptId) => {
         if (this.$route.name === 'code-editor' && this.$route.params.id !== nextScriptId) {
           this.$store.commit('updateCodeEditor_isCodeLoaded', false);
@@ -1103,13 +1145,13 @@ export default {
       }
     },
 
-    async loadRelEntityData(funcId) {
+    async loadRelEntityData(data) {
       let apiRes  = null;
       let listOpt = {
         query: {
           _withTaskInfo: true,
           origin       : 'user',
-          funcId       : funcId,
+          funcId       : data.id,
           pageSize     : 100,
         }
       };
@@ -1133,12 +1175,13 @@ export default {
       }
     },
     async openRelEntity(node, data, target) {
-      await this.loadRelEntityData(data.id);
+      data.showPopover = false;
+
+      await this.loadRelEntityData(data);
 
       this.relEntityFunc   = data;
       this.relEntityTarget = target;
       this.showRelEntity   = true;
-      this.showPopoverId   = null;
     },
     async showAPI(d, urlPattern) {
       // 获取函数详情
@@ -1194,8 +1237,6 @@ export default {
       selectFilterText : '',
       selectOptions    : [],
       selectShowOptions: [],
-
-      showPopoverId: null,
 
       // 直接修改el-tree的`default-expanded-keys`参数会导致过渡动画被跳过
       // 因此需要将初始状态单独提取且防止中途修改
