@@ -283,7 +283,8 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      return _checkConfig(res.locals, data, skipTest, asyncCallback);
+      Object.assign(connector, data);
+      return _checkConfig(res.locals, connector, skipTest, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {

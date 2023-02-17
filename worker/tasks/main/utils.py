@@ -1071,7 +1071,7 @@ def query_connector(self, *args, **kwargs):
 
     connector_helper_class = CONNECTOR_HELPER_CLASS_MAP.get(connector_type)
     if not connector_helper_class:
-        e = Exception('Unsupported Connector type: `{}`'.format(da))
+        e = Exception('Unsupported Connector type: `{}`'.format(connector_type))
         raise e
 
     # 解密字段
