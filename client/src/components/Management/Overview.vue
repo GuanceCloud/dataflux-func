@@ -69,8 +69,8 @@ Pressure         : 压力
           :key="i">
           <div class="worker-queue-info">
             <span class="worker-queue-number">#{{ i }}</span>
-            <br>{{ $tc('workerCount', workerQueue.workerCount || 0) }}
-            <br>{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}
+            <br><span :class="{ 'text-bad' : (workerQueue.workerCount || 0) <= 0 }">{{ $tc('workerCount', workerQueue.workerCount || 0) }}</span>
+            <br><span :class="{ 'text-main': (workerQueue.taskCount   || 0) >  0 }">{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}</span>
           </div>
 
           <el-progress type="circle" width="110"

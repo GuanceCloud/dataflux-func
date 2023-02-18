@@ -3,11 +3,15 @@
 # Built-in Modules
 
 # 3rd-party Modules
+from celery import platforms
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
 
 CONFIG = yaml_resources.get('CONFIG')
+
+# Patch ROOT Warning
+platforms._warn_or_raise_security_error = toolkit.nope_func
 
 def before_app_create():
     APP_NAME_SERVER = CONFIG['APP_NAME'] + '-server'

@@ -42,6 +42,9 @@ MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
 RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
 
+def nope_func(*args, **kwargs):
+    pass
+
 def print_var(v, name=None):
     print('[VAR] `{}` type=`{}`, value=`{}`, obj_size=`{}`'.format(name or '<NO NAME>', type(v), str(v), get_obj_size(v)))
 

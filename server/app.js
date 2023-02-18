@@ -323,8 +323,7 @@ function startApplication() {
   };
   server.listen(listenOpt, function() {
     // Print some message of the server
-    console.log(toolkit.strf('Web Server is listening on {0}  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
-    console.log('Startup time: ' + process.uptime().toFixed(2) + 's');
+    console.log(toolkit.strf('Web Server is listening on port [ {0} ]  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
     console.log('Have fun!');
 
     // Non-request code here...

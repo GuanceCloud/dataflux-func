@@ -2,6 +2,7 @@
 
 # Built-in Modules
 import os
+import sys
 import yaml
 import requests
 
@@ -22,6 +23,7 @@ FILE_CACHE = {};
 CONFIG_KEY           = 'CONFIG';
 ENV_CONFIG_PREFIX    = 'DFF_';
 CUSTOM_CONFIG_PREFIX = 'CUSTOM_'
+PRINT_DETAIL         = sys.argv[0] == '_celery.py'
 
 def load_file(key, file_path):
     obj = None
@@ -36,7 +38,7 @@ def load_file(key, file_path):
 
     return obj
 
-def load_config(config_file_path, print_detail=False):
+def load_config(config_file_path):
     config_obj = load_file(CONFIG_KEY, config_file_path)
 
     # Collect config field type map
@@ -64,13 +66,13 @@ def load_config(config_file_path, print_detail=False):
     user_config_path = os.environ.get('CONFIG_FILE_PATH') or config_obj.get('CONFIG_FILE_PATH')
     if not user_config_path:
         # User config path NOT SET
-        if print_detail:
+        if PRINT_DETAIL:
             print('[YAML Resource] ENV `CONFIG_FILE_PATH` not set. Use default config')
 
     else:
         # User config from FILE
         if not os.path.exists(user_config_path):
-            if print_detail:
+            if PRINT_DETAIL:
                 print('[YAML Resource] Config file `{}` not found. Use default config.'.format(user_config_path))
 
         else:
@@ -81,7 +83,7 @@ def load_config(config_file_path, print_detail=False):
 
             config_obj.update(user_config_obj)
 
-            if print_detail:
+            if PRINT_DETAIL:
                 print('[YAML Resource] Config Overrided by: `{}`'.format(user_config_path))
 
     # User config from env
@@ -97,13 +99,13 @@ def load_config(config_file_path, print_detail=False):
         if k in config_obj:
             # Config override
             config_obj[k] = v
-            if print_detail:
+            if PRINT_DETAIL:
                 print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
         elif k.startswith(CUSTOM_CONFIG_PREFIX):
             # Custom config
             config_obj[k] = v
-            if print_detail:
+            if PRINT_DETAIL:
                 print('[YAML Resource] Custom config item `{}` added by env.'.format(k))
 
     # Convert config value type

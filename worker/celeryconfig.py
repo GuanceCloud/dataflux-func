@@ -6,21 +6,21 @@ import math
 
 # 3rd-party Modules
 import psutil
+import kombu
 from celery.schedules import crontab as celery_crontab
-from kombu import Queue
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
 
 CONFIG = yaml_resources.get('CONFIG')
 
-# 队列名与路由名相同
-def create_queue(queue_name):
-    return Queue(queue_name, routing_key=queue_name)
+imports = [
+    'worker.tasks.webhook',
+    'worker.tasks.internal',
 
-'''
-Some fixed Celery configs
-'''
+    'worker.tasks.example',
+    'worker.tasks.main',
+]
 
 # Worker
 worker_pool_restarts = True
@@ -50,26 +50,14 @@ broker_transport_options = {
 }
 
 # Queue
-task_default_queue       = toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
-task_default_routing_key = task_default_queue
-task_queues = [
-    create_queue(task_default_queue),
-]
+task_queues = []
+for i in range(int(CONFIG['_WORKER_QUEUE_COUNT'])):
+    worker_queue = toolkit.get_worker_queue(i)
+    kombu_queue  = kombu.Queue(worker_queue, routing_key = worker_queue)
+    task_queues.append(kombu_queue)
 
-# Task
-task_routes = {
-    # '<Task Name>': {'queue': toolkit.get_worker_queue('<Queue Name>')},
-}
-
-imports = [
-    'worker.tasks.webhook',
-    'worker.tasks.internal',
-
-    'worker.tasks.example',
-]
-
-# Beat
-beat_schedule = {}
+task_default_queue       = task_queues[0].name
+task_default_routing_key = task_queues[0].name
 
 # Job serialization
 task_serializer   = 'json'
@@ -83,23 +71,6 @@ timezone   = 'Asia/Shanghai'
 # Result
 result_expires = 3600
 
-########## Content for YOUR project below ##########
-# Queue
-for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
-    # 自动生成队列
-    q = toolkit.get_worker_queue(str(i))
-    task_queues.append(create_queue(q))
-
-# Task
-imports.append('worker.tasks.main')
-
-# Route
-task_routes.update({
-    'Main.*': {
-        'queue': toolkit.get_worker_queue(CONFIG['_WORKER_DEFAULT_QUEUE'])
-    },
-})
-
 # Beat
 def create_schedule(crontab_expr):
     splited = crontab_expr.split(' ')
@@ -112,41 +83,44 @@ def create_schedule(crontab_expr):
     }
     return celery_crontab(**kwargs)
 
-# 自动触发配置启动器
-beat_schedule['run-crontab-starter'] = {
-    'task'    : 'Main.CrontabStarter',
-    'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
-}
 
-# 缓存数据刷入数据库
-beat_schedule['run-sync-cache'] = {
-    'task'    : 'Main.SyncCache',
-    'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
-}
+beat_schedule = {
+    # 自动触发配置启动器
+    'run-crontab-starter': {
+        'task'    : 'Main.CrontabStarter',
+        'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
+    },
 
-# 自动清理
-beat_schedule['run-auto-clean'] = {
-    'task'    : 'Main.AutoClean',
-    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEAN']),
-}
+    # 缓存数据刷入数据库
+    'run-sync-cache': {
+        'task'    : 'Main.SyncCache',
+        'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
+    },
 
-# 数据库自动备份
-beat_schedule['run-auto-backup-db'] = {
-    'task'    : 'Main.AutoBackupDB',
-    'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
-}
+    # 自动清理
+    'run-auto-clean': {
+        'task'    : 'Main.AutoClean',
+        'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEAN']),
+    },
 
-# 工作队列压力恢复
-beat_schedule['run-reset-worker-queue-pressure'] = {
-    'task'    : 'Main.ResetWorkerQueuePressure',
-    'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
-}
+    # 数据库自动备份
+    'run-auto-backup-db': {
+        'task'    : 'Main.AutoBackupDB',
+        'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
+    },
 
-# 重新加载数据MD5缓存
-beat_schedule['run-reload-data-md5-cache'] = {
-    'task'    : 'Main.ReloadDataMD5Cache',
-    'kwargs'  : { 'lockTime': 15, 'all': True },
-    'schedule': create_schedule(CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE']),
+    # 工作队列压力恢复
+    'run-reset-worker-queue-pressure': {
+        'task'    : 'Main.ResetWorkerQueuePressure',
+        'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
+    },
+
+    # 重新加载数据MD5缓存
+    'run-reload-data-md5-cache': {
+        'task'    : 'Main.ReloadDataMD5Cache',
+        'kwargs'  : { 'lockTime': 15, 'all': True },
+        'schedule': create_schedule(CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE']),
+    },
 }
 
 ##### 功能关闭 #####
