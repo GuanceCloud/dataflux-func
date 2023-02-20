@@ -20,7 +20,7 @@ Saved Draft Code: 已保存的草稿代码
 </i18n>
 
 <template>
-  <transition name="fade">
+  <transition name="fade-s">
     <el-container v-show="$store.state.isLoaded">
       <!-- 操作区 -->
       <el-header class="code-viewer" style="height: unset !important">

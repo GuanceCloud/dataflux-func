@@ -263,7 +263,9 @@ export default {
 
       this.data = apiRes.data;
 
-      this.$store.commit('updateLoadStatus', true);
+      setTimeout(() => {
+        this.$store.commit('updateLoadStatus', true);
+      }, 500);
     },
     async quickSubmitData(d, operation) {
       let apiRes = null;

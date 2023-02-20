@@ -105,7 +105,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
 </i18n>
 
 <template>
-  <transition name="fade">
+  <transition name="fade-s">
     <split-pane v-on:resize="resizeVueSplitPane" ref="vueSplitPane" :min-percent="0" :default-percent="100" split="horizontal" v-show="$store.state.isLoaded">
       <template slot="paneL">
         <el-container

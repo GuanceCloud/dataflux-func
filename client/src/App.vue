@@ -6,7 +6,7 @@ This page does not support multiple users or multiple tabs for editing at the sa
 </i18n>
 
 <template>
-  <div id="app"
+  <div id="AppContainer"
     :element-loading-text="$t('Processing, please wait...')"
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
@@ -419,7 +419,7 @@ pre {
 code {
   font-family: "Iosevka", "PngFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
 }
-#app, .el-container {
+#AppContainer, .el-container {
   height: 100%;
 }
 h1 {
@@ -453,17 +453,36 @@ ul {
   background-image: url(./assets/img/bg-greyzz.png);
   background-repeat: repeat;
 }
+
+/* 动态效果 */
 .fade-enter-active {
-  transition: opacity .25s;
+  transition: all .2s;
+}
+.fade-enter {
+  transform: translateY(5px);
+  opacity: 0;
+}
+.fade-enter-to {
+  transform: translateY(0);
+  opacity: 1;
 }
 .fade-leave-to,
 .fade-leave {
   display: none;
 }
-.fade-enter {
+
+/* 动态效果（简化） */
+.fade-s-enter-active {
+  transition: all .2s;
+}
+.fade-s-leave-to,
+.fade-s-leave {
+  display: none;
+}
+.fade-s-enter {
   opacity: 0;
 }
-.fade-enter-to {
+.fade-s-enter-to {
   opacity: 1;
 }
 
@@ -474,7 +493,7 @@ ul {
   text-align: center;
   color: white;
   height: 16px;
-  z-index: 99999;
+  z-index: 2000;
   position: relative;
 }
 #Navi {

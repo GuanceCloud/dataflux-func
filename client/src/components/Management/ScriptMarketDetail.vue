@@ -540,7 +540,9 @@ export default {
 
       this.data = data;
 
-      this.$store.commit('updateLoadStatus', true);
+      setTimeout(() => {
+        this.$store.commit('updateLoadStatus', true);
+      }, 500);
     },
     openDialog(scriptSet, operation) {
       this.form.note = null;
