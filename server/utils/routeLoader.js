@@ -8,17 +8,18 @@ var async  = require('async');
 var Router = require('express').Router;
 
 /* Project Modules */
-var E                = require('./serverError');
-var CONFIG           = require('./yamlResources').get('CONFIG');
-var CONST            = require('./yamlResources').get('CONST');
-var PRIVILEGE        = require('./yamlResources').get('PRIVILEGE');
-var ROUTE            = require('./yamlResources').get('ROUTE');
-var toolkit          = require('./toolkit');
-var auth             = require('./auth');
-var requestValidator = require('./requestValidator');
-var modelHelper      = require('./modelHelper');
-var uploads          = require('./uploads');
-var requestDumper    = require('./requestDumper');
+var E                  = require('./serverError');
+var CONFIG             = require('./yamlResources').get('CONFIG');
+var CONST              = require('./yamlResources').get('CONST');
+var PRIVILEGE          = require('./yamlResources').get('PRIVILEGE');
+var ROUTE              = require('./yamlResources').get('ROUTE');
+var toolkit            = require('./toolkit');
+var auth               = require('./auth');
+var requestValidator   = require('./requestValidator');
+var modelHelper        = require('./modelHelper');
+var uploads            = require('./uploads');
+var requestDumper      = require('./requestDumper');
+var operationRecordMid = require('../middlewares/operationRecordMid');
 
 /**
  * All route configs.
@@ -593,6 +594,7 @@ exports.mount = function(app) {
       preMiddlewares.push(uploads(c.files));
     }
 
+    preMiddlewares.push(operationRecordMid.prepare);
     preMiddlewares.push(fixReqData);
 
     if (c.body && CONFIG.MODE === 'dev') {

@@ -4,8 +4,7 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var operationRecordMid = require('../middlewares/operationRecordMid');
-var scriptSetAPICtrl   = require('../controllers/scriptSetAPICtrl');
+var scriptSetAPICtrl = require('../controllers/scriptSetAPICtrl');
 
 routeLoader.load(ROUTE.scriptSetAPI.list, [
   scriptSetAPICtrl.list,
@@ -32,7 +31,6 @@ routeLoader.load(ROUTE.scriptSetAPI.export, [
 ]);
 
 routeLoader.load(ROUTE.scriptSetAPI.import, [
-  operationRecordMid.prepare,
   scriptSetAPICtrl.import,
 ]);
 

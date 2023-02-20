@@ -118,7 +118,7 @@ exports.beforeAppCreate = function(callback) {
   ], function(err) {
     if (err) throw err;
 
-    /********** Content for YOUR project below **********/
+    // Nope
 
     return callback();
   });
@@ -254,8 +254,6 @@ exports.afterAppCreated = function(app, server) {
   // Start interval
   setInterval(recordSysStats, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
   recordSysStats();
-
-  /********** Content for YOUR project below **********/
 
   var path = require('path');
   var fs   = require('fs-extra');
@@ -449,14 +447,12 @@ exports.afterAppCreated = function(app, server) {
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {
-  /********** Content for YOUR project below **********/
   var shouldRecordOperation = true;
 
   // 操作记录
-  var reqRoute        = res.locals.route = req.route.path;
   var operationRecord = res.locals.operationRecord;
 
-  var key   = `${req.method.toUpperCase()} ${reqRoute}`;
+  var key   = `${req.method.toUpperCase()} ${req.route.path}`;
   var route = routeLoader.getRoute(key);
 
   if (!operationRecord) {
@@ -470,7 +466,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
     // 非写操作接口跳过
     shouldRecordOperation = false;
 
-  } else if (reqRoute === ROUTE.scriptAPI.modify.url
+  } else if (req.route.path === ROUTE.scriptAPI.modify.url
       && operationRecord.reqBodyJSON.data.codeDraft
       && operationRecord.reqBodyJSON.prevCodeDraftMD5) {
     // 【特殊处理】由于脚本自动保存可能产生大量日志，因此忽略
@@ -478,15 +474,7 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
   }
 
   if (shouldRecordOperation) {
-    var reqParams = null;
-    if (toolkit.notNothing(req.params)) {
-      reqParams = toolkit.jsonCopy(req.params);
-    }
-
-    operationRecord.reqRoute      = reqRoute;
-    operationRecord.reqParamsJSON = reqParams;
-    operationRecord.reqCost       = reqCost;
-
+    operationRecord.reqCost        = reqCost;
     operationRecord.respStatusCode = statusCode || 200;
     operationRecord.respBodyJSON   = respType === 'json' ? toolkit.jsonCopy(respContent) : null;
 

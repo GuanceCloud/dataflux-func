@@ -156,6 +156,12 @@ export default {
       if (d.reqBodyJSON) {
         httpInfoLines.push(JSON.stringify(d.reqBodyJSON, null, 2));
       }
+      if (d.reqFileInfoJSON) {
+        httpInfoLines.push(`\n===== ${this.$t('Upload')} =====`)
+        d.reqFileInfoJSON.forEach(fileInfo => {
+          httpInfoLines.push(`${fileInfo.name} <${this.T.byteSizeHuman(fileInfo.size)}>`);
+        })
+      }
 
       httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
       httpInfoLines.push(`Status Code: ${d.respStatusCode}`);

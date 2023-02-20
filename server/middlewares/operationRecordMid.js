@@ -11,7 +11,18 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
 exports.prepare = function(req, res, next) {
-  // Query部分
+  // Params 部分
+  var reqParams = null;
+  try {
+    if (toolkit.notNothing(req.params)) {
+      reqParams = toolkit.jsonCopy(req.params);
+    }
+
+  } catch(err) {
+    res.locals.logger.logError(err);
+  }
+
+  // Query 部分
   var reqQuery = null;
   try {
     if (toolkit.notNothing(req.query)) {
@@ -22,18 +33,7 @@ exports.prepare = function(req, res, next) {
     res.locals.logger.logError(err);
   }
 
-  // Params部分
-  var reqParams = null;
-  try {
-    if (toolkit.notNothing(req.query)) {
-      reqParams = toolkit.jsonCopy(req.query);
-    }
-
-  } catch(err) {
-    res.locals.logger.logError(err);
-  }
-
-  // Body部分
+  // Body 部分
   var reqBody = null;
   try {
     if (toolkit.notNothing(req.body)) {
@@ -54,6 +54,7 @@ exports.prepare = function(req, res, next) {
     res.locals.logger.logError(err);
   }
 
+  // File 部分
   var reqFileInfo = null;
   try {
     if (toolkit.notNothing(req.files)) {
@@ -71,14 +72,14 @@ exports.prepare = function(req, res, next) {
   }
 
   res.locals.operationRecord = {
-    userId         : res.locals.user.id   || null,
-    clientId       : res.locals.clientId  || null,
+    userId         : res.locals.user.id  || null,
+    clientId       : res.locals.clientId || null,
     clientIPsJSON  : toolkit.isNothing(req.ips) ? [req.ip] : req.ips,
-    traceId        : res.locals.traceId   || null,
+    traceId        : res.locals.traceId  || null,
     reqMethod      : req.method,
-    reqRoute       : null,
+    reqRoute       : req.route.path,
+    reqParamsJSON  : reqParams,
     reqQueryJSON   : reqQuery,
-    reqParamsJSON  : null,
     reqBodyJSON    : reqBody,
     reqFileInfoJSON: reqFileInfo,
   };

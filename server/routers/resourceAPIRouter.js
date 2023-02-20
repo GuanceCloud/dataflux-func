@@ -5,8 +5,7 @@ var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var routeLoader = require('../utils/routeLoader');
 
-var operationRecordMid = require('../middlewares/operationRecordMid');
-var resourceAPICtrl    = require('../controllers/resourceAPICtrl');
+var resourceAPICtrl = require('../controllers/resourceAPICtrl');
 
 routeLoader.load(ROUTE.resourceAPI.list, [
   resourceAPICtrl.list,
@@ -21,7 +20,6 @@ routeLoader.load(ROUTE.resourceAPI.download, [
 ]);
 
 routeLoader.load(ROUTE.resourceAPI.upload, [
-  operationRecordMid.prepare,
   resourceAPICtrl.upload,
 ]);
 

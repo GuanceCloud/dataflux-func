@@ -147,8 +147,6 @@ function startApplication() {
     app.use(require('./utils/requestDumper').dumpUserInformation);
   }
 
-  app.use(require('./middlewares/operationRecordMid').prepare);
-
   // Load routes
   require('./routers/indexAPIRouter');
   require('./routers/authAPIRouter');

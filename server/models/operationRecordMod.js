@@ -87,11 +87,14 @@ EntityModel.prototype.list = function(options, callback) {
           if (toolkit.endsWith(d.reqRoute, '/sign-in')) {
             try { d.username = d.respBodyJSON.data.username } catch(_) {}
 
-          } else if (toolkit.endsWith(d.reqRoute, '/do/modify') || toolkit.endsWith(d.reqRoute, '/do/delete')) {
+          } else if (d.reqParamsJSON && d.reqParamsJSON.id) {
             try { d._operationEntityId = d.reqParamsJSON.id } catch(_) {}
 
-          } else if (toolkit.endsWith(d.reqRoute, '/do/add')) {
+          } else if (d.respBodyJSON && d.respBodyJSON.data && d.respBodyJSON.data.id) {
             try { d._operationEntityId = d.respBodyJSON.data.id } catch(_) {}
+
+          } else if (d.reqQueryJSON && d.reqQueryJSON.id) {
+            try { d._operationEntityId = d.reqQueryJSON.id } catch(_) {}
           }
         }
       });
