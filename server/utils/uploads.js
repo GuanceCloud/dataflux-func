@@ -33,7 +33,9 @@ module.exports = function(options) {
       var now = Date.now() + CONFIG._UPLOAD_FILE_EXPIRES * 1000;
 
       // 文件保存路径为：<上传临时目录>/<日期时间>_<随机数>_<原文件名>
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
       var tmpFilename = toolkit.strf('{0}_{1}_{2}', moment(now).format('YYYYMMDDHHmmss'), toolkit.genRandString(16), file.originalname);
+
       return callback(null, tmpFilename);
     }
   })
