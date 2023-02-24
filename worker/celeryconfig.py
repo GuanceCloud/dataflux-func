@@ -87,37 +87,37 @@ def create_schedule(crontab_expr):
 beat_schedule = {
     # 自动触发配置启动器
     'run-crontab-starter': {
-        'task'    : 'Main.CrontabStarter',
+        'task'    : 'Biz.CrontabStarter',
         'schedule': create_schedule(CONFIG['_CRONTAB_STARTER']),
     },
 
     # 缓存数据刷入数据库
     'run-sync-cache': {
-        'task'    : 'Main.SyncCache',
+        'task'    : 'Sys.SyncCache',
         'schedule': create_schedule(CONFIG['_CRONTAB_SYNC_CACHE']),
     },
 
     # 自动清理
     'run-auto-clean': {
-        'task'    : 'Main.AutoClean',
+        'task'    : 'Sys.AutoClean',
         'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_CLEAN']),
     },
 
     # 数据库自动备份
     'run-auto-backup-db': {
-        'task'    : 'Main.AutoBackupDB',
+        'task'    : 'Sys.AutoBackupDB',
         'schedule': create_schedule(CONFIG['_CRONTAB_AUTO_BACKUP_DB']),
     },
 
     # 工作队列压力恢复
     'run-reset-worker-queue-pressure': {
-        'task'    : 'Main.ResetWorkerQueuePressure',
+        'task'    : 'Sys.ResetWorkerQueuePressure',
         'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
     },
 
     # 重新加载数据MD5缓存
     'run-reload-data-md5-cache': {
-        'task'    : 'Main.ReloadDataMD5Cache',
+        'task'    : 'Sys.ReloadDataMD5Cache',
         'kwargs'  : { 'lockTime': 15, 'all': True },
         'schedule': create_schedule(CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE']),
     },

@@ -603,5 +603,5 @@ exports.confirmImport = function(req, res, next) {
 
 function reloadDataMD5Cache(celery, callback) {
   var taskKwargs = { all: true };
-  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, callback);
+  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, callback);
 };

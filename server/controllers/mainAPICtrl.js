@@ -691,7 +691,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     var celery = celeryHelper.createHelper(locals.logger);
 
     // 任务名
-    var name = 'Main.FuncRunner';
+    var name = 'Biz.FuncRunner';
 
     // 生成Celery任务的kwargs, options
     var taskOptions = {
@@ -1712,7 +1712,7 @@ exports.runCrontabConfigManually = function(req, res, next) {
     // 发送任务
     var celery = celeryHelper.createHelper(res.locals.logger);
 
-    var name = 'Main.CrontabManualStarter';
+    var name = 'Biz.CrontabManualStarter';
     var kwargs = { crontabConfigId: id };
 
     // 保证UI运行能够正常接收到超时报错
@@ -1830,7 +1830,7 @@ exports.callFuncDraft = function(req, res, next) {
     // 调用草稿
     var celery = celeryHelper.createHelper(res.locals.logger);
 
-    var name = 'Main.FuncDebugger';
+    var name = 'Biz.FuncDebugger';
     var kwargs = {
       funcId        : funcId,
       funcCallKwargs: funcCallKwargs,
@@ -2163,7 +2163,7 @@ exports.integratedSignIn = function(req, res, next) {
   // 调用函数
   var celery = celeryHelper.createHelper(res.locals.logger);
 
-  var name = 'Main.FuncRunner';
+  var name = 'Biz.FuncRunner';
   var kwargs = {
     funcId        : funcId,
     funcCallKwargs: { username: username, password: password },

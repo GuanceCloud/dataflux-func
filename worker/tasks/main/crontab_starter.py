@@ -327,12 +327,12 @@ class CrontabStarterTask(BaseTask):
                     expires=expires,
                     countdown=delay or None)
 
-@app.task(name='Main.CrontabManualStarter', bind=True, base=CrontabStarterTask)
+@app.task(name='Biz.CrontabManualStarter', bind=True, base=CrontabStarterTask)
 def crontab_manual_starter(self, *args, **kwargs):
     # 执行函数、参数
     crontab_config_id = kwargs.get('crontabConfigId')
 
-    self.logger.info('Main.CrontabManualStarter Task launched: `{}`'.format(crontab_config_id))
+    self.logger.info('Biz.CrontabManualStarter Task launched: `{}`'.format(crontab_config_id))
 
     # 计算当前触发点
     trigger_time = int(time.time())
@@ -343,7 +343,7 @@ def crontab_manual_starter(self, *args, **kwargs):
 
     self.send_task(crontab_config=crontab_config, current_time=current_time, trigger_time=trigger_time, exec_mode='async')
 
-@app.task(name='Main.CrontabStarter', bind=True, base=CrontabStarterTask)
+@app.task(name='Biz.CrontabStarter', bind=True, base=CrontabStarterTask)
 def crontab_starter(self, *args, **kwargs):
     # 注：需要等待1秒，确保不会在整点运行，导致跳回上一触发点
     time.sleep(1)

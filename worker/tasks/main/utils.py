@@ -42,7 +42,7 @@ DEFAULT_TASK_INFO_LIMIT_MAP = {
     'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
 }
 
-# Main.ReloadDataMD5Cache
+# Sys.ReloadDataMD5Cache
 class ReloadDataMD5CacheTask(BaseTask):
     '''
     数据MD5缓存任务
@@ -97,7 +97,7 @@ class ReloadDataMD5CacheTask(BaseTask):
             # 无数据 + 指定ID -> 清除缓存
             self.cache_db.hdel(data_md5_cache_key, data_id)
 
-@app.task(name='Main.ReloadDataMD5Cache', bind=True, base=ReloadDataMD5CacheTask)
+@app.task(name='Sys.ReloadDataMD5Cache', bind=True, base=ReloadDataMD5CacheTask)
 def reload_data_md5_cache(self, *args, **kwargs):
     lock_time  = kwargs.get('lockTime') or 0
     reload_all = kwargs.get('all')      or False
@@ -116,7 +116,7 @@ def reload_data_md5_cache(self, *args, **kwargs):
     else:
         self.cache_data_md5(data_type, data_id)
 
-# Main.SyncCache
+# Sys.SyncCache
 class SyncCache(BaseTask):
     def _monitor_data_report(self, points, category='metric'):
         _config = {}
@@ -518,7 +518,7 @@ class SyncCache(BaseTask):
                 sql_params = [ expired_max_seq, origin_id ]
                 self.db.query(sql, sql_params)
 
-@app.task(name='Main.SyncCache', bind=True, base=SyncCache)
+@app.task(name='Sys.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=30)
@@ -544,7 +544,7 @@ def sync_cache(self, *args, **kwargs):
         for line in traceback.format_exc().splitlines():
             self.logger.error(line)
 
-# Main.AutoClean
+# Sys.AutoClean
 class AutoCleanTask(BaseTask):
     def _delete_by_seq(self, table, seq, include=True):
         if seq <= 0:
@@ -736,7 +736,7 @@ class AutoCleanTask(BaseTask):
         for cache in CONFIG['_DEPRECATED_CACHE_KEY_PATTERN_LIST']:
             self.clear_cache_key_pattern(toolkit.get_cache_key(**cache))
 
-@app.task(name='Main.AutoClean', bind=True, base=AutoCleanTask)
+@app.task(name='Sys.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=30)
@@ -826,7 +826,7 @@ def auto_run(self, *args, **kwargs):
 
         func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)
 
-# Main.AutoBackupDB
+# Sys.AutoBackupDB
 class AutoBackupDBTask(BaseTask):
     def get_tables(self):
         # 查询需要导出的表
@@ -1000,7 +1000,7 @@ class AutoBackupDBTask(BaseTask):
                 file_path = os.path.join(dump_file_dir, file_name)
                 os.remove(file_path)
 
-@app.task(name='Main.AutoBackupDB', bind=True, base=AutoBackupDBTask)
+@app.task(name='Sys.AutoBackupDB', bind=True, base=AutoBackupDBTask)
 def auto_backup_db(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=60)
@@ -1086,8 +1086,8 @@ def query_connector(self, *args, **kwargs):
         ret = db_res
     return ret
 
-# Main.ResetWorkerQueuePressure
-@app.task(name='Main.ResetWorkerQueuePressure', bind=True, base=BaseTask)
+# Sys.ResetWorkerQueuePressure
+@app.task(name='Sys.ResetWorkerQueuePressure', bind=True, base=BaseTask)
 def reset_worker_queue_pressure(self, *args, **kwargs):
     # 上锁
     self.lock(max_age=30)

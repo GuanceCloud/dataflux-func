@@ -322,6 +322,7 @@ function startApplication() {
   server.listen(listenOpt, function() {
     // Print some message of the server
     console.log(toolkit.strf('Web Server is listening on port [ {0} ]  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
+    console.log(toolkit.strf('PID: {0}', process.pid));
     console.log('Have fun!');
 
     // Non-request code here...

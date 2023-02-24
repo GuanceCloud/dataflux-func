@@ -29,7 +29,7 @@ from worker.tasks.main import BaseFuncResponse, FuncResponse, FuncResponseLargeD
 
 CONFIG = yaml_resources.get('CONFIG')
 
-@app.task(name='Main.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
+@app.task(name='Biz.FuncRunner.Result', bind=True, base=BaseResultSavingTask, ignore_result=True)
 def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
     options = kwargs or {}
 
@@ -158,7 +158,7 @@ class FuncRunnerTask(ScriptBaseTask):
         result_dumps = toolkit.json_dumps(result)
         self.cache_db.setex(cache_key, cache_result_expires, result_dumps)
 
-@app.task(name='Main.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True)
+@app.task(name='Biz.FuncRunner', bind=True, base=FuncRunnerTask, ignore_result=True)
 def func_runner(self, *args, **kwargs):
     # 执行函数、参数
     func_id              = kwargs.get('funcId')
@@ -169,7 +169,7 @@ def func_runner(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('Main.FuncRunner Task launched: `{}`'.format(func_id))
+    self.logger.info('Biz.FuncRunner Task launched: `{}`'.format(func_id))
 
     # 任务来源
     origin    = kwargs.get('origin')

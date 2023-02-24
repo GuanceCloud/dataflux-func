@@ -35,7 +35,7 @@ exports.recover = function(req, res, next) {
     // 发送更新脚本代码MD5缓存任务
     function(asyncCallback) {
       var taskKwargs = { all: true };
-      celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, asyncCallback);
+      celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

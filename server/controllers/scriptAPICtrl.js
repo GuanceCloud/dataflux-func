@@ -303,7 +303,7 @@ exports.publish = function(req, res, next) {
         queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
         resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
       }
-      celery.putTask('Main.FuncDebugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
+      celery.putTask('Biz.FuncDebugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
         if (err) return asyncCallback(err);
 
         celeryRes = celeryRes || {};
@@ -438,7 +438,7 @@ exports.publish = function(req, res, next) {
           var taskOptions = {
             queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
           }
-          celery.putTask('Main.FuncRunner', null, kwargs, taskOptions);
+          celery.putTask('Biz.FuncRunner', null, kwargs, taskOptions);
         });
       });
     });
@@ -447,5 +447,5 @@ exports.publish = function(req, res, next) {
 
 function reloadDataMD5Cache(celery, scriptId, callback) {
   var taskKwargs = { type: 'script', id: scriptId };
-  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 }

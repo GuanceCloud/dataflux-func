@@ -30,7 +30,7 @@ CONFIG = yaml_resources.get('CONFIG')
 class FuncDebugger(ScriptBaseTask):
     pass
 
-@app.task(name='Main.FuncDebugger', bind=True, base=FuncDebugger)
+@app.task(name='Biz.FuncDebugger', bind=True, base=FuncDebugger)
 def func_debugger(self, *args, **kwargs):
     # 执行函数、参数
     func_id          = kwargs.get('funcId')
@@ -40,7 +40,7 @@ def func_debugger(self, *args, **kwargs):
     script_id     = func_id.split('.')[0]
     func_name     = func_id[len(script_id) + 1:]
 
-    self.logger.info('Main.FuncDebugger Task launched: `{}`'.format(func_id))
+    self.logger.info('Biz.FuncDebugger Task launched: `{}`'.format(func_id))
 
     # 来源
     origin    = kwargs.get('origin')

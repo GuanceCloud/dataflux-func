@@ -162,6 +162,7 @@ def on_worker_ready(sender, **kwargs):
 
     listening_queues = ', '.join(map(lambda q: f'#{q}', _worker_queues))
     print(f'Worker is listening on queues [ {listening_queues} ] (Press CTRL+C to quit)')
+    print(f'PID: {os.getpid()}')
     print('Have fun!')
 
 @signals.heartbeat_sent.connect

@@ -528,5 +528,5 @@ exports.listSubInfo = function(req, res, next) {
 
 function reloadDataMD5Cache(celery, connectorId, callback) {
   var taskKwargs = { type: 'connector', id: connectorId };
-  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 };

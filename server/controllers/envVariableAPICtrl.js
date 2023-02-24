@@ -132,5 +132,5 @@ exports.delete = function(req, res, next) {
 
 function reloadDataMD5Cache(celery, envVariableId, callback) {
   var taskKwargs = { type: 'envVariable', id: envVariableId };
-  celery.putTask('Main.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
 };
