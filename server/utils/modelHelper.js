@@ -1772,7 +1772,7 @@ CRUDHandler.prototype.createDeleteHandler = function(options) {
 };
 
 /**
- * Create a `/data/:id/do/delete-many` handler
+ * Create a `/data/do/delete-many` handler
  *
  * @param  {Object=null}   options
  * @param  {Function=null} options.beforeResp
@@ -1787,13 +1787,33 @@ CRUDHandler.prototype.createDeleteManyHandler = function(options) {
     var ret = null;
 
     var model = new self.modelProto(res.locals);
-    var id = req.query.id;
 
+    var deleteIds = [];
     var oldData = null;
 
     async.series([
       function(asyncCallback) {
-        model.deleteMany(id, function(err, _deletedIds) {
+        var opt = res.locals.getQueryOptions();
+
+        if (toolkit.isNothing(opt.filters)) {
+          return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
+        }
+
+        opt.fields = [ `${model.alias}.id` ];
+        opt.paging = false;
+
+        model.list(opt, function(err, dbRes) {
+          if (err) return asyncCallback(err);
+
+          deleteIds = toolkit.arrayElementValues(dbRes, 'id');
+
+          return asyncCallback();
+        });
+      },
+      function(asyncCallback) {
+        if (toolkit.isNothing(deleteIds)) return asyncCallback();
+
+        model.deleteMany(deleteIds, function(err, _deletedIds) {
           if (err) return asyncCallback(err);
 
           ret = toolkit.initRet({

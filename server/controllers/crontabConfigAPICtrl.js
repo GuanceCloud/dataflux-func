@@ -117,19 +117,21 @@ exports.addMany = function(req, res, next) {
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
 
-  var modifiedIds = [];
-
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+
+  var modifiedIds = [];
 
   var transScope = modelHelper.createTransScope(res.locals.db);
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
-      opt.fields = ['cron.id'];
 
       if (toolkit.isNothing(opt.filters)) {
-        return asyncCallback(new E('EBizCondition.DeleteConditionNotSpecified', 'At least one condition should been specified'));
+        return asyncCallback(new E('EBizCondition.ModifyConditionNotSpecified', 'At least one condition should been specified'));
       }
+
+      opt.fields = [ 'cron.id' ];
+      opt.paging = false;
 
       crontabConfigModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -144,9 +146,12 @@ exports.modifyMany = function(req, res, next) {
     },
     function(asyncCallback) {
       async.eachSeries(modifiedIds, function(id, eachCallback) {
-        var opt = { funcCallKwargs: 'merge' };
         var _data = toolkit.jsonCopy(data);
+        var opt = {
+          funcCallKwargs: 'merge'
+        };
         _modify(res.locals, id, _data, opt, eachCallback);
+
       }, asyncCallback);
     },
   ], function(err) {
