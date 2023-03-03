@@ -1080,12 +1080,12 @@ async function _doAxios(axiosOpt) {
         RECENT_NETWORK_ERROR_TIMESTAMP = now;
 
         // 通讯失败，服务端没有响应
-        MessageBox.alert(`与服务器通讯失败，请稍后再试
-            <br>如果问题持续出现，请联系管理员，检查服务器状态
+        MessageBox.alert(`${app.$t('Failed to communicate with the server, please try to refresh the page')}
+            <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server')}
             <br>${err.toString()}`, {
           showClose: false,
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '了解',
+          confirmButtonText: app.$t('OK'),
           type: 'error',
         });
       }

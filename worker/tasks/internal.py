@@ -19,7 +19,7 @@ def shutdown(self, *args, **kwargs):
     return app.control.broadcast('shutdown')
 
 @app.task(name='Internal.PoolRestart', bind=True, base=BaseTask, ignore_result=False)
-def shutdown(self, *args, **kwargs):
+def pool_restart(self, *args, **kwargs):
     '''
     Restart all worker execution pool
     '''

@@ -17,13 +17,13 @@ if six.PY2:
 else:
     FILE_OPEN_KWARGS = dict(encoding='utf8')
 
-FILE_CACHE = {};
+FILE_CACHE = {}
 
 # Configure
-CONFIG_KEY           = 'CONFIG';
-ENV_CONFIG_PREFIX    = 'DFF_';
+CONFIG_KEY           = 'CONFIG'
+ENV_CONFIG_PREFIX    = 'DFF_'
 CUSTOM_CONFIG_PREFIX = 'CUSTOM_'
-PRINT_DETAIL         = sys.argv[0] == '_celery.py'
+PRINT_DETAIL         = sys.argv[0].split('/')[-1] == 'celery'
 
 def load_file(key, file_path):
     obj = None

@@ -69,7 +69,7 @@ enable_utc = True
 timezone   = 'Asia/Shanghai'
 
 # Result
-result_expires = 3600
+result_expires = CONFIG['_WORKER_RESULT_EXPIRES']
 
 # Beat
 def create_schedule(crontab_expr):
