@@ -875,6 +875,8 @@ export function alert(message, type) {
       break;
   }
 
+  if (!message) return;
+
   // 简单提示，不需要区分标题和内容
   return MessageBox.alert(message, {
     showClose               : false,
@@ -1080,9 +1082,9 @@ async function _doAxios(axiosOpt) {
         RECENT_NETWORK_ERROR_TIMESTAMP = now;
 
         // 通讯失败，服务端没有响应
-        MessageBox.alert(`${app.$t('Failed to communicate with the server, please try to refresh the page')}
-            <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server')}
-            <br>${err.toString()}`, {
+        MessageBox.alert(`${app.$t('Failed to communicate with the server, please refresh the page and try again.')}
+            <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server.')}
+            <br><small>${err.toString()}</small>`, {
           showClose: false,
           dangerouslyUseHTMLString: true,
           confirmButtonText: app.$t('OK'),
@@ -1151,6 +1153,9 @@ export async function callAPI(method, pathPattern, options) {
         }
 
         // 简单提示，不需要区分标题和内容
+        if (!message) {
+          message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>${method.toUpperCase()} ${pathPattern}</small>`
+        }
         MessageBox.alert(message, {
           showClose: false,
           dangerouslyUseHTMLString: true,
@@ -1213,9 +1218,8 @@ export async function callAPI_getOne(pathPattern, id, options) {
       // 无数据提示
       if (!alert.muteError) {
         setTimeout(() => {
-          let message = app.$t('Data not found. It may have been deleted')
           // 简单提示，不需要区分标题和内容
-          MessageBox.alert(message, {
+          MessageBox.alert(app.$t('Data not found. It may have been deleted'), {
             showClose: false,
             confirmButtonText: app.$t('OK'),
             type: 'error',
@@ -1317,6 +1321,9 @@ export async function callAPI_getAll(pathPattern, options) {
           }
 
           // 简单提示，不需要区分标题和内容
+          if (!message) {
+            message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>GET ${pathPattern}</small>`
+          }
           MessageBox.alert(message, {
             showClose: false,
             dangerouslyUseHTMLString: true,

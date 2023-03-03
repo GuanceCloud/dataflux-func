@@ -3,8 +3,9 @@
 en: {}
 
 'zh-CN':
-  Failed to communicate with the server, please try to refresh the page                                   : 与服务器通讯失败，请尝试刷新页面
-  If the problem continues to occur, please contact the administrator to check the status of the server   : 如果问题持续出现，请联系管理员，检查服务器状态
+  Failed to communicate with the server, please refresh the page and try again.                           : 与服务器通讯失败，请尝试刷新页面后再试一次。
+  If the problem continues to occur, please contact the administrator to check the status of the server.  : 如果问题持续出现，请联系管理员，检查服务器状态。
+  Failed to access data, please refresh the page and try again.                                           : 访问数据失败，请尝试刷新页面后再试一次
   Admin user cannot been modified directly                                                                : 管理员用户无法直接修改
   Admin of the Script Market is already taken by other DataFlux Func                                      : 管理权已经被其他 DataFlux Func 获取
   Async task failed                                                                                       : 异步任务失败
