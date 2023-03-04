@@ -1,5 +1,13 @@
 # 自带脚本集目录
 
-在此目录下的所有`.zip`文件将在每次系统启动/重启时导入，并指定`origin`=`"builtin"`。
+在此目录下的所有`.zip`文件将在每次系统启动 / 重启时导入，并指定`origin`=`"builtin"`。
 
-> 仅支持 DataFlux Func 2.x 导出脚本集`.zip`文件
+> 仅支持 DataFlux Func 2.x 导出的脚本集`.zip`文件
+
+---
+
+# Builtin Script Sets
+
+All `.zip` files in this directory will be imported each time the system is started/restarted, specifying `origin`=`"builtin"`.
+
+> Only DataFlux Func 2.x exported Script Set `.zip` files are supported

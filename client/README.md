@@ -2,7 +2,7 @@
 
 本目录下内容为 DataFlux Func 的前端项目，主要使用 Vue 2.x 和 ElementUI 构建。
 
-*注意：本项目需要编译后与服务端一同提交*
+*注意：本项目需要编译后与服务端代码一同提交，以提高镜像构建速度*
 
 ## 相关文档
 
@@ -14,7 +14,7 @@
 
 Web client project of DataFlux Func, based on Vue 2.x and ElementUI.
 
-*Notice: This project should be pre-built and committed with Server side code*
+*Notice: This project needs to be compiled and submitted with the server-side code to improve the image build speed*
 
 ## Related Docs
 

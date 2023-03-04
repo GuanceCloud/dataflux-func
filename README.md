@@ -19,8 +19,8 @@ DataFlux Func 前身为 [观测云](https://guance.com/) 下属的一个计算�
 
 - [官方网站](https://func.guance.com)
 - [快速开始](https://func.guance.com/doc/quick-start/)
-- [开发手册](https://func.guance.com/doc/development-guide/)
-- [部署和维护手册](https://func.guance.com/doc/maintenance-guide/)
+- [部署和维护手册](https://func.guance.com/doc/maintenance-guide-requirement/)
+- [脚本开发手册](https://func.guance.com/doc/development-guide-basic/)
 - [文档库](https://func.guance.com/doc/)
 - [观测云官方网站](https://guance.com/)
 
@@ -51,8 +51,8 @@ For documentations on DataFlux Func, please refer to the following links.
 
 - [Official Site](https://func.guance.com)
 - [Quick Start](https://func.guance.com/doc/quick-start/)
-- [Development Guide](https://func.guance.com/doc/development-guide/)
-- [Deployment and Maintenance Guide](https://func.guance.com/doc/maintenance-guide/)
+- [Deployment and Maintenance Guide](https://func.guance.com/doc/maintenance-guide-requirement/)
+- [Development Guide](https://func.guance.com/doc/development-guide-basic/)
 - [Documentation Library](https://func.guance.com/doc/)
 - [Guance Official Site](https://guance.com/)
 
