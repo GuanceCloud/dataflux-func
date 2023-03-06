@@ -165,7 +165,10 @@ export default {
       this.isRefreshing = true;
 
       let apiRes = await this.T.callAPI_get('/api/v1/monitor/sys-stats/do/get');
-      if (!apiRes || !apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) {
+        this.isRefreshing = false;
+        return;
+      }
 
       let sysStats = apiRes.data;
 

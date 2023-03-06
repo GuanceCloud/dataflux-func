@@ -2274,10 +2274,18 @@ exports.integratedSignIn = function(req, res, next) {
     });
   };
 
-  var taskOptions = {
-    resultWaitTimeout: CONFIG._FUNC_TASK_DEFAULT_TIMEOUT * 1000,
-  }
-  celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+  _getFuncById(res.locals, funcId, function(err, _func) {
+    if (err) return next(err);
+
+    var extraConfigJSON = _func.extraConfigJSON || {};
+    var apiTimeout      = extraConfigJSON.apiTimeout || CONFIG._FUNC_TASK_DEFAULT_API_TIMEOUT;
+
+    var taskOptions = {
+      resultWaitTimeout: apiTimeout * 1000,
+    }
+    console.log('>>>>>>>>', taskOptions)
+    celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+  });
 };
 
 exports.integratedAuthMid = function(req, res, next) {

@@ -26,18 +26,6 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
       <Logo type="auto" class="logo" width="400px" height="70px"></Logo>
 
       <div class="sign-in-panel">
-        <el-dropdown class="ui-local-select" @command="$root.setUILocale">
-          <span><i class="fa fa-fw fa-globe"></i> {{ uiLocaleDetail.name }}</span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-for="_locale in C.UI_LOCALE" :key="_locale.key" :command="_locale.key">
-              <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
-                {{ _locale.name }}
-                <span class="ui-locale-tip" v-if="_locale.tip">{{ _locale.tip }}</span>
-              </span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-
         <el-form ref="form" :model="form" :rules="formRules" class="sign-in-form">
           <el-form-item prop="funcId" v-if="signInFuncs && signInFuncs.length > 0">
             <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
@@ -80,8 +68,28 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
               :captcha-token="form.captchaToken"
               @click.native="refreshCaptcha()" />
           </el-form-item>
-            <el-button tabindex="4" type="primary" @click="submitData">{{ $t('Sign In')}}</el-button>
+
           <el-form-item>
+            <el-button tabindex="4" type="primary" @click="submitData" :disabled="isSigningIn">
+              <i v-if="isSigningIn" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              {{ $t('Sign In')}}
+            </el-button>
+
+            <div class="ui-extra">
+              <el-dropdown class="ui-locale-select" @command="$root.setUILocale">
+                <span><i class="fa fa-fw fa-globe"></i> {{ uiLocaleDetail.name }}</span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-for="_locale in C.UI_LOCALE" :key="_locale.key" :command="_locale.key">
+                    <span :class="{ 'selected-option': uiLocaleDetail.key === _locale.key }">
+                      {{ _locale.name }}
+                      <span class="ui-locale-tip" v-if="_locale.tip">{{ _locale.tip }}</span>
+                    </span>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+
+              <div class="ui-error-message text-bad" v-if="respError.other">{{ respError.other }}</div>
+            </div>
           </el-form-item>
         </el-form>
       </div>
@@ -101,14 +109,20 @@ export default {
   },
   methods: {
     async submitData() {
+      this.isSigningIn = true;
       this.submitFailed = false;
+
+      let prevFormFuncId   = this.form.funcId;
+      let prevFormUsername = this.form.username;
 
       try {
         await this.$refs.form.validate();
       } catch(err) {
+        this.isSigningIn = false;
         return console.error(err);
       }
 
+      await this.$refs.form.clearValidate();
       this.T.jsonClear(this.respError);
 
       let _formData = this.T.jsonCopy(this.form);
@@ -135,6 +149,12 @@ export default {
         body : signInBody,
         alert: { muteError: true }, // 登录失败直接在页面展示，无需弹框
       });
+
+      this.$refs.form.resetFields();
+
+      this.form.funcId   = prevFormFuncId;
+      this.form.username = prevFormUsername;
+
       if (!apiRes.ok) {
         this.refreshCaptcha();
 
@@ -149,36 +169,39 @@ export default {
             break;
 
           case 'EUserDisabled':
-            this.respError.captcha = this.$t('User has been disabled');
+            this.respError.other = this.$t('User has been disabled');
             break;
 
           /* 集成登录失败 */
           case 'EFuncResultParsingFailed':
-            this.respError.captcha = this.$t('Integration sign-in func returned an unexpected value, please contact admin');
+            this.respError.other = this.$t('Integration sign-in func returned an unexpected value, please contact admin');
             break;
 
           case 'EFuncFailed.SignInFuncRaisedException':
-            this.respError.captcha = apiRes.message || this.$t('Sign in failed. Error occured in integration sign-in func, please concat admin');
+            this.respError.other = apiRes.message || this.$t('Sign in failed. Error occured in integration sign-in func, please concat admin');
             break;
 
           case 'EFuncFailed.SignInFuncTimeout':
-            this.respError.captcha = this.$t('Sign in failed. Integration sign-in func timeout, please concat admin');
+            this.respError.other = this.$t('Sign in failed. Integration sign-in func timeout, please concat admin');
             break;
 
           case 'EFuncFailed.SignInFuncReturnedFalseOrNothing':
-            this.respError.captcha = this.$t('Sign in failed. Integration sign-in func returned `False` or empty value, please concat admin');
+            this.respError.other = this.$t('Sign in failed. Integration sign-in func returned `False` or empty value, please concat admin');
             break;
         }
 
+        this.isSigningIn = false;
         this.submitFailed = true;
         return;
       }
 
-      this.$refs.form.resetFields();
-
       let xAuthToken = apiRes.data.xAuthToken;
       this.$store.commit('updateXAuthToken', xAuthToken);
       this.$store.dispatch('reloadUserProfile');
+
+      setTimeout(() => {
+        this.isSigningIn = false;
+      }, 1000);
     },
     refreshCaptcha() {
       this.form.captchaToken = Math.random().toString();
@@ -203,14 +226,17 @@ export default {
   },
   data() {
     return {
+      isSigningIn: false,
+
       respError: {
         password: null,
         captcha : null,
+        other   : null,
       },
       form: {
         captchaToken: null,
         captcha     : null,
-        funcId      : 'builtIn', // 集成登录专用
+        funcId      : null,
         username    : null,
         password    : null,
       },
@@ -248,6 +274,9 @@ export default {
     }
   },
   created() {
+    // 进入页面自动选择登录方式
+    this.form.funcId = this.BUILTIN_SIGN_IN_FUNC_ID;
+
     // 进入页面刷新验证码框
     this.refreshCaptcha();
   },
@@ -276,18 +305,27 @@ export default {
   background-color: #fff;
   position: relative;
 }
-.sign-in-panel .ui-local-select {
-  position: absolute;
-  right: 55px;
-  bottom: 25px;
+.sign-in-panel .ui-extra {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}
+.sign-in-panel .ui-error-message {
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sign-in-panel .ui-locale-select {
+  padding-top: 20px;
   font-size: 16px;
   color: #FF6600;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .sign-in-form {
-  padding: 40px 54px;
-  padding-bottom: 60px;
+  padding: 40px 50px 5px 50px;
   border-radius: 3px;
   box-shadow: 0 1px 2px 0 rgba(155,155,184,.15);
 }

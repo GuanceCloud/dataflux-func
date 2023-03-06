@@ -87,6 +87,9 @@ EntityModel.prototype.list = function(options, callback) {
       var parsedFuncArgs = parseFuncArgs(d.definition);
       d.argsJSON   = d.argsJSON   || parsedFuncArgs.args;
       d.kwargsJSON = d.kwargsJSON || parsedFuncArgs.kwargs;
+
+      // 补全`extraConfigJSON`
+      d.extraConfigJSON = d.extraConfigJSON || {};
     });
 
     return callback(null, dbRes, pageInfo);
