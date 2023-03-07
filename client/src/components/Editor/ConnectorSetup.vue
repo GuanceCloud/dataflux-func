@@ -117,7 +117,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
 
                   <el-form-item :label="$t('Title')">
                     <el-input :placeholder="$t('Optional')"
-                      maxlength="25"
+                      maxlength="50"
                       v-model="form.title"></el-input>
                   </el-form-item>
 

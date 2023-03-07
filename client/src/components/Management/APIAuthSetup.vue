@@ -66,7 +66,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
 
                   <el-form-item :label="$t('Name')">
                     <el-input :placeholder="$t('Optional')"
-                      maxlength="25"
+                      maxlength="50"
                       v-model="form.name"></el-input>
                   </el-form-item>
 

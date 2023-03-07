@@ -38,7 +38,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
 
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
-                    maxlength="25"
+                    maxlength="50"
                     v-model="form.title"></el-input>
                 </el-form-item>
 

@@ -144,7 +144,7 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
 
           <el-form-item :label="$t('Title')">
             <el-input :placeholder="$t('Optional')"
-              maxlength="25"
+              maxlength="50"
               v-model="form.title"></el-input>
           </el-form-item>
 
