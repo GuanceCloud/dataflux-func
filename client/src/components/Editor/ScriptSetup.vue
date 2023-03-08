@@ -68,7 +68,7 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
                     v-model="form.description"></el-input>
                 </el-form-item>
 
-                <el-form-item :label="$t('Script Template')">
+                <el-form-item :label="$t('Script Template')" v-if="T.setupPageMode() === 'add'">
                   <el-select
                     v-model="templateScriptId"
                     @change="showScriptTemplate"
