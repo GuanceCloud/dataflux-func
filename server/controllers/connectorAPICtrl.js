@@ -19,20 +19,14 @@ var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 /* Configure */
 var RESERVED_REF_NAME = 'dataflux_';
 
-function _checkConfig(locals, data, skipTest, callback) {
-  var type   = data.type;
-  var config = data.configJSON;
-
+function _checkConfig(locals, type, config, skipTest, callback) {
   var requiredFields = [];
   var optionalFields = [];
 
   switch(type) {
-    case 'df_dataway':
-      config.port     = config.port     || 9528;
-      config.protocol = config.protocol || 'http';
-
-      requiredFields = ['host', 'port'];
-      optionalFields = ['protocol', 'token', 'accessKey', 'secretKey'];
+    case 'guance':
+      requiredFields = ['guanceNode', 'guanceOpenAPIURL', 'guanceWebSocketURL', 'guanceOpenWayURL', 'guanceAPIKeyId', 'guanceAPIKey'];
+      optionalFields = [];
       break;
 
     case 'df_datakit':
@@ -41,6 +35,14 @@ function _checkConfig(locals, data, skipTest, callback) {
 
       requiredFields = ['host', 'port'];
       optionalFields = ['protocol', 'source'];
+      break;
+
+    case 'df_dataway':
+      config.port     = config.port     || 9528;
+      config.protocol = config.protocol || 'http';
+
+      requiredFields = ['host', 'port'];
+      optionalFields = ['protocol', 'token', 'accessKey', 'secretKey'];
       break;
 
     case 'dff_sidecar':
@@ -233,7 +235,7 @@ exports.add = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      return _checkConfig(res.locals, data, skipTest, asyncCallback);
+      return _checkConfig(res.locals, data.type, data.configJSON, skipTest, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -283,8 +285,7 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      Object.assign(connector, data);
-      return _checkConfig(res.locals, connector, skipTest, asyncCallback);
+      return _checkConfig(res.locals, connector.type, data.configJSON, skipTest, asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
@@ -477,7 +478,7 @@ exports.test = function(req, res, next) {
     },
     // 检查连接器配置
     function(asyncCallback) {
-      return _checkConfig(res.locals, connector, false, asyncCallback);
+      return _checkConfig(res.locals, connector.type, connector.configJSON, false, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

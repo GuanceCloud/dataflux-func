@@ -2497,8 +2497,9 @@ connectorAPI:
         $searchType: in
         $searchKey : cnct.type
         $commaArrayIn:
-          - df_dataway
+          - guance
           - df_datakit
+          - df_dataway
           - dff_sidecar
           - influxdb
           - mysql
@@ -2547,8 +2548,9 @@ connectorAPI:
           $isRequired: true
           $type      : enum
           $in:
-            - df_dataway
+            - guance
             - df_datakit
+            - df_dataway
             - dff_sidecar
             - influxdb
             - mysql
@@ -2567,6 +2569,36 @@ connectorAPI:
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。提交时检查，3秒超时）
           $isRequired: true
+          guanceNode:
+            $desc     : Guance Node
+            $allowNull: true
+            $type     : string
+            $example  : default
+          guanceOpenAPIURL:
+            $desc     : Guance OpenAPI URL
+            $allowNull: true
+            $type     : string
+            $example  : https://openapi.guance.com
+          guanceWebSocketURL:
+            $desc     : Guance WebSocket URL
+            $allowNull: true
+            $type     : string
+            $example  : https://websocket.guance.com
+          guanceOpenWayURL:
+            $desc     : Guance OpenWay URL
+            $allowNull: true
+            $type     : string
+            $example  : https://openway.guance.com
+          guanceAPIKeyId:
+            $desc     : Guance API Key ID
+            $allowNull: true
+            $type     : string
+            $example  : wsak_xxxxxxxxxx
+          guanceAPIKey:
+            $desc     : Guance API Key
+            $allowNull: true
+            $type     : string
+            $example  : xxxxxxxxxx
           host:
             $desc     : 主机
             $allowNull: true
@@ -2701,6 +2733,36 @@ connectorAPI:
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同。修改后重新检查，3秒超时）
           $isRequired: false
+          guanceNode:
+            $desc     : Guance Node
+            $allowNull: true
+            $type     : string
+            $example  : default
+          guanceOpenAPIURL:
+            $desc     : Guance OpenAPI URL
+            $allowNull: true
+            $type     : string
+            $example  : https://openapi.guance.com
+          guanceWebSocketURL:
+            $desc     : Guance WebSocket URL
+            $allowNull: true
+            $type     : string
+            $example  : https://websocket.guance.com
+          guanceOpenWayURL:
+            $desc     : Guance OpenWay URL
+            $allowNull: true
+            $type     : string
+            $example  : https://openway.guance.com
+          guanceAPIKeyId:
+            $desc     : Guance API Key ID
+            $allowNull: true
+            $type     : string
+            $example  : wsak_xxxxxxxxxx
+          guanceAPIKey:
+            $desc     : Guance API Key
+            $allowNull: true
+            $type     : string
+            $example  : xxxxxxxxxx
           host:
             $desc     : 主机
             $allowNull: true
@@ -2827,8 +2889,9 @@ connectorAPI:
 
       |   连接器类型    |                   查询语句示例                  |
       |-----------------|-------------------------------------------------|
-      | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
+      | `guance`        | 使用封装方法操作，不适用SQL语句                 |
       | `df_datakit`    | 使用封装方法操作，不适用SQL语句                 |
+      | `df_dataway`    | 使用封装方法操作，不适用SQL语句                 |
       | `dff_sidecar`   | 使用封装方法操作，不适用SQL语句                 |
       | `influx`        | `"SELECT * FROM some_measurement LIMIT 10"`     |
       | `mysql`         | `"SELECT * FROM some_table LIMIT 10"`           |

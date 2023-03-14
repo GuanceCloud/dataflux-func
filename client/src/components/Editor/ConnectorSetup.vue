@@ -3,6 +3,12 @@ Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
 Compatibility      : 兼容性
+Guance Node        : 观测云节点
+OpenAPI URL        : OpenAPI 地址
+WebSocket URL      : WebSocket 地址
+OpenWay URL        : OpenWay 地址
+API Key ID         : API Key ID
+API Key            : API Key
 Host               : 主机
 Port               : 端口
 Servers            : 服务器列表
@@ -21,9 +27,10 @@ Sub Offset         : 订阅 Offset
 'Topic/Handler'    : 主题/处理函数
 Topic              : 主题
 Handler Func       : 处理函数
-'Recent consume:'  : '最近消费：'
+'Recent consume    : ': '最近消费：'
 'Add Topic/Handler': 添加主题/处理函数
 Test connection    : 测试连通性
+
 Save without connection test: 保存并跳过连通性测试
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
@@ -35,6 +42,13 @@ Please input ID: 请输入ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
 Please input Connector type: 请选择连接器类型
+Please select Guance Node : 请选择观测云节点
+Please input OpenAPI URL  : 请输入 OpenAPI 地址
+Please input Websocket URL: 请输入 WebSocket 地址
+Please input OpenWay URL  : 请输入 OpenWay 地址
+Please input API Key ID   : 请输入 API Key ID
+Please input API Key      : 请输入 API Key
+'Should start with http:// or https://': '必须以 http:// 或 https://开头'
 Please input host: 请输入主机地址
 Please input port: 请输入主机端口
 Only integer between 1 and 65535 are allowed: 主机端口范围为 1-65535
@@ -86,8 +100,12 @@ This is a built-in Connector, please contact the admin to change the config: 当
                 </el-form-item>
 
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
-                  <el-select v-model="form.type" @change="switchType">
-                    <el-option v-for="opt in SUPPORTED_CONNECTOR" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
+                  <el-select
+                    v-model="form.type"
+                    @change="switchType"
+                    filterable
+                    :filter-method="T.debounce(doFilter)">
+                    <el-option v-for="opt in selectShowOptions" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item :label="$t('Type')" v-else>
@@ -131,6 +149,33 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   </el-form-item>
 
                   <!-- 可变区域 -->
+                  <el-form-item :label="$t('Guance Node')" v-if="hasConfigField(selectedType, 'guanceNode')" prop="configJSON.guanceNode">
+                    <el-select v-model="form.configJSON.guanceNode">
+                      <el-option v-for="node in guanceNodes"
+                        :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
+                    <el-input
+                      v-model="form.configJSON.guanceOpenAPIURL"></el-input>
+                  </el-form-item>
+                  <el-form-item :label="$t('WebSocket URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceWebSocketURL')" prop="configJSON.guanceWebSocketURL">
+                    <el-input
+                      v-model="form.configJSON.guanceWebSocketURL"></el-input>
+                  </el-form-item>
+                  <el-form-item :label="$t('OpenWay URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenWayURL')" prop="configJSON.guanceOpenWayURL">
+                    <el-input
+                      v-model="form.configJSON.guanceOpenWayURL"></el-input>
+                  </el-form-item>
+                  <el-form-item :label="$t('API Key ID')" v-if="hasConfigField(selectedType, 'guanceAPIKeyId')" prop="configJSON.guanceAPIKeyId">
+                    <el-input
+                      v-model="form.configJSON.guanceAPIKeyId"></el-input>
+                  </el-form-item>
+                  <el-form-item :label="$t('API Key')" v-if="hasConfigField(selectedType, 'guanceAPIKey')" prop="configJSON.guanceAPIKey">
+                    <el-input
+                      v-model="form.configJSON.guanceAPIKey" show-password></el-input>
+                  </el-form-item>
+
                   <el-form-item :label="$t('Host')" v-if="hasConfigField(selectedType, 'host')" prop="configJSON.host">
                     <el-input @blur="unpackURL"
                       v-model="form.configJSON.host"></el-input>
@@ -206,7 +251,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
 
                   <el-form-item label="Secret Key" v-if="hasConfigField(selectedType, 'secretKey')" prop="configJSON.secretKey">
                     <el-input
-                      v-model="form.configJSON.secretKey"></el-input>
+                      v-model="form.configJSON.secretKey" show-password></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Client ID')" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
@@ -288,7 +333,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
               </el-form>
 
               <!-- 此处特殊处理：要始终保证可以测试连接器 -->
-              <el-form label-width="120px">
+              <el-form label-width="120px" v-if="selectedType">
                 <el-form-item>
                   <el-button v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
 
@@ -324,6 +369,8 @@ This is a built-in Connector, please contact the admin to change the config: 当
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'ConnectorSetup',
   components: {
@@ -346,8 +393,51 @@ export default {
         }
       },
     },
+    selectedType: {
+      immediate: true,
+      async handler(newVal) {
+        // 获取观测云节点信息
+        if (newVal === 'guance') {
+          let axiosOpt = {
+            headers: { 'Cache-Control': 'no-cache' }
+          };
+
+          let guanceNodes = [];
+          try {
+            let resp = await axios.get('https://func.guance.com/guance-endpoints.json', axiosOpt);
+            guanceNodes = resp.data.endpoints;
+          } catch(err) {
+            // Nope
+          } finally {
+            guanceNodes.push(this.C.GUANCE_PRIVATE_ENDPOINT);
+          }
+
+          this.guanceNodes = guanceNodes;
+          this.guanceNodeMap = guanceNodes.reduce((acc, node) => {
+            acc[node.key] = node;
+            return acc;
+          }, {});
+        }
+      },
+    },
+    'form.configJSON.guanceNode'(nodeKey) {
+      let _node = this.guanceNodeMap[nodeKey];
+
+      this.form.configJSON.guanceOpenAPIURL   = _node.openapi;
+      this.form.configJSON.guanceWebSocketURL = _node.openway;
+      this.form.configJSON.guanceOpenWayURL   = _node.websocket;
+    },
   },
   methods: {
+    doFilter(q) {
+      q = (q || '').toLowerCase().trim();
+      if (!q) {
+        this.selectShowOptions = this.SUPPORTED_CONNECTORS;
+      } else {
+        this.selectShowOptions = this.T.searchKeywords(q, this.SUPPORTED_CONNECTORS);
+      }
+    },
+
     updateValidator(type) {
       if (this.$refs.form) {
         this.$refs.form.clearValidate();
@@ -457,8 +547,9 @@ export default {
       // 获取函数列表
       let funcList = await this.common.getFuncList();
 
-      this.funcMap      = funcList.map;
-      this.funcCascader = funcList.cascader;
+      this.funcMap           = funcList.map;
+      this.funcCascader      = funcList.cascader;
+      this.selectShowOptions = this.SUPPORTED_CONNECTORS;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -526,7 +617,8 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
-        name: 'intro',
+        name  : 'connector-setup',
+        params: { id: apiRes.data.id },
       });
       this.$store.commit('updateConnectorListSyncTime');
     },
@@ -590,8 +682,8 @@ export default {
     },
   },
   computed: {
-    SUPPORTED_CONNECTOR() {
-      return this.C.CONNECTOR.filter(opt => {
+    SUPPORTED_CONNECTORS() {
+      let connectorTypes = this.C.CONNECTOR.filter(opt => {
         // 部分连接器特殊处理
         switch (opt.key) {
           case 'sqlserver':
@@ -603,6 +695,13 @@ export default {
             return true;
         }
       });
+
+      // 添加搜索字段
+      connectorTypes.forEach(c => {
+        this.T.appendSearchFields(c, ['key', 'name', 'fullName']);
+      });
+
+      return connectorTypes;
     },
     pageTitle() {
       const _map = {
@@ -629,6 +728,11 @@ export default {
       subInfoMap  : {},
       funcMap     : {},
       funcCascader: [],
+
+      selectShowOptions: [],
+
+      guanceNodes  : [],
+      guanceNodeMap: {},
 
       form: {
         id         : null,
@@ -662,6 +766,65 @@ export default {
             required: true,
           },
         ],
+
+        'configJSON.guanceNode': [
+          {
+            trigger : 'change',
+            message : this.$t('Please select Guance Node'),
+            required: true,
+          },
+        ],
+        'configJSON.guanceOpenAPIURL': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input OpenAPI URL'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: this.C.RE_PATTERN.httpURL,
+          },
+        ],
+        'configJSON.guanceWebSocketURL': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input Websocket URL'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: this.C.RE_PATTERN.httpURL,
+          },
+        ],
+        'configJSON.guanceOpenWayURL': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input OpenWay URL'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: this.C.RE_PATTERN.httpURL,
+          },
+        ],
+        'configJSON.guanceAPIKeyId': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input API Key ID'),
+            required: true,
+          },
+        ],
+        'configJSON.guanceAPIKey': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input API Key'),
+            required: true,
+          },
+        ],
+
         'configJSON.host': [
           {
             trigger : 'change',
@@ -849,6 +1012,9 @@ export default {
 <style>
 .connector-logo img {
   width: auto;
+}
+.connector-logo.logo-guance {
+  height: 100px !important;
 }
 .connector-logo.logo-df_dataway {
 }

@@ -32,6 +32,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 };
 
 var CIPHER_CONFIG_FIELDS = exports.CIPHER_CONFIG_FIELDS = [
+  'guanceAPIKey',
   'password',
   'secretKey',
 ];

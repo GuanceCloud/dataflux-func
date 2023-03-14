@@ -260,6 +260,10 @@ en:
   Data not found. It may have been deleted: 找不到此数据，该数据可能已经被删除
 
   # const.js - CONNECTOR
+  'Guance'                                                                : 观测云
+  'Guance Workspace'                                                      : 观测云工作空间
+  'Guance DataKit (HTTP)'                                                 : 观测云 DataKit (HTTP)
+  'Guance DataWay (HTTP)'                                                 : 观测云 DataWay (HTTP)
   'InfluxDB (HTTP) (And other compatible Databases)'                      : InfluxDB (HTTP)（及兼容数据库）
   'Aliyun Time Series Database for InfluxDB'                              : 阿里云时序数据库 InfluxDB 版
   'MySQL (And other compatible Databases)'                                : MySQL（及兼容数据库）
