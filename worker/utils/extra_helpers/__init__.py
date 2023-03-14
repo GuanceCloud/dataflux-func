@@ -213,6 +213,7 @@ def to_db_res_dict(cur, db_res):
 
     return db_res_dict or db_res
 
+from .guance_helper          import GuanceHelper
 from .datakit_helper         import DataKitHelper
 from .dataway_helper         import DataWayHelper
 from .sidecar_helper         import SidecarHelper

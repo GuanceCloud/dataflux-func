@@ -26,11 +26,13 @@ import funcsigs
 from worker import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers import DataKitHelper, DataWayHelper, SidecarHelper
+from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, KafkaHelper
 from worker.utils.extra_helpers import SQLServerHelper, OracleDatabaseHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers.guance import Guance
+from worker.utils.extra_helpers.datakit import DataKit
 from worker.utils.extra_helpers.dataway import DataWay
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -60,6 +62,7 @@ FIX_INTEGRATION_KEY_MAP = {
 
 # 连接器对应 Helper 类
 CONNECTOR_HELPER_CLASS_MAP = {
+    'guance'       : GuanceHelper,
     'df_dataway'   : DataWayHelper,
     'df_datakit'   : DataKitHelper,
     'dff_sidecar'  : SidecarHelper,
@@ -1596,7 +1599,10 @@ class ScriptBaseTask(BaseTask):
 
             'TASK': self, # 任务本身
 
-            'DATAWAY': DataWay, # DataWay
+            # 无连接器访问
+            'GUANCE' : Guance,
+            'DATAKIT': DataKit,
+            'DATAWAY': DataWay,
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
