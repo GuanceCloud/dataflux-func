@@ -1682,7 +1682,6 @@ export function searchKeywords(s, l) {
   .split(' ')
   .filter(x => notNothing(x));
 
-
   let maxScore                = 0;
   let maxSearchKeywordsLength = 0;
 
@@ -1734,11 +1733,13 @@ export function searchKeywords(s, l) {
     }
   });
 
-  // console.log('-----------------')
-  // console.log(searchTexts.toString())
-  // listScore.slice(0, 10).forEach(x => {
-  //   console.log(`Score: ${x.score} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
-  // })
+  if (window._DFF_DEBUG) {
+    console.log('-----------------')
+    console.log(searchTexts.toString())
+    listScore.slice(0, 10).forEach(x => {
+      console.log(`Score: ${x.score} / Sub: ${x.subScore} / Sim: ${x.simScore} >>>> ${x.item.searchKeywords.toString()}`)
+    })
+  }
 
   listScore = listScore.filter(x => {
     if (x.exactlyMatch) {

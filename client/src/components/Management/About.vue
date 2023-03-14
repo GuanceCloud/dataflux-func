@@ -11,7 +11,7 @@ About: 关于
 'Icons used are from {0}'        : '图标来自 {0}'
 'Illustrations used are from {0}': '插图来自 {0}'
 
-'The latest version is {ver}, click here to go to the official website': '最新版为 {ver}，点击此处前往官方网站'
+'New version {ver} is available, click here to go to the official website': '可以升级到 {ver} 版本，点击此处前往官方网站查看'
 
 Version Information: 版本信息
 System Report      : 系统报告
@@ -110,7 +110,7 @@ Wroker Queue Length      : Worker 队列长度
                 <el-form-item :label="$t('Version')">
                   <el-input :readonly="true" :value="$store.getters.CONFIG('VERSION')"></el-input>
                   <el-link href="https://func.guance.com/" target="_blank" v-if="common.hasNewVersion()">
-                    {{ $t('The latest version is {ver}, click here to go to the official website', { ver: $store.state.latestVersion }) }}
+                    {{ $t('New version {ver} is available, click here to go to the official website', { ver: $store.state.latestVersion }) }}
                   </el-link>
                 </el-form-item>
 
