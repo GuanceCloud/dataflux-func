@@ -12,12 +12,24 @@ var moment = require('moment');
 var g             = require('./utils/g');
 var E             = require('./utils/serverError');
 var yamlResources = require('./utils/yamlResources');
-var modelHelper   = require('./utils/modelHelper');
 var toolkit       = require('./utils/toolkit');
 var routeLoader   = require('./utils/routeLoader');
 
 var ROUTE  = yamlResources.get('ROUTE');
 var CONFIG = yamlResources.get('CONFIG');
+
+function getDBConnection() {
+  var mysqlConfig = {
+    host    : CONFIG.MYSQL_HOST,
+    port    : CONFIG.MYSQL_PORT,
+    user    : CONFIG.MYSQL_USER,
+    password: CONFIG.MYSQL_PASSWORD,
+    database: CONFIG.MYSQL_DATABASE,
+  };
+  var conn = mysql.createConnection(mysqlConfig);
+
+  return conn;
+};
 
 exports.convertJSONResponse = function(ret) {
   // Will disabled by `"X-Wat-Disable-Json-Response-Converting"` Header
@@ -64,13 +76,7 @@ exports.beforeAppCreate = function(callback) {
   };
 
   var loadDatabaseTimezone = function(callback) {
-    var mysqlConfig = {
-      host    : CONFIG.MYSQL_HOST,
-      port    : CONFIG.MYSQL_PORT,
-      user    : CONFIG.MYSQL_USER,
-      password: CONFIG.MYSQL_PASSWORD,
-    };
-    var conn = mysql.createConnection(mysqlConfig);
+    var conn = getDBConnection();
     conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
       // 无法连接数据库也不要报错
       if (err) {
@@ -113,8 +119,29 @@ exports.beforeAppCreate = function(callback) {
     });
   };
 
+  var initDataFluxFuncId = function(callback) {
+    var id    = 'DATAFLUX_FUNC_ID';
+    var value = `DFF-${toolkit.genUUID().toUpperCase()}`;
+
+    var conn = getDBConnection();
+    conn.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
+      if (err) return callback(err);
+
+      if (dbRes[0].count > 0) {
+        return callback();
+      }
+
+      conn.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
+        conn.end();
+
+        return callback(err);
+      });
+    });
+  };
+
   async.series([
     loadDatabaseTimezone,
+    initDataFluxFuncId,
   ], function(err) {
     if (err) throw err;
 

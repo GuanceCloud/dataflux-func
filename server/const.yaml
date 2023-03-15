@@ -74,6 +74,9 @@ fileIcon:
 
 # System Configs and defaults
 systemConfigs:
+  # DataFlux Func ID
+  DATAFLUX_FUNC_ID: null
+
   # 是否启用自定义网站标题
   CUSTOM_SITE_TITLE_ENABLED: false
   # 自定义网站标题文案

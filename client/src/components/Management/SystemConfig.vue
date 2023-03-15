@@ -7,6 +7,10 @@ Doc Link in Navi Bar  : 导航栏文档链接
 Monitor Data Report   : 监控数据上报
 Official Script Market: 官方脚本市场
 
+Show Advanced Configs: 显示高级配置
+Hide Advanced Configs: 隐藏高级配置
+Advanced Configs     : 高级配置
+
 Enable: 启用
 Text  : 文案
 Color : 颜色
@@ -24,6 +28,10 @@ Show a fixed alert bar at the top of all pages: 在所有页面顶部展示固�
 Show a Document Link to the specified URL in the Navi Bar: 在导航栏展示文档链接，点击后可以跳转至指定的 URL 地址
 Report the monitor data of DataFlux Func to the specified URL: 将 DataFlux Func 的监控数据上报到指定 URL
 Show quick creation button for Official Script Market: 显示官方脚本市场快捷创建按钮
+
+If you don't know the meaning of these configurations, please don't make any changes!: 如果您不知道这些配置的意义，请不要作任何修改！
+
+Save and Refresh: 保存并刷新
 </i18n>
 
 <template>
@@ -207,9 +215,25 @@ Show quick creation button for Official Script Market: 显示官方脚本市场�
                   </el-select>
                 </el-form-item>
 
+                <template v-if="showAdvancedConfigs">
+                  <!-- 高级 -->
+                  <el-divider content-position="left"><h3 class="text-bad">{{ $t('Advanced Configs') }}</h3></el-divider>
+
+                  <el-form-item>
+                    <InfoBlock type="error" :title="$t('If you don\'t know the meaning of these configurations, please don\'t make any changes!')" />
+                  </el-form-item>
+
+                  <el-form-item :label="$t('DataFlux Func ID')" prop="DATAFLUX_FUNC_ID">
+                    <el-input v-model="form['DATAFLUX_FUNC_ID']"></el-input>
+                  </el-form-item>
+                </template>
+
+                <el-divider />
+
                 <el-form-item>
+                  <el-button @click="showAdvancedConfigs = !showAdvancedConfigs">{{ showAdvancedConfigs ? $t('Hide Advanced Configs') : $t('Show Advanced Configs') }}</el-button>
                   <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save and Refresh') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -332,6 +356,8 @@ export default {
     return {
       data: {},
       form: {},
+
+      showAdvancedConfigs: false,
     }
   },
 }

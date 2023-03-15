@@ -433,7 +433,6 @@ def decipher_by_aes(data, key):
     bin_data = binascii.a2b_base64(data)
     text = c.decrypt(bin_data)
 
-    print(repr(text))
     return six.ensure_str(text).strip()
 
 def get_base64(s):
