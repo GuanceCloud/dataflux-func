@@ -18,7 +18,7 @@ def get_config(c):
         'api_key'   : c.get('guanceAPIKey'),
     })
 
-def get_dataway_config(c):
+def get_config_dataway(c):
     return toolkit.no_none_or_white_space({
         'url'    : c.get('guanceOpenWayURL'),
         'token'  : c.get('token'),
@@ -49,7 +49,7 @@ class GuanceHelper(object):
     @property
     def dataway(self):
         if not self._dataway:
-            self._dataway = DataWay(**get_dataway_config(config), token=self.client.workspace_token)
+            self._dataway = DataWay(**get_config_dataway(config), token=self.client.workspace_token)
 
         return self._dataway
 

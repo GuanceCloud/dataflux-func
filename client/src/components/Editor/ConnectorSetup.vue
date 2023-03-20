@@ -31,7 +31,7 @@ Handler Func       : 处理函数
 'Add Topic/Handler': 添加主题/处理函数
 Test connection    : 测试连通性
 
-Save without connection test: 保存并跳过连通性测试
+Save without connection test: 保存（忽略连通性测试）
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
@@ -410,6 +410,10 @@ export default {
             // Nope
           } finally {
             guanceNodes.push(this.C.GUANCE_PRIVATE_ENDPOINT);
+
+            if (this.$store.getters.CONFIG('VERSION') === '0.0.0') {
+              guanceNodes.push(this.C.GUANCE_TESTING_ENDPOINT);
+            }
           }
 
           this.guanceNodes = guanceNodes;
@@ -421,11 +425,14 @@ export default {
       },
     },
     'form.configJSON.guanceNode'(nodeKey) {
-      let _node = this.guanceNodeMap[nodeKey];
+      let nextConfigJSON = this.T.jsonCopy(this.form.configJSON);
 
-      this.form.configJSON.guanceOpenAPIURL   = _node.openapi;
-      this.form.configJSON.guanceWebSocketURL = _node.openway;
-      this.form.configJSON.guanceOpenWayURL   = _node.websocket;
+      let _node = this.T.jsonCopy(this.guanceNodeMap[nodeKey]);
+      nextConfigJSON.guanceOpenAPIURL   = _node.openapi;
+      nextConfigJSON.guanceWebSocketURL = _node.websocket;
+      nextConfigJSON.guanceOpenWayURL   = _node.openway;
+
+      this.form.configJSON = nextConfigJSON;
     },
   },
   methods: {
@@ -617,8 +624,7 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
-        name  : 'connector-setup',
-        params: { id: apiRes.data.id },
+        name: 'intro',
       });
       this.$store.commit('updateConnectorListSyncTime');
     },
@@ -981,11 +987,11 @@ export default {
       testConnectorResult: null,
     }
   },
-  mounted() {
-    this.autoRefreshTimer = setInterval(() => {
-      this.updateSubInfo();
-    }, 5 * 1000);
-  },
+  // mounted() {
+  //   this.autoRefreshTimer = setInterval(() => {
+  //     this.updateSubInfo();
+  //   }, 5 * 1000);
+  // },
   beforeDestroy() {
     if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },

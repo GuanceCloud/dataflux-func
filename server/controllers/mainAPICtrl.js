@@ -1937,8 +1937,7 @@ exports.getFuncResult = function(req, res, next) {
 };
 
 exports.getFuncList = function(req, res, next) {
-  req.query = req.query || {};
-  req.query._asFuncDoc = true;
+  res.locals.extra.asFuncDoc = true;
 
   return funcAPICtrl.list(req, res, next);
 };
@@ -2283,7 +2282,6 @@ exports.integratedSignIn = function(req, res, next) {
     var taskOptions = {
       resultWaitTimeout: apiTimeout * 1000,
     }
-    console.log('>>>>>>>>', taskOptions)
     celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
   });
 };

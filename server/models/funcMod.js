@@ -10,6 +10,7 @@ var E           = require('../utils/serverError');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
+var urlFor      = require('../utils/routeLoader').urlFor;
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
@@ -48,6 +49,11 @@ EntityModel.prototype.list = function(options, callback) {
   options = options || {};
   options.extra = options.extra || {};
 
+  if (options.extra.asFuncDoc) {
+    options.filters = options.filters;
+    options.filters['func.extraConfigJSON->>$.isHidden'] = { isnull: true };
+  }
+
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   func.*');
@@ -75,13 +81,13 @@ EntityModel.prototype.list = function(options, callback) {
   return this._list(options, function(err, dbRes, pageInfo) {
     if (err) return callback(err);
 
-    /* 兼容处理 */
+    // 数据补全
     dbRes.forEach(function(d) {
       // 无函数定义不需要补全
-      if (!d.description) return;
+      if (!d.definition) return;
 
       // 已存在不需要补全
-      if (d.argsJSON && d.kwargsJSON) return;
+      if (!d.argsJSON || !d.kwargsJSON) return;
 
       // 补全`argsJSON`,`kwargsJSON`
       var parsedFuncArgs = parseFuncArgs(d.definition);
@@ -92,7 +98,38 @@ EntityModel.prototype.list = function(options, callback) {
       d.extraConfigJSON = d.extraConfigJSON || {};
     });
 
-    return callback(null, dbRes, pageInfo);
+    // 转换格式
+    let funcDoc = null;
+    if (options.extra.asFuncDoc) {
+      funcDoc = [];
+      dbRes.forEach(function(d) {
+        funcDoc.push({
+          url: urlFor('mainAPI.callFunc', {
+            params: { funcId: d.id },
+          }),
+
+          id                  : d.id,
+          name                : d.name,
+          title               : d.title,
+          description         : d.description,
+          definition          : d.definition,
+          argsJSON            : d.argsJSON,
+          kwargsJSON          : d.kwargsJSON,
+          extraConfigJSON     : d.extraConfigJSON,
+          category            : d.category,
+          integration         : d.integration,
+          tagsJSON            : d.tagsJSON,
+          scriptId            : d.scpt_id,
+          scriptTitle         : d.scpt_title,
+          scriptDescription   : d.scpt_description,
+          scriptSetId         : d.sset_id,
+          scriptSetTitle      : d.sset_title,
+          scriptSetDescription: d.sset_description,
+        });
+      });
+    }
+
+    return callback(null, funcDoc || dbRes, pageInfo);
   });
 };
 

@@ -15,8 +15,8 @@ var connectorMod = require('./models/connectorMod');
 var mainAPICtrl  = require('./controllers/mainAPICtrl');
 
 /* Configure */
+var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
-var SUB_CLIENT_LOCK_EXPIRES  = 15;
 
 var CONNECTOR_HELPER_MAP = {
   redis: require('./utils/extraHelpers/redisHelper'),
@@ -24,7 +24,8 @@ var CONNECTOR_HELPER_MAP = {
   kafka: require('./utils/extraHelpers/kafkaHelper'),
 };
 
-var CONNECTOR_TOPIC_MAP = {};
+// 简称 C.T.F
+var CONNECTOR_TOPIC_FUNC_MAP = {};
 
 function createMessageHandler(locals, handlerFuncId) {
   return function(topic, message, packet, callback) {
@@ -34,7 +35,6 @@ function createMessageHandler(locals, handlerFuncId) {
     async.series([
       // 生成函数调用配置
       function(asyncCallback) {
-        var funcId = handlerFuncId;
         var opt = {
           origin  : 'sub',
           originId: topic,
@@ -46,7 +46,7 @@ function createMessageHandler(locals, handlerFuncId) {
             // packet : packet,
           },
         }
-        mainAPICtrl._createFuncCallOptionsFromOptions(locals, funcId, opt, function(err, _funcCallOptions) {
+        mainAPICtrl._createFuncCallOptionsFromOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -57,7 +57,7 @@ function createMessageHandler(locals, handlerFuncId) {
       // 发送任务
       function(asyncCallback) {
         mainAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
-          locals.logger.debug('TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
+          locals.logger.debug('[SUB] TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
 
           if (err) return asyncCallback(err);
 
@@ -68,7 +68,7 @@ function createMessageHandler(locals, handlerFuncId) {
             funcResult = null;
           }
 
-          locals.logger.debug('FUNC: `{0}` -> `{1}`', handlerFuncId, JSON.stringify(funcResult));
+          locals.logger.debug('[SUB] FUNC: `{0}` -> `{1}`', handlerFuncId, JSON.stringify(funcResult));
 
           return asyncCallback();
         });
@@ -85,17 +85,17 @@ exports.runListener = function runListener(app) {
   var lockValue = toolkit.genRandString();
   app.locals.logger.info('Start subscribers... Lock: `{0}`', lockValue);
 
-  // 当前节点是否抢占到单订阅节点资格
-  var isSingleSubNode = false;
+  // 当前节点是否抢占到主节点资格
+  var isMasterNode = false;
 
   // 定期检查
   function connectorChecker() {
     // 重建连接器客户端
-    var nextConnectorTopicMap = {};
+    var nextConnectorTopicFuncMap = {};
     async.series([
       // 上锁
       function(asyncCallback) {
-        app.locals.cacheDB.lock(lockKey, lockValue, SUB_CLIENT_LOCK_EXPIRES, function() {
+        app.locals.cacheDB.lock(lockKey, lockValue, MASTER_LOCK_EXPIRES, function() {
           // 无法上锁可能为：
           //  1. 其他进程已经上锁
           //  2. 本进程已经上锁
@@ -105,20 +105,28 @@ exports.runListener = function runListener(app) {
       },
       // 续租锁
       function(asyncCallback) {
-        app.locals.cacheDB.extendLockTime(lockKey, lockValue, SUB_CLIENT_LOCK_EXPIRES, function(err) {
+        app.locals.cacheDB.extendLockTime(lockKey, lockValue, MASTER_LOCK_EXPIRES, function(err) {
           if (!err) {
             // 成功续租锁，则锁一定为本进程所获得，进入下一步
-            isSingleSubNode = true;
+            if (isMasterNode === null || isMasterNode === false) {
+              app.locals.logger.debug('[SUB] Master Node');
+            }
+
+            isMasterNode = true;
 
           } else {
             // 锁为其他进程获得，安全起见，清理本进程内的所有单订阅客户端
-            isSingleSubNode = false;
+            if (isMasterNode === null || isMasterNode === true) {
+              app.locals.logger.debug('[SUB] Non-Master Node');
+            }
 
-            for (var connTopicKey in CONNECTOR_TOPIC_MAP) {
-              var connector = CONNECTOR_TOPIC_MAP[connTopicKey];
+            isMasterNode = false;
+
+            for (var ctfKey in CONNECTOR_TOPIC_FUNC_MAP) {
+              var connector = CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
               if (connector && !connector.configJSON.multiSubClient) {
                 connector.client.end();
-                delete CONNECTOR_TOPIC_MAP[connTopicKey];
+                delete CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
               }
             }
           }
@@ -152,18 +160,18 @@ exports.runListener = function runListener(app) {
             if (toolkit.isNothing(d.configJSON.topicHandlers)) return;
 
             // 当前节点非单订阅节点时，忽略单订阅连接器
-            if (!isSingleSubNode && !d.configJSON.multiSubClient) return;
+            if (!isMasterNode && !d.configJSON.multiSubClient) return;
 
             // 连接器信息加入待创建表
             d.configJSON.topicHandlers.forEach(function(th) {
-              var connTopicKey = sortedJSON.sortify({
+              var ctfKey = sortedJSON.sortify({
                 'id'    : d.id,
                 'topic' : th.topic,
                 'funcId': th.funcId,
               }, {
                 stringify: true,
               })
-              nextConnectorTopicMap[connTopicKey] = toolkit.jsonCopy(d);
+              nextConnectorTopicFuncMap[ctfKey] = toolkit.jsonCopy(d);
             });
           });
 
@@ -173,23 +181,23 @@ exports.runListener = function runListener(app) {
       // 更新连接器订阅客户端
       function(asyncCallback) {
         // 清除已不存在的连接器
-        for (var connTopicKey in CONNECTOR_TOPIC_MAP) {
-          if ('undefined' === typeof nextConnectorTopicMap[connTopicKey]) {
-            CONNECTOR_TOPIC_MAP[connTopicKey].client.end();
-            delete CONNECTOR_TOPIC_MAP[connTopicKey];
+        for (var ctfKey in CONNECTOR_TOPIC_FUNC_MAP) {
+          if ('undefined' === typeof nextConnectorTopicFuncMap[ctfKey]) {
+            CONNECTOR_TOPIC_FUNC_MAP[ctfKey].client.end();
+            delete CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
 
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', connTopicKey);
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', ctfKey);
           }
         }
 
         // 重建有变化的连接器客户端
-        for (var connTopicKey in nextConnectorTopicMap) {
-          var _tmp = JSON.parse(connTopicKey);
+        for (var ctfKey in nextConnectorTopicFuncMap) {
+          var _tmp = JSON.parse(ctfKey);
           var topic  = _tmp.topic;
           var funcId = _tmp.funcId;
 
-          var _next    = nextConnectorTopicMap[connTopicKey];
-          var _current = CONNECTOR_TOPIC_MAP[connTopicKey];
+          var _next    = nextConnectorTopicFuncMap[ctfKey];
+          var _current = CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
 
           // 跳过无变化客户端
           if (_current && _current['configMD5'] && _current['configMD5'] === _next['configMD5']) {
@@ -199,8 +207,8 @@ exports.runListener = function runListener(app) {
           // 删除客户端
           if (_current) {
             _current.client.end();
-            delete CONNECTOR_TOPIC_MAP[connTopicKey];
-            app.locals.logger.debug('[SUB] Client removed: `{0}`', connTopicKey);
+            delete CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
+            app.locals.logger.debug('[SUB] Client removed: `{0}`', ctfKey);
           }
 
           // 新建客户端
@@ -209,7 +217,7 @@ exports.runListener = function runListener(app) {
             _next.configJSON.disablePub = true;
             _next.client = CONNECTOR_HELPER_MAP[_next.type].createHelper(app.locals.logger, _next.configJSON);
           } catch(err) {
-            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', connTopicKey, err.toString());
+            app.locals.logger.warning('[SUB] Client creating Error: `{0}`, reason: {1}', ctfKey, err.toString());
             continue
           }
 
@@ -217,8 +225,8 @@ exports.runListener = function runListener(app) {
           _next.client.sub(topic, createMessageHandler(app.locals, funcId));
 
           // 记录到本地
-          CONNECTOR_TOPIC_MAP[connTopicKey] = _next;
-          app.locals.logger.debug('[SUB] Client created: `{0}`', connTopicKey);
+          CONNECTOR_TOPIC_FUNC_MAP[ctfKey] = _next;
+          app.locals.logger.debug('[SUB] Client created: `{0}`', ctfKey);
 
           return asyncCallback();
         }
@@ -251,7 +259,7 @@ exports.runListener = function runListener(app) {
         var skip = false;
 
         // 无可用工作队列 / 无订阅对象时，跳过本轮处理
-        if (subWorkerCount <= 0 || toolkit.isNothing(CONNECTOR_TOPIC_MAP)) {
+        if (subWorkerCount <= 0 || toolkit.isNothing(CONNECTOR_TOPIC_FUNC_MAP)) {
           skip = true;
         }
 
@@ -261,22 +269,22 @@ exports.runListener = function runListener(app) {
         }
 
         var isAnyConsumed = false;
-        async.eachOf(CONNECTOR_TOPIC_MAP, function(connector, connTopicKey, eachCallback) {
+        async.eachOf(CONNECTOR_TOPIC_FUNC_MAP, function(connector, ctfKey, eachCallback) {
           async.times(subWorkerCount, function(n, timesCallback) {
             connector.client.consume(function(err, isConsumed){
               if (err) app.locals.logger.logError(err);
 
               if (isConsumed) {
-                app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', connTopicKey);
+                app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', ctfKey);
                 isAnyConsumed = true;
 
                 // 记录最近消费时间
-                var connTopicKeyObj = JSON.parse(connTopicKey);
+                var ctfKeyObj = JSON.parse(ctfKey);
                 var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
-                  'connectorId', connTopicKeyObj.id,
-                  'topic',       connTopicKeyObj.topic]);
+                  'connectorId', ctfKeyObj.id,
+                  'topic',       ctfKeyObj.topic]);
                 var consumeInfo = JSON.stringify({
-                  funcId     : connTopicKeyObj.funcId,
+                  funcId     : ctfKeyObj.funcId,
                   timestampMs: Date.now(),
                 });
                 app.locals.cacheDB.setex(cacheKey, CONFIG._SUB_RECENT_CONSUME_EXPIRE, consumeInfo);
@@ -300,5 +308,5 @@ exports.runListener = function runListener(app) {
     ], foreverCallback);
   });
 
-  var connectorChecker = setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
+  setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
 };

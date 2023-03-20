@@ -38,45 +38,8 @@ exports.list = function(req, res, next) {
       funcModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
+        funcs        = dbRes;
         funcPageInfo = pageInfo;
-
-        if (!toolkit.toBoolean(req.query._asFuncDoc)) {
-          funcs = dbRes;
-        } else {
-          // 转换格式
-          funcs = [];
-
-          dbRes.forEach(function(d) {
-            if (d.extraConfigJSON && d.extraConfigJSON.isHidden) {
-              // 隐藏函数不返回
-              return;
-            }
-
-            funcs.push({
-              url: urlFor('mainAPI.callFunc', {
-                params: { funcId: d.id },
-              }),
-
-              id                  : d.id,
-              name                : d.name,
-              title               : d.title,
-              description         : d.description,
-              definition          : d.definition,
-              argsJSON            : d.argsJSON,
-              kwargsJSON          : d.kwargsJSON,
-              extraConfigJSON     : d.extraConfigJSON,
-              category            : d.category,
-              integration         : d.integration,
-              tagsJSON            : d.tagsJSON,
-              scriptId            : d.scpt_id,
-              scriptTitle         : d.scpt_title,
-              scriptDescription   : d.scpt_description,
-              scriptSetId         : d.sset_id,
-              scriptSetTitle      : d.sset_title,
-              scriptSetDescription: d.sset_description,
-            });
-          });
-        }
 
         return asyncCallback();
       });

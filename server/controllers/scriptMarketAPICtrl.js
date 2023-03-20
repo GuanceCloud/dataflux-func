@@ -741,13 +741,10 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       },
       // git commit
       function(asyncCallback) {
-        // git.raw(['config', '-l'], function(err, data) {
-          // console.log('>>>>>>', err, data);
-          git
-          .addConfig('user.name', locals.user.name)
-          .addConfig('user.email', locals.user.email)
-          .commit(pushContent.extra.note, asyncCallback);
-        // })
+        git
+        .addConfig('user.name', locals.user.name)
+        .addConfig('user.email', locals.user.email)
+        .commit(pushContent.extra.note, asyncCallback);
       },
       // git push / reset
       function(asyncCallback) {

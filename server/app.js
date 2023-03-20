@@ -330,5 +330,8 @@ function startApplication() {
 
     // Sub client
     require('./sub').runListener(app);
+
+    // Guance WS client
+    require('./guanceWebSocket').runListener(app);
   });
 }
