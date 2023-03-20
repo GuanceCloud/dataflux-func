@@ -35,6 +35,7 @@ Save without connection test: 保存（忽略连通性测试）
 
 'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
+API Key here is always required: 每次修改都必须重新输入 API Key
 '1. $share/GROUP/TOPIC in MQTTv5': '1. MQTTv5 的 $share/GROUP/TOPIC'
 '2. $queue/TOPIC in EMQX': '2. EMQX 的 $queue/TOPIC'
 
@@ -174,6 +175,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   <el-form-item :label="$t('API Key')" v-if="hasConfigField(selectedType, 'guanceAPIKey')" prop="configJSON.guanceAPIKey">
                     <el-input
                       v-model="form.configJSON.guanceAPIKey" show-password></el-input>
+                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('API Key here is always required')" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Host')" v-if="hasConfigField(selectedType, 'host')" prop="configJSON.host">

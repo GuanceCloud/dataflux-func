@@ -258,7 +258,7 @@ exports.runListener = function runListener(app) {
 
             for (var cgKey in CONNECTOR_GUANCE_MAP) {
               var connector = CONNECTOR_GUANCE_MAP[cgKey];
-              connector.client.end();
+              connector.client.close();
               delete CONNECTOR_GUANCE_MAP[cgKey];
             }
           }
@@ -322,7 +322,7 @@ exports.runListener = function runListener(app) {
         // 清除已不存在的连接器
         for (var cgKey in CONNECTOR_GUANCE_MAP) {
           if ('undefined' === typeof nextConnectorGuanceMap[cgKey]) {
-            CONNECTOR_GUANCE_MAP[cgKey].client.end();
+            CONNECTOR_GUANCE_MAP[cgKey].client.close();
             delete CONNECTOR_GUANCE_MAP[cgKey];
 
             app.locals.logger.debug('[GUANCE WS] Client removed: `{0}`', cgKey);
@@ -341,7 +341,7 @@ exports.runListener = function runListener(app) {
 
           // 删除客户端
           if (_current) {
-            _current.client.end();
+            _current.client.close();
             delete CONNECTOR_GUANCE_MAP[cgKey];
             app.locals.logger.debug('[GUANCE WS] Client removed: `{0}`', cgKey);
           }
