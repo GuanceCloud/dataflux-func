@@ -126,7 +126,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
         if (resp.ok) {
           var eventData = {
             datafluxFuncId: datafluxFuncId,
-            name          : connector.title,
+            name          : connector.title || `DataFlux Func (${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
             version       : IMAGE_INFO.CI_COMMIT_REF_NAME,
           }
           locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_SYSTEM_INFO}: LOCAL -> Guance, Data: ${JSON.stringify(eventData)}`);
