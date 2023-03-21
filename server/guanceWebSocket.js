@@ -58,7 +58,11 @@ function initIncomingEvent(args) {
     }
   }
 
-  if (event.callback && event.error) {
+  // 保证 Callback 有值
+  event.callback = toolkit.ensureFn(event.callback);
+
+  // 报错时自动调用
+  if (event.error) {
     event.callback(initWSAckErr(event.error));
   }
 
