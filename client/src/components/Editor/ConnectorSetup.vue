@@ -24,11 +24,11 @@ Security Protocol  : 安全协议
 SASL Mechanisms    : SASL 机制
 Multi Sub          : 多订阅器
 Sub Offset         : 订阅 Offset
-'Topic/Handler'    : 主题/处理函数
+'Topic/Handler'    : 主题 / 处理函数
 Topic              : 主题
 Handler Func       : 处理函数
-'Recent consume    : ': '最近消费：'
-'Add Topic/Handler': 添加主题/处理函数
+'Recent consume:'  : '最近消费：'
+'Add Topic/Handler': 添加主题 / 处理函数
 Test connection    : 测试连通性
 
 Save without connection test: 保存（忽略连通性测试）
@@ -151,7 +151,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
 
                   <!-- 可变区域 -->
                   <el-form-item :label="$t('Guance Node')" v-if="hasConfigField(selectedType, 'guanceNode')" prop="configJSON.guanceNode">
-                    <el-select v-model="form.configJSON.guanceNode">
+                    <el-select v-model="form.configJSON.guanceNode" @change="switchGuanceNode">
                       <el-option v-for="node in guanceNodes"
                         :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
                     </el-select>
@@ -321,13 +321,21 @@ This is a built-in Connector, please contact the admin to change the config: 当
                           type="warning"
                           :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
                       </el-form-item>
-                      <el-form-item
-
-                        :key="`consume-info-${index}`">
-                      </el-form-item>
                     </template>
                     <el-form-item>
-                      <el-link type="primary" @click="addTopicHandler"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Topic/Handler') }}</el-link>
+                      <el-link
+                        type="primary"
+                        @click="addTopicHandler">
+                        <i class="fa fa-fw fa-plus"></i>
+                        {{ $t('Add Topic/Handler') }}
+                      </el-link>
+                      <br>
+                      <el-link
+                        href="https://func.guance.com/doc/development-guide-connector-subscribe/"
+                        target="_blank">
+                        <i class="fa fa-fw fa-external-link"></i>
+                        {{ $t('点击此处了解连接器订阅') }}
+                      </el-link>
                     </el-form-item>
                   </template>
                   <!-- 可变区域结束 -->
@@ -438,16 +446,6 @@ export default {
         }
       },
     },
-    'form.configJSON.guanceNode'(nodeKey) {
-      let nextConfigJSON = this.T.jsonCopy(this.form.configJSON);
-
-      let _node = this.T.jsonCopy(this.guanceNodeMap[nodeKey]);
-      nextConfigJSON.guanceOpenAPIURL   = _node.openapi;
-      nextConfigJSON.guanceWebSocketURL = _node.websocket;
-      nextConfigJSON.guanceOpenWayURL   = _node.openway;
-
-      this.form.configJSON = nextConfigJSON;
-    },
   },
   methods: {
     doFilter(q) {
@@ -496,6 +494,16 @@ export default {
     switchType(type) {
       this.fillDefault(type);
       this.updateValidator(type);
+    },
+    switchGuanceNode(nodeKey) {
+      let nextConfigJSON = this.T.jsonCopy(this.form.configJSON);
+
+      let _node = this.T.jsonCopy(this.guanceNodeMap[nodeKey]);
+      nextConfigJSON.guanceOpenAPIURL   = _node.openapi;
+      nextConfigJSON.guanceWebSocketURL = _node.websocket;
+      nextConfigJSON.guanceOpenWayURL   = _node.openway;
+
+      this.form.configJSON = nextConfigJSON;
     },
     unpackURL() {
       if (!this.form || !this.form.configJSON || !this.form.configJSON.host) return;
@@ -576,6 +584,14 @@ export default {
     },
     async updateSubInfo() {
       if (!this.$route.params.id) return;
+
+      let hasTopicHandler = false;
+      try {
+        hasTopicHandler = this.T.notNothing(this.form.configJSON.topicHandlers);
+      } catch(err) {
+        // Nope;
+      }
+      if (!hasTopicHandler) return;
 
       let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
       if (!apiRes || !apiRes.ok) return;
@@ -1004,11 +1020,11 @@ export default {
       img_noticeFuncIsJustPythonWrapper: img_noticeFuncIsJustPythonWrapper,
     }
   },
-  // mounted() {
-  //   this.autoRefreshTimer = setInterval(() => {
-  //     this.updateSubInfo();
-  //   }, 5 * 1000);
-  // },
+  mounted() {
+    this.autoRefreshTimer = setInterval(() => {
+      this.updateSubInfo();
+    }, 5 * 1000);
+  },
   beforeDestroy() {
     if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },

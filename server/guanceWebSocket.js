@@ -32,60 +32,6 @@ const EVENT_DFF_SYSTEM_INFO = 'dff.system.info';
 const EVENT_DFF_FUNC_LIST   = 'dff.func.list';
 const EVENT_DFF_FUNC_CALL   = 'dff.func.call';
 
-function initIncomingEvent(args) {
-  args = Array.prototype.slice.call(args);
-
-  var event = {
-    data    : {},
-    callback: null,
-    error   : null,
-  }
-  if ('function' === typeof args[0]) {
-    event.callback = args[0];
-
-  } else {
-    event.data = args[0] || {};
-    if ('string' === typeof event.data) {
-      try {
-        event.data = JSON.parse(event.data);
-      } catch(err) {
-        event.error = err;
-      }
-    }
-
-    if ('function' === typeof args[1]) {
-      event.callback = args[1];
-    }
-  }
-
-  // 保证 Callback 有值
-  event.callback = toolkit.ensureFn(event.callback);
-
-  // 报错时自动调用
-  if (event.error) {
-    event.callback(initWSAckErr(event.error));
-  }
-
-  return event;
-};
-
-function initWSAck(data) {
-  var ret = {
-    ok     : true,
-    message: '',
-    data   : data,
-  };
-  return ret;
-};
-
-function initWSAckErr(message) {
-  var ret = {
-    ok     : false,
-    message: message ? message.toString() : 'Error Occured',
-  };
-  return ret;
-};
-
 function getAckSample(ack) {
   var ackSample = {};
   for (var k in ack) if (ack.hasOwnProperty(k)) {
@@ -97,6 +43,89 @@ function getAckSample(ack) {
     ackSample[k] = v;
   }
   return JSON.stringify(ackSample);
+};
+
+function getEventObj(locals, event, incommingMessage) {
+  incommingMessage = Array.prototype.slice.call(incommingMessage);
+
+  var eventObj = {
+    data    : {},
+    callback: null,
+    error   : null,
+    taskId  : null,
+  }
+  if ('function' === typeof incommingMessage[0]) {
+    eventObj.callback = incommingMessage[0];
+
+  } else {
+    eventObj.data = incommingMessage[0] || {};
+    if ('string' === typeof eventObj.data) {
+      try {
+        eventObj.data = JSON.parse(eventObj.data);
+      } catch(err) {
+        eventObj.error = err;
+      }
+    }
+
+    if ('function' === typeof incommingMessage[1]) {
+      eventObj.callback = incommingMessage[1];
+    }
+  }
+
+  // 保证 Callback 有值
+  eventObj.callback = toolkit.ensureFn(eventObj.callback);
+
+  // 提取 Task ID
+  try {
+    eventObj.taskId = eventObj.data.taskId;
+  } catch(_) {
+    // Nope
+  }
+
+  // 输出日志
+  if (eventObj.error) {
+    locals.logger.debug(`[GUANCE WS] Event@${event}: LOCAL <- Guance, Data: ${JSON.stringify(eventObj.data)}, Error: ${eventObj.error}`);
+  } else {
+    locals.logger.debug(`[GUANCE WS] Event@${event}: LOCAL <- Guance, Data: ${JSON.stringify(eventObj.data)}`);
+  }
+
+  return eventObj;
+};
+
+function doResponse(locals, client, event, eventObj, respData, error) {
+  error = error || eventObj.error;
+
+  var ack = null;
+  if (error) {
+    ack = {
+      ok     : false,
+      message: (errorOrMessage || 'Error Occured').toString(),
+    }
+
+  } else {
+    ack = {
+      ok     : true,
+      message: '',
+      data   : respData || null,
+    }
+  }
+
+  if (eventObj.taskId) {
+    ack.taskId = eventObj.taskId;
+  }
+
+  var ackEvent  = `${event}.ack`;
+  var ackSample = getAckSample(ack);
+
+  // Ack 事件返回
+  if (eventObj.taskId) {
+    locals.logger.debug(`[GUANCE WS] AckEvent@${ackEvent}: LOCAL -> Guance, Data: ${ackSample}`);
+    client.emit(ackEvent, ack);
+  }
+
+  // Callback 事件返回
+  locals.logger.debug(`[GUANCE WS] EventCallback@${event}: LOCAL -> Guance, Data: ${ackSample}`);
+  return eventObj.callback(ack);
 };
 
 function createWebSocketClient(locals, connector, datafluxFuncId) {
@@ -124,7 +153,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
     locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_AUTH}: LOCAL -> Guance, Data: ${JSON.stringify(eventData)}`);
     client.emit(EVENT_DFF_AUTH, eventData, resp => {
-        locals.logger.debug(`[GUANCE WS] EventAck@${EVENT_DFF_AUTH}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
+        locals.logger.debug(`[GUANCE WS] EventCallback@${EVENT_DFF_AUTH}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
 
         // 上报自身信息
         if (resp.ok) {
@@ -135,7 +164,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
           }
           locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_SYSTEM_INFO}: LOCAL -> Guance, Data: ${JSON.stringify(eventData)}`);
           client.emit(EVENT_DFF_SYSTEM_INFO, eventData, resp => {
-            locals.logger.debug(`[GUANCE WS] EventAck@${EVENT_DFF_SYSTEM_INFO}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
+            locals.logger.debug(`[GUANCE WS] EventCallback@${EVENT_DFF_SYSTEM_INFO}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
           });
         }
     });
@@ -143,29 +172,16 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
   // ping 事件
   client.on(EVENT_PING, function() {
-    var event = initIncomingEvent(arguments);
-    if (event.error) {
-      return locals.logger.debug(`[GUANCE WS] Event@${EVENT_PING}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}, Error: ${event.error}`);
-    } else {
-      locals.logger.debug(`[GUANCE WS] Event@${EVENT_PING}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}`);
-    }
+    var eventObj = getEventObj(locals, EVENT_PING, arguments);
+    if (eventObj.error) return doResponse(locals, client, EVENT_PING, eventObj);
 
-    if (event.callback) {
-      var ack = initWSAck();
-
-      locals.logger.debug(`[GUANCE WS] EventAck@${EVENT_PING}: LOCAL -> Guance, Data: ${getAckSample(ack)}`);
-      return event.callback(ack);
-    }
+    return doResponse(locals, client, EVENT_PING, eventObj);
   });
 
   // dff.func.list 事件
   client.on(EVENT_DFF_FUNC_LIST, function() {
-    var event = initIncomingEvent(arguments);
-    if (event.error) {
-      return locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_FUNC_LIST}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}, Error: ${event.error}`);
-    } else {
-      locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_FUNC_LIST}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}`);
-    }
+    var eventObj = getEventObj(locals, EVENT_DFF_FUNC_LIST, arguments);
+    if (eventObj.error) return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj);
 
     var funcModel = funcMod.createModel(locals);
 
@@ -174,29 +190,23 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
       extra  : { asFuncDoc: true },
     };
 
-    if (event.data && event.data.category) {
-      opt.filters['func.category'] = { eq: event.data.category };
+    if (eventObj.data && eventObj.data.category) {
+      opt.filters['func.category'] = { eq: eventObj.data.category };
     }
     funcModel.list(opt, function(err, dbRes) {
-      if (err) return event.callback(initWSAckErr(err));
+      if (err) return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj, null, err);
 
-      var ack = initWSAck(dbRes);
-      locals.logger.debug(`[GUANCE WS] EventAck@${EVENT_DFF_FUNC_LIST}: LOCAL -> Guance, Data: ${getAckSample(ack)}`);
-      return event.callback(ack);
+      return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj, dbRes);
     });
   });
 
   // dff.func.call 事件
   client.on(EVENT_DFF_FUNC_CALL, function() {
-    var event = initIncomingEvent(arguments);
-    if (event.error) {
-      return locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_FUNC_CALL}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}, Error: ${event.error}`);
-    } else {
-      locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_FUNC_CALL}: LOCAL <- Guance, Data: ${JSON.stringify(event.data)}`);
-    }
+    var eventObj = getEventObj(locals, EVENT_DFF_FUNC_CALL, arguments);
+    if (eventObj.error) return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj);
 
-    var handlerFuncId  = event.data.funcId;
-    var funcCallKwargs = event.data.callKwargs || {};
+    var handlerFuncId  = eventObj.data.funcId;
+    var funcCallKwargs = eventObj.data.callKwargs || {};
 
     // 调用函数
     var funcCallOptions = null;
@@ -239,14 +249,9 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
         });
       },
     ], function(err) {
-      if (err) {
-        locals.logger.error(`[GUANCE WS] Event@${EVENT_DFF_FUNC_CALL}: LOCAL -> Guance, Error: ${JSON.stringify(err)}`);
-        return event.callback(err);
-      }
+      if (err) return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj, null, err);
 
-      var ack = initWSAck(funcResult);
-      locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_FUNC_CALL}: LOCAL -> Guance, Data: ${JSON.stringify(ack)}`);
-      return event.callback(ack);
+      return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj, funcResult);
     });
   });
 
