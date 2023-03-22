@@ -45,15 +45,17 @@ worker_redirect_stdouts    = False
 
 # Broker
 broker_transport_options = {
-    'priority_steps'      : list(range(4)), # 0=system, 1=high, 2=medium, 3=low
-    'queue_order_strategy': 'priority',
+    'priority_steps'        : list(range(4)), # 0 = system, 1 = high, 2 = medium, 3 = low
+    'queue_order_strategy'  : 'priority',
+    'socket_timeout'        : 30,
+    'socket_connect_timeout': 30,
 }
 
 # Queue
 task_queues = []
 for i in range(int(CONFIG['_WORKER_QUEUE_COUNT'])):
     worker_queue = toolkit.get_worker_queue(i)
-    kombu_queue  = kombu.Queue(worker_queue, routing_key = worker_queue)
+    kombu_queue  = kombu.Queue(worker_queue, routing_key=worker_queue)
     task_queues.append(kombu_queue)
 
 task_default_queue       = task_queues[0].name

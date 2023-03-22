@@ -28,8 +28,8 @@ module.exports = function(app, server) {
 
     // 接受认证中间件
     socket.use(function(packet, next) {
-      var event       = packet[0];
-      var xAuthToken  = packet[1];
+      var event        = packet[0];
+      var xAuthToken   = packet[1];
       var respCallback = packet[2];
 
       if (event !== 'auth') return next();
