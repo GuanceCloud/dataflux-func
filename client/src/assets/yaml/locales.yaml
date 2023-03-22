@@ -9,6 +9,11 @@ en:
   timePerMonth : '{n} time / month | {n} times / month'
   timePerYear  : '{n} time / year | {n} times / year'
 
+  # 功能提示
+  FeatureNotice_monkeyPatch            : '<strong>No Monkey Patches in Scripts</strong><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'
+  FeatureNotice_funcIsJustPythonWarpper: '<strong>DataFlux Func is Just a Python Wrapper</strong><p>A connector is simply a convenient feature for developers who want to connect to a database or external system but not an essential feature.</p></p>You can install any third-party Python package you want through the PIP tool and work with it.</p><p>Just like you do with orignal Python.</p>'
+  FeatureNotice_scriptMarketHomepage   : '<strong>This Script Market has a Homepage</strong><p>Script Sets in the Script Market are usually for Script developers.</p><p>If you don''t know how to use the Script Sets in this Script Market, please check the homepage first.</p>'
+
 'zh-CN':
   # 通用
   ',': '，'
@@ -463,3 +468,8 @@ en:
   This information will be used as the user information for git commits.: 此信息将作为 git 提交时的用户信息。
 
   User Profile saved: 用户信息已保存
+
+  # 功能提示
+  FeatureNotice_monkeyPatch            : '<strong>请避免在脚本中使用猴子补丁</strong><p>出于性能方面考虑，脚本<strong style="color: red">并非</strong>运行在沙盒或隔离环境中。</p><p>使用猴子补丁可能导致系统整体出现问题。</p>'
+  FeatureNotice_funcIsJustPythonWarpper: '<strong>DataFlux Func 只是 Python 的包装</strong><p>连接器只是方便开发者连接数据库或外部系统的便捷功能，而不是一个必备功能。</p></p>你可以通过 PIP 工具安装任何你想要的第三方 Python 包然后直接使用它们。</p><p>就和你用原版 Python 开发一样。</p>'
+  FeatureNotice_scriptMarketHomepage   : '<strong>这个脚本市场有主页可供访问</strong><p>脚本市场中的脚本集往往面向脚本开发者。</p><p>如果你不了解如何使用这个脚本市场中的脚本集，请先查看脚本市场主页。</p>'

@@ -366,6 +366,14 @@ This is a built-in Connector, please contact the admin to change the config: 当
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 连接器提示 -->
+      <FeatureNoticeDialog
+        featureKey="connector.funcIsJustPythonWarpper"
+        :description="$t('FeatureNotice_funcIsJustPythonWarpper')"
+        icon="fa-warning"
+        :image="img_noticeFuncIsJustPythonWrapper" />
+
     </el-container>
   </transition>
 </template>
@@ -373,9 +381,13 @@ This is a built-in Connector, please contact the admin to change the config: 当
 <script>
 import axios from 'axios';
 
+import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
+import img_noticeFuncIsJustPythonWrapper from '@/assets/img/notice-func-is-just-python-wrapper.png'
+
 export default {
   name: 'ConnectorSetup',
   components: {
+    FeatureNoticeDialog,
   },
   watch: {
     $route: {
@@ -987,6 +999,9 @@ export default {
 
       isSaving           : false,
       testConnectorResult: null,
+
+      // Func 只是 Python 包装提示
+      img_noticeFuncIsJustPythonWrapper: img_noticeFuncIsJustPythonWrapper,
     }
   },
   // mounted() {

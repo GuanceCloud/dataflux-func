@@ -100,8 +100,6 @@ Please check the code and try again                                             
 Publishing Script, it will be finished in a few seconds. If the page is not responding for a long time, please try refreshing.  : 脚本发布中，正常几秒就能完成。如长时间无响应请尝试刷新页面
 Func is running. If it is not responding for a long time, please try refreshing.                                                : 函数执行中，长时间无响应后再尝试刷新页面
 Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing. : 函数执行中，执行最多等待 {seconds}，长时间无响应后再尝试刷新页面
-
-"Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.": 请避免在脚本中使用猴子补丁<br><br>出于性能考虑，脚本并非运行在沙盒或隔离环境中，使用猴子补丁可能导致系统整体出现问题。
 </i18n>
 
 <template>
@@ -304,7 +302,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
           <!-- 猴子补丁提示 -->
           <FeatureNoticeDialog
             featureKey="codeEditor.monkeyPatch"
-            :description="$t(`Please avoid using monkey patches in scripts<br><br>For performance reasons, the script does not run in a sandbox or isolated environment. Using monkey patches may cause problems to the entire system.`)"
+            :description="$t('FeatureNotice_monkeyPatch')"
             icon="fa-warning"
             :image="img_noticeMonkeyPatch" />
 

@@ -83,17 +83,19 @@ export default {
 }
 .notice-feature-content {
   width: 420px;
-  height: 260px;
+  max-height: 350px;
   border-radius: 20px;
   position: absolute;
-  top: 60px;
+  top: 30px;
   right: 30px;
 }
 .notice-feature-content p {
   font-size: 18px;
-  line-height: 1.8;
+  line-height: 30px;
   word-break: break-word;
   position: relative;
+  padding: 0;
+  margin: 0;
 }
 .notice-feature-buttons {
   position: absolute;
