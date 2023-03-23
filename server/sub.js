@@ -15,6 +15,7 @@ var connectorMod = require('./models/connectorMod');
 var mainAPICtrl  = require('./controllers/mainAPICtrl');
 
 /* Configure */
+var IS_MASTER_NODE           = null;
 var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
 
@@ -85,10 +86,7 @@ exports.runListener = function runListener(app) {
   var lockValue = toolkit.genRandString();
   app.locals.logger.info('Start subscribers... Lock: `{0}`', lockValue);
 
-  // 当前节点是否抢占到主节点资格
-  var isMasterNode = false;
-
-  // 定期检查
+  // 定期检查连接器
   function connectorChecker() {
     // 重建连接器客户端
     var nextConnectorTopicFuncMap = {};
@@ -108,19 +106,19 @@ exports.runListener = function runListener(app) {
         app.locals.cacheDB.extendLockTime(lockKey, lockValue, MASTER_LOCK_EXPIRES, function(err) {
           if (!err) {
             // 成功续租锁，则锁一定为本进程所获得，进入下一步
-            if (isMasterNode === null || isMasterNode === false) {
+            if (IS_MASTER_NODE === null || IS_MASTER_NODE === false) {
               app.locals.logger.debug('[SUB] Master Node');
             }
 
-            isMasterNode = true;
+            IS_MASTER_NODE = true;
 
           } else {
             // 锁为其他进程获得，安全起见，清理本进程内的所有单订阅客户端
-            if (isMasterNode === null || isMasterNode === true) {
+            if (IS_MASTER_NODE === null || IS_MASTER_NODE === true) {
               app.locals.logger.debug('[SUB] Non-Master Node');
             }
 
-            isMasterNode = false;
+            IS_MASTER_NODE = false;
 
             for (var ctfKey in CONNECTOR_TOPIC_FUNC_MAP) {
               var connector = CONNECTOR_TOPIC_FUNC_MAP[ctfKey];
@@ -160,7 +158,7 @@ exports.runListener = function runListener(app) {
             if (toolkit.isNothing(d.configJSON.topicHandlers)) return;
 
             // 当前节点非单订阅节点时，忽略单订阅连接器
-            if (!isMasterNode && !d.configJSON.multiSubClient) return;
+            if (!IS_MASTER_NODE && !d.configJSON.multiSubClient) return;
 
             // 连接器信息加入待创建表
             d.configJSON.topicHandlers.forEach(function(th) {
@@ -235,6 +233,7 @@ exports.runListener = function runListener(app) {
       if (err) return app.locals.logger.logError(err);
     });
   };
+  setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
 
   // 消费触发
   async.forever(function(foreverCallback) {
@@ -307,6 +306,4 @@ exports.runListener = function runListener(app) {
       },
     ], foreverCallback);
   });
-
-  setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
 };

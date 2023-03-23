@@ -19,11 +19,16 @@ var funcMod         = require('./models/funcMod');
 var mainAPICtrl     = require('./controllers/mainAPICtrl');
 
 /* Configure */
+var IS_MASTER_NODE           = null;
 var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
 
 // 简称 C.G
 var CONNECTOR_GUANCE_MAP = {};
+
+// Func 表最后更新时间
+var FUNC_LIST_LATEST_UPDATE_TIME = false;
+var FUNC_LIST_REPORTER_INTERVAL  = 5 * 1000;
 
 // 事件
 const EVENT_PING            = 'ping';
@@ -162,28 +167,14 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
     doEmit(locals, client, EVENT_DFF_AUTH, authData, function(resp) {
       if (!resp.ok) return;
 
+      client.__dffAuthed = true;
+
       /* 上报自身信息 */
       var systemInfoData = {
-        name   : connector.title || `DataFlux Func (${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
+        name   : connector.title || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
         version: IMAGE_INFO.CI_COMMIT_REF_NAME,
       }
       doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfoData);
-
-      /* 上报当前函数列表 */
-      var funcModel = funcMod.createModel(locals);
-
-      var opt = {
-        filters: {
-          'func.category': { like: 'guance.*' }
-        },
-        extra: { asFuncDoc: true },
-      };
-      funcModel.list(opt, function(err, dbRes) {
-        if (err) return locals.logger.logError(err);
-
-        var funcListData = { funcs: dbRes }
-        doEmit(locals, client, EVENT_DFF_FUNC_LIST, funcListData);
-      });
     });
   });
 
@@ -261,10 +252,7 @@ exports.runListener = function runListener(app) {
   // 当前 DataFlux Func ID
   var dataFluxFuncId = null;
 
-  // 当前节点是否抢占到主节点资格
-  var isMasterNode = null;
-
-  // 定期检查
+  // 定期检查连接器
   function connectorChecker() {
     // 重建连接器客户端
     var nextConnectorGuanceMap = {};
@@ -284,18 +272,18 @@ exports.runListener = function runListener(app) {
         app.locals.cacheDB.extendLockTime(lockKey, lockValue, MASTER_LOCK_EXPIRES, function(err) {
           if (!err) {
             // 成功续租锁，则锁一定为本进程所获得，进入下一步
-            if (isMasterNode === null || isMasterNode === false) {
+            if (IS_MASTER_NODE === null || IS_MASTER_NODE === false) {
               app.locals.logger.debug('[GUANCE WS] Master Node');
             }
-            isMasterNode = true;
+            IS_MASTER_NODE = true;
 
           } else {
             // 锁为其他进程获得，安全起见，清理本进程内的所有 WebSocket 客户端
-            if (isMasterNode === null || isMasterNode === true) {
+            if (IS_MASTER_NODE === null || IS_MASTER_NODE === true) {
               app.locals.logger.debug('[GUANCE WS] Non-Master Node');
             }
 
-            isMasterNode = false;
+            IS_MASTER_NODE = false;
 
             for (var cgKey in CONNECTOR_GUANCE_MAP) {
               var connector = CONNECTOR_GUANCE_MAP[cgKey];
@@ -330,7 +318,7 @@ exports.runListener = function runListener(app) {
             d.configJSON = d.configJSON || {};
 
             // 当前节点非主节点时，忽略 WebSocket 连接器
-            if (!isMasterNode) return;
+            if (!IS_MASTER_NODE) return;
 
             // 连接器信息加入待创建表
             var cgKey = sortedJSON.sortify({
@@ -407,6 +395,57 @@ exports.runListener = function runListener(app) {
       if (err) return app.locals.logger.logError(err);
     });
   };
-
   setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
+
+  // 定期上报函数列表
+  function funcListReport() {
+    // 非 Master 节点跳过
+    if (!IS_MASTER_NODE) {
+      FUNC_LIST_LATEST_UPDATE_TIME = false;
+      return;
+    }
+
+    var sql = `
+      SELECT
+          MAX(updateTime) AS updateTime
+      FROM biz_main_func
+      WHERE
+        category LIKE 'guance.%'`;
+    app.locals.db.query(sql, null, function(err, dbRes) {
+      if (err) return app.locals.logger.logError(err);
+
+      var latestUpdateTime = toolkit.jsonDumps(dbRes[0].updateTime);
+
+      // 最后更新时间无变化，跳过
+      if (latestUpdateTime === FUNC_LIST_LATEST_UPDATE_TIME) return;
+
+      // 最后更新时间无变化，记录并上报
+
+      FUNC_LIST_LATEST_UPDATE_TIME = latestUpdateTime;
+
+      async.eachOfSeries(CONNECTOR_GUANCE_MAP, function(connector, cgKey, eachCallback) {
+        // 未登录的不上报
+        if (!connector.client || !connector.client.__dffAuthed) return eachCallback();
+
+        // 上报函数列表
+        var funcModel = funcMod.createModel(app.locals);
+
+        var opt = {
+          filters: {
+            'func.category': { like: 'guance.%' }
+          },
+          extra: { asFuncDoc: true },
+        };
+        funcModel.list(opt, function(err, dbRes) {
+          if (err) return app.locals.logger.logError(err);
+
+          var funcListData = { funcs: dbRes }
+          doEmit(app.locals, connector.client, EVENT_DFF_FUNC_LIST, funcListData, function(resp) {
+            return eachCallback();
+          });
+        });
+      });
+    });
+  };
+  setInterval(funcListReport, FUNC_LIST_REPORTER_INTERVAL);
 };
