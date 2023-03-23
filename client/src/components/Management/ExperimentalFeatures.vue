@@ -52,6 +52,10 @@ Once enabled, it can be accessed from Management page {0} Script Failures: 启�
 Enable Access Key Manage: 启用 Access Key 管理
 For allowing external systems to call DataFlux Func APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
 Once enabled, it can be accessed from Management page {0} Access Keys: 启用后，可在「管理」{0}「Access Keys」进入
+
+Enable Connector for Guance: 启用观测云连接器
+For allowing local DataFlux Func to connect to Guance for advanced features: 用于允许本地 DataFlux Func 连接到观测云，以实现进阶功能
+Once enabled, it can be accessed from Add Connector {0} type Guance: 启用后，可在「添加连接器」{0}「类型：观测云」选择
 </i18n>
 
 <template>
@@ -176,6 +180,14 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                     <br><i18n path="Once enabled, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
+
+                <el-form-item prop="ConnectorForGuance">
+                  <el-switch :active-text="$t('Enable Connector for Guance')" v-model="form.ConnectorForGuance"></el-switch>
+                  <div class="text-small form-item-tip">
+                    {{ $t('For allowing local DataFlux Func to connect to Guance for advanced features') }}
+                    <br><i18n path="Once enabled, it can be accessed from Add Connector {0} type Guance"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                  </div>
+                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -225,19 +237,20 @@ export default {
   data() {
     return {
       form: {
-        PIPTool        : false,
-        Blueprint      : false,
-        FileManage     : false,
-        FileService    : false,
-        FuncCacheManage: false,
-        FuncStoreManage: false,
-        FuncDoc        : false,
-        SysStat        : false,
-        SystemLogs     : false,
-        AbnormalReqs   : false,
-        ScriptLogs     : false,
-        ScriptFailures : false,
-        AccessKeys     : false,
+        PIPTool           : false,
+        Blueprint         : false,
+        FileManage        : false,
+        FileService       : false,
+        FuncCacheManage   : false,
+        FuncStoreManage   : false,
+        FuncDoc           : false,
+        SysStat           : false,
+        SystemLogs        : false,
+        AbnormalReqs      : false,
+        ScriptLogs        : false,
+        ScriptFailures    : false,
+        AccessKeys        : false,
+        ConnectorForGuance: false,
       },
     }
   },
