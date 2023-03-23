@@ -111,51 +111,73 @@ export async function getFuncList() {
   let scriptSetMap = {};
   let scriptMap    = {};
   let funcMap      = {};
+  let funcs        = [];
 
-  // 脚本集
-  let apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
-    query: { fields: ['id', 'title'] },
-  });
-  if (!apiRes || !apiRes.ok) return;
+  let apiRes = null;
 
-  apiRes.data.forEach(d => {
-    scriptSetMap[d.id] = {
-      label   : d.title || d.id,
-      value   : d.id,
-      title   : d.title,
-      children: [],
-    };
-    T.appendSearchFields(scriptSetMap[d.id], ['id', 'title']);
-  });
-
-  // 脚本
-  apiRes = await T.callAPI_getAll('/api/v1/scripts/do/list', {
-    query: { fields: ['id', 'title', 'scriptSetId'] },
-  });
-  if (!apiRes || !apiRes.ok) return;
-
-  apiRes.data.forEach(d => {
-    scriptMap[d.id] = {
-      label   : d.title || d.id,
-      value   : d.id,
-      title   : d.title,
-      children: [],
-    };
-    T.appendSearchFields(scriptMap[d.id], ['id', 'title']);
-
-    // 插入上一层"children"
-    if (scriptSetMap[d.scriptSetId]) {
-      scriptSetMap[d.scriptSetId].children.push(scriptMap[d.id]);
-    }
-  });
+  let relatedScriptSetIds = {};
+  let relatedScriptIds    = {};
 
   // 函数
   apiRes = await T.callAPI_getAll('/api/v1/funcs/do/list', {
-    query: { fields: ['id', 'title', 'definition', 'scriptSetId', 'scriptId', 'argsJSON', 'kwargsJSON', 'extraConfigJSON'] },
+    query: { fields: ['id', 'scriptSetId', 'scriptId', 'title', 'definition', 'argsJSON', 'kwargsJSON', 'extraConfigJSON', 'sset_title', 'scpt_title'] },
   });
   if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
+    relatedScriptSetIds[d.scriptSetId] = true;
+    relatedScriptIds[d.scriptId]       = true;
+  });
+
+  funcs = apiRes.data;
+
+  // 脚本集
+  if (T.notNothing(relatedScriptSetIds)) {
+    apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
+      query: {
+        id    : Object.keys(relatedScriptSetIds).join(','),
+        fields: ['id', 'title'],
+      },
+    });
+    if (!apiRes || !apiRes.ok) return;
+
+    apiRes.data.forEach(d => {
+      scriptSetMap[d.id] = {
+        label   : d.title || d.id,
+        value   : d.id,
+        title   : d.title,
+        children: [],
+      };
+    });
+  }
+
+  // 脚本
+  if (T.notNothing(relatedScriptIds)) {
+    apiRes = await T.callAPI_getAll('/api/v1/scripts/do/list', {
+      query: {
+        id    : Object.keys(relatedScriptIds).join(','),
+        fields: ['id', 'title', 'scriptSetId']
+      },
+    });
+    if (!apiRes || !apiRes.ok) return;
+
+    apiRes.data.forEach(d => {
+      scriptMap[d.id] = {
+        label   : d.title || d.id,
+        value   : d.id,
+        title   : d.title,
+        children: [],
+      };
+
+      // 插入上一层"children"
+      if (scriptSetMap[d.scriptSetId]) {
+        scriptSetMap[d.scriptSetId].children.push(scriptMap[d.id]);
+      }
+    });
+  }
+
+  // 函数插入上一层"children"
+  funcs.forEach(d => {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
@@ -163,10 +185,13 @@ export async function getFuncList() {
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
+      scriptSetId    : d.scriptSetId,
+      scriptSetTitle : d.sset_title,
+      scriptId       : d.scriptId,
+      scriptTitle    : d.scpt_title,
     };
-    T.appendSearchFields(funcMap[d.id], ['id', 'title']);
+    T.appendSearchFields(funcMap[d.id], ['label', 'value', 'title', 'scriptSetId', 'scriptSetTitle', 'scriptId', 'scriptTitle']);
 
-    // 插入上一层"children"
     if (scriptMap[d.scriptId]) {
       scriptMap[d.scriptId].children.push(funcMap[d.id]);
     }
@@ -180,9 +205,27 @@ export async function getFuncList() {
   return result;
 }
 
-export function funcCascaderFilter(node, keyword) {
-  keyword = (keyword || '').trim();
-  return T.searchKeywords(keyword, [node.data]).length > 0;
+export function funcCascaderFilter(node, searchText) {
+  searchText = (searchText || '').toLowerCase().trim();
+
+  if (T.isNothing(node.data.searchKeywords)) {
+    return false;
+
+  } else {
+    for (let i = 0; i < node.data.searchKeywords.length; i++) {
+      let keyword = node.data.searchKeywords[i].toLowerCase().trim();
+
+      if (keyword.indexOf(searchText) >= 0) {
+        return true;
+      }
+
+      if (T.stringSimilar(searchText, keyword) >= .7) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 export function isFuncArgumentPlaceholder(v) {

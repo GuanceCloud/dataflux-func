@@ -248,7 +248,7 @@ export default {
       if (!q) {
         this.selectScriptSetOptions = this.scriptSets;
       } else {
-        this.selectScriptSetOptions = this.T.searchKeywords(q, this.scriptSets);
+        this.selectScriptSetOptions = this.T.filterByKeywords(q, this.scriptSets);
       }
     },
     doConnectorFilter(q) {
@@ -256,7 +256,7 @@ export default {
       if (!q) {
         this.selectConnectorOptions = this.connectors;
       } else {
-        this.selectConnectorOptions = this.T.searchKeywords(q, this.connectors);
+        this.selectConnectorOptions = this.T.filterByKeywords(q, this.connectors);
       }
     },
     doEnvVariableFilter(q) {
@@ -264,7 +264,7 @@ export default {
       if (!q) {
         this.selectEnvVariableOptions = this.envVariables;
       } else {
-        this.selectEnvVariableOptions = this.T.searchKeywords(q, this.envVariables);
+        this.selectEnvVariableOptions = this.T.filterByKeywords(q, this.envVariables);
       }
     },
   },

@@ -2,34 +2,35 @@
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
-Compatibility      : 兼容性
-Guance Node        : 观测云节点
-OpenAPI URL        : OpenAPI 地址
-WebSocket URL      : WebSocket 地址
-OpenWay URL        : OpenWay 地址
-API Key ID         : API Key ID
-API Key            : API Key
-Host               : 主机
-Port               : 端口
-Servers            : 服务器列表
-Protocol           : 协议
-Source             : 源
-Database           : 数据库
-User               : 用户
-Password           : 密码
-Charset            : 编码
-Client ID          : 客户端 ID
-Group ID           : 分组 ID
-Security Protocol  : 安全协议
-SASL Mechanisms    : SASL 机制
-Multi Sub          : 多订阅器
-Sub Offset         : 订阅 Offset
-'Topic/Handler'    : 主题 / 处理函数
-Topic              : 主题
-Handler Func       : 处理函数
-'Recent consume:'  : '最近消费：'
-'Add Topic/Handler': 添加主题 / 处理函数
-Test connection    : 测试连通性
+Compatibility        : 兼容性
+Guance Node          : 观测云节点
+OpenAPI URL          : OpenAPI 地址
+WebSocket URL        : WebSocket 地址
+OpenWay URL          : OpenWay 地址
+API Key ID           : API Key ID
+API Key              : API Key
+Host                 : 主机
+Port                 : 端口
+Servers              : 服务器列表
+Protocol             : 协议
+Source               : 源
+Database             : 数据库
+User                 : 用户
+Password             : 密码
+Charset              : 编码
+Client ID            : 客户端 ID
+Group ID             : 分组 ID
+Security Protocol    : 安全协议
+SASL Mechanisms      : SASL 机制
+Multi Sub            : 多订阅器
+Sub Offset           : 订阅 Offset
+'Topic/Handler'      : 主题 / 处理函数
+Topic                : 主题
+Handler Func         : 处理函数
+No Recent Message    : 无近期消息
+'Recent Message:'    : '近期消息：'
+'Add Topic / Handler': 添加主题 / 处理函数
+Test connection      : 测试连通性
 
 Save without connection test: 保存（忽略连通性测试）
 
@@ -301,6 +302,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                         <!-- 删除按钮 -->
                         <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                       </el-form-item>
+
                       <el-form-item
                         class="func-cascader-input"
                         :key="`handler-${index}`"
@@ -315,11 +317,19 @@ This is a built-in Connector, please contact the admin to change the config: 当
                           v-model="topicHandler.funcId"
                           :options="funcCascader"
                           :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                      </el-form-item>
 
+                      <el-form-item
+                        class="recent-message">
                         <!-- 最近消费提示 -->
                         <InfoBlock v-if="subInfoMap[topicHandler.topic]"
-                          type="warning"
-                          :title="`${$t('Recent consume:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
+                          type="success"
+                          :title="`${$t('Recent Message:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
+                        <InfoBlock v-else type="warning" :title="$t('No Recent Message')" />
+                      </el-form-item>
+
+                      <el-form-item class="config-divider">
+                        <el-divider></el-divider>
                       </el-form-item>
                     </template>
                     <el-form-item>
@@ -327,7 +337,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                         type="primary"
                         @click="addTopicHandler">
                         <i class="fa fa-fw fa-plus"></i>
-                        {{ $t('Add Topic/Handler') }}
+                        {{ $t('Add Topic / Handler') }}
                       </el-link>
                       <br>
                       <el-link
@@ -453,7 +463,7 @@ export default {
       if (!q) {
         this.selectShowOptions = this.SUPPORTED_CONNECTORS;
       } else {
-        this.selectShowOptions = this.T.searchKeywords(q, this.SUPPORTED_CONNECTORS);
+        this.selectShowOptions = this.T.filterByKeywords(q, this.SUPPORTED_CONNECTORS);
       }
     },
 
@@ -1044,11 +1054,9 @@ export default {
   margin-bottom: 0;
 }
 
+.topic-handler .el-input,
 .func-cascader-input .el-cascader,
-.func-cascader-input .form-tip {
-  width: 420px;
-}
-.topic-handler .el-input {
+.recent-message .form-tip {
   width: 420px;
 }
 .topic-handler .el-link {

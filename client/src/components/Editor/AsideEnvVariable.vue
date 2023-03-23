@@ -144,7 +144,7 @@ export default {
       if (!q) {
         this.selectShowOptions = this.selectOptions;
       } else {
-        this.selectShowOptions = this.T.searchKeywords(q, this.selectOptions);
+        this.selectShowOptions = this.T.filterByKeywords(q, this.selectOptions);
       }
     },
 

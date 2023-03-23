@@ -1644,7 +1644,7 @@ export function appendSearchKeywords(data, searchKeywords) {
   }
 
   searchKeywords.forEach(v => {
-    if (v) data.searchKeywords.push('' + v);
+    if (v) data.searchKeywords.push(('' + v).trim());
   })
 
   return data;
@@ -1663,7 +1663,7 @@ export function appendSearchFields(data, keys) {
     }
 
     if (v) {
-      searchKeywords.push('' + v);
+      searchKeywords.push(('' + v).trim());
     }
   });
 
@@ -1675,7 +1675,7 @@ export function appendSearchFields(data, keys) {
   return data;
 };
 
-export function searchKeywords(s, l) {
+export function filterByKeywords(s, l) {
   let searchTexts = s
   .replace(/[.\-_ \(\)（）]/g, ' ')
   .toLowerCase()
@@ -1693,7 +1693,7 @@ export function searchKeywords(s, l) {
     maxSearchKeywordsLength = Math.max(maxSearchKeywordsLength, x.searchKeywords.length);
 
     x.searchKeywords.forEach(keyword => {
-      keyword = keyword.toLowerCase();
+      keyword = keyword.toLowerCase().trim();
 
       if (keyword === s) {
         exactlyMatch = true;
@@ -1718,6 +1718,7 @@ export function searchKeywords(s, l) {
       simScore    : simScore,
       item        : x,
     };
+
     maxScore = Math.max(maxScore, item.score);
     acc.push(item);
     return acc;

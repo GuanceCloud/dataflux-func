@@ -772,7 +772,7 @@ export default {
       if (!q) {
         return this.data;
       } else {
-        return this.T.searchKeywords(q, this.data);
+        return this.T.filterByKeywords(q, this.data);
       }
     },
   },

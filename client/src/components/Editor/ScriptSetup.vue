@@ -142,7 +142,7 @@ export default {
       if (!q || q[0] === '_') {
         this.templateScriptShowOptions = this.templateScripts;
       } else {
-        this.templateScriptShowOptions = this.T.searchKeywords(q, this.templateScripts);
+        this.templateScriptShowOptions = this.T.filterByKeywords(q, this.templateScripts);
       }
     },
 
