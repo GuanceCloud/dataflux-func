@@ -82,9 +82,8 @@ import app from '@/main';
 
 import C from '@/const'
 
-// 最近网络错误时间
-let RECENT_NETWORK_ERROR_TIMESTAMP    = 0;
-let NETWORK_ERROR_NOTICE_MIN_INTERVAL = 1000;
+// 网络错误提示
+let IS_UNDER_NETWORK_ERROR_NOTICE = false;
 
 let handleCircular = function() {
   let cache = [];
@@ -963,7 +962,7 @@ function _createAxiosOpt(method, pathPattern, options) {
   let axiosOpt = {
     method      : method,
     url         : url,
-    timeout     : options.timeout || 180 * 1000,
+    timeout     : options.timeout || 60 * 1000,
     extraOptions: options.extraOptions,
   };
 
@@ -1076,13 +1075,12 @@ async function _doAxios(axiosOpt) {
       return errResp;
 
     } else {
-      let now = Date.now();
-      if (now - RECENT_NETWORK_ERROR_TIMESTAMP > NETWORK_ERROR_NOTICE_MIN_INTERVAL) {
+      if (!IS_UNDER_NETWORK_ERROR_NOTICE) {
         // 防止多请求反复提示
-        RECENT_NETWORK_ERROR_TIMESTAMP = now;
+        IS_UNDER_NETWORK_ERROR_NOTICE = true;
 
         // 通讯失败，服务端没有响应
-        MessageBox.alert(`${app.$t('Failed to communicate with the server, please refresh the page and try again.')}
+        await MessageBox.alert(`${app.$t('Failed to communicate with the server, please refresh the page and try again.')}
             <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server.')}
             <br><small>${err.toString()}</small>`, {
           showClose: false,
@@ -1090,6 +1088,8 @@ async function _doAxios(axiosOpt) {
           confirmButtonText: app.$t('OK'),
           type: 'error',
         });
+
+        IS_UNDER_NETWORK_ERROR_NOTICE = false;
       }
 
       throw err;
