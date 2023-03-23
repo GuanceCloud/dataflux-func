@@ -92,7 +92,16 @@ function getEventObj(locals, event, incommingMessage) {
   return eventObj;
 };
 
-function doResponse(locals, client, event, eventObj, respData, error) {
+function doEmit(locals, client, event, emitData, callback) {
+  locals.logger.debug(`[GUANCE WS] Event@${event}: LOCAL -> Guance, Data: ${JSON.stringify(emitData)}`);
+  client.emit(event, emitData, resp => {
+    locals.logger.debug(`[GUANCE WS] EventCallback@${event}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
+
+    if ('function' === typeof callback) callback(resp);
+  });
+};
+
+function doAck(locals, client, event, eventObj, respData, error) {
   error = error || eventObj.error;
 
   var ack = null;
@@ -143,67 +152,53 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
     // 发送认证信息
     var timestamp = parseInt(Date.now() / 1000);
     var nonce     = toolkit.genRandString();
-    var eventData = {
+    var authData = {
       'apiKeyId'      : connector.configJSON.guanceAPIKeyId,
       'datafluxFuncId': datafluxFuncId,
       'timestamp'     : timestamp,
       'nonce'         : nonce,
       'signature'     : toolkit.getSha256(`${connector.configJSON.guanceAPIKey}~${datafluxFuncId}~${timestamp}~${nonce}`),
     }
+    doEmit(locals, client, EVENT_DFF_AUTH, authData, function(resp) {
+      if (!resp.ok) return;
 
-    locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_AUTH}: LOCAL -> Guance, Data: ${JSON.stringify(eventData)}`);
-    client.emit(EVENT_DFF_AUTH, eventData, resp => {
-        locals.logger.debug(`[GUANCE WS] EventCallback@${EVENT_DFF_AUTH}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
+      /* 上报自身信息 */
+      var systemInfoData = {
+        name   : connector.title || `DataFlux Func (${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
+        version: IMAGE_INFO.CI_COMMIT_REF_NAME,
+      }
+      doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfoData);
 
-        // 上报自身信息
-        if (resp.ok) {
-          var eventData = {
-            datafluxFuncId: datafluxFuncId,
-            name          : connector.title || `DataFlux Func (${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
-            version       : IMAGE_INFO.CI_COMMIT_REF_NAME,
-          }
-          locals.logger.debug(`[GUANCE WS] Event@${EVENT_DFF_SYSTEM_INFO}: LOCAL -> Guance, Data: ${JSON.stringify(eventData)}`);
-          client.emit(EVENT_DFF_SYSTEM_INFO, eventData, resp => {
-            locals.logger.debug(`[GUANCE WS] EventCallback@${EVENT_DFF_SYSTEM_INFO}: LOCAL <- Guance, Data: ${JSON.stringify(resp)}`);
-          });
-        }
+      /* 上报当前函数列表 */
+      var funcModel = funcMod.createModel(locals);
+
+      var opt = {
+        filters: {
+          'func.category': { like: 'guance.*' }
+        },
+        extra: { asFuncDoc: true },
+      };
+      funcModel.list(opt, function(err, dbRes) {
+        if (err) return locals.logger.logError(err);
+
+        var funcListData = { funcs: dbRes }
+        doEmit(locals, client, EVENT_DFF_FUNC_LIST, funcListData);
+      });
     });
   });
 
   // ping 事件
   client.on(EVENT_PING, function() {
     var eventObj = getEventObj(locals, EVENT_PING, arguments);
-    if (eventObj.error) return doResponse(locals, client, EVENT_PING, eventObj);
+    if (eventObj.error) return doAck(locals, client, EVENT_PING, eventObj);
 
-    return doResponse(locals, client, EVENT_PING, eventObj);
-  });
-
-  // dff.func.list 事件
-  client.on(EVENT_DFF_FUNC_LIST, function() {
-    var eventObj = getEventObj(locals, EVENT_DFF_FUNC_LIST, arguments);
-    if (eventObj.error) return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj);
-
-    var funcModel = funcMod.createModel(locals);
-
-    var opt = {
-      filters: { },
-      extra  : { asFuncDoc: true },
-    };
-
-    if (eventObj.data && eventObj.data.category) {
-      opt.filters['func.category'] = { eq: eventObj.data.category };
-    }
-    funcModel.list(opt, function(err, dbRes) {
-      if (err) return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj, null, err);
-
-      return doResponse(locals, client, EVENT_DFF_FUNC_LIST, eventObj, dbRes);
-    });
+    return doAck(locals, client, EVENT_PING, eventObj);
   });
 
   // dff.func.call 事件
   client.on(EVENT_DFF_FUNC_CALL, function() {
     var eventObj = getEventObj(locals, EVENT_DFF_FUNC_CALL, arguments);
-    if (eventObj.error) return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj);
+    if (eventObj.error) return doAck(locals, client, EVENT_DFF_FUNC_CALL, eventObj);
 
     var handlerFuncId  = eventObj.data.funcId;
     var funcCallKwargs = eventObj.data.callKwargs || {};
@@ -249,9 +244,9 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
         });
       },
     ], function(err) {
-      if (err) return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj, null, err);
+      if (err) return doAck(locals, client, EVENT_DFF_FUNC_CALL, eventObj, null, err);
 
-      return doResponse(locals, client, EVENT_DFF_FUNC_CALL, eventObj, funcResult);
+      return doAck(locals, client, EVENT_DFF_FUNC_CALL, eventObj, funcResult);
     });
   });
 
