@@ -119,29 +119,8 @@ exports.beforeAppCreate = function(callback) {
     });
   };
 
-  var initDataFluxFuncId = function(callback) {
-    var id    = 'DATAFLUX_FUNC_ID';
-    var value = `DFF-${toolkit.genUUID().toUpperCase()}`;
-
-    var conn = getDBConnection();
-    conn.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
-      if (err) return callback(err);
-
-      if (dbRes[0].count > 0) {
-        return callback();
-      }
-
-      conn.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
-        conn.end();
-
-        return callback(err);
-      });
-    });
-  };
-
   async.series([
     loadDatabaseTimezone,
-    initDataFluxFuncId,
   ], function(err) {
     if (err) throw err;
 
@@ -387,24 +366,24 @@ exports.afterAppCreated = function(app, server) {
 
   var localDataKitIP = null;
   async.series([
-      // 获取锁
-      function(asyncCallback) {
-        var lockKey   = toolkit.getCacheKey('lock', 'autoCreateDataKit');
-        var lockValue = toolkit.genRandString();
-        var lockAge   = CONFIG._LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE;
+    // 获取锁
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'autoCreateDataKit');
+      var lockValue = toolkit.genRandString();
+      var lockAge   = CONFIG._LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE;
 
-        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-          if (err) return asyncCallback(err);
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
-          if (!cacheRes) {
-            var e = new Error('Local DataKit auto creating is just launched');
-            e.isWarning = true;
-            return asyncCallback(e);
-          }
+        if (!cacheRes) {
+          var e = new Error('Local DataKit auto creating is just launched');
+          e.isWarning = true;
+          return asyncCallback(e);
+        }
 
-          return asyncCallback();
-        });
-      },
+        return asyncCallback();
+      });
+    },
     // 检查DataKit所在IP
     function(asyncCallback) {
       var fetchIPs = [
@@ -469,6 +448,48 @@ exports.afterAppCreated = function(app, server) {
           connectorModel.modify(datakit.id, datakit, asyncCallback);
         }
       })
+    },
+  ], printError);
+
+  // 初始化 DataFlux Func ID
+  async.series([
+    // 获取锁
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'initDataFluxFuncId');
+      var lockValue = toolkit.genRandString();
+      var lockAge   = CONFIG._INIT_DATAFLUX_FUNC_ID_LOCK_AGE;
+
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          var e = new Error('DataFlux Func ID init is just launched');
+          e.isWarning = true;
+          return asyncCallback(e);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 自动生成 DataFlux Func ID
+    function(asyncCallback) {
+      var id    = 'DATAFLUX_FUNC_ID';
+      var value = `DFF-${toolkit.genUUID().toUpperCase()}`;
+
+      var conn = getDBConnection();
+      conn.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes[0].count > 0) {
+          return asyncCallback();
+        }
+
+        conn.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
+          conn.end();
+
+          return asyncCallback(err);
+        });
+      });
     },
   ], printError);
 };
