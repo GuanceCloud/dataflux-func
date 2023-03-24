@@ -171,7 +171,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
       /* 上报自身信息 */
       var systemInfoData = {
-        name   : connector.title || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
+        name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
         version: IMAGE_INFO.CI_COMMIT_REF_NAME,
       }
       doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfoData);

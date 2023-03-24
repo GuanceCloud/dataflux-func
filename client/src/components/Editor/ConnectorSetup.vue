@@ -4,6 +4,7 @@ Setup Connector: 配置连接器
 
 Compatibility        : 兼容性
 Guance Node          : 观测云节点
+Name in Guance       : 观测云中名称
 OpenAPI URL          : OpenAPI 地址
 WebSocket URL        : WebSocket 地址
 OpenWay URL          : OpenWay 地址
@@ -34,39 +35,41 @@ Test connection      : 测试连通性
 
 Save without connection test: 保存（忽略连通性测试）
 
-'Servers to connect (e.g. host1:80,host2:81)': 连接地址列表，如：host1:80,host2:81
+For distinguishing the different DataFlux Func                                  : 在观测云中展示的名称，用于区分不同的 DataFlux Func
+'Servers to connect (e.g. host1:80,host2:81)'                                   : 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
-API Key here is always required: 每次修改都必须重新输入 API Key
-'1. $share/GROUP/TOPIC in MQTTv5': '1. MQTTv5 的 $share/GROUP/TOPIC'
-'2. $queue/TOPIC in EMQX': '2. EMQX 的 $queue/TOPIC'
+API Key here is always required                                                 : 每次修改都必须重新输入 API Key
+'1. $share/GROUP/TOPIC in MQTTv5'                                               : '1. MQTTv5 的 $share/GROUP/TOPIC'
+'2. $queue/TOPIC in EMQX'                                                       : '2. EMQX 的 $queue/TOPIC'
 
-Please input ID: 请输入ID
-Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number: 不得以数字开头
-Please input Connector type: 请选择连接器类型
-Please select Guance Node : 请选择观测云节点
-Please input OpenAPI URL  : 请输入 OpenAPI 地址
-Please input Websocket URL: 请输入 WebSocket 地址
-Please input OpenWay URL  : 请输入 OpenWay 地址
-Please input API Key ID   : 请输入 API Key ID
-Please input API Key      : 请输入 API Key
-'Should start with http:// or https://': '必须以 http:// 或 https://开头'
-Please input host: 请输入主机地址
-Please input port: 请输入主机端口
-Only integer between 1 and 65535 are allowed: 主机端口范围为 1-65535
-Please input servers: 请输入服务器列表
-Please select HTTP protocol: 请选择HTTP协议
-Only HTTP and HTTPS are allowed: 协议只能为HTTP或HTTPS
-Please input source: 请输入连接器名称
-Please input database: 请输入数据库名
-Please input user: 请输入用户名
-Please input password: 请输入密码
-Please input charset: 请输入字符集
-Please input Access Key: 请输入Access Key
-Please input Secret Key: 请输入Secret Key
-Please input client ID: 请输入客户端ID
-Please input topic: 请输入订阅主题
-Please select handler Func: 请选择处理函数
+Please input ID                                      : 请输入ID
+Only alphabets, numbers and underscore are allowed   : 只能包含大小写英文、数字及下划线
+Cannot not starts with a number                      : 不得以数字开头
+Please input Connector type                          : 请选择连接器类型
+Please select Guance Node                            : 请选择观测云节点
+Please input the name of this DataFlux Func in Guance: 请输入本 DataFlux Func 在观测云中的名称
+Please input OpenAPI URL                             : 请输入 OpenAPI 地址
+Please input Websocket URL                           : 请输入 WebSocket 地址
+Please input OpenWay URL                             : 请输入 OpenWay 地址
+Please input API Key ID                              : 请输入 API Key ID
+Please input API Key                                 : 请输入 API Key
+'Should start with http:// or https://'              : '必须以 http:// 或 https:// 开头'
+Please input host                                    : 请输入主机地址
+Please input port                                    : 请输入主机端口
+Only integer between 1 and 65535 are allowed         : 主机端口范围为 1-65535
+Please input servers                                 : 请输入服务器列表
+Please select HTTP protocol                          : 请选择HTTP协议
+Only HTTP and HTTPS are allowed                      : 协议只能为HTTP或HTTPS
+Please input source                                  : 请输入连接器名称
+Please input database                                : 请输入数据库名
+Please input user                                    : 请输入用户名
+Please input password                                : 请输入密码
+Please input charset                                 : 请输入字符集
+Please input Access Key                              : 请输入Access Key
+Please input Secret Key                              : 请输入Secret Key
+Please input client ID                               : 请输入客户端ID
+Please input topic                                   : 请输入订阅主题
+Please select handler Func                           : 请选择处理函数
 
 Connector created: 连接器已创建
 Connector saved  : 连接器已保存
@@ -156,6 +159,11 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       <el-option v-for="node in guanceNodes"
                         :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
                     </el-select>
+                  </el-form-item>
+                  <el-form-item :label="$t('Name in Guance')" v-if="hasConfigField(selectedType, 'nameInGuance')" prop="configJSON.nameInGuance">
+                    <el-input
+                      v-model="form.configJSON.nameInGuance"></el-input>
+                    <InfoBlock type="info" :title="$t('For distinguishing the different DataFlux Func')" />
                   </el-form-item>
                   <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
                     <el-input
@@ -825,6 +833,13 @@ export default {
             trigger : 'change',
             message : this.$t('Please select Guance Node'),
             required: true,
+          },
+        ],
+        'configJSON.nameInGuance': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input the name of this DataFlux Func in Guance'),
+            required: false,
           },
         ],
         'configJSON.guanceOpenAPIURL': [

@@ -2574,6 +2574,11 @@ connectorAPI:
             $allowNull: true
             $type     : string
             $example  : default
+          nameInGuance:
+            $desc     : Name in Guance
+            $allowNull: true
+            $type     : string
+            $example  : 'DataFlux Func (version: 1.0.0)'
           guanceOpenAPIURL:
             $desc     : Guance OpenAPI URL
             $allowNull: true
@@ -2738,6 +2743,11 @@ connectorAPI:
             $allowNull: true
             $type     : string
             $example  : default
+          nameInGuance:
+            $desc     : Name in Guance
+            $allowNull: true
+            $type     : string
+            $example  : 'DataFlux Func (version: 1.0.0)'
           guanceOpenAPIURL:
             $desc     : Guance OpenAPI URL
             $allowNull: true

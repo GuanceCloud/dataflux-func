@@ -86,12 +86,13 @@ export default {
         sampleCode    : `guance = DFF.CONN('{0}')
 res = guance.openapi('GET', '/api/v1/workspace/get')`,
         configFields: {
-          guanceNode         : { default: null, isRequired: true },
+          guanceNode        : { default: null, isRequired: true },
+          nameInGuance      : { default: null },
           guanceOpenAPIURL  : { default: null, isRequired: true },
           guanceWebSocketURL: { default: null, isRequired: true },
           guanceOpenWayURL  : { default: null, isRequired: true },
-          guanceAPIKeyId     : { default: null, isRequired: true },
-          guanceAPIKey       : { default: null, isRequired: true },
+          guanceAPIKeyId    : { default: null, isRequired: true },
+          guanceAPIKey      : { default: null, isRequired: true },
         },
       },
       {
