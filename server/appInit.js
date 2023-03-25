@@ -476,17 +476,14 @@ exports.afterAppCreated = function(app, server) {
       var id    = 'DATAFLUX_FUNC_ID';
       var value = `DFF-${toolkit.genUUID().toUpperCase()}`;
 
-      var conn = getDBConnection();
-      conn.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
+      app.locals.db.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (dbRes[0].count > 0) {
           return asyncCallback();
         }
 
-        conn.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
-          conn.end();
-
+        app.locals.db.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
           return asyncCallback(err);
         });
       });

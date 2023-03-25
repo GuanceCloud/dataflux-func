@@ -50,6 +50,7 @@ function getConfig(c) {
     connectTimeout : CONFIG._MYSQL_CONNECT_TIMEOUT,
 
     multipleStatements: true,
+    enableKeepAlive   : true,
   };
 };
 
