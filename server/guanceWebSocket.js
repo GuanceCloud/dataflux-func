@@ -113,7 +113,7 @@ function doAck(locals, client, event, eventObj, respData, error) {
   if (error) {
     ack = {
       ok     : false,
-      message: (errorOrMessage || 'Error Occured').toString(),
+      message: (error || 'Error Occured').toString(),
     }
 
   } else {
