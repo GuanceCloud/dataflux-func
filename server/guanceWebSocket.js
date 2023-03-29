@@ -27,15 +27,16 @@ var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
 var CONNECTOR_GUANCE_MAP = {};
 
 // Func 表最后更新时间
-var FUNC_LIST_LATEST_UPDATE_TIME = false;
-var FUNC_LIST_REPORTER_INTERVAL  = 5 * 1000;
+var FUNC_LIST_LATEST_UPDATE_TIME     = false;
+var FUNC_LIST_REPORT_TO_ALL_INTERVAL = 5 * 1000;
 
 // 事件
-const EVENT_PING            = 'ping';
-const EVENT_DFF_AUTH        = 'dff.auth';
-const EVENT_DFF_SYSTEM_INFO = 'dff.system.info';
-const EVENT_DFF_FUNC_LIST   = 'dff.func.list';
-const EVENT_DFF_FUNC_CALL   = 'dff.func.call';
+const EVENT_PING                  = 'ping';
+const EVENT_DFF_AUTH              = 'dff.auth';
+const EVENT_DFF_SYSTEM_INFO       = 'dff.system.info';
+const EVENT_DFF_FUNC_LIST         = 'dff.func.list';
+const EVENT_DFF_FUNC_CALL         = 'dff.func.call';
+const EVENT_DFF_FUNC_INIT_REQUIRE = 'dff.func.init.require';
 
 function getAckSample(ack) {
   var ackSample = {};
@@ -97,6 +98,34 @@ function getEventObj(locals, event, incommingMessage) {
   return eventObj;
 };
 
+function getFuncListLastUpdateTime(locals, callback) {
+  var sql = `
+    SELECT
+        MAX(updateTime) AS updateTime
+    FROM biz_main_func
+    WHERE
+      category LIKE 'guance.%'`;
+  locals.db.query(sql, null, function(err, dbRes) {
+    if (err) return callback(err);
+
+    var latestUpdateTime = toolkit.jsonDumps(dbRes[0].updateTime);
+
+    return callback(null, latestUpdateTime);
+  });
+};
+
+function getFuncList(locals, callback) {
+  var funcModel = funcMod.createModel(locals);
+
+  var opt = {
+    filters: {
+      'func.category': { like: 'guance.%' }
+    },
+    extra: { asFuncDoc: true },
+  };
+  funcModel.list(opt, callback);
+};
+
 function doEmit(locals, client, event, emitData, callback) {
   locals.logger.debug(`[GUANCE WS] Event@${event}: LOCAL -> Guance, Data: ${JSON.stringify(emitData)}`);
   client.emit(event, emitData, resp => {
@@ -145,6 +174,27 @@ function doAck(locals, client, event, eventObj, respData, error) {
 function createWebSocketClient(locals, connector, datafluxFuncId) {
   var client = socketIO(connector.configJSON.guanceWebSocketURL);
 
+  // 上报自身信息
+  function reportSystemInfo() {
+    var systemInfo = {
+      name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
+      version: IMAGE_INFO.CI_COMMIT_REF_NAME,
+    }
+    doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfo);
+  }
+
+  // 上报函数列表
+  function reportFuncList() {
+    getFuncList(locals, function(err, funcList) {
+      if (err) return locals.logger.logError(err);
+
+      var emitData = { funcs: funcList }
+      doEmit(locals, client, EVENT_DFF_FUNC_LIST, emitData);
+    });
+  }
+
+  /* 监听事件 */
+
   // 错误事件
   client.on('error', function(err) {
     locals.logger.debug(`[GUANCE WS] Error: ${JSON.stringify(err)}`);
@@ -167,14 +217,17 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
     doEmit(locals, client, EVENT_DFF_AUTH, authData, function(resp) {
       if (!resp.ok) return;
 
+      // 记录认证状态
       client.__dffAuthed = true;
 
-      /* 上报自身信息 */
-      var systemInfoData = {
-        name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
-        version: IMAGE_INFO.CI_COMMIT_REF_NAME,
-      }
-      doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfoData);
+      // 重置函数列表最后更新时间
+      FUNC_LIST_LATEST_UPDATE_TIME = false;
+
+      // 上报自身信息
+      reportSystemInfo();
+
+      // 上报函数列表
+      reportFuncList();
     });
   });
 
@@ -239,6 +292,15 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
       return doAck(locals, client, EVENT_DFF_FUNC_CALL, eventObj, funcResult);
     });
+  });
+
+  // dff.func.init.require 事件
+  client.on(EVENT_DFF_FUNC_INIT_REQUIRE, function() {
+      // 上报自身信息
+      reportSystemInfo();
+
+      // 上报函数列表
+      reportFuncList();
   });
 
   return client;
@@ -398,54 +460,36 @@ exports.runListener = function runListener(app) {
   setInterval(connectorChecker, CONNECTOR_CHECK_INTERVAL);
 
   // 定期上报函数列表
-  function funcListReport() {
+  function reportFuncListToAll() {
     // 非 Master 节点跳过
     if (!IS_MASTER_NODE) {
       FUNC_LIST_LATEST_UPDATE_TIME = false;
       return;
     }
 
-    var sql = `
-      SELECT
-          MAX(updateTime) AS updateTime
-      FROM biz_main_func
-      WHERE
-        category LIKE 'guance.%'`;
-    app.locals.db.query(sql, null, function(err, dbRes) {
+    getFuncListLastUpdateTime(app.locals, function(err, latestUpdateTime) {
       if (err) return app.locals.logger.logError(err);
-
-      var latestUpdateTime = toolkit.jsonDumps(dbRes[0].updateTime);
 
       // 最后更新时间无变化，跳过
       if (latestUpdateTime === FUNC_LIST_LATEST_UPDATE_TIME) return;
 
       // 最后更新时间无变化，记录并上报
-
       FUNC_LIST_LATEST_UPDATE_TIME = latestUpdateTime;
 
-      async.eachOfSeries(CONNECTOR_GUANCE_MAP, function(connector, cgKey, eachCallback) {
-        // 未登录的不上报
-        if (!connector.client || !connector.client.__dffAuthed) return eachCallback();
+      getFuncList(app.locals, function(err, funcList) {
+        if (err) return app.locals.logger.logError(err);
 
-        // 上报函数列表
-        var funcModel = funcMod.createModel(app.locals);
+        async.eachOfSeries(CONNECTOR_GUANCE_MAP, function(connector, cgKey, eachCallback) {
+          // 未登录的不上报
+          if (!connector.client || !connector.client.__dffAuthed) return eachCallback();
 
-        var opt = {
-          filters: {
-            'func.category': { like: 'guance.%' }
-          },
-          extra: { asFuncDoc: true },
-        };
-        funcModel.list(opt, function(err, dbRes) {
-          if (err) return app.locals.logger.logError(err);
-
-          var funcListData = { funcs: dbRes }
-          doEmit(app.locals, connector.client, EVENT_DFF_FUNC_LIST, funcListData, function(resp) {
+          var emitData = { funcs: toolkit.jsonCopy(funcList) }
+          doEmit(app.locals, connector.client, EVENT_DFF_FUNC_LIST, emitData, function(resp) {
             return eachCallback();
           });
         });
       });
     });
   };
-  setInterval(funcListReport, FUNC_LIST_REPORTER_INTERVAL);
+  setInterval(reportFuncListToAll, FUNC_LIST_REPORT_TO_ALL_INTERVAL);
 };
