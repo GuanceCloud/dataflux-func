@@ -225,9 +225,6 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
       // 上报自身信息
       reportSystemInfo();
-
-      // 上报函数列表
-      reportFuncList();
     });
   });
 
@@ -296,11 +293,16 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
   // dff.func.init.require 事件
   client.on(EVENT_DFF_FUNC_INIT_REQUIRE, function() {
-      // 上报自身信息
-      reportSystemInfo();
+    var eventObj = getEventObj(locals, EVENT_PING, arguments);
+    if (eventObj.error) return doAck(locals, client, EVENT_PING, eventObj);
 
-      // 上报函数列表
-      reportFuncList();
+    // 上报自身信息
+    reportSystemInfo();
+
+    // 上报函数列表
+    reportFuncList();
+
+    return doAck(locals, client, EVENT_DFF_FUNC_INIT_REQUIRE, eventObj);
   });
 
   return client;
