@@ -741,15 +741,11 @@ export default {
         // 部分连接器特殊处理
         switch (opt.key) {
           case 'guance':
-            if (!this.$store.getters.isExperimentalFeatureEnabled('ConnectorForGuance')) {
-              return false;
-            }
+            return this.$store.getters.isExperimentalFeatureEnabled('ConnectorForGuance');
             break;
 
           case 'sqlserver':
-            if (this.$store.getters.CONFIG('_ARCH') !== 'x64') {
-              return false;
-            }
+            return this.$store.getters.CONFIG('_ARCH') === 'x64';
             break;
 
           default:
