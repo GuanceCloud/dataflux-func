@@ -249,21 +249,23 @@ The published Script Set will be shown here, you can find and install the ones y
               </el-switch>
             </template>
             <template slot-scope="scope">
+              <!-- 发布方 -->
               <template v-if="scriptMarket.isAdmin">
                 <el-link :disabled="!scope.row.isPublishable" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
                 <el-link :disabled="!scope.row.isDeletable" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
+              <!-- 订阅方 -->
               <template v-else>
                 <template v-if="!isAccessible">
-                  <el-link v-if="scope.row.local" disabled>{{ $t('Upgrade') }}</el-link>
+                  <el-link v-if="scope.row.local" disabled>{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
                   <el-link v-else disabled>{{ $t('Install') }}</el-link>
                 </template>
                 <template v-else-if="scope.row.isInstallable">
-                  <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ $t('Upgrade') }}</el-link>
+                  <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
                   <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
                 </template>
                 <template v-else-if="!forceModeEnabled">
-                  <el-link v-if="scope.row.local" disabled>{{ $t('Upgrade') }}</el-link>
+                  <el-link v-if="scope.row.local" disabled>{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
                   <el-link v-else disabled>{{ $t('Install') }}</el-link>
                 </template>
                 <template v-else>
@@ -272,7 +274,7 @@ The published Script Set will be shown here, you can find and install the ones y
                     type="danger"
                     @click="openDialog(scope.row.remote, 'upgrade')">
                     <i v-if="!scope.row.isInstallable" class="fa fa-fw fa-exclamation-triangle"></i>
-                    {{ scope.row.isInstallable ? $t('Upgrade') : $t('Force Upgrade') }}
+                    {{ scope.row.isInstallable ? scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') : $t('Force Upgrade') }}
                   </el-button>
                   <el-button v-else
                     size="mini"
@@ -501,6 +503,9 @@ export default {
 
             // 是否可以安装（本地未修改、可操作）
             d.isInstallable = !d.isLocalEdited && this.isAccessible;
+
+            // 是否已经更新
+            d.isUptodate = !!(d.local.originMD5 === d.remote.originMD5);
           }
         }
       });
