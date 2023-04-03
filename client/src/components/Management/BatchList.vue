@@ -17,7 +17,6 @@ Batch deleted : 批处理已删除
 
 Show all contents: 展示全部内容
 No Batch has ever been added: 从未添加过任何批处理
-Batch only supports asynchronous calling: 批处理只支持异步调用
 
 Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
 Are you sure you want to delete the Batch?: 是否确认删除此批处理？
@@ -157,7 +156,6 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
       <Pager :pageInfo="pageInfo" />
 
       <APIExampleDialog ref="apiExampleDialog"
-        :description="$t('Batch only supports asynchronous calling')"
         :showExecModeOption="false"
         :showPostExample="true"
         :showPostExampleSimplified="true"
@@ -290,10 +288,8 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes || !apiRes.ok) return;
 
-      let funcKwargs = apiRes.data.kwargsJSON;
-
       // 生成API请求示例
-      let apiURLExample = this.T.formatURL('/api/v1/bat/:id', {
+      let apiURL = this.T.formatURL('/api/v1/bat/:id', {
         baseURL: true,
         params : { id: d.id },
       });
@@ -304,10 +300,12 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = { kwargs: funcCallKwargsJSON };
+      let apiBody = { kwargs: funcCallKwargsJSON };
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
   },
   computed: {

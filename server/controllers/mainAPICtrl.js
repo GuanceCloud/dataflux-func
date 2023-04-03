@@ -470,22 +470,6 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
       }
       break;
 
-    case 'flattened':
-      // 扁平形式：函数参数为「kwargs_参数名」，执行选项为「options_选项名」形式
-      for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {
-        var keyParts = k.split('_');
-        if (keyParts.length <= 1) continue;
-
-        var type = keyParts[0];
-        var name = keyParts.slice(1).join('_');
-        if (type === 'kwargs') {
-          reqCallKwargs[name] = reqOpt[k];
-        } else if (type === 'options') {
-          options[name] = reqOpt[k];
-        }
-      }
-      break;
-
     case 'simplified':
       // 简化形式：函数参数直接为参数名，不支持执行选项
       for (var k in reqOpt) if (reqOpt.hasOwnProperty(k)) {

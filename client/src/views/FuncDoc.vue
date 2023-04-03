@@ -77,7 +77,6 @@ Press {0} to search: 按 {0} 开始搜索
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        :descriptionClass="{'text-bad': true}"
         :showExecModeOption="true"
         :showSaveResultOption="true"
         :showAPITimeoutOption="true"
@@ -117,10 +116,8 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.id);
       if (!apiRes || !apiRes.ok) return;
 
-      let funcKwargs = apiRes.data.kwargsJSON;
-
       // 生成API请求示例
-      let apiURLExample = this.T.formatURL('/api/v1/func/:funcId', {
+      let apiURL = this.T.formatURL('/api/v1/func/:funcId', {
         baseURL: this.$store.getters.CONFIG('WEB_INNER_BASE_URL'),
         params : {funcId: d.id},
       });
@@ -129,9 +126,10 @@ export default {
       for (let k in d.kwargsJSON) if (d.kwargsJSON.hasOwnProperty(k)) {
         kwargsJSON[k] = this.$store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST')[0];
       }
-      let apiBodyExample = { kwargs: kwargsJSON };
+      let apiBody = { kwargs: kwargsJSON };
+      let funcKwargs = apiRes.data.kwargsJSON;
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
+      this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
   },
   computed: {},

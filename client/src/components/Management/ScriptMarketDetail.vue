@@ -4,10 +4,11 @@ ScriptCount: 'No Script included | Includes {n} Script | Includes {n} Scripts'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Publish Script Set: 发布脚本集
-Delete Script Set : 删除脚本集
-Install Script Set: 脚本集详情
-Upgrade Script Set: 脚本集详情
+Publish Script Set  : 发布脚本集
+Delete Script Set   : 删除脚本集
+Install Script Set  : 安装脚本集
+Reinstall Script Set: 重新安装脚本集
+Upgrade Script Set  : 升级脚本集
 
 Exactly Match              : 完全匹配
 Local                      : 本地
@@ -20,28 +21,29 @@ No Corresponding Script Set: 无对应脚本集
 Edited                     : 已修改
 Publish Note               : 发布说明
 Force Mode                 : 强制模式
-Force Upgrade              : 强制升级
 Force Install              : 强制安装
 
-'This Script Set is not from current Script Market, you can:'         : 此脚本集并非来自【当前】脚本市场，您可以：
-'This Script Set is edited locally, you can:'                         : 此脚本集已在本地被修改，您可以：
-1. Remove the local Script Set and install from the Script Market     : 1. 删除本地脚本集后再从脚本市场安装
-2. Enable the Force Mode and install / upgrade the Script Set directly: 2. 开启强制模式并直接安装、升级脚本集
+'This Script Set is not from current Script Market, you can:'    : 此脚本集并非来自【当前】脚本市场，您可以：
+'This Script Set is edited locally, you can:'                    : 此脚本集已在本地被修改，您可以：
+1. Remove the local Script Set and install from the Script Market: 1. 删除本地脚本集后再从脚本市场安装
+2. Enable the Force Mode and reinstall the Script Set            : 2. 开启强制模式并重新安装脚本集
 
 Please input note: 请输入发布说明
 
-Are you sure you want to publish the Script Set to the Script Market?: 是否确认发布脚本集到此脚本市场？
+Are you sure you want to publish the Script Set to the Script Market? : 是否确认发布脚本集到此脚本市场？
 Are you sure you want to delete the Script Set from the Script Market?: 是否确认从脚本市场删除此脚本集？
-Are you sure you want to install the Script Set?: 是否确认安装此脚本集？
-Are you sure you want to upgrade the Script Set?: 是否确认升级此脚本集？
+Are you sure you want to install the Script Set?                      : 是否确认安装此脚本集？
+Are you sure you want to reinstall the Script Set?                    : 是否确认重新安装此脚本集？
+Are you sure you want to upgrade the Script Set?                      : 是否确认升级此脚本集？
 
 This Script Market is locked by you: 当前脚本市场已被您锁定
 This Script Market is locked by other user ({user}): 当前脚本市场已被其他用户（{user}）锁定
 
-Script Set published to the Script Market: 脚本集已发布至脚本市场
-Script Set deleted from the Script Market: 脚本集已从脚本市场删除
-Script Set installed, new Script Set is in effect immediately: 脚本集已安装，新脚本集立即生效
-Script Set upgraded, new Script Set is in effect immediately: 脚本集已升级，新脚本集立即生效
+Script Set published to the Script Market                      : 脚本集已发布至脚本市场
+Script Set deleted from the Script Market                      : 脚本集已从脚本市场删除
+Script Set installed, new Script Set is in effect immediately  : 脚本集已安装，新脚本集立即生效
+Script Set reinstalled, new Script Set is in effect immediately: 脚本集已重新安装，新脚本集立即生效
+Script Set upgraded, new Script Set is in effect immediately   : 脚本集已升级，新脚本集立即生效
 
 This Script Set requires 3rd party Python packages, do you want to open PIP tool now?: 此脚本集依赖第三方 Python 包，是否现在前往PIP工具？
 
@@ -164,7 +166,7 @@ The published Script Set will be shown here, you can find and install the ones y
                 <div slot="content">
                   {{ $t('This Script Set is not from current Script Market, you can:') }}
                   <br>{{ $t('1. Remove the local Script Set and install from the Script Market') }}
-                  <br>{{ $t('2. Enable the Force Mode and install / upgrade the Script Set directly') }}
+                  <br>{{ $t('2. Enable the Force Mode and reinstall the Script Set') }}
                 </div>
                 <i class="fa fa-fw fa-exclamation fa-3x text-bad arrow-icon-cover"></i>
               </el-tooltip>
@@ -172,7 +174,7 @@ The published Script Set will be shown here, you can find and install the ones y
                 <div slot="content" class="xxx">
                   {{ $t('This Script Set is edited locally, you can:') }}
                   <br>{{ $t('1. Remove the local Script Set and install from the Script Market') }}
-                  <br>{{ $t('2. Enable the Force Mode and install / upgrade the Script Set directly') }}
+                  <br>{{ $t('2. Enable the Force Mode and reinstall the Script Set') }}
                 </div>
                 <i class="fa fa-fw fa-exclamation fa-3x text-bad arrow-icon-cover"></i>
               </el-tooltip>
@@ -251,39 +253,32 @@ The published Script Set will be shown here, you can find and install the ones y
             <template slot-scope="scope">
               <!-- 发布方 -->
               <template v-if="scriptMarket.isAdmin">
-                <el-link :disabled="!scope.row.isPublishable" @click="openDialog(scope.row.local, 'publish')">{{ $t('Publish') }}</el-link>
-                <el-link :disabled="!scope.row.isDeletable" @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
+                <el-link :disabled="!scope.row.isPublishable" @click="openDialog(scope.row.local,  'publish')">{{ $t('Publish') }}</el-link>
+                <el-link :disabled="!scope.row.isDeletable"   @click="openDialog(scope.row.remote, 'delete')">{{ $t('Delete') }}</el-link>
               </template>
               <!-- 订阅方 -->
               <template v-else>
-                <template v-if="!isAccessible">
-                  <el-link v-if="scope.row.local" disabled>{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
-                  <el-link v-else disabled>{{ $t('Install') }}</el-link>
-                </template>
-                <template v-else-if="scope.row.isInstallable">
-                  <el-link v-if="scope.row.local" @click="openDialog(scope.row.remote, 'upgrade')">{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
-                  <el-link v-else @click="openDialog(scope.row.remote, 'install')">{{ $t('Install') }}</el-link>
-                </template>
-                <template v-else-if="!forceModeEnabled">
-                  <el-link v-if="scope.row.local" disabled>{{ scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') }}</el-link>
-                  <el-link v-else disabled>{{ $t('Install') }}</el-link>
-                </template>
-                <template v-else>
-                  <el-button v-if="scope.row.local"
-                    size="mini"
-                    type="danger"
-                    @click="openDialog(scope.row.remote, 'upgrade')">
-                    <i v-if="!scope.row.isInstallable" class="fa fa-fw fa-exclamation-triangle"></i>
-                    {{ scope.row.isInstallable ? scope.row.isUptodate ? $t('Reinstall') : $t('Upgrade') : $t('Force Upgrade') }}
-                  </el-button>
-                  <el-button v-else
-                    size="mini"
-                    type="danger"
-                    @click="openDialog(scope.row.remote, 'install')">
-                    <i v-if="!scope.row.isInstallable" class="fa fa-fw fa-exclamation-triangle"></i>
-                    {{ scope.row.isInstallable ? $t('Install') : $t('Force Install') }}
-                  </el-button>
-                </template>
+                <!-- 没有本地时为安装 -->
+                <el-link v-if="!scope.row.local"
+                  @click="openDialog(scope.row.remote, 'install')"
+                  :disabled="!isAccessible">
+                  {{ $t('Install') }}
+                </el-link>
+                <!-- 强制模式（且原本无法安装的） -->
+                <el-button v-else-if="forceModeEnabled && !scope.row.isInstallable"
+                  size="mini"
+                  type="danger"
+                  @click="openDialog(scope.row.remote, 'install')">
+                  <i class="fa fa-fw fa-exclamation-triangle"></i>
+                  {{ $t('Force Install') }}
+                </el-button>
+                <!-- 存在本地时为重新安装 / 升级 -->
+                <el-link v-else
+                  @click="openDialog(scope.row.remote, scope.row.hasNewVersion ? 'upgrade' : 'reinstall')"
+                  :disabled="!isAccessible || !scope.row.isInstallable">
+                  {{ scope.row.hasNewVersion ? $t('Upgrade') : $t('Reinstall') }}
+                </el-link>
+
               </template>
             </template>
           </el-table-column>
@@ -482,6 +477,9 @@ export default {
           d.isScriptMarket        = !!(d.local && d.local.origin === 'scriptMarket');
           d.isScriptMarketMatched = !!(d.local && d.local.origin === 'scriptMarket' && d.local.originId === this.scriptMarket.id);
 
+          // 是否已经是最新版
+          d.hasNewVersion = !!(d.isScriptMarketMatched && d.local.originMD5 !== d.remote.originMD5);
+
           if (!d.isIdMatched) {
             // 无对应
             // 是否可以安装（有远端即可）
@@ -503,9 +501,6 @@ export default {
 
             // 是否可以安装（本地未修改、可操作）
             d.isInstallable = !d.isLocalEdited && this.isAccessible;
-
-            // 是否已经更新
-            d.isUptodate = !!(d.local.originMD5 === d.remote.originMD5);
           }
         }
       });
@@ -575,6 +570,11 @@ export default {
           this.operationButtonTitle = this.$t('Install');
           break;
 
+        case 'reinstall':
+          this.operationDialogTitle = this.$t('Reinstall Script Set');
+          this.operationButtonTitle = this.$t('Reinstall');
+          break;
+
         case 'upgrade':
           this.operationDialogTitle = this.$t('Upgrade Script Set');
           this.operationButtonTitle = this.$t('Upgrade');
@@ -603,6 +603,10 @@ export default {
 
         case 'install':
           if (!await this.T.confirm(this.$t('Are you sure you want to install the Script Set?'))) return;
+          break;
+
+        case 'reinstall':
+          if (!await this.T.confirm(this.$t('Are you sure you want to reinstall the Script Set?'))) return;
           break;
 
         case 'upgrade':
@@ -651,6 +655,19 @@ export default {
 
           break;
 
+        case 'reinstall':
+          apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
+            params: { id: this.scriptMarket.id },
+            body  : {
+              scriptSetIds: [ this.scriptSetToOperate.id ],
+            },
+            alert : { okMessage: this.$t('Script Set reinstalled, new Script Set is in effect immediately') },
+          });
+
+          this.$store.commit('updateScriptListSyncTime');
+
+          break;
+
         case 'upgrade':
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
             params: { id: this.scriptMarket.id },
@@ -680,6 +697,7 @@ export default {
           break;
 
         case 'install':
+        case 'reinstall':
         case 'upgrade':
           skipCheckUpdate = false;
           skipLoadLocal   = false;
@@ -695,6 +713,7 @@ export default {
       // 跳转 PIP 工具
       switch(operation) {
         case 'install':
+        case 'reinstall':
         case 'upgrade':
           if (this.T.notNothing(apiRes.data.requirements)) {
             if (await this.T.confirm(this.$t('This Script Set requires 3rd party Python packages, do you want to open PIP tool now?'))) {

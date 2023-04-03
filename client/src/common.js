@@ -235,13 +235,6 @@ export function isFuncArgumentPlaceholder(v) {
   return false;
 }
 
-export function containsFuncArgumentPlaceholder(s) {
-  for (let i = 0; i < FUNC_ARGUMENT_PLACEHOLDERS.length; i++) {
-    if (s.indexOf(FUNC_ARGUMENT_PLACEHOLDERS[i]) >= 0) return true;
-  }
-  return false;
-}
-
 export function getScriptMarketLogo(scriptMarket) {
   if (scriptMarket.type === 'git') {
     try {

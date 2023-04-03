@@ -6,39 +6,32 @@ seconds: Second | Seconds
 API Example: API 调用示例
 
 Request Options: 请求选项
-Async       : 异步执行
-Save Result : 保留结果
-Func Timeout: 函数超时
-API Timeout : API 超时
+Async          : 异步执行
+Save Result    : 保留结果
+Func Timeout   : 函数超时
+API Timeout    : API 超时
 
-Build Request: 构建请求
-'HTTP Header "Content-Type" should be "application/json" when using POST'                           : 'POST请求时，"Content-Type" 应设置为 "application/json"'
-'"INPUT_BY_CALLER" is the argument of the Python function, please modify it according to your needs': '"INPUT_BY_CALLER"为 Python 函数的参数，请根据需要进行修改'
-'This Python function allows additional parameters (**kwargs syntax)'                               : '本 Python 函数允许传递额外的参数（**kwargs 语法）'
-'This Python function allows uploading files, field name of the uploading file is "files"'          : '本 Python 函数支持文件上传，文件字段名为"files"'
+Input Parameters  : 填写参数
+Calling Example   : 调用示例
+Simple GET        : GET 简化形式
+Normal GET        : GET 标准形式
+Simple POST (JSON): POST 简化形式（JSON）
+Simple POST (Form): POST 简化形式（表单）
+Normal POST       : POST 标准形式
 
-'Invalid Body content. Examples require a valid Body content': 'Body 内容填写存在错误，正确填写后将展示示例'
+'The JSON inside "kwargs" is the call parameter, modify its value and check out the calling example below': '"kwargs" 内的 JSON 即为调用参数，修改其中的值并在下方查看具体调用示例'
+'This Python function allows additional parameters (**kwargs syntax)'                                     : '本 Python 函数支持传递额外的参数（**kwargs 语法）'
+'This Python function allows uploading files, field name of the uploading file is "files"'                : '本 Python 函数支持文件上传，文件字段名为"files"'
 
-Simplified Form for GET: GET 简化形式
-'Only string arguments are allowed in this from. And parameter "options" are not supported': '此方式参数值只支持字符串，且不支持 "options" 参数'
+'Invalid Parameters. Examples require a valid Body content': '参数填写存在错误，正确填写后将展示示例'
 
-Normal Form for GET: GET 标准形式
-'Parameter "kwargs" should be URL encoded in HTTP request': '发送请求时，"kwargs" 参数需要进行 URL encode 编码'
-
-Flattened Form for GET: GET 扁平形式请求
-'Only string arguments are allowed in this from': '此方式参数值只支持字符串'
-
-Simplified Form for POST: POST 简化形式请求
+'Only string arguments are allowed in this from'                                                                                                                       : '此方式参数值只支持字符串'
+'Parameter "kwargs" should be URL encoded in HTTP request'                                                                                                             : '发送请求时，"kwargs" 参数需要进行 URL encode 编码'
 'Parameter "options" are not supported in this from'                                                                                                                   : '此方式不支持 "options" 参数'
-'When posting form data, "Content-Type" should be "multipart/form-data" or "application/x-www-form-urlencoded", and the values of the fields support string value only': '表单形式提交时，"Content-Type" 必须指定为 "multipart/form-data" 或 "application/x-www-form-urlencoded"，此时 Body 中参数值只支持字符串'
-'When posting JSON data, "Content-Type" should be "application/json", together with the Python function containing **kwargs parameter, Body can be any JSON data'      : 'JSON 形式提交时，"Content-Type" 必须指定为 "application/json"，配合包含 **kwargs 的 Python 函数，此时 Body 可以为任意 JSON 数据'
+'When posting form data, "Content-Type" should be "multipart/form-data" or "application/x-www-form-urlencoded", and the values of the fields support string value only': 'POST 表单数据时，"Content-Type" 必须指定为 "multipart/form-data" 或 "application/x-www-form-urlencoded"，此时 Body 中参数值只支持字符串'
+'When posting JSON data, "Content-Type" should be "application/json"'                                                                                                  : 'POST JSON 数据时，"Content-Type" 必须指定为 "application/json"'
 'When uploading files, "Content-Type" should be "multipart/form-data"'                                                                                                 : '上传文件时，"Content-Type" 必须指定为 "multipart/form-data"'
-
-Normal Form for POST: POST 标准形式
-'File uploading is not supported in this this form': '此方式不支持文件上传'
-
-Flattened Form for POST: POST 扁平形式请求
-'When posting data, "Content-Type" should be "multipart/form-data" or "application/x-www-form-urlencoded"': '提交数据时，"Content-Type" 可以指定为 "multipart/form-data" 或 "application/x-www-form-urlencoded"'
+'File uploading is not supported in this this form'                                                                                                                    : '此方式不支持文件上传'
 
 seconds: 秒
 </i18n>
@@ -49,10 +42,8 @@ seconds: 秒
     :visible.sync="show"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    width="750px">
+    width="850px">
     <span>
-      <span :class="descriptionClass">{{ description }}</span>
-
       <template v-if="showOptions">
         <el-divider content-position="left">{{ $t('Request Options') }}</el-divider>
         <el-form class="call-options" label-width="120px">
@@ -96,176 +87,133 @@ seconds: 秒
         </el-form>
       </template>
 
-      <el-divider content-position="left">{{ $t('Build Request') }}</el-divider>
-      <el-row :gutter="20">
-        <el-col :span="22">
-          <el-input
-            type="textarea"
-            readonly
-            autosize
-            resize="none"
-            v-model="apiURLExample">
-          </el-input>
-        </el-col>
-        <el-col :span="2">
-          <CopyButton :content="apiURLExample" />
-        </el-col>
-      </el-row>
-      <el-row :gutter="20" v-if="apiBodyExample || supportCustomKwargs">
+      <el-divider content-position="left">{{ $t('Input Parameters') }}</el-divider>
+      <el-row :gutter="20" v-if="apiBodyInput || supportCustomKwargs">
         <el-col :span="22">
           <el-input
             type="textarea"
             autosize
             resize="none"
-            v-model="apiBodyExample">
+            v-model="apiBodyInput">
           </el-input>
-          <InfoBlock type="info"
-            :title="$t('HTTP Header &quot;Content-Type&quot; should be &quot;application/json&quot; when using POST')" />
-          <InfoBlock type="info" v-if="apiBodyExample && common.containsFuncArgumentPlaceholder(apiBodyExample) >= 0"
-            :title="$t('&quot;INPUT_BY_CALLER&quot; is the argument of the Python function, please modify it according to your needs')" />
+          <InfoBlock type="info" v-if="apiBodyInput.indexOf('kwargs') >= 0"
+            :title="$t('The JSON inside &quot;kwargs&quot; is the call parameter, modify its value and check out the calling example below')" />
           <InfoBlock type="success" v-if="supportCustomKwargs"
             :title="$t('This Python function allows additional parameters (**kwargs syntax)')" />
           <InfoBlock type="success" v-if="supportFileUpload"
             :title="$t('This Python function allows uploading files, field name of the uploading file is &quot;files&quot;')" />
         </el-col>
         <el-col :span="2">
-          <CopyButton :content="apiBodyExample" />
+          <CopyButton :content="apiBodyInput" />
         </el-col>
       </el-row>
 
+      <el-divider content-position="left">{{ $t('Calling Example') }}</el-divider>
       <template v-if="!apiBody">
-        <span class="text-bad">{{ $t('Invalid Body content. Examples require a valid Body content') }}</span>
+        <span class="text-bad">{{ $t('Invalid Parameters. Examples require a valid Body content') }}</span>
       </template>
       <template v-else>
-        <template v-if="showGetExampleSimplified">
-          <el-divider content-position="left">{{ $t('Simplified Form for GET') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link v-if="stringParametersOnly"
-                type="primary" :underline="true"
-                :href="apiURLWithQueryExample_simplified"
-                target="_blank"
-                class="api-url-with-query">
-                <code v-html="apiURLWithQueryExampleText_simplified"></code>
-              </el-link>
-              <InfoBlock
-                :type="stringParametersOnly ? 'info' : 'error'"
-                :title="$t('Only string arguments are allowed in this from. And parameter &quot;options&quot; are not supported')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton v-if="stringParametersOnly"
-                :content="apiURLWithQueryExample_simplified" />
-            </el-col>
-          </el-row>
-        </template>
+        <!-- GET 方式 -->
+        <template v-if="showGet">
+          <el-tabs tab-position="top">
+            <el-tab-pane :label="$t('Simple GET')">
+              <el-row :gutter="20">
+                <el-col :span="22">
+                  <el-link v-if="onlyStringParameter"
+                    :href="getExample('simplified')"
+                    :underline="true"
+                    type="primary"
+                    target="_blank"
+                    class="get-example">
+                    <code v-html="getExample('simplified', { asHTML: true, decodeURL: true })"></code>
+                  </el-link>
+                  <InfoBlock
+                    :type="onlyStringParameter ? 'info' : 'error'"
+                    :title="$t('Only string arguments are allowed in this from')" />
+                  <InfoBlock v-if="showOptions" :title="$t('Parameter &quot;options&quot; are not supported in this from')" />
+                </el-col>
+                <el-col :span="2">
+                  <CopyButton v-if="onlyStringParameter" :content="getExample('simplified')" />
+                </el-col>
+              </el-row>
+            </el-tab-pane>
 
-        <template v-if="showGetExample">
-          <el-divider content-position="left">{{ $t('Normal Form for GET') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link
-                type="primary" :underline="true"
-                :href="apiURLWithQueryExample"
-                target="_blank"
-                class="api-url-with-query">
-                <code v-html="apiURLWithQueryExampleText"></code>
-              </el-link>
-              <InfoBlock type="info" :title="$t('Parameter &quot;kwargs&quot; should be URL encoded in HTTP request')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiURLWithQueryExample" />
-            </el-col>
-          </el-row>
-        </template>
+            <el-tab-pane :label="$t('Normal GET')">
+              <el-row :gutter="20">
+                <el-col :span="22">
+                  <el-link
+                    :href="getExample('normal')"
+                    :underline="true"
+                    type="primary"
+                    target="_blank"
+                    class="get-example">
+                    <code v-html="getExample('normal', { asHTML: true, decodeURL: true })"></code>
+                  </el-link>
+                  <br>
+                  <InfoBlock type="info" :title="$t('Parameter &quot;kwargs&quot; should be URL encoded in HTTP request')" />
+                </el-col>
+                <el-col :span="2">
+                  <CopyButton :content="getExample('normal')" />
+                </el-col>
+              </el-row>
+            </el-tab-pane>
 
-        <template v-if="showGetExampleFlattened">
-          <el-divider content-position="left">{{ $t('Flattened Form for GET') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-link v-if="stringParametersOnly"
-                type="primary" :underline="true"
-                :href="apiURLWithQueryExample_flattened"
-                target="_blank"
-                class="api-url-with-query">
-                <code v-html="apiURLWithQueryExampleText_flattened"></code>
-              </el-link>
-              <InfoBlock
-                :type="stringParametersOnly ? 'info' : 'error'"
-                :title="$t('Only string arguments are allowed in this from')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton v-if="stringParametersOnly"
-                :content="apiURLWithQueryExample_flattened" />
-            </el-col>
-          </el-row>
-        </template>
+            <el-tab-pane :label="$t('Simple POST (JSON)')">
+              <el-row :gutter="20">
+                <el-col :span="22">
+                  <el-input
+                    :value="postExample('simplified', { contentType: 'json' })"
+                    :autosize="{ minRows: 6 }"
+                    type="textarea"
+                    resize="none"
+                    readonly></el-input>
+                  <InfoBlock type="info" :title="$t('When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;')" />
+                  <InfoBlock v-if="showOptions" :title="$t('Parameter &quot;options&quot; are not supported in this from')" />
+                </el-col>
+                <el-col :span="2">
+                  <CopyButton :content="postExample('simplified', { contentType: 'json', oneLine: true })" />
+                </el-col>
+              </el-row>
+            </el-tab-pane>
 
-        <template v-if="showPostExampleSimplified">
-          <el-divider content-position="left">{{ $t('Simplified Form for POST') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-input v-if="stringParametersOnly"
-                type="textarea"
-                readonly
-                autosize
-                resize="none"
-                :value="apiCallByCurlExample_simplified"></el-input>
-              <InfoBlock
-                :type="stringParametersOnly ? 'info' : 'error'"
-                :title="$t('Parameter &quot;options&quot; are not supported in this from')" />
-              <InfoBlock type="info" :title="$t('When posting form data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;, and the values of the fields support string value only')" />
-              <InfoBlock type="info" :title="$t('When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;, together with the Python function containing **kwargs parameter, Body can be any JSON data')" />
-              <InfoBlock type="info" :title="$t('When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton v-if="stringParametersOnly"
-                :content="apiCallByCurlExample_simplified" />
-            </el-col>
-          </el-row>
-        </template>
+            <el-tab-pane :label="$t('Simple POST (Form)')">
+              <el-row :gutter="20">
+                <el-col :span="22">
+                  <el-input
+                    :value="postExample('simplified', { contentType: 'form' })"
+                    :autosize="{ minRows: 6 }"
+                    type="textarea"
+                    resize="none"
+                    readonly></el-input>
+                  <InfoBlock type="info" :title="$t('When posting form data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;, and the values of the fields support string value only')" />
+                  <InfoBlock v-if="supportFileUpload" type="warning" :title="$t('When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;')" />
+                  <InfoBlock v-if="showOptions" type="error" :title="$t('Parameter &quot;options&quot; are not supported in this from')" />
+                </el-col>
+                <el-col :span="2">
+                  <CopyButton v-if="onlyStringParameter" :content="postExample('simplified', { contentType: 'form', oneLine: true })" />
+                </el-col>
+              </el-row>
+            </el-tab-pane>
 
-        <template v-if="showPostExample">
-          <el-divider content-position="left">{{ $t('Normal Form for POST') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-input
-                type="textarea"
-                readonly
-                autosize
-                resize="none"
-                :value="apiCallByCurlExample">
-              </el-input>
-              <InfoBlock type="info" :title="$t('File uploading is not supported in this this form')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton :content="apiCallByCurlExample" />
-            </el-col>
-          </el-row>
-        </template>
+            <el-tab-pane :label="$t('Normal POST')">
+              <el-row :gutter="20">
+                <el-col :span="22">
+                  <el-input
+                    :value="postExample('normal')"
+                    :autosize="{ minRows: 6 }"
+                    type="textarea"
+                    resize="none"
+                    readonly></el-input>
+                  <InfoBlock type="info" :title="$t('When posting JSON data, &quot;Content-Type&quot; should be &quot;application/json&quot;')" />
+                  <InfoBlock v-if="supportFileUpload" type="error" :title="$t('File uploading is not supported in this this form')" />
+                </el-col>
+                <el-col :span="2">
+                  <CopyButton :content="postExample('normal', { oneLine: true })" />
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+          </el-tabs>
 
-        <template v-if="showPostExampleFlattened">
-          <el-divider content-position="left">{{ $t('Flattened Form for POST') }}</el-divider>
-          <el-row :gutter="20">
-            <el-col :span="22">
-              <el-input
-                v-if="stringParametersOnly"
-                type="textarea"
-                readonly
-                autosize
-                resize="none"
-                :value="apiCallByCurlExample_flattened">
-              </el-input>
-              <InfoBlock
-                :type="stringParametersOnly ? 'info' : 'error'"
-                :title="$t('Only string arguments are allowed in this from')" />
-              <InfoBlock type="info" :title="$t('When posting data, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot; or &quot;application/x-www-form-urlencoded&quot;')" />
-              <InfoBlock type="info" :title="$t('When uploading files, &quot;Content-Type&quot; should be &quot;multipart/form-data&quot;')" />
-            </el-col>
-            <el-col :span="2">
-              <CopyButton v-if="stringParametersOnly"
-                :content="apiCallByCurlExample_flattened" />
-            </el-col>
-          </el-row>
         </template>
       </template>
     </span>
@@ -332,189 +280,152 @@ export default {
     washAPIBody(apiBody) {
       apiBody = this.T.jsonCopy(apiBody);
 
-      if (this.T.isNothing(apiBody)) {
-        return apiBody;
-      }
+      if (this.T.isNothing(apiBody)) return apiBody;
 
-      if (this.T.notNothing(apiBody.kwargs)) {
-        for (let k in apiBody.kwargs) {
-          // 不展示**kwargs、files
-          if (k.indexOf('**') === 0 || k === 'files') {
-            delete apiBody.kwargs[k];
-          }
-        }
-      }
-
+      // 无任何参数
       if (this.T.isNothing(apiBody.kwargs) && !this.supportCustomKwargs) {
         delete apiBody.kwargs;
       }
+
+      // 无任何调用选项
       if (this.T.isNothing(apiBody.options)) {
         delete apiBody.options;
       }
+
+      // 不展示 **kwargs、files
+      if (this.T.notNothing(apiBody.kwargs)) {
+        for (let k in apiBody.kwargs) {
+          if (k.indexOf('**') === 0 || k === 'files') delete apiBody.kwargs[k];
+        }
+      }
+
       return apiBody;
     },
-    update(apiURLExample, apiBodyExample, funcKwargs) {
-      apiBodyExample         = apiBodyExample         || {};
-      apiBodyExample.kwargs  = apiBodyExample.kwargs  || {};
-      apiBodyExample.options = apiBodyExample.options || {};
-      funcKwargs             = funcKwargs             || {};
 
-      // 初始化
-      this.supportFileUpload   = false;
-      this.supportCustomKwargs = false;
+    update(apiURL, apiBody, funcKwargs) {
+      apiBody         = apiBody         || {};
+      apiBody.kwargs  = apiBody.kwargs  || {};
+      apiBody.options = apiBody.options || {};
+
+      this.apiKwargs  = this.T.jsonCopy(apiBody.kwargs);
+      this.funcKwargs = this.T.jsonCopy(funcKwargs) || {};
+
+      // 默认调用配置
       for (let k in this.callOptions) {
         this.callOptions[k] = this.DEFAULT_CALL_OPTIONS[k];
       }
 
-      // 判断是否支持上传文件
-      if (apiBodyExample.kwargs.files) {
-        this.supportFileUpload = this.common.isFuncArgumentPlaceholder(apiBodyExample.kwargs.files);
+      // 准备请求体
+      apiBody = this.washAPIBody(apiBody);
+
+      let apiBodyInput = ''
+      if (this.T.notNothing(apiBody)) {
+        apiBodyInput = JSON.stringify(apiBody, null, 2);
       }
 
-      // 判断是否支持额外参数
-      for (let k in funcKwargs) {
-        if (k.indexOf('**') === 0) {
-          this.supportCustomKwargs = true;
-          break;
-        }
-      }
-
-      // 清洗apiBodyExample
-      apiBodyExample = this.washAPIBody(apiBodyExample);
-      if (this.T.isNothing(apiBodyExample)) {
-        apiBodyExample = '';
-      } else {
-        apiBodyExample = JSON.stringify(apiBodyExample, null, 2);
-      }
-
-      this.apiURLExample  = apiURLExample;
-      this.apiBodyExample = apiBodyExample;
+      this.apiURL       = apiURL;
+      this.apiBodyInput = apiBodyInput;
 
       this.show = true;
     },
 
-    getAPIURLWithQueryExample(format, asText, decodeURL) {
+    getExample(format, opt) {
       if (!this.apiBody) return null;
-      let apiBody = this.washAPIBody(this.apiBody);
 
       format = format || 'normal';
-      asText = asText || false;
+
+      opt = opt || {};
+      opt.asHTML    = opt.asHTML    || false;
+      opt.decodeURL = opt.decodeURL || false;
+
+      let body = this.washAPIBody(this.apiBody) || {};
 
       let url   = null;
       let query = {};
       switch(format) {
+        // 标准形式
         case 'normal':
-          query = apiBody || query;
-          url = this.T.formatURL(this.apiURLExample, {query: query});
+          query = body || query;
+          url = this.T.formatURL(this.apiURL, { query: query });
           break;
 
+        // 简化形式
         case 'simplified':
-          if (apiBody && apiBody.kwargs) {
-            query = apiBody.kwargs || query;
-          }
-          url = this.T.formatURL(`${this.apiURLExample}/simplified`, {query: query});
-          break;
-
-        case 'flattened':
-          if (apiBody) {
-            if (apiBody.kwargs) {
-              for (let k in apiBody.kwargs) {
-                query[`kwargs_${k}`] = apiBody.kwargs[k];
-              }
-            }
-
-            if (apiBody.options) {
-              for (let k in apiBody.options) {
-                query[`options_${k}`] = apiBody.options[k];
-              }
-            }
-          }
-          url = this.T.formatURL(`${this.apiURLExample}/flattened`, {query: query});
+          query = body.kwargs || query;
+          url = this.T.formatURL(this.apiURL_simplified, { query: query });
           break;
       }
 
-      if (asText) {
-        url = this.prettyURLForHTML(url);
-      }
+      if (opt.asHTML)    url = this.prettyURLForHTML(url);
+      if (opt.decodeURL) url = decodeURIComponent(url);
 
-      if (decodeURL) {
-        url = decodeURIComponent(url);
-      }
       return url;
     },
-    getAPICallByCurlPostExample(format) {
+    postExample(format, opt) {
       if (!this.apiBody) return null;
-      let apiBody = this.washAPIBody(this.apiBody);
 
       format = format || 'normal';
 
-      let url       = '';
-      let headerOpt = '';
-      let dataOpt   = '';
+      opt = opt || {};
+      opt.oneLine     = opt.oneLine     || false;
+      opt.contentType = opt.contentType || 'json';
+
+      let body = this.washAPIBody(this.apiBody) || {};
+
+      let url = null;
+      let shellNewLine = `\\\n`;
+      let cURLOpts = [`curl`, shellNewLine, `-X`, `POST`, shellNewLine ];   // 示例仅限 cURL
 
       switch(format) {
+        // 标准形式
         case 'normal':
-          url = this.apiURLExample;
-          headerOpt = `-H "Content-Type: application/json"`;
-
-          if (this.T.notNothing(apiBody)) {
-            dataOpt = `-d '${JSON.stringify(apiBody)}'`;
+          if (this.T.notNothing(body)) {
+            cURLOpts.push(`-H`, `"Content-Type: application/json"`, shellNewLine);
+            cURLOpts.push(`-d`, `'${JSON.stringify(body)}'`, shellNewLine);
           }
-
+          cURLOpts.push(this.apiURL);
           break;
 
+        // 简化形式
         case 'simplified':
-          url = `${this.apiURLExample}/${format}`;
+          // 请求体
+          if (this.T.notNothing(body.kwargs)) {
+            switch(opt.contentType) {
+              case 'json':
+                cURLOpts.push(`-H`, `"Content-Type: application/json"`, shellNewLine);
+                cURLOpts.push(`-d`, `'${JSON.stringify(body.kwargs)}'`, shellNewLine);
+                break;
 
+              case 'form':
+                if (this.supportFileUpload) {
+                  cURLOpts.push(`-H`, `"Content-Type: multipart/form-data"`, shellNewLine);
+                  for (let k in body.kwargs) {
+                    cURLOpts.push(`-F`, `'${k}=${body.kwargs[k]}'`, shellNewLine);
+                  }
+
+                } else {
+                  cURLOpts.push(`-H`, `"Content-Type: application/x-www-form-urlencoded"`, shellNewLine);
+                  cURLOpts.push(`-d`, `'${this.T.formatQuery(body.kwargs)}'`, shellNewLine);
+                }
+                break;
+            }
+          }
+
+          // 上传文件
           if (this.supportFileUpload) {
-            headerOpt = `-H "Content-Type: multipart/form-data"`;
-
-            if (this.T.notNothing(apiBody.kwargs)) {
-              for (let k in apiBody.kwargs) {
-                dataOpt += ` -F '${k}=${apiBody.kwargs[k]}'`;
-              }
-            }
-            dataOpt += ` -F files=@FILE_TO_UPLOAD`;
-
-          } else {
-            headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
-
-            if (this.T.notNothing(apiBody.kwargs)) {
-              dataOpt += ` -d '${this.T.formatQuery(apiBody.kwargs)}'`;
-            }
+            cURLOpts.push(`-F`, `files=@UPLOAD_FILE_PATH`, shellNewLine);
           }
 
-          break;
-
-        case 'flattened':
-          url = `${this.apiURLExample}/${format}`;
-          headerOpt = `-H "Content-Type: application/x-www-form-urlencoded"`;
-
-          if (this.T.notNothing(apiBody.kwargs)) {
-            for (let k in apiBody.kwargs) {
-              dataOpt += ` -F kwargs_${k}=${apiBody.kwargs[k]}`;
-            }
-          }
-
-          if (this.T.notNothing(apiBody.options)) {
-            for (let k in apiBody.options) {
-              dataOpt += ` -F options_${k}=${apiBody.options[k]}`;
-            }
-          }
-
-          if (this.supportFileUpload) {
-            dataOpt += ` -F kwargs_files=@FILE_TO_UPLOAD`;
-          }
-
+          cURLOpts.push(this.apiURL_simplified);
           break;
       }
 
-      let curlCmd = 'curl -X POST';
-      if (headerOpt) curlCmd += ` ${headerOpt.trim()}`;
-      if (dataOpt)   curlCmd += ` ${dataOpt.trim()}`;
-      if (url)       curlCmd += ` ${url.trim()}`;
+      if (opt.oneLine) {
+        cURLOpts = cURLOpts.filter(item => item !== shellNewLine);
+      }
 
-      return curlCmd;
+      let cURLCmd = cURLOpts.join(' ');
+      return cURLCmd;
     },
   },
   computed: {
@@ -532,50 +443,32 @@ export default {
           || this.showTimeoutOption
           || this.showAPITimeoutOption;
     },
+    showGet() {
+      return this.showGetExample
+          || this.showGetExampleSimplified;
+    },
+    showPost() {
+      return this.showPostExample
+          || this.showPostExampleSimplified;
+    },
 
+    apiURL_simplified() {
+      return `${this.apiURL}/simplified`;
+    },
     apiBody() {
-      if (!this.apiBodyExample) return {};
+      if (!this.apiBodyInput) return {};
 
-      let apiBody = null;
+      let obj = null;
       try {
-        apiBody = JSON.parse(this.apiBodyExample);
+        obj = JSON.parse(this.apiBodyInput);
       } catch(err) {
         // 无法解析JSON
         return null;
       }
 
-      return apiBody;
+      return obj;
     },
-    apiURLWithQueryExample() {
-      return this.getAPIURLWithQueryExample('normal');
-    },
-    apiURLWithQueryExample_flattened() {
-      return this.getAPIURLWithQueryExample('flattened');
-    },
-    apiURLWithQueryExample_simplified() {
-      return this.getAPIURLWithQueryExample('simplified');
-    },
-    apiURLWithQueryExampleText() {
-      return this.getAPIURLWithQueryExample('normal', true, true);
-    },
-    apiURLWithQueryExampleText_simplified() {
-      return this.getAPIURLWithQueryExample('simplified', true, true);
-    },
-    apiURLWithQueryExampleText_flattened() {
-      return this.getAPIURLWithQueryExample('flattened', true, true);
-    },
-
-    apiCallByCurlExample() {
-      return this.getAPICallByCurlPostExample('normal');
-    },
-    apiCallByCurlExample_simplified() {
-      return this.getAPICallByCurlPostExample('simplified');
-    },
-    apiCallByCurlExample_flattened() {
-      return this.getAPICallByCurlPostExample('flattened');
-    },
-
-    stringParametersOnly() {
+    onlyStringParameter() {
       if (!this.apiBody) return false;
 
       let kwargs = this.apiBody.kwargs || {};
@@ -585,11 +478,23 @@ export default {
 
       return true;
     },
+    supportFileUpload() {
+      if (this.apiKwargs && this.apiKwargs.files) {
+        return this.common.isFuncArgumentPlaceholder(this.apiKwargs.files);
+      }
+      return false;
+    },
+    supportCustomKwargs() {
+      if (this.funcKwargs) {
+        for (let k in this.funcKwargs) {
+          if (k.indexOf('**') === 0) return true;
+        }
+      }
+      return false;
+    },
   },
   props: {
-    title           : String,
-    description     : String,
-    descriptionClass: Object,
+    title: String,
 
     showExecModeOption: {
       type: Boolean,
@@ -616,10 +521,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    showGetExampleFlattened: {
-      type: Boolean,
-      default: false,
-    },
     showPostExample: {
       type: Boolean,
       default: true,
@@ -628,21 +529,15 @@ export default {
       type: Boolean,
       default: false,
     },
-    showPostExampleFlattened: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
       show: false,
 
-      supportFileUpload  : false,
-      supportCustomKwargs: false,
-
-      apiURLExample : null,
-      apiBodyExample: null,
-      funcKwargs    : null,
+      apiURL      : null,
+      apiBodyInput: null,
+      apiKwargs   : null,
+      funcKwargs  : null,
 
       callOptions: {
         execMode  : null,
@@ -652,12 +547,18 @@ export default {
       }
     }
   },
+  mounted() {
+    window.vmc = this;
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.api-url-with-query .el-link--inner {
+.get-example {
+  margin-bottom: 20px;
+}
+.get-example .el-link--inner {
   padding: 0 5px;
 }
 .call-options .el-form-item {

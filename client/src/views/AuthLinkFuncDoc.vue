@@ -6,8 +6,6 @@ Throttling: 限流
 
 Python functions that can be called externally: 可被外部调用的 Python 函数
 Press {0} to search: 按 {0} 开始搜索
-
-Auth Link only supports synchronous calling: 授权链接只支持同步调用
 </i18n>
 
 <template>
@@ -126,7 +124,6 @@ Auth Link only supports synchronous calling: 授权链接只支持同步调用
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        :description="$t('Auth Link only supports synchronous calling')"
         :showPostExample="true"
         :showPostExampleSimplified="true"
         :showGetExample="true"
@@ -165,10 +162,8 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes || !apiRes.ok) return;
 
-      let funcKwargs = apiRes.data.kwargsJSON;
-
       // 生成API请求示例
-      let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
+      let apiURL = this.T.formatURL('/api/v1/al/:id', {
         baseURL: true,
         params : { id: d.id },
       });
@@ -179,9 +174,10 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = { kwargs: funcCallKwargsJSON };
+      let apiBody = { kwargs: funcCallKwargsJSON };
+      let funcKwargs = apiRes.data.kwargsJSON;
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
+      this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
   },
   computed: {

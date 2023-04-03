@@ -1188,10 +1188,8 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes || !apiRes.ok) return;
 
-      let funcKwargs = apiRes.data.kwargsJSON;
-
       // 生成API请求示例
-      let apiURLExample = this.T.formatURL(urlPattern, {
+      let apiURL = this.T.formatURL(urlPattern, {
         baseURL: true,
         params : { id: d.id },
       });
@@ -1202,9 +1200,10 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = { kwargs: funcCallKwargsJSON };
+      let apiBody = { kwargs: funcCallKwargsJSON };
+      let funcKwargs = apiRes.data.kwargsJSON;
 
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
+      this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
     async runCrontabTask(d) {
       if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Config manually?'))) return;

@@ -97,6 +97,7 @@ en:
   Zip     : 压缩
   Unzip   : 解压
   Install : 安装
+  Reinstall: 重新安装
   Upgrade : 升级
   More    : 更多
   Filter  : 过滤
@@ -149,6 +150,7 @@ en:
   zip     : 压缩
   unzip   : 解压
   install : 安装
+  reinstall: 重新安装
   upgrade : 升级
   more    : 更多
   filter  : 过滤

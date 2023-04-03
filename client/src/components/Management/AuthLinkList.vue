@@ -38,7 +38,6 @@ Auth Link deleted : 授权链接已删除
 
 Show all contents: 展示全部内容
 No Auth Link has ever been added: 从未添加过任何授权链接
-Auth Link only supports synchronous calling: 授权链接只支持同步调用
 
 Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链接？
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
@@ -256,7 +255,6 @@ you must first create an Auth Link for the Python function and access the Python
       <Pager :pageInfo="pageInfo" />
 
       <APIExampleDialog ref="apiExampleDialog"
-        :description="$t('Auth Link only supports synchronous calling')"
         :showPostExample="true"
         :showPostExampleSimplified="true"
         :showGetExample="true"
@@ -388,10 +386,8 @@ export default {
       let apiRes = await this.T.callAPI_getOne('/api/v1/funcs/do/list', d.funcId);
       if (!apiRes || !apiRes.ok) return;
 
-      let funcKwargs = apiRes.data.kwargsJSON;
-
       // 生成API请求示例
-      let apiURLExample = this.T.formatURL('/api/v1/al/:id', {
+      let apiURL = this.T.formatURL('/api/v1/al/:id', {
         baseURL: true,
         params : { id: d.id },
       });
@@ -402,10 +398,12 @@ export default {
           funcCallKwargsJSON[k] = d.funcCallKwargsJSON[k];
         }
       }
-      let apiBodyExample = { kwargs: funcCallKwargsJSON };
+      let apiBody = { kwargs: funcCallKwargsJSON };
+      let funcKwargs = apiRes.data.kwargsJSON;
+
+      this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$refs.apiExampleDialog.update(apiURLExample, apiBodyExample, funcKwargs);
     },
     getCostClass(cost) {
       if (cost < 3000) {

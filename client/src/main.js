@@ -27,17 +27,18 @@ Vue.component('split-pane', splitPane);
 // import '@/theme/element-#FF6600/index.css'
 import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
-ElementUI.Tooltip.props.transition.default = false;
-ElementUI.Popover.props.transition.default = false;
-ElementUI.Popover.props.openDelay.default  = 100;
-ElementUI.Popover.props.closeDelay.default = 100;
-ElementUI.Link.props.underline.default     = true;
-ElementUI.Link.props.type.default          = 'primary';
-ElementUI.Form.props.validateOnRuleChange  = false;
-ElementUI.Dialog.props.modalAppendToBody   = true;
-ElementUI.Dialog.props.appendToBody        = true;
+ElementUI.Tooltip.props.transition.default        = false;
+ElementUI.Popover.props.transition.default        = false;
+ElementUI.Popover.props.openDelay.default         = 100;
+ElementUI.Popover.props.closeDelay.default        = 100;
+ElementUI.Link.props.underline.default            = true;
+ElementUI.Link.props.type.default                 = 'primary';
+ElementUI.Form.props.validateOnRuleChange.default = false;
+ElementUI.Dialog.props.modalAppendToBody.default  = true;
+ElementUI.Dialog.props.appendToBody.default       = true;
+ElementUI.Dialog.props.top.default                = '10vh';
 Vue.use(ElementUI);
-
+window.ElementUI = ElementUI
 // 国际化
 import VueI18n from 'vue-i18n'
 Vue.use(VueI18n);
