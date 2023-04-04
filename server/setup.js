@@ -23,6 +23,9 @@ var UPGRADE_INFO = null;
 var IMAGE_INFO   = require('../image-info.json');
 
 var INSTALL_CHECKER_INTERVAL         = 3 * 1000;
+var ADMIN_USER_ID                    = 'u-admin';
+var ADMIN_DEFUALT_USERNAME           = 'admin';
+var ADMIN_DEFUALT_PASSWORD           = 'admin';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ     = 'UPGRADE_DB_SEQ';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD = 'upgrade.db.upgradeSeq';
 
@@ -52,16 +55,31 @@ SetupErrorWrap.prototype.toJSON = function() {
   return this.errors;
 };
 
-function _doInstall(config, callback) {
-  var config = toolkit.jsonCopy(config);
+function _doSetup(userConfig, callback) {
+  var userConfig = toolkit.jsonCopy(userConfig);
 
-  var adminUserId         = 'u-admin';
-  var adminUsername       = config.ADMIN_USERNAME;
-  var adminPassword       = config.ADMIN_PASSWORD;
-  var adminPasswordRepeat = config.ADMIN_PASSWORD_REPEAT;
-  delete config.ADMIN_USERNAME;
-  delete config.ADMIN_PASSWORD;
-  delete config.ADMIN_PASSWORD_REPEAT;
+  var adminUsername       = null;
+  var adminPassword       = null;
+  var adminPasswordRepeat = null;
+
+  if (userConfig.ADMIN_USERNAME) {
+    // 手动初始化
+    adminUsername       = userConfig.ADMIN_USERNAME;
+    adminPassword       = userConfig.ADMIN_PASSWORD;
+    adminPasswordRepeat = userConfig.ADMIN_PASSWORD_REPEAT;
+
+  } else if (userConfig.AUTO_SETUP_ADMIN_USERNAME) {
+    // 自动初始化
+    adminUsername       = userConfig.AUTO_SETUP_ADMIN_USERNAME;
+    adminPassword       = userConfig.AUTO_SETUP_ADMIN_PASSWORD;
+    adminPasswordRepeat = userConfig.AUTO_SETUP_ADMIN_PASSWORD;
+
+  } else {
+    // 默认初始化
+    adminUsername       = ADMIN_DEFUALT_USERNAME;
+    adminPassword       = ADMIN_DEFUALT_PASSWORD;
+    adminPasswordRepeat = ADMIN_DEFUALT_PASSWORD;
+  }
 
   // 错误包装
   var setupErrorWrap = new SetupErrorWrap();
@@ -86,14 +104,14 @@ function _doInstall(config, callback) {
     // Check MySQL, version
     function(asyncCallback) {
       try {
-        var _config = {
-          host    : config.MYSQL_HOST,
-          port    : config.MYSQL_PORT,
-          user    : config.MYSQL_USER,
-          password: config.MYSQL_PASSWORD,
-          database: config.MYSQL_DATABASE,
+        var mysqlConfig = {
+          host    : userConfig.MYSQL_HOST,
+          port    : userConfig.MYSQL_PORT,
+          user    : userConfig.MYSQL_USER,
+          password: userConfig.MYSQL_PASSWORD,
+          database: userConfig.MYSQL_DATABASE,
         }
-        dbHelper = mysqlHelper.createHelper(null, _config);
+        dbHelper = mysqlHelper.createHelper(null, mysqlConfig);
         dbHelper.skipLog = true;
 
         dbHelper.query('SELECT VERSION() AS ver', null, function(err, data) {
@@ -140,12 +158,12 @@ function _doInstall(config, callback) {
     // Check Redis
     function(asyncCallback) {
       try {
-        var _config = {
-          host    : config.REDIS_HOST,
-          port    : config.REDIS_PORT,
-          password: config.REDIS_PASSWORD,
-          db      : config.REDIS_DATABASE || 0,
-          useTLS  : config.REDIS_USE_TLS  || false,
+        var redisConfig = {
+          host    : userConfig.REDIS_HOST,
+          port    : userConfig.REDIS_PORT,
+          password: userConfig.REDIS_PASSWORD,
+          db      : userConfig.REDIS_DATABASE || 0,
+          useTLS  : userConfig.REDIS_USE_TLS  || false,
 
           disableRetry: true,
           errorCallback(err) {
@@ -156,7 +174,7 @@ function _doInstall(config, callback) {
             }
           }
         }
-        cacheHelper = redisHelper.createHelper(null, _config);
+        cacheHelper = redisHelper.createHelper(null, redisConfig);
         cacheHelper.skipLog = true;
 
         cacheHelper.run('info', 'server', function(err, data) {
@@ -206,11 +224,38 @@ function _doInstall(config, callback) {
     function(asyncCallback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
 
-      var sql = 'INSERT INTO `wat_main_system_config` SET `id` = ?, `value` = ?';
-      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ, UPGRADE_INFO[UPGRADE_INFO.length - 1].seq];
+      var sql = 'INSERT INTO `wat_main_system_config` SET ?';
+      var sqlParams = [
+        {
+          id   : SYS_CONFIG_ID_UPGRADE_DB_SEQ,
+          value: UPGRADE_INFO[UPGRADE_INFO.length - 1].seq,
+        }
+      ];
       dbHelper.query(sql, sqlParams, function(err, data) {
         if (err) {
           setupErrorWrap.set('mysqlInit', 'Initializing system configs failed', err);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // Auto Setup Init AK
+    function(asyncCallback) {
+      if (setupErrorWrap.hasError()) return asyncCallback();
+      if (!userConfig.AUTO_SETUP_AK_ID || !userConfig.AUTO_SETUP_AK_SECRET) return asyncCallback();
+
+      var sql = 'INSERT INTO `wat_main_access_key` SET ?';
+      var sqlParams = [
+        {
+          id    : userConfig.AUTO_SETUP_AK_ID,
+          userId: ADMIN_USER_ID,
+          name  : 'Auto Setup Init AK',
+          secret: userConfig.AUTO_SETUP_AK_SECRET,
+        }
+      ];
+      dbHelper.query(sql, sqlParams, function(err, data) {
+        if (err) {
+          setupErrorWrap.set('akInit', 'Initializing AccessKey failed', err);
         }
 
         return asyncCallback();
@@ -221,7 +266,7 @@ function _doInstall(config, callback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
 
       var adminPasswordHash = toolkit.getSaltedPasswordHash(
-          adminUserId, adminPassword, config.SECRET);
+          ADMIN_USER_ID, adminPassword, userConfig.SECRET);
 
       var sql = 'UPDATE `wat_main_user` SET ? WHERE `id` = ?';
       var sqlParams = [
@@ -229,7 +274,7 @@ function _doInstall(config, callback) {
           username    : adminUsername,
           passwordHash: adminPasswordHash,
         },
-        adminUserId,
+        ADMIN_USER_ID,
       ]
       dbHelper.query(sql, sqlParams, function(err, data) {
         if (err) {
@@ -244,23 +289,32 @@ function _doInstall(config, callback) {
 
     if (setupErrorWrap.hasError()) return callback(setupErrorWrap);
 
-    // Write config file
-    Object.assign(USER_CONFIG, config)
+    // Merge to user config
+    Object.assign(USER_CONFIG, userConfig);
     USER_CONFIG._IS_INSTALLED = true;
+
+    delete USER_CONFIG.ADMIN_USERNAME;
+    delete USER_CONFIG.ADMIN_PASSWORD;
+    delete USER_CONFIG.ADMIN_PASSWORD_REPEAT;
+    delete USER_CONFIG.AUTO_SETUP
+    delete USER_CONFIG.AUTO_SETUP_ADMIN_USERNAME
+    delete USER_CONFIG.AUTO_SETUP_ADMIN_PASSWORD
+    delete USER_CONFIG.AUTO_SETUP_AK_ID
+    delete USER_CONFIG.AUTO_SETUP_AK_SECRET
 
     fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
-    console.log('App setup');
+    console.log('DataFlux Func Installed.');
 
     // Response for redirection
-    var redirectURL = config.WEB_BASE_URL || CONFIG.WEB_BASE_URL || null;
+    var redirectURL = userConfig.WEB_BASE_URL || CONFIG.WEB_BASE_URL || null;
     return callback(null, redirectURL);
   });
 };
 
-function runInstallationServer() {
+function runSetupServer() {
   /*
-    安装向导为一个单页面应用，在服务器应用之前启动
+    配置向导为一个单页面应用，在服务器应用之前启动
     用户确认配置信息后，应用将配置写入`user-config.yaml`文件中并退出
     随后服务器应用启动
 
@@ -271,7 +325,7 @@ function runInstallationServer() {
   var installCheckerT = null;
   function installChecker() {
     // 每次都需要重新加载配置文件，检查是否已安装
-    yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config) {
+    yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, config) {
       if (err) {
         console.log(err);
 
@@ -279,16 +333,16 @@ function runInstallationServer() {
         return process.exit(1);
       }
 
-      if (!_config._IS_INSTALLED) {
-        console.log('Waiting for setup.');
+      if (!config._IS_INSTALLED) {
+        console.log('Waiting for installation.');
         return;
       }
 
-      console.log('Other process finished setup.');
+      console.log('Other process finished installation.');
 
       if (installCheckerT) clearInterval(installCheckerT);
 
-      // 退出安装程序，执行后一个程序
+      // 退出配置程序，执行后一个程序
       return process.exit(0);
     });
   };
@@ -311,9 +365,9 @@ function runInstallationServer() {
     var defaultConfig = toolkit.jsonCopy(CONFIG);
 
     // 默认管理员用户/密码
-    defaultConfig['ADMIN_USERNAME']        = 'admin';
-    defaultConfig['ADMIN_PASSWORD']        = 'admin';
-    defaultConfig['ADMIN_PASSWORD_REPEAT'] = 'admin';
+    defaultConfig['ADMIN_USERNAME']        = ADMIN_DEFUALT_USERNAME;
+    defaultConfig['ADMIN_PASSWORD']        = ADMIN_DEFUALT_PASSWORD;
+    defaultConfig['ADMIN_PASSWORD_REPEAT'] = ADMIN_DEFUALT_PASSWORD;
 
     res.render('setup', { CONFIG: defaultConfig, IMAGE_INFO: IMAGE_INFO });
   });
@@ -322,9 +376,9 @@ function runInstallationServer() {
   app.use(bodyParser.json({limit: '1mb'}));
   app.post('/setup', function(req, res, next) {
     // 配置来自接口调用上报
-    var config = req.body.config || {};
+    var userConfig = req.body.userConfig || {};
 
-    _doInstall(config, function(setupErrorWrap, redirectURL) {
+    _doSetup(userConfig, function(setupErrorWrap, redirectURL) {
       if (setupErrorWrap && setupErrorWrap.hasError()) {
         res.status(400);
         return res.send({ setupErrors: setupErrorWrap.toJSON() });
@@ -352,7 +406,7 @@ function runInstallationServer() {
   };
   server.listen(listenOpt, function() {
     // Print some message of the server
-    console.log(toolkit.strf('Installation Server is listening on {0}  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
+    console.log(toolkit.strf('Setup Server is listening on {0}  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
   });
 }
 
@@ -499,7 +553,7 @@ function runUpgrade() {
   });
 }
 
-// Load extra YAML resources and run install
+// Load extra YAML resources and run
 yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _config, _userConfig) {
   if (err) throw err;
 
@@ -515,21 +569,37 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
   var callback = null;
 
-  if (CONFIG._DISABLE_SETUP) {
-    console.log('Installation disabled, skip.');
+  if (CONFIG._SKIP_SETUP) {
+    console.log('Setup Sskipped...');
     return process.exit(0);
   }
 
   if (!CONFIG._IS_INSTALLED) {
-    // 运行安装服务器，并提供配置页面
-    console.log('Start setup guide...')
-    callback = runInstallationServer;
+    // 尚未安装
+
+    if (CONFIG.AUTO_SETUP) {
+      // 自动配置
+      console.log('Start Auto Setup...')
+
+      USER_CONFIG.SECRET = toolkit.genRandString(16);
+      return _doSetup(USER_CONFIG, function() {
+        console.log('Auto Setup finished.');
+        return process.exit(0);
+      });
+
+    } else {
+      // 运行配置服务器，并提供配置页面
+      console.log('Start setup guide...');
+      callback = runSetupServer;
+    }
 
   } else {
     // Upgrade
-    console.log('Start upgrade process...')
+    console.log('Start upgrade process...');
     callback = runUpgrade;
   }
 
-  require('./appInit').beforeAppCreate(callback);
+  if ('function' === typeof callback) {
+    require('./appInit').beforeAppCreate(callback);
+  }
 });
