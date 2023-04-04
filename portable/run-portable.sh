@@ -28,6 +28,9 @@ function blankLine {
 function log {
     echo -e "\033[33m$1\033[0m"
 }
+function error {
+    echo -e "\033[31m$1\033[0m"
+}
 
 # 处理选项
 OPT_MINI=FALSE
@@ -128,7 +131,8 @@ while [ $# -ge 1 ]; do
             ;;
 
         * )
-            shift
+            error "Unknow option: $1"
+            exit 1
             ;;
     esac
 done
@@ -273,14 +277,16 @@ if [ ! -f ${__CONFIG_FILE} ]; then
         echo -e "\n# Auto Setup:"  >> ${__CONFIG_FILE}
         echo -e "AUTO_SETUP: true" >> ${__CONFIG_FILE}
 
-        if [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
+        if [ ${OPT_AUTO_SETUP_ADMIN_USERNAME} ] || [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
             echo -e "\n# Auto setup admin:" >> ${__CONFIG_FILE}
 
             if [ ${OPT_AUTO_SETUP_ADMIN_USERNAME} ]; then
                 echo -e "AUTO_SETUP_ADMIN_USERNAME: ${OPT_AUTO_SETUP_ADMIN_USERNAME}" >> ${__CONFIG_FILE}
             fi
 
-            echo -e "AUTO_SETUP_ADMIN_PASSWORD: ${OPT_AUTO_SETUP_ADMIN_PASSWORD}" >> ${__CONFIG_FILE}
+            if [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
+                echo -e "AUTO_SETUP_ADMIN_PASSWORD: ${OPT_AUTO_SETUP_ADMIN_PASSWORD}" >> ${__CONFIG_FILE}
+            fi
         fi
 
         if [ ${OPT_AUTO_SETUP_AK_SECRET} ]; then

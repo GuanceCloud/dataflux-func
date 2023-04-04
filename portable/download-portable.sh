@@ -19,6 +19,9 @@ function download {
 function log {
     echo -e "\033[33m$1\033[0m"
 }
+function error {
+    echo -e "\033[31m$1\033[0m"
+}
 
 # 处理选项
 OPT_ARCH=DEFAULT
@@ -35,7 +38,8 @@ while [ $# -ge 1 ]; do
             ;;
 
         * )
-            shift
+            error "Unknow option: $1"
+            exit 1
             ;;
     esac
 done
