@@ -69,7 +69,7 @@ function _doSetup(userConfig, callback) {
     adminPassword       = userConfig.ADMIN_PASSWORD;
     adminPasswordRepeat = userConfig.ADMIN_PASSWORD_REPEAT;
 
-  } else if (userConfig.AUTO_SETUP_ADMIN_PASSWORD) {
+  } else if (userConfig.AUTO_SETUP_ADMIN_USERNAME || userConfig.AUTO_SETUP_ADMIN_PASSWORD) {
     // 自动初始化
     adminUsername       = userConfig.AUTO_SETUP_ADMIN_USERNAME || ADMIN_DEFUALT_USERNAME;
     adminPassword       = userConfig.AUTO_SETUP_ADMIN_PASSWORD || ADMIN_DEFUALT_PASSWORD;
