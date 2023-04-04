@@ -350,7 +350,7 @@ _LRU_FUNC_RESULT_CACHE_MAX    : 2000
 _LRU_FUNC_RESULT_CACHE_MAX_AGE: 5
 _HTTP_AUTH_NONCE_MAX_AGE      : 300
 
-# 是否禁用安装配置
+# 是否禁用配置步骤
 _DISABLE_SETUP: false
 # 是否禁用自动安装内置脚本集
 _DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET: false
@@ -361,5 +361,15 @@ _DISABLE_WORKER_LIMIT_PRESSURE: false
 # 是否禁用启动运行任务
 _DISABLE_STARTUP_TASKS: false
 
+# 自动配置
+AUTO_SETUP               : false
+AUTO_SETUP_ADMIN_USERNAME: null
+AUTO_SETUP_ADMIN_PASSWORD: null
+AUTO_SETUP_AK_ID         : null
+AUTO_SETUP_AK_SECRET     : null
+
 # 是否已安装完成
 _IS_INSTALLED: false
+
+# REMAP
+__REMAP: null

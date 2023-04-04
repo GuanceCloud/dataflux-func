@@ -167,6 +167,12 @@ def load_config(config_file_path):
         elif type_ == 'string':
             config_obj[k] = str(v)
 
+    # Remap
+    if config_obj.get('__REMAP'):
+        for _from, _to in config_obj['__REMAP'].items():
+            config_obj[_to] = config_obj.pop(_from, None)
+
+    # Cache
     if CONFIG_KEY in FILE_CACHE:
         FILE_CACHE[CONFIG_KEY].update(config_obj)
     else:

@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="renderer" content="webkit" />
     <meta name="robots" content="none" />
-    <meta name="apple-mobile-web-app-title" content="DataFlux Func 初始安装" />
+    <meta name="apple-mobile-web-app-title" content="DataFlux Func" />
 
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" /> -->
     <!-- <meta name="viewport" content="width=980" /> -->
@@ -193,7 +193,7 @@
               </div>
               <el-input
                 ref="ADMIN_USERNAME"
-                v-model="userConfigs.ADMIN_USERNAME"></el-input>
+                v-model="userConfig.ADMIN_USERNAME"></el-input>
             </div>
             <p>
               {{ $t('Create an initial administrator user for the system') }}
@@ -213,7 +213,7 @@
               </div>
               <el-input
                 ref="ADMIN_PASSWORD"
-                v-model="userConfigs.ADMIN_PASSWORD" show-password></el-input>
+                v-model="userConfig.ADMIN_PASSWORD" show-password></el-input>
             </div>
             <p>
               {{ $t('A strong password can protect your data security') }}
@@ -233,7 +233,7 @@
               </div>
               <el-input
                 ref="ADMIN_PASSWORD_REPEAT"
-                v-model="userConfigs.ADMIN_PASSWORD_REPEAT" show-password></el-input>
+                v-model="userConfig.ADMIN_PASSWORD_REPEAT" show-password></el-input>
             </div>
             <p>
               {{ $t('Enter the administrator password again') }}
@@ -259,10 +259,10 @@
                     <span>{{ $t('Secret') }}</span>
                     <code>SECRET</code>
                   </div>
-                  <el-input v-model="userConfigs.SECRET" show-password :minlength="8" :maxlength="20"></el-input>
+                  <el-input v-model="userConfig.SECRET" show-password :minlength="8" :maxlength="20"></el-input>
                 </div>
                 <p>
-                  <span v-html="$t('A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once installed')"></span>
+                  <span v-html="$t('A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once setup')"></span>
                   <br><strong>{{ $t('Make sure to use the same Secret in multiple deployments') }}</strong>
                 </p>
               </el-popover>
@@ -278,7 +278,7 @@
                     <span>{{ $t('Log level') }}</span>
                     <code>LOG_LEVEL</code>
                   </div>
-                  <el-select v-model="userConfigs.LOG_LEVEL">
+                  <el-select v-model="userConfig.LOG_LEVEL">
                     <el-option :label="$t('NONE (no log)')" value="NONE"></el-option>
                     <el-option label="ERROR" value="ERROR"></el-option>
                     <el-option label="WARNING" value="WARNING"></el-option>
@@ -303,7 +303,7 @@
                     <span>{{ $t('Log file format') }}</span>
                     <code>LOG_FILE_FORMAT</code>
                   </div>
-                  <el-select v-model="userConfigs.LOG_FILE_FORMAT">
+                  <el-select v-model="userConfig.LOG_FILE_FORMAT">
                     <el-option label="TEXT" value="text"></el-option>
                     <el-option label="JSON" value="json"></el-option>
                   </el-select>
@@ -325,7 +325,7 @@
                     <span>{{ $t('Website URL') }}</span>
                     <code>WEB_BASE_URL</code>
                   </div>
-                  <el-input v-model="userConfigs.WEB_BASE_URL"></el-input>
+                  <el-input v-model="userConfig.WEB_BASE_URL"></el-input>
                 </div>
                 <p>
                   {{ $t('Full address to access DataFlux Func, e.g.') }}
@@ -348,7 +348,7 @@
                   <el-input
                     ref="MYSQL_HOST"
                     :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
-                    v-model="userConfigs.MYSQL_HOST"></el-input>
+                    v-model="userConfig.MYSQL_HOST"></el-input>
                 </div>
                 <p>
                   {{ $t('MySQL host to connect. Can be a domain name or IP address, no port included') }}
@@ -370,7 +370,7 @@
                   <el-input
                     ref="MYSQL_PORT"
                     :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
-                    v-model.number="userConfigs.MYSQL_PORT" type="number" min="1" max="65535" step="1"></el-input>
+                    v-model.number="userConfig.MYSQL_PORT" type="number" min="1" max="65535" step="1"></el-input>
                 </div>
                 <p>
                   <span v-html="$t('Typically <code>{port}</code>', { port: 6379 })"></span>
@@ -392,7 +392,7 @@
                   <el-input
                     ref="MYSQL_USER"
                     :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
-                    v-model="userConfigs.MYSQL_USER"></el-input>
+                    v-model="userConfig.MYSQL_USER"></el-input>
                 </div>
                 <p>
                   {{ $t('Since database must be initialized, ensure that the user has full privileges to operate the database') }}
@@ -414,7 +414,7 @@
                   <el-input
                     ref="MYSQL_PASSWORD"
                     :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
-                    v-model="userConfigs.MYSQL_PASSWORD" show-password></el-input>
+                    v-model="userConfig.MYSQL_PASSWORD" show-password></el-input>
                 </div>
                 <p>
                   {{ $t('Password for the MySQL user') }}
@@ -436,7 +436,7 @@
                   <el-input
                     ref="MYSQL_DATABASE"
                     :class="{ 'bad-config': setupErrorKeyStatus.mysql }"
-                    v-model="userConfigs.MYSQL_DATABASE"></el-input>
+                    v-model="userConfig.MYSQL_DATABASE"></el-input>
                 </div>
                 <p>
                   <span v-html="$t('Do not mix the database with other systems, and the default encoding should be <code>utf8mb4</code>')"></span>
@@ -458,7 +458,7 @@
                   <el-input
                     ref="REDIS_HOST"
                     :class="{ 'bad-config': setupErrorKeyStatus.redis }"
-                    v-model="userConfigs.REDIS_HOST"></el-input>
+                    v-model="userConfig.REDIS_HOST"></el-input>
                 </div>
                 <p>
                   {{ $t('Redis host to connect. Can be a domain name or IP address, no port included') }}
@@ -480,7 +480,7 @@
                   <el-input
                     ref="REDIS_PORT"
                     :class="{ 'bad-config': setupErrorKeyStatus.redis }"
-                    v-model.number="userConfigs.REDIS_PORT" type="number" min="1" max="65535" step="1"></el-input>
+                    v-model.number="userConfig.REDIS_PORT" type="number" min="1" max="65535" step="1"></el-input>
                 </div>
                 <p>
                   <span v-html="$t('Typically <code>{port}</code>', { port: 6379 })"></span>
@@ -502,7 +502,7 @@
                   <el-input
                     ref="REDIS_PASSWORD"
                     :class="{ 'bad-config': setupErrorKeyStatus.redis }"
-                    v-model="userConfigs.REDIS_PASSWORD" show-password></el-input>
+                    v-model="userConfig.REDIS_PASSWORD" show-password></el-input>
                 </div>
                 <p>
                   {{ $t('Password for the Redis, leave blank when no password') }}
@@ -524,7 +524,7 @@
                   <el-input
                     ref="REDIS_DATABASE"
                     :class="{ 'bad-config': setupErrorKeyStatus.redis }"
-                    v-model.number="userConfigs.REDIS_DATABASE" type="number" min="0" step="1"></el-input>
+                    v-model.number="userConfig.REDIS_DATABASE" type="number" min="0" step="1"></el-input>
                 </div>
                 <p>
                   {{ $t('Do not mix the database with other systems') }}
@@ -543,7 +543,7 @@
                     <span>{{ $t('Redis TLS') }}</span>
                     <code>REDIS_USE_TLS</code>
                   </div>
-                  <el-select v-model="userConfigs.REDIS_USE_TLS">
+                  <el-select v-model="userConfig.REDIS_USE_TLS">
                     <el-option :label="$t('Disable TLS (default)')" value="false"></el-option>
                     <el-option :label="$t('Enable TLS')" value="true"></el-option>
                   </el-select>
@@ -597,7 +597,7 @@
       'zh-CN': {
         'OK': '好',
 
-        'Setup DataFlux Func'                                                   : '安装 DataFlux Func',
+        'Setup DataFlux Func'                                                   : '配置 DataFlux Func',
         'Processing, please wait...'                                            : '正在处理，请稍后...',
         'Finishing soon...'                                                     : '即将完成...',
         'If there is no response for a long time, you can try to click the link': '如长时间无响应，可尝试点击链接',
@@ -629,15 +629,14 @@
         'Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode'                                                   : 'Redis 4.0 或以上版本，且<strong>不是</strong> Redis 集群',
 
         'Show more configs': '显示更多配置',
-        'The default administrator username and password are <code>admin</code>, which can be changed after installation.': '系统管理员用户名和密码默认都是<code>admin</code>，安装完成后也可以修改',
-        'Unless necessary, just use the default configuration'                                                            : '除非必要，使用默认配置即可',
+        'Unless necessary, just use the default configuration': '除非必要，使用默认配置即可',
 
         'Do not modify if you are using automatic deploying script': '全自动部署时请勿修改',
         'Typically <code>{port}</code>'                            : '一般为<code>{port}</code>',
 
         'Secret': '加密密钥',
-        'A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once installed': '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦安装后请勿修改',
-        'Make sure to use the same Secret in multiple deployments'                                                : '多份部署时必须使用相同的值',
+        'A random string of <code>8</code> to <code>20</code> digits is recommended, do not modify once setup': '建议输入<code>8</code>～<code>20</code>位随机字符串，一旦配置完成后请勿修改',
+        'Make sure to use the same Secret in multiple deployments'                                            : '多份部署时必须使用相同的值',
 
         'Log level'     : '日志等级',
         'NONE (no log)' : 'NONE（不输出）',
@@ -722,16 +721,16 @@
           }
 
           // 准备配置
-          let userConfigs = JSON.parse(JSON.stringify(this.userConfigs))
+          let userConfig = JSON.parse(JSON.stringify(this.userConfig))
 
           // 【配置特殊处理】
-          if ('string' === typeof userConfigs.REDIS_USE_TLS) {
-            userConfigs.REDIS_USE_TLS = JSON.parse(userConfigs.REDIS_USE_TLS);
+          if ('string' === typeof userConfig.REDIS_USE_TLS) {
+            userConfig.REDIS_USE_TLS = JSON.parse(userConfig.REDIS_USE_TLS);
           }
 
           try {
-            // 发送安装请求
-            let axiosRes = await axios.post('/setup', { config: userConfigs });
+            // 发送配置请求
+            let axiosRes = await axios.post('/setup', { userConfig: userConfig });
             this.setupRedirectURL = axiosRes.data.redirectURL;
 
           } catch(err) {
@@ -812,7 +811,7 @@
       },
       computed: {
         redirectURL() {
-          return this.setupRedirectURL || this.userConfigs.WEB_BASE_URL || location.origin;
+          return this.setupRedirectURL || this.userConfig.WEB_BASE_URL || location.origin;
         },
         inputRefKeyMap() {
           return {
@@ -849,7 +848,7 @@
             adminUser: false,
           },
 
-          userConfigs: {
+          userConfig: {
             SECRET               : this.genRandomSecret(),
             LOG_LEVEL            : currentConfig.LOG_LEVEL,
             LOG_FILE_FORMAT      : currentConfig.LOG_FILE_FORMAT,

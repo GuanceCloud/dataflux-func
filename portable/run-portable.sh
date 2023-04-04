@@ -35,14 +35,21 @@ OPT_PORT=DEFAULT
 OPT_INSTALL_DIR=DEFAULT
 OPT_NO_MYSQL=FALSE
 OPT_NO_REDIS=FALSE
+OPT_AUTO_SETUP=FALSE
+OPT_AUTO_SETUP_ADMIN_USERNAME=""
+OPT_AUTO_SETUP_ADMIN_PASSWORD=""
+OPT_AUTO_SETUP_AK_ID=""
+OPT_AUTO_SETUP_AK_SECRET=""
 
 while [ $# -ge 1 ]; do
     case $1 in
+        # 迷你版
         --mini )
             OPT_MINI=TRUE
             shift
             ;;
 
+        # 端口
         --port=* )
             OPT_PORT="${1#*=}"
             shift
@@ -52,6 +59,7 @@ while [ $# -ge 1 ]; do
             shift 2
             ;;
 
+        # 安装目录
         --install-dir=* )
             OPT_INSTALL_DIR="${1#*=}"
             shift
@@ -61,14 +69,62 @@ while [ $# -ge 1 ]; do
             shift 2
             ;;
 
+        # 不启动内置 MySQL
         --no-mysql )
             OPT_NO_MYSQL=TRUE
             shift
             ;;
 
+        # 不启动内置 Redis
         --no-redis )
             OPT_NO_REDIS=TRUE
             shift
+            ;;
+
+        # 自动配置
+        --auto-setup )
+            OPT_AUTO_SETUP=TRUE
+            shift
+            ;;
+
+        # 自动配置 admin 用户名
+        --auto-setup-admin-username=* )
+            OPT_AUTO_SETUP_ADMIN_USERNAME="${1#*=}"
+            shift
+            ;;
+        --auto-setup-admin-username )
+            OPT_AUTO_SETUP_ADMIN_USERNAME=$2
+            shift 2
+            ;;
+
+        # 自动配置 admin 密码
+        --auto-setup-admin-password=* )
+            OPT_AUTO_SETUP_ADMIN_PASSWORD="${1#*=}"
+            shift
+            ;;
+        --auto-setup-admin-password )
+            OPT_AUTO_SETUP_ADMIN_PASSWORD=$2
+            shift 2
+            ;;
+
+        # 自动配置 AccessKey ID
+        --auto-setup-ak-id=* )
+            OPT_AUTO_SETUP_AK_ID="${1#*=}"
+            shift
+            ;;
+        --auto-setup-ak-id )
+            OPT_AUTO_SETUP_AK_ID=$2
+            shift 2
+            ;;
+
+        # 自动配置 AccessKey Secret
+        --auto-setup-ak-secret=* )
+            OPT_AUTO_SETUP_AK_SECRET="${1#*=}"
+            shift
+            ;;
+        --auto-setup-ak-secret )
+            OPT_AUTO_SETUP_AK_SECRET=$2
+            shift 2
             ;;
 
         * )
@@ -91,6 +147,8 @@ __PROJECT_NAME=dataflux-func
 
 __DOCKER_BIN_FILE=docker-20.10.8.tgz
 __SYSTEMD_FILE=docker.service
+
+__LOGROTATE_FILE=/etc/logrotate.d/${__PROJECT_NAME}
 
 __DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
 __MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
@@ -198,17 +256,30 @@ cp ${__PORTABLE_DIR}/${__DOCKER_STACK_EXAMPLE_FILE} ${_INSTALL_DIR}/${__DOCKER_S
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
 blankLine
 if [ ! -f ${__CONFIG_FILE} ]; then
-    echo -e "# Pre-generated config: \
-\nSECRET          : ${__SERVER_SECRET} \
-\nMYSQL_HOST      : mysql \
-\nMYSQL_PORT      : 3306 \
-\nMYSQL_USER      : root \
-\nMYSQL_PASSWORD  : ${__MYSQL_PASSWORD} \
-\nMYSQL_DATABASE  : dataflux_func \
-\nREDIS_HOST      : redis \
-\nREDIS_PORT      : 6379 \
-\nREDIS_DATABASE  : 5" \
-> ${__CONFIG_FILE}
+    echo -e "# Pre-generated config:"                > ${__CONFIG_FILE}
+    echo -e "SECRET          : ${__SERVER_SECRET}"  >> ${__CONFIG_FILE}
+    echo -e "MYSQL_HOST      : mysql"               >> ${__CONFIG_FILE}
+    echo -e "MYSQL_USER      : root"                >> ${__CONFIG_FILE}
+    echo -e "MYSQL_PASSWORD  : ${__MYSQL_PASSWORD}" >> ${__CONFIG_FILE}
+    echo -e "REDIS_HOST      : redis"               >> ${__CONFIG_FILE}
+
+    # 启用自动配置
+    if [ ${OPT_AUTO_SETUP} = "TRUE" ]; then
+        echo -e "\n# Auto Setup:"  >> ${__CONFIG_FILE}
+        echo -e "AUTO_SETUP: true" >> ${__CONFIG_FILE}
+
+        if [ ${OPT_AUTO_SETUP_ADMIN_USERNAME} ] && [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
+            echo -e "\n# Auto Setup Admin:"                                       >> ${__CONFIG_FILE}
+            echo -e "AUTO_SETUP_ADMIN_USERNAME: ${OPT_AUTO_SETUP_ADMIN_USERNAME}" >> ${__CONFIG_FILE}
+            echo -e "AUTO_SETUP_ADMIN_PASSWORD: ${OPT_AUTO_SETUP_ADMIN_PASSWORD}" >> ${__CONFIG_FILE}
+        fi
+
+        if [ ${OPT_AUTO_SETUP_AK_ID} ] && [ ${OPT_AUTO_SETUP_AK_SECRET} ]; then
+            echo -e "\n# Auto Setup AK   :"                             >> ${__CONFIG_FILE}
+            echo -e "AUTO_SETUP_AK_ID    : ${OPT_AUTO_SETUP_AK_ID}"     >> ${__CONFIG_FILE}
+            echo -e "AUTO_SETUP_AK_SECRET: ${OPT_AUTO_SETUP_AK_SECRET}" >> ${__CONFIG_FILE}
+        fi
+    fi
 
     log "New config file with random secret/password created:"
 else
@@ -268,21 +339,21 @@ else
 fi
 log "  ${_INSTALL_DIR}/${__DOCKER_STACK_FILE}"
 
-# 创建logrotate配置
+# 创建 logrotate 配置
 blankLine
 if [ `command -v logrotate` ] && [ -d /etc/logrotate.d ]; then
-    echo -e "${_INSTALL_DIR}/data/logs/dataflux-func.log { \
-\n    missingok \
-\n    copytruncate \
-\n    compress \
-\n    daily \
-\n    rotate 7 \
-\n    dateext \
-\n}" \
-> /etc/logrotate.d/${__PROJECT_NAME}
+    echo -e "${_INSTALL_DIR}/data/logs/dataflux-func.log {"  > ${__LOGROTATE_FILE}
+    echo -e "    missingok"                                 >> ${__LOGROTATE_FILE}
+    echo -e "    copytruncate"                              >> ${__LOGROTATE_FILE}
+    echo -e "    compress"                                  >> ${__LOGROTATE_FILE}
+    echo -e "    daily"                                     >> ${__LOGROTATE_FILE}
+    echo -e "    rotate 7"                                  >> ${__LOGROTATE_FILE}
+    echo -e "    dateext"                                   >> ${__LOGROTATE_FILE}
+    echo -e "}"                                             >> ${__LOGROTATE_FILE}
+
+    log "Logrotate config file created:"
+    log "  ${__LOGROTATE_FILE}"
 fi
-log "Logrotate config file created:"
-log "  /etc/logrotate.d/${__PROJECT_NAME}"
 
 # 执行部署
 blankLine
@@ -327,7 +398,7 @@ log "    sudo rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 blankLine
 log "Now open http://<IP or Hostname>:${_PORT}/ and have fun!"
 
-# 写入ETC信息
+# 写入 /etc 信息
 if [ ! -f ${ETC_PATH} ]; then
     echo "INSTALLED_DIR=${_INSTALL_DIR}" > ${ETC_PATH}
 fi

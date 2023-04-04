@@ -199,6 +199,20 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
     }
   }
 
+  // Remap
+  if (configObj.__REMAP) {
+    for (var from in configObj.__REMAP) {
+      var to = configObj.__REMAP[from];
+
+      configObj[to] = configObj[from];
+      delete configObj[from];
+
+      userConfigObj[to] = userConfigObj[from];
+      delete userConfigObj[from];
+    }
+  }
+
+  // Cache
   if (CONFIG_KEY in FILE_CACHE) {
     Object.assign(FILE_CACHE[CONFIG_KEY], configObj);
   } else {
