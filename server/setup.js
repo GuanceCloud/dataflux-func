@@ -22,10 +22,11 @@ var USER_CONFIG  = null;
 var UPGRADE_INFO = null;
 var IMAGE_INFO   = require('../image-info.json');
 
-var INSTALL_CHECKER_INTERVAL         = 3 * 1000;
+var CHECKER_INTERVAL                 = 3 * 1000;
 var ADMIN_USER_ID                    = 'u-admin';
 var ADMIN_DEFUALT_USERNAME           = 'admin';
 var ADMIN_DEFUALT_PASSWORD           = 'admin';
+var AUTO_SETUP_DEFAULT_AK_ID         = 'ak-auto-setup';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ     = 'UPGRADE_DB_SEQ';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD = 'upgrade.db.upgradeSeq';
 
@@ -70,9 +71,9 @@ function _doSetup(userConfig, callback) {
 
   } else if (userConfig.AUTO_SETUP_ADMIN_PASSWORD) {
     // 自动初始化
-    adminUsername       = userConfig.AUTO_SETUP_ADMIN_USERNAME;
-    adminPassword       = userConfig.AUTO_SETUP_ADMIN_PASSWORD;
-    adminPasswordRepeat = userConfig.AUTO_SETUP_ADMIN_PASSWORD;
+    adminUsername       = userConfig.AUTO_SETUP_ADMIN_USERNAME || ADMIN_DEFUALT_USERNAME;
+    adminPassword       = userConfig.AUTO_SETUP_ADMIN_PASSWORD || ADMIN_DEFUALT_PASSWORD;
+    adminPasswordRepeat = userConfig.AUTO_SETUP_ADMIN_PASSWORD || ADMIN_DEFUALT_PASSWORD;
 
   } else {
     // 默认初始化
@@ -104,22 +105,33 @@ function _doSetup(userConfig, callback) {
     // Check MySQL, version
     function(asyncCallback) {
       try {
-        var mysqlConfig = {
-          host    : userConfig.MYSQL_HOST,
-          port    : userConfig.MYSQL_PORT,
-          user    : userConfig.MYSQL_USER,
-          password: userConfig.MYSQL_PASSWORD,
-          database: userConfig.MYSQL_DATABASE,
-        }
-        dbHelper = mysqlHelper.createHelper(null, mysqlConfig);
-        dbHelper.skipLog = true;
+        var version = '0.0.0';
+        async.retry({ times: 10, interval: CHECKER_INTERVAL }, function(retryCallback) {
+          console.log('Try to check MySQL version...');
 
-        dbHelper.query('SELECT VERSION() AS ver', null, function(err, data) {
+          var mysqlConfig = {
+            host    : userConfig.MYSQL_HOST,
+            port    : userConfig.MYSQL_PORT,
+            user    : userConfig.MYSQL_USER,
+            password: userConfig.MYSQL_PASSWORD,
+            database: userConfig.MYSQL_DATABASE,
+          }
+          dbHelper = mysqlHelper.createHelper(null, mysqlConfig);
+          dbHelper.skipLog = true;
+
+          dbHelper.query('SELECT VERSION() AS version', null, function(err, data) {
+            if (err) return retryCallback(err);
+
+            version = data[0].version;
+
+            return retryCallback();
+          });
+        }, function(err) {
           if (err) {
             setupErrorWrap.set('mysql', 'Connecting to MySQL failed', err);
 
           } else {
-            var versionParts = data[0].ver.split('.');
+            var versionParts = version.split('.');
             var majorVer = parseInt(versionParts[0]);
             var minorVer = parseInt(versionParts[1]);
             if (majorVer < 5 || (majorVer === 5 && minorVer < 7)) {
@@ -247,7 +259,7 @@ function _doSetup(userConfig, callback) {
       var sql = 'INSERT INTO `wat_main_access_key` SET ?';
       var sqlParams = [
         {
-          id    : userConfig.AUTO_SETUP_AK_ID,
+          id    : userConfig.AUTO_SETUP_AK_ID || AUTO_SETUP_DEFAULT_AK_ID,
           userId: ADMIN_USER_ID,
           name  : 'Auto Setup Init AK',
           secret: userConfig.AUTO_SETUP_AK_SECRET,
@@ -322,33 +334,27 @@ function runSetupServer() {
     每个进程定期检测配置信息中`_IS_INSTALLED`的值判断是否已经安装完毕
     检测发现安装完毕后自动退出
    */
-  var installCheckerT = null;
-  function installChecker() {
+
+  // 启动已安装检测
+  setInterval(function() {
     // 每次都需要重新加载配置文件，检查是否已安装
     yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, config) {
       if (err) {
         console.log(err);
-
-        if (installCheckerT) clearInterval(installCheckerT);
         return process.exit(1);
       }
 
+      // 进入下一轮等待
       if (!config._IS_INSTALLED) {
         console.log('Waiting for installation.');
         return;
       }
 
-      console.log('Other process finished installation.');
-
-      if (installCheckerT) clearInterval(installCheckerT);
-
       // 退出配置程序，执行后一个程序
+      console.log('Other process finished installation.');
       return process.exit(0);
     });
-  };
-
-  // 启动自动检测
-  var installCheckerT = setInterval(installChecker, INSTALL_CHECKER_INTERVAL);
+  }, CHECKER_INTERVAL);
 
   // Express
   var app = express();
@@ -470,7 +476,7 @@ function runUpgrade() {
             console.log('Upgrading ended, start application...');
             return process.exit(0)
           });
-        }, INSTALL_CHECKER_INTERVAL);
+        }, CHECKER_INTERVAL);
       });
     },
     // Get upgrade items
@@ -582,7 +588,12 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
       console.log('Start auto setup...')
 
       USER_CONFIG.SECRET = toolkit.genRandString(16);
-      return _doSetup(USER_CONFIG, function() {
+      return _doSetup(USER_CONFIG, function(setupErrorWrap) {
+        if (setupErrorWrap && setupErrorWrap.hasError()) {
+          console.log(setupErrorWrap.toJSON());
+          return process.exit(1);
+        }
+
         console.log('Auto setup finished.');
         return process.exit(0);
       });
