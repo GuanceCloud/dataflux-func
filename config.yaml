@@ -84,8 +84,8 @@ WEB_CORS_CREDENTIALS: true
 # MySQL连接配置
 MYSQL_HOST    : '127.0.0.1'
 MYSQL_PORT    : 3306
-MYSQL_USER    : dataflux_func
-MYSQL_PASSWORD: dataflux_func
+MYSQL_USER    : root
+MYSQL_PASSWORD: ''
 MYSQL_DATABASE: dataflux_func
 
 # Redis连接配置

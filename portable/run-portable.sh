@@ -258,9 +258,15 @@ if [ ! -f ${__CONFIG_FILE} ]; then
     echo -e "# Pre-generated config:"                > ${__CONFIG_FILE}
     echo -e "SECRET          : ${__SERVER_SECRET}"  >> ${__CONFIG_FILE}
     echo -e "MYSQL_HOST      : mysql"               >> ${__CONFIG_FILE}
+    echo -e "MYSQL_PORT      : 3306"                >> ${__CONFIG_FILE}
     echo -e "MYSQL_USER      : root"                >> ${__CONFIG_FILE}
     echo -e "MYSQL_PASSWORD  : ${__MYSQL_PASSWORD}" >> ${__CONFIG_FILE}
+    echo -e "MYSQL_DATABASE  : dataflux_func"       >> ${__CONFIG_FILE}
     echo -e "REDIS_HOST      : redis"               >> ${__CONFIG_FILE}
+    echo -e "REDIS_PORT      : 6379"                >> ${__CONFIG_FILE}
+    echo -e "REDIS_DATABASE  : 5"                   >> ${__CONFIG_FILE}
+    echo -e "REDIS_PASSWORD  : ''"                  >> ${__CONFIG_FILE}
+    echo -e "REDIS_USE_TLS   : false"               >> ${__CONFIG_FILE}
 
     # 启用自动配置
     if [ ${OPT_AUTO_SETUP} = "TRUE" ]; then
