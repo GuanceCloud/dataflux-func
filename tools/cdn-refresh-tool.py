@@ -37,8 +37,8 @@ def get_options_by_command_line():
     arg_parser.add_argument('object_path', metavar='<Object Path>')
 
     # 阿里云AK
-    arg_parser.add_argument('-i', '--access-key-id', dest='ak_id',help='AccessKey ID')
-    arg_parser.add_argument('-k', '--access-key-secret', dest='ak_secret',help='AccessKey Secret')
+    arg_parser.add_argument('-i', '--access-key-id', dest='ak_id', help='AccessKey ID')
+    arg_parser.add_argument('-k', '--access-key-secret', dest='ak_secret', help='AccessKey Secret')
 
     args = vars(arg_parser.parse_args())
     args = dict(filter(lambda x: x[1] is not None, args.items()))

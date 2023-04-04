@@ -50,10 +50,13 @@ def command(F):
     COMMAND_FUNCS[F.__name__] = F
     return F
 
-def confirm():
+def confirm(force=False):
+    if force:
+        return
+
     # 确认
-    confirm = input('Are you sure you want to do this? (yes/no): ')
-    if confirm != 'yes':
+    user_input = input('Are you sure you want to do this? (yes/no): ')
+    if user_input != 'yes':
         raise CommandCanceledException()
 
 def reset_db_data(table, data):
@@ -106,14 +109,14 @@ def run_db_sql(sql):
         DB.commit(trans_conn)
 
 @command
-def reset_admin():
+def reset_admin(options):
     '''
     重置管理员账号
     '''
     # 等待用户输入数据
-    username        = input('Enter new Admin username: ')
-    password        = getpass.getpass(f'Enter new password for [{username}]: ')
-    password_repeat = getpass.getpass('Confirm new password: ')
+    username        = options.get('admin_username') or input('Enter new Admin username: ')
+    password        = options.get('admin_password') or getpass.getpass(f'Enter new password for [{username}]: ')
+    password_repeat = options.get('admin_password') or getpass.getpass('Confirm new password: ')
 
     if password != password_repeat:
         # 两次输入不一致
@@ -137,13 +140,13 @@ def reset_admin():
     }
 
     # 确认提示
-    confirm()
+    confirm(options.get('force'))
 
     # 数据入库
     reset_db_data('wat_main_user', data)
 
 @command
-def reset_upgrade_db_seq():
+def reset_upgrade_db_seq(options):
     '''
     重置数据库升级序号
     '''
@@ -157,24 +160,24 @@ def reset_upgrade_db_seq():
     }
 
     # 确认提示
-    confirm()
+    confirm(options.get('force'))
 
     # 数据入库
     reset_db_data('wat_main_system_config', data)
 
 @command
-def clear_redis():
+def clear_redis(options):
     '''
     清空Redis
     '''
     # 确认提示
-    confirm()
+    confirm(options.get('force'))
 
     # 清空数据库
     CACHE_DB.client.flushdb()
 
 @command
-def run_sql():
+def run_sql(options):
     '''
     执行 SQL
     '''
@@ -206,7 +209,7 @@ def main(options):
     if not command_func:
         raise Exception(f"No such command: {command}\n Command should be one of {', '.join(COMMAND_FUNCS.keys())}")
 
-    command_func()
+    command_func(options)
 
 def get_options_by_command_line():
     arg_parser = argparse.ArgumentParser(
@@ -218,7 +221,7 @@ def get_options_by_command_line():
             +--------------------------+
             This tool should run in the Docker container:
                 $ docker exec {DataFlux Func Container ID} sh -c 'exec python admin-tool.py --help'
-                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_admin'
+                $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_admin [-f] [--admin-username=<Admin Username>] [--admin-password=<Password>]'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py reset_upgrade_db_seq'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py clear_redis'
                 $ docker exec -it {DataFlux Func Container ID} sh -c 'exec python admin-tool.py run_sql'
@@ -226,6 +229,13 @@ def get_options_by_command_line():
 
     # 执行操作
     arg_parser.add_argument('command', metavar='<Command>', help=', '.join(COMMAND_FUNCS.keys()))
+
+    # 免确认
+    arg_parser.add_argument('-f', '--force', action='store_true', help='Force run, no confirm')
+
+    # 重置密码
+    arg_parser.add_argument('--admin-username', dest='admin_username', help='Admin Username')
+    arg_parser.add_argument('--admin-password', dest='admin_password', help='Admin Password')
 
     args = vars(arg_parser.parse_args())
     args = dict(filter(lambda x: x[1] is not None, args.items()))
