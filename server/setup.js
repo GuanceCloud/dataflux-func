@@ -570,7 +570,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   var callback = null;
 
   if (CONFIG._DISABLE_SETUP) {
-    console.log('Setup Sskipped...');
+    console.log('Setup disabled, skip...');
     return process.exit(0);
   }
 
@@ -579,11 +579,11 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
     if (CONFIG.AUTO_SETUP) {
       // 自动配置
-      console.log('Start Auto Setup...')
+      console.log('Start auto setup...')
 
       USER_CONFIG.SECRET = toolkit.genRandString(16);
       return _doSetup(USER_CONFIG, function() {
-        console.log('Auto Setup finished.');
+        console.log('Auto setup finished.');
         return process.exit(0);
       });
 
