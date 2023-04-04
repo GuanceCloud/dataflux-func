@@ -268,15 +268,23 @@ if [ ! -f ${__CONFIG_FILE} ]; then
         echo -e "\n# Auto Setup:"  >> ${__CONFIG_FILE}
         echo -e "AUTO_SETUP: true" >> ${__CONFIG_FILE}
 
-        if [ ${OPT_AUTO_SETUP_ADMIN_USERNAME} ] && [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
-            echo -e "\n# Auto Setup Admin:"                                       >> ${__CONFIG_FILE}
-            echo -e "AUTO_SETUP_ADMIN_USERNAME: ${OPT_AUTO_SETUP_ADMIN_USERNAME}" >> ${__CONFIG_FILE}
+        if [ ${OPT_AUTO_SETUP_ADMIN_PASSWORD} ]; then
+            echo -e "\n# Auto setup admin:" >> ${__CONFIG_FILE}
+
+            if [ ${OPT_AUTO_SETUP_ADMIN_USERNAME} ]; then
+                echo -e "AUTO_SETUP_ADMIN_USERNAME: ${OPT_AUTO_SETUP_ADMIN_USERNAME}" >> ${__CONFIG_FILE}
+            fi
+
             echo -e "AUTO_SETUP_ADMIN_PASSWORD: ${OPT_AUTO_SETUP_ADMIN_PASSWORD}" >> ${__CONFIG_FILE}
         fi
 
-        if [ ${OPT_AUTO_SETUP_AK_ID} ] && [ ${OPT_AUTO_SETUP_AK_SECRET} ]; then
-            echo -e "\n# Auto Setup AK   :"                             >> ${__CONFIG_FILE}
-            echo -e "AUTO_SETUP_AK_ID    : ${OPT_AUTO_SETUP_AK_ID}"     >> ${__CONFIG_FILE}
+        if [ ${OPT_AUTO_SETUP_AK_SECRET} ]; then
+            echo -e "\n# Auto setup AK:" >> ${__CONFIG_FILE}
+
+            if [ ${OPT_AUTO_SETUP_AK_ID} ]; then
+                echo -e "AUTO_SETUP_AK_ID    : ${OPT_AUTO_SETUP_AK_ID}" >> ${__CONFIG_FILE}
+            fi
+
             echo -e "AUTO_SETUP_AK_SECRET: ${OPT_AUTO_SETUP_AK_SECRET}" >> ${__CONFIG_FILE}
         fi
     fi

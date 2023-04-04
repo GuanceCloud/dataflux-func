@@ -363,9 +363,9 @@ _DISABLE_STARTUP_TASKS: false
 
 # 自动配置
 AUTO_SETUP               : false
-AUTO_SETUP_ADMIN_USERNAME: null
+AUTO_SETUP_ADMIN_USERNAME: admin
 AUTO_SETUP_ADMIN_PASSWORD: null
-AUTO_SETUP_AK_ID         : null
+AUTO_SETUP_AK_ID         : ak-auto-setup-init
 AUTO_SETUP_AK_SECRET     : null
 
 # 是否已安装完成

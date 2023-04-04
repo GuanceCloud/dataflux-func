@@ -68,7 +68,7 @@ function _doSetup(userConfig, callback) {
     adminPassword       = userConfig.ADMIN_PASSWORD;
     adminPasswordRepeat = userConfig.ADMIN_PASSWORD_REPEAT;
 
-  } else if (userConfig.AUTO_SETUP_ADMIN_USERNAME) {
+  } else if (userConfig.AUTO_SETUP_ADMIN_PASSWORD) {
     // 自动初始化
     adminUsername       = userConfig.AUTO_SETUP_ADMIN_USERNAME;
     adminPassword       = userConfig.AUTO_SETUP_ADMIN_PASSWORD;
@@ -242,7 +242,7 @@ function _doSetup(userConfig, callback) {
     // Auto Setup Init AK
     function(asyncCallback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
-      if (!userConfig.AUTO_SETUP_AK_ID || !userConfig.AUTO_SETUP_AK_SECRET) return asyncCallback();
+      if (!userConfig.AUTO_SETUP_AK_SECRET) return asyncCallback();
 
       var sql = 'INSERT INTO `wat_main_access_key` SET ?';
       var sqlParams = [
@@ -570,7 +570,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   var callback = null;
 
   if (CONFIG._DISABLE_SETUP) {
-    console.log('Setup Sskipped...');
+    console.log('Setup disabled, skip...');
     return process.exit(0);
   }
 
@@ -579,11 +579,11 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
     if (CONFIG.AUTO_SETUP) {
       // 自动配置
-      console.log('Start Auto Setup...')
+      console.log('Start auto setup...')
 
       USER_CONFIG.SECRET = toolkit.genRandString(16);
       return _doSetup(USER_CONFIG, function() {
-        console.log('Auto Setup finished.');
+        console.log('Auto setup finished.');
         return process.exit(0);
       });
 
