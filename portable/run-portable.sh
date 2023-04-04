@@ -6,7 +6,7 @@ if [ -f ${ETC_PATH} ]; then
     source ${ETC_PATH}
 fi
 
-# 本脚本参考了docker官方文档，以及以下文章
+# 本脚本参考了 Docker 官方文档，以及以下文章
 #   https://www.cnblogs.com/helf/p/12889955.html
 
 function stopPrevStack {
@@ -178,7 +178,7 @@ log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Version     : `cat ${__PORTABLE_DIR}/${__VERSION_FILE}`"
 
-# 安装前根据etc检查
+# 安装前根据 etc 检查
 if [ ${INSTALLED_DIR} ] && [ ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
     log ""
     log "You are reinstalling/upgrading DataFlux Func into a different directory by mistake."
@@ -205,25 +205,24 @@ fi
 # 进入脚本所在目录
 cd ${__PORTABLE_DIR}
 
-# 安装Docker
+# 安装 Docker
 if [ ! `command -v docker` ]; then
-    # 安装Docker
     log "Install and prepare docker"
     tar -zxvf ${__DOCKER_BIN_FILE}
     cp docker/* /usr/bin/
 
-    # 添加systemd 配置
+    # 添加 systemd 配置
     cp ${__SYSTEMD_FILE} /etc/systemd/system/${__SYSTEMD_FILE}
     chmod 666 /etc/systemd/system/${__SYSTEMD_FILE}
     systemctl daemon-reload
     systemctl start docker
     systemctl enable ${__SYSTEMD_FILE}
 
-    # 准备docker swarm
+    # 准备 Docker Swarm
     docker swarm init --advertise-addr=127.0.0.1 --default-addr-pool=10.255.0.0/16
 fi
 
-# 关闭之前的Stack
+# 关闭之前的 Stack
 stopPrevStack ${__PROJECT_NAME}
 
 # 导入必要镜像
@@ -231,13 +230,13 @@ blankLine
 log "Loading image: ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}"
 docker load < ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}
 
-# 未关闭MySQL 时，需要加载镜像
+# 未关闭 MySQL 时，需要加载镜像
 if [ ${OPT_NO_MYSQL} = "FALSE" ]; then
     log "Loading image: ${__MYSQL_IMAGE_GZIP_FILE}"
     docker load < ${__MYSQL_IMAGE_GZIP_FILE}
 fi
 
-# 未关闭Redis 时，需要加载镜像
+# 未关闭 Redis 时，需要加载镜像
 if [ ${OPT_NO_REDIS} = "FALSE" ]; then
     log "Loading image: ${__REDIS_IMAGE_GZIP_FILE}"
     docker load < ${__REDIS_IMAGE_GZIP_FILE}
@@ -250,7 +249,7 @@ mkdir -p ${_INSTALL_DIR}/{data,data/resources/extra-python-packages,data/logs,da
 cd ${_INSTALL_DIR}
 log "In ${_INSTALL_DIR}"
 
-# 拷贝docker stack 示例文件
+# 拷贝 Docker Stack 示例文件
 cp ${__PORTABLE_DIR}/${__DOCKER_STACK_EXAMPLE_FILE} ${_INSTALL_DIR}/${__DOCKER_STACK_EXAMPLE_FILE}
 
 # 创建预配置文件（主要目的是减少用户在配置页面的操作——只要点确认即可）
@@ -295,29 +294,29 @@ else
 fi
 log "  ${_INSTALL_DIR}/${__CONFIG_FILE}"
 
-# 创建docker stack 配置文件
+# 创建 Docker Stack 配置文件
 blankLine
 if [ ! -f ${__DOCKER_STACK_FILE} ]; then
     cp ${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_FILE}
 
-    # 创建配置文件并使用随机密钥/密码
+    # 创建配置文件并使用随机密钥 / 密码
     if [ ${OPT_MINI} = "TRUE" ]; then
-        # 启用mini方式安装，去除Worker default 配置部分
+        # 启用 mini 方式安装，去除 Worker default 配置部分
         sed -i "/# WORKER DEFAULT START/,/# WORKER DEFAULT END/d" \
             ${__DOCKER_STACK_FILE}
     else
-        # 默认方式安装，去除Worker mini 配置部分
+        # 默认方式安装，去除 Worker mini 配置部分
         sed -i "/# WORKER MINI START/,/# WORKER MINI END/d" \
             ${__DOCKER_STACK_FILE}
     fi
 
-    # 关闭MySQL 时，去除MySQL 配置部分
+    # 关闭 MySQL 时，去除 MySQL 配置部分
     if [ ${OPT_NO_MYSQL} = "TRUE" ]; then
         sed -i "/# MYSQL START/,/# MYSQL END/d" \
             ${__DOCKER_STACK_FILE}
     fi
 
-    # 关闭Redis 时，去除Redis 配置部分
+    # 关闭 Redis 时，去除 Redis 配置部分
     if [ ${OPT_NO_REDIS} = "TRUE" ]; then
         sed -i "/# REDIS START/,/# REDIS END/d" \
             ${__DOCKER_STACK_FILE}
@@ -337,7 +336,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 else
     log "Docker stack file already exists:"
 
-    # 为MySQL服务添加TLS版本
+    # 为 MySQL 服务添加 TLS 版本
     if [ `grep "\-\-tls\-version" ${__DOCKER_STACK_FILE} | wc -l` -eq 0 ]; then
             echo 'Add `--tls-version=TLSv1.2` to mysql service'
             sed -i \
