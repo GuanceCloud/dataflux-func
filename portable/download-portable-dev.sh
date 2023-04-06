@@ -112,8 +112,8 @@ log "And run the following command on your server to install DataFlux Func:"
 log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh"
 log "Or install and use default configs to setup:"
 log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup"
-log "Or install and use specified configs to setup:"
-log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup --auto-setup-username=admin --auto-setup-password='Admin@123'"
+log "Or install and use specified admin password to setup:"
+log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup --auto-setup-admin-password='Admin@123'"
 
 # 返回之前目录
 cd ${__PREV_DIR}
