@@ -25,6 +25,7 @@ function error {
 
 # 处理选项
 OPT_ARCH=DEFAULT
+OPT_DOWNLOAD_DIR=DEFAULT
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -34,6 +35,15 @@ while [ $# -ge 1 ]; do
             ;;
         --arch )
             OPT_ARCH=$2
+            shift 2
+            ;;
+
+        --download-dir=* )
+            OPT_DOWNLOAD_DIR="${1#*=}"
+            shift
+            ;;
+        --download-dir )
+            OPT_DOWNLOAD_DIR=$2
             shift 2
             ;;
 
@@ -69,6 +79,10 @@ _VERSION=`curl -s ${__PORTABLE_BASE_URL}/${__VERSION_FILE}`
 
 # 创建下载目录
 __DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
+if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
+    __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
+fi
+
 if [ -d ${__DOWNLOAD_DIR} ]; then
     rm -rf ${__DOWNLOAD_DIR}
 fi
