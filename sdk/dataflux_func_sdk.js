@@ -6,14 +6,6 @@ var http        = require('http');
 var https       = require('https');
 var querystring = require('querystring');
 
-var UPLOAD_DISABLED = false;
-try {
- var FormData = require('form-data');
-} catch(err) {
-  UPLOAD_DISABLED = true;
-  console.log('Cannot import `FormData` module, the WATClient.upload() method is disabled.')
-}
-
 var COLOR_MAP = {
   'grey'   : '\x1b[0;30m',
   'red'    : '\x1b[0;31m',
@@ -52,7 +44,7 @@ function colored(s, color) {
   return color + s + '\x1b[0m';
 };
 
-var WATClient = function(options) {
+var DataFluxFunc = function(options) {
   this.debug = options.debug || false;
 
   this.akId     = options.akId;
@@ -77,20 +69,17 @@ var WATClient = function(options) {
       this.port = 80;
     }
   }
-
-  this.headerFields = {
-      akId       : 'X-Wat-Ak-Id',
-      akTimestamp: 'X-Wat-Ak-Timestamp',
-      akNonce    : 'X-Wat-Ak-Nonce',
-      akSign     : 'X-Wat-Ak-Sign',
-      traceId    : 'X-Trace-Id',
-  }
-  if (options.headerFields) {
-    Object.assign(this.headerFields, options.headerFields);
-  }
 };
 
-WATClient.prototype.getSign = function(method, path, timestamp, nonce) {
+DataFluxFunc.prototype.getBodyMD5 = function(body) {
+  var c = crypto.createHash('md5');
+  c.update(str);
+
+  var hash = c.digest('hex');
+  return hash;
+};
+
+DataFluxFunc.prototype.getSign = function(method, path, timestamp, nonce, body) {
   if (!timestamp) {
     timestamp = parseInt(Date.now() / 1000).toString();
   }
@@ -114,13 +103,13 @@ WATClient.prototype.getSign = function(method, path, timestamp, nonce) {
   return sign;
 };
 
-WATClient.prototype.verifySign = function(sign, method, path, timestamp, nonce) {
+DataFluxFunc.prototype.verifySign = function(sign, method, path, timestamp, nonce) {
   var expectedSign = this.getSign(method, path, timestamp, nonce);
 
   return (sign === expectedSign);
 };
 
-WATClient.prototype.getAuthHeader = function(method, path) {
+DataFluxFunc.prototype.getAuthHeader = function(method, path) {
   var timestamp = parseInt(Date.now() / 1000).toString();
   var nonce     = Math.random().toString();
 
@@ -135,7 +124,7 @@ WATClient.prototype.getAuthHeader = function(method, path) {
   return authHeader;
 };
 
-WATClient.prototype.verifyAuthHeader = function(headers, method, path) {
+DataFluxFunc.prototype.verifyAuthHeader = function(headers, method, path) {
   var timestamp = headers[this.headerFields.akTimestamp.toLowerCase()] || '';
   var nonce     = headers[this.headerFields.akNonce.toLowerCase()]     || '';
   var sign      = headers[this.headerFields.akSign.toLowerCase()]      || '';
@@ -143,7 +132,7 @@ WATClient.prototype.verifyAuthHeader = function(headers, method, path) {
   return this.verifySign(sign, method, path, timestamp, nonce);
 };
 
-WATClient.prototype.run = function(options, callback) {
+DataFluxFunc.prototype.run = function(options, callback) {
   var method  = options.method || 'GET';
   var path    = options.path;
   var query   = options.query;
@@ -242,9 +231,9 @@ WATClient.prototype.run = function(options, callback) {
   req.end();
 };
 
-WATClient.prototype.upload = function(options, callback) {
+DataFluxFunc.prototype.upload = function(options, callback) {
   if (UPLOAD_DISABLED) {
-    throw Error('`WATClient.upload()` method need `FormData` module.')
+    throw Error('`DataFluxFunc.upload()` method need `FormData` module.')
   }
 
   var path        = options.path;
@@ -364,31 +353,31 @@ WATClient.prototype.upload = function(options, callback) {
   req.end();
 };
 
-WATClient.prototype.get = function(options, callback) {
+DataFluxFunc.prototype.get = function(options, callback) {
   options = options || {};
   options.method = 'GET';
   return this.run(options, callback);
 };
 
-WATClient.prototype.post = function(options, callback) {
+DataFluxFunc.prototype.post = function(options, callback) {
   options = options || {};
   options.method = 'POST';
   return this.run(options, callback);
 };
 
-WATClient.prototype.put = function(options, callback) {
+DataFluxFunc.prototype.put = function(options, callback) {
   options = options || {};
   options.method = 'PUT';
   return this.run(options, callback);
 };
 
-WATClient.prototype.delete = function(options, callback) {
+DataFluxFunc.prototype.delete = function(options, callback) {
   options = options || {};
   options.method = 'DELETE';
   return this.run(options, callback);
 };
 
-exports.WATClient = WATClient;
+exports.DataFluxFunc = DataFluxFunc;
 
 if (require.main === module) {
   function testSuit(name, callback) {
@@ -398,7 +387,7 @@ if (require.main === module) {
       host    : 'ubuntu18-dev.vm',
       port    : 80,
     };
-    var c = new WATClient(clientOpt);
+    var c = new DataFluxFunc(clientOpt);
     c.debug = true;
 
     // 1. GET Request Test

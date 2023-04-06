@@ -215,8 +215,7 @@ _WEB_AUTH_LOCAL_STORAGE    : xDFFAuthToken
 _WEB_AUTH_COOKIE           : xDFFAuthToken
 _WEB_AUTH_EXPIRES          : 86400
 _WEB_CAPTCHA_EXPIRES       : 300
-_WEB_DRY_RUN_MODE_HEADER   : X-Dff-Use-Dry-Run-Mode
-_WEB_AK_SIGN_VERSION_HEADER: X-Dff-Ak-Sign-Version
+_WEB_DRY_RUN_MODE_HEADER   : X-Dff-Dry-Run
 _WEB_AK_ID_HEADER          : X-Dff-Ak-Id
 _WEB_AK_TIMESTAMP_HEADER   : X-Dff-Ak-Timestamp
 _WEB_AK_NONCE_HEADER       : X-Dff-Ak-Nonce

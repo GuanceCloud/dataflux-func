@@ -18,13 +18,6 @@ except ImportError:
     import http.client as httplib
     from urllib.parse import urlparse, urlencode, quote
 
-UPLOAD_DISABLED = False
-try:
-    import requests
-except ImportError:
-    UPLOAD_DISABLED = True
-    print('Cannot import `requests` module, the WATClient.upload() method is disabled.')
-
 COLOR_MAP = {
     'grey'   : '\033[0;30m',
     'red'    : '\033[0;31m',
@@ -101,16 +94,15 @@ def colored(s, color=None):
 
     return color + '{}\033[0m'.format(s)
 
-class WATClient(object):
-    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, header_fields=None, debug=False):
-        self.debug = debug
+class DataFluxFunc(object):
+    def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, debug=False):
+        self.debug = debug or False
 
         self.ak_id     = ak_id
         self.ak_secret = ak_secret
 
         self.host = host
         self.port = port
-
         if self.host and ':' in self.host:
             host_port = self.host.split(':')
             self.host = host_port[0]
@@ -125,69 +117,62 @@ class WATClient(object):
             else:
                 self.port = 80
 
-        self.header_fields = {
-            'akId'       : 'X-Wat-Ak-Id',
-            'akTimestamp': 'X-Wat-Ak-Timestamp',
-            'akNonce'    : 'X-Wat-Ak-Nonce',
-            'akSign'     : 'X-Wat-Ak-Sign',
-            'traceId'    : 'X-Trace-Id',
-        }
-        if header_fields:
-            self.header_fields.update(header_fields)
+    def get_body_md5(self, body=None):
+        h = md5()
+        h.update(ensure_binary(body or ''))
 
-    def get_sign(self, method, path, timestamp, nonce):
+        return ensure_str(h.hexdigest())
+
+    def get_sign(self, method, path, timestamp, nonce, body=None):
+        method = method.upper()
+
         if timestamp is None:
             timestamp = str(int(time.time()))
 
         if nonce is None:
             nonce = str(uuid.uuid4().hex)
 
-        string_to_sign = '&'.join([ timestamp, nonce, method.upper(), path])
+        body_md5 = self.get_body_md5(body);
+        string_to_sign = '&'.join([ method, path, timestamp, nonce, body_md5 ])
 
         if self.debug:
-            print('{} {} {}'.format(
+            print('{} {}'.format(
                 colored('[String to Sign]'),
-                colored(self.ak_sign_version, 'cyan'),
                 ensure_str(string_to_sign)))
 
-        ak_secret      = ensure_binary(self.ak_secret)
-        string_to_sign = ensure_binary(string_to_sign)
+        h = hmac.new(ensure_binary(self.ak_secret), ensure_binary(string_to_sign), sha1)
 
-        h = hmac.new(ak_secret, string_to_sign, sha1)
-
-        sign = h.hexdigest()
-        sign = ensure_str(sign)
-
+        sign = ensure_str(h.hexdigest())
         return sign
 
-    def verify_sign(self, sign, method, path, timestamp, nonce):
-        expected_sign = self.get_sign(method, path, timestamp, nonce)
+    def verify_sign(self, sign, method, path, timestamp, nonce, body=None):
+        expected_sign = self.get_sign(method, path, timestamp, nonce, body=body)
 
         return (sign == expected_sign)
 
-    def get_auth_header(self, method, path):
+    def get_auth_header(self, method, path, body=None):
         timestamp = str(int(time.time()))
         nonce     = uuid.uuid4().hex
 
-        sign = self.get_sign(method, path, timestamp, nonce)
+        sign = self.get_sign(method, path, timestamp, nonce, body=body)
 
         auth_headers = {
-            self.header_fields['akId']       : self.ak_id,
-            self.header_fields['akTimestamp']: timestamp,
-            self.header_fields['akNonce']    : nonce,
-            self.header_fields['akSign']     : sign,
+            'X-Dff-Ak-Id'       : self.ak_id,
+            'X-Dff-Ak-Timestamp': timestamp,
+            'X-Dff-Ak-Nonce'    : nonce,
+            'X-Dff-Ak-Sign'     : sign,
         }
         return auth_headers
 
-    def verify_auth_header(self, headers, method, path):
-        timestamp = headers.get(self.header_fields['akTimestamp'], '')
-        nonce     = headers.get(self.header_fields['akNonce'], '')
-        sign      = headers.get(self.header_fields['akSign'], '')
+    def verify_auth_header(self, headers, method, path, body=None):
+        sign      = headers.get('X-Dff-Ak-Sign')
+        timestamp = headers.get('X-Dff-Ak-Timestamp')
+        nonce     = headers.get('X-Dff-Ak-Nonce')
 
-        return self.verify_sign(sign, method, path, timestamp, nonce)
+        return self.verify_sign(sign, method, path, timestamp, nonce, body=body)
 
     def run(self, method, path, query=None, body=None, headers=None, trace_id=None):
-        # Prepare method/query/body
+        # Prepare method / query / body
         method = method.upper()
 
         if query:
@@ -209,13 +194,13 @@ class WATClient(object):
         headers = headers or {}
         headers['Content-Type'] = 'application/json'
         if trace_id:
-            headers[self.header_fields['traceId']] = trace_id
+            headers['X-Trace-Id'] = trace_id
 
         if self.ak_id and self.ak_secret:
-            auth_headers = self.get_auth_header(method, path)
+            auth_headers = self.get_auth_header(method, path, body=body)
             headers.update(auth_headers)
 
-        # Do HTTP/HTTPS
+        # Do HTTP / HTTPS
         conn = None
         if self.use_https:
             conn = httplib.HTTPSConnection(self.host, port=self.port, timeout=self.timeout)
@@ -249,71 +234,6 @@ class WATClient(object):
 
         return resp_status_code, resp_data
 
-    def upload(self, path, file_buffer, filename=None, query=None, fields=None, headers=None, trace_id=None):
-        if UPLOAD_DISABLED:
-            raise Exception('`WATClient.upload()` method need `requests` module.')
-
-        # Prepare method/query/fields/file
-        method = 'POST'
-
-        if not filename:
-            filename = 'uploadfile'
-
-        filename = quote(filename)
-
-        if query:
-            path = path + '?' + urlencode(query)
-
-        if fields and not isinstance(fields, dict):
-            raise Exception('`fields` should be a plain JSON')
-
-        files = {'files': (filename, file_buffer)}
-
-        if self.debug == True:
-            print('=' * 50)
-            print('{} {} {}'.format(colored('[Request]'), colored(method, 'cyan'), colored(ensure_str(path), 'cyan')))
-            if fields:
-                print('{} {}'.format(colored('[Fields]'), ensure_str(json.dumps(fields))))
-            if files:
-                print('{} {}'.format(colored('[File]'), filename))
-
-        # Preapre HTTP
-        url = 'http://{}:{}{}'.format(self.host, self.port, path)
-        req = requests.Request('POST', url, data=fields, files=files)
-        prepared_req = req.prepare()
-
-        # Prepare headers with auth info
-        headers = headers or {}
-        if trace_id:
-            headers[self.header_fields['traceId']] = trace_id
-
-        if self.ak_id and self.ak_secret:
-            auth_headers = self.get_auth_header(method, path)
-            headers.update(auth_headers)
-
-        prepared_req.headers.update(headers)
-
-        with requests.Session() as s:
-            resp = s.send(prepared_req)
-
-        # Get response
-        resp_status_code = resp.status_code
-        resp_raw_data    = resp.text
-
-        resp_content_type = resp.headers.get('Content-Type', '').split(';')[0].strip()
-        if resp_content_type == 'application/json':
-            resp_data = json.loads(resp_raw_data)
-
-        if self.debug == True:
-            _color = 'green'
-            if resp_status_code >= 400:
-                _color = 'red'
-
-            print(colored('{} {}'.format('[Response]', resp_status_code), _color))
-            print(colored('{} {}'.format('[Payload]', ensure_str(resp_raw_data)), _color))
-
-        return resp_status_code, resp_data
-
     def get(self, path, query=None, headers=None, trace_id=None):
         return self.run('GET', path, query, None, headers, trace_id=trace_id)
 
@@ -327,14 +247,19 @@ class WATClient(object):
         return self.run('DELETE', path, query, None, headers, trace_id=trace_id)
 
 if __name__ == '__main__':
-    c = WATClient('ak-7Qf3KXH8QZOrW8Tf', 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3', host='ubuntu18-dev.vm:80')
-    c.debug = True
+    from dataflux_func_sdk import DataFluxFunc
 
-    # 1. GET Request Test
-    status_code, resp = c.get('/api/v1/do/ping',
-            trace_id='TEST-PY{}-001'.format(sys.version_info[0]))
+    # Create DataFlux Func Handler
+    dff = DataFluxFunc(ak_id='ak-xxxxx', ak_secret='xxxxxxxxxx', host='localhost:8088')
 
-    # 2. POST Request Test
+    # Debug ON
+    dff.debug = True
+
+    # Send GET request
+    status_code, resp = dff.get('/api/v1/do/ping')
+    print(status_code, resp)
+
+    # Send POST request
     body = {
         'echo': {
             'int'    : 1,
@@ -344,20 +269,5 @@ if __name__ == '__main__':
             'boolean': True,
         }
     }
-
-    status_code, resp = c.post('/api/v1/do/echo',
-            body=body,
-            trace_id='TEST-PY{}-002'.format(sys.version_info[0]))
-
-    # 3. UPLOAD Request Test
-    if not UPLOAD_DISABLED:
-        with open('使用说明_SDK.md', 'rb') as _f:
-            file_buffer = _f.read()
-
-        fields = {
-            'note': 'This is a Chinese README. 这是一份中文使用说明。'
-        }
-
-        status_code, resp = c.upload('/api/v1/files/do/upload',
-            file_buffer=file_buffer, filename='使用说明_SDK.md', fields=fields,
-            trace_id='TEST-PY{}-003'.format(sys.version_info[0]))
+    status_code, resp = dff.post('/api/v1/do/echo', body=body)
+    print(status_code, resp)
