@@ -1,8 +1,8 @@
 # DataFlux Func SDK
 
-This SDK contains signature feature for programmatically calling DataFlux Func's API.
+DataFlux Func provides full API support and can be called programmatically using the SDK.
 
-The SDK itself is a single file release, so users can put the code file into their projects and use it directly.
+The SDK includes signature functionality and is released as a single file. It can be used directly by users in their projects.
 
 ## 1. Create a AccessKey
 
@@ -26,21 +26,25 @@ dff = DataFluxFunc(ak_id='ak-xxxxx', ak_secret='xxxxxxxxxx', host='localhost:808
 dff.debug = True
 
 # Send GET request
-status_code, resp = dff.get('/api/v1/do/ping')
-print(status_code, resp)
+try:
+    status_code, resp = dff.get('/api/v1/do/ping')
+except Exception as e:
+    print(colored(e, 'red'))
 
 # Send POST request
-body = {
-    'echo': {
-        'int'    : 1,
-        'str'    : 'Hello World',
-        'unicode': u'你好，世界！',
-        'none'   : None,
-        'boolean': True,
+try:
+    body = {
+        'echo': {
+            'int'    : 1,
+            'str'    : 'Hello World',
+            'unicode': u'你好，世界！',
+            'none'   : None,
+            'boolean': True,
+        }
     }
-}
-status_code, resp = dff.post('/api/v1/do/echo', body=body)
-print(status_code, resp)
+    status_code, resp = dff.post('/api/v1/do/echo', body=body)
+except Exception as e:
+    print(colored(e, 'red'))
 ```
 
 
@@ -63,23 +67,23 @@ var getOpt = {
   path: '/api/v1/do/ping',
 };
 dff.get(getOpt, function(err, respData, respStatusCode) {
-  console.log(respStatusCode, respData);
-});
+  if (err) console.error(colored(err, 'red'))
 
-// Send POST request
-var postOpt = {
-  path: '/api/v1/do/echo',
-  body: {
-    'echo': {
-      'int'    : 1,
-      'str'    : 'Hello World',
-      'unicode': '你好，世界！',
-      'none'   : null,
-      'boolean': true,
+  // Send POST request
+  var postOpt = {
+    path: '/api/v1/do/echo',
+    body: {
+      'echo': {
+        'int'    : 1,
+        'str'    : 'Hello World',
+        'unicode': '你好，世界！',
+        'none'   : null,
+        'boolean': true,
+      }
     }
-  }
-};
-dff.post(postOpt, function(err, respData, respStatusCode) {
-  console.log(respStatusCode, respData);
+  };
+  dff.post(postOpt, function(err, respData, respStatusCode) {
+    if (err) console.error(colored(err, 'red'))
+  });
 });
 ```

@@ -14,7 +14,7 @@ var auth    = require('../utils/auth');
 var userMod      = require('../models/userMod');
 var accessKeyMod = require('../models/accessKeyMod');
 
-var WATClient = require('../../sdk/wat_sdk').WATClient;
+var DataFluxFunc = require('../../sdk/dataflux_func_sdk').DataFluxFunc;
 
 /**
  * Username/password Auth.
@@ -159,11 +159,10 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
   if (res.locals.user && res.locals.user.isSignedIn) return next();
 
   // Get AK Sign info
-  var akId          = req.get(CONFIG._WEB_AK_ID_HEADER);
-  var akSign        = req.get(CONFIG._WEB_AK_SIGN_HEADER);
-  var akNonce       = req.get(CONFIG._WEB_AK_NONCE_HEADER);
-  var akTimestamp   = parseInt(req.get(CONFIG._WEB_AK_TIMESTAMP_HEADER));
-  var akSignVersion = req.get(CONFIG._WEB_AK_SIGN_VERSION_HEADER) || 'v1';
+  var akId        = req.get(CONFIG._WEB_AK_ID_HEADER);
+  var akSign      = req.get(CONFIG._WEB_AK_SIGN_HEADER);
+  var akNonce     = req.get(CONFIG._WEB_AK_NONCE_HEADER);
+  var akTimestamp = parseInt(req.get(CONFIG._WEB_AK_TIMESTAMP_HEADER));
 
   // Skip if no AK ID/Sign
   if (!akId || !akSign) return next();
@@ -222,33 +221,11 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
       accessKeyModel.getWithCheck(akId, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        var watClient = new WATClient({
-          akId         : akId,
-          akSecret     : dbRes.secret,
-          akSignVersion: akSignVersion,
-          headerFields: {
-            akSignVersion: CONFIG._WEB_AK_SIGN_VERSION_HEADER,
-            akId         : CONFIG._WEB_AK_ID_HEADER,
-            akTimestamp  : CONFIG._WEB_AK_TIMESTAMP_HEADER,
-            akNonce      : CONFIG._WEB_AK_NONCE_HEADER,
-            akSign       : CONFIG._WEB_AK_SIGN_HEADER,
-          }
-        });
-        var isValidSign = watClient.verifyAuthHeader(req.headers, req.method, req.originalUrl);
+        var dff = new DataFluxFunc({ akId: akId, akSecret: dbRes.secret });
+        var isValidSign = dff.verifyAuthHeader(req.headers, req.method, req.originalUrl);
 
         if (!isValidSign) {
-          res.locals.logger.debug('AK Sign Version : {0}', akSignVersion);
-
-          switch(akSignVersion) {
-            case 'v2':
-              res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key sign. Hint: akSign = HmacSha1("<AK Sign Version>&<AK Timestamp(Second)>&<AK Nonce>&<METHOD>&<FULL URL>&<Body or \'\'>", <AK Secret>)');
-              break;
-
-            case 'v1':
-            default:
-              res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key sign. Hint: akSign = HmacSha1("<AK Timestamp(Second)>&<AK Nonce>&<METHOD>&<FULL URL>", <AK Secret>)');
-              break;
-          }
+          res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key sign. Hint: akSign = HmacSha1("<AK Sign Version>&<AK Timestamp(Second)>&<AK Nonce>&<METHOD>&<FULL URL>&<Body or \'\'>", <AK Secret>)');
           return asyncCallback(res.locals.reqAuthError);
         }
 

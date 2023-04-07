@@ -8,15 +8,14 @@ import json
 import hmac
 from hashlib import sha1, md5
 import types
-import base64
 
 try:
     import httplib
-    from urllib import urlencode, quote
+    from urllib import urlencode
     from urlparse import urlparse
 except ImportError:
     import http.client as httplib
-    from urllib.parse import urlparse, urlencode, quote
+    from urllib.parse import urlparse, urlencode
 
 COLOR_MAP = {
     'grey'   : '\033[0;30m',
@@ -132,7 +131,7 @@ class DataFluxFunc(object):
         if nonce is None:
             nonce = str(uuid.uuid4().hex)
 
-        body_md5 = self.get_body_md5(body);
+        body_md5 = self.get_body_md5(body)
         string_to_sign = '&'.join([ method, path, timestamp, nonce, body_md5 ])
 
         if self.debug:
@@ -165,9 +164,9 @@ class DataFluxFunc(object):
         return auth_headers
 
     def verify_auth_header(self, headers, method, path, body=None):
-        sign      = headers.get('X-Dff-Ak-Sign')
-        timestamp = headers.get('X-Dff-Ak-Timestamp')
-        nonce     = headers.get('X-Dff-Ak-Nonce')
+        sign      = headers.get('X-Dff-Ak-Sign')      or ''
+        timestamp = headers.get('X-Dff-Ak-Timestamp') or ''
+        nonce     = headers.get('X-Dff-Ak-Nonce')     or ''
 
         return self.verify_sign(sign, method, path, timestamp, nonce, body=body)
 
@@ -250,24 +249,32 @@ if __name__ == '__main__':
     from dataflux_func_sdk import DataFluxFunc
 
     # Create DataFlux Func Handler
-    dff = DataFluxFunc(ak_id='ak-xxxxx', ak_secret='xxxxxxxxxx', host='localhost:8088')
+    host = 'localhost:8088'
+    if len(sys.argv) >= 2:
+        host = sys.argv[1]
+
+    dff = DataFluxFunc(ak_id='ak-xxxxx', ak_secret='xxxxxxxxxx', host=host)
 
     # Debug ON
     dff.debug = True
 
     # Send GET request
-    status_code, resp = dff.get('/api/v1/do/ping')
-    print(status_code, resp)
+    try:
+        status_code, resp = dff.get('/api/v1/do/ping')
+    except Exception as e:
+        print(colored(e, 'red'))
 
     # Send POST request
-    body = {
-        'echo': {
-            'int'    : 1,
-            'str'    : 'Hello World',
-            'unicode': u'你好，世界！',
-            'none'   : None,
-            'boolean': True,
+    try:
+        body = {
+            'echo': {
+                'int'    : 1,
+                'str'    : 'Hello World',
+                'unicode': u'你好，世界！',
+                'none'   : None,
+                'boolean': True,
+            }
         }
-    }
-    status_code, resp = dff.post('/api/v1/do/echo', body=body)
-    print(status_code, resp)
+        status_code, resp = dff.post('/api/v1/do/echo', body=body)
+    except Exception as e:
+        print(colored(e, 'red'))

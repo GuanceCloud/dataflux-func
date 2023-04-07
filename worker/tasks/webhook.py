@@ -17,7 +17,7 @@ except ImportError:
 from worker import app
 from worker.tasks import gen_task_id, BaseTask
 from worker.utils import yaml_resources, toolkit
-from worker.utils.wat_sdk import WATClient
+from sdk.dataflux_func import DataFluxFunc
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -103,7 +103,7 @@ def do_http_request(self, *args, **kwargs):
     target = kwargs.get('target')
 
     parsed_url = urlparse(target.get('url'))
-    wat_client = WATClient(
+    dff = DataFluxFunc(
         ak_id=target.get('akId'),
         ak_secret=target.get('akSecret'),
         host=parsed_url.netloc)
@@ -119,7 +119,7 @@ def do_http_request(self, *args, **kwargs):
         'from'  : kwargs.get('from'),
     }
 
-    status_code, resp = wat_client.post(webhook_full_url, body=webhook_body)
+    status_code, resp = dff.post(webhook_full_url, body=webhook_body)
     if status_code >= 400:
         e = Exception(resp)
         raise e

@@ -6,6 +6,14 @@ var http        = require('http');
 var https       = require('https');
 var querystring = require('querystring');
 
+var UPLOAD_DISABLED = false;
+try {
+ var FormData = require('form-data');
+} catch(err) {
+  UPLOAD_DISABLED = true;
+  console.log('Cannot require `form-data` package, the DataFluxFunc.upload() method is disabled.')
+}
+
 var COLOR_MAP = {
   'grey'   : '\x1b[0;30m',
   'red'    : '\x1b[0;31m',
@@ -44,6 +52,51 @@ function colored(s, color) {
   return color + s + '\x1b[0m';
 };
 
+function jsonDumps(obj) {
+  if (typeof obj == 'string') {
+    return '"' + obj + '"';
+  }
+  else if (typeof obj == 'number') {
+    return obj;
+  }
+  else if (typeof obj == 'boolean') {
+    return obj;
+  }
+  else if (typeof obj == 'function') {
+    return '"<FUNCTION>"';
+  }
+  else if (typeof obj == 'object') {
+    if (Array.isArray(obj)) {
+      var parts = [];
+      for (var i = 0; i < obj.length; i++) {
+        var v = jsonDumps(obj[i]);
+        parts.push(v);
+      }
+
+      return '[' + parts.join(',') + ']';
+    }
+    else {
+      var keyList = [];
+      for (var k in obj) {
+        keyList.push(k);
+      }
+      keyList.sort();
+
+      var parts = [];
+      for (var i = 0; i < keyList.length; i++) {
+        var k = keyList[i];
+        var v = jsonDumps(obj[k]);
+
+        parts.push('"' + k + '":' + v);
+      }
+      return '{' + parts.join(',') + '}';
+    }
+  }
+  else {
+    return '"<UNKNOW>"';
+  }
+};
+
 var DataFluxFunc = function(options) {
   this.debug = options.debug || false;
 
@@ -73,13 +126,15 @@ var DataFluxFunc = function(options) {
 
 DataFluxFunc.prototype.getBodyMD5 = function(body) {
   var c = crypto.createHash('md5');
-  c.update(str);
+  c.update(body || '');
 
   var hash = c.digest('hex');
   return hash;
 };
 
 DataFluxFunc.prototype.getSign = function(method, path, timestamp, nonce, body) {
+  method = method.toUpperCase();
+
   if (!timestamp) {
     timestamp = parseInt(Date.now() / 1000).toString();
   }
@@ -88,7 +143,8 @@ DataFluxFunc.prototype.getSign = function(method, path, timestamp, nonce, body) 
     nonce = Math.random().toString();
   }
 
-  var stringToSign = [ timestamp, nonce, method.toUpperCase(), path ].join('&');
+  var bodyMD5 = this.getBodyMD5(body);
+  var stringToSign = [ method, path, timestamp, nonce, bodyMD5 ].join('&');
 
   if (this.debug) {
     console.log(strf('{0} {1}',
@@ -99,37 +155,36 @@ DataFluxFunc.prototype.getSign = function(method, path, timestamp, nonce, body) 
   var c = crypto.createHmac('sha1', this.akSecret);
   c.update(stringToSign);
   var sign = c.digest('hex');
-
   return sign;
 };
 
-DataFluxFunc.prototype.verifySign = function(sign, method, path, timestamp, nonce) {
-  var expectedSign = this.getSign(method, path, timestamp, nonce);
+DataFluxFunc.prototype.verifySign = function(sign, method, path, timestamp, nonce, body) {
+  var expectedSign = this.getSign(method, path, timestamp, nonce, body);
 
   return (sign === expectedSign);
 };
 
-DataFluxFunc.prototype.getAuthHeader = function(method, path) {
+DataFluxFunc.prototype.getAuthHeader = function(method, path, body) {
   var timestamp = parseInt(Date.now() / 1000).toString();
   var nonce     = Math.random().toString();
 
-  var sign = this.getSign(method, path, timestamp, nonce);
+  var sign = this.getSign(method, path, timestamp, nonce, body);
 
-  var authHeader = {}
-  authHeader[this.headerFields.akId]        = this.akId;
-  authHeader[this.headerFields.akTimestamp] = timestamp;
-  authHeader[this.headerFields.akNonce]     = nonce;
-  authHeader[this.headerFields.akSign]      = sign;
-
+  var authHeader = {
+    'X-Dff-Ak-Id'       : this.akId,
+    'X-Dff-Ak-Timestamp': timestamp,
+    'X-Dff-Ak-Nonce'    : nonce,
+    'X-Dff-Ak-Sign'     : sign,
+  };
   return authHeader;
 };
 
-DataFluxFunc.prototype.verifyAuthHeader = function(headers, method, path) {
-  var timestamp = headers[this.headerFields.akTimestamp.toLowerCase()] || '';
-  var nonce     = headers[this.headerFields.akNonce.toLowerCase()]     || '';
-  var sign      = headers[this.headerFields.akSign.toLowerCase()]      || '';
+DataFluxFunc.prototype.verifyAuthHeader = function(headers, method, path, body) {
+  var sign      = headers['X-Dff-Ak-Sign']      || '';
+  var timestamp = headers['X-Dff-Ak-Timestamp'] || '';
+  var nonce     = headers['X-Dff-Ak-Nonce']     || '';
 
-  return this.verifySign(sign, method, path, timestamp, nonce);
+  return this.verifySign(sign, method, path, timestamp, nonce, body);
 };
 
 DataFluxFunc.prototype.run = function(options, callback) {
@@ -140,7 +195,7 @@ DataFluxFunc.prototype.run = function(options, callback) {
   var headers = options.headers;
   var traceId = options.traceId;
 
-  // Prepare method/query/body
+  // Prepare method / query / body
   method = method.toUpperCase();
 
   if (query) {
@@ -149,7 +204,7 @@ DataFluxFunc.prototype.run = function(options, callback) {
 
   if (body) {
     if ('object' === typeof body) {
-      body = JSON.stringify(body);
+      body = jsonDumps(body);
     } else {
       body = '' + (body || '');
     }
@@ -167,15 +222,15 @@ DataFluxFunc.prototype.run = function(options, callback) {
   headers = headers || {};
   headers['Content-Type'] = 'application/json';
   if (traceId) {
-    headers[this.headerFields.traceId] = traceId;
+    headers['X-Trace-Id'] = traceId;
   }
 
   if (this.akId && this.akSecret) {
-    var authHeader = this.getAuthHeader(method, path);
+    var authHeader = this.getAuthHeader(method, path, body);
     Object.assign(headers, authHeader);
   }
 
-  // Do HTTP/HTTPS
+  // Do HTTP / HTTPS
   var requestOptions = {
     host   : this.host,
     port   : this.port,
@@ -233,7 +288,7 @@ DataFluxFunc.prototype.run = function(options, callback) {
 
 DataFluxFunc.prototype.upload = function(options, callback) {
   if (UPLOAD_DISABLED) {
-    throw Error('`DataFluxFunc.upload()` method need `FormData` module.')
+    throw Error('`DataFluxFunc.upload()` method needs `form-data` package.')
   }
 
   var path        = options.path;
@@ -244,13 +299,8 @@ DataFluxFunc.prototype.upload = function(options, callback) {
   var headers     = options.headers;
   var traceId     = options.traceId;
 
-  // Prepare method/query/fields/file
+  // Prepare method / query / fields / file
   var method = 'POST';
-
-  if (!filename) {
-    filename = 'uploadfile';
-  }
-  filename = querystring.escape(filename);
 
   if (query) {
     path = path + '?' + querystring.stringify(query);
@@ -269,7 +319,8 @@ DataFluxFunc.prototype.upload = function(options, callback) {
     }
   }
 
-  formData.append('files', fileBuffer, {filename: filename});
+  filename = querystring.escape(filename || 'uploadfile');
+  formData.append('files', fileBuffer, { filename: filename });
 
   if (this.debug) {
     console.log('='.repeat(50));
@@ -290,7 +341,7 @@ DataFluxFunc.prototype.upload = function(options, callback) {
   }
 
   if (this.akId && this.akSecret) {
-    var authHeader = this.getAuthHeader(method, path);
+    var authHeader = this.getAuthHeader(method, path, fields);
     Object.assign(headers, authHeader);
   }
 
@@ -380,60 +431,41 @@ DataFluxFunc.prototype.delete = function(options, callback) {
 exports.DataFluxFunc = DataFluxFunc;
 
 if (require.main === module) {
-  function testSuit(name, callback) {
-    var clientOpt = {
-      akId    : 'ak-7Qf3KXH8QZOrW8Tf',
-      akSecret: 'WaYGi4cBsievlfZsNhE3fY40ZB9dI9L3',
-      host    : 'ubuntu18-dev.vm',
-      port    : 80,
-    };
-    var c = new DataFluxFunc(clientOpt);
-    c.debug = true;
+  var host = process.argv[2] || 'localhost:8088';
 
-    // 1. GET Request Test
-    var opt1 = {
-      path   : '/api/v1/do/ping',
-      traceId: 'TEST-NODE-001',
-    };
-    c.get(opt1, function(err, respData, respStatusCode) {
-
-      // 2. POST Request Test
-      var opt2 = {
-        path: '/api/v1/do/echo',
-        body: {
-          'echo': {
-            'int'    : 1,
-            'str'    : 'Hello World',
-            'unicode': '你好，世界！',
-            'none'   : null,
-            'boolean': true,
-          }
-        },
-        traceId: 'TEST-NODE-002',
-      };
-      c.post(opt2, function(err, respData, respStatusCode) {
-
-        // 3. UPLOAD Request Test
-        if (UPLOAD_DISABLED) return callback && callback();
-
-        var opt3 = {
-          path      : '/api/v1/files/do/upload',
-          fileBuffer: fs.readFileSync('使用说明_SDK.md'),
-          filename  : '使用说明_SDK.md',
-          fields    : {
-            'note': 'This is a Chinese README. 这是一份中文使用说明。'
-          },
-          traceId: 'TEST-NODE-003',
-        };
-        c.upload(opt3, function(err, respData, respStatusCode) {
-
-          return callback && callback();
-        });
-      });
-    });
+  // Create DataFlux Func Handler
+  var opt = {
+    akId    : 'ak-xxxxx',
+    akSecret: 'xxxxxxxxxx',
+    host    : host,
   };
+  var dff = new DataFluxFunc(opt);
 
-  testSuit('test', function() {
-    testSuit(null);
+  // Debug ON
+  dff.debug = true;
+
+  // Send GET request
+  var getOpt = {
+    path: '/api/v1/do/ping',
+  };
+  dff.get(getOpt, function(err, respData, respStatusCode) {
+    if (err) console.error(colored(err, 'red'))
+
+    // Send POST request
+    var postOpt = {
+      path: '/api/v1/do/echo',
+      body: {
+        'echo': {
+          'int'    : 1,
+          'str'    : 'Hello World',
+          'unicode': '你好，世界！',
+          'none'   : null,
+          'boolean': true,
+        }
+      }
+    };
+    dff.post(postOpt, function(err, respData, respStatusCode) {
+      if (err) console.error(colored(err, 'red'))
+    });
   });
 };

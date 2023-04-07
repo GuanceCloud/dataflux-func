@@ -264,9 +264,7 @@ exports.afterAppCreated = function(app, server) {
   var path = require('path');
   var fs   = require('fs-extra');
 
-  var celeryHelper = require('./utils/extraHelpers/celeryHelper');
-  var WATClient    = require('../sdk/wat_sdk').WATClient;
-  var IMAGE_INFO   = require('../image-info.json');
+  var DataFluxFunc = require('../sdk/dataflux_func_sdk').DataFluxFunc;
 
   /***** 启动时自动运行 *****/
   function printError(err) {
@@ -317,7 +315,7 @@ exports.afterAppCreated = function(app, server) {
         if (toolkit.isNothing(filenamesToInstall)) return asyncCallback();
 
         // 初始化
-        var watClient = new WATClient({ host: 'localhost', port: CONFIG.WEB_PORT });
+        var dff = new DataFluxFunc({ host: 'localhost', port: CONFIG.WEB_PORT });
         app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
 
         // 依次导入
@@ -340,7 +338,7 @@ exports.afterAppCreated = function(app, server) {
             fileBuffer: fileBuffer,
             filename  : filename,
           }
-          watClient.upload(opt, function(err, apiRes) {
+          dff.upload(opt, function(err, apiRes) {
             if (err) return eachCallback(err);
 
             if (!apiRes.ok) {
