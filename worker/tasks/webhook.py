@@ -17,7 +17,7 @@ except ImportError:
 from worker import app
 from worker.tasks import gen_task_id, BaseTask
 from worker.utils import yaml_resources, toolkit
-from sdk.dataflux_func import DataFluxFunc
+from sdk.dataflux_func_sdk import DataFluxFunc
 
 CONFIG = yaml_resources.get('CONFIG')
 
