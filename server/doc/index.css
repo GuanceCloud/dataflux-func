@@ -12,13 +12,13 @@ html {
 *,
 *:before,
 *:after {
-  font-family: Iosevka;
   box-sizing: inherit;
 }
 
 body {
     margin: 0;
     background: #fafafa;
+    padding-bottom: 100px;
 }
 
 em {
@@ -35,17 +35,15 @@ em:before {
   margin-right: 3px;
 }
 
+.swagger-ui .download-url-wrapper,
+.swagger-ui .info hgroup.main a,
 .swagger-ui .try-out {
-  display: none;
+  display: none !important;
 }
 
-.swagger-ui .info hgroup.main a {
-  display: none;
-}
 .swagger-ui .info a {
   color: #4051B5;
   font-size: 16px;
-  font-family: Iosevka;
   text-decoration: none;
   display: inline-block;
   border-bottom: 1px dashed;
@@ -86,6 +84,7 @@ em:before {
 }
 
 .swagger-ui .opblock .opblock-summary-path * {
+  font-family: Iosevka;
   font-size: 18px;
 }
 .swagger-ui .opblock .opblock-summary-description {
@@ -111,10 +110,8 @@ em:before {
 .swagger-ui .renderedMarkdown :not(pre) code {
   font-family: Iosevka;
   color: #FF6600;
-  margin-left: 5px;
-  margin-right: 5px;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  margin: 0;
+  padding: 3px 5px;
   font-weight: normal;
   font-style: normal;
   border-radius: 5px;
@@ -127,17 +124,14 @@ em:before {
   font-weight: normal;
 }
 
-.swagger-ui .markdown p,
-.swagger-ui .markdown pre,
-.swagger-ui .renderedMarkdown p,
-.swagger-ui .renderedMarkdown pre,
 .swagger-ui .markdown pre>code,
 .swagger-ui .renderedMarkdown pre>code,
-.swagger-ui .opblock-description-wrapper *,
-.swagger-ui .opblock-external-docs-wrapper *,
-.swagger-ui .opblock-title_normal *,
 .swagger-ui .opblock-body pre.microlight *{
   font-family: Iosevka;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.8;
+}
+.swagger-ui .renderedMarkdown * {
+  font-size: 16px !important;
+  line-height: 1.8;
 }
