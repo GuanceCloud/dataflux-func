@@ -24,10 +24,10 @@ Publish time     : 发布时间
 Never published  : 从未发布
 Recent operations: 最近操作记录
 Client           : 客户端
-Client ID        : 客户端ID
+Client ID        : 客户端 ID
 IP Address       : IP地址
 Operation        : 操作
-Data ID          : 数据ID
+Data ID          : 数据 ID
 MODIFY           : 修改操作
 DELETE           : 删除操作
 Cost             : 耗时

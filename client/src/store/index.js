@@ -7,6 +7,7 @@ import C from '@/const'
 import * as T from '@/toolkit'
 
 import moment from 'moment'
+import app from '../main'
 
 const STATE_CONFIG = {
   isSystemConfigLoaded                     : { persist: false, syncXTab: false },
@@ -528,14 +529,20 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    async reloadSystemConfig({ commit }) {
+    async signOut({ commit }) {
+      await T.callAPI_get('/api/v1/auth/do/sign-out');
+
+      commit('updateSocketIOStatus', false);
+      commit('updateXAuthToken', null);
+    },
+    async loadSystemConfig({ commit }) {
       let apiRes = await T.callAPI_get('/api/v1/func-system-config');
       if (!apiRes || !apiRes.ok) return;
 
       await commit('updateSystemConfig', apiRes.data);
       window._DFF_isSystemConfigLoaded = true;
     },
-    async reloadUserProfile({ commit, state }) {
+    async loadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;
 
       let apiRes = await T.callAPI_get('/api/v1/auth/profile/do/get');
@@ -543,11 +550,24 @@ export default new Vuex.Store({
 
       commit('updateUserProfile', apiRes.data);
     },
-    async signOut({ commit }) {
-      await T.callAPI_get('/api/v1/auth/do/sign-out');
+    async loadAPINamesLocales({ commit, getters }) {
+      if (!getters.isSignedIn) return;
 
-      commit('updateSocketIOStatus', false);
-      commit('updateXAuthToken', null);
+      let apiRes = await T.callAPI_get('/api');
+
+      let apiNamesLocales_zhCN = {};
+      for (let moduleKey in apiRes.data) {
+        if (moduleKey[0] === '$') continue;
+
+        for (let apiKey in apiRes.data[moduleKey]) {
+          if (apiKey[0] === '$') continue;
+
+          let api = apiRes.data[moduleKey][apiKey];
+          apiNamesLocales_zhCN[api.name] = api.name_zhCN;
+        }
+      }
+
+      app.$i18n.mergeLocaleMessage('zh-CN', apiNamesLocales_zhCN);
     },
   },
   modules: {

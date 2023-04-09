@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 IP Address : IP地址
 Operation  : 操作
-Data ID    : 数据ID
+Data ID    : 数据 ID
 MODIFY     : 修改操作
 DELETE     : 删除操作
 Cost       : 耗时

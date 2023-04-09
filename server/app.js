@@ -97,7 +97,8 @@ function startApplication() {
   app.use(CONFIG._WEB_CLIENT_APP_PATH, express.static(path.join(__dirname, '../client/dist')));
 
   // Static files
-  app.use(CONFIG._WEB_STATICS_PATH, express.static(path.join(__dirname, 'statics')));
+  app.use('/statics', express.static(path.join(__dirname, 'statics')));
+  app.use('/doc',     express.static(path.join(__dirname, 'doc')));
 
   // User agent
   app.use(expressUseragent.express());

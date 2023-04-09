@@ -52,10 +52,9 @@ const elementUILocales = {
 
 import locales  from '@/assets/yaml/locales.yaml'
 import messages from '@/assets/yaml/messages.yaml'
-import apiNames from '@/assets/yaml/api-names.yaml'
 const_.UI_LOCALE.forEach(_locale => {
   let lang = _locale.key;
-  [ elementUILocales, messages, apiNames ].forEach( localeSrc => {
+  [ elementUILocales, messages ].forEach( localeSrc => {
     if (!localeSrc || !localeSrc[lang]) return;
     Object.assign(locales[lang], localeSrc[lang]);
   })
@@ -177,8 +176,9 @@ const app = new Vue({
   render: h => h(App),
 
   created() {
-    this.$store.dispatch('reloadSystemConfig');
-    this.$store.dispatch('reloadUserProfile');
+    this.$store.dispatch('loadSystemConfig');
+    this.$store.dispatch('loadUserProfile');
+    this.$store.dispatch('loadAPINamesLocales');
   },
   computed: {
     variableConfig() {

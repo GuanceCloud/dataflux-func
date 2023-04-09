@@ -1,0 +1,128 @@
+@font-face {
+  font-family: Iosevka;
+  src: url(/statics/font/iosevka-fixed-regular.woff2);
+}
+
+html {
+    box-sizing: border-box;
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: scroll;
+}
+
+*,
+*:before,
+*:after {
+  font-family: Iosevka;
+  box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    background: #fafafa;
+}
+
+em {
+  color: red !important;
+}
+
+.swagger-ui .try-out {
+  display: none;
+}
+
+.swagger-ui .info a,
+.swagger-ui .info hgroup.main a {
+  color: #FF6600;
+  font-size: 16px;
+  font-family: Iosevka;
+  text-decoration: none;
+  display: inline-block;
+  border-bottom: 1px dashed transparent;
+}
+.swagger-ui .info a:hover,
+.swagger-ui .info hgroup.main a:hover {
+  border-bottom: 1px dashed grey;
+}
+
+.swagger-ui .execute-wrapper,
+.swagger-ui .btn-group {
+  display: block;
+  text-align: left;
+  padding: 30px;
+}
+.swagger-ui .btn.execute,
+.swagger-ui .btn-group .btn {
+  width: 200px;
+  height: 40px;
+  box-shadow: 1px 1px 5px #ccc;
+  margin-right: 10px;
+  border-radius: 50px !important;
+}
+
+.swagger-ui table tbody tr td {
+  vertical-align: middle;
+  padding-right: 50px !important;
+}
+.swagger-ui .parameter__name {
+  font-size: 18px;
+}
+.swagger-ui .parameter__name::before {
+  content: "\25BA";
+  margin-right: 5px;
+}
+
+.swagger-ui .opblock .opblock-summary-path * {
+  font-size: 18px;
+}
+.swagger-ui .opblock .opblock-summary-description {
+  text-align: right;
+  margin-right: 20px;
+  font-size: 18px;
+}
+.swagger-ui .opblock-body {
+  background-color: white;
+}
+.swagger-ui .opblock-body select,
+.swagger-ui .parameters-col_description input {
+  background-color: white;
+  border: 1px solid #d9d9d9;
+  box-shadow: 1px 1px 5px #ccc;
+  max-width: 400px;
+  width: 100%;
+  height: 40px;
+  font-family: Iosevka;
+}
+
+.swagger-ui .markdown :not(pre) code,
+.swagger-ui .renderedMarkdown :not(pre) code {
+  font-family: Iosevka;
+  color: #FF6600;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-weight: normal;
+  font-style: normal;
+  border-radius: 5px;
+  background-color: rgb(255,102,0,.05);
+  white-space: nowrap;
+}
+.swagger-ui .markdown code,
+.swagger-ui .renderedMarkdown code {
+  color: black;
+  font-weight: normal;
+}
+
+.swagger-ui .markdown p,
+.swagger-ui .markdown pre,
+.swagger-ui .renderedMarkdown p,
+.swagger-ui .renderedMarkdown pre,
+.swagger-ui .markdown pre>code,
+.swagger-ui .renderedMarkdown pre>code,
+.swagger-ui .opblock-description-wrapper *,
+.swagger-ui .opblock-external-docs-wrapper *,
+.swagger-ui .opblock-title_normal *,
+.swagger-ui .opblock-body pre.microlight *{
+  font-family: Iosevka;
+  font-size: 16px;
+  line-height: 1.5;
+}

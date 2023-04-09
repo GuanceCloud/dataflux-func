@@ -197,7 +197,6 @@ export default {
 
       let xAuthToken = apiRes.data.xAuthToken;
       this.$store.commit('updateXAuthToken', xAuthToken);
-      this.$store.dispatch('reloadUserProfile');
 
       setTimeout(() => {
         this.isSigningIn = false;

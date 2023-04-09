@@ -78,7 +78,10 @@ export default {
     isSignedIn(val) {
       if (val) {
         // 登录后
-        this.$store.dispatch('reloadUserProfile');
+        this.$store.dispatch('loadUserProfile');
+
+        // 加载 API 翻译
+        this.$store.dispatch('loadAPINamesLocales');
 
         // Socket.io 登录
         this.socketIO.emit('auth', this.$store.state.xAuthToken);
@@ -177,7 +180,7 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateShowCompleteUserProfile', false);
-      this.$store.dispatch('reloadUserProfile');
+      this.$store.dispatch('loadUserProfile');
     },
 
     async checkNewVersion() {

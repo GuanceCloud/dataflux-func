@@ -262,7 +262,7 @@ export default {
   },
   methods: {
     async loadData() {
-      await this.$store.dispatch('reloadSystemConfig');
+      await this.$store.dispatch('loadSystemConfig');
 
       this.data = this.T.jsonCopy(this.$root.variableConfig);
       this.form = this.T.jsonCopy(this.$root.variableConfig);
