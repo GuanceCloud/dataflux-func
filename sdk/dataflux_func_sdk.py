@@ -11,11 +11,18 @@ import types
 
 try:
     import httplib
-    from urllib import urlencode
+    from urllib import urlencode, quote
     from urlparse import urlparse
 except ImportError:
     import http.client as httplib
-    from urllib.parse import urlparse, urlencode
+    from urllib.parse import urlparse, urlencode, quote
+
+UPLOAD_DISABLED = False
+try:
+    import requests
+except ImportError:
+    UPLOAD_DISABLED = True
+    print('Cannot import `requests` module, the DataFluxFunc.upload() method is disabled.')
 
 COLOR_MAP = {
     'grey'   : '\033[0;30m',
@@ -93,6 +100,9 @@ def colored(s, color=None):
 
     return color + '{}\033[0m'.format(s)
 
+def json_dumps(obj):
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+
 class DataFluxFunc(object):
     def __init__(self, ak_id=None, ak_secret=None, host=None, port=None, timeout=3, use_https=False, debug=False):
         self.debug = debug or False
@@ -117,10 +127,17 @@ class DataFluxFunc(object):
                 self.port = 80
 
     def get_body_md5(self, body=None):
-        h = md5()
-        h.update(ensure_binary(body or ''))
+        body = json_dumps(body or {})
 
-        return ensure_str(h.hexdigest())
+        if self.debug:
+            print('{} {}'.format(
+                colored('[Body to MD5]'),
+                body))
+
+        h = md5()
+        h.update(ensure_binary(body))
+
+        return h.hexdigest()
 
     def get_sign(self, method, path, timestamp, nonce, body=None):
         method = method.upper()
@@ -137,11 +154,16 @@ class DataFluxFunc(object):
         if self.debug:
             print('{} {}'.format(
                 colored('[String to Sign]'),
-                ensure_str(string_to_sign)))
+                string_to_sign))
 
         h = hmac.new(ensure_binary(self.ak_secret), ensure_binary(string_to_sign), sha1)
+        sign = h.hexdigest()
 
-        sign = ensure_str(h.hexdigest())
+        if self.debug:
+            print('{} {}'.format(
+                colored('[Signature]'),
+                sign))
+
         return sign
 
     def verify_sign(self, sign, method, path, timestamp, nonce, body=None):
@@ -164,9 +186,11 @@ class DataFluxFunc(object):
         return auth_headers
 
     def verify_auth_header(self, headers, method, path, body=None):
-        sign      = headers.get('X-Dff-Ak-Sign')      or ''
-        timestamp = headers.get('X-Dff-Ak-Timestamp') or ''
-        nonce     = headers.get('X-Dff-Ak-Nonce')     or ''
+        _headers = dict([ (k.lower(), v) for k, v in headers.items() ])
+
+        sign      = headers.get('x-dff-ak-sign')      or ''
+        timestamp = headers.get('x-dff-ak-timestamp') or ''
+        nonce     = headers.get('x-dff-ak-nonce')     or ''
 
         return self.verify_sign(sign, method, path, timestamp, nonce, body=body)
 
@@ -177,17 +201,13 @@ class DataFluxFunc(object):
         if query:
             path = path + '?' + urlencode(query)
 
-        if body:
-            if isinstance(body, (tuple, list, dict)):
-                body = json.dumps(body, sort_keys=True, separators=(',', ':'))
-
-            body = ensure_binary(body)
+        dumped_body = json_dumps(body)
 
         if self.debug == True:
             print('=' * 50)
-            print('{} {} {}'.format(colored('[Request]'), colored(method, 'cyan'), colored(ensure_str(path), 'cyan')))
+            print('{} {} {}'.format(colored('[Request]'), colored(method, 'cyan'), colored(path, 'cyan')))
             if body:
-                print('{} {}'.format(colored('[Payload]'), ensure_str(body)))
+                print('{} {}'.format(colored('[Body]'), dumped_body))
 
         # Prepare headers with auth info
         headers = headers or {}
@@ -206,7 +226,10 @@ class DataFluxFunc(object):
         else:
             conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
-        conn.request(method, path, body=body, headers=headers)
+        if body:
+            conn.request(method, path, body=ensure_binary(dumped_body), headers=headers)
+        else:
+            conn.request(method, path, headers=headers)
 
         # Get response
         resp = conn.getresponse()
@@ -219,7 +242,7 @@ class DataFluxFunc(object):
             resp_content_type = resp_content_type.split(';')[0].strip()
 
         if resp_content_type == 'application/json':
-            resp_data = json.loads(ensure_str(resp_raw_data))
+            resp_data = json.loads(resp_raw_data)
         else:
             resp_data = resp_raw_data
 
@@ -229,7 +252,79 @@ class DataFluxFunc(object):
                 _color = 'red'
 
             print(colored('{} {}'.format('[Response]', resp_status_code), _color))
-            print(colored('{} {}'.format('[Payload]', ensure_str(resp_raw_data)), _color))
+            print(colored('{} {}'.format('[Body]', ensure_str(resp_raw_data)), _color))
+
+        return resp_status_code, resp_data
+
+    def upload(self, path, file_buffer, filename=None, query=None, fields=None, headers=None, trace_id=None):
+        if UPLOAD_DISABLED:
+            raise Exception('`DataFluxFunc.upload()` method need `requests` module.')
+
+        # Prepare method/query/fields/file
+        method = 'POST'
+
+        if not filename:
+            filename = 'uploadfile'
+
+        filename = quote(filename)
+
+        if query:
+            path = path + '?' + urlencode(query)
+
+        if fields and not isinstance(fields, dict):
+            raise Exception('`fields` should be a plain JSON')
+
+        dumped_fields = json_dumps(fields)
+
+        files = {'files': (filename, file_buffer)}
+
+        if self.debug == True:
+            print('=' * 50)
+            print('{} {} {}'.format(colored('[Request]'), colored(method, 'cyan'), colored(ensure_str(path), 'cyan')))
+            if fields:
+                print('{} {}'.format(colored('[Fields]'), dumped_fields))
+            if files:
+                print('{} {}'.format(colored('[File]'), filename))
+
+        # Preapre HTTP
+        url = 'http://{}:{}{}'.format(self.host, self.port, path)
+        req = requests.Request('POST', url, data=fields, files=files)
+        prepared_req = req.prepare()
+
+        # Prepare headers with auth info
+        headers = headers or {}
+        if trace_id:
+            headers['X-Trace-Id'] = trace_id
+
+        if self.ak_id and self.ak_secret:
+            auth_headers = self.get_auth_header(method, path, body=fields)
+            headers.update(auth_headers)
+
+        prepared_req.headers.update(headers)
+
+        with requests.Session() as s:
+            resp = s.send(prepared_req)
+
+        # Get response
+        resp_status_code = resp.status_code
+        resp_raw_data    = resp.text
+
+        resp_content_type = resp.headers.get('Content-Type') or ''
+        if isinstance(resp_content_type, string_types):
+            resp_content_type = resp_content_type.split(';')[0].strip()
+
+        if resp_content_type == 'application/json':
+            resp_data = json.loads(resp_raw_data)
+        else:
+            resp_data = resp_raw_data
+
+        if self.debug == True:
+            _color = 'green'
+            if resp_status_code >= 400:
+                _color = 'red'
+
+            print(colored('{} {}'.format('[Response]', resp_status_code), _color))
+            print(colored('{} {}'.format('[Body]', ensure_str(resp_raw_data)), _color))
 
         return resp_status_code, resp_data
 
@@ -258,13 +353,15 @@ if __name__ == '__main__':
     # Debug ON
     dff.debug = True
 
-    # Send GET request
+    # Send GET Request
     try:
         status_code, resp = dff.get('/api/v1/do/ping')
+
     except Exception as e:
         print(colored(e, 'red'))
+        raise
 
-    # Send POST request
+    # Send POST Request
     try:
         body = {
             'echo': {
@@ -276,5 +373,27 @@ if __name__ == '__main__':
             }
         }
         status_code, resp = dff.post('/api/v1/do/echo', body=body)
+
     except Exception as e:
         print(colored(e, 'red'))
+        raise
+
+    # Send UPLOAD Request
+    if not UPLOAD_DISABLED:
+        try:
+            filename = __file__
+            with open(filename, 'rb') as _f:
+                file_buffer = _f.read()
+
+            fields = {
+                'folder': 'test'
+            }
+
+            status_code, resp = dff.upload('/api/v1/resources/do/upload',
+                file_buffer=file_buffer,
+                filename=filename,
+                fields=fields)
+
+        except Exception as e:
+            print(colored(e, 'red'))
+            raise

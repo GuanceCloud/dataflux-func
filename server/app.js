@@ -141,7 +141,6 @@ function startApplication() {
 
   // Auth
   app.use(require('./middlewares/builtinAuthMid').byXAuthToken);
-  app.use(require('./middlewares/builtinAuthMid').byAccessKey);
 
   // Dump user information
   if (CONFIG.MODE === 'dev') {

@@ -19,6 +19,8 @@ var requestValidator   = require('./requestValidator');
 var modelHelper        = require('./modelHelper');
 var uploads            = require('./uploads');
 var requestDumper      = require('./requestDumper');
+
+var builtinAuthMid     = require('../middlewares/builtinAuthMid')
 var operationRecordMid = require('../middlewares/operationRecordMid');
 
 /**
@@ -582,17 +584,15 @@ exports.mount = function(app) {
 
     preMiddlewares.push(routeMonitor(c));
 
-    if (c.requireSignIn) {
-      preMiddlewares.push(auth.createAuthChecker(c));
-
-      if (c.privilege) {
-        preMiddlewares.push(auth.createPrivilegeChecker(c));
-      }
-    }
-
     if (c.files) {
       preMiddlewares.push(uploads(c.files));
     }
+
+    // AK 认证需要等待 Body 解析完毕后进行
+    preMiddlewares.push(builtinAuthMid.byAccessKey);
+
+    preMiddlewares.push(auth.createAuthChecker(c));
+    preMiddlewares.push(auth.createPrivilegeChecker(c));
 
     preMiddlewares.push(operationRecordMid.prepare);
     preMiddlewares.push(fixReqData);

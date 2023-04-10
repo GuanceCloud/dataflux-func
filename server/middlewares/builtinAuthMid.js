@@ -222,7 +222,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
         if (err) return asyncCallback(err);
 
         var dff = new DataFluxFunc({ akId: akId, akSecret: dbRes.secret });
-        var isValidSign = dff.verifyAuthHeader(req.headers, req.method, req.originalUrl);
+        var isValidSign = dff.verifyAuthHeader(req.headers, req.method, req.originalUrl, req.body);
 
         if (!isValidSign) {
           res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key sign. Hint: akSign = HmacSha1("<AK Sign Version>&<AK Timestamp(Second)>&<AK Nonce>&<METHOD>&<FULL URL>&<Body or \'\'>", <AK Secret>)');

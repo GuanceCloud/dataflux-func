@@ -4,11 +4,13 @@ stages:
   - deploy
 
 variables:
-  OSS_WORKDIR              : dataflux-func
-  OSS_PORTABLE_BASE_URL    : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable
-  OSS_PORTABLE_BASE_URL_DEV: oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable-dev
-  CDN_REFRESH_PATH         : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable/
-  CDN_REFRESH_PATH_DEV     : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable-dev/
+  OSS_WORKDIR                  : dataflux-func
+  OSS_PORTABLE_BASE_URL        : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable
+  OSS_PORTABLE_BASE_URL_DEV    : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable-dev
+  OSS_RESOURCE_BASE_URL        : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/resource
+  CDN_PORTABLE_REFRESH_PATH    : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable/
+  CDN_PORTABLE_REFRESH_PATH_DEV: ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable-dev/
+  CDN_RESOURCE_REFRESH_PATH    : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/resource/
 
   IMAGE          : dataflux-func
   IMAGE_GZIP_FILE: dataflux-func.tar.gz
@@ -23,6 +25,9 @@ variables:
   IMAGE_LIST_FILE_X86_64    : image-list-x86_64
   IMAGE_LIST_FILE_AARCH64   : image-list-aarch64
   VERSION_FILE              : version
+
+  SDK_FILE_PY: sdk/dataflux_func_sdk.py
+  SDK_FILE_JS: sdk/dataflux_func_sdk.js
 
   PROJECT: dataflux-func
 
@@ -203,7 +208,7 @@ guancePaaS_release:
   tags:
     - cloudcare-multiarch
 
-# ========== 携带版文件上传到 OSS ==========
+# ========== 文件上传到 OSS ==========
 
 portableFile_dev:
   stage: uploadToOSS
@@ -221,7 +226,7 @@ portableFile_dev:
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH_DEV}
+    - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH_DEV}
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
@@ -242,9 +247,14 @@ portableFile_release:
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_AARCH64}    ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${SDK_FILE_PY}                         ${OSS_RESOURCE_BASE_URL}/${SDK_FILE_PY}               -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${SDK_FILE_JS}                         ${OSS_RESOURCE_BASE_URL}/${SDK_FILE_JS}               -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_REFRESH_PATH}
+    - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET}
+    - python tools/cdn-refresh-tool.py Directory ${CDN_RESOURCE_REFRESH_PATH}
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:

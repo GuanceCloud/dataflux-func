@@ -74,8 +74,9 @@ function jsonDumps(obj) {
       }
 
       return '[' + parts.join(',') + ']';
-    }
-    else {
+    } else if (obj === null) {
+      return 'null';
+    } else {
       var keyList = [];
       for (var k in obj) {
         keyList.push(k);
@@ -125,8 +126,16 @@ var DataFluxFunc = function(options) {
 };
 
 DataFluxFunc.prototype.getBodyMD5 = function(body) {
+  body = jsonDumps(body || {});
+
+  if (this.debug) {
+    console.log(strf('{0} {1}',
+      colored('[Body to MD5]'),
+      body));
+  }
+
   var c = crypto.createHash('md5');
-  c.update(body || '');
+  c.update(body);
 
   var hash = c.digest('hex');
   return hash;
@@ -155,6 +164,13 @@ DataFluxFunc.prototype.getSign = function(method, path, timestamp, nonce, body) 
   var c = crypto.createHmac('sha1', this.akSecret);
   c.update(stringToSign);
   var sign = c.digest('hex');
+
+  if (this.debug) {
+    console.log(strf('{0} {1}',
+      colored('[Signature]'),
+      sign));
+  }
+
   return sign;
 };
 
@@ -180,9 +196,14 @@ DataFluxFunc.prototype.getAuthHeader = function(method, path, body) {
 };
 
 DataFluxFunc.prototype.verifyAuthHeader = function(headers, method, path, body) {
-  var sign      = headers['X-Dff-Ak-Sign']      || '';
-  var timestamp = headers['X-Dff-Ak-Timestamp'] || '';
-  var nonce     = headers['X-Dff-Ak-Nonce']     || '';
+  var _headers = {};
+  for (let k in headers) {
+    _headers[k.toLowerCase()] = headers[k];
+  }
+
+  var sign      = _headers['x-dff-ak-sign']      || '';
+  var timestamp = _headers['x-dff-ak-timestamp'] || '';
+  var nonce     = _headers['x-dff-ak-nonce']     || '';
 
   return this.verifySign(sign, method, path, timestamp, nonce, body);
 };
@@ -202,19 +223,13 @@ DataFluxFunc.prototype.run = function(options, callback) {
     path = path + '?' + querystring.stringify(query);
   }
 
-  if (body) {
-    if ('object' === typeof body) {
-      body = jsonDumps(body);
-    } else {
-      body = '' + (body || '');
-    }
-  }
+  var dumpedBody = jsonDumps(body);
 
   if (this.debug) {
     console.log('='.repeat(50));
     console.log(strf('{0} {1} {2}', colored('[Request]'), colored(method, 'cyan'), colored(path, 'cyan')));
     if (body) {
-      console.log(strf('{0} {1}', colored('[Payload]'), body));
+      console.log(strf('{0} {1}', colored('[Body]'), dumpedBody));
     }
   }
 
@@ -264,7 +279,7 @@ DataFluxFunc.prototype.run = function(options, callback) {
         var _color = respStatusCode >= 400 ? 'red' : 'green';
 
         console.log(colored(strf('{0} {1}', '[Response]', respStatusCode), _color));
-        console.log(colored(strf('{0} {1}', '[Payload]', respRawData.toString()), _color));
+        console.log(colored(strf('{0} {1}', '[Body]', respRawData.toString()), _color));
       }
 
       if ('function' === typeof callback) {
@@ -280,7 +295,7 @@ DataFluxFunc.prototype.run = function(options, callback) {
   });
 
   if (body) {
-    req.write(body);
+    req.write(dumpedBody);
   }
 
   req.end();
@@ -382,7 +397,7 @@ DataFluxFunc.prototype.upload = function(options, callback) {
         var _color = respStatusCode >= 400 ? 'red' : 'green';
 
         console.log(colored(strf('{0} {1}', '[Response]', respStatusCode), _color));
-        console.log(colored(strf('{0} {1}', '[Payload]', respRawData.toString()), _color));
+        console.log(colored(strf('{0} {1}', '[Body]', respRawData.toString()), _color));
       }
 
       if ('function' === typeof callback) {
@@ -444,14 +459,14 @@ if (require.main === module) {
   // Debug ON
   dff.debug = true;
 
-  // Send GET request
+  // Send GET Request
   var getOpt = {
     path: '/api/v1/do/ping',
   };
   dff.get(getOpt, function(err, respData, respStatusCode) {
     if (err) console.error(colored(err, 'red'))
 
-    // Send POST request
+    // Send POST Request
     var postOpt = {
       path: '/api/v1/do/echo',
       body: {
@@ -466,6 +481,22 @@ if (require.main === module) {
     };
     dff.post(postOpt, function(err, respData, respStatusCode) {
       if (err) console.error(colored(err, 'red'))
+
+      // Send UPLOAD Request
+      if (UPLOAD_DISABLED) return;
+
+      var filename = __filename.split('/').pop();
+      var uploadOpt = {
+        path      : '/api/v1/resources/do/upload',
+        fileBuffer: fs.readFileSync(filename),
+        filename  : filename,
+        fields    : {
+          'folder': 'test'
+        },
+      };
+      dff.upload(uploadOpt, function(err, respData, respStatusCode) {
+        if (err) console.error(colored(err, 'red'))
+      });
     });
   });
 };

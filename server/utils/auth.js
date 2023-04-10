@@ -211,6 +211,11 @@ exports.createAuthChecker = function(routeConfig) {
       res.locals.logger.debug('[MID] IN auth.authChecker');
     }
 
+    // Throw error if error occured.
+    if (res.locals.reqAuthError) {
+      return next(res.locals.reqAuthError);
+    }
+
     // Check X-Localhost-Temp-Auth-Token
     if (req.hostname === 'localhost') {
       var localhostTempAuthToken    = req.get(CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER);
@@ -227,11 +232,6 @@ exports.createAuthChecker = function(routeConfig) {
     // Check only require sign-in
     if (!routeConfig.requireSignIn) {
       return next();
-    }
-
-    // Throw error if error occured.
-    if (res.locals.reqAuthError) {
-      return next(res.locals.reqAuthError);
     }
 
     // Stop un-signed-in user
