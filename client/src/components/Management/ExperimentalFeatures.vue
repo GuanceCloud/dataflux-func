@@ -26,8 +26,12 @@ For managing stored data from Scripts: 用于管理脚本产生的存储数据
 Once enabled, it can be accessed from Management page {0} Func Store Manage: 启用后，可在「管理」{0}「函数存储管理」进入
 
 Enable Func Doc: 启用函数文档
-Document page for all exported Python functions: 函数的文档，包含所有导出的 Python 函数
-Once enabled, it can be accessed from Management page {0} Func Doc: 启用后，可在「管理」{0}「函数文档」进入
+Document page for all exported Python functions and Auth Links: 函数的文档，包含所有导出的 Python 函数和授权链接
+Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc: 启用后，可在「管理」{0}「函数文档 / 授权链接文档」进入
+
+Enable Open API Doc: 启用 Open API 文档
+Document page for Open API powered by Swagger: 基于 Swagger 的 Open API 文档
+Once enabled, it can be accessed from Management page {0} Open API Doc: 启用后，可在「管理」{0}「Open API 文档」进入
 
 Enable System Status Page: 启用系统状态查看页面
 Status Page for current system: 本系统状态查看页面
@@ -50,7 +54,7 @@ Failure Page for Script runtime: 脚本运行时故障查看页面
 Once enabled, it can be accessed from Management page {0} Script Failures: 启用后，可在「管理」{0}「脚本故障」进入
 
 Enable Access Key Manage: 启用 Access Key 管理
-For allowing external systems to call DataFlux Func APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
+For allowing external systems to call Open APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
 Once enabled, it can be accessed from Management page {0} Access Keys: 启用后，可在「管理」{0}「Access Keys」进入
 
 Enable Connector for Guance: 启用观测云连接器
@@ -130,8 +134,16 @@ Once enabled, it can be accessed from Add Connector {0} type Guance: 启用后�
                 <el-form-item prop="FuncDoc">
                   <el-switch :active-text="$t('Enable Func Doc')" v-model="form.FuncDoc"></el-switch>
                   <div class="text-small form-item-tip">
-                    {{ $t('Document page for all exported Python functions') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    {{ $t('Document page for all exported Python functions and Auth Links') }}
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="OpenAPIDoc">
+                  <el-switch :active-text="$t('Enable Open API Doc')" v-model="form.OpenAPIDoc"></el-switch>
+                  <div class="text-small form-item-tip">
+                    {{ $t('Document page for Open API powered by Swagger') }}
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Open API Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 
@@ -176,7 +188,7 @@ Once enabled, it can be accessed from Add Connector {0} type Guance: 启用后�
                 <el-form-item prop="AccessKeys" v-if="$store.getters.isAdmin">
                   <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
-                    {{ $t('For allowing external systems to call DataFlux Func APIs') }}
+                    {{ $t('For allowing external systems to call Open APIs') }}
                     <br><i18n path="Once enabled, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
@@ -244,6 +256,7 @@ export default {
         FuncCacheManage   : false,
         FuncStoreManage   : false,
         FuncDoc           : false,
+        OpenAPIDoc        : false,
         SysStat           : false,
         SystemLogs        : false,
         AbnormalReqs      : false,

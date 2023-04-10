@@ -1,12 +1,12 @@
 # 整体描述
 $description: |
-  DataFlux Func API document
+  DataFlux Func Open API document
 $description_zhCN: |
   *注意：本页面正在开发中，内容尚不完整*
 
-  DataFlux Func API 文档
+  DataFlux Func Open API 文档
 
-  请使用 [DataFlux Func SDK](https://func.guance.com/doc/sdk/) 通过编程方式调用接口。
+  请使用 [DataFlux Func SDK](https://func.guance.com/doc/openapi-sdk/) 通过编程方式调用接口。
 
 # 响应体
 $response:

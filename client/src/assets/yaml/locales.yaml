@@ -330,7 +330,8 @@ en:
   File Manage              : 文件管理
   File Service             : 文件服务
   Func Docs                : 函数文档
-  Auth Link Docs           : 授权链接文档
+  Auth Link Doc            : 授权链接文档
+  Open API Doc             : Open API 文档
   Func Cache Manage        : 函数缓存管理
   Func Store Manage        : 函数存储管理
   System Logs              : 系统日志

@@ -147,7 +147,15 @@
               class="experimental-feature" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
               <span>
                 <i class="fa fa-fw fa-link"></i>
-                {{ $t('Auth Link Docs') }}
+                {{ $t('Auth Link Doc') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('OpenAPIDoc')"
+              class="experimental-feature" :index="`${T.getBaseURL()}/doc`">
+              <span>
+                <i class="fa fa-fw fa-book"></i>
+                {{ $t('Open API Doc') }}
               </span>
             </el-menu-item>
 

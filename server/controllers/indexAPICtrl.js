@@ -196,7 +196,7 @@ function getOpenAPISpec(lang) {
   var spec = {
     openapi: '3.0.0',
     info: {
-      title      : 'DataFlux Func API',
+      title      : 'DataFlux Func Open API',
       version    : IMAGE_INFO.CI_COMMIT_REF_NAME,
       description: route.$description,
     },
