@@ -370,6 +370,8 @@ mainAPI:
         $in:
           - simplified
     files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
@@ -520,6 +522,8 @@ mainAPI:
         $in:
           - simplified
     files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
@@ -701,13 +705,15 @@ mainAPI:
         $searchKey : sset.id
 
   getSystemConfig:
-    name    : Get system configs
+    showInDoc: true
+    name     : Get system configs
     name_zhCN: 获取系统配置
-    method  : get
-    url     : /api/v1/func-system-config
-    response: json
+    method   : get
+    url      : /api/v1/func-system-config
+    response : json
 
   getUpgradeInfo:
+    showInDoc    : true
     name         : Get upgrade info
     name_zhCN    : 获取升级信息
     method       : get
@@ -720,11 +726,11 @@ mainAPI:
         $type: int
 
   integratedSignIn:
-    name    : Integrated sign in
+    name     : Integrated sign in
     name_zhCN: 集成用户登录
-    method  : post
-    url     : /api/v1/func/integration/sign-in
-    response: json
+    method   : post
+    url      : /api/v1/func/integration/sign-in
+    response : json
     body:
       captchaToken:
         $desc      : 验证码令牌
@@ -778,6 +784,7 @@ mainAPI:
         $type: string
 
   pullSystemLogs:
+    showInDoc    : true
     name         : Pull system logs
     name_zhCN    : 拉取系统日志
     method       : get
@@ -792,6 +799,7 @@ mainAPI:
         $type    : integer
 
   metrics:
+    showInDoc    : true
     name         : Metric data (OpenMetric)
     name_zhCN    : 指标数据（OpenMetric）
     method       : get
@@ -806,6 +814,7 @@ indexAPI:
   $tag_zhCN: 杂项
 
   index:
+    showInDoc    : true
     name         : API Index
     name_zhCN    : API 索引
     method       : get
@@ -829,6 +838,7 @@ indexAPI:
           - en
 
   clientConfig:
+    showInDoc: true
     name     : Client config
     name_zhCN: 客户端配置
     method   : get
@@ -838,6 +848,7 @@ indexAPI:
     desc_zhCN: 客户端配置
 
   imageInfo:
+    showInDoc: true
     name     : Image Info
     name_zhCN: 镜像信息
     method   : get
@@ -953,6 +964,7 @@ indexAPI:
         $example: 3
 
   testThrowError:
+    showInDoc: true
     name     : Test Throw Error
     name_zhCN: 测试抛出异常
     method   : get
@@ -962,6 +974,7 @@ indexAPI:
     desc_zhCN: 测试抛出异常
 
   testThrowErrorInAsync:
+    showInDoc: true
     name     : Test Throw Error in Async
     name_zhCN: 测试异步抛出异常
     method   : get
@@ -971,6 +984,7 @@ indexAPI:
     desc_zhCN: 测试在异步处理中抛出异常
 
   testSlowAPI:
+    showInDoc: true
     name     : Test Slow API
     name_zhCN: 测试慢速 API
     method   : get
@@ -1034,6 +1048,7 @@ authAPI:
       Client should delete the token and let user sign in again.
 
   changePassword:
+    showInDoc    : true
     name         : Change password
     name_zhCN    : 修改密码
     method       : post
@@ -1108,6 +1123,7 @@ userAPI:
   $tag_zhCN: 用户
 
   list:
+    showInDoc    : true
     name         : List user
     name_zhCN    : 列出用户
     method       : get
@@ -1118,8 +1134,7 @@ userAPI:
     privilege    : user_r
     export       : true
     paging       : false
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq     : u.seq
       username: u.username
@@ -1163,6 +1178,7 @@ userAPI:
         $searchKey : u.isDisabled
 
   get:
+    showInDoc    : true
     name         : Get user
     name_zhCN    : 获取用户
     method       : get
@@ -1171,14 +1187,14 @@ userAPI:
     requireSignIn: true
     authType     : builtin.byXAuthToken
     privilege    : user_r
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     params:
       id:
         $desc: User ID
         $type: string
 
   add:
+    showInDoc    : true
     name         : Add user
     name_zhCN    : 添加用户
     method       : post
@@ -1241,6 +1257,7 @@ userAPI:
           $type: boolean
 
   modify:
+    showInDoc    : true
     name         : Modify user
     name_zhCN    : 修改用户
     method       : post
@@ -1303,6 +1320,7 @@ userAPI:
           $type: boolean
 
   delete:
+    showInDoc    : true
     name         : Delete user
     name_zhCN    : 删除用户
     method       : get
@@ -1332,8 +1350,7 @@ accessKeyAPI:
     privilege    : accessKey_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq : ak.seq
     fuzzySearch:
@@ -1360,8 +1377,7 @@ accessKeyAPI:
     requireSignIn: true
     authType     : builtin.byXAuthToken
     privilege    : accessKey_r
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     params:
       id:
         $desc: Access key ID
@@ -1459,6 +1475,7 @@ pythonPackageAPI:
   $tag_zhCN: Python 包
 
   listInstalled:
+    showInDoc    : true
     name         : List installed Python packages
     name_zhCN    : 列出已安装的 Python 包
     method       : get
@@ -1468,6 +1485,7 @@ pythonPackageAPI:
     privilege    : general_r
 
   getInstallStatus:
+    showInDoc    : true
     name         : Get Python package installing status
     name_zhCN    : 获取 Python 包安装状态
     method       : get
@@ -1477,6 +1495,7 @@ pythonPackageAPI:
     privilege    : general_r
 
   clearInstallStatus:
+    showInDoc    : true
     name         : Clear Python package installing status
     name_zhCN    : 清除 Python 包安装状态
     method       : get
@@ -1486,6 +1505,7 @@ pythonPackageAPI:
     privilege    : general_w
 
   install:
+    showInDoc    : true
     name         : Install Python package
     name_zhCN    : 安装 Python 包
     method       : post
@@ -1509,6 +1529,7 @@ resourceAPI:
   $tag_zhCN: 资源文件
 
   list:
+    showInDoc    : true
     name         : List resource files
     name_zhCN    : 列出资源文件
     method       : get
@@ -1528,6 +1549,7 @@ resourceAPI:
           - file
 
   get:
+    showInDoc    : true
     name         : Get resource file info
     name_zhCN    : 获取资源文件信息
     method       : get
@@ -1542,6 +1564,7 @@ resourceAPI:
         $type    : string
 
   download:
+    showInDoc    : true
     name         : Download resource file
     name_zhCN    : 下载资源文件
     method       : get
@@ -1560,6 +1583,7 @@ resourceAPI:
         $type    : boolean
 
   upload:
+    showInDoc    : true
     name         : Upload resource file
     name_zhCN    : 上传资源文件
     method       : post
@@ -1568,6 +1592,8 @@ resourceAPI:
     requireSignIn: true
     privilege    : general_w
     files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
       $limitSize   : 10GB
       $allowedTypes: '*/*'
     body:
@@ -1579,6 +1605,7 @@ resourceAPI:
         $type: string
 
   operate:
+    showInDoc    : true
     name         : Operate resource file
     name_zhCN    : 操作资源文件
     method       : post
@@ -1624,8 +1651,7 @@ scriptSetAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: sset.seq
       id : sset.id
@@ -1821,6 +1847,8 @@ scriptSetAPI:
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
     files:
+      $desc        : File (limit 200MB)
+      $desc_zhCN   : 文件（200MB 以内）
       $limitSize   : 200M
       $allowedTypes: 'application/octet-stream'
     body:
@@ -1862,8 +1890,7 @@ scriptAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq       : scpt.seq
       id        : scpt.id
@@ -2045,8 +2072,7 @@ funcAPI:
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_r
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq     : func.seq
       id      : func.id
@@ -2104,8 +2130,7 @@ scriptLogAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: slog.seq
     fuzzySearch:
@@ -2139,8 +2164,7 @@ scriptFailureAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: sfal.seq
     fuzzySearch:
@@ -2176,8 +2200,7 @@ scriptRecoverPointAPI:
     privilege    : general_r
     export       : true
     paging       : marker
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: srpt.seq
     fuzzySearch:
@@ -2251,8 +2274,7 @@ scriptPublishHistoryAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: scph.seq
     fulltextSearchFields:
@@ -2294,8 +2316,7 @@ scriptSetExportHistoryAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: sseh.seq
     fuzzySearch:
@@ -2323,8 +2344,7 @@ scriptSetImportHistoryAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: ssih.seq
     fuzzySearch:
@@ -2351,8 +2371,7 @@ scriptMarketAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : false
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       name      : smkt.name
       createTime: smkt.createTime
@@ -2573,8 +2592,7 @@ scriptMarketAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : false
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     params:
       id:
         $desc: 脚本市场ID
@@ -2695,8 +2713,7 @@ connectorAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       id : cnct.id
       seq: cnct.seq
@@ -3211,8 +3228,7 @@ envVariableAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: evar.seq
       id : evar.id
@@ -3347,8 +3363,7 @@ apiAuthAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       id : apia.id
       seq: apia.seq
@@ -3548,8 +3563,7 @@ authLinkAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq   : auln.seq
       funcId: auln.funcId
@@ -4126,8 +4140,7 @@ crontabConfigAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq   : cron.seq
       funcId: cron.funcId
@@ -4585,8 +4598,7 @@ batchAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq   : bat.seq
       funcId: bat.funcId
@@ -5023,8 +5035,7 @@ taskInfoAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     fuzzySearch:
       - task.id
       - task.originId
@@ -5091,8 +5102,7 @@ datafluxFuncTaskResultAPI:
     requireSignIn: true
     privilege    : general_r
     paging       : marker
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: dftr.seq
     fuzzySearch:
@@ -5133,8 +5143,7 @@ datafluxFuncTaskResultAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     params:
       id:
         $desc: 任务ID
@@ -5156,8 +5165,7 @@ operationRecordAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq: oprd.seq
     fuzzySearch:
@@ -5250,8 +5258,7 @@ fileServiceAPI:
     privilege    : general_r
     export       : true
     paging       : false
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       seq       : fsvc.seq
       id        : fsvc.id
@@ -5481,7 +5488,6 @@ blueprintAPI:
   $tag_zhCN: 蓝图
 
   list:
-    showInDoc    : true
     name         : List Blueprints
     name_zhCN    : 列出蓝图
     method       : get
@@ -5491,8 +5497,7 @@ blueprintAPI:
     privilege    : general_r
     export       : true
     paging       : true
-    fieldPicking : true
-    fieldKicking : true
+    fieldSelecting: true
     orderFields:
       id : blpt.id
       seq: blpt.seq
@@ -5517,7 +5522,6 @@ blueprintAPI:
         $searchKey : blpt.note
 
   add:
-    showInDoc    : true
     name         : Add Blueprint
     name_zhCN    : 添加蓝图
     method       : post
@@ -5549,7 +5553,6 @@ blueprintAPI:
           $type     : boolean
 
   modify:
-    showInDoc    : true
     name         : Modify Blueprint
     name_zhCN    : 修改蓝图
     method       : post
@@ -5578,7 +5581,6 @@ blueprintAPI:
           $type     : boolean
 
   delete:
-    showInDoc    : true
     name         : Delete Blueprint
     name_zhCN    : 删除蓝图
     method       : get
@@ -5597,6 +5599,7 @@ systemConfigAPI:
   $tag_zhCN: 系统配置
 
   list:
+    showInDoc    : true
     name         : List System Configs
     name_zhCN    : 列出系统配置
     method       : get
@@ -5615,6 +5618,7 @@ systemConfigAPI:
         $searchKey : sc.id
 
   get:
+    showInDoc    : true
     name         : Get System Config
     name_zhCN    : 获取系统配置
     method       : get
@@ -5628,6 +5632,7 @@ systemConfigAPI:
         $type: string
 
   set:
+    showInDoc    : true
     name         : Set System Config
     name_zhCN    : 设置系统配置
     method       : post
@@ -5648,6 +5653,7 @@ systemConfigAPI:
           $type: any
 
   delete:
+    showInDoc    : true
     name         : Delete System Config
     name_zhCN    : 删除系统配置
     method       : get
@@ -5707,6 +5713,7 @@ monitorAPI:
     privilege    : general_w
 
   getServerEnvironment:
+    showInDoc    : true
     name         : Get server environment
     name_zhCN    : 获取服务器环境
     method       : get
@@ -5716,6 +5723,7 @@ monitorAPI:
     privilege    : general_r
 
   clearSysStats:
+    showInDoc    : true
     name         : Clear system stats
     name_zhCN    : 清空系统状态
     method       : get
@@ -5725,6 +5733,7 @@ monitorAPI:
     privilege    : general_w
 
   listQueuedTasks:
+    showInDoc    : true
     name         : List tasks in queue
     name_zhCN    : 列出已进入队列的任务
     method       : get
@@ -5738,6 +5747,7 @@ monitorAPI:
         $type: string
 
   listScheduledTasks:
+    showInDoc    : true
     name         : List scheduled tasks
     name_zhCN    : 列出已排期的任务
     method       : get
@@ -5751,6 +5761,7 @@ monitorAPI:
         $type: string
 
   listRecentTasks:
+    showInDoc    : true
     name         : List recent tasks
     name_zhCN    : 列出最近任务
     method       : get
@@ -5771,6 +5782,7 @@ monitorAPI:
           - PENDING
 
   pingNodes:
+    showInDoc    : true
     name         : Ping worker node
     name_zhCN    : Ping Worker（工作单元）节点
     method       : get
@@ -5780,6 +5792,7 @@ monitorAPI:
     privilege    : general_r
 
   getNodesStats:
+    showInDoc    : true
     name         : Get worker node stats
     name_zhCN    : 获取 Worker（工作单元）状态
     method       : get
@@ -5789,6 +5802,7 @@ monitorAPI:
     privilege    : general_r
 
   getNodesActiveQueues:
+    showInDoc    : true
     name         : Get worker node active queues
     name_zhCN    : 获取 Worker（工作单元）活跃队列
     method       : get
@@ -5798,6 +5812,7 @@ monitorAPI:
     privilege    : general_r
 
   getNodesReport:
+    showInDoc    : true
     name         : Get worker node report
     name_zhCN    : 获取 Worker（工作单元）节点报告
     method       : get
@@ -5807,6 +5822,7 @@ monitorAPI:
     privilege    : general_r
 
   clearWorkerQueues:
+    showInDoc    : true
     name         : Clear worker queues
     name_zhCN    : 清空工作队列
     method       : post

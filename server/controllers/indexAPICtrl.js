@@ -20,7 +20,7 @@ IMAGE_INFO.PYTHON_VERSION = childProcess.execFileSync('python', [ '--version' ])
 IMAGE_INFO.NODE_VERSION   = childProcess.execFileSync('node', [ '--version' ]).toString().trim().replace('v', '');
 
 var OPEN_API_SPEC = {};
-var OPEN_API_PARAM_OPTIONS = [
+var OPEN_API_PARAM_TYPES = [
   { name: 'params', in: 'path' },
   { name: 'query' , in: 'query' },
 ];
@@ -57,73 +57,129 @@ function useLanguage(j, lang) {
   return _useLanguage(toolkit.jsonCopy(j));
 };
 
-function toOpenAPISchema(field) {
+function toOpenAPISchema(fieldOpt, filesOpt) {
   var schemaSpec = {};
-  switch(field.$type) {
+
+  fieldOpt.$_type = fieldOpt.$ ? 'array' : (fieldOpt.$type || '').toLowerCase();
+  switch(fieldOpt.$_type) {
+    case 'str':
+    case 'string':
+      schemaSpec = {
+        type: 'string',
+      };
+      break;
+
     case 'enum':
       schemaSpec = {
         type: 'string',
-        enum: field.$in,
+        enum: fieldOpt.$in,
       };
       break;
 
     case 'jsonstring':
-    case 'commaArray':
       schemaSpec = {
         type  : 'string',
-        format: field.$type,
+        format: 'JSON',
+      };
+      break;
+
+    case 'commaarray':
+      schemaSpec = {
+        type  : 'string',
+        format: 'array',
       };
       break;
 
     case 'int':
+    case 'integer':
       schemaSpec = {
         type: 'integer',
       };
       break;
 
+    case 'num':
+    case 'number':
+    case 'float':
+      schemaSpec = {
+        type: 'number',
+      };
+      break;
+
+    case 'arr':
+    case 'array':
+      schemaSpec = {
+        type : 'array',
+        items: {},
+      };
+      break;
+
     case 'bool':
+    case 'boolean':
       schemaSpec = {
         type: 'boolean',
       };
       break;
 
-    case '*':
-    case 'any':
-    case 'json':
-      break;
-
     default:
-      schemaSpec = {
-        type      : field.$type || 'object',
-        properties: {},
-      };
+      var hasSubField = false;
+      for (var optKey in fieldOpt) {
+        if (optKey[0] !== '$') {
+          hasSubField = true;
+          break;
+        }
+      }
+
+      if (hasSubField) {
+        schemaSpec = {
+          type      : 'object',
+          properties: {},
+        };
+
+      } else {
+        schemaSpec = {
+          type: 'string',
+        };
+      }
       break;
   }
 
-  if (field.$desc) {
-    schemaSpec.description = field.$desc.trim();
+  if (fieldOpt.$desc) {
+    schemaSpec.description = fieldOpt.$desc.trim();
   }
-  if (field.$allowNull) {
+  if (fieldOpt.$allowNull) {
     schemaSpec.nullable = true;
   }
-  if (field.$notEmptyString) {
+  if (fieldOpt.$notEmptyString) {
     schemaSpec.allowEmptyValue = false;
   }
-  if ('$minValue' in field) {
-    schemaSpec.minimum = field.$minValue;
+  if ('$minValue' in fieldOpt) {
+    schemaSpec.minimum = fieldOpt.$minValue;
   }
-  if ('$maxValue' in field) {
-    schemaSpec.maximum = field.$maxValue;
+  if ('$maxValue' in fieldOpt) {
+    schemaSpec.maximum = fieldOpt.$maxValue;
   }
-  if (field.$example) {
-    schemaSpec.example = field.$example;
+  if (fieldOpt.$example) {
+    schemaSpec.example = fieldOpt.$example;
   }
 
-  for (var subFieldKey in field) {
-    if (subFieldKey[0] === '$') continue;
+  for (var optKey in fieldOpt) {
+    if (optKey === '$') {
+      // Array
+      schemaSpec.items = toOpenAPISchema(fieldOpt.$);
 
-    var subField = field[subFieldKey];
-    schemaSpec.properties[subFieldKey] = toOpenAPISchema(subField);
+    } else if (optKey[0] !== '$') {
+      // Object
+      var subFieldOpt = fieldOpt[optKey];
+      schemaSpec.properties[optKey] = toOpenAPISchema(subFieldOpt);
+    }
+  }
+
+  if (filesOpt && schemaSpec.properties) {
+    schemaSpec.properties.files = {
+      description: filesOpt.$desc,
+      type       : 'string',
+      format     : 'binary',
+    }
   }
 
   return schemaSpec;
@@ -175,38 +231,58 @@ function getOpenAPISpec(lang) {
       var api = module[apiKey];
       if (!api.showInDoc) continue;
 
+      // API
       var apiSpec = {
         summary    : api.name,
         description: api.desc,
         tags       : [ moduleTag ],
         parameters : [],
         responses: {
-          default: { $ref: '#/components/responses/GeneralResponse' }
+          200: { $ref: '#/components/responses/GeneralResponse' }
         }
       }
 
-      OPEN_API_PARAM_OPTIONS.forEach(function(paramOpt) {
-        if (!api[paramOpt.name]) return;
+      // Parameters
+      OPEN_API_PARAM_TYPES.forEach(function(paramType) {
+        if (!api[paramType.name]) return;
 
-        for (var k in api[paramOpt.name]) {
-          var param = api[paramOpt.name][k];
+        for (var k in api[paramType.name]) {
+          var paramOpt = api[paramType.name][k];
 
           var paramSpec = {
             name       : k,
-            in         : paramOpt.in,
-            description: param.$desc,
-            schema     : toOpenAPISchema(param),
+            in         : paramType.in,
+            description: paramOpt.$desc,
+            schema     : toOpenAPISchema(paramOpt),
+            deprecated : !!paramOpt.$isDeprecated,
+            required   : !!(paramType.in === 'path' || paramOpt.$isRequired || paramOpt.$required),
           }
-          if (paramOpt.in === 'path' || param.$isRequired || param.$required) {
-            paramSpec.required = true;
-          }
-
           apiSpec.parameters.push(paramSpec);
         }
       });
 
+      // Body
       if (api.body) {
+        if (api.files) {
+          apiSpec.requestBody = {
+            required: true,
+            content: {
+              'multipart/form-data': {
+                schema: toOpenAPISchema(api.body, api.files)
+              }
+            }
+          }
 
+        } else {
+          apiSpec.requestBody = {
+            required: true,
+            content: {
+              'application/json': {
+                schema: toOpenAPISchema(api.body)
+              }
+            }
+          }
+        }
       }
 
       var apiURL = api.url.replace(/\/:([a-zA-Z0-9-_]+)/g, '/{$1}');

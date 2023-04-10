@@ -406,6 +406,7 @@ exports.load = function(config, middlewares) {
   if (config.method.toLowerCase() === 'post' && config.tagDataField) {
     var tagsConfig = {
       $desc     : 'Tags',
+      $desc_zhCN: '标签',
       $type     : 'json',
       $allowNull: false,
     };
@@ -421,6 +422,7 @@ exports.load = function(config, middlewares) {
   if (config.fuzzySearch) {
     config.query._fuzzySearch = {
       $desc     : 'Fuzzy Search',
+      $desc_zhCN: '模糊搜索',
       $type     : 'string',
       $searchKey: config.fuzzySearch,
     };
@@ -430,14 +432,16 @@ exports.load = function(config, middlewares) {
   if (config.fulltextSearchFields) {
     config.query._fulltextSearchField = {
       $desc        : 'Full Text Search field',
+      $desc_zhCN   : '全文搜索字段',
       $type        : 'enum',
       $searchKeyMap: config.fulltextSearchFields,
       $in          : toolkit.jsonKeys(config.fulltextSearchFields),
     };
 
     config.query._fulltextSearchWord = {
-      $desc: 'Full Text Search keyword',
-      $type: 'string',
+      $desc     : 'Full Text Search keyword',
+      $desc_zhCN: '全文搜索关键字',
+      $type     : 'string',
     };
   }
 
@@ -446,15 +450,17 @@ exports.load = function(config, middlewares) {
     config.query = config.query || {};
 
     config.query.export = {
-        $desc: 'Export file type',
-        $type: 'enum',
-        $in  : ['json', 'csv'],
+        $desc     : 'Export file type',
+        $desc_zhCN: '导出文件类型',
+        $type     : 'enum',
+        $in       : ['json', 'csv'],
     };
 
     config.query.charset = {
-        $desc: 'Export file encoding',
-        $type: 'enum',
-        $in  : ['utf8', 'gbk'],
+        $desc     : 'Export file encoding',
+        $desc_zhCN: '导出文件编码',
+        $type     : 'enum',
+        $in       : ['utf8', 'gbk'],
     };
   }
 
@@ -464,6 +470,7 @@ exports.load = function(config, middlewares) {
 
     config.query.pageSize = {
       $desc             : 'Page size',
+      $desc_zhCN        : '分页大小',
       $type             : 'integer',
       $isPositiveInteger: true,
       $minValue         : 1,
@@ -472,7 +479,8 @@ exports.load = function(config, middlewares) {
 
     if (config.paging === true || config.paging === 'normal' || config.paging === 'simple') {
       config.query.pageNumber = {
-        $desc             : 'Page number',
+        $desc             : 'Page number (starts from 1)',
+        $desc_zhCN        : '页码（从 1 开始）',
         $type             : 'integer',
         $isPositiveInteger: true,
         $minValue         : 1,
@@ -482,6 +490,7 @@ exports.load = function(config, middlewares) {
     } else if (config.paging === 'marker') {
       config.query.pageMarker = {
         $desc             : 'Page marker',
+        $desc_zhCN        : '翻页游标',
         $type             : 'integer',
         $isPositiveInteger: true,
       };
@@ -499,8 +508,13 @@ exports.load = function(config, middlewares) {
 
     // New version
     config.query.sort = {
-      $desc: 'Sort by fields (e.g. "field1,field2")',
-      $type: 'commaArray',
+      $desc     : `Sort by fields (e.g. \`"field1,field2"\`)
+- ASC: \`"field"\`
+- DESC: \`"-field"\``,
+      $desc_zhCN: `按字段排序（如：\`"field1,field2"\`）
+- 正序: \`"field"\`
+- 倒序: \`"-field"\``,
+      $type     : 'commaArray',
       $commaArrayIn: orderFields.reduce(function(acc, x) {
         acc.push(x, '-' + x);
         return acc
@@ -508,50 +522,58 @@ exports.load = function(config, middlewares) {
     };
 
     // Old version
-    config.query.orderBy = {
-      $desc: 'Order field',
-      $type: 'enum',
-      $in  : orderFields,
-      $isDeprecated: true,
-    };
-    config.query.orderMethod = {
-      $desc: 'Order method',
-      $type: 'enum',
-      $in  : ['asc', 'desc'],
-      $isDeprecated: true,
-    };
+    // config.query.orderBy = {
+    //   $desc        : 'Order field',
+    //   $desc_zhCN   : '排序字段',
+    //   $type        : 'enum',
+    //   $in          : orderFields,
+    //   $isDeprecated: true,
+    // };
+    // config.query.orderMethod = {
+    //   $desc        : 'Order method',
+    //   $desc_zhCN   : '排序方法',
+    //   $type        : 'enum',
+    //   $in          : ['asc', 'desc'],
+    //   $isDeprecated: true,
+    // };
   }
 
   // If a route allow field selecting(picking/kicking), add query configs
-  // New version
-  if (config.fieldSelecting || config.fieldPicking || config.fieldKicking) {
+  if (config.fieldSelecting) {
     config.query = config.query || {};
 
     config.query.fields = {
-      $desc: 'Field selecting (only: "field1,field2", not: "-,field1,field2" / "-field1,field2")',
+      $desc: `Return field filter
+- Include Syntax: \`"field1,field2\`"
+- Exclude Syntax: \`"-,field1,field2\`"`,
+      $desc_zhCN: `返回字段过滤
+- 只返回部分字段: \`"field1,field2\`"
+- *不*返回部分字段: \`"-,field1,field2\`"`,
       $type: 'commaArray',
     };
   }
 
   // Old version
-  if (config.fieldPicking) {
-    config.query = config.query || {};
+  // if (config.fieldPicking) {
+  //   config.query = config.query || {};
 
-    config.query.fieldPicking = {
-      $desc: 'Field picking',
-      $type: 'commaArray',
-      $isDeprecated: true,
-    };
-  }
-  if (config.fieldKicking) {
-    config.query = config.query || {};
+  //   config.query.fieldPicking = {
+  //     $desc        : 'Field picking',
+  //     $desc_zhCN   : '只返回部分字段',
+  //     $type        : 'commaArray',
+  //     $isDeprecated: true,
+  //   };
+  // }
+  // if (config.fieldKicking) {
+  //   config.query = config.query || {};
 
-    config.query.fieldKicking = {
-      $desc: 'Field kicking',
-      $type: 'commaArray',
-      $isDeprecated: true,
-    };
-  }
+  //   config.query.fieldKicking = {
+  //     $desc        : 'Field kicking',
+  //     $desc_zhCN   : '*不*返回部分字段',
+  //     $type        : 'commaArray',
+  //     $isDeprecated: true,
+  //   };
+  // }
 
   middlewares = toolkit.asArray(middlewares);
   _ROUTES.push({
