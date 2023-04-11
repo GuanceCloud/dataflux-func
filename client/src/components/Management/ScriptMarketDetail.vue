@@ -59,7 +59,7 @@ Script Set Installed Successfully!: 成功安装脚本集！
 
 Requires 3rd party Python packages        : 依赖第三方 Python 包
 Go to PIP Tool                            : 前往 PIP 工具
-Includes a Startup Script                 : 已经包含了启动脚本（Startup）
+Includes a Startup Script                 : 包含了启动脚本（Startup）
 Go to Startup Script and check it out     : 前往查看此启动脚本
 Includes a Crontab Config which is ENABLED: 包含了一个自动触发配置，且已经开启
 Go to the Crontab Config and check it out : 前往查看此自动触发配置
