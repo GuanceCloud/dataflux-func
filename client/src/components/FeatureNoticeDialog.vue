@@ -83,15 +83,15 @@ export default {
 }
 .notice-feature-content {
   width: 420px;
-  max-height: 350px;
+  height: 350px;
   border-radius: 20px;
   position: absolute;
   top: 30px;
   right: 30px;
 }
 .notice-feature-content p {
-  font-size: 18px;
-  line-height: 30px;
+  font-size: 16px;
+  line-height: 20px;
   word-break: break-word;
   position: relative;
   padding: 0;
@@ -113,4 +113,8 @@ export default {
 }
 </style>
 <style>
+.notice-feature-content h1,
+.notice-feature-content p>h1 {
+  text-align: center !important;
+}
 </style>

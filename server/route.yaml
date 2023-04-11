@@ -2679,7 +2679,7 @@ scriptMarketAPI:
           $isRequired: true
           $type      : string
       startupScript:
-        $desc: 创建自动启动脚本
+        $desc: 启动脚本
         create:
           $desc   : 是否创建启动脚本
           $type   : boolean
@@ -4235,6 +4235,11 @@ crontabConfigAPI:
     body:
       data:
         $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
         funcId:
           $desc      : 函数ID
           $isRequired: true

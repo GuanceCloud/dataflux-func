@@ -191,6 +191,9 @@ _OFFICIAL_SCRIPT_MARKET:
   configJSON: { "url": "https://func.guance.com/script-market/official" }
   isPinned  : true
 
+# 启动脚本默认 ID
+_STARTUP_SCRIPT_DEFAULT_ID: startup
+
 # MySQL一般作为常量的配置
 _MYSQL_CONNECTION_LIMIT: 20
 _MYSQL_CONNECT_TIMEOUT : 60000

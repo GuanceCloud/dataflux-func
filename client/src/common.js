@@ -292,7 +292,24 @@ export function getScriptMarketName(scriptMarket) {
   }
 }
 
-export function goToPIPTools(requirements) {
+export function goToScript(scriptId) {
+  T.openURL({
+    name  : 'code-editor',
+    params: { id: scriptId },
+  });
+}
+
+export function goToList(name, filter) {
+  T.openURL({
+    name: name,
+    query: { filter: T.createPageFilter(filter) },
+  })
+}
+
+export function goToPIPTools(requirements, opt) {
+  opt = opt || {};
+  opt.newTab = opt.newTab || false;
+
   let requirementsParts = [];
   for (let pkg in requirements) {
     let ver = requirements[pkg];
@@ -300,10 +317,15 @@ export function goToPIPTools(requirements) {
   };
 
   let requirementsLine = requirementsParts.join(' ');
-  router.push({
+  let nextRoute = {
     name: 'pip-tool',
     query: { requirements: T.getBase64(requirementsLine) },
-  });
+  }
+  if (opt.newTab) {
+    T.openURL(router.resolve(nextRoute).href);
+  } else {
+    router.push(nextRoute);
+  }
 }
 
 export async function checkScriptMarketUpdate(scriptMarketId) {

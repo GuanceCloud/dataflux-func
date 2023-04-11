@@ -238,7 +238,6 @@ exports.delete = function(req, res, next) {
 exports.publish = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
-
   var wait = req.body.wait; // 等待发布结束
 
   var celery = celeryHelper.createHelper(res.locals.logger);
@@ -290,79 +289,13 @@ exports.publish = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      var kwargs = {
-        funcId: script.id,
-      }
-      var taskOptions = {
-        queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-        resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
-      }
-      celery.putTask('Biz.FuncDebugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
+      sendPreCheckTask(celery, id, function(err, exportedAPIFuncs) {
         if (err) return asyncCallback(err);
 
-        celeryRes = celeryRes || {};
-        extraInfo = extraInfo || {};
-
-        if (celeryRes.status === 'FAILURE') {
-          if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
-            // 超时错误
-            return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again', {
-              id       : celeryRes.id,
-              etype    : celeryRes.result && celeryRes.result.exc_type,
-              einfoTEXT: celeryRes.einfoTEXT,
-            }));
-
-          } else {
-            // 其他错误
-            return asyncCallback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-              id       : celeryRes.id,
-              etype    : celeryRes.result && celeryRes.result.exc_type,
-              einfoTEXT: celeryRes.einfoTEXT,
-            }));
-          }
-
-        } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
-            id   : extraInfo.id,
-            etype: celeryRes.result && celeryRes.result.exc_type,
-          }));
-
-        } else if (celeryRes.retval.einfoTEXT) {
-          return asyncCallback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-            id       : extraInfo.id,
-            etype    : celeryRes.result && celeryRes.result.exc_type,
-            einfoTEXT: celeryRes.retval.einfoTEXT,
-            traceInfo: celeryRes.retval.traceInfo,
-          }));
-        }
-
-        try {
-          nextExportedAPIFuncs = celeryRes.retval.result.exportedAPIFuncs
-        } catch(_) {
-          // Nope
-        } finally {
-          // 保证一定为数组
-          if (toolkit.isNothing(nextExportedAPIFuncs)) {
-            nextExportedAPIFuncs = [];
-          }
-        }
-
-        // 检查重名函数
-        var funcNameMap = {};
-        for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
-          var name = nextExportedAPIFuncs[i].name;
-
-          if (!funcNameMap[name]) {
-            funcNameMap[name] = true;
-          } else {
-            return asyncCallback(new E('EClientDuplicated', 'Found duplicated func names in script', {
-              funcName: name,
-            }));
-          }
-        }
+        nextExportedAPIFuncs = exportedAPIFuncs;
 
         return asyncCallback();
-      });
+      })
     },
     function(asyncCallback) {
       transScope.start(asyncCallback);
@@ -439,7 +372,88 @@ exports.publish = function(req, res, next) {
   });
 };
 
+function sendPreCheckTask(celery, scriptId, callback) {
+  var exportedAPIFuncs = [];
+
+  var kwargs = {
+    funcId: scriptId,
+  }
+  var taskOptions = {
+    queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
+    resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
+  }
+  celery.putTask('Biz.FuncDebugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
+    if (err) return callback(err);
+
+    celeryRes = celeryRes || {};
+    extraInfo = extraInfo || {};
+
+    if (celeryRes.status === 'FAILURE') {
+      if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
+        // 超时错误
+        return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again', {
+          id       : celeryRes.id,
+          etype    : celeryRes.result && celeryRes.result.exc_type,
+          einfoTEXT: celeryRes.einfoTEXT,
+        }));
+
+      } else {
+        // 其他错误
+        return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
+          id       : celeryRes.id,
+          etype    : celeryRes.result && celeryRes.result.exc_type,
+          einfoTEXT: celeryRes.einfoTEXT,
+        }));
+      }
+
+    } else if (extraInfo.status === 'TIMEOUT') {
+      return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
+        id   : extraInfo.id,
+        etype: celeryRes.result && celeryRes.result.exc_type,
+      }));
+
+    } else if (celeryRes.retval.einfoTEXT) {
+      return callback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
+        id       : extraInfo.id,
+        etype    : celeryRes.result && celeryRes.result.exc_type,
+        einfoTEXT: celeryRes.retval.einfoTEXT,
+        traceInfo: celeryRes.retval.traceInfo,
+      }));
+    }
+
+    try {
+      exportedAPIFuncs = celeryRes.retval.result.exportedAPIFuncs
+    } catch(_) {
+      // Nope
+    } finally {
+      // 保证一定为数组
+      if (toolkit.isNothing(exportedAPIFuncs)) {
+        exportedAPIFuncs = [];
+      }
+    }
+
+    // 检查重名函数
+    var funcNameMap = {};
+    for (var i = 0; i < exportedAPIFuncs.length; i++) {
+      var name = exportedAPIFuncs[i].name;
+
+      if (!funcNameMap[name]) {
+        funcNameMap[name] = true;
+      } else {
+        return callback(new E('EClientDuplicated', 'Found duplicated func names in script', {
+          funcName: name,
+        }));
+      }
+    }
+
+    return callback(null, exportedAPIFuncs);
+  });
+};
+
 function reloadDataMD5Cache(celery, scriptId, callback) {
   var taskKwargs = { type: 'script', id: scriptId };
   celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
-}
+};
+
+exports.sendPreCheckTask   = sendPreCheckTask;
+exports.reloadDataMD5Cache = reloadDataMD5Cache;

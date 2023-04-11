@@ -1793,5 +1793,8 @@ export function htmlSpace(count, lang) {
 };
 
 export function openURL(url) {
+  if ('object' === typeof url) {
+    url = router.resolve(url).href;
+  }
   window.open(url);
 };

@@ -45,15 +45,24 @@ Script Set installed, new Script Set is in effect immediately  : 脚本集已安
 Script Set reinstalled, new Script Set is in effect immediately: 脚本集已重新安装，新脚本集立即生效
 Script Set upgraded, new Script Set is in effect immediately   : 脚本集已升级，新脚本集立即生效
 
-This Script Set requires 3rd party Python packages, do you want to open PIP tool now?: 此脚本集依赖第三方 Python 包，是否现在前往PIP工具？
-
 No Script Set has ever been published: 尚未发布过任何脚本集到脚本市场
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
 Homepage: 前往主页
+Stay Here: 留在本页
 
 'Processing...': '正在处理...'
+
+Script Set Installed Successfully!: 成功安装脚本集！
+'In addition, this Script Set...' :  '同时，这个脚本集...'
+
+Requires 3rd party Python packages        : 依赖第三方 Python 包
+Go to PIP Tool                            : 前往 PIP 工具
+Includes a Startup Script                 : 已经包含了启动脚本（Startup）
+Go to Startup Script and check it out     : 前往查看此启动脚本
+Includes a Crontab Config which is ENABLED: 包含了一个自动触发配置，且已经开启
+Go to the Crontab Config and check it out : 前往查看此自动触发配置
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 </i18n>
@@ -351,6 +360,57 @@ The published Script Set will be shown here, you can find and install the ones y
         </div>
       </el-dialog>
 
+      <!-- 下一步操作 -->
+      <el-dialog
+        :visible.sync="showNextOperation"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        width="850px">
+        <div class="notice-next-operation-container">
+          <el-image style="width: 550px; left: -50px;" :src="nextOperationImage"></el-image>
+          <el-card class="notice-next-operation-content">
+            <i class="fa fa-fw fa-check-circle notice-next-operation-icon"></i>
+
+            <h1 class="text-main">{{ $t('Script Set Installed Successfully!') }}</h1>
+            <p class="text-info">{{ $t('In addition, this Script Set...') }}<p>
+
+            <p v-if="T.notNothing(nextOperation.requirements)">
+              <br>
+              {{ $t('Requires 3rd party Python packages') }}
+              <br>&#12288;
+              <el-button type="text" @click="common.goToPIPTools(nextOperation.requirements, { newTab: true })">
+                <i class="fa fa-fw fa-arrow-right"></i>
+                {{ $t('Go to PIP Tool') }}
+              </el-button>
+            </p>
+
+            <p v-if="T.notNothing(nextOperation.startupScriptIds)">
+              <br>
+              {{ $t('Includes a Startup Script') }}
+              <br>&#12288;
+              <el-button type="text" @click="common.goToScript(nextOperation.startupScriptIds[0])">
+                <i class="fa fa-fw fa-arrow-right"></i>
+                {{ $t('Go to Startup Script and check it out') }}
+              </el-button>
+            </p>
+
+            <p v-if="T.notNothing(nextOperation.startupCrontabIds)">
+              <br>
+              {{ $t('Includes a Crontab Config which is ENABLED') }}
+              <br>&#12288;
+              <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: nextOperation.startupCrontabIds[0] })">
+                <i class="fa fa-fw fa-arrow-right"></i>
+                {{ $t('Go to the Crontab Config and check it out') }}
+              </el-button>
+            </p>
+          </el-card>
+          <div class="notice-next-operation-buttons">
+            <el-button @click="showNextOperation = false">{{ $t('Stay Here') }}</el-button>
+          </div>
+        </div>
+      </el-dialog>
+
       <!-- 主页提示 -->
       <FeatureNoticeDialog
         featureKey="scriptMarket.homepage"
@@ -367,6 +427,8 @@ import { debounce } from '@/toolkit'
 
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_noticeScriptMarketHomepage from '@/assets/img/notice-script-market-homepage.png'
+
+import img_nextOperation from '@/assets/img/notice-finished.png'
 
 export default {
   name: 'ScriptMarketDetail',
@@ -643,42 +705,24 @@ export default {
           break;
 
         case 'install':
-          apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
-            params: { id: this.scriptMarket.id },
-            body  : {
-              scriptSetIds: [ this.scriptSetToOperate.id ],
-            },
-            alert : { okMessage: this.$t('Script Set installed, new Script Set is in effect immediately') },
-          });
-
-          this.$store.commit('updateScriptListSyncTime');
-
-          break;
-
         case 'reinstall':
-          apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
-            params: { id: this.scriptMarket.id },
-            body  : {
-              scriptSetIds: [ this.scriptSetToOperate.id ],
-            },
-            alert : { okMessage: this.$t('Script Set reinstalled, new Script Set is in effect immediately') },
-          });
-
-          this.$store.commit('updateScriptListSyncTime');
-
-          break;
-
         case 'upgrade':
+          let installMessageMap = {
+            install  : 'Script Set installed, new Script Set is in effect immediately',
+            reinstall: 'Script Set reinstalled, new Script Set is in effect immediately',
+            upgrade  : 'Script Set upgraded, new Script Set is in effect immediately',
+
+          }
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
             params: { id: this.scriptMarket.id },
             body  : {
-              scriptSetIds: [ this.scriptSetToOperate.id ],
+              scriptSetIds : [ this.scriptSetToOperate.id ],
+              startupScript: { create: true }
             },
-            alert : { okMessage: this.$t('Script Set upgraded, new Script Set is in effect immediately') },
+            alert : { okMessage: this.$t(installMessageMap[operation]) },
           });
 
           this.$store.commit('updateScriptListSyncTime');
-
           break;
       }
 
@@ -710,19 +754,6 @@ export default {
         this.common.checkScriptMarketUpdate(this.scriptMarket.id);
       }
 
-      // 跳转 PIP 工具
-      switch(operation) {
-        case 'install':
-        case 'reinstall':
-        case 'upgrade':
-          if (this.T.notNothing(apiRes.data.requirements)) {
-            if (await this.T.confirm(this.$t('This Script Set requires 3rd party Python packages, do you want to open PIP tool now?'))) {
-              return this.common.goToPIPTools(apiRes.data.requirements);
-            }
-          }
-          break;
-      }
-
       await this.loadData({
         skipLoadLocal : skipLoadLocal,
         skipLoadRemote: skipLoadRemote,
@@ -730,6 +761,22 @@ export default {
 
       this.isProcessing  = false;
       this.showOperation = false;
+
+      // 跳转个后续提示
+      switch(operation) {
+        case 'install':
+        case 'reinstall':
+        case 'upgrade':
+          console.log(apiRes.data)
+          if (this.T.notNothing(apiRes.data.requirements)
+            || this.T.notNothing(apiRes.data.startupScriptIds)
+            || this.T.notNothing(apiRes.data.startupCrontabIds)) {
+
+            this.nextOperation = apiRes.data;
+            this.showNextOperation = true;
+          }
+          break;
+      }
     },
     onFilterChange: debounce(function(val) {
       this.filterTEXT = val;
@@ -799,6 +846,9 @@ export default {
         return this.T.filterByKeywords(q, this.data);
       }
     },
+    nextOperationImage() {
+      return img_nextOperation;
+    },
   },
   props: {
   },
@@ -831,6 +881,9 @@ export default {
       operationDialogTitle: null,
       operationButtonTitle: null,
       isProcessing        : false,
+
+      nextOperation    : {},
+      showNextOperation: false,
 
       forceModeEnabled: false,
 
@@ -872,6 +925,43 @@ export default {
 }
 .publish-time {
   padding-left: 20px;
+}
+
+.notice-next-operation-container {
+
+}
+.notice-next-operation-content {
+  width: 420px;
+  height: 350px;
+  border-radius: 20px;
+  position: absolute;
+  top: 30px;
+  right: 30px;
+}
+.notice-next-operation-content h1 {
+  text-align: center;
+}
+.notice-next-operation-content p {
+  font-size: 16px;
+  line-height: 20px;
+  word-break: break-word;
+  position: relative;
+  padding: 0;
+  margin: 0;
+}
+.notice-next-operation-buttons {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+.notice-next-operation-icon {
+  position: absolute;
+  font-size: 245px;
+  right: -15%;
+  bottom: -5%;
+  color: #ff660018;
+  line-height: 200px;
+  z-index: 0;
 }
 </style>
 
