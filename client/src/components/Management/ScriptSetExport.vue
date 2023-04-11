@@ -160,7 +160,7 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: { fields: ['id', 'title'] },
+        query: { fields: ['id', 'title', 'origin', 'originId'] },
       };
 
       // 获取关联数据
@@ -169,6 +169,12 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       let scriptSets = apiRes.data;
+
+      // 跳过来自官方脚本市场的脚本
+      scriptSets = scriptSets.filter(d => {
+        return !this.common.shouldScriptSetHidden(d);
+      });
+
       scriptSets.forEach(x => {
         this.T.appendSearchFields(x, ['id', 'title'])
       });

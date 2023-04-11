@@ -693,6 +693,9 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(d => {
+        // 跳过隐藏的脚本集
+        if (this.common.shouldScriptSetHidden(d)) return;
+
         // 记录节点
         nodeEntity[d.id] = 'scriptSet';
 
@@ -753,6 +756,9 @@ export default {
 
       window._DFF_scriptIds = [];
       apiRes.data.forEach(d => {
+        // 跳过不存在的脚本集
+        if (!scriptSetMap[d.scriptSetId]) return;
+
         window._DFF_scriptIds.push(d.id);
 
         // 记录节点
@@ -824,6 +830,9 @@ export default {
 
       window._DFF_funcIds = [];
       apiRes.data.forEach(d => {
+        // 跳过不存在的函数
+        if (!scriptMap[d.scriptId]) return;
+
         window._DFF_funcIds.push(d.id);
 
         // 记录节点

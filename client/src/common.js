@@ -1,3 +1,4 @@
+import app from '@/main';
 import router from '@/router'
 import store from './store'
 import * as T from '@/toolkit'
@@ -136,12 +137,14 @@ export async function getFuncList() {
     apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
       query: {
         id    : Object.keys(relatedScriptSetIds).join(','),
-        fields: ['id', 'title'],
+        fields: ['id', 'title', 'origin', 'originId'],
       },
     });
     if (!apiRes || !apiRes.ok) return;
 
     apiRes.data.forEach(d => {
+      if (shouldScriptSetHidden(d)) return;
+
       scriptSetMap[d.id] = {
         label   : d.title || d.id,
         value   : d.id,
@@ -344,4 +347,14 @@ export function hasNewVersion() {
   if (!T.parseVersion(version) || !T.parseVersion(latestVersion)) return;
 
   return T.compareVersion(version, latestVersion) < 0 ? 1 : null;
+}
+
+export function shouldScriptSetHidden(scriptSet) {
+  // 隐藏来自脚本市场脚本集
+  if (!app.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN']
+    && scriptSet.origin === 'scriptMarket' && scriptSet.originId === 'smkt-official') {
+    return true;
+  }
+
+  return false;
 }

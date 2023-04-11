@@ -1,11 +1,12 @@
 <i18n locale="zh-CN" lang="yaml">
-Custom Site Title     : 自定义网站标题
-Custom Site Favicon   : 自定义网站 Favicon
-Custom Site Logo      : 自定义网站 Logo
-Notice Bar            : 顶部提示栏
-Doc Link in Navi Bar  : 导航栏文档链接
-Monitor Data Report   : 监控数据上报
-Official Script Market: 官方脚本市场
+Custom Site Title                 : 自定义网站标题
+Custom Site Favicon               : 自定义网站 Favicon
+Custom Site Logo                  : 自定义网站 Logo
+Notice Bar                        : 顶部提示栏
+Doc Link in Navi Bar              : 导航栏文档链接
+Monitor Data Report               : 监控数据上报
+Official Script Market            : 官方脚本市场
+Script From Official Script Market: 来自官方脚本市场的脚本
 
 Show Advanced Configs: 显示高级配置
 Hide Advanced Configs: 隐藏高级配置
@@ -212,6 +213,16 @@ Save and Refresh: 保存并刷新
                   <el-select v-model="form['OFFICIAL_SCRIPT_MARKET_ENABLED']" :class="enableClass(form['OFFICIAL_SCRIPT_MARKET_ENABLED'])">
                     <el-option :label="$t('Enabled')" key="true"   :value="true"></el-option>
                     <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <!-- 来自官方脚本市场的脚本 -->
+                <el-divider content-position="left"><h3>{{ $t('Script From Official Script Market') }}</h3></el-divider>
+
+                <el-form-item :label="$t('Show')" prop="OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN">
+                  <el-select v-model="form['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN']" :class="enableClass(form['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN'])">
+                    <el-option :label="$t('Shown')" key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Hidden')" key="false" :value="false"></el-option>
                   </el-select>
                 </el-form-item>
 
