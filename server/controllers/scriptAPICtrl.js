@@ -12,8 +12,8 @@ var toolkit      = require('../utils/toolkit');
 var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
-var scriptMod               = require('../models/scriptMod');
 var scriptSetMod            = require('../models/scriptSetMod');
+var scriptMod               = require('../models/scriptMod');
 var funcMod                 = require('../models/funcMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 

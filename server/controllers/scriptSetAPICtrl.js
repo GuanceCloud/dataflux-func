@@ -16,10 +16,13 @@ var CONFIG       = require('../utils/yamlResources').get('CONFIG');
 var ROUTE        = require('../utils/yamlResources').get('ROUTE');
 var toolkit      = require('../utils/toolkit');
 var common       = require('../utils/common');
+var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
+var scriptAPICtrl             = require('./scriptAPICtrl');
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
+var funcMod                   = require('../models/funcMod');
 var connectorMod              = require('../models/connectorMod');
 var envVariableMod            = require('../models/envVariableMod');
 var authLinkMod               = require('../models/authLinkMod');
@@ -600,7 +603,186 @@ exports.confirmImport = function(req, res, next) {
   });
 };
 
+exports.deploy = function(req, res, next) {
+  var scriptSetId = req.params.id;
+
+  var opt = {
+    crontabConfig : req.body.crontabConfig  || false,
+    configReplacer: req.body.configReplacer || {},
+  }
+  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      startupScriptId : startupScriptId,
+      startupCrontabId: startupCrontabId,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
 function reloadDataMD5Cache(celery, callback) {
   var taskKwargs = { all: true };
   celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, callback);
 };
+
+function doDeploy(locals, scriptSetId, options, callback) {
+  options                = options                || {};
+  options.crontabConfig  = options.crontabConfig  || false;
+  options.configReplacer = options.configReplacer || {};
+
+  var celery = celeryHelper.createHelper(locals.logger);
+
+  var startupScriptId  = `${CONFIG._STARTUP_SCRIPT_SET_ID}__${scriptSetId}`;
+  var startupCrontabId = null
+
+  var scriptSetModel     = scriptSetMod.createModel(locals);
+  var scriptModel        = scriptMod.createModel(locals);
+  var funcModel          = funcMod.createModel(locals);
+  var crontabConfigModel = crontabConfigMod.createModel(locals);
+
+  var installedScriptSet   = null;
+  var exampleScript        = null;
+  var nextExportedAPIFuncs = null;
+  async.series([
+    // 获取已安装脚本集
+    function(asyncCallback) {
+      scriptSetModel.getWithCheck(scriptSetId, [ 'id', 'title' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        installedScriptSet = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取示例脚本
+    function(asyncCallback) {
+      var exampleScriptId = `${scriptSetId}__example`;
+      scriptModel.get(exampleScriptId, [ 'code' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        if (dbRes) {
+          exampleScript = dbRes;
+          return asyncCallback();
+
+        } else {
+          // 没有示例脚本，直接结束
+          return callback();
+        }
+      });
+    },
+    // 检查启动脚本集存在性 / 创建启动脚本集
+    function(asyncCallback) {
+      scriptSetModel.get(CONFIG._STARTUP_SCRIPT_SET_ID, [ 'seq' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 已经创建，忽略
+        if (dbRes) return asyncCallback();
+
+        // 尚未创建，立刻创建
+        var _data = {
+          id      : CONFIG._STARTUP_SCRIPT_SET_ID,
+          title   : 'Startup',
+          isPinned: true,
+        }
+        return scriptSetModel.add(_data, asyncCallback);
+      })
+    },
+    // 检查启动脚本存在性 / 创建启动脚本
+    function(asyncCallback) {
+      scriptModel.get(startupScriptId, [ 'seq' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 已经创建，忽略
+        if (dbRes) return asyncCallback();
+
+        // 尚未创建，立刻创建
+        if (toolkit.notNothing(options.configReplacer)) {
+          for (var k in options.configReplacer) {
+            var v = options.configReplacer[k];
+            if (v) {
+              exampleScript.code = exampleScript.code.replace(`"<${k}>"`, `"${v}"`);
+            }
+          }
+        }
+
+        var _data = {
+          id       : startupScriptId,
+          title    : installedScriptSet.title || scriptSetId,
+          code     : exampleScript.code,
+          codeDraft: exampleScript.code,
+        }
+        return scriptModel.add(_data, asyncCallback);
+      });
+    },
+    // 发送脚本代码预检查任务
+    function(asyncCallback) {
+      scriptAPICtrl.sendPreCheckTask(celery, startupScriptId, function(err, exportedAPIFuncs) {
+        if (err) return asyncCallback(err);
+
+        nextExportedAPIFuncs = exportedAPIFuncs;
+
+        return asyncCallback();
+      });
+    },
+    // 更新函数
+    function(asyncCallback) {
+      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+
+      funcModel.update(startupScriptId, nextExportedAPIFuncs, asyncCallback);
+    },
+    // 检查自动触发配置存在性 / 创建自动触发配置
+    function(asyncCallback) {
+      if (!options.crontabConfig) return asyncCallback();
+      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+
+      var crontabFunc = null;
+      for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
+        var _func = nextExportedAPIFuncs[i];
+        if (_func.extraConfig && _func.extraConfig.fixedCrontab) {
+          crontabFunc = _func;
+          break;
+        }
+      }
+
+      // 没有可用于配置自动触发的函数，忽略
+      if (!crontabFunc) return asyncCallback();
+
+      var crontabFuncId = `${startupScriptId}.${crontabFunc.name}`;
+
+      // 检查自动触发配置存在性
+      var opt = {
+        fields : [ 'cron.id' ],
+        filters: {
+          funcId: { eq: crontabFuncId }
+        }
+      }
+      crontabConfigModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 已经存在，忽略
+        if (dbRes.length > 0) {
+          startupCrontabId = dbRes[0].id;
+          return asyncCallback();
+        }
+
+        // 尚不存在，立即创建
+        startupCrontabId = `${CONFIG._STARTUP_CRONTAB_ID_PREFIX}-${scriptSetId}`;
+        var _data = {
+          id                : startupCrontabId,
+          funcId            : crontabFuncId,
+          funcCallKwargsJSON: {},
+        }
+        return crontabConfigModel.add(_data, asyncCallback);
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    callback(null, startupScriptId, startupCrontabId);
+
+    // 刷新数据 MD5 缓存
+    reloadDataMD5Cache(celery);
+  });
+};
+
+exports.doDeploy = doDeploy;

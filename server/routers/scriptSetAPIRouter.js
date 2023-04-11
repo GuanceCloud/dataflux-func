@@ -37,3 +37,7 @@ routeLoader.load(ROUTE.scriptSetAPI.import, [
 routeLoader.load(ROUTE.scriptSetAPI.confirmImport, [
   scriptSetAPICtrl.confirmImport,
 ]);
+
+routeLoader.load(ROUTE.scriptSetAPI.deploy, [
+  scriptSetAPICtrl.deploy,
+]);

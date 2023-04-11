@@ -1874,6 +1874,29 @@ scriptSetAPI:
         $type      : string
         $example   : import-001
 
+  deploy:
+    showInDoc    : true
+    name         : Deploy
+    name_zhCN    : 部署
+    method       : post
+    url          : /api/v1/script-sets/:id/do/deploy
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 脚本集 ID
+        $type: string
+    body:
+      crontabConfig:
+        $desc   : 是否部署自动触发配置
+        $type   : boolean
+        $example: true
+      configReplacer:
+        $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
+        $type   : json
+        $example: { '"<您的 AK ID>"': '"xxxx"' }
+
 # 脚本
 scriptAPI:
   $tag     : Script Set / Script / Func
@@ -2678,18 +2701,18 @@ scriptMarketAPI:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
-      startupScript:
-        $desc: 启动脚本
-        create:
-          $desc   : 是否创建启动脚本
+      deployOptions:
+        $desc: 部署选项
+        startupScript:
+          $desc   : 是否部署启动脚本
           $type   : boolean
-          $example: false
-        scriptSetId:
-          $desc   : 指定启动脚本 ID
-          $type   : string
-          $example: startup
-        replaceConfig:
-          $desc   : 替换配置（如： 将 `"<您的 AK ID>"` 替换为具体之
+          $example: true
+        crontabConfig:
+          $desc   : 是否部署自动触发配置
+          $type   : boolean
+          $example: true
+        configReplacer:
+          $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
           $type   : json
           $example: { '"<您的 AK ID>"': '"xxxx"' }
 

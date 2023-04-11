@@ -950,7 +950,26 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
           requirements[pkgVer[0]] = pkgVer[1] || null;
         });
       });
-      return callback(null, requirements);
+
+      // 提取 example 脚本 ID / 配置字段
+      var exampleScriptIds = [];
+      var configFields     = [];
+      importData.scripts.forEach(function(s) {
+        if (s.id === `${s.scriptSetId}__example`) {
+          // example 脚本 ID
+          exampleScriptIds.push(s.id);
+
+          // example 脚本内配置占位符
+          var m = s.code.match(/"<.+>"/g);
+          if (m) {
+            m.forEach(function(placeholder) {
+              configFields.push(placeholder.slice(2, -2));
+            });
+          }
+        }
+      });
+
+      return callback(null, requirements, exampleScriptIds, configFields);
     });
   });
 };

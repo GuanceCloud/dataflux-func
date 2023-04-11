@@ -27,7 +27,6 @@
     "js-base64": "2.5.2",
     "js-yaml": "3.14.1",
     "jsonwebtoken": "8.5.1",
-    "jszip": "3.10.1",
     "lru-cache": "6.0.0",
     "markdown-table": "2.0.0",
     "marked": "4.0.18",

@@ -42,7 +42,6 @@
 | js-base64                | 2.6.4       | BSD-3-Clause        | https://github.com/dankogai/js-base64#readme                                         |
 | js-yaml                  | 3.14.1      | MIT                 | https://github.com/nodeca/js-yaml#readme                                             |
 | jsonwebtoken             | 8.5.1       | MIT                 | https://github.com/auth0/node-jsonwebtoken#readme                                    |
-| jszip                    | 3.10.1      | MIT license / GPLv3 | https://github.com/Stuk/jszip#readme                                                 |
 | lru-cache                | 6.0.0       | ISC                 | https://github.com/isaacs/node-lru-cache#readme                                      |
 | marked                   | 4.0.18      | MIT                 | https://marked.js.org/                                                               |
 | micromatch               | 4.0.5       | MIT                 | https://github.com/micromatch/micromatch                                             |

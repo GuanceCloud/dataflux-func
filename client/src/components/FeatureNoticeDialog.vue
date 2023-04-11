@@ -11,7 +11,7 @@ Don't prompt again: 不再提示
     :close-on-press-escape="false"
     width="850px">
     <div class="notice-feature-container">
-      <el-image style="width: 550px; left: -50px;" :src="image"></el-image>
+      <el-image :src="image"></el-image>
       <el-card class="notice-feature-content">
         <i class="fa fa-fw notice-feature-icon" :class="icon"></i>
         <p v-html="description"></p>
@@ -79,15 +79,22 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .notice-feature-container {
-
+  min-height: 350px;
+}
+.notice-feature-container .el-image {
+  width: 550px;
+  left: -50px;
+  top: 0px;
+  position: absolute;
 }
 .notice-feature-content {
   width: 420px;
-  height: 350px;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
   border-radius: 20px;
-  position: absolute;
-  top: 30px;
-  right: 30px;
+  position: relative;
+  top: -30px;
+  left: 380px;
 }
 .notice-feature-content p {
   font-size: 16px;
@@ -116,5 +123,6 @@ export default {
 .notice-feature-content h1,
 .notice-feature-content p>h1 {
   text-align: center !important;
+  color: #FF6600;
 }
 </style>

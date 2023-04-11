@@ -12,6 +12,10 @@ a {
   color: #5f5fff;
 }
 
+img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 .node-card .stage-header {
   background-color: #333 !important;
 }
@@ -54,10 +58,7 @@ a {
 }
 .connector-logo,
 .script-market-logo {
-  background-color: white;
   padding: 5px;
-  border: grey solid 10px;
-  border-radius: 5px;
 }
 .code-editor-status-bar {
   background-color: black !important;

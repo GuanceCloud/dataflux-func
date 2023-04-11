@@ -57,12 +57,15 @@ Stay Here: 留在本页
 Script Set Installed Successfully!: 成功安装脚本集！
 'In addition, this Script Set...' :  '同时，这个脚本集...'
 
-Requires 3rd party Python packages        : 依赖第三方 Python 包
-Go to PIP Tool                            : 前往 PIP 工具
-Includes a Startup Script                 : 包含了启动脚本（Startup）
-Go to Startup Script and check it out     : 前往查看此启动脚本
-Includes a Crontab Config which is ENABLED: 包含了一个自动触发配置，且已经开启
-Go to the Crontab Config and check it out : 前往查看此自动触发配置
+Requires 3rd party Python packages                 : 依赖第三方 Python 包
+Go to PIP Tool                                     : 前往 PIP 工具
+Includes a Startup Script                          : 包含了启动脚本（Startup）
+'Includes a Startup Script with following configs:': 包含了启动脚本（Startup）及如下配置项目：
+Deploy Startup Script                              : 部署启动脚本
+Deploy Startup Script and Crontab Config           : 部署启动脚本及自动触发配置
+Startup Script is deployed                         : 启动脚本已部署
+Go to Startup Script                               : 前往启动脚本
+Go to the Crontab Config                           : 前往自动触发配置
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 </i18n>
@@ -360,53 +363,78 @@ The published Script Set will be shown here, you can find and install the ones y
         </div>
       </el-dialog>
 
-      <!-- 下一步操作 -->
+      <!-- 部署 -->
       <el-dialog
-        :visible.sync="showNextOperation"
+        :visible.sync="showDeploy"
         :show-close="false"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
-        width="850px">
-        <div class="notice-next-operation-container">
-          <el-image style="width: 550px; left: -50px;" :src="nextOperationImage"></el-image>
-          <el-card class="notice-next-operation-content">
-            <i class="fa fa-fw fa-check-circle notice-next-operation-icon"></i>
+        width="950px">
+        <div class="deploy-container">
+          <el-image :src="deployImage"></el-image>
+          <el-card class="deploy-content">
+            <i class="fa fa-fw fa-check-circle deploy-icon"></i>
 
             <h1 class="text-main">{{ $t('Script Set Installed Successfully!') }}</h1>
             <p class="text-info">{{ $t('In addition, this Script Set...') }}<p>
 
-            <p v-if="T.notNothing(nextOperation.requirements)">
+            <p v-if="T.notNothing(deployment.requirements)">
               <br>
               {{ $t('Requires 3rd party Python packages') }}
               <br>&#12288;
-              <el-button type="text" @click="common.goToPIPTools(nextOperation.requirements, { newTab: true })">
+              <el-button type="text" @click="common.goToPIPTools(deployment.requirements, { newTab: true })">
                 <i class="fa fa-fw fa-arrow-right"></i>
                 {{ $t('Go to PIP Tool') }}
               </el-button>
             </p>
 
-            <p v-if="T.notNothing(nextOperation.startupScriptIds)">
+            <p v-if="T.notNothing(deployment.exampleScriptIds)">
               <br>
-              {{ $t('Includes a Startup Script') }}
-              <br>&#12288;
-              <el-button type="text" @click="common.goToScript(nextOperation.startupScriptIds[0])">
-                <i class="fa fa-fw fa-arrow-right"></i>
-                {{ $t('Go to Startup Script and check it out') }}
-              </el-button>
-            </p>
+              <!-- 已部署 -->
+              <template v-if="T.notNothing(deployment.startupScriptIds)">
+                {{ $t('Startup Script is deployed') }}
+                <br>
+                <el-button type="text" @click="common.goToScript(deployment.startupScriptIds[0])">
+                  <i class="fa fa-fw fa-arrow-right"></i>
+                  {{ $t('Go to Startup Script') }}
+                </el-button>
 
-            <p v-if="T.notNothing(nextOperation.startupCrontabIds)">
-              <br>
-              {{ $t('Includes a Crontab Config which is ENABLED') }}
-              <br>&#12288;
-              <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: nextOperation.startupCrontabIds[0] })">
-                <i class="fa fa-fw fa-arrow-right"></i>
-                {{ $t('Go to the Crontab Config and check it out') }}
-              </el-button>
+                <template v-if="T.notNothing(deployment.startupCrontabIds)">
+                  <br>
+                  <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: deployment.startupCrontabIds[0] })">
+                    <i class="fa fa-fw fa-arrow-right"></i>
+                    {{ $t('Go to the Crontab Config') }}
+                  </el-button>
+                </template>
+              </template>
+
+              <!-- 尚未部署 -->
+              <template v-else>
+                <template v-if="T.isNothing(deployment.configFields)">
+                  {{ $t('Includes a Startup Script') }}
+                </template>
+                <template v-else>
+                  {{ $t('Includes a Startup Script with following configs:') }}
+                  <el-form :model="configReplacerForm" size="small">
+                    <el-form-item v-for="f in deployment.configFields" :label="f" :key="f">
+                      <el-input v-model="configReplacerForm[f]"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-button type="text" @click="deploy()">
+                    <i class="fa fa-fw fa-arrow-right"></i>
+                    {{ $t('Deploy Startup Script') }}
+                  </el-button>
+                  <br>
+                  <el-button type="text" @click="deploy({ crontabConfig: true })">
+                    <i class="fa fa-fw fa-arrow-right"></i>
+                    {{ $t('Deploy Startup Script and Crontab Config') }}
+                  </el-button>
+                </template>
+              </template>
             </p>
           </el-card>
-          <div class="notice-next-operation-buttons">
-            <el-button @click="showNextOperation = false">{{ $t('Stay Here') }}</el-button>
+          <div class="deploy-buttons">
+            <el-button @click="showDeploy = false">{{ $t('Stay Here') }}</el-button>
           </div>
         </div>
       </el-dialog>
@@ -428,7 +456,7 @@ import { debounce } from '@/toolkit'
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_noticeScriptMarketHomepage from '@/assets/img/notice-script-market-homepage.png'
 
-import img_nextOperation from '@/assets/img/notice-finished.png'
+import img_deploy from '@/assets/img/notice-todo-list.png'
 
 export default {
   name: 'ScriptMarketDetail',
@@ -444,6 +472,10 @@ export default {
     },
   },
   methods: {
+    onFilterChange: debounce(function(val) {
+      this.filterTEXT = val;
+    }),
+
     async loadData(opt) {
       opt = opt || {};
 
@@ -715,10 +747,7 @@ export default {
           }
           apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/install', {
             params: { id: this.scriptMarket.id },
-            body  : {
-              scriptSetIds : [ this.scriptSetToOperate.id ],
-              startupScript: { create: true }
-            },
+            body  : { scriptSetIds : [ this.scriptSetToOperate.id ] },
             alert : { okMessage: this.$t(installMessageMap[operation]) },
           });
 
@@ -767,20 +796,33 @@ export default {
         case 'install':
         case 'reinstall':
         case 'upgrade':
-          console.log(apiRes.data)
           if (this.T.notNothing(apiRes.data.requirements)
-            || this.T.notNothing(apiRes.data.startupScriptIds)
-            || this.T.notNothing(apiRes.data.startupCrontabIds)) {
-
-            this.nextOperation = apiRes.data;
-            this.showNextOperation = true;
+            || this.T.notNothing(apiRes.data.exampleScriptIds)) {
+            // 提取部署信息
+            this.deployment         = apiRes.data;
+            this.configReplacerForm = {};
+            this.showDeploy         = true;
           }
           break;
       }
     },
-    onFilterChange: debounce(function(val) {
-      this.filterTEXT = val;
-    }),
+    async deploy(options) {
+      options = options || {};
+      options.configReplacer = this.configReplacerForm || {};
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/deploy', {
+        params: { id: this.scriptSetToOperate.id },
+        body  : options,
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      if (apiRes.data.startupScriptId) {
+        this.deployment.startupScriptIds = [ apiRes.data.startupScriptId ];
+      }
+      if (apiRes.data.startupCrontabId) {
+        this.deployment.startupCrontabIds = [ apiRes.data.startupCrontabId ];
+      }
+    },
   },
   computed: {
     isWriteOperation() {
@@ -846,8 +888,8 @@ export default {
         return this.T.filterByKeywords(q, this.data);
       }
     },
-    nextOperationImage() {
-      return img_nextOperation;
+    deployImage() {
+      return img_deploy;
     },
   },
   props: {
@@ -882,8 +924,9 @@ export default {
       operationButtonTitle: null,
       isProcessing        : false,
 
-      nextOperation    : {},
-      showNextOperation: false,
+      deployment        : {},
+      configReplacerForm: {},
+      showDeploy        : false,
 
       forceModeEnabled: false,
 
@@ -927,21 +970,28 @@ export default {
   padding-left: 20px;
 }
 
-.notice-next-operation-container {
-
+.deploy-container {
+  min-height: 350px;
 }
-.notice-next-operation-content {
-  width: 420px;
-  height: 350px;
-  border-radius: 20px;
+.deploy-container .el-image {
+  width: 550px;
+  left: -50px;
+  top: 0px;
   position: absolute;
-  top: 30px;
-  right: 30px;
 }
-.notice-next-operation-content h1 {
+.deploy-content {
+  width: 500px;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-radius: 20px;
+  position: relative;
+  top: -30px;
+  left: 400px;
+}
+.deploy-content h1 {
   text-align: center;
 }
-.notice-next-operation-content p {
+.deploy-content p {
   font-size: 16px;
   line-height: 20px;
   word-break: break-word;
@@ -949,16 +999,28 @@ export default {
   padding: 0;
   margin: 0;
 }
-.notice-next-operation-buttons {
+.deploy-content .el-form {
+  padding-left: 20px;
+}
+.deploy-content .el-form-item {
+  margin-bottom: 0;
+  margin-top: 15px;
+}
+.deploy-content .el-button {
+  margin-bottom: 0;
+  margin-top: 15px;
+  padding: 0 0 0 20px;
+}
+.deploy-buttons {
   position: absolute;
   bottom: 30px;
   right: 30px;
 }
-.notice-next-operation-icon {
+.deploy-icon {
   position: absolute;
   font-size: 245px;
-  right: -15%;
-  bottom: -5%;
+  right: -12%;
+  top: -5%;
   color: #ff660018;
   line-height: 200px;
   z-index: 0;
@@ -966,6 +1028,10 @@ export default {
 </style>
 
 <style>
+.deploy-content .el-form-item__label {
+  font-size: 14px;
+  line-height: 1.5;
+}
 .commit-divider {
   margin: 1px 0;
 }
