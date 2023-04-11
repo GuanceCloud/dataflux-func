@@ -239,8 +239,7 @@ exports.publish = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
 
-  var force = req.body.force; // 强制发布
-  var wait  = req.body.wait;  // 等待发布结束
+  var wait = req.body.wait; // 等待发布结束
 
   var celery = celeryHelper.createHelper(res.locals.logger);
 
@@ -253,7 +252,7 @@ exports.publish = function(req, res, next) {
   var scriptSet = null;
 
   var nextScriptPublishVersion = null;
-  var nextExportedAPIFuncs     = null;
+  var nextExportedAPIFuncs     = [];
 
   var transScope = modelHelper.createTransScope(res.locals.db);
   async.series([
@@ -265,11 +264,6 @@ exports.publish = function(req, res, next) {
         if (!res.locals.user.is('sa') // 超级管理员不受限制
             && dbRes.lockedByUserId && dbRes.lockedByUserId !== res.locals.user.id) {
           return asyncCallback(new E('EBizCondition.PublishingScriptNotAllowed', 'This Script is locked by other user'));
-        }
-
-        // 没有修改的脚本不允许发布
-        if (!force && (dbRes.codeMD5 === dbRes.codeDraftMD5 || dbRes.code === dbRes.codeDraft)) {
-          return asyncCallback(new E('EBizCondition.ScriptNotEdited', 'Script not edited'))
         }
 
         script = dbRes;

@@ -208,7 +208,7 @@ class BaseTestSuit(object):
 
         # 发布脚本
         params = { 'id': cls.PRE_SCRIPT_ID }
-        body = { 'force': True, 'wait': True }
+        body   = { 'wait': True }
         status_code, resp = cls.API.post('/api/v1/scripts/:id/do/publish', params=params, body=body)
         assert status_code == 200, AssertDesc.bad_resp(resp)
 

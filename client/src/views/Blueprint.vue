@@ -396,7 +396,7 @@ export default {
       // 发布脚本
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
         params: { id: blueprintScriptId },
-        body  : { force: true, wait : true },
+        body  : { wait: true },
       });
       if (!apiRes || !apiRes.ok) return;
 

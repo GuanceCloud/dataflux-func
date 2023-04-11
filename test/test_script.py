@@ -66,7 +66,7 @@ class TestSuitScript(BaseTestSuit):
 
         # 测试接口
         params = { 'id': SCRIPT_ID }
-        body   = { 'force': True, 'wait': True, 'data': data }
+        body   = { 'wait': True, 'data': data }
         status_code, resp = self.API.post('/api/v1/scripts/:id/do/publish', params=params, body=body)
 
         assert status_code == 200, AssertDesc.bad_resp(resp)
