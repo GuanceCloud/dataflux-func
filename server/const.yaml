@@ -111,5 +111,7 @@ systemConfigs:
 
   # 是否启用官方脚本市场
   OFFICIAL_SCRIPT_MARKET_ENABLED: true
-  # 是否显示官方脚本市场脚本集
-  OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN: false
+
+  # 脚本集隐藏
+  SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET: true
+  SCRIPT_SET_HIDDEN_BUILTIN               : true

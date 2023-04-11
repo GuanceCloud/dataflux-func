@@ -149,6 +149,8 @@ export async function getFuncList() {
         label   : d.title || d.id,
         value   : d.id,
         title   : d.title,
+        origin  : d.origin,
+        originId: d.originId,
         children: [],
       };
     });
@@ -200,9 +202,12 @@ export async function getFuncList() {
     }
   });
 
+  let scriptSets = Object.values(scriptSetMap);
+  scriptSets.sort(T.scriptSetSorter);
+
   let result = {
     map     : funcMap,
-    cascader: Object.values(scriptSetMap),
+    cascader: scriptSets,
   }
 
   return result;
@@ -351,8 +356,14 @@ export function hasNewVersion() {
 
 export function shouldScriptSetHidden(scriptSet) {
   // 隐藏来自脚本市场脚本集
-  if (!app.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN']
+  if (!app.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
     && scriptSet.origin === 'scriptMarket' && scriptSet.originId === 'smkt-official') {
+    return true;
+  }
+
+  // 隐藏内置脚本集
+  if (!app.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']
+    && scriptSet.origin === 'builtin') {
     return true;
   }
 

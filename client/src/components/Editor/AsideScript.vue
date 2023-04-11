@@ -878,7 +878,7 @@ export default {
       treeData.forEach(d => {
         d.children.sort(this.T.asideItemSorter);
       })
-      treeData.sort(this.T.asideItemSorter);
+      treeData.sort(this.T.scriptSetSorter);
       treeData.unshift({type: 'addScriptSet'});
       treeData.unshift({type: 'refresh'});
 

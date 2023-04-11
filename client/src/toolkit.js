@@ -840,13 +840,6 @@ export function stringSimilar(s, t, f) {
 }
 
 export function asideItemSorter(a, b) {
-  // // 根据置顶时间排序
-  // let pinTimeA = new Date(a.pinTime || 0).getTime();
-  // let pinTimeB = new Date(b.pinTime || 0).getTime();
-
-  // if (pinTimeA < pinTimeB) return 1;
-  // if (pinTimeA > pinTimeB) return -1;
-
   // 根据是否置顶排序
   let isPinnedA = !!a.pinTime;
   let isPinnedB = !!b.pinTime;
@@ -856,6 +849,30 @@ export function asideItemSorter(a, b) {
 
   if (a.label < b.label) return -1;
   if (a.label > b.label) return 1;
+
+  return 0;
+}
+
+export function scriptSetSorter(a, b) {
+  // 根据是否置顶排序
+  let isPinnedA = !!a.pinTime;
+  let isPinnedB = !!b.pinTime;
+
+  if (isPinnedA < isPinnedB) return 1;
+  if (isPinnedA > isPinnedB) return -1;
+
+  // 根据来源排序
+  let aOrigin = a.origin;
+  let bOrigin = b.origin;
+  let orders = [ 'user', 'scriptMarket', 'builtin' ];
+  if (orders.indexOf(aOrigin) < orders.indexOf(bOrigin)) return -1;
+  if (orders.indexOf(aOrigin) > orders.indexOf(bOrigin)) return 1;
+
+  // 根据名称 / ID 排序
+  let aLabel = a.label || a.title || a.id;
+  let bLabel = b.label || b.title || b.id;
+  if (aLabel < bLabel) return -1;
+  if (aLabel > bLabel) return 1;
 
   return 0;
 };

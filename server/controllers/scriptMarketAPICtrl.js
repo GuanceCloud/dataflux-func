@@ -1708,8 +1708,9 @@ exports.publish = function(req, res, next) {
 };
 
 exports.install = function(req, res, next) {
-  var id           = req.params.id;
-  var scriptSetIds = req.body.scriptSetIds;
+  var id            = req.params.id;
+  var scriptSetIds  = req.body.scriptSetIds;
+  var startupScript = req.body.startupScript;
 
   var scriptSetModel    = scriptSetMod.createModel(res.locals);
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);

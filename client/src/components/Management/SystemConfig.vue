@@ -1,23 +1,25 @@
 <i18n locale="zh-CN" lang="yaml">
-Custom Site Title                 : 自定义网站标题
-Custom Site Favicon               : 自定义网站 Favicon
-Custom Site Logo                  : 自定义网站 Logo
-Notice Bar                        : 顶部提示栏
-Doc Link in Navi Bar              : 导航栏文档链接
-Monitor Data Report               : 监控数据上报
-Official Script Market            : 官方脚本市场
-Script From Official Script Market: 来自官方脚本市场的脚本
+Custom Site Title          : 自定义网站标题
+Custom Site Favicon        : 自定义网站 Favicon
+Custom Site Logo           : 自定义网站 Logo
+Notice Bar                 : 顶部提示栏
+Doc Link in Navi Bar       : 导航栏文档链接
+Monitor Data Report        : 监控数据上报
+Official Script Market     : 官方脚本市场
+Hide Following Script Sets : 隐藏下列脚本集
 
 Show Advanced Configs: 显示高级配置
 Hide Advanced Configs: 隐藏高级配置
 Advanced Configs     : 高级配置
 
-Enable: 启用
-Text  : 文案
-Color : 颜色
-Image : 图片
-URL   : URL 地址
-DataKit / DataWay URL: DataKit / DataWay URL 地址
+Enable                     : 启用
+Text                       : 文案
+Color                      : 颜色
+Image                      : 图片
+URL                        : URL 地址
+DataKit / DataWay URL      : DataKit / DataWay URL 地址
+From Official Script Market: 来自官方脚本市场
+Builtin                    : 内置脚本集
 
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
 'System Config Saved. Page will be refreshed soon...': '系统配置已保存，页面即将刷新...'
@@ -29,6 +31,7 @@ Show a fixed alert bar at the top of all pages: 在所有页面顶部展示固�
 Show a Document Link to the specified URL in the Navi Bar: 在导航栏展示文档链接，点击后可以跳转至指定的 URL 地址
 Report the monitor data of DataFlux Func to the specified URL: 将 DataFlux Func 的监控数据上报到指定 URL
 Show quick creation button for Official Script Market: 显示官方脚本市场快捷创建按钮
+Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options: 一些脚本应当避免直接修改，如果需要查看，请开启以下选项
 
 If you don't know the meaning of these configurations, please don't make any changes!: 如果您不知道这些配置的意义，请不要作任何修改！
 
@@ -216,13 +219,24 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <!-- 来自官方脚本市场的脚本 -->
-                <el-divider content-position="left"><h3>{{ $t('Script From Official Script Market') }}</h3></el-divider>
+                <!-- 隐藏脚本集 -->
+                <el-divider content-position="left"><h3>{{ $t('Hide Following Script Sets') }}</h3></el-divider>
 
-                <el-form-item :label="$t('Show')" prop="OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN">
-                  <el-select v-model="form['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN']" :class="enableClass(form['OFFICIAL_SCRIPT_MARKET_SCRIPT_SET_SHOWN'])">
-                    <el-option :label="$t('Shown')" key="true"  :value="true"></el-option>
-                    <el-option :label="$t('Hidden')" key="false" :value="false"></el-option>
+                <el-form-item>
+                  <InfoBlock type="warning" :title="$t('Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options')" />
+                </el-form-item>
+
+                <el-form-item :label="$t('From Official Script Market')" prop="SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET">
+                  <el-select v-model="form['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']" :class="enableClass(form['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET'])">
+                    <el-option :label="$t('Hidden')" key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Shown')"  key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item :label="$t('Builtin')" prop="SCRIPT_SET_HIDDEN_BUILTIN">
+                  <el-select v-model="form['SCRIPT_SET_HIDDEN_BUILTIN']" :class="enableClass(form['SCRIPT_SET_HIDDEN_BUILTIN'])">
+                    <el-option :label="$t('Hidden')" key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Shown')"  key="false" :value="false"></el-option>
                   </el-select>
                 </el-form-item>
 

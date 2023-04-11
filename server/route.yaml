@@ -2671,13 +2671,27 @@ scriptMarketAPI:
         $type: string
     body:
       scriptSetIds:
-        $desc      : 需要拉取的脚本集ID列表
+        $desc      : 需要安装的脚本集ID列表
         $isRequired: true
         $minLength : 1
         $:
           $desc      : 脚本集ID
           $isRequired: true
           $type      : string
+      startupScript:
+        $desc: 创建自动启动脚本
+        create:
+          $desc   : 是否创建启动脚本
+          $type   : boolean
+          $example: false
+        scriptSetId:
+          $desc   : 指定启动脚本 ID
+          $type   : string
+          $example: startup
+        replaceConfig:
+          $desc   : 替换配置（如： 将 `"<您的 AK ID>"` 替换为具体之
+          $type   : json
+          $example: { '"<您的 AK ID>"': '"xxxx"' }
 
   checkUpdate:
     showInDoc    : true
