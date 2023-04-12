@@ -150,13 +150,13 @@ The published Script Set will be shown here, you can find and install the ones y
               <template v-if="scope.row.local">
                 <strong class="script-set-name">{{ scope.row.local.title || scope.row.local.id }}</strong>
                 &#12288;
-                <el-tag v-if="scope.row.local.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                <el-tag v-if="filterInput && scope.row.local.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
                   <CopyButton :content="scope.row.local.id" />
                   &#12288;
-                  <el-tag v-if="scope.row.local.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                  <el-tag v-if="filterInput && scope.row.local.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.local.scripts || []).length ) }}
                 </div>
@@ -222,13 +222,13 @@ The published Script Set will be shown here, you can find and install the ones y
               <template v-if="scope.row.remote">
                 <strong class="script-set-name">{{ scope.row.remote.title || scope.row.remote.id }}</strong>
                 &#12288;
-                <el-tag v-if="scope.row.remote.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                <el-tag v-if="filterInput && scope.row.remote.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
                   <CopyButton :content="scope.row.remote.id" />
                   &#12288;
-                  <el-tag v-if="scope.row.remote.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                  <el-tag v-if="filterInput && scope.row.remote.id === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                   <br>
                   &#12288;{{ $tc('ScriptCount', (scope.row.remote.scripts || []).length ) }}
                 </div>
