@@ -59,11 +59,11 @@ Script Set Installed Successfully!: 成功安装脚本集！
 
 Requires 3rd party Python packages                 : 依赖第三方 Python 包
 Go to PIP Tool                                     : 前往 PIP 工具
-Includes a Startup Script                          : 包含了启动脚本（Startup）
-'Includes a Startup Script with following configs:': 包含了启动脚本（Startup）及如下配置项目：
+Includes a Startup Script                          : 包含启动脚本（Startup）
+'Includes a Startup Script with following configs:': 包含启动脚本（Startup）及如下配置项目：
 Deploy Startup Script                              : 部署启动脚本
-Deploy Startup Script and Crontab Config           : 部署启动脚本及自动触发配置
 Startup Script is deployed                         : 启动脚本已部署
+Crontab Config is deployed                         : 自动触发配置已部署
 Go to Startup Script                               : 前往启动脚本
 Go to the Crontab Config                           : 前往自动触发配置
 
@@ -378,38 +378,31 @@ The published Script Set will be shown here, you can find and install the ones y
             <h1 class="text-main">{{ $t('Script Set Installed Successfully!') }}</h1>
             <p class="text-info">{{ $t('In addition, this Script Set...') }}<p>
 
+            <!-- 依赖包 -->
             <p v-if="T.notNothing(deployment.requirements)">
-              <br>
               {{ $t('Requires 3rd party Python packages') }}
               <br>&#12288;
               <el-button type="text" @click="common.goToPIPTools(deployment.requirements, { newTab: true })">
-                <i class="fa fa-fw fa-arrow-right"></i>
+                <i class="fa fa-fw fa-external-link"></i>
                 {{ $t('Go to PIP Tool') }}
               </el-button>
             </p>
 
-            <p v-if="T.notNothing(deployment.exampleScriptIds)">
-              <br>
-              <!-- 已部署 -->
-              <template v-if="T.notNothing(deployment.startupScriptIds)">
-                {{ $t('Startup Script is deployed') }}
+            <!-- 包含示例的脚本集 -->
+            <template v-if="T.notNothing(deployment.exampleScriptIds)">
+              <!-- 启动脚本 -->
+              <p v-if="T.notNothing(deployment.startupScriptIds)">
+                <span class="text-good">
+                  <i class="fa fa-fw fa-check-circle"></i>
+                  {{ $t('Startup Script is deployed') }}
+                </span>
                 <br>
                 <el-button type="text" @click="common.goToScript(deployment.startupScriptIds[0])">
-                  <i class="fa fa-fw fa-arrow-right"></i>
+                  <i class="fa fa-fw fa-external-link"></i>
                   {{ $t('Go to Startup Script') }}
                 </el-button>
-
-                <template v-if="T.notNothing(deployment.startupCrontabIds)">
-                  <br>
-                  <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: deployment.startupCrontabIds[0] })">
-                    <i class="fa fa-fw fa-arrow-right"></i>
-                    {{ $t('Go to the Crontab Config') }}
-                  </el-button>
-                </template>
-              </template>
-
-              <!-- 尚未部署 -->
-              <template v-else>
+              </p>
+              <p v-else>
                 <template v-if="T.isNothing(deployment.configFields)">
                   {{ $t('Includes a Startup Script') }}
                 </template>
@@ -420,18 +413,28 @@ The published Script Set will be shown here, you can find and install the ones y
                       <el-input v-model="configReplacerForm[f]"></el-input>
                     </el-form-item>
                   </el-form>
-                  <el-button type="text" @click="deploy()">
-                    <i class="fa fa-fw fa-arrow-right"></i>
-                    {{ $t('Deploy Startup Script') }}
-                  </el-button>
-                  <br>
-                  <el-button type="text" @click="deploy({ crontabConfig: true })">
-                    <i class="fa fa-fw fa-arrow-right"></i>
-                    {{ $t('Deploy Startup Script and Crontab Config') }}
-                  </el-button>
                 </template>
-              </template>
-            </p>
+
+                <el-button type="primary" size="small" @click="deploy({ crontabConfig: true })" :disabled="isDeploying">
+                  <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+                  <i v-else class="fa fa-fw fa-plus"></i>
+                  {{ $t('Deploy Startup Script') }}
+                </el-button>
+              </p>
+
+              <!-- 自动触发 -->
+              <p v-if="T.notNothing(deployment.startupCrontabIds)">
+                <span class="text-good">
+                  <i class="fa fa-fw fa-check-circle"></i>
+                  {{ $t('Crontab Config is deployed') }}
+                </span>
+                <br>
+                <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: deployment.startupCrontabIds[0] })">
+                  <i class="fa fa-fw fa-external-link"></i>
+                  {{ $t('Go to the Crontab Config') }}
+                </el-button>
+              </p>
+            </template>
           </el-card>
           <div class="deploy-buttons">
             <el-button @click="showDeploy = false">{{ $t('Stay Here') }}</el-button>
@@ -810,18 +813,25 @@ export default {
       options = options || {};
       options.configReplacer = this.configReplacerForm || {};
 
+      this.isDeploying = true;
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/deploy', {
         params: { id: this.scriptSetToOperate.id },
         body  : options,
       });
-      if (!apiRes || !apiRes.ok) return;
+      if (!apiRes || !apiRes.ok) {
+        this.isDeploying = false;
+        return;
+      }
 
-      if (apiRes.data.startupScriptId) {
-        this.deployment.startupScriptIds = [ apiRes.data.startupScriptId ];
-      }
-      if (apiRes.data.startupCrontabId) {
-        this.deployment.startupCrontabIds = [ apiRes.data.startupCrontabId ];
-      }
+      setTimeout(() => {
+        if (apiRes.data.startupScriptId) {
+          this.deployment.startupScriptIds = [ apiRes.data.startupScriptId ];
+        }
+        if (apiRes.data.startupCrontabId) {
+          this.deployment.startupCrontabIds = [ apiRes.data.startupCrontabId ];
+        }
+        this.isDeploying = false;
+      }, 3 * 1000);
     },
   },
   computed: {
@@ -927,6 +937,7 @@ export default {
       deployment        : {},
       configReplacerForm: {},
       showDeploy        : false,
+      isDeploying       : false,
 
       forceModeEnabled: false,
 
@@ -982,7 +993,6 @@ export default {
 .deploy-content {
   width: 500px;
   margin-bottom: 30px;
-  padding-bottom: 10px;
   border-radius: 20px;
   position: relative;
   top: -30px;
@@ -996,7 +1006,7 @@ export default {
   line-height: 20px;
   word-break: break-word;
   position: relative;
-  padding: 0;
+  padding-bottom: 15px;
   margin: 0;
 }
 .deploy-content .el-form {
@@ -1007,9 +1017,7 @@ export default {
   margin-top: 15px;
 }
 .deploy-content .el-button {
-  margin-bottom: 0;
-  margin-top: 15px;
-  padding: 0 0 0 20px;
+  margin: 15px 0 0 20px;
 }
 .deploy-buttons {
   position: absolute;

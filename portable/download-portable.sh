@@ -5,11 +5,11 @@ function download {
     echo "Downloading file $1"
 
     if [ `command -v wget` ]; then
-        wget --quiet --show-progress --output-document $2 $1
+        wget --output-document $2 $1
 
     elif [ `command -v curl` ]; then
         echo $2
-        curl --progress-bar --output $2 $1
+        curl --output $2 $1
 
     else
         echo 'No `curl` or `wget`, abort.'
