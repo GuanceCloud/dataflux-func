@@ -626,11 +626,13 @@ export default {
       data.forEach(d => {
         let local  = d.local  || {};
         let remote = d.remote || {};
+        let author = remote._extra && remote._extra.exportUser || '';
         this.T.appendSearchKeywords(d, [
           local.id     || remote.id,
           local.title  || remote.title,
           remote.id    || local.id,
           remote.title || local.title,
+          author,
         ]);
       });
 
