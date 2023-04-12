@@ -49,6 +49,7 @@ No Script Set has ever been published: 尚未发布过任何脚本集到脚本�
 
 FoundScriptSetCount: '找不到脚本集 | 共找到 {n} 个脚本集 | 共找到 {n} 个脚本集'
 ScriptCount: '不包含任何脚本 | 包含 {n} 个脚本 | 包含 {n} 个脚本'
+Locked By Me: 由我锁定
 Homepage: 前往主页
 Stay Here: 留在本页
 
@@ -95,6 +96,10 @@ The published Script Set will be shown here, you can find and install the ones y
 
             <span class="text-main">{{ $tc('FoundScriptSetCount', filteredData.length) }}</span>
             &#12288;
+            <el-checkbox v-if="scriptMarket.isAdmin"
+              :border="true"
+              size="small"
+              v-model="filterLockedByMe">{{ $t('Locked By Me') }}</el-checkbox>
             <el-input :placeholder="$t('Filter')"
               size="small"
               class="filter-input"
@@ -118,7 +123,7 @@ The published Script Set will be shown here, you can find and install the ones y
       <!-- 列表区 -->
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(filteredData)">
-          <h1 class="no-data-title" v-if="T.notNothing(filterTEXT)"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
+          <h1 class="no-data-title" v-if="T.notNothing(filterTEXT || filterLockedByMe)"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Script Set has ever been published') }}</h1>
 
           <p class="no-data-tip">
@@ -531,6 +536,7 @@ export default {
               'origin',
               'originId',
               'originMD5',
+              'lockedByUserId',
             ]
           },
         });
@@ -553,6 +559,9 @@ export default {
       // 生成列表并排序
       var data = Object.values(remoteScriptSetMap);
       data.forEach(d => {
+        // 是否脚本集被当前用户锁定
+        d.isLockedByMe = !!(d.local && d.local.lockedByUserId === this.$store.getters.userId);
+
         // 是否有对应 ID 的脚本集
         d.isIdMatched = !!(d.local && d.remote);
 
@@ -851,7 +860,7 @@ export default {
         return `${this.scriptMarket.lockedByUserName || this.scriptMarket.lockedByUsername}`
     },
     isLockedByMe() {
-      return this.scriptMarket.lockedByUserId === this.$store.getters.userId
+      return this.scriptMarket.lockedByUserId === this.$store.getters.userId;
     },
     isLockedByOther() {
       return this.scriptMarket.lockedByUserId && !this.isLockedByMe;
@@ -894,11 +903,16 @@ export default {
     },
     filteredData() {
       let q = (this.filterTEXT || '').toLowerCase().trim();
-      if (!q) {
-        return this.data;
-      } else {
-        return this.T.filterByKeywords(q, this.data);
+
+      let data = this.data;
+      if (q) {
+        data = this.T.filterByKeywords(q, data);
       }
+      if (this.filterLockedByMe) {
+        data = data.filter(d => d.isLockedByMe);
+      }
+
+      return data;
     },
     deployImage() {
       return img_deploy;
@@ -926,8 +940,9 @@ export default {
         ]
       },
 
-      filterInput: '',
-      filterTEXT : '',
+      filterInput     : '',
+      filterTEXT      : '',
+      filterLockedByMe: false,
 
       scriptSetToOperate: {},
       operation           : null,
