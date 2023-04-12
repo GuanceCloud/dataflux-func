@@ -111,10 +111,10 @@ ls -hl
 log "\nPlease copy ${PWD} to your portable media (e.g. USB-Key)"
 log "And run the following command on your server to install DataFlux Func:"
 log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh"
-log "Or install and use default configs to setup:"
-log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup"
-log "Or install and use specified admin password to setup:"
-log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup --auto-setup-admin-password='AdminPass'"
+# log "Or install and use default configs to setup:"
+# log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup"
+# log "Or install and use specified admin password to setup:"
+# log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup --auto-setup-admin-password='AdminPass'"
 
 # 返回之前目录
 cd ${__PREV_DIR}
