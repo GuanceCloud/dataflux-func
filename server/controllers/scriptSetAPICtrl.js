@@ -16,7 +16,6 @@ var CONFIG       = require('../utils/yamlResources').get('CONFIG');
 var ROUTE        = require('../utils/yamlResources').get('ROUTE');
 var toolkit      = require('../utils/toolkit');
 var common       = require('../utils/common');
-var modelHelper  = require('../utils/modelHelper');
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 var scriptAPICtrl             = require('./scriptAPICtrl');
@@ -610,12 +609,13 @@ exports.deploy = function(req, res, next) {
     crontabConfig : req.body.crontabConfig  || false,
     configReplacer: req.body.configReplacer || {},
   }
-  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId) {
+  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId, startupScriptCrontabFunc) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      startupScriptId : startupScriptId,
-      startupCrontabId: startupCrontabId,
+      startupScriptId         : startupScriptId,
+      startupCrontabId        : startupCrontabId,
+      startupScriptCrontabFunc: startupScriptCrontabFunc,
     });
     return res.locals.sendJSON(ret);
   });
@@ -633,8 +633,10 @@ function doDeploy(locals, scriptSetId, options, callback) {
 
   var celery = celeryHelper.createHelper(locals.logger);
 
-  var startupScriptId  = `${CONFIG._STARTUP_SCRIPT_SET_ID}__${scriptSetId}`;
-  var startupCrontabId = null
+  var startupScriptId = `${CONFIG._STARTUP_SCRIPT_SET_ID}__${scriptSetId}`;
+
+  var startupScriptCrontabFunc = null;
+  var startupCrontabId         = null;
 
   var scriptSetModel     = scriptSetMod.createModel(locals);
   var scriptModel        = scriptMod.createModel(locals);
@@ -736,19 +738,18 @@ function doDeploy(locals, scriptSetId, options, callback) {
       if (!options.crontabConfig) return asyncCallback();
       if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
 
-      var crontabFunc = null;
       for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
-        var _func = nextExportedAPIFuncs[i];
-        if (_func.extraConfig && _func.extraConfig.fixedCrontab) {
-          crontabFunc = _func;
+        var apiFunc = nextExportedAPIFuncs[i];
+        if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCrontab) {
+          startupScriptCrontabFunc = apiFunc;
           break;
         }
       }
 
       // 没有可用于配置自动触发的函数，忽略
-      if (!crontabFunc) return asyncCallback();
+      if (!startupScriptCrontabFunc) return asyncCallback();
 
-      var crontabFuncId = `${startupScriptId}.${crontabFunc.name}`;
+      var crontabFuncId = `${startupScriptId}.${startupScriptCrontabFunc.name}`;
 
       // 检查自动触发配置存在性
       var opt = {
@@ -778,7 +779,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
     },
   ], function(err) {
     if (err) return callback(err);
-    callback(null, startupScriptId, startupCrontabId);
+    callback(null, startupScriptId, startupCrontabId, startupScriptCrontabFunc);
 
     // 刷新数据 MD5 缓存
     reloadDataMD5Cache(celery);

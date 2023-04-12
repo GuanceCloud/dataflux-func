@@ -24,6 +24,7 @@ var scriptSetAPICtrl = require('./scriptSetAPICtrl');
 var scriptMarketMod  = require('../models/scriptMarketMod');
 var scriptSetMod     = require('../models/scriptSetMod');
 var scriptMod        = require('../models/scriptMod');
+var funcMod          = require('../models/funcMod');
 var crontabConfigMod = require('../models/crontabConfigMod');
 
 /* Configure */
@@ -1717,19 +1718,21 @@ exports.install = function(req, res, next) {
     return new E('EBizCondition', 'Script Set ID not specified');
   }
 
-  var scriptModel        = scriptMod.createModel(res.locals);
   var scriptSetModel     = scriptSetMod.createModel(res.locals);
+  var scriptModel        = scriptMod.createModel(res.locals);
+  var funcModel          = funcMod.createModel(res.locals);
   var scriptMarketModel  = scriptMarketMod.createModel(res.locals);
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   scriptMarketModel.decipher = true;
 
-  var scriptMarket      = null;
-  var importData        = null;
-  var requirements      = {};
-  var exampleScriptIds  = [];
-  var configFields      = [];
-  var startupScriptIds  = [];
-  var startupCrontabIds = [];
+  var scriptMarket                = null;
+  var importData                  = null;
+  var requirements                = {};
+  var exampleScriptIds            = [];
+  var configFields                = [];
+  var startupScriptCrontabFuncMap = {};
+  var startupScriptIds            = [];
+  var startupCrontabIds           = [];
 
   async.series([
     // 获取脚本市场
@@ -1811,6 +1814,32 @@ exports.install = function(req, res, next) {
         return asyncCallback();
       })
     },
+    // 查询附带 fixed_crontab 的函数列表
+    function(asyncCallback) {
+      if (toolkit.isNothing(startupScriptIds)) return asyncCallback();
+
+      var opt = {
+        fields: [
+          'func.id',
+          'func.scriptId',
+          'func.extraConfigJSON',
+        ],
+        filters: {
+          'func.extraConfigJSON->>$.fixedCrontab': { isnotnull: true },
+          'scpt.id'                              : { in       : startupScriptIds },
+        }
+      }
+      funcModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        dbRes.forEach(function(d) {
+          if (startupScriptCrontabFuncMap[d.scriptId]) return;
+          startupScriptCrontabFuncMap[d.scriptId] = d;
+        });
+
+        return asyncCallback();
+      })
+    },
     // 查询自动触发 ID 列表
     function(asyncCallback) {
       if (toolkit.isNothing(startupScriptIds)) return asyncCallback();
@@ -1835,11 +1864,12 @@ exports.install = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      requirements     : requirements,
-      exampleScriptIds : exampleScriptIds,
-      configFields     : configFields,
-      startupScriptIds : startupScriptIds,
-      startupCrontabIds: startupCrontabIds,
+      requirements               : requirements,
+      exampleScriptIds           : exampleScriptIds,
+      configFields               : configFields,
+      startupScriptIds           : startupScriptIds,
+      startupCrontabIds          : startupCrontabIds,
+      startupScriptCrontabFuncMap: startupScriptCrontabFuncMap,
     });
     return res.locals.sendJSON(ret);
   });
