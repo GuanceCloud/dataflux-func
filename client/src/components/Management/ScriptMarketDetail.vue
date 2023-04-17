@@ -518,12 +518,12 @@ Translated Text    : 译文
                 :name="lang"
                 :label="C.UI_LOCALE_MAP.get(lang).name">
                 <el-form ref="extraI18nForm" label-width="40%" :model="extraForm.i18n">
-                  <el-form-item :label="$t('Source Text')" class="translation-title">
+                  <el-form-item :label="$t('Source Text')" class="translation-title" prop="_">
                     <i class="fa fa-fw fa-arrow-right"></i>
                     <label>{{ $t('Translated Text') }}</label>
 
                     <el-link style="float: right"
-                        v-if="lang === 'en' && scriptMarket.isOfficial && scriptMarket.isAdmin"
+                        v-if="lang === 'en' && scriptMarket.isAdmin && T.isFuncDev"
                         size="mini"
                         @click="__fillEnPreTranslation">填充预翻译文</el-link>
                   </el-form-item>
@@ -768,6 +768,7 @@ export default {
 
         x.local.scripts.forEach(s => {
           if (!s.code) return;
+          if (s.id !== `${s.scriptSetId}__example`) return;
 
           var m = s.code.match(/"<.+>"/g);
           if (m) {

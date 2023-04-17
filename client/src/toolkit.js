@@ -116,6 +116,14 @@ export function getBaseURL() {
   return baseURL;
 };
 
+export function isFuncDev() {
+  return location.hostname === 'func-dev.dataflux.cn';
+};
+
+export function isFuncDemo() {
+  return location.hostname === 'func-demo.dataflux.cn';
+};
+
 let CURRENT_UI_LOCALE = null;
 export function getUILocale() {
   if (!CURRENT_UI_LOCALE) {
