@@ -53,7 +53,7 @@ Save and Refresh: 保存并刷新
             <div class="common-form">
               <el-form ref="form" label-width="135px" :model="form">
                 <!-- 网站标题 -->
-                <el-divider content-position="left"><h3>{{ $t('Custom Site Title') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Custom Site Title') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Use the specified text as the site title')" />
@@ -71,7 +71,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 自定义 Favicon -->
-                <el-divider content-position="left"><h3>{{ $t('Custom Site Favicon') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Custom Site Favicon') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Use the specified image as the site icon (favicon)')" />
@@ -103,7 +103,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 自定义 Logo -->
-                <el-divider content-position="left"><h3>{{ $t('Custom Site Logo') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Custom Site Logo') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Use the specified image as the system Logo')" />
@@ -135,7 +135,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 提示栏 -->
-                <el-divider content-position="left"><h3>{{ $t('Notice Bar') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Notice Bar') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Show a fixed alert bar at the top of all pages')" />
@@ -164,7 +164,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 导航栏文档链接 -->
-                <el-divider content-position="left"><h3>{{ $t('Doc Link in Navi Bar') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Doc Link in Navi Bar') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Show a Document Link to the specified URL in the Navi Bar')" />
@@ -185,7 +185,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 监控数据上传 -->
-                <el-divider content-position="left"><h3>{{ $t('Monitor Data Report') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Monitor Data Report') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Report the monitor data of DataFlux Func to the specified URL')" />
@@ -206,7 +206,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 官方脚本市场 -->
-                <el-divider content-position="left"><h3>{{ $t('Official Script Market') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Official Script Market') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Show quick creation button for Official Script Market')" />
@@ -220,7 +220,7 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <!-- 隐藏脚本集 -->
-                <el-divider content-position="left"><h3>{{ $t('Hide Following Script Sets') }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Hide Following Script Sets') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock type="warning" :title="$t('Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options')" />
@@ -242,7 +242,7 @@ Save and Refresh: 保存并刷新
 
                 <template v-if="showAdvancedConfigs">
                   <!-- 高级 -->
-                  <el-divider content-position="left"><h3 class="text-bad">{{ $t('Advanced Configs') }}</h3></el-divider>
+                  <el-divider content-position="left"><h1 class="text-bad">{{ $t('Advanced Configs') }}</h1></el-divider>
 
                   <el-form-item>
                     <InfoBlock type="error" :title="$t('If you don\'t know the meaning of these configurations, please don\'t make any changes!')" />

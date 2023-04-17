@@ -109,11 +109,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
           <InfoBlock type="warning" :title="$t('Before you start, please read the following')" />
 
           <!-- 编辑器左侧栏 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Left Sidebar') }}</i>
-            </h1>
-          </el-divider>
+          <el-divider content-position="left"><h1>{{ $t('Left Sidebar') }}</h1></el-divider>
           <p>
             {{ $t('In the left sidebar you can find the core module entrance of the Editor:') }}
             <table class="intro-feature-table">
@@ -141,22 +137,14 @@ Distribute and share code by publishing and installing Script Sets using git rep
           <p>{{ $t('The gray divider between the left sidebar and the editing area can be dragged to adjust the left sidebar width.') }}</p>
 
           <!-- 内置功能 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Built-in Features') }}</i>
-            </h1>
-          </el-divider>
+          <el-divider content-position="left"><h1>{{ $t('Built-in Features') }}</h1></el-divider>
           <p>{{ $t('Some built-in objects are pre-injected into the context of the Script and can be accessed directly without importing.') }}</p>
           <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSetting.style">
             <textarea id="editor_Intro">{{ $t('codeExample') }}</textarea>
           </div>
 
           <!-- 编写代码 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Code Editor') }}</i>
-            </h1>
-          </el-divider>
+          <el-divider content-position="left"><h1>{{ $t('Code Editor') }}</h1></el-divider>
           <p>
             {{ $t('Select the Script in the left sidebar to enter the Code Editor.') }}<br>
             {{ $t('The common shortcuts for the Code Editor are similar to Sublime Text:') }}
@@ -175,11 +163,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
           </p>
 
           <!-- 管理 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Management') }}</i>
-            </h1>
-          </el-divider>
+          <el-divider content-position="left"><h1>{{ $t('Management') }}</h1></el-divider>
           <p>
             {{ $t('Features built on the Script are located in the management page.') }}
             <table class="intro-feature-table">
@@ -254,11 +238,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
           </p>
 
           <!-- 脚本市场 -->
-          <el-divider content-position="left">
-            <h1>
-              <i>{{ $t('Script Market') }}</i>
-            </h1>
-          </el-divider>
+          <el-divider content-position="left"><h1>{{ $t('Script Market') }}</h1></el-divider>
           <p>
             {{ $t('Distribute and share code by publishing and installing Script Sets using git repositories, Alibaba Cloud OSS, file services etc.') }}
           </p>

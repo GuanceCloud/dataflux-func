@@ -35,7 +35,8 @@ var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
-  var withScripts = toolkit.toBoolean(req.query._withScripts);
+  var withScripts    = toolkit.toBoolean(req.query._withScripts);
+  var withScriptCode = toolkit.toBoolean(req.query._withScriptCode);
 
   var scriptSets        = null;
   var scriptSetPageInfo = null;
@@ -67,6 +68,9 @@ exports.list = function(req, res, next) {
       var opt = {
         filters: {
           scriptSetId: { in: scriptSetIds }
+        },
+        extra: {
+          withCode: withScriptCode,
         }
       }
       scriptModel.list(opt, function(err, dbRes) {

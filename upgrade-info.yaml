@@ -302,3 +302,11 @@ upgradeInfo:
       -- 脚本市场加入锁定功能
       ALTER TABLE biz_main_script_market
         ADD COLUMN `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID';
+
+  # 于观测云SaaS 2022-04-20 迭代中实装
+  - seq: 17
+    database: |-
+      -- 添加脚本市场额外配置
+      ALTER TABLE `biz_main_script_market`
+        ADD COLUMN `extraJSON` json DEFAULT NULL COMMENT '额外信息JSON'
+        AFTER `configJSON`;

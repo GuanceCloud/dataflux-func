@@ -160,7 +160,10 @@ File already existed                                                            
               </template>
 
               <el-dropdown @command="resourceOperationCmd">
-                <el-link :underline="false">{{ $t('More') }}<i class="el-icon-arrow-down el-icon--right"></i></el-link>
+                <el-link :underline="false">
+                  {{ $t('More') }}
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </el-link>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item v-if="!zipExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'zip' }">
                     {{ $t('Zip') }}

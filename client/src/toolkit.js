@@ -346,6 +346,20 @@ export function asArray(o) {
   }
 };
 
+export function noDuplication(arr) {
+  var tmp = {};
+  for (var i = 0; i < arr.length; i++) {
+    tmp[arr[i]] = null;
+  }
+
+  var newArr = [];
+  for (var k in tmp) if (tmp.hasOwnProperty(k)) {
+    newArr.push(k);
+  }
+
+  return newArr;
+};
+
 export function limitText(text, maxLength, options) {
   text      = text      || '';
   maxLength = maxLength || 30;

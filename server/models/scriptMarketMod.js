@@ -20,6 +20,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 
   objectFields: {
     configJSON: 'json',
+    extraJSON : 'json',
     isOfficial: 'boolean',
     isLocked  : 'boolean',
     isPinned  : 'boolean',
@@ -192,6 +193,10 @@ function _prepareData(data) {
     });
 
     data.configJSON = JSON.stringify(data.configJSON);
+  }
+
+  if (data.extraJSON && 'object' === typeof data.extraJSON) {
+    data.extraJSON = JSON.stringify(data.extraJSON);
   }
 
   if ('boolean' === typeof data.isPinned) {

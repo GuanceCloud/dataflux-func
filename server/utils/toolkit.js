@@ -193,8 +193,16 @@ var initRet = toolkit.initRet = function initRet(data, pageInfo, extraData) {
  * Generate a UUID
  * @return {String}
  */
-var genUUID = toolkit.genUUID = function genUUID() {
-  return uuid.v4();
+var genUUID = toolkit.genUUID = function genUUID(opt) {
+  opt = opt || {}
+  opt.noHyphen = opt.noHyphen || false;
+
+  var v = uuid.v4();
+  if (opt.noHyphen) {
+    v = v.replace('-', '');
+  }
+
+  return v;
 };
 
 /**

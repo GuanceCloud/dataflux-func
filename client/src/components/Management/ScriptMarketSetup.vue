@@ -2,9 +2,8 @@
 Add Script Market  : 添加脚本市场
 Setup Script Market: 配置脚本市场
 
-Branch      : 分支
-Region      : 地域
-Homepage URL: 主页 URL
+Branch: 分支
+Region: 地域
 
 Password here is always required when the Script Market requires password : 如脚本市场需要密码，则每次修改都必须重新输入密码
 AK Secret here is always required when the Script Market requires password: 如脚本市场需要 AK Secret，则每次修改都必须重新输入 AK Secret
@@ -149,13 +148,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                       <span>{{ $t('Manage this Script Market') }}</span>
                     </div>
                   </el-form-item>
-
-                  <template v-if="setAdmin || data.isAdmin">
-                    <el-form-item :label="$t('Homepage URL')" prop="configJSON.homepageURL">
-                      <el-input
-                        v-model="form.configJSON.homepageURL"></el-input>
-                    </el-form-item>
-                  </template>
                   <!-- 可变部分结束 -->
                 </template>
 
@@ -488,13 +480,6 @@ export default {
             trigger : 'change',
             message : this.$t('Please input AK Secret'),
             required: true,
-          },
-        ],
-        'configJSON.homepageURL': [
-          {
-            trigger: 'change',
-            message: this.$t('Should start with http:// or https://'),
-            pattern: this.C.RE_PATTERN.httpURL,
           },
         ],
       },

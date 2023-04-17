@@ -45,7 +45,7 @@ seconds: 秒
     width="850px">
     <span>
       <template v-if="showOptions">
-        <el-divider content-position="left">{{ $t('Request Options') }}</el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Request Options') }}</h1></el-divider>
         <el-form class="call-options" label-width="120px">
           <el-form-item :label="$t('Async')" v-if="showExecModeOption">
             <el-switch
@@ -87,7 +87,7 @@ seconds: 秒
         </el-form>
       </template>
 
-      <el-divider content-position="left">{{ $t('Input Parameters') }}</el-divider>
+      <el-divider content-position="left"><h1>{{ $t('Input Parameters') }}</h1></el-divider>
       <el-row :gutter="20" v-if="apiBodyInput || supportCustomKwargs">
         <el-col :span="22">
           <el-input
@@ -108,7 +108,7 @@ seconds: 秒
         </el-col>
       </el-row>
 
-      <el-divider content-position="left">{{ $t('Calling Example') }}</el-divider>
+      <el-divider content-position="left"><h1>{{ $t('Calling Example') }}</h1></el-divider>
       <template v-if="!apiBody">
         <span class="text-bad">{{ $t('Invalid Parameters. Examples require a valid Body content') }}</span>
       </template>
@@ -547,9 +547,6 @@ export default {
       }
     }
   },
-  mounted() {
-    window.vmc = this;
-  }
 }
 </script>
 

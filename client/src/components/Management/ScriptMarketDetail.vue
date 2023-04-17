@@ -71,6 +71,15 @@ Go to Startup Script                               : 前往启动脚本
 Go to the Crontab Config                           : 前往自动触发配置
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
+
+Extra Config       : 额外配置
+Homepage URL       : 主页 URL
+Translations       : 翻译
+Add translation for: 添加翻译
+Source Text        : 源文本
+Translated Text    : 译文
+
+'Should start with http:// or https://': '必须以 http:// 或 https://开头'
 </i18n>
 
 <template>
@@ -97,11 +106,13 @@ The published Script Set will be shown here, you can find and install the ones y
             </template>
 
             <span class="text-main">{{ $tc('FoundScriptSetCount', filteredData.length) }}</span>
+
             &#12288;
             <el-checkbox v-if="scriptMarket.isAdmin"
               :border="true"
               size="small"
               v-model="filterLockedByMe">{{ $t('Locked By Me') }}</el-checkbox>
+
             <el-input :placeholder="$t('Filter')"
               size="small"
               class="filter-input"
@@ -112,6 +123,14 @@ The published Script Set will be shown here, you can find and install the ones y
                 v-if="filterInput"
                 @click="filterInput = ''; onFilterChange()"></i>
             </el-input>
+
+            <el-tooltip :content="$t('Extra Config')" placement="bottom" :enterable="false" v-if="scriptMarket.isAdmin">
+              <el-button
+                @click="showExtra = true"
+                plain size="small">
+                <i class="fa fa-fw fa-cog"></i>
+              </el-button>
+            </el-tooltip>
           </div>
         </div>
       </el-header>
@@ -155,9 +174,9 @@ The published Script Set will be shown here, you can find and install the ones y
             </template>
             <template slot-scope="scope">
               <template v-if="scope.row.local">
-                <strong class="script-set-name">{{ scope.row.local.title || scope.row.local.id }}</strong>
+                <strong class="script-set-name">{{ getTranslation(scope.row.local.title) || scope.row.local.id }}</strong>
                 &#12288;
-                <el-tag v-if="filterInput && scope.row.local.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                <el-tag v-if="filterInput && getTranslation(scope.row.local.title) === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.local.id }}</code>
@@ -227,9 +246,9 @@ The published Script Set will be shown here, you can find and install the ones y
             </template>
             <template slot-scope="scope">
               <template v-if="scope.row.remote">
-                <strong class="script-set-name">{{ scope.row.remote.title || scope.row.remote.id }}</strong>
+                <strong class="script-set-name">{{ getTranslation(scope.row.remote.title) || scope.row.remote.id }}</strong>
                 &#12288;
-                <el-tag v-if="filterInput && scope.row.remote.title === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
+                <el-tag v-if="filterInput && getTranslation(scope.row.remote.title) === filterInput" type="primary" size="mini" effect="dark">{{ $t('Exactly Match') }}</el-tag>
                 <div>
                   <span class="text-info">ID</span>
                   &nbsp;<code class="text-main">{{ scope.row.remote.id }}</code>
@@ -416,7 +435,7 @@ The published Script Set will be shown here, you can find and install the ones y
                 <template v-else>
                   {{ $t('Includes a Startup Script with following configs:') }}
                   <el-form :model="configReplacerForm" size="small">
-                    <el-form-item v-for="f in deployment.configFields" :label="f" :key="f">
+                    <el-form-item v-for="f in deployment.configFields" :label="getTranslation(f)" :key="f">
                       <el-input v-model="configReplacerForm[f]"></el-input>
                     </el-form-item>
                   </el-form>
@@ -457,6 +476,81 @@ The published Script Set will be shown here, you can find and install the ones y
           <div class="deploy-buttons">
             <el-button @click="showDeploy = false">{{ $t('Stay Here') }}</el-button>
           </div>
+        </div>
+      </el-dialog>
+
+      <!-- 额外操作 / 翻译 -->
+      <el-dialog
+        :title="$t('Extra Config')"
+        :visible.sync="showExtra"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        width="950px">
+        <el-form ref="extraForm" label-width="115px" :model="extraForm" :rules="extraFormRule">
+          <el-form-item :label="$t('Homepage URL')" prop="homepageURL">
+            <el-input v-model="extraForm.homepageURL"></el-input>
+          </el-form-item>
+
+          <el-form-item :label="$t('Translations')">
+            <el-dropdown @command="addTranslation">
+              <el-button>
+                {{ $t('Add translation for') }}
+                <i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  v-for="_locale in C.UI_LOCALE"
+                  :key="_locale.key"
+                  :command="_locale.key">
+                  {{ _locale.name }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </el-form-item>
+
+          <el-form-item>
+            <el-tabs v-if="T.notNothing(extraForm.i18n)"
+              v-model="editingLang" type="border-card" closable @tab-remove="removeTranslation">
+              <el-tab-pane
+                v-for="(translations, lang) in extraForm.i18n"
+                :key="lang"
+                :name="lang"
+                :label="C.UI_LOCALE_MAP.get(lang).name">
+                <el-form ref="extraI18nForm" label-width="40%" :model="extraForm.i18n">
+                  <el-form-item :label="$t('Source Text')" class="translation-title">
+                    <i class="fa fa-fw fa-arrow-right"></i>
+                    <label>{{ $t('Translated Text') }}</label>
+
+                    <el-link style="float: right"
+                        v-if="lang === 'en' && scriptMarket.isAdmin"
+                        size="mini"
+                        @click="__fillEnPreTranslation">填充预翻译文</el-link>
+                  </el-form-item>
+
+                  <!-- 提取的语言翻译项  -->
+                  <el-form-item v-for="text in scriptPlacehoders"
+                    :label="text"
+                    :key="`${lang}.${text}`"
+                    :prop="`${lang}.${text}`">
+                    <el-input size="mini" v-model="extraForm.i18n[lang][text]"></el-input>
+                  </el-form-item>
+
+                  <el-form-item v-for="text in scriptSetNames"
+                    :label="text"
+                    :key="`${lang}.${text}`"
+                    :prop="`${lang}.${text}`">
+                    <el-input size="mini" v-model="extraForm.i18n[lang][text]"></el-input>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+            </el-tabs>
+          </el-form-item>
+        </el-form>
+
+        <div slot="footer" class="dialog-footer">
+          <el-button size="small" @click="showExtra = false">{{ $t('Cancel') }}</el-button>
+          <el-button size="small" type="primary" @click="saveExtra" :loading="isProcessing">{{ $t('Save') }}</el-button>
         </div>
       </el-dialog>
 
@@ -511,11 +605,22 @@ export default {
 
         this.scriptMarket = apiRes.data;
 
+        // 额外信息
+        if (this.T.notNothing(this.scriptMarket.extraJSON)) {
+          let nextExtraFrom = {};
+          Object.keys(this.extraForm).forEach(f => nextExtraFrom[f] = this.scriptMarket.extraJSON[f]);
+          this.extraForm = nextExtraFrom;
+
+          if (this.extraForm && this.T.notNothing(this.extraForm.i18n)) {
+            this.editingLang = Object.keys(this.extraForm.i18n)[0];
+          }
+        }
+
         // 检查更新
         this.common.checkScriptMarketUpdate(this.scriptMarket.id);
       }
 
-      // 获取远端脚本集列表
+      // 获取远端脚本集
       if (!opt.skipLoadRemote) {
         apiRes = await this.T.callAPI_get('/api/v1/script-markets/:id/script-sets/do/list', {
           params: { id: this.$route.params.id },
@@ -526,19 +631,15 @@ export default {
           });
         };
 
-        let dataMap = apiRes.data.reduce((acc, x) => {
-          acc[x.id] = { remote: x };
-          return acc;
-        }, {});
-
-        this.remoteScriptSetMap = dataMap;
+        this.remoteScriptSets = apiRes.data;
       }
 
       // 获取本地脚本集列表
       if (!opt.skipLoadLocal) {
         apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
           query: {
-            _withScripts: true,
+            _withScripts   : true,
+            _withScriptCode: true,
             fields: [
               'id',
               'title',
@@ -558,19 +659,19 @@ export default {
         this.localScriptSets = apiRes.data;
       }
 
-      let remoteScriptSetMap = this.T.jsonCopy(this.remoteScriptSetMap);
-      let localScriptSets    = this.T.jsonCopy(this.localScriptSets);
-      localScriptSets.forEach(x => {
-        let d = remoteScriptSetMap[x.id];
-        if (d) {
-          d.local = x;
-        } else if (this.scriptMarket.isAdmin) {
-          remoteScriptSetMap[x.id] = { local: x };
-        }
+      // 生成总列表
+      let allScriptSetMap = {};
+      this.remoteScriptSets.forEach(d => {
+        allScriptSetMap[d.id] = allScriptSetMap[d.id] || {};
+        allScriptSetMap[d.id].remote = d;
       });
+      this.localScriptSets.forEach(d => {
+        allScriptSetMap[d.id] = allScriptSetMap[d.id] || {};
+        allScriptSetMap[d.id].local = d;
+      });
+      var data = Object.values(allScriptSetMap);
 
-      // 生成列表并排序
-      var data = Object.values(remoteScriptSetMap);
+      // 进一步处理
       data.forEach(d => {
         // 是否脚本集被当前用户锁定
         d.isLockedByMe = !!(d.local && d.local.lockedByUserId === this.$store.getters.userId);
@@ -622,6 +723,20 @@ export default {
             d.isInstallable = !d.isLocalEdited && this.isAccessible;
           }
         }
+
+        // 添加搜索关键字
+        let local  = d.local  || {};
+        let remote = d.remote || {};
+        let author = remote._extra && remote._extra.exportUser || '';
+        this.T.appendSearchKeywords(d, [
+          local.id     || remote.id,
+          local.title  || remote.title,
+          remote.id    || local.id,
+          remote.title || local.title,
+          this.getTranslation(local.title  || remote.title),
+          this.getTranslation(remote.title || local.title),
+          author,
+        ]);
       });
 
       data.sort((a, b) => {
@@ -644,21 +759,32 @@ export default {
 
         return bScore - aScore;
       });
-      // 添加搜索关键字
-      data.forEach(d => {
-        let local  = d.local  || {};
-        let remote = d.remote || {};
-        let author = remote._extra && remote._extra.exportUser || '';
-        this.T.appendSearchKeywords(d, [
-          local.id     || remote.id,
-          local.title  || remote.title,
-          remote.id    || local.id,
-          remote.title || local.title,
-          author,
-        ]);
-      });
 
       this.data = data;
+
+      // 提取可翻译文案
+      this.scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
+        if (!x.local || !x.local.scripts) return acc;
+
+        x.local.scripts.forEach(s => {
+          if (!s.code) return;
+
+          var m = s.code.match(/"<.+>"/g);
+          if (m) {
+            m.forEach(function(placeholder) {
+              acc.push(placeholder.slice(2, -2));
+            });
+          }
+        });
+
+        return acc;
+      }, []));
+      this.scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
+        if (x.local && x.local.title) {
+          acc.push(x.local.title);
+        }
+        return acc;
+      }, []));
 
       setTimeout(() => {
         this.$store.commit('updateLoadStatus', true);
@@ -700,6 +826,15 @@ export default {
           this.operationDialogTitle = this.$t('Upgrade Script Set');
           this.operationButtonTitle = this.$t('Upgrade');
           break;
+      }
+
+      // 翻译
+      scriptSet = this.T.jsonCopy(scriptSet);
+      switch(operation) {
+        case 'install':
+        case 'reinstall':
+        case 'upgrade':
+          scriptSet.title = this.getTranslation(scriptSet.title);
       }
 
       this.operation          = operation;
@@ -872,6 +1007,112 @@ export default {
         this.isDeploying = false;
       }, 1 * 1000);
     },
+
+    async saveExtra() {
+      try {
+        await this.$refs.extraForm.validate();
+      } catch(err) {
+        return console.error(err);
+      }
+
+      this.isProcessing = true;
+
+      let _formData = this.T.jsonCopy(this.extraForm);
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
+        params: { id: this.$route.params.id },
+        body  : { data: { extraJSON: _formData } },
+        alert : { okMessage: this.$t('Script Market saved') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+
+      await this.loadData({
+        skipLoadLocal : true,
+        skipLoadRemote: true,
+      });
+
+      this.isProcessing    = false;
+      this.showExtra = false;
+    },
+    addTranslation(lang) {
+      if (!this.extraForm.i18n[lang]) {
+        this.$set(this.extraForm.i18n, lang, this.extraForm.i18n[lang] || {});
+      }
+      this.editingLang = lang;
+    },
+    removeTranslation(lang) {
+      this.$delete(this.extraForm.i18n, lang);
+
+      let remainLangs = Object.keys(this.extraForm.i18n);
+      if (remainLangs.length > 0) {
+        this.editingLang = remainLangs[0];
+      }
+    },
+    getTranslation(text) {
+      if (!text) return text;
+
+      if (!this.scriptMarketI18n || !this.scriptMarketI18n[this.currentLang]) {
+        return text;
+      }
+
+      return this.scriptMarketI18n[this.currentLang][text] || text;
+    },
+
+    ///// 官方脚本市场专供 /////
+    // 自动添加半成品英文翻译
+    __fillEnPreTranslation() {
+      let rules = [
+        ['（', '('],
+        ['）', ')'],
+        ['您的', 'Your '],
+        ['你的', 'Your '],
+        ['观测云集成', 'Guance Integration '],
+        ['观测云自建巡检', 'Guance Intelligent Inspection '],
+        ['Core 核心包', 'Core Package'],
+        ['阿里云', 'Alibaba Cloud '],
+        ['腾讯云', 'Tencent Cloud '],
+        ['华为云', 'Huawei Cloud '],
+        ['您的阿里云', 'Your Alibaba Cloud '],
+        ['您的腾讯云', 'Your Tencent Cloud '],
+        ['您的华为云', 'Your Huawei Cloud '],
+        ['你的阿里云', 'Your Alibaba Cloud '],
+        ['你的腾讯云', 'Your Tencent Cloud '],
+        ['你的华为云', 'Your Huawei Cloud '],
+        ['采集', ' Collection'],
+        ['巡检', ' Inspection'],
+        ['示例', ' Example'],
+      ];
+
+      let getEnPreTranslation = (src) => {
+        let translation = src;
+        rules.forEach(rule => {
+          translation = translation.replaceAll(rule[0], rule[1]);
+        });
+
+        translation = translation.replace(/\s+/g, ' ').trim();
+
+        if (translation !== src) {
+          return translation;
+        } else {
+          return null;
+        }
+      }
+
+      this.extraForm.i18n = this.extraForm.i18n || {};
+
+      this.scriptPlacehoders.forEach(src => {
+        if (!this.extraForm.i18n.en[src]) {
+          this.extraForm.i18n.en[src] = getEnPreTranslation(src);
+        }
+      });
+      this.scriptSetNames.forEach(src => {
+        if (!this.extraForm.i18n.en[src]) {
+          this.extraForm.i18n.en[src] = getEnPreTranslation(src);
+        }
+      });
+    },
   },
   computed: {
     isWriteOperation() {
@@ -897,10 +1138,6 @@ export default {
       // 超级管理员不受限制
       if (this.$store.getters.isAdmin) return true;
       return !this.isLockedByOther;
-    },
-    homepageURL() {
-      if (!this.scriptMarket || !this.scriptMarket.extra) return null;
-      return this.scriptMarket.extra.homepageURL;
     },
     hasLocalMarker() {
       for (let i = 0; i < this.data.length; i++) {
@@ -933,9 +1170,18 @@ export default {
       let q = (this.filterTEXT || '').toLowerCase().trim();
 
       let data = this.data;
+
+      // 订阅方本地存在远端不存在的不展示
+      if (!this.scriptMarket.isAdmin) {
+        data = data.filter(d => !(d.local && !d.remote));
+      }
+
+      // 关键字过滤
       if (q) {
         data = this.T.filterByKeywords(q, data);
       }
+
+      // 按我锁定过滤
       if (this.filterLockedByMe) {
         data = data.filter(d => d.isLockedByMe);
       }
@@ -945,15 +1191,24 @@ export default {
     deployImage() {
       return img_deploy;
     },
+    homepageURL() {
+      if (!this.scriptMarket || !this.scriptMarket.extra) return null;
+      return this.scriptMarket.extra.homepageURL;
+    },
+    scriptMarketI18n() {
+      if (!this.scriptMarket || !this.scriptMarket.extra) return null;
+      return this.scriptMarket.extra.i18n;
+    },
   },
   props: {
   },
   data() {
     return {
-      data: [],
+      data            : [],
+      remoteScriptSets: [],
+      localScriptSets : [],
 
-      scriptMarket      : {},
-      remoteScriptSetMap: {},
+      scriptMarket: {},
 
       form: {
         note: null,
@@ -966,6 +1221,20 @@ export default {
             required: true,
           },
         ]
+      },
+
+      extraForm: {
+        homepageURL: null,
+        i18n       : {},
+      },
+      extraFormRule: {
+        'homepageURL': [
+          {
+            trigger: 'change',
+            message: this.$t('Should start with http:// or https://'),
+            pattern: this.C.RE_PATTERN.httpURL,
+          },
+        ],
       },
 
       filterInput     : '',
@@ -985,11 +1254,17 @@ export default {
       isDeploying       : false,
 
       forceModeEnabled: false,
+      showExtra       : false,
+
+      currentLang      : this.$store.getters.uiLocale.toString(),
+      editingLang      : null,
+      scriptPlacehoders: [],
+      scriptSetNames   : [],
 
       // 主页提示
       img_noticeScriptMarketHomepage: img_noticeScriptMarketHomepage,
     }
-  },
+  }
 }
 </script>
 
@@ -1081,6 +1356,11 @@ export default {
 </style>
 
 <style>
+.translation-title label,
+.translation-title i.fa {
+  font-weight: bold;
+  color: #FF6600;
+}
 .deploy-content .el-form-item__label {
   font-size: 14px;
   line-height: 1.5;

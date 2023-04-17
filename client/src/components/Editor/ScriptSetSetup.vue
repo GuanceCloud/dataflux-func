@@ -54,7 +54,7 @@ This Script Set is locked by other user ({user}): 当前脚本已被其他用户
 
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
-                    maxlength="50"
+                    maxlength="200"
                     v-model="form.title"></el-input>
                 </el-form-item>
 

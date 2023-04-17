@@ -68,7 +68,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
           <template v-if="importInfo && importInfo.diff">
             <template v-for="t in C.IMPORT_DATA_TYPE">
               <template v-if="T.notNothing(importInfo.diff[t.key])">
-                <el-divider content-position="left"><h3>{{ t.name }}</h3></el-divider>
+                <el-divider content-position="left"><h1>{{ t.name }}</h1></el-divider>
                 <el-table :data="importInfo.diff[t.key]"
                   :show-header="false">
                   <el-table-column width="180" align="center">
@@ -98,7 +98,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
           </template>
 
           <template v-if="importInfo && importInfo.note">
-            <el-divider content-position="left"><h3>{{ $t('Note') }}</h3></el-divider>
+            <el-divider content-position="left"><h1>{{ $t('Note') }}</h1></el-divider>
             <pre class="import-note">{{ importInfo.note }}</pre>
           </template>
         </span>

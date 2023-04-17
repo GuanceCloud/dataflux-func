@@ -387,7 +387,7 @@ export default {
 
 <style>
 @font-face {
-  font-family: Iosevka;
+  font-family: "Iosevka";
   src: url(./assets/font/iosevka-fixed-regular.woff2);
 }
 * {
@@ -629,7 +629,7 @@ hr.br {
 kbd {
   padding: 2px 8px;
   font-size: 14px;
-  font-family: Iosevka;
+  font-family: "Iosevka";
   color: #fff;
   background-color: #333;
   border: 1px darkgrey solid;
@@ -922,6 +922,10 @@ kbd {
 }
 .el-divider--horizontal {
   margin-bottom: 35px !important;
+}
+.el-divider--horizontal h1 {
+  font-style: italic;
+  font-weight: normal;
 }
 
 .el-drawer__wrapper {

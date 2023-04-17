@@ -38,10 +38,6 @@ var SCRIPT_MARKET_RW_MAP = {
   httpService: 'ro',
 }
 
-var SCRIPT_MARKET_CONFIG_TO_META_EXTRA_FIELDS = [
-  'homepageURL',
-]
-
 function _prepareConfig(data) {
   if (toolkit.isNothing(data.configJSON)) return data;
 
@@ -811,7 +807,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
             'cp', localFilePath, ossFilePath, '-f',
             '-e', ossEndpoint,
             '-i', scriptMarket.configJSON.accessKeyId,
-            '-k', scriptMarket.configJSON.accessKeySecret
+            '-k', scriptMarket.configJSON.accessKeySecret,
           ];
           if (toolkit.endsWith(file, '/')) cmdArgs.push('-r');
 
@@ -832,7 +828,7 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
             'cp', localFolderPath, ossFolderPath, '-r', '-f',
             '-e', ossEndpoint,
             '-i', scriptMarket.configJSON.accessKeyId,
-            '-k', scriptMarket.configJSON.accessKeySecret
+            '-k', scriptMarket.configJSON.accessKeySecret,
           ];
 
           toolkit.childProcessSpawn(OSSUTIL_CMD, cmdArgs, null, function(err, stdout) {
@@ -1009,8 +1005,8 @@ function _setMetaExtra(locals, scriptMarket, callback) {
     return callback(new E('EBizCondition', 'This operation is not supported on this type of Script Market'));
   }
 
-  // 没有配置的跳过
-  if (!scriptMarket.configJSON) return callback();
+  // 没有额外配置的跳过
+  if (!scriptMarket.extraJSON) return callback();
 
   async.series([
     // 准备
@@ -1024,11 +1020,11 @@ function _setMetaExtra(locals, scriptMarket, callback) {
       metaData = metaData || {};
       metaData.extra = metaData.extra || {};
 
-      SCRIPT_MARKET_CONFIG_TO_META_EXTRA_FIELDS.forEach(function(f) {
-        if (toolkit.isNothing(scriptMarket.configJSON[f])) {
+      Object.keys(scriptMarket.extraJSON).forEach(function(f) {
+        if (toolkit.isNothing(scriptMarket.extraJSON[f])) {
           metaData.extra[f] = null;
         } else {
-          metaData.extra[f] = scriptMarket.configJSON[f];
+          metaData.extra[f] = scriptMarket.extraJSON[f];
         }
       });
 
@@ -1380,6 +1376,7 @@ exports.modify = function(req, res, next) {
   var data = _prepareConfig(req.body.data);
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
+  scriptMarketModel.decipher = true;
 
   var scriptMarket = null;
 
@@ -1417,7 +1414,7 @@ exports.modify = function(req, res, next) {
     },
     // 设置额外信息
     function(asyncCallback) {
-      if (toolkit.isNothing(data.configJSON)) return asyncCallback();
+      if (toolkit.isNothing(data.extraJSON)) return asyncCallback();
 
       // 检查是否为管理员
       var token       = _getToken(scriptMarket);
@@ -1826,7 +1823,7 @@ exports.install = function(req, res, next) {
         ],
         filters: {
           'func.extraConfigJSON->>$.fixedCrontab': { isnotnull: true },
-          'scpt.id'                              : { in       : startupScriptIds },
+          'scpt.id'                              : { in : startupScriptIds },
         }
       }
       funcModel.list(opt, function(err, dbRes) {

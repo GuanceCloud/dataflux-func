@@ -45,7 +45,9 @@ common.convertImportExportDataSchema = function(data) {
 
   // v1 => v2
   if (data.version === 1) {
-    // 转换脚本集中额外信息
+    // scriptSets[#]._exportUser 字段位置改为 _extra.exportUser
+    // scriptSets[#]._exportTime 字段位置改为 _extra.exportTime
+    // scriptSets[#]._note       字段位置改为 _extra.note
     if (toolkit.notNothing(data.scriptSets)) {
       data.scriptSets.forEach(function(scriptSet) {
         scriptSet._extra = scriptSet._extra || {};
@@ -59,7 +61,9 @@ common.convertImportExportDataSchema = function(data) {
       })
     }
 
-    // 转换 extra 信息
+    // exportUser 字段位置改为 extra.exportUser
+    // exportTime 字段位置改为 extra.exportTime
+    // note       字段位置改为 extra.note
     data.extra = data.extra || {};
     if ('exportUser' in data) data.extra.exportUser = data.exportUser;
     if ('exportTime' in data) data.extra.exportTime = data.exportTime;

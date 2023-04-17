@@ -471,19 +471,22 @@ exports.afterAppCreated = function(app, server) {
     },
     // 自动生成 DataFlux Func ID
     function(asyncCallback) {
-      var id    = 'DATAFLUX_FUNC_ID';
-      var value = `DFF-${toolkit.genUUID().toUpperCase()}`;
+      var id = 'DATAFLUX_FUNC_ID';
 
-      app.locals.db.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ?', [ id ], function(err, dbRes) {
+      app.locals.db.query('SELECT COUNT(*) AS count FROM wat_main_system_config WHERE id = ? LIMIT 1', [ id ], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (dbRes[0].count > 0) {
-          return asyncCallback();
-        }
+          app.locals.db.query("UPDATE wat_main_system_config SET value = REPLACE(value, '-', '') WHERE id = ? LIMIT 1", [ id ], function(err) {
+            return asyncCallback(err);
+          });
 
-        app.locals.db.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
-          return asyncCallback(err);
-        });
+        } else {
+          var value = `DFF${toolkit.genUUID({ noHyphen: true }).toUpperCase()}`;
+          app.locals.db.query('INSERT IGNORE INTO wat_main_system_config SET id = ?, value = ?', [ id, JSON.stringify(value) ], function(err) {
+            return asyncCallback(err);
+          });
+        }
       });
     },
   ], printError);
