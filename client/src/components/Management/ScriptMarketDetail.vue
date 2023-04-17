@@ -762,9 +762,9 @@ export default {
 
       // 提取可翻译文案
       let scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
-        if (!x.remote || !x.remote.scripts) return acc;
+        if (!x.isIdMatched) return acc;
 
-        x.remote.scripts.forEach(s => {
+        x.local.scripts.forEach(s => {
           if (!s.code) return;
           if (s.id !== `${s.scriptSetId}__example`) return;
 
@@ -779,9 +779,10 @@ export default {
         return acc;
       }, []));
       let scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
-        if (x.remote && x.remote.title) {
-          acc.push(x.remote.title);
-        }
+        if (!x.isIdMatched) return acc;
+        if (!x.remote.title) return acc;
+
+        acc.push(x.remote.title);
         return acc;
       }, []));
       this.textsToTranslate = scriptPlacehoders.concat(scriptSetNames);
