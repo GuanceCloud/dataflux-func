@@ -517,9 +517,8 @@ Translated Text    : 译文
                 :key="lang"
                 :name="lang"
                 :label="C.UI_LOCALE_MAP.get(lang).name">
-                <el-form ref="extraI18nForm" label-width="40%" :model="extraForm.i18n">
+                <el-form ref="extraI18nForm" label-width="50%" :model="extraForm.i18n">
                   <el-form-item :label="$t('Source Text')" class="translation-title" prop="_">
-                    <i class="fa fa-fw fa-arrow-right"></i>
                     <label>{{ $t('Translated Text') }}</label>
 
                     <el-link style="float: right"
@@ -764,9 +763,9 @@ export default {
 
       // 提取可翻译文案
       this.scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
-        if (!x.local || !x.local.scripts) return acc;
+        if (!x.remote || !x.remote.scripts) return acc;
 
-        x.local.scripts.forEach(s => {
+        x.remote.scripts.forEach(s => {
           if (!s.code) return;
           if (s.id !== `${s.scriptSetId}__example`) return;
 
@@ -781,8 +780,8 @@ export default {
         return acc;
       }, []));
       this.scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
-        if (x.local && x.local.title) {
-          acc.push(x.local.title);
+        if (x.remote && x.remote.title) {
+          acc.push(x.remote.title);
         }
         return acc;
       }, []));
@@ -1038,6 +1037,7 @@ export default {
       this.showExtra = false;
     },
     addTranslation(lang) {
+      this.extraForm.i18n = this.extraForm.i18n || {};
       if (!this.extraForm.i18n[lang]) {
         this.$set(this.extraForm.i18n, lang, this.extraForm.i18n[lang] || {});
       }
@@ -1092,7 +1092,7 @@ export default {
           translation = translation.replaceAll(rule[0], rule[1]);
         });
 
-        translation = translation.replace(/\s+/g, ' ').trim();
+        translation = translation.replace(/\s+/g, ' ').trim().toString();
 
         if (translation !== src) {
           return translation;
@@ -1101,18 +1101,20 @@ export default {
         }
       }
 
-      this.extraForm.i18n = this.extraForm.i18n || {};
+      let nextI18n = this.T.jsonCopy(this.extraForm.i18n || {});
 
       this.scriptPlacehoders.forEach(src => {
-        if (!this.extraForm.i18n.en[src]) {
-          this.extraForm.i18n.en[src] = getEnPreTranslation(src);
+        if (!nextI18n.en[src]) {
+          nextI18n.en[src] = getEnPreTranslation(src);
         }
       });
       this.scriptSetNames.forEach(src => {
-        if (!this.extraForm.i18n.en[src]) {
-          this.extraForm.i18n.en[src] = getEnPreTranslation(src);
+        if (!nextI18n.en[src]) {
+          nextI18n.en[src] = getEnPreTranslation(src);
         }
       });
+
+      this.extraForm.i18n = nextI18n;
     },
   },
   computed: {
