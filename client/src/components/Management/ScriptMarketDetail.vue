@@ -779,8 +779,7 @@ export default {
         return acc;
       }, []));
       let scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
-        if (!x.isIdMatched) return acc;
-        if (!x.remote.title) return acc;
+        if (!x.remote || !x.remote.title) return acc;
 
         acc.push(x.remote.title);
         return acc;
@@ -1128,32 +1127,44 @@ export default {
       let rules = [
         ['（', '('],
         ['）', ')'],
-        ['您的', 'Your '],
-        ['你的', 'Your '],
-        ['观测云集成', 'Guance Integration '],
-        ['观测云自建巡检', 'Guance Intelligent Inspection '],
+        ['-', ' '],
+        ['观测云工具包', 'Guance Toolkit'],
+        ['您的', 'Your'],
+        ['你的', 'Your'],
+        ['观测云集成', 'Guance Integration'],
+        ['观测云自建巡检', 'Guance Intelligent Inspection'],
         ['Core 核心包', 'Core Package'],
-        ['阿里云', 'Alibaba Cloud '],
-        ['腾讯云', 'Tencent Cloud '],
-        ['华为云', 'Huawei Cloud '],
-        ['您的阿里云', 'Your Alibaba Cloud '],
-        ['您的腾讯云', 'Your Tencent Cloud '],
-        ['您的华为云', 'Your Huawei Cloud '],
-        ['你的阿里云', 'Your Alibaba Cloud '],
-        ['你的腾讯云', 'Your Tencent Cloud '],
-        ['你的华为云', 'Your Huawei Cloud '],
-        ['采集', ' Collection'],
-        ['巡检', ' Inspection'],
-        ['示例', ' Example'],
+        ['阿里云', 'Alibaba Cloud'],
+        ['腾讯云', 'Tencent Cloud'],
+        ['华为云', 'Huawei Cloud'],
+        ['您的阿里云', 'Your Alibaba Cloud'],
+        ['您的腾讯云', 'Your Tencent Cloud'],
+        ['您的华为云', 'Your Huawei Cloud'],
+        ['你的阿里云', 'Your Alibaba Cloud'],
+        ['你的腾讯云', 'Your Tencent Cloud'],
+        ['你的华为云', 'Your Huawei Cloud'],
+        ['慢查询日志', 'Slow Log'],
+        ['日志', 'Log'],
+        ['账单', 'Bill'],
+        ['云监控', 'Monitor'],
+        ['实例维度', 'By Instance'],
+        ['性能', 'Performance'],
+        ['健康', 'Health'],
+        ['采集', 'Collector'],
+        ['巡检', 'Inspecter'],
+        ['示例', 'Example'],
       ];
 
       let getEnPreTranslation = (src) => {
         let translation = src;
         rules.forEach(rule => {
-          translation = translation.replaceAll(rule[0], rule[1]);
+          translation = translation.replaceAll(rule[0], ` ${rule[1]} `);
         });
 
-        translation = translation.replace(/\s+/g, ' ').trim().toString();
+        translation = translation.replace(/\s+/g, ' ')
+                                .replaceAll('( ', '(')
+                                .replaceAll(' )', ')')
+                                .trim().toString();
 
         if (translation !== src) {
           return translation;
