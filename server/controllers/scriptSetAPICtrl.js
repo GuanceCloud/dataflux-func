@@ -610,8 +610,9 @@ exports.deploy = function(req, res, next) {
   var scriptSetId = req.params.id;
 
   var opt = {
-    crontabConfig : req.body.crontabConfig  || false,
-    configReplacer: req.body.configReplacer || {},
+    startupScriptTitle: req.body.startupScriptTitle || null,
+    withCrontabConfig : req.body.withCrontabConfig  || false,
+    configReplacer    : req.body.configReplacer     || {},
   }
   doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId, startupScriptCrontabFunc) {
     if (err) return next(err);
@@ -631,9 +632,10 @@ function reloadDataMD5Cache(celery, callback) {
 };
 
 function doDeploy(locals, scriptSetId, options, callback) {
-  options                = options                || {};
-  options.crontabConfig  = options.crontabConfig  || false;
-  options.configReplacer = options.configReplacer || {};
+  options = options || {};
+  options.withCrontabConfig  = options.withCrontabConfig  || false;
+  options.startupScriptTitle = options.startupScriptTitle || null;
+  options.configReplacer     = options.configReplacer     || {};
 
   var celery = celeryHelper.createHelper(locals.logger);
 
@@ -714,7 +716,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
 
         var _data = {
           id       : startupScriptId,
-          title    : installedScriptSet.title || scriptSetId,
+          title    : options.startupScriptTitle || scriptSetId,
           code     : exampleScript.code,
           codeDraft: exampleScript.code,
         }
@@ -739,7 +741,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
     },
     // 检查自动触发配置存在性 / 创建自动触发配置
     function(asyncCallback) {
-      if (!options.crontabConfig) return asyncCallback();
+      if (!options.withCrontabConfig) return asyncCallback();
       if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
 
       for (var i = 0; i < nextExportedAPIFuncs.length; i++) {

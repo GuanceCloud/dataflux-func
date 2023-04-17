@@ -1891,10 +1891,13 @@ scriptSetAPI:
         $desc: 脚本集 ID
         $type: string
     body:
-      crontabConfig:
+      withCrontabConfig:
         $desc   : 是否部署自动触发配置
         $type   : boolean
         $example: true
+      startupScriptTitle:
+        $desc   : 启动脚本标题
+        $type   : string
       configReplacer:
         $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
         $type   : json
@@ -2718,14 +2721,17 @@ scriptMarketAPI:
           $type      : string
       deployOptions:
         $desc: 部署选项
-        startupScript:
+        withStartupScript:
           $desc   : 是否部署启动脚本
           $type   : boolean
           $example: true
-        crontabConfig:
+        withCrontabConfig:
           $desc   : 是否部署自动触发配置
           $type   : boolean
           $example: true
+        startupScriptTitle:
+          $desc   : 脚本标题
+          $type   : string
         configReplacer:
           $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
           $type   : json

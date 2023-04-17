@@ -1819,7 +1819,7 @@ exports.install = function(req, res, next) {
     },
     // 自动创建启动脚本
     function(asyncCallback) {
-      if (!deployOptions || !deployOptions.startupScript) return asyncCallback();
+      if (!deployOptions || !deployOptions.withStartupScript) return asyncCallback();
 
       async.eachSeries(scriptSetIds, function(scriptSetId, eachCallback) {
         scriptSetAPICtrl.doDeploy(res.locals, scriptSetId, deployOptions, eachCallback);

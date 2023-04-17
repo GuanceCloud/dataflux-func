@@ -443,7 +443,7 @@ Translated Text    : 译文
                   </el-form>
                 </template>
 
-                <el-button type="primary" size="small" @click="deploy({ crontabConfig: true })" :disabled="isDeploying">
+                <el-button type="primary" size="small" @click="deploy({ withCrontabConfig: true })" :disabled="isDeploying">
                   <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                   <i v-else class="fa fa-fw fa-plus"></i>
                   {{ $t('Deploy Startup Script') }}
@@ -466,7 +466,7 @@ Translated Text    : 译文
                 <p v-else-if="deployment.startupScriptId">
                   {{ $t('Crontab Config is not deployed yet') }}
                   <br>
-                  <el-button type="primary" size="small" @click="deploy({ crontabConfig: true })" :disabled="isDeploying">
+                  <el-button type="primary" size="small" @click="deploy({ withCrontabConfig: true })" :disabled="isDeploying">
                     <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                     <i v-else class="fa fa-fw fa-plus"></i>
                     {{ $t('Deploy Crontab Config') }}
@@ -992,7 +992,8 @@ export default {
     },
     async deploy(options) {
       options = options || {};
-      options.configReplacer = this.configReplacerForm || {};
+      options.startupScriptTitle = this.getTranslation(this.scriptSetToOperate.title);
+      options.configReplacer     = this.configReplacerForm || {};
 
       this.isDeploying = true;
       let apiRes = await this.T.callAPI('post', '/api/v1/script-sets/:id/do/deploy', {

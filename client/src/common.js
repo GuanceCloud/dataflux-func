@@ -378,13 +378,13 @@ export function hasNewVersion() {
 
 export function shouldScriptSetHidden(scriptSet) {
   // 隐藏来自脚本市场脚本集
-  if (!app.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
+  if (app.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
     && scriptSet.origin === 'scriptMarket' && scriptSet.originId === 'smkt-official') {
     return true;
   }
 
   // 隐藏内置脚本集
-  if (!app.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']
+  if (app.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']
     && scriptSet.origin === 'builtin') {
     return true;
   }
