@@ -38,6 +38,12 @@ var SCRIPT_MARKET_RW_MAP = {
   httpService: 'ro',
 }
 
+var EXPORT_FIELDS = [
+  'exportUser',
+  'exportTime',
+  'note',
+]
+
 function _prepareConfig(data) {
   if (toolkit.isNothing(data.configJSON)) return data;
 
@@ -1329,6 +1335,14 @@ exports.add = function(req, res, next) {
     },
     // 数据入库
     function(asyncCallback) {
+      // 补全额外信息
+      var extra = _getMetaData(data).extra || {};
+      data.extraJSON = {};
+      for (var f in extra) {
+        if (EXPORT_FIELDS.indexOf(f) >= 0) continue;
+        data.extraJSON[f] = extra[f];
+      }
+
       scriptMarketModel.add(data, function(err, _addedId, _addedData) {
         if (err) return asyncCallback(err);
 
@@ -1409,7 +1423,7 @@ exports.modify = function(req, res, next) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.configJSON)) return asyncCallback();
 
-      Object.assign(scriptMarket, data);
+      scriptMarket.configJSON = data.configJSON;
       SCRIPT_MARKET_INIT_FUNC_MAP[scriptMarket.type](res.locals, scriptMarket, asyncCallback);
     },
     // 设置额外信息
@@ -1420,6 +1434,11 @@ exports.modify = function(req, res, next) {
       var token       = _getToken(scriptMarket);
       var remoteToken = _getRemoteTokenInfo(scriptMarket).value;
       if (token !== remoteToken) return asyncCallback();
+
+      // 合并额外配置
+      scriptMarket.extraJSON = scriptMarket.extraJSON || {};
+      toolkit.jsonOverride(data.extraJSON, scriptMarket.extraJSON);
+      data.extraJSON = scriptMarket.extraJSON;
 
       return _setMetaExtra(res.locals, scriptMarket, asyncCallback);
     },

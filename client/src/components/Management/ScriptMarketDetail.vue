@@ -209,7 +209,7 @@ Translated Text    : 译文
                 <i class="fa fa-fw fa-exclamation fa-3x text-bad arrow-icon-cover"></i>
               </el-tooltip>
               <el-tooltip v-else-if="!scriptMarket.isAdmin && scope.row.isLocalEdited" effect="dark" placement="top" :enterable="false">
-                <div slot="content" class="xxx">
+                <div slot="content">
                   {{ $t('This Script Set is edited locally, you can:') }}
                   <br>{{ $t('1. Remove the local Script Set and install from the Script Market') }}
                   <br>{{ $t('2. Enable the Force Mode and reinstall the Script Set') }}
