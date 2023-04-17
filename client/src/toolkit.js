@@ -116,12 +116,15 @@ export function getBaseURL() {
   return baseURL;
 };
 
+export function isLocalhost() {
+  return location.hostname === 'localhost';
+}
 export function isFuncDev() {
-  return location.hostname === 'func-dev.dataflux.cn';
+  return location.hostname === 'func-dev.dataflux.cn' || isLocalhost();
 };
 
 export function isFuncDemo() {
-  return location.hostname === 'func-demo.dataflux.cn';
+  return location.hostname === 'func-demo.dataflux.cn' || isLocalhost();
 };
 
 let CURRENT_UI_LOCALE = null;

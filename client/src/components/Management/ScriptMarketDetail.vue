@@ -44,6 +44,7 @@ Script Set deleted from the Script Market                      : 脚本集已从
 Script Set installed, new Script Set is in effect immediately  : 脚本集已安装，新脚本集立即生效
 Script Set reinstalled, new Script Set is in effect immediately: 脚本集已重新安装，新脚本集立即生效
 Script Set upgraded, new Script Set is in effect immediately   : 脚本集已升级，新脚本集立即生效
+Script Market saved                                            : 脚本市场已保存
 
 No Script Set has ever been published: 尚未发布过任何脚本集到脚本市场
 
@@ -126,7 +127,7 @@ Translated Text    : 译文
 
             <el-tooltip :content="$t('Extra Config')" placement="bottom" :enterable="false" v-if="scriptMarket.isAdmin">
               <el-button
-                @click="showExtra = true"
+                @click="openExtraDialog"
                 plain size="small">
                 <i class="fa fa-fw fa-cog"></i>
               </el-button>
@@ -483,7 +484,6 @@ Translated Text    : 译文
       <el-dialog
         :title="$t('Extra Config')"
         :visible.sync="showExtra"
-        :show-close="false"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         width="950px">
@@ -522,20 +522,13 @@ Translated Text    : 译文
                     <label>{{ $t('Translated Text') }}</label>
 
                     <el-link style="float: right"
-                        v-if="lang === 'en' && scriptMarket.isAdmin && T.isFuncDev"
+                        v-if="lang === 'en' && scriptMarket.isAdmin && T.isFuncDev()"
                         size="mini"
                         @click="__fillEnPreTranslation">填充预翻译文</el-link>
                   </el-form-item>
 
                   <!-- 提取的语言翻译项  -->
-                  <el-form-item v-for="text in scriptPlacehoders"
-                    :label="text"
-                    :key="`${lang}.${text}`"
-                    :prop="`${lang}.${text}`">
-                    <el-input size="mini" v-model="extraForm.i18n[lang][text]"></el-input>
-                  </el-form-item>
-
-                  <el-form-item v-for="text in scriptSetNames"
+                  <el-form-item v-for="text in orderedTextsToTranslateMap[lang]"
                     :label="text"
                     :key="`${lang}.${text}`"
                     :prop="`${lang}.${text}`">
@@ -762,7 +755,7 @@ export default {
       this.data = data;
 
       // 提取可翻译文案
-      this.scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
+      let scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
         if (!x.remote || !x.remote.scripts) return acc;
 
         x.remote.scripts.forEach(s => {
@@ -779,12 +772,13 @@ export default {
 
         return acc;
       }, []));
-      this.scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
+      let scriptSetNames = this.T.noDuplication(this.data.reduce((acc, x) => {
         if (x.remote && x.remote.title) {
           acc.push(x.remote.title);
         }
         return acc;
       }, []));
+      this.textsToTranslate = scriptPlacehoders.concat(scriptSetNames);
 
       setTimeout(() => {
         this.$store.commit('updateLoadStatus', true);
@@ -1008,6 +1002,33 @@ export default {
       }, 1 * 1000);
     },
 
+    openExtraDialog() {
+      this.C.UI_LOCALE.forEach(uiLocale => {
+        let lang = uiLocale.key;
+        let texts = this.T.jsonCopy(this.textsToTranslate);
+
+        let translationMap = {};
+        if (this.extraForm.i18n && this.extraForm.i18n[lang]) {
+          translationMap = this.extraForm.i18n[lang];
+        }
+
+        if (this.T.notNothing(translationMap)) {
+          texts.sort((a, b) => {
+            if (translationMap[a] && !translationMap[b]) return 1;
+            else if (!translationMap[a] && translationMap[b]) return -1;
+
+            if (a < b) return 1;
+            else if (a > b) return -1;
+
+            return 0;
+          });
+        }
+
+        this.orderedTextsToTranslateMap[lang] = texts;
+      });
+
+      this.showExtra = true;
+    },
     async saveExtra() {
       try {
         await this.$refs.extraForm.validate();
@@ -1103,15 +1124,9 @@ export default {
 
       let nextI18n = this.T.jsonCopy(this.extraForm.i18n || {});
 
-      this.scriptPlacehoders.forEach(src => {
-        if (!nextI18n.en[src]) {
-          nextI18n.en[src] = getEnPreTranslation(src);
-        }
-      });
-      this.scriptSetNames.forEach(src => {
-        if (!nextI18n.en[src]) {
-          nextI18n.en[src] = getEnPreTranslation(src);
-        }
+      this.textsToTranslate.forEach(src => {
+        if (nextI18n.en[src]) return;
+        nextI18n.en[src] = getEnPreTranslation(src);
       });
 
       this.extraForm.i18n = nextI18n;
@@ -1259,10 +1274,10 @@ export default {
       forceModeEnabled: false,
       showExtra       : false,
 
-      currentLang      : this.$store.getters.uiLocale.toString(),
-      editingLang      : null,
-      scriptPlacehoders: [],
-      scriptSetNames   : [],
+      currentLang     : this.$store.getters.uiLocale.toString(),
+      editingLang     : null,
+      textsToTranslate: [],
+      orderedTextsToTranslateMap: {},
 
       // 主页提示
       img_noticeScriptMarketHomepage: img_noticeScriptMarketHomepage,
