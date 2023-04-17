@@ -35,6 +35,7 @@ Are you sure you want to delete the Script Set from the Script Market?: 是否�
 Are you sure you want to install the Script Set?                      : 是否确认安装此脚本集？
 Are you sure you want to reinstall the Script Set?                    : 是否确认重新安装此脚本集？
 Are you sure you want to upgrade the Script Set?                      : 是否确认升级此脚本集？
+Are you sure you want to remove the Translation?                      : 是否确认移除此翻译？
 
 This Script Market is locked by you: 当前脚本市场已被您锁定
 This Script Market is locked by other user ({user}): 当前脚本市场已被其他用户（{user}）锁定
@@ -507,6 +508,11 @@ Translated Text    : 译文
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
+
+            <div v-if="extraFormHeight > 1000" class="secondary-cancel-save-buttons">
+              <el-button size="small" @click="showExtra = false">{{ $t('Cancel') }}</el-button>
+              <el-button size="small" type="primary" @click="saveExtra" :loading="isProcessing">{{ $t('Save') }}</el-button>
+            </div>
           </el-form-item>
 
           <el-form-item>
@@ -589,7 +595,7 @@ export default {
       let apiRes = null;
 
       // 获取脚本市场信息
-      if (this.T.isNothing(this.scriptMarket)) {
+      if (opt.forceLoadScriptMarket || this.T.isNothing(this.scriptMarket)) {
         apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id, {
           alert: true,
         });
@@ -779,6 +785,16 @@ export default {
         return acc;
       }, []));
       this.textsToTranslate = scriptPlacehoders.concat(scriptSetNames);
+
+      // 删除已经不存在的 Key
+      if (this.extraForm.i18n) {
+        for (let lang in this.extraForm.i18n) {
+          for (let _text in this.extraForm.i18n[lang]) {
+            if (this.textsToTranslate.indexOf(_text) >= 0) continue;
+            this.$delete(this.extraForm.i18n[lang], _text);
+          }
+        }
+      }
 
       setTimeout(() => {
         this.$store.commit('updateLoadStatus', true);
@@ -1002,7 +1018,14 @@ export default {
       }, 1 * 1000);
     },
 
+    updateExtraFromHeight() {
+      setImmediate(() => {
+        this.extraFormHeight = this.$refs.extraForm.$el.scrollHeight;
+      });
+    },
     openExtraDialog() {
+      this.extraFormHeight = 0;
+
       this.C.UI_LOCALE.forEach(uiLocale => {
         let lang = uiLocale.key;
         let texts = this.T.jsonCopy(this.textsToTranslate);
@@ -1028,6 +1051,8 @@ export default {
       });
 
       this.showExtra = true;
+
+      this.updateExtraFromHeight();
     },
     async saveExtra() {
       try {
@@ -1050,27 +1075,40 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       await this.loadData({
-        skipLoadLocal : true,
-        skipLoadRemote: true,
+        skipLoadLocal        : true,
+        skipLoadRemote       : true,
+        forceLoadScriptMarket: true,
       });
 
-      this.isProcessing    = false;
-      this.showExtra = false;
+      this.isProcessing = false;
+      this.showExtra    = false;
     },
     addTranslation(lang) {
       this.extraForm.i18n = this.extraForm.i18n || {};
       if (!this.extraForm.i18n[lang]) {
         this.$set(this.extraForm.i18n, lang, this.extraForm.i18n[lang] || {});
+
+        var blankTranslation = {};
+        this.textsToTranslate.forEach(_text => {
+          blankTranslation[_text] = null;
+        });
+        this.extraForm.i18n[lang] = blankTranslation;
       }
       this.editingLang = lang;
+
+      this.updateExtraFromHeight();
     },
-    removeTranslation(lang) {
+    async removeTranslation(lang) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to remove the Translation?'))) return;
+
       this.$delete(this.extraForm.i18n, lang);
 
       let remainLangs = Object.keys(this.extraForm.i18n);
       if (remainLangs.length > 0) {
         this.editingLang = remainLangs[0];
       }
+
+      this.updateExtraFromHeight();
     },
     getTranslation(text) {
       if (!text) return text;
@@ -1272,17 +1310,18 @@ export default {
       isDeploying       : false,
 
       forceModeEnabled: false,
-      showExtra       : false,
 
-      currentLang     : this.$store.getters.uiLocale.toString(),
-      editingLang     : null,
-      textsToTranslate: [],
+      showExtra                 : false,
+      extraFormHeight           : 0,
+      currentLang               : this.$store.getters.uiLocale.toString(),
+      editingLang               : null,
+      textsToTranslate          : [],
       orderedTextsToTranslateMap: {},
 
       // 主页提示
       img_noticeScriptMarketHomepage: img_noticeScriptMarketHomepage,
     }
-  }
+  },
 }
 </script>
 
@@ -1370,6 +1409,10 @@ export default {
   color: #ff660018;
   line-height: 200px;
   z-index: 0;
+}
+.secondary-cancel-save-buttons {
+  display: inline-block;
+  float: right;
 }
 </style>
 

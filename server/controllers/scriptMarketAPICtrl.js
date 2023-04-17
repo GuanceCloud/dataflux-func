@@ -1437,8 +1437,27 @@ exports.modify = function(req, res, next) {
 
       // 合并额外配置
       scriptMarket.extraJSON = scriptMarket.extraJSON || {};
-      toolkit.jsonOverride(data.extraJSON, scriptMarket.extraJSON);
-      data.extraJSON = scriptMarket.extraJSON;
+      for (var k in scriptMarket.extraJSON) {
+        switch(k) {
+          case 'i18n':
+            for (var lang in scriptMarket.extraJSON.i18n) {
+              data.extraJSON.i18n = data.extraJSON.i18n || {};
+              if (!data.extraJSON.i18n[lang]) continue;
+
+              for (var _text in scriptMarket.extraJSON.i18n) {
+                if (!(_text in data.extraJSON.i18n[lang])) continue;
+                data.extraJSON.i18n[lang][_text] = data.extraJSON.i18n[lang][_text] || scriptMarket.extraJSON.i18n[lang][_text];
+              }
+            }
+            break;
+
+          default:
+            data.extraJSON[k] = data.extraJSON[k] || scriptMarket.extraJSON[k];
+            break;
+        }
+      }
+
+      scriptMarket.extraJSON = data.extraJSON;
 
       return _setMetaExtra(res.locals, scriptMarket, asyncCallback);
     },
