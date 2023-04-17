@@ -523,7 +523,7 @@ Translated Text    : 译文
                     <label>{{ $t('Translated Text') }}</label>
 
                     <el-link style="float: right"
-                        v-if="lang === 'en' && scriptMarket.isAdmin"
+                        v-if="lang === 'en' && scriptMarket.isOfficial && scriptMarket.isAdmin"
                         size="mini"
                         @click="__fillEnPreTranslation">填充预翻译文</el-link>
                   </el-form-item>
