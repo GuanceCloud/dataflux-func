@@ -111,13 +111,11 @@ OFFICIAL_PACKAGE_INDEX_URL: https://static.guance.com/dataflux-func/market/pkg-i
 ########################
 
 # 初始化脚本目录
-INIT_SCRIPT_DIR: init-script
+INIT_SCRIPT_DIR: init-scripts
 # 文件存储根目录
 FILE_STORE_ROOT_DIR: uploaded-files
 # 额外 Python 包安装目录
 EXTRA_PYTHON_PACKAGE_INSTALL_DIR: extra-python-packages
-# 额外 Python 包黑名单
-EXTRA_PYTHON_PACKAGE_BLACK_LIST: aliyunsdkcore
 
 # 脚本市场 Git 库保存目录
 SCRIPT_MARKET_GIT_REPO_DIR: script-market/git
