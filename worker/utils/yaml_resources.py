@@ -3,14 +3,14 @@
 # Built-in Modules
 import os
 import sys
-import yaml
-import requests
 
 # Project Modules
 from worker.utils import toolkit
 
 # 3rd-party Modules
 import six
+import yaml
+import requests
 
 if six.PY2:
     FILE_OPEN_KWARGS = {}

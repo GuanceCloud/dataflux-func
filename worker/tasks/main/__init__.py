@@ -36,7 +36,6 @@ from worker.utils.extra_helpers.datakit import DataKit
 from worker.utils.extra_helpers.dataway import DataWay
 
 CONFIG = yaml_resources.get('CONFIG')
-ROUTE  = yaml_resources.get('ROUTE')
 
 # 集成处理
 FIX_INTEGRATION_KEY_MAP = {
@@ -599,11 +598,6 @@ class FuncCacheHelper(object):
         return self._convert_result(res)
 
 class FuncConnectorHelper(object):
-    # 自动从路由配置中获取连接器可用的配置项目
-    AVAILABLE_CONFIG_KEYS = tuple(filter(
-        lambda x: not x.startswith('$'),
-        toolkit.json_smart_find(ROUTE, 'configJSON').keys()))
-
     def __init__(self, task):
         self.__task = task
 
@@ -679,10 +673,6 @@ class FuncConnectorHelper(object):
 
         if not isinstance(config, dict):
             raise InvalidConnectorOptionException('Connector config should be a dict')
-
-        for k in config.keys():
-            if k not in self.AVAILABLE_CONFIG_KEYS:
-                raise InvalidConnectorOptionException(f'Connector config item `{k}` not available')
 
         # 加密字段
         for k in CONNECTOR_CIPHER_FIELDS:

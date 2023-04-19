@@ -21,15 +21,13 @@ from worker.utils import yaml_resources, toolkit
 # Configure
 base_path  = os.path.dirname(os.path.abspath(__file__))
 CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'))
-ROUTE      = yaml_resources.load_file('ROUTE', os.path.join(base_path, '../server/route.yaml'))
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../image-info.json'))
 
 WORKER_ID     = toolkit.gen_time_serial_seq()
 WORKER_QUEUES = None
 
 # For monitor
-MAIN_PROCESS = psutil.Process()
-MAIN_PROCESS.cpu_percent(interval=1)
+MAIN_PROCESS = None
 
 CHILD_PROCESS_MAP = {} # PID -> Process
 
@@ -85,6 +83,11 @@ def heartbeat():
     global CHILD_PROCESSES
     global MONITOR_HEARTBEAT_TIMESTAMP
     global MONITOR_SYS_STATS_CHECK_TIMESTAMP
+
+    # Init
+    if MAIN_PROCESS is None:
+        MAIN_PROCESS = psutil.Process()
+        MAIN_PROCESS.cpu_percent(interval=1)
 
     current_timestamp = int(time.time())
 

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# init
+init.sh
+
 # setup
 python _check_setup.py
 if [ $? -ne 0 ]; then
@@ -8,10 +11,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# app name
-app_name=`python _config.py APP_NAME`
-
 # gen queue names
+app_name=`python _config.py APP_NAME`
 queue_prefix="${app_name}-worker#workerQueue@"
 
 enabled_queues=''

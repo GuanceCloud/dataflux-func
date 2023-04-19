@@ -110,6 +110,8 @@ OFFICIAL_PACKAGE_INDEX_URL: https://static.guance.com/dataflux-func/market/pkg-i
 #   以下配置请勿修改   #
 ########################
 
+# 初始化脚本目录
+INIT_SCRIPT_DIR: init-script
 # 文件存储根目录
 FILE_STORE_ROOT_DIR: uploaded-files
 # 额外 Python 包安装目录

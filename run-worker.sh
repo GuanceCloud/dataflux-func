@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# init
+init.sh
+
 # setup
 python _check_setup.py
 if [ $? -ne 0 ]; then

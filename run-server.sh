@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# init
+init.sh
+
 # setup
 node server/setup.js $*
 if [ $? -ne 0 ]; then
@@ -9,4 +12,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run server
-node --expose-gc server/app.js
+node server/app.js
