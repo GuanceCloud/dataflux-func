@@ -4,8 +4,10 @@ Processing, please wait...: 正在处理中，请稍后...
 Multiple Editing: 多重编辑
 This page does not support multiple users or multiple tabs for editing at the same time, to avoid the possible problem of data overwriting each other, please confirm before operation: 本功能不支持多人或多窗口同时编辑。为避免可能出现的数据相互覆盖等问题，请确认后再进行操作
 
-DataFlux Func Upgraded              : DataFlux Func 已更新
-Please refresh the page and continue: 请刷新页面后继续
+DataFlux Func Upgraded                                                : DataFlux Func 已更新
+The DataFlux Func has been upgraded<br>and the page may be out of date: DataFlux Func 已经升级，页面可能已经过时
+Please refresh the page and continue                                  : 请刷新页面后继续
+Not Now                                                               : 等会再说
 </i18n>
 
 <template>
@@ -56,16 +58,14 @@ Please refresh the page and continue: 请刷新页面后继续
 
     <el-dialog
       id="UpgradeNotice"
-      :visible="T.notNothing($store.state.serverUpgradeInfo)"
+      :visible.sync="showUpgradeNotice"
       :show-close="false"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       top="15vh"
+      :title="$t('DataFlux Func Upgraded')"
       width="600px">
       <div class="upgrade-notice">
-        <h1 class="upgrade-notice-title">
-          {{ $t('DataFlux Func Upgraded') }}
-        </h1>
         <div class="upgrade-notice-logo">
           <div class="upgrade-notice-logo-old">
             <Logo type="auto" width="245px" height="49px"></Logo>
@@ -77,9 +77,13 @@ Please refresh the page and continue: 请刷新页面后继续
             <span class="upgrade-notice-version" v-if="T.notNothing($store.state.serverUpgradeInfo)">{{ $store.state.serverUpgradeInfo.next }}&emsp;</span>
           </div>
         </div>
-        <p class="upgrade-notice-refresh text-bad">
-          {{ $t('Please refresh the page and continue') }}
+        <p class="upgrade-notice-refresh">
+          <span class="text-main" v-html="$t('The DataFlux Func has been upgraded<br>and the page may be out of date')"></span>
+          <br>
+          <br>
+          <span class="text-bad">{{ $t('Please refresh the page and continue') }}</span>
         </p>
+        <el-button @click="showUpgradeNotice = false">{{ $t('Not Now') }}</el-button>
       </div>
     </el-dialog>
 
@@ -134,6 +138,11 @@ export default {
       let $uiThemeLink = document.getElementById('uiTheme');
       let cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', val);
       $uiThemeLink.setAttribute('href', cssHref);
+    },
+    '$store.state.serverUpgradeInfo'(val) {
+      if (this.T.notNothing(val)) {
+        this.showUpgradeNotice = true;
+      }
     },
   },
   methods: {
@@ -295,6 +304,8 @@ export default {
       },
 
       socketIOReportTimer: null,
+
+      showUpgradeNotice: false,
     }
   },
   mounted() {
@@ -421,26 +432,21 @@ export default {
 .upgrade-notice {
   text-align: center;
 }
-.upgrade-notice-title {
-  font-size: 35px;
-  margin-top: 0;
-  margin-bottom: 30px;
-}
 .upgrade-notice-refresh {
   font-size: 18px;
+  padding: 20px 0;
 }
 .upgrade-notice-logo {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  margin-bottom: 50px;
   text-align: right;
 }
 .upgrade-notice-arrow {
   font-size: 25px;
 }
 .upgrade-notice-logo-old {
-  filter: grayscale(.6);
+  filter: grayscale(.75);
 }
 .upgrade-notice-version {
   color: #FF6600;
