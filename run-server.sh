@@ -2,7 +2,7 @@
 set -e
 
 # init
-init.sh
+run-init-scripts.sh
 
 # setup
 node server/setup.js $*

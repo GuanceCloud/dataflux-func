@@ -7,6 +7,8 @@ mkdir -p ${init_script_folder}
 
 # run shell scripts
 cd ${init_script_folder}
-for file in `ls *.sh`; do
-    /bin/bash ${file}
-done
+if [ "`ls -A .`" != "" ]; then
+    for file in `ls *.sh`; do
+        /bin/bash ${file}
+    done
+fi
