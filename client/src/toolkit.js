@@ -865,12 +865,17 @@ export function stringSimilar(s, t, f) {
 }
 
 export function asideItemSorter(a, b) {
-  // 根据是否置顶排序
+  // 根据置顶排序
   let isPinnedA = !!a.pinTime;
   let isPinnedB = !!b.pinTime;
 
   if (isPinnedA < isPinnedB) return 1;
   if (isPinnedA > isPinnedB) return -1;
+
+  if (isPinnedA && isPinnedB) {
+    if (a.pinTime > b.pinTime) return -1;
+    if (a.pinTime < b.pinTime) return 1;
+  }
 
   if (a.label < b.label) return -1;
   if (a.label > b.label) return 1;
@@ -879,12 +884,17 @@ export function asideItemSorter(a, b) {
 }
 
 export function scriptSetSorter(a, b) {
-  // 根据是否置顶排序
+  // 根据置顶排序
   let isPinnedA = !!a.pinTime;
   let isPinnedB = !!b.pinTime;
 
   if (isPinnedA < isPinnedB) return 1;
   if (isPinnedA > isPinnedB) return -1;
+
+  if (isPinnedA && isPinnedB) {
+    if (a.pinTime > b.pinTime) return -1;
+    if (a.pinTime < b.pinTime) return 1;
+  }
 
   // 根据来源排序
   let aOrigin = a.origin;
