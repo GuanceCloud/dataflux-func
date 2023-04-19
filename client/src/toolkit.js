@@ -77,6 +77,9 @@ export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
 export const MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
 export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 
+// Markdown
+import { marked } from 'marked'
+
 // 国际化
 import app from '@/main';
 
@@ -1840,4 +1843,19 @@ export function openURL(url) {
     url = router.resolve(url).href;
   }
   window.open(url);
+};
+
+export function renderMarkdown(text, options) {
+  options = options || {};
+
+  let renderer = options.renderer || false;
+  delete options.renderer;
+
+  marked.use({ renderer });
+
+  if (options.inline === true) {
+    return marked.parseInline(text, options);
+  } else {
+    return marked.parse(text, options);
+  }
 };

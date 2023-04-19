@@ -714,6 +714,9 @@ function doDeploy(locals, scriptSetId, options, callback) {
           }
         }
 
+        // 其他配置项目修改为空字符串
+        exampleScript.code = exampleScript.code.replace(/"<(.+)>"(.*)/g, '""$2 # $1');
+
         var _data = {
           id       : startupScriptId,
           title    : options.startupScriptTitle || scriptSetId,

@@ -437,7 +437,8 @@ Translated Text    : 译文
                 <template v-else>
                   {{ $t('Includes a Startup Script with following configs:') }}
                   <el-form :model="configReplacerForm" size="small">
-                    <el-form-item v-for="f in deployment.configFields" :label="getTranslation(f)" :key="f">
+                    <el-form-item v-for="f in deployment.configFields" :key="f">
+                      <label v-html="renderMarkdown(getTranslation(f))"></label>
                       <el-input v-model="configReplacerForm[f]"></el-input>
                     </el-form-item>
                   </el-form>
@@ -588,6 +589,20 @@ export default {
     onFilterChange: debounce(function(val) {
       this.filterTEXT = val;
     }),
+    renderMarkdown(text) {
+      let opt = {
+        inline: true,
+        renderer: {
+          em(text) {
+            return `<strong class="text-bad">${text}</strong>`;
+          },
+          link(href, title, text) {
+            return `<a class="text-main" href="${href}" target="_blank" style="float: right"><i class="fa fa-fw fa-info-circle"></i> ${text}</a>`;
+          }
+        }
+      }
+      return this.T.renderMarkdown(text, opt);
+    },
 
     async loadData(opt) {
       opt = opt || {};
