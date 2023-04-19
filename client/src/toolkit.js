@@ -1101,6 +1101,14 @@ async function _doAxios(axiosOpt) {
     // }
 
     let axiosRes = await axios(axiosOpt);
+
+    // 升级监测
+    let serverInfo = {
+      VERSION         : axiosRes.headers[store.getters.CONFIG('_WEB_SERVER_VERSION_HEADER')],
+      CREATE_TIMESTAMP: parseInt(axiosRes.headers[store.getters.CONFIG('_WEB_SERVER_CREATE_TIMESTAMP_HEADER')]),
+    }
+    store.dispatch('checkServerUpgradeInfo', serverInfo);
+
     axiosRes = await _prepareAxiosRes(axiosRes);
     return axiosRes;
 

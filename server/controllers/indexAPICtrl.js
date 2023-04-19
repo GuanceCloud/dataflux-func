@@ -1,10 +1,8 @@
 'use strict';
 
 /* Built-in Modules */
-var childProcess = require('child_process');
 
 /* 3rd-party Modules */
-var fs      = require('fs-extra');
 var async   = require('async');
 var request = require('request');
 
@@ -15,9 +13,6 @@ var toolkit = require('../utils/toolkit');
 
 /* Configure */
 var IMAGE_INFO = require('../../image-info.json');
-IMAGE_INFO.ARCHITECTURE   = childProcess.execFileSync('uname', [ '-m' ]).toString().trim();
-IMAGE_INFO.PYTHON_VERSION = childProcess.execFileSync('python', [ '--version' ]).toString().trim().split(' ').pop();
-IMAGE_INFO.NODE_VERSION   = childProcess.execFileSync('node', [ '--version' ]).toString().trim().replace('v', '');
 
 var OPEN_API_SPEC = {};
 var OPEN_API_PARAM_TYPES = [
@@ -197,7 +192,7 @@ function getOpenAPISpec(lang) {
     openapi: '3.0.0',
     info: {
       title      : 'DataFlux Func Open API',
-      version    : IMAGE_INFO.CI_COMMIT_REF_NAME,
+      version    : IMAGE_INFO.VERSION,
       description: route.$description,
     },
     tags : [],

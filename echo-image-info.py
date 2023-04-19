@@ -5,7 +5,6 @@ import json
 import os
 
 EXTRACT_CI_ENVS = [
-    'CI_COMMIT_REF_NAME',
     'CI_PIPELINE_ID',
     'CI_JOB_ID',
     'CI_BUILD_ID',
@@ -13,6 +12,7 @@ EXTRACT_CI_ENVS = [
 
 def main():
     image_info = {
+        'VERSION'         : os.environ.get('CI_COMMIT_REF_NAME') or '0.0.0',
         'CREATE_TIMESTAMP': int(time.time()),
     }
 

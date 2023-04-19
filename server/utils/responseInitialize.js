@@ -70,6 +70,16 @@ var getRetSample = function(ret) {
 };
 
 /**
+ * Add Server Info
+ */
+router.all('*', function addServerInfo(req, res, next) {
+  res.set(CONFIG._WEB_SERVER_VERSION_HEADER,          IMAGE_INFO.VERSION);
+  res.set(CONFIG._WEB_SERVER_CREATE_TIMESTAMP_HEADER, IMAGE_INFO.CREATE_TIMESTAMP);
+
+  return next();
+});
+
+/**
  * Prepare basic client information.
  *
  * @return {String} res.locals.traceId

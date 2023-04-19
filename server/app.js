@@ -4,8 +4,9 @@
 require('./monkeyPatch');
 
 /* Built-in Modules */
-var path = require('path');
-var http = require('http');
+var path         = require('path');
+var http         = require('http');
+var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var express          = require('express');
@@ -16,6 +17,11 @@ var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
 
 /* Configure */
+var IMAGE_INFO = require('../image-info.json');
+IMAGE_INFO.ARCHITECTURE     = childProcess.execFileSync('uname', [ '-m' ]).toString().trim();
+IMAGE_INFO.PYTHON_VERSION   = childProcess.execFileSync('python', [ '--version' ]).toString().trim().split(' ').pop();
+IMAGE_INFO.NODE_VERSION     = childProcess.execFileSync('node', [ '--version' ]).toString().trim().replace('v', '');
+IMAGE_INFO.CREATE_TIMESTAMP = IMAGE_INFO.CREATE_TIMESTAMP || parseInt(Date.now() / 1000);
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
@@ -42,7 +48,6 @@ function startApplication() {
   var toolkit     = require('./utils/toolkit');
   var logHelper   = require('./utils/logHelper');
   var routeLoader = require('./utils/routeLoader');
-  var auth        = require('./utils/auth');
 
   // Express
   var app = express();
@@ -80,6 +85,7 @@ function startApplication() {
   var corsConfig = {
     origin              : CONFIG.WEB_CORS_ORIGIN,
     credentials         : CONFIG.WEB_CORS_CREDENTIALS,
+    exposedHeaders      : '*',
     optionsSuccessStatus: 200,
     maxAge              : 86400,
   }
@@ -220,7 +226,7 @@ function startApplication() {
   });
 
   // Handle Error
-  app.use(function handleError(originError, req, res, next) {
+  app.use(function handleError(err, req, res, next) {
     if (!res.locals.logger) {
       res.locals.logger = serverLogger;
     }
@@ -229,18 +235,17 @@ function startApplication() {
       res.locals.logger.debug('[MID] IN app.handleError');
     }
 
-    var err = originError;
-
     // Wrap general error
-    if (!E.prototype.isPrototypeOf(originError)) {
-      var data = null;
+    if (!E.prototype.isPrototypeOf(err)) {
+      var errMessage = 'A System error occured. Please report this response to the administrator';
+      var errStack   = null;
 
       if (CONFIG.MODE === 'dev') {
-        // Response call stack if not in PROD mode
-        data = originError.stack;
+        errMessage = err.toString();
+        errStack   = err.stack;
       }
 
-      err = new E('ESys', 'A System error occured. Please report this response to the administrator', data, originError);
+      err = new E('ESys', errMessage, errStack, err);
     }
 
     // Set status code

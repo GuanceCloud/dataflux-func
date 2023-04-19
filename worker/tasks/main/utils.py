@@ -974,7 +974,7 @@ class AutoBackupDBTask(BaseTask):
                     -- {'-' * 50}
                     -- DataFlux Func DB Backup
                     -- Date: {now.format('YYYY-MM-DD HH:mm:ss')}
-                    -- Version: {IMAGE_INFO['CI_COMMIT_REF_NAME']}
+                    -- Version: {IMAGE_INFO['VERSION']}
                     -- {'-' * 50}
                 ''').lstrip())
             for t in tables:

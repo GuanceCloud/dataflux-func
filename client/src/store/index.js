@@ -11,6 +11,7 @@ import app from '../main'
 
 const STATE_CONFIG = {
   isSystemConfigLoaded                     : { persist: false, syncXTab: false },
+  serverUpgradeInfo                        : { persist: false, syncXTab: false },
   systemConfig                             : { persist: true,  syncXTab: true  },
   isLoaded                                 : { persist: false, syncXTab: false },
   processingTaskCount                      : { persist: false, syncXTab: false },
@@ -107,7 +108,10 @@ function getRouteKey(routeInfo) {
 
 export default new Vuex.Store({
   state: {
-    // 客户端配置
+    // 服务器升级信息
+    serverUpgradeInfo: null,
+
+    // 系统配置
     systemConfig: {},
 
     // 主要内容加载完毕标识
@@ -211,8 +215,13 @@ export default new Vuex.Store({
     },
     CONFIG: state => (key, defaultValue) => {
       if (state.systemConfig && (key in state.systemConfig)) {
-        return state.systemConfig[key];
+        let configValue = state.systemConfig[key];
+        if (T.endsWith(key, '_HEADER')) {
+          configValue = configValue.toLowerCase();
+        }
+        return configValue;
       }
+
       return defaultValue || null;
     },
     isProcessing: state => {
@@ -568,6 +577,34 @@ export default new Vuex.Store({
       }
 
       app.$i18n.mergeLocaleMessage('zh-CN', apiNamesLocales_zhCN);
+    },
+
+    async checkServerUpgradeInfo({ dispatch, state }, serverInfo) {
+      let nextServerUpgradeInfo = null;
+
+      if (state.systemConfig && !state.serverUpgradeInfo) {
+        if (state.systemConfig.VERSION
+            && serverInfo.VERSION
+            && state.systemConfig.VERSION !== serverInfo.VERSION) {
+          nextServerUpgradeInfo = {
+            prev: `Version: ${state.systemConfig.VERSION}`,
+            next: `Version: ${serverInfo.VERSION}`,
+          }
+
+        } else if (state.systemConfig.CREATE_TIMESTAMP
+            && serverInfo.CREATE_TIMESTAMP
+            && state.systemConfig.CREATE_TIMESTAMP !== serverInfo.CREATE_TIMESTAMP) {
+          nextServerUpgradeInfo = {
+            prev: `Build: ${T.getDateTimeString(state.systemConfig.CREATE_TIMESTAMP * 1000)}`,
+            next: `Build: ${T.getDateTimeString(serverInfo.CREATE_TIMESTAMP         * 1000)}`,
+          }
+        }
+      }
+
+      if (nextServerUpgradeInfo) {
+        await dispatch('loadSystemConfig');
+        state.serverUpgradeInfo = nextServerUpgradeInfo;
+      }
     },
   },
   modules: {

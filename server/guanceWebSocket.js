@@ -136,13 +136,26 @@ function doEmit(locals, client, event, emitData, callback) {
 };
 
 function doAck(locals, client, event, eventObj, respData, error) {
-  error = error || eventObj.error;
+  var err = error || eventObj.error;
 
   var ack = null;
-  if (error) {
+  if (err) {
+    if (!E.prototype.isPrototypeOf(err)) {
+      var errMessage = 'Calling Function failed';
+      var errStack   = null;
+
+      if (CONFIG.MODE === 'dev') {
+        errMessage = err.toString();
+        errStack   = err.stack;
+      }
+
+      err = new E('EFuncFailed', errMessage, errStack, err);
+    }
+
     ack = {
       ok     : false,
-      message: (error || 'Error Occured').toString(),
+      message: err.message,
+      detail : err.detail,
     }
 
   } else {
@@ -177,8 +190,8 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
   // 上报自身信息
   function reportSystemInfo() {
     var systemInfo = {
-      name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.CI_COMMIT_REF_NAME})`,
-      version: IMAGE_INFO.CI_COMMIT_REF_NAME,
+      name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.VERSION})`,
+      version: IMAGE_INFO.VERSION,
     }
     doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfo);
   }

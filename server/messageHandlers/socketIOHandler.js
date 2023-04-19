@@ -12,9 +12,18 @@ var toolkit = require('../utils/toolkit');
 var auth    = require('../utils/auth');
 
 var socketIOServerHelper = require('../utils/extraHelpers/socketIOServerHelper');
-var mainAPICtrl = require('../controllers/mainAPICtrl');
+
+/* Configure */
+var IMAGE_INFO = require('../../image-info.json');
+IMAGE_INFO.CREATE_TIMESTAMP = IMAGE_INFO.CREATE_TIMESTAMP || parseInt(Date.now() / 1000);
 
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
+
+var SERVER_VERSION = {
+  version        : IMAGE_INFO.VERSION,
+  createTimestamp: IMAGE_INFO.CREATE_TIMESTAMP,
+}
+var SERVER_VERSION_BROADCAST_INTERVAL =  15 * 1000;
 
 module.exports = function(app, server) {
   // 初始化
@@ -122,7 +131,7 @@ module.exports = function(app, server) {
       }
 
       async.series([
-        // 检查CoreStone 认证令牌是否失效
+        // 检查认证令牌是否失效
         function(asyncCallback) {
           if (!xAuthTokenObj) return asyncCallback();
 
@@ -146,7 +155,6 @@ module.exports = function(app, server) {
               return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
             }
 
-            // 使用 Socket.IO 认证令牌不会触发刷新
             return asyncCallback();
           });
         },
@@ -165,34 +173,19 @@ module.exports = function(app, server) {
         return next(new E('ESocketIOAuth', 'Socket.io connection gone').forSocketIO());
       }
 
-      var event       = packet[0];
-      var data        = packet[1];
+      var event        = packet[0];
+      var data         = packet[1] || {};
       var respCallback = packet[2];
 
-      // REQ标志ID
-      var reqId = null;
-
-      // 为避免混淆，Socket.io的事件必须以`socketio`开头
-      var eventParts = event.split('.');
-      if (eventParts[0] !== 'socketio') {
-        return next(new E('ESocketIOEvent', 'Event of Socket.io must match pattern "socketio.*"').forSocketIO(reqId));
-      }
-
-      // 为统一处理，Socket.io的数据必须为JSON字符串
-      try {
-        data  = JSON.parse(data);
-        reqId = data.reqId || undefined;
-
-      } catch(err) {
-        return next(new E('ESocketIOData', 'Data of Socket.io must be a JSON string').forSocketIO(reqId));
-      }
+      // REQ 标志 ID
+      var reqId = data.reqId || undefined;
 
       var retData        = null;
       var conflictSource = null;
       async.series([
         // 消息处理
         function(asyncCallback) {
-          switch(eventParts[1]) {
+          switch(event) {
             case 'ping':
               retData = 'pong';
               break;
@@ -220,7 +213,7 @@ module.exports = function(app, server) {
               break;
 
             default:
-              return asyncCallback(new E('ESocketIOEvent', 'Unknow event of Socket.io').forSocketIO(reqId));
+              return asyncCallback(new E('ESocketIOEvent', `Unknow event: ${event}`).forSocketIO(reqId));
           }
 
           return asyncCallback();
@@ -288,7 +281,7 @@ module.exports = function(app, server) {
     });
 
     // 错误处理
-    socket.on("error", function(err) {
+    socket.on('error', function(err) {
       var reason = null;
       try {
         reason = JSON.parse(err.message);

@@ -3,6 +3,9 @@ Processing, please wait...: 正在处理中，请稍后...
 
 Multiple Editing: 多重编辑
 This page does not support multiple users or multiple tabs for editing at the same time, to avoid the possible problem of data overwriting each other, please confirm before operation: 本功能不支持多人或多窗口同时编辑。为避免可能出现的数据相互覆盖等问题，请确认后再进行操作
+
+DataFlux Func Upgraded              : DataFlux Func 已更新
+Please refresh the page and continue: 请刷新页面后继续
 </i18n>
 
 <template>
@@ -48,6 +51,35 @@ This page does not support multiple users or multiple tabs for editing at the sa
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="$store.commit('updateShowCompleteUserProfile', false)">{{ $t('Cancel') }}</el-button>
         <el-button size="small" type="primary" @click="updateUserProfile()">{{ $t('Save') }}</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      id="UpgradeNotice"
+      :visible="T.notNothing($store.state.serverUpgradeInfo)"
+      :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      top="15vh"
+      width="600px">
+      <div class="upgrade-notice">
+        <h1 class="upgrade-notice-title">
+          {{ $t('DataFlux Func Upgraded') }}
+        </h1>
+        <div class="upgrade-notice-logo">
+          <div class="upgrade-notice-logo-old">
+            <Logo type="auto" width="245px" height="49px"></Logo>
+            <span class="upgrade-notice-version" v-if="T.notNothing($store.state.serverUpgradeInfo)">{{ $store.state.serverUpgradeInfo.prev }}&emsp;</span>
+          </div>
+          <span class="upgrade-notice-arrow text-main">&#10132;</span>
+          <div class="upgrade-notice-logo-new">
+            <Logo type="auto" width="245px" height="49px"></Logo>
+            <span class="upgrade-notice-version" v-if="T.notNothing($store.state.serverUpgradeInfo)">{{ $store.state.serverUpgradeInfo.next }}&emsp;</span>
+          </div>
+        </div>
+        <p class="upgrade-notice-refresh text-bad">
+          {{ $t('Please refresh the page and continue') }}
+        </p>
       </div>
     </el-dialog>
 
@@ -124,14 +156,14 @@ export default {
           break;
       }
 
-      let checkRouteInfo = JSON.stringify({
+      let checkRouteInfo = {
         routeName  : routeName,
         routeQuery : this.$route.query,
         routeParams: this.$route.params,
         checkOnly  : checkOnly,
         conflictId : window.conflictId,
-      });
-      this.socketIO.emit('socketio.reportAndCheckClientConflict', checkRouteInfo, resData => {
+      };
+      this.socketIO.emit('reportAndCheckClientConflict', checkRouteInfo, resData => {
         if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
           this.prevReportAndCheckClientConflictResData = resData;
         }
@@ -240,8 +272,6 @@ export default {
     return {
       prevReportAndCheckClientConflictResData: null,
 
-      heartbeatTimer: null,
-
       form: {
         name : userProfile.name  || '',
         email: userProfile.email || '',
@@ -263,10 +293,12 @@ export default {
           },
         ]
       },
+
+      socketIOReportTimer: null,
     }
   },
   mounted() {
-    // 初始化Socket.io
+    // 初始化 Socket.io 并启动页面上报定时器
     const connectSocketIO = () => {
       if (this.$store.getters.isSocketIOReady) return;
 
@@ -275,16 +307,8 @@ export default {
         this.socketIO.emit('auth', this.$store.state.xAuthToken);
       }
     }
-    const handleDisconnect = () => {
-      setTimeout(() => {
-        this.socketIO.connect();
-      }, 1000)
-    }
-    const handleAuth = () => {
-      this.$store.commit('updateSocketIOStatus', true);
-    }
     const handleError = err => {
-      console.error(err);
+      console.warn(err);
 
       try {
         err = JSON.parse(err);
@@ -296,22 +320,30 @@ export default {
         }
 
       } catch(err) {
-        console.error(err);
+        console.warn(err);
       }
     }
+    const handleDisconnect = () => {
+      setTimeout(() => {
+        this.socketIO.connect();
+      }, 1000)
+    }
+    const handleAuth = () => {
+      this.$store.commit('updateSocketIOStatus', true);
+    }
+
     this.$nextTick(() => {
       this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL, { transports: ['websocket'] });
       this.socketIO
+        .on('error', handleError)
         .on('connect', connectSocketIO)
         .on('reconnect', connectSocketIO)
         .on('disconnect', handleDisconnect)
         .on('auth.resp', handleAuth)
-        .on('ftAuth.resp', handleAuth)
-        .on('error', handleError);
 
       // 定期报告当前页面
-      this.heartbeatTimer = setInterval(() => {
-        connectSocketIO()
+      this.socketIOReportTimer = setInterval(() => {
+        connectSocketIO();
         this.reportAndCheckClientConflict();
       }, 1 * 1000);
     });
@@ -380,11 +412,41 @@ export default {
     this.checkNewVersion();
   },
   beforeDestroy() {
-    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    if (this.socketIOReportTimer) clearInterval(this.socketIOReportTimer);
   },
 }
 </script>
 
+<style scoped>
+.upgrade-notice {
+  text-align: center;
+}
+.upgrade-notice-title {
+  font-size: 35px;
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+.upgrade-notice-refresh {
+  font-size: 18px;
+}
+.upgrade-notice-logo {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 50px;
+  text-align: right;
+}
+.upgrade-notice-arrow {
+  font-size: 25px;
+}
+.upgrade-notice-logo-old {
+  filter: grayscale(.6);
+}
+.upgrade-notice-version {
+  color: #FF6600;
+  font-weight: bold;
+}
+</style>
 <style>
 @font-face {
   font-family: "Iosevka";

@@ -35,7 +35,6 @@ en: {}
   Data of Socket.io must be a JSON string                                                                 : Socket.io 数据必须为 JSON 字符串
   Deleting built-in Connector is not allowed                                                              : 不允许删除内置连接器
   Empty import file                                                                                       : 导入文件为空
-  Event of Socket.io must match pattern "socketio.*"                                                      : Socket.io 事件必须满足格式 "socketio.*"
   Export failed                                                                                           : 导出失败
   File not exists                                                                                         : 文件不存在
   File or folder already existed                                                                          : 文件或目录已存在
