@@ -145,7 +145,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="140">
+          <el-table-column width="135">
             <template slot-scope="scope">
               <el-link v-if="scope.row.extra.homepageURL || scope.row.type === 'git'"
                 :href="scope.row.extra.homepageURL || scope.row.configJSON.url" target="_blank">
@@ -155,7 +155,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="120">
+          <el-table-column width="135">
             <template slot-scope="scope">
               <span v-if="scope.row.isTimeout"
                 class="text-bad">
