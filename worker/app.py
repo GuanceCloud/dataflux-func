@@ -19,9 +19,9 @@ import psutil
 from worker.utils import yaml_resources, toolkit
 
 # Configure
-base_path  = os.path.dirname(os.path.abspath(__file__))
-CONFIG     = yaml_resources.load_config(os.path.join(base_path, '../config.yaml'))
-IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(base_path, '../image-info.json'))
+BASE_PATH  = os.path.dirname(os.path.abspath(__file__))
+CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'))
+IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
 
 WORKER_ID     = toolkit.gen_time_serial_seq()
 WORKER_QUEUES = None

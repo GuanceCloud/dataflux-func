@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 3rd-party Modules
-import requests
-
 # Built-in Modules
+import os
 import sys
 import textwrap
 import getpass
@@ -12,9 +10,23 @@ import logging
 import argparse
 import traceback
 
+# 3rd-party Modules
+import requests
+
 # Project Modules
 from worker.utils import yaml_resources, toolkit
+
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+CONFIG    = yaml_resources.load_config(os.path.join(BASE_PATH, './config.yaml'))
+
 from worker.utils.extra_helpers import MySQLHelper, RedisHelper
+DB       = MySQLHelper(logging)
+CACHE_DB = RedisHelper(logging)
+
+ADMIN_USER_ID     = 'u-admin'
+DB_UPGRADE_SEQ_ID = 'UPGRADE_DB_SEQ'
+
+COMMAND_FUNCS = {}
 
 COLOR_MAP = {
     'grey'   : '\033[0;30m',
@@ -35,16 +47,6 @@ def colored(s, color=None):
 
 class CommandCanceledException(Exception):
     pass
-
-CONFIG = yaml_resources.get('CONFIG')
-
-DB       = MySQLHelper(logging)
-CACHE_DB = RedisHelper(logging)
-
-ADMIN_USER_ID     = 'u-admin'
-DB_UPGRADE_SEQ_ID = 'UPGRADE_DB_SEQ'
-
-COMMAND_FUNCS = {}
 
 def command(F):
     COMMAND_FUNCS[F.__name__] = F
