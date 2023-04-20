@@ -77,6 +77,22 @@ WORKER_LOGGER = LogHelper()
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
 REDIS_HELPER.skip_log = True
 
+def init(queues):
+    global WORKER_QUEUES
+
+    after_app_created(app)
+
+    _worker_queues = []
+    for kombu_queue in queues:
+        _worker_queues.append(kombu_queue.name.split('@')[1])
+
+    WORKER_QUEUES = _worker_queues
+
+    listening_queues = ', '.join(map(lambda q: f'#{q}', _worker_queues))
+    print(f'Worker is listening on queues [ {listening_queues} ] (Press CTRL+C to quit)')
+    print(f'PID: {os.getpid()}')
+    print('Have fun!')
+
 def heartbeat():
     global WORKER_QUEUES
     global MAIN_PROCESS
@@ -151,20 +167,7 @@ def heartbeat():
 
 @signals.worker_ready.connect
 def on_worker_ready(sender, **kwargs):
-    global WORKER_QUEUES
-
-    after_app_created(app)
-
-    _worker_queues = []
-    for kombu_queue in sender.task_consumer.queues:
-        _worker_queues.append(kombu_queue.name.split('@')[1])
-
-    WORKER_QUEUES = _worker_queues
-
-    listening_queues = ', '.join(map(lambda q: f'#{q}', _worker_queues))
-    print(f'Worker is listening on queues [ {listening_queues} ] (Press CTRL+C to quit)')
-    print(f'PID: {os.getpid()}')
-    print('Have fun!')
+    init(sender.task_consumer.queues)
 
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(**kwargs):

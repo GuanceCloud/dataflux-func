@@ -1,12 +1,14 @@
 #!/bin/bash
 set -e
 
-# setup
+# Check Setup
+echo "[STARTER] Check CONFIG._IS_INSTALLED"
 python _check_setup.py
 if [ $? -ne 0 ]; then
     echo 'Setup failed.'
     exit 1
 fi
 
-# run beat
+# Run Beat
+echo "[STARTER] Run Beat"
 celery --app worker.app --quiet beat --loglevel ERROR

@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
-# init
+# Init Script
 /bin/bash run-init-scripts.sh 'worker'
 
-# setup
+# Check Setup
+echo "[STARTER] Check CONFIG._IS_INSTALLED"
 python _check_setup.py
 if [ $? -ne 0 ]; then
     echo 'Setup failed.'
     exit 1
 fi
 
-# gen queue names
+# Generate Queue Names
 app_name=`python _config.py APP_NAME`
 queue_prefix="${app_name}-worker#workerQueue@"
 
@@ -24,5 +25,6 @@ for queue in $*; do
     fi
 done
 
-# run worker
+# Run Worker
+echo "[STARTER] Run Worker by Queue"
 celery --app worker.app --quiet worker --loglevel ERROR --queues ${enabled_queues}

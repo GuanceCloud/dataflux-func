@@ -9,7 +9,7 @@ mkdir -p ${init_script_folder}
 cd ${init_script_folder}
 if [ "`ls -A .`" != "" ]; then
     for file in `ls *.sh`; do
-        echo "[INIT SCRIPTS] Run ${file}"
+        echo "[STARTER] Run Init Script: ${file}"
         /bin/bash ${file} $1
     done
 fi
