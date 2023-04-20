@@ -1052,11 +1052,18 @@ export default {
 
         if (this.T.notNothing(translationMap)) {
           texts.sort((a, b) => {
-            if (translationMap[a] && !translationMap[b]) return 1;
-            else if (!translationMap[a] && translationMap[b]) return -1;
+            if ( translationMap[a] && !translationMap[b]) return 1;
+            if (!translationMap[a] &&  translationMap[b]) return -1;
 
-            if (a < b) return 1;
-            else if (a > b) return -1;
+            if (a < b) return -1;
+            if (a > b) return 1;
+
+            return 0;
+          });
+        } else {
+          texts.sort((a, b) => {
+            if (a < b) return -1;
+            if (a > b) return 1;
 
             return 0;
           });

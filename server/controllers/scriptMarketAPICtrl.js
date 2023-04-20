@@ -1582,10 +1582,10 @@ exports.listScriptSets = function(req, res, next) {
       if (toolkit.isNothing(scriptSets)) return asyncCallback();
 
       var localPath = _getLocalAbsPath(scriptMarket);
-      async.eachSeries(scriptSets, function(scriptSet, eachScriptSetCallback) {
+      async.eachLimit(scriptSets, 5, function(scriptSet, eachScriptSetCallback) {
         if (toolkit.isNothing(scriptSet.scripts)) return eachScriptSetCallback();
 
-        async.eachSeries(scriptSet.scripts, function(script, eachScriptCallback) {
+        async.eachLimit(scriptSet.scripts, 5, function(script, eachScriptCallback) {
           if (script.id !== `${scriptSet.id}__example`) return eachScriptCallback();
 
           var file = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id, common.getScriptFilename(script));
