@@ -77,24 +77,21 @@ WORKER_LOGGER = LogHelper()
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
 REDIS_HELPER.skip_log = True
 
-def init():
-    global WORKER_QUEUES
-
-    after_app_created(app)
-
-    queues_flag = '--queues'
-    if queues_flag not in sys.argv:
-        _worker_queues = list([ str(q) for q in range(CONFIG['_WORKER_QUEUE_COUNT']) ])
+# Collect worker queues
+if 'worker' in sys.argv:
+    QUEUES_FLAG = '--queues'
+    if QUEUES_FLAG in sys.argv:
+        WORKER_QUEUES = sys.argv[sys.argv.index(QUEUES_FLAG) + 1:]
+        WORKER_QUEUES = list([ q.split('@')[1] for q in WORKER_QUEUES ])
     else:
-        _worker_queues = sys.argv[sys.argv.index(queues_flag) + 1:]
-        _worker_queues = list([ q.split('@')[1] for q in _worker_queues ])
+        WORKER_QUEUES = list([ str(q) for q in range(CONFIG['_WORKER_QUEUE_COUNT']) ])
 
-    WORKER_QUEUES = _worker_queues
-
-    listening_queues = ', '.join(map(lambda q: f'#{q}', _worker_queues))
+    listening_queues = ', '.join(map(lambda q: f'#{q}', WORKER_QUEUES))
     print(f'Worker is listening on queues [ {listening_queues} ] (Press CTRL+C to quit)')
     print(f'PID: {os.getpid()}')
     print('Have fun!')
+
+    after_app_created(app)
 
 def heartbeat():
     global WORKER_QUEUES
@@ -171,5 +168,3 @@ def heartbeat():
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(**kwargs):
     heartbeat()
-
-init()
