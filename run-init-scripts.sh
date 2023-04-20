@@ -9,6 +9,6 @@ mkdir -p ${init_script_folder}
 cd ${init_script_folder}
 if [ "`ls -A .`" != "" ]; then
     for file in `ls *.sh`; do
-        /bin/bash ${file}
+        /bin/bash ${file} $1
     done
 fi
