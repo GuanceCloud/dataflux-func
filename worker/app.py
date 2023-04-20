@@ -77,14 +77,17 @@ WORKER_LOGGER = LogHelper()
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
 REDIS_HELPER.skip_log = True
 
-def init(queues):
+def init():
     global WORKER_QUEUES
 
     after_app_created(app)
 
-    _worker_queues = []
-    for kombu_queue in queues:
-        _worker_queues.append(kombu_queue.name.split('@')[1])
+    queues_flag = '--queues'
+    if queues_flag not in sys.argv:
+        _worker_queues = list([ str(q) for q in range(CONFIG['_WORKER_QUEUE_COUNT']) ])
+    else:
+        _worker_queues = sys.argv[sys.argv.index(queues_flag) + 1:]
+        _worker_queues = list([ q.split('@')[1] for q in _worker_queues ])
 
     WORKER_QUEUES = _worker_queues
 
@@ -165,10 +168,8 @@ def heartbeat():
         cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
         REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
 
-@signals.worker_ready.connect
-def on_worker_ready(sender, **kwargs):
-    init(sender.task_consumer.queues)
-
 @signals.heartbeat_sent.connect
 def on_heartbeat_sent(**kwargs):
     heartbeat()
+
+init()
