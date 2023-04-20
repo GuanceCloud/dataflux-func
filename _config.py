@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
+import os
 import argparse
 
 # Project Modules
 from worker.utils import yaml_resources
 
-CONFIG = yaml_resources.get('CONFIG')
+base_path  = os.path.dirname(os.path.abspath(__file__))
+CONFIG = yaml_resources.load_config(os.path.join(base_path, './config.yaml'))
 
 def get_options_from_command_line():
     arg_parser = argparse.ArgumentParser(description='DataFlux Func Config Helper')

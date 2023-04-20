@@ -14,7 +14,7 @@ except ImportError:
     from urllib.parse import urlparse, urlencode
 
 # Project Modules
-from worker import app
+from worker.app import app
 from worker.tasks import gen_task_id, BaseTask
 from worker.utils import yaml_resources, toolkit
 from sdk.dataflux_func_sdk import DataFluxFunc

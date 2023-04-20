@@ -18,7 +18,7 @@ import arrow
 import requests
 
 # Project Modules
-from worker import app
+from worker.app import app
 from worker.utils import toolkit, yaml_resources
 from worker.tasks import gen_task_id
 from worker.tasks.main import decipher_connector_config_fields

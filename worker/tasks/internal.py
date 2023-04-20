@@ -4,7 +4,7 @@
 import time
 
 # Project Modules
-from worker import app
+from worker.app import app
 from worker.tasks import BaseTask
 from worker.utils import yaml_resources
 

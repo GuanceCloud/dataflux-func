@@ -12,4 +12,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # run worker
-celery --app worker --quiet worker --loglevel ERROR
+celery --app worker.app --quiet worker --loglevel ERROR

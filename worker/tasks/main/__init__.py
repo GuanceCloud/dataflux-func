@@ -23,7 +23,7 @@ from croniter import croniter
 import funcsigs
 
 # Project Modules
-from worker import app
+from worker.app import app
 from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper

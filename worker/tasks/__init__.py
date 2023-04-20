@@ -10,7 +10,7 @@ from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 import celery.states as celery_status
 
 # Project Modules
-from worker import app
+from worker.app import app
 from worker.utils import toolkit, yaml_resources
 from worker.utils.log_helper import LogHelper, LOG_LEVELS
 from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
