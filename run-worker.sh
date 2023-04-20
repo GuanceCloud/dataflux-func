@@ -2,7 +2,7 @@
 set -e
 
 # init
-run-init-scripts.sh
+/bin/bash run-init-scripts.sh
 
 # setup
 python _check_setup.py
