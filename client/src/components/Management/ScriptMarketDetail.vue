@@ -651,8 +651,7 @@ export default {
       if (!opt.skipLoadLocal) {
         apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
           query: {
-            _withScripts   : true,
-            _withScriptCode: true,
+            _withScripts: true,
             fields: [
               'id',
               'title',
@@ -779,9 +778,9 @@ export default {
       let scriptPlacehoders = this.T.noDuplication(this.data.reduce((acc, x) => {
         if (!x.isIdMatched) return acc;
 
-        x.local.scripts.forEach(s => {
+        x.remote.scripts.forEach(s => {
           if (!s.code) return;
-          if (s.id !== `${s.scriptSetId}__example`) return;
+          if (s.id !== `${x.remote.id}__example`) return;
 
           var m = s.code.match(/"<.+>"/g);
           if (m) {

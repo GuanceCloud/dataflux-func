@@ -1577,6 +1577,29 @@ exports.listScriptSets = function(req, res, next) {
         return asyncCallback();
       });
     },
+    // 加载 example 文件代码
+    function(asyncCallback) {
+      if (toolkit.isNothing(scriptSets)) return asyncCallback();
+
+      var localPath = _getLocalAbsPath(scriptMarket);
+      async.eachSeries(scriptSets, function(scriptSet, eachScriptSetCallback) {
+        if (toolkit.isNothing(scriptSet.scripts)) return eachScriptSetCallback();
+
+        async.eachSeries(scriptSet.scripts, function(script, eachScriptCallback) {
+          if (script.id !== `${scriptSet.id}__example`) return eachScriptCallback();
+
+          var file = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id, common.getScriptFilename(script));
+          SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, function(err) {
+            if (err) return eachScriptCallback(err);
+
+            var codeFilePath = path.join(localPath, file);
+            script.code = toolkit.safeReadFileSync(codeFilePath) || '';
+
+            return eachScriptCallback();
+          });
+        }, eachScriptSetCallback);
+      }, asyncCallback);
+    },
   ], function(err) {
     if (err) return next(err);
 
