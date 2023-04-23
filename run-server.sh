@@ -5,7 +5,7 @@ set -e
 /bin/bash gen-localhost-auth-token.sh
 
 # Init Script
-/bin/bash run-init-scripts.sh 'server'
+/bin/bash pre-run-scripts.sh 'server'
 
 # Run Setup
 echo "[STARTER] Run Setup"

@@ -279,176 +279,6 @@ exports.afterAppCreated = function(app, server) {
     }
   }
 
-  // 自动安装脚本集
-  // if (CONFIG._DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET) {
-  //     app.locals.logger.warning('Script Set auto installing is disabled.');
-
-  // } else {
-  //   async.series([
-  //     // 获取锁
-  //     function(asyncCallback) {
-  //       var lockKey   = toolkit.getCacheKey('lock', 'autoInstallScriptSet');
-  //       var lockValue = toolkit.genRandString();
-  //       var lockAge   = CONFIG._SCRIPT_SET_AUTO_INSTALL_LOCK_AGE;
-
-  //       app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-  //         if (err) return asyncCallback(err);
-
-  //         if (!cacheRes) {
-  //           var e = new Error('Script Set auto installing is just launched');
-  //           e.isWarning = true;
-  //           return asyncCallback(e);
-  //         }
-
-  //         return asyncCallback();
-  //       });
-  //     },
-  //     // 安装脚本集
-  //     function(asyncCallback) {
-  //       // 获取内置脚本集列表
-  //       var builtinScriptSetDir = path.join(__dirname, '../builtin-script-sets/');
-  //       var filenamesToInstall  = fs.readdirSync(builtinScriptSetDir);
-  //       filenamesToInstall = filenamesToInstall.filter(function(fileName) {
-  //         return toolkit.endsWith(fileName, '.zip');
-  //       });
-
-  //       if (toolkit.isNothing(filenamesToInstall)) return asyncCallback();
-
-  //       // 初始化
-  //       var dff = new DataFluxFunc({ host: 'localhost', port: CONFIG.WEB_PORT });
-  //       app.locals.localhostTempAuthTokenMap = app.locals.localhostTempAuthTokenMap || {};
-
-  //       // 依次导入
-  //       async.eachSeries(filenamesToInstall, function(filename, eachCallback) {
-  //         app.locals.logger.info('Auto install built-in Script Set: {0}', filename);
-
-  //         var filePath = path.join(builtinScriptSetDir, filename);
-  //         var fileBuffer = fs.readFileSync(path.join(filePath));
-
-  //         // 使用本地临时认证令牌认证
-  //         var localhostTempAuthToken = toolkit.genRandString();
-  //         app.locals.localhostTempAuthTokenMap[localhostTempAuthToken] = true;
-
-  //         var headers = {};
-  //         headers[CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER] = localhostTempAuthToken;
-
-  //         var opt = {
-  //           headers   : headers,
-  //           path      : '/api/v1/script-sets/do/import',
-  //           fileBuffer: fileBuffer,
-  //           filename  : filename,
-  //         }
-  //         dff.upload(opt, function(err, apiRes) {
-  //           if (err) return eachCallback(err);
-
-  //           if (!apiRes.ok) {
-  //             app.locals.cacheDB.lock(lockKey, lockValue);
-  //             return eachCallback(new Error('Auto install Script Set failed: ' + apiRes.message));
-  //           }
-
-  //           return eachCallback();
-  //         });
-  //       }, asyncCallback);
-  //     },
-  //   ], printError);
-  // }
-
-  // // 自动添加本地DataKit连接器
-  // var request = require('request');
-  // var connectorModel = require('./models/connectorMod').createModel(app.locals);
-
-  // var LOCAL_DATAKIT_ID    = 'datakit';
-  // var LOCAL_DATAKIT_TITLE = '观测云DataKit';
-  // var LOCAL_DATAKIT_DESC  = `Auto updated at: ${moment().utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss')}`;
-  // var LOCAL_DATAKIT_PORT  = 9529;
-
-  // var localDataKitIP = null;
-  // async.series([
-  //   // 获取锁
-  //   function(asyncCallback) {
-  //     var lockKey   = toolkit.getCacheKey('lock', 'autoCreateDataKit');
-  //     var lockValue = toolkit.genRandString();
-  //     var lockAge   = CONFIG._LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE;
-
-  //     app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-  //       if (err) return asyncCallback(err);
-
-  //       if (!cacheRes) {
-  //         var e = new Error('Local DataKit auto creating is just launched');
-  //         e.isWarning = true;
-  //         return asyncCallback(e);
-  //       }
-
-  //       return asyncCallback();
-  //     });
-  //   },
-  //   // 检查DataKit所在IP
-  //   function(asyncCallback) {
-  //     var fetchIPs = [
-  //       '172.17.0.1', // Docker宿主机本地
-  //       '127.0.0.1',  // 本机本地
-  //     ];
-  //     async.eachSeries(fetchIPs, function(ip, eachCallback) {
-  //       if (localDataKitIP) return eachCallback();
-
-  //       var url = toolkit.strf('http://{0}:{1}/v1/ping', ip, LOCAL_DATAKIT_PORT);
-  //       var requestOptions = {
-  //         method : 'get',
-  //         url    : url,
-  //         timeout: 3 * 1000,
-  //       };
-  //       request(requestOptions, function(err, _res, _body) {
-  //         if (!err && _res.statusCode === 200) {
-  //           app.locals.logger.info('Check local DataKit: `{0}`... OK', url);
-
-  //           localDataKitIP = ip;
-
-  //         } else {
-  //           app.locals.logger.info('Check local DataKit: `{0}`... Fail: {1}', url, err);
-  //         }
-
-  //         return eachCallback();
-  //       });
-  //     }, asyncCallback);
-  //   },
-  //   // 添加DataKit连接器
-  //   function(asyncCallback) {
-  //     if (!localDataKitIP) return asyncCallback();
-
-  //     app.locals.logger.info('Auto add local DataKit: `{0}`', localDataKitIP);
-
-  //     var opt = {
-  //       filters: {
-  //         id: { eq: LOCAL_DATAKIT_ID }
-  //       }
-  //     }
-  //     connectorModel.list(opt, function(err, dbRes) {
-  //       if (err) return asyncCallback(err);
-
-  //       var datakit = {
-  //         id         : LOCAL_DATAKIT_ID,
-  //         title      : LOCAL_DATAKIT_TITLE,
-  //         description: LOCAL_DATAKIT_DESC,
-  //         type       : 'df_datakit',
-  //         configJSON: {
-  //           host    : localDataKitIP,
-  //           port    : LOCAL_DATAKIT_PORT,
-  //           protocol: 'http',
-  //           source  : 'dataflux_func',
-  //         }
-  //       }
-  //       if (dbRes.length <= 0) {
-  //         // 不存在，则添加
-  //         connectorModel.add(datakit, asyncCallback);
-
-  //       } else {
-  //         // 存在，则更新
-  //         connectorModel.modify(datakit.id, datakit, asyncCallback);
-  //       }
-  //     })
-  //   },
-  // ], printError);
-
   // 初始化 DataFlux Func ID
   async.series([
     // 获取锁
@@ -492,68 +322,72 @@ exports.afterAppCreated = function(app, server) {
   ], printError);
 
   // 自动运行脚本
-  async.series([
-    // 获取锁
-    function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'initScripts');
-      var lockValue = toolkit.genRandString();
-      var lockAge   = CONFIG._AUTORUN_SCRIPTS_LOCK_AGE;
+  if (!CONFIG._DISABLE_INIT_SCRIPTS) {
+    async.series([
+      // 获取锁
+      function(asyncCallback) {
+        var lockKey   = toolkit.getCacheKey('lock', 'initScripts');
+        var lockValue = toolkit.genRandString();
+        var lockAge   = CONFIG._AUTORUN_SCRIPTS_LOCK_AGE;
 
-      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
+        app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+          if (err) return asyncCallback(err);
 
-        if (!cacheRes) {
-          var e = new Error('Autorun Scriptst is just launched');
-          e.isWarning = true;
-          return asyncCallback(e);
-        }
-
-        return asyncCallback();
-      });
-    },
-    // 等待若干秒
-    function(asyncCallback) {
-      setTimeout(asyncCallback, 3000);
-    },
-    // 执行 Autorun 脚本
-    function(asyncCallback) {
-      var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
-
-      var initScriptDir = path.join(__dirname, '../init-scripts/');
-      var scripts = fs.readdirSync(initScriptDir).filter(function(filename) {
-        return toolkit.endsWith(filename, '.sh') || toolkit.endsWith(filename, '.py');
-      });
-
-      async.eachSeries(scripts, function(script, eachCallback) {
-        var cmd = null;
-        if (toolkit.endsWith(script, '.sh')) {
-          cmd = 'bash';
-        } else if (toolkit.endsWith(script, '.py')) {
-          cmd = 'python';
-        }
-
-        var scriptPath = path.join(initScriptDir, script);
-        var opt = {
-          cwd: initScriptDir,
-          env: {
-            BASE_URL   : `http://localhost:${CONFIG.WEB_PORT}`,
-            AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
-            AUTH_TOKEN : localhostAuthToken,
-            PATH       : process.env.PATH,
-            PYTHONPATH : process.env.PYTHONPATH,
+          if (!cacheRes) {
+            var e = new Error('Autorun Scriptst is just launched');
+            e.isWarning = true;
+            return asyncCallback(e);
           }
-        }
-        toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {
-          if (err) return eachCallback(err);
 
-          app.locals.logger.info(`[AUTORUN SCRIPT] ${script}`);
-          app.locals.logger.info(`[AUTORUN SCRIPT] stdout: ${stdout}`);
-
-          return eachCallback();
+          return asyncCallback();
         });
-      }, asyncCallback);
-    },
-  ], printError);
+      },
+      // 等待若干秒
+      function(asyncCallback) {
+        setTimeout(asyncCallback, 3000);
+      },
+      // 执行 Autorun 脚本
+      function(asyncCallback) {
+        var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
+
+        var initScriptDir = path.join(__dirname, '../init-scripts/');
+        var scripts = fs.readdirSync(initScriptDir).filter(function(filename) {
+          return !toolkit.startsWith(filename, '.')
+                && (toolkit.endsWith(filename, '.sh') || toolkit.endsWith(filename, '.py'));
+        });
+
+        async.eachSeries(scripts, function(script, eachCallback) {
+          var cmd = null;
+          if (toolkit.endsWith(script, '.sh')) {
+            cmd = 'bash';
+          } else if (toolkit.endsWith(script, '.py')) {
+            cmd = 'python';
+          }
+
+          var scriptPath = path.join(initScriptDir, script);
+          var projectPath = path.join(__dirname, '..');
+          var opt = {
+            cwd: initScriptDir,
+            env: {
+              BASE_URL   : `http://localhost:${CONFIG.WEB_PORT}`,
+              AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
+              AUTH_TOKEN : localhostAuthToken,
+              PATH       : process.env.PATH,
+              PYTHONPATH : `.:${projectPath}`,
+            }
+          }
+          toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {
+            if (err) return eachCallback(err);
+
+            app.locals.logger.info(`[INIT SCRIPT] ${script}`);
+            app.locals.logger.info(`[INIT SCRIPT] stdout: ${stdout}`);
+
+            return eachCallback();
+          });
+        }, asyncCallback);
+      },
+    ], printError);
+  }
 };
 
 exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, respType) {

@@ -356,6 +356,10 @@ _HTTP_AUTH_NONCE_MAX_AGE      : 300
 
 # 是否禁用配置步骤
 _DISABLE_SETUP: false
+# 是否禁用预执行脚本（pre-run-scripts）
+_DISABLE_PRE_RUN_SCRIPTS: false
+# 是否禁用初始化脚本（init-scripts）
+_DISABLE_INIT_SCRIPTS: false
 # 是否禁用数据库自动备份
 _DISABLE_DB_AUTO_BACKUP: false
 # 是否禁用工作单元限制压力

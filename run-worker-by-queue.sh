@@ -2,7 +2,7 @@
 set -e
 
 # Init Script
-/bin/bash run-init-scripts.sh 'worker'
+/bin/bash pre-run-scripts.sh 'worker'
 
 # Check Setup
 echo "[STARTER] Check CONFIG._IS_INSTALLED"
