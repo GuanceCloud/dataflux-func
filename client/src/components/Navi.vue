@@ -67,7 +67,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
         :hide-timeout="0">
         <template slot="title">
           <span>
-            <el-badge :hidden="!common.hasNewVersion()" is-dot>
+            <el-badge :hidden="true || !common.hasNewVersion()" is-dot>
               <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
               <i v-else class="fa fa-fw fa-user-md"></i>
               <span>{{ userProfileName }}</span>

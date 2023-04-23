@@ -710,7 +710,7 @@ export default {
           d.isScriptMarketMatched = !!(d.local && d.local.origin === 'scriptMarket' && d.local.originId === this.scriptMarket.id);
 
           // 是否已经是最新版
-          d.hasNewVersion = !!(d.isScriptMarketMatched && d.local.originMD5 !== d.remote.originMD5);
+          d.hasNewVersion = !!(d.isIdMatched && d.isScriptMarketMatched && d.local.originMD5 !== d.remote.originMD5);
 
           if (!d.isIdMatched) {
             // 无对应
