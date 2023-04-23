@@ -517,6 +517,8 @@ exports.afterAppCreated = function(app, server) {
     },
     // 执行 Autorun 脚本
     function(asyncCallback) {
+      var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
+
       var autorunScriptDir = path.join(__dirname, '../autorun-scripts/');
       var scripts = fs.readdirSync(autorunScriptDir).filter(function(filename) {
         return toolkit.endsWith(filename, '.sh') || toolkit.endsWith(filename, '.py');
@@ -536,7 +538,7 @@ exports.afterAppCreated = function(app, server) {
           env: {
             WEB_PORT   : CONFIG.WEB_PORT,
             AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
-            AUTH_TOKEN : app.locals.LOCALHOST_AUTH_TOKEN,
+            AUTH_TOKEN : localhostAuthToken,
           }
         }
         toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {

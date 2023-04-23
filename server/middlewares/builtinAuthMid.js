@@ -286,11 +286,11 @@ exports.byLocalhostAuthToken = function byLocalhostAuthToken(req, res, next) {
   if (res.locals.user && res.locals.user.isSignedIn) return next();
 
   // Get Localhost Auth Token
-  var localhostAuthToken = req.get(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER);
-  var LOCALHOST_AUTH_TOKEN = req.app.locals.LOCALHOST_AUTH_TOKEN;
+  var receivedLocalhostAuthToken = req.get(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER);
+  var localhostAuthToken         = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
   // Skip if no Localhost Auth Token
-  if (req.hostname !== 'localhost' || !localhostAuthToken || !LOCALHOST_AUTH_TOKEN) return next();
+  if (req.hostname !== 'localhost' || !receivedLocalhostAuthToken || !localhostAuthToken) return next();
 
   if (CONFIG.MODE === 'dev') {
     res.locals.logger.debug('[MID] IN buildinAuth.byLocalhostAuthToken');
@@ -299,8 +299,8 @@ exports.byLocalhostAuthToken = function byLocalhostAuthToken(req, res, next) {
   res.locals.user = auth.createUserHandler();
 
   // Check Localhost Auth Token
-  localhostAuthToken = localhostAuthToken.trim();
-  if (localhostAuthToken !== LOCALHOST_AUTH_TOKEN) {
+  receivedLocalhostAuthToken = receivedLocalhostAuthToken.trim();
+  if (receivedLocalhostAuthToken !== localhostAuthToken) {
     res.locals.reqAuthError = new E('EUserAuth', 'Invalid Localhost Auth Token');
     return next(res.locals.reqAuthError);
   }
