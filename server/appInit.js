@@ -536,10 +536,11 @@ exports.afterAppCreated = function(app, server) {
         var opt = {
           cwd: initScriptDir,
           env: {
-            WEB_PORT   : CONFIG.WEB_PORT,
+            BASE_URL   : `http://localhost:${CONFIG.WEB_PORT}`,
             AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
             AUTH_TOKEN : localhostAuthToken,
             PATH       : process.env.PATH,
+            PYTHONPATH : process.env.PYTHONPATH,
           }
         }
         toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {
