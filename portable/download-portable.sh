@@ -27,6 +27,7 @@ function error {
 # 处理选项
 OPT_ARCH=DEFAULT
 OPT_DOWNLOAD_DIR=DEFAULT
+OPT_FOR=DEFAULT
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -45,6 +46,15 @@ while [ $# -ge 1 ]; do
             ;;
         --download-dir )
             OPT_DOWNLOAD_DIR=$2
+            shift 2
+            ;;
+
+        --for=* )
+            OPT_FOR="${1#*=}"
+            shift
+            ;;
+        --for )
+            OPT_FOR=$2
             shift 2
             ;;
 
@@ -68,6 +78,13 @@ __SYSTEMD_FILE=docker.service
 __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 __RUN_PORTABLE_FILE=run-portable.sh
 __VERSION_FILE=version
+
+# 版本
+case ${OPT_FOR} in
+    dev|GSE )
+        __PORTABLE_BASE_URL="${__PORTABLE_BASE_URL}-${OPT_FOR}"
+        ;;
+esac
 
 # 获取架构
 _ARCH=`uname -m`
@@ -111,10 +128,6 @@ ls -hl
 log "\nPlease copy ${PWD} to your portable media (e.g. USB-Key)"
 log "And run the following command on your server to install DataFlux Func:"
 log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh"
-# log "Or install and use default configs to setup:"
-# log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup"
-# log "Or install and use specified admin password to setup:"
-# log "    $ sudo /bin/bash ${__DOWNLOAD_DIR}/run-portable.sh --auto-setup --auto-setup-admin-password='AdminPass'"
 
 # 返回之前目录
 cd ${__PREV_DIR}

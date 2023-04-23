@@ -17,16 +17,17 @@ variables:
   IMAGE          : dataflux-func
   IMAGE_GZIP_FILE: dataflux-func.tar.gz
 
-  DOCKER_STACK_EXAMPLE_FILE : docker-stack.example.yaml
-  DOCKER_SERVICE_FILE       : docker.service
-  DOWNLOAD_PORTABLE_FILE    : download-portable.sh
-  DOWNLOAD_PORTABLE_FILE_DEV: download-portable-dev.sh
-  RUN_PORTABLE_FILE         : run-portable.sh
-  IMAGE_LIST_FILE           : image-list
-  IMAGE_LIST_FILE_DEV       : image-list-dev
-  IMAGE_LIST_FILE_X86_64    : image-list-x86_64
-  IMAGE_LIST_FILE_AARCH64   : image-list-aarch64
-  VERSION_FILE              : version
+  DOCKER_STACK_EXAMPLE_FILE  : docker-stack.example.yaml
+  DOCKER_SERVICE_FILE        : docker.service
+  DOWNLOAD_PORTABLE_FILE     : download-portable.sh
+  RUN_PORTABLE_FILE          : run-portable.sh
+  IMAGE_LIST_FILE            : image-list
+  IMAGE_LIST_FILE_DEV        : image-list-dev
+  IMAGE_LIST_FILE_X86_64     : image-list-x86_64
+  IMAGE_LIST_FILE_AARCH64    : image-list-aarch64
+  IMAGE_LIST_FILE_GSE_X86_64 : image-list-GSE-x86_64
+  IMAGE_LIST_FILE_GSE_AARCH64: image-list-GSE-aarch64
+  VERSION_FILE               : version
 
   SDK_FILE_PY: sdk/dataflux_func_sdk.py
   SDK_FILE_JS: sdk/dataflux_func_sdk.js
@@ -114,10 +115,10 @@ portable_GSE_amd64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}:latest
+      -t ${IMAGE_PUBLIC}-GSE:latest
       -f Dockerfile-guance .
       --load
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-GSE:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_GZIP_FILE}
       -f
@@ -139,10 +140,10 @@ portable_GSE_arm64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/arm64
-      -t ${IMAGE_PUBLIC}-arm64:latest
+      -t ${IMAGE_PUBLIC}-GSE-arm64:latest
       -f Dockerfile-guance .
       --load
-    - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-GSE-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
       cp ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_GZIP_FILE}
       -f
@@ -152,6 +153,7 @@ portable_GSE_arm64:
   tags:
     - cloudcare-multiarch
 
+# 独立部署版
 singleton_release:
   stage: build
   only:
@@ -181,6 +183,7 @@ singleton_release:
   tags:
     - cloudcare-multiarch
 
+# 观测云同捆版
 guance_testing:
   stage: build
   only:
@@ -277,7 +280,6 @@ portableFile_dev:
     # 上传文件
     - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE_DEV} ${OSS_PORTABLE_BASE_URL_DEV}/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_DEV}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_DEV}        ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
@@ -325,13 +327,12 @@ portableFile_GSE_release:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
-    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_PORTABLE_BASE_URL_GSE}/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_GSE}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_AARCH64}    ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_GSE}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}   ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}         ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}           ${OSS_PORTABLE_BASE_URL_GSE}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_GSE_X86_64}  ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_GSE_AARCH64} ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}                         ${OSS_PORTABLE_BASE_URL_GSE}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH_GSE}
