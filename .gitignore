@@ -113,6 +113,6 @@ client/public/theme-dark.min.css
 .ossutil_checkpoint
 docker-stack.yaml
 client/report.*.json
-autorun-scripts/*.zip
-autorun-scripts/*.py
-autorun-scripts/*.sh
+init-scripts/*.zip
+init-scripts/*.py
+init-scripts/*.sh

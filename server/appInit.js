@@ -495,7 +495,7 @@ exports.afterAppCreated = function(app, server) {
   async.series([
     // 获取锁
     function(asyncCallback) {
-      var lockKey   = toolkit.getCacheKey('lock', 'autorunScripts');
+      var lockKey   = toolkit.getCacheKey('lock', 'initScripts');
       var lockValue = toolkit.genRandString();
       var lockAge   = CONFIG._AUTORUN_SCRIPTS_LOCK_AGE;
 
@@ -519,8 +519,8 @@ exports.afterAppCreated = function(app, server) {
     function(asyncCallback) {
       var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
-      var autorunScriptDir = path.join(__dirname, '../autorun-scripts/');
-      var scripts = fs.readdirSync(autorunScriptDir).filter(function(filename) {
+      var initScriptDir = path.join(__dirname, '../init-scripts/');
+      var scripts = fs.readdirSync(initScriptDir).filter(function(filename) {
         return toolkit.endsWith(filename, '.sh') || toolkit.endsWith(filename, '.py');
       });
 
@@ -532,9 +532,9 @@ exports.afterAppCreated = function(app, server) {
           cmd = 'python';
         }
 
-        var scriptPath = path.join(autorunScriptDir, script);
+        var scriptPath = path.join(initScriptDir, script);
         var opt = {
-          cwd: autorunScriptDir,
+          cwd: initScriptDir,
           env: {
             WEB_PORT   : CONFIG.WEB_PORT,
             AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
