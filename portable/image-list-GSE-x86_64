@@ -1,4 +1,4 @@
 IMAGE_ARCH=x86_64
-DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func-GSE:latest
+DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func-gse:latest
 MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mysql:5.7.26
 REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis:5.0.7

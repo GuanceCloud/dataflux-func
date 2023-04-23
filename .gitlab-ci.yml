@@ -115,10 +115,10 @@ portable_GSE_amd64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}-GSE:latest
+      -t ${IMAGE_PUBLIC}-gse:latest
       -f Dockerfile-guance .
       --load
-    - docker save ${IMAGE_PUBLIC}-GSE:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-gse:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_GZIP_FILE}
       -f
@@ -140,10 +140,10 @@ portable_GSE_arm64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/arm64
-      -t ${IMAGE_PUBLIC}-GSE-arm64:latest
+      -t ${IMAGE_PUBLIC}-gse-arm64:latest
       -f Dockerfile-guance .
       --load
-    - docker save ${IMAGE_PUBLIC}-GSE-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-gse-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
       cp ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_GZIP_FILE}
       -f
