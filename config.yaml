@@ -147,12 +147,10 @@ _IS_STREAKING: false
 
 # 客户端冲突过期时间
 _CLIENT_CONFLICT_EXPIRES: 5
-# 脚本集自动安装锁定时间
-_SCRIPT_SET_AUTO_INSTALL_LOCK_AGE: 60
-# DataKit自动添加锁定时间
-_LOCAL_DATAKIT_AUTO_CREATE_LOCK_AGE: 15
 # 初始化 DataFlux Func ID 锁定时间
 _INIT_DATAFLUX_FUNC_ID_LOCK_AGE: 15
+# Autorun Script 锁定时间
+_AUTORUN_SCRIPTS_LOCK_AGE: 60
 # 脚本市场操作锁定时长
 _SCRIPT_MARKET_OPERATION_LOCK_AGE: 30
 # 脚本市场操作锁等待事件
@@ -234,8 +232,9 @@ _WEB_SERVER_CREATE_TIMESTAMP_HEADER: X-Dff-Server-Create-Timestamp
 _SUB_BUFFER_LIMIT         : 5000
 _SUB_RECENT_CONSUME_EXPIRE: 604800
 
-# 本地临时认证令牌
-_WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER: X-Localhost-Temp-Auth-Token
+# 本地调用认证令牌
+_WEB_LOCALHOST_AUTH_TOKEN_HEADER: X-Localhost-Auth-Token
+_WEB_LOCALHOST_AUTH_TOKEN_PATH  : /data/localhost-auth-token
 
 # Worker模块一般作为常量的配置
 _WORKER_QUEUE_COUNT        : 10
@@ -357,8 +356,6 @@ _HTTP_AUTH_NONCE_MAX_AGE      : 300
 
 # 是否禁用配置步骤
 _DISABLE_SETUP: false
-# 是否禁用自动安装内置脚本集
-_DISABLE_AUTO_INSTALL_BUILTIN_SCRIPT_SET: false
 # 是否禁用数据库自动备份
 _DISABLE_DB_AUTO_BACKUP: false
 # 是否禁用工作单元限制压力

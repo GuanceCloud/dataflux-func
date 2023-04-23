@@ -145,10 +145,10 @@ guance_release:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
     - /^release_\d+_\d+$/ # 如：release_20190101_01
   script:
-    # 下载观测云内置脚本集
-    - mkdir -p builtin-script-sets
-    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
+    # 下载自动运行数据
+    - wget ${AUTORUN_IMPORT_SCRIPT_SETS_URL} -O autorun-scripts/import_script_sets.py; # 自动执行脚本
+    - wget ${AUTORUN_DATAFLUX_ZIP_URL}       -O autorun-scripts/dataflux.zip;          # 旧版
+    - wget ${AUTORUN_GUANCE_ZIP_URL}         -O autorun-scripts/guance.zip;            # 新版
     # 构建/推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
@@ -165,10 +165,10 @@ guancePaaS_preview:
   only:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
-    # 下载观测云内置脚本集
-    - mkdir -p builtin-script-sets
-    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
+    # 下载自动运行数据
+    - wget ${AUTORUN_IMPORT_SCRIPT_SETS_URL} -O autorun-scripts/import_script_sets.py; # 自动执行脚本
+    - wget ${AUTORUN_DATAFLUX_ZIP_URL}       -O autorun-scripts/dataflux.zip;          # 旧版
+    - wget ${AUTORUN_GUANCE_ZIP_URL}         -O autorun-scripts/guance.zip;            # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
@@ -189,10 +189,10 @@ guancePaaS_release:
   only:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
-    # 下载观测云内置脚本集
-    - mkdir -p builtin-script-sets
-    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX} -O builtin-script-sets/dataflux.zip; # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}   -O builtin-script-sets/guance.zip;   # 新版
+    # 下载自动运行数据
+    - wget ${AUTORUN_IMPORT_SCRIPT_SETS_URL} -O autorun-scripts/import_script_sets.py; # 自动执行脚本
+    - wget ${AUTORUN_DATAFLUX_ZIP_URL}       -O autorun-scripts/dataflux.zip;          # 旧版
+    - wget ${AUTORUN_GUANCE_ZIP_URL}         -O autorun-scripts/guance.zip;            # 新版
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}

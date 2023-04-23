@@ -20,7 +20,7 @@ var modelHelper        = require('./modelHelper');
 var uploads            = require('./uploads');
 var requestDumper      = require('./requestDumper');
 
-var builtinAuthMid     = require('../middlewares/builtinAuthMid')
+var builtinAuthMid     = require('../middlewares/builtinAuthMid');
 var operationRecordMid = require('../middlewares/operationRecordMid');
 
 /**
@@ -610,8 +610,12 @@ exports.mount = function(app) {
       preMiddlewares.push(uploads(c.files));
     }
 
-    // AK 认证需要等待 Body 解析完毕后进行
+    // X-Auth-Token 认证
+    preMiddlewares.push(builtinAuthMid.byXAuthToken);
+    // AcccessKey 认证
     preMiddlewares.push(builtinAuthMid.byAccessKey);
+    // LocalhostAuthToken 认证
+    preMiddlewares.push(builtinAuthMid.byLocalhostAuthToken);
 
     preMiddlewares.push(auth.createAuthChecker(c));
     preMiddlewares.push(auth.createPrivilegeChecker(c));

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Create Localhost auth token
+/bin/bash gen-localhost-auth-token.sh
+
 # Init Script
 /bin/bash run-init-scripts.sh 'server'
 

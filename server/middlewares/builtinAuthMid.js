@@ -276,3 +276,76 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
     return next();
   });
 };
+
+/**
+ * Localhost Auth.
+ *
+ * @return {Object} [res.locals.user=null] - User Handler (Fix Admin)
+ */
+exports.byLocalhostAuthToken = function byLocalhostAuthToken(req, res, next) {
+  if (res.locals.user && res.locals.user.isSignedIn) return next();
+
+  // Get Localhost Auth Token
+  var localhostAuthToken = req.get(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER);
+  var LOCALHOST_AUTH_TOKEN = req.app.locals.LOCALHOST_AUTH_TOKEN;
+
+  // Skip if no Localhost Auth Token
+  if (req.hostname !== 'localhost' || !localhostAuthToken || !LOCALHOST_AUTH_TOKEN) return next();
+
+  if (CONFIG.MODE === 'dev') {
+    res.locals.logger.debug('[MID] IN buildinAuth.byLocalhostAuthToken');
+  }
+
+  res.locals.user = auth.createUserHandler();
+
+  // Check Localhost Auth Token
+  localhostAuthToken = localhostAuthToken.trim();
+  if (localhostAuthToken !== LOCALHOST_AUTH_TOKEN) {
+    res.locals.reqAuthError = new E('EUserAuth', 'Invalid Localhost Auth Token');
+    return next(res.locals.reqAuthError);
+  }
+
+  var userId = 'u-admin';
+  var dbUser = null;
+
+  async.series([
+    // Get admin info
+    function(asyncCallback) {
+      var userModel = userMod.createModel(res.locals);
+
+      userModel.getWithCheck(userId, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // Prepare to check
+        dbUser = dbRes;
+
+        if (dbUser.isDisabled) {
+          res.locals.reqAuthError = new E('EUserDisabled', 'Current user has been disabled')
+          return asyncCallback(res.locals.reqAuthError);
+        }
+
+        delete dbUser.passwordHash;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err && res.locals.reqAuthError === err) {
+      // Skip request error here, throw later.
+      return next();
+    }
+
+    if (err) return next(err);
+
+    res.locals.user.load(dbUser);
+
+    res.locals.logger.info('Auth by [localhostAuthToken]: id=`{0}`; username=`{1}`',
+      res.locals.user.id,
+      res.locals.user.username);
+
+    // client detect
+    res.locals.authType = 'builtin.byLocalhostAuthToken';
+
+    return next();
+  });
+};

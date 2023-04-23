@@ -2362,11 +2362,17 @@ var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
 };
 
 var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
+  if (!filePath) {
+    console.log(`No filePath specified`);
+    return null;
+  }
+
   var data = '';
   try {
     data = fs.readFileSync(filePath).toString();
   } catch(err) {
     console.log(`Reading ${filePath} failed. Origin error:\n${err.toString()}`);
+    return null;
   }
 
   try {

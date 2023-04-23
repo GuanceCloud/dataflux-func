@@ -52,6 +52,13 @@ function startApplication() {
   // Express
   var app = express();
 
+  // Load Localhost Auth Token
+  var LOCALHOST_AUTH_TOKEN = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH);
+  if (LOCALHOST_AUTH_TOKEN) {
+    LOCALHOST_AUTH_TOKEN = LOCALHOST_AUTH_TOKEN.trim();
+  }
+  app.locals.LOCALHOST_AUTH_TOKEN = LOCALHOST_AUTH_TOKEN;
+
   // gzip
   app.use(require('compression')());
 
@@ -144,9 +151,6 @@ function startApplication() {
 
   // 集成登录认证
   app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
-
-  // Auth
-  app.use(require('./middlewares/builtinAuthMid').byXAuthToken);
 
   // Dump user information
   if (CONFIG.MODE === 'dev') {

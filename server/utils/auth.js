@@ -216,19 +216,6 @@ exports.createAuthChecker = function(routeConfig) {
       return next(res.locals.reqAuthError);
     }
 
-    // Check X-Localhost-Temp-Auth-Token
-    if (req.hostname === 'localhost') {
-      var localhostTempAuthToken    = req.get(CONFIG._WEB_LOCALHOST_TEMP_AUTH_TOKEN_HEADER);
-      var localhostTempAuthTokenMap = req.app.locals.localhostTempAuthTokenMap || {};
-
-      if (localhostTempAuthToken && localhostTempAuthTokenMap[localhostTempAuthToken]) {
-        delete localhostTempAuthTokenMap[localhostTempAuthToken];
-
-        res.locals.skipPrivilegeChecker = true;
-        return next();
-      }
-    }
-
     // Check only require sign-in
     if (!routeConfig.requireSignIn) {
       return next();
@@ -239,14 +226,14 @@ exports.createAuthChecker = function(routeConfig) {
       return next(new E('EUserAuth', 'User not signed in'));
     }
 
-    // Stop unsupported auth type
+    // Stop unsupported auth type (except Localhost Auth Token)
     var isInvalidAuthType = false;
-    if (routeConfig.authType) {
-      if (!Array.isArray(routeConfig.authType) && !toolkit.matchWildcard(res.locals.authType, routeConfig.authType)) {
-        isInvalidAuthType = true;
-      }
+    if (routeConfig.authType
+      && res.locals.authType !== 'builtin.byLocalhostAuthToken') {
 
-      if (!isInvalidAuthType && Array.isArray(routeConfig.authType) && !toolkit.matchWildcards(res.locals.authType, routeConfig.authType)) {
+      if ('string' === typeof routeConfig.authType && !toolkit.matchWildcard(res.locals.authType, routeConfig.authType)) {
+        isInvalidAuthType = true;
+      } else if (Array.isArray(routeConfig.authType) && !toolkit.matchWildcards(res.locals.authType, routeConfig.authType)) {
         isInvalidAuthType = true;
       }
 

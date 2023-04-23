@@ -365,8 +365,9 @@ exports.export = function(req, res, next) {
 };
 
 exports.import = function(req, res, next) {
-  var file      = req.files ? req.files[0] : null;
-  var checkOnly = toolkit.toBoolean(req.body.checkOnly);
+  var file       = req.files ? req.files[0]: null;
+  var checkOnly  = toolkit.toBoolean(req.body.checkOnly);
+  var setBuiltin = toolkit.toBoolean(req.body.setBuiltin);
 
   var scriptSetModel     = scriptSetMod.createModel(res.locals);
   var connectorModel     = connectorMod.createModel(res.locals);
@@ -467,12 +468,17 @@ exports.import = function(req, res, next) {
       });
 
       // 替换 origin, originId
-      var origin   = 'builtin';
-      var originId = 'builtin';
-      if (res.locals.user && res.locals.user.isSignedIn) {
+      var origin   = 'UNKNOW';
+      var originId = 'UNKNOW';
+
+      if (setBuiltin) {
+        origin   = 'builtin';
+        originId = 'builtin';
+      } else if (res.locals.user && res.locals.user.isSignedIn) {
         origin   = 'user';
         originId = res.locals.user.id;
       }
+
       common.replaceImportDataOrigin(importData, origin, originId);
 
       if (checkOnly) {

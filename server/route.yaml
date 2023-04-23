@@ -1860,6 +1860,11 @@ scriptSetAPI:
         $isRequired: false
         $type      : string # form提交只能接受字符串
         $example   : "true"
+      setBuiltin:
+        $desc      : 将脚本集指定为`builtin`
+        $isRequired: false
+        $type      : string # form提交只能接受字符串
+        $example   : "true"
 
   confirmImport:
     showInDoc    : true
