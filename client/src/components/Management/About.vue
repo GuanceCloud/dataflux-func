@@ -108,7 +108,7 @@ Wroker Queue Length      : Worker 队列长度
 
               <el-form label-width="120px">
                 <el-form-item :label="$t('Version')">
-                  <el-input :readonly="true" :value="$store.getters.CONFIG('VERSION')"></el-input>
+                  <el-input :readonly="true" :value="FULL_VERSION"></el-input>
                   <el-link href="https://func.guance.com/" target="_blank" v-if="common.hasNewVersion()">
                     {{ $t('New version {ver} is available, click here to go to the official website', { ver: $store.state.latestVersion }) }}
                   </el-link>
@@ -411,6 +411,13 @@ export default {
   computed: {
     NO_INFO_TEXT() {
       return this.$t('No Data');
+    },
+    FULL_VERSION() {
+      if (this.$store.getters.CONFIG('EDITION')) {
+        return `${this.$store.getters.CONFIG('VERSION')} (${this.$store.getters.CONFIG('EDITION')})`;
+      } else {
+        return this.$store.getters.CONFIG('VERSION');
+      }
     },
     systemReportTEXT() {
       return [

@@ -147,7 +147,12 @@
           <!-- 头部 -->
           <div id="setupPanelHeader">
             <img src="/statics/img/logo-dataflux-func.png">
-            <br><span>{{ $t('Version:') }} <%= IMAGE_INFO.VERSION %></span>
+            <br>
+            <span>
+              {{ $t('Version:') }}
+              <%= IMAGE_INFO.VERSION %>
+              <%= IMAGE_INFO.EDITION ? `(${IMAGE_INFO.EDITION})` : '' %>
+            </span>
           </div>
 
           <!-- 语言选择 -->

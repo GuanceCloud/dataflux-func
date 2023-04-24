@@ -3,6 +3,7 @@
   "CI_JOB_ID"         : "-",
   "CI_BUILD_ID"       : "-",
   "ARCHITECTURE"      : "local",
+  "EDITION"           : "local",
   "VERSION"           : "0.0.0",
   "PYTHON_VERSION"    : "local",
   "NODE_VERSION"      : "local",

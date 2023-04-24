@@ -2095,6 +2095,7 @@ exports.getSystemConfig = function(req, res, next) {
 
   // 配置文件（部分）
   var configFile = {
+    EDITION         : IMAGE_INFO.EDITION,
     VERSION         : IMAGE_INFO.VERSION,
     CREATE_TIMESTAMP: IMAGE_INFO.CREATE_TIMESTAMP,
 
