@@ -687,6 +687,7 @@ export default {
       let funcMap      = {};
 
       /***** 脚本集 *****/
+      let hasHiddenScripts = false;
       let apiRes = await this.T.callAPI_getAll('/api/v1/script-sets/do/list', {
         query: {
           fields: [
@@ -707,7 +708,10 @@ export default {
 
       apiRes.data.forEach(d => {
         // 跳过隐藏的脚本集
-        if (this.common.shouldScriptSetHidden(d)) return;
+        if (this.common.shouldScriptSetHidden(d)) {
+          hasHiddenScripts = true;
+          return;
+        }
 
         // 记录节点
         nodeEntity[d.id] = 'scriptSet';
@@ -894,8 +898,9 @@ export default {
       treeData.sort(this.T.scriptSetSorter);
       treeData.unshift({ type: 'addScriptSet' });
       treeData.unshift({ type: 'refresh' });
-      if (this.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
-        || this.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']) {
+
+      // 隐藏脚本提示项
+      if (hasHiddenScripts) {
         treeData.push({
           type    : 'scriptSetHiddenTip',
           tipTitle: this.$t('Some Script Sets are hidden'),
