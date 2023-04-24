@@ -29,7 +29,7 @@ import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
 ElementUI.Tooltip.props.transition.default        = false;
 ElementUI.Popover.props.transition.default        = false;
-ElementUI.Popover.props.openDelay.default         = 100;
+ElementUI.Popover.props.openDelay.default         = 50;
 ElementUI.Popover.props.closeDelay.default        = 100;
 ElementUI.Link.props.underline.default            = true;
 ElementUI.Link.props.type.default                 = 'primary';

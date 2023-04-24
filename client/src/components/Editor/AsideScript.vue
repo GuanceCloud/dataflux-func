@@ -18,21 +18,20 @@ Quick View                                     : 快速查看
 View                                           : 查看
 Setup                                          : 配置
 Copy example                                   : 复制示例
-Copy {name} ID                                 : 复制{name}ID
+Copy {name} ID                                 : 复制{name} ID
 Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
-'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
-Some Script Sets are hidden                    : 一些脚本集已隐藏
+'Import/Calling will run the published version': 引用 / API 调用实际将运行已发布代码
 
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
 
-Please input ID                                   : 请输入ID
-Script Set ID too long                            : 脚本集ID过长
+Please input ID                                   : 请输入 ID
+Script Set ID too long                            : 脚本集 ID 过长
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number                   : 不得以数字开头
-Please input new Script Set ID                    : 请输入新脚本集ID
-Inputed Script Set ID already exists              : 输入的脚本集ID已经存在
+Please input new Script Set ID                    : 请输入新脚本集 ID
+Inputed Script Set ID already exists              : 输入的脚本集 ID 已经存在
 
 Script Set pinned  : 脚本集已置顶
 Script Set unpinned: 脚本集已取消
@@ -71,6 +70,9 @@ Show Crontab Configs: 显示自动触发配置列表
 Show Batches        : 显示批处理列表
 Go to Script Market : 前往脚本市场
 Export Script Set   : 导出脚本集
+
+Some Script Sets are hidden: 一些脚本集已隐藏
+In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.: 在大多数情况下，从官方脚本市场安装的脚本集并不需要用户直接查看或操作，因此没有在此列表中展示。
 </i18n>
 
 <template>
@@ -123,11 +125,18 @@ Export Script Set   : 导出脚本集
           placement="right-start"
           trigger="hover"
           popper-class="aside-tip"
-          :disabled="!!!data.id"
+          :disabled="!data.id && !data.tip"
           v-model="data.showPopover">
 
+          <!-- 提示 -->
+          <div v-if="data.tip" class="aside-tree-node-tip">
+            <i class="fa fa-fw fa-info-circle"></i> <strong v-if="data.tipTitle">{{ data.tipTitle }}<br></strong>
+            {{ data.tip }}
+          </div>
+
           <!-- 基本信息 -->
-          <div class="aside-tree-node-description">
+          <div v-if="data.id"
+            class="aside-tree-node-description">
             <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')" />
             <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')" />
 
@@ -148,7 +157,7 @@ Export Script Set   : 导出脚本集
             </div>
           </template>
 
-          <!-- 提示 -->
+          <!-- 已编辑提示 -->
           <template v-if="data.isCodeEdited">
             <br>
             <div class="code-edited-tip">
@@ -262,7 +271,7 @@ Export Script Set   : 导出脚本集
                 <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
               </el-link>
               <el-link v-else-if="data.type === 'scriptSetHiddenTip'" type="info">
-                <i class="fa fa-fw fa-info-circle"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
+                <i class="fa fa-fw fa-eye-slash"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
               </el-link>
               <div v-else>
                 <template v-if="data.type === 'scriptSet'">
@@ -887,7 +896,11 @@ export default {
       treeData.unshift({ type: 'refresh' });
       if (this.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
         || this.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']) {
-        treeData.push({ type: 'scriptSetHiddenTip' });
+        treeData.push({
+          type    : 'scriptSetHiddenTip',
+          tipTitle: this.$t('Some Script Sets are hidden'),
+          tip     : this.$t('In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.'),
+        });
       }
 
       // 清理无效数据（已经不存在的节点）
@@ -1341,6 +1354,11 @@ export default {
 }
 .aside-tree-node-quick-view {
   margin-left: 5px;
+}
+.aside-tree-node-tip {
+  width: 400px;
+  word-break: normal;
+  line-height: 2;
 }
 
 .aside-tree-node > span {
