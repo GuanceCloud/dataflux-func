@@ -1343,6 +1343,7 @@ exports.overview = function(req, res, next) {
   var batchModel         = batchMod.createModel(res.locals);
   var fileServiceModel   = fileServiceMod.createModel(res.locals);
   var userModel          = userMod.createModel(res.locals);
+  var systemConfigModel  = systemConfigMod.createModel(res.locals);
 
   var overviewParts = [
     { name : 'scriptSet',     model: scriptSetModel},
@@ -1364,13 +1365,90 @@ exports.overview = function(req, res, next) {
     latestOperations : [],
   };
 
+  var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = null;
+  var SCRIPT_SET_HIDDEN_BUILTIN                = null;
+  var nonScriptSetOriginIds                    = []
   async.series([
+    // 获取 SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET 配置
+    function(asyncCallback) {
+      systemConfigModel.get('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET', [ 'value' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.value;
+        if (SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET) {
+          nonScriptSetOriginIds.push('smkt-official');
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 获取 SCRIPT_SET_HIDDEN_BUILTIN 配置
+    function(asyncCallback) {
+      systemConfigModel.get('SCRIPT_SET_HIDDEN_BUILTIN', [ 'value' ], function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        SCRIPT_SET_HIDDEN_BUILTIN = dbRes.value;
+        if (SCRIPT_SET_HIDDEN_BUILTIN) {
+          nonScriptSetOriginIds.push('builtin');
+        }
+
+        return asyncCallback();
+      });
+    },
     // 业务实体计数
     function(asyncCallback) {
       if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
 
       async.eachSeries(overviewParts, function(part, eachCallback) {
-        part.model.count(null, function(err, dbRes) {
+        var opt = null;
+        if (nonScriptSetOriginIds.length > 0) {
+          // 特定业务实体使用过滤条件
+          switch(part.name) {
+            case 'scriptSet':
+                opt = {
+                  baseSQL: `
+                    SELECT
+                      COUNT(sset.id) AS count
+                    FROM biz_main_script_set AS sset`,
+                  filters: {
+                    'sset.originId': { notin: nonScriptSetOriginIds }
+                  }
+                }
+              break;
+
+            case 'script':
+                opt = {
+                  baseSQL: `
+                    SELECT
+                      COUNT(scpt.id) AS count
+                    FROM biz_main_script AS scpt
+                    JOIN biz_main_script_set AS sset
+                      ON scpt.scriptSetId = sset.id`,
+                  filters: {
+                    'sset.originId': { notin: nonScriptSetOriginIds }
+                  }
+                }
+              break;
+
+            case 'func':
+                opt = {
+                  baseSQL: `
+                    SELECT
+                      COUNT(func.id) AS count
+                    FROM biz_main_func AS func
+                    JOIN biz_main_script AS scpt
+                      ON func.scriptId = scpt.id
+                    JOIN biz_main_script_set AS sset
+                      ON scpt.scriptSetId = sset.id`,
+                  filters: {
+                    'sset.originId': { notin: nonScriptSetOriginIds }
+                  }
+                }
+              break;
+          }
+        }
+
+        part.model.count(opt, function(err, dbRes) {
           if (err) return eachCallback(err);
 
           overview.bizEntityCount.push({
@@ -1444,7 +1522,10 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.scriptSetOverview) return asyncCallback();
 
-      scriptSetModel.overview(null, function(err, dbRes) {
+      var opt = {
+        excludeOriginIds: nonScriptSetOriginIds,
+      };
+      scriptSetModel.overview(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         overview.scriptSetOverview = dbRes;

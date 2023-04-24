@@ -22,6 +22,7 @@ Copy {name} ID                                 : 复制{name}ID
 Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用/API调用实际将运行已发布代码
+Some Script Sets are hidden                    : 一些脚本集已隐藏
 
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
@@ -259,6 +260,9 @@ Export Script Set   : 导出脚本集
               </el-link>
               <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
                 <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'scriptSetHiddenTip'" type="info">
+                <i class="fa fa-fw fa-info-circle"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
               </el-link>
               <div v-else>
                 <template v-if="data.type === 'scriptSet'">
@@ -879,8 +883,12 @@ export default {
         d.children.sort(this.T.asideItemSorter);
       })
       treeData.sort(this.T.scriptSetSorter);
-      treeData.unshift({type: 'addScriptSet'});
-      treeData.unshift({type: 'refresh'});
+      treeData.unshift({ type: 'addScriptSet' });
+      treeData.unshift({ type: 'refresh' });
+      if (this.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
+        || this.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']) {
+        treeData.push({ type: 'scriptSetHiddenTip' });
+      }
 
       // 清理无效数据（已经不存在的节点）
       let _d = this.T.jsonCopy(this.$store.state.asideScript_expandedNodeMap);

@@ -97,6 +97,12 @@ _VERSION=`curl -s ${__PORTABLE_BASE_URL}/${__VERSION_FILE}`
 
 # 创建下载目录
 __DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
+case ${OPT_FOR} in
+    GSE )
+        __DOWNLOAD_DIR="${__DOWNLOAD_DIR}-${OPT_FOR}"
+        ;;
+esac
+
 if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
     __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
 fi

@@ -79,13 +79,17 @@ EntityModel.prototype.list = function(options, callback) {
 };
 
 EntityModel.prototype.overview = function(options, callback) {
+  options = options || {};
+
   var self = this;
 
+  var sqlParams = [];
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   sset.id');
   sql.append('  ,sset.title');
   sql.append('  ,sset.origin');
+  sql.append('  ,sset.originId');
 
   sql.append('  ,SUM(LENGTH(scpt.code)) AS codeSize');
   sql.append('  ,MAX(scph.createTime)   AS latestPublishTime');
@@ -104,13 +108,20 @@ EntityModel.prototype.overview = function(options, callback) {
   sql.append('LEFT JOIN biz_main_func as func');
   sql.append('  ON func.scriptId = scpt.id');
 
+  if (toolkit.notNothing(options.excludeOriginIds)) {
+    sql.append('WHERE');
+    sql.append('  sset.originId NOT IN (?)');
+
+    sqlParams.push(options.excludeOriginIds);
+  }
+
   sql.append('GROUP BY');
   sql.append('  sset.id');
 
   sql.append('ORDER BY');
   sql.append('   sset.id ASC');
 
-  self.db.query(sql, null, function(err, dbRes) {
+  self.db.query(sql, sqlParams, function(err, dbRes) {
     if (err) return callback(err);
 
     dbRes = self.convertObject(dbRes);

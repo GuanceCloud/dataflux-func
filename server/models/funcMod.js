@@ -67,6 +67,8 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,sset.id          AS sset_id');
   sql.append('  ,sset.title       AS sset_title');
   sql.append('  ,sset.description AS sset_description');
+  sql.append('  ,sset.origin      AS sset_origin');
+  sql.append('  ,sset.originId    AS sset_originId');
 
   sql.append('FROM biz_main_func AS func');
 
