@@ -81,7 +81,7 @@ REDIS_HELPER.skip_log = True
 if 'worker' in sys.argv:
     QUEUES_FLAG = '--queues'
     if QUEUES_FLAG in sys.argv:
-        WORKER_QUEUES = sys.argv[sys.argv.index(QUEUES_FLAG) + 1:]
+        WORKER_QUEUES = sys.argv[sys.argv.index(QUEUES_FLAG) + 1].split(',')
         WORKER_QUEUES = list([ q.split('@')[1] for q in WORKER_QUEUES ])
     else:
         WORKER_QUEUES = list([ str(q) for q in range(CONFIG['_WORKER_QUEUE_COUNT']) ])
