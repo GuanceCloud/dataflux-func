@@ -1365,16 +1365,19 @@ exports.overview = function(req, res, next) {
     latestOperations : [],
   };
 
-  var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = null;
-  var SCRIPT_SET_HIDDEN_BUILTIN                = null;
-  var nonScriptSetOriginIds                    = []
+  var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemConfigs.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
+  var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemConfigs.SCRIPT_SET_HIDDEN_BUILTIN;
+  var nonScriptSetOriginIds                    = [];
   async.series([
     // 获取 SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET 配置
     function(asyncCallback) {
       systemConfigModel.get('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET', [ 'value' ], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.value;
+        if (dbRes) {
+          SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.value;
+        }
+
         if (SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET) {
           nonScriptSetOriginIds.push('smkt-official');
         }
@@ -1387,7 +1390,10 @@ exports.overview = function(req, res, next) {
       systemConfigModel.get('SCRIPT_SET_HIDDEN_BUILTIN', [ 'value' ], function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        SCRIPT_SET_HIDDEN_BUILTIN = dbRes.value;
+        if (dbRes) {
+          SCRIPT_SET_HIDDEN_BUILTIN = dbRes.value;
+        }
+
         if (SCRIPT_SET_HIDDEN_BUILTIN) {
           nonScriptSetOriginIds.push('builtin');
         }
