@@ -116,7 +116,7 @@ Go to Recent Task Info: 前往最近任务信息
           </el-button-group>
 
           <!-- 关联配置 -->
-          <div class="goto-links">
+          <div class="goto-links" v-if="data.connectorType">
             <!-- 关联直接函数调用 -->
             <el-link v-if="C.CONNECTOR_MAP.get(data.connectorType).configFields.topicHandlers || data.connectorType === 'guance'"
               @click="common.goToTaskInfo({ origin: 'connector', originId: data.id })">
