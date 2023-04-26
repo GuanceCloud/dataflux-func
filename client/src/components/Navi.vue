@@ -21,7 +21,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
       <template v-if="isSignedIn">
         <el-menu-item index="/editor/intro">
           <span>
-            <i class="fa fa-fw fa-edit"></i>
+            <i class="fa fa-fw fa-code"></i>
             <span>{{ $t('Development') }}</span>
           </span>
         </el-menu-item>
@@ -35,7 +35,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
 
         <el-menu-item index="/management/overview">
           <span>
-            <i class="fa fa-fw fa-tasks"></i>
+            <i class="fa fa-fw fa-th-large"></i>
             <span>{{ $t('Management') }}</span>
           </span>
         </el-menu-item>

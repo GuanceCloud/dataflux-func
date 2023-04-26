@@ -42,7 +42,7 @@ API Key here is always required                                                 
 '1. $share/GROUP/TOPIC in MQTTv5'                                               : '1. MQTTv5 的 $share/GROUP/TOPIC'
 '2. $queue/TOPIC in EMQX'                                                       : '2. EMQX 的 $queue/TOPIC'
 
-Please input ID                                      : 请输入ID
+Please input ID                                      : 请输入 ID
 Only alphabets, numbers and underscore are allowed   : 只能包含大小写英文、数字及下划线
 Cannot not starts with a number                      : 不得以数字开头
 Please input Connector type                          : 请选择连接器类型
@@ -67,7 +67,7 @@ Please input password                                : 请输入密码
 Please input charset                                 : 请输入字符集
 Please input Access Key                              : 请输入Access Key
 Please input Secret Key                              : 请输入Secret Key
-Please input client ID                               : 请输入客户端ID
+Please input client ID                               : 请输入客户端 ID
 Please input topic                                   : 请输入订阅主题
 Please select handler Func                           : 请选择处理函数
 

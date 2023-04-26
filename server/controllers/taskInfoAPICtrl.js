@@ -18,14 +18,3 @@ var taskInfoMod = require('../models/taskInfoMod');
 var crudHandler = exports.crudHandler = taskInfoMod.createCRUDHandler();
 
 exports.list = crudHandler.createListHandler();
-
-exports.clear = function(req, res, next) {
-  var originId = req.params.originId;
-
-  var taskInfoModel = taskInfoMod.createModel(res.locals);
-  taskInfoModel.deleteByOriginId(originId, function(err) {
-    if (err) return next(err);
-
-    res.locals.sendJSON();
-  });
-};

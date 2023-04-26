@@ -26,7 +26,7 @@ exports.add = function(req, res, next) {
   var envVariableModel = envVariableMod.createModel(res.locals);
 
   async.series([
-    // 检查ID重名
+    // 检查 ID 重名
     function(asyncCallback) {
       var opt = {
         limit  : 1,

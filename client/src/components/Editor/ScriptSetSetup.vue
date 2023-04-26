@@ -4,15 +4,15 @@ Setup Script Set: 配置脚本集
 
 Requirements: 依赖包
 
-Script Set ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
+Script Set ID will be a part of the Func ID: 脚本集 ID 将作为函数 ID 的一部分
 requirements.txt format, one for each line : requirements.txt 文件格式，一行一个
 Go to PIP tool to install                  : 前往PIP工具安装
 
-Please input ID                                   : 请输入ID
+Please input ID                                   : 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number                   : 不得以数字开头
 
-'ID cannot contains double underscore "__"': '脚本集ID不能包含"__"，"__"为脚本集ID与脚本ID的分隔标志'
+'ID cannot contains double underscore "__"': '脚本集 ID 不能包含"__"，"__"为脚本集 ID 与脚本 ID 的分隔标志'
 
 Script Set created : 脚本集已创建
 Script Set saved   : 脚本集已保存

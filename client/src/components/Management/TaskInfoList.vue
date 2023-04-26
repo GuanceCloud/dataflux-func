@@ -4,14 +4,14 @@ integration: Integration Call
 authLink   : Auth Link
 crontab    : Crontab
 batch      : Batch
-connector  : Connector Subscribe / Call
+connector  : Connector
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
 Exec Mode   : 执行模式
 Trigger Time: 触发时间
 Start Time  : 启动时间
 Task        : 任务
-Func ID     : 函数ID
+Func ID     : 函数 ID
 Func Name   : 函数名
 Func Title  : 函数标题
 Main Task   : 主任务
@@ -53,7 +53,7 @@ integration: 集成调用
 authLink   : 授权链接
 crontab    : 自动触发
 batch      : 批处理
-connector  : 连接器订阅 / 接收
+connector  : 连接器
 </i18n>
 
 <template>
@@ -65,7 +65,7 @@ connector  : 连接器订阅 / 接收
           <span>
             {{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}
             <small class="text-info">
-              {{ $t('(') }}
+              &#12288;
               <span class="task-info-query" v-if="dataFilter.origin">
                 {{ $t('Origin')}}
                 <code class="text-main">{{ $t(dataFilter.origin) }}</code>
@@ -78,7 +78,6 @@ connector  : 连接器订阅 / 接收
                 {{ $t('Func ID')}}
                 <code class="text-main">{{ dataFilter.funcId }}</code>
               </span>
-              {{ $t(')') }}
             </small>
           </span>
 
@@ -93,13 +92,6 @@ connector  : 连接器订阅 / 接收
                 true-label="ROOT"
                 false-label=""
                 @change="T.changePageFilter(dataFilter)">{{ $t('Main Task Only') }}</el-checkbox>
-            </el-tooltip>
-
-            &#12288;
-            <el-tooltip :content="$t('Clear')" placement="bottom" :enterable="false">
-              <el-button @click="clear" size="small" v-if="isMainTaskInfoList">
-                <i class="fa fa-fw fa-trash-o"></i>
-              </el-button>
             </el-tooltip>
           </div>
         </div>
@@ -285,17 +277,6 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    async clear() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to clear the Task Info?'))) return;
-
-      let apiRes = await this.T.callAPI('/api/v1/task-info/:originId/do/clear', {
-        params: { originId: this.$route.params.id },
-        alert : { okMessage: this.$t('Task Info cleared') },
-      });
-      if (!apiRes || !apiRes.ok) return;
-
-      this.loadData();
-    },
     openSubTaskInfo(d) {
       let nextRouteQuery = this.T.packRouteQuery();
       nextRouteQuery.filter = this.T.createPageFilter({
@@ -384,7 +365,7 @@ export default {
 
 <style scoped>
 .task-info-query + .task-info-query:before {
-  content: "/";
+  content: "|";
   position: relative;
   left: -6px;
 }

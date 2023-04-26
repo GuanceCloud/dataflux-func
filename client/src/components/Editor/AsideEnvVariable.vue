@@ -5,7 +5,7 @@ New ENV       : 新建环境变量
 Setup         : 配置
 Example       : 示例
 Copy example  : 复制示例
-Copy {name} ID: 复制{name}ID
+Copy {name} ID: 复制{name} ID
 
 ENV Variable pinned  : 环境变量已置顶
 ENV Variable unpinned: 环境变量已取消

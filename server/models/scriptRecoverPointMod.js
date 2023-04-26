@@ -62,7 +62,7 @@ EntityModel.prototype.add = function(data, callback) {
   var scriptRecoverPointId = null;
   var allScriptSetIds = [];
   async.series([
-    // 查询所有脚本集ID
+    // 查询所有脚本集 ID
     function(asyncCallback) {
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');

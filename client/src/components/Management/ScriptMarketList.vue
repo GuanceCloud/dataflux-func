@@ -168,7 +168,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
                   size="small"
                   :plain="scope.row.isAdmin ? false : true"
                   @click="openDetail(scope.row)">
-                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-wrench' : 'fa-th-large'"></i>
+                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-th-large' : 'fa-bars'"></i>
                   {{ scope.row.isAdmin ? $t('Admin') : $t('Detail') }}
                 </el-button>
               </el-badge>

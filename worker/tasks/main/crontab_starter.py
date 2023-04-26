@@ -285,7 +285,7 @@ class CrontabStarterTask(BaseTask):
                 self.logger.warning('Crontab Config in lock, skip...')
                 continue
 
-            # 任务ID
+            # 任务 ID
             task_id = gen_task_id()
 
             # 计算任务过期时间
@@ -294,7 +294,7 @@ class CrontabStarterTask(BaseTask):
 
             # 任务入队
             task_headers = {
-                'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置ID>-<时间戳>」
+                'origin': '{}-{}'.format(crontab_config['id'], current_time) # 来源标记为「<自动触发配置 ID>-<时间戳>」
             }
 
             # 注意：

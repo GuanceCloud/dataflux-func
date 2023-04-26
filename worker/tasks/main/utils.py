@@ -36,7 +36,7 @@ IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 # Sys.ReloadDataMD5Cache
 class ReloadDataMD5CacheTask(BaseTask):
     '''
-    数据MD5缓存任务
+    数据 MD5 缓存任务
     '''
 
     META = {
@@ -76,7 +76,7 @@ class ReloadDataMD5CacheTask(BaseTask):
 
         data_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', data_type])
 
-        # 不指定ID表示全部重建
+        # 不指定 ID 表示全部重建
         if not data_id:
             self.cache_db.delete(data_md5_cache_key)
 
@@ -85,7 +85,7 @@ class ReloadDataMD5CacheTask(BaseTask):
             self.cache_db.hmset(data_md5_cache_key, data_md5_map)
 
         elif data_id:
-            # 无数据 + 指定ID -> 清除缓存
+            # 无数据 + 指定 ID -> 清除缓存
             self.cache_db.hdel(data_md5_cache_key, data_id)
 
 @app.task(name='Sys.ReloadDataMD5Cache', bind=True, base=ReloadDataMD5CacheTask)
@@ -99,7 +99,7 @@ def reload_data_md5_cache(self, *args, **kwargs):
     if isinstance(lock_time, (int, float)) and lock_time > 0:
         self.lock(max_age=int(lock_time))
 
-    # 将数据MD5缓存入Redis
+    # 将数据 MD5 缓存入 Redis
     if reload_all:
         for data_type in self.META.keys():
             self.cache_data_md5(data_type)
@@ -832,7 +832,7 @@ def auto_run(self, *args, **kwargs):
     # 获取函数功能集成自动运行函数
     integrated_auto_run_funcs = self.get_integrated_on_launch_funcs()
     for f in integrated_auto_run_funcs:
-        # 任务ID
+        # 任务 ID
         task_id = gen_task_id()
 
         # 任务参数

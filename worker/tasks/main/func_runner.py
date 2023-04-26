@@ -178,7 +178,7 @@ def func_runner(self, *args, **kwargs):
     # 任务记录数
     task_info_limit = kwargs.get('taskInfoLimit')
 
-    # 任务ID
+    # 任务 ID
     task_id      = self.request.id
     root_task_id = kwargs.get('rootTaskId') or 'ROOT'
 

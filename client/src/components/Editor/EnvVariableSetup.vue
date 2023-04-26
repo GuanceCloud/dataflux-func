@@ -4,7 +4,7 @@ Setup ENV: 配置环境变量
 
 Value Type: 值类型
 
-Please input ID: 请输入ID
+Please input ID: 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
 Please input Value: 请输入值

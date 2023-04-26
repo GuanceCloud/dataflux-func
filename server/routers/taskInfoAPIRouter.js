@@ -9,7 +9,3 @@ var taskInfoAPICtrl = require('../controllers/taskInfoAPICtrl');
 routeLoader.load(ROUTE.taskInfoAPI.list, [
   taskInfoAPICtrl.list,
 ]);
-
-routeLoader.load(ROUTE.taskInfoAPI.clear, [
-  taskInfoAPICtrl.clear,
-]);

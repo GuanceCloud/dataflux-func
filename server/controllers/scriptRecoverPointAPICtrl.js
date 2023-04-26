@@ -32,7 +32,7 @@ exports.recover = function(req, res, next) {
     function(asyncCallback) {
       scriptRecoverPointModel.recover(id, asyncCallback);
     },
-    // 发送更新脚本代码MD5缓存任务
+    // 发送更新脚本代码 MD5 缓存任务
     function(asyncCallback) {
       var taskKwargs = { all: true };
       celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, asyncCallback);

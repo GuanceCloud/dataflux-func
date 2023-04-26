@@ -725,7 +725,7 @@ export default {
           } else if (d.isIdMatched && d.isScriptMarket && d.isScriptMarketMatched) {
             // 有对应，来自相同脚本市场
 
-            // 本地是否编辑（本地MD5 与本地 Origin MD5 不同）
+            // 本地是否编辑（本地 MD5 与本地 Origin MD5 不同）
             d.isLocalEdited = d.local.md5 !== d.local.originMD5;
 
             // 远端是否更新

@@ -115,12 +115,12 @@ common.flattenImportExportData = function(data) {
     _scripts.forEach(function(script) {
       script.scriptSetId = scriptSet.id;
 
-      script.code    = script.code    || '';                         // 保证code字段不为NULL
-      script.codeMD5 = script.codeMD5 || toolkit.getMD5(script.code) // 计算MD5值
+      script.code    = script.code    || '';                         // 保证 code 字段不为 NULL
+      script.codeMD5 = script.codeMD5 || toolkit.getMD5(script.code) // 计算 MD5 值
 
       if (script.codeDraft) {
-        script.codeDraft    = script.codeDraft || '';                              // 保证codeDraft字段不为NULL
-        script.codeDraftMD5 = script.codeDraft || toolkit.getMD5(script.codeDraft) // 计算MD5值
+        script.codeDraft    = script.codeDraft || '';                              // 保证 codeDraft 字段不为 NULL
+        script.codeDraftMD5 = script.codeDraft || toolkit.getMD5(script.codeDraft) // 计算 MD5 值
       } else {
         script.codeDraft    = script.code;
         script.codeDraftMD5 = script.codeMD5;

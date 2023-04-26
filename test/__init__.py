@@ -246,7 +246,7 @@ class BaseTestSuit(object):
         if data_id:
             assert resp['data']['id'] == data_id, AssertDesc.bad_value()
 
-        # 当前ID
+        # 当前 ID
         test_id = resp['data']['id']
         self.state_push('testAddedIds', test_id)
 

@@ -140,7 +140,7 @@ EntityModel.prototype.overview = function(options, callback) {
 };
 
 EntityModel.prototype.add = function(data, callback) {
-  // 自动填入脚本集ID
+  // 自动填入脚本集 ID
   data.scriptSetId = data.id.split('__')[0];
 
   // 保证空代码为空字符串

@@ -16,7 +16,7 @@ Show Error                       : 显示错误信息
 Reset Install Status             : 复位安装状态
 
 'Package installed: {pkg}': 包已安装：{pkg}
-{Any container ID}: 任意一个容器ID
+{Any container ID}: 任意一个容器 ID
 
 You can also install the package by following command: 您也可以使用以下命令来安装
 Previous installing may still running                : 之前的安装似乎仍然在运行

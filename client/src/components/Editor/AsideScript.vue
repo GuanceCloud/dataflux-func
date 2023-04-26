@@ -258,7 +258,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
               <!-- 关联直接函数调用 -->
               <el-link v-if="data.type === 'func'"
                 @click="common.goToTaskInfo({ funcId: data.id })">
-                <i class="fa fa-fw fa-history"></i>
+                <i class="fa fa-fw fa-info-circle"></i>
                 {{ $t('Go to Recent Task Info') }}
               </el-link>
 
@@ -1324,8 +1324,8 @@ export default {
   padding-top: 10px;
 }
 .goto-links > a {
-  font-size: 12px;
-  padding-top: 5px;
+  font-size: 14px;
+  padding-top: 10px;
   display: inline-block;
 }
 .jump-to-select {

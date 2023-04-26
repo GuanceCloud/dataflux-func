@@ -160,25 +160,25 @@ class DFFWraper(object):
 
 def gen_script_failure_id():
     '''
-    生成脚本故障ID
+    生成脚本故障 ID
     '''
     return toolkit.gen_data_id('sfal')
 
 def gen_script_log_id():
     '''
-    生成脚本日志ID
+    生成脚本日志 ID
     '''
     return toolkit.gen_data_id('slog')
 
 def gen_connector_id():
     '''
-    生成连接器ID
+    生成连接器 ID
     '''
     return toolkit.gen_data_id('cnct')
 
 def compute_func_store_id(key, scope):
     '''
-    计算函数存储ID
+    计算函数存储 ID
     '''
     str_to_md5 = '-'.join([key, scope])
 
@@ -746,9 +746,9 @@ class FuncConnectorHelper(object):
 class FuncEnvVariableHelper(object):
     '''
     加载环境变量
-    1. 检查本地缓存（60秒强制失效）的MD5与Redis缓存的MD5是否一致
+    1. 检查本地缓存（60 秒强制失效）的 MD5 与 Redis 缓存的 MD5 是否一致
         a. 一致则直接使用本地缓存
-        b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
+        b. 不一致则从数据库中读取脚本，并更新 Redis 缓存的 MD5
     2. 单次任务中，一旦加载则保持到任务结束
     '''
     def __init__(self, task):
@@ -1407,9 +1407,9 @@ class ScriptBaseTask(BaseTask):
         '''
         加载脚本
         1. 草稿脚本始终直接从数据库中读取
-        2. 正式脚本检查本地缓存（60秒强制失效）的MD5与Redis缓存的MD5是否一致
+        2. 正式脚本检查本地缓存（60秒强制失效）的 MD5 与 Redis 缓存的 MD5 是否一致
             a. 一致则直接使用本地缓存
-            b. 不一致则从数据库中读取脚本，并更新Redis缓存的MD5
+            b. 不一致则从数据库中读取脚本，并更新 Redis 缓存的 MD5
         '''
         # 只有导入名称中包含`__`的才有可能是用户脚本
         if '__' not in script_id:

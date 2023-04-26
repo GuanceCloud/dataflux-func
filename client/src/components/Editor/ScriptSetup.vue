@@ -8,12 +8,12 @@ Basic Example       : 基础示例
 Blank Script        : 空白脚本
 From Example Script : 来自示例脚本
 
-Script ID will be a part of the Func ID: 脚本集ID将作为函数ID的一部分
+Script ID will be a part of the Func ID: 脚本集 ID 将作为函数 ID 的一部分
 
-Please input ID: 请输入ID
+Please input ID: 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
-'Script ID should starts with "{prefix}"': '脚本ID必须以 "{prefix}" 开头'
+'Script ID should starts with "{prefix}"': '脚本 ID 必须以 "{prefix}" 开头'
 
 Script created : 脚本已创建
 Script saved   : 脚本已保存
@@ -126,7 +126,7 @@ export default {
             this.T.jsonClear(this.form);
             this.data = {};
 
-            // 【特殊处理】脚本ID格式为"<脚本集ID>__<脚本名>"
+            // 【特殊处理】脚本 ID 格式为"<脚本集 ID>__<脚本名>"
             this.form.id = `${this.scriptSetId}__`;
             break;
 

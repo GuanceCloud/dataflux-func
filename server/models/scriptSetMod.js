@@ -295,7 +295,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
 
         var cloneData = [];
         dbRes.forEach(function(d) {
-          // 计算新脚本ID
+          // 计算新脚本 ID
           var idParts = d.id.split('__');
           idParts[0] = newId;
           var newScriptId = idParts.join('__');
@@ -362,7 +362,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
 
         var cloneData = [];
         dbRes.forEach(function(d) {
-          // 计算新脚本、函数ID
+          // 计算新脚本、函数 ID
           var idParts = d.id.split('__');
           idParts[0] = newId;
           var newFuncId   = idParts.join('__');

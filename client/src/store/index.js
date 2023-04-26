@@ -127,7 +127,7 @@ export default new Vuex.Store({
     // 路由冲突表
     conflictedRouteMap: {},
 
-    // 客户端ID
+    // 客户端 ID
     clientId: null,
     // 用户信息
     userProfile: null,

@@ -46,7 +46,7 @@ def func_debugger(self, *args, **kwargs):
     origin    = kwargs.get('origin')
     origin_id = kwargs.get('originId')
 
-    # 任务ID
+    # 任务 ID
     task_id      = self.request.id
     root_task_id = kwargs.get('rootTaskId') or task_id
 

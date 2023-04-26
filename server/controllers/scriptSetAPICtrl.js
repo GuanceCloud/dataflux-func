@@ -104,7 +104,7 @@ exports.add = function(req, res, next) {
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
-    // 检查ID重名
+    // 检查 ID 重名
     function(asyncCallback) {
       var opt = {
         limit  : 1,
@@ -224,7 +224,7 @@ exports.clone = function(req, res, next) {
   var scriptModel    = scriptMod.createModel(res.locals);
 
   async.series([
-    // 检查ID重名
+    // 检查 ID 重名
     function(asyncCallback) {
       var opt = {
         limit  : 1,
@@ -243,7 +243,7 @@ exports.clone = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 检查ID过长
+    // 检查 ID 过长
     function(asyncCallback) {
       var opt = {
         fields : ['scpt.id'],

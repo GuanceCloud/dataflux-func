@@ -58,7 +58,7 @@ exports.add = function(req, res, next) {
   var scriptSetModel = scriptSetMod.createModel(res.locals);
 
   async.series([
-    // 检查ID重名
+    // 检查 ID 重名
     function(asyncCallback) {
       var opt = {
         limit  : 1,
@@ -134,7 +134,7 @@ exports.modify = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 检查脚本锁定状态、检查代码MD5值
+    // 检查脚本锁定状态、检查代码 MD5 值
     function(asyncCallback) {
       scriptModel.getWithCheck(id, ['codeDraftMD5', 'lockedByUserId'], function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -338,7 +338,7 @@ exports.publish = function(req, res, next) {
       if (!wait) doResponse(); // 不等待发布结束
 
       // 发布成功后
-      // 1. 重新加载脚本代码MD5缓存
+      // 1. 重新加载脚本代码 MD5 缓存
       // 2. 运行发布后自动运行的函数
       reloadDataMD5Cache(celery, id, function(err) {
         if (wait) doResponse(); // 等待发布结束

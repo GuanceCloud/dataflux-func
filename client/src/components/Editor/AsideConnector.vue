@@ -7,7 +7,7 @@ View           : 查看
 Setup          : 配置
 Example        : 示例
 Copy example   : 复制示例
-Copy {name} ID : 复制{name}ID
+Copy {name} ID : 复制{name} ID
 
 Connector pinned  : 连接器已置顶
 Connector unpinned: 连接器已取消
@@ -120,7 +120,7 @@ Go to Recent Task Info: 前往最近任务信息
             <!-- 关联直接函数调用 -->
             <el-link
               @click="common.goToTaskInfo({ origin: 'connector', originId: data.id })">
-              <i class="fa fa-fw fa-history"></i>
+              <i class="fa fa-fw fa-info-circle"></i>
               {{ $t('Go to Recent Task Info') }}
             </el-link>
           </div>
@@ -367,6 +367,11 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   padding-top: 10px;
+}
+.goto-links > a {
+  font-size: 14px;
+  padding-top: 10px;
+  display: inline-block;
 }
 .jump-to-select {
   position: absolute;

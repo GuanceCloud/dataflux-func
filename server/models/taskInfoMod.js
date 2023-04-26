@@ -136,14 +136,3 @@ EntityModel.prototype.appendTaskInfo = function(data, callback) {
     return callback(null, data);
   });
 };
-
-EntityModel.prototype.deleteByOriginId = function(originId, callback) {
-  var self = this;
-  var sql = toolkit.createStringBuilder();
-  sql.append('DELETE FROM biz_main_task_info');
-  sql.append('WHERE');
-  sql.append('  originId = ?');
-
-  var sqlParams = [ originId ];
-  self.db.query(sql, sqlParams, callback);
-};

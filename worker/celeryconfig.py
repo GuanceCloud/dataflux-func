@@ -117,7 +117,7 @@ beat_schedule = {
         'schedule': create_schedule(CONFIG['_CRONTAB_RESET_WORKER_QUEUE_PRESSURE']),
     },
 
-    # 重新加载数据MD5缓存
+    # 重新加载数据 MD5 缓存
     'run-reload-data-md5-cache': {
         'task'    : 'Sys.ReloadDataMD5Cache',
         'kwargs'  : { 'lockTime': 15, 'all': True },

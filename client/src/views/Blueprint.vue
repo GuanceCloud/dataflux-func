@@ -14,7 +14,7 @@ Add Process Step: 添加处理步骤
 Add Branch Step : 添加分支步骤
 Select all      : 全选
 
-'Function "entry_func(prev_result)" is the main func of the node': '函数"entry_func(prev_res)"为节点的入口函数'
+'Function "entry_func(prev_result)" is the main func of the node': '函数 "entry_func(prev_res)" 为节点的入口函数'
 
 Code          : 代码
 Kwargs        : 执行参数
@@ -22,10 +22,10 @@ Add Kwargs    : 添加执行参数
 Global Vars   : 全局变量
 Add Global Var: 添加全局变量
 
-Please input ID: 请输入ID
+Please input ID: 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
-'ID cannot contains double underscore "__"': 'ID不能包含"__"'
+'ID cannot contains double underscore "__"': 'ID 不能包含"__"'
 
 Blueprint created : 蓝图已创建
 Blueprint saved   : 蓝图已保存
@@ -270,7 +270,7 @@ export default {
       let scriptId = `${blueprintId}__blueprint`;
       let funcId   = `${scriptId}.start`;
 
-      // 记录选择的脚本ID，记录函数高亮
+      // 记录选择的脚本 ID，记录函数高亮
       this.$store.commit('updateEditor_selectedItemId', funcId);
 
       // 跳转
@@ -482,7 +482,7 @@ export default {
     createNodeData(type, options) {
       options = options || {};
 
-      // 节点ID
+      // 节点 ID
       let newNodeId = null;
       switch(type) {
         case 'start':

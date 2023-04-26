@@ -106,14 +106,14 @@ function _getTaskDefaultQueue(execMode) {
 
 function _getFuncById(locals, funcId, callback) {
   if (!funcId) {
-    // 未传递函数ID不执行
+    // 未传递函数 ID 不执行
     return callback(new E('EClientNotFound', 'Func ID not specified'));
   }
 
   var func = FUNC_LRU.get(funcId);
   if (func) return callback(null, func);
 
-  // 此处由于需要同时获取函数所在脚本的MD5值，需要使用`list`方法
+  // 此处由于需要同时获取函数所在脚本的 MD5 值，需要使用`list`方法
   var funcModel = funcMod.createModel(locals);
 
   var opt = {
@@ -183,7 +183,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     funcCallOptions.origin   = funcCallOptions.origin   || 'UNKNOWN';
     funcCallOptions.originId = funcCallOptions.originId || locals.traceId;
 
-    // 函数ID
+    // 函数 ID
     funcCallOptions.funcId = func.id;
 
     // 参数
@@ -717,7 +717,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
   }
 
   if (funcCallOptions.execMode === 'sync') {
-    // 计算函数参数MD5，获取预期函数压力值
+    // 计算函数参数 MD5，获取预期函数压力值
     var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs || {}, {
           stringify: true,
           sortArray: false});
@@ -936,7 +936,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     ], sendTask);
 
   } else {
-    // 非同步任务不计算MD5值/函数压力值
+    // 非同步任务不计算 MD5 值/函数压力值
     funcCallOptions.funcCallKwargsMD5 = 'NON_SYNC';
     funcCallOptions.funcPressure      = 0;
 
@@ -2277,7 +2277,7 @@ exports.integratedSignIn = function(req, res, next) {
     var userDisplayName = username;
     var userEmail       = null;
     switch(typeof funcRetval) {
-      // 集成登录函数仅返回字符串/数字时，此字符串作为用户ID
+      // 集成登录函数仅返回字符串/数字时，此字符串作为用户 ID
       case 'string':
       case 'number':
         userId = '' + funcRetval;
@@ -2323,7 +2323,7 @@ exports.integratedSignIn = function(req, res, next) {
         break;
     }
 
-    // 避免与内置系统用户ID冲突
+    // 避免与内置系统用户 ID 冲突
     userId = toolkit.strf('igu_{0}-{1}', toolkit.getMD5(funcId), userId);
 
     // 发行登录令牌
