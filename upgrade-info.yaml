@@ -342,3 +342,12 @@ upgradeInfo:
         ADD COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOW' COMMENT '任务来源'
         AFTER `id`;
 
+      -- 修复拼写错误
+      UPDATE `biz_main_auth_link`      SET `origin` = 'UNKNOWN' WHERE `origin` = 'UNKNOW';
+      UPDATE `biz_main_crontab_config` SET `origin` = 'UNKNOWN' WHERE `origin` = 'UNKNOW';
+      UPDATE `biz_main_batch`          SET `origin` = 'UNKNOWN' WHERE `origin` = 'UNKNOW';
+      UPDATE `biz_main_script_set`     SET `origin` = 'UNKNOWN' WHERE `origin` = 'UNKNOW';
+      UPDATE `biz_main_auth_link`      SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
+      UPDATE `biz_main_crontab_config` SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
+      UPDATE `biz_main_batch`          SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
+      UPDATE `biz_main_script_set`     SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
