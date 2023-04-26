@@ -118,7 +118,7 @@ Go to Recent Task Info: 前往最近任务信息
           <!-- 关联配置 -->
           <div class="goto-links">
             <!-- 关联直接函数调用 -->
-            <el-link
+            <el-link v-if="C.CONNECTOR_MAP.get(data.connectorType).configFields.topicHandlers || data.connectorType === 'guance'"
               @click="common.goToTaskInfo({ origin: 'connector', originId: data.id })">
               <i class="fa fa-fw fa-info-circle"></i>
               {{ $t('Go to Recent Task Info') }}
