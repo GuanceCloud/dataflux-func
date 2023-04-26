@@ -41,7 +41,7 @@ dingTalkHelper.prototype.call = function(message, callback) {
   };
 
   self.logger && self.logger.debug('[DINGTALK ROBOT] Call <{0}> <- `{1}`',
-    message.msgtype || 'UNKNOW',
+    message.msgtype || 'UNKNOWN',
     JSON.stringify(message)
   );
 

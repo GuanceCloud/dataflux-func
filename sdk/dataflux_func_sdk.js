@@ -94,7 +94,7 @@ function jsonDumps(obj) {
     }
   }
   else {
-    return '"<UNKNOW>"';
+    return '"<UNKNOWN>"';
   }
 };
 

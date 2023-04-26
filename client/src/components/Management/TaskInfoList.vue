@@ -1,4 +1,12 @@
 <i18n locale="zh-CN" lang="yaml">
+direct     : Directly Call
+integration: Integration Call
+authLink   : Auth Link
+crontab    : Crontab
+batch      : Batch
+connector  : Connector Subscribe / Call
+</i18n>
+<i18n locale="zh-CN" lang="yaml">
 Exec Mode   : 执行模式
 Trigger Time: 触发时间
 Start Time  : 启动时间
@@ -36,6 +44,16 @@ Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
 
 No Recent Task Info: 尚无任何近期任务信息
 All recent Task Info will be collected and shown here: 所有近期任务信息会被搜集，并展示在此
+
+Origin   : 来源
+Origin ID: 来源 ID
+
+direct     : 直接调用
+integration: 集成调用
+authLink   : 授权链接
+crontab    : 自动触发
+batch      : 批处理
+connector  : 连接器订阅 / 接收
 </i18n>
 
 <template>
@@ -44,7 +62,26 @@ All recent Task Info will be collected and shown here: 所有近期任务信息�
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>{{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}</span>
+          <span>
+            {{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}
+            <small class="text-info">
+              {{ $t('(') }}
+              <span class="task-info-query" v-if="dataFilter.origin">
+                {{ $t('Origin')}}
+                <code class="text-main">{{ $t(dataFilter.origin) }}</code>
+              </span>
+              <span class="task-info-query" v-if="dataFilter.originId">
+                {{ $t('Origin ID')}}
+                <code class="text-main">{{ dataFilter.originId }}</code>
+              </span>
+              <span class="task-info-query" v-if="dataFilter.funcId">
+                {{ $t('Func ID')}}
+                <code class="text-main">{{ dataFilter.funcId }}</code>
+              </span>
+              {{ $t(')') }}
+            </small>
+          </span>
+
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -193,8 +230,6 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery();
-      _listQuery.originId = this.$route.params.id;
-
       let apiRes = await this.T.callAPI_get('/api/v1/task-info/do/list', {
         query: _listQuery,
       });
@@ -348,6 +383,14 @@ export default {
 </script>
 
 <style scoped>
+.task-info-query + .task-info-query:before {
+  content: "/";
+  position: relative;
+  left: -6px;
+}
+.task-info-query + .task-info-query {
+  margin-left: 10px;
+}
 .func-title {
   font-size: 16px;
 }

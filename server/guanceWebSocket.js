@@ -210,7 +210,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
   // 错误事件
   client.on('error', function(err) {
-    locals.logger.debug(`[GUANCE WS] Error: ${JSON.stringify(err)}`);
+    locals.logger.error(`[GUANCE WS] Error: ${JSON.stringify(err)}`);
   });
 
   // 连接事件
@@ -228,7 +228,9 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
       'signature'     : toolkit.getSha256(`${connector.configJSON.guanceAPIKey}~${datafluxFuncId}~${timestamp}~${nonce}`),
     }
     doEmit(locals, client, EVENT_DFF_AUTH, authData, function(resp) {
-      if (!resp.ok) return;
+      if (!resp.ok) {
+        return locals.logger.error(`[GUANCE WS] Error: ${JSON.stringify(resp)}`);
+      }
 
       // 记录认证状态
       client.__dffAuthed = true;
@@ -264,7 +266,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
       // 生成函数调用配置
       function(asyncCallback) {
         var opt = {
-          origin        : 'websocket',
+          origin        : 'connector',
           originId      : connector.id,
           queue         : CONFIG._FUNC_TASK_DEFAULT_WEBSOCKET_HANDLER_QUEUE,
           funcCallKwargs: funcCallKwargs || {},

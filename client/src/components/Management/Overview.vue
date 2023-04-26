@@ -110,13 +110,13 @@ Pressure         : 压力
                 <i class="fa fa-fw fa-shopping-cart"></i>
                 {{ $t('Script Market') }}
               </span>
-              <span v-else-if="scope.row.origin === 'UNKNOW'" class="text-info">
+              <span v-else-if="scope.row.origin === 'UNKNOWN'" class="text-info">
                 <i class="fa fa-fw fa-question-circle"></i>
-                {{ $t('UNKNOW') }}
+                {{ $t('UNKNOWN') }}
               </span>
               <span v-else class="text-info">
                 <i class="fa fa-fw fa-question-circle"></i>
-                {{ $t('UNKNOW') }}({{ scope.row.origin }})
+                {{ $t('UNKNOWN') }}({{ scope.row.origin }})
               </span>
             </template>
           </el-table-column>

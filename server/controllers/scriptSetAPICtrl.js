@@ -468,8 +468,8 @@ exports.import = function(req, res, next) {
       });
 
       // 替换 origin, originId
-      var origin   = 'UNKNOW';
-      var originId = 'UNKNOW';
+      var origin   = 'UNKNOWN';
+      var originId = 'UNKNOWN';
 
       if (setBuiltin) {
         origin   = 'builtin';

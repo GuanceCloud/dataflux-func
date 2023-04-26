@@ -122,7 +122,7 @@ class CrontabStarterTask(BaseTask):
 
             c = {
                 'seq'            : 0,
-                'id'             : CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'],
+                'id'             : f['id'],
                 'funcCallKwargs' : {},
                 'crontab'        : crontab_expr,
                 'saveResult'     : False,

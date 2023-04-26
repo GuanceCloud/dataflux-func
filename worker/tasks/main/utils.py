@@ -33,15 +33,6 @@ from worker.tasks.main import func_runner, CONNECTOR_HELPER_CLASS_MAP
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
-SQL_STR_TYPE_KEYWORDS = { 'char', 'text', 'blob' }
-
-DEFAULT_TASK_INFO_LIMIT_MAP = {
-    'authLink'   : CONFIG['_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'],
-    'crontab'    : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB'],
-    'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
-    'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
-}
-
 # Sys.ReloadDataMD5Cache
 class ReloadDataMD5CacheTask(BaseTask):
     '''
@@ -118,6 +109,15 @@ def reload_data_md5_cache(self, *args, **kwargs):
 
 # Sys.SyncCache
 class SyncCache(BaseTask):
+    DEFAULT_TASK_INFO_LIMIT_MAP = {
+        'direct'     : CONFIG['_TASK_INFO_DEFAULT_LIMIT_DIRECT'],
+        'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
+        'connector'  : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CONNECTOR'],
+        'authLink'   : CONFIG['_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'],
+        'crontab'    : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB'],
+        'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
+    }
+
     def _monitor_data_report(self, points, category='metric'):
         _config = {}
 
@@ -435,22 +435,29 @@ class SyncCache(BaseTask):
             else:
                 data.append(cache_res)
 
-        # 搜集任务记录限额，组装监控上报数据，写入本地DB数据
-        task_info_limit_map = {}
-        monitor_data_points = []
+        # 搜集任务记录限额，组装监控上报数据，写入本地 DB 数据
+        entity_task_info_limit_map     = {}
+        non_entity_task_info_limit_map = {}
+        monitor_data_points            = []
         for d in data:
             origin    = d.get('origin')
             origin_id = d.get('originId')
 
-            default_task_info_limit = DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
-            task_info_limit         = d.get('taskInfoLimit') or default_task_info_limit
-            task_info_limit_map[origin_id] = task_info_limit
+            # 统计回卷范围
+            if origin in ('connector', 'authLink', 'crontab', 'batch'):
+                task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
+                entity_task_info_limit_map[origin_id] = task_info_limit
+
+            else:
+                task_info_limit = self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
+                non_entity_task_info_limit_map[origin] = task_info_limit
 
             # 组装监控上报数据
             _point = {
                 'measurement': 'DFF_task_info',
                 'tags': {
                     'workspaceUUID': d['funcCallKwargs'].get('workspace_uuid') or 'NONE',
+                    'origin'       : d['origin'],
                     'originId'     : d['originId'],
                     'funcId'       : d['funcId'],
                     'execMode'     : d['execMode'],
@@ -470,6 +477,7 @@ class SyncCache(BaseTask):
             if task_info_limit > 0:
                 _data = {
                     'id'            : d['id'],
+                    'origin'        : d['origin'],
                     'originId'      : d['originId'],
                     'rootTaskId'    : d['rootTaskId'],
                     'funcId'        : d['funcId'],
@@ -492,8 +500,8 @@ class SyncCache(BaseTask):
         # 发送监控数据
         self._monitor_data_report(monitor_data_points)
 
-        # 数据回卷
-        for origin_id, task_info_limit in task_info_limit_map.items():
+        # 数据回卷（业务实体）
+        for origin_id, task_info_limit in entity_task_info_limit_map.items():
             sql = '''
                 SELECT
                     seq AS expiredMaxSeq
@@ -516,6 +524,32 @@ class SyncCache(BaseTask):
                         AND originId =  ?
                 '''
                 sql_params = [ expired_max_seq, origin_id ]
+                self.db.query(sql, sql_params)
+
+        # 数据回卷（非业务实体）
+        for origin, task_info_limit in non_entity_task_info_limit_map.items():
+            sql = '''
+                SELECT
+                    seq AS expiredMaxSeq
+                FROM biz_main_task_info
+                WHERE
+                    origin = ?
+                ORDER BY
+                    seq DESC
+                LIMIT ?, 1
+            '''
+            sql_params = [ origin, task_info_limit ]
+            db_res = self.db.query(sql, sql_params)
+
+            if db_res:
+                expired_max_seq = db_res[0]['expiredMaxSeq']
+                sql = '''
+                    DELETE FROM biz_main_task_info
+                    WHERE
+                            seq    <= ?
+                        AND origin =  ?
+                '''
+                sql_params = [ expired_max_seq, origin ]
                 self.db.query(sql, sql_params)
 
 @app.task(name='Sys.SyncCache', bind=True, base=SyncCache)
@@ -546,6 +580,13 @@ def sync_cache(self, *args, **kwargs):
 
 # Sys.AutoClean
 class AutoCleanTask(BaseTask):
+    TASK_INFO_ORIGIN_TABLE_MAP = {
+        'connector': 'biz_main_connector',
+        'authLink' : 'biz_main_auth_link',
+        'crontab'  : 'biz_main_crontab_config',
+        'batch'    : 'biz_main_batch',
+    }
+
     def _delete_by_seq(self, table, seq, include=True):
         if seq <= 0:
             return
@@ -682,49 +723,32 @@ class AutoCleanTask(BaseTask):
                     os.remove(file_path)
 
     def clear_outdated_task_info(self):
-        origin_ids = set()
-
-        # 集成函数自动触发配置永不过期
-        origin_ids.add(CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'])
-
-        # 搜集实际存活的 Origin ID 列表
-        sql = '''
-            SELECT id FROM biz_main_auth_link
-            UNION
-            SELECT id FROM biz_main_crontab_config
-            UNION
-            SELECT id FROM biz_main_batch
-            '''
-        db_res = self.db.query(sql)
-        for d in db_res:
-            origin_ids.add(d['id'])
-
-        # 删除无效 TaskInfo Key
-        cache_pattern = toolkit.get_cache_key('syncCache', 'taskInfo', tags=[ 'originId', '*' ])
-        cache_res = self.cache_db.keys(cache_pattern)
-        for cache_key in cache_res:
-            cache_key_info = toolkit.parse_cache_key(cache_key)
-
-            if cache_key_info['tags']['originId'] in origin_ids:
-                continue
-
-            self.cache_db.delete(cache_key)
-
-        # 删除无效的 TaskInfo 数据
-        sql = '''
-            SELECT DISTINCT originId FROM biz_main_task_info
-            '''
-        db_res = self.db.query(sql)
-        for d in db_res:
-            origin_id = d['originId']
-            if origin_id in origin_ids:
-                continue
-
+        for origin, table in self.TASK_INFO_ORIGIN_TABLE_MAP.items():
+            # 搜集实际存活的 Origin ID 列表
             sql = '''
-                DELETE FROM biz_main_task_info WHERE originId = ?
+                SELECT id FROM ??
                 '''
-            sql_params = [ origin_id ]
-            self.db.non_query(sql, sql_params)
+            db_res = self.db.query(sql, [ table ])
+
+            origin_ids = set()
+            for d in db_res:
+                origin_ids.add(d['id'])
+
+            # 删除无效的 TaskInfo 数据
+            sql = '''
+                SELECT DISTINCT originId FROM biz_main_task_info WHERE origin = ?
+                '''
+            db_res = self.db.query(sql, [ origin ])
+            for d in db_res:
+                origin_id = d['originId']
+                if origin_id in origin_ids:
+                    continue
+
+                sql = '''
+                    DELETE FROM biz_main_task_info WHERE origin = ? AND originId = ?
+                    '''
+                sql_params = [ origin, origin_id ]
+                self.db.non_query(sql, sql_params)
 
     def clear_deprecated_data(self):
         for table in CONFIG['_DEPRECATED_TABLE_LIST']:
@@ -815,7 +839,7 @@ def auto_run(self, *args, **kwargs):
         task_kwargs = {
             'funcId'       : f['id'],
             'origin'       : 'integration',
-            'originId'     : CONFIG['_INTEGRATION_CRONTAB_CONFIG_ID'],
+            'originId'     : f['id'],
             'execMode'     : 'onLaunch',
             'queue'        : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
             'taskInfoLimit': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
@@ -828,6 +852,8 @@ def auto_run(self, *args, **kwargs):
 
 # Sys.AutoBackupDB
 class AutoBackupDBTask(BaseTask):
+    SQL_STR_TYPE_KEYWORDS = { 'char', 'text', 'blob' }
+
     def get_tables(self):
         # 查询需要导出的表
         tables = []
@@ -888,7 +914,7 @@ class AutoBackupDBTask(BaseTask):
             if field_type == 'json':
                 field_type_map[field] = 'json'
             else:
-                for type_keyword in SQL_STR_TYPE_KEYWORDS:
+                for type_keyword in self.SQL_STR_TYPE_KEYWORDS:
                     if type_keyword in field_type:
                         field_type_map[field] = 'hexStr'
                         break

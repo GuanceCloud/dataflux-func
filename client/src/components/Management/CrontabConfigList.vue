@@ -27,8 +27,6 @@ Are you sure you want to disable the Crontab Config?: 是否确认禁用此自�
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 
-Integration Func Tasks: 集成函数任务
-
 lastSucceeded : '{t}执行成功'
 lastFailed    : '{t}执行失败'
 lastRan       : '{t}执行'
@@ -46,9 +44,6 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
         <div class="page-header">
           <span>{{ $t('Crontab Config') }}</span>
           <div class="header-control">
-            <el-link @click="openTaskInfo({ id: 'cron-AUTORUN' })">{{ $t('Integration Func Tasks') }}</el-link>
-            &#12288;
-
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
@@ -162,7 +157,7 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
+              <el-link @click="common.goToTaskInfo({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskInfoCount">
                 {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-link>
               <el-link @click="runTask(scope.row)" :disabled="!scope.row.func_id">
@@ -286,18 +281,6 @@ export default {
           })
           break;
       }
-    },
-    openTaskInfo(d) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
-      this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$store.commit('updateTableList_scrollY');
-
-      this.$router.push({
-        name  : 'task-info-list',
-        params: { id: d.id },
-        query : nextRouteQuery,
-      });
     },
     async runTask(d) {
       if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Config manually?'))) return;

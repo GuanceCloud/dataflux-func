@@ -180,7 +180,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     var funcCallOptions = options || {};
 
     // 来源
-    funcCallOptions.origin   = funcCallOptions.origin   || 'UNKNOW';
+    funcCallOptions.origin   = funcCallOptions.origin   || 'UNKNOWN';
     funcCallOptions.originId = funcCallOptions.originId || locals.traceId;
 
     // 函数ID

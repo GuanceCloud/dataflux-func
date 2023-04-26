@@ -125,7 +125,12 @@ class Guance(object):
     def is_api_key_match(self):
         remote_api_key = None
         try:
-            remote_api_key = self.do_get(f'/api/v1/workspace/accesskey/{self.api_key_id}/get')['content']['sk']
+            remote_api_key_list = self.do_get(f'/api/v1/workspace/accesskey/list')['content']
+            for d in remote_api_key_list:
+                if d['ak'] == self.api_key_id:
+                    remote_api_key = d['sk']
+                    break
+
         except Exception as e:
             return False
         finally:

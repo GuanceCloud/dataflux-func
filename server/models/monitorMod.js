@@ -291,8 +291,8 @@ EntityModel.prototype.getServerEnvironment = function(callback) {
     cpuCores    : cpus.length,
     nodeVersion : process.versions.node,
     nodePackages: nodePackages,
-    mysqlVersion: 'UNKNOW',
-    redisVersion: 'UNKNOW',
+    mysqlVersion: 'UNKNOWN',
+    redisVersion: 'UNKNOWN',
   };
 
   async.series([
@@ -301,7 +301,7 @@ EntityModel.prototype.getServerEnvironment = function(callback) {
       self.cacheDB.info(function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        serverEnvironment.redisVersion = cacheRes.match(/redis_version:(.+)/)[1] || 'UNKNOW';
+        serverEnvironment.redisVersion = cacheRes.match(/redis_version:(.+)/)[1] || 'UNKNOWN';
 
         return asyncCallback();
       });
@@ -313,7 +313,7 @@ EntityModel.prototype.getServerEnvironment = function(callback) {
         if (err) return asyncCallback(err);
 
         if (dbRes.length > 0) {
-          serverEnvironment.mysqlVersion = dbRes[0].mysqlVersion || 'UNKNOW';
+          serverEnvironment.mysqlVersion = dbRes[0].mysqlVersion || 'UNKNOWN';
         }
 
         return asyncCallback();

@@ -5102,6 +5102,7 @@ taskInfoAPI:
     fieldSelecting: true
     fuzzySearch:
       - task.id
+      - task.origin
       - task.originId
       - task.rootTaskId
       - task.funcId
@@ -5114,6 +5115,11 @@ taskInfoAPI:
         $type      : string
         $searchType: eq
         $searchKey : task.id
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.origin
       originId:
         $desc      : 根据来源ID过滤
         $type      : string

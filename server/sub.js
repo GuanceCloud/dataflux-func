@@ -28,7 +28,7 @@ var CONNECTOR_HELPER_MAP = {
 // 简称 C.T.F
 var CONNECTOR_TOPIC_FUNC_MAP = {};
 
-function createMessageHandler(locals, handlerFuncId) {
+function createMessageHandler(locals, connectorId, handlerFuncId) {
   return function(topic, message, packet, callback) {
     // 发送任务
     var funcCallOptions = null;
@@ -37,8 +37,8 @@ function createMessageHandler(locals, handlerFuncId) {
       // 生成函数调用配置
       function(asyncCallback) {
         var opt = {
-          origin  : 'sub',
-          originId: topic,
+          origin  : 'connector',
+          originId: connectorId,
           queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
           funcCallKwargs: {
             topic  : topic.toString(),
@@ -220,7 +220,7 @@ exports.runListener = function runListener(app) {
           }
 
           // 订阅主题
-          _next.client.sub(topic, createMessageHandler(app.locals, funcId));
+          _next.client.sub(topic, createMessageHandler(app.locals, _next.id, funcId));
 
           // 记录到本地
           CONNECTOR_TOPIC_FUNC_MAP[ctfKey] = _next;

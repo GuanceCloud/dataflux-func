@@ -22,6 +22,7 @@ Copy {name} ID                                 : 复制{name} ID
 Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用 / API 调用实际将运行已发布代码
+Export Script Set                              : 导出脚本集
 
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
@@ -65,11 +66,11 @@ failureCount  : '失败 {n}'
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Show Auth Links     : 显示授权链接列表
-Show Crontab Configs: 显示自动触发配置列表
-Show Batches        : 显示批处理列表
-Go to Script Market : 前往脚本市场
-Export Script Set   : 导出脚本集
+Show Auth Links       : 显示授权链接列表
+Show Crontab Configs  : 显示自动触发配置列表
+Show Batches          : 显示批处理列表
+Go to Recent Task Info: 前往最近任务信息
+Go to Script Market   : 前往脚本市场
 
 Some Script Sets are hidden: 一些脚本集已隐藏
 In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.: 在大多数情况下，从官方脚本市场安装的脚本集并不需要用户直接查看或操作，因此没有在此列表中展示。
@@ -231,22 +232,34 @@ In most cases, the Script Sets installed from the official Script Market do not 
               </el-button-group>
             </template>
 
+            <!-- 关联配置 -->
             <div class="goto-links">
-              <!-- 关联配置 -->
+              <!-- 关联授权链接 -->
               <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'authLink')">
                 <i class="fa fa-fw fa-link"></i>
                 {{ $t('Show Auth Links') }}
               </el-link>
+
+              <!-- 关联自动触发配置 -->
               <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'crontabConfig')">
                 <i class="fa fa-fw fa-clock-o"></i>
                 {{ $t('Show Crontab Configs') }}
               </el-link>
+
+              <!-- 关联批处理 -->
               <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'batch')">
                 <i class="fa fa-fw fa-tasks"></i>
                 {{ $t('Show Batches') }}
+              </el-link>
+
+              <!-- 关联直接函数调用 -->
+              <el-link v-if="data.type === 'func'"
+                @click="common.goToTaskInfo({ funcId: data.id })">
+                <i class="fa fa-fw fa-history"></i>
+                {{ $t('Go to Recent Task Info') }}
               </el-link>
 
               <!-- 前往脚本市场 -->
@@ -720,7 +733,7 @@ export default {
         d.description = this.T.limitLines(d.description, 10);
 
         // 创建节点数据
-        let lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW')}`;
+        let lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOWN')}`;
         let isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
         let isLockedByOther = d.lockedByUserId && !isLockedByMe;
         let isEditable      = this.$store.getters.isAdmin || !isLockedByOther;
@@ -792,8 +805,8 @@ export default {
         let isCodeEdited   = d.codeMD5 !== d.codeDraftMD5;
         let lockedByUserId = d.sset_lockedByUserId || d.lockedByUserId;
         let lockedByUser   = d.sset_lockedByUserId
-                            ? `${d.sset_lockedByUserName || d.sset_lockedByUsername || this.$t('UNKNOW')}`
-                            : `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW')}`;
+                            ? `${d.sset_lockedByUserName || d.sset_lockedByUsername || this.$t('UNKNOWN')}`
+                            : `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOWN')}`;
         let isLockedByMe        = lockedByUserId === this.$store.getters.userId;
         let isLockedByOther     = lockedByUserId && !isLockedByMe;
         let isLocked            = isLockedByMe || isLockedByOther;

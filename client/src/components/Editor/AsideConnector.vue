@@ -11,6 +11,8 @@ Copy {name} ID : 复制{name}ID
 
 Connector pinned  : 连接器已置顶
 Connector unpinned: 连接器已取消
+
+Go to Recent Task Info: 前往最近任务信息
 </i18n>
 
 <template>
@@ -112,6 +114,16 @@ Connector unpinned: 连接器已取消
               {{ data.isBuiltin ? $t('View') : $t('Setup') }}
             </el-button>
           </el-button-group>
+
+          <!-- 关联配置 -->
+          <div class="goto-links">
+            <!-- 关联直接函数调用 -->
+            <el-link
+              @click="common.goToTaskInfo({ origin: 'connector', originId: data.id })">
+              <i class="fa fa-fw fa-history"></i>
+              {{ $t('Go to Recent Task Info') }}
+            </el-link>
+          </div>
 
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
@@ -350,6 +362,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.goto-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 10px;
+}
 .jump-to-select {
   position: absolute;
   left: 5px;

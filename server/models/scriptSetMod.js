@@ -145,8 +145,8 @@ EntityModel.prototype.add = function(data, callback) {
   }
 
   // 添加 origin, originId
-  data.origin   = 'UNKNOW';
-  data.originId = 'UNKNOW';
+  data.origin   = 'UNKNOWN';
+  data.originId = 'UNKNOWN';
   if (this.locals.user && this.locals.user.isSignedIn) {
     data.origin   = 'user';
     data.originId = this.locals.user.id;
@@ -235,7 +235,7 @@ EntityModel.prototype.clone = function(id, newId, callback) {
 
         var cloneData = [];
 
-        var origin   = 'UNKNOW';
+        var origin   = 'UNKNOWN';
         var originId = null;
         if (self.locals.user && self.locals.user.isSignedIn) {
           origin   = 'user';

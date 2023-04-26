@@ -357,7 +357,7 @@ exports.publish = function(req, res, next) {
           var kwargs = {
             funcId       : funcId,
             origin       : 'integration',
-            originId     : CONFIG._INTEGRATION_CRONTAB_CONFIG_ID,
+            originId     : funcId,
             execMode     : 'onPublish',
             queue        : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
             taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,

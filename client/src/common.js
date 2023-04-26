@@ -328,6 +328,23 @@ export function goToPIPTools(requirements, opt) {
   }
 }
 
+export function goToTaskInfo(query, options) {
+  options = options || {};
+
+  let nextRouteQuery = T.packRouteQuery();
+  nextRouteQuery.filter = T.createPageFilter(query);
+
+  if (options.hlDataId) {
+    store.commit('updateHighlightedTableDataId', options.hlDataId);
+    store.commit('updateTableList_scrollY');
+  }
+
+  router.push({
+    name  : 'task-info-list',
+    query : nextRouteQuery,
+  });
+}
+
 export async function checkScriptMarketUpdate(scriptMarketId) {
   let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update', {
     query: { scriptMarketId: scriptMarketId },

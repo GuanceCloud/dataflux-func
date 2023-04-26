@@ -189,7 +189,7 @@ const routes = [
       },
 
       {
-        path: 'task-info-list/:id',
+        path: 'task-info-list',
         name: 'task-info-list',
         component: () => import('../components/Management/TaskInfoList.vue'),
       },

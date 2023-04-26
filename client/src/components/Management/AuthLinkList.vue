@@ -187,7 +187,7 @@ you must first create an Auth Link for the Python function and access the Python
 
             <el-table-column align="right" width="380">
               <template slot-scope="scope">
-                <el-link @click="openTaskInfo(scope.row)" :disabled="!scope.row.taskInfoCount">
+                <el-link @click="common.goToTaskInfo({ origin: 'authLink', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskInfoCount">
                   {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
                 </el-link>
                 <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
@@ -368,18 +368,6 @@ export default {
           })
           break;
       }
-    },
-    openTaskInfo(d) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
-      this.$store.commit('updateHighlightedTableDataId', d.id);
-      this.$store.commit('updateTableList_scrollY');
-
-      this.$router.push({
-        name  : 'task-info-list',
-        params: { id: d.id },
-        query : nextRouteQuery,
-      });
     },
     async showAPI(d) {
       // 获取函数详情

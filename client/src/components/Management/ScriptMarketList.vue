@@ -254,7 +254,7 @@ export default {
 
       // 锁定状态
       apiRes.data.forEach(d => {
-        d.lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOW') }`;
+        d.lockedByUser    = `${d.lockedByUserName || d.lockedByUsername || this.$t('UNKNOWN') }`;
         d.isLockedByMe    = d.lockedByUserId === this.$store.getters.userId;
         d.isLockedByOther = d.lockedByUserId && !d.isLockedByMe;
         d.isAccessible    = this.$store.getters.isAdmin || !d.isLockedByOther;

@@ -1430,12 +1430,12 @@ export function isPageFiltered(options) {
 };
 
 export function createListQuery(nextListQuery) {
-  let prevFilter = router.currentRoute.query.filter;
+  let filter = router.currentRoute.query.filter;
 
   let listQuery = {};
-  if (!isNothing(prevFilter)) {
+  if (notNothing(filter)) {
     try {
-      listQuery = JSON.parse(fromBase64(prevFilter));
+      listQuery = JSON.parse(fromBase64(filter));
     } catch(err) {
       console.error(err);
     }

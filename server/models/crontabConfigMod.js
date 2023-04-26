@@ -106,8 +106,8 @@ EntityModel.prototype.add = function(data, callback) {
   }
 
   // 添加 origin, originId
-  data.origin   = 'UNKNOW';
-  data.originId = 'UNKNOW';
+  data.origin   = 'UNKNOWN';
+  data.originId = 'UNKNOWN';
   if (this.locals.user && this.locals.user.isSignedIn) {
     data.origin   = 'user';
     data.originId = this.locals.user.id;
