@@ -311,7 +311,7 @@ upgradeInfo:
         ADD COLUMN `extraJSON` json DEFAULT NULL COMMENT '额外信息JSON'
         AFTER `configJSON`;
 
-  # 于观测云SaaS 2022-04-25 迭代中实装
+  # 于观测云SaaS 2022-04-27 迭代中实装
   - seq: 18
     database: |-
       -- 清理任务记录
@@ -351,3 +351,10 @@ upgradeInfo:
       UPDATE `biz_main_crontab_config` SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
       UPDATE `biz_main_batch`          SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
       UPDATE `biz_main_script_set`     SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
+
+  # 于观测云SaaS 2022-04-27 迭代中实装
+  - seq: 19
+    database: |-
+      -- 修复以往注释错误
+      ALTER TABLE `biz_main_auth_link`
+        MODIFY COLUMN `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON';
