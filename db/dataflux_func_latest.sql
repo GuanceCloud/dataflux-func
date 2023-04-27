@@ -801,6 +801,7 @@ CREATE TABLE `biz_main_task_info` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`seq`),
   UNIQUE KEY `ID` (`id`),
+  KEY `ORIGIN` (`origin`),
   KEY `ORIGIN_ID` (`originId`),
   KEY `ROOT_TASK_ID` (`rootTaskId`),
   KEY `FUNC_ID` (`funcId`)

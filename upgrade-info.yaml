@@ -358,3 +358,26 @@ upgradeInfo:
       -- 修复以往注释错误
       ALTER TABLE `biz_main_auth_link`
         MODIFY COLUMN `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON';
+
+  # 于观测云SaaS 2022-04-27 迭代中实装
+  - seq: 20
+    database: |-
+      -- 清理任务记录
+      TRUNCATE biz_main_task_info;
+
+      -- 任务记录表重建索引
+      ALTER TABLE biz_main_task_info
+      DROP INDEX `ORIGIN_ID`,
+      DROP INDEX `ROOT_TASK_ID`,
+      DROP INDEX `FUNC_ID`;
+
+      ALTER TABLE biz_main_task_info
+      ADD INDEX `ORIGIN` (`origin`),
+      ADD INDEX `ORIGIN_ID` (`originId`),
+      ADD INDEX `ROOT_TASK_ID` (`rootTaskId`),
+      ADD INDEX `FUNC_ID` (`funcId`);
+
+      -- 修复注释错误
+      ALTER TABLE `biz_main_task_info`
+        MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源',
+        MODIFY COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源ID';
