@@ -181,7 +181,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
 
     // 来源
     funcCallOptions.origin   = funcCallOptions.origin   || 'UNKNOWN';
-    funcCallOptions.originId = funcCallOptions.originId || locals.traceId;
+    funcCallOptions.originId = funcCallOptions.originId || 'UNKNOWN';
 
     // 函数 ID
     funcCallOptions.funcId = func.id;
@@ -249,6 +249,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       }
     }
 
+    // TODO: 自动填充 execMode 处理需要考虑重构
     // 执行模式（优先级：调用时指定 > 默认值）
     if (toolkit.notNothing(funcCallOptions.execMode)) {
       // 调用时指定
@@ -267,19 +268,12 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
           }
           break;
 
-        default:
-          var _EXEC_MODES = ['sync', 'async'];
-          if (_EXEC_MODES.indexOf(funcCallOptions.execMode) < 0) {
-            return callback(new E('EClientBadRequest', 'Invalid options, invalid execMode', { allowed: _EXEC_MODES }));
-          }
-          break;
       }
 
     } else {
       // 默认值
       switch(funcCallOptions.origin) {
         case 'direct':
-        case 'sub':
         case 'apiAuth':
         case 'authLink':
           funcCallOptions.execMode = 'sync';
@@ -1605,7 +1599,8 @@ exports.callFunc = function(req, res, next) {
     // 创建函数调用选项
     function(asyncCallback) {
       var opt = {
-        origin: 'direct',
+        origin  : 'direct',
+        originId: 'direct',
       }
       _createFuncCallOptionsFromRequest(req, res, funcId, opt, function(err, _funcCallOptions) {
         if (err) return asyncCallback(err);
@@ -2478,6 +2473,7 @@ exports.clearLogCacheTables = function(req, res, next) {
     'biz_main_task_result_dataflux_func',
     'biz_main_crontab_task_info',
     'biz_main_batch_task_info',
+    'biz_main_task_info',
     'biz_main_operation_record',
   ];
 

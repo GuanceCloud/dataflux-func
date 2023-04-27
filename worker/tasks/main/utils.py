@@ -436,21 +436,15 @@ class SyncCache(BaseTask):
                 data.append(cache_res)
 
         # 搜集任务记录限额，组装监控上报数据，写入本地 DB 数据
-        entity_task_info_limit_map     = {}
-        non_entity_task_info_limit_map = {}
-        monitor_data_points            = []
+        entity_task_info_limit_map = {}
+        monitor_data_points        = []
         for d in data:
             origin    = d.get('origin')
             origin_id = d.get('originId')
 
             # 统计回卷范围
-            if origin in ('connector', 'authLink', 'crontab', 'batch'):
-                task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
-                entity_task_info_limit_map[origin_id] = task_info_limit
-
-            else:
-                task_info_limit = self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
-                non_entity_task_info_limit_map[origin] = task_info_limit
+            task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
+            entity_task_info_limit_map[origin_id] = task_info_limit
 
             # 组装监控上报数据
             _point = {
@@ -500,7 +494,7 @@ class SyncCache(BaseTask):
         # 发送监控数据
         self._monitor_data_report(monitor_data_points)
 
-        # 数据回卷（业务实体）
+        # 数据回卷
         for origin_id, task_info_limit in entity_task_info_limit_map.items():
             sql = '''
                 SELECT
@@ -524,32 +518,6 @@ class SyncCache(BaseTask):
                         AND originId =  ?
                 '''
                 sql_params = [ expired_max_seq, origin_id ]
-                self.db.query(sql, sql_params)
-
-        # 数据回卷（非业务实体）
-        for origin, task_info_limit in non_entity_task_info_limit_map.items():
-            sql = '''
-                SELECT
-                    seq AS expiredMaxSeq
-                FROM biz_main_task_info
-                WHERE
-                    origin = ?
-                ORDER BY
-                    seq DESC
-                LIMIT ?, 1
-            '''
-            sql_params = [ origin, task_info_limit ]
-            db_res = self.db.query(sql, sql_params)
-
-            if db_res:
-                expired_max_seq = db_res[0]['expiredMaxSeq']
-                sql = '''
-                    DELETE FROM biz_main_task_info
-                    WHERE
-                            seq    <= ?
-                        AND origin =  ?
-                '''
-                sql_params = [ expired_max_seq, origin ]
                 self.db.query(sql, sql_params)
 
 @app.task(name='Sys.SyncCache', bind=True, base=SyncCache)
@@ -580,13 +548,6 @@ def sync_cache(self, *args, **kwargs):
 
 # Sys.AutoClean
 class AutoCleanTask(BaseTask):
-    TASK_INFO_ORIGIN_TABLE_MAP = {
-        'connector': 'biz_main_connector',
-        'authLink' : 'biz_main_auth_link',
-        'crontab'  : 'biz_main_crontab_config',
-        'batch'    : 'biz_main_batch',
-    }
-
     def _delete_by_seq(self, table, seq, include=True):
         if seq <= 0:
             return
@@ -723,32 +684,42 @@ class AutoCleanTask(BaseTask):
                     os.remove(file_path)
 
     def clear_outdated_task_info(self):
-        for origin, table in self.TASK_INFO_ORIGIN_TABLE_MAP.items():
-            # 搜集实际存活的 Origin ID 列表
+        # 搜集实际存活的 Origin ID 列表
+        sql = '''
+            SELECT id FROM biz_main_auth_link
+            UNION
+            SELECT id FROM biz_main_crontab_config
+            UNION
+            SELECT id FROM biz_main_batch
+            UNION
+            SELECT id FROM biz_main_connector
+            UNION
+            SELECT 'direct' AS id
+            UNION
+            SELECT 'integration' AS id
+            '''
+        db_res = self.db.query(sql)
+        current_origin_ids = set()
+        for d in db_res:
+            current_origin_ids.add(d['id'])
+
+        # 搜集任务记录里的 Origin ID 列表
+        sql = '''
+            SELECT DISTINCT originId FROM biz_main_task_info
+            '''
+        db_res = self.db.query(sql)
+        task_info_origin_ids = set()
+        for d in db_res:
+            task_info_origin_ids.add(d['originId'])
+
+        # 无效的 Origin ID
+        outdated_origin_ids = task_info_origin_ids - current_origin_ids
+        if outdated_origin_ids:
             sql = '''
-                SELECT id FROM ??
+                DELETE FROM biz_main_task_info WHERE originId IN (?)
                 '''
-            db_res = self.db.query(sql, [ table ])
-
-            origin_ids = set()
-            for d in db_res:
-                origin_ids.add(d['id'])
-
-            # 删除无效的 TaskInfo 数据
-            sql = '''
-                SELECT DISTINCT originId FROM biz_main_task_info WHERE origin = ?
-                '''
-            db_res = self.db.query(sql, [ origin ])
-            for d in db_res:
-                origin_id = d['originId']
-                if origin_id in origin_ids:
-                    continue
-
-                sql = '''
-                    DELETE FROM biz_main_task_info WHERE origin = ? AND originId = ?
-                    '''
-                sql_params = [ origin, origin_id ]
-                self.db.non_query(sql, sql_params)
+            sql_params = [ outdated_origin_ids ]
+            self.db.non_query(sql, sql_params)
 
     def clear_deprecated_data(self):
         for table in CONFIG['_DEPRECATED_TABLE_LIST']:
@@ -798,11 +769,11 @@ def auto_clean(self, *args, **kwargs):
             self.logger.error(line)
 
     # 清理过时的任务信息
-    # try:
-    #     self.clear_outdated_task_info()
-    # except Exception as e:
-    #     for line in traceback.format_exc().splitlines():
-    #         self.logger.error(line)
+    try:
+        self.clear_outdated_task_info()
+    except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            self.logger.error(line)
 
     # 清楚已弃用功能的数据
     try:
@@ -839,7 +810,7 @@ def auto_run(self, *args, **kwargs):
         task_kwargs = {
             'funcId'       : f['id'],
             'origin'       : 'integration',
-            'originId'     : f['id'],
+            'originId'     : 'integration',
             'execMode'     : 'onLaunch',
             'queue'        : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
             'taskInfoLimit': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
