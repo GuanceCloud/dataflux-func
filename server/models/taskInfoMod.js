@@ -43,7 +43,6 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   task.*');
-  sql.append('  ,COUNT(sub.seq) AS subTaskCount');
 
   sql.append('  ,func.id              AS func_id');
   sql.append('  ,func.name            AS func_name');
@@ -62,11 +61,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('LEFT JOIN biz_main_func AS func');
   sql.append('  ON func.id = task.funcId');
 
-  sql.append('LEFT JOIN biz_main_task_info AS sub');
-  sql.append('  ON task.id = sub.rootTaskId');
-
   options.baseSQL = sql.toString();
-  options.groups  = [ 'task.id' ];
   options.orders  = [ { field: 'task.seq', method: 'DESC' } ];
 
   if (options.filters['task.rootTaskId'] && options.filters['task.rootTaskId'].eq) {
@@ -76,6 +71,44 @@ EntityModel.prototype.list = function(options, callback) {
   }
 
   this._list(options, callback);
+};
+
+EntityModel.prototype.appendSubTaskCount = function(data, callback) {
+  if (toolkit.isNothing(data)) return callback(null, data);
+
+  var rootTaskIds = toolkit.arrayElementValues(data, 'id');
+
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('  sub.rootTaskId,');
+  sql.append('  COUNT(sub.seq) AS subTaskCount');
+  sql.append('FROM');
+  sql.append('  biz_main_task_info AS sub');
+  sql.append('WHERE');
+  sql.append('  sub.rootTaskId IN (?)');
+  sql.append('GROUP BY');
+  sql.append('  sub.rootTaskId');
+
+  var sqlParams = [ rootTaskIds ];
+  this.db.query(sql, sqlParams, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 整理成map
+    var subTaskCountMap = {};
+    dbRes.forEach(function(d) {
+      if (!d.rootTaskId) return;
+
+      subTaskCountMap[d.rootTaskId] = d.subTaskCount;
+    });
+
+    // 填入数据
+    data.forEach(function(x) {
+      var subTaskCount = subTaskCountMap[x.id] || 0;
+      x.subTaskCount = subTaskCount || 0;
+    });
+
+    return callback(null, data);
+  });
 };
 
 EntityModel.prototype.appendTaskInfo = function(data, callback) {
