@@ -769,11 +769,11 @@ def auto_clean(self, *args, **kwargs):
             self.logger.error(line)
 
     # 清理过时的任务信息
-    try:
-        self.clear_outdated_task_info()
-    except Exception as e:
-        for line in traceback.format_exc().splitlines():
-            self.logger.error(line)
+    # try:
+    #     self.clear_outdated_task_info()
+    # except Exception as e:
+    #     for line in traceback.format_exc().splitlines():
+    #         self.logger.error(line)
 
     # 清楚已弃用功能的数据
     try:
