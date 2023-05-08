@@ -184,9 +184,26 @@ exports.afterAppCreated = function(app, server) {
           });
 
           async.eachLimit(tableInfoList, 5, function(tableInfo, eachCallback) {
-            var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'dbDiskUsed', 'table', tableInfo.Name]);
-            var opt = { timestamp: currentTimestamp, value: tableInfo.Data_length };
-            return app.locals.cacheDB.tsAdd(cacheKey, opt, eachCallback);
+            async.series([
+              // 总使用量
+              function(innerCallback) {
+                var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'dbTableTotalUsed', 'table', tableInfo.Name]);
+                var opt = { timestamp: currentTimestamp, value: tableInfo.Data_length + tableInfo.Index_length };
+                return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
+              },
+              // 数据使用量
+              function(innerCallback) {
+                var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'dbTableDataUsed', 'table', tableInfo.Name]);
+                var opt = { timestamp: currentTimestamp, value: tableInfo.Data_length };
+                return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
+              },
+              // 索引使用量
+              function(innerCallback) {
+                var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', ['metric', 'dbTableIndexUsed', 'table', tableInfo.Name]);
+                var opt = { timestamp: currentTimestamp, value: tableInfo.Index_length };
+                return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
+              },
+            ], eachCallback);
           }, asyncCallback);
         });
       },

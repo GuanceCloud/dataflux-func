@@ -1,9 +1,10 @@
 <i18n locale="zh-CN" lang="yaml">
 System Status: 系统指标
-Tasks / Func: 任务 / 函数
-Cache / Database: 缓存 / 数据库
-Server: Server（服务）
-Worker: Worker（工作单元）
+Tasks / Func : 任务 / 函数
+Cache        : 缓存
+Database     : 数据库
+Server       : Server（服务）
+Worker       : Worker（工作单元）
 
 Server CPU Percent         : Server CPU 使用率
 Server Memory RSS          : Server 内存 RSS
@@ -14,7 +15,9 @@ Worker CPU Percent         : Worker CPU 使用率
 Worker Memory PSS          : Worker 内存 PSS
 Func Call Count            : 函数调用次数
 Worker Queue Length        : 工作队列长度
-Database Disk Used         : 数据库磁盘用量
+DB Table Total Used        : 数据库表总用量（数据 + 索引）
+DB Table Data Used         : 数据库表数据用量
+DB Table Index Used        : 数据库表索引用量
 Cache Memory Used          : 缓存数据库内存用量
 Cache Key Used             : 缓存数据库 Key 数量
 Cache Key Count by Prefix  : 缓存数据库 Key 数量（按前缀区分）
@@ -43,11 +46,15 @@ Matched Route Count        : 接口访问次数（按路由区分）
         <div id="funcCallCount" class="chart"></div>
         <div id="matchedRouteCount" class="chart"></div>
 
-        <el-divider content-position="left"><h1>{{ $t('Cache / Database') }}</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Cache') }}</h1></el-divider>
         <div id="cacheDBMemoryUsed" class="chart"></div>
         <div id="cacheDBKeyUsed" class="chart"></div>
         <div id="cacheDBKeyCountByPrefix" class="chart"></div>
-        <div id="dbDiskUsed" class="chart"></div>
+
+        <el-divider content-position="left"><h1>{{ $t('Database') }}</h1></el-divider>
+        <div id="dbTableTotalUsed" class="chart"></div>
+        <div id="dbTableDataUsed" class="chart"></div>
+        <div id="dbTableIndexUsed" class="chart"></div>
 
         <el-divider content-position="left"><h1>{{ $t('Server') }}</h1></el-divider>
         <div id="serverCPUPercent" class="chart"></div>
@@ -476,9 +483,25 @@ export default {
           yAxis  : this.createCountYAxisOpt({ max: value => Math.max(parseInt(value.max * 1.1), 100) }),
         },
 
-        dbDiskUsed: {
+        dbTableTotalUsed: {
           textStyle: textStyle,
-          title  : this.createTitleOpt(this.$t('Database Disk Used')),
+          title  : this.createTitleOpt(this.$t('DB Table Total Used')),
+          tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
+          grid   : this.createCommonGridOpt(),
+          xAxis  : this.createTimeXAxisOpt(),
+          yAxis  : this.createVolumnYAxisOpt(),
+        },
+        dbTableDataUsed: {
+          textStyle: textStyle,
+          title  : this.createTitleOpt(this.$t('DB Table Data Used')),
+          tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
+          grid   : this.createCommonGridOpt(),
+          xAxis  : this.createTimeXAxisOpt(),
+          yAxis  : this.createVolumnYAxisOpt(),
+        },
+        dbTableIndexUsed: {
+          textStyle: textStyle,
+          title  : this.createTitleOpt(this.$t('DB Table Index Used')),
           tooltip: this.createTSTooltipOpt({ unit: 'MB'}),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),

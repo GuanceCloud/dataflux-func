@@ -73,23 +73,28 @@ EntityModel.prototype.getSysStats = function(callback) {
     },
     // Get DB Disk usage
     function(asyncCallback) {
-      var metric = 'dbDiskUsed';
+      var dbMetrics = [
+        'dbTableTotalUsed',
+        'dbTableDataUsed',
+        'dbTableIndexUsed',
+      ];
+      async.eachSeries(dbMetrics, function(metric, eachCallback) {
+        sysStats[metric] = {};
 
-      sysStats[metric] = {};
+        var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'table', '*']);
+        var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
 
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'sysStats', ['metric', metric, 'table', '*']);
-      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
+        self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+          if (err) return eachCallback(err);
 
-      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
-        if (err) return asyncCallback(err);
+          for (var k in tsDataMap) {
+            var table = toolkit.parseCacheKey(k).tags.table;
+            sysStats[metric][table] = tsDataMap[k];
+          }
 
-        for (var k in tsDataMap) {
-          var table = toolkit.parseCacheKey(k).tags.table;
-          sysStats[metric][table] = tsDataMap[k];
-        }
-
-        return asyncCallback();
-      });
+          return eachCallback();
+        });
+      }, asyncCallback);
     },
     // Get Cache DB usage
     function(asyncCallback) {

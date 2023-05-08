@@ -44,7 +44,9 @@ Web Server CPU Usage     : Web 服务 CPU 使用率
 Web Server Memory Usage  : Web 服务内存使用量
 Worker CPU Usage         : Worker CPU 使用率
 Worker Memory Usage      : Worker 内存使用量
-DB Disk Usage            : 数据库磁盘使用量
+DB Table Total Used      : 数据库表总用量（数据 + 索引）
+DB Table Data Used       : 数据库表数据用量
+DB Table Index Used      : 数据库表索引用量
 Cache DB Number          : 缓存数据库序号
 Cache Key Count          : 缓存键数量
 Cache Memory Usage       : 缓存内存使用量
@@ -162,7 +164,8 @@ Wroker Queue Length      : Worker 队列长度
                 </template>
 
                 <el-form-item>
-                  <el-button @click="clearLogCacheTables" v-if="dbDiskUsedInfoTEXT">{{ $t('Clear Log and Cache') }}</el-button>
+                  <el-button @click="clearLogCacheTables"
+                    v-if="dbTableTotalUsedInfoTEXT || dbTableDataUsedInfoTEXT || dbTableIndexUsedInfoTEXT">{{ $t('Clear Log and Cache') }}</el-button>
 
                   <el-dropdown trigger="click" @command="clearWorkerQueue" v-if="workerQueues.length > 0">
                     <el-button>{{ $t('Clear Worker Queue') }}</el-button>
@@ -250,7 +253,9 @@ export default {
       this.serverMemoryRSSInfoTEXT   = '';
       this.workerCPUPercentInfoTEXT  = '';
       this.workerMemoryPSSInfoTEXT   = '';
-      this.dbDiskUsedInfoTEXT        = '';
+      this.dbTableTotalUsedInfoTEXT  = '';
+      this.dbTableDataUsedInfoTEXT   = '';
+      this.dbTableIndexUsedInfoTEXT  = '';
       this.cacheDBMemoryUsedInfoTEXT = '';
       this.cacheDBKeyUsedInfoTEXT    = '';
       this.workerQueueLengthInfoTEXT = '';
@@ -265,13 +270,12 @@ export default {
             tsDataMap = { '': tsDataMap };
           }
 
-          let infoLines = [];
-
           let maxNameLength = 0;
           for (let name in tsDataMap) {
             if (name.length > maxNameLength) maxNameLength = name.length;
           }
 
+          let infoLinesObj = [];
           for (let name in tsDataMap) {
             let tsData = tsDataMap[name];
 
@@ -290,9 +294,16 @@ export default {
             if (Array.isArray(unit)) {
               unit = latestValue > 1 ? unit[0] : unit[1];
             }
-            infoLines.push(`${prefix}${name}${padding} = ${latestValue}${unit}`);
+            infoLinesObj.push({ prefix, name, padding, latestValue, unit });
           }
 
+          infoLinesObj.sort((a, b) => {
+            if (a.latestValue > b.latestValue) return -1;
+            else if (a.latestValue < b.latestValue) return 1;
+            else return 0;
+          });
+
+          let infoLines = infoLinesObj.map(obj => `${obj.prefix}${obj.name}${obj.padding} = ${obj.latestValue}${obj.unit}`);
           return infoLines.join('\n');
         }
 
@@ -302,7 +313,9 @@ export default {
         this.serverMemoryRSSInfoTEXT   = _getInfo(sysStats.serverMemoryRSS,   ' MB');
         this.workerCPUPercentInfoTEXT  = _getInfo(sysStats.workerCPUPercent,  '%');
         this.workerMemoryPSSInfoTEXT   = _getInfo(sysStats.workerMemoryPSS,   ' MB');
-        this.dbDiskUsedInfoTEXT        = _getInfo(sysStats.dbDiskUsed,        ' MB');
+        this.dbTableTotalUsedInfoTEXT  = _getInfo(sysStats.dbTableTotalUsed,  ' MB');
+        this.dbTableDataUsedInfoTEXT   = _getInfo(sysStats.dbTableDataUsed,   ' MB');
+        this.dbTableIndexUsedInfoTEXT  = _getInfo(sysStats.dbTableIndexUsed,  ' MB');
         this.cacheDBKeyUsedInfoTEXT    = _getInfo(sysStats.cacheDBKeyUsed,    [' Keys', ' Key']);
         this.cacheDBMemoryUsedInfoTEXT = _getInfo(sysStats.cacheDBMemoryUsed, ' MB');
         this.workerQueueLengthInfoTEXT = _getInfo(sysStats.workerQueueLength, [' Tasks', ' Task'], '#');
@@ -320,7 +333,9 @@ export default {
         this.serverMemoryRSSInfoTEXT   = this.NO_INFO_TEXT;
         this.workerCPUPercentInfoTEXT  = this.NO_INFO_TEXT;
         this.workerMemoryPSSInfoTEXT   = this.NO_INFO_TEXT;
-        this.dbDiskUsedInfoTEXT        = this.NO_INFO_TEXT;
+        this.dbTableTotalUsedInfoTEXT  = this.NO_INFO_TEXT;
+        this.dbTableDataUsedInfoTEXT   = this.NO_INFO_TEXT;
+        this.dbTableIndexUsedInfoTEXT  = this.NO_INFO_TEXT;
         this.cacheDBKeyUsedInfoTEXT    = this.NO_INFO_TEXT;
         this.cacheDBMemoryUsedInfoTEXT = this.NO_INFO_TEXT;
         this.workerQueueLengthInfoTEXT = this.NO_INFO_TEXT;
@@ -426,7 +441,9 @@ export default {
         `\n[${this.$t('Web Server Memory Usage')}]`,   this.serverMemoryRSSInfoTEXT,
         `\n[${this.$t('Worker CPU Usage')}]`,          this.workerCPUPercentInfoTEXT,
         `\n[${this.$t('Worker Memory Usage')}]`,       this.workerMemoryPSSInfoTEXT,
-        `\n[${this.$t('DB Disk Usage')}]`,             this.dbDiskUsedInfoTEXT,
+        `\n[${this.$t('DB Table Total Used')}]`,       this.dbTableTotalUsedInfoTEXT,
+        `\n[${this.$t('DB Table Data Used')}]`,        this.dbTableDataUsedInfoTEXT,
+        `\n[${this.$t('DB Table Index Used')}]`,       this.dbTableIndexUsedInfoTEXT,
         `\n[${this.$t('Cache DB Number')}]`,           this.cacheDBNumberInfoTEXT,
         `\n[${this.$t('Cache Key Count')}]`,           this.cacheDBKeyUsedInfoTEXT,
         `\n[${this.$t('Cache Memory Usage')}]`,        this.cacheDBMemoryUsedInfoTEXT,
@@ -461,7 +478,9 @@ export default {
       showSystemReport: false,
 
       dbSchemaVersionInfoTEXT  : '',
-      dbDiskUsedInfoTEXT       : '',
+      dbTableTotalUsedInfoTEXT : '',
+      dbTableDataUsedInfoTEXT  : '',
+      dbTableIndexUsedInfoTEXT : '',
       cacheDBNumberInfoTEXT    : '',
       cacheDBKeyUsedInfoTEXT   : '',
       cacheDBMemoryUsedInfoTEXT: '',
