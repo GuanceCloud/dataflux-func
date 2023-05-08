@@ -1,14 +1,14 @@
 <template>
-  <el-footer v-if="pageInfo && pageInfo.pageCount > 0" class="paging-area">
+  <el-footer v-if="T.notNothing(pageInfo)" class="paging-area">
     <el-pagination
       background
       @size-change="T.changePageSize"
       @current-change="T.goToPageNumber"
       layout="total, sizes, prev, pager, next, jumper"
-      :page-sizes="[10, 20, 50, 100]"
+      :page-sizes="[3, 10, 20, 50, 100]"
       :current-page="pageInfo.pageNumber"
       :page-size="pageInfo.pageSize"
-      :page-count="pageInfo.pageCount"
+      :page-count="pageCount"
       :total="pageInfo.totalCount">
     </el-pagination>
   </el-footer>
@@ -23,12 +23,19 @@ export default {
   },
   methods: {
   },
-  computed: {
-  },
   props: {
     pageInfo: Object,
   },
   computed: {
+    pageCount() {
+      if (this.pageInfo.pageCount) {
+        return this.pageInfo.pageCount;
+      } else if (this.pageInfo.count < this.pageInfo.pageSize) {
+        return this.pageInfo.pageNumber;
+      } else {
+        return this.pageInfo.pageNumber + 1;
+      }
+    }
   },
   data() {
     return {}

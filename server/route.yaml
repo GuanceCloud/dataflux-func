@@ -5098,7 +5098,7 @@ taskInfoAPI:
     response     : json
     requireSignIn: true
     privilege    : general_r
-    paging       : true
+    paging       : simple
     fieldSelecting: true
     fuzzySearch:
       - task.id
