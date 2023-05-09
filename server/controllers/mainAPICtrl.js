@@ -1363,31 +1363,21 @@ exports.overview = function(req, res, next) {
   var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemConfigs.SCRIPT_SET_HIDDEN_BUILTIN;
   var nonScriptSetOriginIds                    = [];
   async.series([
-    // 获取 SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET 配置
+    // 获取系统配置
     function(asyncCallback) {
-      systemConfigModel.get('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET', [ 'value' ], function(err, dbRes) {
+      var systemConfigIds = [
+        'SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET',
+        'SCRIPT_SET_HIDDEN_BUILTIN',
+      ]
+      systemConfigModel.get(systemConfigIds, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        if (dbRes) {
-          SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.value;
-        }
-
+        SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
         if (SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET) {
           nonScriptSetOriginIds.push('smkt-official');
         }
 
-        return asyncCallback();
-      });
-    },
-    // 获取 SCRIPT_SET_HIDDEN_BUILTIN 配置
-    function(asyncCallback) {
-      systemConfigModel.get('SCRIPT_SET_HIDDEN_BUILTIN', [ 'value' ], function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (dbRes) {
-          SCRIPT_SET_HIDDEN_BUILTIN = dbRes.value;
-        }
-
+        SCRIPT_SET_HIDDEN_BUILTIN = dbRes.SCRIPT_SET_HIDDEN_BUILTIN;
         if (SCRIPT_SET_HIDDEN_BUILTIN) {
           nonScriptSetOriginIds.push('builtin');
         }
@@ -2172,22 +2162,10 @@ exports.getSystemConfig = function(req, res, next) {
     },
     // 获取系统配置表配置
     function(asyncCallback) {
-      var opt = {
-        filters: {
-          id: {in: Object.keys(CONST.systemConfigs)}
-        }
-      };
-      systemConfigModel.list(opt, function(err, dbRes) {
+      systemConfigModel.get(Object.keys(CONST.systemConfigs), function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        var variableConfigs = toolkit.jsonCopy(CONST.systemConfigs);
-        dbRes.forEach(function(d) {
-          if (toolkit.notNothing(d.value)) {
-            variableConfigs[d.id] = d.value;
-          }
-        });
-
-        systemConfig.VARIABLE_CONFIG = variableConfigs;
+        systemConfig.VARIABLE_CONFIG = dbRes;
 
         return asyncCallback();
       });

@@ -4,7 +4,7 @@ Custom Site Favicon        : 自定义网站 Favicon
 Custom Site Logo           : 自定义网站 Logo
 Notice Bar                 : 顶部提示栏
 Doc Link in Navi Bar       : 导航栏文档链接
-Monitor Data Report        : 监控数据上报
+Guance Data Report        : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
 
@@ -184,25 +184,25 @@ Save and Refresh: 保存并刷新
                     v-model="form['NAVI_DOC_LINK_URL']"></el-input>
                 </el-form-item>
 
-                <!-- 监控数据上传 -->
-                <el-divider content-position="left"><h1>{{ $t('Monitor Data Report') }}</h1></el-divider>
+                <!-- 观测云数据上传 -->
+                <el-divider content-position="left"><h1>{{ $t('Guance Data Report') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Report the monitor data of DataFlux Func to the specified URL')" />
                 </el-form-item>
 
-                <el-form-item :label="$t('Enable')" prop="MONITOR_DATA_UPLOAD_ENABLED">
-                  <el-select v-model="form['MONITOR_DATA_UPLOAD_ENABLED']" :class="enableClass(form['MONITOR_DATA_UPLOAD_ENABLED'])">
+                <el-form-item :label="$t('Enable')" prop="GUANCE_DATA_UPLOAD_ENABLED">
+                  <el-select v-model="form['GUANCE_DATA_UPLOAD_ENABLED']" :class="enableClass(form['GUANCE_DATA_UPLOAD_ENABLED'])">
                     <el-option :label="$t('Enabled')" key="true"   :value="true"></el-option>
                     <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('URL')" prop="MONITOR_DATA_UPLOAD_URL">
+                <el-form-item :label="$t('URL')" prop="GUANCE_DATA_UPLOAD_URL">
                   <el-input placeholder="http(s)://<DataKit / DataWay Domain>:<Port>?token=<Token>"
                     type="textarea"
                     :autosize="{ minRows: 2 }"
-                    v-model="form['MONITOR_DATA_UPLOAD_URL']"></el-input>
+                    v-model="form['GUANCE_DATA_UPLOAD_URL']"></el-input>
                 </el-form-item>
 
                 <!-- 官方脚本市场 -->

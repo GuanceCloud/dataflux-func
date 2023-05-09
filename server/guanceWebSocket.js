@@ -418,10 +418,10 @@ exports.runListener = function runListener(app) {
 
         var systemConfigModel = systemConfigMod.createModel(app.locals);
 
-        systemConfigModel.get('DATAFLUX_FUNC_ID', [ 'value' ], function(err, dbRes) {
+        systemConfigModel.get('DATAFLUX_FUNC_ID', function(err, dbRes) {
           if (err) return asyncCallback(err);
 
-          dataFluxFuncId = dbRes.value;
+          dataFluxFuncId = dbRes.DATAFLUX_FUNC_ID;
 
           return asyncCallback();
         });

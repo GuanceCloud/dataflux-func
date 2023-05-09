@@ -7,6 +7,7 @@ var async = require('async');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
+var CONST       = require('../utils/yamlResources').get('CONST');
 var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
@@ -32,6 +33,33 @@ exports.createModel = function(locals) {
 };
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
+
+EntityModel.prototype.get = function(ids, callback) {
+  ids = toolkit.asArray(ids);
+
+  var opt = {
+    filters: {
+      id: { in: ids },
+    }
+  }
+  this.list(opt, function(err, dbRes) {
+    if (err) return callback(err);
+
+    var result = {};
+
+    // 默认值
+    ids.forEach(function(id) {
+      result[id] = CONST.systemConfigs[id];
+    });
+
+    // 用户配置
+    dbRes.forEach(function(d) {
+      result[d.id] = d.value;
+    });
+
+    return callback(null, result);
+  });
+};
 
 EntityModel.prototype.set = function(id, newValue, callback) {
   var self = this;

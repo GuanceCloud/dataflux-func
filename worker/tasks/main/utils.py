@@ -118,7 +118,7 @@ class SyncCache(BaseTask):
         'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
     }
 
-    def _monitor_data_report(self, points, category='metric'):
+    def report_guance_points(self, points, category='metric'):
         _config = {}
 
         # 查询配置
@@ -129,7 +129,7 @@ class SyncCache(BaseTask):
                 WHERE
                     id IN (?)
                 '''
-        sql_params = [ [ 'MONITOR_DATA_UPLOAD_ENABLED', 'MONITOR_DATA_UPLOAD_URL'] ]
+        sql_params = [ [ 'GUANCE_DATA_UPLOAD_ENABLED', 'GUANCE_DATA_UPLOAD_URL'] ]
         db_res = self.db.query(sql, sql_params)
         for d in db_res:
             try:
@@ -139,8 +139,8 @@ class SyncCache(BaseTask):
                 for line in traceback.format_exc().splitlines():
                     self.logger.error(line)
 
-        upload_enabled = _config.get('MONITOR_DATA_UPLOAD_ENABLED') or False
-        upload_url     = _config.get('MONITOR_DATA_UPLOAD_URL')     or None
+        upload_enabled = _config.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = _config.get('GUANCE_DATA_UPLOAD_URL')     or None
         if not all([upload_enabled, upload_url]):
             return
 
@@ -435,9 +435,9 @@ class SyncCache(BaseTask):
             else:
                 data.append(cache_res)
 
-        # 搜集任务记录限额，组装监控上报数据，写入本地 DB 数据
+        # 搜集任务记录限额，组装观测云上报数据，写入本地 DB 数据
         entity_task_info_limit_map = {}
-        monitor_data_points        = []
+        guance_points           = []
         for d in data:
             origin    = d.get('origin')
             origin_id = d.get('originId')
@@ -446,7 +446,7 @@ class SyncCache(BaseTask):
             task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
             entity_task_info_limit_map[origin_id] = task_info_limit
 
-            # 组装监控上报数据
+            # 组装观测云上报数据
             _point = {
                 'measurement': 'DFF_task_info',
                 'tags': {
@@ -465,7 +465,7 @@ class SyncCache(BaseTask):
                 },
                 'timestamp': d['triggerTimeMs'],
             }
-            monitor_data_points.append(_point)
+            guance_points.append(_point)
 
             # 写入数据库
             if task_info_limit > 0:
@@ -491,8 +491,8 @@ class SyncCache(BaseTask):
                 sql_params = [ _data ]
                 self.db.query(sql, sql_params)
 
-        # 发送监控数据
-        self._monitor_data_report(monitor_data_points)
+        # 发送数据
+        self.report_guance_points(guance_points)
 
         # 数据回卷
         for origin_id, task_info_limit in entity_task_info_limit_map.items():

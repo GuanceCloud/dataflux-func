@@ -240,6 +240,8 @@ class BaseTask(app.Task):
     def unlock(self, lock_key, lock_value):
         self.cache_db.unlock(lock_key, lock_value)
 
+    def system_config(self, system_config_id):
+
 class BaseResultSavingTask(app.Task):
     '''
     Base result saving task class
