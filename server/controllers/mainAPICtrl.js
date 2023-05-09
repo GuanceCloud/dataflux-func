@@ -249,7 +249,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       }
     }
 
-    // TODO: 自动填充 execMode 处理需要考虑重构
+    // TODO 自动填充 execMode 处理需要考虑重构
     // 执行模式（优先级：调用时指定 > 默认值）
     if (toolkit.notNothing(funcCallOptions.execMode)) {
       // 调用时指定
