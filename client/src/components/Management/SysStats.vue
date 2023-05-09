@@ -264,7 +264,10 @@ export default {
       opt = opt || {};
       return {
         trigger: 'axis',
-        axisPointer: { animation: false },
+        axisPointer: { animation: false, type: 'cross' },
+        showDelay: 0,
+        hideDelay: 0,
+        transitionDuration: 0,
         formatter: params => {
           let sortedParams = this.T.jsonCopy(params);
           sortedParams.sort((a, b) => {
@@ -281,6 +284,8 @@ export default {
               }
             }
           });
+
+          let nDigits = 'number' === typeof opt.nDigits ? opt.nDigits : 1;
 
           let tooltipHTML = this.T.getDateTimeString(params[0].data[0]);
           tooltipHTML += '<br>';
@@ -303,7 +308,7 @@ export default {
               tooltipHTML += '<td style="font-size: 12px">' + p.seriesName + '</td>';
               tooltipHTML += '<td style="font-size: 12px">:</td>';
             }
-            tooltipHTML += '<td style="font-size: 12px" align="right">' + p.data[1] + '</td>';
+            tooltipHTML += '<td style="font-size: 12px" align="right">' + p.data[1].toFixed(nDigits) + '</td>';
             tooltipHTML += '<td style="font-size: 12px">' + unit + '</td>';
             tooltipHTML += '</tr>';
           }
@@ -469,7 +474,7 @@ export default {
         funcCallCount: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Func Call Count')),
-          tooltip: this.createTSTooltipOpt({ unit: ['Times', 'Time']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Times', 'Time'], nDigits: 0 }),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
@@ -477,7 +482,7 @@ export default {
         workerQueueLength: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Worker Queue Length')),
-          tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task'], nDigits: 0 }),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt({ max: value => Math.max(parseInt(value.max * 1.1), 100) }),
@@ -519,7 +524,7 @@ export default {
         cacheDBKeyUsed: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Cache Key Used')),
-          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key'], nDigits: 0 }),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
@@ -527,7 +532,7 @@ export default {
         cacheDBKeyCountByPrefix: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Cache Key Count by Prefix')),
-          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key']}),
+          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key'], nDigits: 0 }),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
@@ -535,7 +540,7 @@ export default {
         matchedRouteCount: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Matched Route Count')),
-          tooltip: this.createCommonTooltipOpt(),
+          tooltip: this.createCommonTooltipOpt({ nDigits: 0 }),
           grid   : this.createCountGridOpt(),
           xAxis  : this.createCountXAxisOpt(),
           yAxis  : this.createCateYAxisOpt(),
