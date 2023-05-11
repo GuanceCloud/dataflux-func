@@ -95,8 +95,7 @@ def on_event(self, *args, **kwargs):
 
             do_http_request.apply_async(task_id=gen_task_id(), kwargs=task_kwargs, headers=task_headers)
 
-@app.task(name='Webhook.DoHTTPRequest', bind=True, base=BaseTask,
-        autoretry_for=(Exception,), retry_backoff=True, retry_backoff_max=3600, max_retries=3)
+@app.task(name='Webhook.DoHTTPRequest', bind=True, base=BaseTask, autoretry_for=(Exception,), retry_backoff=True, retry_backoff_max=3600, max_retries=3)
 def do_http_request(self, *args, **kwargs):
     self.logger.info('Webhook doHTTPRequest Task started.')
 
@@ -120,9 +119,5 @@ def do_http_request(self, *args, **kwargs):
     }
 
     status_code, resp = dff.post(webhook_full_url, body=webhook_body)
-    if status_code >= 400:
-        e = Exception(resp)
-        raise e
-
     return resp
 

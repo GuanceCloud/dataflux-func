@@ -434,7 +434,7 @@ class DataWay(object):
                 print(colored(output, color))
 
         if resp_status_code >= 400:
-            e = Exception(resp_status_code, resp_data)
+            e = Exception(resp_status_code, resp_raw_data)
             raise e
 
         return resp_status_code, resp_data

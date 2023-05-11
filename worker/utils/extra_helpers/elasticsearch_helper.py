@@ -77,7 +77,7 @@ class ElasticSearchHelper(object):
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
-            e = Exception(r.status_code, parsed_resp)
+            e = Exception(r.status_code, r.text)
             raise e
 
         return r.status_code, parsed_resp

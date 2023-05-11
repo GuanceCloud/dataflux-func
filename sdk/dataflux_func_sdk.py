@@ -254,6 +254,10 @@ class DataFluxFunc(object):
             print(colored('{} {}'.format('[Response]', resp_status_code), _color))
             print(colored('{} {}'.format('[Body]', ensure_str(resp_raw_data)), _color))
 
+        if resp_status_code >= 400:
+            e = Exception(resp_status_code, resp_raw_data)
+            raise e
+
         return resp_status_code, resp_data
 
     def upload(self, path, file_buffer, filename=None, query=None, fields=None, headers=None, trace_id=None):
@@ -325,6 +329,10 @@ class DataFluxFunc(object):
 
             print(colored('{} {}'.format('[Response]', resp_status_code), _color))
             print(colored('{} {}'.format('[Body]', ensure_str(resp_raw_data)), _color))
+
+        if resp_status_code >= 400:
+            e = Exception(resp_status_code, resp_raw_data)
+            raise e
 
         return resp_status_code, resp_data
 

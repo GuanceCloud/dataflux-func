@@ -72,7 +72,9 @@ class NSQLookupHelper(object):
                 for nsq_node in self.nsq_nodes:
                     url = '{}://{}/ping'.format(self.config['protocol'], nsq_node)
                     r = requests.get(url, timeout=self.config['timeout'])
-                    r.raise_for_status()
+                    if r.status_code >= 400:
+                        e = Exception(r.status_code, r.text)
+                        raise e
 
             else:
                 self.query('get', '/nodes')
@@ -127,7 +129,7 @@ class NSQLookupHelper(object):
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
-            e = Exception(r.status_code, parsed_resp)
+            e = Exception(r.status_code, r.text)
             raise e
 
         return r.status_code, parsed_resp
@@ -152,5 +154,7 @@ class NSQLookupHelper(object):
         self.logger.debug('[NSQLOOKUP] Pub -> `{}`'.format(topic))
 
         r = requests.post(url, params=query, data=message, timeout=timeout)
-        r.raise_for_status()
+        if r.status_code >= 400:
+            e = Exception(r.status_code, r.text)
+            raise e
 

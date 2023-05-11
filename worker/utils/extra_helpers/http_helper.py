@@ -19,7 +19,8 @@ class HTTPHelper(object):
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
-            raise Exception(parsed_resp)
+            e = Exception(r.status_code, r.text)
+            raise e
 
         return parsed_resp
 
@@ -28,6 +29,7 @@ class HTTPHelper(object):
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
-            raise Exception(parsed_resp)
+            e = Exception(r.status_code, r.text)
+            raise e
 
         return parsed_resp

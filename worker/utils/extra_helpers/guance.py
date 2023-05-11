@@ -32,7 +32,9 @@ class Guance(object):
         '''
         url = self.url + path
         resp = requests.get(url=url, params=query, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            e = Exception(resp.status_code, resp.text)
+            raise e
 
         return resp.json()
 
@@ -72,7 +74,9 @@ class Guance(object):
         '''
         url = self.url + path
         resp = requests.post(url=url, params=query, json=body, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            e = Exception(resp.status_code, resp.text)
+            raise e
 
         return resp.json()
 
@@ -87,7 +91,9 @@ class Guance(object):
             'funcBody': { 'kwargs': kwargs or {} }
         }
         resp = requests.post(url=url, json=body, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            e = Exception(resp.status_code, resp.text)
+            raise e
 
         func_resp = resp.json()['content']
         if func_resp['error'] > 200:
