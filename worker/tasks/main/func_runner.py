@@ -152,8 +152,6 @@ class FuncRunnerTask(ScriptBaseTask):
         full_log_message = '\n'.join(log_messages)
         if einfo_text:
             full_log_message = '\n'.join([ full_log_message, ' Stack '.center(30, '-'), einfo_text])
-        if edump_text:
-            full_log_message = '\n'.join([ full_log_message, ' Error '.center(30, '-'), edump_text])
 
         guance_points = [{
             'measurement': 'DFF_func_log',
@@ -164,7 +162,6 @@ class FuncRunnerTask(ScriptBaseTask):
                 'origin_id'       : origin_id,
                 'root_task_id'    : root_task_id,
                 'func_id'         : func_id,
-                'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
                 'exec_mode'       : exec_mode,
                 'status'          : status,
                 'trigger_time_cn' : toolkit.to_cn_time_str(trigger_time_ms),
@@ -173,10 +170,12 @@ class FuncRunnerTask(ScriptBaseTask):
                 'queue'           : self.queue,
             },
             'fields': {
-                'wait_cost' : start_time_ms - trigger_time_ms,
-                'run_cost'  : end_time_ms   - start_time_ms,
-                'total_cost': end_time_ms   - trigger_time_ms,
-                'message'   : full_log_message,
+                'wait_cost'       : start_time_ms - trigger_time_ms,
+                'run_cost'        : end_time_ms   - start_time_ms,
+                'total_cost'      : end_time_ms   - trigger_time_ms,
+                'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
+                'edump_text'      : edump_text or 'NONE',
+                'message'         : full_log_message,
             },
             'timestamp': trigger_time_ms,
         }]
