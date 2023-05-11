@@ -21,6 +21,7 @@ from worker.utils import yaml_resources, toolkit
 # Configure
 BASE_PATH  = os.path.dirname(os.path.abspath(__file__))
 CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'))
+CONST      = yaml_resources.load_file('CONST', os.path.join(BASE_PATH, '../const.yaml'))
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
 
 WORKER_ID     = toolkit.gen_time_serial_seq()

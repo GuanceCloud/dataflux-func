@@ -355,6 +355,9 @@ def to_iso_datetime(d):
     d_arrow = to_arrow(d)
     return d_arrow.isoformat()
 
+def to_cn_time_str(d=None):
+    return arrow.get(d).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
+
 def to_boolean(o):
     if isinstance(o, bool):
         return o

@@ -103,6 +103,7 @@ class FuncRunnerTask(ScriptBaseTask):
         if isinstance(task_info_limit, (int, float)) and task_info_limit <= 0:
             return
 
+        # 记录本地数据库
         data = {
             'id'            : self.request.id,
             'origin'        : origin,
@@ -116,7 +117,7 @@ class FuncRunnerTask(ScriptBaseTask):
             'startTimeMs'   : start_time_ms,
             'endTimeMs'     : int(time.time() * 1000),
             'taskInfoLimit' : task_info_limit,
-            'queue'         : self.queue,
+            'queue'         : str(self.queue),
         }
 
         if log_messages:
@@ -144,6 +145,35 @@ class FuncRunnerTask(ScriptBaseTask):
         data = toolkit.json_dumps(data, indent=0)
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
         self.cache_db.run('lpush', cache_key, data)
+
+        # 上传到观测云
+        end_time_ms = int(time.time() * 1000)
+        guance_points = [{
+            'measurement': 'DFF_func_log',
+            'tags': {
+                'workspace_uuid'  : func_call_kwargs.get('workspace_uuid') or 'NONE',
+                'task_id'         : self.request.id,
+                'origin'          : origin,
+                'origin_id'       : origin_id,
+                'root_task_id'    : root_task_id,
+                'func_id'         : func_id,
+                'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
+                'exec_mode'       : exec_mode,
+                'status'          : status,
+                'trigger_time_cn' : toolkit.to_cn_time_str(trigger_time_ms),
+                'start_time_cn'   : toolkit.to_cn_time_str(start_time_ms),
+                'end_time_cn'     : toolkit.to_cn_time_str(end_time_ms),
+                'queue'           : self.queue,
+            },
+            'fields': {
+                'wait_cost' : start_time_ms - trigger_time_ms,
+                'run_cost'  : end_time_ms   - start_time_ms,
+                'total_cost': end_time_ms   - trigger_time_ms,
+                'message'   : '\n'.join(log_messages),
+            },
+            'timestamp': trigger_time_ms,
+        }]
+        self.report_guance_points('logging', guance_points)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
         if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):

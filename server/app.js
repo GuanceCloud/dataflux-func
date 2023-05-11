@@ -26,7 +26,7 @@ IMAGE_INFO.CREATE_TIMESTAMP = IMAGE_INFO.CREATE_TIMESTAMP || parseInt(Date.now()
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
 
-yamlResources.loadFile('CONST',     path.join(__dirname, './const.yaml'));
+yamlResources.loadFile('CONST',     path.join(__dirname, '../const.yaml'));
 yamlResources.loadFile('ROUTE',     path.join(__dirname, './route.yaml'));
 yamlResources.loadFile('PRIVILEGE', path.join(__dirname, './privilege.yaml'));
 

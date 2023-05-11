@@ -4,7 +4,7 @@ Custom Site Favicon        : 自定义网站 Favicon
 Custom Site Logo           : 自定义网站 Logo
 Notice Bar                 : 顶部提示栏
 Doc Link in Navi Bar       : 导航栏文档链接
-Guance Data Report        : 观测云数据上报
+Guance Data Report         : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
 
@@ -20,6 +20,7 @@ URL                        : URL 地址
 DataKit / DataWay URL      : DataKit / DataWay URL 地址
 From Official Script Market: 来自官方脚本市场
 Builtin                    : 内置脚本集
+Site Name                  : 站点名
 
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
 'System Config Saved. Page will be refreshed soon...': '系统配置已保存，页面即将刷新...'
@@ -203,6 +204,10 @@ Save and Refresh: 保存并刷新
                     type="textarea"
                     :autosize="{ minRows: 2 }"
                     v-model="form['GUANCE_DATA_UPLOAD_URL']"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('Site Name')" prop="GUANCE_DATA_SITE_NAME">
+                  <el-input v-model="form['GUANCE_DATA_SITE_NAME']"></el-input>
                 </el-form-item>
 
                 <!-- 官方脚本市场 -->

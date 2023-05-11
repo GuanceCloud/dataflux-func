@@ -3,9 +3,12 @@
 # Built-in Modules
 import time
 import traceback
+from urllib.parse import urljoin
 
 # 3rd-party Modules
 import six
+import arrow
+import requests
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 import celery.states as celery_status
 
@@ -14,10 +17,20 @@ from worker.app import app
 from worker.utils import toolkit, yaml_resources
 from worker.utils.log_helper import LogHelper, LOG_LEVELS
 from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
+from worker.utils.extra_helpers.dataway import DataWay
 
+CONST  = yaml_resources.get('CONST')
 CONFIG = yaml_resources.get('CONFIG')
 
 CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
+
+GUANCE_DATA_DEFAULT_STATUS = 'info'
+GUANCE_DATA_STATUS_MAP = {
+    'success': 'ok',
+    'failure': 'error',
+    'ok'     : 'ok',
+    'error'  : 'error'
+}
 
 class TaskInLockedException(Exception):
     pass
@@ -240,7 +253,72 @@ class BaseTask(app.Task):
     def unlock(self, lock_key, lock_value):
         self.cache_db.unlock(lock_key, lock_value)
 
-    def system_config(self, system_config_id):
+    def get_system_config(self, system_config_ids):
+        system_config_ids = toolkit.as_array(system_config_ids)
+
+        sql = '''SELECT
+                    id
+                    ,value
+                FROM wat_main_system_config
+                WHERE
+                    id IN (?)
+                '''
+        sql_params = [ system_config_ids ]
+        db_res = self.db.query(sql, sql_params)
+
+        result = {}
+
+        # 默认值
+        for _id in system_config_ids:
+            result[_id] = CONST['systemConfigs'][_id]
+
+        # 用户配置
+        for d in db_res:
+            result[d['id']] = toolkit.json_loads(d['value'])
+
+        return result
+
+    def report_guance_points(self, category, points):
+        if not points:
+            return
+
+        points = toolkit.as_array(points)
+
+        # 查询配置
+        system_config_ids = [
+            'GUANCE_DATA_UPLOAD_ENABLED',
+            'GUANCE_DATA_UPLOAD_URL',
+            'GUANCE_DATA_SITE_NAME',
+        ]
+        _config = self.get_system_config(system_config_ids)
+
+        upload_enabled = _config.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = _config.get('GUANCE_DATA_UPLOAD_URL')     or None
+        if not all([upload_enabled, upload_url]):
+            return
+
+        for p in points:
+            p['tags'] = p.get('tags') or {}
+
+            # 替换 tags.status 值
+            guance_status = GUANCE_DATA_DEFAULT_STATUS
+            try:
+                guance_status = GUANCE_DATA_STATUS_MAP[p['tags']['status']]
+            except Exception as e:
+                pass
+            finally:
+                p['tags']['status'] = guance_status
+
+            # 添加 tags.site_name
+            site_name = _config.get('GUANCE_DATA_SITE_NAME')
+            if site_name:
+                p['tags']['site_name'] = site_name
+
+        # 上报数据
+        dataway = DataWay(url=upload_url)
+        status_code, resp_data = dataway.post_line_protocol(points, path=f'/v1/write/{category}')
+        if status_code > 200:
+            self.logger.error(resp_data)
 
 class BaseResultSavingTask(app.Task):
     '''

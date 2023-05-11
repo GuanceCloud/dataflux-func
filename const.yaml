@@ -104,10 +104,12 @@ systemConfigs:
   # 导航文档地址
   NAVI_DOC_LINK_URL: 'https://func.guance.com/#/doc-index'
 
-  # 是否启用观测数据上传
+  # 是否启用观测云数据上传
   GUANCE_DATA_UPLOAD_ENABLED: false
-  # 观测数据上传地址
+  # 观测云数据上传地址
   GUANCE_DATA_UPLOAD_URL: null
+  # 观测云数据上传附带的 tags.site_name
+  GUANCE_DATA_SITE_NAME: null
 
   # 是否启用官方脚本市场
   OFFICIAL_SCRIPT_MARKET_ENABLED: true

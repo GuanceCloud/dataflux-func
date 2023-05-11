@@ -10,7 +10,6 @@ import traceback
 import pprint
 import os
 import textwrap
-from urllib.parse import urljoin
 
 # 3rd-party Modules
 import six
@@ -24,7 +23,6 @@ from worker.tasks import gen_task_id
 from worker.tasks.main import decipher_connector_config_fields
 from worker.utils.extra_helpers import HexStr
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
-from worker.utils.extra_helpers.datakit import DataKit
 
 # Current Module
 from worker.tasks import BaseTask
@@ -117,45 +115,6 @@ class SyncCache(BaseTask):
         'crontab'    : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB'],
         'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
     }
-
-    def report_guance_points(self, points, category='metric'):
-        _config = {}
-
-        # 查询配置
-        sql = '''SELECT
-                    id
-                    ,value
-                FROM wat_main_system_config
-                WHERE
-                    id IN (?)
-                '''
-        sql_params = [ [ 'GUANCE_DATA_UPLOAD_ENABLED', 'GUANCE_DATA_UPLOAD_URL'] ]
-        db_res = self.db.query(sql, sql_params)
-        for d in db_res:
-            try:
-                _config[d['id']] = toolkit.json_loads(d['value'])
-
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-
-        upload_enabled = _config.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = _config.get('GUANCE_DATA_UPLOAD_URL')     or None
-        if not all([upload_enabled, upload_url]):
-            return
-
-        # 上报数据
-        try:
-            _url_parts = upload_url.split('?')
-            _url_parts[0] = urljoin(_url_parts[0], f'/v1/write/{category}')
-            write_url = '?'.join(_url_parts)
-
-            resp = requests.post(write_url, data=DataKit.prepare_line_protocol(points), timeout=3)
-            resp.raise_for_status()
-
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
 
     def sync_func_call_count(self):
         data = []
@@ -448,20 +407,19 @@ class SyncCache(BaseTask):
 
             # 组装观测云上报数据
             _point = {
-                'measurement': 'DFF_task_info',
+                'measurement': 'DFF_func_stats',
                 'tags': {
-                    'workspaceUUID': d['funcCallKwargs'].get('workspace_uuid') or 'NONE',
-                    'origin'       : d['origin'],
-                    'originId'     : d['originId'],
-                    'funcId'       : d['funcId'],
-                    'execMode'     : d['execMode'],
-                    'status'       : d['status'],
-                    'queue'        : str(d['queue']),
+                    'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or 'NONE',
+                    'origin'        : d['origin'],
+                    'func_id'       : d['funcId'],
+                    'exec_mode'     : d['execMode'],
+                    'status'        : d['status'],
+                    'queue'         : str(d['queue']),
                 },
                 'fields': {
-                    'waitCost' : d['startTimeMs'] - d['triggerTimeMs'],
-                    'runCost'  : d['endTimeMs']   - d['startTimeMs'],
-                    'totalCost': d['endTimeMs']   - d['triggerTimeMs'],
+                    'wait_cost' : d['startTimeMs'] - d['triggerTimeMs'],
+                    'run_cost'  : d['endTimeMs']   - d['startTimeMs'],
+                    'total_cost': d['endTimeMs']   - d['triggerTimeMs'],
                 },
                 'timestamp': d['triggerTimeMs'],
             }
@@ -492,7 +450,7 @@ class SyncCache(BaseTask):
                 self.db.query(sql, sql_params)
 
         # 发送数据
-        self.report_guance_points(guance_points)
+        self.report_guance_points('metric', guance_points)
 
         # 数据回卷
         for origin_id, task_info_limit in entity_task_info_limit_map.items():

@@ -92,11 +92,17 @@ EntityModel.prototype.set = function(id, newValue, callback) {
       var _newValue = JSON.stringify(newValue);
 
       if (systemConfigId) {
-        // 更新数据
-        var nextData = {
-          value: _newValue,
-        };
-        self.modify(systemConfigId, nextData, asyncCallback);
+        if (toolkit.isNothing(newValue)) {
+          // 删除数据
+          self.delete(systemConfigId, asyncCallback);
+
+        } else {
+          // 更新数据
+          var nextData = {
+            value: _newValue,
+          };
+          self.modify(systemConfigId, nextData, asyncCallback);
+        }
 
       } else {
         // 插入数据
