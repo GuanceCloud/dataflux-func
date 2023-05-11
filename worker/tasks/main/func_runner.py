@@ -148,6 +148,13 @@ class FuncRunnerTask(ScriptBaseTask):
 
         # 上传到观测云
         end_time_ms = int(time.time() * 1000)
+
+        message = '\n'.join(log_messages)
+        if einfo_text:
+            message = '\n'.join([ message, ' Stack '.center(30, '-'), einfo_text])
+        if edump_text:
+            message = '\n'.join([ message, ' Error '.center(30, '-'), edump_text])
+
         guance_points = [{
             'measurement': 'DFF_func_log',
             'tags': {
