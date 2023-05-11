@@ -409,7 +409,7 @@ class SyncCache(BaseTask):
             _point = {
                 'measurement': 'DFF_func_stats',
                 'tags': {
-                    'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or 'NONE',
+                    'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or '-',
                     'origin'        : d['origin'],
                     'func_id'       : d['funcId'],
                     'exec_mode'     : d['execMode'],

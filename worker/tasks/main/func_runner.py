@@ -156,7 +156,7 @@ class FuncRunnerTask(ScriptBaseTask):
         guance_points = [{
             'measurement': 'DFF_func_log',
             'tags': {
-                'workspace_uuid'  : func_call_kwargs.get('workspace_uuid') or 'NONE',
+                'workspace_uuid'  : func_call_kwargs.get('workspace_uuid') or '-',
                 'task_id'         : self.request.id,
                 'origin'          : origin,
                 'origin_id'       : origin_id,
@@ -174,7 +174,7 @@ class FuncRunnerTask(ScriptBaseTask):
                 'run_cost'        : end_time_ms   - start_time_ms,
                 'total_cost'      : end_time_ms   - trigger_time_ms,
                 'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
-                'edump_text'      : edump_text or 'NONE',
+                'edump_text'      : edump_text or '-',
                 'message'         : full_log_message,
             },
             'timestamp': trigger_time_ms,
