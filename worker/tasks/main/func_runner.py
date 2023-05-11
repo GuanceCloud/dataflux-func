@@ -149,11 +149,11 @@ class FuncRunnerTask(ScriptBaseTask):
         # 上传到观测云
         end_time_ms = int(time.time() * 1000)
 
-        message = '\n'.join(log_messages)
+        full_log_message = '\n'.join(log_messages)
         if einfo_text:
-            message = '\n'.join([ message, ' Stack '.center(30, '-'), einfo_text])
+            full_log_message = '\n'.join([ full_log_message, ' Stack '.center(30, '-'), einfo_text])
         if edump_text:
-            message = '\n'.join([ message, ' Error '.center(30, '-'), edump_text])
+            full_log_message = '\n'.join([ full_log_message, ' Error '.center(30, '-'), edump_text])
 
         guance_points = [{
             'measurement': 'DFF_func_log',
@@ -176,7 +176,7 @@ class FuncRunnerTask(ScriptBaseTask):
                 'wait_cost' : start_time_ms - trigger_time_ms,
                 'run_cost'  : end_time_ms   - start_time_ms,
                 'total_cost': end_time_ms   - trigger_time_ms,
-                'message'   : '\n'.join(log_messages),
+                'message'   : full_log_message,
             },
             'timestamp': trigger_time_ms,
         }]
