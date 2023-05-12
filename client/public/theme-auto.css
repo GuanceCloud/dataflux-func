@@ -414,25 +414,36 @@ input:disabled {
 .el-tabs__nav {
   background-color: #222 !important;
 }
-.el-tabs__item {
-  border: 1px solid #3c3c3c !important;
-}
-.el-tabs__item.is-active {
-  background-color: #555 !important;
-  color: #fff !important;
-}
 .el-tabs--border-card {
   background: #222 !important;
   border-color: #3c3c3c !important;
 }
-.el-tabs--border-card>.el-tabs__header {
+.el-tabs__nav-wrap::after {
+  background-color: #333 !important;
+}
+
+.el-tabs .el-tabs__item {
+  color: #ccc;
+}
+.el-tabs .el-tabs__item.is-top {
+  border-bottom: 2px solid #333;
+}
+
+.el-tabs--border-card .el-tabs__item {
+  border: 1px solid #3c3c3c !important;
+}
+.el-tabs--border-card .el-tabs__item.is-active {
+  background-color: #333 !important;
+  color: #FF6600 !important;
+}
+.el-tabs--border-card > .el-tabs__header {
   background-color: #222 !important;
   border-bottom: 1px solid #3c3c3c !important;
 }
-.el-tabs--left.el-tabs--border-card .el-tabs__header.is-left {
+.el-tabs--border-card.el-tabs--left .el-tabs__header.is-left {
   border-right: 1px solid #3c3c3c !important;
 }
-.el-tabs--bottom.el-tabs--border-card .el-tabs__header.is-bottom {
+.el-tabs--border-card.el-tabs--bottom .el-tabs__header.is-bottom {
   border-top: 1px solid #3c3c3c !important;
 }
 

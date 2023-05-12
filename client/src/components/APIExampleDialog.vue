@@ -42,7 +42,7 @@ seconds: 秒
     :visible.sync="show"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    width="850px">
+    width="950px">
     <span>
       <template v-if="showOptions">
         <el-divider content-position="left"><h1>{{ $t('Request Options') }}</h1></el-divider>
