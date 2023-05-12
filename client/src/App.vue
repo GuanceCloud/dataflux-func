@@ -113,9 +113,6 @@ export default {
     },
     isSignedIn(val) {
       if (val) {
-        // 登录后
-        this.$store.dispatch('loadUserProfile');
-
         // 加载 API 翻译
         this.$store.dispatch('loadAPINamesLocales');
 

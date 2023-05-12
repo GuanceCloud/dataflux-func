@@ -538,6 +538,10 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    async signIn({ commit, dispatch }, xAuthToken) {
+      commit('updateXAuthToken', xAuthToken);
+      dispatch('loadUserProfile');
+    },
     async signOut({ commit }) {
       await T.callAPI_get('/api/v1/auth/do/sign-out');
 
