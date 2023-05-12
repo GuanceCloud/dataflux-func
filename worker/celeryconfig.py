@@ -22,6 +22,19 @@ imports = [
     'worker.tasks.main',
 ]
 
+# Broker
+broker_transport_options = {
+    'priority_steps'        : list(range(4)), # 0 = system, 1 = high, 2 = medium, 3 = low
+    'queue_order_strategy'  : 'priority',
+    'socket_timeout'        : 10,
+    'socket_connect_timeout': 10,
+}
+redis_backend_health_check_interval = 10
+redis_socket_timeout                = 10
+redis_socket_connect_timeout        = 10
+redis_socket_keepalive              = True
+redis_retry_on_timeout              = True
+
 # Worker
 worker_pool_restarts = True
 
@@ -42,14 +55,6 @@ worker_max_tasks_per_child = CONFIG['_WORKER_MAX_TASKS_PER_CHILD']
 worker_hijack_root_logger  = False
 worker_log_color           = False
 worker_redirect_stdouts    = False
-
-# Broker
-broker_transport_options = {
-    'priority_steps'        : list(range(4)), # 0 = system, 1 = high, 2 = medium, 3 = low
-    'queue_order_strategy'  : 'priority',
-    'socket_timeout'        : 30,
-    'socket_connect_timeout': 30,
-}
 
 # Queue
 task_queues = []

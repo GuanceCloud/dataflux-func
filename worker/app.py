@@ -67,9 +67,7 @@ app.conf.update(
     broker_url=redis_url,
     broker_use_ssl=ssl_options,
     result_backend=redis_url,
-    redis_backend_use_ssl=ssl_options,
-    redis_socket_connect_timeout=30,
-    redis_backend_health_check_interval=30)
+    redis_backend_use_ssl=ssl_options)
 
 # Redis helper
 from worker.utils.log_helper import LogHelper
