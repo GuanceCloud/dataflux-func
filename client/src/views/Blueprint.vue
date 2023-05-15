@@ -201,7 +201,7 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
               @click="openAddGlobalVarInput">{{ $t('Add Global Var') }}</el-button>
           </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
+        <div slot="footer">
           <el-button @click="showItemConfigPanel  = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" @click="updateItemMeta">{{ $t('Confirm') }}</el-button>
         </div>

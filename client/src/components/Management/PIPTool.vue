@@ -135,7 +135,7 @@ installCost: （耗时 {n} 秒）
             </div>
           </div>
         </div>
-        <span slot="footer">
+        <div slot="footer">
           <el-dropdown split-button v-if="isInstalling" @click="showInstallStatus = false" @command="clearInstallStatus">
             {{ $t('Close') }}
             <el-dropdown-menu slot="dropdown">
@@ -143,7 +143,7 @@ installCost: （耗时 {n} 秒）
             </el-dropdown-menu>
           </el-dropdown>
           <el-button v-else type="primary" @click="clearInstallStatus">{{ $t('Finish') }}</el-button>
-        </span>
+        </div>
       </el-dialog>
 
       <LongTextDialog ref="longTextDialog" />

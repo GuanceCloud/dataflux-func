@@ -201,10 +201,10 @@ File already existed                                                            
             </el-form-item>
           </el-form>
         </div>
-        <span slot="footer" class="dialog-footer">
+        <div slot="footer">
           <el-button @click="showInstallWheel = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" @click="installWheel">{{ $t('Install') }}</el-button>
-        </span>
+        </div>
       </el-dialog>
     </el-container>
   </transition>

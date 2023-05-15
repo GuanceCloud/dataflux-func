@@ -50,7 +50,7 @@ Not Now                                                               : 等会�
         </el-form-item>
       </el-form>
 
-      <div slot="footer" class="dialog-footer">
+      <div slot="footer">
         <el-button size="small" @click="$store.commit('updateShowCompleteUserProfile', false)">{{ $t('Cancel') }}</el-button>
         <el-button size="small" type="primary" @click="updateUserProfile()">{{ $t('Save') }}</el-button>
       </div>
@@ -576,9 +576,6 @@ ul {
   width: 100%;
 }
 
-#CompleteUserProfile .el-dialog__body {
-  padding: 5px 20px;
-}
 #CompleteUserProfile p {
   padding: 10px 30px;
   text-align: center;
@@ -1004,6 +1001,17 @@ kbd {
 }
 .el-drawer__body {
   overflow-y: auto;
+}
+
+.el-dialog__header {
+  min-height: 20px !important;
+}
+.el-dialog__body {
+  padding: 5px 20px 20px 20px !important;
+}
+.el-dialog__footer {
+  padding-top: 0 !important;
+  padding-bottom: 20px !important;
 }
 
 /* CodeMirror 修正 */

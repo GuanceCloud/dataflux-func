@@ -58,19 +58,18 @@ Stay Here: 留在本页
 'Processing...': '正在处理...'
 
 Script Set Installed Successfully!: 成功安装脚本集！
-'In addition, this Script Set...' :  '同时，这个脚本集...'
 
-Requires 3rd party Python packages                 : 依赖第三方 Python 包
-Go to PIP Tool                                     : 前往 PIP 工具
-Includes a Startup Script                          : 包含启动脚本（Startup）
-'Includes a Startup Script with following configs:': 包含启动脚本（Startup）及如下配置项目：
-Deploy Startup Script                              : 部署启动脚本
-Deploy Crontab Config                              : 部署自动触发配置
-Startup Script is deployed                         : 启动脚本已部署
-Crontab Config is deployed                         : 自动触发配置已部署
-Crontab Config is not deployed yet                 : 自动触发配置尚未部署
-Go to Startup Script                               : 前往启动脚本
-Go to the Crontab Config                           : 前往自动触发配置
+This Script Set requires 3rd party Python packages                 : 本脚本集依赖第三方 Python 包
+Go to PIP Tool                                                     : 前往 PIP 工具
+This Script Set includes a Startup Script                          : 本脚本集包含启动脚本（Startup）
+'This Script Set includes a Startup Script with following configs:': 本脚本集包含启动脚本（Startup）及如下配置项目：
+Deploy Startup Script                                              : 部署启动脚本
+Deploy Crontab Config                                              : 部署自动触发配置
+Startup Script is deployed                                         : 启动脚本已部署
+Crontab Config is deployed                                         : 自动触发配置已部署
+Crontab Config is not deployed yet                                 : 自动触发配置尚未部署
+Go to Startup Script                                               : 前往启动脚本
+Go to the Crontab Config                                           : 前往自动触发配置
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 
@@ -384,10 +383,9 @@ Translated Text    : 译文
             </el-form-item>
           </template>
         </el-form>
-
-        <div slot="footer" class="dialog-footer">
-          <el-button size="small" @click="showOperation = false">{{ $t('Cancel') }}</el-button>
-          <el-button size="small" type="primary" @click="submitData(operation)" :loading="isProcessing">{{ operationButtonTitle }}</el-button>
+        <div slot="footer">
+          <el-button @click="showOperation = false">{{ $t('Cancel') }}</el-button>
+          <el-button type="primary" @click="submitData(operation)" :loading="isProcessing">{{ operationButtonTitle }}</el-button>
         </div>
       </el-dialog>
 
@@ -404,11 +402,10 @@ Translated Text    : 译文
             <i class="fa fa-fw fa-check-circle deploy-icon"></i>
 
             <h1 class="text-main">{{ $t('Script Set Installed Successfully!') }}</h1>
-            <p class="text-info">{{ $t('In addition, this Script Set...') }}<p>
 
             <!-- 依赖包 -->
             <p v-if="T.notNothing(deployment.requirements)">
-              {{ $t('Requires 3rd party Python packages') }}
+              {{ $t('This Script Set requires 3rd party Python packages') }}
               <br>&#12288;
               <el-button type="text" @click="common.goToPIPTools(deployment.requirements, { newTab: true })">
                 <i class="fa fa-fw fa-external-link"></i>
@@ -432,10 +429,10 @@ Translated Text    : 译文
               </p>
               <p v-else>
                 <template v-if="T.isNothing(deployment.configFields)">
-                  {{ $t('Includes a Startup Script') }}
+                  {{ $t('This Script Set includes a Startup Script') }}
                 </template>
                 <template v-else>
-                  {{ $t('Includes a Startup Script with following configs:') }}
+                  {{ $t('This Script Set includes a Startup Script with following configs:') }}
                   <el-form :model="configReplacerForm" size="small">
                     <el-form-item v-for="f in deployment.configFields" :key="f">
                       <label v-html="renderMarkdown(getTranslation(f))"></label>
@@ -476,9 +473,9 @@ Translated Text    : 译文
               </template>
             </template>
           </el-card>
-          <div class="deploy-buttons">
-            <el-button @click="showDeploy = false">{{ $t('Stay Here') }}</el-button>
-          </div>
+        </div>
+        <div slot="footer" class="deploy-buttons">
+          <el-button @click="showDeploy = false">{{ $t('Stay Here') }}</el-button>
         </div>
       </el-dialog>
 
@@ -546,10 +543,9 @@ Translated Text    : 译文
             </el-tabs>
           </el-form-item>
         </el-form>
-
-        <div slot="footer" class="dialog-footer">
-          <el-button size="small" @click="showExtra = false">{{ $t('Cancel') }}</el-button>
-          <el-button size="small" type="primary" @click="saveExtra" :loading="isProcessing">{{ $t('Save') }}</el-button>
+        <div slot="footer">
+          <el-button @click="showExtra = false">{{ $t('Cancel') }}</el-button>
+          <el-button type="primary" @click="saveExtra" :loading="isProcessing">{{ $t('Save') }}</el-button>
         </div>
       </el-dialog>
 
@@ -974,9 +970,6 @@ export default {
         skipLoadRemote: skipLoadRemote,
       });
 
-      this.isProcessing  = false;
-      this.showOperation = false;
-
       // 跳转个后续提示
       switch(operation) {
         case 'install':
@@ -989,8 +982,20 @@ export default {
             let startupScriptId          = apiRes.data.startupScriptIds[0]                          || null;
             let startupCrontabId         = apiRes.data.startupCrontabIds[0]                         || null;
             let startupScriptCrontabFunc = apiRes.data.startupScriptCrontabFuncMap[startupScriptId] || null;
+
+            // 计算缺少的依赖包
+            let requirements = apiRes.data.requirements;
+            if (this.T.notNothing(requirements)) {
+              apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed/do/list');
+              if (apiRes && apiRes.ok) {
+                apiRes.data.forEach(pkg => {
+                  if (pkg.name in requirements) delete requirements[pkg.name];
+                });
+              }
+            }
+
             this.deployment = {
-              requirements            : apiRes.data.requirements,
+              requirements            : requirements,
               configFields            : apiRes.data.configFields,
               exampleScriptId         : exampleScriptId,
               startupScriptId         : startupScriptId,
@@ -1002,6 +1007,9 @@ export default {
           }
           break;
       }
+
+      this.isProcessing  = false;
+      this.showOperation = false;
     },
     async deploy(options) {
       options = options || {};
@@ -1403,7 +1411,7 @@ export default {
 }
 .deploy-content {
   width: 500px;
-  margin-bottom: 30px;
+  min-height: 120px;
   border-radius: 20px;
   position: relative;
   top: -30px;
@@ -1431,9 +1439,9 @@ export default {
   margin: 15px 0 0 20px;
 }
 .deploy-buttons {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
+  text-align: right;
+  position: relative;
+  right: 10px;
 }
 .deploy-icon {
   position: absolute;

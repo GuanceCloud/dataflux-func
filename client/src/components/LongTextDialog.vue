@@ -96,12 +96,6 @@ export default {
 }
 </style>
 <style>
-#LongTextDialog .el-dialog__header {
-  min-height: 20px
-}
-#LongTextDialog .el-dialog__body {
-  padding: 5px 20px;
-}
 #LongTextDialog .CodeMirror {
   height: 100%;
 }
