@@ -310,13 +310,20 @@ export function goToPIPTools(requirements, opt) {
   opt = opt || {};
   opt.newTab = opt.newTab || false;
 
-  let requirementsParts = [];
-  for (let pkg in requirements) {
-    let ver = requirements[pkg];
-    requirementsParts.push(ver ? `${pkg}==${ver}` : pkg);
-  };
+  let requirementsLine = null;
+  if ('string' === typeof requirements) {
+    requirementsLine = requirements.split(/\s+/).join(' ');
 
-  let requirementsLine = requirementsParts.join(' ');
+  } else {
+    let requirementsParts = [];
+    for (let pkg in requirements) {
+      let ver = requirements[pkg];
+      requirementsParts.push(ver ? `${pkg}==${ver}` : pkg);
+    };
+
+    requirementsLine = requirementsParts.join(' ');
+  }
+
   let nextRoute = {
     name: 'pip-tool',
     query: { requirements: T.getBase64(requirementsLine) },

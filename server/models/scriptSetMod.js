@@ -957,8 +957,10 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         s.requirements.split('\n').forEach(function(r) {
           if (toolkit.isNothing(r)) return;
 
-          var pkgVer = r.trim().split('==');
-          requirements[pkgVer[0]] = pkgVer[1] || null;
+          var pkgVer = r.trim().split(/[>=<!]=*/);
+          var pkg = pkgVer[0].split('[')[0];
+          var ver = pkgVer[1] || null;
+          requirements[pkg] = ver;
         });
       });
 

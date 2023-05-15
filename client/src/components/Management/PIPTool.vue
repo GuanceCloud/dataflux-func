@@ -55,12 +55,11 @@ installCost: （耗时 {n} 秒）
         </el-button>
 
         <p class="pip-install-tips">
-          <template v-if="pipCommand">
+          <template v-if="isInstallable">
             {{ $t('You can also install the package by following command') }}{{ $t(':') }}
             <br>
-            &#12288;
-            <code class="text-main">{{ pipCommand }}</code>
-            <CopyButton :content="pipCommand" />
+            <CopyButton :content="getPIPCommand()" tip-placement="left" />
+            <code class="text-main" v-html="getPIPCommand({ pretty: true })"></code>
           </template>
         </p>
 
@@ -169,6 +168,23 @@ export default {
     },
   },
   methods: {
+    getPIPCommand(opt) {
+      if (!this.isInstallable) return null;
+
+      opt = opt || {};
+      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Any container ID}');
+      let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
+      let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
+
+      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} `;
+      if (opt.pretty) {
+        cmd = `${cmd} \\<br>&#12288;&#12288;&#12288;${this.packageToInstall.trim().split(/\s+/).join(' \\<br>&#12288;&#12288;&#12288;')}`;
+      } else {
+        cmd = `${cmd} ${this.packageToInstall}`.trim();
+      }
+
+      return cmd;
+    },
     async loadData() {
       this.pypiMirror = this.C.PIP_MIRROR_DEFAULT.value;
 
@@ -232,16 +248,6 @@ export default {
     },
   },
   computed: {
-    pipCommand() {
-      if (!this.isInstallable) return null;
-
-      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Any container ID}');
-      let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
-      let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
-
-      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} ${this.packageToInstall.trim()}`;
-      return cmd;
-    },
     isInstallable() {
       // 检查空内容
       if (this.T.isNothing(this.packageToInstall)) {

@@ -1,11 +1,15 @@
+<i18n locale="en" lang="yaml">
+requirementsTip: '"Package" or "Package==Version", one for each line'
+</i18n>
 <i18n locale="zh-CN" lang="yaml">
+requirementsTip: '"Package" 或 "Package==Version" 格式，一行一个'
+
 Add Script Set  : 添加脚本集
 Setup Script Set: 配置脚本集
 
 Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集 ID 将作为函数 ID 的一部分
-requirements.txt format, one for each line : requirements.txt 文件格式，一行一个
 Go to PIP tool to install                  : 前往PIP工具安装
 
 Please input ID                                   : 请输入 ID
@@ -74,9 +78,9 @@ This Script Set is locked by other user ({user}): 当前脚本已被其他用户
                     :autosize="{minRows: 2}"
                     maxlength="5000"
                     v-model="form.requirements"></el-input>
-                  <InfoBlock :title="$t('requirements.txt format, one for each line')" />
+                  <InfoBlock :title="$t('requirementsTip')" />
                   <div class="setup-right">
-                    <el-button v-if="requirementsTEXT" type="text" @click="goToPIPTool">{{ $t('Go to PIP tool to install') }}</el-button>
+                    <el-button v-if="requirementsLine" type="text" @click="common.goToPIPTools(requirementsLine)">{{ $t('Go to PIP tool to install') }}</el-button>
                   </div>
                 </el-form-item>
 
@@ -201,12 +205,6 @@ export default {
       });
       this.$store.commit('updateScriptListSyncTime');
     },
-    goToPIPTool() {
-      this.$router.push({
-        name: 'pip-tool',
-        query: { pkgs: this.T.getBase64(this.requirementsTEXT) },
-      });
-    },
   },
   computed: {
     pageTitle() {
@@ -240,11 +238,11 @@ export default {
       return !this.isLockedByOther;
     },
 
-    requirementsTEXT() {
+    requirementsLine() {
       if (!this.form.requirements) return null;
 
-      let pkgs = this.form.requirements.split(/\s+/).join(' ');
-      return pkgs;
+      let line = this.form.requirements.split(/\s+/).join(' ');
+      return line;
     },
   },
   props: {
