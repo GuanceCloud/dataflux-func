@@ -715,7 +715,10 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs || {}, {
           stringify: true,
           sortArray: false});
-    funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
+
+    // 调整策略：计算函数压力值时，不再区分不同的调用参数，避免 Redis 中缓存键数量过大
+    // funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
+    funcCallOptions.funcCallKwargsMD5 = 'IGNORE';
     funcCallOptions.funcPressure      = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE // 后续从Redis中获取实际预期压力值
 
     // 同步函数回调函数
@@ -930,8 +933,8 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     ], sendTask);
 
   } else {
-    // 非同步任务不计算 MD5 值/函数压力值
-    funcCallOptions.funcCallKwargsMD5 = 'NON_SYNC';
+    // 非同步任务不计算函数压力值
+    funcCallOptions.funcCallKwargsMD5 = 'IGNORE';
     funcCallOptions.funcPressure      = 0;
 
     // 非同步函数回调函数
