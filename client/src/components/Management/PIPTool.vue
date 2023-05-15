@@ -15,8 +15,9 @@ Loading Installed Python Packages: 正在加载已安装的 Python 包列表
 Show Error                       : 显示错误信息
 Reset Install Status             : 复位安装状态
 
+package or package==1.2.3 : package 或 package==1.2.3
 'Package installed: {pkg}': 包已安装：{pkg}
-{Any container ID}: 任意一个容器 ID
+{Func Container ID}       : Func 容器 ID
 
 You can also install the package by following command: 您也可以使用以下命令来安装
 Previous installing may still running                : 之前的安装似乎仍然在运行
@@ -42,7 +43,7 @@ installCost: （耗时 {n} 秒）
           v-model="pypiMirror">
           <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
         </el-select>
-        <el-input placeholder="package or package==1.2.3"
+        <el-input :placeholder="$t('package or package==1.2.3')"
           style="width: 500px"
           v-model="packageToInstall">
         </el-input>
@@ -172,7 +173,7 @@ export default {
       if (!this.isInstallable) return null;
 
       opt = opt || {};
-      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Any container ID}');
+      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Func Container ID}');
       let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
       let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
 

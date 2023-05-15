@@ -1,8 +1,8 @@
 <i18n locale="en" lang="yaml">
-requirementsTip: '"Package" or "Package==Version", one for each line'
+requirementsTip: '"package" or "package==1.2.3", one per row'
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
-requirementsTip: '"Package" 或 "Package==Version" 格式，一行一个'
+requirementsTip: '"package" 或 "package==1.2.3" 格式，每行一个'
 
 Add Script Set  : 添加脚本集
 Setup Script Set: 配置脚本集
