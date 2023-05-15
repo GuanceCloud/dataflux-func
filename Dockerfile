@@ -61,19 +61,11 @@ RUN case ${TARGETARCH} in \
 
 # 安装 DataFlux Func 后端依赖包
 WORKDIR /usr/src/base
-COPY package.json package-lock.json requirements.txt requirements-arm64.txt ./
+COPY package.json package-lock.json requirements.txt ./
 RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist && \
         rm -rf /usr/src/base/node_modules/node-rdkafka/examples && \
         rm -rf /usr/src/base/node_modules/node-rdkafka/deps     && \
-    case ${TARGETARCH} in \
-        "amd64" ) \
-            pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements.txt \
-            ;; \
-
-        "arm64" ) \
-            pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements-arm64.txt \
-            ;; \
-    esac
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements.txt
 
 # 安装 DataFlux Func 前端依赖包
 WORKDIR /usr/src/base/client
