@@ -341,7 +341,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
     } else {
       // 默认值
       if (funcCallOptions.origin === 'direct') {
-        // 只有直接调用且为普通形式时不拆包
+        // 只有直接调用且为标准形式时不拆包
         funcCallOptions.unfold = false;
       } else {
         // 其他默认都拆包
@@ -455,7 +455,7 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
   var format = req.params.format || 'normal';
   switch(format) {
     case 'normal':
-      // 普通形式：函数参数、执行选项为JSON字符串形式
+      // 标准形式：函数参数、执行选项为JSON字符串形式
       if (toolkit.notNothing(reqOpt.kwargs)) {
         reqCallKwargs = reqOpt.kwargs;
       }

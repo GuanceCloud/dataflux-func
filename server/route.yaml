@@ -264,7 +264,7 @@ mainAPI:
       *注意2：本形式不支持标准格式中的`options`参数*
 
     method       : get
-    url          : /api/v1/al/:id/:format
+    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
     response     : json
     requireSignIn: false
     params:
@@ -275,6 +275,7 @@ mainAPI:
         $desc: 调用形式
         $type: enum
         $in:
+          - normal
           - simplified
 
   callAuthLinkByPost:
@@ -357,7 +358,7 @@ mainAPI:
       *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
 
     method       : post
-    url          : /api/v1/al/:id/:format
+    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
     response     : json
     requireSignIn: false
     params:
@@ -368,6 +369,7 @@ mainAPI:
         $desc: 调用形式
         $type: enum
         $in:
+          - normal
           - simplified
     files:
       $desc        : File (limit 10GB)
@@ -434,7 +436,7 @@ mainAPI:
       *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
 
     method       : get
-    url          : /api/v1/bat/:id/:format
+    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
     response     : json
     requireSignIn: false
     privilege    : general_r
@@ -446,6 +448,7 @@ mainAPI:
         $desc: 调用形式
         $type: enum
         $in:
+          - normal
           - simplified
 
   callBatchByPost:
@@ -509,7 +512,7 @@ mainAPI:
       *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
 
     method       : post
-    url          : /api/v1/bat/:id/:format
+    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
     response     : json
     requireSignIn: false
     params:
@@ -520,6 +523,7 @@ mainAPI:
         $desc: 调用形式
         $type: enum
         $in:
+          - normal
           - simplified
     files:
       $desc        : File (limit 10GB)

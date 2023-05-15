@@ -280,7 +280,7 @@ function getOpenAPISpec(lang) {
         }
       }
 
-      var apiURL = api.url.replace(/\/:([a-zA-Z0-9-_]+)/g, '/{$1}');
+      var apiURL = toolkit.asArray(api.url)[0].replace(/\/:([a-zA-Z0-9-_]+)/g, '/{$1}');
       if (!spec.paths[apiURL]) {
         spec.paths[apiURL] = {};
       }
