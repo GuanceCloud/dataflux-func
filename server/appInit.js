@@ -365,7 +365,7 @@ exports.afterAppCreated = function(app, server) {
       },
       // 执行 Autorun 脚本
       function(asyncCallback) {
-        var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
+        var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH);
 
         var initScriptDir = path.join(__dirname, '../init-scripts/');
         var scripts = fs.readdirSync(initScriptDir).filter(function(filename) {
@@ -396,8 +396,8 @@ exports.afterAppCreated = function(app, server) {
           toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {
             if (err) return eachCallback(err);
 
-            app.locals.logger.info(`[INIT SCRIPT] ${script}`);
-            app.locals.logger.info(`[INIT SCRIPT] stdout: ${stdout}`);
+            app.locals.logger.warning(`[INIT SCRIPT] ${script}`);
+            app.locals.logger.warning(`[INIT SCRIPT] stdout: ${stdout}`);
 
             return eachCallback();
           });

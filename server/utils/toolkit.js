@@ -2384,6 +2384,12 @@ var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
       case 'yaml':
         data = yaml.load(data);
         break;
+
+      default:
+        if ('string' === typeof data) {
+          data = data.trim();
+        }
+        break;
     }
 
   } catch(err) {
