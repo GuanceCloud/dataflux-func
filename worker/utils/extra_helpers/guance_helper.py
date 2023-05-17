@@ -8,10 +8,11 @@ import requests
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.extra_helpers.guance import Guance
+from worker.utils.extra_helpers.guance_openapi import GuanceOpenAPI
 from worker.utils.extra_helpers.dataway import DataWay
 
 def get_config(c):
+    print(c)
     return toolkit.no_none_or_white_space({
         'url'       : c.get('guanceOpenAPIURL'),
         'api_key_id': c.get('guanceAPIKeyId'),
@@ -38,7 +39,7 @@ class GuanceHelper(object):
             config['timeout'] = timeout
 
         self.config = config
-        self.client = Guance(**get_config(config))
+        self.client = GuanceOpenAPI(**get_config(config))
 
         self._dataway = None
 
@@ -49,7 +50,7 @@ class GuanceHelper(object):
     @property
     def dataway(self):
         if not self._dataway:
-            self._dataway = DataWay(**get_config_dataway(config), token=self.client.workspace_token)
+            self._dataway = DataWay(**get_config_dataway(self.config), token=self.client.workspace_token)
 
         return self._dataway
 

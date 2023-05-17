@@ -31,7 +31,7 @@ from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper,
 from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, KafkaHelper
 from worker.utils.extra_helpers import SQLServerHelper, OracleDatabaseHelper
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
-from worker.utils.extra_helpers.guance import Guance
+from worker.utils.extra_helpers.guance_openapi import GuanceOpenAPI
 from worker.utils.extra_helpers.datakit import DataKit
 from worker.utils.extra_helpers.dataway import DataWay
 
@@ -82,6 +82,7 @@ CONNECTOR_HELPER_CLASS_MAP = {
 
 # 连接器加密字段
 CONNECTOR_CIPHER_FIELDS = [
+    'guanceAPIKey',
     'password',
     'secretKey',
 ]
@@ -1590,9 +1591,9 @@ class ScriptBaseTask(BaseTask):
             'TASK': self, # 任务本身
 
             # 无连接器访问
-            'GUANCE' : Guance,
-            'DATAKIT': DataKit,
-            'DATAWAY': DataWay,
+            'GUANCE_OPENAPI': GuanceOpenAPI,
+            'DATAKIT'       : DataKit,
+            'DATAWAY'       : DataWay,
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 

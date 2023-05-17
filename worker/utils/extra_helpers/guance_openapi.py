@@ -10,7 +10,7 @@ import requests
 from worker.utils import toolkit
 from . import parse_response
 
-class Guance(object):
+class GuanceOpenAPI(object):
     REQUESTS_TIMEOUT  = (3, 12)
     OPENAPI_FUNC_PATH = '/api/v1/outer_function/execute'
 
