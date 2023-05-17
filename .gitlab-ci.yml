@@ -38,6 +38,7 @@ variables:
 # Origin 原版携带版
 portable_dev:
   stage: build
+  retry: 2
   only:
     - dev
   script:
@@ -60,6 +61,7 @@ portable_dev:
 
 portable_amd64:
   stage: build
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -82,6 +84,7 @@ portable_amd64:
 
 portable_arm64:
   stage: build
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -105,6 +108,7 @@ portable_arm64:
 # Guance Special Edition （GSE 观测云特别版）
 portable_GSE_amd64:
   stage: build
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -130,6 +134,7 @@ portable_GSE_amd64:
 
 portable_GSE_arm64:
   stage: build
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -156,6 +161,7 @@ portable_GSE_arm64:
 # 独立部署版
 singleton_release:
   stage: build
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -186,6 +192,7 @@ singleton_release:
 # 观测云同捆版
 guance_testing:
   stage: build
+  retry: 2
   only:
     - dev
   script:
@@ -201,6 +208,7 @@ guance_testing:
 
 guance_release:
   stage: build
+  retry: 2
   only:
     - /^pre_\d+_\d+$/     # 如：pre_20190101_01
     - /^release_\d+_\d+$/ # 如：release_20190101_01
@@ -222,6 +230,7 @@ guance_release:
 
 guancePaaS_preview:
   stage: build
+  retry: 2
   only:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
@@ -246,6 +255,7 @@ guancePaaS_preview:
 
 guancePaaS_release:
   stage: build
+  retry: 2
   only:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
@@ -272,6 +282,7 @@ guancePaaS_release:
 
 portableFile_dev:
   stage: uploadToOSS
+  retry: 2
   only:
     - dev
   script:
@@ -293,6 +304,7 @@ portableFile_dev:
 
 portableFile_release:
   stage: uploadToOSS
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -321,6 +333,7 @@ portableFile_release:
 
 portableFile_GSE_release:
   stage: uploadToOSS
+  retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
@@ -344,6 +357,7 @@ portableFile_GSE_release:
 # ========== 部署 ==========
 guanceK8s_testing:
   stage: deploy
+  retry: 2
   only:
     - dev
   script:
@@ -355,6 +369,7 @@ guanceK8s_testing:
 
 guanceK8s_release:
   stage: deploy
+  retry: 2
   only:
     - /^deploy_\d+$/
   script:
