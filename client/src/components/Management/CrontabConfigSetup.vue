@@ -142,7 +142,12 @@ shortcutDays  : '{n} 天'
                     <el-checkbox-group v-model="formCrontab.weeks">
                       <template v-for="(item, index) in WEEKS">
                         <br v-if="item === 'sep'">
-                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                        <el-checkbox v-else
+                          border
+                          class="crontab-item-checkbox"
+                          :key="item.expr"
+                          :label="item.expr"
+                          @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -151,7 +156,12 @@ shortcutDays  : '{n} 天'
                     <el-checkbox-group v-model="formCrontab.months">
                       <template v-for="(item, index) in MONTHS">
                         <br v-if="item === 'sep'">
-                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                        <el-checkbox v-else
+                          border
+                          class="crontab-item-checkbox"
+                          :key="item.expr"
+                          :label="item.expr"
+                          @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -160,7 +170,12 @@ shortcutDays  : '{n} 天'
                     <el-checkbox-group v-model="formCrontab.days">
                       <template v-for="(item, index) in DAYS">
                         <br v-if="item === 'sep'">
-                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                        <el-checkbox v-else
+                          border
+                          class="crontab-item-checkbox"
+                          :key="item.expr"
+                          :label="item.expr"
+                          @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -169,7 +184,12 @@ shortcutDays  : '{n} 天'
                     <el-checkbox-group v-model="formCrontab.hours">
                       <template v-for="(item, index) in HOURS">
                         <br v-if="item === 'sep'">
-                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                        <el-checkbox v-else
+                          border
+                          class="crontab-item-checkbox"
+                          :key="item.expr"
+                          :label="item.expr"
+                          @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -178,7 +198,12 @@ shortcutDays  : '{n} 天'
                     <el-checkbox-group v-model="formCrontab.minutes">
                       <template v-for="(item, index) in MINUTES">
                         <br v-if="item === 'sep'">
-                        <el-checkbox v-else border :key="item.expr" :label="item.expr" @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                        <el-checkbox v-else
+                          border
+                          class="crontab-item-checkbox"
+                          :key="item.expr"
+                          :label="item.expr"
+                          @change="autoFixCrontab">{{ item.name }}</el-checkbox>
                       </template>
                     </el-checkbox-group>
                   </el-form-item>
@@ -776,8 +801,9 @@ export default {
   color: orange;
 }
 
-.el-checkbox.is-bordered {
+.el-checkbox.crontab-item-checkbox {
   margin-left : 5px !important;
   margin-right: 0 !important;
+  min-width: 75px;
 }
 </style>
