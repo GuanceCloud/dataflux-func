@@ -411,11 +411,11 @@ def func_runner(self, *args, **kwargs):
         return result
 
     finally:
-        # Crontab解锁
-        lock_key   = kwargs.get('lockKey')
-        lock_value = kwargs.get('lockValue')
-        if lock_key and lock_value:
-            self.cache_db.unlock(lock_key, lock_value)
+        # 定时任务解锁
+        crontab_lock_key   = kwargs.get('crontabLockKey')
+        crontab_lock_value = kwargs.get('crontabLockValue')
+        if crontab_lock_key and crontab_lock_value:
+            self.cache_db.unlock(crontab_lock_key, crontab_lock_value)
 
         # 记录脚本日志
         if script_scope:

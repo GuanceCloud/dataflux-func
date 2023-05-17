@@ -272,15 +272,15 @@ class CrontabStarterTask(BaseTask):
             delayed_crontab = [0]
 
         for delay in delayed_crontab:
-            # 上锁
-            lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
+            # 定时任务锁
+            crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
                     'crontabConfigId', crontab_config['id'],
                     'funcId',          crontab_config['funcId'],
                     'execMode',        exec_mode,
                     'crontabDelay',    delay])
 
-            lock_value = toolkit.gen_uuid()
-            if not self.cache_db.lock(lock_key, lock_value, time_limit):
+            crontab_lock_value = toolkit.gen_uuid()
+            if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, time_limit):
                 # 触发任务前上锁，失败则跳过
                 self.logger.warning('Crontab Config in lock, skip...')
                 continue
@@ -302,20 +302,20 @@ class CrontabStarterTask(BaseTask):
             # 「任务的`origin`」表示任务来源（取值 authLink, crontab, batch, integration），配合`originId`可确定业务实体
             # 「自动触发配置的`origin`」表示配置来源（取值 API, UI, INTEGRATION）
             task_kwargs = {
-                'funcId'        : crontab_config['funcId'],
-                'funcCallKwargs': crontab_config['funcCallKwargs'],
-                'origin'        : crontab_config['taskOrigin'],
-                'originId'      : crontab_config['id'],
-                'saveResult'    : crontab_config['saveResult'],
-                'execMode'      : exec_mode,
-                'triggerTime'   : (trigger_time + delay),
-                'triggerTimeMs' : (trigger_time + delay) * 1000,
-                'crontab'       : crontab_config['crontab'],
-                'crontabDelay'  : delay,
-                'queue'         : queue,
-                'taskInfoLimit' : crontab_config['taskInfoLimit'],
-                'lockKey'       : lock_key,
-                'lockValue'     : lock_value,
+                'funcId'          : crontab_config['funcId'],
+                'funcCallKwargs'  : crontab_config['funcCallKwargs'],
+                'origin'          : crontab_config['taskOrigin'],
+                'originId'        : crontab_config['id'],
+                'saveResult'      : crontab_config['saveResult'],
+                'execMode'        : exec_mode,
+                'triggerTime'     : (trigger_time + delay),
+                'triggerTimeMs'   : (trigger_time + delay) * 1000,
+                'crontab'         : crontab_config['crontab'],
+                'crontabDelay'    : delay,
+                'queue'           : queue,
+                'taskInfoLimit'   : crontab_config['taskInfoLimit'],
+                'crontabLockKey'  : crontab_lock_key,
+                'crontabLockValue': crontab_lock_value,
             }
             func_runner.apply_async(
                     task_id=task_id,
@@ -356,8 +356,7 @@ def crontab_starter(self, *args, **kwargs):
     current_time      = int(time.time())
 
     # 上锁
-    lock_age = int(next_trigger_time - current_time - 1)
-    self.lock(max_age=lock_age)
+    self.lock_task(max_age=next_trigger_time - current_time - 1)
 
     # 获取函数功能集成自动触发
     integrated_crontab_configs = self.get_integrated_func_crontab_configs()

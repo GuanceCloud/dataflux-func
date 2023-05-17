@@ -141,6 +141,10 @@ class BaseTask(app.Task):
         self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
+        self.DFF_system_configs  = {}
+        self.DFF_task_lock_key   = None
+        self.DFF_task_lock_value = None
+
         # Add Queue Info
         self.worker_queue = self.request.delivery_info['routing_key']
         self.queue        = self.worker_queue.split('@').pop()
@@ -278,16 +282,21 @@ class BaseTask(app.Task):
 
         self.logger.error('[{}]'.format(celery_status.FAILURE))
 
-    def lock(self, max_age=60):
-        lock_key   = toolkit.get_cache_key('lock', self.name)
+    def lock_task(self, max_age=30):
+        max_age = int(max_age)
+        lock_key   = toolkit.get_cache_key('lock', 'task', tags=[ 'task', self.name ])
         lock_value = toolkit.gen_uuid()
         if not self.cache_db.lock(lock_key, lock_value, max_age):
-            raise TaskInLockedException(f"`{self.name}` Task already launched.")
+            raise TaskInLockedException(f"Task `{self.name}` already launched.")
 
-        return lock_key, lock_value
+        self.DFF_task_lock_key   = lock_key
+        self.DFF_task_lock_value = lock_value
 
-    def unlock(self, lock_key, lock_value):
-        self.cache_db.unlock(lock_key, lock_value)
+    def unlock_task(self):
+        self.cache_db.unlock(self.DFF_task_lock_key, self.DFF_task_lock_value)
+
+        self.DFF_task_lock_key   = None
+        self.DFF_task_lock_value = None
 
     def upload_guance_data(self, category, points):
         self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(points)} {category} point(s)')

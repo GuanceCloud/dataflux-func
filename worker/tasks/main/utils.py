@@ -95,7 +95,7 @@ def reload_data_md5_cache(self, *args, **kwargs):
 
     # 根据参数确定是否需要上锁
     if isinstance(lock_time, (int, float)) and lock_time > 0:
-        self.lock(max_age=int(lock_time))
+        self.lock_task(max_age=lock_time)
 
     # 将数据 MD5 缓存入 Redis
     if reload_all:
@@ -484,7 +484,7 @@ class SyncCache(BaseTask):
 @app.task(name='Sys.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=30)
+    self.lock_task()
 
     # 函数调用计数刷入数据库
     try:
@@ -695,7 +695,7 @@ class AutoCleanTask(BaseTask):
 @app.task(name='Sys.AutoClean', bind=True, base=AutoCleanTask)
 def auto_clean(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=30)
+    self.lock_task()
 
     # 回卷数据库数据
     table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
@@ -759,7 +759,7 @@ class AutoRunTask(BaseTask):
 @app.task(name='Main.AutoRun', bind=True, base=AutoRunTask)
 def auto_run(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=30)
+    self.lock_task()
 
     # 获取函数功能集成自动运行函数
     integrated_auto_run_funcs = self.get_integrated_on_launch_funcs()
@@ -961,7 +961,7 @@ class AutoBackupDBTask(BaseTask):
 @app.task(name='Sys.AutoBackupDB', bind=True, base=AutoBackupDBTask)
 def auto_backup_db(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=60)
+    self.lock_task(max_age=60)
 
     # 需要导出的表
     tables = self.get_tables()
@@ -1048,7 +1048,7 @@ def query_connector(self, *args, **kwargs):
 @app.task(name='Sys.ResetWorkerQueuePressure', bind=True, base=BaseTask)
 def reset_worker_queue_pressure(self, *args, **kwargs):
     # 上锁
-    self.lock(max_age=30)
+    self.lock_task()
 
     for i in range(CONFIG['_WORKER_QUEUE_COUNT']):
         queue_key = toolkit.get_worker_queue(i)
