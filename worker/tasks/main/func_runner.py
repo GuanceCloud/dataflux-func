@@ -146,40 +146,48 @@ class FuncRunnerTask(ScriptBaseTask):
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
         self.cache_db.run('lpush', cache_key, data)
 
-        # 上传到观测云
-        end_time_ms = int(time.time() * 1000)
+        # 上传观测云数据
+        upload_enabled = self.system_configs.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_configs.get('GUANCE_DATA_UPLOAD_URL')     or None
+        if all([ upload_enabled, upload_url ]):
+            full_log_message_parts = []
+            if log_messages:
+                full_log_message_parts.append('\n'.join(log_messages))
 
-        full_log_message = '\n'.join(log_messages)
-        if einfo_text:
-            full_log_message = '\n'.join([ full_log_message, ' Stack '.center(30, '-'), einfo_text])
+            if einfo_text:
+                full_log_message_parts.append(' Stack '.center(30, '-'))
+                full_log_message_parts.append('\n'.join(einfo_text))
 
-        guance_points = [{
-            'measurement': 'DFF_func_log',
-            'tags': {
-                'workspace_uuid'  : func_call_kwargs.get('workspace_uuid') or '-',
-                'task_id'         : self.request.id,
-                'origin'          : origin,
-                'origin_id'       : origin_id,
-                'root_task_id'    : root_task_id,
-                'func_id'         : func_id,
-                'exec_mode'       : exec_mode,
-                'status'          : status,
-                'trigger_time_cn' : toolkit.to_cn_time_str(trigger_time_ms),
-                'start_time_cn'   : toolkit.to_cn_time_str(start_time_ms),
-                'end_time_cn'     : toolkit.to_cn_time_str(end_time_ms),
-                'queue'           : self.queue,
-            },
-            'fields': {
-                'wait_cost'       : start_time_ms - trigger_time_ms,
-                'run_cost'        : end_time_ms   - start_time_ms,
-                'total_cost'      : end_time_ms   - trigger_time_ms,
-                'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
-                'edump_text'      : edump_text or '-',
-                'message'         : full_log_message,
-            },
-            'timestamp': trigger_time_ms,
-        }]
-        self.report_guance_points('logging', guance_points)
+            full_log_messages = '\n'.join(full_log_message_parts)
+            end_time_ms = int(time.time() * 1000)
+
+            guance_points = [{
+                'measurement': 'DFF_func_log',
+                'tags': {
+                    'workspace_uuid'  : func_call_kwargs.get('workspace_uuid') or '-',
+                    'task_id'         : self.request.id,
+                    'origin'          : origin,
+                    'origin_id'       : origin_id,
+                    'root_task_id'    : root_task_id,
+                    'func_id'         : func_id,
+                    'exec_mode'       : exec_mode,
+                    'status'          : status,
+                    'trigger_time_cn' : toolkit.to_cn_time_str(trigger_time_ms),
+                    'start_time_cn'   : toolkit.to_cn_time_str(start_time_ms),
+                    'end_time_cn'     : toolkit.to_cn_time_str(end_time_ms),
+                    'queue'           : self.queue,
+                },
+                'fields': {
+                    'wait_cost'       : start_time_ms - trigger_time_ms,
+                    'run_cost'        : end_time_ms   - start_time_ms,
+                    'total_cost'      : end_time_ms   - trigger_time_ms,
+                    'func_call_kwargs': toolkit.json_dumps(func_call_kwargs),
+                    'edump_text'      : edump_text or '-',
+                    'message'         : full_log_messages,
+                },
+                'timestamp': trigger_time_ms,
+            }]
+            self.upload_guance_data('logging', guance_points)
 
     def cache_func_result(self, func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, result, cache_result_expires):
         if not all([func_id, script_code_md5, script_publish_version, func_call_kwargs_md5, cache_result_expires]):

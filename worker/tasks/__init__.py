@@ -66,6 +66,39 @@ class BaseTask(app.Task):
     _success_result_saving_task = None
     _failure_result_saving_task = None
 
+    @property
+    def system_configs(self):
+        return self.DFF_system_configs
+
+    def _load_system_configs(self):
+        system_config_ids = [
+            'GUANCE_DATA_UPLOAD_ENABLED',
+            'GUANCE_DATA_UPLOAD_URL',
+            'GUANCE_DATA_SITE_NAME',
+        ]
+        sql = '''
+                SELECT
+                    id
+                    ,value
+                FROM wat_main_system_config
+                WHERE
+                    id IN ( ? )
+                '''
+        sql_params = [ system_config_ids ]
+        db_res = self.db.query(sql, sql_params)
+
+        system_configs = {}
+
+        # 默认值
+        for _id in system_config_ids:
+            system_configs[_id] = CONST['systemConfigs'][_id]
+
+        # 用户配置
+        for d in db_res:
+            system_configs[d['id']] = toolkit.json_loads(d['value'])
+
+        self.DFF_system_configs = system_configs
+
     def _set_task_status(self, status, **next_context):
         '''
         Set task result for WAT's monitor.
@@ -123,6 +156,9 @@ class BaseTask(app.Task):
 
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
+
+        # Load System Configs
+        self._load_system_configs()
 
         if CONFIG['MODE'] == 'prod':
             self.db.skip_log       = True
@@ -253,48 +289,17 @@ class BaseTask(app.Task):
     def unlock(self, lock_key, lock_value):
         self.cache_db.unlock(lock_key, lock_value)
 
-    def get_system_config(self, system_config_ids):
-        system_config_ids = toolkit.as_array(system_config_ids)
+    def upload_guance_data(self, category, points):
+        self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(points)} {category} point(s)')
 
-        sql = '''SELECT
-                    id
-                    ,value
-                FROM wat_main_system_config
-                WHERE
-                    id IN (?)
-                '''
-        sql_params = [ system_config_ids ]
-        db_res = self.db.query(sql, sql_params)
-
-        result = {}
-
-        # 默认值
-        for _id in system_config_ids:
-            result[_id] = CONST['systemConfigs'][_id]
-
-        # 用户配置
-        for d in db_res:
-            result[d['id']] = toolkit.json_loads(d['value'])
-
-        return result
-
-    def report_guance_points(self, category, points):
         if not points:
             return
 
         points = toolkit.as_array(points)
 
-        # 查询配置
-        system_config_ids = [
-            'GUANCE_DATA_UPLOAD_ENABLED',
-            'GUANCE_DATA_UPLOAD_URL',
-            'GUANCE_DATA_SITE_NAME',
-        ]
-        _config = self.get_system_config(system_config_ids)
-
-        upload_enabled = _config.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = _config.get('GUANCE_DATA_UPLOAD_URL')     or None
-        if not all([upload_enabled, upload_url]):
+        upload_enabled = self.system_configs.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_configs.get('GUANCE_DATA_UPLOAD_URL')     or None
+        if not all([ upload_enabled, upload_url ]):
             return
 
         for p in points:
@@ -310,7 +315,7 @@ class BaseTask(app.Task):
                 p['tags']['status'] = guance_status
 
             # 添加 tags.site_name
-            site_name = _config.get('GUANCE_DATA_SITE_NAME')
+            site_name = self.system_configs.get('GUANCE_DATA_SITE_NAME')
             if site_name:
                 p['tags']['site_name'] = site_name
 

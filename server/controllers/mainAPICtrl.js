@@ -716,9 +716,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           stringify: true,
           sortArray: false});
 
-    // 调整策略：计算函数压力值时，不再区分不同的调用参数，避免 Redis 中缓存键数量过大
-    // funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
-    funcCallOptions.funcCallKwargsMD5 = 'IGNORE';
+    funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
     funcCallOptions.funcPressure      = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE // 后续从Redis中获取实际预期压力值
 
     // 同步函数回调函数
@@ -851,9 +849,12 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           async.series([
             // 计算/记录函数压力值
             function(asyncCallback) {
-              var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
-                    'funcId'           , funcCallOptions.funcId,
-                    'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
+              // 调整策略：计算函数压力值时，不再区分不同的调用参数，避免 Redis 中缓存键数量过大
+              // var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
+              //       'funcId'           , funcCallOptions.funcId,
+              //       'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
+              var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [ 'funcId', funcCallOptions.funcId ])
+
               locals.cacheDB.setex(cacheKey, CONFIG._WORKER_LIMIT_FUNC_PRESSURE_EXPIRES, nextFuncPressure, asyncCallback);
             },
             // 减少队列压力
@@ -881,9 +882,11 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       function(asyncCallback) {
         var funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
 
-        var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
-              'funcId'           , funcCallOptions.funcId,
-              'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
+        // 调整策略：计算函数压力值时，不再区分不同的调用参数，避免 Redis 中缓存键数量过大
+        // var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [
+        //       'funcId'           , funcCallOptions.funcId,
+        //       'funcCallKwargsMD5', funcCallOptions.funcCallKwargsMD5])
+        var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [ 'funcId', funcCallOptions.funcId ]);
 
         locals.cacheDB.get(cacheKey, function(err, cacheRes) {
           if (err) return asyncCallback(err);

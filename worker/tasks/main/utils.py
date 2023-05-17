@@ -394,9 +394,8 @@ class SyncCache(BaseTask):
             else:
                 data.append(cache_res)
 
-        # 搜集任务记录限额，组装观测云上报数据，写入本地 DB 数据
+        # 写入本地 DB 数据
         entity_task_info_limit_map = {}
-        guance_points           = []
         for d in data:
             origin    = d.get('origin')
             origin_id = d.get('originId')
@@ -404,26 +403,6 @@ class SyncCache(BaseTask):
             # 统计回卷范围
             task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
             entity_task_info_limit_map[origin_id] = task_info_limit
-
-            # 组装观测云上报数据
-            _point = {
-                'measurement': 'DFF_func_stats',
-                'tags': {
-                    'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or '-',
-                    'origin'        : d['origin'],
-                    'func_id'       : d['funcId'],
-                    'exec_mode'     : d['execMode'],
-                    'status'        : d['status'],
-                    'queue'         : str(d['queue']),
-                },
-                'fields': {
-                    'wait_cost' : d['startTimeMs'] - d['triggerTimeMs'],
-                    'run_cost'  : d['endTimeMs']   - d['startTimeMs'],
-                    'total_cost': d['endTimeMs']   - d['triggerTimeMs'],
-                },
-                'timestamp': d['triggerTimeMs'],
-            }
-            guance_points.append(_point)
 
             # 写入数据库
             if task_info_limit > 0:
@@ -449,10 +428,7 @@ class SyncCache(BaseTask):
                 sql_params = [ _data ]
                 self.db.query(sql, sql_params)
 
-        # 发送数据
-        self.report_guance_points('metric', guance_points)
-
-        # 数据回卷
+        # 本地 DB 数据回卷
         for origin_id, task_info_limit in entity_task_info_limit_map.items():
             sql = '''
                 SELECT
@@ -477,6 +453,33 @@ class SyncCache(BaseTask):
                 '''
                 sql_params = [ expired_max_seq, origin_id ]
                 self.db.query(sql, sql_params)
+
+        # 上传观测云数据
+        upload_enabled = self.system_configs.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_configs.get('GUANCE_DATA_UPLOAD_URL')     or None
+        if all([ upload_enabled, upload_url ]):
+            guance_points = []
+
+            for d in data:
+                guance_points.append({
+                    'measurement': 'DFF_func_stats',
+                    'tags': {
+                        'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or '-',
+                        'origin'        : d['origin'],
+                        'func_id'       : d['funcId'],
+                        'exec_mode'     : d['execMode'],
+                        'status'        : d['status'],
+                        'queue'         : str(d['queue']),
+                    },
+                    'fields': {
+                        'wait_cost' : d['startTimeMs'] - d['triggerTimeMs'],
+                        'run_cost'  : d['endTimeMs']   - d['startTimeMs'],
+                        'total_cost': d['endTimeMs']   - d['triggerTimeMs'],
+                    },
+                    'timestamp': d['triggerTimeMs'],
+                })
+
+            self.upload_guance_data('metric', guance_points)
 
 @app.task(name='Sys.SyncCache', bind=True, base=SyncCache)
 def sync_cache(self, *args, **kwargs):
