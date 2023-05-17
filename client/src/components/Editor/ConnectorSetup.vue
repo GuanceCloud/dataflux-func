@@ -740,10 +740,6 @@ export default {
       let connectorTypes = this.C.CONNECTOR.filter(opt => {
         // 部分连接器特殊处理
         switch (opt.key) {
-          case 'guance':
-            return this.$store.getters.isExperimentalFeatureEnabled('ConnectorForGuance');
-            break;
-
           case 'sqlserver':
             return this.$store.getters.CONFIG('_ARCH') === 'x64';
             break;
