@@ -744,6 +744,23 @@ class FuncConnectorHelper(object):
 
         self.reload_config_md5(connector_id)
 
+    def query(self, connector_type=None):
+        sql = '''
+            SELECT
+                id,
+                title,
+                type
+            FROM biz_main_connector
+            '''
+        sql_params = []
+
+        if connector_type:
+            sql += 'WHERE type IN (?)'
+            sql_params.append(toolkit.as_array(connector_type))
+
+        db_res = self.__task.db.query(sql, sql_params)
+        return db_res
+
 class FuncEnvVariableHelper(object):
     '''
     加载环境变量
@@ -965,6 +982,40 @@ class FuncRedirect(FuncResponse):
             'headers'     : { 'Location': url }
         }
         super().__init__(**kwargs)
+
+class ToolkitWrap(object):
+    gen_uuid             = toolkit.gen_uuid
+    json_find            = toolkit.json_find
+    json_find_safe       = toolkit.json_find_safe
+    json_smart_find      = toolkit.json_smart_find
+    json_override        = toolkit.json_override
+    json_pick            = toolkit.json_pick
+    json_dumps           = toolkit.json_dumps
+    json_loads           = toolkit.json_loads
+    json_copy            = toolkit.json_copy
+    get_date_string      = toolkit.get_date_string
+    get_time_string      = toolkit.get_time_string
+    get_datetime_string  = toolkit.get_datetime_string
+    to_arrow             = toolkit.to_arrow
+    to_unix_timestamp    = toolkit.to_unix_timestamp
+    to_unix_timestamp_ms = toolkit.to_unix_timestamp_ms
+    to_iso_datetime      = toolkit.to_iso_datetime
+    to_cn_time_str       = toolkit.to_cn_time_str
+    to_boolean           = toolkit.to_boolean
+    get_days_from_now    = toolkit.get_days_from_now
+    get_md5              = toolkit.get_md5
+    get_sha1             = toolkit.get_sha1
+    get_sha256           = toolkit.get_sha256
+    get_sha512           = toolkit.get_sha512
+    cipher_by_aes        = toolkit.cipher_by_aes
+    decipher_by_aes      = toolkit.decipher_by_aes
+    get_base64           = toolkit.get_base64
+    from_base64          = toolkit.from_base64
+    gen_rand_string      = toolkit.gen_rand_string
+    as_array             = toolkit.as_array
+    as_array_str         = toolkit.as_array_str
+    match_wildcard       = toolkit.match_wildcard
+    match_wildcards      = toolkit.match_wildcards
 
 class ScriptBaseTask(BaseTask):
     def __call__(self, *args, **kwargs):
@@ -1588,12 +1639,17 @@ class ScriptBaseTask(BaseTask):
             'FUNC'  : __call_func,     # 调用函数（产生新Task）
             'THREAD': __thread_helper, # 多线程处理模块
 
-            'TASK': self, # 任务本身
+            'TASK'        : self,          # 当前任务
+            'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
+            'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
             # 无连接器访问
             'GUANCE_OPENAPI': GuanceOpenAPI,
             'DATAKIT'       : DataKit,
             'DATAWAY'       : DataWay,
+
+            # 方便函数
+            'toolkit': ToolkitWrap,
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
@@ -1612,8 +1668,16 @@ class ScriptBaseTask(BaseTask):
         def __print(*args, **kwargs):
             return self._print(safe_scope, *args, **kwargs)
 
+        def __print_var(*args, **kwargs):
+            for v in args:
+                __print(f"[VAR] type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
+
+            for name, v in kwargs.items():
+                __print(f"[VAR] {name}: type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
+
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
+        safe_scope['__builtins__']['print_var']  = __print_var
 
         return safe_scope
 

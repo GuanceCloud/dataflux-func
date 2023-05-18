@@ -120,7 +120,7 @@ portable_GSE_amd64:
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}-gse:latest
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --load
     - docker save ${IMAGE_PUBLIC}-gse:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
@@ -146,7 +146,7 @@ portable_GSE_arm64:
     - docker buildx build
       --platform linux/arm64
       -t ${IMAGE_PUBLIC}-gse-arm64:latest
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --load
     - docker save ${IMAGE_PUBLIC}-gse-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
@@ -201,7 +201,7 @@ guance_testing:
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -223,7 +223,7 @@ guance_release:
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
       -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -248,7 +248,7 @@ guancePaaS_preview:
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -273,7 +273,7 @@ guancePaaS_release:
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
-      -f Dockerfile-guance .
+      -f Dockerfile-GSE .
       --push
   tags:
     - cloudcare-multiarch

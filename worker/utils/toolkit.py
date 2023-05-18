@@ -45,8 +45,12 @@ RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
 def nope_func(*args, **kwargs):
     pass
 
-def print_var(v, name=None):
-    print('[VAR] `{}` type=`{}`, value=`{}`, obj_size=`{}`'.format(name or '<NO NAME>', type(v), str(v), get_obj_size(v)))
+def print_var(*args, **kwargs):
+    for v in args:
+        print(f"[VAR] type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
+
+    for name, v in kwargs.items():
+        print(f"[VAR] {name}: type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
 
 def get_obj_size(o, handlers={}):
     '''
@@ -65,7 +69,7 @@ def get_obj_size(o, handlers={}):
 
     all_handlers.update(handlers)     # user handlers take precedence
     seen = set()                      # track which object id's have already been seen
-    default_size = sys.getsizeof(0)       # estimate sizeof object without __sizeof__
+    default_size = sys.getsizeof(0)   # estimate sizeof object without __sizeof__
 
     def sizeof(o):
         if id(o) in seen:       # do not double count the same object

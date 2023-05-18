@@ -1,6 +1,6 @@
 # 由于在环境准备步骤中，buildx 在 qemu-arm64 下执行速度太慢
 # 因此日常镜像构建由半成品镜像开始打包，以提高效率
-FROM registry.jiagouyun.com/middlewares/dataflux-func:base-guance
+FROM registry.jiagouyun.com/middlewares/dataflux-func:base-gse
 
 MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 
