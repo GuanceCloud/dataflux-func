@@ -921,9 +921,9 @@ kafka.publish(topic='some_topic', message='some_message')`,
   get PIP_MIRROR() {
     return [
       {
-        key  : 'tsinghua',
-        name : $t('Tsinghua University mirror'),
-        value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
+        key  : 'douban',
+        name : $t('Douban mirror'),
+        value: 'https://pypi.douban.com/simple/',
       },
       {
         key  : 'alibaba',
@@ -931,9 +931,9 @@ kafka.publish(topic='some_topic', message='some_message')`,
         value: 'https://mirrors.aliyun.com/pypi/simple/',
       },
       {
-        key  : 'douban',
-        name : $t('Douban mirror'),
-        value: 'https://pypi.douban.com/simple/',
+        key  : 'tsinghua',
+        name : $t('Tsinghua University mirror'),
+        value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
       },
       {
         key  : 'official',

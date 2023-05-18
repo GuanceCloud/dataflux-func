@@ -65,7 +65,7 @@ COPY package.json package-lock.json requirements.txt ./
 RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist && \
         rm -rf /usr/src/base/node_modules/node-rdkafka/examples && \
         rm -rf /usr/src/base/node_modules/node-rdkafka/deps     && \
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r ./requirements.txt
+        pip install -i https://pypi.douban.com/simple/ -r ./requirements.txt
 
 # 安装 DataFlux Func 前端依赖包
 WORKDIR /usr/src/base/client
