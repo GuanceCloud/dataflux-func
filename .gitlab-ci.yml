@@ -105,22 +105,22 @@ portable_arm64:
   tags:
     - cloudcare-multiarch
 
-# Guance Special Edition （GSE 观测云特别版）
-portable_GSE_amd64:
+# GSE 观测云特别版携带版
+portable_amd64_GSE:
   stage: build
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_INIT_DATAKIT} -O init-scripts/init_datakit.py;
-    - wget ${INIT_SCRIPT_INIT_FOR_GSE} -O init-scripts/init_for_gse.py;
+    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
+    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
     # 单独构建amd64版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}-gse:latest
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --load
     - docker save ${IMAGE_PUBLIC}-gse:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
@@ -132,21 +132,21 @@ portable_GSE_amd64:
   tags:
     - cloudcare-multiarch
 
-portable_GSE_arm64:
+portable_arm64_GSE:
   stage: build
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_INIT_DATAKIT} -O init-scripts/init_datakit.py;
-    - wget ${INIT_SCRIPT_INIT_FOR_GSE} -O init-scripts/init_for_gse.py;
+    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
+    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
     # 单独构建arm64版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/arm64
       -t ${IMAGE_PUBLIC}-gse-arm64:latest
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --load
     - docker save ${IMAGE_PUBLIC}-gse-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
@@ -158,8 +158,8 @@ portable_GSE_arm64:
   tags:
     - cloudcare-multiarch
 
-# 独立部署版
-singleton_release:
+# Origin 原版独立部署版
+singleton:
   stage: build
   retry: 2
   only:
@@ -189,8 +189,40 @@ singleton_release:
   tags:
     - cloudcare-multiarch
 
+# GSE 观测云特别版独立部署版
+singleton_GSE:
+  stage: build
+  retry: 2
+  only:
+    - /^\d+\.\d+\.\d+$/ # 如：1.2.3
+  script:
+    # 计算版本号
+    - V_PARTS=(${CI_COMMIT_REF_NAME//[\.]/ })
+    - V_MAJOR=${V_PARTS[0]}
+    - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
+    - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
+    # 下载初始化脚本
+    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
+    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
+    # 构建/推送多架构版本
+    - python echo-image-info.py --edition=GSE > image-info.json
+    - docker buildx build
+      --platform linux/amd64,linux/arm64
+      -t ${IMAGE_PRIVATE}-gse:latest
+      -t ${IMAGE_PRIVATE}-gse:${V_MAJOR}
+      -t ${IMAGE_PRIVATE}-gse:${V_MAJOR_MINOR}
+      -t ${IMAGE_PRIVATE}-gse:${V_MAJOR_MINOR_PATCH}
+      -t ${IMAGE_PUBLIC}-gse:latest
+      -t ${IMAGE_PUBLIC}-gse:${V_MAJOR}
+      -t ${IMAGE_PUBLIC}-gse:${V_MAJOR_MINOR}
+      -t ${IMAGE_PUBLIC}-gse:${V_MAJOR_MINOR_PATCH}
+      -f Dockerfile-GSE-singleton .
+      --push
+  tags:
+    - cloudcare-multiarch
+
 # 观测云同捆版
-guance_testing:
+guanceSaaS_testing:
   stage: build
   retry: 2
   only:
@@ -201,12 +233,12 @@ guance_testing:
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --push
   tags:
     - cloudcare-multiarch
 
-guance_release:
+guanceSaaS_release:
   stage: build
   retry: 2
   only:
@@ -223,7 +255,7 @@ guance_release:
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
       -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -248,7 +280,7 @@ guancePaaS_preview:
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -273,7 +305,7 @@ guancePaaS_release:
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
-      -f Dockerfile-GSE .
+      -f Dockerfile-singleton-GSE .
       --push
   tags:
     - cloudcare-multiarch
@@ -302,7 +334,7 @@ portableFile_dev:
   tags:
     - cloudcare-multiarch
 
-portableFile_release:
+portableFile_singleton:
   stage: uploadToOSS
   retry: 2
   only:
@@ -331,7 +363,7 @@ portableFile_release:
   tags:
     - cloudcare-multiarch
 
-portableFile_GSE_release:
+portableFile_singleton_GSE:
   stage: uploadToOSS
   retry: 2
   only:
@@ -355,7 +387,7 @@ portableFile_GSE_release:
     - cloudcare-multiarch
 
 # ========== 部署 ==========
-guanceK8s_testing:
+deploy_testing:
   stage: deploy
   retry: 2
   only:
@@ -367,7 +399,7 @@ guanceK8s_testing:
   tags:
     - cloudcare-multiarch
 
-guanceK8s_release:
+deploy_release:
   stage: deploy
   retry: 2
   only:
