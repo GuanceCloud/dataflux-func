@@ -46,7 +46,7 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
                   <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
                 </el-form-item>
 
-                <el-form-item label="ID" prop="id">
+                <el-form-item label="ID" prop="id" class="script-set-id-field">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
                     maxlength="64"
                     v-model="form.id"></el-input>
@@ -397,5 +397,8 @@ export default {
 <style scoped>
 .example-script {
   padding-left: 20px;
+}
+.script-set-id-field {
+  margin-bottom: 40px;
 }
 </style>

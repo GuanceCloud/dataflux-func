@@ -846,6 +846,9 @@ kbd {
   position: relative;
   top: -1px;
 }
+.el-form-item__error {
+  word-break: break-all;
+}
 
 .fix-compact-button {
   margin-left: 0 !important;

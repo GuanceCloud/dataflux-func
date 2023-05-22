@@ -1705,7 +1705,7 @@ scriptSetAPI:
           $isRequired    : true
           $type          : string
           $minLength     : 1
-          $maxLength     : 32
+          $maxLength     : 60
           $matchRegExp   : ^[a-zA-Z_][a-zA-Z0-9_]*$
           $notMatchRegExp: __
         title:
@@ -1794,7 +1794,7 @@ scriptSetAPI:
         $desc      : 新脚本集 ID
         $isRequired: true
         $type      : string
-        $maxLength : 32
+        $maxLength : 60
 
   export:
     showInDoc    : true
