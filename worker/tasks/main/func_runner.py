@@ -156,7 +156,7 @@ class FuncRunnerTask(ScriptBaseTask):
 
             if einfo_text:
                 full_log_message_parts.append(' Stack '.center(30, '-'))
-                full_log_message_parts.append('\n'.join(einfo_text))
+                full_log_message_parts.append(einfo_text)
 
             full_log_messages = '\n'.join(full_log_message_parts)
             end_time_ms = int(time.time() * 1000)
