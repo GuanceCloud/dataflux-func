@@ -4,11 +4,12 @@
 
 /* 3rd-party Modules */
 var sortedJSON = require('sorted-json');
+var async      = require('async');
+var request    = require('request');
 
 /* Project Modules */
-var E           = require('./serverError');
-var CONFIG      = require('./yamlResources').get('CONFIG');
-var toolkit     = require('./toolkit');
+var toolkit    = require('./toolkit');
+var IMAGE_INFO = require('../../image-info.json');
 
 var common = exports;
 
@@ -219,4 +220,78 @@ common.replaceImportDataOrigin = function(importData, origin, originId) {
   });
 
   return importData;
-}
+};
+
+common.getGuanceNodes = function(callback) {
+  var guanceNodes = [];
+
+  var requestOptions = {
+    method : 'get',
+    url    : 'https://func.guance.com/guance-nodes.json',
+    headers: { 'Cache-Control': 'no-cache' },
+    json   : true,
+  };
+  request(requestOptions, function(err, _res, _body) {
+    if (!err) {
+      guanceNodes = _body.nodes || [];
+      if (['0.0.0', 'dev'].indexOf(IMAGE_INFO.VERSION) < 0) {
+        guanceNodes = guanceNodes.filter(function(x) {
+          return x.key !== 'testing';
+        });
+      }
+    }
+
+    // 忽略报错
+    return callback(null, guanceNodes);
+  });
+};
+
+common.checkGuanceAPIKey = function(guanceNodeKey, guanceAPIKeyID, guanceAPIKey, callback) {
+  var guanceNode = null;
+  async.series([
+    // 获取观测云节点
+    function(asyncCallback) {
+      common.getGuanceNodes(function(err, guanceNodes) {
+        if (err) return asyncCallback(err);
+
+        guanceNode = guanceNodes.filter(function(node) {
+          return node.key === guanceNodeKey;
+        })[0];
+
+        if (!guanceNode) {
+          return asyncCallback(new E('EClientNotFound', 'Guance Node not found'));
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 尝试调用观测云 OpenAPI
+    function(asyncCallback) {
+      var requestOptions = {
+        method : 'get',
+        url    : `${guanceNode.openapi}/api/v1/workspace/accesskey/list`,
+        headers: { 'DF-API-KEY': guanceAPIKeyID },
+        json   : true,
+      };
+      request(requestOptions, function(err, _res, _body) {
+        if (err) return asyncCallback(err);
+
+        if (_res.statusCode >= 400) {
+          return asyncCallback(new Error('Calling Guance API Failed'));
+        }
+
+        var matchedData = _body.content.filter(function(d) {
+          return d.ak === guanceAPIKeyID && d.sk === guanceAPIKey;
+        });
+        if (matchedData.length <= 0) {
+          return asyncCallback(new Error('Guance API Key ID and API Key not match'));
+        }
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback();
+  });
+};

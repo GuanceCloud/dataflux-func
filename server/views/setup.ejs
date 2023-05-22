@@ -185,68 +185,139 @@
           </p>
 
           <hr>
-          <!-- 管理员用户 -->
-          <el-popover
-            :visible-arrow="false"
-            placement="right"
-            popper-class="popover-tips"
-            trigger="hover">
-            <div slot="reference">
-              <div class="config-info">
-                <span>{{ $t('Administrator username') }}</span>
-                <code>ADMIN_USERNAME</code>
-              </div>
-              <el-input
-                ref="ADMIN_USERNAME"
-                v-model="userConfig.ADMIN_USERNAME"></el-input>
-            </div>
-            <p>
-              {{ $t('Create an initial administrator user for the system') }}
-            </p>
-          </el-popover>
-
-          <!-- 管理员密码（默认为 admin) -->
-          <el-popover
-            :visible-arrow="false"
-            placement="right"
-            popper-class="popover-tips"
-            trigger="hover">
-            <div slot="reference">
-              <div class="config-info">
-                <span>{{ $t('Administrator password (default is admin)') }}</span>
-                <code>ADMIN_PASSWORD</code>
-              </div>
-              <el-input
-                ref="ADMIN_PASSWORD"
-                v-model="userConfig.ADMIN_PASSWORD" show-password></el-input>
-            </div>
-            <p>
-              {{ $t('A strong password can protect your data security') }}
-            </p>
-          </el-popover>
-
-          <!-- 重复管理员密码 -->
-          <el-popover
-            :visible-arrow="false"
-            placement="right"
-            popper-class="popover-tips"
-            trigger="hover">
-            <div slot="reference">
-              <div class="config-info">
-                <span>{{ $t('Repeat administrator password') }}</span>
-                <code>ADMIN_PASSWORD_REPEAT</code>
-              </div>
-              <el-input
-                ref="ADMIN_PASSWORD_REPEAT"
-                v-model="userConfig.ADMIN_PASSWORD_REPEAT" show-password></el-input>
-            </div>
-            <p>
-              {{ $t('Enter the administrator password again') }}
-            </p>
-          </el-popover>
-
-          <!-- 自定义选项 -->
           <div id="setupConfigArea">
+            <!-- 管理员用户 -->
+            <el-popover
+              :visible-arrow="false"
+              placement="right"
+              popper-class="popover-tips"
+              trigger="hover">
+              <div slot="reference">
+                <div class="config-info">
+                  <span>{{ $t('Administrator username') }}</span>
+                  <code>ADMIN_USERNAME</code>
+                </div>
+                <el-input
+                  ref="ADMIN_USERNAME"
+                  v-model="userConfig.ADMIN_USERNAME"></el-input>
+              </div>
+              <p>
+                {{ $t('Create an initial administrator user for the system') }}
+              </p>
+            </el-popover>
+
+            <!-- 管理员密码（默认为 admin) -->
+            <el-popover
+              :visible-arrow="false"
+              placement="right"
+              popper-class="popover-tips"
+              trigger="hover">
+              <div slot="reference">
+                <div class="config-info">
+                  <span>{{ $t('Administrator password (default is admin)') }}</span>
+                  <code>ADMIN_PASSWORD</code>
+                </div>
+                <el-input
+                  ref="ADMIN_PASSWORD"
+                  :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
+                  v-model="userConfig.ADMIN_PASSWORD" show-password></el-input>
+              </div>
+              <p>
+                {{ $t('A strong password can protect your data security') }}
+              </p>
+            </el-popover>
+
+            <!-- 重复管理员密码 -->
+            <el-popover
+              :visible-arrow="false"
+              placement="right"
+              popper-class="popover-tips"
+              trigger="hover">
+              <div slot="reference">
+                <div class="config-info">
+                  <span>{{ $t('Repeat administrator password') }}</span>
+                  <code>ADMIN_PASSWORD_REPEAT</code>
+                </div>
+                <el-input
+                  ref="ADMIN_PASSWORD_REPEAT"
+                  :class="{ 'bad-config': setupErrorKeyStatus.adminUser }"
+                  v-model="userConfig.ADMIN_PASSWORD_REPEAT" show-password></el-input>
+              </div>
+              <p>
+                {{ $t('Enter the administrator password again') }}
+              </p>
+            </el-popover>
+
+            <template v-if="GUANCE_NODES && GUANCE_NODES.length > 0">
+              <!-- 观测云节点 -->
+              <el-popover
+                :visible-arrow="false"
+                placement="right"
+                popper-class="popover-tips"
+                trigger="hover">
+                <div slot="reference">
+                  <div class="config-info">
+                    <span>{{ $t('Guance Node') }}</span>
+                    <code>GUANCE_NODE</code>
+                  </div>
+                  <el-select
+                    :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                    v-model="userConfig.GUANCE_NODE">
+                    <el-option :label="$t('Do not create Guance connector')" :value="null"></el-option>
+                    <el-option v-for="node in GUANCE_NODES" :label="$t(node.name_en)" :value="node.key"></el-option>
+                  </el-select>
+                </div>
+                <p>
+                  {{ $t('Provide Guance API Key to create a Guance connector automatically') }}
+                </p>
+              </el-popover>
+
+              <template v-if="userConfig.GUANCE_NODE">
+                <!-- 观测云 API Key ID -->
+                <el-popover
+                  :disabled="true"
+                  :visible-arrow="false"
+                  placement="right"
+                  popper-class="popover-tips"
+                  trigger="hover">
+                  <div slot="reference">
+                    <div class="config-info">
+                      <span>{{ $t('Guance API Key ID') }}</span>
+                      <code>GUANCE_API_KEY_ID</code>
+                    </div>
+                    <el-input
+                      ref="GUANCE_API_KEY_ID"
+                      :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                      v-model="userConfig.GUANCE_API_KEY_ID"></el-input>
+                  </div>
+                  <p>
+                  </p>
+                </el-popover>
+
+                <!-- 观测云 API Key -->
+                <el-popover
+                  :disabled="true"
+                  :visible-arrow="false"
+                  placement="right"
+                  popper-class="popover-tips"
+                  trigger="hover">
+                  <div slot="reference">
+                    <div class="config-info">
+                      <span>{{ $t('Guance API Key') }}</span>
+                      <code>GUANCE_API_KEY</code>
+                    </div>
+                    <el-input
+                      ref="GUANCE_API_KEY"
+                      :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                      v-model="userConfig.GUANCE_API_KEY" show-password></el-input>
+                  </div>
+                  <p>
+                  </p>
+                </el-popover>
+              </template>
+            </template>
+
+            <!-- 自定义选项 -->
             <div class="config-info">
               <el-checkbox v-model="showMoreConfigs">{{ $t('Show more configs') }}</el-checkbox>
             </div>
@@ -597,6 +668,9 @@
     </div>
   </body>
   <script>
+    // ElementUI 配置
+    ELEMENT.Select.props.placeholder.default = '-';
+
     // 多语言
     const messages = {
       'zh-CN': {
@@ -608,6 +682,12 @@
         'If there is no response for a long time, you can try to click the link': '如长时间无响应，可尝试点击链接',
         'Error occured during initializing DB'                                  : '初始化数据库时发生错误',
 
+        'Administrator username or password is not inputed'       : '管理员用户名或密码未填写',
+        'Repeated administrator password not match'               : '两次输入的管理员密码不匹配',
+        'Guance API Key ID is not inputed'                        : '观测云 API Key ID 未填写',
+        'Guance API Key is not inputed'                           : '观测云 API Key 未填写',
+        'No such Guance Node'                                     : '不存在此观测云节点',
+        'Guance API Key ID / API Key is not valid'                : '观测云 API Key ID / API Key 不正确',
         'Connecting to MySQL failed'                              : '连接 MySQL 失败',
         'Unexpected error with MySQL'                             : 'MySQL 抛出未预期的错误',
         'MySQL 5.7 or above is required'                          : 'MySQL 版本必须为 5.7 及以上',
@@ -618,9 +698,9 @@
         'Unexpected error with Redis'                             : 'Redis 抛出未预期的错误',
         'Initializing MySQL database failed'                      : '初始化 MySQL 数据库失败',
         'Initializing system configs failed'                      : '初始化系统配置失败',
-        'Administrator username or password is not inputed'       : '管理员用户名或密码未填写',
-        'Repeated administrator password not match'               : '两次输入的管理员密码不匹配',
-        'Setup administrator password failed'                     : '设置管理员密码失败',
+        'Initializing Guance connector failed'                    : '初始化观测云连接器失败',
+        'Initializing AccessKey failed'                           : '初始化 AccessKey 失败',
+        'Set administrator password failed'                       : '设置管理员密码失败',
 
         'Version:': '版本：',
 
@@ -632,6 +712,23 @@
         'Keep the option <code>innodb_large_prefix</code> <strong>ON</strong> in MySQL 5.7'                                      : 'MySQL 5.7 <code>innodb_large_prefix</code>选项保持<strong>打开（ON）</strong>',
         '(Official MySQL 5.7 doc)'                                                                                               : '（MySQL 5.7 官方文档）',
         'Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode'                                                   : 'Redis 4.0 或以上版本，且<strong>不是</strong> Redis 集群',
+
+        'Administrator username': '管理员用户名',
+        'Create an initial administrator user for the system': '为系统配置一个初始管理员用户',
+
+        'Administrator password (default is admin)': '管理员密码（默认为 admin)',
+        'A strong password can protect your data security': '复杂的密码可以保护您的数据安全',
+
+        'Repeat administrator password': '重复管理员密码',
+        'Enter the administrator password again': '请再输入一遍管理员密码',
+
+        'Guance Node': '观测云节点',
+        'Do not create Guance connector': '不要创建观测云连接器',
+        'Provide Guance API Key to create a Guance connector automatically': '请提供观测云 API Key 来自动创建观测云连接器',
+
+        'Guance API Key ID': '观测云 API Key ID',
+
+        'Guance API Key': '观测云 API Key',
 
         'Show more configs': '显示更多配置',
         'Unless necessary, just use the default configuration': '除非必要，使用默认配置即可',
@@ -687,18 +784,16 @@
         'Disable TLS (default)'                                                : '禁用 TLS（默认）',
         'Enable TLS'                                                           : '启用 TLS',
 
-        'Administrator username': '管理员用户名',
-        'Create an initial administrator user for the system': '为系统配置一个初始管理员用户',
-
-        'Administrator password (default is admin)': '管理员密码（默认为 admin)',
-        'A strong password can protect your data security': '复杂的密码可以保护您的数据安全',
-
-        'Repeat administrator password': '重复管理员密码',
-        'Enter the administrator password again': '请再输入一遍管理员密码',
-
         'Save and init DB': '保存并初始化数据库',
       }
     };
+
+    // 观测云节点
+    const GUANCE_NODES = <%- JSON.stringify(GUANCE_NODES) %>;
+    GUANCE_NODES.forEach(node => {
+      messages['zh-CN'][node.name_en] = node.name;
+    });
+
     const i18n = new VueI18n({
       locale                : 'zh-CN',
       fallbackLocale        : 'en',
@@ -815,11 +910,26 @@
         },
       },
       computed: {
+        GUANCE_NODES() {
+          return GUANCE_NODES;
+        },
+        GUANCE_NODE_MAP() {
+          return GUANCE_NODES.reduce((acc, x) => {
+            acc[x.key] = x;
+            return acc;
+          }, {})
+        },
         redirectURL() {
           return this.setupRedirectURL || this.userConfig.WEB_BASE_URL || location.origin;
         },
         inputRefKeyMap() {
           return {
+            ADMIN_USERNAME       : 'adminUser',
+            ADMIN_PASSWORD       : 'adminUser',
+            ADMIN_PASSWORD_REPEAT: 'adminUser',
+            GUANCE_NODE          : 'guance',
+            GUANCE_API_KEY_ID    : 'guance',
+            GUANCE_API_KEY       : 'guance',
             MYSQL_HOST           : 'mysql',
             MYSQL_PORT           : 'mysql',
             MYSQL_USER           : 'mysql',
@@ -830,9 +940,6 @@
             REDIS_DATABASE       : 'redis',
             REDIS_PASSWORD       : 'redis',
             REDIS_USE_TLS        : 'redis',
-            ADMIN_USERNAME       : 'adminUser',
-            ADMIN_PASSWORD       : 'adminUser',
-            ADMIN_PASSWORD_REPEAT: 'adminUser',
           }
         },
       },
@@ -848,9 +955,10 @@
           setupRedirectURL: null,
 
           setupErrorKeyStatus: {
+            adminUser: false,
+            guance   : false,
             mysql    : false,
             redis    : false,
-            adminUser: false,
           },
 
           userConfig: {
@@ -868,10 +976,14 @@
             REDIS_DATABASE       : currentConfig.REDIS_DATABASE,
             REDIS_PASSWORD       : currentConfig.REDIS_PASSWORD,
             REDIS_USE_TLS        : `${currentConfig.REDIS_USE_TLS}`,
+
             ADMIN_USERNAME       : currentConfig.ADMIN_USERNAME,
             ADMIN_PASSWORD       : currentConfig.ADMIN_PASSWORD,
             ADMIN_PASSWORD_REPEAT: currentConfig.ADMIN_PASSWORD_REPEAT,
-          }
+            GUANCE_NODE          : null,
+            GUANCE_API_KEY_ID    : null,
+            GUANCE_API_KEY       : null,
+          },
         }
       },
     }).$mount('#app');

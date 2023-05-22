@@ -10,9 +10,12 @@ var express    = require('express');
 var bodyParser = require('body-parser');
 var async      = require('async');
 var yaml       = require('js-yaml');
+var request    = require('request');
 
 /* Project Modules */
-var toolkit = require('./utils/toolkit');
+var toolkit    = require('./utils/toolkit');
+var common     = require('./utils/common');
+var IMAGE_INFO = require('../image-info.json');
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
@@ -59,9 +62,10 @@ SetupErrorWrap.prototype.toJSON = function() {
 function _doSetup(userConfig, callback) {
   var userConfig = toolkit.jsonCopy(userConfig);
 
-  var adminUsername       = null;
-  var adminPassword       = null;
-  var adminPasswordRepeat = null;
+  var adminUsername         = null;
+  var adminPassword         = null;
+  var adminPasswordRepeat   = null;
+  var guanceConnectorConfig = null;
 
   if (userConfig.ADMIN_USERNAME) {
     // 手动初始化
@@ -101,6 +105,62 @@ function _doSetup(userConfig, callback) {
       }
 
       return asyncCallback();
+    },
+    // Check Guance API Key
+    function(asyncCallback) {
+      if (!userConfig.GUANCE_NODE) return asyncCallback();
+
+      if (!userConfig.GUANCE_API_KEY_ID) {
+        setupErrorWrap.set('guance', 'Guance API Key ID is not inputed');
+      }
+      if (!userConfig.GUANCE_API_KEY) {
+        setupErrorWrap.set('guance', 'Guance API Key is not inputed');
+      }
+      if (setupErrorWrap.has('guance')) return asyncCallback();
+
+      var guanceNode = null;
+      async.series([
+        // 检查观测云节点存在性
+        function(innerCallback) {
+          common.getGuanceNodes(function(err, guanceNodes) {
+            guanceNode = guanceNodes.filter(function(node) {
+              return node.key === userConfig.GUANCE_NODE;
+            })[0];
+
+            if (!guanceNode) {
+              setupErrorWrap.set('guance', 'No such Guance Node');
+              return innerCallback(true);
+            }
+
+            return innerCallback();
+          });
+        },
+        // 检查观测云 API Key 有效性
+        function(innerCallback) {
+          common.checkGuanceAPIKey(guanceNode.key, userConfig.GUANCE_API_KEY_ID, userConfig.GUANCE_API_KEY, function(err) {
+            if (err) {
+              setupErrorWrap.set('guance', 'Guance API Key ID / API Key is not valid');
+              return innerCallback(true);
+            }
+
+            return innerCallback();
+          });
+        },
+      ], function(err) {
+        if (!err) {
+          guanceConnectorConfig = {
+            guanceNode        : guanceNode.key,
+            nameInGuance      : 'DataFlux Func',
+            guanceOpenAPIURL  : guanceNode.openapi,
+            guanceWebSocketURL: guanceNode.websocket,
+            guanceOpenWayURL  : guanceNode.openway,
+            guanceAPIKeyId    : userConfig.GUANCE_API_KEY_ID,
+            guanceAPIKeyCipher: toolkit.cipherByAES(userConfig.GUANCE_API_KEY, userConfig.SECRET),
+          };
+        }
+
+        return asyncCallback();
+      });
     },
     // Check MySQL, version
     function(asyncCallback) {
@@ -251,6 +311,30 @@ function _doSetup(userConfig, callback) {
         return asyncCallback();
       });
     },
+    // Add Guance connector
+    function(asyncCallback) {
+      if (setupErrorWrap.hasError()) return asyncCallback();
+      if (toolkit.isNothing(guanceConnectorConfig)) return asyncCallback();
+
+      var sql = 'INSERT INTO `biz_main_connector` SET ?';
+      var sqlParams = [
+        {
+          id         : 'guance',
+          title      : 'Guance',
+          description: `Created at ${toolkit.getDateTimeStringCN()} during Setup`,
+          type       : 'guance',
+          configJSON : JSON.stringify(guanceConnectorConfig),
+          pinTime    : new Date(),
+        }
+      ];
+      dbHelper.query(sql, sqlParams, function(err, data) {
+        if (err) {
+          setupErrorWrap.set('guanceInit', 'Initializing Guance connector failed', err);
+        }
+
+        return asyncCallback();
+      });
+    },
     // Auto Setup Init AK
     function(asyncCallback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
@@ -290,7 +374,7 @@ function _doSetup(userConfig, callback) {
       ]
       dbHelper.query(sql, sqlParams, function(err, data) {
         if (err) {
-          setupErrorWrap.set('adminUser', 'Setup administrator password failed', err);
+          setupErrorWrap.set('adminUser', 'Set administrator password failed', err);
         }
 
         return asyncCallback();
@@ -308,11 +392,16 @@ function _doSetup(userConfig, callback) {
     delete USER_CONFIG.ADMIN_USERNAME;
     delete USER_CONFIG.ADMIN_PASSWORD;
     delete USER_CONFIG.ADMIN_PASSWORD_REPEAT;
-    delete USER_CONFIG.AUTO_SETUP
-    delete USER_CONFIG.AUTO_SETUP_ADMIN_USERNAME
-    delete USER_CONFIG.AUTO_SETUP_ADMIN_PASSWORD
-    delete USER_CONFIG.AUTO_SETUP_AK_ID
-    delete USER_CONFIG.AUTO_SETUP_AK_SECRET
+
+    delete USER_CONFIG.AUTO_SETUP;
+    delete USER_CONFIG.AUTO_SETUP_ADMIN_USERNAME;
+    delete USER_CONFIG.AUTO_SETUP_ADMIN_PASSWORD;
+    delete USER_CONFIG.AUTO_SETUP_AK_ID;
+    delete USER_CONFIG.AUTO_SETUP_AK_SECRET;
+
+    delete USER_CONFIG.GUANCE_NODE;
+    delete USER_CONFIG.GUANCE_API_KEY_ID;
+    delete USER_CONFIG.GUANCE_API_KEY;
 
     fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 
@@ -375,7 +464,28 @@ function runSetupServer() {
     defaultConfig['ADMIN_PASSWORD']        = ADMIN_DEFUALT_PASSWORD;
     defaultConfig['ADMIN_PASSWORD_REPEAT'] = ADMIN_DEFUALT_PASSWORD;
 
-    res.render('setup', { CONFIG: defaultConfig, IMAGE_INFO: IMAGE_INFO });
+    var GUANCE_NODES = [];
+    async.series([
+      // 查询所有观测云节点
+      function(asyncCallback) {
+        if (IMAGE_INFO.EDITION === 'GSE') return asyncCallback();
+
+        common.getGuanceNodes(function(err, guanceNodes) {
+          if (err) return asyncCallback(err);
+
+          GUANCE_NODES = guanceNodes;
+
+          return asyncCallback();
+        });
+      },
+    ], function(err) {
+      var pageData = {
+        CONFIG          : defaultConfig,
+        IMAGE_INFO      : IMAGE_INFO,
+        GUANCE_NODES: GUANCE_NODES,
+      }
+      res.render('setup', pageData);
+    });
   });
 
   // Setup handler

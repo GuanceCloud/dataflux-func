@@ -1212,7 +1212,7 @@ export async function callAPI(method, pathPattern, options) {
 
         // 进一步添加小字详细信息
         if (axiosRes.data.detail && axiosRes.data.detail.message) {
-          message += `<br><small>${axiosRes.data.detail.message.replace(/\n/g, '<br>')}<small>`;
+          message += `<br><small>${app.$t(axiosRes.data.detail.message.replace(/\n/g, '<br>'))}<small>`;
         }
 
         // 简单提示，不需要区分标题和内容

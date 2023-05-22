@@ -77,6 +77,7 @@ Connector deleted: 连接器已删除
 
 Are you sure you want to delete the Connector?: 是否确认删除此连接器？
 
+Click here for connector subscription: 点击此处了解连接器订阅
 This is a built-in Connector, please contact the admin to change the config: 当前连接器为内置连接器，请联系管理员调整集群配置
 </i18n>
 
@@ -352,7 +353,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                         href="https://func.guance.com/doc/development-guide-connector-subscribe/"
                         target="_blank">
                         <i class="fa fa-fw fa-external-link"></i>
-                        {{ $t('点击此处了解连接器订阅') }}
+                        {{ $t('Click here for connector subscription') }}
                       </el-link>
                     </el-form-item>
                   </template>
@@ -437,26 +438,10 @@ export default {
       immediate: true,
       async handler(newVal) {
         // 获取观测云节点信息
-        if (newVal === 'guance') {
-          let axiosOpt = {
-            headers: { 'Cache-Control': 'no-cache' }
-          };
+        if (newVal === 'guance' && this.T.isNothing(this.guanceNodes)) {
+          let guanceNodes = this.$store.getters.CONFIG('GUANCE_NODES');
 
-          let guanceNodes = [];
-          try {
-            let resp = await axios.get('https://func.guance.com/guance-endpoints.json', axiosOpt);
-            guanceNodes = resp.data.endpoints;
-          } catch(err) {
-            // Nope
-          } finally {
-            guanceNodes.push(this.C.GUANCE_PRIVATE_ENDPOINT);
-
-            if (this.$store.getters.CONFIG('VERSION') === '0.0.0') {
-              guanceNodes.push(this.C.GUANCE_TESTING_ENDPOINT);
-            }
-          }
-
-          this.guanceNodes = guanceNodes;
+          this.guanceNodes   = guanceNodes;
           this.guanceNodeMap = guanceNodes.reduce((acc, node) => {
             acc[node.key] = node;
             return acc;

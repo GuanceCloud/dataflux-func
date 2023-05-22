@@ -26,8 +26,9 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
         echo "Asia/Shanghai" > /etc/timezone
 
 # 替换镜像源并安装常用工具
-RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
-    sed -i 's/ports.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    sed -i 's/ports.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y vim tzdata telnet curl wget net-tools iputils-ping zip unzip unar snmp git \
                 python3.8-dev python3-pip default-libmysqlclient-dev build-essential mysql-client redis-tools libpq-dev libaio1 && \

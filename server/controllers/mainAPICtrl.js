@@ -20,6 +20,7 @@ var CONFIG     = require('../utils/yamlResources').get('CONFIG');
 var CONST      = require('../utils/yamlResources').get('CONST');
 var ROUTE      = require('../utils/yamlResources').get('ROUTE');
 var toolkit    = require('../utils/toolkit');
+var common     = require('../utils/common');
 var urlFor     = require('../utils/routeLoader').urlFor;
 var auth       = require('../utils/auth');
 var IMAGE_INFO = require('../../image-info.json');
@@ -2172,6 +2173,16 @@ exports.getSystemConfig = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         systemConfig.VARIABLE_CONFIG = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取观测云节点列表
+    function(asyncCallback) {
+      common.getGuanceNodes(function(err, guanceNodes) {
+        if (err) return asyncCallback(err);
+
+        systemConfig.GUANCE_NODES = guanceNodes;
 
         return asyncCallback();
       });

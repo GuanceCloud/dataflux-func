@@ -12,7 +12,6 @@ from worker.utils.extra_helpers.guance_openapi import GuanceOpenAPI
 from worker.utils.extra_helpers.dataway import DataWay
 
 def get_config(c):
-    print(c)
     return toolkit.no_none_or_white_space({
         'url'       : c.get('guanceOpenAPIURL'),
         'api_key_id': c.get('guanceAPIKeyId'),
@@ -73,7 +72,7 @@ class GuanceHelper(object):
 
         else:
             if not self.client.is_api_key_match:
-                e = Exception('Guance API Key NOT match!')
+                e = Exception('Guance API Key NOT match to API Key ID!')
                 raise e
 
     def __getattr__(self, name):

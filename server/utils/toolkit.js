@@ -199,7 +199,7 @@ var genUUID = toolkit.genUUID = function genUUID(opt) {
 
   var v = uuid.v4();
   if (opt.noHyphen) {
-    v = v.replace('-', '');
+    v = v.replaceAll('-', '');
   }
 
   return v;

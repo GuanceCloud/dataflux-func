@@ -416,29 +416,6 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return new MAP_CONST(this.CONNECTOR);
   },
 
-  // 观测云节点（私有）
-  get GUANCE_PRIVATE_ENDPOINT() {
-    return {
-      key      : 'private',
-      name     : '私有部署',
-      name_en  : 'Private',
-      openapi  : 'https://openapi.YOUR_DOMAIN.com',
-      websocket: 'https://websocket.YOUR_DOMAIN.com',
-      openway  : 'https://openway.YOUR_DOMAIN.com',
-    }
-  },
-  // 观测云节点（测试）
-  get GUANCE_TESTING_ENDPOINT() {
-    return {
-      key      : 'testing',
-      name     : '测试环境',
-      name_en  : 'Testing',
-      openapi  : 'http://testing-ft2x-open-api.cloudcare.cn',
-      websocket: 'http://testing-ft2x-websocket.cloudcare.cn',
-      openway  : 'http://testing-openway.cloudcare.cn',
-    }
-  },
-
   // 代码注释
   get TODO_TYPE() {
     return [

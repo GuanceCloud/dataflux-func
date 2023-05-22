@@ -129,18 +129,13 @@ class GuanceOpenAPI(object):
 
     @property
     def is_api_key_match(self):
-        remote_api_key = None
         try:
-            remote_api_key_list = self.do_get(f'/api/v1/workspace/accesskey/list')['content']
-            for d in remote_api_key_list:
-                if d['ak'] == self.api_key_id:
-                    remote_api_key = d['sk']
-                    break
+            access_key_list = self.do_get(f'/api/v1/workspace/accesskey/list')['content']
+            matched_data = filter(lambda d: d['ak'] == self.api_key_id and d['sk'] == self.api_key, access_key_list)
+            return len(list(matched_data)) > 0
 
         except Exception as e:
             return False
-        finally:
-            return self.api_key and self.api_key == remote_api_key
 
     @property
     def workspace_language(self):

@@ -4,9 +4,9 @@
 var os = require('os');
 
 /* 3rd-party Modules */
-var async  = require('async');
-var mysql  = require('mysql2');
-var moment = require('moment');
+var async   = require('async');
+var mysql   = require('mysql2');
+var moment  = require('moment');
 
 /* Project Modules */
 var g             = require('./utils/g');
@@ -75,52 +75,51 @@ exports.beforeAppCreate = function(callback) {
     return cacheKeyInfo;
   };
 
-  var loadDatabaseTimezone = function(callback) {
-    var conn = getDBConnection();
-    conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
-      // 无法连接数据库也不要报错
-      if (err) {
-        console.log('Cannot detect database Timezone, skip');
-        return callback();
-      }
-
-      var serverSettings = {};
-      dbRes.forEach(function(d) {
-        serverSettings[d['Variable_name']] = d['Value'];
-      });
-
-      var timezone       = serverSettings['time_zone'];
-      var systemTimezone = serverSettings['system_time_zone'];
-
-      if (!timezone || timezone.toUpperCase() === 'SYSTEM') {
-        timezone = systemTimezone;
-      }
-
-      switch(timezone) {
-        case 'UTC':
-        case 'GMT':
-          timezone = '+00:00';
-          break;
-
-        case 'CST':
-        case 'Asia/Shanghai':
-          timezone = '+08:00';
-          break;
-      }
-
-      conn.end();
-
-      if (timezone) {
-        yamlResources.set('CONFIG', '_MYSQL_TIMEZONE', timezone);
-      }
-      console.log('Database Timezone: ' + timezone);
-
-      return callback();
-    });
-  };
-
   async.series([
-    loadDatabaseTimezone,
+    // 加载数据库时区
+    function(asyncCallback) {
+      var conn = getDBConnection();
+      conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
+        // 无法连接数据库也不要报错
+        if (err) {
+          console.log('Cannot detect database Timezone, skip');
+          return asyncCallback();
+        }
+
+        var serverSettings = {};
+        dbRes.forEach(function(d) {
+          serverSettings[d['Variable_name']] = d['Value'];
+        });
+
+        var timezone       = serverSettings['time_zone'];
+        var systemTimezone = serverSettings['system_time_zone'];
+
+        if (!timezone || timezone.toUpperCase() === 'SYSTEM') {
+          timezone = systemTimezone;
+        }
+
+        switch(timezone) {
+          case 'UTC':
+          case 'GMT':
+            timezone = '+00:00';
+            break;
+
+          case 'CST':
+          case 'Asia/Shanghai':
+            timezone = '+08:00';
+            break;
+        }
+
+        conn.end();
+
+        if (timezone) {
+          yamlResources.set('CONFIG', '_MYSQL_TIMEZONE', timezone);
+        }
+        console.log('Database Timezone: ' + timezone);
+
+        return asyncCallback();
+      });
+    }
   ], function(err) {
     if (err) throw err;
 
@@ -396,8 +395,8 @@ exports.afterAppCreated = function(app, server) {
           toolkit.childProcessSpawn(cmd, [ scriptPath ], opt, function(err, stdout) {
             if (err) return eachCallback(err);
 
-            app.locals.logger.warning(`[INIT SCRIPT] ${script}`);
-            app.locals.logger.warning(`[INIT SCRIPT] stdout: ${stdout}`);
+            app.locals.logger.warning(`[INIT SCRIPT] ${script}: Run`);
+            app.locals.logger.warning(`[INIT SCRIPT] ${script}: ${stdout}`);
 
             return eachCallback();
           });

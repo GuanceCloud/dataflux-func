@@ -216,7 +216,7 @@ singleton_GSE:
       -t ${IMAGE_PUBLIC}-gse:${V_MAJOR}
       -t ${IMAGE_PUBLIC}-gse:${V_MAJOR_MINOR}
       -t ${IMAGE_PUBLIC}-gse:${V_MAJOR_MINOR_PATCH}
-      -f Dockerfile-GSE-singleton .
+      -f Dockerfile-singleton-GSE .
       --push
   tags:
     - cloudcare-multiarch

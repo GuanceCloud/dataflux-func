@@ -240,6 +240,9 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
 
       // 上报自身信息
       reportSystemInfo();
+
+      // 上报函数列表
+      reportFuncList();
     });
   });
 
