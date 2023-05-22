@@ -468,10 +468,11 @@ function runSetupServer() {
     async.series([
       // 查询所有观测云节点
       function(asyncCallback) {
-        if (IMAGE_INFO.EDITION === 'GSE') return asyncCallback();
-
         common.getGuanceNodes(function(err, guanceNodes) {
-          if (err) return asyncCallback(err);
+          if (err) {
+            console.log('Get Guance Nodes failed', err);
+            return asyncCallback(err);
+          }
 
           GUANCE_NODES = guanceNodes;
 
@@ -480,8 +481,8 @@ function runSetupServer() {
       },
     ], function(err) {
       var pageData = {
-        CONFIG          : defaultConfig,
-        IMAGE_INFO      : IMAGE_INFO,
+        CONFIG      : defaultConfig,
+        IMAGE_INFO  : IMAGE_INFO,
         GUANCE_NODES: GUANCE_NODES,
       }
       res.render('setup', pageData);
