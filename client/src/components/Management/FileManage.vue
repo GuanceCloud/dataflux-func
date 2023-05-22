@@ -568,8 +568,8 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/do/install', {
         body : {
-          mirror: this.pypiMirror,
-          pkg   : this.getPath(name),
+          mirror  : this.pypiMirror,
+          packages: this.getPath(name),
         },
         alert: { okMessage: this.$t('Wheel package installed: {name}', { name: name }) },
       });
