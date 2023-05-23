@@ -329,10 +329,17 @@ class BaseTask(app.Task):
                 p['tags']['site_name'] = site_name
 
         # 上报数据
-        dataway = DataWay(url=upload_url)
-        status_code, resp_data = dataway.post_line_protocol(points, path=f'/v1/write/{category}')
-        if status_code > 200:
-            self.logger.error(resp_data)
+        try:
+            dataway = DataWay(url=upload_url)
+            status_code, resp_data = dataway.post_line_protocol(points, path=f'/v1/write/{category}')
+            if status_code > 200:
+                self.logger.error(resp_data)
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+            # 不要将错误抛出
 
 class BaseResultSavingTask(app.Task):
     '''
