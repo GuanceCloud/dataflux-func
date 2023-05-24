@@ -15,8 +15,8 @@ Not Now                                                               : 等会�
     :element-loading-text="$t('Processing, please wait...')"
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen.body.lock="$store.getters.isProcessing">
-    <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: $root.variableConfig['NOTICE_BAR_COLOR'] }">
-      {{ $root.variableConfig['NOTICE_BAR_TEXT'] }}
+    <div id="NoticeBar" v-if="showNoticeBar" :style="{ backgroundColor: $store.getters.SYSTEM_SETTINGS('NOTICE_BAR_COLOR') }">
+      {{ $store.getters.SYSTEM_SETTINGS('NOTICE_BAR_TEXT') }}
     </div>
     <div id="Navi" v-if="showNavi">
       <Navi></Navi>
@@ -170,7 +170,7 @@ export default {
         conflictId : window.conflictId,
       };
       this.socketIO.emit('reportAndCheckClientConflict', checkRouteInfo, resData => {
-        if (this.$store.getters.CONFIG('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
+        if (this.$store.getters.SYSTEM_INFO('MODE') === 'dev' && resData !== this.prevReportAndCheckClientConflictResData) {
           this.prevReportAndCheckClientConflictResData = resData;
         }
         resData = JSON.parse(resData);
@@ -222,7 +222,7 @@ export default {
     },
 
     async checkNewVersion() {
-      if (!this.T.parseVersion(this.$store.getters.CONFIG('VERSION'))) return;
+      if (!this.T.parseVersion(this.$store.getters.SYSTEM_INFO('VERSION'))) return;
 
       try {
         let axiosOpt = {
@@ -253,7 +253,8 @@ export default {
       }
     },
     showNoticeBar() {
-      return this.$root.variableConfig['NOTICE_BAR_ENABLED'] && this.$root.variableConfig['NOTICE_BAR_TEXT'];
+      return this.$store.getters.SYSTEM_SETTINGS['NOTICE_BAR_ENABLED']
+          && this.$store.getters.SYSTEM_SETTINGS['NOTICE_BAR_TEXT'];
     },
     viewTop() {
       let top = 0;

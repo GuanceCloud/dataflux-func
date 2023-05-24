@@ -87,15 +87,15 @@ privileges:
     role:
       - admin
 
-  # System Config
-  systemConfig_r:
-    name: System Config module READ privilege
-    desc: System Config list, get, etc.
+  # System Setting
+  systemSetting_r:
+    name: System Setting module READ privilege
+    desc: System Setting list, get, etc.
     role:
       - sa
 
-  systemConfig_w:
-    name: System Config module WRITE privilege
-    desc: System Config set, delete, etc.
+  systemSetting_w:
+    name: System Setting module WRITE privilege
+    desc: System Setting set, delete, etc.
     role:
       - sa

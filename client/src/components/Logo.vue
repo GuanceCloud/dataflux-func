@@ -1,9 +1,9 @@
 <template>
-  <div class="logo-container" v-show="$store.state.isSystemConfigLoaded">
-    <img v-if="$root.variableConfig['CUSTOM_LOGO_ENABLED'] && $root.variableConfig['CUSTOM_LOGO_IMAGE_SRC']"
+  <div class="logo-container" v-show="$store.state.isSystemInfoLoaded">
+    <img v-if="$store.getters.SYSTEM_SETTINGS('CUSTOM_LOGO_ENABLED') && $store.getters.SYSTEM_SETTINGS('CUSTOM_LOGO_IMAGE_SRC')"
       class="custom-logo-img"
       :style="customLogoStyle"
-      :src="$root.variableConfig['CUSTOM_LOGO_IMAGE_SRC']" />
+      :src="$store.getters.SYSTEM_SETTINGS('CUSTOM_LOGO_IMAGE_SRC')" />
     <div v-else
       class="logo-img"
       :class="logoClass"

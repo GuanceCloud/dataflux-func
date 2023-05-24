@@ -173,8 +173,8 @@ export default {
       if (!this.isInstallable) return null;
 
       opt = opt || {};
-      let containerId = this.$store.getters.CONFIG('_HOSTNAME') || this.$t('{Func Container ID}');
-      let targetOpt   = `-t ${this.$store.getters.CONFIG('_PIP_INSTALL_DIR')}`;
+      let containerId = this.$store.getters.SYSTEM_INFO('_HOSTNAME') || this.$t('{Func Container ID}');
+      let targetOpt   = `-t ${this.$store.getters.SYSTEM_INFO('_PIP_INSTALL_DIR')}`;
       let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
 
       let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} `;

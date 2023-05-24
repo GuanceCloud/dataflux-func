@@ -115,7 +115,7 @@ export function _switchToBuiltinAuth() {
 };
 
 export function getBaseURL() {
-  let baseURL = store.getters.CONFIG('WEB_BASE_URL') || location.origin;
+  let baseURL = store.getters.SYSTEM_INFO('WEB_BASE_URL') || location.origin;
   return baseURL;
 };
 
@@ -654,7 +654,7 @@ export function formatURL(pathPattern, options) {
 
   if (options.auth) {
     options.query = options.query || {};
-    let authQuery = store.getters.CONFIG('_WEB_AUTH_QUERY');
+    let authQuery = store.getters.SYSTEM_INFO('_WEB_AUTH_QUERY');
     options.query[authQuery] = store.state.xAuthToken;
   }
 
@@ -1046,9 +1046,9 @@ function _createAxiosOpt(method, pathPattern, options) {
   if (store.state.xAuthToken) {
     axiosOpt.headers = axiosOpt.headers || {};
 
-    axiosOpt.headers[store.getters.CONFIG('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
+    axiosOpt.headers[store.getters.SYSTEM_INFO('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
 
-    let authHeaderField = store.getters.CONFIG('_WEB_AUTH_HEADER');
+    let authHeaderField = store.getters.SYSTEM_INFO('_WEB_AUTH_HEADER');
     if (store.state.xAuthToken) {
       axiosOpt.headers[authHeaderField] = store.state.xAuthToken;
     }
@@ -1117,8 +1117,8 @@ async function _doAxios(axiosOpt) {
 
     // 升级监测
     let serverInfo = {
-      VERSION         : axiosRes.headers[store.getters.CONFIG('_WEB_SERVER_VERSION_HEADER')],
-      CREATE_TIMESTAMP: parseInt(axiosRes.headers[store.getters.CONFIG('_WEB_SERVER_CREATE_TIMESTAMP_HEADER')]),
+      VERSION         : axiosRes.headers[store.getters.SYSTEM_INFO('_WEB_SERVER_VERSION_HEADER')],
+      CREATE_TIMESTAMP: parseInt(axiosRes.headers[store.getters.SYSTEM_INFO('_WEB_SERVER_CREATE_TIMESTAMP_HEADER')]),
     }
     store.dispatch('checkServerUpgradeInfo', serverInfo);
 
@@ -1649,7 +1649,7 @@ export function setCodeMirrorMode(codeMirror, mode) {
 };
 
 export function getCodeMirrorThemeName() {
-  return store.getters.codeMirrorSetting.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
+  return store.getters.codeMirrorSettings.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
 };
 
 export function jumpToCodeMirrorLine(codeMirror, cursor) {

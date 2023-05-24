@@ -86,9 +86,9 @@ Export Script Sets as zip files                           : 将脚本集导出�
 Import Script Sets from zip files                         : 从 zip 文件导入将脚本集
 Recover Script Lib to a previous moment                   : 将脚本库恢复到以前的某个时刻
 Manage the users who use the system                       : 管理使用本系统的用户
-Some customization options for the system                 : 一些客制化选项
+Some customization setting for the system                 : 一些定制化设置
 Some key operation records                                : 一些关键操作记录
-Toggling experimental features                            : 打开/关闭实验性功能
+Toggling experimental features                            : 打开 / 关闭实验性功能
 
 Distribute and share code by publishing and installing Script Sets using git repositories, Alibaba Cloud OSS, file services etc.: 使用 git 库、阿里云 OSS、文件服务等进行脚本集的发布、安装，实现代码的分发和共享。
 </i18n>
@@ -139,7 +139,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
           <!-- 内置功能 -->
           <el-divider content-position="left"><h1>{{ $t('Built-in Features') }}</h1></el-divider>
           <p>{{ $t('Some built-in objects are pre-injected into the context of the Script and can be accessed directly without importing.') }}</p>
-          <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSetting.style">
+          <div id="editorContainer_Intro" :style="$store.getters.codeMirrorSettings.style">
             <textarea id="editor_Intro">{{ $t('codeExample') }}</textarea>
           </div>
 
@@ -219,9 +219,9 @@ Distribute and share code by publishing and installing Script Sets using git rep
                   <td>{{ $t('Manage the users who use the system') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-cog"></i> {{ $t('System Config') }}</td>
+                  <td><i class="fa fa-fw fa-cog"></i> {{ $t('System Setting') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
-                  <td>{{ $t('Some customization options for the system') }}</td>
+                  <td>{{ $t('Some customization setting for the system') }}</td>
                 </tr>
                 <tr>
                   <td><i class="fa fa-fw fa-keyboard-o"></i> {{ $t('Operation Records') }}</td>

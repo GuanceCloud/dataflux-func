@@ -212,7 +212,7 @@ export default {
       return 'builtIn';
     },
     signInFuncs() {
-      return this.$store.getters.CONFIG('INTEGRATED_SIGN_IN_FUNC');
+      return this.$store.getters.SYSTEM_INFO('INTEGRATED_SIGN_IN_FUNC');
     },
     isBuiltInSignIn() {
       return this.T.isNothing(this.signInFuncs) || this.form.funcId === this.BUILTIN_SIGN_IN_FUNC_ID;

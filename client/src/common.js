@@ -4,7 +4,7 @@ import store from './store'
 import * as T from '@/toolkit'
 import C from '@/const'
 
-let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
+let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.SYSTEM_INFO('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
 export function getSelectableItems(pythonCode, scriptId) {
   if (!pythonCode) [];
@@ -393,7 +393,7 @@ export function getScriptMarketUpdateBadge(scriptMarketId, scriptSetId) {
 }
 
 export function hasNewVersion() {
-  let version       = store.getters.CONFIG('VERSION');
+  let version       = store.getters.SYSTEM_INFO('VERSION');
   let latestVersion = store.state.latestVersion;
   if (!T.parseVersion(version) || !T.parseVersion(latestVersion)) return;
 
@@ -402,13 +402,13 @@ export function hasNewVersion() {
 
 export function shouldScriptSetHidden(scriptSet) {
   // 隐藏来自脚本市场脚本集
-  if (app.$root.variableConfig['SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET']
+  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET')
     && scriptSet.origin === 'scriptMarket' && scriptSet.originId === 'smkt-official') {
     return true;
   }
 
   // 隐藏内置脚本集
-  if (app.$root.variableConfig['SCRIPT_SET_HIDDEN_BUILTIN']
+  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BUILTIN')
     && scriptSet.origin === 'builtin') {
     return true;
   }

@@ -165,7 +165,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptLogs" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG')">
+                <el-form-item prop="ScriptLogs" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_LOG')">
                   <el-switch :active-text="$t('Enable Script Log Page')" v-model="form.ScriptLogs"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Log Page for Script runtime') }}
@@ -173,7 +173,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptFailures" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE')">
+                <el-form-item prop="ScriptFailures" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_FAILURE')">
                   <el-switch :active-text="$t('Enable Script Failure Page')" v-model="form.ScriptFailures"></el-switch>
                   <div class="text-small form-item-tip">
                     {{ $t('Failure Page for Script runtime') }}

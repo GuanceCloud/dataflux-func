@@ -28,7 +28,7 @@
     (function() {
       // 延迟处理
       var T = setInterval(function() {
-        if (!window._DFF_isSystemConfigLoaded) return;
+        if (!window._DFF_isSystemInfoLoaded) return;
 
         var vuexData = localStorage.getItem('vuex');
         if (!vuexData) {
@@ -37,7 +37,7 @@
           vuexData = JSON.parse(vuexData);
         }
 
-        var variableConfig = vuexData.systemConfig.VARIABLE_CONFIG;
+        var SYSTEM_SETTINGS = vuexData.systemInfo.SYSTEM_SETTINGS;
 
         // 切换主题
         var uiTheme = vuexData.uiTheme;
@@ -49,16 +49,16 @@
 
         // 切换 favicon
         var $faviconLink = document.getElementById('favicon');
-        if (variableConfig['CUSTOM_FAVICON_ENABLED'] && variableConfig['CUSTOM_FAVICON_IMAGE_SRC']) {
-          $faviconLink.setAttribute('href', variableConfig['CUSTOM_FAVICON_IMAGE_SRC']);
+        if (SYSTEM_SETTINGS['CUSTOM_FAVICON_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']) {
+          $faviconLink.setAttribute('href', SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']);
         } else {
           var defaultHref = $faviconLink.getAttribute('origin-href');
           // $faviconLink.setAttribute('href', defaultHref);
         }
 
         // 切换 title
-        if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {
-          document.title = variableConfig['CUSTOM_SITE_TITLE_TEXT'];
+        if (SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_TEXT']) {
+          document.title = SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_TEXT'];
         } else {
           document.title = 'DataFlux Func';
         }

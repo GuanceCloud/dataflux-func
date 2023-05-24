@@ -295,7 +295,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
           </el-header>
 
           <!-- 代码区 -->
-          <el-main id="editorContainer_CodeEditor" :style="$store.getters.codeMirrorSetting.style">
+          <el-main id="editorContainer_CodeEditor" :style="$store.getters.codeMirrorSettings.style">
             <textarea id="editor_CodeEditor"></textarea>
           </el-main>
 
@@ -652,7 +652,7 @@ export default {
         this.countDownTimer = null;
       }
 
-      let leftSeconds = this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT');
+      let leftSeconds = this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT');
       updateCountDownTipTitle(leftSeconds);
 
       this.countDownTimer = setInterval(() => {
@@ -938,7 +938,7 @@ export default {
           } else {
             this.T.alert(`${this.$t('Waiting Func response timeout')}
                 <span class="text-main">
-                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.CONFIG('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT')) })}
                   <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
                 </span>`);
           }
@@ -1014,7 +1014,7 @@ export default {
             div.classList.add('error-line-text');
             div.classList.add('highlight-text');
 
-            const editorStyle = this.$store.getters.codeMirrorSetting.style;
+            const editorStyle = this.$store.getters.codeMirrorSettings.style;
             div.style.top        = `-${parseInt(editorStyle.fontSize) * editorStyle.lineHeight}px`;
             div.style.fontSize   = `${editorStyle.fontSize}`;
             div.style.lineHeight = editorStyle.lineHeight;

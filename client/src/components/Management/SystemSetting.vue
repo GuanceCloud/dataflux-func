@@ -8,9 +8,9 @@ Guance Data Report         : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
 
-Show Advanced Configs: 显示高级配置
-Hide Advanced Configs: 隐藏高级配置
-Advanced Configs     : 高级配置
+Show Advanced Settings: 显示高级设置
+Hide Advanced Settings: 隐藏高级设置
+Advanced Settings     : 高级设置
 
 Enable                     : 启用
 Text                       : 文案
@@ -23,7 +23,7 @@ Builtin                    : 内置脚本集
 Site Name                  : 站点名
 
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
-'System Config Saved. Page will be refreshed soon...': '系统配置已保存，页面即将刷新...'
+'System Setting Saved. Page will be refreshed soon...': '系统设置已保存，页面即将刷新...'
 
 Use the specified text as the site title: 使用指定的文案作为网站标题
 Use the specified image as the site icon (favicon): 使用指定的图片作为网站图标（favicon）
@@ -44,7 +44,7 @@ Save and Refresh: 保存并刷新
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>{{ $t('System Config') }}</h1>
+        <h1>{{ $t('System Setting') }}</h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -245,9 +245,9 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <template v-if="showAdvancedConfigs">
+                <template v-if="showAdvancedSettings">
                   <!-- 高级 -->
-                  <el-divider content-position="left"><h1 class="text-bad">{{ $t('Advanced Configs') }}</h1></el-divider>
+                  <el-divider content-position="left"><h1 class="text-bad">{{ $t('Advanced Settings') }}</h1></el-divider>
 
                   <el-form-item>
                     <InfoBlock type="error" :title="$t('If you don\'t know the meaning of these configurations, please don\'t make any changes!')" />
@@ -261,7 +261,7 @@ Save and Refresh: 保存并刷新
                 <el-divider />
 
                 <el-form-item>
-                  <el-button @click="showAdvancedConfigs = !showAdvancedConfigs">{{ showAdvancedConfigs ? $t('Hide Advanced Configs') : $t('Show Advanced Configs') }}</el-button>
+                  <el-button @click="showAdvancedSettings = !showAdvancedSettings">{{ showAdvancedSettings ? $t('Hide Advanced Settings') : $t('Show Advanced Settings') }}</el-button>
                   <div class="setup-right">
                     <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save and Refresh') }}</el-button>
                   </div>
@@ -279,7 +279,7 @@ Save and Refresh: 保存并刷新
 
 <script>
 export default {
-  name: 'SystemConfig',
+  name: 'SystemSetting',
   components: {
   },
   watch: {
@@ -292,10 +292,10 @@ export default {
   },
   methods: {
     async loadData() {
-      await this.$store.dispatch('loadSystemConfig');
+      await this.$store.dispatch('loadSystemInfo');
 
-      this.data = this.T.jsonCopy(this.$root.variableConfig);
-      this.form = this.T.jsonCopy(this.$root.variableConfig);
+      this.data = this.T.jsonCopy(this.$store.getters.SYSTEM_SETTINGS());
+      this.form = this.T.jsonCopy(this.$store.getters.SYSTEM_SETTINGS());
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -322,7 +322,7 @@ export default {
           value = `http://${value}`;
         }
 
-        apiRes = await this.T.callAPI('post', '/api/v1/system-configs/:id/do/set', {
+        apiRes = await this.T.callAPI('post', '/api/v1/system-settings/:id/do/set', {
           params: { id: id },
           body  : { data: { value: value } },
         });
@@ -330,15 +330,15 @@ export default {
       }
 
       if (!apiRes || apiRes.ok) {
-        await this.T.alert(this.$t('System Config Saved. Page will be refreshed soon...'), 'success');
+        await this.T.alert(this.$t('System Setting Saved. Page will be refreshed soon...'), 'success');
         location.reload();
       }
     },
     enableClass(val) {
       if (val === true) {
-        return 'config-enabled';
+        return 'setting-enabled';
       } else if (val === false) {
-        return 'config-disabled';
+        return 'setting-disabled';
       } else {
         return '';
       }
@@ -387,7 +387,7 @@ export default {
       data: {},
       form: {},
 
-      showAdvancedConfigs: false,
+      showAdvancedSettings: false,
     }
   },
 }
@@ -395,11 +395,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-.config-enabled input {
+.setting-enabled input {
   color: green !important;
   font-weight: bold;
 }
-.config-disabled input {
+.setting-disabled input {
   color: red !important;
   font-weight: bold;
 }

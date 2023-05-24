@@ -72,7 +72,7 @@ export default {
       deep: true,
       handler(to, from) {
         let _formData = this.T.jsonCopy(this.form);
-        this.$store.commit('updateCodeMirrorSetting', _formData);
+        this.$store.commit('updateCodeMirrorSettings', _formData);
 
         setImmediate(() => {
           if (this.codeMirror) {
@@ -98,10 +98,10 @@ export default {
   },
   data() {
     let _formData = this.T.jsonCopy({
-      theme: this.$store.getters.codeMirrorSetting.theme,
+      theme: this.$store.getters.codeMirrorSettings.theme,
       style: {
-        fontSize  : parseInt(this.$store.getters.codeMirrorSetting.style.fontSize),
-        lineHeight: this.$store.getters.codeMirrorSetting.style.lineHeight,
+        fontSize  : parseInt(this.$store.getters.codeMirrorSettings.style.fontSize),
+        lineHeight: this.$store.getters.codeMirrorSettings.style.lineHeight,
       }
     });
 

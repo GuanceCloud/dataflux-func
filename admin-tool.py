@@ -165,7 +165,7 @@ def reset_upgrade_db_seq(options):
     confirm(options.get('force'))
 
     # 数据入库
-    reset_db_data('wat_main_system_config', data)
+    reset_db_data('wat_main_system_setting', data)
 
 @command
 def clear_redis(options):

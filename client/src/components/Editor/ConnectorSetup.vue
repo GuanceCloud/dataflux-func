@@ -439,7 +439,7 @@ export default {
       async handler(newVal) {
         // 获取观测云节点信息
         if (newVal === 'guance' && this.T.isNothing(this.guanceNodes)) {
-          let guanceNodes = this.$store.getters.CONFIG('GUANCE_NODES');
+          let guanceNodes = this.$store.getters.SYSTEM_INFO('GUANCE_NODES');
 
           this.guanceNodes   = guanceNodes;
           this.guanceNodeMap = guanceNodes.reduce((acc, node) => {
@@ -726,7 +726,7 @@ export default {
         // 部分连接器特殊处理
         switch (opt.key) {
           case 'sqlserver':
-            return this.$store.getters.CONFIG('_ARCH') === 'x64';
+            return this.$store.getters.SYSTEM_INFO('_ARCH') === 'x64';
             break;
 
           default:

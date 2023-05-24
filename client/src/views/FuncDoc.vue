@@ -118,13 +118,13 @@ export default {
 
       // 生成API请求示例
       let apiURL = this.T.formatURL('/api/v1/func/:funcId', {
-        baseURL: this.$store.getters.CONFIG('WEB_INNER_BASE_URL'),
+        baseURL: this.$store.getters.SYSTEM_INFO('WEB_INNER_BASE_URL'),
         params : {funcId: d.id},
       });
 
       let kwargsJSON = {};
       for (let k in d.kwargsJSON) if (d.kwargsJSON.hasOwnProperty(k)) {
-        kwargsJSON[k] = this.$store.getters.CONFIG('_FUNC_ARGUMENT_PLACEHOLDER_LIST')[0];
+        kwargsJSON[k] = this.$store.getters.SYSTEM_INFO('_FUNC_ARGUMENT_PLACEHOLDER_LIST')[0];
       }
       let apiBody = { kwargs: kwargsJSON };
       let funcKwargs = apiRes.data.kwargsJSON;

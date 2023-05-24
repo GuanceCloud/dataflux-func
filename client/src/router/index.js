@@ -254,9 +254,9 @@ const routes = [
       },
 
       {
-        path: 'system-config',
-        name: 'system-config',
-        component: () => import('../components/Management/SystemConfig.vue'),
+        path: 'system-setting',
+        name: 'system-setting',
+        component: () => import('../components/Management/SystemSetting.vue'),
       },
 
       {
@@ -409,7 +409,7 @@ const adminOnlyRoutes = [
   'user-setup',
   'access-key-list',
   'access-key-add',
-  'system-config',
+  'system-setting',
 ];
 
 router.beforeEach((to, from, next) => {
@@ -436,7 +436,7 @@ router.beforeEach((to, from, next) => {
   // 设置页面标题
   if (from.name) {
     let siteTitle = 'DataFlux Func';
-    let variableConfig = store.getters.CONFIG('VARIABLE_CONFIG', {});
+    let variableConfig = store.getters.SYSTEM_INFO('VARIABLE_CONFIG', {});
     if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {
       siteTitle = variableConfig['CUSTOM_SITE_TITLE_TEXT'];
     }

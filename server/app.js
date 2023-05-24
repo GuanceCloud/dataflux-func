@@ -156,7 +156,7 @@ function startApplication() {
   require('./routers/userAPIRouter');
   require('./routers/accessKeyAPIRouter');
   require('./routers/monitorAPIRouter');
-  require('./routers/systemConfigAPIRouter');
+  require('./routers/systemSettingAPIRouter');
   require('./routers/debugAPIRouter');
 
   /***** DataFlux Func *****/

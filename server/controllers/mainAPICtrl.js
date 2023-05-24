@@ -38,7 +38,7 @@ var operationRecordMod        = require('../models/operationRecordMod');
 var fileServiceMod            = require('../models/fileServiceMod');
 var userMod                   = require('../models/userMod');
 var apiAuthMod                = require('../models/apiAuthMod');
-var systemConfigMod           = require('../models/systemConfigMod');
+var systemSettingMod          = require('../models/systemSettingMod');
 
 var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 var funcAPICtrl  = require('./funcAPICtrl');
@@ -1344,7 +1344,7 @@ exports.overview = function(req, res, next) {
   var batchModel         = batchMod.createModel(res.locals);
   var fileServiceModel   = fileServiceMod.createModel(res.locals);
   var userModel          = userMod.createModel(res.locals);
-  var systemConfigModel  = systemConfigMod.createModel(res.locals);
+  var systemSettingModel = systemSettingMod.createModel(res.locals);
 
   var overviewParts = [
     { name : 'scriptSet',     model: scriptSetModel},
@@ -1366,17 +1366,17 @@ exports.overview = function(req, res, next) {
     latestOperations : [],
   };
 
-  var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemConfigs.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
-  var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemConfigs.SCRIPT_SET_HIDDEN_BUILTIN;
+  var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemSettings.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
+  var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemSettings.SCRIPT_SET_HIDDEN_BUILTIN;
   var nonScriptSetOriginIds                    = [];
   async.series([
     // 获取系统配置
     function(asyncCallback) {
-      var systemConfigIds = [
+      var systemSettingIds = [
         'SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET',
         'SCRIPT_SET_HIDDEN_BUILTIN',
       ]
-      systemConfigModel.get(systemConfigIds, function(err, dbRes) {
+      systemSettingModel.get(systemSettingIds, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
@@ -2088,11 +2088,11 @@ exports.getAuthLinkFuncList = function(req, res, next) {
   });
 };
 
-exports.getSystemConfig = function(req, res, next) {
-  var systemConfig = {};
+exports.getSystemInfo = function(req, res, next) {
+  var systemInfo = {};
 
   // 配置文件（部分）
-  var configFile = {
+  var configParts = {
     EDITION         : IMAGE_INFO.EDITION,
     VERSION         : IMAGE_INFO.VERSION,
     CREATE_TIMESTAMP: IMAGE_INFO.CREATE_TIMESTAMP,
@@ -2137,10 +2137,10 @@ exports.getSystemConfig = function(req, res, next) {
     _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.resourceAPI.upload.files.$limitSize),
     _ARCH: process.arch, // x64|arm64
   };
-  Object.assign(systemConfig, configFile);
+  Object.assign(systemInfo, configParts);
 
-  var funcModel         = funcMod.createModel(res.locals);
-  var systemConfigModel = systemConfigMod.createModel(res.locals);
+  var funcModel          = funcMod.createModel(res.locals);
+  var systemSettingModel = systemSettingMod.createModel(res.locals);
 
   async.series([
     // 获取登录集成函数
@@ -2162,17 +2162,17 @@ exports.getSystemConfig = function(req, res, next) {
           });
         });
 
-        systemConfig.INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
+        systemInfo.INTEGRATED_SIGN_IN_FUNC = integratedSignInFuncs;
 
         return asyncCallback();
       });
     },
-    // 获取系统配置表配置
+    // 获取系统设置
     function(asyncCallback) {
-      systemConfigModel.get(Object.keys(CONST.systemConfigs), function(err, dbRes) {
+      systemSettingModel.get(Object.keys(CONST.systemSettings), function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        systemConfig.VARIABLE_CONFIG = dbRes;
+        systemInfo.SYSTEM_SETTINGS = dbRes;
 
         return asyncCallback();
       });
@@ -2182,7 +2182,7 @@ exports.getSystemConfig = function(req, res, next) {
       common.getGuanceNodes(function(err, guanceNodes) {
         if (err) return asyncCallback(err);
 
-        systemConfig.GUANCE_NODES = guanceNodes;
+        systemInfo.GUANCE_NODES = guanceNodes;
 
         return asyncCallback();
       });
@@ -2190,7 +2190,7 @@ exports.getSystemConfig = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(systemConfig);
+    var ret = toolkit.initRet(systemInfo);
     return res.locals.sendJSON(ret);
   });
 };
@@ -2442,7 +2442,7 @@ exports.integratedAuthMid = function(req, res, next) {
       name            : xAuthTokenObj.nm,
       email           : xAuthTokenObj.em,
       roles           : ['user'].join(','),
-      customPrivileges: ['systemConfig_r'].join(','),
+      customPrivileges: ['systemSetting_r'].join(','),
       isIntegratedUser: xAuthTokenObj.ig,
     });
 

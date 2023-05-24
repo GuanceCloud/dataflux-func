@@ -80,9 +80,9 @@ routeLoader.load(ROUTE.mainAPI.getAuthLinkFuncList, [
   mainAPICtrl.getAuthLinkFuncList,
 ]);
 
-// 获取系统配置
-routeLoader.load(ROUTE.mainAPI.getSystemConfig, [
-  mainAPICtrl.getSystemConfig,
+// 获取系统信息
+routeLoader.load(ROUTE.mainAPI.getSystemInfo, [
+  mainAPICtrl.getSystemInfo,
 ]);
 
 // 获取升级信息

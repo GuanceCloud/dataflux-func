@@ -13,10 +13,10 @@ var CONFIG     = require('./utils/yamlResources').get('CONFIG');
 var toolkit    = require('./utils/toolkit');
 var IMAGE_INFO = require('../image-info.json');
 
-var systemConfigMod = require('./models/systemConfigMod');
-var connectorMod    = require('./models/connectorMod');
-var funcMod         = require('./models/funcMod');
-var mainAPICtrl     = require('./controllers/mainAPICtrl');
+var systemSettingMod = require('./models/systemSettingMod');
+var connectorMod     = require('./models/connectorMod');
+var funcMod          = require('./models/funcMod');
+var mainAPICtrl      = require('./controllers/mainAPICtrl');
 
 /* Configure */
 var IS_MASTER_NODE           = null;
@@ -419,9 +419,9 @@ exports.runListener = function runListener(app) {
       function(asyncCallback) {
         if (toolkit.isNothing(nextConnectorGuanceMap)) return asyncCallback();
 
-        var systemConfigModel = systemConfigMod.createModel(app.locals);
+        var systemSettingModel = systemSettingMod.createModel(app.locals);
 
-        systemConfigModel.get('DATAFLUX_FUNC_ID', function(err, dbRes) {
+        systemSettingModel.get('DATAFLUX_FUNC_ID', function(err, dbRes) {
           if (err) return asyncCallback(err);
 
           dataFluxFuncId = dbRes.DATAFLUX_FUNC_ID;

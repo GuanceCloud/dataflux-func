@@ -176,13 +176,13 @@ const app = new Vue({
   render: h => h(App),
 
   created() {
-    this.$store.dispatch('loadSystemConfig');
+    this.$store.dispatch('loadSystemInfo');
     this.$store.dispatch('loadUserProfile');
     this.$store.dispatch('loadAPINamesLocales');
   },
   computed: {
-    variableConfig() {
-      return this.$store.getters.CONFIG('VARIABLE_CONFIG', {});
+    systemSettings() {
+      return this.$store.getters.SYSTEM_INFO('SYSTEM_SETTINGS', {});
     },
   },
   methods: {

@@ -428,10 +428,10 @@ export default {
       return this.$t('No Data');
     },
     FULL_VERSION() {
-      if (this.$store.getters.CONFIG('EDITION')) {
-        return `${this.$store.getters.CONFIG('VERSION')} (${this.$store.getters.CONFIG('EDITION')})`;
+      if (this.$store.getters.SYSTEM_INFO('EDITION')) {
+        return `${this.$store.getters.SYSTEM_INFO('VERSION')} (${this.$store.getters.SYSTEM_INFO('EDITION')})`;
       } else {
-        return this.$store.getters.CONFIG('VERSION');
+        return this.$store.getters.SYSTEM_INFO('VERSION');
       }
     },
     systemReportTEXT() {

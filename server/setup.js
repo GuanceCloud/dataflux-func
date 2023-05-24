@@ -296,7 +296,7 @@ function _doSetup(userConfig, callback) {
     function(asyncCallback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
 
-      var sql = 'INSERT INTO `wat_main_system_config` SET ?';
+      var sql = 'INSERT INTO `wat_main_system_setting` SET ?';
       var sqlParams = [
         {
           id   : SYS_CONFIG_ID_UPGRADE_DB_SEQ,
@@ -305,7 +305,7 @@ function _doSetup(userConfig, callback) {
       ];
       dbHelper.query(sql, sqlParams, function(err, data) {
         if (err) {
-          setupErrorWrap.set('mysqlInit', 'Initializing system configs failed', err);
+          setupErrorWrap.set('mysqlInit', 'Initializing system settings failed', err);
         }
 
         return asyncCallback();
@@ -555,7 +555,7 @@ function runUpgrade() {
   async.series([
     // 更新旧版数据库标记
     function(asyncCallback) {
-      var sql = 'UPDATE wat_main_system_config SET id = ? WHERE id = ?';
+      var sql = 'UPDATE wat_main_system_setting SET id = ? WHERE id = ?';
       var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ, SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD];
       dbHelper.query(sql, sqlParams, asyncCallback);
     },
@@ -592,7 +592,7 @@ function runUpgrade() {
     },
     // Get upgrade items
     function(asyncCallback) {
-      var sql = 'SELECT value FROM wat_main_system_config WHERE id = ?';
+      var sql = 'SELECT value FROM wat_main_system_setting WHERE id = ?';
       var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ];
       dbHelper.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -646,8 +646,8 @@ function runUpgrade() {
       if (toolkit.isNothing(nextUpgradeSeq)) return asyncCallback();
 
       var sql = toolkit.isNothing(currentUpgradeSeq)
-              ? 'INSERT INTO wat_main_system_config SET value = ?, id = ?'
-              : 'UPDATE wat_main_system_config SET value = ? WHERE id = ?';
+              ? 'INSERT INTO wat_main_system_setting SET value = ?, id = ?'
+              : 'UPDATE wat_main_system_setting SET value = ? WHERE id = ?';
       var sqlParams = [nextUpgradeSeq, SYS_CONFIG_ID_UPGRADE_DB_SEQ];
 
       dbHelper.query(sql, sqlParams, function(err) {

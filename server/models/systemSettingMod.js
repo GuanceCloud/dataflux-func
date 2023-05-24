@@ -14,10 +14,10 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Configure */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'system config',
-  entityName : 'systemConfig',
-  tableName  : 'wat_main_system_config',
-  alias      : 'sc',
+  displayName: 'system setting',
+  entityName : 'systemSetting',
+  tableName  : 'wat_main_system_setting',
+  alias      : 'ss',
 
   objectFields: {
     value: 'json',
@@ -49,10 +49,10 @@ EntityModel.prototype.get = function(ids, callback) {
 
     // 默认值
     ids.forEach(function(id) {
-      result[id] = CONST.systemConfigs[id];
+      result[id] = CONST.systemSettings[id];
     });
 
-    // 用户配置
+    // 用户设置
     dbRes.forEach(function(d) {
       result[d.id] = d.value;
     });
@@ -64,8 +64,8 @@ EntityModel.prototype.get = function(ids, callback) {
 EntityModel.prototype.set = function(id, newValue, callback) {
   var self = this;
 
-  var systemConfigId = null;
-  var oldValue       = null;
+  var systemSettingId = null;
+  var oldValue        = null;
 
   async.series([
     // 查询配置项
@@ -80,8 +80,8 @@ EntityModel.prototype.set = function(id, newValue, callback) {
 
         dbRes = dbRes[0];
         if (dbRes) {
-          systemConfigId = dbRes.id;
-          oldValue       = dbRes.value;
+          systemSettingId = dbRes.id;
+          oldValue        = dbRes.value;
         }
 
         return asyncCallback();
@@ -91,17 +91,17 @@ EntityModel.prototype.set = function(id, newValue, callback) {
     function(asyncCallback) {
       var _newValue = JSON.stringify(newValue);
 
-      if (systemConfigId) {
+      if (systemSettingId) {
         if (toolkit.isNothing(newValue)) {
           // 删除数据
-          self.delete(systemConfigId, asyncCallback);
+          self.delete(systemSettingId, asyncCallback);
 
         } else {
           // 更新数据
           var nextData = {
             value: _newValue,
           };
-          self.modify(systemConfigId, nextData, asyncCallback);
+          self.modify(systemSettingId, nextData, asyncCallback);
         }
 
       } else {

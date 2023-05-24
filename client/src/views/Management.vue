@@ -77,10 +77,10 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/system-config" v-if="$store.getters.isAdmin">
+            <el-menu-item index="/management/system-setting" v-if="$store.getters.isAdmin">
               <span>
                 <i class="fa fa-fw fa-cog"></i>
-                {{ $t('System Config') }}
+                {{ $t('System Setting') }}
               </span>
             </el-menu-item>
 
@@ -181,14 +181,14 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-log-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLogs')">
+            <el-menu-item index="/management/script-log-list" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLogs')">
               <span>
                 <i class="fa fa-fw fa-terminal"></i>
                 {{ $t('Script Logs') }}
                 <i class="fa fa-fw fa-flask"></i>
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.CONFIG('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailures')">
+            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailures')">
               <span>
                 <i class="fa fa-fw fa-bug"></i>
                 {{ $t('Script Failures') }}

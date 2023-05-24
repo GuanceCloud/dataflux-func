@@ -708,12 +708,12 @@ mainAPI:
         $searchType: in
         $searchKey : sset.id
 
-  getSystemConfig:
+  getSystemInfo:
     showInDoc: true
-    name     : Get system configs
-    name_zhCN: 获取系统配置
+    name     : Get System Info
+    name_zhCN: 获取系统信息
     method   : get
-    url      : /api/v1/func-system-config
+    url      : /api/v1/system-info
     response : json
 
   getUpgradeInfo:
@@ -824,7 +824,7 @@ indexAPI:
     method       : get
     url          : /api
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     desc         : All API list
     desc_zhCN    : 所有 API 列表
     query:
@@ -5653,78 +5653,64 @@ blueprintAPI:
         $desc: 蓝图 ID
         $type: string
 
-# 系统配置
-systemConfigAPI:
-  $tag     : System Config
-  $tag_zhCN: 系统配置
+# 系统设置
+systemSettingAPI:
+  $tag     : System Setting
+  $tag_zhCN: 系统设置
 
-  list:
+  get:
     showInDoc    : true
-    name         : List System Configs
-    name_zhCN    : 列出系统配置
+    name         : List System Settings
+    name_zhCN    : 获取系统设置
     method       : get
-    url          : /api/v1/system-configs/do/list
+    url          : /api/v1/system-settings/do/get
     response     : json
     requireSignIn: true
-    privilege    : systemConfig_r
+    privilege    : systemSetting_r
     export       : true
     fuzzySearch:
-      - sc.id
+      - ss.id
     query:
       id:
         $desc      : Filter by ID
         $type      : commaArray
         $searchType: in
-        $searchKey : sc.id
-
-  get:
-    showInDoc    : true
-    name         : Get System Config
-    name_zhCN    : 获取系统配置
-    method       : get
-    url          : /api/v1/system-configs/:id/do/get
-    response     : json
-    requireSignIn: true
-    privilege    : systemConfig_r
-    params:
-      id:
-        $desc: System Config ID
-        $type: string
+        $searchKey : ss.id
 
   set:
     showInDoc    : true
-    name         : Set System Config
-    name_zhCN    : 设置系统配置
+    name         : Set System Setting
+    name_zhCN    : 设置系统设置
     method       : post
-    url          : /api/v1/system-configs/:id/do/set
+    url          : /api/v1/system-settings/:id/do/set
     response     : json
     requireSignIn: true
     authType     : builtin.byXAuthToken
-    privilege    : systemConfig_w
+    privilege    : systemSetting_w
     params:
       id:
-        $desc: System Config ID
+        $desc: System Setting ID
         $type: string
     body:
       data:
         $isRequired: true
         value:
-          $desc: System Config Value
+          $desc: System Setting Value
           $type: any
 
   delete:
     showInDoc    : true
-    name         : Delete System Config
-    name_zhCN    : 删除系统配置
+    name         : Delete System Setting
+    name_zhCN    : 删除系统设置
     method       : get
-    url          : /api/v1/system-configs/:id/do/delete
+    url          : /api/v1/system-settings/:id/do/delete
     response     : json
     requireSignIn: true
     authType     : builtin.byXAuthToken
-    privilege    : systemConfig_w
+    privilege    : systemSetting_w
     params:
       id:
-        $desc: System Config ID
+        $desc: System Setting ID
         $type: string
 
 # 监控

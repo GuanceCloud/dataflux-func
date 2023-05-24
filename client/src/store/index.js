@@ -10,9 +10,9 @@ import moment from 'moment'
 import app from '../main'
 
 const STATE_CONFIG = {
-  isSystemConfigLoaded                     : { persist: false, syncXTab: false },
+  isSystemInfoLoaded                       : { persist: false, syncXTab: false },
   serverUpgradeInfo                        : { persist: false, syncXTab: false },
-  systemConfig                             : { persist: true,  syncXTab: true  },
+  systemInfo                               : { persist: true,  syncXTab: true  },
   isLoaded                                 : { persist: false, syncXTab: false },
   processingTaskCount                      : { persist: false, syncXTab: false },
   processingTaskUpdateTime                 : { persist: false, syncXTab: false },
@@ -22,7 +22,7 @@ const STATE_CONFIG = {
   xAuthToken                               : { persist: true,  syncXTab: true  },
   uiLocale                                 : { persist: true,  syncXTab: true  },
   uiTheme                                  : { persist: true,  syncXTab: true  },
-  codeMirrorSetting                        : { persist: true,  syncXTab: true  },
+  codeMirrorSettings                       : { persist: true,  syncXTab: true  },
   asideScript_expandedNodeMap              : { persist: false, syncXTab: false },
   asideScript_quickViewWindowPosition      : { persist: true,  syncXTab: false },
   asideConnector_simpleDebugWindowPosition : { persist: true,  syncXTab: false },
@@ -50,7 +50,7 @@ const STATE_CONFIG = {
   latestVersion                            : { persist: false, syncXTab: false },
 };
 const MUTATION_CONFIG = {
-  updateSystemConfig                             : { persist: true  },
+  updateSystemInfo                               : { persist: true  },
   updateLoadStatus                               : { persist: false },
   startProcessing                                : { persist: false },
   endProcessing                                  : { persist: false },
@@ -60,7 +60,7 @@ const MUTATION_CONFIG = {
   updateXAuthToken                               : { persist: true  },
   updateUILocale                                 : { persist: true  },
   updateUITheme                                  : { persist: true  },
-  updateCodeMirrorSetting                        : { persist: true  },
+  updateCodeMirrorSettings                       : { persist: true  },
   updateAsideScript_expandedNodeMap              : { persist: true  },
   updateAsideScript_quickViewWindowPosition      : { persist: true  },
   updateAsideConnector_simpleDebugWindowPosition : { persist: true  },
@@ -111,8 +111,8 @@ export default new Vuex.Store({
     // 服务器升级信息
     serverUpgradeInfo: null,
 
-    // 系统配置
-    systemConfig: {},
+    // 系统信息
+    systemInfo: {},
 
     // 主要内容加载完毕标识
     isLoaded: false,
@@ -139,7 +139,7 @@ export default new Vuex.Store({
     // UI主题
     uiTheme: null,
     // CodeMirror配置
-    codeMirrorSetting: {
+    codeMirrorSettings: {
       theme: null,
       style: {
         fontSize  : null,
@@ -213,16 +213,24 @@ export default new Vuex.Store({
         Editor_splitPanePercent    : 20,
       }
     },
-    CONFIG: state => (key, defaultValue) => {
-      if (state.systemConfig && (key in state.systemConfig)) {
-        let configValue = state.systemConfig[key];
+    SYSTEM_INFO: state => (key, defaultValue) => {
+      if (state.systemInfo && (key in state.systemInfo)) {
+        let value = state.systemInfo[key];
         if (T.endsWith(key, '_HEADER')) {
-          configValue = configValue.toLowerCase();
+          value = value.toLowerCase();
         }
-        return configValue;
+        return value;
       }
 
       return defaultValue || null;
+    },
+    SYSTEM_SETTINGS: state => (key) => {
+      console.log(key, state.systemInfo)
+      if (state.systemInfo && state.systemInfo.SYSTEM_SETTINGS && (key in state.systemInfo.SYSTEM_SETTINGS)) {
+        return state.systemInfo.SYSTEM_SETTINGS[key];
+      }
+
+      return null;
     },
     isProcessing: state => {
       return state.processingTaskCount > 0 && (Date.now() - state.processingTaskUpdateTime) > 3000;
@@ -302,14 +310,14 @@ export default new Vuex.Store({
         return getters.uiTheme;
       }
     },
-    codeMirrorSetting: (state, getters) => {
-      let theme = state.codeMirrorSetting.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
+    codeMirrorSettings: (state, getters) => {
+      let theme = state.codeMirrorSettings.theme || C.CODE_MIRROR_THEME_DEFAULT.key;
 
-      let fontSize = state.codeMirrorSetting.style.fontSize || getters.DEFAULT_STATE.codeMirrorStyle.fontSize;
+      let fontSize = state.codeMirrorSettings.style.fontSize || getters.DEFAULT_STATE.codeMirrorStyle.fontSize;
       fontSize = Math.max(fontSize, 12);
       fontSize = Math.min(fontSize, 36);
 
-      let lineHeight = state.codeMirrorSetting.style.lineHeight || getters.DEFAULT_STATE.codeMirrorStyle.lineHeight;
+      let lineHeight = state.codeMirrorSettings.style.lineHeight || getters.DEFAULT_STATE.codeMirrorStyle.lineHeight;
       lineHeight = Math.max(lineHeight, 1);
       lineHeight = Math.min(lineHeight, 2);
 
@@ -333,9 +341,9 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    updateSystemConfig(state, config) {
-      state.systemConfig = config || {};
-      state.isSystemConfigLoaded = true;
+    updateSystemInfo(state, info) {
+      state.systemInfo = info || {};
+      state.isSystemInfoLoaded = true;
     },
 
     updateLoadStatus(state, isLoaded) {
@@ -386,8 +394,8 @@ export default new Vuex.Store({
       state.uiTheme = value || null;
     },
 
-    updateCodeMirrorSetting(state, value) {
-      state.codeMirrorSetting = value || {
+    updateCodeMirrorSettings(state, value) {
+      state.codeMirrorSettings = value || {
         theme: C.CODE_MIRROR_THEME_DEFAULT.key,
         style: {},
       };
@@ -548,12 +556,12 @@ export default new Vuex.Store({
       commit('updateSocketIOStatus', false);
       commit('updateXAuthToken', null);
     },
-    async loadSystemConfig({ commit }) {
-      let apiRes = await T.callAPI_get('/api/v1/func-system-config');
+    async loadSystemInfo({ commit }) {
+      let apiRes = await T.callAPI_get('/api/v1/system-info');
       if (!apiRes || !apiRes.ok) return;
 
-      await commit('updateSystemConfig', apiRes.data);
-      window._DFF_isSystemConfigLoaded = true;
+      await commit('updateSystemInfo', apiRes.data);
+      window._DFF_isSystemInfoLoaded = true;
     },
     async loadUserProfile({ commit, state }) {
       if (!state.xAuthToken) return;
@@ -586,27 +594,27 @@ export default new Vuex.Store({
     async checkServerUpgradeInfo({ dispatch, state }, serverInfo) {
       let nextServerUpgradeInfo = null;
 
-      if (state.systemConfig && !state.serverUpgradeInfo) {
-        if (state.systemConfig.VERSION
+      if (state.systemInfo && !state.serverUpgradeInfo) {
+        if (state.systemInfo.VERSION
             && serverInfo.VERSION
-            && state.systemConfig.VERSION !== serverInfo.VERSION) {
+            && state.systemInfo.VERSION !== serverInfo.VERSION) {
           nextServerUpgradeInfo = {
-            prev: `Version: ${state.systemConfig.VERSION}`,
+            prev: `Version: ${state.systemInfo.VERSION}`,
             next: `Version: ${serverInfo.VERSION}`,
           }
 
-        } else if (state.systemConfig.CREATE_TIMESTAMP
+        } else if (state.systemInfo.CREATE_TIMESTAMP
             && serverInfo.CREATE_TIMESTAMP
-            && state.systemConfig.CREATE_TIMESTAMP !== serverInfo.CREATE_TIMESTAMP) {
+            && state.systemInfo.CREATE_TIMESTAMP !== serverInfo.CREATE_TIMESTAMP) {
           nextServerUpgradeInfo = {
-            prev: `Build: ${T.getDateTimeString(state.systemConfig.CREATE_TIMESTAMP * 1000)}`,
-            next: `Build: ${T.getDateTimeString(serverInfo.CREATE_TIMESTAMP         * 1000)}`,
+            prev: `Build: ${T.getDateTimeString(state.systemInfo.CREATE_TIMESTAMP * 1000)}`,
+            next: `Build: ${T.getDateTimeString(serverInfo.CREATE_TIMESTAMP       * 1000)}`,
           }
         }
       }
 
       if (nextServerUpgradeInfo) {
-        await dispatch('loadSystemConfig');
+        await dispatch('loadSystemInfo');
         state.serverUpgradeInfo = nextServerUpgradeInfo;
       }
     },

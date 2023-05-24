@@ -15,7 +15,7 @@ Position of scroll in Management                                    : 管理界�
 Notice messages or dialogs                                          : 提示信息及对话框
 Search history                                                      : 搜索历史
 
-Config loaded from server                    : 从服务器加载的系统配置
+System Info loaded from server               : 从服务器加载的系统信息
 Page will refresh after clearing this content: 清除本项目会刷新页面
 
 Clear: 清除
@@ -45,7 +45,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                 </el-form-item>
 
                 <el-form-item>
-                  <el-checkbox v-model="form.clear_codeMirrorSetting">
+                  <el-checkbox v-model="form.clear_codeMirrorSettings">
                     <strong>{{ $t('Code Editor Setting') }}</strong>
                   </el-checkbox>
                   <div class="text-small form-item-tip">{{ $t('Including') }}{{ $t(':') }}
@@ -71,8 +71,8 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
                 </el-form-item>
 
                 <el-form-item>
-                  <el-checkbox v-model="form.clear_systemConfig">
-                    <strong>{{ $t('Config loaded from server') }}</strong>
+                  <el-checkbox v-model="form.clear_systemInfo">
+                    <strong>{{ $t('System Info loaded from server') }}</strong>
                   </el-checkbox>
                   <div class="text-small form-item-tip">{{ $t('Page will refresh after clearing this content') }}</div>
                 </el-form-item>
@@ -100,8 +100,8 @@ export default {
   },
   methods: {
     async clearCache() {
-      if (this.form.clear_codeMirrorSetting) {
-        this.$store.commit('updateCodeMirrorSetting', null);
+      if (this.form.clear_codeMirrorSettings) {
+        this.$store.commit('updateCodeMirrorSettings', null);
       }
 
       if (this.form.clear_UIStatus) {
@@ -119,13 +119,13 @@ export default {
       }
 
       let _message = this.$t('Cache is cleared');
-      if (this.form.clear_systemConfig) {
+      if (this.form.clear_systemInfo) {
         _message += `<br><span class="text-bad">${this.$t('Page will be refreshed, and config will reload from server')}</span>`;
       }
 
       this.T.notify(_message);
 
-      if (this.form.clear_systemConfig) {
+      if (this.form.clear_systemInfo) {
         // 延迟3秒，保证提示能够正常展示
         setTimeout(() => {
           location.reload();
@@ -141,8 +141,8 @@ export default {
     return {
       form: {
         clear_UIStatus         : true,
-        clear_codeMirrorSetting: true,
-        clear_systemConfig     : false,
+        clear_codeMirrorSettings: true,
+        clear_systemInfo     : false,
       },
     }
   },

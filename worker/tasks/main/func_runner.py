@@ -147,8 +147,8 @@ class FuncRunnerTask(ScriptBaseTask):
         self.cache_db.run('lpush', cache_key, data)
 
         # 上传观测云数据
-        upload_enabled = self.system_configs.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = self.system_configs.get('GUANCE_DATA_UPLOAD_URL')     or None
+        upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
         if all([ upload_enabled, upload_url ]):
             full_log_message_parts = []
             if log_messages:

@@ -121,13 +121,13 @@ recentTaskCount: '{n} 个近期任务'
                     :disabled="true"
                     :value="fixedTaskInfoLimit"></el-input-number>
                   <el-input-number class="task-info-limit-input" v-else
-                    :min="$store.getters.CONFIG('_TASK_INFO_MIN_LIMIT')"
-                    :max="$store.getters.CONFIG('_TASK_INFO_MAX_LIMIT')"
+                    :min="$store.getters.SYSTEM_INFO('_TASK_INFO_MIN_LIMIT')"
+                    :max="$store.getters.SYSTEM_INFO('_TASK_INFO_MAX_LIMIT')"
                     :step="10"
                     :precision="0"
                     v-model="form.taskInfoLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -207,7 +207,7 @@ export default {
             this.T.jsonClear(this.form);
             this.form.throttlingJSON = {};
             this.form.showInDoc      = false;
-            this.form.taskInfoLimit  = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK');
+            this.form.taskInfoLimit  = this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK');
             this.data = {};
             break;
 
@@ -240,7 +240,7 @@ export default {
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
 
         if (this.T.isNothing(nextForm.taskInfoLimit)) {
-          nextForm.taskInfoLimit = this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')
+          nextForm.taskInfoLimit = this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK')
         }
 
         this.form = nextForm;
@@ -449,7 +449,7 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
-        taskInfoLimit     : this.$store.getters.CONFIG('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'),
+        taskInfoLimit     : this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'),
         note              : null,
       },
 

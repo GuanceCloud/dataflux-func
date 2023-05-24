@@ -67,11 +67,11 @@ class BaseTask(app.Task):
     _failure_result_saving_task = None
 
     @property
-    def system_configs(self):
-        return self.DFF_system_configs
+    def system_settings(self):
+        return self.DFF_system_settings
 
-    def _load_system_configs(self):
-        system_config_ids = [
+    def _load_system_settings(self):
+        system_setting_ids = [
             'GUANCE_DATA_UPLOAD_ENABLED',
             'GUANCE_DATA_UPLOAD_URL',
             'GUANCE_DATA_SITE_NAME',
@@ -80,24 +80,24 @@ class BaseTask(app.Task):
                 SELECT
                     id
                     ,value
-                FROM wat_main_system_config
+                FROM wat_main_system_setting
                 WHERE
                     id IN ( ? )
                 '''
-        sql_params = [ system_config_ids ]
+        sql_params = [ system_setting_ids ]
         db_res = self.db.query(sql, sql_params)
 
-        system_configs = {}
+        system_settings = {}
 
         # 默认值
-        for _id in system_config_ids:
-            system_configs[_id] = CONST['systemConfigs'][_id]
+        for _id in system_setting_ids:
+            system_settings[_id] = CONST['systemSettings'][_id]
 
         # 用户配置
         for d in db_res:
-            system_configs[d['id']] = toolkit.json_loads(d['value'])
+            system_settings[d['id']] = toolkit.json_loads(d['value'])
 
-        self.DFF_system_configs = system_configs
+        self.DFF_system_settings = system_settings
 
     def _set_task_status(self, status, **next_context):
         '''
@@ -141,7 +141,7 @@ class BaseTask(app.Task):
         self.backend.client.publish(key, content)
 
     def __call__(self, *args, **kwargs):
-        self.DFF_system_configs  = {}
+        self.DFF_system_settings = {}
         self.DFF_task_lock_key   = None
         self.DFF_task_lock_value = None
 
@@ -161,8 +161,8 @@ class BaseTask(app.Task):
         # Add File Storage Helper
         self.file_storage = FileSystemHelper(self.logger)
 
-        # Load System Configs
-        self._load_system_configs()
+        # Load System Settings
+        self._load_system_settings()
 
         if CONFIG['MODE'] == 'prod':
             self.db.skip_log       = True
@@ -306,8 +306,8 @@ class BaseTask(app.Task):
 
         points = toolkit.as_array(points)
 
-        upload_enabled = self.system_configs.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = self.system_configs.get('GUANCE_DATA_UPLOAD_URL')     or None
+        upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
         if not all([ upload_enabled, upload_url ]):
             return
 
@@ -324,7 +324,7 @@ class BaseTask(app.Task):
                 p['tags']['status'] = guance_status
 
             # 添加 tags.site_name
-            site_name = self.system_configs.get('GUANCE_DATA_SITE_NAME')
+            site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
             if site_name:
                 p['tags']['site_name'] = site_name
 

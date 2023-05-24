@@ -117,7 +117,7 @@ Saved Draft Code: 已保存的草稿代码
       </el-header>
 
       <!-- 代码区 -->
-      <el-main id="editorContainer_CodeViewer" :style="$store.getters.codeMirrorSetting.style">
+      <el-main id="editorContainer_CodeViewer" :style="$store.getters.codeMirrorSettings.style">
         <textarea id="editor_CodeViewer"></textarea>
         <h1 id="viewModeHint">{{ $t('View Mode') }}</h1>
       </el-main>

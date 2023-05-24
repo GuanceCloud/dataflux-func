@@ -43,7 +43,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
           <span>{{ $t('Script Market') }}</span>
 
           <div class="header-control">
-            <template v-if="$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']">
+            <template v-if="$store.getters.SYSTEM_SETTINGS('OFFICIAL_SCRIPT_MARKET_ENABLED')">
               <el-link v-if="!hasOfficialScriptMarket" @click="createOfficialScriptMarket">
                 <i class="fa fa-fw fa-star"></i>
                 {{ $t('Add Official Script Market') }}
@@ -248,7 +248,7 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       // 隐藏官方脚本市场
-      if (!this.$root.variableConfig['OFFICIAL_SCRIPT_MARKET_ENABLED']) {
+      if (!this.$store.getters.SYSTEM_SETTINGS('OFFICIAL_SCRIPT_MARKET_ENABLED')) {
         apiRes.data = apiRes.data.filter(x => !x.isOfficial);
       }
 

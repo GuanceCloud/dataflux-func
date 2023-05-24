@@ -51,8 +51,8 @@ Click here to visit the official website: 点击此处前往官方网站查看
       </template>
 
       <el-menu-item
-        v-if="$root.variableConfig['NAVI_DOC_LINK_ENABLED'] && $root.variableConfig['NAVI_DOC_LINK_URL']"
-        :index="$root.variableConfig['NAVI_DOC_LINK_URL']">
+        v-if="$store.getters.SYSTEM_SETTINGS('NAVI_DOC_LINK_ENABLED') && $store.getters.SYSTEM_SETTINGS('NAVI_DOC_LINK_URL')"
+        :index="$store.getters.SYSTEM_SETTINGS('NAVI_DOC_LINK_URL')">
         <span>
           <i class="fa fa-fw fa-book"></i>
           <span>{{ $t('Documents') }}</span>
@@ -78,7 +78,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
         <el-menu-item v-if="common.hasNewVersion()" @click="showNewVersionDialog = true">
           <span class="text-bad">
             {{ $t('New Version') }}{{ $t(':') }}
-            {{ $store.getters.CONFIG('VERSION') }} &#10132; {{ $store.state.latestVersion }}
+            {{ $store.getters.SYSTEM_INFO('VERSION') }} &#10132; {{ $store.state.latestVersion }}
           </span>
         </el-menu-item>
         <el-menu-item index="/setting/profile-setup">{{ $t('Profile') }}</el-menu-item>
@@ -141,7 +141,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
         <el-card class="notice-new-version-content">
           <p class="new-version-tip">
             <i18n path="Current version of DataFlux Func is {0}">
-              <span class="text-main">{{ $store.getters.CONFIG('VERSION') }}</span>
+              <span class="text-main">{{ $store.getters.SYSTEM_INFO('VERSION') }}</span>
             </i18n>
 
             <br>

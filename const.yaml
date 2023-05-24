@@ -72,8 +72,8 @@ fileIcon:
   xml : file-code-o
   csv : file-code-o
 
-# System Configs and defaults
-systemConfigs:
+# System Settings and defaults
+systemSettings:
   # DataFlux Func ID
   DATAFLUX_FUNC_ID: null
 
