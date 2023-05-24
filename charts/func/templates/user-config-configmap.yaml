@@ -1,7 +1,6 @@
 apiVersion: v1
 data:
   user-config-template.yaml: |-
-    SECRET: aa7ca52eee226085
     {{- if .Values.mysql.enabled }}
     MYSQL_HOST: {{ include "func.fullname" . }}-mysql
     {{- else }}

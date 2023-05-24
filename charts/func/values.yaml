@@ -7,7 +7,7 @@ image:
   ## @param repository - string - required
   ## Define the repository to use:
   #
-  repository: "pubrepo.jiagouyun.com/dataflux-func/dataflux-func"
+  repository: "pubrepo.guance.com/dataflux-func/dataflux-func-gse"
   pullPolicy: IfNotPresent
   ## @param tag - string - required
   ## Define the Cluster-Agent version to use.
