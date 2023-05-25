@@ -35,7 +35,7 @@ Test connection      : 测试连通性
 
 Save without connection test: 保存（忽略连通性测试）
 
-For distinguishing the different DataFlux Func                                  : 在观测云中展示的名称，用于区分不同的 DataFlux Func
+This Title will also be displayed in Guance                                     : 这个标题同时也会展示在观测云中
 'Servers to connect (e.g. host1:80,host2:81)'                                   : 连接地址列表，如：host1:80,host2:81
 Password here is always required when the Connector requires password to connect: 如连接器需要密码，则每次修改都必须重新输入密码
 API Key here is always required                                                 : 每次修改都必须重新输入 API Key
@@ -47,7 +47,6 @@ Only alphabets, numbers and underscore are allowed   : 只能包含大小写英�
 Cannot not starts with a number                      : 不得以数字开头
 Please input Connector type                          : 请选择连接器类型
 Please select Guance Node                            : 请选择观测云节点
-Please input the name of this DataFlux Func in Guance: 请输入本 DataFlux Func 在观测云中的名称
 Please input OpenAPI URL                             : 请输入 OpenAPI 地址
 Please input Websocket URL                           : 请输入 WebSocket 地址
 Please input OpenWay URL                             : 请输入 OpenWay 地址
@@ -143,6 +142,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                     <el-input :placeholder="$t('Optional')"
                       maxlength="50"
                       v-model="form.title"></el-input>
+                    <InfoBlock v-if="selectedType === 'guance'" type="info" :title="$t('This Title will also be displayed in Guance')" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Description')">
@@ -160,11 +160,6 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       <el-option v-for="node in guanceNodes"
                         :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
                     </el-select>
-                  </el-form-item>
-                  <el-form-item :label="$t('Name in Guance')" v-if="hasConfigField(selectedType, 'nameInGuance')" prop="configJSON.nameInGuance">
-                    <el-input
-                      v-model="form.configJSON.nameInGuance"></el-input>
-                    <InfoBlock type="info" :title="$t('For distinguishing the different DataFlux Func')" />
                   </el-form-item>
                   <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
                     <el-input
@@ -810,13 +805,6 @@ export default {
             trigger : 'change',
             message : this.$t('Please select Guance Node'),
             required: true,
-          },
-        ],
-        'configJSON.nameInGuance': [
-          {
-            trigger : 'change',
-            message : this.$t('Please input the name of this DataFlux Func in Guance'),
-            required: false,
           },
         ],
         'configJSON.guanceOpenAPIURL': [

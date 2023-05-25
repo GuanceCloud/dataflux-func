@@ -190,7 +190,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
   // 上报自身信息
   function reportSystemInfo() {
     var systemInfo = {
-      name   : connector.configJSON.nameInGuance || `DataFlux Func (version: ${IMAGE_INFO.VERSION})`,
+      name   : connector.title || `DataFlux Func (version: ${IMAGE_INFO.VERSION})`,
       version: IMAGE_INFO.VERSION,
     }
     doEmit(locals, client, EVENT_DFF_SYSTEM_INFO, systemInfo);

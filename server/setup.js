@@ -150,7 +150,6 @@ function _doSetup(userConfig, callback) {
         if (!err) {
           guanceConnectorConfig = {
             guanceNode        : guanceNode.key,
-            nameInGuance      : 'DataFlux Func',
             guanceOpenAPIURL  : guanceNode.openapi,
             guanceWebSocketURL: guanceNode.websocket,
             guanceOpenWayURL  : guanceNode.openway,

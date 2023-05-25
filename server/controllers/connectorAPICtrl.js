@@ -26,7 +26,7 @@ function _checkConfig(locals, type, config, skipTest, callback) {
   switch(type) {
     case 'guance':
       requiredFields = ['guanceNode', 'guanceOpenAPIURL', 'guanceWebSocketURL', 'guanceOpenWayURL', 'guanceAPIKeyId', 'guanceAPIKey'];
-      optionalFields = ['nameInGuance'];
+      optionalFields = [];
       break;
 
     case 'df_datakit':

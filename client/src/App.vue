@@ -253,8 +253,8 @@ export default {
       }
     },
     showNoticeBar() {
-      return this.$store.getters.SYSTEM_SETTINGS['NOTICE_BAR_ENABLED']
-          && this.$store.getters.SYSTEM_SETTINGS['NOTICE_BAR_TEXT'];
+      return this.$store.getters.SYSTEM_SETTINGS('NOTICE_BAR_ENABLED')
+          && this.$store.getters.SYSTEM_SETTINGS('NOTICE_BAR_TEXT');
     },
     viewTop() {
       let top = 0;

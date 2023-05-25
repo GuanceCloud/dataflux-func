@@ -225,8 +225,12 @@ export default new Vuex.Store({
       return defaultValue || null;
     },
     SYSTEM_SETTINGS: state => (key) => {
-      if (state.systemInfo && state.systemInfo.SYSTEM_SETTINGS && (key in state.systemInfo.SYSTEM_SETTINGS)) {
-        return state.systemInfo.SYSTEM_SETTINGS[key];
+      if (state.systemInfo && state.systemInfo.SYSTEM_SETTINGS) {
+        if (!key) {
+          return state.systemInfo.SYSTEM_SETTINGS;
+        } else if (key in state.systemInfo.SYSTEM_SETTINGS) {
+          return state.systemInfo.SYSTEM_SETTINGS[key] || null;
+        }
       }
 
       return null;
