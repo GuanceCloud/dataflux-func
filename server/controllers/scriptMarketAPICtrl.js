@@ -494,18 +494,16 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
     fs.emptyDirSync(localPathTmp);
 
     async.series([
-      // 下载初始化文件
+      // 下载 META 文件
       function(asyncCallback) {
-        var files = [
-          CONFIG.SCRIPT_EXPORT_META_FILE,
-          CONFIG.SCRIPT_MARKET_TOKEN_FILE,
-        ];
-        async.eachSeries(files, function(file, eachCallback) {
-          SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, file, function(err) {
-            // 初始化时下载文件失败不报错
-            return eachCallback();
-          });
-        }, asyncCallback);
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG.SCRIPT_EXPORT_META_FILE, asyncCallback);
+      },
+      // 下载 TOKEN 文件
+      function(asyncCallback) {
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG.SCRIPT_MARKET_TOKEN_FILE, function(err) {
+          // 忽略下载 TOKEN 文件失败
+          return asyncCallback();
+        });
       },
     ], function(err) {
       // 初始化失败
@@ -680,6 +678,10 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
     request(requestOptions, function(err, _res, _body) {
       if (err) return callback(err);
 
+      if (_res.statusCode !== 200) {
+        return callback(new Error(`Fetch file [${file}] from HTTP Service failed. Server returned a status code [${_res.statusCode} ${_res.statusMessage}]`));
+      }
+
       var fileContent = _body.toString();
       var fileExt = fileURL.split('.').pop();
 
@@ -696,13 +698,13 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
         }
 
       } catch(err) {
-        return callback(new Error('Fetch file from HTTP Service failed.'))
+        return callback(new Error(`Fetch file [${file}] from HTTP Service failed. File cannot be load as [${fileExt}] format`))
       }
 
       fs.outputFileSync(localFilePath, fileContent);
 
       if (!fs.existsSync(localFilePath)) {
-        return callback(new Error('Fetch file from HTTP Service failed.'))
+        return callback(new Error(`Fetch file [${file}] from HTTP Service failed`))
       }
       return callback();
     });
