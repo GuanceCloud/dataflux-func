@@ -86,3 +86,62 @@ dff.get(getOpt, function(err, respData, respStatusCode) {
   });
 });
 ```
+
+### Golang
+
+```go
+package main
+
+import (
+    "os"
+
+    // DataFlux Func SDK
+    "./dataflux_func_sdk"
+)
+
+var (
+    colorMap = map[interface{}]string{
+        "grey":    "\033[0;30m",
+        "red":     "\033[0;31m",
+        "green":   "\033[0;32m",
+        "yellow":  "\033[0;33m",
+        "blue":    "\033[0;34m",
+        "magenta": "\033[0;35m",
+        "cyan":    "\033[0;36m",
+    }
+)
+
+func main() {
+    host := "localhost:8088"
+    if len(os.Args) >= 2 {
+        host = os.Args[1]
+    }
+
+    // 创建 DataFlux Func 操作对象
+    dff := dataflux_func_sdk.NewDataFluxFunc("ak-xxxxx", "xxxxxxxxxx", host, 30, false)
+
+    // 开启 Debug
+    dff.Debug = true
+
+    // 发送 GET 请求
+    _, _, err := dff.Get("/api/v1/do/ping", nil, nil, "")
+    if err != nil {
+        panic(err)
+    }
+
+    // 发送 POST 请求
+    body := map[string]interface{}{
+        "echo": map[string]interface{}{
+            "int"    : 1,
+            "str"    : "Hello World",
+            "unicode": "你好，世界！",
+            "none"   : nil,
+            "boolean": true,
+        },
+    }
+    _, _, err = dff.Post("/api/v1/do/echo", body, nil, nil, "")
+    if err != nil {
+        panic(err)
+    }
+}
+```

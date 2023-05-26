@@ -351,7 +351,7 @@ class DataFluxFunc(object):
 if __name__ == '__main__':
     from dataflux_func_sdk import DataFluxFunc
 
-    # Create DataFlux Func Handler
+    # Create DataFlux Func Client
     host = 'localhost:8088'
     if len(sys.argv) >= 2:
         host = sys.argv[1]

@@ -448,7 +448,7 @@ exports.DataFluxFunc = DataFluxFunc;
 if (require.main === module) {
   var host = process.argv[2] || 'localhost:8088';
 
-  // Create DataFlux Func Handler
+  // Create DataFlux Func Client
   var opt = {
     akId    : 'ak-xxxxx',
     akSecret: 'xxxxxxxxxx',
