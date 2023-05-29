@@ -6,7 +6,7 @@ let THANKS_HEADER_CSS = 'font-size: 18px; color: #F60';
 let THANKS_LIST = [
   {
     name: 'samuel',
-    desc: '提出了整个idea，并设计了@DFF.API的核心使用方式',
+    desc: '提出了整个 idea，并设计了 @DFF.API 的核心使用方式',
   },
   {
     name: '陆宏鸣',
@@ -14,12 +14,16 @@ let THANKS_LIST = [
   },
   {
     name: 'sx、陈春亮、郁凯、刘星',
-    desc: '首个投产项目先行团队',
+    desc: '首个投产项目的先行团队',
   },
   {
     name: '范育宾',
-    desc: '在Func的迭代、相关项目落地过程中，提供了大量意见反馈，帮助完善了整个系统',
-  }
+    desc: '在迭代、相关项目落地过程中，提供了大量意见反馈，帮助完善了整个系统',
+  },
+  {
+    name: '张斌',
+    desc: '贡献了 Golang 版本的 SDK',
+  },
 ];
 let THANKS_LISTE_CSS = 'font-weight: bold';
 
