@@ -4,6 +4,8 @@
 
 # 3rd-party Modules
 from celery import platforms
+import pymysql
+from pymysql.cursors import DictCursor
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
@@ -13,7 +15,22 @@ CONFIG = yaml_resources.get('CONFIG')
 # Patch ROOT Warning
 platforms._warn_or_raise_security_error = toolkit.nope_func
 
+def get_db_connection():
+    mysql_config = {
+        'host'    : CONFIG['MYSQL_HOST'],
+        'port'    : CONFIG['MYSQL_PORT'],
+        'user'    : CONFIG['MYSQL_USER'],
+        'password': CONFIG['MYSQL_PASSWORD'],
+        'database': CONFIG['MYSQL_DATABASE'],
+
+        'cursorclass' : DictCursor,
+    }
+    conn = pymysql.connect(**mysql_config)
+
+    return conn
+
 def before_app_create():
+    # Init toolkit
     APP_NAME_SERVER = CONFIG['APP_NAME'] + '-server'
     APP_NAME_WORKER = CONFIG['APP_NAME'] + '-worker'
 
@@ -51,6 +68,31 @@ def before_app_create():
         return cache_key_info
 
     toolkit.parse_cache_key = parse_cache_key
+
+    # 加载数据库时区
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            server_settings = {}
+
+            cur.execute("SHOW VARIABLES LIKE '%time_zone%'")
+            db_res = cur.fetchall()
+            for d in db_res:
+                server_settings[d['Variable_name']] = d['Value']
+
+            timezone        = server_settings['time_zone']
+            system_timezone = server_settings['system_time_zone']
+
+            if not timezone or timezone.upper() == 'SYSTEM':
+                timezone = system_timezone
+
+            if timezone in ('UTC', 'GMT'):
+                timezone = '+00:00'
+            elif timezone in ('CST', 'Asia/Shanghai'):
+                timezone = '+08:00'
+
+            if timezone:
+                yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
+            print(f'Database Timezone: {timezone}');
 
 def after_app_created(celery_app):
     from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run

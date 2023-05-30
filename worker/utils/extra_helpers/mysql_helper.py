@@ -2,9 +2,11 @@
 
 # Built-in Modules
 import re
+import datetime
 import traceback
 
 # 3rd-party Modules
+import arrow
 import pymysql
 from pymysql.cursors import DictCursor
 from pymysql.constants import CLIENT as CLIENT_FLAG
@@ -69,6 +71,7 @@ class MySQLHelper(object):
                     'password': CONFIG['MYSQL_PASSWORD'],
                     'database': CONFIG['MYSQL_DATABASE'],
                     'charset' : CONFIG['_MYSQL_CHARSET'],
+                    'timezone': CONFIG['_MYSQL_TIMEZONE'],
                 }
                 CLIENT = PersistentDB(pymysql, **get_config(CLIENT_CONFIG))
 
@@ -143,6 +146,19 @@ class MySQLHelper(object):
         cur.close()
         conn.close()
 
+    def _convert_timezone(self, db_res):
+        if not self.config.get('timezone'):
+            return db_res
+
+        for d in db_res:
+            for k, v in d.items():
+                if not isinstance(v, datetime.datetime):
+                    continue
+
+                d[k] = arrow.get(v, self.config.get('timezone'))
+
+        return db_res
+
     def _trans_execute(self, trans_conn, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
 
@@ -158,7 +174,9 @@ class MySQLHelper(object):
         count  = cur.execute(formatted_sql)
         db_res = cur.fetchall()
 
-        return list(db_res), count
+        db_res = list(db_res)
+        db_res = self._convert_timezone(db_res)
+        return db_res, count
 
     def _execute(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
@@ -188,7 +206,9 @@ class MySQLHelper(object):
         else:
             conn.commit()
 
-            return list(db_res), count
+            db_res = list(db_res)
+            db_res = self._convert_timezone(db_res)
+            return db_res, count
 
         finally:
             if cur:

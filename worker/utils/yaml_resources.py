@@ -186,5 +186,8 @@ def get(key):
 
     return resource
 
+def set_value(key, path, value):
+    FILE_CACHE[key][path] = value
+
 def get_all():
     return FILE_CACHE

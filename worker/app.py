@@ -69,12 +69,19 @@ app.conf.update(
     result_backend=redis_url,
     redis_backend_use_ssl=ssl_options)
 
-# Redis helper
+# Logger
 from worker.utils.log_helper import LogHelper
-from worker.utils.extra_helpers import RedisHelper
 WORKER_LOGGER = LogHelper()
+
+# Redis helper
+from worker.utils.extra_helpers import RedisHelper
 REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
 REDIS_HELPER.skip_log = True
+
+# MySQL helper
+from worker.utils.extra_helpers import MySQLHelper
+MYSQL_HELPER = MySQLHelper(logger=WORKER_LOGGER)
+MYSQL_HELPER.skip_log = True
 
 # Collect worker queues
 if 'worker' in sys.argv:
