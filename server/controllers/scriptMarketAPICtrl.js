@@ -1364,7 +1364,12 @@ exports.add = function(req, res, next) {
 };
 
 exports.addOfficial = function(req, res, next) {
-  var data = CONFIG._OFFICIAL_SCRIPT_MARKET;
+  var data = {
+    id        : CONFIG._OFFICIAL_SCRIPT_MARKET_ID,
+    type      : 'httpService',
+    configJSON: { "url": CONFIG._OFFICIAL_SCRIPT_MARKET_URL },
+    isPinned  : true
+  };
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
 

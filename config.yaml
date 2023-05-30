@@ -103,9 +103,6 @@ REDIS_TS_MIN_INTERVAL: 60     # 时间戳最小间隔（秒）
 # Worker配置
 WORKER_QUEUE_ALIAS_MAP: cpu=9
 
-# 官方脚本库索引地址
-OFFICIAL_PACKAGE_INDEX_URL: https://static.guance.com/dataflux-func/market/pkg-index.json
-
 ########################
 #   以下配置请勿修改   #
 ########################
@@ -183,11 +180,8 @@ _SAMPLE_SCRIPT: |-
       return 'OK'
 
 # 官方脚本市场
-_OFFICIAL_SCRIPT_MARKET:
-  id        : smkt-official
-  type      : httpService
-  configJSON: { "url": "https://func.guance.com/script-market/official" }
-  isPinned  : true
+_OFFICIAL_SCRIPT_MARKET_ID : smkt-official
+_OFFICIAL_SCRIPT_MARKET_URL: https://func.guance.com/script-market/official
 
 # 启动脚本集 ID
 _STARTUP_SCRIPT_SET_ID: startup

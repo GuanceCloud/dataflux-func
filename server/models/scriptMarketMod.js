@@ -73,7 +73,7 @@ EntityModel.prototype.list = function(options, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   smkt.*');
-  sql.append(`  ,smkt.id = '${CONFIG._OFFICIAL_SCRIPT_MARKET.id}' AS isOfficial`);
+  sql.append(`  ,smkt.id = '${CONFIG._OFFICIAL_SCRIPT_MARKET_ID}' AS isOfficial`);
   sql.append('  ,NOT ISNULL(smkt.pinTime) AS isPinned');
   sql.append('  ,locker.username          AS lockedByUserUsername');
   sql.append('  ,locker.name              AS lockedByUserName');
