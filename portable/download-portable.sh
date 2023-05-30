@@ -92,19 +92,32 @@ if [ ${OPT_ARCH} != "DEFAULT" ]; then
     _ARCH=${OPT_ARCH}
 fi
 
+case ${_ARCH} in
+    x86_64|amd64|x86 )
+        _ARCH="x86_64"
+        ;;
+
+    aarch64|arm64|arm )
+        _ARCH="aarch64"
+        ;;
+
+    * )
+        error "Unsupported arch: ${_ARCH}"
+        exit 1
+        ;;
+esac
+
 # 获取版本号
 _VERSION=`curl -s ${__PORTABLE_BASE_URL}/${__VERSION_FILE}`
 
 # 创建下载目录
-__DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
-case ${OPT_FOR} in
-    GSE )
-        __DOWNLOAD_DIR="${__DOWNLOAD_DIR}-${OPT_FOR}"
-        ;;
-esac
-
 if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
     __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
+else
+    __DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
+    if [ ${OPT_FOR} != "DEFAULT" ]; then
+        __DOWNLOAD_DIR="${__DOWNLOAD_DIR}-${OPT_FOR}"
+    fi
 fi
 
 if [ -d ${__DOWNLOAD_DIR} ]; then
