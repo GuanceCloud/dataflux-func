@@ -4,54 +4,46 @@ stages:
   - deploy
 
 variables:
-  OSS_WORKDIR                  : dataflux-func
-  OSS_PORTABLE_BASE_URL        : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable
-  OSS_PORTABLE_BASE_URL_DEV    : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable-dev
-  OSS_PORTABLE_BASE_URL_GSE    : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/portable-GSE
-  OSS_RESOURCE_BASE_URL        : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}/resource
-  CDN_PORTABLE_REFRESH_PATH    : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable/
-  CDN_PORTABLE_REFRESH_PATH_DEV: ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable-dev/
-  CDN_PORTABLE_REFRESH_PATH_GSE: ${ZY_STATIC_SITE}/${OSS_WORKDIR}/portable-GSE/
-  CDN_RESOURCE_REFRESH_PATH    : ${ZY_STATIC_SITE}/${OSS_WORKDIR}/resource/
+  OSS_WORKDIR          : dataflux-func
+  OSS_WORKDIR_BASE_URL : oss://${ZY_STATIC_OSS_BUCKET}/${OSS_WORKDIR}
+  CDN_REFRESH_BASE_PATH: ${ZY_STATIC_SITE}/${OSS_WORKDIR}
 
   IMAGE          : dataflux-func
   IMAGE_GZIP_FILE: dataflux-func.tar.gz
 
-  DOCKER_STACK_EXAMPLE_FILE  : docker-stack.example.yaml
-  DOCKER_SERVICE_FILE        : docker.service
-  DOWNLOAD_PORTABLE_FILE     : download-portable.sh
-  RUN_PORTABLE_FILE          : run-portable.sh
-  IMAGE_LIST_FILE            : image-list
-  IMAGE_LIST_FILE_DEV        : image-list-dev
-  IMAGE_LIST_FILE_X86_64     : image-list-x86_64
-  IMAGE_LIST_FILE_AARCH64    : image-list-aarch64
-  IMAGE_LIST_FILE_GSE_X86_64 : image-list-GSE-x86_64
-  IMAGE_LIST_FILE_GSE_AARCH64: image-list-GSE-aarch64
-  VERSION_FILE               : version
+  DOCKER_STACK_EXAMPLE_FILE: docker-stack.example.yaml
+  DOCKER_SERVICE_FILE      : docker.service
+  DOWNLOAD_PORTABLE_FILE   : download-portable.sh
+  RUN_PORTABLE_FILE        : run-portable.sh
+  IMAGE_LIST_FILE          : image-list
+  VERSION_FILE             : version
 
-  SDK_FILE_PY: sdk/dataflux_func_sdk.py
-  SDK_FILE_JS: sdk/dataflux_func_sdk.js
+  INIT_SCRIPTS_DIR: init-scripts/
+  SDK_DIR         : sdk/
 
   PROJECT: dataflux-func
 
 # ========== 构建镜像 ==========
-# Origin 原版携带版
+
+# 原版携带版
 portable_dev:
   stage: build
   retry: 2
   only:
     - dev
   script:
-    # 开发版只需支持amd64
+    # 开发版只需支持 amd64
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}-dev:latest
       -f Dockerfile-singleton .
       --load
+    # 导出镜像
     - docker save ${IMAGE_PUBLIC}-dev:latest | gzip > ${IMAGE_GZIP_FILE}
+    # 上传至 OSS
     - tools/ossutil64 cp
-      ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_GZIP_FILE}
+      ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-dev/x86_64/${IMAGE_GZIP_FILE}
       -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
       -i ${ZY_STATIC_OSS_AK_ID}
@@ -65,16 +57,18 @@ portable_amd64:
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
-    # 单独构建amd64版本用于导出
+    # 单独构建 amd64 版本用于导出
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PUBLIC}:latest
       -f Dockerfile-singleton .
       --load
+    # 导出镜像
     - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    # 上传至 OSS
     - tools/ossutil64 cp
-      ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_GZIP_FILE}
+      ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable/x86_64/${IMAGE_GZIP_FILE}
       -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
       -i ${ZY_STATIC_OSS_AK_ID}
@@ -88,16 +82,18 @@ portable_arm64:
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
-    # 单独构建arm64版本用于导出
+    # 单独构建 arm64 版本用于导出
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/arm64
       -t ${IMAGE_PUBLIC}-arm64:latest
       -f Dockerfile-singleton .
       --load
+    # 导出镜像
     - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    # 上传至 OSS
     - tools/ossutil64
-      cp ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_GZIP_FILE}
+      cp ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_GZIP_FILE}
       -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
       -i ${ZY_STATIC_OSS_AK_ID}
@@ -115,7 +111,7 @@ portable_amd64_GSE:
     # 下载初始化脚本
     - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
     - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
-    # 单独构建amd64版本用于导出
+    # 单独构建 amd64 版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64
@@ -124,7 +120,7 @@ portable_amd64_GSE:
       --load
     - docker save ${IMAGE_PUBLIC}-gse:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
-      ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_GZIP_FILE}
+      ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-GSE/x86_64/${IMAGE_GZIP_FILE}
       -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
       -i ${ZY_STATIC_OSS_AK_ID}
@@ -141,7 +137,7 @@ portable_arm64_GSE:
     # 下载初始化脚本
     - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
     - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
-    # 单独构建arm64版本用于导出
+    # 单独构建 arm64 版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/arm64
@@ -150,7 +146,7 @@ portable_arm64_GSE:
       --load
     - docker save ${IMAGE_PUBLIC}-gse-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
-      cp ${IMAGE_GZIP_FILE} ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_GZIP_FILE}
+      cp ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-GSE/aarch64/${IMAGE_GZIP_FILE}
       -f
       -e ${ZY_STATIC_OSS_ENDPOINT}
       -i ${ZY_STATIC_OSS_AK_ID}
@@ -158,7 +154,7 @@ portable_arm64_GSE:
   tags:
     - cloudcare-multiarch
 
-# Origin 原版独立部署版
+# 原版独立部署版
 singleton:
   stage: build
   retry: 2
@@ -170,7 +166,7 @@ singleton:
     - V_MAJOR=${V_PARTS[0]}
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
-    # 构建/推送多架构版本
+    # 构建 / 推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -184,7 +180,7 @@ singleton:
       -t ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
       -f Dockerfile-singleton .
       --push
-    # 推送生产Helm
+    # 推送生产 Helm
     - sh build-charts.sh ${V_MAJOR_MINOR_PATCH} ${V_MAJOR_MINOR_PATCH} func-prod-chart
   tags:
     - cloudcare-multiarch
@@ -204,7 +200,7 @@ singleton_GSE:
     # 下载初始化脚本
     - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
     - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
-    # 构建/推送多架构版本
+    # 构建 / 推送多架构版本
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -228,7 +224,7 @@ guanceSaaS_testing:
   only:
     - dev
   script:
-    # 开发版只需支持amd64
+    # 开发版只需支持 amd64
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
@@ -249,7 +245,7 @@ guanceSaaS_release:
     - wget ${INIT_SCRIPT_IMPORT_SCRIPT_SETS_URL}  -O init-scripts/import_script_sets.py; # 自动执行脚本
     - wget ${BUILTIN_SCRIPT_SET_DATAFLUX_ZIP_URL} -O init-scripts/dataflux.zip;          # 旧版
     - wget ${BUILTIN_SCRIPT_SET_GUANCE_ZIP_URL}   -O init-scripts/guance.zip;            # 新版
-    # 构建/推送多架构版本
+    # 构建 / 推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -275,7 +271,7 @@ guancePaaS_preview:
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
     - REPO=dataflux-prev/$VDIR
     - TAG=${PROJECT}-${V[4]}
-    # 构建/推送多架构版本
+    # 构建 / 推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -300,7 +296,7 @@ guancePaaS_release:
     - VDIR=${V[0]}.${V[1]}.${V[2]}
     - REPO=dataflux/$VDIR
     - TAG=${PROJECT}-${V[3]}-${V[4]}
-    # 构建/推送多架构版本
+    # 构建 / 推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
@@ -321,14 +317,15 @@ portableFile_dev:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
-    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL_DEV}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL_DEV}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_DEV}        ${OSS_PORTABLE_BASE_URL_DEV}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL_DEV}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable-dev/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_WORKDIR_BASE_URL}/portable-dev/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_WORKDIR_BASE_URL}/portable-dev/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-dev        ${OSS_WORKDIR_BASE_URL}/portable-dev/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable-dev/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH_DEV}
+    - python tools/cdn-refresh-tool.py
+      Directory ${CDN_REFRESH_BASE_PATH}/portable-dev/
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
@@ -343,23 +340,20 @@ portableFile_singleton:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
-    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_PORTABLE_BASE_URL}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_PORTABLE_BASE_URL}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_PORTABLE_BASE_URL}/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_PORTABLE_BASE_URL}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_X86_64}     ${OSS_PORTABLE_BASE_URL}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_AARCH64}    ${OSS_PORTABLE_BASE_URL}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_PORTABLE_BASE_URL}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${SDK_FILE_PY}                         ${OSS_RESOURCE_BASE_URL}/${SDK_FILE_PY}               -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${SDK_FILE_JS}                         ${OSS_RESOURCE_BASE_URL}/${SDK_FILE_JS}               -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_WORKDIR_BASE_URL}/portable/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-x86_64     ${OSS_WORKDIR_BASE_URL}/portable/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-aarch64    ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH}
+    - python tools/cdn-refresh-tool.py
+      Directory ${CDN_REFRESH_BASE_PATH}/portable/
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
-    - python tools/cdn-refresh-tool.py Directory ${CDN_RESOURCE_REFRESH_PATH}
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
+
   tags:
     - cloudcare-multiarch
 
@@ -372,21 +366,43 @@ portableFile_singleton_GSE:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
     # 上传文件
-    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}   ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}         ${OSS_PORTABLE_BASE_URL_GSE}/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}           ${OSS_PORTABLE_BASE_URL_GSE}/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_GSE_X86_64}  ${OSS_PORTABLE_BASE_URL_GSE}/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE_GSE_AARCH64} ${OSS_PORTABLE_BASE_URL_GSE}/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${VERSION_FILE}                         ${OSS_PORTABLE_BASE_URL_GSE}/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}           ${OSS_WORKDIR_BASE_URL}/portable-GSE/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}   ${OSS_WORKDIR_BASE_URL}/portable-GSE/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}         ${OSS_WORKDIR_BASE_URL}/portable-GSE/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-GSE-x86_64  ${OSS_WORKDIR_BASE_URL}/portable-GSE/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-GSE-aarch64 ${OSS_WORKDIR_BASE_URL}/portable-GSE/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}                         ${OSS_WORKDIR_BASE_URL}/portable-GSE/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
-    - python tools/cdn-refresh-tool.py Directory ${CDN_PORTABLE_REFRESH_PATH_GSE}
+    - python tools/cdn-refresh-tool.py
+      Directory ${CDN_REFRESH_BASE_PATH}/portable-GSE/
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
   tags:
     - cloudcare-multiarch
 
+portableFile_singleton_extra:
+  stage: uploadToOSS
+  retry: 2
+  only:
+    - /^\d+\.\d+\.\d+$/ # 如：1.2.3
+  script:
+    # 上传文件
+    - tools/ossutil64 cp -r ${INIT_SCRIPTS_DIR} ${OSS_WORKDIR_BASE_URL}/${INIT_SCRIPTS_DIR} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp -r ${SDK_DIR}          ${OSS_WORKDIR_BASE_URL}/${SDK_DIR}          -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    # 刷新 CDN 缓存
+    - pip install -r tools/requirements.txt
+    - python tools/cdn-refresh-tool.py
+      Directory ${OSS_WORKDIR_BASE_URL}/${INIT_SCRIPTS_DIR}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET}
+    - python tools/cdn-refresh-tool.py
+      Directory ${OSS_WORKDIR_BASE_URL}/${SDK_DIR}
+      -i ${ZY_STATIC_OSS_AK_ID}
+      -k ${ZY_STATIC_OSS_AK_SECRET}
+
 # ========== 部署 ==========
+
 deploy_testing:
   stage: deploy
   retry: 2

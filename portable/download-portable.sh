@@ -84,6 +84,14 @@ case ${OPT_FOR} in
     dev|GSE )
         __PORTABLE_BASE_URL="${__PORTABLE_BASE_URL}-${OPT_FOR}"
         ;;
+
+    DEFAULT )
+        ;;
+
+    * )
+        error "Unsupported edition: ${OPT_FOR}"
+        exit 1
+        ;;
 esac
 
 # 获取架构
@@ -115,7 +123,7 @@ if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
     __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
 else
     __DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
-    if [ ${OPT_FOR} != "DEFAULT" ]; then
+    if [ ${OPT_FOR} != "DEFAULT" ] && [ ${OPT_FOR} != "dev" ]; then
         __DOWNLOAD_DIR="${__DOWNLOAD_DIR}-${OPT_FOR}"
     fi
 fi
