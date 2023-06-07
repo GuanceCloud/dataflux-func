@@ -180,7 +180,7 @@
                 <br>
                 <a target="_blank" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix">{{ $t('(Official MySQL 5.7 doc)') }}</a>
               </li>
-              <li v-html="$t('Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode')"></li>
+              <li v-html="$t('Redis 4.0 or above, at least 1 GB available memory and <strong>NOT</strong> running in Cluster Mode')"></li>
             </ul>
           </p>
 
@@ -695,6 +695,8 @@
         'Connecting to Redis failed'                              : '连接 Redis 失败',
         'Access Redis failed'                                     : '访问 Redis 失败',
         'Redis 4.0 or above is required'                          : 'Redis 版本必须为 4.0 及以上',
+        'Redis requires at least 1GB of memory'                   : 'Redis 需要至少 1 GB 内存',
+        'DataFlux Func does not support Redis Cluster'            : 'DataFlux Func 不支持 Redis 集群版',
         'Unexpected error with Redis'                             : 'Redis 抛出未预期的错误',
         'Initializing MySQL database failed'                      : '初始化 MySQL 数据库失败',
         'Initializing system settings failed'                     : '初始化系统设置失败',
@@ -711,7 +713,7 @@
         'There is a user in MySQL who can log in remotely and has permission to the empty database (including CREATE permission)': 'MySQL 中存在可远程登录的用户，且有权限操作上述空数据库（包含 CREATE 权限）',
         'Keep the option <code>innodb_large_prefix</code> <strong>ON</strong> in MySQL 5.7'                                      : 'MySQL 5.7 <code>innodb_large_prefix</code>选项保持<strong>打开（ON）</strong>',
         '(Official MySQL 5.7 doc)'                                                                                               : '（MySQL 5.7 官方文档）',
-        'Redis 4.0 or above, and <strong>NOT</strong> running in Cluster Mode'                                                   : 'Redis 4.0 或以上版本，且<strong>不是</strong> Redis 集群',
+        'Redis 4.0 or above, at least 1 GB available memory and <strong>NOT</strong> running in Cluster Mode'                    : 'Redis 4.0 或以上版本，至少 1 GB 可用内存，且<strong>不是</strong> Redis 集群',
 
         'Administrator username': '管理员用户名',
         'Create an initial administrator user for the system': '为系统配置一个初始管理员用户',
@@ -836,15 +838,16 @@
           } catch(err) {
             // 错误提示
             let setupErrors = err.response.data.setupErrors;
-            let setupErrorMessages = Object.values(setupErrors).map(setupError => {
-              let _title = this.$t(setupError.title) || '';
-              let _error = setupError.error || '';
 
-              var parts = [];
-              if (_title) parts.push(_title);
-              if (_error) parts.push(_error);
-
-              return parts.join(': ');
+            let setupErrorMessages = [];
+            Object.values(setupErrors).forEach(setupError => {
+              setupError.forEach(line => {
+                let message = this.$t(line.message) || '';
+                if (line.error) {
+                  message += ` <small>(${line.error})</small>`;
+                }
+                setupErrorMessages.push(message);
+              });
             });
             let setupErrorMessageHTML = `<ul>${setupErrorMessages.map(m => `<li><strong>${m}</strong></li>`).join('')}</ul>`;
 

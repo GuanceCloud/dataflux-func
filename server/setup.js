@@ -32,6 +32,7 @@ var ADMIN_DEFUALT_PASSWORD           = 'admin';
 var AUTO_SETUP_DEFAULT_AK_ID         = 'ak-auto-setup';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ     = 'UPGRADE_DB_SEQ';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD = 'upgrade.db.upgradeSeq';
+var MEMORY_1GB_BYTES                 = 1 * 1024 * 1024 * 1024;
 
 // DB/Cache helper should load AFTER config is loaded.
 var mysqlHelper = null;
@@ -41,13 +42,20 @@ var redisHelper = null;
 var SetupErrorWrap = function() {
   this.errors = {}
 };
-SetupErrorWrap.prototype.set = function(key, title, error) {
-  if (this.errors[key]) return;
-
-  this.errors[key] = { title: title };
-  if (error) {
-    this.errors[key].error = error.toString();
+SetupErrorWrap.prototype.set = function(key, message, error) {
+  if (!this.errors[key]) {
+    this.errors[key] = [];
   }
+
+  var line = {
+    message: message.toString(),
+  }
+
+  if (error) {
+    line.error = error.toString();
+  }
+
+  this.errors[key].push(line);
 };
 SetupErrorWrap.prototype.has = function(key) {
   return (key in this.errors);
@@ -248,23 +256,54 @@ function _doSetup(userConfig, callback) {
         cacheHelper = redisHelper.createHelper(null, redisConfig);
         cacheHelper.skipLog = true;
 
-        cacheHelper.run('info', 'server', function(err, data) {
+        cacheHelper.run('info', function(err, data) {
           if (err) {
             setupErrorWrap.set('redis', 'Access Redis failed', err);
 
           } else {
-            var version = null;
+            var redisInfo = {
+              redis_version      : null,
+              total_system_memory: null,
+              maxmemory          : null,
+              cluster_enabled    : null,
+            }
             data.split('\n').forEach(function(line) {
-              if (line.indexOf('redis_version:') === 0) {
-                version = line.split(':')[1];
+              for (var k in redisInfo) {
+                if (line.indexOf(`${k}:`) === 0) {
+                  redisInfo[k] = line.split(':')[1].trim();
+                }
               }
             });
 
-            var versionParts = version.split('.');
-            var majorVer = parseInt(versionParts[0]);
-            var minorVer = parseInt(versionParts[1]);
-            if (majorVer < 4) {
-              setupErrorWrap.set('redis', 'Redis 4.0 or above is required');
+            // 检查版本号
+            if (redisInfo['redis_version'] !== null) {
+              var redisMajorVer = parseInt(redisInfo['redis_version'].split('.')[0]);
+              if (redisMajorVer < 4) {
+                setupErrorWrap.set('redis', 'Redis 4.0 or above is required', `redis_version: ${redisInfo['redis_version']}`);
+              }
+            }
+
+            // 检查可用内存
+            if (redisInfo['total_system_memory'] !== null) {
+              var redisSystemMemory = parseInt(redisInfo['total_system_memory']);
+              if (redisSystemMemory < MEMORY_1GB_BYTES) {
+                setupErrorWrap.set('redis', 'Redis requires at least 1GB of memory', `total_system_memory: ${redisInfo['total_system_memory']}`);
+              }
+            }
+
+            if (redisInfo['maxmemory'] !== null) {
+              var redisMaxMemory = parseInt(redisInfo['maxmemory']);
+              if (redisMaxMemory > 0 && redisMaxMemory < MEMORY_1GB_BYTES) {
+                setupErrorWrap.set('redis', 'Redis requires at least 1GB of memory', `maxmemory: ${redisInfo['maxmemory']}`);
+              }
+            }
+
+            // 检查是否为集群
+            if (redisInfo['cluster_enabled'] !== null) {
+              var redisClusterEnabled = redisInfo['cluster_enabled'] !== '0';
+              if (redisClusterEnabled) {
+                setupErrorWrap.set('redis', 'DataFlux Func does not support Redis Cluster', `cluster_enabled: ${redisInfo['cluster_enabled']}`);
+              }
             }
           }
 
