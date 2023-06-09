@@ -4,6 +4,11 @@ APP_NAME: DataFluxFunc
 # 必须使用绝对路径
 CONFIG_FILE_PATH: '/data/user-config.yaml'
 
+# 从环境变量读取的配置前缀
+CONFIG_FROM_ENV_PREFIX: DFF_
+# 自定义配置名称前缀
+CUSTOM_CONFIG_PREFIX: CUSTOM_
+
 # 资源文件根目录
 # 必须使用绝对路径
 RESOURCE_ROOT_PATH: '/data/resources'

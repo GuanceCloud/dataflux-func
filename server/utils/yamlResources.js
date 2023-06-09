@@ -14,8 +14,7 @@ var FILE_CACHE = {};
 
 /* Configure */
 var CONFIG_KEY           = 'CONFIG';
-var ENV_CONFIG_PREFIX    = 'DFF_';
-var CUSTOM_CONFIG_PREFIX = 'CUSTOM_';
+var CONFIG_FILE_PATH_KEY = 'CONFIG_FILE_PATH'
 
 /**
  * Load a YAML file.
@@ -46,6 +45,9 @@ var loadFile = exports.loadFile = function loadFile(key, filePath) {
 var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callback) {
   var configObj     = loadFile(CONFIG_KEY, configFilePath);
   var userConfigObj = {};
+
+  var configFromEnvPrefix = configObj.CONFIG_FROM_ENV_PREFIX;
+  var customConfigPrefix  = configObj.CUSTOM_CONFIG_PREFIX;
 
   // Collect config field type map
   var configTypeMap = {};
@@ -79,7 +81,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
     }
   }
 
-  var userConfigPath = process.env['CONFIG_FILE_PATH'] || configObj.CONFIG_FILE_PATH;
+  var userConfigPath = process.env[`${configFromEnvPrefix}${CONFIG_FILE_PATH_KEY}`] || configObj[CONFIG_FILE_PATH_KEY];
   if (!userConfigPath) {
     // User config path NOT SET
     console.log('[YAML Resource] ENV `CONFIG_FILE_PATH` not set. Use default config.');
@@ -101,9 +103,9 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
 
   // User config from env
   for (var envK in process.env) {
-    if (!toolkit.startsWith(envK, ENV_CONFIG_PREFIX)) continue;
+    if (!toolkit.startsWith(envK, configFromEnvPrefix)) continue;
 
-    var k = envK.slice(ENV_CONFIG_PREFIX.length);
+    var k = envK.slice(configFromEnvPrefix.length);
     var v = process.env[envK];
 
     if ('string' === typeof v && v.trim() === '') {
@@ -114,7 +116,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    } else if (toolkit.startsWith(k, CUSTOM_CONFIG_PREFIX)) {
+    } else if (toolkit.startsWith(k, customConfigPrefix)) {
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
     }

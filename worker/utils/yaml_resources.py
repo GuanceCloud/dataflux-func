@@ -21,8 +21,7 @@ FILE_CACHE = {}
 
 # Configure
 CONFIG_KEY           = 'CONFIG'
-ENV_CONFIG_PREFIX    = 'DFF_'
-CUSTOM_CONFIG_PREFIX = 'CUSTOM_'
+CONFIG_FILE_PATH_KEY = 'CONFIG_FILE_PATH'
 PRINT_DETAIL         = sys.argv[0].split('/')[-1] == 'celery'
 
 def load_file(key, file_path):
@@ -40,6 +39,8 @@ def load_file(key, file_path):
 
 def load_config(config_file_path):
     config_obj = load_file(CONFIG_KEY, config_file_path)
+    config_from_env_prefix = config_obj['CONFIG_FROM_ENV_PREFIX']
+    custom_config_prefix   = config_obj['CUSTOM_CONFIG_PREFIX']
 
     # Collect config field type map
     config_type_map = {}
@@ -63,7 +64,8 @@ def load_config(config_file_path):
             else:
                 config_type_map[k] = 'string'
 
-    user_config_path = os.environ.get('CONFIG_FILE_PATH') or config_obj.get('CONFIG_FILE_PATH')
+    # Load user config
+    user_config_path = os.environ.get(f'{config_from_env_prefix}{CONFIG_FILE_PATH_KEY}') or config_obj.get(CONFIG_FILE_PATH_KEY)
     if not user_config_path:
         # User config path NOT SET
         if PRINT_DETAIL:
@@ -88,10 +90,10 @@ def load_config(config_file_path):
 
     # User config from env
     for env_k, v in os.environ.items():
-        if not env_k.startswith(ENV_CONFIG_PREFIX):
+        if not env_k.startswith(config_from_env_prefix):
             continue
 
-        k = env_k[len(ENV_CONFIG_PREFIX):]
+        k = env_k[len(config_from_env_prefix):]
 
         if isinstance(v, str) and v.strip() == '':
             continue
@@ -102,7 +104,7 @@ def load_config(config_file_path):
             if PRINT_DETAIL:
                 print('[YAML Resource] Config item `{}` Overrided by env.'.format(k))
 
-        elif k.startswith(CUSTOM_CONFIG_PREFIX):
+        elif k.startswith(custom_config_prefix):
             # Custom config
             config_obj[k] = v
             if PRINT_DETAIL:
