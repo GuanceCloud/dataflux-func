@@ -1129,9 +1129,8 @@ async function _doAxios(axiosOpt) {
     if (err.response) {
       // 服务端存在错误响应
       if (err.response.status === 401 && err.response.data.reason === 'EUserAuth') {
-        // 认证失败时，自动清除Token，并跳回首页
+        // 认证失败时，自动清除Token
         store.commit('updateXAuthToken', null);
-        router.push({name: 'index'});
       }
 
       let errResp = await _prepareAxiosRes(err.response)

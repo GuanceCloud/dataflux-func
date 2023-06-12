@@ -37,12 +37,6 @@ module.exports = {
   publicPath: IS_PROD ? '/client-app/' : '/',
   productionSourceMap: false,
   chainWebpack: config => {
-    config.optimization.splitChunks({
-      chunks: 'all',
-      minSize: 2 * 1024 * 1024,
-      maxAsyncRequests: 1,
-      maxInitialRequests: 1,
-    });
     config.module.rule('vue')
       .use('vue-loader')
         .loader('vue-loader')

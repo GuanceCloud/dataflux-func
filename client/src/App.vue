@@ -127,7 +127,7 @@ export default {
       } else {
         // 登出后
         if (this.$route.name !== 'sign-out') {
-          this.$router.push({ name: 'index' });
+          location.href = '/';
         }
       }
     },

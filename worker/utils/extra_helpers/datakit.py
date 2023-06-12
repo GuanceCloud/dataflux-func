@@ -176,6 +176,9 @@ def assert_json_str(data, name):
 def json_copy(j):
     return json.loads(json.dumps(j))
 
+def normalize_space(s):
+    return re.sub(RE_NORMALIZE_SPACE, ' ', s)
+
 def as_array(d):
     if not isinstance(d, (list, tuple)):
         d = [d]
@@ -262,6 +265,7 @@ class DataKit(object):
             # Influx DB line protocol
             # https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/
             measurement = p.get('measurement')
+            measurement = normalize_space(measurement)
             measurement = re.sub(RE_ESCAPE_MEASUREMENT, ESCAPE_REPLACER, measurement)
 
             tag_set_list = []
@@ -278,7 +282,10 @@ class DataKit(object):
                     else:
                         v = '{0}'.format(v)
 
+                    k = normalize_space(k)
                     k = re.sub(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER, k)
+
+                    v = normalize_space(v)
                     v = re.sub(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER, v)
 
                     tag_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
@@ -296,7 +303,9 @@ class DataKit(object):
                     if v is None:
                         continue
 
+                    k = normalize_space(k)
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
+
                     if isinstance(v, string_types):
                         # 字符串
                         v = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, v)
