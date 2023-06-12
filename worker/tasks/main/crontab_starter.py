@@ -255,7 +255,7 @@ class CrontabStarterTask(BaseTask):
 
         return str(queue)
 
-    def send_task(self, crontab_config, current_time, trigger_time, exec_mode=None):
+    def send_task(self, crontab_config, current_time, trigger_time, exec_mode=None, countdown=None):
         exec_mode = exec_mode or crontab_config['execMode']
 
         # 确定超时时间
@@ -269,7 +269,7 @@ class CrontabStarterTask(BaseTask):
         try:
             delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab') or [0]
         except Exception as e:
-            delayed_crontab = [0]
+            delayed_crontab = [ 0 ]
 
         for delay in delayed_crontab:
             # 定时任务锁
@@ -325,7 +325,7 @@ class CrontabStarterTask(BaseTask):
                     soft_time_limit=soft_time_limit,
                     time_limit=time_limit,
                     expires=expires,
-                    countdown=delay or None)
+                    countdown=delay or countdown or None)
 
 @app.task(name='Biz.CrontabManualStarter', bind=True, base=CrontabStarterTask)
 def crontab_manual_starter(self, *args, **kwargs):
@@ -358,24 +358,33 @@ def crontab_starter(self, *args, **kwargs):
     # 上锁
     self.lock_task(max_age=next_trigger_time - current_time - 1)
 
-    # 获取函数功能集成自动触发
+    ### 集成函数自动触发 ###
     integrated_crontab_configs = self.get_integrated_func_crontab_configs()
+    for c in integrated_crontab_configs:
+        # 跳过未到达触发时间的任务
+        if not self.crontab_config_filter(trigger_time, c):
+            continue
 
-    # 循环获取需要执行的自动触发配置
+        # 发送任务
+        self.send_task(crontab_config=c, current_time=current_time, trigger_time=trigger_time)
+
+    ### 自动触发配置 ###
     next_seq = 0
+    crontab_count = 0
     while next_seq is not None:
         crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
-
-        # 第一轮查询时，加入功能集成中自动执行的函数
-        if integrated_crontab_configs:
-            crontab_configs = integrated_crontab_configs + crontab_configs
-            integrated_crontab_configs = None
-
-        # 分发任务
         for c in crontab_configs:
             # 跳过未到达触发时间的任务
             if not self.crontab_config_filter(trigger_time, c):
                 continue
 
-            self.send_task(crontab_config=c, current_time=current_time, trigger_time=trigger_time)
+            # 平均分布任务触发事件点
+            countdown = 0
+            if CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE'] > 0:
+                countdown = crontab_count % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
+            # 发送任务
+            self.send_task(crontab_config=c, current_time=current_time, trigger_time=trigger_time, countdown=countdown)
+
+            # 自动触发配置记述
+            crontab_count += 1
