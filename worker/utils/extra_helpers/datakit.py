@@ -160,7 +160,7 @@ def assert_json_str(data, name):
             e = Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
             raise e
 
-    elif isinstance(data, (dict, OrderedDict, list, tuple)):
+    elif isinstance(data, (list, tuple, dict, OrderedDict)):
         try:
             data = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         except Exception as e:
@@ -175,6 +175,12 @@ def assert_json_str(data, name):
 
 def json_copy(j):
     return json.loads(json.dumps(j))
+
+def as_array(d):
+    if not isinstance(d, (list, tuple)):
+        d = [d]
+
+    return d
 
 COLORS = {
     'black'  : [30, 39],
@@ -200,15 +206,15 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, source=None, timeout=None, debug=False, dry_run=False, write_size=None):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, source=None):
         self.host       = host       or 'localhost'
         self.port       = int(port   or 9529)
         self.protocol   = protocol   or 'http'
-        self.source     = source     or 'datakit-python-sdk'
         self.timeout    = timeout    or 3
         self.debug      = debug      or False
         self.dry_run    = dry_run    or False
         self.write_size = write_size or 100
+        self.source     = source     or 'datakit-python-sdk'
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -248,8 +254,7 @@ class DataKit(object):
 
     @classmethod
     def prepare_line_protocol(cls, points):
-        if not isinstance(points, (list, tuple)):
-            points = [points]
+        points = as_array(points)
 
         lines = []
 
@@ -403,8 +408,7 @@ class DataKit(object):
     def post_line_protocol(self, path, points, query=None, headers=None):
         content_type = 'text/plain'
 
-        if not isinstance(points, (list, tuple)):
-            points = [points]
+        points = as_array(points)
 
         # break obj reference
         points = json_copy(points)
@@ -441,7 +445,7 @@ class DataKit(object):
             headers = json_copy(headers)
 
         body = json_obj
-        if isinstance(body, (dict, list, tuple)):
+        if isinstance(body, (list, tuple, dict, OrderedDict)):
             body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
@@ -488,6 +492,8 @@ class DataKit(object):
         return self.post_line_protocol(path=path, points=prepared_data, query=query)
 
     def _write_many(self, path, data):
+        data = as_array(data)
+
         # break obj reference
         data = json_copy(data)
 
@@ -609,6 +615,15 @@ class DataKit(object):
             unpacked_dql_res['series'] = dicted_series_list
 
         return status_code, unpacked_dql_res
+
+    def write_point(self, *args, **kwargs):
+        return self.write_metric(*args, **kwargs)
+
+    def write_points(self, *args, **kwargs):
+        return self.write_metric_many(*args, **kwargs)
+
+    def write_metrics(self, *args, **kwargs):
+        return self.write_metric_many(*args, **kwargs)
 
 # Alias
 Datakit = DataKit

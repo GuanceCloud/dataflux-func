@@ -164,7 +164,7 @@ def assert_json_str(data, name):
             e = Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
             raise e
 
-    elif isinstance(data, (dict, OrderedDict, list, tuple)):
+    elif isinstance(data, (list, tuple, dict, OrderedDict)):
         try:
             data = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         except Exception as e:
@@ -179,6 +179,12 @@ def assert_json_str(data, name):
 
 def json_copy(j):
     return json.loads(json.dumps(j))
+
+def as_array(d):
+    if not isinstance(d, (list, tuple)):
+        d = [d]
+
+    return d
 
 COLORS = {
     'black'  : [30, 39],
@@ -204,19 +210,18 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class DataWay(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False, write_size=None):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, token=None, rp=None, access_key=None, secret_key=None):
         self.host       = host       or 'localhost'
         self.port       = int(port   or 9528)
         self.protocol   = protocol   or 'http'
-        self.path       = path       or '/v1/write/metric'
-        self.token      = token      or None
-        self.rp         = rp         or None
         self.timeout    = timeout    or 3
-        self.access_key = access_key or None
-        self.secret_key = secret_key or None
         self.debug      = debug      or False
         self.dry_run    = dry_run    or False
         self.write_size = write_size or 100
+        self.token      = token      or None
+        self.rp         = rp         or None
+        self.access_key = access_key or None
+        self.secret_key = secret_key or None
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -228,9 +233,6 @@ class DataWay(object):
 
             if splited_url.scheme:
                 self.protocol = splited_url.scheme
-
-            if splited_url.path:
-                self.path = splited_url.path
 
             if splited_url.query:
                 parsed_query = parse_qs(splited_url.query)
@@ -304,8 +306,7 @@ class DataWay(object):
 
     @classmethod
     def prepare_line_protocol(cls, points):
-        if not isinstance(points, (list, tuple)):
-            points = [points]
+        points = as_array(points)
 
         lines = []
 
@@ -441,22 +442,20 @@ class DataWay(object):
 
     def _do_get(self, path, query=None, headers=None):
         method = 'GET'
-        path   = path or self.path
 
         query = query or {}
         if self.token:
             query['token'] = self.token
 
-        _auth_headers = self._prepare_auth_headers(method=method)
-
         headers = headers or {}
-        headers.update(_auth_headers)
+        if self.access_key and self.secret_key:
+            _auth_headers = self._prepare_auth_headers(method=method)
+            headers.update(_auth_headers)
 
         return self._do_request(method=method, path=path, query=query, headers=headers)
 
-    def _do_post(self, path, body, content_type, method=None, query=None, headers=None, with_rp=False):
-        method = method or 'POST'
-        path   = path or self.path
+    def _do_post(self, path, body, content_type, query=None, headers=None, with_rp=False):
+        method = 'POST'
 
         query = query or {}
         if self.token:
@@ -464,11 +463,12 @@ class DataWay(object):
         if with_rp and self.rp:
             query['rp'] = self.rp
 
-        _auth_headers = self._prepare_auth_headers(method=method, content_type=content_type, body=body)
-
         headers = headers or {}
-        headers.update(_auth_headers)
         headers['Content-Type'] = content_type
+
+        if self.access_key and self.secret_key:
+            _auth_headers = self._prepare_auth_headers(method=method, content_type=content_type, body=body)
+            headers.update(_auth_headers)
 
         return self._do_request(method=method, path=path, query=query, body=body, headers=headers)
 
@@ -476,11 +476,14 @@ class DataWay(object):
     def get(self, path, query=None, headers=None):
         return self._do_get(path=path, query=query, headers=headers)
 
-    def post_line_protocol(self, points, path=None, query=None, headers=None, with_rp=False):
+    def post_line_protocol(self, path, points, query=None, headers=None, with_rp=False):
+        # 兼容旧版 points, path 参数顺序
+        if isinstance(points, str) and isinstance(path, (list, tuple, dict, order)):
+            path, points = points, path
+
         content_type = 'text/plain'
 
-        if not isinstance(points, (list, tuple)):
-            points = [points]
+        points = as_array(points)
 
         # break obj reference
         points = json_copy(points)
@@ -506,7 +509,11 @@ class DataWay(object):
 
         return resp
 
-    def post_json(self, json_obj, path, method=None, query=None, headers=None, with_rp=False):
+    def post_json(self, path, json_obj, query=None, headers=None, with_rp=False):
+        # 兼容旧版 json_obj, path 参数顺序
+        if isinstance(json_obj, str) and isinstance(path, (list, tuple, dict, OrderedDict)):
+            path, json_obj = json_obj, path
+
         content_type = 'application/json'
 
         # break obj reference
@@ -517,13 +524,13 @@ class DataWay(object):
             headers = json_copy(headers)
 
         body = json_obj
-        if isinstance(body, (dict, list, tuple)):
+        if isinstance(body, (list, tuple, dict, OrderedDict)):
             body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
-        return self._do_post(path=path, body=body, content_type=content_type, method=method, query=query, headers=headers, with_rp=with_rp)
+        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
 
     # High-Level API
-    def _prepare_metric(self, data):
+    def _prepare_data(self, data):
         assert_dict(data, name='data')
 
         measurement = assert_str(data.get('measurement'), name='measurement')
@@ -547,7 +554,7 @@ class DataWay(object):
         }
         return prepared_data
 
-    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
+    def _write(self, path, measurement, tags=None, fields=None, timestamp=None):
         data = {
             'measurement': measurement,
             'tags'       : tags,
@@ -558,47 +565,41 @@ class DataWay(object):
         # break obj reference
         data = json_copy(data)
 
-        prepared_data = self._prepare_metric(data)
+        prepared_data = self._prepare_data(data)
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
+        return self.post_line_protocol(path=path, points=prepared_data, with_rp=True)
 
-    def write_metric_many(self, data):
-        if not isinstance(data, (list, tuple)):
-            e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
-            raise e
+    def _write_many(self, path, data):
+        data = as_array(data)
 
         # break obj reference
         data = json_copy(data)
 
         prepared_data = []
         for d in data:
-            prepared_data.append(self._prepare_metric(d))
+            prepared_data.append(self._prepare_data(d))
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/write/metric', with_rp=True)
+        return self.post_line_protocol(path=path, points=prepared_data, with_rp=True)
 
-    def write_metrics(self, data):
-        '''
-        Alias of self.write_metric_many()
-        '''
-        return self.write_metric_many(data)
+    def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None):
+        path = '/v1/write/{0}'.format(category)
+        return self._write(path, measurement, tags, fields, timestamp)
 
-    def write_point(self, measurement, tags=None, fields=None, timestamp=None):
-        '''
-        Alias of self.write_metric()
-        '''
-        return self.write_metric(measurement=measurement, tags=tags, fields=fields, timestamp=timestamp)
+    def write_by_category_many(self, category, data):
+        path = '/v1/write/{0}'.format(category)
+        return self._write_many(path, data)
 
-    def write_point_many(self, points):
-        '''
-        Alias of self.write_metric_many()
-        '''
-        return self.write_metric_many(data=points)
+    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
+        return self._write('/v1/write/metric', measurement, tags, fields, timestamp)
 
-    def write_points(self, points):
-        '''
-        Alias of self.write_metric_many()
-        '''
-        return self.write_metric_many(data=points)
+    def write_metric_many(self, data):
+        return self._write_many('/v1/write/metric', data)
+
+    def write_logging(self, measurement, tags=None, fields=None, timestamp=None):
+        return self._write('/v1/write/logging', measurement, tags, fields, timestamp)
+
+    def write_logging_many(self, data):
+        return self._write_many('/v1/write/logging', data)
 
     def query(self, dql, all_series=False, dict_output=False, raw=False, **kwargs):
         if not self.token:
@@ -695,6 +696,15 @@ class DataWay(object):
             unpacked_dql_res['series'] = dicted_series_list
 
         return status_code, unpacked_dql_res
+
+    def write_point(self, *args, **kwargs):
+        return self.write_metric(*args, **kwargs)
+
+    def write_points(self, *args, **kwargs):
+        return self.write_metric_many(*args, **kwargs)
+
+    def write_metrics(self, *args, **kwargs):
+        return self.write_metric_many(*args, **kwargs)
 
 # Alias
 Dataway = DataWay

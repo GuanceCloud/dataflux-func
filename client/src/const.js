@@ -121,7 +121,7 @@ res = datakit.write_metric(measurement='some_measurement',
         tagType       : 'info',
         debugSupported: false,
         sampleCode    : `dataway = DFF.CONN('{0}', token='DATAWAY_TOKEN')
-res = dataway.write_point(measurement='some_measurement',
+res = dataway.write_metric(measurement='some_measurement',
     tags={'name': 'Tom'}, fields={'value': 10})`,
         configFields: {
           host     : { default: null, isRequired: true },
