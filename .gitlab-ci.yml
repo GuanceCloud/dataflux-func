@@ -405,19 +405,19 @@ portableFile_singleton_extra:
 
 deploy_testing:
   stage: deploy
-  retry: 2
   only:
     - dev
   script:
-    - for workload in ${WORKLOADS}; do
-        curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}" ${RANCHER_API_BASE_URL}/v3/project/${PROJECT_ID}/workloads/deployment:${workload}?action=redeploy;
+    - for project_id in ${DEV_PROJECT_IDS}; do
+        for workload in ${DEV_WORKLOADS}; do
+          curl -sS -X POST -H "Authorization:Bearer ${RANCHER_TOKEN}" ${RANCHER_API_BASE_URL}/v3/project/${project_id}/workloads/deployment:${workload}?action=redeploy;
+        done
       done
   tags:
     - cloudcare-multiarch
 
 deploy_release:
   stage: deploy
-  retry: 2
   only:
     - /^deploy_\d+$/
   script:
