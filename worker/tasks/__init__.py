@@ -331,7 +331,7 @@ class BaseTask(app.Task):
         # 上报数据
         try:
             dataway = DataWay(url=upload_url)
-            status_code, resp_data = dataway.post_line_protocol(points, path=f'/v1/write/{category}')
+            status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=points)
             if status_code > 200:
                 self.logger.error(resp_data)
 
