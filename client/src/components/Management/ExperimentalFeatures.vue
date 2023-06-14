@@ -165,22 +165,6 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="ScriptLogs" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_LOG')">
-                  <el-switch :active-text="$t('Enable Script Log Page')" v-model="form.ScriptLogs"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('Log Page for Script runtime') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Script Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-
-                <el-form-item prop="ScriptFailures" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_FAILURE')">
-                  <el-switch :active-text="$t('Enable Script Failure Page')" v-model="form.ScriptFailures"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('Failure Page for Script runtime') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Script Failures"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-
                 <el-form-item prop="AccessKeys" v-if="$store.getters.isAdmin">
                   <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
@@ -237,20 +221,18 @@ export default {
   data() {
     return {
       form: {
-        PIPTool           : false,
-        Blueprint         : false,
-        FileManage        : false,
-        FileService       : false,
-        FuncCacheManage   : false,
-        FuncStoreManage   : false,
-        FuncDoc           : false,
-        OpenAPIDoc        : false,
-        SysStat           : false,
-        SystemLogs        : false,
-        AbnormalReqs      : false,
-        ScriptLogs        : false,
-        ScriptFailures    : false,
-        AccessKeys        : false,
+        PIPTool        : false,
+        Blueprint      : false,
+        FileManage     : false,
+        FileService    : false,
+        FuncCacheManage: false,
+        FuncStoreManage: false,
+        FuncDoc        : false,
+        OpenAPIDoc     : false,
+        SysStat        : false,
+        SystemLogs     : false,
+        AbnormalReqs   : false,
+        AccessKeys     : false,
       },
     }
   },

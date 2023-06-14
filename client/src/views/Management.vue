@@ -181,21 +181,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-log-list" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_LOG') && $store.getters.isExperimentalFeatureEnabled('ScriptLogs')">
-              <span>
-                <i class="fa fa-fw fa-terminal"></i>
-                {{ $t('Script Logs') }}
-                <i class="fa fa-fw fa-flask"></i>
-              </span>
-            </el-menu-item>
-            <el-menu-item index="/management/script-failure-list" v-if="$store.getters.SYSTEM_INFO('_INTERNAL_KEEP_SCRIPT_FAILURE') && $store.getters.isExperimentalFeatureEnabled('ScriptFailures')">
-              <span>
-                <i class="fa fa-fw fa-bug"></i>
-                {{ $t('Script Failures') }}
-                <i class="fa fa-fw fa-flask"></i>
-              </span>
-            </el-menu-item>
-
             <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKeys')"
               class="experimental-feature" index="/management/access-key-list">
               <span>

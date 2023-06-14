@@ -259,17 +259,6 @@ const routes = [
         component: () => import('../components/Management/SystemSetting.vue'),
       },
 
-      {
-        path: 'script-log-list',
-        name: 'script-log-list',
-        component: () => import('../components/Management/ScriptLogList.vue'),
-      },
-      {
-        path: 'script-failure-list',
-        name: 'script-failure-list',
-        component: () => import('../components/Management/ScriptFailureList.vue'),
-      },
-
       /* 实验性功能 */
       {
         path: 'experimental-features',

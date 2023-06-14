@@ -1,10 +1,11 @@
 <i18n locale="zh-CN" lang="yaml">
+Auth Link Documents: 授权链接文档
+
 Config    : 配置
 Auth      : 认证
 Expires   : 过期
 Throttling: 限流
 
-Python functions that can be called externally: 可被外部调用的 Python 函数
 Press {0} to search: 按 {0} 开始搜索
 </i18n>
 
@@ -16,8 +17,6 @@ Press {0} to search: 按 {0} 开始搜索
         <h1>
           <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
           {{ $t('Auth Link Documents') }}
-          &nbsp;
-          <small>{{ $t('Python functions that can be called externally') }}</small>
           <span class="text-info title-tip">
             <i18n path="Press {0} to search">
               <span><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd></span>
@@ -34,6 +33,7 @@ Press {0} to search: 按 {0} 开始搜索
           <el-table-column :label="$t('Func')">
             <template slot-scope="scope">
               <FuncInfo
+                :config-func-id="scope.row.configFuncId"
                 :id="scope.row.funcId"
                 :title="scope.row.funcTitle"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />

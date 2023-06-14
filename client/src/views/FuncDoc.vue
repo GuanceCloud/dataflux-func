@@ -1,5 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Python functions that can only be called internally: 只能被内部调用的 Python 函数
+Func Documents: 函数文档
+
 Press {0} to search: 按 {0} 开始搜索
 </i18n>
 
@@ -11,8 +12,6 @@ Press {0} to search: 按 {0} 开始搜索
         <h1>
           <Logo type="auto" width="200px" height="40px" class="doc-logo"></Logo>
           {{ $t('Func Documents') }}
-          &nbsp;
-          <small>{{ $t('Python functions that can only be called internally') }}</small>
           <span class="text-info title-tip">
             <i18n path="Press {0} to search">
               <span><kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>F</kbd></span>

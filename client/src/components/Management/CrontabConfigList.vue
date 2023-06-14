@@ -81,6 +81,7 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
           <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
               <FuncInfo
+                :config-func-id="scope.row.funcId"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />
@@ -166,7 +167,7 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
-              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>

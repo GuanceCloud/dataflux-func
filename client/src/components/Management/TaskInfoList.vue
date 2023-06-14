@@ -140,7 +140,8 @@ connector  : 连接器
           <el-table-column :label="$t('Func')" min-width="300">
             <template slot-scope="scope">
               <FuncInfo
-                :id="scope.row.funcId"
+                :config-func-id="scope.row.funcId"
+                :id="scope.row.func_id"
                 :title="scope.row.func_title" />
               <InfoBlock v-if="scope.row.einfoSummary"
                 :title="scope.row.einfoSummary"

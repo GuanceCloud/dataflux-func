@@ -168,9 +168,6 @@ function startApplication() {
   require('./routers/scriptAPIRouter');
   require('./routers/funcAPIRouter');
 
-  require('./routers/scriptLogAPIRouter');
-  require('./routers/scriptFailureAPIRouter');
-
   require('./routers/scriptRecoverPointAPIRouter');
 
   require('./routers/scriptPublishHistoryAPIRouter');

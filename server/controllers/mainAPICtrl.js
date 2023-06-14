@@ -2066,6 +2066,7 @@ exports.getAuthLinkFuncList = function(req, res, next) {
         throttlingJSON    : d.throttlingJSON,
         isDisabled        : d.isDisabled,
 
+        configFuncId      : d.funcId,
         funcId            : d.func_id,
         funcName          : d.func_name,
         funcTitle         : d.func_title,
@@ -2130,9 +2131,6 @@ exports.getSystemInfo = function(req, res, next) {
     _TASK_INFO_DEFAULT_LIMIT_BATCH    : CONFIG._TASK_INFO_DEFAULT_LIMIT_BATCH,
     _TASK_INFO_MIN_LIMIT              : CONFIG._TASK_INFO_MIN_LIMIT,
     _TASK_INFO_MAX_LIMIT              : CONFIG._TASK_INFO_MAX_LIMIT,
-
-    _INTERNAL_KEEP_SCRIPT_FAILURE: CONFIG._INTERNAL_KEEP_SCRIPT_FAILURE,
-    _INTERNAL_KEEP_SCRIPT_LOG    : CONFIG._INTERNAL_KEEP_SCRIPT_LOG,
 
     _EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.resourceAPI.upload.files.$limitSize),
     _ARCH: process.arch, // x64|arm64
@@ -2462,21 +2460,20 @@ exports.integratedAuthMid = function(req, res, next) {
 
 // 清空日志/缓存表
 exports.clearLogCacheTables = function(req, res, next) {
-  var logTables = [
-    'biz_main_script_log',
-    'biz_main_script_failure',
-    'biz_main_task_result_dataflux_func',
-    'biz_main_crontab_task_info',
-    'biz_main_batch_task_info',
-    'biz_main_task_info',
-    'biz_main_operation_record',
-  ];
+  var tables = CONFIG._DBDATA_LOG_CACHE_TABLE_LIST;
 
-  var sql = logTables.map(function(t) {
-    return 'TRUNCATE ' + t;
-  }).join('; ');
+  async.eachSeries(tables, function(t, asyncCallback) {
+    var sqlParams = [ t ];
 
-  res.locals.db.query(sql, null, function(err) {
+    var sql = 'SHOW TABLES LIKE ?';
+    res.locals.db.query(sql, sqlParams, function(err, dbRes) {
+      if (err) return asyncCallback(err);
+      if (dbRes.length <= 0) return asyncCallback();
+
+      var sql = 'TRUNCATE ??';
+      res.locals.db.query(sql, sqlParams, asyncCallback);
+    });
+  }, function(err) {
     if (err) return next(err);
 
     return res.locals.sendJSON();

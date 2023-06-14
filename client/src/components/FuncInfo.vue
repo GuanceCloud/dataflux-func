@@ -1,53 +1,41 @@
 <i18n locale="zh-CN" lang="yaml">
 Func not exists: 函数不存在
-Fixed          : 固定值
-By Input       : 传入值
 
 Get from the arguments when calling: 在调用时从参数中获取
 </i18n>
 
 <template>
   <div class="func-info">
-    <template v-if="id">
-      <strong class="func-title">{{ title || name }}</strong>
-      <GotoFuncButton v-if="!hideGotoFunc" :funcId="id"></GotoFuncButton>
-      <br>
-      <span class="code-font text-info">def</span>
-      <template v-if="fullDefinition">
-        <!-- 优先使用定义方式展示 -->
-        <code class="code-font text-main">{{ fullDefinition }}</code>
-      </template>
-      <template v-else>
-        <!-- 其次封装方式展示 -->
-        <code class="code-font text-main">{{ id }}(</code
-        ><code v-if="!kwargsJSON" class="code-font">...</code
-        ><template v-else>
-          <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
-            <code class="func-kwargs-name">{{ name }}</code>
+    <!-- 函数标题 -->
+    <strong class="func-title">
+      <span v-if="id">{{ title || name }}</span>
+      <span v-else class="func-not-exists text-bad">{{ $t('Func not exists') }}</span>
+    </strong>
+    <GotoFuncButton v-if="id && !hideGotoFunc" :funcId="id"></GotoFuncButton>
 
-            <el-tooltip placement="top" v-if="common.isFuncArgumentPlaceholder(value)">
-              <div slot="content">
-                <pre class="func-kwargs-value">{{ $t('Get from the arguments when calling') }}</pre>
-              </div>
-              <code>{{ $t('By Input') }}</code>
-            </el-tooltip>
-            <template v-else>
-              <el-tooltip placement="top">
-                <div slot="content">
-                  <pre class="func-kwargs-value">{{ JSON.stringify(value, null, 2) }}</pre>
-                </div>
-                <code>{{ $t('Fixed') }}</code>
-              </el-tooltip><CopyButton :content="JSON.stringify(value, null, 2)" />
-            </template>
-
-            <span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
-          </div>
-        </template
-        ><code class="code-font text-main">)</code>
-      </template>
+    <!-- 函数定义 -->
+    <br>
+    <span class="code-font text-info">def</span>
+    <template v-if="fullDefinition">
+      <!-- 优先使用定义方式展示 -->
+      <code class="code-font text-main">{{ fullDefinition }}</code>
     </template>
     <template v-else>
-      <span class="func-not-exists text-bad">{{ $t('Func not exists') }}</span>
+      <!-- 其次封装方式展示 -->
+      <code class="code-font text-main">{{ configFuncId }}(</code
+      ><code v-if="!kwargsJSON" class="code-font">...</code
+      ><template v-else>
+        <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
+          <el-tooltip placement="top" >
+            <div slot="content">
+              <pre class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)">{{ $t('Get from the arguments when calling') }}</pre>
+              <pre class="func-kwargs-value" v-else>{{ JSON.stringify(value, null, 2) }}</pre>
+            </div>
+            <code class="func-kwargs-name">{{ name }}</code>
+          </el-tooltip><span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
+        </div>
+      </template
+      ><code class="code-font text-main">)</code>
     </template>
   </div>
 </template>
@@ -75,6 +63,7 @@ export default {
   },
   props: {
     mode        : String,
+    configFuncId: String,
     id          : String,
     title       : String,
     definition  : String,
@@ -103,10 +92,7 @@ export default {
 }
 .func-kwargs-name {
   color: #ff6600;
-}
-.func-kwargs-name:after {
-  content: ' =';
-  color: red;
+  padding: 0px 5px;
 }
 pre.func-kwargs-value {
   padding: 0;

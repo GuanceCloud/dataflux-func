@@ -75,6 +75,7 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
           <el-table-column :label="$t('Func')" min-width="420">
             <template slot-scope="scope">
               <FuncInfo
+                :config-func-id="scope.row.funcId"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title"
                 :kwargsJSON="scope.row.funcCallKwargsJSON" />
@@ -140,12 +141,9 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
                 {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
               </el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
-
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
-
-              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
-
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>

@@ -24,12 +24,16 @@ let THANKS_LIST = [
     name: '张斌',
     desc: '贡献了 Golang 版本的 SDK',
   },
+  {
+    name: '李文津',
+    desc: '帮助实现了 Helm 的部署方式，为 k8s 用户提供了方便',
+  }
 ];
 let THANKS_LISTE_CSS = 'font-weight: bold';
 
 export function thanks() {
   console.log(`${MARKER} ${THANKS_HEADER}`, THANKS_HEADER_CSS);
   THANKS_LIST.forEach(d => {
-    console.log(`${MARKER}- ${d.name}:\t${d.desc}`, THANKS_LISTE_CSS);
+    console.log(`${MARKER}- ${d.name}: ${d.desc}`, THANKS_LISTE_CSS);
   });
 }

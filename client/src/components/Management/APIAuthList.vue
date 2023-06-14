@@ -57,7 +57,7 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
 
           <el-table-column :label="$t('Name')">
             <template slot-scope="scope">
-              {{ scope.row.name }}
+              {{ scope.row.name || scope.row.func_title }}
               <template v-if="scope.row.note">
                 <br>
                 <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
@@ -103,16 +103,18 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
                 </span>
               </span>
 
-              <FuncInfo v-else-if="scope.row.type === 'func'"
-                :id="scope.row.func_id"
-                :title="scope.row.func_title" />
+              <template v-else-if="scope.row.type === 'func'">
+                <FuncInfo
+                  :config-func-id="scope.row.configJSON.funcId"
+                  :id="scope.row.func_id"
+                  :title="scope.row.func_title" />
+              </template>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="300">
             <template slot-scope="scope">
-              <el-link :disabled="scope.row.type === 'func' && T.isNothing(scope.row.func_id)" @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
-
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
