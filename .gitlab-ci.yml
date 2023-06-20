@@ -419,8 +419,8 @@ deploy_testing:
 deploy_release:
   stage: deploy
   only:
-    - /^deploy_\d+$/
+    - /^deploy_\d+/
   script:
-    - sh deploy-guance.sh -d
+    - sh cd.sh -d
   tags:
     - cloudcare-multiarch
