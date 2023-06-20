@@ -382,7 +382,7 @@ upgradeInfo:
         MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源',
         MODIFY COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源ID';
 
-  # 于观测云SaaS 2022-06-06 迭代中实装
+  # 于观测云SaaS 2022-06-20 迭代中实装
   - seq: 21
     database: |-
       -- 系统设置表更名
