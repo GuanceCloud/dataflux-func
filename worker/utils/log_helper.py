@@ -7,6 +7,7 @@ import time
 import logging
 import socket
 import re
+import pathlib
 
 # 3rd-party Modules
 import arrow
@@ -195,6 +196,7 @@ LOGGER.addHandler(console_handler)
 if CONFIG['LOG_FILE_PATH']:
     log_dir = os.path.dirname(CONFIG['LOG_FILE_PATH'])
     os.makedirs(log_dir, exist_ok=True)
+    pathlib.Path(CONFIG['LOG_FILE_PATH']).touch()
 
     file_handler = logging.FileHandler(filename=CONFIG['LOG_FILE_PATH'])
     file_handler.setFormatter(LoggingFormatter(color=False, json=CONFIG['LOG_FILE_FORMAT'] == 'json'))

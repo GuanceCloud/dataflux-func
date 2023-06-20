@@ -209,7 +209,8 @@ winstonOpt.transports.push(new winston.transports.Console(consoleOpt));
 // Add file logger
 if (CONFIG.LOG_FILE_PATH) {
   var logDir = path.dirname(CONFIG.LOG_FILE_PATH);
-  fs.ensureDirSync(logDir)
+  fs.ensureDirSync(logDir);
+  fs.ensureFileSync(CONFIG.LOG_FILE_PATH);
 
   var fileFormatterOpt = {
     path: CONFIG.LOG_FILE_PATH,
