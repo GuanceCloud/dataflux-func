@@ -6,10 +6,6 @@ Cost       : 耗时
 Show detail: 显示请求详情
 omitted.   : 略
 
-Abnormal Request data cleared: 异常请求数据已清空
-
-Are you sure you want to clear the abnormal Request data?: 是否确认清空异常请求数据？
-
 No Recent Abnormal Request: 尚无任何近期异常请求
 All recent abnormal requests will be collected and shown here: 所有异常的请求会被搜集，并展示在此
 </i18n>
@@ -33,13 +29,6 @@ All recent abnormal requests will be collected and shown here: 所有异常的�
               size="small">
               <el-radio-button v-for="type, i in C.ABNORMAL_REQUEST_TYPE" :key="type.key" :label="type.key">{{ type.name }}</el-radio-button>
             </el-radio-group>
-
-            &#12288;
-            <el-tooltip :content="$t('Clear')" placement="bottom" :enterable="false">
-              <el-button @click="clear" size="small">
-                <i class="fa fa-fw fa-trash-o"></i>
-              </el-button>
-            </el-tooltip>
           </div>
         </div>
       </el-header>
@@ -199,15 +188,6 @@ export default {
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
     async refresh() {
-      await this.loadData();
-    },
-    async clear() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to clear the abnormal Request data?'))) return;
-
-      let apiRes = await this.T.callAPI('/api/v1/monitor/abnormal-requests/do/clear', {
-        alert : { okMessage: this.$t('Abnormal Request data cleared') },
-      });
-
       await this.loadData();
     },
   },

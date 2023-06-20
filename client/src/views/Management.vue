@@ -159,28 +159,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SysStat')"
-              class="experimental-feature" index="/management/sys-stats">
-              <span>
-                <i class="fa fa-fw fa-line-chart"></i>
-                {{ $t('System Status') }}
-              </span>
-            </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('SystemLogs')"
-              class="experimental-feature" index="/management/system-logs">
-              <span>
-                <i class="fa fa-fw fa-file-text-o"></i>
-                {{ $t('System Logs') }}
-              </span>
-            </el-menu-item>
-            <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('AbnormalReqs')"
-              class="experimental-feature" index="/management/abnormal-request-list">
-              <span>
-                <i class="fa fa-fw fa-exclamation-triangle"></i>
-                {{ $t('Abnormal Requests') }}
-              </span>
-            </el-menu-item>
-
             <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKeys')"
               class="experimental-feature" index="/management/access-key-list">
               <span>

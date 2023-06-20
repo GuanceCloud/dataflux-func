@@ -155,7 +155,7 @@ class SyncCache(BaseTask):
 
         # 写入时序数据
         for pk, c in count_map.items():
-            cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
+            cache_key = toolkit.get_server_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
 
             self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
 

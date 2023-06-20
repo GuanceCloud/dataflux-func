@@ -300,7 +300,7 @@ LoggerHelper.prototype._log = function() {
 
   var message = toolkit.strf.apply(null, args)
   if (CONFIG.MODE !== 'dev') {
-    message = toolkit.maskSensitiveInfo(message);
+    message = toolkit.maskAuthURL(message);
   }
 
   var fixedMessage = message.replace(/%([sdj%])/g, '%%$1'); // Fix winston 2.4.2

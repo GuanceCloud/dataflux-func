@@ -2,10 +2,8 @@
   "CI_PIPELINE_ID"    : "-",
   "CI_JOB_ID"         : "-",
   "CI_BUILD_ID"       : "-",
-  "ARCHITECTURE"      : "local",
-  "EDITION"           : "local",
+  "ARCHITECTURE"      : "",
+  "EDITION"           : "",
   "VERSION"           : "0.0.0",
-  "PYTHON_VERSION"    : "local",
-  "NODE_VERSION"      : "local",
-  "CREATE_TIMESTAMP"  : 0
+  "RELEASE_TIMESTAMP" : 0
 }

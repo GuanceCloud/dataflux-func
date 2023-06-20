@@ -61,7 +61,7 @@ $response:
     $example  : TRACE-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 
 # 主要功能
-mainAPI:
+indexAPI:
   $tag     : Core Feature
   $tag_zhCN: 主要功能
 
@@ -708,27 +708,6 @@ mainAPI:
         $searchType: in
         $searchKey : sset.id
 
-  getSystemInfo:
-    showInDoc: true
-    name     : Get System Info
-    name_zhCN: 获取系统信息
-    method   : get
-    url      : /api/v1/system-info
-    response : json
-
-  getUpgradeInfo:
-    showInDoc    : true
-    name         : Get upgrade info
-    name_zhCN    : 获取升级信息
-    method       : get
-    url          : /api/v1/upgrade-info
-    response     : json
-    requireSignIn: false
-    query:
-      seq:
-        $desc: 更新序号（数字或"latest"）
-        $type: int
-
   integratedSignIn:
     name     : Integrated sign in
     name_zhCN: 集成用户登录
@@ -766,15 +745,6 @@ mainAPI:
           $maxLength : 100
           $example   : 'Abc123'
 
-  clearLogCacheTables:
-    name         : Clear Log and Cache tables
-    name_zhCN    : 清空日志和缓存表
-    method       : post
-    url          : /api/v1/log-cache-tables/do/clear
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-
   fileService:
     name         : File Service
     name_zhCN    : 文件服务
@@ -787,40 +757,15 @@ mainAPI:
         $desc: 文件服务 ID
         $type: string
 
-  pullSystemLogs:
-    showInDoc    : true
-    name         : Pull system logs
-    name_zhCN    : 拉取系统日志
-    method       : get
-    url          : /api/v1/system-logs
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      position:
-        $desc    : 日志文件读取位置
-        $required: false
-        $type    : integer
-
-  metrics:
-    showInDoc    : true
-    name         : Metric data (OpenMetric)
-    name_zhCN    : 指标数据（OpenMetric）
-    method       : get
-    url          : /api/v1/metrics
-    response     : text
-    requireSignIn: false
-    privilege    : general_r
-
-# General
-indexAPI:
+# 杂项
+miscAPI:
   $tag     : MISC
   $tag_zhCN: 杂项
 
-  index:
+  api:
     showInDoc    : true
-    name         : API Index
-    name_zhCN    : API 索引
+    name         : API List
+    name_zhCN    : API 列表
     method       : get
     url          : /api
     response     : json
@@ -834,6 +779,7 @@ indexAPI:
         $in:
           - openapi
           - swagger
+          - raw
       lang:
         $desc: API Doc Language
         $type: enum
@@ -841,25 +787,32 @@ indexAPI:
           - zh-CN
           - en
 
-  clientConfig:
-    showInDoc: true
-    name     : Client config
-    name_zhCN: 客户端配置
-    method   : get
-    url      : /api/v1/client-config/do/get
-    response : json
-    desc     : Client config
-    desc_zhCN: 客户端配置
-
   imageInfo:
     showInDoc: true
     name     : Image Info
     name_zhCN: 镜像信息
     method   : get
-    url      : /api/v1/image-info/do/get
+    url      : /api/v1/image-info
     response : json
     desc     : Image info
     desc_zhCN: 镜像信息
+
+  systemInfo:
+    showInDoc: true
+    name     : System Info
+    name_zhCN: 系统信息
+    method   : get
+    url      : /api/v1/system-info
+    response : json
+
+  metrics:
+    showInDoc: true
+    name     : Metric data (OpenMetric)
+    name_zhCN: 指标数据（OpenMetric）
+    method   : get
+    url      : /api/v1/metrics
+    response : text
+    privilege: general_r
 
   captcha:
     name     : Gen captcha image
@@ -967,40 +920,15 @@ indexAPI:
         $type   : integer
         $example: 3
 
-  testThrowError:
-    showInDoc: true
-    name     : Test Throw Error
-    name_zhCN: 测试抛出异常
-    method   : get
-    url      : /api/v1/do/test-throw-error
-    response : json
-    desc     : Test Throw Error
-    desc_zhCN: 测试抛出异常
-
-  testThrowErrorInAsync:
-    showInDoc: true
-    name     : Test Throw Error in Async
-    name_zhCN: 测试异步抛出异常
-    method   : get
-    url      : /api/v1/do/test-throw-error-in-async
-    response : json
-    desc     : Test Throw Error in Async
-    desc_zhCN: 测试在异步处理中抛出异常
-
-  testSlowAPI:
-    showInDoc: true
-    name     : Test Slow API
-    name_zhCN: 测试慢速 API
-    method   : get
-    url      : /api/v1/do/test-slow-api
-    response : json
-    desc     : Test Slow API
-    desc_zhCN: 测试慢速 API
-    query:
-      simulateReqCost:
-        $desc    : Simulate request cost (ms)
-        $type    : integer
-        $minValue: 1
+  systemReport:
+    showInDoc    : true
+    name         : System Report
+    name_zhCN    : 系统报告
+    method       : get
+    url          : /api/v1/system-report
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
 
 # Authentication
 authAPI:
@@ -5640,12 +5568,12 @@ monitorAPI:
   $tag     : Monitor
   $tag_zhCN: 监控
 
-  getSysStats:
+  getSystemMetrics:
     showInDoc    : true
-    name         : Get system stats
-    name_zhCN    : 获取系统状态
+    name         : Get system metrics
+    name_zhCN    : 获取系统指标
     method       : get
-    url          : /api/v1/monitor/sys-stats/do/get
+    url          : /api/v1/monitor/system-metrics/do/get
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -5670,153 +5598,30 @@ monitorAPI:
           - 'statusCode4xx'
           - 'statusCode5xx'
 
-  clearAbnormalRequests:
-    showInDoc    : true
-    name         : Clear abnormal requests
-    name_zhCN    : 清空异常请求
-    method       : get
-    url          : /api/v1/monitor/abnormal-requests/do/clear
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-
-  getServerEnvironment:
-    showInDoc    : true
-    name         : Get server environment
-    name_zhCN    : 获取服务器环境
-    method       : get
-    url          : /api/v1/monitor/server-environment/do/get
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  clearSysStats:
-    showInDoc    : true
-    name         : Clear system stats
-    name_zhCN    : 清空系统状态
-    method       : get
-    url          : /api/v1/monitor/sys-stats/do/clear
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-
-  listQueuedTasks:
-    showInDoc    : true
-    name         : List tasks in queue
-    name_zhCN    : 列出已进入队列的任务
-    method       : get
-    url          : /api/v1/monitor/tasks/do/list-queued
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      task:
-        $desc: Match by task name
-        $type: string
-
-  listScheduledTasks:
-    showInDoc    : true
-    name         : List scheduled tasks
-    name_zhCN    : 列出已排期的任务
-    method       : get
-    url          : /api/v1/monitor/tasks/do/list-scheduled
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      task:
-        $desc: Match by task name
-        $type: string
-
-  listRecentTasks:
-    showInDoc    : true
-    name         : List recent tasks
-    name_zhCN    : 列出最近任务
-    method       : get
-    url          : /api/v1/monitor/tasks/do/list-recent
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    query:
-      task:
-        $desc: Match by task name
-        $type: string
-      status:
-        $desc: Filter by task status
-        $type: enum
-        $in:
-          - SUCCESS
-          - FAILURE
-          - PENDING
-
-  pingNodes:
-    showInDoc    : true
-    name         : Ping worker node
-    name_zhCN    : Ping Worker（工作单元）节点
-    method       : get
-    url          : /api/v1/monitor/nodes/do/ping
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  getNodesStats:
-    showInDoc    : true
-    name         : Get worker node stats
-    name_zhCN    : 获取 Worker（工作单元）状态
-    method       : get
-    url          : /api/v1/monitor/nodes/do/get-stats
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  getNodesActiveQueues:
-    showInDoc    : true
-    name         : Get worker node active queues
-    name_zhCN    : 获取 Worker（工作单元）活跃队列
-    method       : get
-    url          : /api/v1/monitor/nodes/do/get-active-queues
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  getNodesReport:
-    showInDoc    : true
-    name         : Get worker node report
-    name_zhCN    : 获取 Worker（工作单元）节点报告
-    method       : get
-    url          : /api/v1/monitor/nodes/do/get-report
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-
-  clearWorkerQueues:
-    showInDoc    : true
-    name         : Clear worker queues
-    name_zhCN    : 清空工作队列
-    method       : post
-    url          : /api/v1/monitor/worker-queues/do/clear
-    response     : json
-    requireSignIn: true
-    privilege    : general_w
-    body:
-      workerQueues:
-        $desc      : Worker Queue names
-        $isRequired: true
-        $:
-          $desc      : Worker Queue name
-          $isRequired: true
-          $type      : string
-          $minLength : 1
-
 # 调试
 debugAPI:
   $tag     : Debug
   $tag_zhCN: 调试
 
+  pullSystemLogs:
+    showInDoc    : true
+    name         : Pull system logs
+    name_zhCN    : 拉取系统日志
+    method       : get
+    url          : /api/v1/debug/system-logs/do/pull
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      position:
+        $desc    : 日志文件读取位置
+        $required: false
+        $type    : integer
+
   putTask:
     showInDoc    : true
-    name         : DEBUG - Put async task
-    name_zhCN    : 调试 - 发送异步任务
+    name         : Put async task
+    name_zhCN    : 发送异步任务
     descType     : markdown
     desc         : "*CAUTION: This API is just for debug, please DO NOT use in a production environment.*"
     method       : post
@@ -5892,3 +5697,44 @@ debugAPI:
             $desc   : Extra information
             $type   : any
             $example: {"extraKey": "extraValue"}
+
+  testAPIBehavior:
+    showInDoc: true
+    name     : Test Throw Error
+    name_zhCN: 测试 API 行为
+    method   : get
+    url      : /api/v1/debug/api-behavior/do/test
+    response : json
+    desc     : Test Throw Error
+    desc_zhCN: 测试 API 行为
+    query:
+      scenario:
+        $desc    : 场景
+        $required: true
+        $type    : enum
+        $in:
+          - ok
+          - error
+          - unhandledError
+          - unhandledAsyncError
+          - slowResponse
+
+  clearWorkerQueues:
+    showInDoc    : true
+    name         : Clear worker queues
+    name_zhCN    : 清空工作队列
+    method       : post
+    url          : /api/v1/debug/worker-queues/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+
+  clearLogCacheTables:
+    showInDoc    : true
+    name         : Clear Log and Cache tables
+    name_zhCN    : 清空日志和缓存表
+    method       : post
+    url          : /api/v1/debug/log-cache-tables/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : general_w

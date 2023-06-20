@@ -14,16 +14,7 @@ var auth    = require('../utils/auth');
 var socketIOServerHelper = require('../utils/extraHelpers/socketIOServerHelper');
 
 /* Configure */
-var IMAGE_INFO = require('../../image-info.json');
-IMAGE_INFO.CREATE_TIMESTAMP = IMAGE_INFO.CREATE_TIMESTAMP || parseInt(Date.now() / 1000);
-
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
-
-var SERVER_VERSION = {
-  version        : IMAGE_INFO.VERSION,
-  createTimestamp: IMAGE_INFO.CREATE_TIMESTAMP,
-}
-var SERVER_VERSION_BROADCAST_INTERVAL =  15 * 1000;
 
 module.exports = function(app, server) {
   // 初始化

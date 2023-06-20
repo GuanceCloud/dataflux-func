@@ -10,7 +10,7 @@ Setup Script Set: 配置脚本集
 Requirements: 依赖包
 
 Script Set ID will be a part of the Func ID: 脚本集 ID 将作为函数 ID 的一部分
-Go to PIP tool to install                  : 前往PIP工具安装
+Go to PIP tool to install                  : 前往 PIP 工具安装
 
 Please input ID                                   : 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线

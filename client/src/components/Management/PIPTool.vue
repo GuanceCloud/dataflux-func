@@ -2,7 +2,7 @@
 installCost: (Cost {n} s)
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
-PIP Tool                         : PIP工具
+PIP Tool                         : PIP 工具
 Mirror                           : 镜像源
 Install Python Package           : 安装 Python 包
 Installed Python Packages        : 已安装的 Python 包

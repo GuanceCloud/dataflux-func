@@ -41,6 +41,10 @@ var TRANSMISSION_RATE_RADIX_IN_BYTE = toolkit.TRANSMISSION_RATE_RADIX_IN_BYTE = 
 
 var RE_HTTP_BASIC_AUTH_MASK         = /:\/\/.+:.+@/g;
 var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@';
+var CONFIG_AUTH_FIELD_KEYWORDS = [
+  'secret',
+  'password',
+]
 
 var ensureFn = toolkit.ensureFn = function ensureFn(fn) {
   if ('function' === typeof fn) {
@@ -2400,12 +2404,29 @@ var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
   return data;
 };
 
-var maskSensitiveInfo = toolkit.maskSensitiveInfo = function(s) {
+var maskAuthURL = toolkit.maskAuthURL = function(s) {
   try {
     return s.replace(RE_HTTP_BASIC_AUTH_MASK, RE_HTTP_BASIC_AUTH_MASK_REPLACE);
   } catch(err) {
     return s;
   }
+};
+
+var maskConfig = toolkit.maskConfig = function(j) {
+  var masked = {};
+  for (var k in j) {
+    masked[k] = j[k];
+
+    for (var i = 0; i < CONFIG_AUTH_FIELD_KEYWORDS.length; i++) {
+      var kw = CONFIG_AUTH_FIELD_KEYWORDS[i].toLowerCase();
+      if (k.toLowerCase().indexOf(kw) >= 0) {
+        masked[k] = '*****';
+        break;
+      }
+    }
+  }
+
+  return masked;
 };
 
 var childProcessSpawn = toolkit.childProcessSpawn = function(cmd, cmdArgs, cmdOpt, callback) {

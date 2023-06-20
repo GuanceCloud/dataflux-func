@@ -106,7 +106,7 @@ EntityModel.prototype.list = function(options, callback) {
       funcDoc = [];
       dbRes.forEach(function(d) {
         funcDoc.push({
-          url: urlFor('mainAPI.callFunc', {
+          url: urlFor('indexAPI.callFunc', {
             params: { funcId: d.id },
           }),
 

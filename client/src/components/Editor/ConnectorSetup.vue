@@ -721,7 +721,7 @@ export default {
         // 部分连接器特殊处理
         switch (opt.key) {
           case 'sqlserver':
-            return this.$store.getters.SYSTEM_INFO('_ARCH') === 'x64';
+            return this.$store.getters.SYSTEM_INFO('ARCHITECTURE') === 'x86_64';
             break;
 
           default:

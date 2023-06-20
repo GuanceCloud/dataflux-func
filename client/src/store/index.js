@@ -606,12 +606,12 @@ export default new Vuex.Store({
             next: `Version: ${serverInfo.VERSION}`,
           }
 
-        } else if (state.systemInfo.CREATE_TIMESTAMP
-            && serverInfo.CREATE_TIMESTAMP
-            && state.systemInfo.CREATE_TIMESTAMP !== serverInfo.CREATE_TIMESTAMP) {
+        } else if (state.systemInfo.RELEASE_TIMESTAMP
+            && serverInfo.RELEASE_TIMESTAMP
+            && state.systemInfo.RELEASE_TIMESTAMP !== serverInfo.RELEASE_TIMESTAMP) {
           nextServerUpgradeInfo = {
-            prev: `Build: ${T.getDateTimeString(state.systemInfo.CREATE_TIMESTAMP * 1000)}`,
-            next: `Build: ${T.getDateTimeString(serverInfo.CREATE_TIMESTAMP       * 1000)}`,
+            prev: `Build: ${T.getDateTimeString(state.systemInfo.RELEASE_TIMESTAMP * 1000)}`,
+            next: `Build: ${T.getDateTimeString(serverInfo.RELEASE_TIMESTAMP       * 1000)}`,
           }
         }
       }

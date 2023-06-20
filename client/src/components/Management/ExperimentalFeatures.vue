@@ -143,28 +143,6 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                   </div>
                 </el-form-item>
 
-                <el-form-item prop="SysStat">
-                  <el-switch :active-text="$t('Enable System Status Page')" v-model="form.SysStat"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('Status Page for current system') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} System Status"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-                <el-form-item prop="SystemLogs">
-                  <el-switch :active-text="$t('Enable System Log Page')" v-model="form.SystemLogs"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('Log Page for current system') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} System Logs"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-                <el-form-item prop="AbnormalReqs">
-                  <el-switch :active-text="$t('Enable Abnormal Request Page')" v-model="form.AbnormalReqs"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('Abnormal Request Page for current system') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Abnormal Requests"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-
                 <el-form-item prop="AccessKeys" v-if="$store.getters.isAdmin">
                   <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
@@ -229,9 +207,6 @@ export default {
         FuncStoreManage: false,
         FuncDoc        : false,
         OpenAPIDoc     : false,
-        SysStat        : false,
-        SystemLogs     : false,
-        AbnormalReqs   : false,
         AccessKeys     : false,
       },
     }

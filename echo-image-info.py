@@ -17,7 +17,7 @@ def main(options):
     image_info = {
         'EDITION'         : options.get('edition'),
         'VERSION'         : os.environ.get('CI_COMMIT_REF_NAME') or '0.0.0',
-        'CREATE_TIMESTAMP': int(time.time()),
+        'RELEASE_TIMESTAMP': int(time.time()),
     }
 
     for env in EXTRACT_CI_ENVS:

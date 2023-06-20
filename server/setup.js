@@ -13,9 +13,8 @@ var yaml       = require('js-yaml');
 var request    = require('request');
 
 /* Project Modules */
-var toolkit    = require('./utils/toolkit');
-var common     = require('./utils/common');
-var IMAGE_INFO = require('../image-info.json');
+var toolkit = require('./utils/toolkit');
+var common  = require('./utils/common');
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');

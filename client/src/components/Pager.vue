@@ -5,7 +5,7 @@
       @size-change="T.changePageSize"
       @current-change="T.goToPageNumber"
       layout="total, sizes, prev, pager, next, jumper"
-      :page-sizes="[3, 10, 20, 50, 100]"
+      :page-sizes="[10, 20, 50, 100]"
       :current-page="pageInfo.pageNumber"
       :page-size="pageInfo.pageSize"
       :page-count="pageCount"

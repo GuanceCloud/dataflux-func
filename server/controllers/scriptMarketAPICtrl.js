@@ -969,7 +969,7 @@ function _setAdmin(locals, scriptMarket, callback) {
           locals.logger.logError(err);
 
           return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
-            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskSensitiveInfo(err.message),
+            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskAuthURL(err.message),
           }));
         }
         return asyncCallback();
@@ -1049,7 +1049,7 @@ function _setMetaExtra(locals, scriptMarket, callback) {
           locals.logger.logError(err);
 
           return asyncCallback(new E('EClient', 'Failed to setting Admin',  {
-            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskSensitiveInfo(err.message),
+            message: CONFIG.MODE === 'dev' ? err.message : toolkit.maskAuthURL(err.message),
           }));
         }
         return asyncCallback();

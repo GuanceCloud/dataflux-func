@@ -165,10 +165,10 @@ def heartbeat():
 
         hostname = socket.gethostname()
 
-        cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerCPUPercent', 'hostname', hostname]);
+        cache_key = toolkit.get_server_cache_key('monitor', 'systemMetrics', ['metric', 'workerCPUPercent', 'hostname', hostname]);
         REDIS_HELPER.ts_add(cache_key, total_cpu_percent, timestamp=current_timestamp)
 
-        cache_key = toolkit.get_server_cache_key('monitor', 'sysStats', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
+        cache_key = toolkit.get_server_cache_key('monitor', 'systemMetrics', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
         REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
 
 @signals.heartbeat_sent.connect

@@ -40,7 +40,7 @@ SECRET: 'your_secret'
 LOG_LEVEL: WARNING
 
 # 输出 Server 任务发送日志
-LOG_FUNC_FUNC_CALL_OPTIONS: false
+LOG_FUNC_CALL_OPTIONS: false
 
 # 日志文件输出地址
 # 必须使用绝对路径
@@ -200,32 +200,32 @@ _MYSQL_CHARSET         : utf8mb4
 _MYSQL_TIMEZONE        : ''
 
 # WEB模块一般作为常量的配置
-_WEB_CLIENT_APP_PATH               : /client-app
-_WEB_CLIENT_ID_COOKIE              : xDFFClientId
-_WEB_CLIENT_ID_HEADER              : X-Dff-Client-Id
-_WEB_CLIENT_LOCALE_COOKIE          : xDFFClientLocale
-_WEB_CLIENT_LANGUAGE_COOKIE        : xDFFClientLocaleLanguage
-_WEB_PAGE_SIZE_COOKIE              : xDFFPageSize
-_WEB_TRACE_ID_HEADER               : X-Trace-Id
-_WEB_REQUEST_TIME_HEADER           : X-Request-Time
-_WEB_RESPONSE_TIME_HEADER          : X-Response-Time
-_WEB_REQUEST_COST_HEADER           : X-Request-Cost
-_WEB_AUTH_HEADER                   : X-Dff-Auth-Token
-_WEB_AUTH_QUERY                    : xDFFAuthToken
-_WEB_AUTH_LOCAL_STORAGE            : xDFFAuthToken
-_WEB_AUTH_COOKIE                   : xDFFAuthToken
-_WEB_AUTH_EXPIRES                  : 86400
-_WEB_CAPTCHA_EXPIRES               : 300
-_WEB_DRY_RUN_MODE_HEADER           : X-Dff-Dry-Run
-_WEB_AK_ID_HEADER                  : X-Dff-Ak-Id
-_WEB_AK_TIMESTAMP_HEADER           : X-Dff-Ak-Timestamp
-_WEB_AK_NONCE_HEADER               : X-Dff-Ak-Nonce
-_WEB_AK_SIGN_HEADER                : X-Dff-Ak-Sign
-_WEB_AK_TIMESTAMP_MAX_DIFF         : 900
-_WEB_AK_NONCE_TTL                  : 86400
-_WEB_PULL_LOG_TRACE_ID             : TRACE-PULLLOGS
-_WEB_SERVER_VERSION_HEADER         : X-Dff-Server-Version
-_WEB_SERVER_CREATE_TIMESTAMP_HEADER: X-Dff-Server-Create-Timestamp
+_WEB_CLIENT_APP_PATH                : /client-app
+_WEB_CLIENT_ID_COOKIE               : xDFFClientId
+_WEB_CLIENT_ID_HEADER               : X-Dff-Client-Id
+_WEB_CLIENT_LOCALE_COOKIE           : xDFFClientLocale
+_WEB_CLIENT_LANGUAGE_COOKIE         : xDFFClientLocaleLanguage
+_WEB_PAGE_SIZE_COOKIE               : xDFFPageSize
+_WEB_TRACE_ID_HEADER                : X-Trace-Id
+_WEB_REQUEST_TIME_HEADER            : X-Request-Time
+_WEB_RESPONSE_TIME_HEADER           : X-Response-Time
+_WEB_REQUEST_COST_HEADER            : X-Request-Cost
+_WEB_AUTH_HEADER                    : X-Dff-Auth-Token
+_WEB_AUTH_QUERY                     : xDFFAuthToken
+_WEB_AUTH_LOCAL_STORAGE             : xDFFAuthToken
+_WEB_AUTH_COOKIE                    : xDFFAuthToken
+_WEB_AUTH_EXPIRES                   : 86400
+_WEB_CAPTCHA_EXPIRES                : 300
+_WEB_DRY_RUN_MODE_HEADER            : X-Dff-Dry-Run
+_WEB_AK_ID_HEADER                   : X-Dff-Ak-Id
+_WEB_AK_TIMESTAMP_HEADER            : X-Dff-Ak-Timestamp
+_WEB_AK_NONCE_HEADER                : X-Dff-Ak-Nonce
+_WEB_AK_SIGN_HEADER                 : X-Dff-Ak-Sign
+_WEB_AK_TIMESTAMP_MAX_DIFF          : 900
+_WEB_AK_NONCE_TTL                   : 86400
+_WEB_PULL_LOG_TRACE_ID              : TRACE-PULLLOGS
+_WEB_SERVER_VERSION_HEADER          : X-Dff-Version
+_WEB_SERVER_RELEASE_TIMESTAMP_HEADER: X-Dff-Release-Timestamp
 
 # 订阅模块一般作为常量的配置
 _SUB_BUFFER_LIMIT         : 5000
@@ -303,7 +303,7 @@ _FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
 _FUNC_TASK_DISTRIBUTION_RANGE                   : 0
 
 
-_WORKER_LIMIT_FUNC_PRESSURE_BASE           : 1000
+_WORKER_LIMIT_FUNC_PRESSURE_BASE           : 500
 _WORKER_LIMIT_FUNC_PRESSURE_EXPIRES        : 3600
 _WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE   : 300000
 _WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES: 3600
@@ -380,10 +380,10 @@ _DISABLE_STARTUP_TASKS: false
 
 # 自动配置
 AUTO_SETUP               : false
-AUTO_SETUP_ADMIN_USERNAME: null
-AUTO_SETUP_ADMIN_PASSWORD: null
-AUTO_SETUP_AK_ID         : null
-AUTO_SETUP_AK_SECRET     : null
+AUTO_SETUP_ADMIN_USERNAME: ''
+AUTO_SETUP_ADMIN_PASSWORD: ''
+AUTO_SETUP_AK_ID         : ''
+AUTO_SETUP_AK_SECRET     : ''
 
 # 是否已安装完成
 _IS_INSTALLED: false

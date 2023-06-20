@@ -304,9 +304,9 @@ const routes = [
       },
 
       {
-        path: 'sys-stats',
-        name: 'sys-stats',
-        component: () => import('../components/Management/SysStats.vue'),
+        path: 'system-metrics',
+        name: 'system-metrics',
+        component: () => import('../components/Management/SystemMetrics.vue'),
       },
       {
         path: 'system-logs',

@@ -59,7 +59,7 @@ File already existed                                                            
             </el-button>
           </el-popover>
 
-          <el-tooltip :content="`${$t('File size limit')}${$t(':')} ${T.byteSizeHuman($store.getters.SYSTEM_INFO('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT'))}`" placement="bottom">
+          <el-tooltip :content="`${$t('File size limit')}${$t(':')} ${T.byteSizeHuman($store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT'))}`" placement="bottom">
             <el-upload ref="upload"
               class="upload-button"
               :limit="2"
@@ -452,7 +452,7 @@ export default {
     },
     async handleUpload(req) {
       // 检查文件大小
-      let fileSizeLimit = this.$store.getters.SYSTEM_INFO('_EX_UPLOAD_RESOURCE_FILE_SIZE_LIMIT');
+      let fileSizeLimit = this.$store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT');
       if (req.file.size > fileSizeLimit) {
         let sizeStr = this.T.byteSizeHuman(fileSizeLimit);
         return this.T.alert(this.$t('File too large (size limit: {size})', { size: sizeStr }));

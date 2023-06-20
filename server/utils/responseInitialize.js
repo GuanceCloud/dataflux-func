@@ -12,6 +12,7 @@ var LRU        = require('lru-cache');
 
 /* Project Modules */
 var E             = require('./serverError');
+var IMAGE_INFO    = require('./yamlResources').get('IMAGE_INFO');
 var CONFIG        = require('./yamlResources').get('CONFIG');
 var yamlResources = require('./yamlResources');
 var toolkit       = require('./toolkit');
@@ -21,8 +22,6 @@ var appInit       = require('../appInit');
 
 /* Configure */
 var STATIC_RENDER_LRU = new LRU();
-
-var IMAGE_INFO = require('../../image-info.json');
 
 var CLIENT_CONFIG = {
   _WEB_CLIENT_ID_COOKIE      : CONFIG._WEB_CLIENT_ID_COOKIE,
@@ -74,7 +73,7 @@ var getRetSample = function(ret) {
  */
 router.all('*', function addServerInfo(req, res, next) {
   res.set(CONFIG._WEB_SERVER_VERSION_HEADER,          IMAGE_INFO.VERSION);
-  res.set(CONFIG._WEB_SERVER_CREATE_TIMESTAMP_HEADER, IMAGE_INFO.CREATE_TIMESTAMP);
+  res.set(CONFIG._WEB_SERVER_RELEASE_TIMESTAMP_HEADER, IMAGE_INFO.RELEASE_TIMESTAMP);
 
   return next();
 });

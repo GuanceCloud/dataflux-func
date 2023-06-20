@@ -64,7 +64,7 @@ export default {
       let headers = {}
       headers[this.$store.getters.SYSTEM_INFO('_WEB_TRACE_ID_HEADER')] = this.$store.getters.SYSTEM_INFO('_WEB_PULL_LOG_TRACE_ID');
 
-      let apiRes = await this.T.callAPI_get('/api/v1/system-logs', {
+      let apiRes = await this.T.callAPI_get('/api/v1/debug/system-logs/do/pull', {
         headers: headers,
         query  : { position: this.nextPosition },
       });

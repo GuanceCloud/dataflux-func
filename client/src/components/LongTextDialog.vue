@@ -70,7 +70,7 @@ export default {
   },
   props: {
     title       : String,
-    mode        : Boolean,
+    mode        : String,
     showDownload: Boolean,
   },
   data() {

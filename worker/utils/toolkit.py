@@ -737,7 +737,7 @@ class LocalCache(object):
         except KeyError as e:
             pass
 
-def mask_sensitive_info(s):
+def mask_auth_url(s):
     try:
         return RE_HTTP_BASIC_AUTH_MASK.sub(RE_HTTP_BASIC_AUTH_MASK_REPLACE, s)
     except Exception as e:

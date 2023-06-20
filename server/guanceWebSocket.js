@@ -9,14 +9,14 @@ var sortedJSON = require('sorted-json');
 
 /* Project Modules */
 var E          = require('./utils/serverError');
+var IMAGE_INFO = require('./utils/yamlResources').get('IMAGE_INFO');
 var CONFIG     = require('./utils/yamlResources').get('CONFIG');
 var toolkit    = require('./utils/toolkit');
-var IMAGE_INFO = require('../image-info.json');
 
 var systemSettingMod = require('./models/systemSettingMod');
 var connectorMod     = require('./models/connectorMod');
 var funcMod          = require('./models/funcMod');
-var mainAPICtrl      = require('./controllers/mainAPICtrl');
+var indexAPICtrl     = require('./controllers/indexAPICtrl');
 
 /* Configure */
 var IS_MASTER_NODE           = null;
@@ -275,7 +275,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
           funcCallKwargs: funcCallKwargs || {},
           execMode      : 'sync',
         }
-        mainAPICtrl._createFuncCallOptionsFromOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
+        indexAPICtrl._createFuncCallOptionsFromOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;
@@ -285,7 +285,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        mainAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
+        indexAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
           locals.logger.debug('[GUANCE WS] GUANCE -> FUNC: `{0}`', handlerFuncId);
 
           if (err) return asyncCallback(err);

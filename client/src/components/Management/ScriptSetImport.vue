@@ -5,7 +5,7 @@ Importing: 即将导入
 Imported contents do not include sensitive data (such as password), please re-entered them after import: 导入内容不包含敏感数据，请在导入后重新输入
 Drag and drop the file here, or click here to upload: 将文件拖到此处，或点击此处上传
 
-Imported Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往PIP工具？
+Imported Script Set requires 3rd party packages, do you want to open PIP tool now?: 导入的脚本集需要第三方包，是否现在前往 PIP 工具？
 </i18n>
 
 <template>

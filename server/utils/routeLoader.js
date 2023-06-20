@@ -53,7 +53,7 @@ function routeMonitor(routeConfig) {
       return next();
     }
 
-    var cacheKey = toolkit.getCacheKey('monitor', 'sysStats', [
+    var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', [
         'metric', 'matchedRouteCount',
         'date', toolkit.getDateString()]);
     async.series([

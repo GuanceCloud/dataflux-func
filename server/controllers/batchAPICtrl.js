@@ -62,7 +62,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('mainAPI.callBatchByGet', {
+      url: urlFor('indexAPI.callBatchByGet', {
         params: { id: addedId },
       }),
     });
@@ -238,7 +238,7 @@ function _modify(locals, id, data, opt, callback) {
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('mainAPI.callBatchByGet', { params: { id: id } });
+    var url = urlFor('indexAPI.callBatchByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };

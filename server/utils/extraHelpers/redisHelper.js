@@ -152,7 +152,11 @@ RedisHelper.prototype.run = function() {
   var command = args.shift();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] Run `{0} {1} ...`', command.toUpperCase(), args[0]);
+    if ('string' === typeof args[0]) {
+      this.logger.debug('[REDIS] Run `{0} {1} ...`', command.toUpperCase(), args[0]);
+    } else {
+      this.logger.debug('[REDIS] Run `{0}`', command.toUpperCase());
+    }
   }
 
   return this.client[command].apply(this.client, args);

@@ -17,18 +17,17 @@ var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
 
 /* Configure */
-var IMAGE_INFO = require('../image-info.json');
-IMAGE_INFO.ARCHITECTURE     = childProcess.execFileSync('uname', [ '-m' ]).toString().trim();
-IMAGE_INFO.PYTHON_VERSION   = childProcess.execFileSync('python', [ '--version' ]).toString().trim().split(' ').pop();
-IMAGE_INFO.NODE_VERSION     = childProcess.execFileSync('node', [ '--version' ]).toString().trim().replace('v', '');
-IMAGE_INFO.CREATE_TIMESTAMP = IMAGE_INFO.CREATE_TIMESTAMP || parseInt(Date.now() / 1000);
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
 
-yamlResources.loadFile('CONST',     path.join(__dirname, '../const.yaml'));
-yamlResources.loadFile('ROUTE',     path.join(__dirname, './route.yaml'));
-yamlResources.loadFile('PRIVILEGE', path.join(__dirname, './privilege.yaml'));
+yamlResources.loadFile('IMAGE_INFO', path.join(__dirname, '../image-info.json'));
+yamlResources.loadFile('CONST',      path.join(__dirname, '../const.yaml'));
+yamlResources.loadFile('ROUTE',      path.join(__dirname, './route.yaml'));
+yamlResources.loadFile('PRIVILEGE',  path.join(__dirname, './privilege.yaml'));
+
+// Load arch
+yamlResources.set('IMAGE_INFO', 'ARCHITECTURE', childProcess.execFileSync('uname', [ '-m' ]).toString().trim());
 
 var CONFIG = null;
 
@@ -143,7 +142,7 @@ function startApplication() {
   });
 
   // 集成登录认证
-  app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
+  app.use(require('./controllers/indexAPICtrl').integratedAuthMid);
 
   // Dump user information
   if (CONFIG.MODE === 'dev') {
@@ -151,7 +150,7 @@ function startApplication() {
   }
 
   // Load routes
-  require('./routers/indexAPIRouter');
+  require('./routers/miscAPIRouter');
   require('./routers/authAPIRouter');
   require('./routers/userAPIRouter');
   require('./routers/accessKeyAPIRouter');
@@ -159,8 +158,7 @@ function startApplication() {
   require('./routers/systemSettingAPIRouter');
   require('./routers/debugAPIRouter');
 
-  /***** DataFlux Func *****/
-  require('./routers/mainAPIRouter');
+  require('./routers/indexAPIRouter');
   require('./routers/pythonPackageAPIRouter');
   require('./routers/resourceAPIRouter');
 

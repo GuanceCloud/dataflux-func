@@ -3,8 +3,6 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-import yaml from 'js-yaml'
-
 // 公共函数
 import * as toolkit from '@/toolkit'
 Vue.prototype.toolkit = toolkit;
