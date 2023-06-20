@@ -304,7 +304,7 @@ exports.export = function(req, res, next) {
           // 导出脚本集数据中不含 extra
           delete scriptSet._extra;
 
-          var scriptSetDir = path.join(CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
+          var scriptSetDir = path.join(CONFIG._SCRIPT_EXPORT_SCRIPT_SET_DIR, scriptSet.id);
           scriptSet.scripts.forEach(function(script) {
             // 写入脚本文件
             var filePath = path.join(scriptSetDir, common.getScriptFilename(script));
@@ -317,12 +317,12 @@ exports.export = function(req, res, next) {
         });
 
         // 写入 META 文件
-        zip.addFile(CONFIG.SCRIPT_EXPORT_META_FILE, yaml.dump(exportData));
+        zip.addFile(CONFIG._SCRIPT_EXPORT_META_FILE, yaml.dump(exportData));
 
         // 单独生成备注文件
         var note = toolkit.jsonFindSafe(exportData, 'extra.note');
         if (note) {
-          zip.addFile(CONFIG.SCRIPT_EXPORT_NOTE_FILE, note);
+          zip.addFile(CONFIG._SCRIPT_EXPORT_NOTE_FILE, note);
         }
 
         fileBuf = zip.toBuffer();
@@ -407,7 +407,7 @@ exports.import = function(req, res, next) {
 
       // 提升目录级别：xxx/yyy/zzz/* -> *
       var realMetaPath = Object.keys(allFileData).filter(function(filePath) {
-        return toolkit.endsWith(filePath, `/${CONFIG.SCRIPT_EXPORT_META_FILE}`);
+        return toolkit.endsWith(filePath, `/${CONFIG._SCRIPT_EXPORT_META_FILE}`);
       })[0];
 
       if (realMetaPath) {
@@ -424,8 +424,8 @@ exports.import = function(req, res, next) {
       }
 
       // 提取数据
-      if (allFileData[CONFIG.SCRIPT_EXPORT_META_FILE]) {
-        importData = yaml.load(allFileData[CONFIG.SCRIPT_EXPORT_META_FILE]) || {};
+      if (allFileData[CONFIG._SCRIPT_EXPORT_META_FILE]) {
+        importData = yaml.load(allFileData[CONFIG._SCRIPT_EXPORT_META_FILE]) || {};
 
       } else {
         /* 兼容处理 */
@@ -451,7 +451,7 @@ exports.import = function(req, res, next) {
 
         // 从 NOTE 文件提取备注
         importData.extra = importData.extra || {};
-        importData.extra.note = allFileData[CONFIG.SCRIPT_EXPORT_NOTE_FILE] || null;
+        importData.extra.note = allFileData[CONFIG._SCRIPT_EXPORT_NOTE_FILE] || null;
       }
 
       // 提取脚本代码
@@ -462,7 +462,7 @@ exports.import = function(req, res, next) {
           scriptMap[script.id] = script;
 
           // 读取代码
-          var scriptZipPath = `${CONFIG.SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}/${common.getScriptFilename(script)}`;
+          var scriptZipPath = `${CONFIG._SCRIPT_EXPORT_SCRIPT_SET_DIR}/${scriptSet.id}/${common.getScriptFilename(script)}`;
           script.code = allFileData[scriptZipPath] || '';
         });
       });

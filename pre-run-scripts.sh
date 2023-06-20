@@ -6,7 +6,7 @@ if [ "`python _config.py _DISABLE_PRE_RUN_SCRIPTS`" = "True" ]; then
 fi
 
 # Create pre-run script folder
-pre_run_script_folder="`python _config.py RESOURCE_ROOT_PATH`/`python _config.py PRE_RUN_SCRIPT_DIR`"
+pre_run_script_folder="`python _config.py RESOURCE_ROOT_PATH`/`python _config.py _PRE_RUN_SCRIPT_DIR`"
 mkdir -p ${pre_run_script_folder}
 
 # Copy old version

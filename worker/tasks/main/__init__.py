@@ -111,7 +111,7 @@ ENV_VARIABLE_LOCAL_CACHE = toolkit.LocalCache(expires=30)
 # 添加额外import路径
 extra_import_paths = [
     CONFIG.get('RESOURCE_ROOT_PATH'),
-    os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('EXTRA_PYTHON_PACKAGE_INSTALL_DIR')),
+    os.path.join(CONFIG.get('RESOURCE_ROOT_PATH'), CONFIG.get('_EXTRA_PYTHON_PACKAGE_INSTALL_DIR')),
 ]
 for p in extra_import_paths:
     os.makedirs(p, exist_ok=True)

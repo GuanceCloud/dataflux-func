@@ -1128,7 +1128,7 @@ async function _doAxios(axiosOpt) {
   } catch (err) {
     if (err.response) {
       // 服务端存在错误响应
-      if (err.response.status === 401 && err.response.data.reason === 'EUserAuth') {
+      if (err.response.status === 401) {
         // 认证失败时，自动清除Token
         store.commit('updateXAuthToken', null);
       }
@@ -1197,7 +1197,7 @@ export async function callAPI(method, pathPattern, options) {
 
   } else {
     // 失败提示
-    if (axiosRes.status === 401 && axiosRes.data.reason === 'EUserAuth') {
+    if (axiosRes.status === 401) {
       // 【特殊处理】令牌过期等，不用弹框提示
 
     } else {
@@ -1364,7 +1364,7 @@ export async function callAPI_getAll(pathPattern, options) {
   let alert = options.alert || {};
   if (isFailed) {
     // 请求失败
-    if (axiosRes.status === 401 && axiosRes.data.reason === 'EUserAuth') {
+    if (axiosRes.status === 401) {
       // 【特殊处理】令牌过期等，不用弹框提示
 
     } else {

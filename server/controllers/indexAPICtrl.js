@@ -2096,8 +2096,12 @@ exports.getAuthLinkFuncList = function(req, res, next) {
   });
 };
 
-// 集成处理
+// 集成登录
 exports.integratedSignIn = function(req, res, next) {
+  if (CONFIG.DISABLE_INTEGRATED_SIGNIN) {
+      return next(new E('EBizCondition', 'Integrated Sign-in is disabled'));
+  }
+
   var funcId   = req.body.signIn.funcId;
   var username = req.body.signIn.username;
   var password = req.body.signIn.password;
@@ -2283,6 +2287,15 @@ exports.integratedAuthMid = function(req, res, next) {
 
         return asyncCallback();
       });
+    },
+    // Check Integrated Sign-in disabled
+    function(asyncCallback) {
+      if (CONFIG.DISABLE_INTEGRATED_SIGNIN) {
+        res.locals.reqAuthError = new E('EUserDisabled', 'Integrated Sign-in is disabled');
+      }
+
+      // 认证错误后续抛出
+      return asyncCallback();
     },
     // Check Redis
     function(asyncCallback) {

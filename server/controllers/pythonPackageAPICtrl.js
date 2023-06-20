@@ -17,7 +17,7 @@ var toolkit = require('../utils/toolkit');
 /* Handlers */
 exports.listInstalled = function(req, res, next) {
   // Python包安装路径
-  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
 
   var packageVersionMap = {};
 
@@ -103,7 +103,7 @@ exports.install = function(req, res, next) {
   var installStatus         = [];
 
   // Python 包安装路径
-  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
+  var packageInstallPath = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._EXTRA_PYTHON_PACKAGE_INSTALL_DIR);
   fs.ensureDirSync(packageInstallPath);
 
   // 单个包安装处理

@@ -350,7 +350,7 @@ exports.systemInfo = function(req, res, next) {
     WEB_INNER_BASE_URL: CONFIG.WEB_INNER_BASE_URL,
 
     _HOSTNAME       : process.env.HOSTNAME,
-    _PIP_INSTALL_DIR: path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.EXTRA_PYTHON_PACKAGE_INSTALL_DIR),
+    _PIP_INSTALL_DIR: path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG._EXTRA_PYTHON_PACKAGE_INSTALL_DIR),
 
     _WEB_CLIENT_ID_HEADER              : CONFIG._WEB_CLIENT_ID_HEADER,
     _WEB_AUTH_HEADER                   : CONFIG._WEB_AUTH_HEADER,
@@ -388,6 +388,8 @@ exports.systemInfo = function(req, res, next) {
   async.series([
     // 获取登录集成函数
     function(asyncCallback) {
+      if (CONFIG.DISABLE_INTEGRATED_SIGNIN) return asyncCallback();
+
       var opt = {
         filters: {
           integration: {eq: 'signIn'}

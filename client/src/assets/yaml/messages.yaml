@@ -76,6 +76,7 @@ en: {}
   Invalid request post data                                                                               : 请求体数据无效
   Invalid request query                                                                                   : 请求参数无效
   Invalid username or password                                                                            : 用户名或密码无效
+  Integrated Sign-in is disabled                                                                          : 集成登录功能已被禁用
   Maximum calling rate exceeded                                                                           : 达到最大调用频率
   Modifying built-in Connector is not allowed, please edit the config instead                             : 不允许修改内置连接器，请修改系统配置
   No such Auth Link                                                                                       : 不存在此授权链接

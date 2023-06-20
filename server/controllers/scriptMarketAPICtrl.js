@@ -140,7 +140,7 @@ function _getToken(scriptMarket) {
 function _getRemoteTokenInfo(scriptMarket) {
   var localPath = _getLocalAbsPath(scriptMarket);
 
-  var tokenFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_TOKEN_FILE);
+  var tokenFilePath = path.join(localPath, CONFIG._SCRIPT_MARKET_TOKEN_FILE);
   var remoteToken   = toolkit.safeReadFileSync(tokenFilePath);
 
   var info = {
@@ -245,7 +245,7 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
         `${index + 1}`,
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
-        `${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}`,
+        `${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}`,
         deleteTimeCN,
       ])
     });
@@ -277,9 +277,9 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
         `${index + 1}`,
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
-        `[${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
+        `[${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
         `${pushExtra.exportUser || '-'}<br>${exportTimeCN}`,
-        `[查看 / Show](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
+        `[查看 / Show](${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
       ])
     });
 
@@ -310,9 +310,9 @@ function _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent) {
         `${index + 1}`,
         `\`${scriptSet.id}\``,
         `${scriptSet.title || '-'}`,
-        `[${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
+        `[${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}](${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id})`,
         `${scriptSetExtra.exportUser || '-'}<br>${exportTimeCN}`,
-        `[查看 / Show](${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
+        `[查看 / Show](${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/CHANGELOG.md)`,
       ]);
     });
     content.push(_getMarkdownTable(_table));
@@ -496,11 +496,11 @@ var SCRIPT_MARKET_INIT_FUNC_MAP = {
     async.series([
       // 下载 META 文件
       function(asyncCallback) {
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG.SCRIPT_EXPORT_META_FILE, asyncCallback);
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG._SCRIPT_MARKET_META_FILE, asyncCallback);
       },
       // 下载 TOKEN 文件
       function(asyncCallback) {
-        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG.SCRIPT_MARKET_TOKEN_FILE, function(err) {
+        SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPathTmp, CONFIG._SCRIPT_MARKET_TOKEN_FILE, function(err) {
           // 忽略下载 TOKEN 文件失败
           return asyncCallback();
         });
@@ -599,8 +599,8 @@ var SCRIPT_MARKET_RESET_FUNC_MAP = {
       // 重新下载 META、TOKEN
       function(asyncCallback) {
         var files = [
-          CONFIG.SCRIPT_EXPORT_META_FILE,
-          CONFIG.SCRIPT_MARKET_TOKEN_FILE,
+          CONFIG._SCRIPT_MARKET_META_FILE,
+          CONFIG._SCRIPT_MARKET_TOKEN_FILE,
         ];
         async.eachSeries(files, function(file, eachCallback) {
           SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, function(err) {
@@ -801,9 +801,9 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
       // 上传固定文件
       function(asyncCallback) {
         var files = [
-          CONFIG.SCRIPT_EXPORT_META_FILE,
-          CONFIG.SCRIPT_MARKET_TOKEN_FILE,
-          CONFIG.SCRIPT_EXPORT_README_FILE,
+          CONFIG._SCRIPT_MARKET_META_FILE,
+          CONFIG._SCRIPT_MARKET_TOKEN_FILE,
+          CONFIG._SCRIPT_MARKET_README_FILE,
         ]
         async.eachSeries(files, function(file, eachCallback) {
           var localFilePath = path.join(localPath, file);
@@ -830,8 +830,8 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
         if (toolkit.isNothing(pushContent.scriptSets)) return asyncCallback();
 
         async.eachSeries(pushContent.scriptSets, function(scriptSet, eachCallback) {
-          var localFolderPath = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id) + '/';
-          var ossFolderPath   = ossPath + `${CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/`;
+          var localFolderPath = path.join(localPath, CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id) + '/';
+          var ossFolderPath   = ossPath + `${CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR}/${scriptSet.id}/`;
           var cmdArgs = [
             'cp', localFolderPath, ossFolderPath, '-r', '-f',
             '-e', ossEndpoint,
@@ -864,7 +864,7 @@ function _getLocalAbsPath(scriptMarket) {
     case 'git':
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
-          CONFIG.SCRIPT_MARKET_GIT_REPO_DIR,
+          CONFIG._SCRIPT_MARKET_GIT_REPO_DIR,
           scriptMarket.id);
 
       return localAbsPath;
@@ -872,14 +872,14 @@ function _getLocalAbsPath(scriptMarket) {
     case 'aliyunOSS':
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
-          CONFIG.SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR,
+          CONFIG._SCRIPT_MARKET_ALIYUN_OSS_REPO_DIR,
           scriptMarket.id);
       return localAbsPath;
 
     case 'httpService':
       var localAbsPath = path.join(
           CONFIG.RESOURCE_ROOT_PATH,
-          CONFIG.SCRIPT_MARKET_HTTP_SERVICE_REPO_DIR,
+          CONFIG._SCRIPT_MARKET_HTTP_SERVICE_REPO_DIR,
           scriptMarket.id);
 
       return localAbsPath;
@@ -891,7 +891,7 @@ function _getMetaData(scriptMarket) {
   var localPath = _getLocalAbsPath(scriptMarket);
   var metaData  = {};
 
-  var metaFilePath = path.join(localPath, CONFIG.SCRIPT_EXPORT_META_FILE);
+  var metaFilePath = path.join(localPath, CONFIG._SCRIPT_MARKET_META_FILE);
   if (!fs.existsSync(metaFilePath)) return metaData;
 
   var metaData = toolkit.safeReadFileSync(metaFilePath, 'yaml') || {};
@@ -905,7 +905,7 @@ function _getMetaData(scriptMarket) {
 // 脚本市场 - 写入 META 数据
 function _writeMetaData(scriptMarket, metaData) {
   var localPath = _getLocalAbsPath(scriptMarket);
-  fs.outputFileSync(path.join(localPath, CONFIG.SCRIPT_EXPORT_META_FILE), yaml.dump(metaData));
+  fs.outputFileSync(path.join(localPath, CONFIG._SCRIPT_MARKET_META_FILE), yaml.dump(metaData));
 };
 
 // 脚本市场 - 列出脚本集
@@ -1118,20 +1118,20 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
         // 写入脚本集（索引 + 代码文件）
         if (toolkit.notNothing(pushContent.scriptSets)) {
           pushContent.scriptSets.forEach(function(scriptSet) {
-            var scriptSetDir = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id);
+            var scriptSetDir = path.join(localPath, CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id);
 
             // 生成脚本集 README
-            var scriptSetReadmeFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_EXPORT_README_FILE);
+            var scriptSetReadmeFilePath = path.join(scriptSetDir, CONFIG._SCRIPT_MARKET_README_FILE);
             var scriptSetReadmeData = _isAutoGeneratedFileOrNothing(scriptSetReadmeFilePath)
                                     ? _getDefaultScriptSetReadmeContent(scriptSet)
                                     : toolkit.safeReadFileSync(scriptSetReadmeFilePath);
 
             // 生成脚本集 CHANGELOG 信息
-            var scriptSetChangelogInfoFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_CHANGELOG_INFO_FILE);
+            var scriptSetChangelogInfoFilePath = path.join(scriptSetDir, CONFIG._SCRIPT_MARKET_CHANGELOG_INFO_FILE);
             var changelogInfoData = toolkit.safeReadFileSync(scriptSetChangelogInfoFilePath, 'yaml') || {};
             changelogInfoData = _addChangelogInfo(changelogInfoData, scriptSet);
 
-            var scriptSetChangelogFilePath = path.join(scriptSetDir, CONFIG.SCRIPT_MARKET_CHANGELOG_FILE);
+            var scriptSetChangelogFilePath = path.join(scriptSetDir, CONFIG._SCRIPT_MARKET_CHANGELOG_FILE);
             var scriptSetChangelogData = _isAutoGeneratedFileOrNothing(scriptSetChangelogFilePath)
                                     ? _getDefaultScriptSetChangelogContent(changelogInfoData)
                                     : toolkit.safeReadFileSync(scriptSetChangelogFilePath);
@@ -1167,7 +1167,7 @@ function _pushToScriptMarket(locals, scriptMarket, pushContent, callback) {
         _writeMetaData(scriptMarket, metaData);
 
         // 写入脚本市场 README 文件
-        var scriptMarketReadmeFilePath = path.join(localPath, CONFIG.SCRIPT_EXPORT_README_FILE);
+        var scriptMarketReadmeFilePath = path.join(localPath, CONFIG._SCRIPT_MARKET_README_FILE);
         if (_isAutoGeneratedFileOrNothing(scriptMarketReadmeFilePath)) {
           var scriptMarketReadmeData = _getDefaultScriptMarketReadmeContent(scriptMarket, pushContent);
           fs.outputFileSync(scriptMarketReadmeFilePath, scriptMarketReadmeData);
@@ -1223,7 +1223,7 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
         if (toolkit.isNothing(scriptSet.scripts)) return;
 
         scriptSet.scripts.forEach(function(script) {
-          var codeFilePath = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSetId, common.getScriptFilename(script));
+          var codeFilePath = path.join(CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSetId, common.getScriptFilename(script));
           files.push(codeFilePath);
         })
       });
@@ -1238,7 +1238,7 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
         // 读取代码
         var scriptSet = tmpScriptSetMap[scriptSetId];
         scriptSet.scripts.forEach(function(script) {
-          var codeFilePath = path.join(localPath, CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSetId, common.getScriptFilename(script));
+          var codeFilePath = path.join(localPath, CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSetId, common.getScriptFilename(script));
           script.code = toolkit.safeReadFileSync(codeFilePath);
         });
 
@@ -1595,7 +1595,7 @@ exports.listScriptSets = function(req, res, next) {
         async.eachLimit(scriptSet.scripts, 5, function(script, eachScriptCallback) {
           if (script.id !== `${scriptSet.id}__example`) return eachScriptCallback();
 
-          var file = path.join(CONFIG.SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id, common.getScriptFilename(script));
+          var file = path.join(CONFIG._SCRIPT_MARKET_SCRIPT_SET_DIR, scriptSet.id, common.getScriptFilename(script));
           SCRIPT_MARKET_DOWNLOAD_FUNC_MAP[scriptMarket.type](scriptMarket, localPath, file, function(err) {
             if (err) return eachScriptCallback(err);
 

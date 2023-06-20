@@ -26,7 +26,7 @@ var FileSystemHelper = function(logger, config) {
     self.config = toolkit.noNullOrWhiteSpace(config);
   } else {
     self.config = toolkit.noNullOrWhiteSpace({
-      rootFolder: CONFIG.FILE_STORE_ROOT_DIR,
+      rootFolder: CONFIG._FILE_STORE_ROOT_DIR,
     });
   }
 
