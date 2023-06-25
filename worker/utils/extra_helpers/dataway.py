@@ -425,6 +425,7 @@ class DataWay(object):
                 raise Exception('Send request `{} {}:{}{}` failed: {}'.format(method, self.host, self.port, path, str(e)))
 
             resp = conn.getresponse()
+            conn.close()
 
             resp_status_code = resp.status
             resp_raw_data    = resp.read()

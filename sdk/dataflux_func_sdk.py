@@ -233,6 +233,7 @@ class DataFluxFunc(object):
 
         # Get response
         resp = conn.getresponse()
+        conn.close()
 
         resp_status_code = resp.status
         resp_raw_data    = resp.read()
