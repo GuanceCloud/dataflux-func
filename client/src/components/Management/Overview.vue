@@ -376,7 +376,7 @@ export default {
   margin-top: 100px;
 }
 .overview-card {
-  width: 330px;
+  width: 300px;
   height: 200px;
   display: inline-block;
   margin: 10px 20px;
