@@ -1068,9 +1068,10 @@ userAPI:
     paging       : false
     fieldSelecting: true
     orderFields:
-      seq     : u.seq
-      username: u.username
-      name    : u.name
+      seq       : u.seq
+      username  : u.username
+      name      : u.name
+      isDisabled: u.isDisabled
     fuzzySearch:
       - u.id
       - u.username

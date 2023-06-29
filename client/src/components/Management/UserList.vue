@@ -150,7 +150,7 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        sort: ['seq']
+        sort: ['isDisabled', '-seq']
       });
 
       let apiRes = await this.T.callAPI_get('/api/v1/users/do/list', {

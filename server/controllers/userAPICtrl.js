@@ -69,24 +69,32 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
 
     }, function() {
       // Session 排序
-      ret.data.forEach(function(d) {
+      ret.data.forEach(function(d, index) {
         d.sessions.sort(function(a, b) {
           if (a.ttlMs > b.ttlMs) return -1;
           else if (a.ttlMs < b.ttlMs) return 1;
           else return 0;
         });
+
+        // 原始排序标记
+        d._index = index;
       });
 
       // 用户排序
       ret.data.sort(function(a, b) {
         if (a.sessions.length > 0 && b.sessions.length <= 0) return -1;
         else if (a.sessions.length <= 0 && b.sessions.length > 0) return 1;
-        else if (a.sessions.length <= 0 && b.sessions.length <= 0) return b.seq - a.seq;
+        else if (a.sessions.length <= 0 && b.sessions.length <= 0) return a._index - b._index;
         else {
           if (a.sessions[0].ttlMs > b.sessions[0].ttlMs) return -1;
           else if (a.sessions[0].ttlMs < b.sessions[0].ttlMs) return 1;
-          else return b.seq - a.seq;
+          else return a._index - b._index;
         }
+      });
+
+      // 清理原始排序标记
+      ret.data.forEach(function(d) {
+        delete d._index;
       });
 
       return callback(null, ret);
