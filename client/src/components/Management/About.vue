@@ -179,8 +179,8 @@ export default {
 
       } else {
         this.imageInfo = {
-          architecture : this.NO_INFO_TEXT,
-          releaseDate  : this.NO_INFO_TEXT,
+          architecture    : this.NO_INFO_TEXT,
+          releaseTimestamp: this.NO_INFO_TEXT,
         };
       }
     },

@@ -384,6 +384,7 @@ upgradeInfo:
 
   # 于观测云SaaS 2022-06-20 迭代中实装
   - seq: 21
+    skipWhenSetup: true
     database: |-
       -- 系统设置表更名
       RENAME TABLE `wat_main_system_config` TO `wat_main_system_setting`;

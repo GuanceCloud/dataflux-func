@@ -589,11 +589,29 @@ function runUpgrade() {
   var lockKey     = toolkit.strf('{0}#upgradeLock', CONFIG.APP_NAME);
   var lockValue   = toolkit.genRandString();
   var maxLockTime = 30;
+
   async.series([
+    // 更新新版系统设置表名 wat_main_system_config -> wat_main_system_setting
+    function(asyncCallback) {
+      var sql = "show tables LIKE 'wat_main_system_setting'";
+      dbHelper.query(sql, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        // 已存在新版系统设置表
+        if (dbRes.length > 0) return asyncCallback();
+
+        // 更新系统设置表名
+        var sql = 'RENAME TABLE `wat_main_system_config` TO `wat_main_system_setting`';
+        dbHelper.query(sql, null, asyncCallback);
+      });
+    },
     // 更新旧版数据库标记
     function(asyncCallback) {
       var sql = 'UPDATE wat_main_system_setting SET id = ? WHERE id = ?';
-      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ, SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD];
+      var sqlParams = [
+        SYS_CONFIG_ID_UPGRADE_DB_SEQ,
+        SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD,
+      ];
       dbHelper.query(sql, sqlParams, asyncCallback);
     },
     // Check upgrade lock
@@ -665,17 +683,26 @@ function runUpgrade() {
       async.eachSeries(upgradeItems, function(item, eachCallback) {
         console.log(toolkit.strf('Upgading to SEQ {0}...', item.seq));
 
-        dbHelper.query(item.database, null, function(err) {
-          if (err) return eachCallback(err);
-
+        if (item.skipWhenSetup) {
+          // 跳过部分升级处理
           nextUpgradeSeq = item.seq;
 
-          cacheHelper.extendLockTime(lockKey, lockValue, maxLockTime, function(err) {
-            if (err) return console.log('Extend upgrading lock time failed: ', err);
-          });
-
           return eachCallback();
-        });
+
+        } else {
+          // 正常执行升级处理
+          dbHelper.query(item.database, null, function(err) {
+            if (err) return eachCallback(err);
+
+            nextUpgradeSeq = item.seq;
+
+            cacheHelper.extendLockTime(lockKey, lockValue, maxLockTime, function(err) {
+              if (err) return console.log('Extend upgrading lock time failed: ', err);
+            });
+
+            return eachCallback();
+          });
+        }
       }, asyncCallback);
     },
     // Update upgrade seq
