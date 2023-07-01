@@ -28,7 +28,7 @@ Please input password: 请输入密码
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <!-- Fake user/password -->
                 <el-form-item style="height: 0; overflow: hidden">
@@ -59,12 +59,6 @@ Please input password: 请输入密码
                     show-password
                     v-model="form.password"></el-input>
                 </el-form-item>
-
-                <el-form-item>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -72,6 +66,13 @@ Please input password: 请输入密码
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>

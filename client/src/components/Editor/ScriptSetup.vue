@@ -37,7 +37,7 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
                 <el-form-item v-if="isLockedByMe">
                   <InfoBlock type="success" :title="$t('This Script is locked by you')" />
@@ -87,13 +87,6 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
 
                   <el-button v-if="!!templateScript" @click="showScriptTemplate" type="text">{{ $t('Show Script Template') }}</el-button>
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -101,6 +94,14 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
 
       <LongTextDialog :title="$t('Script Template')" mode="python" ref="longTextDialog" />
     </el-container>

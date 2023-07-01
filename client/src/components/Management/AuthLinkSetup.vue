@@ -61,7 +61,7 @@ recentTaskCount: '{n} 个近期任务'
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
@@ -80,7 +80,7 @@ recentTaskCount: '{n} 个近期任务'
                 </el-form-item>
 
                 <el-form-item :label="$t('Func')" prop="funcId">
-                  <el-cascader class="func-cascader-input" ref="funcCascader"
+                  <el-cascader ref="funcCascader"
                     popper-class="code-font"
                     placeholder="--"
                     filterable
@@ -143,7 +143,7 @@ recentTaskCount: '{n} 个近期任务'
                 </el-form-item>
 
                 <el-form-item :label="$t('Expires')" prop="expireTime">
-                  <el-date-picker class="expire-time-input"
+                  <el-date-picker
                     v-model="form.expireTime"
                     type="datetime"
                     align="left"
@@ -173,13 +173,6 @@ recentTaskCount: '{n} 个近期任务'
                     maxlength="200"
                     v-model="form.note"></el-input>
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -187,6 +180,14 @@ recentTaskCount: '{n} 个近期任务'
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>
@@ -522,9 +523,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.func-cascader-input {
-  width: 485px;
-}
 .task-info-limit-input {
   width: 180px;
 }
@@ -542,9 +540,6 @@ export default {
 }
 .task-info-limit-clear {
   float: right
-}
-.expire-time-input {
-  width: 500px;
 }
 .throttling-input {
   width: 260px;

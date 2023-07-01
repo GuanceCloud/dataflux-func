@@ -40,8 +40,10 @@ Script Set locked  : 脚本集已上锁
 Script Set unlocked: 脚本集已解锁
 Script Set cloned  : 脚本集已克隆
 Script Set exported: 脚本集已导出
+Script Set deleted : 脚本集已删除
 Script locked      : 脚本已上锁
 Script unlocked    : 脚本已解锁
+Script deleted     : 脚本已删除
 
 Installed form Script Market      : 从脚本市场安装的脚本集
 The Script Market has been removed: 脚本市场已被删除
@@ -63,6 +65,8 @@ lastRan       : '{t}调用'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
 
+Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本集?<br><strong class="text-bad">{label}</strong>
+Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本<br><strong class="text-bad">{label}</strong>
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 Crontab Config Task sent: 自动触发配置任务已发送
 
@@ -170,19 +174,30 @@ In most cases, the Script Sets installed from the official Script Market do not 
           <template v-if="[ 'scriptSet', 'script', 'func' ].indexOf(data.type) >= 0">
             <template v-if="[ 'scriptSet', 'script' ].indexOf(data.type) >= 0">
               <br>
+
               <el-button-group>
-                <!-- 添加脚本集 -->
+                <!-- 添加脚本 -->
                 <el-button v-if="data.type === 'scriptSet'"
-                  size="mini"
+                  size="small"
                   :disabled="!data.isEditable"
                   @click="openEntity(data, 'add')">
                   <i class="fa fa-fw fa-plus"></i>
                   {{ $t('New Script') }}
                 </el-button>
 
-                <!-- 快速查看 -->
+                <!-- 配置 -->
+                <el-button
+                  size="small"
+                  @click="openEntity(data, 'setup')">
+                  <i class="fa fa-fw fa-wrench"></i>
+                  {{ $t('Setup') }}
+                </el-button>
+              </el-button-group>
+
+              <!-- 快速查看 -->
+              <el-button-group>
                 <el-button v-if="data.type === 'script'"
-                  size="mini"
+                  size="small"
                   @click="showQuickViewWindow(data)">
                   <i class="fa fa-fw fa-window-restore"></i>
                   {{ $t('Quick View') }}
@@ -190,7 +205,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
 
                 <!-- 置顶 -->
                 <el-button v-if="data.type === 'scriptSet'"
-                  size="mini"
+                  size="small"
                   :disabled="!data.isEditable"
                   v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
                   <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
@@ -199,7 +214,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
 
                 <!-- 锁定/解锁脚本/脚本集 -->
                 <el-button
-                  size="mini"
+                  size="small"
                   :disabled="!data.isEditable || (data.type === 'script' && data.isLockedByScriptSet)"
                   v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
                   <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
@@ -208,28 +223,29 @@ In most cases, the Script Sets installed from the official Script Market do not 
 
                 <!-- 克隆 -->
                 <el-button v-if="data.type === 'scriptSet'"
-                  size="mini"
+                  size="small"
                   @click="cloneData(data)">
                   <i class="fa fa-fw fa-files-o"></i>
                   {{ $t('Clone') }}
                 </el-button>
 
-                <!-- 克隆 -->
+                <!-- 导出 -->
                 <el-button v-if="data.type === 'scriptSet'"
-                  size="mini"
+                  size="small"
                   @click="exportData(data)">
                   <i class="fa fa-fw fa-cloud-download"></i>
                   {{ $t('Export') }}
                 </el-button>
-
-                <!-- 配置 -->
-                <el-button
-                  size="mini"
-                  @click="openEntity(data, 'setup')">
-                  <i class="fa fa-fw fa-wrench"></i>
-                  {{ $t('Setup') }}
-                </el-button>
               </el-button-group>
+
+              <!-- 删除 -->
+              <el-button
+                class="delete-button"
+                size="small"
+                @click="deleteEntity(data)">
+                <i class="fa fa-fw fa-times"></i>
+                {{ $t('Delete') }}
+              </el-button>
             </template>
 
             <!-- 关联配置 -->
@@ -1191,6 +1207,41 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+    },
+    async deleteEntity(data) {
+      let apiPath     = null;
+      let confirmText = null;
+      let finishText  = null;
+      switch(data.type) {
+        // 脚本集节点
+        case 'scriptSet':
+          apiPath     = '/api/v1/script-sets/:id/do/delete';
+          confirmText = this.$t('Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>', { label: data.label });
+          finishText  = this.$t('Script Set deleted');
+          break;
+
+        // 脚本节点
+        case 'script':
+          apiPath     = '/api/v1/scripts/:id/do/delete';
+          confirmText = this.$t('Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>', { label: data.label });
+          finishText  = this.$t('Script deleted');
+          break;
+
+        default:
+          return;
+      }
+      if (!await this.T.confirm(confirmText)) return;
+
+      let apiRes = await this.T.callAPI(apiPath, {
+        params: { id: data.id },
+        alert : { okMessage: finishText },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$router.push({
+        name: 'intro',
+      });
+      this.$store.commit('updateScriptListSyncTime');
     },
 
     async loadRelEntityData(data) {

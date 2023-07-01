@@ -96,17 +96,6 @@ Data exported: 数据已导出
                     v-model="form.note"></el-input>
                   <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button @click="goToHistory">
-                    <i class="fa fa-fw fa-history"></i>
-                    {{ $t('Script Set Export History') }}
-                  </el-button>
-
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -114,6 +103,17 @@ Data exported: 数据已导出
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button @click="goToHistory">
+            <i class="fa fa-fw fa-history"></i>
+            {{ $t('Script Set Export History') }}
+          </el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
+        </div>
+      </el-footer>
 
       <el-dialog
         :title="$t('Data exported')"

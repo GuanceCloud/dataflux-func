@@ -28,7 +28,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
@@ -67,13 +67,6 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                   <InfoBlock v-if="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting)"
                     :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips" />
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -81,6 +74,14 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>

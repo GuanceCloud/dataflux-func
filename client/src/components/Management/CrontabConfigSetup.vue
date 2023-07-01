@@ -76,10 +76,10 @@ shortcutDays  : '{n} 天'
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Func')" prop="funcId">
-                  <el-cascader class="func-cascader-input" ref="funcCascader"
+                  <el-cascader ref="funcCascader"
                     popper-class="code-font"
                     placeholder="--"
                     filterable
@@ -226,7 +226,7 @@ shortcutDays  : '{n} 天'
                 <!-- Crontab配置结束 -->
 
                 <el-form-item :label="$t('Expires')" prop="expireTime">
-                  <el-date-picker class="expire-time-input"
+                  <el-date-picker
                     v-model="form.expireTime"
                     type="datetime"
                     align="left"
@@ -244,13 +244,6 @@ shortcutDays  : '{n} 天'
                     maxlength="200"
                     v-model="form.note"></el-input>
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -258,6 +251,14 @@ shortcutDays  : '{n} 天'
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>
@@ -757,9 +758,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.func-cascader-input {
-  width: 485px;
-}
 .task-info-limit-input {
   width: 180px;
 }
@@ -777,9 +775,6 @@ export default {
 }
 .task-info-limit-clear {
   float: right
-}
-.expire-time-input {
-  width: 500px;
 }
 .crontab-expr-parts {
   font-size: xx-large;

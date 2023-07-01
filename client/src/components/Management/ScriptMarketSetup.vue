@@ -40,7 +40,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <!-- Fake user/password -->
                 <el-form-item style="height: 0; overflow: hidden">
@@ -150,18 +150,6 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                   </el-form-item>
                   <!-- 可变部分结束 -->
                 </template>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-
-                  <div class="setup-right">
-                    <el-button type="primary" @click="submitData"
-                      :disabled="isSaving">
-                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
-                      {{ $t('Save') }}
-                    </el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -170,6 +158,17 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
         </el-row>
       </el-main>
 
+      <!-- 底部栏 -->
+      <el-footer v-if="selectedType">
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" @click="submitData"
+            :disabled="isSaving">
+            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+            {{ $t('Save') }}
+          </el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>

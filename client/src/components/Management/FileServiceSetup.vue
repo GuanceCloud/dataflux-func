@@ -38,7 +38,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-switch v-model="useCustomId"></el-switch>
@@ -57,7 +57,7 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                 </el-form-item>
 
                 <el-form-item :label="$t('Root')" prop="root">
-                  <el-cascader class="root-cascader-input" ref="rootCascader"
+                  <el-cascader ref="rootCascader"
                     placeholder="--"
                     separator=""
                     v-model="form.root"
@@ -72,13 +72,6 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
                     maxlength="200"
                     v-model="form.note"></el-input>
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -86,6 +79,14 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>
@@ -284,7 +285,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.root-cascader-input {
-  width: 500px;
-}
 </style>

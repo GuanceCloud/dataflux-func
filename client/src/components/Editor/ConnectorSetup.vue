@@ -92,7 +92,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
                 <!-- Fake user/password -->
                 <el-form-item style="height: 0; overflow: hidden">
@@ -310,7 +310,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       <el-form-item
                         class="func-cascader-input"
                         :key="`handler-${index}`"
-                        :prop="`configJSON.topicHandlers.${index}.funcId`"
+                        :prop="`configJSON.topicH !importantandlers.${index}.funcId`"
                         :rules="formRules_topicHandler">
                         <el-cascader ref="funcCascader"
                           popper-class="code-font"
@@ -355,39 +355,35 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   <!-- 可变区域结束 -->
                 </template>
               </el-form>
-
-              <!-- 此处特殊处理：要始终保证可以测试连接器 -->
-              <el-form label-width="120px" v-if="selectedType">
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
-
-                  <div class="setup-right">
-                    <el-button v-if="T.setupPageMode() === 'setup'" @click="testConnector"
-                      :disabled="testConnectorResult === 'running'">
-                      <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
-                      <i class="fa fa-fw fa-times text-bad" v-if="testConnectorResult === 'ng'"></i>
-                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="testConnectorResult === 'running'"></i>
-                      {{ $t('Test connection') }}
-                    </el-button>
-
-                    &nbsp;
-                    <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
-                      :disabled="isSaving">
-                      <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
-                      {{ $t('Save') }}
-                      <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </el-dropdown>
-                  </div>
-                </el-form-item>
-              </el-form>
             </div>
           </el-col>
           <el-col :span="9" class="hidden-md-and-down">
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer v-if="selectedType">
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button v-if="T.setupPageMode() === 'setup'" @click="testConnector"
+            :disabled="testConnectorResult === 'running'">
+            <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
+            <i class="fa fa-fw fa-times text-bad" v-else-if="testConnectorResult === 'ng'"></i>
+            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-else-if="testConnectorResult === 'running'"></i>
+            <i class="fa fa-fw fa-question-circle" v-else></i>
+            {{ $t('Test connection') }}
+          </el-button>
+          <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
+            :disabled="isSaving">
+            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+            {{ $t('Save') }}
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </el-footer>
 
       <!-- 连接器提示 -->
       <FeatureNoticeDialog
@@ -692,11 +688,13 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/connectors/:id/do/test', {
         params: { id: this.$route.params.id },
       });
-      if (apiRes.ok) {
-        this.testConnectorResult = 'ok';
-      } else {
-        this.testConnectorResult = 'ng';
-      }
+      setTimeout(() => {
+        if (apiRes.ok) {
+          this.testConnectorResult = 'ok';
+        } else {
+          this.testConnectorResult = 'ng';
+        }
+      }, 1000);
     },
     hasConfigField(type, field) {
       if (!this.C.CONNECTOR_MAP.get(type) || !this.C.CONNECTOR_MAP.get(type).configFields) {
@@ -1037,7 +1035,7 @@ export default {
 .topic-handler .el-input,
 .func-cascader-input .el-cascader,
 .recent-message .form-tip {
-  width: 420px;
+  width: 420px !important;
 }
 .topic-handler .el-link {
   float: right;

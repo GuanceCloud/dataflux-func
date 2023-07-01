@@ -11,6 +11,9 @@ Copy {name} ID : 复制{name} ID
 
 Connector pinned  : 连接器已置顶
 Connector unpinned: 连接器已取消
+Connector deleted : 连接器已删除
+
+Are you sure you want to delete the Connector?<br><strong class="text-bad">{label}</strong>: 是否确认删除此连接器<br><strong class="text-bad">{label}</strong>
 
 Go to Recent Task Info: 前往最近任务信息
 </i18n>
@@ -114,6 +117,15 @@ Go to Recent Task Info: 前往最近任务信息
               {{ data.isBuiltin ? $t('View') : $t('Setup') }}
             </el-button>
           </el-button-group>
+
+          <!-- 删除 -->
+          <el-button
+            class="delete-button"
+            size="small"
+            @click="deleteEntity(data)">
+            <i class="fa fa-fw fa-times"></i>
+            {{ $t('Delete') }}
+          </el-button>
 
           <!-- 关联配置 -->
           <div class="goto-links" v-if="data.connectorType">
@@ -340,6 +352,20 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+    },
+    async deleteEntity(data) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Connector?<br><strong class="text-bad">{label}</strong>', { label: data.label }))) return;
+
+      let apiRes = await this.T.callAPI('/api/v1/connectors/:id/do/delete', {
+        params: { id: data.id },
+        alert : { okMessage: this.$t('Connector deleted') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$router.push({
+        name: 'intro',
+      });
+      this.$store.commit('updateConnectorListSyncTime');
     },
   },
   props: {

@@ -25,7 +25,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Note')" prop="note">
                   <el-input
@@ -36,17 +36,6 @@ Script Lib Recover Point created: 脚本库还原点已创建
                     v-model="form.note"></el-input>
                   <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button @click="goToHistory">
-                    <i class="fa fa-fw fa-history"></i>
-                    {{ $t('Script Lib Recover Points' )}}
-                  </el-button>
-
-                  <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Create') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -54,6 +43,17 @@ Script Lib Recover Point created: 脚本库还原点已创建
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button @click="goToHistory">
+            <i class="fa fa-fw fa-history"></i>
+            {{ $t('Script Lib Recover Points' )}}
+          </el-button>
+          <el-button type="primary" @click="submitData">{{ $t('Create') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>

@@ -8,6 +8,7 @@ Guance Data Report         : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
 
+Delete Image          : 删除图片
 Show Advanced Settings: 显示高级设置
 Hide Advanced Settings: 隐藏高级设置
 Advanced Settings     : 高级设置
@@ -51,7 +52,7 @@ Save and Refresh: 保存并刷新
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form">
                 <!-- 网站标题 -->
                 <el-divider content-position="left"><h1>{{ $t('Custom Site Title') }}</h1></el-divider>
@@ -101,6 +102,11 @@ Save and Refresh: 保存并刷新
                       <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
                     </template>
                   </el-upload>
+                  <el-button v-if="form.CUSTOM_FAVICON_IMAGE_SRC"
+                    type="text"
+                    @click="removeImage('CUSTOM_FAVICON_IMAGE_SRC')">
+                    {{ $t('Delete Image') }}
+                  </el-button>
                 </el-form-item>
 
                 <!-- 自定义 Logo -->
@@ -133,6 +139,11 @@ Save and Refresh: 保存并刷新
                       <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
                     </template>
                   </el-upload>
+                  <el-button v-if="form.CUSTOM_LOGO_IMAGE_SRC"
+                    type="text"
+                    @click="removeImage('CUSTOM_LOGO_IMAGE_SRC')">
+                    {{ $t('Delete Image') }}
+                  </el-button>
                 </el-form-item>
 
                 <!-- 提示栏 -->
@@ -262,9 +273,6 @@ Save and Refresh: 保存并刷新
 
                 <el-form-item>
                   <el-button @click="showAdvancedSettings = !showAdvancedSettings">{{ showAdvancedSettings ? $t('Hide Advanced Settings') : $t('Show Advanced Settings') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save and Refresh') }}</el-button>
-                  </div>
                 </el-form-item>
               </el-form>
             </div>
@@ -273,6 +281,13 @@ Save and Refresh: 保存并刷新
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save and Refresh') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>
@@ -345,11 +360,11 @@ export default {
     },
 
     onCustomBase64ImageChange(file, fileList, key) {
-      var self = this;
+      let self = this;
 
       if (fileList.length > 1) fileList.splice(0, 1);
 
-      var reader = new FileReader();
+      let reader = new FileReader();
       reader.readAsDataURL(file.raw);
       reader.onload = () => {
         this.form[key] = reader.result;
@@ -363,6 +378,20 @@ export default {
     },
     onNoticeBarColorChange(color) {
       this.form.NOTICE_BAR_COLOR = color;
+    },
+
+    removeImage(imageKey) {
+      console.log(imageKey)
+      if (this.form[imageKey]) {
+        console.log(1)
+        this.form[imageKey] = null;
+      }
+
+      let upload = this.$refs[imageKey];
+      if (upload) {
+        console.log(2)
+        upload.clearFiles();
+      }
     },
   },
   computed: {

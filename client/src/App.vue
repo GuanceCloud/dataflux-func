@@ -585,27 +585,50 @@ ul {
   width: 620px;
 }
 
-.common-form {
+.delete-button {
+  color: #FF0000 !important;
+  border-color: #FF000077 !important;
+}
+.setup-footer {
+  width: 620px;
+  text-align: right;
+  padding-top: 15px;
+  border-top: 1px dashed #dddfe6;
+}
+.setup-footer .el-button+.el-button,
+.setup-footer .el-button+.el-dropdown
+ {
+  margin-left: 10px;
+}
+.setup-footer .delete-button {
+  float: left;
+}
+
+.setup-form {
   width: 620px;
 }
-.common-form .form-item-tip {
+.setup-form .form-item-tip {
   color: darkgrey !important;
   margin-left: 25px;
   line-height: 1.5;
 }
-.common-form .el-color-picker,
-.common-form .el-color-picker__trigger {
+.setup-form .el-color-picker,
+.setup-form .el-color-picker__trigger {
   width: 100%;
 }
-.common-form .el-upload-dragger {
+.setup-form .el-date-editor,
+.setup-form .el-cascader {
+  width: 485px !important;
+}
+.setup-form .el-upload-dragger {
   width: 485px;
   height: unset;
 }
-.common-form .el-upload-dragger > .image-preview {
+.setup-form .el-upload-dragger > .image-preview {
   max-width: 485px;
   padding: 10px;
 }
-.common-form .el-upload-dragger > .image-preview > img {
+.setup-form .el-upload-dragger > .image-preview > img {
   max-width: 100%;
 }
 
@@ -631,6 +654,10 @@ ul {
   padding: 5px 0 0 0 !important;
 }
 
+.button-bad {
+  color: red !important;
+  border-color: red !important;
+}
 .text-main {
   color: #FF6600 !important;
   /* text-shadow: #ffa5004d 0 0 10px; */

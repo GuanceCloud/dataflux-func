@@ -25,6 +25,7 @@ Vue.component('split-pane', splitPane);
 // import '@/theme/element-#FF6600/index.css'
 import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
+ElementUI.Footer.props.height.default             = '80px';
 ElementUI.Tooltip.props.transition.default        = false;
 ElementUI.Popover.props.transition.default        = false;
 ElementUI.Popover.props.openDelay.default         = 50;

@@ -20,7 +20,7 @@ Access Key created: Access Key 已创建
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Name')" prop="name">
                   <el-input
@@ -35,12 +35,6 @@ Access Key created: Access Key 已创建
                 <el-form-item label="Secret">
                   <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
                 </el-form-item>
-
-                <el-form-item>
-                  <div class="setup-right">
-                    <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -48,6 +42,13 @@ Access Key created: Access Key 已创建
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
     </el-container>
   </transition>
 </template>

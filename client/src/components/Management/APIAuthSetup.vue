@@ -46,7 +46,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item :label="$t('Auth Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
@@ -146,7 +146,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                   <!-- 函数认证配置 -->
                   <template v-if="hasConfigField(selectedType, 'funcId')">
                     <el-form-item :label="$t('Func')" prop="configJSON.funcId">
-                      <el-cascader class="func-cascader-input" ref="funcCascader"
+                      <el-cascader ref="funcCascader"
                         placeholder="--"
                         filterable
                         :filter-method="common.funcCascaderFilter"
@@ -170,13 +170,6 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                       v-model="form.note"></el-input>
                   </el-form-item>
                 </template>
-
-                <el-form-item>
-                  <el-button v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-                  <div class="setup-right">
-                    <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -184,6 +177,14 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer v-if="selectedType">
+        <div class="setup-footer">
+          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+        </div>
+      </el-footer>
 
       <LongTextDialog :title="$t('Sample Code')" mode="python" ref="longTextDialog" />
     </el-container>
@@ -485,11 +486,6 @@ def my_auth_func():
 .config-divider {
   margin-bottom: 0;
 }
-
-.func-cascader-input {
-  width: 485px;
-}
-
 .fixed-field-location .el-select {
   width: 420px;
   display: inline-block;

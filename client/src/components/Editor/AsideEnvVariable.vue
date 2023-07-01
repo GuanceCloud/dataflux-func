@@ -9,6 +9,9 @@ Copy {name} ID: 复制{name} ID
 
 ENV Variable pinned  : 环境变量已置顶
 ENV Variable unpinned: 环境变量已取消
+ENV Variable deleted : 环境变量已删除
+
+Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</strong>: 是否确认删除此环境变量？<br><strong class="text-bad">{label}</strong>
 </i18n>
 
 <template>
@@ -93,6 +96,15 @@ ENV Variable unpinned: 环境变量已取消
               {{ $t('Setup') }}
             </el-button>
           </el-button-group>
+
+          <!-- 删除 -->
+          <el-button
+            class="delete-button"
+            size="small"
+            @click="deleteEntity(data)">
+            <i class="fa fa-fw fa-times"></i>
+            {{ $t('Delete') }}
+          </el-button>
 
           <div slot="reference" class="aside-item">
             <!-- 项目内容 -->
@@ -288,6 +300,20 @@ export default {
           console.error(`Unexcepted data type: ${data.type}`);
           break;
       }
+    },
+    async deleteEntity(data) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</strong>', { label: data.label }))) return;
+
+      let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
+        params: { id: data.id },
+        alert : { okMessage: this.$t('ENV Variable deleted') },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.$router.push({
+        name: 'intro',
+      });
+      this.$store.commit('updateEnvVariableListSyncTime');
     },
   },
   props: {

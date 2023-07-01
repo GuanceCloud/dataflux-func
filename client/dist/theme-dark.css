@@ -16,6 +16,9 @@ img {
   filter: invert(1) hue-rotate(180deg);
 }
 
+.setup-footer {
+  border-top-color: #3c3c3c !important;
+}
 .node-card .stage-header {
   background-color: #333 !important;
 }

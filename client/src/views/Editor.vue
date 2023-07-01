@@ -178,6 +178,6 @@ export default {
 }
 .aside-tip {
   padding: 12px !important;
-  max-width: 600px;
+  max-width: 650px;
 }
 </style>

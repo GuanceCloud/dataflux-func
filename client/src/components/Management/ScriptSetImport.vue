@@ -22,7 +22,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px">
                 <el-form-item :label="$t('Select a file')" prop="upload">
                   <el-upload drag ref="upload" :class="uploadAreaBorderClass"
@@ -38,17 +38,6 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
                   </el-upload>
                   <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')" />
                 </el-form-item>
-
-                <el-form-item>
-                  <el-button @click="goToHistory">
-                    <i class="fa fa-fw fa-history"></i>
-                    {{ $t('Script Set Import History') }}
-                  </el-button>
-
-                  <div class="setup-right">
-                    <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
-                  </div>
-                </el-form-item>
               </el-form>
             </div>
           </el-col>
@@ -56,6 +45,17 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
           </el-col>
         </el-row>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-footer">
+          <el-button @click="goToHistory">
+            <i class="fa fa-fw fa-history"></i>
+            {{ $t('Script Set Import History') }}
+          </el-button>
+          <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
+        </div>
+      </el-footer>
 
       <el-dialog
         :title="$t('Importing')"

@@ -590,25 +590,28 @@ function runUpgrade() {
   var lockValue   = toolkit.genRandString();
   var maxLockTime = 30;
 
+  var system_setting_table = 'wat_main_system_setting';
   async.series([
-    // 更新新版系统设置表名 wat_main_system_config -> wat_main_system_setting
+    // 检查当前系统设置表名
+    //    wat_main_system_config OR wat_main_system_setting
     function(asyncCallback) {
-      var sql = "show tables LIKE 'wat_main_system_setting'";
+      var sql = "SHOW TABLES LIKE 'wat_main_system_setting'";
       dbHelper.query(sql, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        // 已存在新版系统设置表
-        if (dbRes.length > 0) return asyncCallback();
+        // 不存在新版系统设置表，旧表
+        if (dbRes.length <= 0) {
+          system_setting_table = 'wat_main_system_config';
+        }
 
-        // 更新系统设置表名
-        var sql = 'RENAME TABLE `wat_main_system_config` TO `wat_main_system_setting`';
-        dbHelper.query(sql, null, asyncCallback);
+        return asyncCallback();
       });
     },
-    // 更新旧版数据库标记
+    // 更新数据库旧版标记
     function(asyncCallback) {
-      var sql = 'UPDATE wat_main_system_setting SET id = ? WHERE id = ?';
+      var sql = 'UPDATE ?? SET id = ? WHERE id = ?';
       var sqlParams = [
+        system_setting_table,
         SYS_CONFIG_ID_UPGRADE_DB_SEQ,
         SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD,
       ];
@@ -647,8 +650,11 @@ function runUpgrade() {
     },
     // Get upgrade items
     function(asyncCallback) {
-      var sql = 'SELECT value FROM wat_main_system_setting WHERE id = ?';
-      var sqlParams = [SYS_CONFIG_ID_UPGRADE_DB_SEQ];
+      var sql = 'SELECT value FROM ?? WHERE id = ?';
+      var sqlParams = [
+        system_setting_table,
+        SYS_CONFIG_ID_UPGRADE_DB_SEQ,
+      ];
       dbHelper.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
@@ -709,6 +715,7 @@ function runUpgrade() {
     function(asyncCallback) {
       if (toolkit.isNothing(nextUpgradeSeq)) return asyncCallback();
 
+      // 此时系统设置表一定为新表名
       var sql = toolkit.isNothing(currentUpgradeSeq)
               ? 'INSERT INTO wat_main_system_setting SET value = ?, id = ?'
               : 'UPDATE wat_main_system_setting SET value = ? WHERE id = ?';

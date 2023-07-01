@@ -38,7 +38,7 @@ Page will be refreshed, and config will reload from server: 即将刷新页面�
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" :model="form" label-width="0px">
                 <el-form-item>
                   <InfoBlock type="info" :title="$t('If you got trouble with UI or Code Editor, please try to clear cache')" />
@@ -153,7 +153,7 @@ export default {
 </script>
 
 <style>
-.common-form .clear-cache-button {
+.setup-form .clear-cache-button {
   margin-left: 35px;
 }
 </style>

@@ -32,7 +32,7 @@ New password not matches                                         : 两次输入�
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules" :disabled="$store.getters.isIntegratedUser">
                 <el-form-item>
                   <InfoBlock v-if="$store.getters.isIntegratedUser" type="warning" :title="$t('You are signed in as a integrated user, please change your password in the origin system')" />
@@ -229,10 +229,10 @@ export default {
 </script>
 
 <style>
-.common-form [_captcha] .el-input {
+.setup-form [_captcha] .el-input {
   width: 330px;
 }
-.common-form [_captcha] .captcha-image {
+.setup-form [_captcha] .captcha-image {
   display: inline-block;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -241,7 +241,7 @@ export default {
   width: 136px;
   overflow: hidden;
 }
-.common-form [_captcha] .captcha-image svg {
+.setup-form [_captcha] .captcha-image svg {
   transform: scale(1.15);
   left: 8px;
   top: 5px;

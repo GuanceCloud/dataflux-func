@@ -72,7 +72,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
       <el-main>
         <el-row :gutter="20">
           <el-col :span="15">
-            <div class="common-form">
+            <div class="setup-form">
               <el-form ref="form" :model="form" label-width="0px">
                 <el-form-item>
                   <InfoBlock type="info" :title="$t('Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.')" />
