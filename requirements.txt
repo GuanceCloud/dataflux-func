@@ -33,5 +33,6 @@ requests==2.28.1
 retry2==0.9.4
 simplejson==3.17.6
 six==1.16.0
+toml==0.10.2
 ujson==5.4.0
 xmltodict==0.13.0
