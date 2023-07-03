@@ -9,7 +9,7 @@ var request    = require('request');
 
 /* Project Modules */
 var toolkit    = require('./toolkit');
-var IMAGE_INFO = require('../utils/yamlResources').get('IMAGE_INFO');
+var IMAGE_INFO = require('../../image-info.json');
 
 var common = exports;
 
