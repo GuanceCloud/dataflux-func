@@ -91,6 +91,7 @@ else:
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
 
 ESCAPE_REPLACER           = r'\\\1'
+RE_NORMALIZE_SPACE        = re.compile('\s')
 RE_ESCAPE_TAG_KEY         = re.compile('([,= ])')
 RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
