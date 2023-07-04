@@ -233,10 +233,11 @@ class DataFluxFunc(object):
 
         # Get response
         resp = conn.getresponse()
-        conn.close()
 
         resp_status_code = resp.status
         resp_raw_data    = resp.read()
+
+        conn.close()
 
         resp_content_type = resp.getheader('Content-Type')
         if isinstance(resp_content_type, string_types):

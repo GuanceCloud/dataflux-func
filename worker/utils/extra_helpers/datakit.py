@@ -373,10 +373,11 @@ class DataKit(object):
                 raise Exception('Send request `{} {}:{}{}` failed: {}'.format(method, self.host, self.port, path, str(e)))
 
             resp = conn.getresponse()
-            conn.close()
 
             resp_status_code = resp.status
             resp_raw_data    = resp.read()
+
+            conn.close()
 
             resp_data = resp_raw_data
             try:
