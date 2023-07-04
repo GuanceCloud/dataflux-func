@@ -95,10 +95,12 @@ def before_app_create():
             print(f'Database Timezone: {timezone}');
 
 def after_app_created(celery_app):
-    from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run
+    from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run, auto_backup_db
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
-        reload_data_md5_cache.apply_async(kwargs={ 'lockTime': 15, 'all': True }, countdown=10)
-        auto_run.apply_async(countdown=10)
-        auto_clean.apply_async(countdown=30)
+        auto_backup_db.apply_async()
+        reload_data_md5_cache.apply_async(kwargs={ 'lockTime': 15, 'all': True })
+
+        auto_run.apply_async(countdown=5)
+        auto_clean.apply_async(countdown=15)

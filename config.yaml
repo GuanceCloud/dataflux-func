@@ -63,7 +63,7 @@ DB_AUTO_BACKUP_LIMIT: 168
 
 # 数据库自动备份目录
 # 必须使用绝对路径
-DB_AUTO_BACKUP_PATH: '/data/sqldump/'
+DB_AUTO_BACKUP_DIR: '/data/sqldump/'
 
 # Web服务器访问URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
@@ -350,7 +350,6 @@ _DBDATA_LOG_CACHE_TABLE_LIST:
 
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
-_DB_AUTO_BACKUP_EXT   : .sql
 
 # 过时的数据
 _DEPRECATED_TABLE_LIST:

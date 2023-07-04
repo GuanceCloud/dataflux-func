@@ -10,6 +10,7 @@ import traceback
 import pprint
 import os
 import textwrap
+import zipfile
 
 # 3rd-party Modules
 import six
@@ -894,6 +895,10 @@ class AutoBackupDBTask(BaseTask):
                     t = field_type_map[f]
                     if v is None:
                         _d.append(None)
+
+                    elif isinstance(v, arrow.Arrow):
+                        _d.append(v.format('YYYY-MM-DD HH:mm:ss'))
+
                     else:
                         if t == 'hexStr':
                             _d.append(HexStr(v))
@@ -917,17 +922,19 @@ class AutoBackupDBTask(BaseTask):
         return table_dumps_parts
 
     def run_backup(self, tables):
-        # 准备备份
-        now = arrow.get().to('Asia/Shanghai')
-        date_str = now.format('YYYYMMDD-HHmmss')
-        dump_file_dir  = CONFIG['DB_AUTO_BACKUP_PATH']
-        dump_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}{CONFIG['_DB_AUTO_BACKUP_EXT']}"
-        dump_file_path = os.path.join(dump_file_dir, dump_file_name)
-
         # 保证目录
-        os.makedirs(dump_file_dir, exist_ok=True)
+        backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        os.makedirs(backup_dir, exist_ok=True)
 
-        with open(dump_file_path, 'a') as _f:
+        # 准备备份
+        now      = arrow.get().to('Asia/Shanghai')
+        date_str = now.format('YYYYMMDD-HHmmss')
+
+        # 生成待压缩文件
+        sql_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}.sql"
+        sql_file_path = os.path.join(backup_dir, sql_file_name)
+
+        with open(sql_file_path, 'a') as _f:
             _f.write(textwrap.dedent(f'''
                     -- {'-' * 50}
                     -- DataFlux Func DB Backup
@@ -935,27 +942,41 @@ class AutoBackupDBTask(BaseTask):
                     -- Version: {IMAGE_INFO['VERSION']}
                     -- {'-' * 50}
                 ''').lstrip())
+
             for t in tables:
                 table_dump_parts = self.get_table_dump_parts(t)
                 if table_dump_parts:
                     table_dumps = '\n'.join(table_dump_parts) + '\n\n'
                     _f.write(table_dumps)
 
+        # 生成压缩文件
+        zip_file_name = f"{CONFIG['_DB_AUTO_BACKUP_PREFIX']}{date_str}.zip"
+        zip_file_path = os.path.join(backup_dir, zip_file_name)
+
+        with zipfile.ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED) as _z:
+            _z.write(sql_file_path, arcname=sql_file_name)
+
+        # 删除待压缩文件
+        os.remove(sql_file_path)
+
     def limit_backups(self):
-        dump_file_dir = CONFIG['DB_AUTO_BACKUP_PATH']
-        if not os.path.exists(dump_file_dir):
+        backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        if not os.path.exists(backup_dir):
             return
 
+        # 获取备份文件名
         backup_file_names = []
-        with os.scandir(dump_file_dir) as _dir:
+        with os.scandir(backup_dir) as _dir:
             for _f in _dir:
-                if _f.is_file() and _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']) and _f.name.endswith(CONFIG['_DB_AUTO_BACKUP_EXT']):
+                if _f.is_file() and _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']) \
+                    and (_f.name.endswith('.sql') or _f.name.endswith('.zip')):
                     backup_file_names.append(_f.name)
 
+        # 删除多余备份
         backup_file_names.sort()
         if len(backup_file_names) > CONFIG['DB_AUTO_BACKUP_LIMIT']:
             for file_name in backup_file_names[0:-1 * CONFIG['DB_AUTO_BACKUP_LIMIT']]:
-                file_path = os.path.join(dump_file_dir, file_name)
+                file_path = os.path.join(backup_dir, file_name)
                 os.remove(file_path)
 
 @app.task(name='Sys.AutoBackupDB', bind=True, base=AutoBackupDBTask)
