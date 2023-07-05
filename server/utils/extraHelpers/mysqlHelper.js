@@ -1,13 +1,12 @@
 'use strict';
 
 /* Built-in Modules */
-var path = require('path');
+var util = require('util');
 
 /* 3rd-party Modules */
-var async     = require('async');
-var fs        = require('fs-extra');
 var mysql     = require('mysql2');
 var sqlstring = require('sqlstring');
+var moment    = require('moment');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
@@ -632,6 +631,37 @@ MySQLHelper.prototype.getData = function(options, dbRes) {
 };
 
 /**
+ * Convert Date object to string for SQL parameters.
+ *
+ * @param  {*[]} sqlParams
+ * @return {*[]}
+ */
+MySQLHelper.prototype.convertDate = function(sqlParams) {
+  if (!Array.isArray(sqlParams) || !this.config.timezone) return sqlParams;
+
+  for (var i = 0; i < sqlParams.length; i++) {
+    var p = sqlParams[i];
+
+    if (util.types.isDate(p)) {
+      // Parameter
+      sqlParams[i] = moment(p).utcOffset(this.config.timezone).format('YYYY-MM-DD HH:mm:ss');
+
+    } else if (toolkit.isJSON(p)) {
+      // Parameter in JSON
+      for (var k in p) {
+        var v = p[k];
+
+        if (util.types.isDate(v)) {
+          p[k] = moment(v).utcOffset(this.config.timezone).format('YYYY-MM-DD HH:mm:ss');
+        }
+      }
+    }
+  }
+
+  return sqlParams;
+};
+
+/**
  * Format the SQL statement with parameters.
  *
  * @param  {String} sql
@@ -639,6 +669,12 @@ MySQLHelper.prototype.getData = function(options, dbRes) {
  * @return {String}
  */
 MySQLHelper.prototype.format = function(sql, sqlParams) {
+  try {
+    sqlParams = this.convertDate(sqlParams);
+  } catch(err) {
+    // nope
+  }
+
   return sqlstring.format(sql, sqlParams);
 };
 

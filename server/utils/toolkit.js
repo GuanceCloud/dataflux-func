@@ -763,7 +763,7 @@ var notNothing = toolkit.notNothing = function notNothing(o) {
  */
 var isJSON = toolkit.isJSON = function isJSON(o) {
   if (typeof(o) == 'object'
-      && Object.prototype.toString.call(o).toLowerCase() == '[object object]'
+      && Object.prototype.toString.call(o) == '[object Object]'
       && !o.length) {
     return true;
   }
