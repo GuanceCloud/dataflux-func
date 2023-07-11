@@ -26,10 +26,10 @@ Get from the arguments when calling: 在调用时从参数中获取
       ><code v-if="!kwargsJSON" class="code-font">...</code
       ><template v-else>
         <div class="code-font func-kwargs-block" v-for="(value, name, index) in kwargsJSON">
-          <el-tooltip placement="top" >
+          <el-tooltip placement="top">
             <div slot="content">
               <pre class="func-kwargs-value" v-if="common.isFuncArgumentPlaceholder(value)">{{ $t('Get from the arguments when calling') }}</pre>
-              <pre class="func-kwargs-value" v-else>{{ JSON.stringify(value, null, 2) }}</pre>
+              <pre class="func-kwargs-value" v-else>{{ T.limitText(JSON.stringify(value, null, 2), 100) }}</pre>
             </div>
             <code class="func-kwargs-name">{{ name }}</code>
           </el-tooltip><span v-if="index < T.jsonLength(kwargsJSON) - 1">,&nbsp;</span>
