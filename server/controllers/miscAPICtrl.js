@@ -670,7 +670,10 @@ exports.systemReport = function(req, res, next) {
       res.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        MYSQL_TABLE = dbRes;
+        MYSQL_TABLE = dbRes.reduce(function(acc, x) {
+          acc[x.Name] = x;
+          return acc;
+        }, {});
 
         return asyncCallback();
       });

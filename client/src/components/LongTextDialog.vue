@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-Download as text file: 作为文本文件下载
+Download as a text file: 作为文本文件下载
 </i18n>
 
 <template>
@@ -15,7 +15,7 @@ Download as text file: 作为文本文件下载
     <div>
       <div class="download-link" v-if="showDownload && fileName && content">
         <el-link type="primary" @click="download">
-          {{ $t('Download as text file') }}
+          {{ $t('Download as a text file') }}
           <i class="fa fa-fw fa-download"></i>
         </el-link>
       </div>

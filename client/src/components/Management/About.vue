@@ -143,19 +143,19 @@ Are you sure you want to clear the Log and Cache?: 是否确认清空日志与�
         </el-row>
       </el-main>
 
-      <LongTextDialog ref="longTextDialog" :showDownload="true" mode="javascript" />
+      <JSONViewerDialog ref="jsonViewerDialog" :showDownload="true" mode="json" />
     </el-container>
   </transition>
 </template>
 
 <script>
 import Vue from 'vue'
-import LongTextDialog from '@/components/LongTextDialog'
+import JSONViewerDialog from '@/components/JSONViewerDialog'
 
 export default {
   name: 'About',
   components: {
-    LongTextDialog,
+    JSONViewerDialog,
   },
   watch: {
     $route: {
@@ -193,7 +193,7 @@ export default {
         var contentTEXT = JSON.stringify(apiRes.data, null, 2);
         let createTimeStr = this.M().utcOffset(8).format('YYYYMMDD_HHmmss');
         let fileName = `system-report.${createTimeStr}`;
-        this.$refs.longTextDialog.update(contentTEXT, fileName);
+        this.$refs.jsonViewerDialog.update(contentTEXT, fileName);
       }
 
       this.isLoadingSystemInfo = false;

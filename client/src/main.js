@@ -38,6 +38,7 @@ ElementUI.Dialog.props.appendToBody.default       = true;
 ElementUI.Dialog.props.top.default                = '10vh';
 Vue.use(ElementUI);
 window.ElementUI = ElementUI
+
 // 国际化
 import VueI18n from 'vue-i18n'
 Vue.use(VueI18n);
@@ -98,6 +99,10 @@ Vue.prototype.validator = validator;
 // 剪贴板
 import clipboardJS from 'clipboard';
 Vue.prototype.clipboardJS = clipboardJS;
+
+// JSON 查看器
+import JsonViewer from 'vue-json-viewer';
+Vue.use(JsonViewer);
 
 // 防止连点
 import preventReClick from '@/preventReClick'
