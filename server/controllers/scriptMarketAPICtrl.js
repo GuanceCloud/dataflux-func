@@ -1446,6 +1446,7 @@ exports.modify = function(req, res, next) {
       scriptMarket.extraJSON = scriptMarket.extraJSON || {};
       for (var k in scriptMarket.extraJSON) {
         switch(k) {
+          // 多语言
           case 'i18n':
             for (var lang in scriptMarket.extraJSON.i18n) {
               data.extraJSON.i18n = data.extraJSON.i18n || {};
@@ -1790,11 +1791,11 @@ exports.install = function(req, res, next) {
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   scriptMarketModel.decipher = true;
 
-  var scriptMarket                = null;
-  var importData                  = null;
-  var requirements                = {};
-  var exampleScriptIds            = [];
-  var configFields                = [];
+  var scriptMarket = null;
+
+  var importData = null;
+  var importInfo = {};
+
   var startupScriptCrontabFuncMap = {};
   var startupScriptIds            = [];
   var startupCrontabIds           = [];
@@ -1818,7 +1819,7 @@ exports.install = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 获取拉取数据数据
+    // 拉取数据
     function(asyncCallback) {
       _pullFromScriptMarket(res.locals, scriptMarket, scriptSetIds, function(err, _importData) {
         if (err) return asyncCallback(err);
@@ -1837,16 +1838,15 @@ exports.install = function(req, res, next) {
         type: 'install',
         note: 'System: Before installing Script Sets',
       };
-      scriptSetModel.import(importData, recoverPoint, function(err, _requirements, _exampleScriptIds, _configFields) {
+      scriptSetModel.import(importData, recoverPoint, function(err, _importInfo) {
         if (err) return asyncCallback(err);
 
-        requirements     = _requirements;
-        exampleScriptIds = _exampleScriptIds;
-        configFields     = _configFields;
+        importInfo = _importInfo;
 
         return asyncCallback();
       });
     },
+    // 根据以来继续拉取数据
     // 自动创建启动脚本
     function(asyncCallback) {
       if (!deployOptions || !deployOptions.withStartupScript) return asyncCallback();
@@ -1929,9 +1929,10 @@ exports.install = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      requirements               : requirements,
-      exampleScriptIds           : exampleScriptIds,
-      configFields               : configFields,
+      requirements    : importInfo.requirements,
+      exampleScriptIds: importInfo.exampleScriptIds,
+      configFields    : importInfo.configFields,
+
       startupScriptIds           : startupScriptIds,
       startupCrontabIds          : startupCrontabIds,
       startupScriptCrontabFuncMap: startupScriptCrontabFuncMap,

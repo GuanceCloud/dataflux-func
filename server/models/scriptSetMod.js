@@ -982,7 +982,12 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         }
       });
 
-      return callback(null, requirements, exampleScriptIds, configFields);
+      var importInfo = {
+        requirements,
+        exampleScriptIds,
+        configFields,
+      }
+      return callback(null, importInfo);
     });
   });
 };
