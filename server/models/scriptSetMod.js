@@ -813,6 +813,8 @@ EntityModel.prototype.getExportData = function(options, callback) {
 EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
+  importData = toolkit.jsonCopy(importData);
+
   /* 兼容处理 */
   importData = common.convertImportExportDataSchema(importData);
 
@@ -842,7 +844,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     },
     // 删除所有涉及的脚本集、脚本、函数
     function(asyncCallback) {
-      if (recoverPoint.type === 'recover') {
+      if (recoverPoint && recoverPoint.type === 'recover') {
         // 恢复模式：清空所有脚本集、脚本、函数
         var sql = toolkit.createStringBuilder();
         sql.append('DELETE FROM biz_main_script_set;');

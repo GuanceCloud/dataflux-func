@@ -1791,7 +1791,8 @@ exports.install = function(req, res, next) {
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
   scriptMarketModel.decipher = true;
 
-  var scriptMarket = null;
+  var scriptMarket   = null;
+  var scriptSetIdMap = {};
 
   var importData = null;
   var importInfo = {};
@@ -1846,7 +1847,107 @@ exports.install = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 根据以来继续拉取数据
+    // 获取所有可用脚本集 ID
+    function(asyncCallback) {
+      _listScriptSets(res.locals, scriptMarket, function(err, scriptSets) {
+        if (err) return asyncCallback(err);
+
+        scriptSetIdMap = scriptSets.reduce(function(acc, x) {
+          acc[x.id] = true;
+          return acc
+        }, {})
+
+        return asyncCallback(err);
+      });
+    },
+    // 根据依赖继续拉取数据
+    function(asyncCallback) {
+      function getDependencies(importData, excludes) {
+        var scriptSetIds = [];
+
+        importData.scriptSets.forEach(function(scriptSet) {
+          scriptSet.scripts.forEach(function(s) {
+            var code = s.code;
+
+            // 清除所有 Python 注释行
+            code = code.replace(/^\s*#\s*.*$/gm, '');
+
+            // 获取所有导入脚本集 ID
+            var m = s.code.match(/(?<=import\s+|from\s+)[a-zA-Z0-9_]+(?=__[a-zA-Z0-9_]+)/g);
+            if (m) {
+              scriptSetIds = scriptSetIds.concat(m);
+            }
+          });
+        });
+
+        // 去重
+        var dependencyMap = {};
+        scriptSetIds.forEach(function(id) {
+          dependencyMap[id] = true;
+        });
+
+        // 去忽略
+        excludes.forEach(function(id) {
+          delete dependencyMap[id];
+        });
+
+        // 去除不存在的脚本
+        for (var id in dependencyMap) {
+          if (!scriptSetIdMap[id]) {
+            delete dependencyMap[id];
+          }
+        }
+
+        return Object.keys(dependencyMap);
+      }
+
+      var importedScriptSetIds = toolkit.jsonCopy(scriptSetIds);
+
+      var moreScriptSetIds = getDependencies(importData, importedScriptSetIds);
+      var moreImportData   = {};
+      async.whilst(
+        // 是否还有更多脚本集需要安装？
+        function() {
+          return moreScriptSetIds.length > 0;
+        },
+        // 继续导入更多脚本集
+        function(whileCallback) {
+          _pullFromScriptMarket(res.locals, scriptMarket, moreScriptSetIds, function(err, _importData) {
+            if (err) return whileCallback(err);
+
+            // 合并脚本集数据
+            for (var k in _importData) {
+              if (!moreImportData[k]) {
+                moreImportData[k] = _importData[k];
+              } else {
+                moreImportData[k] = moreImportData[k].concat(_importData[k]);
+              }
+            }
+
+            // 记录脚本集 ID
+            _importData.scriptSets.forEach(function(sset) {
+              importedScriptSetIds.push(sset.id);
+            });
+
+            // 查询更多脚本集
+            moreScriptSetIds = getDependencies(_importData, importedScriptSetIds);
+
+            return whileCallback();
+          });
+        },
+      // 结束，导入数据
+      function(err) {
+        if (err) return asyncCallback(err);
+        if (toolkit.isNothing(moreImportData)) return asyncCallback(err);
+
+        // 替换 origin, originId
+        common.replaceImportDataOrigin(moreImportData, 'scriptMarket', scriptMarket.id);
+
+        // 自动安装依赖不需要额外还原点
+        var recoverPoint = null;
+        scriptSetModel.import(moreImportData, recoverPoint, asyncCallback);
+      });
+    },
     // 自动创建启动脚本
     function(asyncCallback) {
       if (!deployOptions || !deployOptions.withStartupScript) return asyncCallback();
