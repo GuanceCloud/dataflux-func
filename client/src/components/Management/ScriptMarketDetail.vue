@@ -987,9 +987,9 @@ export default {
 
             // 忽略已安装的依赖包
             if (this.T.notNothing(requirements)) {
-              apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed/do/list');
-              if (apiRes && apiRes.ok) {
-                apiRes.data.forEach(pkg => {
+              let apiRes_pyPkg = await this.T.callAPI_get('/api/v1/python-packages/installed/do/list');
+              if (apiRes_pyPkg && apiRes_pyPkg.ok) {
+                apiRes_pyPkg.data.forEach(pkg => {
                   if (pkg.name in requirements) delete requirements[pkg.name];
                 });
               }
