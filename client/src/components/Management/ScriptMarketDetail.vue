@@ -406,7 +406,7 @@ Translated Text    : 译文
             <!-- 依赖包 -->
             <p v-if="T.notNothing(deployment.requirements)">
               {{ $t('This Script Set requires 3rd party Python packages') }}
-              <br>&#12288;
+              <br>
               <el-button type="text" @click="common.goToPIPTools(deployment.requirements, { newTab: true })">
                 <i class="fa fa-fw fa-external-link"></i>
                 {{ $t('Go to PIP Tool') }}

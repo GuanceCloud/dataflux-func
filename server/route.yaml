@@ -1834,8 +1834,9 @@ scriptSetAPI:
         $type   : boolean
         $example: true
       startupScriptTitle:
-        $desc   : 启动脚本标题
-        $type   : string
+        $desc     : 启动脚本标题
+        $type     : string
+        $allowNull: true
       configReplacer:
         $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
         $type   : json
@@ -2600,8 +2601,9 @@ scriptMarketAPI:
           $type   : boolean
           $example: true
         startupScriptTitle:
-          $desc   : 脚本标题
-          $type   : string
+          $desc     : 启动脚本标题
+          $type     : string
+          $allowNull: true
         configReplacer:
           $desc   : 配置替换（如： 将 `"<您的 AK ID>"` 替换为具体值
           $type   : json

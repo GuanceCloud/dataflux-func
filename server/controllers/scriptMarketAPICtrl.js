@@ -1920,7 +1920,14 @@ exports.install = function(req, res, next) {
           requirements = _requirements;
   
           // 提取 example 脚本 ID / 配置字段
+          var deployScriptSetIdMap = scriptSetIds.reduce(function(acc, x) {
+            acc[x] = true;
+            return acc;
+          }, {});
+
           importData.scripts.forEach(function(s) {
+            if (!deployScriptSetIdMap[s.scriptSetId]) return;
+            
             if (s.id === `${s.scriptSetId}__example`) {
               // example 脚本 ID
               exampleScriptIds.push(s.id);
