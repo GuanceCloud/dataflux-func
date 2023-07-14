@@ -813,8 +813,6 @@ EntityModel.prototype.getExportData = function(options, callback) {
 EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var self = this;
 
-  importData = toolkit.jsonCopy(importData);
-
   /* 兼容处理 */
   importData = common.convertImportExportDataSchema(importData);
 
@@ -966,30 +964,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         });
       });
 
-      // 提取 example 脚本 ID / 配置字段
-      var exampleScriptIds = [];
-      var configFields     = [];
-      importData.scripts.forEach(function(s) {
-        if (s.id === `${s.scriptSetId}__example`) {
-          // example 脚本 ID
-          exampleScriptIds.push(s.id);
-
-          // example 脚本内配置占位符
-          var m = s.code.match(/"<.+>"/g);
-          if (m) {
-            m.forEach(function(placeholder) {
-              configFields.push(placeholder.slice(2, -2));
-            });
-          }
-        }
-      });
-
-      var importInfo = {
-        requirements,
-        exampleScriptIds,
-        configFields,
-      }
-      return callback(null, importInfo);
+      return callback(null, requirements);
     });
   });
 };

@@ -492,10 +492,10 @@ exports.import = function(req, res, next) {
           type: 'import',
           note: 'System: Before importing Script Sets',
         };
-        return scriptSetModel.import(importData, recoverPoint, function(err, importInfo) {
+        return scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
           if (err) return asyncCallback(err);
 
-          requirements = importInfo.requirements;
+          requirements = _requirements;
 
           var celery = celeryHelper.createHelper(res.locals.logger);
           reloadDataMD5Cache(celery, asyncCallback);
@@ -593,10 +593,10 @@ exports.confirmImport = function(req, res, next) {
         type: 'import',
         note: 'System: Before importing Script Sets',
       };
-      scriptSetModel.import(importData, recoverPoint, function(err, importInfo) {
+      scriptSetModel.import(importData, recoverPoint, function(err, _requirements) {
         if (err) return asyncCallback(err);
 
-        requirements = importInfo.requirements;
+        requirements = _requirements;
 
         var celery = celeryHelper.createHelper(res.locals.logger);
         reloadDataMD5Cache(celery, asyncCallback);

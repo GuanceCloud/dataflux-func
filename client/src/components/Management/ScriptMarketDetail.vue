@@ -982,9 +982,10 @@ export default {
             let startupScriptId          = apiRes.data.startupScriptIds[0]                          || null;
             let startupCrontabId         = apiRes.data.startupCrontabIds[0]                         || null;
             let startupScriptCrontabFunc = apiRes.data.startupScriptCrontabFuncMap[startupScriptId] || null;
+            let requirements             = apiRes.data.requirements                                 || null;
+            let configFields             = apiRes.data.configFields                                 || null;
 
-            // 计算缺少的依赖包
-            let requirements = apiRes.data.requirements;
+            // 忽略已安装的依赖包
             if (this.T.notNothing(requirements)) {
               apiRes = await this.T.callAPI_get('/api/v1/python-packages/installed/do/list');
               if (apiRes && apiRes.ok) {
@@ -996,7 +997,7 @@ export default {
 
             this.deployment = {
               requirements            : requirements,
-              configFields            : apiRes.data.configFields,
+              configFields            : configFields,
               exampleScriptId         : exampleScriptId,
               startupScriptId         : startupScriptId,
               startupCrontabId        : startupCrontabId,
@@ -1453,7 +1454,7 @@ export default {
   z-index: 0;
 }
 .secondary-cancel-save-buttons {
-  display: inline-block;
+  display: block;
   float: right;
 }
 </style>
