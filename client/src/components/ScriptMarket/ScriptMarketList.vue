@@ -167,12 +167,12 @@ After adding the Script Market, you can install Script Sets from the Script Mark
               </span>
               <el-badge v-else :value="common.getScriptMarketUpdateBadge(scope.row.id)">
                 <el-button
-                  style="width: 87px"
+                  style="width: 100px"
                   type="primary"
                   size="small"
                   :plain="scope.row.isAdmin ? false : true"
                   @click="openContents(scope.row)">
-                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-th-large' : 'fa-bars'"></i>
+                  <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-cog' : 'fa-th-large'"></i>
                   {{ scope.row.isAdmin ? $t('Admin') : $t('Contents') }}
                 </el-button>
               </el-badge>

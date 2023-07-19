@@ -59,9 +59,10 @@ Add Blueprint to deploy data processing flow in a visualization way: 添加蓝�
           <el-table-column width="135">
             <template slot-scope="scope">
               <el-button
-                style="width: 87px"
+                style="width: 100px"
                 type="primary"
                 size="small"
+                plain
                 @click="openContents(scope.row)">
                 <i class="fa fa-fw fa-th-large"></i>
                 {{ $t('Contents') }}
