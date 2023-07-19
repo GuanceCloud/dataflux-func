@@ -129,7 +129,7 @@ Saved Draft Code: 已保存的草稿代码
 
 <script>
 // @ is an alias to /src
-import CodeEditorSetting from '@/components/Editor/CodeEditorSetting'
+import CodeEditorSetting from '@/components/Development/CodeEditorSetting'
 
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';

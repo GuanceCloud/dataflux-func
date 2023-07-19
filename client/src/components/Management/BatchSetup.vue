@@ -67,7 +67,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-input
-                    maxlength="50"
+                    maxlength="60"
                     v-model="form.id">
                   </el-input>
                   <InfoBlock :title="$t('ID will be a part of the calling URL')" />
@@ -126,7 +126,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
                   <el-select v-model="form.apiAuthId">
-                    <el-option v-for="opt in apiAuthOptions" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
+                    <el-option v-for="opt in apiAuthList" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
                   </el-select>
                 </el-form-item>
 
@@ -135,7 +135,7 @@ recentTaskCount: '{n} 个近期任务'
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     v-model="form.note"></el-input>
                 </el-form-item>
               </el-form>
@@ -296,7 +296,7 @@ export default {
       });
     },
     async deleteData() {
-      if (!await this.T.confirm(`Are you sure you want to delete the Batch?`)) return;
+      if (!await this.T.confirm(this.$t(`Are you sure you want to delete the Batch?`))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
         params: { id: this.$route.params.id },
@@ -376,13 +376,6 @@ export default {
       } else {
         return null;
       }
-    },
-    apiAuthOptions() {
-      return this.apiAuthList.map(d => {
-        let _typeName = this.C.API_AUTH_MAP.get(d.type).name;
-        d.label = `[${_typeName}] ${d.name || ''}`;
-        return d;
-      });
     },
   },
   data() {

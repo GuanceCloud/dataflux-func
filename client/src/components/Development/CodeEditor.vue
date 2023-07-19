@@ -332,7 +332,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
 
 <script>
 // @ is an alias to /src
-import CodeEditorSetting from '@/components/Editor/CodeEditorSetting'
+import CodeEditorSetting from '@/components/Development/CodeEditorSetting'
 import LongTextDialog from '@/components/LongTextDialog'
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';

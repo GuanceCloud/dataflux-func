@@ -2085,9 +2085,9 @@ exports.getAuthLinkFuncList = function(req, res, next) {
         funcIntegration   : d.func_integration,
         funcTagsJSON      : d.func_tagsJSON,
 
-        apiAuthId  : d.apia_id,
-        apiAuthName: d.apia_name,
-        apiAuthType: d.apia_type,
+        apiAuthId   : d.apia_id,
+        apiAuthTitle: d.apia_title,
+        apiAuthType : d.apia_type,
       });
     });
 

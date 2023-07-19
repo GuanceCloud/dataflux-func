@@ -88,7 +88,7 @@ Pressure         : 压力
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('ID')" sortable>
+          <el-table-column :label="ID" sortable>
             <template slot-scope="scope">
               <code class="text-main">{{ scope.row.id }}</code>
               <CopyButton :content="scope.row.id" />

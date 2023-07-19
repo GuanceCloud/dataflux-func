@@ -96,11 +96,13 @@ export async function getAPIAuthList() {
   let apiAuthList = [];
 
   let apiRes = await T.callAPI_getAll('/api/v1/api-auth/do/list', {
-    query: { fields: ['id', 'name', 'type'] },
+    query: { fields: ['id', 'title', 'type'] },
   });
   if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
+    let _typeName = C.API_AUTH_MAP.get(d.type).name;
+    d.label = `[${_typeName}] ${d.title || ''}`;
     apiAuthList.push(d);
   })
 
@@ -275,9 +277,9 @@ export function getScriptMarketClass(scriptMarket) {
   return `logo-${scriptMarket.type}`;
 }
 
-export function getScriptMarketName(scriptMarket) {
-  if (scriptMarket.name) {
-    return scriptMarket.name
+export function getScriptMarketTitle(scriptMarket) {
+  if (scriptMarket.title) {
+    return scriptMarket.title
   } else {
     switch(scriptMarket.type) {
       case 'git':

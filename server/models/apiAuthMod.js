@@ -177,6 +177,12 @@ EntityModel.prototype.modify = function(id, data, callback) {
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
+  // 兼容处理 name -> title
+  if ('name' in data) {
+    data.title = data.title || data.name;
+    delete data.name;
+  }
+
   if (data.configJSON && 'object' === typeof data.configJSON) {
     data.configJSON = JSON.stringify(data.configJSON);
   }

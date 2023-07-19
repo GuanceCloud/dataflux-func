@@ -104,6 +104,7 @@ Go to Recent Task Info: 前往最近任务信息
             <!-- 置顶 -->
             <el-button
               size="small"
+              :class="data.isPinned ? 'aside-on-button' : ''"
               v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
               <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
               {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
@@ -174,7 +175,7 @@ Go to Recent Task Info: 前往最近任务信息
 </template>
 
 <script>
-import SimpleDebugWindow from '@/components/Editor/SimpleDebugWindow'
+import SimpleDebugWindow from '@/components/Development/SimpleDebugWindow'
 
 export default {
   name: 'AsideConnector',
@@ -437,6 +438,8 @@ export default {
   font-size: 14px;
   padding-right: 8px;
   height: 31px;
+  max-width: 100%;
+  overflow: hidden;
 }
 .aside-tree-node i.fa {
   font-size: 14px;

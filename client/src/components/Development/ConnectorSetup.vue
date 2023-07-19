@@ -134,13 +134,13 @@ This is a built-in Connector, please contact the admin to change the config: 当
 
                   <el-form-item label="ID" prop="id">
                     <el-input :disabled="T.setupPageMode() === 'setup'"
-                      maxlength="40"
+                      maxlength="60"
                       v-model="form.id"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Title')">
                     <el-input :placeholder="$t('Optional')"
-                      maxlength="50"
+                      maxlength="200"
                       v-model="form.title"></el-input>
                     <InfoBlock v-if="selectedType === 'guance'" type="info" :title="$t('This Title will also be displayed in Guance')" />
                   </el-form-item>

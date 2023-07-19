@@ -47,7 +47,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('SELECT');
   sql.append('   ak.seq');
   sql.append('  ,ak.id');
-  sql.append('  ,ak.name');
+  sql.append('  ,ak.title');
   sql.append('  ,ak.secret');
   sql.append('  ,ak.webhookURL');
   sql.append('  ,ak.webhookEvents');
@@ -109,6 +109,12 @@ EntityModel.prototype.modify = function(id, data, callback) {
 
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
+
+  // 兼容处理 name -> title
+  if ('name' in data) {
+    data.title = data.title || data.name;
+    delete data.name;
+  }
 
   if (Array.isArray(data.webhookEvents)) {
     data.webhookEvents = data.webhookEvents.join(',');

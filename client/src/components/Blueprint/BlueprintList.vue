@@ -1,11 +1,13 @@
 <i18n locale="zh-CN" lang="yaml">
-Access Key deleted: Access Key 已删除
+Contents: 内容
 
-No Access Key has ever been added: 从未添加过任何授权链接
+Blueprint deleted: 蓝图已删除
 
-Are you sure you want to delete the Access Key?: 是否确认删除此 Access Key？
+No Blueprint has ever been added: 从未添加过任何蓝图
 
-Add Access Key to allow external systems to call DataFlux Func Open API: 添加 Access Key，允许外部系统调用 DataFlux Func 的 Open API
+Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
+
+Add Blueprint to deploy data processing flow in a visualization way: 添加蓝图，使用可视化方式部署数据处理流程
 </i18n>
 
 <template>
@@ -14,7 +16,7 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="page-header">
-          <span>Access Key</span>
+          <span>{{ $t('Blueprint') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
@@ -30,10 +32,10 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Access Key has ever been added') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Blueprint has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('Add Access Key to allow external systems to call DataFlux Func Open API') }}
+            {{ $t('Add Blueprint to deploy data processing flow in a visualization way') }}
           </p>
         </div>
         <el-table v-else
@@ -41,41 +43,35 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Title')">
-            <template slot-scope="scope">
-              <span>{{ scope.row.title }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="Access Key ID" width="220">
+          <el-table-column label="ID" width="220">
             <template slot-scope="scope">
               <code class="text-main text-small">{{ scope.row.id }}</code>
               <CopyButton :content="scope.row.id" />
             </template>
           </el-table-column>
 
-          <el-table-column label="Access Key Secret" width="350">
+          <el-table-column :label="$t('Title')">
             <template slot-scope="scope">
-              <template v-if="!showSecretMap[scope.row.id]">
-                <el-button @click="showSecret(scope.row)" type="text">{{ $t('Show') }}</el-button>
-              </template>
-              <template v-else>
-                <code class="text-main text-small">{{ scope.row.secret }}</code>
-                <CopyButton :content="scope.row.secret" />
-              </template>
+              <span>{{ scope.row.title }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Create Time')" width="200">
+          <el-table-column width="135">
             <template slot-scope="scope">
-              <span>{{ scope.row.createTime | datetime }}</span>
-              <br>
-              <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
+              <el-button
+                style="width: 87px"
+                type="primary"
+                size="small"
+                @click="openContents(scope.row)">
+                <i class="fa fa-fw fa-th-large"></i>
+                {{ $t('Contents') }}
+              </el-button>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
@@ -90,7 +86,7 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
 
 <script>
 export default {
-  name: 'AccessKeyList',
+  name: 'BlueprintList',
   components: {
   },
   watch: {
@@ -104,11 +100,11 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        fields: [ 'id', 'userId', 'title', 'secret', 'createTime' ],
+        fields: [ 'id', 'title', 'createTime' ],
         sort  : [ '-seq' ],
       });
 
-      let apiRes = await this.T.callAPI_get('/api/v1/access-keys/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/blueprints/do/list', {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
@@ -121,16 +117,16 @@ export default {
     async quickSubmitData(d, operation) {
       switch(operation) {
         case 'delete':
-          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Access Key?'))) return;
+          if (!await this.T.confirm(this.$t('Are you sure you want to delete the Blueprint?'))) return;
           break;
       }
 
       let apiRes = null;
       switch(operation) {
         case 'delete':
-          apiRes = await this.T.callAPI('/api/v1/access-keys/:id/do/delete', {
+          apiRes = await this.T.callAPI('/api/v1/blueprints/:id/do/delete', {
             params: { id: d.id },
-            alert : { okMessage: this.$t('Access Key deleted') },
+            alert : { okMessage: this.$t('Blueprint deleted') },
           });
           break;
       }
@@ -146,14 +142,32 @@ export default {
       switch(target) {
         case 'add':
           this.$router.push({
-            name: 'access-key-add',
+            name: 'blueprint-add',
             query: nextRouteQuery,
           });
           break;
+
+        case 'setup':
+          this.$store.commit('updateHighlightedTableDataId', d.id);
+
+          this.$router.push({
+            name  : 'blueprint-setup',
+            params: { id: d.id },
+            query : nextRouteQuery,
+          })
+          break;
       }
     },
-    showSecret(d) {
-      this.$set(this.showSecretMap, d.id, true);
+    openContents(d) {
+      let nextRouteQuery = this.T.packRouteQuery();
+
+      this.$store.commit('updateHighlightedTableDataId', d.id);
+
+      this.$router.push({
+        name  : 'blueprint-contents',
+        params: { id: d.id },
+        query : nextRouteQuery,
+      })
     },
   },
   computed: {
@@ -171,8 +185,6 @@ export default {
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
-
-      showSecretMap: {},
     }
   },
 }

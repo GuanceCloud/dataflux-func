@@ -1288,7 +1288,7 @@ accessKeyAPI:
       seq : ak.seq
     fuzzySearch:
       - ak.id
-      - ak.name
+      - ak.title
     query:
       id:
         $desc      : Filter by ID
@@ -1296,10 +1296,16 @@ accessKeyAPI:
         $searchType: in
         $searchKey : ak.id
       name:
-        $desc      : Search by name
+        $isDeprecated: true
+        $desc      : Search by name *(Deprecated, use `title` instead)*
         $type      : string
         $searchType: like
-        $searchKey : ak.name
+        $searchKey : ak.title
+      title:
+        $desc      : Search by title
+        $type      : string
+        $searchType: like
+        $searchKey : ak.title
 
   get:
     name         : Get Access Key
@@ -1329,9 +1335,13 @@ accessKeyAPI:
       data:
         $isRequired: true
         name:
-          $desc      : Name
+          $isDeprecated: true
+          $desc      : Name *(Deprecated, use `title` instead)*
+          $isRequired: false
+          $type      : string
+        title:
+          $desc      : Title
           $isRequired: true
-          $allowNull : true
           $type      : string
         webhookURL:
           $desc     : Webhook
@@ -2269,11 +2279,11 @@ scriptMarketAPI:
     paging       : false
     fieldSelecting: true
     orderFields:
-      name      : smkt.name
+      title     : smkt.title
       createTime: smkt.createTime
       updateTime: smkt.updateTime
     fuzzySearch:
-      - smkt.name
+      - smkt.title
       - smkt.description
       - smkt.type
       - smkt.configJSON
@@ -2284,10 +2294,16 @@ scriptMarketAPI:
         $searchType: in
         $searchKey : smkt.id
       name:
-        $desc      : 根据名称搜索
+        $isDeprecated: true
+        $desc      : 根据名称搜索*（已过时，请改用`title`字段）*
         $type      : string
         $searchType: like
-        $searchKey : smkt.name
+        $searchKey : smkt.title
+      title:
+        $desc      : 根据标题搜索
+        $type      : string
+        $searchType: like
+        $searchKey : smkt.title
       type:
         $desc      : 根据类型过滤
         $type      : commaArray
@@ -2315,7 +2331,12 @@ scriptMarketAPI:
       data:
         $isRequired: true
         name:
-          $desc      : 名称
+          $isDeprecated: true
+          $desc      : 名称*（已过时，请改用`title`字段）*
+          $allowNull : true
+          $type      : string
+        title:
+          $desc      : 标题
           $allowNull : true
           $type      : string
         description:
@@ -2405,7 +2426,12 @@ scriptMarketAPI:
       data:
         $isRequired: true
         name:
-          $desc      : 名称
+          $isDeprecated: true
+          $desc      : 名称*（已过时，请改用`title`字段）*
+          $allowNull : true
+          $type      : string
+        title:
+          $desc      : 标题
           $allowNull : true
           $type      : string
         description:
@@ -3285,7 +3311,7 @@ apiAuthAPI:
       seq: apia.seq
     fuzzySearch:
       - apia.id
-      - apia.name
+      - apia.title
       - apia.configJSON
       - apia.note
     query:
@@ -3305,10 +3331,16 @@ apiAuthAPI:
           - httpDigest
           - func
       name:
-        $desc      : 根据名称搜索
+        $isDeprecated: true
+        $desc      : 根据名称搜索*（已过时，请改用`title`字段）*
         $type      : string
         $searchType: like
-        $searchKey : apia.name
+        $searchKey : apia.title
+      title:
+        $desc      : 根据标题搜索
+        $type      : string
+        $searchType: like
+        $searchKey : apia.title
       note:
         $desc      : 根据备注搜索
         $type      : string
@@ -3328,7 +3360,12 @@ apiAuthAPI:
       data:
         $isRequired: true
         name:
-          $desc      : 名称
+          $isDeprecated: true
+          $desc     : 名称*（已过时，请改用`title`字段）*
+          $allowNull: true
+          $type     : string
+        title:
+          $desc      : 标题
           $allowNull : true
           $type      : string
         type:
@@ -3402,7 +3439,12 @@ apiAuthAPI:
       data:
         $isRequired: true
         name:
-          $desc      : 名称
+          $isDeprecated: true
+          $desc      : 名称*（已过时，请改用`title`字段）*
+          $allowNull : true
+          $type      : string
+        title:
+          $desc      : 标题
           $allowNull : true
           $type      : string
         configJSON:
@@ -5456,6 +5498,10 @@ blueprintAPI:
           $desc      : 标题
           $allowNull : true
           $type      : string
+        description:
+          $desc      : 描述
+          $allowNull : true
+          $type      : string
         canvasJSON:
           $desc      : 画布JSON
           $isRequired: false
@@ -5482,6 +5528,10 @@ blueprintAPI:
         $isRequired: true
         title:
           $desc      : 标题
+          $allowNull : true
+          $type      : string
+        description:
+          $desc      : 描述
           $allowNull : true
           $type      : string
         canvasJSON:

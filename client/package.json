@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@intlify/vue-i18n-loader": "1.1.0",
+    "@logicflow/core": "1.2.10",
+    "@logicflow/extension": "1.2.10",
     "axios": "0.27.2",
     "bowser": "2.11.0",
     "byte-size": "7.0.1",

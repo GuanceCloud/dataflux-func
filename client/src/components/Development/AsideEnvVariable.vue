@@ -83,6 +83,7 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
             <!-- 置顶 -->
             <el-button
               size="small"
+              :class="data.isPinned ? 'aside-on-button' : ''"
               @click="pinData(data.type, data.id, !data.isPinned)">
               <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
               {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
@@ -363,6 +364,8 @@ export default {
   padding-right: 8px;
   padding-right: 8px;
   height: 31px;
+  max-width: 100%;
+  overflow: hidden;
 }
 .aside-tree-node i.fa {
   font-size: 14px;

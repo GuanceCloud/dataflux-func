@@ -91,9 +91,9 @@ Translated Text    : 译文
       <el-header height="60px">
         <div class="page-header">
           <span>
-            <span class="text-main script-market-name">
+            <span class="text-main script-market-title">
               <span v-if="scriptMarket.isOfficial"><i class="fa fa-fw fa-star text-watch"></i> {{ $t('Official Script Market') }}</span>
-              <span v-else>{{ common.getScriptMarketName(scriptMarket) }}</span>
+              <span v-else>{{ common.getScriptMarketTitle(scriptMarket) }}</span>
             </span>
           </span>
 
@@ -569,7 +569,7 @@ import img_noticeScriptMarketHomepage from '@/assets/img/notice-script-market-ho
 import img_deploy from '@/assets/img/notice-todo-list.png'
 
 export default {
-  name: 'ScriptMarketDetail',
+  name: 'ScriptMarketContents',
   components: {
     FeatureNoticeDialog,
   },
@@ -1373,7 +1373,7 @@ export default {
   position: absolute;
   z-index: 9;
 }
-.script-market-name {
+.script-market-title {
   display: inline-block;
   vertical-align: bottom;
   max-width: 500px;

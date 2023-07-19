@@ -32,7 +32,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 5}"
-                    maxlength="200"
+                    maxlength="5000"
                     v-model="form.note"></el-input>
                   <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>

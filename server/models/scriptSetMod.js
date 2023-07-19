@@ -60,7 +60,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,locker.username             AS lockedByUserUsername');
   sql.append('  ,locker.name                 AS lockedByUserName');
   sql.append('  ,smkt.id                     AS smkt_id');
-  sql.append('  ,smkt.name                   AS smkt_name');
+  sql.append('  ,smkt.title                  AS smkt_title');
   sql.append('  ,smkt.type                   AS smkt_type');
   sql.append('  ,smkt.configJSON             AS smkt_configJSON');
 

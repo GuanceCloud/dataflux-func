@@ -33,7 +33,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main" v-if="data.name">{{ data.name || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
+        <h1>{{ pageTitle }} <code class="text-main" v-if="data.title">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -68,10 +68,10 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                     <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip" />
                   </el-form-item>
 
-                  <el-form-item :label="$t('Name')">
+                  <el-form-item :label="$t('Title')">
                     <el-input :placeholder="$t('Optional')"
-                      maxlength="25"
-                      v-model="form.name"></el-input>
+                      maxlength="200"
+                      v-model="form.title"></el-input>
                   </el-form-item>
 
                   <el-form-item :label="$t('Description')">
@@ -318,7 +318,6 @@ export default {
     },
     async modifyData() {
       let _formData = this._getFromData();
-
       delete _formData.id;
       delete _formData.type;
 

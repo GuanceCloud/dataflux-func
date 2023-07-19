@@ -1,38 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Deployed    : 已部署
-Not Deployed: 未部署
-
-Start       : 开始
-End         : 结束
-Process Step: 处理步骤
-Branch Step : 分支步骤
-'True'      : 真
-'False'     : 假
-
-Select Blueprint: 选择蓝图
-Add Process Step: 添加处理步骤
-Add Branch Step : 添加分支步骤
-Select all      : 全选
-
-'Function "entry_func(prev_result)" is the main func of the node': '函数 "entry_func(prev_res)" 为节点的入口函数'
-
-Code          : 代码
-Kwargs        : 执行参数
-Add Kwargs    : 添加执行参数
-Global Vars   : 全局变量
-Add Global Var: 添加全局变量
-
-Please input ID: 请输入 ID
-Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number: 不得以数字开头
-'ID cannot contains double underscore "__"': 'ID 不能包含"__"'
-
-Blueprint created : 蓝图已创建
-Blueprint saved   : 蓝图已保存
-Blueprint deployed: 蓝图已部署
-Blueprint deleted : 蓝图已删除
-
-Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
 </i18n>
 
 <template>
@@ -43,183 +9,31 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
         <div class="page-header">
           <span>{{ $t('Blueprint') }} (WIP)</span>
           <div class="header-control header-control-left">
-            <el-button @click="openAddBlueprint" type="primary" plain size="small">
+            <el-button  type="primary" plain size="small">
               <i class="fa fa-fw fa-plus"></i>
             </el-button>
-            <el-select @change="loadData(data.id)" size="small" v-model="data.id" :placeholder="$t('Select Blueprint')" class="blueprint-list">
-              <el-option v-for="b in blueprints" :key="b.id" :label="b.title" :value="b.id">
-                <span class="float-left">{{ b.title || b.id }}</span>
-                <span v-if="b.isDeployed" class="float-right text-good">{{ $t('Deployed') }}</span>
-                <span v-else class="float-right text-bad">{{ $t('Not Deployed') }}</span>
-              </el-option>
-            </el-select>
 
-            <template v-if="data.id">
-              <el-button-group>
-                <el-button @click="openRenameBlueprint" size="small">
-                  <i class="fa fa-fw fa-edit"></i> {{ $t('Rename') }}
-                </el-button>
-
-                <el-button v-prevent-re-click @click="saveBlueprintCanvas" size="small">
-                  <i class="fa fa-fw fa-save"></i> {{ $t('Save') }}
-                </el-button>
-              </el-button-group>
-
-                <el-button v-prevent-re-click @click="deployBlueprintCanvas" type="primary" plain size="small" class="fix-compact-button">
-                  <i class="fa fa-fw fa-coffee"></i> {{ $t('Deploy') }}
-                </el-button>
-
-              <el-button @click="deleteBlueprintCanvas" size="small" class="fix-compact-button">
-                <i class="fa fa-fw fa-times"></i> {{ $t('Delete') }}
-              </el-button>
-            </template>
           </div>
         </div>
       </el-header>
 
       <!-- 画布区 -->
-      <super-flow ref="superFlow" v-if="data.canvasJSON"
-        :graph-menu="graphMenu"
-        :node-menu="nodeMenu"
-        :link-menu="linkMenu"
-        :enter-intercept="enterIntercept"
-        :output-intercept="outputIntercept"
-        :link-base-style="linkBaseStyle"
-        :link-desc="linkDesc"
-        :node-list="data.canvasJSON.nodeList"
-        :link-list="data.canvasJSON.linkList"
 
-        :before-node-create="beforeNodeCreate"
-        :on-node-created="onNodeCreated"
-        :before-link-create="beforeLinkCreate"
-        :on-link-created="onLinkCreated">
-        <template v-slot:node="{ meta }">
-          <!-- 开始点 -->
-          <el-card class="node-card point-card" shadow="hover" v-if="meta.type === 'start'">
-            <span>{{ $t('Start') }}</span>
-          </el-card>
 
-          <!-- 结束点 -->
-          <el-card class="node-card point-card" shadow="hover" v-else-if="meta.type === 'end'">
-            <span>{{ $t('End') }}</span>
-          </el-card>
 
-          <!-- 代码 -->
-          <el-card class="node-card code-step-card" shadow="hover" v-else-if="meta.type === 'code'">
-            <div class="step-header code-step-header">
-              <i class="fa fa-fw fa-file-code-o"></i>
-            </div>
-            <div class="node-title">
-              <div class="node-title-content">
-                <span>{{ getTitle(meta) }}</span>
-              </div>
-            </div>
-          </el-card>
-
-          <!-- 分支 -->
-          <el-card class="node-card branch-step-card" shadow="hover" v-else-if="meta.type === 'branch'">
-            <div class="step-header branch-step-header">
-              <i class="fa fa-fw fa-code-fork"></i>
-            </div>
-            <div class="node-title">
-              <div class="node-title-content">
-                <span>{{ getTitle(meta) }}</span>
-              </div>
-            </div>
-          </el-card>
-        </template>
-      </super-flow>
-
-      <!-- 新建/重命名蓝图 -->
-      <el-dialog :title="blueprintPanelMode === 'add' ? $t('Add') : $t('Rename')" :visible.sync="showBlueprintPanel"
-        width="620px"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false">
-        <el-form label-width="100px" :model="form" :rules="formRules">
-          <el-form-item label="ID" prop="id" v-if="blueprintPanelMode === 'add'">
-            <el-input :disabled="T.setupPageMode() === 'setup'"
-              maxlength="80"
-              v-model="form.id"></el-input>
-          </el-form-item>
-
-          <el-form-item :label="$t('Title')">
-            <el-input :placeholder="$t('Optional')"
-              maxlength="50"
-              v-model="form.title"></el-input>
-          </el-form-item>
-
-          <el-form-item>
-            <div class="setup-right">
-              <el-button type="primary" @click="submitBlueprint">{{ $t('Save') }}</el-button>
-            </div>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-
-      <!-- 图表元素配置 -->
-      <el-dialog :title="`${$t('Setup')} - ${currentItem.id}`" :visible.sync="showItemConfigPanel" v-if="currentItem"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false">
-        <el-form label-width="100px" :model="itemMetaConfigForm">
-          <!-- 标题 -->
-          <el-form-item :label="$t('Title')" v-if="hasConfig(currentItem.meta.type, 'title')">
-            <el-input v-model="itemMetaConfigForm.title" autocomplete="off"></el-input>
-          </el-form-item>
-
-          <!-- 代码 -->
-          <el-form-item :label="$t('Code')" v-show="hasConfig(currentItem.meta.type, 'code')">
-            <InfoBlock type="info" :title="$t('Function &quot;entry_func(prev_result)&quot; is the main func of the node')" />
-
-            <div id="codeStageContainer_Blueprint" :style="$store.getters.codeMirrorSettings.style">
-              <textarea id="codeStage_Blueprint"></textarea>
-            </div>
-          </el-form-item>
-
-          <!-- 输入参数 -->
-          <el-form-item :label="$t('Kwargs')" prop="kwargs" v-if="hasConfig(currentItem.meta.type, 'kwargs')">
-            <el-tag v-for="kw in itemMetaConfigForm.kwargs" :key="kw" type="primary" closable @close="removeKwargs(kw)">{{ kw }}</el-tag>
-            <el-input v-if="showAddKwargs" ref="newKwargs"
-              v-model="newKwargs"
-              size="mini"
-              @keyup.enter.native="addKwargs"
-              @blur="addKwargs"></el-input>
-            <el-button v-else
-              type="text"
-              @click="openAddKwargsInput">{{ $t('Add Kwargs') }}</el-button>
-          </el-form-item>
-
-          <!-- 全局变量 -->
-          <el-form-item :label="$t('Global Vars')" prop="globalVars" v-if="hasConfig(currentItem.meta.type, 'globalVars')">
-            <el-tag v-for="gv in itemMetaConfigForm.globalVars" :key="gv" type="info" closable @close="removeGlobalVar(gv)">{{ gv }}</el-tag>
-            <el-input v-if="showAddGlobalVar" ref="newGlobalVar"
-              v-model="newGlobalVar"
-              size="mini"
-              @keyup.enter.native="addGlobalVar"
-              @blur="addGlobalVar"></el-input>
-            <el-button v-else
-              type="text"
-              @click="openAddGlobalVarInput">{{ $t('Add Global Var') }}</el-button>
-          </el-form-item>
-        </el-form>
-        <div slot="footer">
-          <el-button @click="showItemConfigPanel  = false">{{ $t('Cancel') }}</el-button>
-          <el-button type="primary" @click="updateItemMeta">{{ $t('Confirm') }}</el-button>
-        </div>
-      </el-dialog>
     </el-container>
   </transition>
 </template>
 
 <script>
-/* 声明：
- * 有关流程图的代码（super-flow）
- * 是基于开源项目（https://github.com/caohuatao/vue-super-flow）定制修改而来
- */
-import SuperFlow from '@/components/SuperFlow'
+import LogicFlow from '@logicflow/core'
+import { Menu, Snapshot, MiniMap } from '@logicflow/extension'
+import '@logicflow/core/dist/style/index.css'
+import '@logicflow/extension/lib/style/index.css'
 import * as blueprint from '@/blueprint'
 
 export default {
-  name: 'Blueprint',
+  name: 'BlueprintDraw',
   components: {
     SuperFlow,
   },
@@ -235,15 +49,6 @@ export default {
     },
   },
   methods: {
-    _getGraph() {
-      if (!this.$refs.superFlow) return null;
-
-      return this.$refs.superFlow.graph;
-    },
-    _dumpGraph() {
-      return JSON.stringify(JSON.stringify(this._getGraph().toJSON()))
-    },
-
     async loadData(selectBlueprintId) {
       // 获取蓝图列表
       let apiRes = await this.T.callAPI_getAll('/api/v1/blueprints/do/list');

@@ -1,19 +1,16 @@
 <i18n locale="zh-CN" lang="yaml">
-Add ENV  : 添加环境变量
-Setup ENV: 配置环境变量
+Add Blueprint  : 添加蓝图
+Setup Blueprint: 配置蓝图
 
-Value Type: 值类型
+Blueprint ID will be used as Script Set ID after deployment: 蓝图 ID 在部署后将作为脚本集 ID
 
-Please input ID: 请输入 ID
-Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
-Cannot not starts with a number: 不得以数字开头
-Please input Value: 请输入值
+Please input title: 请输入标题
 
-ENV Variable created: 环境变量已创建
-ENV Variable saved  : 环境变量已保存
-ENV Variable deleted: 环境变量已删除
+Blueprint created: 蓝图已创建
+Blueprint saved  : 蓝图已保存
+Blueprint deleted: 蓝图已删除
 
-Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
+Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
 </i18n>
 
 <template>
@@ -32,13 +29,14 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
                 <el-form-item label="ID" prop="id">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
-                    maxlength="40"
+                    maxlength="60"
                     v-model="form.id"></el-input>
+                  <InfoBlock :title="$t('Blueprint ID will be used as Script Set ID after deployment')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Title')">
                   <el-input :placeholder="$t('Optional')"
-                    maxlength="50"
+                    maxlength="200"
                     v-model="form.title"></el-input>
                 </el-form-item>
 
@@ -49,23 +47,6 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
                     :autosize="{minRows: 2}"
                     maxlength="5000"
                     v-model="form.description"></el-input>
-                </el-form-item>
-
-                <el-form-item :label="$t('Value')" prop="valueTEXT">
-                  <el-input
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.valueTEXT"></el-input>
-                </el-form-item>
-
-                <el-form-item :label="$t('Value Type')">
-                  <el-select v-model="form.autoTypeCasting">
-                    <el-option v-for="opt in C.ENV_VARIABLE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
-                  </el-select>
-                  <InfoBlock v-if="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting)"
-                    :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips" />
                 </el-form-item>
               </el-form>
             </div>
@@ -78,8 +59,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
       <!-- 底部栏 -->
       <el-footer>
         <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+          <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
         </div>
       </el-footer>
     </el-container>
@@ -88,7 +68,7 @@ Are you sure you want to delete the ENV?: 是否确认删除此环境变量？
 
 <script>
 export default {
-  name: 'EnvVariableSetup',
+  name: 'BlueprintSetup',
   components: {
   },
   watch: {
@@ -101,9 +81,6 @@ export default {
           case 'add':
             this.T.jsonClear(this.form);
             this.data = {};
-
-            // 【特殊处理】默认自动类型转换为"string"
-            this.form.autoTypeCasting = 'string';
             break;
 
           case 'setup':
@@ -115,7 +92,7 @@ export default {
   methods: {
     async loadData() {
       if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/env-variables/do/list', this.$route.params.id);
+        let apiRes = await this.T.callAPI_getOne('/api/v1/blueprints/do/list', this.$route.params.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -142,66 +119,69 @@ export default {
       }
     },
     async addData() {
-      let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/do/add', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/blueprints/do/add', {
         body : { data: this.T.jsonCopy(this.form) },
-        alert: { okMessage: this.$t('ENV Variable created') },
+        alert: { okMessage: this.$t('Blueprint created') },
       });
       if (!apiRes || !apiRes.ok) return;
 
+      this.$store.commit('updateTableList_scrollY');
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+
       this.$router.push({
-        name  : 'env-variable-setup',
-        params: {id: apiRes.data.id},
+        name : 'blueprint-list',
+        query: this.T.getPrevQuery(),
       });
-      this.$store.commit('updateEnvVariableListSyncTime');
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
       delete _formData.id;
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/env-variables/:id/do/modify', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
         params: { id: this.$route.params.id },
         body  : { data: _formData },
-        alert : { okMessage: this.$t('ENV Variable saved') },
+        alert : { okMessage: this.$t('Blueprint saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$store.commit('updateEnvVariableListSyncTime');
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+
+      this.$router.push({
+        name : 'blueprint-list',
+        query: this.T.getPrevQuery(),
+      });
     },
     async deleteData() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to delete the ENV?'))) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to delete the Blueprint?'))) return;
 
-      let apiRes = await this.T.callAPI('/api/v1/env-variables/:id/do/delete', {
+      let apiRes = await this.T.callAPI('/api/v1/blueprints/:id/do/delete', {
         params: { id: this.$route.params.id },
-        alert : { okMessage: this.$t('ENV Variable deleted') },
+        alert : { okMessage: this.$t('Blueprint deleted') },
       });
       if (!apiRes || !apiRes.ok) return;
 
       this.$router.push({
-        name: 'intro',
+        name : 'blueprint-list',
+        query: this.T.getPrevQuery(),
       });
-      this.$store.commit('updateEnvVariableListSyncTime');
     },
   },
   computed: {
     pageTitle() {
       const _map = {
-        setup: this.$t('Setup ENV'),
-        add  : this.$t('Add ENV'),
+        setup: this.$t('Setup Blueprint'),
+        add  : this.$t('Add Blueprint'),
       };
       return _map[this.T.setupPageMode()];
     },
-  },
-  props: {
   },
   data() {
     return {
       data: {},
       form: {
-        id             : null,
-        title          : null,
-        description    : null,
-        valueTEXT      : null,
-        autoTypeCasting: null,
+        id         : null,
+        title      : null,
+        description: null,
       },
       formRules: {
         id: [
@@ -220,15 +200,18 @@ export default {
             message: this.$t('Cannot not starts with a number'),
             pattern: /^[^0-9]/g,
           },
-        ],
-        valueTEXT: [
           {
-            trigger : 'change',
-            message : this.$t('Please input Value'),
-            required: true,
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value.indexOf('__') >= 0) {
+                let _message = this.$t('ID cannot contains double underscore "__"');
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
           },
-        ]
-      },
+        ],
+      }
     }
   },
 }
@@ -236,5 +219,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 </style>

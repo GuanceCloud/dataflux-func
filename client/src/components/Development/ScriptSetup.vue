@@ -48,7 +48,7 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
 
                 <el-form-item label="ID" prop="id" class="script-set-id-field">
                   <el-input :disabled="T.setupPageMode() === 'setup'"
-                    maxlength="64"
+                    maxlength="60"
                     v-model="form.id"></el-input>
                   <InfoBlock :title="$t('Script ID will be a part of the Func ID')" />
                 </el-form-item>

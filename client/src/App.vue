@@ -40,12 +40,12 @@ Not Now                                                               : 等会�
       <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
         <el-form-item :label="$t('User Name')" prop="name">
           <el-input
-            maxlength="25"
+            maxlength="200"
             v-model="form.name"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Email')" prop="email">
           <el-input
-            maxlength="50"
+            maxlength="200"
             v-model="form.email"></el-input>
         </el-form-item>
       </el-form>
@@ -588,6 +588,12 @@ ul {
 .delete-button {
   color: #FF0000 !important;
   border-color: #FF000077 !important;
+}
+.aside-on-button {
+  color: #FF6600 !important
+}
+.aside-on-button * {
+  color: #FF6600 !important
 }
 .setup-footer {
   width: 620px;

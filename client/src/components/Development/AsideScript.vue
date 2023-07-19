@@ -206,6 +206,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
                 <!-- 置顶 -->
                 <el-button v-if="data.type === 'scriptSet'"
                   size="small"
+                  :class="data.isPinned ? 'aside-on-button' : ''"
                   :disabled="!data.isEditable"
                   v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
                   <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
@@ -215,6 +216,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
                 <!-- 锁定/解锁脚本/脚本集 -->
                 <el-button
                   size="small"
+                  :class="data.isLocked ? 'aside-on-button' : ''"
                   :disabled="!data.isEditable || (data.type === 'script' && data.isLockedByScriptSet)"
                   v-prevent-re-click @click="lockData(data.type, data.id, !data.isLocked)">
                   <i class="fa fa-fw" :class="[data.isLocked ? 'fa-unlock' : 'fa-lock']"></i>
@@ -376,7 +378,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
             <el-table-column :label="$t('Config')" width="220">
               <template slot-scope="scope">
                 <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
-                <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
+                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
                   <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
                 </el-tooltip>
 
@@ -552,7 +554,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
             <el-table-column :label="$t('Config')" width="220">
               <template slot-scope="scope">
                 <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
-                <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
+                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
                   <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
                 </el-tooltip>
               </template>
@@ -603,7 +605,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
 </template>
 
 <script>
-import QuickViewWindow from '@/components/Editor/QuickViewWindow'
+import QuickViewWindow from '@/components/Development/QuickViewWindow'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
 import FileSaver from 'file-saver';
@@ -1140,7 +1142,7 @@ export default {
           } else if (target === 'scriptMarket') {
             // 前往脚本市场
             this.$router.push({
-              name  : 'script-market-detail',
+              name  : 'script-market-contents',
               params: {id: data.originId},
             });
 
@@ -1405,6 +1407,8 @@ export default {
   font-size: 14px;
   padding-right: 8px;
   height: 31px;
+  max-width: 100%;
+  overflow: hidden;
 }
 .aside-tree-node i.fa {
   font-size: 14px;

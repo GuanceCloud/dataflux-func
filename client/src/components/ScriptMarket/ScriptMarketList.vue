@@ -3,6 +3,8 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+Contents: 内容
+
 Homepage: 前往主页
 Branch: 分支
 Access Timeout: 访问超时
@@ -83,14 +85,16 @@ After adding the Script Market, you can install Script Sets from the Script Mark
           </p>
         </div>
         <el-table v-else
-          class="common-table" height="100%"
+          class="common-table script-market-list-table" height="100%"
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
           <el-table-column :label="$t('Type')" width="150" align="center">
             <template slot-scope="scope">
-              <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
-              <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
+              <div class="script-market-logo-wrap">
+                <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
+                <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
+              </div>
             </template>
           </el-table-column>
 
@@ -100,9 +104,9 @@ After adding the Script Market, you can install Script Sets from the Script Mark
                 <i class="fa fa-fw fa-thumb-tack text-bad"></i>
               </el-tooltip>
 
-              <strong class="script-market-name" :class="scope.row.isPinned ? 'text-bad': ''">
+              <strong class="script-market-title" :class="scope.row.isPinned ? 'text-bad': ''">
                 <span v-if="scope.row.isOfficial">{{ $t('Official Script Market') }}</span>
-                <span v-else>{{ common.getScriptMarketName(scope.row) }}</span>
+                <span v-else>{{ common.getScriptMarketTitle(scope.row) }}</span>
               </strong>
 
               <div>
@@ -167,9 +171,9 @@ After adding the Script Market, you can install Script Sets from the Script Mark
                   type="primary"
                   size="small"
                   :plain="scope.row.isAdmin ? false : true"
-                  @click="openDetail(scope.row)">
+                  @click="openContents(scope.row)">
                   <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-th-large' : 'fa-bars'"></i>
-                  {{ scope.row.isAdmin ? $t('Admin') : $t('Detail') }}
+                  {{ scope.row.isAdmin ? $t('Admin') : $t('Contents') }}
                 </el-button>
               </el-badge>
             </template>
@@ -351,13 +355,13 @@ export default {
           break;
       }
     },
-    openDetail(d) {
+    openContents(d) {
       let nextRouteQuery = this.T.packRouteQuery();
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       this.$router.push({
-        name  : 'script-market-detail',
+        name  : 'script-market-contents',
         params: { id: d.id },
         query : nextRouteQuery,
       })
@@ -435,7 +439,7 @@ export default {
 </script>
 
 <style scoped>
-.script-market-name {
+.script-market-title {
   font-size: 16px;
 }
 .script-market-extra-info {
@@ -443,6 +447,13 @@ export default {
 }
 </style>
 <style>
+.script-market-logo-wrap {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .script-market-logo img {
   width: auto;
 }

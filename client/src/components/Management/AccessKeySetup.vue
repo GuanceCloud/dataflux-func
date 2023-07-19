@@ -3,7 +3,7 @@ Add Access Key: 添加 Access Key
 
 'Auto generate...': 自动生成...
 
-Please input name: 请输入名称
+Please input title: 请输入标题
 
 Access Key created: Access Key 已创建
 </i18n>
@@ -22,10 +22,10 @@ Access Key created: Access Key 已创建
           <el-col :span="15">
             <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Name')" prop="name">
+                <el-form-item :label="$t('Title')" prop="title">
                   <el-input
-                    maxlength="40"
-                    v-model="form.name"></el-input>
+                    maxlength="200"
+                    v-model="form.title"></el-input>
                 </el-form-item>
 
                 <el-form-item label="ID">
@@ -117,13 +117,13 @@ export default {
     return {
       data: {},
       form: {
-        name: null,
+        title: null,
       },
       formRules: {
-        name: [
+        title: [
           {
             trigger : 'change',
-            message : this.$t('Please input name'),
+            message : this.$t('Please input title'),
             required: true,
           }
         ],

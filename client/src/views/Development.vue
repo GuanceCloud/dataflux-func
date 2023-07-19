@@ -31,12 +31,12 @@
 <script>
 // @ is an alias to /src
 // 边栏导航区
-import AsideScript      from '@/components/Editor/AsideScript'
-import AsideConnector   from '@/components/Editor/AsideConnector'
-import AsideEnvVariable from '@/components/Editor/AsideEnvVariable'
+import AsideScript      from '@/components/Development/AsideScript'
+import AsideConnector   from '@/components/Development/AsideConnector'
+import AsideEnvVariable from '@/components/Development/AsideEnvVariable'
 
 export default {
-  name: 'Editor',
+  name: 'Development',
   components: {
     // 边栏导航区
     AsideScript,
