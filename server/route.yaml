@@ -1761,7 +1761,7 @@ scriptSetAPI:
           $isRequired: true
           $type      : string
       envVariableIds:
-        $desc: 导出的环境变量 ID列表
+        $desc: 导出的环境变量 ID 列表
         $:
           $desc      : 环境变量 ID
           $isRequired: true
