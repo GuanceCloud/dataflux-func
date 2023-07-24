@@ -1,6 +1,4 @@
 <i18n locale="zh-CN" lang="yaml">
-Contents: 内容
-
 Blueprint deleted: 蓝图已删除
 
 No Blueprint has ever been added: 从未添加过任何蓝图
@@ -15,7 +13,7 @@ Add Blueprint to deploy data processing flow in a visualization way: 添加蓝�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Blueprint') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
@@ -65,7 +63,7 @@ Add Blueprint to deploy data processing flow in a visualization way: 添加蓝�
                 plain
                 @click="openContents(scope.row)">
                 <i class="fa fa-fw fa-th-large"></i>
-                {{ $t('Contents') }}
+                {{ $t('Enter') }}
               </el-button>
             </template>
           </el-table-column>

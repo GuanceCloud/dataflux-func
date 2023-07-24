@@ -43,7 +43,14 @@ EntityModel.prototype.list = function(options, callback) {
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   blpt.*');
+  sql.append('    blpt.seq');
+  sql.append('   ,blpt.id');
+  sql.append('   ,blpt.title');
+  sql.append('   ,blpt.description');
+  sql.append('   ,blpt.createTime');
+  sql.append('   ,blpt.updateTime');
+
+  if (options.extra.withCanvas) sql.append(',blpt.canvasJSON');
 
   sql.append('FROM biz_main_blueprint AS blpt');
 

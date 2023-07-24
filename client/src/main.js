@@ -197,16 +197,21 @@ const app = new Vue({
       this.$store.commit('updateUILocale', uiLocale);
 
       // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
-      // this.$nextTick(() => {
-      //   this.$i18n.locale = this.$store.getters.uiLocale;
-      // });
       this.$loading();
+
       setImmediate(() => {
         location.reload();
       });
     },
     setUITheme(uiTheme) {
       this.$store.commit('updateUITheme', uiTheme);
+
+      // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
+      this.$loading();
+
+      setImmediate(() => {
+        location.reload();
+      });
     },
 
     checkUserProfileForGit() {

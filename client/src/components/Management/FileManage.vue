@@ -32,7 +32,7 @@ File already existed                                                            
       :element-loading-text="progressTip || $t('Processing...')">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('File Manage') }}</span>
 
           &#12288;

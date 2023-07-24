@@ -457,9 +457,10 @@ en:
   Unsupported resource operation                          : 不支持的资源操作
 
   # 蓝图
-  Missing branch for True   : 缺少判断为真的分支
-  Missing branch for False  : 缺少判断为假的分支
-  Incomplete processing flow: 处理流程不完整
+  Entry: 入口
+  Cannot point to an Entry Node: 不能指向一个入口节点
+
+  Code: 代码
 
   # 脚本市场
   Official Script Market: 官方脚本市场

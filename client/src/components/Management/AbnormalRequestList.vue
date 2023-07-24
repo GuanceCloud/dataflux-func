@@ -15,7 +15,7 @@ All recent abnormal requests will be collected and shown here: 所有异常的�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Abnormal Requests') }}</span>
           <div class="header-control">
             <el-button @click="refresh" size="small">

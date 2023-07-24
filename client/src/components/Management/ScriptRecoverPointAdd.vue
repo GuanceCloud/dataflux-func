@@ -16,7 +16,7 @@ Script Lib Recover Point created: 脚本库还原点已创建
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Create Recover Point') }}</span>
         </div>
       </el-header>

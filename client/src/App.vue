@@ -732,10 +732,10 @@ kbd {
   border-radius: 3px;
   box-shadow: 2px 2px 0 darkgrey;
 }
-.page-header {
+.list-page-header {
   padding: 20px 10px 10px 10px;
 }
-.page-header > span:first-child {
+.list-page-header > span:first-child {
   font-weight: bold;
   font-size: 22px;
   float: left;
@@ -749,9 +749,11 @@ kbd {
   justify-content: flex-end;
 }
 .header-control-left {
-  /* float: left; */
-  padding-left: 30px;
-  justify-content: flex-start;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: normal;
+  position: relative;
+  top: -3px;
 }
 .header-control > * {
   margin-left: 15px !important;

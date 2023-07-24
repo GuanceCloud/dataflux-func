@@ -105,11 +105,11 @@ const routes = [
     name: 'blueprint-setup',
     component: () => import('../components/Blueprint/BlueprintSetup.vue'),
   },
-  // {
-  //   path: '/blueprint-contents/:id',
-  //   name: 'blueprint-contents',
-  //   component: () => import('../components/Blueprint/BlueprintContents.vue'),
-  // },
+  {
+    path: '/blueprint-contents/:id',
+    name: 'blueprint-contents',
+    component: () => import('../components/Blueprint/BlueprintContents.vue'),
+  },
 
   // 脚本市场
   {

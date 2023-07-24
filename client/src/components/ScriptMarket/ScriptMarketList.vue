@@ -3,8 +3,6 @@ ScriptSetCount: 'No Script Set included | Includes {n} Script Set | Includes {n}
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Contents: 内容
-
 Homepage: 前往主页
 Branch: 分支
 Access Timeout: 访问超时
@@ -41,7 +39,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
       :element-loading-text="processingText">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Script Market') }}</span>
 
           <div class="header-control">
@@ -173,7 +171,7 @@ After adding the Script Market, you can install Script Sets from the Script Mark
                   :plain="scope.row.isAdmin ? false : true"
                   @click="openContents(scope.row)">
                   <i class="fa fa-fw" :class="scope.row.isAdmin ? 'fa-cog' : 'fa-th-large'"></i>
-                  {{ scope.row.isAdmin ? $t('Admin') : $t('Contents') }}
+                  {{ scope.row.isAdmin ? $t('Admin') : $t('Enter') }}
                 </el-button>
               </el-badge>
             </template>

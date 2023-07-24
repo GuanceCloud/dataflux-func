@@ -16,7 +16,7 @@ Recover Points can also be created manually.                                    
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Script Lib Recover') }}</span>
           <div class="header-control">
             <el-button @click="openSetup(null, 'add')" size="small">

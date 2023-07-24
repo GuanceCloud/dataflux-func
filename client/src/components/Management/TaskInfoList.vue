@@ -61,7 +61,7 @@ connector  : 连接器
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>
             {{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}
             <small class="text-info">

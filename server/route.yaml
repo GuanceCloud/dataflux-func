@@ -5460,6 +5460,9 @@ blueprintAPI:
       - blpt.id
       - blpt.title
     query:
+      _withCanvas:
+        $desc: 是否同时返回画布数据
+        $type: bool
       id:
         $desc      : 根据 ID 过滤
         $type      : commaArray

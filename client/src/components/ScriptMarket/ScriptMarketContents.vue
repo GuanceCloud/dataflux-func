@@ -89,12 +89,11 @@ Translated Text    : 译文
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>
-            <span class="text-main script-market-title">
-              <span v-if="scriptMarket.isOfficial"><i class="fa fa-fw fa-star text-watch"></i> {{ $t('Official Script Market') }}</span>
-              <span v-else>{{ common.getScriptMarketTitle(scriptMarket) }}</span>
-            </span>
+            {{ $t('Script Market') }}
+            <span class="text-main" v-if="scriptMarket.isOfficial"><i class="fa fa-fw fa-star text-watch"></i> {{ $t('Official Script Market') }}</span>
+            <span class="text-main" v-else>{{ common.getScriptMarketTitle(scriptMarket) }}</span>
           </span>
 
           <div class="header-control" v-if="T.notNothing(data)">
@@ -1372,15 +1371,6 @@ export default {
 .arrow-icon-cover {
   position: absolute;
   z-index: 9;
-}
-.script-market-title {
-  display: inline-block;
-  vertical-align: bottom;
-  max-width: 500px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  font-size: 18px;
 }
 .filter-input {
   width: 260px;

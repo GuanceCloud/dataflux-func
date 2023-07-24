@@ -57,7 +57,7 @@ you must first create an Auth Link for the Python function and access the Python
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Auth Link') }}</span>
           <div class="header-control">
             <el-switch
