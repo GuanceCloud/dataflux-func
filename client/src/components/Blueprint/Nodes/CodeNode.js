@@ -1,20 +1,19 @@
-// 国际化
-import app from '@/main';
-import { HtmlNode, HtmlNodeModel } from "@logicflow/core";
+import { BaseNode, BaseNodeModel } from "./BaseNode";
 
 import * as T from '@/toolkit';
-import * as common from './common';
 
+// 国际化
+import app from '@/main';
 const $t = function(s) {
   return app ? app.$t(s) : s;
 }
 
-class CodeNode extends HtmlNode {
+class CodeNode extends BaseNode {
   setHtml(rootEl) {
     const { properties } = this.props.model;
 
     const el = document.createElement('div');
-    el.className = 'code-node';
+    el.className = 'node';
     const html = `
       <div class="node-icon"><i class="fa fa-fw fa-code"></i></div>
       <div class="node-text">${properties.title || $t('Code')}</div>
@@ -26,13 +25,9 @@ class CodeNode extends HtmlNode {
   }
 }
 
-class CodeNodeModel extends HtmlNodeModel {
+class CodeNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('code');
-  }
-
-  setAttributes() {
-    common.prepareNode(this);
+    return T.genDataId('code-node');
   }
 }
 

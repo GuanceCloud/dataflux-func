@@ -440,14 +440,20 @@ en:
   Script Market based on git supports HTTPS only : 基于 git 的脚本市场仅支持 HTTPS
   Script Market based on HTTP Service is readonly: 基于 HTTP 服务的脚本市场为只读
 
-  # const.js - BLUEPRINT_NODE_TYPE
-  Entry     : 入口
-  Entry Node: 入口节点
-  Code      : 代码
-  Code Node : 代码节点
-  # Func      : 函数
-  Func Node : 函数节点
-  Line      : 连线
+  # const.js - BLUEPRINT_ELEMENT_TYPE
+  Entry      : 入口
+  Entry Node : 入口节点
+  Code       : 代码
+  Code Node  : 代码节点
+  # Func     : 函数
+  Func Node  : 函数节点
+  Switch     : 分支
+  Switch Node: 分支节点
+  Simple Line: 简单连线
+  Switch Line: 分支连线
+
+  Cannot point to the Entry Node : 不能指向入口节点
+  Cannot point to the node itself: 不能指向节点自身
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题

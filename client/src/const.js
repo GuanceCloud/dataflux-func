@@ -1087,7 +1087,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
   },
 
   // 蓝图
-  get BLUEPRINT_NODE_TYPE() {
+  get BLUEPRINT_ELEMENT_TYPE() {
     return [
       {
         key  : 'EntryNode',
@@ -1108,14 +1108,27 @@ kafka.publish(topic='some_topic', message='some_message')`,
         props: [ 'title', 'funcId' ],
       },
       {
-        key  : 'Line',
-        name : $t('Line'),
-        title: $t('Line'),
+        key  : 'SwitchNode',
+        name : $t('Switch Node'),
+        title: $t('Switch'),
+        props: [ ],
+      },
+
+      {
+        key  : 'SimpleLine',
+        name : $t('Simple Line'),
+        title: $t('Simple Line'),
+        props: [ ],
+      },
+      {
+        key  : 'SwitchLine',
+        name : $t('Switch Line'),
+        title: $t('Switch Line'),
         props: [ ],
       },
     ]
   },
-  get BLUEPRINT_NODE_TYPE_MAP() {
-    return new MAP_CONST(this.BLUEPRINT_NODE_TYPE);
+  get BLUEPRINT_ELEMENT_TYPE_MAP() {
+    return new MAP_CONST(this.BLUEPRINT_ELEMENT_TYPE);
   },
 }

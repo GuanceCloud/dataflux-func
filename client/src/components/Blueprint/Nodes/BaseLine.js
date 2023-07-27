@@ -1,16 +1,11 @@
-// 国际化
-import app from '@/main';
 import { BezierEdge, BezierEdgeModel } from "@logicflow/core";
 
 import * as T from '@/toolkit';
 
-const $t = function(s) {
-  return app ? app.$t(s) : s;
-}
-
-class LineModel extends BezierEdgeModel {
+export class BaseLine extends BezierEdge {}
+export class BaseLineModel extends BezierEdgeModel {
   createId() {
-    return T.genDataId('l');
+    return T.genDataId('line');
   }
 
   initEdgeData(data) {
@@ -23,6 +18,11 @@ class LineModel extends BezierEdgeModel {
   }
 
   setAttributes() {
+    // 不允许文本被拖动
+    this.text.draggable = false;
+    // 不允许文本被编辑
+    this.text.editable = false;
+
     // 开启动画
     this.isAnimation = true;
   }
@@ -60,9 +60,3 @@ class LineModel extends BezierEdgeModel {
     return data;
   }
 }
-
-export default {
-  type : 'Line',
-  view : BezierEdge,
-  model: LineModel,
-};

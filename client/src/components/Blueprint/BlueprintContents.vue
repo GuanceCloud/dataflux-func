@@ -10,8 +10,6 @@
 
   Selected: 已选中
   Open Setting Panel: 打开设置面板
-
-  Cannot point to an Entry Node: 不能指向一个入口节点
 </i18n>
 
 <template>
@@ -36,6 +34,10 @@
                     <i class="fa fa-fw fa-repeat"></i>
                   </el-button>
                 </el-tooltip>
+                <el-button size="mini" @click="">
+                  <i class="fa fa-fw fa-floppy-o"></i>
+                  {{ $t('Save') }}
+                </el-button>
               </el-button-group>
               &nbsp;
               <el-button-group>
@@ -63,7 +65,7 @@
               &#12288;
               <template v-if="selectedElementData">
                 <span>{{ $t('Selected') }}{{ $t(':') }}</span>
-                <strong class="text-main">{{ C.BLUEPRINT_NODE_TYPE_MAP.get(selectedElementData.type).name }}</strong>
+                <strong class="text-main">{{ C.BLUEPRINT_ELEMENT_TYPE_MAP.get(selectedElementData.type).name }}</strong>
                 &nbsp;
                 <el-button v-if="selectedElementCan('openProps')"
                   size="mini"
@@ -89,21 +91,31 @@
 
       <!-- 画布区 -->
       <div id="logicFlowContainer">
+        <!-- 画布 -->
         <div id="logicFlow" ref="logicFlow"></div>
+
+        <!-- 拖拽面板 -->
         <div id="logicFlowDnd">
           <span>{{ $t('Add Node') }}</span>
 
           <div class="dnd-node">
-            <div class="code-node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
               <div class="node-icon"><i class="fa fa-fw fa-code"></i></div>
               <div class="node-text">{{ $t('Code Node') }}</div>
             </div>
           </div>
 
           <div class="dnd-node">
-            <div class="func-node" @mousedown="canvasAction('dragAddNode', { type: 'FuncNode' })">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'FuncNode' })">
               <div class="node-icon code-font text-info">def</div>
               <div class="node-text">{{ $t('Func Node') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'SwitchNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-sitemap fa-rotate-270"></i></div>
+              <div class="node-text">{{ $t('Switch Node') }}</div>
             </div>
           </div>
         </div>
@@ -135,10 +147,14 @@ import LogicFlow from '@logicflow/core'
 import '@logicflow/core/dist/style/index.css'
 
 // 节点
-import Line from '@/components/Blueprint/Nodes/Line.js';
 import EntryNode from '@/components/Blueprint/Nodes/EntryNode.js';
 import CodeNode from '@/components/Blueprint/Nodes/CodeNode.js';
 import FuncNode from '@/components/Blueprint/Nodes/FuncNode.js';
+import SwitchNode from '@/components/Blueprint/Nodes/SwitchNode.js';
+
+// 线条
+import SimpleLine from '@/components/Blueprint/Nodes/SimpleLine.js';
+import SwitchLine from '@/components/Blueprint/Nodes/SwitchLine.js';
 
 const demoData =
 {
@@ -146,19 +162,7 @@ const demoData =
     {
       id: 'entry',
       type: 'EntryNode',
-      x: 230, y: 70,
-      properties: {},
-    },
-    {
-      id: 'code-1',
-      type: 'CodeNode',
-      x: 500, y: 100,
-      properties: {},
-    },
-    {
-      id: 'func-1',
-      type: 'FuncNode',
-      x: 900, y: 100,
+      x: 350, y: 50,
       properties: {},
     },
   ],
@@ -203,10 +207,13 @@ export default {
 
       // 注册组件
       this.logicFlow.batchRegister([
-        Line,
         EntryNode,
         CodeNode,
         FuncNode,
+        SwitchNode,
+
+        SimpleLine,
+        SwitchLine,
       ]);
 
       // 渲染
@@ -216,7 +223,7 @@ export default {
       if (!this.logicFlow) return;
 
       // 添加节点、双击元素后打开设置界面
-      this.logicFlow.on('node:dnd-add,node:dbclick,edge:dbclick', ({ data }) => {
+      this.logicFlow.on('node:dbclick,edge:dbclick', ({ data }) => {
         // 选中元素
         this.logicFlow.selectElementById(data.id);
 
@@ -233,10 +240,18 @@ export default {
         let sourceNode = this.logicFlow.getNodeDataById(data.sourceNodeId);
 
         if (sourceNode.type === 'SwitchNode') {
-          // Switch 节点允许多个出线
+          // Switch 节点允许多个出线，且连线后打开配置
+          // 选中元素
+          this.logicFlow.selectElementById(data.id);
+
+          // 记录新创建的元素
+          this.selectedElement = this.logicFlow.getModelById(data.id);
+
+          // 打开设置界面
+          this.elementAction('openProps');
 
         } else {
-          // 其他节点不允许多个出线
+          // 其他节点只保留最后一个出线
           let lines = this.logicFlow.getNodeOutgoingEdge(data.sourceNodeId);
           lines.forEach(line => {
             if (line.id !== data.id) {
@@ -248,7 +263,7 @@ export default {
 
       // 禁止连线
       this.logicFlow.on('connection:not-allowed', ({ data, msg }) => {
-        console.log(msg);
+        this.T.alert(msg, 'error');
       });
 
       // 元素点击
@@ -272,7 +287,7 @@ export default {
 
     selectedElementHas(prop) {
       if (!this.selectedElement) return false;
-      return this.C.BLUEPRINT_NODE_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
+      return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
     },
     selectedElementCan(action) {
       if (!this.selectedElement) return false;
@@ -282,7 +297,7 @@ export default {
     elementAction(action) {
       if (!this.selectedElement || !this.selectedElementCan(action)) return;
 
-      let elementType = this.C.BLUEPRINT_NODE_TYPE_MAP.get(this.selectedElementData.type);
+      let elementType = this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type);
       let elementProps = this.selectedElement.getProperties();
 
       switch(action) {
@@ -383,8 +398,12 @@ export default {
         // 开启动画
         animation: true,
 
-        // 连线类型
-        edgeType: 'Line',
+        // 默认连线类型
+        edgeType: 'SimpleLine',
+        // 分支节点出线为分支连线
+        edgeGenerator: (sourceNode, targetNode, currentEdge) => {
+          if (sourceNode.type === 'SwitchNode') return 'SwitchLine';
+        },
 
         // 允许调整连线起始点
         adjustEdgeStartAndEnd: true,
@@ -468,16 +487,16 @@ export default {
     },
     elementActionMap() {
       return {
-        'openProps': [ 'CodeNode', 'FuncNode', 'Line' ],
-        'setProps' : [ 'CodeNode', 'FuncNode', 'Line' ],
-        'delete'   : [ 'CodeNode', 'FuncNode', 'Line' ],
+        'openProps': [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
+        'setProps' : [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
+        'delete'   : [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
       }
     },
 
     propSettingTitle() {
       if (!this.selectedElementData) return '';
 
-      return this.C.BLUEPRINT_NODE_TYPE_MAP.get(this.selectedElementData.type).name;
+      return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type).name;
     },
   },
   props: {
@@ -528,9 +547,9 @@ export default {
 
 #logicFlow,
 #logicFlowDnd {
-  .code-node,
-  .func-node {
+  .node {
     border: 1px solid #FF6600;
+    border-radius: 5px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -538,16 +557,8 @@ export default {
     background-color: #FDF5EF;
   }
 
-  .code-node {
-    border-radius: 5px;
-  }
-  .func-node {
-    border-radius: 20px;
-  }
-
   .node-icon {
     color: #FF6600;
-    margin: 0 10px;
   }
   .node-text {
     color: #FF6600;
@@ -558,14 +569,20 @@ export default {
 }
 
 #logicFlow {
-  .code-node,
-  .func-node {
+  .node {
     width: 218px;
+    height: 38px;
+  }
+
+  .node.node-half {
+    width: 118px;
     height: 38px;
   }
 
   .node-icon {
     font-size: 18px;
+    width: 20px;
+    margin: 0 15px;
   }
   .node-text {
     font-size: 16px;
@@ -586,14 +603,15 @@ export default {
   border-radius: 5px;
   background: white;
 
-  .code-node,
-  .func-node {
+  .node {
     width: 110px;
     height: 28px;
   }
 
   .node-icon {
     font-size: 12px;
+    width: 14px;
+    margin: 0px 10px;
   }
   .node-text {
     font-size: 12px;

@@ -1,20 +1,22 @@
 import { BaseHalfNode, BaseHalfNodeModel } from "./BaseHalfNode";
 
+import * as T from '@/toolkit';
+
 // 国际化
 import app from '@/main';
 const $t = function(s) {
   return app ? app.$t(s) : s;
 }
 
-class EntryNode extends BaseHalfNode {
+class SwitchNode extends BaseHalfNode {
   setHtml(rootEl) {
     const { properties } = this.props.model;
 
     const el = document.createElement('div');
     el.className = 'node node-half';
     const html = `
-      <div class="node-icon"><i class="fa fa-fw fa-sign-in"></i></div>
-      <div class="node-text">${properties.title || $t('Entry')}</div>
+      <div class="node-icon"><i class="fa fa-fw fa-sitemap fa-rotate-270"></i></div>
+      <div class="node-text">${properties.title || $t('Switch')}</div>
     `;
     el.innerHTML = html;
 
@@ -23,14 +25,14 @@ class EntryNode extends BaseHalfNode {
   }
 }
 
-class EntryNodeModel extends BaseHalfNodeModel {
+class SwitchNodeModel extends BaseHalfNodeModel {
   createId() {
-    return 'entry-node';
+    return T.genDataId('code');
   }
 }
 
 export default {
-  type : 'EntryNode',
-  view : EntryNode,
-  model: EntryNodeModel,
+  type : 'SwitchNode',
+  view : SwitchNode,
+  model: SwitchNodeModel,
 };
