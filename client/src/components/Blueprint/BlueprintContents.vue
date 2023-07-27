@@ -197,6 +197,10 @@ export default {
       // 初始化 LogicFlow
       this.logicFlow = new LogicFlow(this.canvasConfig);
 
+      // 限制缩放大小
+      this.logicFlow.setZoomMaxSize(3);
+      this.logicFlow.setZoomMiniSize(0.4);
+
       // 注册组件
       this.logicFlow.batchRegister([
         Line,
@@ -344,8 +348,7 @@ export default {
           break;
 
         case 'resetZoom':
-          this.logicFlow.translate(-currentTransform.TRANSLATE_X, -currentTransform.TRANSLATE_Y);
-          this.logicFlow.resetZoom();
+          this.logicFlow.zoom(1, zoomBasePoint);
           break;
 
         case 'fitView':
@@ -376,6 +379,9 @@ export default {
 
       return {
         container: this.$refs.logicFlow,
+
+        // 开启动画
+        animation: true,
 
         // 连线类型
         edgeType: 'Line',
