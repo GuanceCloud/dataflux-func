@@ -302,6 +302,7 @@ en:
   Docs         : 文档
   Document     : 文档
   Documents    : 文档
+  Setting      : 设置
   Profile      : 个人设置
   Sign Out     : 登出
   Not Signed In: 尚未登录
@@ -433,11 +434,20 @@ en:
   Status Code 4xx     : 状态码 4xx
   Status Code 5xx     : 状态码 5xx
 
-  # const.js - SCRIPT_MARKET
+  # const.js - SCRIPT_MARKET_TYPE
   Alibaba Cloud OSS: 阿里云 OSS
   HTTP Service     : HTTP 服务
   Script Market based on git supports HTTPS only : 基于 git 的脚本市场仅支持 HTTPS
   Script Market based on HTTP Service is readonly: 基于 HTTP 服务的脚本市场为只读
+
+  # const.js - BLUEPRINT_NODE_TYPE
+  Entry     : 入口
+  Entry Node: 入口节点
+  Code      : 代码
+  Code Node : 代码节点
+  # Func      : 函数
+  Func Node : 函数节点
+  Line      : 连线
 
   # serverError
   A System error occured. Please report this response to the administrator: 发生系统故障，请联系管理员并报告此问题
@@ -455,12 +465,6 @@ en:
   Unzip destination already existed                       : 解压 ZIP 文件的目标目录已经存在
   Specified new file or folder name already existed       : 指定的名称已经存在
   Unsupported resource operation                          : 不支持的资源操作
-
-  # 蓝图
-  Entry: 入口
-  Cannot point to an Entry Node: 不能指向一个入口节点
-
-  Code: 代码
 
   # 脚本市场
   Official Script Market: 官方脚本市场

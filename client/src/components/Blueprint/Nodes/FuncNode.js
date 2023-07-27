@@ -17,7 +17,7 @@ class FuncNode extends HtmlNode {
     el.className = 'func-node';
     const html = `
       <div class="node-icon code-font text-info">def</div>
-      <div class="node-text">${$t('My Func')}</div>
+      <div class="node-text">${properties.title || $t('My Func')}</div>
     `;
     el.innerHTML = html;
 

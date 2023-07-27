@@ -17,7 +17,7 @@ class CodeNode extends HtmlNode {
     el.className = 'code-node';
     const html = `
       <div class="node-icon"><i class="fa fa-fw fa-code"></i></div>
-      <div class="node-text">${$t('Code')}</div>
+      <div class="node-text">${properties.title || $t('Code')}</div>
     `;
     el.innerHTML = html;
 

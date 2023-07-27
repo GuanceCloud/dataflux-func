@@ -1035,7 +1035,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
   },
 
   // 脚本市场类型
-  get SCRIPT_MARKET() {
+  get SCRIPT_MARKET_TYPE() {
     return [
       {
         key       : 'git',
@@ -1082,7 +1082,40 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
     ];
   },
-  get SCRIPT_MARKET_MAP() {
-    return new MAP_CONST(this.SCRIPT_MARKET);
+  get SCRIPT_MARKET_TYPE_MAP() {
+    return new MAP_CONST(this.SCRIPT_MARKET_TYPE);
+  },
+
+  // 蓝图
+  get BLUEPRINT_NODE_TYPE() {
+    return [
+      {
+        key  : 'EntryNode',
+        name : $t('Entry Node'),
+        title: $t('Entry'),
+        props: [ ],
+      },
+      {
+        key  : 'CodeNode',
+        name : $t('Code Node'),
+        title: $t('Code'),
+        props: [ 'title', 'code' ],
+      },
+      {
+        key  : 'FuncNode',
+        name : $t('Func Node'),
+        title: $t('Func'),
+        props: [ 'title', 'funcId' ],
+      },
+      {
+        key  : 'Line',
+        name : $t('Line'),
+        title: $t('Line'),
+        props: [ ],
+      },
+    ]
+  },
+  get BLUEPRINT_NODE_TYPE_MAP() {
+    return new MAP_CONST(this.BLUEPRINT_NODE_TYPE);
   },
 }

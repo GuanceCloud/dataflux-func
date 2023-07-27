@@ -50,22 +50,22 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 
                 <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
                   <el-select v-model="form.type" @change="switchType">
-                    <el-option v-for="opt in C.SCRIPT_MARKET" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
+                    <el-option v-for="opt in C.SCRIPT_MARKET_TYPE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item :label="$t('Type')" v-else>
                   <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.SCRIPT_MARKET_MAP.get(selectedType).name" :value="selectedType"></el-option>
+                    <el-option :label="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).name" :value="selectedType"></el-option>
                   </el-select>
                 </el-form-item>
 
                 <template v-if="selectedType">
-                  <el-form-item v-if="C.SCRIPT_MARKET_MAP.get(selectedType).logo">
+                  <el-form-item v-if="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).logo">
                     <el-image class="script-market-logo" :class="common.getScriptMarketClass(form)" :src="common.getScriptMarketLogo(form)"></el-image>
                   </el-form-item>
 
                   <el-form-item>
-                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_MAP.get(selectedType).tip" />
+                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).tip" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Title')">
@@ -135,7 +135,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
                     <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')" />
                   </el-form-item>
 
-                  <el-form-item v-if="T.setupPageMode() === 'add' && !C.SCRIPT_MARKET_MAP.get(selectedType).isReadonly">
+                  <el-form-item v-if="T.setupPageMode() === 'add' && !C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).isReadonly">
                     <el-switch
                       v-model="setAdmin"
                       :active-text="$t('Manage this Script Market')">
@@ -203,7 +203,7 @@ export default {
         this.$refs.form.clearValidate();
       }
 
-      let fieldMap = this.C.SCRIPT_MARKET_MAP.get(type).configFields;
+      let fieldMap = this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       for (let f in fieldMap) if (fieldMap.hasOwnProperty(f)) {
@@ -223,7 +223,7 @@ export default {
       }
     },
     fillDefault(type) {
-      let fieldMap = this.C.SCRIPT_MARKET_MAP.get(type).configFields;
+      let fieldMap = this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields;
       if (!fieldMap) return;
 
       let nextConfigJSON = {};
@@ -354,10 +354,10 @@ export default {
       });
     },
     hasConfigField(type, field) {
-      if (!this.C.SCRIPT_MARKET_MAP.get(type) || !this.C.SCRIPT_MARKET_MAP.get(type).configFields) {
+      if (!this.C.SCRIPT_MARKET_TYPE_MAP.get(type) || !this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields) {
         return false;
       }
-      return (field in this.C.SCRIPT_MARKET_MAP.get(type).configFields);
+      return (field in this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields);
     },
   },
   computed: {

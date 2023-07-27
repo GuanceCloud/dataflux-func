@@ -250,7 +250,7 @@ export function getScriptMarketLogo(scriptMarket) {
     try {
       let url = new URL(scriptMarket.configJSON.url);
 
-      let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
       if (brandLogo) return brandLogo;
 
     } catch (err) {
@@ -258,7 +258,7 @@ export function getScriptMarketLogo(scriptMarket) {
     }
   }
 
-  return C.SCRIPT_MARKET_MAP.get(scriptMarket.type).logo;
+  return C.SCRIPT_MARKET_TYPE_MAP.get(scriptMarket.type).logo;
 }
 
 export function getScriptMarketClass(scriptMarket) {
@@ -266,7 +266,7 @@ export function getScriptMarketClass(scriptMarket) {
     try {
       let url = new URL(scriptMarket.configJSON.url);
 
-      let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
       if (brandLogo) return `logo-${url.host.replace('.', '-')}`;
 
     } catch (err) {

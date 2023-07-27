@@ -334,7 +334,7 @@ Translated Text    : 译文
         :element-loading-text="$t('Processing...')"
         width="650px">
         <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
-          <el-form-item :label="$t('Name')">
+          <el-form-item :label="$t('Title')">
             <el-input :disabled="isWriteOperation" :readonly="!isWriteOperation" :value="scriptSetToOperate.title"></el-input>
           </el-form-item>
           <el-form-item label="ID">

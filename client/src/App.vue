@@ -657,7 +657,7 @@ ul {
 }
 .common-table-container {
   /* scroll-behavior: smooth; */
-  padding: 5px 0 0 0 !important;
+  padding: 0 !important;
 }
 
 .button-bad {
@@ -733,12 +733,15 @@ kbd {
   box-shadow: 2px 2px 0 darkgrey;
 }
 .list-page-header {
-  padding: 20px 10px 10px 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .list-page-header > span:first-child {
   font-weight: bold;
   font-size: 22px;
-  float: left;
+  line-height: 2;
 }
 .header-control {
   /* float: right;*/
@@ -750,7 +753,7 @@ kbd {
 }
 .header-control-left {
   display: inline-block;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: normal;
   position: relative;
   top: -3px;
