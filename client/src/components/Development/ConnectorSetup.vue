@@ -1028,10 +1028,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.config-divider {
-  margin-bottom: 0;
-}
-
 .topic-handler .el-input,
 .func-cascader-input .el-cascader,
 .recent-message .form-tip {

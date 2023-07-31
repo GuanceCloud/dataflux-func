@@ -6,10 +6,19 @@
   Zoom In : 放大
   Zoom Out: 缩小
   Fit View: 适合大小
-  Add Node: 添加节点
+  Drag to add: 拖拽添加节点
 
   Selected: 已选中
   Open Setting Panel: 打开设置面板
+
+  Add Switch       : 添加分支
+  IF               : 如果
+  ELSE             : 除此之外
+  Python expression: Python 表达式
+
+  Or double-click the node: 或鼠标双击节点
+  Enter this branch if no expression returns True: 没有任何表达式返回 True 时，进入本分支
+  Please input a Python Expression which returns a bool for Switch: 请输入一个返回布尔值的 Python 表达式
 </i18n>
 
 <template>
@@ -69,13 +78,15 @@
                 <span>{{ $t('Selected') }}{{ $t(':') }}</span>
                 <strong class="text-main">{{ C.BLUEPRINT_ELEMENT_TYPE_MAP.get(selectedElementData.type).name }}</strong>
                 &nbsp;
-                <el-button v-if="selectedElementCanAction('openProps')"
-                  size="mini"
-                  type="primary" plain
-                  @click="elementAction('openProps')">
-                  <i class="fa fa-fw fa-sliders"></i>
-                  {{ $t('Open Setting Panel') }}
-                </el-button>
+                <el-tooltip effect="dark" :content="$t('Or double-click the node')" placement="bottom">
+                  <el-button v-if="selectedElementCanAction('openProps')"
+                    size="mini"
+                    type="primary" plain
+                    @click="elementAction('openProps')">
+                    <i class="fa fa-fw fa-sliders"></i>
+                    {{ $t('Open Setting Panel') }}
+                  </el-button>
+                </el-tooltip>
 
                 <el-tooltip v-if="selectedElementCanAction('delete')"
                   effect="dark"
@@ -98,7 +109,7 @@
 
         <!-- 拖拽面板 -->
         <div id="logicFlowDnd">
-          <span>{{ $t('Add Node') }}</span>
+          <span>{{ $t('Drag to add') }}</span>
 
           <div class="dnd-node">
             <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
@@ -130,7 +141,7 @@
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         width="850px">
-        <el-form ref="form" label-width="80px" :model="form" :rules="formRules">
+        <el-form ref="form" label-width="85px" :model="form" :rules="formRules">
           <!-- 标题 -->
           <el-form-item :label="$t('Title')" v-if="selectedElementHasProp('title')">
             <el-input :placeholder="$t('Optional')" v-model="form.title"></el-input>
@@ -144,9 +155,44 @@
           </el-form-item>
 
           <!-- 分支表达式 -->
-          <el-form-item :label="$t('Expression')" v-if="selectedElementHasProp('switchExpr')">
+          <template v-if="selectedElementHasProp('switchItems')">
+            <el-form-item class="config-divider" :label="$t('Switch')">
+              <el-divider></el-divider>
+            </el-form-item>
 
-          </el-form-item>
+            <template v-for="(item, index) in form.switchItems || []">
+              <el-form-item
+                :label="`#${index + 1}`"
+                :key="`switch-${index}`"
+                :rules="formRules_item">
+                <span slot="label" class="switch-item-label">#{{ index + 1 }}</span>
+                <div class="switch-item">
+                  <div>
+                    <el-select
+                      class="switch-item-type"
+                      v-model="item.type">
+                      <el-option :label="$t('IF')" value="expr"></el-option>
+                      <el-option :label="$t('ELSE')" value="else"></el-option>
+                    </el-select>
+
+                    <el-input v-if="item.type === 'expr'"
+                      class="switch-item-expr"
+                      v-model="item.expr"
+                      :placeholder="$t('Python expression')" ></el-input>
+                    <span class="text-info switch-item-else" v-else-if="item.type === 'else'">{{ $t('Enter this branch if no expression returns True' ) }}</span>
+                  </div>
+
+                  <!-- 删除按钮 -->
+                  <el-link type="primary" @click.prevent="removeSwitchExpr(index)">{{ $t('Delete') }}</el-link>
+                </div>
+              </el-form-item>
+            </template>
+
+            <el-form-item>
+              <el-link type="primary" @click="addSwitchExpr"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Switch') }}</el-link>
+            </el-form-item>
+          </template>
+
         </el-form>
 
         <div slot="footer">
@@ -171,18 +217,6 @@ import SwitchNode from '@/components/Blueprint/Nodes/SwitchNode.js';
 // 线条
 import SimpleLine from '@/components/Blueprint/Nodes/SimpleLine.js';
 import SwitchLine from '@/components/Blueprint/Nodes/SwitchLine.js';
-
-const demoData =
-{
-  nodes: [
-    {
-      id: 'entry',
-      type: 'EntryNode',
-      x: 350, y: 50,
-      properties: {},
-    },
-  ],
-};
 
 export default {
   name: 'BlueprintContents',
@@ -400,6 +434,7 @@ export default {
     },
     selectedElementCanAction(action) {
       if (!this.selectedElement) return false;
+
       return this.elementActionMap[action].indexOf(this.selectedElement.type) >= 0;
     },
 
@@ -507,6 +542,16 @@ export default {
         default:
           return;
       }
+    },
+
+    addSwitchExpr() {
+      if (this.T.isNothing(this.form.switchItems)) {
+        this.$set(this.form, 'switchItems', []);
+      }
+      this.form.switchItems.push({ expr: '' });
+    },
+    removeSwitchExpr(index) {
+      this.form.switchItems.splice(index, 1);
     },
   },
   computed: {
@@ -617,11 +662,25 @@ export default {
       return this.selectedElement.getData();
     },
     elementActionMap() {
-      return {
-        'openProps': [ 'CodeNode', 'FuncNode' ],
-        'setProps' : [ 'CodeNode', 'FuncNode' ],
-        'delete'   : [ 'CodeNode', 'FuncNode', 'SimpleLine', 'SwitchLine' ],
+      let _map = {
+        'setProps': [
+          'CodeNode',
+          'FuncNode',
+          'SwitchNode',
+        ],
+        'delete': [
+          'CodeNode',
+          'FuncNode',
+          'SwitchNode',
+          'SimpleLine',
+          'SwitchLine',
+        ],
       }
+
+      // 可以 setProps 的一定能 openProps
+      _map['openProps'] = _map['setProps'];
+
+      return _map;
     },
 
     propSettingTitle() {
@@ -648,6 +707,11 @@ export default {
       form: {
       },
       formRules: {
+        formRules_switchExpr: {
+          trigger: 'change',
+          message : this.$t('Please input a Python Expression which returns a bool for Switch'),
+          required: true,
+        },
       },
     }
   },
@@ -671,6 +735,34 @@ export default {
   width: 100%;
   height: 100%;
 }
+
+.switch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.switch-item-label {
+  padding: 2px 10px;
+  color: #FF6600;
+  font-family: Iosevka;
+  font-size: 16px;
+  border: 1px solid #FF6600;
+  border-radius: 5px;
+  background-color: #FDF5EF;
+}
+.switch-item-type {
+  width: 110px;
+  display: inline-block;
+}
+.switch-item-expr {
+  width: 550px;
+  display: inline-block;
+}
+.switch-item-else {
+  padding-left: 15px;
+}
+.switch-item-delete {
+}
 </style>
 
 <style>
@@ -689,7 +781,6 @@ export default {
     flex-wrap: nowrap;
     background-color: #FDF5EF;
   }
-
   .node-icon {
     color: #FF6600;
   }
@@ -711,7 +802,6 @@ export default {
     width: 118px;
     height: 38px;
   }
-
   .node-icon {
     font-size: 18px;
     width: 20px;

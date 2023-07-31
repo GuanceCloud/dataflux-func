@@ -1111,7 +1111,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
         key  : 'SwitchNode',
         name : $t('Switch Node'),
         title: $t('Switch'),
-        props: [ ],
+        props: [ 'title', 'switchItems' ],
       },
 
       {

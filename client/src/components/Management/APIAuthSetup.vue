@@ -483,9 +483,6 @@ def my_auth_func():
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.config-divider {
-  margin-bottom: 0;
-}
 .fixed-field-location .el-select {
   width: 420px;
   display: inline-block;

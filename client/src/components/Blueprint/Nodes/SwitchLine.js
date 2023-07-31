@@ -12,8 +12,7 @@ class SwitchLineModel extends BaseLineModel {
     // 业务数据分支序号展示为文本
     let _switchOrder = this.getProperties().switchOrder;
     if (T.notNothing(_switchOrder)) {
-      console.log(_switchOrder)
-      this.updateText(_switchOrder);
+      this.updateText(` #${_switchOrder} `);
     }
   }
 
@@ -22,12 +21,13 @@ class SwitchLineModel extends BaseLineModel {
     const style = super.getTextStyle();
 
     style.color = '#FF6600';
-    style.fontSize = 18;
-    style.style = 'font-family: Iosevka';
+    style.fontSize = 16;
+    style.style = 'font-family: Iosevka; cursor: hand;';
     style.background.fill = '#FDF5EF';
     style.background.stroke = '#FF6600';
     style.background.rx = 5;
     style.background.ry = 5;
+    style.background.style = 'cursor: hand;';
 
     return style;
   }

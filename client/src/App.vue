@@ -794,6 +794,10 @@ kbd {
 .timeline-tip:last-of-type {
   margin-bottom: 20px;
 }
+.config-divider {
+  margin-bottom: 0 !important;
+}
+
 /* vue-splitpane 修正 */
 .splitter-pane-resizer {
   opacity: 1 !important;
