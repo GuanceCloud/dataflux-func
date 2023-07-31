@@ -46,6 +46,7 @@ var CeleryHelper = function(logger, config) {
         host    : CONFIG.REDIS_HOST,
         port    : CONFIG.REDIS_PORT,
         db      : CONFIG.REDIS_DATABASE,
+        user    : CONFIG.REDIS_USER,
         password: CONFIG.REDIS_PASSWORD,
         useTLS  : CONFIG.REDIS_USE_TLS,
       });

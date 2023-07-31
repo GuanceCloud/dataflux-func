@@ -52,6 +52,8 @@ app.config_from_object('worker.celeryconfig')
 redis_auth = ''
 if CONFIG['REDIS_PASSWORD']:
     redis_auth = f":{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
+if redis_auth and CONFIG['REDIS_USER']:
+    redis_auth = f"{urllib.parse.quote(CONFIG['REDIS_USER'])}{redis_auth}"
 
 redis_schema = 'redis://'
 ssl_options  = None
