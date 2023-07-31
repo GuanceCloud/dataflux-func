@@ -22,22 +22,24 @@
             {{ $t('Blueprint') }}
             <span class="text-main">{{ data.title || data.id }}</span>
             &#12288;
+
             <span class="header-control-left">
+              <el-button size="mini" @click="">
+                <i class="fa fa-fw fa-coffee"></i>
+                {{ $t('Deploy') }}
+              </el-button>
+              &nbsp;
               <el-button-group>
                 <el-tooltip effect="dark" :content="$t('Undo')" placement="bottom">
-                  <el-button size="mini" plain :disabled="!undoAble" @click="canvasAction('undo')">
+                  <el-button size="mini" :disabled="!undoAble" @click="canvasAction('undo')">
                     <i class="fa fa-fw fa-undo"></i>
                   </el-button>
                 </el-tooltip>
                 <el-tooltip effect="dark" :content="$t('Redo')" placement="bottom">
-                  <el-button size="mini" plain :disabled="!redoAble" @click="canvasAction('redo')">
+                  <el-button size="mini" :disabled="!redoAble" @click="canvasAction('redo')">
                     <i class="fa fa-fw fa-repeat"></i>
                   </el-button>
                 </el-tooltip>
-                <el-button size="mini" @click="">
-                  <i class="fa fa-fw fa-floppy-o"></i>
-                  {{ $t('Save') }}
-                </el-button>
               </el-button-group>
               &nbsp;
               <el-button-group>
@@ -67,7 +69,7 @@
                 <span>{{ $t('Selected') }}{{ $t(':') }}</span>
                 <strong class="text-main">{{ C.BLUEPRINT_ELEMENT_TYPE_MAP.get(selectedElementData.type).name }}</strong>
                 &nbsp;
-                <el-button v-if="selectedElementCan('openProps')"
+                <el-button v-if="selectedElementCanAction('openProps')"
                   size="mini"
                   type="primary" plain
                   @click="elementAction('openProps')">
@@ -75,7 +77,7 @@
                   {{ $t('Open Setting Panel') }}
                 </el-button>
 
-                <el-tooltip v-if="selectedElementCan('delete')"
+                <el-tooltip v-if="selectedElementCanAction('delete')"
                   effect="dark"
                   :content="$t('Delete')"
                   placement="bottom">
@@ -127,12 +129,26 @@
         :visible.sync="showSetting"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
-        width="650px">
-        <el-form ref="form" label-width="50px" :model="form" :rules="formRules">
-          <el-form-item :label="$t('Title')" v-if="selectedElementHas('title')">
+        width="850px">
+        <el-form ref="form" label-width="80px" :model="form" :rules="formRules">
+          <!-- 标题 -->
+          <el-form-item :label="$t('Title')" v-if="selectedElementHasProp('title')">
             <el-input :placeholder="$t('Optional')" v-model="form.title"></el-input>
           </el-form-item>
+
+          <!-- 代码 -->
+          <el-form-item :label="$t('Code')" v-show="selectedElementHasProp('code')">
+            <div id="codeContainer_BlueprintContents" :style="$store.getters.codeMirrorSettings.style">
+              <textarea id="code_BlueprintContents"></textarea>
+            </div>
+          </el-form-item>
+
+          <!-- 分支表达式 -->
+          <el-form-item :label="$t('Expression')" v-if="selectedElementHasProp('switchExpr')">
+
+          </el-form-item>
         </el-form>
+
         <div slot="footer">
           <el-button @click="showSetting = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" @click="elementAction('setProps')">{{ $t('Save') }}</el-button>
@@ -191,10 +207,32 @@ export default {
 
       this.data = apiRes.data;
 
+      // 初始化画布
       this.initCanvas();
       this.initCanvasEvent();
 
       this.$store.commit('updateLoadStatus', true);
+    },
+    async saveData() {
+      // 画布数据
+      let canvasJSON = this.logicFlow.getGraphRawData();
+
+      // 视图数据
+      let currentTransform = this.logicFlow.getTransform();
+      let viewJSON = {
+        zoom             : currentTransform.SCALE_X,
+        moveX            : currentTransform.TRANSLATE_X,
+        moveY            : currentTransform.TRANSLATE_Y,
+        selectedElementId: this.selectedElementData ? this.selectedElementData.id : null,
+      }
+
+      let apiRes = this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
+        params: { id: this.$route.params.id },
+        body: { data: { canvasJSON, viewJSON } },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      // Nope
     },
 
     initCanvas() {
@@ -217,42 +255,87 @@ export default {
       ]);
 
       // 渲染
-      this.logicFlow.render(demoData);
+      this.logicFlow.render(this.data.canvasJSON);
+
+      // 恢复视图
+      if (this.T.notNothing(this.data.viewJSON)) {
+        let viewJSON = this.data.viewJSON;
+
+        if (viewJSON.zoom) {
+          this.logicFlow.zoom(viewJSON.zoom);
+        }
+        if (viewJSON.moveX || viewJSON.moveY) {
+          this.logicFlow.translate(viewJSON.moveX || 0, viewJSON.moveY || 0);
+        }
+        if (viewJSON.selectedElementId) {
+          this.selectElement(viewJSON.selectedElementId);
+        }
+      }
     },
     initCanvasEvent() {
       if (!this.logicFlow) return;
 
-      // 添加节点、双击元素后打开设置界面
+      // 双击元素后打开设置界面
       this.logicFlow.on('node:dbclick,edge:dbclick', ({ data }) => {
-        // 选中元素
-        this.logicFlow.selectElementById(data.id);
-
-        // 记录新创建的元素
-        this.selectedElement = this.logicFlow.getModelById(data.id);
-
         // 打开设置界面
+        this.selectElement(data.id);
         this.elementAction('openProps');
+      });
+
+      // 添加节点后选中
+      this.logicFlow.on('node:dnd-add', ({ data }) => {
+        this.selectElement(data.id);
       });
 
       // 元素连线后
       this.logicFlow.on('edge:add', ({ data }) => {
-        // 防止重复连线
         let sourceNode = this.logicFlow.getNodeDataById(data.sourceNodeId);
+        let lines      = this.logicFlow.getNodeOutgoingEdge(data.sourceNodeId);
 
         if (sourceNode.type === 'SwitchNode') {
-          // Switch 节点允许多个出线，且连线后打开配置
-          // 选中元素
-          this.logicFlow.selectElementById(data.id);
+          // Switch 节点允许多个出线，并自动重新分配序号
 
-          // 记录新创建的元素
-          this.selectedElement = this.logicFlow.getModelById(data.id);
+          // 重复连接只保留最后一个
+          lines.forEach(line => {
+            if (line.id !== data.id
+              && line.sourceNodeId === data.sourceNodeId
+              && line.targetNodeId === data.targetNodeId) {
+              this.logicFlow.deleteEdge(line.id);
+            }
+          });
 
-          // 打开设置界面
-          this.elementAction('openProps');
+          // 重新获取所有出线
+          lines = this.logicFlow.getNodeOutgoingEdge(data.sourceNodeId);
+
+          // 提取当前已分配的序号（从 1 开始）
+          let _currentOrders = [ true ];
+          lines.forEach(line => {
+            let _lineProp = line.getProperties();
+            let _order = _lineProp.switchOrder;
+            if (this.T.notNothing(_order)) {
+              _currentOrders[_order] = true;
+            }
+          });
+          console.log(_currentOrders)
+
+          // 补充空缺序号
+          lines.forEach(line => {
+            let _lineProp = line.getProperties();
+            if (this.T.notNothing(_lineProp.switchOrder)) return;
+
+            // 从空缺补充
+            for (let i = 0; i <= _currentOrders.length; i++) {
+              if (!_currentOrders[i]) {
+                line.setProperties({ switchOrder: i });
+                console.log('set text', i)
+                _currentOrders[i] = true;
+                break;
+              }
+            }
+          });
 
         } else {
           // 其他节点只保留最后一个出线
-          let lines = this.logicFlow.getNodeOutgoingEdge(data.sourceNodeId);
           lines.forEach(line => {
             if (line.id !== data.id) {
               this.logicFlow.deleteEdge(line.id);
@@ -268,8 +351,7 @@ export default {
 
       // 元素点击
       this.logicFlow.on('element:click', ({ data }) => {
-        // 记录选中元素
-        this.selectedElement = this.logicFlow.getModelById(data.id);
+        this.selectElement(data.id);
       });
 
       // 画布点击
@@ -278,24 +360,51 @@ export default {
         this.selectedElement = null;
       });
 
+      // 画布移动
+      this.logicFlow.on('graph:transform', this.T.debounce(() => {
+        // 触发保存
+        this.logicFlow.emit('custom:save-canvas-view');
+      }));
+
       // 历史记录
       this.logicFlow.on('history:change', ({ data }) => {
+        // 记录是否可以撤销、重做
         this.redoAble = data.redoAble;
         this.undoAble = data.undoAble;
+
+        // 触发保存
+        this.logicFlow.emit('custom:save-canvas-view');
+      });
+
+      // 保存画布、视图
+      this.logicFlow.on('custom:save-canvas-view', () => {
+        this.saveData();
       });
     },
 
-    selectedElementHas(prop) {
+    selectElement(id) {
+      if (!this.logicFlow) return;
+
+      // 选中元素
+      this.logicFlow.selectElementById(id);
+
+      // 记录新创建的元素
+      this.selectedElement = this.logicFlow.getModelById(id);
+
+      // 触发保存
+      this.logicFlow.emit('custom:save-canvas-view');
+    },
+    selectedElementHasProp(prop) {
       if (!this.selectedElement) return false;
       return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
     },
-    selectedElementCan(action) {
+    selectedElementCanAction(action) {
       if (!this.selectedElement) return false;
       return this.elementActionMap[action].indexOf(this.selectedElement.type) >= 0;
     },
 
     elementAction(action) {
-      if (!this.selectedElement || !this.selectedElementCan(action)) return;
+      if (!this.selectedElement || !this.selectedElementCanAction(action)) return;
 
       let elementType = this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type);
       let elementProps = this.selectedElement.getProperties();
@@ -310,12 +419,33 @@ export default {
           this.form = currentProps;
 
           this.showSetting = true;
+
+          // 加载代码
+          if ('code' in currentProps) {
+            setImmediate(() => {
+              // 初始化代码编辑器
+              if (!this.codeMirror) {
+                this.codeMirror = this.T.initCodeMirror('code_BlueprintContents');
+                this.codeMirror.setOption('theme', this.T.getCodeMirrorThemeName());
+              }
+
+              // 代码需要使用 CodeMirror 加载
+              this.codeMirror.setValue(currentProps.code || '');
+            });
+          }
           break;
 
         case 'setProps':
           let nextProps = {};
           elementType.props.forEach(prop => {
-            nextProps[prop] = this.form[prop] || null;
+            if (prop === 'code') {
+              // 代码需要从 CodeMirror 中读取
+              nextProps.code = this.codeMirror.getValue();
+
+            } else {
+              // 其他属性从 Form 中读取
+              nextProps[prop] = this.form[prop] || null;
+            }
           });
 
           this.selectedElement.setProperties(nextProps);
@@ -400,13 +530,14 @@ export default {
 
         // 默认连线类型
         edgeType: 'SimpleLine',
+
         // 分支节点出线为分支连线
         edgeGenerator: (sourceNode, targetNode, currentEdge) => {
           if (sourceNode.type === 'SwitchNode') return 'SwitchLine';
         },
 
         // 允许调整连线起始点
-        adjustEdgeStartAndEnd: true,
+        adjustEdgeStartAndEnd: false,
         // 禁止鼠标滚动画布
         stopScrollGraph: true,
 
@@ -487,9 +618,9 @@ export default {
     },
     elementActionMap() {
       return {
-        'openProps': [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
-        'setProps' : [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
-        'delete'   : [ 'CodeNode', 'FuncNode', 'SwitchLine' ],
+        'openProps': [ 'CodeNode', 'FuncNode' ],
+        'setProps' : [ 'CodeNode', 'FuncNode' ],
+        'delete'   : [ 'CodeNode', 'FuncNode', 'SimpleLine', 'SwitchLine' ],
       }
     },
 
@@ -503,7 +634,8 @@ export default {
   },
   data() {
     return {
-      logicFlow: null,
+      logicFlow : null,
+      codeMirror: null,
 
       data: {},
 
@@ -523,6 +655,7 @@ export default {
     window.vmc = this;
   },
   beforeDestroy() {
+    this.T.destoryCodeMirror(this.codeMirror);
   },
 }
 </script>
@@ -621,5 +754,14 @@ export default {
     cursor: copy;
     margin-top: 15px;
   }
+}
+
+#codeContainer_BlueprintContents {
+  border: 1px solid #DCDFE6;
+  border-radius: 3px;
+}
+#codeContainer_BlueprintContents .CodeMirror {
+  height: 420px;
+  width: auto;
 }
 </style>

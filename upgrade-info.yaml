@@ -395,7 +395,7 @@ upgradeInfo:
       ALTER TABLE `biz_main_script` DROP INDEX `FT`;
       ALTER TABLE `biz_main_script_publish_history` DROP INDEX `FT`;
 
-  # 与观测云SaaS 2023-07-27 迭代中试装
+  # 与观测云SaaS 2023-??-?? 迭代中实装
   - seq: 23
     database: |-
       -- 统一业务实体标题字段名
@@ -408,7 +408,7 @@ upgradeInfo:
       ALTER TABLE `wat_main_access_key`
         CHANGE `name` `title` varchar(256) NOT NULL;
 
-      -- 蓝图添加表述字段
+      -- 蓝图添加描述字段
       ALTER TABLE `biz_main_blueprint`
         ADD COLUMN `description` text COMMENT '描述'
         AFTER `title`;

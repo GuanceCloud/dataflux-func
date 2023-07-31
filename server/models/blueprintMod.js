@@ -50,7 +50,10 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('   ,blpt.createTime');
   sql.append('   ,blpt.updateTime');
 
-  if (options.extra.withCanvas) sql.append(',blpt.canvasJSON');
+  if (options.extra.withCanvas) {
+    sql.append(',blpt.canvasJSON');
+    sql.append(',blpt.viewJSON');
+  }
 
   sql.append('FROM biz_main_blueprint AS blpt');
 
@@ -66,10 +69,6 @@ EntityModel.prototype.add = function(data, callback) {
                  : data.canvasJSON;
 
   try {
-    if (!data.canvasJSON) {
-      data.canvasJSON = {};
-    }
-
     data = _prepareData(data);
   } catch(err) {
     this.logger.logError(err);
@@ -105,12 +104,12 @@ EntityModel.prototype.modify = function(id, data, callback) {
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if ('canvasJSON' in data) {
-    if (data.canvasJSON && 'object' === typeof data.canvasJSON) {
-      data.canvasJSON = JSON.stringify(data.canvasJSON);
-    } else {
-      data.canvasJSON = '{}';
-    }
+  if (data.canvasJSON && 'object' === typeof data.canvasJSON) {
+    data.canvasJSON = JSON.stringify(data.canvasJSON);
+  }
+
+  if (data.viewJSON && 'object' === typeof data.viewJSON) {
+    data.viewJSON = JSON.stringify(data.viewJSON);
   }
 
   return data;

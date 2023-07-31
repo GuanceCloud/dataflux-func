@@ -3732,7 +3732,7 @@ authLinkAPI:
           $desc      : 函数调用参数JSON (kwargs)
           $isRequired: false
           $type      : json
-          $example  : {"msg": "INPUT_BY_CALLER"}
+          $example   : {"msg": "INPUT_BY_CALLER"}
         tagsJSON:
           $desc     : 授权链接标签（直接替换完整数组）
           $allowNull: true
@@ -5509,6 +5509,10 @@ blueprintAPI:
           $desc      : 画布JSON
           $isRequired: false
           $type      : json
+        viewJSON:
+          $desc      : 视图JSON
+          $isRequired: false
+          $type      : json
         isDeployed:
           $desc     : 是否已部署
           $allowNull: false
@@ -5539,6 +5543,10 @@ blueprintAPI:
           $type      : string
         canvasJSON:
           $desc      : 画布JSON
+          $isRequired: false
+          $type      : json
+        viewJSON:
+          $desc      : 视图JSON
           $isRequired: false
           $type      : json
         isDeployed:

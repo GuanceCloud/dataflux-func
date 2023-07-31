@@ -166,7 +166,7 @@ export default {
         name  : 'blueprint-contents',
         params: { id: d.id },
         query : nextRouteQuery,
-      })
+      });
     },
   },
   computed: {

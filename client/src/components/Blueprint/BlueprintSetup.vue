@@ -125,12 +125,15 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
+      let nextRouteQuery = this.T.packRouteQuery();
+
       this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       this.$router.push({
-        name : 'blueprint-list',
-        query: this.T.getPrevQuery(),
+        name  : 'blueprint-contents',
+        params: { id: apiRes.data.id },
+        query : nextRouteQuery,
       });
     },
     async modifyData() {

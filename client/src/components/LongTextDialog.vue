@@ -48,7 +48,8 @@ export default {
       setImmediate(() => {
         // 初始化编辑器
         if (!this.codeMirror) {
-          this.codeMirror = this.T.initCodeMirror('longTextDialogContent', this.mode || 'text');
+          let opt = { mode: this.mode || 'text' };
+          this.codeMirror = this.T.initCodeMirror('longTextDialogContent', opt);
           this.codeMirror.setOption('theme', this.T.getCodeMirrorThemeName());
           this.T.setCodeMirrorReadOnly(this.codeMirror, true);
         }

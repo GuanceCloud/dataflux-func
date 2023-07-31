@@ -147,12 +147,8 @@ EntityModel.prototype.modify = function(id, data, callback) {
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if ('funcCallKwargsJSON' in data) {
-    if (data.funcCallKwargsJSON && 'object' === typeof data.funcCallKwargsJSON) {
-      data.funcCallKwargsJSON = JSON.stringify(data.funcCallKwargsJSON);
-    } else {
-      data.funcCallKwargsJSON = '{}';
-    }
+  if (data.funcCallKwargsJSON && 'object' === typeof data.funcCallKwargsJSON) {
+    data.funcCallKwargsJSON = JSON.stringify(data.funcCallKwargsJSON);
   }
 
   if (data.tagsJSON && 'object' === typeof data.tagsJSON) {

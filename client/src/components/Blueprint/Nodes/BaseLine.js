@@ -15,13 +15,6 @@ export class BaseLineModel extends BezierEdgeModel {
     this.text.draggable = false;
     // 不允许文本被编辑
     this.text.editable = false;
-  }
-
-  setAttributes() {
-    // 不允许文本被拖动
-    this.text.draggable = false;
-    // 不允许文本被编辑
-    this.text.editable = false;
 
     // 开启动画
     this.isAnimation = true;

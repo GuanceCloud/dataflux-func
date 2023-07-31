@@ -1124,7 +1124,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
         key  : 'SwitchLine',
         name : $t('Switch Line'),
         title: $t('Switch Line'),
-        props: [ ],
+        props: [ 'switchOrder' ],
       },
     ]
   },

@@ -1526,8 +1526,10 @@ export function getPrevQuery() {
   return unpackRouteQuery(router.currentRoute.query.prevRouteQuery);
 };
 
-export function initCodeMirror(id, mode) {
-  let cm = CodeMirror.fromTextArea(document.getElementById(id), {
+export function initCodeMirror(id, options) {
+  options = options || {};
+
+  let config = {
     autoRefresh : true,
     autofocus   : true,
     indentUnit  : 4,
@@ -1573,7 +1575,13 @@ export function initCodeMirror(id, mode) {
       'Cmd-F' : 'findPersistent',
       'Ctrl-F': 'findPersistent',
     },
-  });
+  }
+
+  if (options.config) {
+    Object.assign(config, options.config);
+  }
+
+  let cm = CodeMirror.fromTextArea(document.getElementById(id), config);
 
   // 随键入代码提示
   cm.on('change', debounce((editor, change) => {
@@ -1584,7 +1592,7 @@ export function initCodeMirror(id, mode) {
   }, 150));
 
   resetCodeMirrorPhrases(cm);
-  setCodeMirrorMode(cm, mode || 'python');
+  setCodeMirrorMode(cm, options.mode || 'python');
   return cm;
 };
 

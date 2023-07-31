@@ -201,15 +201,15 @@ _SAMPLE_SCRIPT: |-
 # 基础蓝图数据
 _BLUEPRINT_BASE_CANVAS_JSON: |-
   {
-    nodes: [
+    "nodes": [
       {
-        id  : 'entry',
-        type: 'EntryNode',
-        x   : 240,
-        y   : 40,
-        properties: {},
-      },
-    ],
+        "id": "entry",
+        "type": "EntryNode",
+        "x": 240,
+        "y": 40,
+        "properties": {}
+      }
+    ]
   }
 
 # 官方脚本市场
