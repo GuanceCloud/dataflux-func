@@ -5567,6 +5567,19 @@ blueprintAPI:
         $desc: 蓝图 ID
         $type: string
 
+  deploy:
+    name         : Deploy Blueprint
+    name_zhCN    : 部署蓝图
+    method       : post
+    url          : /api/v1/blueprints/:id/do/deploy
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 蓝图 ID
+        $type: string
+
 # 系统设置
 systemSettingAPI:
   $tag     : System Setting

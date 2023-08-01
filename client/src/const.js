@@ -1090,41 +1090,71 @@ kafka.publish(topic='some_topic', message='some_message')`,
   get BLUEPRINT_ELEMENT_TYPE() {
     return [
       {
-        key  : 'EntryNode',
-        name : $t('Entry Node'),
-        title: $t('Entry'),
-        props: [ ],
-      },
-      {
-        key  : 'CodeNode',
-        name : $t('Code Node'),
-        title: $t('Code'),
-        props: [ 'title', 'code' ],
-      },
-      {
-        key  : 'FuncNode',
-        name : $t('Func Node'),
-        title: $t('Func'),
-        props: [ 'title', 'funcId' ],
-      },
-      {
-        key  : 'SwitchNode',
-        name : $t('Switch Node'),
-        title: $t('Switch'),
-        props: [ 'title', 'switchItems' ],
-      },
-
-      {
         key  : 'SimpleLine',
         name : $t('Simple Line'),
-        title: $t('Simple Line'),
         props: [ ],
       },
       {
         key  : 'SwitchLine',
         name : $t('Switch Line'),
-        title: $t('Switch Line'),
         props: [ 'switchOrder' ],
+      },
+
+      {
+        key  : 'EntryNode',
+        name : $t('Entry Node'),
+        props: [ ],
+      },
+      {
+        key  : 'CodeNode',
+        name : $t('Code Node'),
+        props: [ 'title', 'code' ],
+      },
+      {
+        key  : 'FuncNode',
+        name : $t('Func Node'),
+        props: [ 'title', 'funcId', 'parameterPassingMethod', 'parameterAssigningMap', 'outputField' ],
+      },
+      {
+        key  : 'SwitchNode',
+        name : $t('Switch Node'),
+        props: [ 'title', 'switchItems' ],
+      },
+
+      {
+        key  : 'BuiltinHashNode',
+        name : $t('Hash'),
+        props: [ 'inputField', 'outputField', 'hashAlgorithm' ],
+      },
+      {
+        key  : 'BuiltinBase64Node',
+        name : $t('Base64'),
+        props: [ 'inputField', 'outputField', 'encodeOrDecode' ],
+      },
+      {
+        key  : 'BuiltinRandomNode',
+        name : $t('Random'),
+        props: [ 'outputField', 'randomType', 'randomLength', 'minValue', 'maxValue' ],
+      },
+      {
+        key  : 'BuiltinJSONNode',
+        name : $t('JSON'),
+        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+      },
+      {
+        key  : 'BuiltinYAMLNode',
+        name : $t('YAML'),
+        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+      },
+      {
+        key  : 'BuiltinHTTPNode',
+        name : $t('HTTP'),
+        props: [ 'httpMethod', 'url', 'body' ],
+      },
+      {
+        key  : 'BuiltinDingTalkNode',
+        name : $t('DingTalk'),
+        props: [ 'url', 'secret', 'dingTalkMessageType', 'content', 'body' ],
       },
     ]
   },

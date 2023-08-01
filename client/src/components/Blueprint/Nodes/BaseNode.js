@@ -16,6 +16,8 @@ export class BaseNodeModel extends HtmlNodeModel {
   }
 
   setAttributes() {
+    super.setAttributes();
+
     // 大小
     this.width = 220;
     this.height = 40;

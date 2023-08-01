@@ -320,7 +320,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                           :placeholder="$t('Handler Func')"
                           v-model="topicHandler.funcId"
                           :options="funcCascader"
-                          :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                          :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
                       </el-form-item>
 
                       <el-form-item

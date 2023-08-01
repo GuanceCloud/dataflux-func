@@ -152,7 +152,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                         :filter-method="common.funcCascaderFilter"
                         v-model="form.configJSON.funcId"
                         :options="funcCascader"
-                        :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                        :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
 
                       <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
                       <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Show Sample Code') }}</el-button>

@@ -22,3 +22,7 @@ exports.list   = crudHandler.createListHandler();
 exports.add    = crudHandler.createAddHandler();
 exports.modify = crudHandler.createModifyHandler();
 exports.delete = crudHandler.createDeleteHandler();
+
+exports.deploy = function(req, res, next) {
+  return res.locals.sendJSON();
+};

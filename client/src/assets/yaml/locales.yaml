@@ -440,7 +440,10 @@ en:
   Script Market based on git supports HTTPS only : 基于 git 的脚本市场仅支持 HTTPS
   Script Market based on HTTP Service is readonly: 基于 HTTP 服务的脚本市场为只读
 
-  # const.js - BLUEPRINT_ELEMENT_TYPE
+  # const.js - BLUEPRINT_ELEMENT_TYPE, 节点
+  Simple Line: 简单连线
+  Switch Line: 分支连线
+
   Entry      : 入口
   Entry Node : 入口节点
   Code       : 代码
@@ -449,8 +452,29 @@ en:
   Func Node  : 函数节点
   Switch     : 分支
   Switch Node: 分支节点
-  Simple Line: 简单连线
-  Switch Line: 分支连线
+
+  Get MD5              : 获取 MD5
+  Get SHA1             : 获取 SHA1
+  Get SHA256           : 获取 SHA256
+  Get SHA512           : 获取 SHA512
+  Get Base64           : Base64 编码
+  From Base64          : Base64 解码
+  Get Random String    : 获取随机字符串
+  Get Random Integer   : 获取随机整数
+  Load JSON            : 加载 JSON 为对象
+  Dump JSON            : 输出 JSON 字符串
+  Load YAML            : 加载 YAML 为对象
+  Dump YAML            : 输出 YAML 字符串
+  HTTP Request         : 发送 GET 请求
+  GET Request          : 发送 GET 请求
+  POST Request         : 发送 POST 请求
+  PUT Request          : 发送 PUT 请求
+  PATCH Request        : 发送 PATCH 请求
+  DELETE Request       : 发送 DELETE 请求
+  DingTalk             : 钉钉
+  DingTalk Message     : 钉钉消息
+  DingTalk Text Message: 钉钉纯文本消息
+  DingTalk MD Message  : 钉钉 Markdown 消息
 
   Cannot point to the Entry Node : 不能指向入口节点
   Cannot point to the node itself: 不能指向节点自身

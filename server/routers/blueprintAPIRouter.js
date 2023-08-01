@@ -21,3 +21,7 @@ routeLoader.load(ROUTE.blueprintAPI.modify, [
 routeLoader.load(ROUTE.blueprintAPI.delete, [
   blueprintAPICtrl.delete,
 ]);
+
+routeLoader.load(ROUTE.blueprintAPI.deploy, [
+  blueprintAPICtrl.deploy,
+]);

@@ -11,10 +11,37 @@
   Selected: 已选中
   Open Setting Panel: 打开设置面板
 
-  Add Switch       : 添加分支
-  IF               : 如果
-  ELSE             : 除此之外
-  Python expression: Python 表达式
+  Parameter                 : 参数
+  Calling Preview           : 调用预览
+  Passed as first parameter : 作为第一个参数传递
+  Unpack as named parameters: 以具名参数解包
+  Assign by name            : 按名称指定
+  No parameter              : 不传递参数
+  Add Switch                : 添加分支
+  IF                        : 如果
+  ELSE                      : 除此之外
+  Python expression         : Python 表达式
+
+  Input Field   : 输入字段
+  Output Field  : 输出字段
+  Algorithm     : 算法
+  Operation     : 操作
+  Encode        : 编码
+  Decode        : 解码
+  Serialize     : 序列化
+  Deserialize   : 反序列化
+  Cipher        : 加密
+  Decipher      : 解密
+  Length        : 长度
+  Type          : 类型
+  Text          : 文本
+  Min Value     : 最小值
+  Max Value     : 最大值
+  Method        : 方法
+  Body          : 请求体
+  Content       : 内容
+  URL           : URL 地址
+  Secret        : 密钥
 
   Or double-click the node: 或鼠标双击节点
   Enter this branch if no expression returns True: 没有任何表达式返回 True 时，进入本分支
@@ -33,7 +60,7 @@
             &#12288;
 
             <span class="header-control-left">
-              <el-button size="mini" @click="">
+              <el-button size="mini" @click="deploy">
                 <i class="fa fa-fw fa-coffee"></i>
                 {{ $t('Deploy') }}
               </el-button>
@@ -109,7 +136,7 @@
 
         <!-- 拖拽面板 -->
         <div id="logicFlowDnd">
-          <span>{{ $t('Drag to add') }}</span>
+          <div class="dnd-title">{{ $t('Drag to add') }}</div>
 
           <div class="dnd-node">
             <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
@@ -131,6 +158,57 @@
               <div class="node-text">{{ $t('Switch Node') }}</div>
             </div>
           </div>
+
+          <div class="dnd-title">{{ $t('Built-in') }}</div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHashNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('Hash') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinBase64Node' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('Base64') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinRandomNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('Random') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinJSONNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('JSON') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinYAMLNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('YAML') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHTTPNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('HTTP') }}</div>
+            </div>
+          </div>
+
+          <div class="dnd-node">
+            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinDingTalkNode' })">
+              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+              <div class="node-text">{{ $t('DingTalk') }}</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -140,61 +218,233 @@
         :visible.sync="showSetting"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
+        @closed="onCloseProp"
         width="850px">
-        <el-form ref="form" label-width="85px" :model="form" :rules="formRules">
-          <!-- 标题 -->
-          <el-form-item :label="$t('Title')" v-if="selectedElementHasProp('title')">
-            <el-input :placeholder="$t('Optional')" v-model="form.title"></el-input>
-          </el-form-item>
-
-          <!-- 代码 -->
-          <el-form-item :label="$t('Code')" v-show="selectedElementHasProp('code')">
-            <div id="codeContainer_BlueprintContents" :style="$store.getters.codeMirrorSettings.style">
-              <textarea id="code_BlueprintContents"></textarea>
-            </div>
-          </el-form-item>
-
-          <!-- 分支表达式 -->
-          <template v-if="selectedElementHasProp('switchItems')">
-            <el-form-item class="config-divider" :label="$t('Switch')">
-              <el-divider></el-divider>
+        <div class="prop-form">
+          <el-form ref="form" label-width="120px" :model="form" :rules="formRules">
+            <!-- 标题 -->
+            <el-form-item :label="$t('Title')" v-if="selectedElementHasProp('title')">
+              <el-input :placeholder="$t('Optional')" v-model="form.title"></el-input>
             </el-form-item>
 
-            <template v-for="(item, index) in form.switchItems || []">
-              <el-form-item
-                :label="`#${index + 1}`"
-                :key="`switch-${index}`"
-                :rules="formRules_item">
-                <span slot="label" class="switch-item-label">#{{ index + 1 }}</span>
-                <div class="switch-item">
-                  <div>
-                    <el-select
-                      class="switch-item-type"
-                      v-model="item.type">
-                      <el-option :label="$t('IF')" value="expr"></el-option>
-                      <el-option :label="$t('ELSE')" value="else"></el-option>
-                    </el-select>
+            <!-- 代码 -->
+            <el-form-item :label="$t('Code')" v-show="selectedElementHasProp('code')">
+              <div id="codeContainer_BlueprintContents" :style="$store.getters.codeMirrorSettings.style">
+                <textarea id="code_BlueprintContents"></textarea>
+              </div>
+            </el-form-item>
 
-                    <el-input v-if="item.type === 'expr'"
-                      class="switch-item-expr"
-                      v-model="item.expr"
-                      :placeholder="$t('Python expression')" ></el-input>
-                    <span class="text-info switch-item-else" v-else-if="item.type === 'else'">{{ $t('Enter this branch if no expression returns True' ) }}</span>
-                  </div>
+            <!-- 函数 -->
+            <el-form-item :label="$t('Func')" v-show="selectedElementHasProp('funcId')">
+              <el-cascader ref="funcCascader"
+                popper-class="code-font"
+                placeholder="--"
+                filterable
+                :filter-method="common.funcCascaderFilter"
+                v-model="form.funcId"
+                :options="funcCascader"
+                :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
+                @change=""></el-cascader>
+            </el-form-item>
 
-                  <!-- 删除按钮 -->
-                  <el-link type="primary" @click.prevent="removeSwitchExpr(index)">{{ $t('Delete') }}</el-link>
-                </div>
+            <!-- 参数传递方式 -->
+            <el-form-item :label="$t('Parameter')" v-if="selectedElementHasProp('parameterPassingMethod')">
+              <el-select v-model="form.parameterPassingMethod">
+                <el-option :label="$t('Passed as first parameter')" value="passAsFirstParameter"></el-option>
+                <el-option :label="$t('Unpack as named parameters')" value="unpackAsNamedParameters"></el-option>
+                <el-option :label="$t('Assign by name')" value="assignByName"></el-option>
+                <el-option :label="$t('No parameter')" value="noParameter"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 参数指定 -->
+            <template v-if="form.parameterPassingMethod === 'assignByName'">
+              <el-form-item v-for="arg in selectedFunc.argsJSON" :key="arg">
+                <span slot="label" class="parameter-assign-label">{{ arg }} =</span>
+                <el-input
+                  v-model="form.parameterAssigningMap[arg]"
+                  :placeholder="$t('Python expression')"></el-input>
               </el-form-item>
             </template>
 
-            <el-form-item>
-              <el-link type="primary" @click="addSwitchExpr"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Switch') }}</el-link>
+            <!-- 分支表达式 -->
+            <template v-if="selectedElementHasProp('switchItems')">
+              <el-form-item class="config-divider" :label="$t('Switch')">
+                <el-divider></el-divider>
+              </el-form-item>
+
+              <template v-for="(item, index) in form.switchItems || []">
+                <el-form-item
+                  :label="`#${index + 1}`"
+                  :key="`switch-${index}`"
+                  :rules="formRules_item">
+                  <span slot="label" class="switch-item-label">#{{ index + 1 }}</span>
+                  <div class="switch-item">
+                    <div>
+                      <el-select class="switch-item-type" v-model="item.type">
+                        <el-option :label="$t('IF')" value="expr"></el-option>
+                        <el-option :label="$t('ELSE')" value="else"></el-option>
+                      </el-select>
+
+                      <el-input v-if="item.type === 'expr'"
+                        class="switch-item-expr"
+                        v-model="item.expr"
+                        :placeholder="$t('Python expression')"></el-input>
+                      <span class="text-info switch-item-else" v-else-if="item.type === 'else'">{{ $t('Enter this branch if no expression returns True' ) }}</span>
+                    </div>
+
+                    <!-- 删除按钮 -->
+                    <el-link type="primary" @click.prevent="removeSwitchExpr(index)">{{ $t('Delete') }}</el-link>
+                  </div>
+                </el-form-item>
+              </template>
+
+              <el-form-item>
+                <el-link type="primary" @click="addSwitchExpr"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Switch') }}</el-link>
+              </el-form-item>
+            </template>
+
+            <!-- 输入字段 -->
+            <el-form-item :label="$t('Input Field')" v-if="selectedElementHasProp('inputField')">
+              <el-input v-model="form.inputField"></el-input>
             </el-form-item>
-          </template>
 
-        </el-form>
+            <!-- 输出字段 -->
+            <el-form-item :label="$t('Output Field')" v-if="selectedElementHasProp('outputField')">
+              <el-input v-model="form.outputField"></el-input>
+            </el-form-item>
 
+            <!-- 编码 / 解码 -->
+            <el-form-item :label="$t('Operation')" v-if="selectedElementHasProp('encodeOrDecode')">
+              <el-select
+                v-model="form.encodeOrDecode">
+                <el-option :label="$t('Encode')" value="encode"></el-option>
+                <el-option :label="$t('Decode')" value="decode"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 序列化 / 反序列化 -->
+            <el-form-item :label="$t('Operation')" v-if="selectedElementHasProp('serializeOrDeserialize')">
+              <el-select
+                v-model="form.serializeOrDeserialize">
+                <el-option :label="$t('Serialize')" value="serialize"></el-option>
+                <el-option :label="$t('Deserialize')" value="deserialize"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 加密 / 解密 -->
+            <el-form-item :label="$t('Operation')" v-if="selectedElementHasProp('cipherOrDecipher')">
+              <el-select
+                v-model="form.cipherOrDecipher">
+                <el-option :label="$t('Cipher')" value="cipher"></el-option>
+                <el-option :label="$t('Decipher')" value="decipher"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 哈希算法 -->
+            <el-form-item :label="$t('Algorithm')" v-if="selectedElementHasProp('hashAlgorithm')">
+              <el-select
+                v-model="form.hashAlgorithm">
+                <el-option label="MD5" value="md5"></el-option>
+                <el-option label="SHA1" value="sha1"></el-option>
+                <el-option label="SHA256" value="sha256"></el-option>
+                <el-option label="SHA512" value="sha512"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 值类型 -->
+            <el-form-item :label="$t('Type')" v-if="selectedElementHasProp('randomType')">
+              <el-select
+                v-model="form.randomType">
+                <el-option :label="$t('String')" value="string"></el-option>
+                <el-option :label="$t('Integer')" value="integer"></el-option>
+                <el-option :label="$t('Float')" value="float"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 钉钉机器人消息类型 -->
+            <el-form-item :label="$t('Type')" v-if="selectedElementHasProp('dingTalkMessageType')">
+              <el-select
+                v-model="form.dingTalkMessageType">
+                <el-option :label="$t('Text')" value="text"></el-option>
+                <el-option :label="$t('Markdown')" value="markdown"></el-option>
+                <el-option :label="$t('JSON')" value="json"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- 长度 -->
+            <el-form-item :label="$t('Length')" v-if="selectedElementHasProp('randomLength')">
+              <el-input-number v-model="form.randomLength" :step="1" :min="1" :max="100" step-strictly></el-input-number>
+            </el-form-item>
+
+            <!-- 最小值 -->
+            <el-form-item :label="$t('Min Value')" v-if="selectedElementHasProp('minValue')">
+              <el-input-number v-model="form.minValue" :step="1"></el-input-number>
+            </el-form-item>
+
+            <!-- 最大值 -->
+            <el-form-item :label="$t('Max Value')" v-if="selectedElementHasProp('maxValue')">
+              <el-input-number v-model="form.maxValue" :step="1"></el-input-number>
+            </el-form-item>
+
+            <!-- HTTP 方法 -->
+            <el-form-item :label="$t('Method')" v-if="selectedElementHasProp('httpMethod')">
+              <el-select
+                v-model="form.httpMethod">
+                <el-option label="GET" value="get"></el-option>
+                <el-option label="POST" value="post"></el-option>
+                <el-option label="PUT" value="put"></el-option>
+                <el-option label="PATCH" value="patch"></el-option>
+                <el-option label="DELETE" value="delete"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <!-- URL -->
+            <el-form-item :label="$t('URL')" v-if="selectedElementHasProp('url')">
+              <el-input v-model="form.url"></el-input>
+            </el-form-item>
+
+            <!-- 密钥 -->
+            <el-form-item :label="$t('Secret')" v-if="selectedElementHasProp('secret')">
+              <el-input v-model="form.secret"></el-input>
+            </el-form-item>
+
+            <!-- Body -->
+            <el-form-item :label="$t('Body')" v-if="selectedElementHasProp('body')">
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 3 }"
+                v-model="form.body"></el-input>
+            </el-form-item>
+
+            <!-- 内容 -->
+            <el-form-item :label="$t('Content')" v-if="selectedElementHasProp('content')">
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 3 }"
+                v-model="form.content"></el-input>
+            </el-form-item>
+
+            <!-- 函数调用预览 -->
+            <el-form-item :label="$t('Calling Preview')" v-if="selectedFunc">
+              <p class="form-item text-main code-font">
+                <template v-if="form.parameterPassingMethod === 'passAsFirstParameter'">
+                  {{ selectedFunc.id }}(data)
+                </template>
+                <template v-else-if="form.parameterPassingMethod === 'unpackAsNamedParameters'">
+                  {{ selectedFunc.id }}(**data)
+                </template>
+                <template v-else-if="form.parameterPassingMethod === 'assignByName'">
+                  <span v-if="form.outputField">data['{{ form.outputField }}']&nbsp;=&nbsp;</span>
+                  {{ selectedFunc.id }}(<span v-for="(v, k, i) in form.parameterAssigningMap"><span v-if="i > 0">,&nbsp;</span>{{ k }}={{ v }}</span>)
+                </template>
+                <template v-else>
+                  {{ selectedFunc.id }}()
+                </template>
+              </p>
+            </el-form-item>
+          </el-form>
+        </div>
         <div slot="footer">
           <el-button @click="showSetting = false">{{ $t('Cancel') }}</el-button>
           <el-button type="primary" @click="elementAction('setProps')">{{ $t('Save') }}</el-button>
@@ -208,15 +458,25 @@
 import LogicFlow from '@logicflow/core'
 import '@logicflow/core/dist/style/index.css'
 
-// 节点
+// 连线
+import SimpleLine from '@/components/Blueprint/Nodes/SimpleLine.js';
+import SwitchLine from '@/components/Blueprint/Nodes/SwitchLine.js';
+
+// 基础节点
 import EntryNode from '@/components/Blueprint/Nodes/EntryNode.js';
 import CodeNode from '@/components/Blueprint/Nodes/CodeNode.js';
 import FuncNode from '@/components/Blueprint/Nodes/FuncNode.js';
 import SwitchNode from '@/components/Blueprint/Nodes/SwitchNode.js';
 
-// 线条
-import SimpleLine from '@/components/Blueprint/Nodes/SimpleLine.js';
-import SwitchLine from '@/components/Blueprint/Nodes/SwitchLine.js';
+// 内建节点
+import BuiltinHashNode from '@/components/Blueprint/Nodes/BuiltinHashNode.js';
+import BuiltinBase64Node from '@/components/Blueprint/Nodes/BuiltinBase64Node.js';
+import BuiltinRandomNode from '@/components/Blueprint/Nodes/BuiltinRandomNode.js';
+import BuiltinJSONNode from '@/components/Blueprint/Nodes/BuiltinJSONNode.js';
+import BuiltinYAMLNode from '@/components/Blueprint/Nodes/BuiltinYAMLNode.js';
+import BuiltinHTTPNode from '@/components/Blueprint/Nodes/BuiltinHTTPNode.js';
+import BuiltinDingTalkNode from '@/components/Blueprint/Nodes/BuiltinDingTalkNode.js';
+
 
 export default {
   name: 'BlueprintContents',
@@ -229,6 +489,11 @@ export default {
         await this.loadData();
       },
     },
+    'form.parameterPassingMethod': function(val) {
+      if (val === 'assignByName') {
+        this.form.parameterAssigningMap = this.form.parameterAssigningMap || {};
+      }
+    }
   },
   methods: {
     async loadData(selectBlueprintId) {
@@ -240,6 +505,12 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
+
+      // 获取函数列表
+      let funcList = await this.common.getFuncList();
+
+      this.funcMap      = funcList.map;
+      this.funcCascader = funcList.cascader;
 
       // 初始化画布
       this.initCanvas();
@@ -268,6 +539,15 @@ export default {
 
       // Nope
     },
+    async deploy() {
+      await this.saveData();
+
+      let apiRes = this.T.callAPI('post', '/api/v1/blueprints/:id/do/deploy', {
+        params: { id: this.$route.params.id },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+    },
 
     initCanvas() {
       // 初始化 LogicFlow
@@ -279,13 +559,21 @@ export default {
 
       // 注册组件
       this.logicFlow.batchRegister([
+        SimpleLine,
+        SwitchLine,
+
         EntryNode,
         CodeNode,
         FuncNode,
         SwitchNode,
 
-        SimpleLine,
-        SwitchLine,
+        BuiltinHashNode,
+        BuiltinBase64Node,
+        BuiltinRandomNode,
+        BuiltinJSONNode,
+        BuiltinYAMLNode,
+        BuiltinHTTPNode,
+        BuiltinDingTalkNode,
       ]);
 
       // 渲染
@@ -316,9 +604,10 @@ export default {
         this.elementAction('openProps');
       });
 
-      // 添加节点后选中
+      // 添加节点后选中并打开设置界面
       this.logicFlow.on('node:dnd-add', ({ data }) => {
         this.selectElement(data.id);
+        this.elementAction('openProps');
       });
 
       // 元素连线后
@@ -350,7 +639,6 @@ export default {
               _currentOrders[_order] = true;
             }
           });
-          console.log(_currentOrders)
 
           // 补充空缺序号
           lines.forEach(line => {
@@ -361,7 +649,6 @@ export default {
             for (let i = 0; i <= _currentOrders.length; i++) {
               if (!_currentOrders[i]) {
                 line.setProperties({ switchOrder: i });
-                console.log('set text', i)
                 _currentOrders[i] = true;
                 break;
               }
@@ -430,12 +717,75 @@ export default {
     },
     selectedElementHasProp(prop) {
       if (!this.selectedElement) return false;
-      return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
+
+      let hasProp = this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
+      if (!hasProp) return false;
+
+      // 特殊处理
+      switch(this.selectedElement.type) {
+        case 'FuncNode':
+          switch(prop) {
+            case 'parameterPassingMethod':
+              if (!this.form.funcId) return false;
+              if (!this.selectedFunc || this.T.isNothing(this.selectedFunc.argsJSON)) return false;
+              break;
+          }
+          break;
+
+        case 'BuiltinRandomNode':
+          switch(prop) {
+            case 'randomLength':
+              if (this.form.randomType !== 'string') return false;
+              break;
+
+            case 'minValue':
+            case 'maxValue':
+              if (this.form.randomType === 'string') return false;
+              break;
+          }
+          break;
+
+        case 'BuiltinHTTPNode':
+          switch(prop) {
+            case 'body':
+              if (['post', 'put', 'patch'].indexOf(this.form.httpMethod) < 0) return false;
+              break;
+          }
+          break;
+
+        case 'BuiltinDingTalkNode':
+          switch(prop) {
+            case 'body':
+              if (this.form.dingTalkMessageType !== 'json') return false;
+              break;
+
+            case 'content':
+              if (this.form.dingTalkMessageType === 'json') return false;
+              break;
+          }
+          break;
+      }
+
+      return true;
     },
     selectedElementCanAction(action) {
       if (!this.selectedElement) return false;
 
-      return this.elementActionMap[action].indexOf(this.selectedElement.type) >= 0;
+      let type     = this.selectedElement.type;
+      let baseType = this.selectedElement.BaseType;
+
+      // 入口节点不能进行任何操作
+      if (type === 'EntryNode') return false;
+
+      switch(action) {
+        // 连线不允许设置
+        case 'openProps':
+        case 'setProps':
+          if (baseType === 'edge') return false;
+          break;
+      }
+
+      return true;
     },
 
     elementAction(action) {
@@ -448,7 +798,15 @@ export default {
         case 'openProps':
           let currentProps = {}
           elementType.props.forEach(prop => {
-            currentProps[prop] = elementProps[prop] || null;
+            switch(prop) {
+              case 'inputField':
+              case 'outputField':
+                currentProps[prop] = elementProps[prop] || 'value';
+                break;
+
+              default:
+                currentProps[prop] = elementProps[prop] || null;
+            }
           });
 
           this.form = currentProps;
@@ -468,6 +826,7 @@ export default {
               this.codeMirror.setValue(currentProps.code || '');
             });
           }
+
           break;
 
         case 'setProps':
@@ -544,6 +903,10 @@ export default {
       }
     },
 
+    onCloseProp() {
+      this.T.destoryCodeMirror(this.codeMirror);
+      this.codeMirror = null;
+    },
     addSwitchExpr() {
       if (this.T.isNothing(this.form.switchItems)) {
         this.$set(this.form, 'switchItems', []);
@@ -661,30 +1024,14 @@ export default {
       if (!this.selectedElement) return null;
       return this.selectedElement.getData();
     },
-    elementActionMap() {
-      let _map = {
-        'setProps': [
-          'CodeNode',
-          'FuncNode',
-          'SwitchNode',
-        ],
-        'delete': [
-          'CodeNode',
-          'FuncNode',
-          'SwitchNode',
-          'SimpleLine',
-          'SwitchLine',
-        ],
-      }
+    selectedFunc() {
+      if (!this.form.funcId) return null;
 
-      // 可以 setProps 的一定能 openProps
-      _map['openProps'] = _map['setProps'];
-
-      return _map;
+      return this.funcMap[this.form.funcId] || null;
     },
 
     propSettingTitle() {
-      if (!this.selectedElementData) return '';
+      if (!this.selectedElement) return '';
 
       return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type).name;
     },
@@ -696,7 +1043,9 @@ export default {
       logicFlow : null,
       codeMirror: null,
 
-      data: {},
+      data        : {},
+      funcMap     : {},
+      funcCascader: [],
 
       selectedElement: null,
 
@@ -720,6 +1069,7 @@ export default {
   },
   beforeDestroy() {
     this.T.destoryCodeMirror(this.codeMirror);
+    this.codeMirror = null;
   },
 }
 </script>
@@ -751,11 +1101,11 @@ export default {
   background-color: #FDF5EF;
 }
 .switch-item-type {
-  width: 110px;
+  width: 120px;
   display: inline-block;
 }
 .switch-item-expr {
-  width: 550px;
+  width: 520px;
   display: inline-block;
 }
 .switch-item-else {
@@ -808,7 +1158,7 @@ export default {
     margin: 0 15px;
   }
   .node-text {
-    font-size: 16px;
+    font-size: 14px;
     width: 150px;
   }
 }
@@ -818,16 +1168,17 @@ export default {
   position: absolute;
   top: 20px;
   left: 10px;
-  padding: 15px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   border: 1px solid #ccc;
   border-radius: 5px;
   background: white;
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
 
   .node {
-    width: 110px;
+    width: 130px;
     height: 28px;
   }
 
@@ -840,9 +1191,11 @@ export default {
     font-size: 12px;
     width: 150px;
   }
+  .dnd-title, .dnd-node {
+    margin: 5px 10px;
+  }
   .dnd-node {
     cursor: copy;
-    margin-top: 15px;
   }
 }
 
@@ -853,5 +1206,9 @@ export default {
 #codeContainer_BlueprintContents .CodeMirror {
   height: 420px;
   width: auto;
+}
+
+.prop-form .el-cascader {
+  width: 100%;
 }
 </style>

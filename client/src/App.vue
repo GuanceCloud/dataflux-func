@@ -610,6 +610,13 @@ ul {
   float: left;
 }
 
+p.form-item {
+  margin: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
 .setup-form {
   width: 620px;
 }
@@ -619,19 +626,17 @@ ul {
   line-height: 1.5;
 }
 .setup-form .el-color-picker,
-.setup-form .el-color-picker__trigger {
-  width: 100%;
-}
+.setup-form .el-color-picker__trigger,
 .setup-form .el-date-editor,
 .setup-form .el-cascader {
-  width: 485px !important;
+  width: 100% !important;
 }
 .setup-form .el-upload-dragger {
   width: 485px;
   height: unset;
 }
 .setup-form .el-upload-dragger > .image-preview {
-  max-width: 485px;
+  max-width: 100%;
   padding: 10px;
 }
 .setup-form .el-upload-dragger > .image-preview > img {

@@ -9,6 +9,8 @@ class SwitchLineModel extends BaseLineModel {
   }
 
   setAttributes() {
+    super.setAttributes();
+
     // 业务数据分支序号展示为文本
     let _switchOrder = this.getProperties().switchOrder;
     if (T.notNothing(_switchOrder)) {

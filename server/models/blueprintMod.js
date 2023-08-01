@@ -68,6 +68,8 @@ EntityModel.prototype.add = function(data, callback) {
                  ? CONFIG._BLUEPRINT_BASE_CANVAS_JSON
                  : data.canvasJSON;
 
+  data.viewJSON = {};
+
   try {
     data = _prepareData(data);
   } catch(err) {

@@ -188,7 +188,9 @@ export async function getFuncList() {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
+      id             : d.id,
       title          : d.title,
+      definition     : d.definition,
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
