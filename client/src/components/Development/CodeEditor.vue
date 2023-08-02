@@ -883,7 +883,7 @@ export default {
 
       let toRoute = {
         name  : 'code-viewer',
-        params: {id: this.scriptId},
+        params: { id: this.scriptId },
       };
 
       this.$router.push(toRoute);

@@ -459,20 +459,22 @@ en:
   Get SHA512           : 获取 SHA512
   Get Base64           : Base64 编码
   From Base64          : Base64 解码
-  Get Random String    : 获取随机字符串
-  Get Random Integer   : 获取随机整数
+  Random               : 随机
+  Gen Random String    : 生成随机字符串
+  Gen Random Integer   : 生成随机整数
+  Gen Random Float     : 生成随机小数
   Load JSON            : 加载 JSON 为对象
   Dump JSON            : 输出 JSON 字符串
   Load YAML            : 加载 YAML 为对象
   Dump YAML            : 输出 YAML 字符串
-  HTTP Request         : 发送 GET 请求
+  HTTP Request         : HTTP 请求
   GET Request          : 发送 GET 请求
   POST Request         : 发送 POST 请求
   PUT Request          : 发送 PUT 请求
   PATCH Request        : 发送 PATCH 请求
   DELETE Request       : 发送 DELETE 请求
   DingTalk             : 钉钉
-  DingTalk Message     : 钉钉消息
+  DingTalk Robot       : 钉钉机器人
   DingTalk Text Message: 钉钉纯文本消息
   DingTalk MD Message  : 钉钉 Markdown 消息
 

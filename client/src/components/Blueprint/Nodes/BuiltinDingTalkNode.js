@@ -15,7 +15,7 @@ class BuiltinDingTalkNode extends BaseNode {
     const el = document.createElement('div');
     el.className = 'node';
 
-    let title = 'DingTalk Message';
+    let title = 'DingTalk Robot';
     switch(properties.dingTalkMessageType) {
       case 'text':
         title = `DingTalk Text Message`;

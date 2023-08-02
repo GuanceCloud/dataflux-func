@@ -18,15 +18,15 @@ class BuiltinRandomNode extends BaseNode {
     let title = 'Random';
     switch(properties.randomType) {
       case 'string':
-        title = 'Get Random String';
+        title = 'Gen Random String';
         break;
 
       case 'integer':
-        title = 'Get Random Integer';
+        title = 'Gen Random Integer';
         break;
 
       case 'float':
-        title = 'Get Random Float';
+        title = 'Gen Random Float';
         break;
     }
 

@@ -45,7 +45,7 @@ var NODE_FUNC_IMPORTS_MAP = {
   },
   BuiltinDingTalkNode: function(props) {
     if (props.secret) {
-      return [ 'requests', 'hashlib', 'time', 'hmac', 'urllib' ];
+      return [ 'requests', 'hashlib', 'time', 'hmac', 'urllib', 'base64' ];
     } else {
       return [ 'requests' ];
     }
@@ -56,11 +56,7 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
   EntryNode: function() {
     var codeBlock = toolkit.createStringBuilder();
 
-    // 函数注释
-    codeBlock.append(`'''`);
-    codeBlock.append(`入口`);
-    codeBlock.append(`Entry`);
-    codeBlock.append(`'''`);
+    codeBlock.append(`pass`);
 
     return codeBlock;
   },
@@ -199,9 +195,9 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
 
     var codeBlock = toolkit.createStringBuilder();
 
-    codeBlock.append(`h = hashlib.${props.hashAlgorithm || 'md5'}`);
-    codeBlock.append(`s = str(data['${props.inputField}'])`);
-    codeBlock.append(`data['${props.outputField}'] = h(s.encode()).hexdigest()`);
+    codeBlock.append(`hash = hashlib.${props.hashAlgorithm || 'md5'}`);
+    codeBlock.append(`str_to_hash = str(data['${props.inputField}'])`);
+    codeBlock.append(`data['${props.outputField}'] = hash(str_to_hash.encode()).hexdigest()`);
 
     return codeBlock;
   },
@@ -210,14 +206,14 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
 
     var codeBlock = toolkit.createStringBuilder();
 
-    codeBlock.append(`s = str(data['${props.inputField}'])`);
+    codeBlock.append(`str_to_base64 = str(data['${props.inputField}'])`);
     switch(props.encodeOrDecode) {
       case 'encode':
-        codeBlock.append(`data['${props.outputField}'] = base64.b64encode(s.encode()).decode()`);
+        codeBlock.append(`data['${props.outputField}'] = base64.b64encode(str_to_base64.encode()).decode()`);
         break;
 
       case 'decode':
-        codeBlock.append(`data['${props.outputField}'] = base64.b64decode(s).decode()`);
+        codeBlock.append(`data['${props.outputField}'] = base64.b64decode(str_to_base64).decode()`);
         break;
     }
 
@@ -230,9 +226,9 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
 
     switch(props.randomType) {
       case 'string':
-        codeBlock.append(`s = string.digits + string.ascii_letters`)
-        codeBlock.append(`r = [ random.choice(s) for i in range(${props.randomLength || 8})]`);
-        codeBlock.append(`data['${props.outputField}'] = ''.join(r)`);
+        codeBlock.append(`sample = string.digits + string.ascii_letters`)
+        codeBlock.append(`rand_chars = [ random.choice(sample) for i in range(${props.randomLength || 8})]`);
+        codeBlock.append(`data['${props.outputField}'] = ''.join(rand_chars)`);
         break;
 
       case 'integer':
@@ -291,17 +287,17 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
       case 'post':
       case 'put':
       case 'patch':
-        codeBlock.append(`h = { 'Content-Type': '${props.httpContentType}' }`);
-        codeBlock.append(`d = ${JSON.stringify(props.httpBody)}`);
-        codeBlock.append(`r = requests.${props.httpMethod}('${props.url}', headers=h, data=d)`);
+        codeBlock.append(`headers = { 'Content-Type': '${props.httpContentType}' }`);
+        codeBlock.append(`payload = ${JSON.stringify(props.httpBody)}`);
+        codeBlock.append(`resp = requests.${props.httpMethod}('${props.url}', headers=headers, data=payload)`);
         break;
 
       default:
-        codeBlock.append(`r = requests.${props.httpMethod}('${props.url}')`);
+        codeBlock.append(`resp = requests.${props.httpMethod}('${props.url}')`);
         break;
     }
 
-    codeBlock.append(`r.raise_for_status()`);
+    codeBlock.append(`resp.raise_for_status()`);
 
     return codeBlock;
   },
@@ -328,24 +324,24 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
 
     switch(props.dingTalkMessageType) {
       case 'text':
-        codeBlock.append(`c = ${JSON.stringify(props.content || '')}`)
-        codeBlock.append(`d = { "msgtype": "text", "text": { "content": c } }`);
+        codeBlock.append(`content = ${JSON.stringify(props.content || '')}`)
+        codeBlock.append(`payload = { "msgtype": "text", "text": { "content": content } }`);
         break;
 
       case 'markdown':
         var title = (props.content || '').split('\n')[0].replace(/^#+/g, '').trim();
-        codeBlock.append(`c = ${JSON.stringify(props.content || '')}`);
-        codeBlock.append(`t = ${JSON.stringify(title)}`);
-        codeBlock.append(`d = { "msgtype": "markdown", "markdown": { "title": t, "text": c } }`);
+        codeBlock.append(`content = ${JSON.stringify(props.content || '')}`);
+        codeBlock.append(`title = ${JSON.stringify(title)}`);
+        codeBlock.append(`payload = { "msgtype": "markdown", "markdown": { "title": title, "text": content } }`);
         break;
 
       case 'json':
-        codeBlock.append(`d = ${JSON.stringify(props.httpBody)}`);
+        codeBlock.append(`payload = ${JSON.stringify(props.httpBody)}`);
         break;
     }
 
-    codeBlock.append(`r = requests.post(url, json=d)`)
-    codeBlock.append(`r.raise_for_status()`);
+    codeBlock.append(`resp = requests.post(url, json=payload)`)
+    codeBlock.append(`resp.raise_for_status()`);
 
     return codeBlock;
   },
@@ -429,7 +425,8 @@ exports.deploy = function(req, res, next) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      id: id,
+      scriptSetId: blueprintScriptSetId,
+      scriptId   : blueprintScriptId,
     });
     return res.locals.sendJSON(ret);
   });

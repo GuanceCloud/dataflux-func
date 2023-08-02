@@ -1176,7 +1176,7 @@ export default {
 
             this.$router.push({
               name  : 'code-viewer',
-              params: {id: data.id},
+              params: { id: data.id },
             });
 
           }
@@ -1199,7 +1199,7 @@ export default {
             setCodeLoading(data.scriptId);
             this.$router.push({
               name  : 'code-viewer',
-              params: {id: data.scriptId},
+              params: { id: data.scriptId },
             });
           }
 

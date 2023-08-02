@@ -205,14 +205,14 @@
           <div class="dnd-node">
             <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHTTPNode' })">
               <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('HTTP') }}</div>
+              <div class="node-text">{{ $t('HTTP Request') }}</div>
             </div>
           </div>
 
           <div class="dnd-node">
             <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinDingTalkNode' })">
               <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('DingTalk') }}</div>
+              <div class="node-text">{{ $t('DingTalk Robot') }}</div>
             </div>
           </div>
         </div>
@@ -419,7 +419,7 @@
             <el-form-item :label="$t('Body Type')" v-if="selectedElementHasProp('httpContentType')">
               <el-select
                 v-model="form.httpContentType">
-                <el-option :label="$('Plain Text')" value="text/plain"></el-option>
+                <el-option :label="$t('Plain Text')" value="text/plain"></el-option>
                 <el-option label="JSON" value="application/json"></el-option>
               </el-select>
             </el-form-item>
@@ -546,7 +546,7 @@ export default {
         selectedElementId: this.selectedElementData ? this.selectedElementData.id : null,
       }
 
-      let apiRes = this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/modify', {
         params: { id: this.$route.params.id },
         body: { data: { canvasJSON, viewJSON } },
       });
@@ -559,12 +559,16 @@ export default {
 
       await this.saveData();
 
-      let apiRes = this.T.callAPI('post', '/api/v1/blueprints/:id/do/deploy', {
+      let apiRes = await this.T.callAPI('post', '/api/v1/blueprints/:id/do/deploy', {
         params: { id: this.$route.params.id },
         alert : { okMessage: this.$t('Blueprint deployed') },
       });
       if (!apiRes || !apiRes.ok) return;
 
+      this.$router.push({
+        name  : 'code-viewer',
+        params: { id: apiRes.data.scriptId },
+      });
     },
 
     initCanvas() {
@@ -758,7 +762,8 @@ export default {
 
             case 'minValue':
             case 'maxValue':
-              if (this.form.randomType === 'string') return false;
+              if (this.form.randomType !== 'integer'
+                && this.form.randomType !== 'float') return false;
               break;
           }
           break;
@@ -778,7 +783,8 @@ export default {
               break;
 
             case 'content':
-              if (this.form.dingTalkMessageType === 'json') return false;
+              if (this.form.dingTalkMessageType !== 'text'
+                && this.form.dingTalkMessageType !== 'markdown') return false;
               break;
           }
           break;
@@ -859,6 +865,14 @@ export default {
               nextProps[prop] = this.form[prop] || null;
             }
           });
+
+          // 函数节点自动添加 funcTitle
+          if ('funcId' in nextProps) {
+            let funcTitle = this.funcMap[nextProps.funcId].title;
+            if (funcTitle) {
+              nextProps.funcTitle = funcTitle;
+            }
+          }
 
           this.selectedElement.setProperties(nextProps);
 

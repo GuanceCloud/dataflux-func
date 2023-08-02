@@ -16,7 +16,7 @@ class FuncNode extends BaseNode {
     el.className = 'node';
     const html = `
       <div class="node-icon code-font text-info">def</div>
-      <div class="node-text">${properties.title || $t('Func')}</div>
+      <div class="node-text">${properties.title || properties.funcTitle || $t('Func')}</div>
     `;
     el.innerHTML = html;
 

@@ -44,7 +44,7 @@ export default {
       // 跳转
       this.$router.push({
         name  : 'code-viewer',
-        params: {id: this.scriptId},
+        params: { id: this.scriptId },
       });
     },
   },
