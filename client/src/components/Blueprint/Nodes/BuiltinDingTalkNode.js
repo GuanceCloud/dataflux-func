@@ -39,7 +39,7 @@ class BuiltinDingTalkNode extends BaseNode {
 
 class BuiltinDingTalkNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-dingtalk-node');
+    return T.genBlueprintNodeId('builtin-dingtalk-node');
   }
 }
 

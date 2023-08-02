@@ -27,7 +27,7 @@ class CodeNode extends BaseNode {
 
 class CodeNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('code-node');
+    return T.genBlueprintNodeId('code-node');
   }
 }
 

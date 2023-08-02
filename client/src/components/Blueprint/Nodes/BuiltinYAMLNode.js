@@ -39,7 +39,7 @@ class BuiltinYAMLNode extends BaseNode {
 
 class BuiltinYAMLNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-yaml-node');
+    return T.genBlueprintNodeId('builtin-yaml-node');
   }
 }
 

@@ -472,7 +472,7 @@ function runSetupServer() {
 
       // 进入下一轮等待
       if (!config._IS_INSTALLED) {
-        console.log('Waiting for installation.');
+        console.log(`Waiting for setup, please open http://<IP or Hostname>:${config.WEB_PORT}/ and continue`)
         return;
       }
 

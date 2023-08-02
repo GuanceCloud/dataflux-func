@@ -1149,12 +1149,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key  : 'BuiltinHTTPNode',
         name : $t('HTTP'),
-        props: [ 'httpMethod', 'url', 'body' ],
+        props: [ 'httpMethod', 'url', 'httpContentType', 'httpBody' ],
       },
       {
         key  : 'BuiltinDingTalkNode',
         name : $t('DingTalk'),
-        props: [ 'url', 'secret', 'dingTalkMessageType', 'content', 'body' ],
+        props: [ 'url', 'secret', 'dingTalkMessageType', 'content', 'httpBody' ],
       },
     ]
   },

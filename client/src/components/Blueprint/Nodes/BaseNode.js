@@ -12,7 +12,7 @@ export class BaseNode extends HtmlNode {}
 
 export class BaseNodeModel extends HtmlNodeModel {
   createId() {
-    return T.genDataId('node');
+    return T.genBlueprintNodeId('node');
   }
 
   setAttributes() {

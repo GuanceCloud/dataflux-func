@@ -5,7 +5,7 @@ import * as T from '@/toolkit';
 export class BaseLine extends BezierEdge {}
 export class BaseLineModel extends BezierEdgeModel {
   createId() {
-    return T.genDataId('line');
+    return T.genBlueprintNodeId('line');
   }
 
   initEdgeData(data) {

@@ -415,7 +415,7 @@ log "    sudo rm -rf ${_INSTALL_DIR}"
 log "    sudo rm -f /etc/logrotate.d/${__PROJECT_NAME}"
 
 blankLine
-log "Now open http://<IP or Hostname>:${_PORT}/ and have fun!"
+log "Now open http://<IP or Domain>:${_PORT}/ and have fun!"
 
 # 写入 /etc 信息
 if [ ! -f ${ETC_PATH} ]; then

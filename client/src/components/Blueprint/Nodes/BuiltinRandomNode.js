@@ -43,7 +43,7 @@ class BuiltinRandomNode extends BaseNode {
 
 class BuiltinRandomNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-random-node');
+    return T.genBlueprintNodeId('builtin-random-node');
   }
 }
 

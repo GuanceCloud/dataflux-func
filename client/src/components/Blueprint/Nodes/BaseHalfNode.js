@@ -6,7 +6,7 @@ export class BaseHalfNode extends BaseNode {}
 
 export class BaseHalfNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('half-node');
+    return T.genBlueprintNodeId('half-node');
   }
 
   setAttributes() {

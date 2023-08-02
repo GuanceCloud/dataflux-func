@@ -39,7 +39,7 @@ class BuiltinJSONNode extends BaseNode {
 
 class BuiltinJSONNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-json-node');
+    return T.genBlueprintNodeId('builtin-json-node');
   }
 }
 

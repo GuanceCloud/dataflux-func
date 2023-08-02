@@ -27,7 +27,7 @@ class SwitchNode extends BaseNode {
 
 class SwitchNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('code');
+    return T.genBlueprintNodeId('switch-node');
   }
 }
 

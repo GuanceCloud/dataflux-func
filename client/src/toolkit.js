@@ -52,6 +52,7 @@ import 'codemirror/theme/darcula.css'
 // ID
 import { customAlphabet } from 'nanoid'
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)
+const nanoid_BlueprintNode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
 
 // Base64
 import { Base64 } from 'js-base64'
@@ -246,6 +247,11 @@ export function genDataId(prefix) {
   prefix = prefix || 'data';
   return prefix + '-' + nanoid();
 };
+
+export function genBlueprintNodeId(prefix) {
+  prefix = prefix || 'node';
+  return prefix + '-' + nanoid_BlueprintNode();
+}
 
 export function byteSizeHuman(s) {
   return byteSize(s, { units: 'iec' });

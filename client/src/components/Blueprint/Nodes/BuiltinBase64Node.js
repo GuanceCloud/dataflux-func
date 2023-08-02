@@ -39,7 +39,7 @@ class BuiltinBase64Node extends BaseNode {
 
 class BuiltinBase64NodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-base64-node');
+    return T.genBlueprintNodeId('builtin-base64-node');
   }
 }
 

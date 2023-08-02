@@ -27,7 +27,7 @@ class FuncNode extends BaseNode {
 
 class FuncNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('func-node');
+    return T.genBlueprintNodeId('func-node');
   }
 }
 

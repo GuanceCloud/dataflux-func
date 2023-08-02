@@ -39,6 +39,8 @@
   Max Value     : 最大值
   Method        : 方法
   Body          : 请求体
+  Body Type     : 请求体类型
+  Plain Text    : 纯文本
   Content       : 内容
   URL           : URL 地址
   Secret        : 密钥
@@ -46,6 +48,10 @@
   Or double-click the node: 或鼠标双击节点
   Enter this branch if no expression returns True: 没有任何表达式返回 True 时，进入本分支
   Please input a Python Expression which returns a bool for Switch: 请输入一个返回布尔值的 Python 表达式
+
+  Blueprint deployed: 蓝图已部署
+
+  Are you sure you want to deploy the Blueprint?: 是否确认部署此蓝图？
 </i18n>
 
 <template>
@@ -409,12 +415,21 @@
               <el-input v-model="form.secret"></el-input>
             </el-form-item>
 
+            <!-- Body Type -->
+            <el-form-item :label="$t('Body Type')" v-if="selectedElementHasProp('httpContentType')">
+              <el-select
+                v-model="form.httpContentType">
+                <el-option :label="$('Plain Text')" value="text/plain"></el-option>
+                <el-option label="JSON" value="application/json"></el-option>
+              </el-select>
+            </el-form-item>
+
             <!-- Body -->
-            <el-form-item :label="$t('Body')" v-if="selectedElementHasProp('body')">
+            <el-form-item :label="$t('Body')" v-if="selectedElementHasProp('httpBody')">
               <el-input
                 type="textarea"
                 :autosize="{ minRows: 3 }"
-                v-model="form.body"></el-input>
+                v-model="form.httpBody"></el-input>
             </el-form-item>
 
             <!-- 内容 -->
@@ -540,10 +555,13 @@ export default {
       // Nope
     },
     async deploy() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to deploy the Blueprint?'))) return;
+
       await this.saveData();
 
       let apiRes = this.T.callAPI('post', '/api/v1/blueprints/:id/do/deploy', {
         params: { id: this.$route.params.id },
+        alert : { okMessage: this.$t('Blueprint deployed') },
       });
       if (!apiRes || !apiRes.ok) return;
 
@@ -747,7 +765,7 @@ export default {
 
         case 'BuiltinHTTPNode':
           switch(prop) {
-            case 'body':
+            case 'httpBody':
               if (['post', 'put', 'patch'].indexOf(this.form.httpMethod) < 0) return false;
               break;
           }
@@ -755,7 +773,7 @@ export default {
 
         case 'BuiltinDingTalkNode':
           switch(prop) {
-            case 'body':
+            case 'httpBody':
               if (this.form.dingTalkMessageType !== 'json') return false;
               break;
 

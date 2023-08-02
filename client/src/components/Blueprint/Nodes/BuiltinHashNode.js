@@ -33,7 +33,7 @@ class BuiltinHashNode extends BaseNode {
 
 class BuiltinHashNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-hash-node');
+    return T.genBlueprintNodeId('builtin-hash-node');
   }
 }
 

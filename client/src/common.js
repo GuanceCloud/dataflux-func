@@ -13,6 +13,8 @@ export function getSelectableItems(pythonCode, scriptId) {
   let codeItems    = [];
   let commentStack = [];
   pythonCode.split('\n').forEach((l, i) => {
+    l = l.trimEnd();
+
     let first3chars = l.slice(0, 3);
     if ([ '"""', "'''" ].indexOf(first3chars) >= 0) {
       let lastBlockCommentIndex = commentStack.lastIndexOf(first3chars);

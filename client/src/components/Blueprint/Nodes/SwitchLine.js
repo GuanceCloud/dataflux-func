@@ -5,7 +5,7 @@ import * as T from '@/toolkit';
 class SwitchLine extends BaseLine {}
 class SwitchLineModel extends BaseLineModel {
   createId() {
-    return T.genDataId('switch-line');
+    return T.genBlueprintNodeId('switch-line');
   }
 
   setAttributes() {

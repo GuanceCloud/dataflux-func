@@ -33,7 +33,7 @@ class BuiltinHTTPNode extends BaseNode {
 
 class BuiltinHTTPNodeModel extends BaseNodeModel {
   createId() {
-    return T.genDataId('builtin-http-node');
+    return T.genBlueprintNodeId('builtin-http-node');
   }
 }
 
