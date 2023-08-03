@@ -45,9 +45,9 @@ var NODE_FUNC_IMPORTS_MAP = {
   },
   BuiltinDingTalkNode: function(props) {
     if (props.secret) {
-      return [ 'requests', 'hashlib', 'time', 'hmac', 'urllib', 'base64' ];
+      return [ 'requests', 'jinja2', 'hashlib', 'time', 'hmac', 'urllib', 'base64' ];
     } else {
-      return [ 'requests' ];
+      return [ 'requests', 'jinja2' ];
     }
   },
 };
@@ -324,19 +324,22 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
 
     switch(props.dingTalkMessageType) {
       case 'text':
-        codeBlock.append(`content = ${JSON.stringify(props.content || '')}`)
+        codeBlock.append(`content = ${JSON.stringify(props.content || '')}`);
+        codeBlock.append(`content = jinja2.Template(content).render(**data)`);
         codeBlock.append(`payload = { "msgtype": "text", "text": { "content": content } }`);
         break;
 
       case 'markdown':
         var title = (props.content || '').split('\n')[0].replace(/^#+/g, '').trim();
+        codeBlock.append(`title   = ${JSON.stringify(title)}`);
         codeBlock.append(`content = ${JSON.stringify(props.content || '')}`);
-        codeBlock.append(`title = ${JSON.stringify(title)}`);
+        codeBlock.append(`content = jinja2.Template(content).render(**data)`);
         codeBlock.append(`payload = { "msgtype": "markdown", "markdown": { "title": title, "text": content } }`);
         break;
 
       case 'json':
         codeBlock.append(`payload = ${JSON.stringify(props.httpBody)}`);
+        codeBlock.append(`payload = jinja2.Template(payload).render(**data)`);
         break;
     }
 
