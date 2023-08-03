@@ -342,7 +342,7 @@ export default {
     }
 
     this.$nextTick(() => {
-      this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL, { transports: ['websocket'] });
+      this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL);
       this.socketIO
         .on('error', handleError)
         .on('connect', connectSocketIO)

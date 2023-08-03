@@ -149,7 +149,7 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
     }
 
     // 分支条件添加序号
-    var switchItems = props.switchItems.map(function(item, index) {
+    var switchItems = (props.switchItems || []).map(function(item, index) {
       item.switchOrder = index + 1;
       return item;
     });
