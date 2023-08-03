@@ -6,7 +6,6 @@
 
 arrow==0.17.0
 celery[redis]==5.3.1
-kombu==5.3.1
 clickhouse-driver==0.1.5
 croniter==1.3.5
 cx-Oracle==7.3.0
@@ -14,7 +13,9 @@ DBUtils==1.4
 funcsigs==1.0.2
 httpie==3.2.1
 influxdb==5.3.1
+Jinja2==2.11.3
 kafka-python3==3.0.0
+kombu==5.3.1
 nanoid==2.0.0
 paho-mqtt==1.6.1
 psutil==5.9.1
