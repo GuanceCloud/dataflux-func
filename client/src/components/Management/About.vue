@@ -5,11 +5,13 @@ taskRemain: '(remain {n} task to process) | (remain {n} tasks to process)'
 <i18n locale="zh-CN" lang="yaml">
 About: 关于
 
-'You are using {0} browser'      : 您正在使用 {0} 浏览器
-'In this system:'                : '在本系统中：'
-'Monospaced font is from {0}'    : '等宽字体来自 {0}'
-'Icons used are from {0}'        : '图标来自 {0}'
-'Illustrations used are from {0}': '插图来自 {0}'
+'You are using {0} browser'          : 您正在使用 {0} 浏览器
+'In this system                      : ': '在本系统中：'
+'Monospaced font is from {0}'        : '等宽字体来自 {0}'
+'Icons used are from {0}'            : '图标来自 {0}'
+'Illustrations used are from {0}'    : '插图来自 {0}'
+'Code Editor is powered by {0}'      : '代码编辑器基于 {0} 实现'
+'Blueprint Canvans is powered by {0}': '蓝图画布基于 {0} 实现'
 
 'New version {ver} is available, click here to go to the official website': '可以升级到 {ver} 版本，点击此处前往官方网站查看'
 
@@ -85,6 +87,22 @@ Are you sure you want to clear the Log and Cache?: 是否确认清空日志与�
                         <el-link href="https://flexiple.com/illustrations/" target="_blank">
                           <i class="fa fa-fw fa-external-link"></i>
                           Scale by flexiple
+                        </el-link>
+                      </i18n>
+                    </li>
+                    <li>
+                      <i18n path="Code Editor is powered by {0}">
+                        <el-link href="https://codemirror.net/5/" target="_blank">
+                          <i class="fa fa-fw fa-external-link"></i>
+                          Code Mirror (v5)
+                        </el-link>
+                      </i18n>
+                    </li>
+                    <li>
+                      <i18n path="Blueprint Canvans is powered by {0}">
+                        <el-link href="https://site.logic-flow.cn/" target="_blank">
+                          <i class="fa fa-fw fa-external-link"></i>
+                          LogicFlow (v1.2)
                         </el-link>
                       </i18n>
                     </li>
