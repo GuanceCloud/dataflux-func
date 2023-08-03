@@ -1035,7 +1035,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
   },
 
   // 脚本市场类型
-  get SCRIPT_MARKET() {
+  get SCRIPT_MARKET_TYPE() {
     return [
       {
         key       : 'git',
@@ -1082,7 +1082,83 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
     ];
   },
-  get SCRIPT_MARKET_MAP() {
-    return new MAP_CONST(this.SCRIPT_MARKET);
+  get SCRIPT_MARKET_TYPE_MAP() {
+    return new MAP_CONST(this.SCRIPT_MARKET_TYPE);
+  },
+
+  // 蓝图
+  get BLUEPRINT_ELEMENT_TYPE() {
+    return [
+      {
+        key  : 'SimpleLine',
+        name : $t('Simple Line'),
+        props: [ ],
+      },
+      {
+        key  : 'SwitchLine',
+        name : $t('Switch Line'),
+        props: [ 'switchOrder' ],
+      },
+
+      {
+        key  : 'EntryNode',
+        name : $t('Entry Node'),
+        props: [ ],
+      },
+      {
+        key  : 'CodeNode',
+        name : $t('Code Node'),
+        props: [ 'title', 'code' ],
+      },
+      {
+        key  : 'FuncNode',
+        name : $t('Func Node'),
+        props: [ 'title', 'funcId', 'parameterPassingMethod', 'parameterAssigningMap', 'outputField' ],
+      },
+      {
+        key  : 'SwitchNode',
+        name : $t('Switch Node'),
+        props: [ 'title', 'switchItems' ],
+      },
+
+      {
+        key  : 'BuiltinHashNode',
+        name : $t('Hash'),
+        props: [ 'inputField', 'outputField', 'hashAlgorithm' ],
+      },
+      {
+        key  : 'BuiltinBase64Node',
+        name : $t('Base64'),
+        props: [ 'inputField', 'outputField', 'encodeOrDecode' ],
+      },
+      {
+        key  : 'BuiltinRandomNode',
+        name : $t('Random'),
+        props: [ 'outputField', 'randomType', 'randomLength', 'minValue', 'maxValue' ],
+      },
+      {
+        key  : 'BuiltinJSONNode',
+        name : $t('JSON'),
+        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+      },
+      {
+        key  : 'BuiltinYAMLNode',
+        name : $t('YAML'),
+        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+      },
+      {
+        key  : 'BuiltinHTTPNode',
+        name : $t('HTTP Request'),
+        props: [ 'httpMethod', 'url', 'httpContentType', 'httpBody' ],
+      },
+      {
+        key  : 'BuiltinDingTalkNode',
+        name : $t('DingTalk Robot'),
+        props: [ 'url', 'secret', 'dingTalkMessageType', 'content', 'httpBody' ],
+      },
+    ]
+  },
+  get BLUEPRINT_ELEMENT_TYPE_MAP() {
+    return new MAP_CONST(this.BLUEPRINT_ELEMENT_TYPE);
   },
 }

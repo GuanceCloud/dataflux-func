@@ -86,7 +86,7 @@ shortcutDays  : '{n} 天'
                     :filter-method="common.funcCascaderFilter"
                     v-model="form.funcId"
                     :options="funcCascader"
-                    :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"
+                    :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
@@ -241,7 +241,7 @@ shortcutDays  : '{n} 天'
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     v-model="form.note"></el-input>
                 </el-form-item>
               </el-form>

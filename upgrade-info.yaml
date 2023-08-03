@@ -394,3 +394,31 @@ upgradeInfo:
       -- 删除无用的全文搜索索引
       ALTER TABLE `biz_main_script` DROP INDEX `FT`;
       ALTER TABLE `biz_main_script_publish_history` DROP INDEX `FT`;
+
+  # 与观测云SaaS 2023-08-10 迭代中实装
+  - seq: 23
+    database: |-
+      -- 统一业务实体标题字段名
+      ALTER TABLE `biz_main_api_auth`
+        CHANGE `name` `title` varchar(256) DEFAULT NULL COMMENT '标题';
+
+      ALTER TABLE `biz_main_script_market`
+        CHANGE `name` `title` varchar(256) DEFAULT NULL COMMENT '标题';
+
+      ALTER TABLE `wat_main_access_key`
+        CHANGE `name` `title` varchar(256) NOT NULL;
+
+      -- 重建蓝图
+      DROP TABLE `biz_main_blueprint`;
+      CREATE TABLE `biz_main_blueprint` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `title` varchar(256) DEFAULT NULL COMMENT '标题',
+        `description` text COMMENT '描述',
+        `canvasJSON` json NOT NULL COMMENT '画布JSON',
+        `viewJSON` json NOT NULL COMMENT '视图JSON',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';

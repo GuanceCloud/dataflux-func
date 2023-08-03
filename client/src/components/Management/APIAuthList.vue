@@ -26,7 +26,7 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('API Auth') }}</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
@@ -55,9 +55,9 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Name')">
+          <el-table-column :label="$t('Title')">
             <template slot-scope="scope">
-              {{ scope.row.name || scope.row.func_title }}
+              {{ scope.row.title || scope.row.func_title }}
               <template v-if="scope.row.note">
                 <br>
                 <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>

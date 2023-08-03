@@ -28,6 +28,7 @@
     (function() {
       // 延迟处理
       var T = setInterval(function() {
+        // 等待系统信息加载完毕
         if (!window._DFF_isSystemInfoLoaded) return;
 
         var vuexData = localStorage.getItem('vuex');

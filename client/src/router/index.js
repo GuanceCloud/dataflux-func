@@ -12,81 +12,128 @@ VueRouter.prototype.push = function push(location) {
 Vue.use(VueRouter)
 
 const routes = [
-  {
-    path: '/',
-    redirect: '/index',
-  },
+  // 首页（登录页面）
   {
     path: '/index',
     name: 'index',
     component: () => import('../views/Index.vue'),
   },
+
+  // 登出页面
   {
     path: '/sign-out',
     name: 'sign-out',
     component: () => import('../views/SignOut.vue'),
   },
+
+  // 开发
   {
-    path: '/editor',
-    component: () => import('../views/Editor.vue'),
+    path: '/development',
+    component: () => import('../views/Development.vue'),
     children: [
       {
         path: 'intro',
         name: 'intro',
-        component: () => import('../components/Editor/Intro.vue'),
+        component: () => import('../components/Development/Intro.vue'),
       },
       {
         path: 'code-editor/:id',
         name: 'code-editor',
-        component: () => import('../components/Editor/CodeEditor.vue'),
+        component: () => import('../components/Development/CodeEditor.vue'),
       },
       {
         path: 'code-viewer/:id',
         name: 'code-viewer',
-        component: () => import('../components/Editor/CodeViewer.vue'),
+        component: () => import('../components/Development/CodeViewer.vue'),
       },
       {
         path: 'script-set-add',
         name: 'script-set-add',
-        component: () => import('../components/Editor/ScriptSetSetup.vue'),
+        component: () => import('../components/Development/ScriptSetSetup.vue'),
       },
       {
         path: 'script-set-setup/:id',
         name: 'script-set-setup',
-        component: () => import('../components/Editor/ScriptSetSetup.vue'),
+        component: () => import('../components/Development/ScriptSetSetup.vue'),
       },
       {
         path: 'script-add/:id',
         name: 'script-add',
-        component: () => import('../components/Editor/ScriptSetup.vue'),
+        component: () => import('../components/Development/ScriptSetup.vue'),
       },
       {
         path: 'script-setup/:id',
         name: 'script-setup',
-        component: () => import('../components/Editor/ScriptSetup.vue'),
+        component: () => import('../components/Development/ScriptSetup.vue'),
       },
       {
         path: 'connector-add',
         name: 'connector-add',
-        component: () => import('../components/Editor/ConnectorSetup.vue'),
+        component: () => import('../components/Development/ConnectorSetup.vue'),
       },
       {
         path: 'connector-setup/:id',
         name: 'connector-setup',
-        component: () => import('../components/Editor/ConnectorSetup.vue'),
+        component: () => import('../components/Development/ConnectorSetup.vue'),
       },
       {
         path: 'env-variable-add',
         name: 'env-variable-add',
-        component: () => import('../components/Editor/EnvVariableSetup.vue'),
+        component: () => import('../components/Development/EnvVariableSetup.vue'),
       },
       {
         path: 'env-variable-setup/:id',
         name: 'env-variable-setup',
-        component: () => import('../components/Editor/EnvVariableSetup.vue'),
+        component: () => import('../components/Development/EnvVariableSetup.vue'),
       },
     ]
   },
+
+  // 蓝图
+  {
+    path: '/blueprint-list',
+    name: 'blueprint-list',
+    component: () => import('../components/Blueprint/BlueprintList.vue'),
+  },
+  {
+    path: '/blueprint-add',
+    name: 'blueprint-add',
+    component: () => import('../components/Blueprint/BlueprintSetup.vue'),
+  },
+  {
+    path: '/blueprint-setup/:id',
+    name: 'blueprint-setup',
+    component: () => import('../components/Blueprint/BlueprintSetup.vue'),
+  },
+  {
+    path: '/blueprint-contents/:id',
+    name: 'blueprint-contents',
+    component: () => import('../components/Blueprint/BlueprintContents.vue'),
+  },
+
+  // 脚本市场
+  {
+    path: '/script-market-list',
+    name: 'script-market-list',
+    component: () => import('../components/ScriptMarket/ScriptMarketList.vue'),
+  },
+  {
+    path: '/script-market-add',
+    name: 'script-market-add',
+    component: () => import('../components/ScriptMarket/ScriptMarketSetup.vue'),
+  },
+  {
+    path: '/script-market-setup/:id',
+    name: 'script-market-setup',
+    component: () => import('../components/ScriptMarket/ScriptMarketSetup.vue'),
+  },
+  {
+    path: '/script-market-contents/:id',
+    name: 'script-market-contents',
+    component: () => import('../components/ScriptMarket/ScriptMarketContents.vue'),
+  },
+
+  // 管理
   {
     path: '/management',
     name: 'management',
@@ -101,27 +148,6 @@ const routes = [
         path: 'about',
         name: 'about',
         component: () => import('../components/Management/About.vue'),
-      },
-
-      {
-        path: 'script-market-list',
-        name: 'script-market-list',
-        component: () => import('../components/Management/ScriptMarketList.vue'),
-      },
-      {
-        path: 'script-market-add',
-        name: 'script-market-add',
-        component: () => import('../components/Management/ScriptMarketSetup.vue'),
-      },
-      {
-        path: 'script-market-setup/:id',
-        name: 'script-market-setup',
-        component: () => import('../components/Management/ScriptMarketSetup.vue'),
-      },
-      {
-        path: 'script-market-detail/:id',
-        name: 'script-market-detail',
-        component: () => import('../components/Management/ScriptMarketDetail.vue'),
       },
 
       {
@@ -331,6 +357,8 @@ const routes = [
       },
     ],
   },
+
+  // 设置
   {
     path: '/setting',
     name: 'setting',
@@ -353,31 +381,37 @@ const routes = [
       },
     ],
   },
+
+  // 函数文档
   {
     path: '/func-doc',
     name: 'func-doc',
     component: () => import('../views/FuncDoc.vue'),
   },
+
+  // 授权链接文档
   {
     path: '/auth-link-func-doc',
     name: 'auth-link-func-doc',
     component: () => import('../views/AuthLinkFuncDoc.vue'),
   },
+
+  // 梦境
   {
     path: '/dream',
     name: 'dream',
     component: () => import('../views/Dream.vue'),
   },
-  {
-    path: '/blueprint',
-    name: 'blueprint',
-    component: () => import('../views/Blueprint.vue'),
-  },
 
+  // 自动跳转
+  {
+    path: '/',
+    redirect: '/index',
+  },
   {
     path: '*',
     redirect: {
-      name: 'home',
+      name: 'index',
       query: null,
     }
   }

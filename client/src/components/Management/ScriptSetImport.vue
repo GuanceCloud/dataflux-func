@@ -13,7 +13,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Script Sets Import') }}</span>
         </div>
       </el-header>

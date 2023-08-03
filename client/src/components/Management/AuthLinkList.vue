@@ -57,7 +57,7 @@ you must first create an Auth Link for the Python function and access the Python
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Auth Link') }}</span>
           <div class="header-control">
             <el-switch
@@ -135,7 +135,7 @@ you must first create an Auth Link for the Python function and access the Python
             <el-table-column :label="$t('Config')" width="220">
               <template slot-scope="scope">
                 <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
-                <el-tooltip :content="scope.row.apia_name" :disabled="!!!scope.row.apia_name" placement="right">
+                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
                   <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
                 </el-tooltip>
 

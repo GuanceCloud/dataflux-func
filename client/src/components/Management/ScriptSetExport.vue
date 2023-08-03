@@ -14,7 +14,7 @@ Data exported: 数据已导出
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('Script Set Export') }}</span>
         </div>
       </el-header>
@@ -92,7 +92,7 @@ Data exported: 数据已导出
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     v-model="form.note"></el-input>
                   <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
                 </el-form-item>

@@ -1113,4 +1113,19 @@ CodeMirror template by Jan T. Sott (https://github.com/idleberg), adapted by Bra
   color: #9C9E9E !important;
 }
 
+
+/* Blueprint */
+#logicFlow,
+#logicFlowDnd {
+  .code-node,
+  .func-node {
+    background-color: #222 !important;
+  }
+}
+
+#logicFlowDnd {
+  border-color: #555 !important;
+  background: #222 !important;
+}
+
 }

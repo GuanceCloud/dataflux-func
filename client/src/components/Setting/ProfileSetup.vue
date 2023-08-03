@@ -35,19 +35,19 @@ User Profile saved: 用户信息已保存
 
                 <el-form-item :label="$t('Name')" prop="name">
                   <el-input
-                    maxlength="25"
+                    maxlength="200"
                     v-model="form.name"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Email')" prop="email">
                   <el-input
-                    maxlength="50"
+                    maxlength="200"
                     v-model="form.email"></el-input>
                 </el-form-item>
 
                 <el-form-item :label="$t('Mobile')" prop="mobile">
                   <el-input
-                    maxlength="25"
+                    maxlength="30"
                     v-model="form.mobile"></el-input>
                 </el-form-item>
 

@@ -43,7 +43,17 @@ EntityModel.prototype.list = function(options, callback) {
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   blpt.*');
+  sql.append('    blpt.seq');
+  sql.append('   ,blpt.id');
+  sql.append('   ,blpt.title');
+  sql.append('   ,blpt.description');
+  sql.append('   ,blpt.createTime');
+  sql.append('   ,blpt.updateTime');
+
+  if (options.extra.withCanvas) {
+    sql.append(',blpt.canvasJSON');
+    sql.append(',blpt.viewJSON');
+  }
 
   sql.append('FROM biz_main_blueprint AS blpt');
 
@@ -53,11 +63,14 @@ EntityModel.prototype.list = function(options, callback) {
 };
 
 EntityModel.prototype.add = function(data, callback) {
-  try {
-    if (!data.canvasJSON) {
-      data.canvasJSON = {};
-    }
+  // 自动填入基础数据
+  data.canvasJSON = toolkit.isNullOrUndefined(data.canvasJSON)
+                 ? CONFIG._BLUEPRINT_BASE_CANVAS_JSON
+                 : data.canvasJSON;
 
+  data.viewJSON = {};
+
+  try {
     data = _prepareData(data);
   } catch(err) {
     this.logger.logError(err);
@@ -93,12 +106,12 @@ EntityModel.prototype.modify = function(id, data, callback) {
 function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
-  if ('canvasJSON' in data) {
-    if (data.canvasJSON && 'object' === typeof data.canvasJSON) {
-      data.canvasJSON = JSON.stringify(data.canvasJSON);
-    } else {
-      data.canvasJSON = '{}';
-    }
+  if (data.canvasJSON && 'object' === typeof data.canvasJSON) {
+    data.canvasJSON = JSON.stringify(data.canvasJSON);
+  }
+
+  if (data.viewJSON && 'object' === typeof data.viewJSON) {
+    data.viewJSON = JSON.stringify(data.viewJSON);
   }
 
   return data;

@@ -13,7 +13,7 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>Access Key</span>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
@@ -41,20 +41,20 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Name')">
+          <el-table-column :label="$t('Title')">
             <template slot-scope="scope">
-              <span>{{ scope.row.name }}</span>
+              <span>{{ scope.row.title }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="Access Key ID">
+          <el-table-column label="Access Key ID" width="220">
             <template slot-scope="scope">
               <code class="text-main text-small">{{ scope.row.id }}</code>
               <CopyButton :content="scope.row.id" />
             </template>
           </el-table-column>
 
-          <el-table-column label="Access Key Secret">
+          <el-table-column label="Access Key Secret" width="350">
             <template slot-scope="scope">
               <template v-if="!showSecretMap[scope.row.id]">
                 <el-button @click="showSecret(scope.row)" type="text">{{ $t('Show') }}</el-button>
@@ -104,7 +104,7 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        fields: [ 'id', 'userId', 'name', 'secret', 'createTime' ],
+        fields: [ 'id', 'userId', 'title', 'secret', 'createTime' ],
         sort  : [ '-seq' ],
       });
 

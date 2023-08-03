@@ -198,6 +198,20 @@ _SAMPLE_SCRIPT: |-
       assert hello_world('Tom') == "Hello, world! Tom"
       return 'OK'
 
+# 基础蓝图数据
+_BLUEPRINT_BASE_CANVAS_JSON: |-
+  {
+    "nodes": [
+      {
+        "id": "entry",
+        "type": "EntryNode",
+        "x": 240,
+        "y": 40,
+        "properties": {}
+      }
+    ]
+  }
+
 # 官方脚本市场
 _OFFICIAL_SCRIPT_MARKET_ID : smkt-official
 _OFFICIAL_SCRIPT_MARKET_URL: https://func.guance.com/script-market/official

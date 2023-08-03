@@ -39,7 +39,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main" v-if="data.name">{{ data.name || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
+        <h1>{{ pageTitle }} <code class="text-main" v-if="data.title">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
       </el-header>
 
       <!-- 编辑区 -->
@@ -64,10 +64,10 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                     <InfoBlock type="info" :title="C.API_AUTH_MAP.get(selectedType).tips" />
                   </el-form-item>
 
-                  <el-form-item :label="$t('Name')">
+                  <el-form-item :label="$t('Title')">
                     <el-input :placeholder="$t('Optional')"
-                      maxlength="50"
-                      v-model="form.name"></el-input>
+                      maxlength="200"
+                      v-model="form.title"></el-input>
                   </el-form-item>
 
                   <!-- 固定字段配置 -->
@@ -152,7 +152,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                         :filter-method="common.funcCascaderFilter"
                         v-model="form.configJSON.funcId"
                         :options="funcCascader"
-                        :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"></el-cascader>
+                        :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
 
                       <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
                       <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Show Sample Code') }}</el-button>
@@ -166,7 +166,7 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
                       type="textarea"
                       resize="none"
                       :autosize="{minRows: 2}"
-                      maxlength="200"
+                      maxlength="5000"
                       v-model="form.note"></el-input>
                   </el-form-item>
                 </template>
@@ -430,7 +430,7 @@ def my_auth_func():
       funcCascader: [],
 
       form: {
-        name      : null,
+        title     : null,
         type      : null,
         configJSON: {},
         note      : null,
@@ -483,9 +483,6 @@ def my_auth_func():
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.config-divider {
-  margin-bottom: 0;
-}
 .fixed-field-location .el-select {
   width: 420px;
   display: inline-block;

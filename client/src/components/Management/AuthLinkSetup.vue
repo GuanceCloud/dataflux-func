@@ -73,7 +73,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
                   <el-input
-                    maxlength="50"
+                    maxlength="60"
                     v-model="form.id">
                   </el-input>
                   <InfoBlock :title="$t('ID will be a part of the calling URL')" />
@@ -87,7 +87,7 @@ recentTaskCount: '{n} 个近期任务'
                     :filter-method="common.funcCascaderFilter"
                     v-model="form.funcId"
                     :options="funcCascader"
-                    :props="{expandTrigger: 'hover', emitPath: false, multiple: false}"
+                    :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
                     @change="autoFillFuncCallKwargsJSON"></el-cascader>
                 </el-form-item>
 
@@ -132,7 +132,7 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
                   <el-select v-model="form.apiAuthId">
-                    <el-option v-for="opt in apiAuthOptions" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
+                    <el-option v-for="opt in apiAuthList" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
                   </el-select>
                 </el-form-item>
 
@@ -170,7 +170,7 @@ recentTaskCount: '{n} 个近期任务'
                     type="textarea"
                     resize="none"
                     :autosize="{minRows: 2}"
-                    maxlength="200"
+                    maxlength="5000"
                     v-model="form.note"></el-input>
                 </el-form-item>
               </el-form>
@@ -397,13 +397,6 @@ export default {
         if (k.indexOf('**') === 0) return true;
       }
       return false;
-    },
-    apiAuthOptions() {
-      return this.apiAuthList.map(d => {
-        let _typeName = this.C.API_AUTH_MAP.get(d.type).name;
-        d.label = `[${_typeName}] ${d.name || ''}`;
-        return d;
-      });
     },
     datetimePickerOptions() {
       const now = new Date().getTime();

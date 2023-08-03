@@ -40,12 +40,12 @@ Not Now                                                               : 等会�
       <el-form ref="form" label-width="115px" :model="form" :rules="formRules">
         <el-form-item :label="$t('User Name')" prop="name">
           <el-input
-            maxlength="25"
+            maxlength="200"
             v-model="form.name"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Email')" prop="email">
           <el-input
-            maxlength="50"
+            maxlength="200"
             v-model="form.email"></el-input>
         </el-form-item>
       </el-form>
@@ -589,6 +589,12 @@ ul {
   color: #FF0000 !important;
   border-color: #FF000077 !important;
 }
+.aside-on-button {
+  color: #FF6600 !important
+}
+.aside-on-button * {
+  color: #FF6600 !important
+}
 .setup-footer {
   width: 620px;
   text-align: right;
@@ -604,6 +610,13 @@ ul {
   float: left;
 }
 
+p.form-item {
+  margin: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
 .setup-form {
   width: 620px;
 }
@@ -613,19 +626,17 @@ ul {
   line-height: 1.5;
 }
 .setup-form .el-color-picker,
-.setup-form .el-color-picker__trigger {
-  width: 100%;
-}
+.setup-form .el-color-picker__trigger,
 .setup-form .el-date-editor,
 .setup-form .el-cascader {
-  width: 485px !important;
+  width: 100% !important;
 }
 .setup-form .el-upload-dragger {
   width: 485px;
   height: unset;
 }
 .setup-form .el-upload-dragger > .image-preview {
-  max-width: 485px;
+  max-width: 100%;
   padding: 10px;
 }
 .setup-form .el-upload-dragger > .image-preview > img {
@@ -651,7 +662,7 @@ ul {
 }
 .common-table-container {
   /* scroll-behavior: smooth; */
-  padding: 5px 0 0 0 !important;
+  padding: 0 !important;
 }
 
 .button-bad {
@@ -726,13 +737,16 @@ kbd {
   border-radius: 3px;
   box-shadow: 2px 2px 0 darkgrey;
 }
-.page-header {
-  padding: 20px 10px 10px 10px;
+.list-page-header {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.page-header > span:first-child {
+.list-page-header > span:first-child {
   font-weight: bold;
   font-size: 22px;
-  float: left;
+  line-height: 2;
 }
 .header-control {
   /* float: right;*/
@@ -743,9 +757,11 @@ kbd {
   justify-content: flex-end;
 }
 .header-control-left {
-  /* float: left; */
-  padding-left: 30px;
-  justify-content: flex-start;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: normal;
+  position: relative;
+  top: -3px;
 }
 .header-control > * {
   margin-left: 15px !important;
@@ -783,6 +799,10 @@ kbd {
 .timeline-tip:last-of-type {
   margin-bottom: 20px;
 }
+.config-divider {
+  margin-bottom: 0 !important;
+}
+
 /* vue-splitpane 修正 */
 .splitter-pane-resizer {
   opacity: 1 !important;
@@ -857,6 +877,11 @@ kbd {
 .el-link.is-disabled {
   opacity: .6;
 }
+
+.el-button-group > .el-button.is-disabled {
+  z-index: unset;
+}
+
 .el-button--mini,
 .el-input--mini .el-input__inner,
 .el-radio-button--mini .el-radio-button__inner {

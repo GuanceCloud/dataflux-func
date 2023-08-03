@@ -15,22 +15,31 @@ Click here to visit the official website: 点击此处前往官方网站查看
       text-color="#fff"
       active-text-color="#fff"
       @select="onNaviMenuSelect">
-      <el-menu-item index="/editor/intro">
+      <el-menu-item index="/development/intro">
         <Logo type="auto"></Logo>
       </el-menu-item>
       <template v-if="isSignedIn">
-        <el-menu-item index="/editor/intro">
+        <el-menu-item index="/development/intro">
           <span>
             <i class="fa fa-fw fa-code"></i>
             <span>{{ $t('Development') }}</span>
           </span>
         </el-menu-item>
 
-        <el-menu-item index="/blueprint" v-if="$store.getters.isExperimentalFeatureEnabled('Blueprint')">
+        <el-menu-item index="/blueprint-list" v-if="$store.getters.isExperimentalFeatureEnabled('Blueprint')">
           <span>
-            <i class="fa fa-fw fa-sitemap"></i>
+            <i class="fa fa-fw fa-sitemap fa-rotate-270"></i>
             <span>{{ $t('Blueprint') }}</span>
           </span>
+        </el-menu-item>
+
+        <el-menu-item index="/script-market-list">
+          <el-badge :hidden="!common.getScriptMarketUpdateBadge()" is-dot>
+            <span>
+              <i class="fa fa-fw fa-shopping-cart"></i>
+              <span>{{ $t('Script Market') }}</span>
+            </span>
+          </el-badge>
         </el-menu-item>
 
         <el-menu-item index="/management/overview">
@@ -38,15 +47,6 @@ Click here to visit the official website: 点击此处前往官方网站查看
             <i class="fa fa-fw fa-th-large"></i>
             <span>{{ $t('Management') }}</span>
           </span>
-        </el-menu-item>
-
-        <el-menu-item index="/management/script-market-list">
-          <el-badge :hidden="!common.getScriptMarketUpdateBadge()" is-dot>
-            <span>
-              <i class="fa fa-fw fa-shopping-cart"></i>
-              <span>{{ $t('Script Market') }}</span>
-            </span>
-          </el-badge>
         </el-menu-item>
       </template>
 

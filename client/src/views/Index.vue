@@ -37,7 +37,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
 
           <el-form-item prop="username">
             <el-input tabindex="1"
-              maxlength="100"
+              maxlength="60"
               :placeholder="$t('Username')"
               v-model="form.username">
               <i slot="prefix" class="fth-man-icon fth-man-icon-account-number"></i>

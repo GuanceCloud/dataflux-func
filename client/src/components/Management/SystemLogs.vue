@@ -7,7 +7,7 @@ Input filter content: 输入过滤内容
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="page-header">
+        <div class="list-page-header">
           <span>{{ $t('System Logs') }}</span>
           <div class="header-control">
             <div class="log-filter-input">

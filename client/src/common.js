@@ -13,6 +13,8 @@ export function getSelectableItems(pythonCode, scriptId) {
   let codeItems    = [];
   let commentStack = [];
   pythonCode.split('\n').forEach((l, i) => {
+    l = l.trimEnd();
+
     let first3chars = l.slice(0, 3);
     if ([ '"""', "'''" ].indexOf(first3chars) >= 0) {
       let lastBlockCommentIndex = commentStack.lastIndexOf(first3chars);
@@ -96,11 +98,13 @@ export async function getAPIAuthList() {
   let apiAuthList = [];
 
   let apiRes = await T.callAPI_getAll('/api/v1/api-auth/do/list', {
-    query: { fields: ['id', 'name', 'type'] },
+    query: { fields: ['id', 'title', 'type'] },
   });
   if (!apiRes || !apiRes.ok) return;
 
   apiRes.data.forEach(d => {
+    let _typeName = C.API_AUTH_MAP.get(d.type).name;
+    d.label = `[${_typeName}] ${d.title || ''}`;
     apiAuthList.push(d);
   })
 
@@ -186,7 +190,9 @@ export async function getFuncList() {
     funcMap[d.id] = {
       label          : d.title || d.definition,
       value          : d.id,
+      id             : d.id,
       title          : d.title,
+      definition     : d.definition,
       argsJSON       : d.argsJSON,
       kwargsJSON     : d.kwargsJSON,
       extraConfigJSON: d.extraConfigJSON,
@@ -248,7 +254,7 @@ export function getScriptMarketLogo(scriptMarket) {
     try {
       let url = new URL(scriptMarket.configJSON.url);
 
-      let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
       if (brandLogo) return brandLogo;
 
     } catch (err) {
@@ -256,7 +262,7 @@ export function getScriptMarketLogo(scriptMarket) {
     }
   }
 
-  return C.SCRIPT_MARKET_MAP.get(scriptMarket.type).logo;
+  return C.SCRIPT_MARKET_TYPE_MAP.get(scriptMarket.type).logo;
 }
 
 export function getScriptMarketClass(scriptMarket) {
@@ -264,7 +270,7 @@ export function getScriptMarketClass(scriptMarket) {
     try {
       let url = new URL(scriptMarket.configJSON.url);
 
-      let brandLogo = C.SCRIPT_MARKET_MAP.get('git').brandLogo[url.host];
+      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
       if (brandLogo) return `logo-${url.host.replace('.', '-')}`;
 
     } catch (err) {
@@ -275,9 +281,9 @@ export function getScriptMarketClass(scriptMarket) {
   return `logo-${scriptMarket.type}`;
 }
 
-export function getScriptMarketName(scriptMarket) {
-  if (scriptMarket.name) {
-    return scriptMarket.name
+export function getScriptMarketTitle(scriptMarket) {
+  if (scriptMarket.title) {
+    return scriptMarket.title
   } else {
     switch(scriptMarket.type) {
       case 'git':

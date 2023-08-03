@@ -193,20 +193,24 @@ const app = new Vue({
     goToSignOut() {
       this.$router.push({ name: 'sign-out' });
     },
-    setUILocale(uiLocale) {
-      this.$store.commit('updateUILocale', uiLocale);
-
-      // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
-      // this.$nextTick(() => {
-      //   this.$i18n.locale = this.$store.getters.uiLocale;
-      // });
+    reloadPage() {
       this.$loading();
+
       setImmediate(() => {
         location.reload();
       });
     },
+    setUILocale(uiLocale) {
+      this.$store.commit('updateUILocale', uiLocale);
+
+      // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
+      this.reloadPage();
+    },
     setUITheme(uiTheme) {
       this.$store.commit('updateUITheme', uiTheme);
+
+      // 某些前端组件无法有效支持直接切换，刷新页面最为稳妥
+      this.reloadPage();
     },
 
     checkUserProfileForGit() {
