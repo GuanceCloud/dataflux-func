@@ -462,7 +462,7 @@
         </div>
         <div slot="footer">
           <el-button @click="showSetting = false">{{ $t('Cancel') }}</el-button>
-          <el-button type="primary" @click="elementAction('setProps')">{{ $t('Save') }}</el-button>
+          <el-button :disabled="!isPropSettingSatisfied" type="primary" @click="elementAction('setProps')">{{ $t('Save') }}</el-button>
         </div>
       </el-dialog>
     </el-container>
@@ -740,7 +740,7 @@ export default {
     selectedElementHasProp(prop) {
       if (!this.selectedElement) return false;
 
-      let hasProp = this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props.indexOf(prop) >= 0;
+      let hasProp = prop in this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElement.type).props;
       if (!hasProp) return false;
 
       // 特殊处理
@@ -821,7 +821,7 @@ export default {
       switch(action) {
         case 'openProps':
           let currentProps = {}
-          elementType.props.forEach(prop => {
+          Object.keys(elementType.props).forEach(prop => {
             switch(prop) {
               case 'inputField':
               case 'outputField':
@@ -855,7 +855,7 @@ export default {
 
         case 'setProps':
           let nextProps = {};
-          elementType.props.forEach(prop => {
+          Object.keys(elementType.props).forEach(prop => {
             if (prop === 'code') {
               // 代码需要从 CodeMirror 中读取
               nextProps.code = this.codeMirror.getValue();
@@ -1066,6 +1066,46 @@ export default {
       if (!this.selectedElement) return '';
 
       return this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type).name;
+    },
+    isPropSettingSatisfied() {
+      if (!this.selectedElement) return false;
+
+      let elementProps = this.C.BLUEPRINT_ELEMENT_TYPE_MAP.get(this.selectedElementData.type).props;
+      for (let prop in elementProps) {
+        if (elementProps[prop].isRequired
+          && this.T.isNothing(this.form[prop])) {
+          return false;
+        }
+      }
+
+      switch(this.selectElement.type) {
+        case 'SwitchNode':
+          if (this.T.isNothing(this.form.switchItems)) return false;
+          break;
+
+        case 'BuiltinRandomNode':
+          if (this.form.randomType === 'string'
+            && this.T.isNothing(this.form.randomLength)) return false;
+
+          if ((this.form.randomType === 'integer'
+              || this.form.randomType === 'float')
+            && (this.T.isNothing(this.form.minValue)
+              || this.T.isNothing(this.form.maxValue))) return false;
+
+          break;
+
+        case 'BuiltinDingTalkNode':
+          if (this.T.isNothing(this.form.dingTalkMessageType)) return false;
+
+          if ((this.form.dingTalkMessageType === 'text'
+              || this.form.dingTalkMessageType === 'markdown')
+            && this.T.isNothing(this.form.content)) return false;
+
+          if (this.form.dingTalkMessageType === 'json'
+            && this.T.isNothing(this.form.httpBody)) return false;
+      }
+
+      return true;
     },
   },
   props: {

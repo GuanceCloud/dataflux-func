@@ -1092,69 +1092,116 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key  : 'SimpleLine',
         name : $t('Simple Line'),
-        props: [ ],
+        props: { },
       },
       {
         key  : 'SwitchLine',
         name : $t('Switch Line'),
-        props: [ 'switchOrder' ],
+        props: {
+          switchOrder: { isRequired: true },
+        },
       },
 
       {
         key  : 'EntryNode',
         name : $t('Entry Node'),
-        props: [ ],
+        props: { },
       },
       {
         key  : 'CodeNode',
         name : $t('Code Node'),
-        props: [ 'title', 'code' ],
+        props: {
+          title: { isRequired: false },
+          code : { isRequired: false },
+        },
       },
       {
         key  : 'FuncNode',
         name : $t('Func Node'),
-        props: [ 'title', 'funcId', 'parameterPassingMethod', 'parameterAssigningMap', 'outputField' ],
+        props: {
+          title                 : { isRequired: false },
+          funcId                : { isRequired: true },
+          parameterPassingMethod: { isRequired: true },
+          parameterAssigningMap : { isRequired: false },
+          outputField           : { isRequired: false },
+        },
       },
       {
         key  : 'SwitchNode',
         name : $t('Switch Node'),
-        props: [ 'title', 'switchItems' ],
+        props: {
+          title      : { isRequired: false },
+          switchItems: { isRequired: true },
+        },
       },
 
       {
         key  : 'BuiltinHashNode',
         name : $t('Hash'),
-        props: [ 'inputField', 'outputField', 'hashAlgorithm' ],
+        props: {
+          inputField   : { isRequired: true },
+          outputField  : { isRequired: true },
+          hashAlgorithm: { isRequired: true },
+        },
       },
       {
         key  : 'BuiltinBase64Node',
         name : $t('Base64'),
-        props: [ 'inputField', 'outputField', 'encodeOrDecode' ],
+        props: {
+          inputField    : { isRequired: true },
+          outputField   : { isRequired: true },
+          encodeOrDecode: { isRequired: true },
+        },
       },
       {
         key  : 'BuiltinRandomNode',
         name : $t('Random'),
-        props: [ 'outputField', 'randomType', 'randomLength', 'minValue', 'maxValue' ],
+        props: {
+          outputField : { isRequired: true },
+          randomType  : { isRequired: true },
+          randomLength: { isRequired: false },
+          minValue    : { isRequired: false },
+          maxValue    : { isRequired: false },
+        },
       },
       {
         key  : 'BuiltinJSONNode',
         name : $t('JSON'),
-        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+        props: {
+          inputField            : { isRequired: true },
+          outputField           : { isRequired: true },
+          serializeOrDeserialize: { isRequired: true },
+        },
       },
       {
         key  : 'BuiltinYAMLNode',
         name : $t('YAML'),
-        props: [ 'inputField', 'outputField', 'serializeOrDeserialize' ],
+        props: {
+          inputField            : { isRequired: true },
+          outputField           : { isRequired: true },
+          serializeOrDeserialize: { isRequired: true },
+        },
       },
       {
         key  : 'BuiltinHTTPNode',
         name : $t('HTTP Request'),
-        props: [ 'httpMethod', 'url', 'httpContentType', 'httpBody' ],
+        props: {
+          httpMethod     : { isRequired: true },
+          url            : { isRequired: true },
+          httpContentType: { isRequired: false },
+          httpBody       : { isRequired: false },
+        },
       },
       {
         key  : 'BuiltinDingTalkNode',
         name : $t('DingTalk Robot'),
-        props: [ 'url', 'secret', 'dingTalkMessageType', 'content', 'httpBody' ],
+        props: {
+          url                : { isRequired: true },
+          dingTalkMessageType: { isRequired: true },
+          secret             : { isRequired: false },
+          content            : { isRequired: false },
+          httpBody           : { isRequired: false },
+        },
       },
     ]
   },
