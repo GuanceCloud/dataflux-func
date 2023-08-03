@@ -26,7 +26,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
           </span>
         </el-menu-item>
 
-        <el-menu-item index="/blueprint-list" v-if="$store.getters.isExperimentalFeatureEnabled('Blueprint')">
+        <el-menu-item index="/blueprint-list">
           <span>
             <i class="fa fa-fw fa-sitemap fa-rotate-270"></i>
             <span>{{ $t('Blueprint') }}</span>

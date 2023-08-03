@@ -1,10 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.: 一些尚未正式公开的实验性功能可在本页面开启，本页面配置仅保存在浏览器本地
 
-Enable Blueprint: 启用蓝图
-For developing Scripts graphically: 用于图形化方式开发脚本
-Once enabled, it can be accessed from Navigation Bar {0} Blueprint: 启用后，可在顶部「导航栏」{0}「蓝图」进入
-
 Enable PIP Tool: 启用 PIP 工具
 For installing 3rd-party Python package: 用于安装第三方 Python 包
 Once enabled, it can be accessed from Management page {0} PIP tool: 启用后，可在「管理」{0}「PIP 工具」进入
@@ -77,16 +73,6 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                 <el-form-item>
                   <InfoBlock type="info" :title="$t('Experimental Features that have not been officially released can be enabled here, configuration is only saved locally in the browser.')" />
                 </el-form-item>
-
-                <el-form-item prop="Blueprint">
-                  <el-switch :active-text="$t('Enable Blueprint')" v-model="form.Blueprint"></el-switch>
-                  <div class="text-small form-item-tip">
-                    {{ $t('For developing Scripts graphically') }}
-                    <br><i18n path="Once enabled, it can be accessed from Navigation Bar {0} Blueprint"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
-                  </div>
-                </el-form-item>
-
-                <br><br>
 
                 <el-form-item prop="PIPTool">
                   <el-switch :active-text="$t('Enable PIP Tool')" v-model="form.PIPTool"></el-switch>
@@ -200,7 +186,6 @@ export default {
     return {
       form: {
         PIPTool        : false,
-        Blueprint      : false,
         FileManage     : false,
         FileService    : false,
         FuncCacheManage: false,
