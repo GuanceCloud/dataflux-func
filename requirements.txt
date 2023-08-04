@@ -16,6 +16,7 @@ influxdb==5.3.1
 Jinja2==2.11.3
 kafka-python3==3.0.0
 kombu==5.3.1
+MarkupSafe==2.0.1 # 高版本会导致 Jinja2 导入报错
 nanoid==2.0.0
 paho-mqtt==1.6.1
 psutil==5.9.1
