@@ -19,6 +19,7 @@ def get_config(c):
         'host'    : c.get('host')     or '127.0.0.1',
         'port'    : c.get('port')     or 6379,
         'db'      : c.get('db')       or c.get('database'),
+        'username': c.get('user')     or c.get('username'),
         'password': c.get('password') or None,
         'ssl'     : c.get('useSSL')   or c.get('useTLS'),
     }
@@ -65,6 +66,7 @@ class RedisHelper(object):
                     'host'    : CONFIG['REDIS_HOST'],
                     'port'    : CONFIG['REDIS_PORT'],
                     'database': CONFIG['REDIS_DATABASE'],
+                    'user'    : CONFIG['REDIS_USER'],
                     'password': CONFIG['REDIS_PASSWORD'],
                     'useTLS'  : CONFIG['REDIS_USE_TLS'],
                 }

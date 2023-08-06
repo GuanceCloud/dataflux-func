@@ -239,6 +239,7 @@ function _doSetup(userConfig, callback) {
         var redisConfig = {
           host    : userConfig.REDIS_HOST,
           port    : userConfig.REDIS_PORT,
+          user    : userConfig.REDIS_USER,
           password: userConfig.REDIS_PASSWORD,
           db      : userConfig.REDIS_DATABASE || 0,
           useTLS  : userConfig.REDIS_USE_TLS  || false,

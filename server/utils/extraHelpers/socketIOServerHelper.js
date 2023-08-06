@@ -15,6 +15,7 @@ function getConfig(c, retryStrategy) {
     host    : c.host,
     port    : c.port,
     db      : c.db || c.database || 0,
+    user    : c.user     || undefined,
     password: c.password || undefined,
     tls     : c.useTLS ? { rejectUnauthorized: false } : null,
   };
@@ -80,6 +81,7 @@ var SocketIOServerHelper = function(server, logger, config) {
         host    : CONFIG.REDIS_HOST,
         port    : CONFIG.REDIS_PORT,
         db      : CONFIG.REDIS_DATABASE,
+        user    : CONFIG.REDIS_USER,
         password: CONFIG.REDIS_PASSWORD,
         useTLS  : CONFIG.REDIS_USE_TLS,
       });
