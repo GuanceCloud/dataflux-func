@@ -6,26 +6,10 @@ var redis        = require('redis');
 var redisAdapter = require('@socket.io/redis-adapter');
 
 /* Project Modules */
-var CONFIG    = require('../yamlResources').get('CONFIG');
-var toolkit   = require('../toolkit');
-var logHelper = require('../logHelper');
-
-function getConfig(c, retryStrategy) {
-  var c = {
-    host    : c.host,
-    port    : c.port,
-    db      : c.db || c.database || 0,
-    user    : c.user     || undefined,
-    password: c.password || undefined,
-    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
-  };
-
-  if (retryStrategy) {
-    c.retry_strategy = retryStrategy;
-  }
-
-  return c;
-};
+var CONFIG      = require('../yamlResources').get('CONFIG');
+var toolkit     = require('../toolkit');
+var logHelper   = require('../logHelper');
+var redisHelper = require('./redisHelper');
 
 /* Singleton Client */
 var CLIENT_CONFIG  = null;
@@ -51,14 +35,12 @@ var SocketIOServerHelper = function(server, logger, config) {
   };
 
   if (config) {
-    var _retryStrategy = config.disableRetry
-                       ? null
-                       : self.retryStrategy;
+    var _retryStrategy = config.disableRetry ? null : self.retryStrategy;
 
     self.config = toolkit.noNullOrWhiteSpace(config);
 
-    self.subClient = redis.createClient(getConfig(self.config, _retryStrategy));
-    self.pubClient = redis.createClient(getConfig(self.config, _retryStrategy));
+    self.subClient = redis.createClient(redisHelper.getConfig(self.config, _retryStrategy));
+    self.pubClient = redis.createClient(redisHelper.getConfig(self.config, _retryStrategy));
 
     self.subClient.on('error', function(err) {
       self.logger.error('[SOCKET IO] Error: `{0}` (in SubClient)', err.toString());
@@ -84,10 +66,11 @@ var SocketIOServerHelper = function(server, logger, config) {
         user    : CONFIG.REDIS_USER,
         password: CONFIG.REDIS_PASSWORD,
         useTLS  : CONFIG.REDIS_USE_TLS,
+        authType: CONFIG.REDIS_AUTH_TYPE,
       });
 
-      SUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
-      PUB_CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
+      SUB_CLIENT = redis.createClient(redisHelper.getConfig(CLIENT_CONFIG, self.retryStrategy));
+      PUB_CLIENT = redis.createClient(redisHelper.getConfig(CLIENT_CONFIG, self.retryStrategy));
 
       // Error handling
       SUB_CLIENT.on('error', function(err) {
@@ -103,7 +86,11 @@ var SocketIOServerHelper = function(server, logger, config) {
     self.pubClient = PUB_CLIENT;
   }
 
-  self.server = new socketIO.Server(server);
+  var options = {};
+  if (CONFIG.MODE === 'dev') {
+    options.cors = {};
+  }
+  self.server = new socketIO.Server(server, options);
   self.server.adapter(redisAdapter.createAdapter(self.pubClient, self.subClient));
 };
 

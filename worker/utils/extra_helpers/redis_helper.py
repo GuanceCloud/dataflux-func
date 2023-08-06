@@ -16,15 +16,30 @@ CONFIG = yaml_resources.get('CONFIG')
 
 def get_config(c):
     config = {
-        'host'    : c.get('host')     or '127.0.0.1',
-        'port'    : c.get('port')     or 6379,
-        'db'      : c.get('db')       or c.get('database'),
-        'username': c.get('user')     or c.get('username'),
-        'password': c.get('password') or None,
-        'ssl'     : c.get('useSSL')   or c.get('useTLS'),
+        'host': c.get('host')   or '127.0.0.1',
+        'port': c.get('port')   or 6379,
+        'db'  : c.get('db')     or c.get('database'),
+        'ssl' : c.get('useSSL') or c.get('useTLS'),
     }
+
     if config['ssl'] is True:
         config['ssl_cert_reqs'] = None
+
+    if c.get('password'):
+        if not c.get('user'):
+            # Only password
+            config['password'] = c['password']
+
+        else:
+            # user and password
+            if c.get('authType') == 'aliyun':
+                # Aliyun special auth type
+                config['password'] = f"{c['user']}:{c['password']}"
+
+            else:
+                # Default auth type
+                config['username'] = c['user']
+                config['password'] = c['password']
 
     return config
 
@@ -69,6 +84,7 @@ class RedisHelper(object):
                     'user'    : CONFIG['REDIS_USER'],
                     'password': CONFIG['REDIS_PASSWORD'],
                     'useTLS'  : CONFIG['REDIS_USE_TLS'],
+                    'authType': CONFIG['REDIS_AUTH_TYPE'],
                 }
 
                 CLIENT_CONFIG['tsMaxAge']      = CONFIG.get('REDIS_TS_MAX_AGE')

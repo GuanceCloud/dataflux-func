@@ -80,7 +80,7 @@ function startApplication() {
   app.set('view engine', 'ejs');
   app.set('view cache', CONFIG.MODE === 'prod');
 
-  // Enable CORS
+  // CORS
   var corsConfig = {
     origin              : CONFIG.WEB_CORS_ORIGIN,
     credentials         : CONFIG.WEB_CORS_CREDENTIALS,

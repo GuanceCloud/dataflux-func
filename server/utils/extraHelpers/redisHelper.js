@@ -15,23 +15,39 @@ var LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
 var LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
 /* Configure */
-var LIMIT_ARGS_DUMP = 500;
 
 function getConfig(c, retryStrategy) {
-  var c = {
-    host    : c.host,
-    port    : c.port,
-    db      : c.db || c.database || 0,
-    user    : c.user     || undefined,
-    password: c.password || undefined,
-    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
+  var config = {
+    host: c.host,
+    port: c.port,
+    db  : c.db || c.database || 0,
+    tls : c.useTLS ? { rejectUnauthorized: false } : null,
   };
 
   if (retryStrategy) {
-    c.retry_strategy = retryStrategy;
+    config.retry_strategy = retryStrategy;
   }
 
-  return c;
+  if (c.password) {
+    if (!c.user) {
+      // Only password
+      config.password = c.password;
+
+    } else {
+      // user and password
+      if (c.authType === 'aliyun') {
+        // Aliyun special auth type
+        config.password = `${c.user}:${c.password}`;
+
+      } else {
+        // Default auth type
+        config.user     = c.user;
+        config.password = c.password;
+      }
+    }
+  }
+
+  return config;
 };
 
 /* Singleton Client */
@@ -93,6 +109,7 @@ var RedisHelper = function(logger, config) {
         user    : CONFIG.REDIS_USER,
         password: CONFIG.REDIS_PASSWORD,
         useTLS  : CONFIG.REDIS_USE_TLS,
+        authType: CONFIG.REDIS_AUTH_TYPE,
       });
 
       CLIENT_CONFIG.tsMaxAge      = CONFIG.REDIS_TS_MAX_AGE;
@@ -1062,3 +1079,5 @@ exports.RedisHelper = RedisHelper;
 exports.createHelper = function(logger, config) {
   return new RedisHelper(logger, config);
 };
+
+exports.getConfig = getConfig;

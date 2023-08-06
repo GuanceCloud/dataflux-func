@@ -243,6 +243,7 @@ function _doSetup(userConfig, callback) {
           password: userConfig.REDIS_PASSWORD,
           db      : userConfig.REDIS_DATABASE || 0,
           useTLS  : userConfig.REDIS_USE_TLS  || false,
+          authType: userConfig.REDIS_AUTH_TYPE,
 
           disableRetry: true,
           errorCallback(err) {

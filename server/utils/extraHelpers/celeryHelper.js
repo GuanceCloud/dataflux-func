@@ -1,23 +1,13 @@
 'use strict';
 
 /* 3rd-party Modules */
-var redis  = require('redis');
 var celery = require('celery-client');
 
 /* Project Modules */
-var CONFIG    = require('../yamlResources').get('CONFIG');
-var toolkit   = require('../toolkit');
-var logHelper = require('../logHelper');
-
-function getConfig(c) {
-  return {
-    host    : c.host,
-    port    : c.port,
-    db      : c.db || c.database || 0,
-    password: c.password || undefined,
-    tls     : c.useTLS ? { rejectUnauthorized: false } : null,
-  };
-};
+var CONFIG      = require('../yamlResources').get('CONFIG');
+var toolkit     = require('../toolkit');
+var logHelper   = require('../logHelper');
+var redisHelper = require('./redisHelper');
 
 /* Singleton Client */
 var CLIENT_CONFIG = null;
@@ -35,8 +25,8 @@ var CeleryHelper = function(logger, config) {
   if (config) {
     this.config = toolkit.noNullOrWhiteSpace(config);
     this.client = new celery.Client(
-      new celery.RedisHandler(getConfig(this.config)),
-      new celery.RedisHandler(getConfig(this.config))
+      new celery.RedisHandler(redisHelper.getConfig(this.config)),
+      new celery.RedisHandler(redisHelper.getConfig(this.config))
     );
     this.defaultQueue = config.defaultQueue || CONFIG._WORKER_DEFAULT_QUEUE;
 
@@ -49,10 +39,11 @@ var CeleryHelper = function(logger, config) {
         user    : CONFIG.REDIS_USER,
         password: CONFIG.REDIS_PASSWORD,
         useTLS  : CONFIG.REDIS_USE_TLS,
+        authType: CONFIG.REDIS_AUTH_TYPE,
       });
       CLIENT = new celery.Client(
-        new celery.RedisHandler(getConfig(CLIENT_CONFIG)),
-        new celery.RedisHandler(getConfig(CLIENT_CONFIG)),
+        new celery.RedisHandler(redisHelper.getConfig(CLIENT_CONFIG)),
+        new celery.RedisHandler(redisHelper.getConfig(CLIENT_CONFIG)),
         {
           priority: 2, // medium
         }

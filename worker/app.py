@@ -51,9 +51,20 @@ app.config_from_object('worker.celeryconfig')
 # Redis config
 redis_auth = ''
 if CONFIG['REDIS_PASSWORD']:
-    redis_auth = f":{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
-if redis_auth and CONFIG['REDIS_USER']:
-    redis_auth = f"{urllib.parse.quote(CONFIG['REDIS_USER'])}{redis_auth}"
+    if not CONFIG['REDIS_USER']:
+        # 没有用户名
+        redis_auth = f":{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
+
+    else:
+        # 用户名 + 密码
+        if CONFIG['REDIS_AUTH_TYPE'] == 'aliyun':
+            # 阿里云特殊认证方式
+            _user_pass = f"{CONFIG['REDIS_USER']}:{CONFIG['REDIS_PASSWORD']}"
+            redis_auth = f":{urllib.parse.quote(_user_pass)}@"
+
+        else:
+            # 默认认证方式
+            redis_auth = f"{urllib.parse.quote(CONFIG['REDIS_USER'])}:{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
 
 redis_schema = 'redis://'
 ssl_options  = None
