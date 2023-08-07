@@ -30,7 +30,7 @@ Func Error     : 函数报错
 Func Timeout   : 函数超时
 API Timeout    : 接口超时
 Bad return     : 非法结果
-Unknow Error   : 未知错误
+Unknown Error  : 未知错误
 
 Auth Link disabled: 授权链接已禁用
 Auth Link enabled : 授权链接已启用
@@ -428,8 +428,8 @@ export default {
           title: this.$t('Bad return'),
           class: 'text-bad',
         },
-        UnknowError: {
-          title: this.$t('Unknow Error'),
+        UnknownError: {
+          title: this.$t('Unknown Error'),
           class: 'text-bad',
         },
       }

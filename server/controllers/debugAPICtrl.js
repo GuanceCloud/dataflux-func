@@ -124,7 +124,7 @@ exports.putTask = function(req, res, next) {
           return next(new E('ESysAsyncTaskFailed', 'Async task failed', {
             id   : celeryRes.id,
             etype: celeryRes.result && celeryRes.result.exc_type,
-            stack: celeryRes.einfoTEXT,
+            stack: celeryRes.einfoTEXT || 'No error stack',
           }));
 
         } else if (extraInfo.status === 'TIMEOUT') {

@@ -133,7 +133,7 @@ module.exports = function(app, server) {
               break;
 
             default:
-              return asyncCallback(new E('EAuthToken', 'Unknow auth type', { authType: xAuthTokenObj.authType }).forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Unknown auth type', { authType: xAuthTokenObj.authType }).forSocketIO());
           }
 
           app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
@@ -204,7 +204,7 @@ module.exports = function(app, server) {
               break;
 
             default:
-              return asyncCallback(new E('ESocketIOEvent', `Unknow event: ${event}`).forSocketIO(reqId));
+              return asyncCallback(new E('ESocketIOEvent', `Unknown event: ${event}`).forSocketIO(reqId));
           }
 
           return asyncCallback();

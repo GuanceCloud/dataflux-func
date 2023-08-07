@@ -736,8 +736,13 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
           }
 
           if (celeryRes.status === 'FAILURE') {
+            // 保证有值
+            celeryRes.einfoTEXT = celeryRes.einfoTEXT || '';
+
             // 正式调用发生错误只返回堆栈错误信息最后一行
-            var einfoTEXT = celeryRes.einfoTEXT.trim().split('\n').pop().trim();
+            var einfoTEXT = celeryRes.einfoTEXT
+                          ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
+                          : 'No error info';
 
             if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
               // 超时错误
@@ -812,7 +817,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
             function(asyncCallback) {
               var status = 'OK';
               if (err) {
-                status = err.reason || 'UnknowError';
+                status = err.reason || 'UnknownError';
               } else if (celeryRes.id === 'CACHED') {
                 status = 'cached';
               }
@@ -1931,7 +1936,7 @@ exports.callFuncDraft = function(req, res, next) {
         return next(new E('EFuncFailed', 'Calling Function failed', {
           id       : celeryRes.id,
           etype    : celeryRes.result && celeryRes.result.exc_type,
-          einfoTEXT: celeryRes.einfoTEXT,
+          einfoTEXT: celeryRes.einfoTEXT || 'No error info',
         }));
 
       } else if (extraInfo.status === 'TIMEOUT') {
@@ -1941,7 +1946,7 @@ exports.callFuncDraft = function(req, res, next) {
       }
 
       var ret = null;
-      if (celeryRes.retval.einfoTEXT) {
+      if (celeryRes.retval && celeryRes.retval.einfoTEXT) {
         // 脚本执行错误，手工包装
         ret = {
           ok     : false,

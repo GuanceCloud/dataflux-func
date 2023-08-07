@@ -178,7 +178,10 @@ function _checkConfig(locals, type, config, skipTest, callback) {
     celeryRes = celeryRes || {};
     extraInfo = extraInfo || {};
 
-    var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
+    var errorMessage = celeryRes.einfoTEXT
+                     ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
+                     : 'No error message';
+
     if (celeryRes.status === 'FAILURE') {
       return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector failed', {
         etype  : celeryRes.result && celeryRes.result.exc_type,
@@ -431,7 +434,10 @@ exports.query = function(req, res, next) {
         celeryRes = celeryRes || {};
         extraInfo = extraInfo || {};
 
-        var errorMessage = (celeryRes.einfoTEXT || '').trim().split('\n').pop().trim();
+        var errorMessage = celeryRes.einfoTEXT
+                         ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
+                         : 'No error message';
+
         if (celeryRes.status === 'FAILURE') {
           return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed', {
             etype  : celeryRes.result && celeryRes.result.exc_type,

@@ -131,7 +131,7 @@ while [ $# -ge 1 ]; do
             ;;
 
         * )
-            error "Unknow option: $1"
+            error "Unknown option: $1"
             exit 1
             ;;
     esac

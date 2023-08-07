@@ -780,7 +780,7 @@ export default {
       }
 
       // 错误堆栈
-      if (apiRes.detail) {
+      if (apiRes.detail && apiRes.detail.einfoTEXT) {
         // 错误堆栈
         // 发布失败/在线调试失败时，包含错误堆栈信息
         // 【此处进行预处理，避免在computed中反复计算】

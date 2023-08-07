@@ -1211,7 +1211,7 @@ Model.prototype.genWhereStatement = function(filters, options) {
         for (var operation in condition) if (condition.hasOwnProperty(operation)) {
           var value = condition[operation];
           if ('function' !== typeof this.db.whereSqlGenerators[operation]) {
-            throw Error('Unknow SQL operation: {0}', operation);
+            throw Error('Unknown SQL operation: {0}', operation);
           } else {
             sqlConditions.push('(' + this.db.whereSqlGenerators[operation](field, value) + ')');
           }

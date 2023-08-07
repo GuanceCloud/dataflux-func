@@ -225,7 +225,7 @@ class AliyunClient(object):
         api_config = PRODUCT_API_CONFIG_MAP.get(product)
 
         if not api_config:
-            raise Exception('Unknow Aliyun product API config. Please use `call()` with full API configs.')
+            raise Exception('Unknown Aliyun product API config. Please use `call()` with full API configs.')
 
         domain   = api_config.get('domain')
         version  = api_config.get('version')

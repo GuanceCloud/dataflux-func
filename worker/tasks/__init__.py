@@ -121,7 +121,7 @@ class BaseTask(app.Task):
             'id'    : self.request.id,
             'args'  : self.request.args,
             'kwargs': self.request.kwargs,
-            'origin': self.request.origin, # 注意：Celery中Task.requset.origin 和Func 业务中的Origin *不是*一回事
+            'origin': self.request.origin, # 注意：Celery 中 Task.requset.origin 和 Func 业务中的 Origin *不是*一回事
             'queue' : self.worker_queue,
             'status': status,
 

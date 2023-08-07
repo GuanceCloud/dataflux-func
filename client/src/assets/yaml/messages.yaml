@@ -111,8 +111,8 @@ en: {}
   This username is used by others                                                                         : 此用户名已被其他用户使用
   Accessing git repo timeout                                                                              : 访问 git 库超时
   Too many tasks in worker queue                                                                          : 工作队列中任务过多
-  Unknow auth type                                                                                        : 认证类型未知
-  Unknow event of Socket.io                                                                               : Socket.io 事件未知
+  Unknown auth type                                                                                       : 认证类型未知
+  Unknown event of Socket.io                                                                              : Socket.io 事件未知
   Unsupported resource operation                                                                          : 资源不支持进行此操作
   Unzip destination already existed                                                                       : 解压目标地址已经存在
   User not signed in                                                                                      : 用户尚未登录

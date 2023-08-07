@@ -389,12 +389,12 @@ function sendPreCheckTask(celery, scriptId, callback) {
     extraInfo = extraInfo || {};
 
     if (celeryRes.status === 'FAILURE') {
-      if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
+      if (celeryRes.einfoTEXT && celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
         // 超时错误
         return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again', {
           id       : celeryRes.id,
           etype    : celeryRes.result && celeryRes.result.exc_type,
-          einfoTEXT: celeryRes.einfoTEXT,
+          einfoTEXT: celeryRes.einfoTEXT || 'No error info',
         }));
 
       } else {
@@ -402,7 +402,7 @@ function sendPreCheckTask(celery, scriptId, callback) {
         return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
           id       : celeryRes.id,
           etype    : celeryRes.result && celeryRes.result.exc_type,
-          einfoTEXT: celeryRes.einfoTEXT,
+          einfoTEXT: celeryRes.einfoTEXT || 'No error info',
         }));
       }
 
@@ -412,12 +412,12 @@ function sendPreCheckTask(celery, scriptId, callback) {
         etype: celeryRes.result && celeryRes.result.exc_type,
       }));
 
-    } else if (celeryRes.retval.einfoTEXT) {
+    } else if (celeryRes.retval && celeryRes.retval.einfoTEXT) {
       return callback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
         id       : extraInfo.id,
         etype    : celeryRes.result && celeryRes.result.exc_type,
-        einfoTEXT: celeryRes.retval.einfoTEXT,
-        traceInfo: celeryRes.retval.traceInfo,
+        einfoTEXT: celeryRes.retval.einfoTEXT || 'No error info',
+        traceInfo: celeryRes.retval.traceInfo || 'No trace info',
       }));
     }
 
