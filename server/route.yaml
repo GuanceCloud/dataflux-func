@@ -2829,6 +2829,10 @@ connectorAPI:
             $allowNull: true
             $type     : string
             $example  : dev
+          authType:
+            $desc     : 认证类型
+            $allowNull: true
+            $type     : string
           charset:
             $desc     : 编码
             $allowNull: true
@@ -2994,6 +2998,10 @@ connectorAPI:
             $allowNull: true
             $type     : string
             $example  : dev
+          authType:
+            $desc     : 认证类型
+            $allowNull: true
+            $type     : string
           charset:
             $desc     : 编码
             $allowNull: true

@@ -76,7 +76,7 @@ function _checkConfig(locals, type, config, skipTest, callback) {
       config.database = config.database || 0;
 
       requiredFields = ['host', 'database'];
-      optionalFields = ['port', 'password', 'topicHandlers'];
+      optionalFields = ['port', 'user', 'password', 'authType', 'topicHandlers'];
       break;
 
     case 'memcached':

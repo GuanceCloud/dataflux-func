@@ -18,6 +18,7 @@ Source               : 源
 Database             : 数据库
 User                 : 用户
 Password             : 密码
+Auth Type            : 认证类型
 Charset              : 编码
 Client ID            : 客户端 ID
 Group ID             : 分组 ID
@@ -63,6 +64,7 @@ Please input source                                  : 请输入连接器名称
 Please input database                                : 请输入数据库名
 Please input user                                    : 请输入用户名
 Please input password                                : 请输入密码
+Please input auth type                               : 请输入认证方式
 Please input charset                                 : 请输入字符集
 Please input Access Key                              : 请输入Access Key
 Please input Secret Key                              : 请输入Secret Key
@@ -239,6 +241,13 @@ This is a built-in Connector, please contact the admin to change the config: 当
                     <el-input
                       v-model="form.configJSON.password" show-password></el-input>
                     <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')" />
+                  </el-form-item>
+
+                  <el-form-item :label="$t('Auth Type')" v-if="hasConfigField(selectedType, 'authType')" prop="configJSON.authType">
+                    <el-select v-model="form.configJSON.authType">
+                      <el-option v-if="selectedType === 'redis'" :label="$t('Default')" key="default" value="default"></el-option>
+                      <el-option v-if="selectedType === 'redis'" :label="$t('Alibaba Cloud')" key="aliyun" value="aliyun"></el-option>
+                    </el-select>
                   </el-form-item>
 
                   <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
@@ -923,6 +932,13 @@ export default {
           {
             trigger : 'change',
             message : this.$t('Please input password'),
+            required: false,
+          },
+        ],
+        'configJSON.authType': [
+          {
+            trigger : 'change',
+            message : this.$t('Please input auth type'),
             required: false,
           },
         ],
