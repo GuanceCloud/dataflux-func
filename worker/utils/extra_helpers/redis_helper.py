@@ -46,8 +46,8 @@ def get_config(c):
 LIMIT_ARGS_DUMP = 200
 
 # LUA
-LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
-LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
+LUA_UNLOCK_SCRIPT_KEY_COUNT = 1
+LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end '
 
 CLIENT_CONFIG = None
 CLIENT        = None

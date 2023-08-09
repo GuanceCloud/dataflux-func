@@ -319,7 +319,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       <el-form-item
                         class="func-cascader-input"
                         :key="`handler-${index}`"
-                        :prop="`configJSON.topicH !importantandlers.${index}.funcId`"
+                        :prop="`configJSON.topicHandlers.${index}.funcId`"
                         :rules="formRules_topicHandler">
                         <el-cascader ref="funcCascader"
                           popper-class="code-font"
