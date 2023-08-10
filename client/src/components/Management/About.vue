@@ -6,7 +6,7 @@ taskRemain: '(remain {n} task to process) | (remain {n} tasks to process)'
 About: 关于
 
 'You are using {0} browser'          : 您正在使用 {0} 浏览器
-'In this system                      : ': '在本系统中：'
+'In this system:'                    : '在本系统中：'
 'Monospaced font is from {0}'        : '等宽字体来自 {0}'
 'Icons used are from {0}'            : '图标来自 {0}'
 'Illustrations used are from {0}'    : '插图来自 {0}'
