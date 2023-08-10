@@ -72,7 +72,7 @@ var getRetSample = function(ret) {
  * Add Server Info
  */
 router.all('*', function addServerInfo(req, res, next) {
-  res.set(CONFIG._WEB_SERVER_VERSION_HEADER,          IMAGE_INFO.VERSION);
+  res.set(CONFIG._WEB_SERVER_VERSION_HEADER,           IMAGE_INFO.VERSION);
   res.set(CONFIG._WEB_SERVER_RELEASE_TIMESTAMP_HEADER, IMAGE_INFO.RELEASE_TIMESTAMP);
 
   return next();
