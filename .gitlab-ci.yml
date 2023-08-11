@@ -18,8 +18,7 @@ variables:
   IMAGE_LIST_FILE          : image-list
   VERSION_FILE             : version
 
-  INIT_SCRIPTS_DIR: init-scripts/
-  SDK_DIR         : sdk/
+  SDK_DIR : sdk/
 
   PROJECT: dataflux-func
 
@@ -109,8 +108,8 @@ portable_amd64_GSE:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
-    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
+    - wget ${INIT_SCRIPT_URL_ADD_LOCAL_DATAKIT}                 -O init-scripts/add_local_datakit.py;
+    - wget ${INIT_SCRIPT_URL_INSTALL_OFFICIAL_CORE_SCRIPT_SETS} -O init-scripts/install_official_core_script_sets.py;
     # 单独构建 amd64 版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
@@ -135,8 +134,8 @@ portable_arm64_GSE:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
-    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
+    - wget ${INIT_SCRIPT_URL_ADD_LOCAL_DATAKIT}                 -O init-scripts/add_local_datakit.py;
+    - wget ${INIT_SCRIPT_URL_INSTALL_OFFICIAL_CORE_SCRIPT_SETS} -O init-scripts/install_official_core_script_sets.py;
     # 单独构建 arm64 版本用于导出
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
@@ -198,8 +197,8 @@ singleton_GSE:
     - V_MAJOR_MINOR=${V_PARTS[0]}.${V_PARTS[1]}
     - V_MAJOR_MINOR_PATCH=${V_PARTS[0]}.${V_PARTS[1]}.${V_PARTS[2]}
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_INIT_DATAKIT_URL} -O init-scripts/init_datakit.py;
-    - wget ${INIT_SCRIPT_INIT_FOR_GSE_URL} -O init-scripts/init_for_gse.py;
+    - wget ${INIT_SCRIPT_URL_ADD_LOCAL_DATAKIT}                 -O init-scripts/add_local_datakit.py;
+    - wget ${INIT_SCRIPT_URL_INSTALL_OFFICIAL_CORE_SCRIPT_SETS} -O init-scripts/install_official_core_script_sets.py;
     # 构建 / 推送多架构版本
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
@@ -228,7 +227,7 @@ guanceSaaS_testing:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PRIVATE}-gse:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton-GSE .
       --push
   tags:
@@ -242,15 +241,15 @@ guanceSaaS_release:
     - /^release_\d+_\d+$/ # 如：release_20190101_01
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_IMPORT_SCRIPT_SETS_URL}  -O init-scripts/import_script_sets.py; # 自动执行脚本
-    - wget ${BUILTIN_SCRIPT_SET_DATAFLUX_ZIP_URL} -O init-scripts/dataflux.zip;          # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_GUANCE_ZIP_URL}   -O init-scripts/guance.zip;            # 新版
+    - wget ${INIT_SCRIPT_URL_IMPORT_BUILTIN_SCRIPT_SETS} -O init-scripts/import_builtin_script_sets.py; # 导入内置脚本集
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX}            -O init-scripts/dataflux.zip;                  # 旧版内置脚本集
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}              -O init-scripts/guance.zip;                    # 新版内置脚本集
     # 构建 / 推送多架构版本
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
-      -t ${IMAGE_PRIVATE}:${CI_COMMIT_REF_NAME}
-      -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PRIVATE}-gse:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PUBLIC}-gse:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton-GSE .
       --push
   tags:
@@ -263,9 +262,9 @@ guancePaaS_preview:
     - /\d+\.\d+\.\d+\.\d+-\w+-prev/ # 如：1.10.49.1-c2f4e3b-prev
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_IMPORT_SCRIPT_SETS_URL}  -O init-scripts/import_script_sets.py; # 自动执行脚本
-    - wget ${BUILTIN_SCRIPT_SET_DATAFLUX_ZIP_URL} -O init-scripts/dataflux.zip;          # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_GUANCE_ZIP_URL}   -O init-scripts/guance.zip;            # 新版
+    - wget ${INIT_SCRIPT_URL_IMPORT_BUILTIN_SCRIPT_SETS} -O init-scripts/import_builtin_script_sets.py; # 自动执行脚本
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX}            -O init-scripts/dataflux.zip;                  # 旧版内置脚本集
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}              -O init-scripts/guance.zip;                    # 新版内置脚本集
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}.${V[3]}
@@ -288,9 +287,9 @@ guancePaaS_release:
     - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
   script:
     # 下载初始化脚本
-    - wget ${INIT_SCRIPT_IMPORT_SCRIPT_SETS_URL}  -O init-scripts/import_script_sets.py; # 自动执行脚本
-    - wget ${BUILTIN_SCRIPT_SET_DATAFLUX_ZIP_URL} -O init-scripts/dataflux.zip;          # 旧版
-    - wget ${BUILTIN_SCRIPT_SET_GUANCE_ZIP_URL}   -O init-scripts/guance.zip;            # 新版
+    - wget ${INIT_SCRIPT_URL_IMPORT_BUILTIN_SCRIPT_SETS} -O init-scripts/import_builtin_script_sets.py; # 自动执行脚本
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX}            -O init-scripts/dataflux.zip;                  # 旧版内置脚本集
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}              -O init-scripts/guance.zip;                    # 新版内置脚本集
     # 计算版本号
     - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
     - VDIR=${V[0]}.${V[1]}.${V[2]}
@@ -306,9 +305,9 @@ guancePaaS_release:
   tags:
     - cloudcare-multiarch
 
-# ========== 文件上传到 OSS ==========
+# ========== 其他携带版文件上传到 OSS ==========
 
-portableFile_dev:
+otherPortableFile_dev:
   stage: uploadToOSS
   retry: 2
   only:
@@ -331,7 +330,7 @@ portableFile_dev:
   tags:
     - cloudcare-multiarch
 
-portableFile_singleton:
+otherPortableFile_singleton:
   stage: uploadToOSS
   retry: 2
   only:
@@ -357,7 +356,7 @@ portableFile_singleton:
   tags:
     - cloudcare-multiarch
 
-portableFile_singleton_GSE:
+otherPortableFile_singleton_GSE:
   stage: uploadToOSS
   retry: 2
   only:
@@ -381,23 +380,18 @@ portableFile_singleton_GSE:
   tags:
     - cloudcare-multiarch
 
-portableFile_singleton_extra:
+otherResourceFile:
   stage: uploadToOSS
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
   script:
     # 上传文件
-    - tools/ossutil64 cp -r ${INIT_SCRIPTS_DIR} ${OSS_WORKDIR_BASE_URL}/${INIT_SCRIPTS_DIR} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp -r ${SDK_DIR}          ${OSS_WORKDIR_BASE_URL}/${SDK_DIR}          -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp -r ${SDK_DIR} ${OSS_WORKDIR_BASE_URL}/${SDK_DIR} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
-      Directory ${OSS_WORKDIR_BASE_URL}/${INIT_SCRIPTS_DIR}
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
-    - python tools/cdn-refresh-tool.py
-      Directory ${OSS_WORKDIR_BASE_URL}/${SDK_DIR}
+      Directory ${CDN_REFRESH_BASE_PATH}/${SDK_DIR}
       -i ${ZY_STATIC_OSS_AK_ID}
       -k ${ZY_STATIC_OSS_AK_SECRET}
 
