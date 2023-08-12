@@ -224,7 +224,7 @@ guanceSaaS_testing:
     - dev
   script:
     # 开发版只需支持 amd64
-    - python echo-image-info.py > image-info.json
+    - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64
       -t ${IMAGE_PRIVATE}-gse:${CI_COMMIT_REF_NAME}
@@ -245,7 +245,7 @@ guanceSaaS_release:
     - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX}            -O init-scripts/dataflux.zip;                  # 旧版内置脚本集
     - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}              -O init-scripts/guance.zip;                    # 新版内置脚本集
     # 构建 / 推送多架构版本
-    - python echo-image-info.py > image-info.json
+    - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t ${IMAGE_PRIVATE}-gse:${CI_COMMIT_REF_NAME}
@@ -271,7 +271,7 @@ guancePaaS_preview:
     - REPO=dataflux-prev/$VDIR
     - TAG=${PROJECT}-${V[4]}
     # 构建 / 推送多架构版本
-    - python echo-image-info.py > image-info.json
+    - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
@@ -296,7 +296,7 @@ guancePaaS_release:
     - REPO=dataflux/$VDIR
     - TAG=${PROJECT}-${V[3]}-${V[4]}
     # 构建 / 推送多架构版本
-    - python echo-image-info.py > image-info.json
+    - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64,linux/arm64
       -t pubrepo.jiagouyun.com/$REPO:$TAG
