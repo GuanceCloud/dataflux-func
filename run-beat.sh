@@ -11,4 +11,4 @@ fi
 
 # Run Beat
 echo "[STARTER] Run Beat"
-celery --app worker.app --quiet beat --loglevel ERROR
+python worker/beat.py

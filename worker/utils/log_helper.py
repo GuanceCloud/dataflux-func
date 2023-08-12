@@ -240,7 +240,7 @@ class LogHelper(object):
             _queue   = self.task.request.delivery_info['routing_key']
             _origin  = self.task.request.origin
 
-        message = toolkit.mask_auth_url(message)
+        message = toolkit.mask_auth_url(f'{message}')
 
         log_line = {
             'message': message,
