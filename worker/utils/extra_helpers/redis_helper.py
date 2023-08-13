@@ -49,6 +49,10 @@ LIMIT_ARGS_DUMP = 200
 LUA_UNLOCK_SCRIPT_KEY_COUNT = 1
 LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end '
 
+LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT = 2
+LUA_ZPOP_BELOW_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], "-inf", ARGV[1]) > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmin", KEYS[1])[1]) else return nil end '
+LUA_ZPOP_ABOVE_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], ARGV[1], "+inf") > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmax", KEYS[1])[1]) else return nil end '
+
 CLIENT_CONFIG = None
 CLIENT        = None
 
@@ -299,8 +303,14 @@ class RedisHelper(object):
     def lpop(self, key):
         return self.run('lpop', key)
 
+    def blpop(self, key):
+        return self.run('blpop', key)
+
     def rpop(self, key):
         return self.run('rpop', key)
+
+    def brpop(self, key):
+        return self.run('brpop', key)
 
     def llen(self, key):
         return self.run('llen', key)
@@ -465,3 +475,12 @@ class RedisHelper(object):
             ts_data = list(map(lambda x: { 't': x[0], 'v': x[1] }, ts_data))
 
         return ts_data
+
+    def zadd(self, key, score, value):
+        return self.run('zadd', key, { value: score })
+
+    def zpop_below_lpush(self, key, dest_key, score):
+        return self.run('eval', LUA_ZPOP_BELOW_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+
+    def zpop_above_lpush(self, key, dest_key, score):
+        return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)

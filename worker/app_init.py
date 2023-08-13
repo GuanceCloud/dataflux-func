@@ -50,13 +50,16 @@ def before_app_create():
     toolkit.get_server_cache_key = get_server_cache_key
 
     def get_worker_queue(name):
-        worker_queue = toolkit._get_worker_queue(name)
-
-        # Add queue prefix to queue name
-        worker_queue_with_prefix = '{}#{}'.format(APP_NAME_WORKER, worker_queue)
-        return worker_queue_with_prefix
+        worker_queue = f'{APP_NAME_WORKER}#{toolkit._get_worker_queue(name)}'
+        return worker_queue
 
     toolkit.get_worker_queue = get_worker_queue
+
+    def get_delay_queue(name):
+        worker_queue = f'{APP_NAME_WORKER}#{toolkit._get_delay_queue(name)}'
+        return worker_queue
+
+    toolkit.get_delay_queue = get_delay_queue
 
     def parse_cache_key(cache_key):
         cache_key_info = toolkit._parse_cache_key(cache_key)

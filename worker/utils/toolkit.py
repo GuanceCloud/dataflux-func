@@ -31,6 +31,7 @@ import arrow
 from dateutil import parser as dateutil_parser
 import nanoid
 from Cryptodome.Cipher import AES
+from croniter import croniter
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
@@ -125,8 +126,11 @@ def gen_time_serial_seq(d=None, rand_length=4):
 
     return offsetted_timestamp + rand_int
 
-def get_first_part(s, sep='-', count=2):
-    return sep.join(s.split(sep)[0:count])
+def get_short_id(s, sep='-', count=6):
+    if sep in s:
+        return s.split(sep)[1][0:count]
+    else:
+        return s
 
 def json_find(j, path, safe=False):
     if j is None:
@@ -229,28 +233,31 @@ def json_update_by_keys(s, d, keys=None):
 
     return d
 
-def json_dumps_default(v):
-    if isinstance(v, datetime.datetime):
-        return to_iso_datetime(v)
-    elif isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+def json_dumps_default(j):
+    if isinstance(j, datetime.datetime):
+        return to_iso_datetime(j)
+    elif isinstance(j, float) and (math.isnan(j) or math.isinf(j)):
         return None
     else:
-        return pprint.saferepr(v)
+        return pprint.saferepr(j)
 
-def json_dumps(v, **kwargs):
+def json_dumps(j, ignore_nothing=False, **kwargs):
     kwargs['allow_nan'] = False
     kwargs['indent'] = kwargs.get('indent') or 0
 
+    if ignore_nothing:
+        j = no_none_or_white_space(j)
+
     try:
-        return ujson.dumps(v, **kwargs)
+        return ujson.dumps(j, **kwargs)
 
     except Exception as e:
-        print('Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead: ', repr(e))
+        print('Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead:', repr(e))
 
         kwargs['indent'] = kwargs['indent'] or None
         if not kwargs['indent']:
             kwargs['separators'] = (',', ':')
-        return simplejson.dumps(v, default=json_dumps_default, ignore_nan=True, **kwargs)
+        return simplejson.dumps(j, default=json_dumps_default, ignore_nan=True, **kwargs)
 
 def json_loads(s):
     return ujson.loads(s)
@@ -510,10 +517,17 @@ def _parse_cache_key(cache_key):
 
 def _get_worker_queue(name):
     if not isinstance(name, int) and not name:
-        e = Exception('WAT: Queue name not specified.')
+        e = Exception('Queue name not specified.')
         raise e
 
     return 'workerQueue@{}'.format(name)
+
+def _get_delay_queue(name):
+    if not isinstance(name, int) and not name:
+        e = Exception('Queue name not specified.')
+        raise e
+
+    return 'delayQueue@{}'.format(name)
 
 def as_array(o):
     if o is None:
@@ -622,17 +636,11 @@ def to_short_unix_timestamp(t):
 def from_short_unix_timestamp(t):
     return t + SHORT_UNIX_TIMESTAMP_OFFSET
 
-class FakeTaskRequest(object):
-    def __init__(self, fake_task_id=None):
-        self.called_directly = False
-        self.id              = fake_task_id or 'TASK-' + gen_rand_string(4).upper()
-        self.delivery_info   = { 'routing_key': 'WORKER-INTERNAL@NONE' }
-        self.origin          = 'WORKER-INTERNAL'
-
 class FakeTask(object):
     def __init__(self, fake_task_id=None):
-        self.request = FakeTaskRequest(fake_task_id)
-        self.name    = 'WORKER-INTERNAL'
+        self.name    = 'WORKER'
+        self.queue   = 'NONE'
+        self.task_id = fake_task_id or 'WORKER'
 
 class IgnoreCaseDict(dict):
     def __lower_key(self, key):
@@ -742,3 +750,23 @@ def mask_auth_url(s):
         return RE_HTTP_BASIC_AUTH_MASK.sub(RE_HTTP_BASIC_AUTH_MASK_REPLACE, s)
     except Exception as e:
         return s
+
+def to_croniter_style(crontab):
+    parts = crontab.split(' ')
+
+    if len(parts) < 5:
+        parts.extend([ '*' ] * (5 - len(parts)))
+
+    if len(parts) == 5:
+        parts.append('0')
+    elif len(parts) > 5:
+        parts = parts[1:6] + parts[0:1]
+
+    return ' '.join(parts)
+
+def is_match_crontab(crontab, t, tz=None):
+    crontab = to_croniter_style(crontab)
+    tz = tz or 'Asia/Shanghai'
+    at = arrow.get(t).to(tz)
+
+    return croniter.match(crontab, at.datetime)

@@ -292,7 +292,7 @@ LoggerHelper.prototype._log = function() {
 
   var nowMs    = Date.now();
   var now      = parseInt(nowMs / 1000);
-  var nowStr   = moment(nowMs).tz(CONFIG.LOG_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+  var nowStr   = moment(nowMs).tz(CONFIG.TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
   var nowShort = nowStr.slice(5);
 
   var reqTimeMs = this.locals.requestTime

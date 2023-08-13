@@ -46,8 +46,8 @@ LOG_FUNC_CALL_OPTIONS: false
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/logs/dataflux-func.log'
 
-# 日志时间时区
-LOG_TIMEZONE: 'Asia/Shanghai'
+# 时区
+TIMEZONE: 'Asia/Shanghai'
 
 # 日志输出格式
 # 可选：
@@ -109,9 +109,6 @@ REDIS_TS_MIN_INTERVAL: 60     # 时间戳最小间隔（秒）
 
 # Worker 配置
 WORKER_QUEUE_ALIAS_MAP: cpu=9
-
-# Beat 配置
-BEAT_TICK_INTERVAL: 10
 
 # 是否禁用集成登录
 DISABLE_INTEGRATED_SIGNIN: false

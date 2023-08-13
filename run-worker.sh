@@ -14,4 +14,4 @@ fi
 
 # Run Worker
 echo "[STARTER] Run Worker"
-celery --app worker.app --quiet worker --loglevel ERROR
+python worker/app.py $*

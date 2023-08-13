@@ -3,19 +3,19 @@
 # Built-in Modules
 import os
 import sys
-import socket
-import simplejson as json
-import logging
 import time
+import socket
 import ssl
 import urllib
 
 # 3rd-party Modules
-from celery import Celery, signals
-import redis
-import psutil
+# Disable InsecureRequestWarning
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Project Modules
+from worker import run_background
 from worker.utils import yaml_resources, toolkit
 
 # Configure
@@ -24,93 +24,54 @@ CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'
 CONST      = yaml_resources.load_file('CONST', os.path.join(BASE_PATH, '../const.yaml'))
 IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
 
-WORKER_ID     = toolkit.gen_time_serial_seq()
-WORKER_QUEUES = None
-
-# For monitor
-MAIN_PROCESS = None
-
-CHILD_PROCESS_MAP = {} # PID -> Process
-
-MONITOR_HEARTBEAT_TIMESTAMP       = 0
-MONITOR_SYS_STATS_CHECK_TIMESTAMP = 0
-
+# Init
 from worker.app_init import before_app_create, after_app_created
-
-# Disable InsecureRequestWarning
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-# Celery
 before_app_create()
 
-app = Celery(quiet=True)
-app.config_from_object('worker.celeryconfig')
-
-# Redis config
-redis_auth = ''
-if CONFIG['REDIS_PASSWORD']:
-    if not CONFIG['REDIS_USER']:
-        # 没有用户名
-        redis_auth = f":{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
-
-    else:
-        # 用户名 + 密码
-        if CONFIG['REDIS_AUTH_TYPE'] == 'aliyun':
-            # 阿里云特殊认证方式
-            _user_pass = f"{CONFIG['REDIS_USER']}:{CONFIG['REDIS_PASSWORD']}"
-            redis_auth = f":{urllib.parse.quote(_user_pass)}@"
-
-        else:
-            # 默认认证方式
-            redis_auth = f"{urllib.parse.quote(CONFIG['REDIS_USER'])}:{urllib.parse.quote(CONFIG['REDIS_PASSWORD'])}@"
-
-redis_schema = 'redis://'
-ssl_options  = None
-if CONFIG['REDIS_USE_TLS']:
-    redis_schema = 'rediss://'
-    ssl_options = {
-        'ssl_cert_reqs': ssl.CERT_NONE,
-    }
-
-redis_url = f"{redis_schema}{redis_auth}{CONFIG['REDIS_HOST']}:{CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}"
-
-app.conf.update(
-    broker_url=redis_url,
-    broker_use_ssl=ssl_options,
-    result_backend=redis_url,
-    redis_backend_use_ssl=ssl_options)
-
-# Logger
 from worker.utils.log_helper import LogHelper
-WORKER_LOGGER = LogHelper()
-
-# Redis helper
 from worker.utils.extra_helpers import RedisHelper
-REDIS_HELPER = RedisHelper(logger=WORKER_LOGGER)
-REDIS_HELPER.skip_log = True
 
-# MySQL helper
-from worker.utils.extra_helpers import MySQLHelper
-MYSQL_HELPER = MySQLHelper(logger=WORKER_LOGGER)
-MYSQL_HELPER.skip_log = True
+LOGGER = LogHelper()
+REDIS  = RedisHelper(logger=LOGGER)
+REDIS.skip_log = True
 
-# Collect worker queues
-if 'worker' in sys.argv:
-    QUEUES_FLAG = '--queues'
-    if QUEUES_FLAG in sys.argv:
-        WORKER_QUEUES = sys.argv[sys.argv.index(QUEUES_FLAG) + 1].split(',')
-        WORKER_QUEUES = list([ q.split('@')[1] for q in WORKER_QUEUES ])
-    else:
-        WORKER_QUEUES = list([ str(q) for q in range(CONFIG['_WORKER_QUEUE_COUNT']) ])
+# 当前 Worker 监听队列
+LISTINGING_QUEUES = sys.argv[1:] or list(range(CONFIG['_WORKER_QUEUE_COUNT']))
 
-    listening_queues = ', '.join(map(lambda q: f'#{q}', WORKER_QUEUES))
-    print(f'Worker is listening on queues [ {listening_queues} ] (Press CTRL+C to quit)')
-    print(f'PID: {os.getpid()}')
+from worker.tasks import get_task
+
+def consume():
+    '''
+    消费队列中任务
+    '''
+    # 获取任务
+    cache_keys = list(map(lambda q: toolkit.get_worker_queue(q), LISTINGING_QUEUES))
+    _, task_req = map(lambda s: s.decode(), REDIS.brpop(cache_keys))
+    task_req = toolkit.json_loads(task_req)
+
+    # 生成任务对象
+    task = get_task(task_req['name'])
+    if not task:
+        return
+
+    task_instance = task.from_task_request(task_req)
+
+    # 执行任务
+    task_instance.start()
+
+if __name__ == '__main__':
+    # 打印提示信息
+    queues = ', '.join(map(lambda q: f'#{q}', LISTINGING_QUEUES))
+    pid = os.getpid()
+
+    print(f'Worker is listening on queues [ {queues} ] (Press CTRL+C to quit)')
+    print(f'PID: {pid}')
     print('Have fun!')
 
-    after_app_created(app)
+    # 启动后台
+    run_background(func=consume,
+                   pool_size=CONFIG['_WORKER_CONCURRENCY'],
+                   max_tasks=CONFIG['_WORKER_MAX_TASKS_PER_CHILD'])
 
 def heartbeat():
     global WORKER_QUEUES
@@ -184,6 +145,5 @@ def heartbeat():
         cache_key = toolkit.get_server_cache_key('monitor', 'systemMetrics', ['metric', 'workerMemoryPSS', 'hostname', hostname]);
         REDIS_HELPER.ts_add(cache_key, total_memory_pss, timestamp=current_timestamp)
 
-@signals.heartbeat_sent.connect
 def on_heartbeat_sent(**kwargs):
     heartbeat()

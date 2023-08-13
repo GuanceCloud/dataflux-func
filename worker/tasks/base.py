@@ -1,0 +1,313 @@
+# -*- coding: utf-8 -*-
+
+# Built-in Modules
+import time
+import signal
+import traceback
+
+# 3rd-party Modules
+import pprint
+
+# Project Modules
+from worker.utils import toolkit, yaml_resources
+from worker.utils.log_helper import LogHelper
+from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
+from worker.utils.extra_helpers.dataway import DataWay
+
+CONST  = yaml_resources.get('CONST')
+CONFIG = yaml_resources.get('CONFIG')
+
+GUANCE_DATA_DEFAULT_STATUS = 'info'
+GUANCE_DATA_STATUS_MAP = {
+    'success': 'ok',
+    'failure': 'critical',
+    'skip'   : 'warning',
+    'timeout': 'error'
+}
+
+class TaskInLockedException(Exception):
+    pass
+
+class TaskTimeoutException(Exception):
+    pass
+
+class BaseTask(object):
+    '''
+    Base task class
+    '''
+    # 名称
+    name = None
+
+    # 自动运行配置
+    crontab        = None
+    crontab_kwargs = None
+
+    # 运行队列
+    queue = 0
+
+    # 延迟执行
+    delay = None
+
+    # 过期时间
+    expires = 3600
+
+    # 运行限时
+    time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+
+    # 是否忽略结果
+    ignore_result = False
+
+    def __init__(self,
+                 task_id=None,
+                 kwargs=None,
+                 queue=None,
+                 delay=None,
+                 expires=None,
+                 time_limit=None,
+                 ignore_result=None,
+                 trigger_time=None):
+
+        self.task_id = task_id or toolkit.gen_data_id('task')
+        self.kwargs  = kwargs or dict()
+
+        self.trigger_time = trigger_time or int(time.time())
+        self.start_time   = None
+        self.end_time     = None
+
+        self.result      = None
+        self.error       = None
+        self.error_stack = None
+        self.status      = 'waiting'
+
+        if queue is not None:
+            self.queue = queue
+
+        if delay is not None:
+            self.trigger_time += delay
+            self.delay        =  delay
+
+        if expires is not None:
+            self.expires = expires
+
+        if time_limit is not None:
+            self.time_limit = time_limit
+
+        if ignore_result is not None:
+            self.ignore_result = ignore_result
+
+        # 任务锁
+        self._lock_key   = None
+        self._lock_value = None
+
+        # 关联组件
+        self.logger       = LogHelper(self)
+        self.db           = MySQLHelper(self.logger)
+        self.cache_db     = RedisHelper(self.logger)
+        self.file_storage = FileSystemHelper(self.logger)
+
+    @property
+    def system_settings(self):
+        return self._system_settings
+
+    def reload_system_settings(self):
+        system_setting_ids = [
+            'GUANCE_DATA_UPLOAD_ENABLED',
+            'GUANCE_DATA_UPLOAD_URL',
+            'GUANCE_DATA_SITE_NAME',
+        ]
+        sql = '''
+                SELECT
+                    id
+                    ,value
+                FROM wat_main_system_setting
+                WHERE
+                    id IN ( ? )
+                '''
+        sql_params = [ system_setting_ids ]
+        db_res = self.db.query(sql, sql_params)
+
+        system_settings = {}
+
+        # 默认值
+        for _id in system_setting_ids:
+            system_settings[_id] = CONST['systemSettings'][_id]
+
+        # 用户配置
+        for d in db_res:
+            system_settings[d['id']] = toolkit.json_loads(d['value'])
+
+        self._system_settings = system_settings
+
+    def lock(self, max_age=None):
+        max_age = int(max_age or 30)
+
+        lock_key   = toolkit.get_cache_key('lock', 'task', tags=[ 'task', self.name ])
+        lock_value = toolkit.gen_uuid()
+
+        if not self.cache_db.lock(lock_key, lock_value, max_age):
+            raise TaskInLockedException(f"Task `{self.name}` already launched.")
+
+        self._lock_key   = lock_key
+        self._lock_value = lock_value
+
+    def unlock(self):
+        if self._lock_key and self._lock_value:
+            self.cache_db.unlock(self._lock_key, self._lock_value)
+
+        self._lock_key   = None
+        self._lock_value = None
+
+    def set_info(self):
+        # 任务结束
+        if self.status not in ('waiting', 'pending'):
+            # 发布消息
+            cache_key = toolkit.get_cache_key('task', 'info', [ 'name', self.name, 'id', self.task_id ])
+
+            info = {
+                'name'  : self.name,
+                'id'    : self.task_id,
+                'kwargs': self.kwargs,
+
+                'triggerTime': self.trigger_time,
+                'startTime'  : self.start_time,
+                'endTime'    : self.end_time,
+
+                'result'    : self.result if not self.ignore_result else 'IGNORED',
+                'status'    : self.status,
+                'error'     : pprint.saferepr(self.error),
+                'errorStack': self.error_stack,
+            }
+            info_dumps = toolkit.json_dumps(info, ignore_nothing=True, indent=None)
+
+            self.cache_db.publish(cache_key, info_dumps)
+
+            # 自动解锁
+            self.unlock()
+
+    def create_task_request(self):
+        task_req = {
+            'name'  : self.name,
+            'id'    : self.task_id,
+            'kwargs': self.kwargs,
+
+            'triggerTime': self.trigger_time,
+
+            'queue'       : self.queue,
+            'delay'       : self.delay,
+            'expires'     : self.expires,
+            'timeLimit'   : self.time_limit,
+            'ignoreResult': self.ignore_result,
+        }
+        return task_req
+
+    @classmethod
+    def from_task_request(cls, task_req):
+        task_instance = cls(task_id=task_req.get('id'),
+                            kwargs=task_req.get('kwargs'),
+                            trigger_time=task_req.get('kwargs'),
+                            queue=task_req.get('queue'),
+                            delay=task_req.get('delay'),
+                            expires=task_req.get('expires'),
+                            time_limit=task_req.get('timeLimit'),
+                            ignore_result=task_req.get('ignoreResult'))
+        return task_instance
+
+    def handle_sigalarm(self, signum, frame):
+        e = TaskTimeoutException(f'Task Timeout')
+        raise e
+
+    def start(self):
+        # 任务信息
+        self.status     = 'pending'
+        self.start_time = int(time.time())
+        self.set_info()
+
+        # 加载系统配置
+        self.reload_system_settings()
+
+        if CONFIG['MODE'] == 'prod':
+            self.db.skip_log       = True
+            self.cache_db.skip_log = True
+
+        # 调用子类 run() 函数
+        result = None
+        try:
+            self.logger.debug(f'[CALL] {self.name}')
+
+            # 限制执行时长
+            signal.signal(signal.SIGALRM, self.handle_sigalarm)
+            signal.alarm(self.time_limit)
+
+            result = self.run(**self.kwargs)
+
+        except TaskInLockedException as e:
+            # 任务重复运行错误，认为正常结束即可
+            self.status = 'skip'
+            self.error  = e
+            self.logger.warning(self.error)
+
+        except TaskTimeoutException as e:
+            # 任务超时
+            self.status      = 'timeout'
+            self.error       = e
+            self.error_stack = traceback.format_exc()
+
+            for line in self.error_stack.splitlines():
+                self.logger.error(line)
+
+        except Exception as e:
+            # 其他错误
+            self.status      = 'failure'
+            self.error       = e
+            self.error_stack = traceback.format_exc()
+
+            for line in self.error_stack.splitlines():
+                self.logger.error(line)
+
+        else:
+            # 正常
+            self.status = 'success'
+            self.result = result
+
+        finally:
+            self.end_time = int(time.time())
+
+            # 记录任务信息
+            self.set_info()
+
+    def upload_guance_data(self, category, points):
+        self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(points)} {category} point(s)')
+
+        if not points:
+            return
+
+        points = toolkit.as_array(points)
+
+        upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
+        if not all([ upload_enabled, upload_url ]):
+            return
+
+        for p in points:
+            p['tags'] = p.get('tags') or {}
+
+            # 替换 tags.status 值为观测云风格
+            p['tags']['status'] = GUANCE_DATA_STATUS_MAP.get(p['tags']['status']) or GUANCE_DATA_DEFAULT_STATUS
+
+            # 添加 tags.site_name
+            site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
+            if site_name:
+                p['tags']['site_name'] = site_name
+
+        # 上报数据
+        try:
+            dataway = DataWay(url=upload_url)
+            status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=points)
+            if status_code > 200:
+                self.logger.error(resp_data)
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+            # 不要将错误抛出
