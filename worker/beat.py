@@ -28,14 +28,10 @@ LOGGER = LogHelper()
 REDIS  = RedisHelper(logger=LOGGER)
 REDIS.skip_log = True
 
-from worker.tasks import list_matched_crontab_tasks
+from worker.tasks import get_matched_crontab_task_instances
 
 class TickTimeoutException(Exception):
     pass
-
-def handle_sigalarm(self, signum, frame):
-    e = TickTimeoutException(f'Tick Timeout')
-    raise e
 
 def tick():
     '''
@@ -44,21 +40,19 @@ def tick():
     1. 获取已注册的，当前时间满足 Crontab 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
-    tick_time = time.time()
+    tick_time = toolkit.get_timestamp()
 
     # 限制执行时长
-    signal.signal(signal.SIGALRM, handle_sigalarm)
     signal.alarm(15)
 
     # 记录运行时间
     REDIS.incr(toolkit.get_cache_key('beat', 'tick'))
 
     # 分发配置了 Crontab 的任务
-    tasks = list_matched_crontab_tasks(tick_time, tz=CONFIG['TIMEZONE'])
-    for task in tasks:
+    task_instances = get_matched_crontab_task_instances(tick_time, tz=CONFIG['TIMEZONE'])
+    for task_inst in task_instances:
         # 创建任务请求
-        task_instance = task(trigger_time=tick_time)
-        task_req = task_instance.create_task_request()
+        task_req = task_inst.create_task_request()
         task_req_dumps = toolkit.json_dumps(task_req, ignore_nothing=True, indent=None)
 
         # 任务入队
@@ -87,7 +81,14 @@ def tick():
     wait_time = 1 - tick_time % 1
     time.sleep(wait_time)
 
+def handle_sigalarm(self, signum, frame):
+    e = TickTimeoutException(f'Tick Timeout')
+    raise e
+
 if __name__ == '__main__':
+    # 注册 SIGALRM 处理函数
+    signal.signal(signal.SIGALRM, handle_sigalarm)
+
     # 打印提示信息
     pid = os.getpid()
 

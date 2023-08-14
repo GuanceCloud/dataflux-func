@@ -3,7 +3,7 @@
 # Built-in Modules
 import os
 import sys
-import time
+import signal
 import socket
 import ssl
 import urllib
@@ -39,27 +39,41 @@ REDIS.skip_log = True
 LISTINGING_QUEUES = sys.argv[1:] or list(range(CONFIG['_WORKER_QUEUE_COUNT']))
 
 from worker.tasks import get_task
+from worker.tasks.base import TaskTimeoutException
 
 def consume():
     '''
     消费队列中任务
     '''
+    # 取消执行时长
+    signal.alarm(0)
+
     # 获取任务
     cache_keys = list(map(lambda q: toolkit.get_worker_queue(q), LISTINGING_QUEUES))
     _, task_req = map(lambda s: s.decode(), REDIS.brpop(cache_keys))
     task_req = toolkit.json_loads(task_req)
 
     # 生成任务对象
-    task = get_task(task_req['name'])
-    if not task:
+    task_cls = get_task(task_req['name'])
+    if not task_cls:
         return
 
-    task_instance = task.from_task_request(task_req)
+    task_inst = task_cls.from_task_request(task_req)
+
+    # 限制执行时长
+    signal.alarm(task_inst.time_limit)
 
     # 执行任务
-    task_instance.start()
+    task_inst.start()
+
+def handle_sigalarm(signum, frame):
+    e = TaskTimeoutException(f'Task Timeout')
+    raise e
 
 if __name__ == '__main__':
+    # 注册 SIGALRM 处理函数
+    signal.signal(signal.SIGALRM, handle_sigalarm)
+
     # 打印提示信息
     queues = ', '.join(map(lambda q: f'#{q}', LISTINGING_QUEUES))
     pid = os.getpid()

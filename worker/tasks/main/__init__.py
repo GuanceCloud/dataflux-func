@@ -23,8 +23,8 @@ from croniter import croniter
 import funcsigs
 
 # Project Modules
-from worker.app import app
-from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
+from worker.tasks.base import BaseTask
+# from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
@@ -142,8 +142,8 @@ class ConfigUnaccessableException(DataFluxFuncBaseException):
 
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
-        self.exported_api_funcs = []
-        self.log_messages       = []
+        self.apis         = []
+        self.log_messages = []
 
         self.inject_funcs = inject_funcs
 
@@ -158,24 +158,6 @@ class DFFWraper(object):
 
         else:
             return self.inject_funcs.get(name)
-
-def gen_script_failure_id():
-    '''
-    生成脚本故障 ID
-    '''
-    return toolkit.gen_data_id('sfal')
-
-def gen_script_log_id():
-    '''
-    生成脚本日志 ID
-    '''
-    return toolkit.gen_data_id('slog')
-
-def gen_connector_id():
-    '''
-    生成连接器 ID
-    '''
-    return toolkit.gen_data_id('cnct')
 
 def compute_func_store_id(key, scope):
     '''
@@ -1017,16 +999,16 @@ class ToolkitWrap(object):
     match_wildcard       = toolkit.match_wildcard
     match_wildcards      = toolkit.match_wildcards
 
-class ScriptBaseTask(BaseTask):
-    def __call__(self, *args, **kwargs):
+class FuncBaseTask(BaseTask):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.__context_helper = FuncContextHelper(self)
 
         self.__loaded_script_cache   = toolkit.LocalCache()
         self.__imported_module_cache = toolkit.LocalCache()
 
         self.__prev_log_time = 0
-
-        return super().__call__(*args, **kwargs)
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1307,7 +1289,7 @@ class ScriptBaseTask(BaseTask):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
 
             # 记录至已导出函数列表
-            safe_scope['DFF'].exported_api_funcs.append({
+            safe_scope['DFF'].apis.append({
                 'name'       : f_name,
                 'title'      : title,
                 'description': f_doc,
@@ -1318,7 +1300,7 @@ class ScriptBaseTask(BaseTask):
                 'args'       : f_args,
                 'kwargs'     : f_kwargs,
                 'integration': integration,
-                'defOrder'   : len(safe_scope['DFF'].exported_api_funcs),
+                'defOrder'   : len(safe_scope['DFF'].apis),
             })
 
             @functools.wraps(F)
@@ -1791,15 +1773,15 @@ class ScriptBaseTask(BaseTask):
 
         return '\n'.join(lines)
 
-from worker.tasks.main.func_debugger   import func_debugger
-from worker.tasks.main.func_runner     import func_runner
-from worker.tasks.main.crontab_starter import crontab_starter
+# from worker.tasks.main.func_debugger   import func_debugger
+# from worker.tasks.main.func_runner     import func_runner
+# from worker.tasks.main.crontab_starter import crontab_starter
 
-from worker.tasks.main.utils import reload_data_md5_cache
-from worker.tasks.main.utils import sync_cache
-from worker.tasks.main.utils import auto_clean
-from worker.tasks.main.utils import auto_run
-from worker.tasks.main.utils import check_connector
-from worker.tasks.main.utils import query_connector
-from worker.tasks.main.utils import reset_worker_queue_pressure
-from worker.tasks.main.utils import auto_backup_db
+# from worker.tasks.main.utils import reload_data_md5_cache
+# from worker.tasks.main.utils import sync_cache
+# from worker.tasks.main.utils import auto_clean
+# from worker.tasks.main.utils import auto_run
+# from worker.tasks.main.utils import check_connector
+# from worker.tasks.main.utils import query_connector
+# from worker.tasks.main.utils import reset_worker_queue_pressure
+# from worker.tasks.main.utils import auto_backup_db

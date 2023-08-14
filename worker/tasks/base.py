@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
-import time
 import signal
 import traceback
 
@@ -38,30 +37,23 @@ class BaseTask(object):
     # 名称
     name = None
 
-    # 自动运行配置
-    crontab        = None
-    crontab_kwargs = None
+    # 默认运行队列
+    default_queue = 0
 
-    # 运行队列
-    queue = 0
+    # 默认过期时间
+    default_expires = 3600
 
-    # 延迟执行
-    delay = None
+    # 默认运行限时
+    default_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
 
-    # 过期时间
-    expires = 3600
-
-    # 运行限时
-    time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
-
-    # 是否忽略结果
-    ignore_result = False
+    # 默认是否忽略结果
+    default_ignore_result = False
 
     def __init__(self,
                  task_id=None,
                  kwargs=None,
-                 queue=None,
                  delay=None,
+                 queue=None,
                  expires=None,
                  time_limit=None,
                  ignore_result=None,
@@ -70,7 +62,7 @@ class BaseTask(object):
         self.task_id = task_id or toolkit.gen_data_id('task')
         self.kwargs  = kwargs or dict()
 
-        self.trigger_time = trigger_time or int(time.time())
+        self.trigger_time = trigger_time or toolkit.get_timestamp()
         self.start_time   = None
         self.end_time     = None
 
@@ -79,12 +71,20 @@ class BaseTask(object):
         self.error_stack = None
         self.status      = 'waiting'
 
+        # 默认配置
+        self.delay         = 0
+        self.queue         = self.default_queue
+        self.expires       = self.default_expires
+        self.time_limit    = self.default_time_limit
+        self.ignore_result = self.default_ignore_result
+
+        # 实例指定配置
+        if delay is not None:
+            self.delay        =  delay
+            self.trigger_time += delay
+
         if queue is not None:
             self.queue = queue
-
-        if delay is not None:
-            self.trigger_time += delay
-            self.delay        =  delay
 
         if expires is not None:
             self.expires = expires
@@ -202,24 +202,20 @@ class BaseTask(object):
 
     @classmethod
     def from_task_request(cls, task_req):
-        task_instance = cls(task_id=task_req.get('id'),
+        task_inst = cls(task_id=task_req.get('id'),
                             kwargs=task_req.get('kwargs'),
-                            trigger_time=task_req.get('kwargs'),
+                            trigger_time=task_req.get('triggerTime'),
                             queue=task_req.get('queue'),
                             delay=task_req.get('delay'),
                             expires=task_req.get('expires'),
                             time_limit=task_req.get('timeLimit'),
                             ignore_result=task_req.get('ignoreResult'))
-        return task_instance
-
-    def handle_sigalarm(self, signum, frame):
-        e = TaskTimeoutException(f'Task Timeout')
-        raise e
+        return task_inst
 
     def start(self):
         # 任务信息
         self.status     = 'pending'
-        self.start_time = int(time.time())
+        self.start_time = toolkit.get_timestamp()
         self.set_info()
 
         # 加载系统配置
@@ -233,11 +229,6 @@ class BaseTask(object):
         result = None
         try:
             self.logger.debug(f'[CALL] {self.name}')
-
-            # 限制执行时长
-            signal.signal(signal.SIGALRM, self.handle_sigalarm)
-            signal.alarm(self.time_limit)
-
             result = self.run(**self.kwargs)
 
         except TaskInLockedException as e:
@@ -270,7 +261,7 @@ class BaseTask(object):
             self.result = result
 
         finally:
-            self.end_time = int(time.time())
+            self.end_time = toolkit.get_timestamp()
 
             # 记录任务信息
             self.set_info()

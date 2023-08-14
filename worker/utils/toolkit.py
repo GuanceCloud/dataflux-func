@@ -112,7 +112,7 @@ def gen_data_id(prefix=None):
 
 def gen_time_serial_seq(d=None, rand_length=4):
     if not d:
-        d = time.time()
+        d = get_timestamp()
     elif isinstance(d, datetime.datetime):
         d = time.mktime(d.timetuple())
 
@@ -289,6 +289,12 @@ def is_none_or_white_space(o):
 def no_none_or_white_space(o):
     return dict([(k,v) for k, v in o.items() if not is_none_or_white_space(v)])
 
+def get_timestamp(ndigits=3):
+    return round(time.time(), ndigits)
+
+def get_timestamp_ms():
+    return int(time.time() * 1000)
+
 def get_date_string(d=None, f=None):
     if not d:
         d = time.time()
@@ -303,7 +309,7 @@ def get_date_string(d=None, f=None):
 
 def get_time_string(d=None, f=None):
     if not d:
-        d = time.time()
+        d = get_timestamp()
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -315,7 +321,7 @@ def get_time_string(d=None, f=None):
 
 def get_datetime_string(d=None, f=None):
     if not d:
-        d = time.time()
+        d = get_timestamp()
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -386,11 +392,11 @@ def to_boolean(o):
 
 def is_past_datetime(d):
     ts = to_unix_timestamp(d)
-    return ts > time.time()
+    return ts > get_timestamp()
 
 def get_days_from_now(d):
     ts = to_unix_timestamp(d)
-    days = float(ts - time.time()) / 3600 / 24
+    days = float(ts - get_timestamp()) / 3600 / 24
     return days
 
 def get_md5(s):
