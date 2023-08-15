@@ -53,19 +53,22 @@ class FuncDebuggerTask(FuncBaseTask):
             if isinstance(e, TaskTimeoutException):
                 status = 'timeout'
 
+            # 由于任务本身始终成功，此处需要手工输出堆栈到日志（warning）
             for line in traceback.format_exc().splitlines():
                 self.logger.warning(line)
 
+            # 搜集错误堆栈
             error_stack = self.get_error_stack()
 
         else:
             status = 'success'
 
         finally:
-            apis             = []
-            log_messages     = []
             return_value     = None
             response_control = None
+
+            apis         = []
+            log_messages = []
 
             if self.script_scope:
                 # 脚本解析结果
@@ -90,14 +93,14 @@ class FuncDebuggerTask(FuncBaseTask):
 
             # 准备返回值
             result = {
-                'apis'       : apis,
-                'status'     : status,
-                'logMessage' : log_messages,
-                'errorStack' : error_stack,
-                'returnValue': return_value,
-
+                'returnValue'    : return_value,
                 'responseControl': response_control,
 
+                'apis'      : apis,
+                'logMessage': log_messages,
+
+                'status'         : status,
+                'errorStack'     : error_stack,
                 'cost'           : toolkit.get_timestamp() - self.start_time,
                 'peakMemroyUsage': None,
             }

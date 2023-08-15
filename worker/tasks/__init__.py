@@ -260,9 +260,11 @@ class BaseTask(object):
 
         except TaskTimeoutException as e:
             # 任务超时
-            self.status      = 'timeout'
-            self.error       = e
-            self.error_stack = traceback.format_exc()
+            self.status = 'timeout'
+
+            # 可替换错误信息、堆栈信息
+            self.error       = self.error       or e
+            self.error_stack = self.error_stack or traceback.format_exc()
 
             for line in self.error_stack.splitlines():
                 self.logger.error(line)

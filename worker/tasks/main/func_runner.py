@@ -160,9 +160,6 @@ class FuncRunnerTask(FuncBaseTask):
     def run(self, **kwargs):
         super().run(**kwargs)
 
-        # 被强行 Kill 时，不会进入 except 范围，所以默认指定为 "failure"
-        status = 'failure'
-
         # 用于函数缓存
         self.func_call_kwargs_md5 = kwargs.get('funcCallKwargsMD5')
 
@@ -192,81 +189,69 @@ class FuncRunnerTask(FuncBaseTask):
                 func_resp.cache_to_file(self.cache_result_expires or 0)
 
         except Exception as e:
-            status = 'failure'
-
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
-
-
-            self.logger.error('Error occured in script. `{}`'.format(func_id))
-
-            trace_info = self.get_trace_info()
-            einfo_text = self.get_formated_einfo(trace_info, only_in_script=True)
-            edump_text = trace_info.get('exceptionDump')
+            # 替换默认错误堆栈
+            self.error_stack = self.get_error_stack()
 
             raise
 
         else:
-            status = 'success'
-
             # 准备函数运行结果
-            func_result_raw        = None
-            func_result_repr       = None
-            func_result_json_dumps = None
+            return_value     = None
+            response_control = func_resp.make_response_control()
 
             if func_resp.data is not None:
+                return_value = {}
+
                 try:
-                    func_result_raw = func_resp.data
+                    return_value['raw'] = func_resp.data
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
 
                 try:
-                    func_result_repr = pprint.saferepr(func_resp.data)
+                    return_value['repr'] = pprint.saferepr(func_resp.data)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
 
                 try:
-                    func_result_json_dumps = toolkit.json_dumps(func_resp.data)
+                    return_value['json_dumps'] = toolkit.json_dumps(func_resp.data)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)
 
+            # 准备返回值
             result = {
-                'raw'      : func_result_raw,
-                'repr'     : func_result_repr,
-                'jsonDumps': func_result_json_dumps,
-
-                '_responseControl': func_resp.make_response_control()
+                'returnValue'    : return_value,
+                'responseControl': response_control,
             }
 
-            # 记录函数运行结果
-            if save_result:
-                args = (
-                    self.request.id,
-                    self.name,
-                    self.request.origin,
-                    self.request.x_start_time,
-                    int(time.time()),
-                    self.request.args,
-                    self.request.kwargs,
-                    result,
-                    celery_status.SUCCESS,
-                    None
-                )
-                result_task_id = '{}-RESULT'.format(self.request.id)
-                result_saving_task.apply_async(task_id=result_task_id, args=args)
+            # # 记录函数运行结果
+            # if save_result:
+            #     args = (
+            #         self.request.id,
+            #         self.name,
+            #         self.request.origin,
+            #         self.request.x_start_time,
+            #         int(time.time()),
+            #         self.request.args,
+            #         self.request.kwargs,
+            #         result,
+            #         celery_status.SUCCESS,
+            #         None
+            #     )
+            #     result_task_id = '{}-RESULT'.format(self.request.id)
+            #     result_saving_task.apply_async(task_id=result_task_id, args=args)
 
-            # 缓存函数运行结果
-            if cache_result_expires:
-                self.cache_func_result(
-                    func_id=func_id,
-                    script_code_md5=target_script['codeMD5'],
-                    script_publish_version=target_script['publishVersion'],
-                    func_call_kwargs_md5=func_call_kwargs_md5,
-                    result=result,
-                    cache_result_expires=cache_result_expires)
+            # # 缓存函数运行结果
+            # if cache_result_expires:
+            #     self.cache_func_result(
+            #         func_id=func_id,
+            #         script_code_md5=target_script['codeMD5'],
+            #         script_publish_version=target_script['publishVersion'],
+            #         func_call_kwargs_md5=func_call_kwargs_md5,
+            #         result=result,
+            #         cache_result_expires=cache_result_expires)
 
             # 返回函数结果
             return result
@@ -278,38 +263,38 @@ class FuncRunnerTask(FuncBaseTask):
             if crontab_lock_key and crontab_lock_value:
                 self.cache_db.unlock(crontab_lock_key, crontab_lock_value)
 
-            # 记录脚本日志
-            if script_scope:
-                log_messages = script_scope['DFF'].log_messages or None
+            # # 记录脚本日志
+            # if script_scope:
+            #     log_messages = script_scope['DFF'].log_messages or None
 
-            # 记录函数运行故障
-            if status == 'failure':
-                trace_info = trace_info or self.get_trace_info()
-                einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
+            # # 记录函数运行故障
+            # if status == 'failure':
+            #     trace_info = trace_info or self.get_trace_info()
+            #     einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
 
-            # 记录函数运行信息
-            self.cache_running_info(
-                func_id=func_id,
-                script_publish_version=target_script['publishVersion'],
-                exec_mode=exec_mode,
-                is_failed=(status == 'failure'),
-                cost=int(time.time() * 1000) - start_time_ms)
+            # # 记录函数运行信息
+            # self.cache_running_info(
+            #     func_id=func_id,
+            #     script_publish_version=target_script['publishVersion'],
+            #     exec_mode=exec_mode,
+            #     is_failed=(status == 'failure'),
+            #     cost=int(time.time() * 1000) - start_time_ms)
 
-            # 缓存任务状态
-            self.cache_task_info(
-                origin=origin,
-                origin_id=origin_id,
-                exec_mode=exec_mode,
-                status=status,
-                trigger_time_ms=trigger_time_ms,
-                start_time_ms=start_time_ms,
-                root_task_id=root_task_id,
-                func_id=func_id,
-                func_call_kwargs=func_call_kwargs,
-                log_messages=log_messages,
-                einfo_text=einfo_text,
-                edump_text=edump_text,
-                task_info_limit=task_info_limit)
+            # # 缓存任务状态
+            # self.cache_task_info(
+            #     origin=origin,
+            #     origin_id=origin_id,
+            #     exec_mode=exec_mode,
+            #     status=status,
+            #     trigger_time_ms=trigger_time_ms,
+            #     start_time_ms=start_time_ms,
+            #     root_task_id=root_task_id,
+            #     func_id=func_id,
+            #     func_call_kwargs=func_call_kwargs,
+            #     log_messages=log_messages,
+            #     einfo_text=einfo_text,
+            #     edump_text=edump_text,
+            #     task_info_limit=task_info_limit)
 
             # 清理资源
             self.clean_up()
