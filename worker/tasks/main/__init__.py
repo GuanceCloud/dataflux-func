@@ -23,8 +23,7 @@ from croniter import croniter
 import funcsigs
 
 # Project Modules
-from worker.tasks.base import BaseTask
-# from worker.tasks import BaseTask, BaseResultSavingTask, gen_task_id
+from worker.tasks import BaseTask
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
@@ -175,7 +174,7 @@ def decipher_connector_config_fields(config):
     config = toolkit.json_copy(config)
 
     for f in CONNECTOR_CIPHER_FIELDS:
-        f_cipher = '{}Cipher'.format(f)
+        f_cipher = f'{f}Cipher'
 
         if config.get(f_cipher):
             try:
@@ -210,10 +209,10 @@ class FuncThreadHelper(object):
             FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
 
         key = key or toolkit.gen_data_id('async')
-        self.__task.logger.debug('[THREAD POOL] Submit Key=`{0}`'.format(key))
+        self.__task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
 
         if key in self.result_map:
-            e = ThreadResultKeyDuplicatedException('Thread result key already existed: `{0}`'.format(key))
+            e = ThreadResultKeyDuplicatedException(f'Thread result key already existed: `{key}`')
             raise e
 
         args   = args   or []
@@ -661,7 +660,7 @@ class FuncConnectorHelper(object):
         for k in CONNECTOR_CIPHER_FIELDS:
             v = config.get(k)
             if v is not None:
-                config['{}Cipher'.format(k)] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
+                config[f'{k}Cipher'] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
             config.pop(k, None)
 
         config_json = toolkit.json_dumps(config)
@@ -844,7 +843,7 @@ class FuncConfigHelper(object):
 
     def get(self, config_id, default=None):
         if not config_id.startswith('CUSTOM_'):
-            e = ConfigUnaccessableException('Config `{}` is not accessible'.format(config_id))
+            e = ConfigUnaccessableException(f'Config `{config_id}` is not accessible')
             raise e
 
         if config_id in CONFIG:
@@ -859,66 +858,82 @@ class FuncConfigHelper(object):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
 class BaseFuncResponse(object):
-    def __init__(self, data=None, file_path=None, status_code=None, content_type=None, headers=None, allow_304=False, auto_delete_file=False, download_file=True):
-        self.data             = data             # 返回数据
-        self.file_path        = file_path        # 返回文件（资源目录下相对路径）
-        self.status_code      = status_code      # HTTP响应码
-        self.content_type     = content_type     # HTTP响应体类型
-        self.headers          = headers or {}    # HTTP响应头
-        self.allow_304        = allow_304        # 是否允许304缓存
-        self.auto_delete_file = auto_delete_file # 是否响应后自动删除文件文件
-        self.download_file    = download_file    # 是否下载文件
+    def __init__(self,
+                 data=None,
+                 file_path=None,
+                 status_code=None,
+                 content_type=None,
+                 headers=None,
+                 allow_304=False,
+                 auto_delete=False,
+                 download=True):
+        self.data         = data          # 返回数据
+        self.file_path    = file_path     # 返回文件（资源目录下相对路径）
+        self.status_code  = status_code   # HTTP响应码
+        self.content_type = content_type  # HTTP响应体类型
+        self.headers      = headers or {} # HTTP响应头
+        self.allow_304    = allow_304     # 是否允许304缓存
+        self.auto_delete  = auto_delete   # 是否响应后自动删除文件文件
+        self.download     = download      # 是否响应为文件下载
 
         # 检查待下载的文件是否存在
         if self.file_path:
             if not os.path.isfile(get_resource_path(self.file_path)):
-                e = Exception('No such file in Resource folder: {}'.format(self.file_path))
+                e = Exception(f'No such file in Resource folder: {self.file_path}')
                 raise e
 
     def make_response_control(self):
         response_control = {
-            'statusCode'  : self.status_code,
-            'contentType' : self.content_type,
-            'headers'     : self.headers,
-            'allow304'    : self.allow_304,
-            'downloadFile': self.download_file,
+            'statusCode' : self.status_code,
+            'contentType': self.content_type,
+            'headers'    : self.headers,
+            'allow304'   : self.allow_304,
+            'download'   : self.download,
         }
 
         if self.file_path:
-            response_control['filePath']       = self.file_path
-            response_control['autoDeleteFile'] = self.auto_delete_file
+            response_control['filePath']   = self.file_path
+            response_control['autoDelete'] = self.auto_delete
+
+        response_control = toolkit.no_none_or_white_space(response_control)
 
         return response_control
 
 class FuncResponse(BaseFuncResponse):
-    def __init__(self, data, status_code=None, content_type=None, headers=None, allow_304=False, download=False):
+    def __init__(self,
+                 data,
+                 status_code=None,
+                 content_type=None,
+                 headers=None,
+                 allow_304=False,
+                 download=False):
         try:
             # 尝试序列化返回值
             toolkit.json_dumps(data, indent=None)
         except Exception as e:
-            data = Exception('Func Response cannot been serialized: {0}'.format(str(e)))
+            data = Exception(f'Func Response cannot been serialized: {e}')
 
-        kwargs = {
-            'data'         : data,
-            'status_code'  : status_code,
-            'content_type' : content_type,
-            'headers'      : headers,
-            'allow_304'    : allow_304,
-            'download_file': download,
-        }
-        super().__init__(**kwargs)
+        super().__init__(data=data,
+                         status_code=status_code,
+                         content_type=content_type,
+                         headers=headers,
+                         allow_304=allow_304,
+                         download=download)
 
 class FuncResponseFile(BaseFuncResponse):
-    def __init__(self, file_path, status_code=None, headers=None, allow_304=False, auto_delete=False, download=True):
-        kwargs = {
-            'file_path'       : file_path,
-            'status_code'     : status_code,
-            'headers'         : headers,
-            'allow_304'       : allow_304,
-            'auto_delete_file': auto_delete,
-            'download_file'   : download,
-        }
-        super().__init__(**kwargs)
+    def __init__(self,
+                 file_path,
+                 status_code=None,
+                 headers=None,
+                 allow_304=False,
+                 auto_delete=False,
+                 download=True):
+        super().__init__(file_path=file_path,
+                         status_code=status_code,
+                         headers=headers,
+                         allow_304=allow_304,
+                         auto_delete=auto_delete,
+                         download=download)
 
 class FuncResponseLargeData(BaseFuncResponse):
     def __init__(self, data, content_type=None):
@@ -931,39 +946,35 @@ class FuncResponseLargeData(BaseFuncResponse):
         if not isinstance(data, str):
             data = toolkit.json_dumps(data)
 
-        self._content_type = content_type
-        self._data         = data
+        self.tmp_file_ext  = content_type
+        self.tmp_file_data = data
 
-        kwargs = {
-            'auto_delete_file': True,
-            'download_file'   : False,
-        }
-        super().__init__(**kwargs)
+        super().__init__(auto_delete=True, download=False)
 
-    def cache_to_file(self, auto_delete=True, cache_expires=0):
-        cache_expires = cache_expires or 0
+    def cache_to_file(self, cache_expires=0):
+        # 保证至少 60 秒缓存缓存
+        if cache_expires < 60:
+            cache_expires = 60
 
-        # 保证至少60秒缓存事件
-        now = time.time() + max([cache_expires, 60])
+        tmp_dir    = CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER']
+        expire_tag = arrow.get(time.time() + cache_expires).format('YYYYMMDDHHmmss')
+        rand_tag   = toolkit.gen_rand_string(16)
 
-        file_name = f"{arrow.get(now).format('YYYYMMDDHHmmss')}_{toolkit.gen_rand_string(16)}_api-resp.{self._content_type}"
-        file_path = os.path.join(CONFIG.get('DOWNLOAD_TEMP_ROOT_FOLDER'), file_name)
-        with open(get_resource_path(file_path), 'w') as _f:
-            _f.write(self._data)
+        tmp_file_path = f"{tmp_dir}/{expire_tag}_{rand_tag}_api-resp.{self.tmp_file_ext}"
+        with open(get_resource_path(tmp_file_path), 'w') as _f:
+            _f.write(self.tmp_file_data)
 
-        self.file_path        = file_path
-        self.auto_delete_file = auto_delete
+        self.file_path = tmp_file_path
 
 class FuncRedirect(FuncResponse):
     def __init__(self, url):
-        html = f'<a href="{url}">Redirect</a>'
-        kwargs = {
-            'data'        : html,
-            'status_code' : 302,
-            'content_type': 'html',
-            'headers'     : { 'Location': url }
-        }
-        super().__init__(**kwargs)
+        data    = f'<a href   = "{url}">Redirect</a>'
+        headers = { 'Location': url }
+
+        super().__init__(data=data,
+                         status_code=302,
+                         content_type='html',
+                         headers=headers)
 
 class ToolkitWrap(object):
     gen_uuid             = toolkit.gen_uuid
@@ -1010,6 +1021,45 @@ class FuncBaseTask(BaseTask):
 
         self.__prev_log_time = 0
 
+        # 函数 ID
+        self.func_id = self.kwargs.get('funcId')
+
+        # 函数调用参数
+        self.func_call_kwargs = self.kwargs.get('funcCallKwargs') or {}
+
+        # 脚本集 ID，脚本 ID，脚本名，函数名
+        if '.' in self.func_id:
+            self.script_id, self.func_name = self.func_id.split('.', maxsplit=1)
+        else:
+            self.script_id, self.func_name = self.func_id, None
+
+        self.script_set_id, self.script_name = self.script_id.split('__', maxsplit=1)
+
+        # 执行模式
+        self.exec_mode = self.kwargs.get('execMode') or 'sync'
+
+        # 任务来源
+        self.origin    = self.kwargs.get('origin')
+        self.origin_id = self.kwargs.get('originId')
+
+        # 主任务 ID
+        self.root_task_id = self.kwargs.get('rootTaskId') or 'ROOT'
+
+        # 函数链
+        self.func_chain = self.kwargs.get('funcChain') or []
+        self.func_chain.append(self.func_id)
+
+        # HTTP请求
+        self.http_request = self.kwargs.get('httpRequest') or {}
+        if 'headers' in self.http_request:
+            self.http_request['headers'] = toolkit.IgnoreCaseDict(self.http_request['headers'])
+
+        # 脚本信息
+        self.script_info = None
+
+        # 脚本环境
+        self.script_scope = None
+
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1021,7 +1071,7 @@ class FuncBaseTask(BaseTask):
             f_doc = inspect.cleandoc(f_doc)
 
         f_sig = funcsigs.signature(F)
-        f_def = '{}{}'.format(f_name, str(f_sig)).strip()
+        f_def = f'{f_name}{f_sig}'.strip()
 
         f_argspec = None
         f_args    = None
@@ -1033,16 +1083,16 @@ class FuncBaseTask(BaseTask):
 
         f_args = f_argspec.args
         if f_argspec.varargs:
-            f_args.append('*{}'.format(f_argspec.varargs))
+            f_args.append(f'*{f_argspec.varargs}')
         if f_argspec.varkw:
-            f_args.append('**{}'.format(f_argspec.varkw))
+            f_args.append(f'**{f_argspec.varkw}')
 
         for arg_name, args_info in f_sig.parameters.items():
             if str(args_info.kind) == 'VAR_POSITIONAL':
-                f_kwargs['*{}'.format(arg_name)] = {}
+                f_kwargs[f'*{arg_name}'] = {}
 
             elif str(args_info.kind) == 'VAR_KEYWORD':
-                f_kwargs['**{}'.format(arg_name)] = {}
+                f_kwargs[f'**{arg_name}'] = {}
 
             elif str(args_info.kind) == 'POSITIONAL_OR_KEYWORD':
                 f_kwargs[arg_name] = {}
@@ -1067,7 +1117,7 @@ class FuncBaseTask(BaseTask):
             if o:
                 globals[import_name] = o
             else:
-                e = Exception('CustomImport: Cannot import name `{}`'.format(import_name))
+                e = Exception(f'CustomImport: Cannot import name `{import_name}`')
                 raise e
 
     def _custom_import(self, name, globals=None, locals=None, fromlist=None, level=0, parent_scope=None):
@@ -1184,7 +1234,7 @@ class FuncBaseTask(BaseTask):
             _min_timeout = CONFIG['_FUNC_TASK_MIN_TIMEOUT']
             _max_timeout = CONFIG['_FUNC_TASK_MAX_TIMEOUT']
             if not (_min_timeout <= timeout <= _max_timeout):
-                e = InvalidAPIOptionException('`timeout` should be between `{}` and `{}` (seconds)'.format(_min_timeout, _max_timeout))
+                e = InvalidAPIOptionException(f'`timeout` should be between `{_min_timeout}` and `{_max_timeout}` (seconds)')
                 raise e
 
             extra_config['timeout'] = timeout
@@ -1198,7 +1248,7 @@ class FuncBaseTask(BaseTask):
             _min_api_timeout = CONFIG['_FUNC_TASK_MIN_API_TIMEOUT']
             _max_api_timeout = CONFIG['_FUNC_TASK_MAX_API_TIMEOUT']
             if not (_min_api_timeout <= api_timeout <= _max_api_timeout):
-                e = InvalidAPIOptionException('`api_timeout` should be between `{}` and `{}` (seconds)'.format(_min_api_timeout, _max_api_timeout))
+                e = InvalidAPIOptionException(f'`api_timeout` should be between `{_min_api_timeout}` and `{_max_api_timeout}` (seconds)')
                 raise e
 
             extra_config['apiTimeout'] = api_timeout
@@ -1215,7 +1265,7 @@ class FuncBaseTask(BaseTask):
         if queue is not None:
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])) + list(CONFIG['WORKER_QUEUE_ALIAS_MAP'].keys())
             if queue not in available_queues:
-                e = InvalidAPIOptionException('`queue` should be one of {}'.format(toolkit.json_dumps(available_queues)))
+                e = InvalidAPIOptionException(f'`queue` should be one of {toolkit.json_dumps(available_queues)}')
                 raise e
 
             extra_config['queue'] = queue
@@ -1229,7 +1279,7 @@ class FuncBaseTask(BaseTask):
             _min_task_info_limit = CONFIG['_TASK_INFO_MIN_LIMIT']
             _max_task_info_limit = CONFIG['_TASK_INFO_MAX_LIMIT']
             if not (_min_task_info_limit <= fixed_task_info_limit <= _max_task_info_limit):
-                e = InvalidAPIOptionException('`fixed_task_info_limit` should be between `{}` and `{}` (tasks)'.format(_min_task_info_limit, _max_task_info_limit))
+                e = InvalidAPIOptionException(f'`fixed_task_info_limit` should be between `{_min_task_info_limit}` and `{_max_task_info_limit}` (tasks)')
                 raise e
 
             extra_config['fixedTaskInfoLimit'] = fixed_task_info_limit
@@ -1334,7 +1384,7 @@ class FuncBaseTask(BaseTask):
             delta = int((now - self.__prev_log_time) * 1000)
         self.__prev_log_time = now
 
-        line = '[{}] [+{}ms] {}'.format(message_time, delta, message)
+        line = f'[{message_time}] [+{delta}ms] {message}'
         safe_scope['DFF'].log_messages.append(line)
 
     def _print(self, safe_scope, *args, **kwargs):
@@ -1344,7 +1394,7 @@ class FuncBaseTask(BaseTask):
         try:
             value_list = []
             for arg in args:
-                value_list.append('{}'.format(arg))
+                value_list.append(f'{arg}')
 
             sep = kwargs.get('sep') or ' '
             message = sep.join(value_list)
@@ -1357,7 +1407,7 @@ class FuncBaseTask(BaseTask):
 
     def _call_func(self, safe_scope, func_id, kwargs=None, save_result=False):
         func_chain = safe_scope.get('_DFF_FUNC_CHAIN') or []
-        func_chain_info = ' -> '.join(map(lambda x: '`{}`'.format(x), func_chain))
+        func_chain_info = ' -> '.join(map(lambda x: f'`{x}`', func_chain))
 
         # 检查函数链长度
         if len(func_chain) >= CONFIG['_FUNC_TASK_MAX_CHAIN_LENGTH']:
@@ -1366,7 +1416,7 @@ class FuncBaseTask(BaseTask):
 
         # 检查重复调用
         if func_id in func_chain:
-            e = FuncRecursiveCallException('{} -> [{}]'.format(func_chain_info, func_id))
+            e = FuncRecursiveCallException(f'{func_chain_info} -> [{func_id}]')
             raise e
 
         # 检查并获取函数信息
@@ -1436,6 +1486,9 @@ class FuncBaseTask(BaseTask):
             soft_time_limit=soft_time_limit,
             time_limit=time_limit,
             expires=expires)
+
+    def run(self, **kwargs):
+        self.logger.info(f'{self.name} Task launched. Func ID: `{self.func_id}`')
 
     def load_script(self, script_id, draft=False):
         '''
@@ -1554,23 +1607,37 @@ class FuncBaseTask(BaseTask):
 
         return script
 
-    def create_safe_scope(self, script_name=None, extra_vars=None):
+    def create_safe_scope(self, script_name=None, debug=False):
         '''
         创建安全脚本作用域
         '''
         safe_scope = {
-            '__name__'    : script_name or '<script>',
-            '__file__'    : script_name or '<script>',
-            '__builtins__': {},
+            '__name__' : script_name or '<script>',
+            '__file__' : script_name or '<script>',
+
+            # DataFlux Func 内置变量
+            '_DFF_DEBUG'          : debug,
+            '_DFF_TASK_ID'        : self.task_id,
+            '_DFF_ROOT_TASK_ID'   : self.root_task_id,
+            '_DFF_SCRIPT_SET_ID'  : self.script_set_id,
+            '_DFF_SCRIPT_ID'      : self.script_id,
+            '_DFF_FUNC_ID'        : self.func_id,
+            '_DFF_FUNC_NAME'      : self.func_name,
+            '_DFF_FUNC_CHAIN'     : self.func_chain,
+            '_DFF_ORIGIN'         : self.origin,
+            '_DFF_ORIGIN_ID'      : self.origin_id,
+            '_DFF_EXEC_MODE'      : self.exec_mode,
+            '_DFF_TRIGGER_TIME'   : self.trigger_time,
+            '_DFF_TRIGGER_TIME_MS': self.trigger_time_ms,
+            '_DFF_START_TIME'     : self.start_time,
+            '_DFF_START_TIME_MS'  : self.start_time_ms,
+            '_DFF_CRONTAB'        : self.kwargs.get('crontab'),
+            '_DFF_CRONTAB_DELAY'  : self.kwargs.get('crontabDelay'),
+            '_DFF_QUEUE'          : self.queue,
+            '_DFF_HTTP_REQUEST'   : self.http_request,
         }
 
-        # 填充DataFlux Func 内置变量
-        if extra_vars:
-            for k, v in extra_vars.items():
-                if k not in safe_scope:
-                    safe_scope[k] = v
-
-        # 填充DataFlux Func 内置方法/对象
+        # 添加 DataFlux Func 内置方法/对象
         __connector_helper    = FuncConnectorHelper(self)
         __env_variable_helper = FuncEnvVariableHelper(self)
         __store_helper        = FuncStoreHelper(self, default_scope=script_name)
@@ -1635,7 +1702,8 @@ class FuncBaseTask(BaseTask):
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
-        # 填充内置对象/函数
+        # 添加内置对象 / 函数
+        safe_scope['__builtins__'] = {}
         for name in dir(six.moves.builtins):
             # 跳过内置 import 函数，后续替换为 custom_import 函数
             if name == 'import':
@@ -1643,7 +1711,7 @@ class FuncBaseTask(BaseTask):
 
             safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
 
-        # 替换内置对象/函数
+        # 替换内置对象 / 函数
         def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
             return self._custom_import(name, globals, locals, fromlist, level, safe_scope)
 
@@ -1669,42 +1737,49 @@ class FuncBaseTask(BaseTask):
 
         return safe_scope
 
-    def clean_up(self):
-        pass
+    def apply(self):
+        # 目标脚本
+        self.script_info = self.load_script(self.script_id, draft=True)
+        if not self.script_info:
+            e = NotFoundException(f'Script `{self.script_id}` not found')
+            raise e
 
-    def get_trace_info(self):
-        '''
-        Data sample:
-            {
-                "header"       : "Traceback (most recent call last):",
-                "exceptionDump": "ZeroDivisionError: integer division or modulo by zero",
-                "stack": [
-                    {
-                    "localsInfo": [
-                        { "type": "<type 'int'>",  "name": "a", "repr": "1" },
-                        { "type": "<type 'dict'>", "name": "d", "dump": "{\"a\": 1, \"b\": 2}" }
-                    ],
-                    "funcname"         : "f1",
-                    "lineCode"         : "a = a / 0",
-                    "lineNumber"       : 12,
-                    "formattedLocation": "File \"/Users/pastgift/Documents/01-try/try_traceback_2.py\", line 12, in f1",
-                    "filename"         : "/Users/pastgift/Documents/01-try/try_traceback_2.py",
-                    "isInScript"       : true,
-                    }
-                ]
-            }
-        '''
+        # 脚本运行环境
+        self.script_scope = self.create_safe_scope(self.script_id, debug=True)
+
+        # 加载入口脚本
+        self.logger.info(f'[ENTRY SCRIPT] `{self.script_id}`')
+        self.script_scope = self.safe_exec(self.script_info['codeObj'], globals=self.script_scope)
+
+        # 执行脚本
+        func_resp = None
+        if self.func_name:
+            entry_func = self.script_scope.get(self.func_name)
+            if not entry_func:
+                e = NotFoundException(f'Function `{self.func_name}` not found in `{self.script_id}`')
+                raise e
+
+            # 执行函数
+            self.logger.info(f'[RUN FUNC] `{self.func_id}`')
+            func_resp = entry_func(**self.func_call_kwargs)
+
+            if not isinstance(func_resp, BaseFuncResponse):
+                func_resp = FuncResponse(func_resp)
+
+            if isinstance(func_resp.data, Exception):
+                raise func_resp.data
+
+        return func_resp
+
+    def get_error_stack(self, only_in_script=True):
         try:
-            sample_scope = self.create_safe_scope()
-
             exc_type, exc_obj, tb = sys.exc_info()
 
-            trace_info = {
-                'header'       : 'Traceback (most recent call last):',
-                'exceptionDump': ''.join(traceback.format_exception_only(exc_type, exc_obj)).strip(),
-                'stack'        : [],
-            }
+            header         = 'Traceback (most recent call last *in User Script*): '
+            exception_info = ''.join(traceback.format_exception_only(exc_type, exc_obj)).strip()
+            stack = []
 
+            # 搜集堆栈
             while tb is not None:
                 frame  = tb.tb_frame
                 line_number = tb.tb_lineno
@@ -1734,8 +1809,8 @@ class FuncBaseTask(BaseTask):
                 if line_code:
                     line_code = line_code.strip()
 
-                compacted_filename = filename.replace(os.getcwd(), '<{}>'.format(CONFIG['APP_NAME']))
-                formatted_location = 'File "{}", line {}, in {}'.format(compacted_filename, line_number, funcname)
+                compacted_filename = filename.replace(os.getcwd(), f'<{CONFIG["APP_NAME"]}>')
+                formatted_location = f'File "{compacted_filename}", line {line_number}, in {funcname}'
 
                 stack_item = {
                     'filename'         : filename,
@@ -1745,11 +1820,24 @@ class FuncBaseTask(BaseTask):
                     'formattedLocation': formatted_location,
                     'isInScript'       : is_in_script,
                 }
-                trace_info['stack'].append(stack_item)
+                stack.append(stack_item)
 
                 tb = tb.tb_next
 
-            return trace_info
+            # 格式化输出
+            lines = []
+            lines.append(header)
+
+            for s in stack:
+                if only_in_script and not s['isInScript']:
+                    continue
+
+                lines.append('  ' + s['formattedLocation'])
+                lines.append('    ' + s['lineCode'].strip())
+
+            lines.append(exception_info)
+
+            return '\n'.join(lines)
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
@@ -1758,20 +1846,8 @@ class FuncBaseTask(BaseTask):
         finally:
             exc_type = exc_obj = tb = None
 
-    def get_formated_einfo(self, trace_info, only_in_script=False):
-        lines = []
-        lines.append(trace_info['header'])
-
-        for s in trace_info['stack']:
-            if only_in_script and not s['isInScript']:
-                continue
-
-            lines.append('  ' + s['formattedLocation'])
-            lines.append('    ' + s['lineCode'].strip())
-
-        lines.append(trace_info['exceptionDump'])
-
-        return '\n'.join(lines)
+    def clean_up(self):
+        pass
 
 # from worker.tasks.main.func_debugger   import func_debugger
 # from worker.tasks.main.func_runner     import func_runner

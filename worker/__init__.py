@@ -1,9 +1,59 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
+import os
 import multiprocessing
 import signal
 import time
+
+# 3rd-party Modules
+
+# Project Modules
+from worker.utils import yaml_resources, toolkit
+
+# Configure
+BASE_PATH  = os.path.dirname(os.path.abspath(__file__))
+CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'))
+CONST      = yaml_resources.load_file('CONST', os.path.join(BASE_PATH, '../const.yaml'))
+IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
+
+from worker.tasks.example import ExampleSuccessTask, ExampleFailureTask, ExampleTimeoutTask
+from worker.tasks.main.func_debugger import FuncDebuggerTask
+from worker.tasks.main.func_runner import FuncRunnerTask
+
+# 任务表
+TASK_MAP = {
+    # 示例任务
+    ExampleSuccessTask.name: ExampleSuccessTask,
+    ExampleFailureTask.name: ExampleFailureTask,
+    ExampleTimeoutTask.name: ExampleTimeoutTask,
+
+    # 函数任务
+    FuncDebuggerTask.name: FuncDebuggerTask,
+    # FuncRunnerTask.name  : FuncRunnerTask,
+
+    # 系统后台任务
+}
+
+# 定时任务表
+CRONTAB_MAP = {
+    'example-per-second': {
+        'task'   : ExampleTimeoutTask,
+        'crontab': '*/3 * * * * *',
+    },
+}
+
+def get_task(name):
+    return TASK_MAP.get(name)
+
+def get_matched_crontab_task_instances(t, tz=None):
+    result = []
+    for item in CRONTAB_MAP.values():
+        if toolkit.is_match_crontab(item['crontab'], t, tz):
+            task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
+            result.append(task_inst)
+
+    return result
 
 def run_background(func, pool_size, max_tasks):
     try:

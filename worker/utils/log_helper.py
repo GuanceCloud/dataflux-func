@@ -154,21 +154,21 @@ class LoggingFormatter(logging.Formatter):
                 # Pretty field
                 field_value = meta.get(field) or ''
                 if field == 'upTime':
-                    field_value = 'UP {}s'.format(field_value or '0')
+                    field_value = f'UP {field_value or 0}s'
 
                 elif field == 'costTime':
-                    field_value = '{}ms'.format(field_value or '0')
+                    field_value = f'{field_value or 0}ms'
 
                 elif field == 'diffTime':
-                    field_value = '+{}ms'.format(field_value or '0')
+                    field_value = f'+{field_value or 0}ms'
 
                 elif field == 'userId' or field == 'userIdShort':
                     field_value = field_value or 'NON_USER_ID'
 
                 elif field == 'username':
-                    field_value = '@{}'.format(field_value or 'NON_USERNAME')
+                    field_value = f'@{field_value or "NON_USERNAME"}'
 
-                field_value = '[{}]'.format(field_value)
+                field_value = f'[{field_value}]'
 
                 # Add color
                 if self.options.get('color') and hasattr(colors, field_color):
@@ -280,7 +280,7 @@ class LogHelper(object):
 
     def __getattr__(self, level):
         if level.upper() not in LOG_LEVELS['levels']:
-            raise AttributeError("'{}' does not support the level '{}'".format(self.__class__.__name__, level))
+            raise AttributeError(f"'{self.__class__.__name__}' does not support the level '{level}'")
 
         def _f(*args):
             return self.log(level, *args)

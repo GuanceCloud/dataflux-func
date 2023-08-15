@@ -5,7 +5,7 @@ import time
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.tasks.base import BaseTask
+from worker.tasks import BaseTask
 
 class ExampleSuccessTask(BaseTask):
     name = 'Example.Success'

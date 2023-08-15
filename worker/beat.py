@@ -11,12 +11,6 @@ import signal
 from worker import run_background
 from worker.utils import yaml_resources, toolkit
 
-# Configure
-BASE_PATH  = os.path.dirname(os.path.abspath(__file__))
-CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'))
-CONST      = yaml_resources.load_file('CONST', os.path.join(BASE_PATH, '../const.yaml'))
-IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
-
 # Init
 from worker.app_init import before_app_create, after_app_created
 before_app_create()
@@ -24,11 +18,13 @@ before_app_create()
 from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import RedisHelper
 
+CONFIG = yaml_resources.get('CONFIG')
+
 LOGGER = LogHelper()
 REDIS  = RedisHelper(logger=LOGGER)
 REDIS.skip_log = True
 
-from worker.tasks import get_matched_crontab_task_instances
+from worker import get_matched_crontab_task_instances
 
 class TickTimeoutException(Exception):
     pass

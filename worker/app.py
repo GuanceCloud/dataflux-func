@@ -18,18 +18,14 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from worker import run_background
 from worker.utils import yaml_resources, toolkit
 
-# Configure
-BASE_PATH  = os.path.dirname(os.path.abspath(__file__))
-CONFIG     = yaml_resources.load_config(os.path.join(BASE_PATH, '../config.yaml'))
-CONST      = yaml_resources.load_file('CONST', os.path.join(BASE_PATH, '../const.yaml'))
-IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../image-info.json'))
-
 # Init
 from worker.app_init import before_app_create, after_app_created
 before_app_create()
 
 from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import RedisHelper
+
+CONFIG = yaml_resources.get('CONFIG')
 
 LOGGER = LogHelper()
 REDIS  = RedisHelper(logger=LOGGER)
@@ -38,8 +34,8 @@ REDIS.skip_log = True
 # 当前 Worker 监听队列
 LISTINGING_QUEUES = sys.argv[1:] or list(range(CONFIG['_WORKER_QUEUE_COUNT']))
 
-from worker.tasks import get_task
-from worker.tasks.base import TaskTimeoutException
+from worker import get_task
+from worker.tasks import TaskTimeoutException
 
 def consume():
     '''
