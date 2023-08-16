@@ -46,7 +46,7 @@ class FuncDebuggerTask(FuncBaseTask):
         func_resp = None
         try:
             # 执行函数
-            func_resp = self.apply()
+            func_resp = self.apply(use_code_draft=True)
 
         except Exception as e:
             status = 'failure'

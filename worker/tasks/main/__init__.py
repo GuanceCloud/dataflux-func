@@ -1737,9 +1737,9 @@ class FuncBaseTask(BaseTask):
 
         return safe_scope
 
-    def apply(self):
+    def apply(self, use_code_draft=False):
         # 目标脚本
-        self.script_info = self.load_script(self.script_id, draft=True)
+        self.script_info = self.load_script(self.script_id, draft=use_code_draft)
         if not self.script_info:
             e = NotFoundException(f'Script `{self.script_id}` not found')
             raise e

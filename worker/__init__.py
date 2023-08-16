@@ -30,7 +30,7 @@ TASK_MAP = {
 
     # 函数任务
     FuncDebuggerTask.name: FuncDebuggerTask,
-    # FuncRunnerTask.name  : FuncRunnerTask,
+    FuncRunnerTask.name  : FuncRunnerTask,
 
     # 系统后台任务
 }

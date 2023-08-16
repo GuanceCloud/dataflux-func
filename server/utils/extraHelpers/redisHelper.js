@@ -55,6 +55,9 @@ var CLIENT_CONFIG  = null;
 var CLIENT         = null;
 var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
 
+var SUB_CLIENT          = null;
+var MESSAGE_HANDLER_MAP = {};
+
 /**
  * @constructor
  * @param  {Object} [logger=null]
@@ -117,6 +120,7 @@ var RedisHelper = function(logger, config) {
       CLIENT_CONFIG.tsMinInterval = CONFIG.REDIS_TS_MIN_INTERVAL;
 
       CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
+      SUB_CLIENT = CLIENT.duplicate();
 
       // Error handling
       CLIENT.on('error', function(err) {

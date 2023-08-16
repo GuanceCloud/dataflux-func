@@ -180,7 +180,7 @@ class FuncRunnerTask(FuncBaseTask):
 
             # 提取函数结果缓存时长
             try:
-                self.cache_result_expires = self.target_script['funcExtraConfig'][self.func_id]['cacheResult']
+                self.cache_result_expires = self.script_info['funcExtraConfig'][self.func_id]['cacheResult']
             except (KeyError, TypeError) as e:
                 pass
 
