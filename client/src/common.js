@@ -129,6 +129,7 @@ export async function getFuncList() {
   });
   if (!apiRes || !apiRes.ok) return;
 
+  // 记录关联脚本集、脚本
   apiRes.data.forEach(d => {
     relatedScriptSetIds[d.scriptSetId] = true;
     relatedScriptIds[d.scriptId]       = true;
@@ -140,7 +141,6 @@ export async function getFuncList() {
   if (T.notNothing(relatedScriptSetIds)) {
     apiRes = await T.callAPI_getAll('/api/v1/script-sets/do/list', {
       query: {
-        id    : Object.keys(relatedScriptSetIds).join(','),
         fields: ['id', 'title', 'origin', 'originId'],
       },
     });
@@ -148,7 +148,9 @@ export async function getFuncList() {
 
     apiRes.data.forEach(d => {
       if (shouldScriptSetHidden(d)) return;
+      if (!relatedScriptSetIds[d.id]) return;
 
+      // 加入映射表
       scriptSetMap[d.id] = {
         label   : d.title || d.id,
         value   : d.id,
@@ -164,13 +166,15 @@ export async function getFuncList() {
   if (T.notNothing(relatedScriptIds)) {
     apiRes = await T.callAPI_getAll('/api/v1/scripts/do/list', {
       query: {
-        id    : Object.keys(relatedScriptIds).join(','),
         fields: ['id', 'title', 'scriptSetId']
       },
     });
     if (!apiRes || !apiRes.ok) return;
 
     apiRes.data.forEach(d => {
+      if (!relatedScriptIds[d.id]) return;
+
+      // 加入映射表
       scriptMap[d.id] = {
         label   : d.title || d.id,
         value   : d.id,
