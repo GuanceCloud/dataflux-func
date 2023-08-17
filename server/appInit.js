@@ -250,8 +250,6 @@ exports.afterAppCreated = function(app, server) {
             var prefix = null;
             if (toolkit.startsWith(key, CONFIG.APP_NAME)) {
               prefix = key.split(':')[0] + ':{Tags}';
-            } else if (toolkit.startsWith(key, 'celery-task-meta-')) {
-              prefix = 'celery-task-meta-{Task ID}';
             } else {
               prefix = 'OTHER';
             }

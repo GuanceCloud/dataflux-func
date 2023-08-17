@@ -10,14 +10,13 @@ var request    = require('request');
 var promClient = require('prom-client');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var IMAGE_INFO   = require('../utils/yamlResources').get('IMAGE_INFO');
-var ROUTE        = require('../utils/yamlResources').get('ROUTE');
-var CONST        = require('../utils/yamlResources').get('CONST');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var common       = require('../utils/common');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E          = require('../utils/serverError');
+var IMAGE_INFO = require('../utils/yamlResources').get('IMAGE_INFO');
+var ROUTE      = require('../utils/yamlResources').get('ROUTE');
+var CONST      = require('../utils/yamlResources').get('CONST');
+var CONFIG     = require('../utils/yamlResources').get('CONFIG');
+var toolkit    = require('../utils/toolkit');
+var common     = require('../utils/common');
 
 var funcMod          = require('../models/funcMod');
 var systemSettingMod = require('../models/systemSettingMod');
@@ -603,33 +602,7 @@ exports.systemReport = function(req, res, next) {
   var MYSQL       = {};
   var MYSQL_TABLE = {};
 
-  var celery = celeryHelper.createHelper(res.locals.logger);
   async.series([
-    // Worker 信息
-    function(asyncCallback) {
-      var tasks = [
-        'Internal.Ping',
-        'Internal.Stats',
-        'Internal.ActiveQueues',
-      ];
-      async.each(tasks, function(task, eachCallback) {
-        var args   = null;
-        var kwargs = null;
-        celery.putTask(task, args, kwargs, null, null, function(err, celeryRes) {
-          if (err) return eachCallback(err);
-          if (!celeryRes) return eachCallback();
-
-          var reportKey = task.split('.').pop();
-          WORKER[reportKey] = {};
-
-          if (celeryRes.result) {
-            WORKER[reportKey] = celeryRes.result;
-          }
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
     // Redis 信息
     function(asyncCallback) {
       res.locals.cacheDB.info(function(err, cacheRes) {

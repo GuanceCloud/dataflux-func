@@ -81,7 +81,7 @@ var getMyIPv4 = toolkit.getMyIPv4 = function getMyIPv4(ifaceName) {
   if (ifaceName) {
     var iface = ifaces[ifaceName];
 
-    if (!iface) throw new Error('WAT: No such interface: ' + ifaceName);
+    if (!iface) throw new Error('No such interface: ' + ifaceName);
 
     for (var i = 0; i < iface.length; i++) {
       if (iface[i].family !== 'IPv4' || iface[i].internal) continue;
@@ -772,21 +772,28 @@ var isJSON = toolkit.isJSON = function isJSON(o) {
 }
 
 /**
+ * Get current timestamp in s.
+ *
+ * @return {Integer}
+ */
+var getTimestamp = toolkit.getTimestamp = function getTimestamp(ndigits) {
+  ndigits = ndigits || 0;
+  if (ndigits === 0) {
+    return round(Date.now() / 1000);
+  } else if (ndigits === 3) {
+    return Date.now() / 1000;
+  } else {
+    return parseFloat((Date.now() / 1000).toFixed(ndigits));
+  }
+};
+
+/**
  * Get current timestamp in ms.
  *
  * @return {Integer}
  */
 var getTimestampMs = toolkit.getTimestampMs = function getTimestampMs() {
   return Date.now();
-};
-
-/**
- * Get current timestamp in s.
- *
- * @return {Integer}
- */
-var getTimestamp = toolkit.getTimestamp = function getTimestamp() {
-  return parseInt(Date.now() / 1000);
 };
 
 /**
@@ -1162,11 +1169,11 @@ var genRandString = toolkit.genRandString = function genRandString(len, chars) {
  */
 var _getCacheKey = toolkit._getCacheKey = function _getCacheKey(topic, name, tags) {
   if (isNothing(topic) === true) {
-    throw new Error(strf('WAT: Can not use a topic with `{0}`', topic));
+    throw new Error(strf('Can not use a topic with `{0}`', topic));
   }
 
   if (isNothing(name) === true) {
-    throw new Error(strf('WAT: Can not use a name with `{0}`', name));
+    throw new Error(strf('Can not use a name with `{0}`', name));
   }
 
   if (toolkit.isNothing(tags)) {
@@ -1208,9 +1215,16 @@ var _parseCacheKey = toolkit._parseCacheKey = function _parseCacheKey(cacheKey) 
 
 var _getWorkerQueue = toolkit._getWorkerQueue = function _getWorkerQueue(name) {
   if ('number' !== typeof name && !name) {
-    throw new Error('WAT: Queue name not specified.')
+    throw new Error('Worker Queue name not specified.')
   }
   return strf('workerQueue@{0}', name);
+};
+
+var _getDelayQueue = toolkit._getDelayQueue = function _getDelayQueue(name) {
+  if ('number' !== typeof name && !name) {
+    throw new Error('Delay Queue name not specified.')
+  }
+  return strf('delayQueue@{0}', name);
 };
 
 /**

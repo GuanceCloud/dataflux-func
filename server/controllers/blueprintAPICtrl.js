@@ -6,10 +6,9 @@
 var async = require('async');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
 
 var scriptAPICtrl = require('./scriptAPICtrl');
 var blueprintMod  = require('../models/blueprintMod');
@@ -361,8 +360,6 @@ exports.delete = crudHandler.createDeleteHandler();
 exports.deploy = function(req, res, next) {
   var id = req.params.id;
 
-  var celery = celeryHelper.createHelper(res.locals.logger);
-
   var blueprintModel = blueprintMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
   var scriptModel    = scriptMod.createModel(res.locals);
@@ -410,7 +407,7 @@ exports.deploy = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      scriptAPICtrl.sendPreCheckTask(celery, blueprintScriptId, function(err, exportedAPIFuncs) {
+      scriptAPICtrl.sendPreCheckTask(res.locals, blueprintScriptId, function(err, exportedAPIFuncs) {
         if (err) return asyncCallback(err);
 
         nextExportedAPIFuncs = exportedAPIFuncs;

@@ -7,14 +7,11 @@ var async     = require('async');
 var splitargs = require('splitargs');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
 
 var connectorMod = require('../models/connectorMod');
-
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
 
 /* Configure */
 var RESERVED_REF_NAME = 'dataflux_';
@@ -169,32 +166,35 @@ function _checkConfig(locals, type, config, skipTest, callback) {
   // 尝试连接
   if (skipTest) return callback();
 
-  var celery = celeryHelper.createHelper(locals.logger);
+  var taskReq = {
+    name  : 'Main.CheckConnector',
+    kwargs: { type: type, config: config },
 
-  var kwargs = { type: type, config: config };
-  celery.putTask('Main.CheckConnector', null, kwargs, null, null, function(err, celeryRes, extraInfo) {
-    if (err) return callback(err);
+    handler(taskResp) {
+      switch(taskResp.status) {
+        case 'noResponse':
+          // 无响应
+          return callback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
 
-    celeryRes = celeryRes || {};
-    extraInfo = extraInfo || {};
+        case 'failure':
+          // 失败
+          return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector failed', {
+            error     : taskResp.error,
+            errorStack: taskResp.errorStack,
+          }));
 
-    var errorMessage = celeryRes.einfoTEXT
-                     ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
-                     : 'No error message';
+        case 'timeout':
+          // 超时
+          return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector timeout', {
+            error     : taskResp.error,
+            errorStack: taskResp.errorStack,
+          }));
+      }
 
-    if (celeryRes.status === 'FAILURE') {
-      return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector failed', {
-        etype  : celeryRes.result && celeryRes.result.exc_type,
-        message: errorMessage,
-      }));
-    } else if (extraInfo.status === 'TIMEOUT') {
-      return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector timeout', {
-        etype: celeryRes.result && celeryRes.result.exc_type,
-      }));
+      return callback();
     }
-
-    return callback();
-  });
+  }
+  return locals.cacheDB.putTask(taskReq);
 };
 
 /* Handlers */
@@ -302,8 +302,7 @@ exports.modify = function(req, res, next) {
     });
     res.locals.sendJSON(ret);
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
-    reloadDataMD5Cache(celery, id);
+    reloadDataMD5Cache(res.locals, id);
   });
 };
 
@@ -340,8 +339,7 @@ exports.delete = function(req, res, next) {
     });
     res.locals.sendJSON(ret);
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
-    reloadDataMD5Cache(celery, id);
+    reloadDataMD5Cache(res.locals, id);
   });
 };
 
@@ -426,34 +424,36 @@ exports.query = function(req, res, next) {
       }
 
       // 执行命令
-      var celery = celeryHelper.createHelper(res.locals.logger);
+      var taskReq = {
+        name  : 'Main.QueryConnector',
+        kwargs: taskKwargs,
 
-      celery.putTask('Main.QueryConnector', null, taskKwargs, null, null, function(err, celeryRes, extraInfo) {
-        if (err) return asyncCallback(err);
+        handler(taskResp) {
+          switch(taskResp.status) {
+            case 'noResponse':
+              // 无响应
+              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
 
-        celeryRes = celeryRes || {};
-        extraInfo = extraInfo || {};
+            case 'failure':
+              // 失败
+              return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed', {
+                error     : taskResp.error,
+                errorStack: taskResp.errorStack,
+              }));
 
-        var errorMessage = celeryRes.einfoTEXT
-                         ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
-                         : 'No error message';
+            case 'timeout':
+              // 超时
+              return asyncCallback(new E('EClientBadRequest.QueryTimeout', 'Query timeout', {
+                error     : taskResp.error,
+                errorStack: taskResp.errorStack,
+              }));
+          }
 
-        if (celeryRes.status === 'FAILURE') {
-          return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed', {
-            etype  : celeryRes.result && celeryRes.result.exc_type,
-            message: errorMessage,
-          }));
-
-        } else if (extraInfo.status === 'TIMEOUT') {
-          return asyncCallback(new E('EClientBadRequest.QueryTimeout', 'Query timeout', {
-            etype: celeryRes.result && celeryRes.result.exc_type,
-          }));
+          queryResult = taskResp.result || null;
+          return asyncCallback();
         }
-
-        queryResult = celeryRes.retval || null;
-
-        return asyncCallback();
-      });
+      }
+      return res.locals.cacheDB.pushTask(taskReq);
     },
   ], function(err) {
     if (err) return next(err);
@@ -533,7 +533,10 @@ exports.listSubInfo = function(req, res, next) {
   });
 };
 
-function reloadDataMD5Cache(celery, connectorId, callback) {
-  var taskKwargs = { type: 'connector', id: connectorId };
-  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+function reloadDataMD5Cache(locals, connectorId, callback) {
+  var taskReq = {
+    name  : 'Sys.ReloadDataMD5Cache',
+    kwargs: { type: 'connector', id: connectorId },
+  }
+  locals.cacheDB.putTask(taskReq, callback);
 };

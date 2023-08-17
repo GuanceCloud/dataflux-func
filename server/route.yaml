@@ -5705,8 +5705,8 @@ debugAPI:
 
   putTask:
     showInDoc    : true
-    name         : Put async task
-    name_zhCN    : 发送异步任务
+    name         : Put task
+    name_zhCN    : 发送任务
     descType     : markdown
     desc         : "*CAUTION: This API is just for debug, please DO NOT use in a production environment.*"
     method       : post
@@ -5716,72 +5716,41 @@ debugAPI:
     authType     : builtin.byXAuthToken
     privilege    : general_w
     body:
-      waitResult:
-        $desc   : Wait task result before response
+      name:
+        $desc      : Task name
+        $isRequired: true
+        $type      : string
+        $example   : Example.Success
+      kwargs:
+        $desc: Dict arguments (**kwargs)
+        $type: json
+        $example: {'kwarg1': 'val1', 'kwarg2': 'val2'}
+      delay:
+        $desc   : Delay for executing task (seconds)
+        $type   : integer
+        $example: 3
+      queue:
+        $desc    : Queue
+        $type    : integer
+        $minValue: 0
+        $maxValue: 9
+        $example : 0
+      expires:
+        $desc   : Expires for executing task (seconds)
+        $type   : integer
+        $example: 3
+      timeLimit:
+        $desc   : Time limit for executing task (seconds)
+        $type   : integer
+        $example: 3
+      ignoreResult:
+        $desc   : If ignore task result
         $type   : boolean
-        $example: true
-      times:
-        $desc    : Send times
-        $type    : int
-        $minValue: 1
-        $example : 1
-      task:
-        name:
-          $desc      : Task name
-          $isRequired: true
-          $type      : string
-          $example   : Example.Echo.Success
-        args:
-          $desc: List arguments (*args)
-          $:
-            $type: any
-          $example: ['arg1', 'arg2', 'arg3']
-        kwargs:
-          $desc: Dict arguments (**kwargs)
-          $type: json
-          $example: {'kwarg1': 'val1', 'kwarg2': 'val2'}
-        options:
-          $desc: Task options
-          queue:
-            $desc   : Queue
-            $type   : string
-            $example: celery
-          eta:
-            $desc     : ETA (ISO8601)
-            $type     : string
-            $isISO8601: true
-            $example  : '2020-01-01T00:00:00Z'
-          expires:
-            $desc     : Expires (ISO8601)
-            $type     : string
-            $isISO8601: true
-            $example  : '2020-01-01T00:00:00Z'
-          retries:
-            $desc    : Retry times
-            $type    : int
-            $minValue: 0
-          timeLimit:
-            $desc    : Time limit (in seconds)
-            $type    : int
-            $minValue: 1
-          softTimeLimit:
-            $desc    : Time soft limit (in seconds)
-            $type    : int
-            $minValue: 1
-          origin:
-            $desc   : origin
-            $type   : string
-            $example: Host-1
-          priority:
-            $desc    : Priority
-            $type    : int
-            $minValue: 0
-            $maxValue: 255
-            $example : 0
-          extra:
-            $desc   : Extra information
-            $type   : any
-            $example: {"extraKey": "extraValue"}
+        $example: false
+      waitTimeout:
+        $desc   : Timeout for waiting task response (seconds)
+        $type   : integer
+        $example: 3
 
   testAPIBehavior:
     showInDoc: true

@@ -120,7 +120,6 @@ var RedisHelper = function(logger, config) {
       CLIENT_CONFIG.tsMinInterval = CONFIG.REDIS_TS_MIN_INTERVAL;
 
       CLIENT = redis.createClient(getConfig(CLIENT_CONFIG, self.retryStrategy));
-      SUB_CLIENT = CLIENT.duplicate();
 
       // Error handling
       CLIENT.on('error', function(err) {
@@ -1077,6 +1076,100 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
     if (err) return callback(err);
     return callback(null, data, pageInfo);
   });
+};
+
+RedisHelper.prototype.putTask = function(taskReq, callback) {
+  var self = this;
+
+  taskReq = taskReq || {};
+
+  if (!taskReq.name) {
+    return callback(new Error('taskReq.name is required.'));
+  }
+
+  // Init task response sub client
+  if (!self.taskRespSubClient) {
+    self.taskRespSubClient  = self.client.duplicate();
+    self.taskRespHandlerMap = {};
+
+    var taskRespCacheKey = toolkit.getCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
+    self.taskRespSubClient.psubscribe(taskRespCacheKey);
+
+    self.taskRespSubClient.on('pmessage', function(pattern, channel, message) {
+      var taskId = toolkit.parseCacheKey(channel).tags.id;
+
+      var handler = self.taskRespHandlerMap[taskId];
+      delete self.taskRespHandlerMap[taskId];
+
+      if ('function' !== typeof handler) return;
+
+      var taskResp = message;
+      if (taskResp) {
+        try {
+          taskResp = JSON.parse(taskResp);
+        } catch(ex) {
+          // Nope
+        }
+      }
+
+      handler(taskResp);
+    });
+  }
+
+  // Prepare
+  if (taskReq.ignoreResult === true) {
+    delete taskReq.handler;
+    delete taskReq.waitTimeout;
+  }
+
+  // Push task
+  taskReq.id          = taskReq.id          || toolkit.genDataId('task');
+  taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
+
+  taskReq.queue = toolkit.isNothing(taskReq.queue)
+                ? taskReq.CONFIG._WORKER_DEFAULT_QUEUE
+                : taskReq.queue;
+
+  if ('function' === typeof taskReq.handler) {
+    self.taskRespHandlerMap[taskReq.id] = taskReq.handler;
+    taskReq.ignoreResult = false;
+
+    // Wait result
+    setTimeout(function() {
+      var handler = self.taskRespHandlerMap[taskReq.id];
+      delete self.taskRespHandlerMap[taskReq.id];
+
+      if ('function' === typeof handler) {
+        var taskResp = {
+          name  : taskReq.name,
+          id    : taskReq.id,
+          kwargs: taskReq.kwargs,
+
+          triggerTime: taskReq.triggerTime,
+
+          status: 'noResponse',
+        }
+        handler(taskResp);
+      }
+    }, (taskReq.waitTimeout || 5) * 1000);
+
+  } else {
+    delete taskReq.ignoreResult;
+  }
+
+  delete taskReq.handler;
+  delete taskReq.waitTimeout;
+
+  var taskReqDumps = JSON.stringify(taskReqDumps);
+  if (taskReq.delay) {
+    var delayQueue = toolkit.getDelayQueue(taskReq.queue);
+    var eta = taskReq.triggerTime + taskReq.delay;
+    return self.client.zadd(delayQueue, eta, taskReqDumps, callback);
+
+  } else {
+    var workerQueue = toolkit.getWorkerQueue(taskReq.queue);
+    return self.client.lpush(workerQueue, taskReqDumps, callback);
+  }
 };
 
 exports.RedisHelper = RedisHelper;

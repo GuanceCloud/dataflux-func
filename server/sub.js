@@ -47,7 +47,7 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
             // packet : packet,
           },
         }
-        indexAPICtrl._createFuncCallOptionsFromOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
+        indexAPICtrl._createFuncCallOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
           if (err) return asyncCallback(err);
 
           funcCallOptions = _funcCallOptions;

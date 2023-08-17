@@ -112,7 +112,7 @@ def gen_data_id(prefix=None):
 
 def gen_time_serial_seq(d=None, rand_length=4):
     if not d:
-        d = get_timestamp()
+        d = get_timestamp(3)
     elif isinstance(d, datetime.datetime):
         d = time.mktime(d.timetuple())
 
@@ -157,7 +157,7 @@ def json_find(j, path, safe=False):
             if safe:
                 return None
             else:
-                e = Exception('json_find() - hit non-dict at `{}`'.format(curr_path))
+                e = Exception(f'json_find() - hit non-dict at `{curr_path}`')
                 raise e
 
             break
@@ -289,7 +289,7 @@ def is_none_or_white_space(o):
 def no_none_or_white_space(o):
     return dict([(k,v) for k, v in o.items() if not is_none_or_white_space(v)])
 
-def get_timestamp(ndigits=3):
+def get_timestamp(ndigits=0):
     return round(time.time(), ndigits)
 
 def get_timestamp_ms():
@@ -309,7 +309,7 @@ def get_date_string(d=None, f=None):
 
 def get_time_string(d=None, f=None):
     if not d:
-        d = get_timestamp()
+        d = get_timestamp(3)
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -321,7 +321,7 @@ def get_time_string(d=None, f=None):
 
 def get_datetime_string(d=None, f=None):
     if not d:
-        d = get_timestamp()
+        d = get_timestamp(3)
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -392,11 +392,11 @@ def to_boolean(o):
 
 def is_past_datetime(d):
     ts = to_unix_timestamp(d)
-    return ts > get_timestamp()
+    return ts > get_timestamp(3)
 
 def get_days_from_now(d):
     ts = to_unix_timestamp(d)
-    days = float(ts - get_timestamp()) / 3600 / 24
+    days = float(ts - get_timestamp(3)) / 3600 / 24
     return days
 
 def get_md5(s):
@@ -483,20 +483,20 @@ def gen_rand_string(length=None, chars=None):
 
 def _get_cache_key(topic, name, tags=None):
     if not topic:
-        e = Exception('WAT: Can not use a topic with `{}`'.format(topic))
+        e = Exception(f'Can not use a topic with `{topic}`')
         raise e
 
     if not name:
-        e = Exception('WAT: Can not use a name with `{}`'.format(name))
+        e = Exception(f'Can not use a name with `{name}`')
         raise e
 
     if not tags:
-        cache_key = '{}@{}'.format(topic, name)
+        cache_key = f'{topic}@{name}'
         return cache_key
 
     else:
         parts = [str(tag) for tag in tags]
-        cache_key = '{}@{}:{}:'.format(topic, name, ':'.join(parts))
+        cache_key = f"{topic}@{name}:{':'.join(parts)}:"
         return cache_key
 
 def _parse_cache_key(cache_key):
@@ -523,17 +523,17 @@ def _parse_cache_key(cache_key):
 
 def _get_worker_queue(name):
     if not isinstance(name, int) and not name:
-        e = Exception('Queue name not specified.')
+        e = Exception('Worker Queue name not specified.')
         raise e
 
-    return 'workerQueue@{}'.format(name)
+    return f'workerQueue@{name}'
 
 def _get_delay_queue(name):
     if not isinstance(name, int) and not name:
-        e = Exception('Queue name not specified.')
+        e = Exception('Delay Queue name not specified.')
         raise e
 
-    return 'delayQueue@{}'.format(name)
+    return f'delayQueue@{name}'
 
 def as_array(o):
     if o is None:
@@ -562,9 +562,9 @@ def gen_reg_exp_by_wildcard(pattern):
                         .replace('*', '[^\\.\\|]+')
 
     if pattern.endswith('**'):
-        reg_exp = '^{}'.format(reg_exp)
+        reg_exp = f'^{reg_exp}'
     else:
-        reg_exp = '^{}$'.format(reg_exp)
+        reg_exp = f'^{reg_exp}$'
 
     return reg_exp
 
@@ -596,9 +596,9 @@ def limit_text(s, max_length=30, show_length=None, length_title=None):
         limited = s[0:max_length - 3] + '...'
 
         if show_length == 'newLine':
-            limited += '\n <{}: {}>'.format(length_title, len(s))
+            limited += f'\n <{length_title}: {len(s)}>'
         elif show_length:
-            limited += ' <{}: {}>'.format(length_title, len(s))
+            limited += f' <{length_title}: {len(s)}>'
 
         return limited
 
@@ -615,7 +615,7 @@ def merge_query(url, query):
     scheme = six.ensure_str(splited_url.scheme)
     netloc = six.ensure_str(splited_url.netloc)
     path   = six.ensure_str(splited_url.path)
-    merged_url = '{}://{}{}'.format(splited_url.scheme, splited_url.netloc, splited_url.path)
+    merged_url = f'{splited_url.scheme}://{splited_url.netloc}{splited_url.path}'
     if merged_query:
         next_query = {}
         for k, v in merged_query.items():
@@ -673,7 +673,7 @@ class IgnoreCaseDict(dict):
             self.__setitem__(k, v)
 
     def __repr__(self):
-        return '{0}({1})'.format(type(self).__name__, super().__repr__())
+        return f'{type(self).__name__}({super().__repr__()})'
 
 class LocalCache(object):
     def __init__(self, expires=None, clean_interval=60):

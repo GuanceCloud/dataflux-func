@@ -67,12 +67,12 @@ class FuncDebuggerTask(FuncBaseTask):
             return_value     = None
             response_control = None
 
-            apis         = []
+            api_funcs    = []
             log_messages = []
 
             if self.script_scope:
                 # 脚本解析结果
-                apis = self.script_scope['DFF'].apis or []
+                api_funcs = self.script_scope['DFF'].api_funcs or []
 
                 # 脚本输出日志
                 log_messages = self.script_scope['DFF'].log_messages or []
@@ -96,12 +96,12 @@ class FuncDebuggerTask(FuncBaseTask):
                 'returnValue'    : return_value,
                 'responseControl': response_control,
 
-                'apis'      : apis,
+                'apiFuncs'  : api_funcs,
                 'logMessage': log_messages,
 
                 'status'         : status,
                 'errorStack'     : error_stack,
-                'cost'           : toolkit.get_timestamp() - self.start_time,
+                'cost'           : toolkit.get_timestamp(3) - self.start_time,
                 'peakMemroyUsage': None,
             }
 

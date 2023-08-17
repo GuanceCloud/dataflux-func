@@ -1054,10 +1054,11 @@ class FuncBaseTask(BaseTask):
         if 'headers' in self.http_request:
             self.http_request['headers'] = toolkit.IgnoreCaseDict(self.http_request['headers'])
 
-        # 脚本信息
-        self.script_info = None
+        # 任务信息保留数量
+        self.task_info_limit = self.kwargs.get('taskInfoLimit') or 0
 
-        # 脚本环境
+        # 脚本信息 / 环境
+        self.script_info = None
         self.script_scope = None
 
     def _get_func_defination(self, F):

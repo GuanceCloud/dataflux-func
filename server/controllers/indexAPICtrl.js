@@ -34,8 +34,7 @@ var userMod                   = require('../models/userMod');
 var apiAuthMod                = require('../models/apiAuthMod');
 var systemSettingMod          = require('../models/systemSettingMod');
 
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
-var funcAPICtrl  = require('./funcAPICtrl');
+var funcAPICtrl = require('./funcAPICtrl');
 
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,
@@ -123,6 +122,7 @@ function _getFuncById(locals, funcId, callback) {
     }
 
     func = dbRes;
+    func.extraConfigJSON = func.extraConfigJSON || {};
 
     // 建立缓存
     FUNC_LRU.set(funcId, func);
@@ -138,29 +138,15 @@ function _isFuncArgumentPlaceholder(v) {
   return false;
 };
 
-function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
-  if (CONFIG.MODE === 'dev' && CONFIG.LOG_FUNC_CALL_OPTIONS) {
-    var _tmpOptions = toolkit.jsonCopy(options);
-    _tmpOptions.httpRequest = '<...略>';
-
-    locals.logger.debug('_createFuncCallOptionsFromOptions:\nfuncId = {0}\noptions = {1}',
-        funcId,
-        JSON.stringify(_tmpOptions, null, 2));
-  }
-
-  // 注意：
-  //  本函数内所有搜集的时长类数据均为秒
-  //  后续在_callFuncRunner 中转换为所需要类型（如：ISO8601格式等）
-
+function _createFuncRunnerTaskReq(locals, options, callback) {
   var func = null;
   async.series([
     // 获取函数
     function(asyncCallback) {
-      _getFuncById(locals, funcId, function(err, _func) {
+      _getFuncById(locals, options.funcId, function(err, _func) {
         if (err) return asyncCallback(err);
 
         func = _func;
-        func.extraConfigJSON = func.extraConfigJSON || {};
 
         return asyncCallback();
       })
@@ -168,18 +154,31 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
   ], function(err) {
     if (err) return callback(err);
 
-    /***** 组装参数 *****/
-    var funcCallOptions = options || {};
+    /***** 组装任务请求 *****/
+    var funcCallKwargsDump = sortedJSON.sortify(options.funcCallKwargs || {}, { stringify: true, sortArray: false});
+    var funcCallKwargsMD5  = toolkit.getMD5(funcCallKwargsDump);
 
-    // 来源
-    funcCallOptions.origin   = funcCallOptions.origin   || 'UNKNOWN';
-    funcCallOptions.originId = funcCallOptions.originId || 'UNKNOWN';
+ var cacheKey = toolkit.getWorkerCacheKey('cache', 'funcResult', [
+      'funcId'              , funcId,
+      'scriptCodeMD5'       , funcCallOptions.scriptCodeMD5,
+      'scriptPublishVersion', funcCallOptions.scriptPublishVersion,
+      'funcCallKwargsMD5'   , funcCallOptions.funcCallKwargsMD5]);
 
-    // 函数 ID
-    funcCallOptions.funcId = func.id;
+    var taskReq = {
+      name: 'Main.FuncRunner',
+      kwargs: {
+        // 调用函数 / 参数
+        funcId        : options.funcId,
+        funcCallKwargs: options.funcCallKwargs,
 
-    // 参数
-    funcCallOptions.funcCallKwargs = funcCallOptions.funcCallKwargs || {};
+        // 来源
+        origin  : options.origin   || 'UNKNOWN',
+        originId: options.originId || 'UNKNOWN',
+
+
+
+      }
+    };
 
     // 函数信息（用于函数结果缓存）
     funcCallOptions.scriptCodeMD5        = func.scpt_codeMD5;
@@ -393,7 +392,7 @@ function _createFuncCallOptionsFromOptions(locals, funcId, options, callback) {
       var _tmpOptions = toolkit.jsonCopy(funcCallOptions);
       _tmpOptions.httpRequest = '<...略>';
 
-      locals.logger.debug('_createFuncCallOptionsFromOptions:\nresult = {0}',
+      locals.logger.debug('_createFuncCallOptions:\nresult = {0}',
           JSON.stringify(_tmpOptions, null, 2));
     }
 
@@ -504,7 +503,7 @@ function _createFuncCallOptionsFromRequest(req, res, funcId, options, callback) 
   /*** HTTP请求信息 ***/
   options.httpRequest = _getHTTPRequestInfo(req);
 
-  return _createFuncCallOptionsFromOptions(res.locals, funcId, options, callback);
+  return _createFuncCallOptions(res.locals, funcId, options, callback);
 };
 
 function _createFuncCallOptionsForAPIAuth(req, res, funcId, options, callback) {
@@ -519,7 +518,7 @@ function _createFuncCallOptionsForAPIAuth(req, res, funcId, options, callback) {
   /*** HTTP请求信息 ***/
   options.httpRequest = _getHTTPRequestInfo(req);
 
-  return _createFuncCallOptionsFromOptions(res.locals, funcId, options, callback);
+  return _createFuncCallOptions(res.locals, funcId, options, callback);
 };
 
 function _mergeFuncCallKwargs(baseFuncCallKwargs, inputedFuncCallKwargs) {
@@ -648,203 +647,189 @@ function _checkWorkerQueuePressure(locals, funcCallOptions, callback) {
   ], callback);
 };
 
-function _callFuncRunner(locals, funcCallOptions, callback) {
-  funcCallOptions = funcCallOptions || {};
+function _callFuncRunnerSync(locals, taskReq, callback) {
+  var funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
 
-  // 函数执行任务Callback
-  var onTaskCallback   = null;
-  var onResultCallback = null;
+  async.series([
+    // 直接返回缓存结果
+    function(asyncCallback) {
+      if (!taskReq.cacheResult) return asyncCallback();
+
+      _getFuncCallResultFromCache(locals, funcCallOptions, function(err, cachedRetval) {
+        if (err) {
+          // 报错后改为真实调用函数
+          locals.logger.logError(err);
+          return asyncCallback();
+        }
+
+        if (!cachedRetval) {
+          // 无缓存时改为真实调用函数
+          return asyncCallback();
+        }
+
+        var dummyCeleryRes = {
+          id       : 'CACHED',
+          status   : 'SUCCESS',
+          retval   : cachedRetval,
+          einfoTEXT: null,
+        };
+        return taskRespHandler(null, dummyCeleryRes, null);
+
+        /* 进入缓存时，到此结束，直接回调结果函数，不再继续执行 */
+      });
+    },
+    // 获取函数预期压力值
+    function(asyncCallback) {
+      var cacheKey = toolkit.getCacheKey('cache', 'funcPressure', [ 'funcId', taskReq.kwargs.funcId ]);
+      locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (cacheRes) {
+          funcPressure = Math.max(parseInt(cacheRes), 1);
+        }
+
+        return asyncCallback();
+      });
+    },
+
+    // 真实调用函数前，检查队列压力
+    function(asyncCallback) {
+      _checkWorkerQueuePressure(locals, funcCallOptions, asyncCallback);
+    },
+  ], putTask);
+};
+
+function _callFuncRunnerAsync(locals, taskReq, callback) {
+};
+
+function _callFuncRunner(locals, taskReq, callback) {
+
 
   // 发送任务
-  var sendTask = function(err) {
+  var putTask = function(err) {
     if (err) return callback(err);
 
-    var celery = celeryHelper.createHelper(locals.logger);
+    // 任务请求
+    var taskReq = {
+      id  : toolkit.genDataId('task'),
+      name: 'Biz.FuncRunner',
+      kwargs: {
+        funcId           : funcCallOptions.funcId,
+        funcCallKwargs   : funcCallOptions.funcCallKwargs,
+        funcCallKwargsMD5: funcCallOptions.funcCallKwargsMD5,
+        funcPressure     : funcCallOptions.funcPressure,
+        origin           : funcCallOptions.origin,
+        originId         : funcCallOptions.originId,
+        execMode         : funcCallOptions.execMode,
+        saveResult       : funcCallOptions.saveResult,
+        triggerTime      : funcCallOptions.triggerTime,
+        triggerTimeMs    : funcCallOptions.triggerTimeMs,
+        queue            : funcCallOptions.queue,
+        taskInfoLimit    : funcCallOptions.taskInfoLimit,
+        httpRequest      : funcCallOptions.httpRequest,
+      },
+      queue      : funcCallOptions.queue,
+      timeLimit  : funcCallOptions.timeout + CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
+      waitTimeout: funcCallOptions.apiTimeout * 1000,
 
-    // 任务名
-    var name = 'Biz.FuncRunner';
-
-    // 生成Celery任务的kwargs, options
-    var taskOptions = {
-      id               : toolkit.genDataId('task'),
-      queue            : funcCallOptions.queue,
-      resultWaitTimeout: funcCallOptions.apiTimeout * 1000,
-      softTimeLimit    : funcCallOptions.timeout,
-      timeLimit        : funcCallOptions.timeout + CONFIG._FUNC_TASK_EXTRA_TIMEOUT_TO_KILL,
+      handler: taskRespHandler,
     };
-
-    // 格式转换以匹配Celery框架
-    if (funcCallOptions.eta) {
-      // eta参数为ISO8601格式
-      taskOptions.eta = toolkit.getISO8601(funcCallOptions.eta);
-    }
-    if (!funcCallOptions.neverExpire) {
-      // expires参数为ISO8601格式
-      var _shiftMS = parseInt(funcCallOptions.timeout * funcCallOptions.timeoutToExpireScale) * 1000;
-      taskOptions.expires = toolkit.getISO8601(Date.now() + _shiftMS);
-    }
-
-    // 任务参数
-    var taskKwargs = {
-      funcId           : funcCallOptions.funcId,
-      funcCallKwargs   : funcCallOptions.funcCallKwargs,
-      funcCallKwargsMD5: funcCallOptions.funcCallKwargsMD5,
-      funcPressure     : funcCallOptions.funcPressure,
-      origin           : funcCallOptions.origin,
-      originId         : funcCallOptions.originId,
-      execMode         : funcCallOptions.execMode,
-      saveResult       : funcCallOptions.saveResult,
-      triggerTime      : funcCallOptions.triggerTime,
-      triggerTimeMs    : funcCallOptions.triggerTimeMs,
-      queue            : funcCallOptions.queue,
-      taskInfoLimit    : funcCallOptions.taskInfoLimit,
-      httpRequest      : funcCallOptions.httpRequest,
-    };
-    celery.putTask(name, null, taskKwargs, taskOptions, onTaskCallback, onResultCallback);
+    locals.cacheDB.putTask(taskReq, putTaskCallback);
   }
 
-  if (funcCallOptions.execMode === 'sync') {
+  // 同步任务：
+  //  1. 存在 handler
+  //  2. 且，未指定忽略结果
+  if (taskReq.handler && !taskReq.ignoreResult) {
     // 计算函数参数 MD5，获取预期函数压力值
-    var funcCallKwargsDump = sortedJSON.sortify(funcCallOptions.funcCallKwargs || {}, {
+    var kwargsDump = sortedJSON.sortify(taskReq.kwargs || {}, {
           stringify: true,
           sortArray: false});
 
-    funcCallOptions.funcCallKwargsMD5 = toolkit.getMD5(funcCallKwargsDump);
-    funcCallOptions.funcPressure      = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE // 后续从Redis中获取实际预期压力值
+    var kwargsMD5    = toolkit.getMD5(kwargsDump);
+    var funcPressure = CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE; // 后续从 Redis 中获取实际预期压力值
 
     // 同步函数回调函数
-    onResultCallback = function(celeryErr, celeryRes, extraInfo) {
-      /* 此处有celeryErr也不能立刻callback，需要经过统计处理后再将错误抛出 */
-
-      var isCached        = false;
-      var ret             = null;
-      var responseControl = null;
-
+    taskReq.handler = function(taskResp) {
       async.series([
-        // 结果处理
         function(asyncCallback) {
-          if (celeryErr) return asyncCallback(celeryErr);
+          // 错误处理
+          switch(taskResp.status) {
+            case 'noResponse':
+              // 无响应
+              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
 
-          celeryRes = celeryRes || {};
-          extraInfo = extraInfo || {};
-
-          // 无法通过JSON.parse解析
-          if ('string' === typeof celeryRes) {
-            return asyncCallback(new E('EFuncResultParsingFailed', 'Func result is not standard JSON', {
-              etype: celeryRes.result && celeryRes.result.exc_type,
-            }));
-          }
-
-          if (celeryRes.status === 'FAILURE') {
-            // 保证有值
-            celeryRes.einfoTEXT = celeryRes.einfoTEXT || '';
-
-            // 正式调用发生错误只返回堆栈错误信息最后一行
-            var einfoTEXT = celeryRes.einfoTEXT
-                          ? celeryRes.einfoTEXT.trim().split('\n').pop().trim()
-                          : 'No error info';
-
-            if (celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
-              // 超时错误
-              return asyncCallback(new E('EFuncTimeout', 'Calling Function timeout', {
-                id       : celeryRes.id,
-                etype    : celeryRes.result && celeryRes.result.exc_type,
-                einfoTEXT: einfoTEXT,
+            case 'failure':
+              // 失败
+              return asyncCallback(new E('EFuncFailed', 'Func task failed', {
+                error     : taskResp.error,
+                errorStack: taskResp.errorStack,
               }));
 
-            } else {
-              // 其他错误
-              return asyncCallback(new E('EFuncFailed', 'Calling Function failed', {
-                id       : celeryRes.id,
-                etype    : celeryRes.result && celeryRes.result.exc_type,
-                einfoTEXT: einfoTEXT,
+            case 'timeout':
+              // 超时
+              return asyncCallback(new E('EFuncTimeout', 'Func task timeout', {
+                error     : taskResp.error,
+                errorStack: taskResp.errorStack,
               }));
-            }
-
-          } else if (extraInfo.status === 'TIMEOUT') {
-            // API等待超时
-            return asyncCallback(new E('EAPITimeout', 'Waiting Func result timeout, but task is still running. Use task ID to fetch result later', {
-              id   : extraInfo.id,
-              etype: celeryRes.result && celeryRes.result.exc_type,
-            }));
           }
 
-          // 缓存结果标记
-          isCached = celeryRes.id === 'CACHED';
-
-          // 提取响应控制
-          responseControl = celeryRes.retval._responseControl;
-
-          // 准备API返回值
-          ret = toolkit.initRet({ result: celeryRes.retval });
-          if (funcCallOptions.saveResult) {
-            ret.taskId    = celeryRes.id;
-            ret.resultURL = urlFor('indexAPI.getFuncResult', {query: {taskId: celeryRes.id}});
+          // 结果无法解析
+          if ('string' === typeof taskResp.result) {
+            return asyncCallback(new E('EFuncResultParsingFailed', 'Cannot parse task result', {
+              result: taskResp.result,
+            }));
           }
 
           return asyncCallback();
         },
       ], function(err) {
         /* 1. 统计记录 */
-        var costMs = Date.now() - funcCallOptions.triggerTimeMs;
+        var costMs = Date.now() - taskResp.triggerTime * 1000;
 
-        // 授权链接相关
-        if (funcCallOptions.origin === 'authLink') {
+        // 授权链接特殊处理
+        if (taskReq.kwargs.origin === 'authLink') {
           // 记录最近几天调用次数
-          var dateStr = toolkit.getDateString();
-
-          var countCacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallCount', [
-              'authLinkId', funcCallOptions.originId, 'date', dateStr]);
+          var cacheKey = toolkit.getCacheKey('authLink', 'recentCallCount', [
+              'authLinkId', taskReq.kwargs.originId,
+              'date',       toolkit.getDateString()]);
           async.series([
-            // 计数
             function(asyncCallback) {
-              locals.cacheDB.incr(countCacheKey, asyncCallback);
+              locals.cacheDB.incr(cacheKey, asyncCallback);
             },
-            // 设置自动过期
             function(asyncCallback) {
               var expires = CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES;
-              locals.cacheDB.expire(countCacheKey, expires, asyncCallback);
+              locals.cacheDB.expire(cacheKey, expires, asyncCallback);
             },
           ], function(err) {
             if (err) locals.logger.logError(err);
           });
 
           // 记录最近几次调用状态
-          var statusCacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
-              'authLinkId', funcCallOptions.originId]);
+          var cacheKey = toolkit.getCacheKey('authLink', 'recentCallStatus', [
+              'authLinkId', taskReq.kwargs.originId]);
           async.series([
-            // 最近耗时推入队列
             function(asyncCallback) {
-              var status = 'OK';
-              if (err) {
-                status = err.reason || 'UnknownError';
-              } else if (celeryRes.id === 'CACHED') {
-                status = 'cached';
-              }
-
-              var runningStatus = JSON.stringify({
-                costMs: costMs,
-                status: status,
-              });
-              locals.cacheDB.lpush(statusCacheKey, runningStatus, asyncCallback);
+              var runningStatus = { costMs: costMs, status: taskResp.status };
+              var runningStatusDump = JSON.stringify(runningStatus);
+              locals.cacheDB.lpush(cacheKey, runningStatusDump, asyncCallback);
             },
             function(asyncCallback) {
               var limit = CONFIG._RECENT_FUNC_RUNNING_STATUS_LIMIT;
-              locals.cacheDB.ltrim(statusCacheKey, 0, limit, asyncCallback);
+              locals.cacheDB.ltrim(cacheKey, 0, limit, asyncCallback);
             },
-            // 设置自动过期
             function(asyncCallback) {
               var expires = CONFIG._RECENT_FUNC_RUNNING_STATUS_EXPIRES;
-              locals.cacheDB.expire(statusCacheKey, expires, asyncCallback);
+              locals.cacheDB.expire(cacheKey, expires, asyncCallback);
             },
           ], function(err) {
             if (err) locals.logger.logError(err);
           });
         }
 
-        // 同步执行相关
-        if (funcCallOptions.execMode === 'sync' && !isCached) {
-          var prevFuncPressure = funcCallOptions.funcPressure || CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
+        // 非缓存时计算 / 添加压力值
+        if (!taskResp.isCached) {
+          var prevFuncPressure = funcPressure || CONFIG._WORKER_LIMIT_FUNC_PRESSURE_BASE;
           var nextFuncPressure = parseInt((prevFuncPressure + costMs) >> 1);
 
           async.series([
@@ -937,7 +922,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
             retval   : cachedRetval,
             einfoTEXT: null,
           };
-          return onResultCallback(null, dummyCeleryRes, null);
+          return taskRespHandler(null, dummyCeleryRes, null);
 
           /* 进入缓存时，到此结束，直接回调结果函数，不再继续执行 */
         });
@@ -946,7 +931,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       function(asyncCallback) {
         _checkWorkerQueuePressure(locals, funcCallOptions, asyncCallback);
       },
-    ], sendTask);
+    ], putTask);
 
   } else {
     // 非同步任务不计算函数压力值
@@ -954,7 +939,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
     funcCallOptions.funcPressure      = 0;
 
     // 非同步函数回调函数
-    onTaskCallback = function(err, taskId) {
+    putTaskCallback = function(err, taskId) {
       if (err) return callback(err);
 
       var ret = null;
@@ -973,7 +958,7 @@ function _callFuncRunner(locals, funcCallOptions, callback) {
       return callback(err, ret);
     };
 
-    return sendTask();
+    return putTask();
   }
 };
 
@@ -1918,7 +1903,7 @@ exports.callFuncDraft = function(req, res, next) {
     kwargs.triggerTime   = parseInt(kwargs.triggerTimeMs / 1000);
 
     // 启动函数执行任务
-    var onResultCallback = function(err, celeryRes, extraInfo) {
+    var taskRespHandler = function(err, celeryRes, extraInfo) {
       if (err) return next(err);
 
       celeryRes = celeryRes || {};
@@ -1977,7 +1962,7 @@ exports.callFuncDraft = function(req, res, next) {
     // 保证UI运行能够正常接收到超时报错
     taskOptions.resultWaitTimeout = (taskOptions.timeLimit + 5) * 1000;
 
-    celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+    celery.putTask(name, null, kwargs, taskOptions, null, taskRespHandler);
   });
 };
 
@@ -2121,7 +2106,7 @@ exports.integratedSignIn = function(req, res, next) {
   };
 
   // 启动函数执行任务
-  var onResultCallback = function(err, celeryRes, extraInfo) {
+  var taskRespHandler = function(err, celeryRes, extraInfo) {
     if (err) return next(err);
 
     celeryRes = celeryRes || {};
@@ -2234,7 +2219,7 @@ exports.integratedSignIn = function(req, res, next) {
     var taskOptions = {
       resultWaitTimeout: apiTimeout * 1000,
     }
-    celery.putTask(name, null, kwargs, taskOptions, null, onResultCallback);
+    celery.putTask(name, null, kwargs, taskOptions, null, taskRespHandler);
   });
 };
 
@@ -2455,5 +2440,5 @@ exports.fileService = function(req, res, next) {
 
 /* 允许其他模块调用 */
 exports._getFuncById                      = _getFuncById;
-exports._createFuncCallOptionsFromOptions = _createFuncCallOptionsFromOptions;
+exports._createFuncCallOptions = _createFuncCallOptions;
 exports._callFuncRunner                   = _callFuncRunner;

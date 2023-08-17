@@ -47,7 +47,7 @@ class BaseTask(object):
     default_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
 
     # 默认是否忽略结果
-    default_ignore_result = False
+    default_ignore_result = True
 
     def __init__(self,
                  task_id=None,
@@ -62,7 +62,7 @@ class BaseTask(object):
         self.task_id = task_id or toolkit.gen_data_id('task')
         self.kwargs  = kwargs or dict()
 
-        self.trigger_time = trigger_time or toolkit.get_timestamp()
+        self.trigger_time = trigger_time or toolkit.get_timestamp(3)
         self.start_time   = None
         self.end_time     = None
 
@@ -178,29 +178,30 @@ class BaseTask(object):
         self._lock_key   = None
         self._lock_value = None
 
-    def set_info(self):
-        # 任务结束
+    def response(self):
+        # 任务结束时的处理
         if self.status not in ('waiting', 'pending'):
-            # 发布消息
-            cache_key = toolkit.get_cache_key('task', 'info', [ 'name', self.name, 'id', self.task_id ])
+            # 发送结果通知
+            if not self.ignore_result:
+                cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])
 
-            info = {
-                'name'  : self.name,
-                'id'    : self.task_id,
-                'kwargs': self.kwargs,
+                task_resp = {
+                    'name'  : self.name,
+                    'id'    : self.task_id,
+                    'kwargs': self.kwargs,
 
-                'triggerTime': self.trigger_time,
-                'startTime'  : self.start_time,
-                'endTime'    : self.end_time,
+                    'triggerTime': self.trigger_time,
+                    'startTime'  : self.start_time,
+                    'endTime'    : self.end_time,
 
-                'result'    : self.result if not self.ignore_result else 'IGNORED',
-                'status'    : self.status,
-                'error'     : None if self.error is None else pprint.saferepr(self.error),
-                'errorStack': self.error_stack,
-            }
-            info_dumps = toolkit.json_dumps(info, ignore_nothing=True, indent=None)
+                    'result'    : self.result if not self.ignore_result else 'IGNORED',
+                    'status'    : self.status,
+                    'error'     : None if self.error is None else pprint.saferepr(self.error),
+                    'errorStack': self.error_stack,
+                }
+                task_resp_dumps = toolkit.json_dumps(task_resp, ignore_nothing=True, indent=None)
 
-            self.cache_db.publish(cache_key, info_dumps)
+                self.cache_db.publish(cache_key, task_resp_dumps)
 
             # 自动解锁
             self.unlock()
@@ -236,8 +237,8 @@ class BaseTask(object):
     def start(self):
         # 任务信息
         self.status     = 'pending'
-        self.start_time = toolkit.get_timestamp()
-        self.set_info()
+        self.start_time = toolkit.get_timestamp(3)
+        self.response()
 
         # 加载系统配置
         self.reload_system_settings()
@@ -286,13 +287,13 @@ class BaseTask(object):
             self.result = result
 
         finally:
-            self.end_time = toolkit.get_timestamp()
+            self.end_time = toolkit.get_timestamp(3)
 
             # 执行后回调
             self.callback()
 
             # 记录任务信息
-            self.set_info()
+            self.response()
 
     def run(self, **kwargs):
         self.logger.info(f'{self.name} Task launched.')

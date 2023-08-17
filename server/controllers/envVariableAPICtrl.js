@@ -6,10 +6,9 @@
 var async = require('async');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
 
 var envVariableMod = require('../models/envVariableMod');
 
@@ -90,8 +89,7 @@ exports.modify = function(req, res, next) {
     });
     res.locals.sendJSON(ret);
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
-    reloadDataMD5Cache(celery, id);
+    reloadDataMD5Cache(res.locals, id);
   });
 };
 
@@ -125,12 +123,14 @@ exports.delete = function(req, res, next) {
     });
     res.locals.sendJSON(ret);
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
-    reloadDataMD5Cache(celery, id);
+    reloadDataMD5Cache(res.locals, id);
   });
 };
 
-function reloadDataMD5Cache(celery, envVariableId, callback) {
-  var taskKwargs = { type: 'envVariable', id: envVariableId };
-  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
+function reloadDataMD5Cache(locals, envVariableId, callback) {
+  var taskReq = {
+    name  : 'Sys.ReloadDataMD5Cache',
+    kwargs: { type: 'envVariable', id: envVariableId },
+  }
+  locals.cacheDB.putTask(taskReq, callback);
 };

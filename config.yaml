@@ -39,9 +39,6 @@ SECRET: 'your_secret'
 #   NONE   : 不输出
 LOG_LEVEL: WARNING
 
-# 输出 Server 任务发送日志
-LOG_FUNC_CALL_OPTIONS: false
-
 # 日志文件输出地址
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/logs/dataflux-func.log'

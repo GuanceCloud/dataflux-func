@@ -44,6 +44,7 @@ respCodeMap:
   EFuncFailed             : 599.30  # 函数执行失败
   EFuncTimeout            : 599.31  # 函数执行超时
   EFuncResultParsingFailed: 599.40  # 函数返回值无法解析
+  EWorkerNoResponse       : 599.99  # 工作单元无响应
 
 # File icon for extension
 fileIcon:
