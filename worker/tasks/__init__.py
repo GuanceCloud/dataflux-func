@@ -182,6 +182,8 @@ class BaseTask(object):
         pass
 
     def response(self, task_resp):
+        print('>>>>>', task_resp, self.status, self.ignore_result)
+
         # 任务结束时的处理
         if self.status not in ('waiting', 'pending'):
             # 发送结果通知

@@ -779,7 +779,7 @@ var isJSON = toolkit.isJSON = function isJSON(o) {
 var getTimestamp = toolkit.getTimestamp = function getTimestamp(ndigits) {
   ndigits = ndigits || 0;
   if (ndigits === 0) {
-    return round(Date.now() / 1000);
+    return Math.round(Date.now() / 1000);
   } else if (ndigits === 3) {
     return Date.now() / 1000;
   } else {

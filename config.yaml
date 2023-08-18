@@ -316,6 +316,7 @@ _FUNC_TASK_DEFAULT_TIMEOUT                      : 30
 _FUNC_TASK_DEFAULT_BATCH_TIMEOUT                : 3600
 _FUNC_TASK_MIN_TIMEOUT                          : 1
 _FUNC_TASK_MAX_TIMEOUT                          : 3600
+_FUNC_TASK_DEBUG_TIMEOUT                        : 60
 _FUNC_TASK_THREAD_POOL_SIZE                     : 5
 _FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
 _FUNC_TASK_DISTRIBUTION_RANGE                   : 0

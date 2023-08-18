@@ -143,6 +143,7 @@ class ConfigUnaccessableException(DataFluxFuncBaseException):
 
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
+        self.api_set      = set()
         self.apis         = []
         self.log_messages = []
 
@@ -1345,11 +1346,11 @@ class FuncBaseTask(BaseTask):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
 
             # 记录至已导出函数列表
-            if f_name in safe_scope['DFF'].apis_set:
+            if f_name in safe_scope['DFF'].api_set:
                 e = DuplicatedFuncException(f'Two or more functions named `{f_name}`')
                 raise e
 
-            safe_scope['DFF'].apis_set.add(f_name)
+            safe_scope['DFF'].api_set.add(f_name)
             safe_scope['DFF'].apis.append({
                 'name'       : f_name,
                 'title'      : title,

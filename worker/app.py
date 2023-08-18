@@ -50,8 +50,10 @@ def consume():
     task_req = toolkit.json_loads(task_req)
 
     # 生成任务对象
-    task_cls = get_task(task_req['name'])
+    task_name = task_req['name']
+    task_cls = get_task(task_name)
     if not task_cls:
+        LOGGER.warning(f'No such task: {task_name}')
         return
 
     task_inst = task_cls.from_task_request(task_req)

@@ -42,7 +42,6 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
 function startApplication() {
   /* Project Modules */
-  var g           = require('./utils/g');
   var E           = require('./utils/serverError');
   var toolkit     = require('./utils/toolkit');
   var logHelper   = require('./utils/logHelper');
@@ -266,11 +265,6 @@ function startApplication() {
           for (var i = 0; i < stackLines.length; i++) {
             (res.locals.logger || console).error(stackLines[i]);
           }
-        }
-
-        // 5xx Error hook
-        if ('function' === typeof g.on5xxError) {
-          g.on5xxError(req, res, err);
         }
       }
     }

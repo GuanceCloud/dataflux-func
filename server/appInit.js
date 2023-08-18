@@ -9,7 +9,6 @@ var mysql   = require('mysql2');
 var moment  = require('moment');
 
 /* Project Modules */
-var g             = require('./utils/g');
 var E             = require('./utils/serverError');
 var yamlResources = require('./utils/yamlResources');
 var toolkit       = require('./utils/toolkit');
@@ -130,8 +129,6 @@ exports.beforeAppCreate = function(callback) {
 };
 
 exports.afterAppCreated = function(app, server) {
-  g.runUpTime = toolkit.getTimestamp();
-
   var hostname = os.hostname();
 
   // System Metrics

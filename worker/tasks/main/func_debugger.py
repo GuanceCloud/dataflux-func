@@ -29,9 +29,6 @@ class FuncDebuggerTask(FuncBaseTask):
 
         super().__init__(*args, **kwargs)
 
-    def callback(self):
-        pass
-
     def run(self, **kwargs):
         super().run(**kwargs)
 

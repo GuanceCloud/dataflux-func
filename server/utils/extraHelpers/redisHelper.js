@@ -55,8 +55,8 @@ var CLIENT_CONFIG  = null;
 var CLIENT         = null;
 var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
 
-var SUB_CLIENT          = null;
-var MESSAGE_HANDLER_MAP = {};
+var SUB_CLIENT           = null;
+var TASK_ON_RESPONSE_MAP = {};
 
 /**
  * @constructor
@@ -1079,6 +1079,7 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
 };
 
 RedisHelper.prototype.putTask = function(taskReq, callback) {
+  console.log('>>>>>', taskReq)
   var self = this;
 
   taskReq  = taskReq || {};
@@ -1089,18 +1090,19 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   }
 
   // Init task response sub client
-  if (!self.taskResponseSubClient) {
-    self.taskResponseSubClient = self.client.duplicate();
-    self.taskOnResponseMap = {};
+  if (!SUB_CLIENT) {
+    SUB_CLIENT = self.client.duplicate();
+    TASK_ON_RESPONSE_MAP = {};
 
-    var taskRespCacheKey = toolkit.getCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
-    self.taskResponseSubClient.psubscribe(taskRespCacheKey);
+    var taskRespCacheKey = toolkit.getWorkerCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
+    SUB_CLIENT.psubscribe(taskRespCacheKey);
 
-    self.taskResponseSubClient.on('pmessage', function(pattern, channel, message) {
+    SUB_CLIENT.on('pmessage', function(pattern, channel, message) {
+      console.log('>>>>>', channel, message)
       var taskId = toolkit.parseCacheKey(channel).tags.id;
 
-      var onResponse = self.taskOnResponseMap[taskId];
-      delete self.taskOnResponseMap[taskId];
+      var onResponse = TASK_ON_RESPONSE_MAP[taskId];
+      delete TASK_ON_RESPONSE_MAP[taskId];
 
       if ('function' !== typeof onResponse) return;
 
@@ -1121,7 +1123,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   if (taskReq.ignoreResult === true) {
     delete taskReq.onResponse;
   } else {
-    taskReq.ignoreResult = !!taskReq.onResponse;
+    taskReq.ignoreResult = !!!taskReq.onResponse;
   }
 
   // Push task
@@ -1129,17 +1131,17 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
 
   taskReq.queue = toolkit.isNothing(taskReq.queue)
-                ? taskReq.CONFIG._TASK_DEFAULT_QUEUE
+                ? CONFIG._TASK_DEFAULT_QUEUE
                 : taskReq.queue;
 
   if (taskReq.onResponse) {
-    self.taskOnResponseMap[taskReq.id] = taskReq.onResponse;
+    TASK_ON_RESPONSE_MAP[taskReq.id] = taskReq.onResponse;
     delete taskReq.onResponse;
 
     // Waiting for response
     setTimeout(function() {
-      var onResponse = self.taskOnResponseMap[taskReq.id];
-      delete self.taskOnResponseMap[taskReq.id];
+      var onResponse = TASK_ON_RESPONSE_MAP[taskReq.id];
+      delete TASK_ON_RESPONSE_MAP[taskReq.id];
 
       if (onResponse) {
         var taskResp = {
@@ -1156,6 +1158,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     }, Math.min(taskReq.timeout || CONFIG._TASK_DEFAULT_TIMEOUT, CONFIG._TASK_MAX_WAIT_TIMEOUT) * 1000);
   }
 
+  console.log('>>>>>', taskReq)
   var taskReqDumps = JSON.stringify(taskReq);
 
   if (taskReq.delay) {
