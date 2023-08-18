@@ -435,7 +435,7 @@ function callFuncRunner(locals, taskReq, callback) {
           switch(taskResp.status) {
             case 'noResponse':
               // 无响应
-              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
+              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
             case 'failure':
               // 失败
@@ -512,25 +512,26 @@ function callFuncDebugger(locals, options, callback) {
       // 失败处理
       if (taskResp.status === 'noResponse') {
         // 无响应
-        return callback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
+        return callback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
       } else if (taskResp.status === 'success' && taskResp.result) {
         // 预检查处理永远不会失败，且必然有返回数据
-        switch(taskResp.result.status) {
-          // 失败
-          case 'failure':
-            return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
-            }));
 
-          // 超时
-          case 'timeout':
-          return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
-            }));
-        }
+        // switch(taskResp.result.status) {
+        //   // 失败
+        //   case 'failure':
+        //     return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
+        //       error     : taskResp.result.error,
+        //       errorStack: taskResp.result.errorStack,
+        //     }));
+
+        //   // 超时
+        //   case 'timeout':
+        //   return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
+        //       error     : taskResp.result.error,
+        //       errorStack: taskResp.result.errorStack,
+        //     }));
+        // }
 
       } else {
         return callback(new E('EAssert', 'Unexpected pre-check result.'));
@@ -619,7 +620,8 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
 
       // 根据 returnType 响应
       if (returnType === 'ALL') {
-        return res.locals.sendJSON(taskResp);
+        var ret = toolkit.initRet(taskResp);
+        return res.locals.sendJSON(ret);
       } else {
         return res.locals.sendRaw(returnValue[returnType] || null);
       }
@@ -1408,7 +1410,9 @@ exports.callFuncDraft = function(req, res, next) {
   }
   return callFuncDebugger(res.locals, opt, function(err, taskResp) {
     if (err) return next(err);
-    res.locals.sendJSON(taskResp);
+
+    var ret = toolkit.initRet(taskResp);
+    res.locals.sendJSON(ret);
   });
 };
 
@@ -1578,7 +1582,7 @@ exports.integratedSignIn = function(req, res, next) {
         switch(taskResp.status) {
           case 'noResponse':
             // 无响应
-            return next(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
+            return next(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
           case 'failure':
             // 失败

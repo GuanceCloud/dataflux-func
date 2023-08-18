@@ -36,7 +36,8 @@ class FuncDebuggerTask(FuncBaseTask):
         # 此处的 status 为用户函数执行结果，API 端需要根据 result.status 判断预检查是否通过，并将错误重新包装后返回给调用方
         status = 'failure'
 
-        # 错误堆栈
+        # 错误信息
+        error       = None
         error_stack = None
 
         ### 任务开始
@@ -54,7 +55,8 @@ class FuncDebuggerTask(FuncBaseTask):
             for line in traceback.format_exc().splitlines():
                 self.logger.warning(line)
 
-            # 搜集错误堆栈
+            # 搜集错误
+            error       = e
             error_stack = self.get_error_stack()
 
         else:
@@ -97,8 +99,9 @@ class FuncDebuggerTask(FuncBaseTask):
                 'logMessage': log_messages,
 
                 'status'         : status,
+                'error'          : None if error is None else pprint.saferepr(error),
                 'errorStack'     : error_stack,
-                'cost'           : toolkit.get_timestamp(3) - self.start_time,
+                'cost'           : round(toolkit.get_timestamp(3) - self.start_time, 3),
                 'peakMemroyUsage': None,
             }
 

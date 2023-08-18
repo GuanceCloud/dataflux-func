@@ -327,22 +327,18 @@ exports.publish = function(req, res, next) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return next(scopeErr);
 
-      function doResponse() {
-        var ret = toolkit.initRet({
-          id            : id,
-          publishVersion: nextScriptPublishVersion,
-          apiFuncs      : nextAPIFuncs,
-        });
-        res.locals.sendJSON(ret);
-      }
-
-      if (!wait) doResponse(); // 不等待发布结束
+      // 响应
+      var ret = toolkit.initRet({
+        id            : id,
+        publishVersion: nextScriptPublishVersion,
+        apiFuncs      : nextAPIFuncs,
+      });
+      res.locals.sendJSON(ret);
 
       // 发布成功后
       // 1. 重新加载脚本代码 MD5 缓存
       // 2. 运行发布后自动运行的函数
       reloadDataMD5Cache(res.locals, id, function(err) {
-        if (wait) doResponse(); // 等待发布结束
         if (err) return;
 
         nextAPIFuncs.forEach(function(func) {

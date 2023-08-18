@@ -2020,10 +2020,6 @@ scriptAPI:
         $desc: 脚本 ID
         $type: string
     body:
-      wait:
-        $desc   : 等待发布结束
-        $type   : boolean
-        $example: false
       data:
         $isRequired: false
         note:

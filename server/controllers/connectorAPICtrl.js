@@ -174,7 +174,7 @@ function _checkConfig(locals, type, config, skipTest, callback) {
       switch(taskResp.status) {
         case 'noResponse':
           // 无响应
-          return callback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
+          return callback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
         case 'failure':
           // 失败
@@ -432,7 +432,7 @@ exports.query = function(req, res, next) {
           switch(taskResp.status) {
             case 'noResponse':
               // 无响应
-              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
+              return asyncCallback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
             case 'failure':
               // 失败
