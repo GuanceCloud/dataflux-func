@@ -170,7 +170,7 @@ function _checkConfig(locals, type, config, skipTest, callback) {
     name  : 'Main.CheckConnector',
     kwargs: { type: type, config: config },
 
-    handler(taskResp) {
+    onResponse(taskResp) {
       switch(taskResp.status) {
         case 'noResponse':
           // 无响应
@@ -428,7 +428,7 @@ exports.query = function(req, res, next) {
         name  : 'Main.QueryConnector',
         kwargs: taskKwargs,
 
-        handler(taskResp) {
+        onResponse(taskResp) {
           switch(taskResp.status) {
             case 'noResponse':
               // 无响应

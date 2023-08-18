@@ -57,7 +57,7 @@ def consume():
     task_inst = task_cls.from_task_request(task_req)
 
     # 限制执行时长
-    signal.alarm(task_inst.time_limit)
+    signal.alarm(task_inst.timeout)
 
     # 执行任务
     task_inst.start()

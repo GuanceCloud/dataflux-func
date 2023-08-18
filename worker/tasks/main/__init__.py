@@ -136,6 +136,8 @@ class InvalidConnectorOptionException(DataFluxFuncBaseException):
     pass
 class InvalidAPIOptionException(DataFluxFuncBaseException):
     pass
+class DuplicatedFuncException(DataFluxFuncBaseException):
+    pass
 class ConfigUnaccessableException(DataFluxFuncBaseException):
     pass
 
@@ -1049,13 +1051,16 @@ class FuncBaseTask(BaseTask):
         self.func_chain = self.kwargs.get('funcChain') or []
         self.func_chain.append(self.func_id)
 
-        # HTTP请求
+        # HTTP 请求
         self.http_request = self.kwargs.get('httpRequest') or {}
         if 'headers' in self.http_request:
             self.http_request['headers'] = toolkit.IgnoreCaseDict(self.http_request['headers'])
 
         # 任务信息保留数量
         self.task_info_limit = self.kwargs.get('taskInfoLimit') or 0
+
+        # 缓存函数调用结果
+        self.cache_result = self.kwargs.get('cacheResult') or False
 
         # 脚本信息 / 环境
         self.script_info = None
@@ -1340,12 +1345,17 @@ class FuncBaseTask(BaseTask):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
 
             # 记录至已导出函数列表
+            if f_name in safe_scope['DFF'].apis_set:
+                e = DuplicatedFuncException(f'Two or more functions named `{f_name}`')
+                raise e
+
+            safe_scope['DFF'].apis_set.add(f_name)
             safe_scope['DFF'].apis.append({
                 'name'       : f_name,
                 'title'      : title,
                 'description': f_doc,
                 'definition' : f_def,
-                'extraConfig': extra_config or None,
+                'extraConfig': extra_config,
                 'category'   : category,
                 'tags'       : tags,
                 'args'       : f_args,

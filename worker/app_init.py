@@ -3,7 +3,6 @@
 # Built-in Modules
 
 # 3rd-party Modules
-from celery import platforms
 import pymysql
 from pymysql.cursors import DictCursor
 
@@ -11,9 +10,6 @@ from pymysql.cursors import DictCursor
 from worker.utils import toolkit, yaml_resources
 
 CONFIG = yaml_resources.get('CONFIG')
-
-# Patch ROOT Warning
-platforms._warn_or_raise_security_error = toolkit.nope_func
 
 def get_db_connection():
     mysql_config = {
@@ -97,7 +93,7 @@ def before_app_create():
                 yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
             print(f'Database Timezone: {timezone}');
 
-def after_app_created(celery_app):
+def after_app_created(cache_db):
     from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run, auto_backup_db
 
     # 启动时自动执行

@@ -31,40 +31,41 @@ var CONNECTOR_TOPIC_FUNC_MAP = {};
 function createMessageHandler(locals, connectorId, handlerFuncId) {
   return function(topic, message, packet, callback) {
     // 发送任务
-    var funcCallOptions = null;
-    var funcResult      = null;
+    var taskReq    = null;
+    var funcResult = null;
     async.series([
       // 生成函数调用配置
       function(asyncCallback) {
         var opt = {
-          origin  : 'connector',
-          originId: connectorId,
-          queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
+          funcId: handlerFuncId,
           funcCallKwargs: {
             topic  : topic.toString(),
             message: message.toString(),
             // NOTE: 一般而言 topic 和 message 参数足矣。为减少数据传输量，暂不提供本参数
             // packet : packet,
           },
+          origin  : 'connector',
+          originId: connectorId,
+          queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
         }
-        indexAPICtrl._createFuncCallOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
+        indexAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);
 
-          funcCallOptions = _funcCallOptions;
+          taskReq = _taskReq;
 
           return asyncCallback();
         });
       },
       // 发送任务
       function(asyncCallback) {
-        indexAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
+        indexAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
           locals.logger.debug('[SUB] TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
 
           if (err) return asyncCallback(err);
 
           // 提取结果
           try {
-            funcResult = ret.data.result.raw;
+            funcResult = taskResp.result.returnValue;
           } catch(err) {
             funcResult = null;
           }

@@ -17,7 +17,6 @@ var ROUTE   = require('../utils/yamlResources').get('ROUTE');
 var toolkit = require('../utils/toolkit');
 var common  = require('../utils/common');
 
-var scriptAPICtrl             = require('./scriptAPICtrl');
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
 var funcMod                   = require('../models/funcMod');
@@ -27,6 +26,9 @@ var authLinkMod               = require('../models/authLinkMod');
 var crontabConfigMod          = require('../models/crontabConfigMod');
 var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
+
+var indexAPICtrl = require('./indexAPICtrl');
+
 
 /* Configure */
 
@@ -653,9 +655,8 @@ function doDeploy(locals, scriptSetId, options, callback) {
   var funcModel          = funcMod.createModel(locals);
   var crontabConfigModel = crontabConfigMod.createModel(locals);
 
-  var installedScriptSet   = null;
-  var exampleScript        = null;
-  var nextExportedAPIFuncs = null;
+  var exampleScript = null;
+  var nextAPIFuncs  = null;
   async.series([
     // 获取已安装脚本集
     function(asyncCallback) {
@@ -732,27 +733,30 @@ function doDeploy(locals, scriptSetId, options, callback) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      scriptAPICtrl.sendPreCheckTask(locals, startupScriptId, function(err, exportedAPIFuncs) {
+      var opt = {
+        scriptId: startupScriptId,
+      }
+      indexAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextExportedAPIFuncs = exportedAPIFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       });
     },
     // 更新函数
     function(asyncCallback) {
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      funcModel.update(startupScriptId, nextExportedAPIFuncs, asyncCallback);
+      funcModel.update(startupScriptId, nextAPIFuncs, asyncCallback);
     },
     // 检查自动触发配置存在性 / 创建自动触发配置
     function(asyncCallback) {
       if (!options.withCrontabConfig) return asyncCallback();
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
-        var apiFunc = nextExportedAPIFuncs[i];
+      for (var i = 0; i < nextAPIFuncs.length; i++) {
+        var apiFunc = nextAPIFuncs[i];
         if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCrontab) {
           startupScriptCrontabFunc = apiFunc;
           break;

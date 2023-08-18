@@ -1081,27 +1081,28 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
 RedisHelper.prototype.putTask = function(taskReq, callback) {
   var self = this;
 
-  taskReq = taskReq || {};
+  taskReq  = taskReq || {};
+  callback = toolkit.ensureFn(callback);
 
   if (!taskReq.name) {
     return callback(new Error('taskReq.name is required.'));
   }
 
   // Init task response sub client
-  if (!self.taskRespSubClient) {
-    self.taskRespSubClient  = self.client.duplicate();
-    self.taskRespHandlerMap = {};
+  if (!self.taskResponseSubClient) {
+    self.taskResponseSubClient = self.client.duplicate();
+    self.taskOnResponseMap = {};
 
     var taskRespCacheKey = toolkit.getCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
-    self.taskRespSubClient.psubscribe(taskRespCacheKey);
+    self.taskResponseSubClient.psubscribe(taskRespCacheKey);
 
-    self.taskRespSubClient.on('pmessage', function(pattern, channel, message) {
+    self.taskResponseSubClient.on('pmessage', function(pattern, channel, message) {
       var taskId = toolkit.parseCacheKey(channel).tags.id;
 
-      var handler = self.taskRespHandlerMap[taskId];
-      delete self.taskRespHandlerMap[taskId];
+      var onResponse = self.taskOnResponseMap[taskId];
+      delete self.taskOnResponseMap[taskId];
 
-      if ('function' !== typeof handler) return;
+      if ('function' !== typeof onResponse) return;
 
       var taskResp = message;
       if (taskResp) {
@@ -1112,14 +1113,15 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
         }
       }
 
-      handler(taskResp);
+      onResponse(taskResp);
     });
   }
 
   // Prepare
   if (taskReq.ignoreResult === true) {
-    delete taskReq.handler;
-    delete taskReq.waitTimeout;
+    delete taskReq.onResponse;
+  } else {
+    taskReq.ignoreResult = !!taskReq.onResponse;
   }
 
   // Push task
@@ -1127,19 +1129,19 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
 
   taskReq.queue = toolkit.isNothing(taskReq.queue)
-                ? taskReq.CONFIG._WORKER_DEFAULT_QUEUE
+                ? taskReq.CONFIG._TASK_DEFAULT_QUEUE
                 : taskReq.queue;
 
-  if ('function' === typeof taskReq.handler) {
-    self.taskRespHandlerMap[taskReq.id] = taskReq.handler;
-    taskReq.ignoreResult = false;
+  if (taskReq.onResponse) {
+    self.taskOnResponseMap[taskReq.id] = taskReq.onResponse;
+    delete taskReq.onResponse;
 
-    // Wait result
+    // Waiting for response
     setTimeout(function() {
-      var handler = self.taskRespHandlerMap[taskReq.id];
-      delete self.taskRespHandlerMap[taskReq.id];
+      var onResponse = self.taskOnResponseMap[taskReq.id];
+      delete self.taskOnResponseMap[taskReq.id];
 
-      if ('function' === typeof handler) {
+      if (onResponse) {
         var taskResp = {
           name  : taskReq.name,
           id    : taskReq.id,
@@ -1149,18 +1151,13 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
 
           status: 'noResponse',
         }
-        handler(taskResp);
+        onResponse(taskResp);
       }
-    }, (taskReq.waitTimeout || 5) * 1000);
-
-  } else {
-    delete taskReq.ignoreResult;
+    }, Math.min(taskReq.timeout || CONFIG._TASK_DEFAULT_TIMEOUT, CONFIG._TASK_MAX_WAIT_TIMEOUT) * 1000);
   }
 
-  delete taskReq.handler;
-  delete taskReq.waitTimeout;
+  var taskReqDumps = JSON.stringify(taskReq);
 
-  var taskReqDumps = JSON.stringify(taskReqDumps);
   if (taskReq.delay) {
     var delayQueue = toolkit.getDelayQueue(taskReq.queue);
     var eta = taskReq.triggerTime + taskReq.delay;

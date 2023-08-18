@@ -122,7 +122,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
-        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
+        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -165,7 +165,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
+        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break
@@ -382,7 +382,7 @@ class SyncCache(BaseTask):
 
         # 搜集数据
         cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
-        for i in range(CONFIG['_SYNC_CACHE_BULK_COUNT']):
+        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
                 break

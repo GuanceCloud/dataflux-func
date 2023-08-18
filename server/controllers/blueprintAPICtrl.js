@@ -10,11 +10,12 @@ var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
-var scriptAPICtrl = require('./scriptAPICtrl');
-var blueprintMod  = require('../models/blueprintMod');
-var scriptSetMod  = require('../models/scriptSetMod');
-var scriptMod     = require('../models/scriptMod');
-var funcMod       = require('../models/funcMod');
+var blueprintMod = require('../models/blueprintMod');
+var scriptSetMod = require('../models/scriptSetMod');
+var scriptMod    = require('../models/scriptMod');
+var funcMod      = require('../models/funcMod');
+
+var indexAPICtrl = require('./indexAPICtrl');
 
 /* Configure */
 var NODE_FUNC_IMPORTS_MAP = {
@@ -368,7 +369,7 @@ exports.deploy = function(req, res, next) {
   var blueprintScriptSetId = `blueprint_${id}`;
   var blueprintScriptId    = `${blueprintScriptSetId}__main`;
   var blueprint            = null;
-  var nextExportedAPIFuncs = null;
+  var nextAPIFuncs         = null;
 
   async.series([
     // 获取蓝图画布数据
@@ -407,19 +408,22 @@ exports.deploy = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      scriptAPICtrl.sendPreCheckTask(res.locals, blueprintScriptId, function(err, exportedAPIFuncs) {
+      var opt = {
+        scriptId: blueprintScriptId,
+      }
+      indexAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextExportedAPIFuncs = exportedAPIFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       });
     },
     // 更新函数
     function(asyncCallback) {
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      funcModel.update(blueprintScriptId, nextExportedAPIFuncs, asyncCallback);
+      funcModel.update(blueprintScriptId, nextAPIFuncs, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

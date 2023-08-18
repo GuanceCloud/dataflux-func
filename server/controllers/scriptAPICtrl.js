@@ -16,6 +16,8 @@ var scriptMod               = require('../models/scriptMod');
 var funcMod                 = require('../models/funcMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
+var indexAPICtrl = require('./indexAPICtrl');
+
 /* Configure */
 
 /* Handlers */
@@ -285,10 +287,13 @@ exports.publish = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      sendPreCheckTask(res.locals, id, function(err, apiFuncs) {
+      var opt = {
+        scriptId: id
+      }
+      indexAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextAPIFuncs = apiFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       })
@@ -343,20 +348,23 @@ exports.publish = function(req, res, next) {
         nextAPIFuncs.forEach(function(func) {
           if (func.integration !== 'autoRun') return;
 
-          try {
-            if (!func.extraConfig.integrationConfig.onPublish) return;
-          } catch(err) {
-            return;
+          if (!func.extraConfig
+            || !func.extraConfig.integrationConfig
+            || !func.extraConfig.integrationConfig.onPublish) return;
+
+          var timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+          if (func.extraConfigJSON && func.extraConfigJSON.timeout) {
+            timeout = parseInt(func.extraConfigJSON.timeout);
           }
 
-          var funcId = toolkit.strf('{0}.{1}', id, func.name)
           var taskReq = {
-            name: 'Biz.FuncRunner',
+            name: 'Main.FuncRunner',
             kwargs: {
-              funcId       : funcId,
+              funcId       : toolkit.strf('{0}.{1}', id, func.name),
               origin       : 'integration',
               originId     : 'integration',
-              execMode     : 'onPublish',
+              timeout      : timeout,
+              expires      : timeout,
               taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
             },
             queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
@@ -368,77 +376,6 @@ exports.publish = function(req, res, next) {
   });
 };
 
-function sendPreCheckTask(locals, scriptId, callback) {
-  var apiFuncs = [];
-
-  var taskReq = {
-    name: 'Biz.FuncDebugger',
-    kwargs: {
-      funcId: scriptId,
-    },
-    queue      : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-    waitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
-
-    handler(taskResp) {
-      // 失败处理
-      if (taskResp.status === 'noResponse') {
-        // 无响应
-        return callback(new E('EWorkerNoResponse', 'Worker no response, please check ths system'));
-
-      } else if (taskResp.status === 'success' && taskResp.result) {
-        // 预检查处理永远不会失败，且必然有返回数据
-        switch(taskResp.result.status) {
-          // 失败
-          case 'failure':
-            return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
-            }));
-
-          // 超时
-          case 'timeout':
-          return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
-            }));
-        }
-
-      } else {
-        return callback(new E('EAssert', 'Unexpected pre-check result.'));
-      }
-
-      // 成功继续
-      try {
-        apiFuncs = taskResp.result.apiFuncs;
-      } catch(_) {
-        // Nope
-      } finally {
-        // 保证一定为数组
-        if (toolkit.isNothing(apiFuncs)) {
-          apiFuncs = [];
-        }
-      }
-
-      // 检查重名函数
-      var funcNameMap = {};
-      for (var i = 0; i < apiFuncs.length; i++) {
-        var name = apiFuncs[i].name;
-
-        if (!funcNameMap[name]) {
-          funcNameMap[name] = true;
-        } else {
-          return callback(new E('EClientDuplicated', 'Found duplicated func names in script', {
-            funcName: name,
-          }));
-        }
-      }
-
-      return callback(null, apiFuncs);
-    }
-  }
-  return locals.cacheDB.putTask(taskReq);
-};
-
 function reloadDataMD5Cache(locals, scriptId, callback) {
   var taskReq = {
     name  : 'Sys.ReloadDataMD5Cache',
@@ -447,5 +384,4 @@ function reloadDataMD5Cache(locals, scriptId, callback) {
   locals.cacheDB.putTask(taskReq, callback);
 };
 
-exports.sendPreCheckTask   = sendPreCheckTask;
 exports.reloadDataMD5Cache = reloadDataMD5Cache;

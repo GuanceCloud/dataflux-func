@@ -10,7 +10,7 @@ from worker.tasks import BaseTask
 class ExampleSuccessTask(BaseTask):
     name = 'Example.Success'
 
-    default_time_limit = 30
+    default_timeout = 30
 
     def run(self, **kwargs):
         s = 'Example: Success'
@@ -19,7 +19,7 @@ class ExampleSuccessTask(BaseTask):
 class ExampleFailureTask(BaseTask):
     name = 'Example.Failure'
 
-    default_time_limit = 30
+    default_timeout = 30
 
     def run(self, **kwargs):
         raise Exception('Example: Failure')
@@ -27,7 +27,7 @@ class ExampleFailureTask(BaseTask):
 class ExampleTimeoutTask(BaseTask):
     name = 'Example.Timeout'
 
-    default_time_limit = 15
+    default_timeout = 15
 
     def run(self, **kwargs):
         time.sleep(30)

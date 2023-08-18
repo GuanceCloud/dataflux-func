@@ -82,11 +82,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Celery Beat
-celerybeat.pid
-celerybeat-schedule
-celerybeat-schedule.*
-
 # Code try
 *.try.py
 

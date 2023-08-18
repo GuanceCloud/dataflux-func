@@ -10,7 +10,6 @@
     "babyparse": "0.4.6",
     "body-parser": "1.20.0",
     "byte-size": "7.0.1",
-    "celery-client": "0.4.2",
     "colors": "1.4.0",
     "compression": "1.7.4",
     "cookie-parser": "1.4.6",
