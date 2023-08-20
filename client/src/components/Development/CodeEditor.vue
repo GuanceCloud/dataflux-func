@@ -738,6 +738,8 @@ export default {
       let cost            = result.cost;            // 执行耗时
       let logMessages     = result.logMessage;      // 日志输出
       let returnValue     = result.returnValue;     // 函数返回值
+      let error           = result.error;           // 错误信息
+      let errorClass      = result.errorClass;      // 错误类
       let errorStack      = result.errorStack;      // 错误堆栈
 
       // 日志输出添加格式
@@ -751,24 +753,6 @@ export default {
         return [timeTag, timeDiffTag, logContent].join(' ');
       });
       logMessages = logMessages.join('\n') || null;
-
-      if (status === 'success') {
-        // 预检查成功，提取函数 repr 返回值
-        returnValue = returnValue.repr || null;
-        returnValue = htmlEscaper.escape(returnValue);
-
-      } else {
-        // 预检查失败，错误堆栈添加样式
-        if (errorStack) {
-          let lines = errorStack.split('\n').reduce((acc, x) => {
-            if (!x.trim()) return acc;
-
-            acc.push(`<span class="code-editor-output-error-stack">${htmlEscaper.escape(x)}</span>`);
-            return acc;
-          }, []);
-          errorStack = lines.join('\n');
-        }
-      }
 
       let output = {
         seq            : this.funcCallSeq,
@@ -795,54 +779,30 @@ export default {
       });
 
       // 标记错误行
-      // if (status !== 'success') {
-      //   setImmediate(() => {
-      //     const currentFilename = `${this.scriptId}`;
+      if (status !== 'success') {
+        setImmediate(() => {
+          // 提取错误行号
+          let _re = new RegExp(`^\\s*File "${this.scriptId}", line (\\d+)(, in (\\w+))?$`, 'gm');
+          let _m  = [...errorStack.matchAll(_re)];
+          let errorLine = parseInt(_m.pop()[1]) - 1;
 
-      //     let stack = apiRes.detail.traceInfo.stack;
-      //     let inFileStack = stack.filter((s) => {
-      //       if (!s.isInScript) return;
-      //       if (s.filename !== currentFilename) return;
-      //       return true;
-      //     });
-
-      //     // 顶层用户脚本帧（用于定位用户脚本的运行时错误）
-      //     let lastInFileFrame = inFileStack[inFileStack.length - 1];
-
-      //     // 最后报错行（用于定位语法错误）
-      //     let lastErrorLine = [...apiRes.detail.traceInfo.exceptionDump.matchAll(/^File \"(\w+)\", line (\d+)$/mg)].pop()
-
-      //     // 定位错误行
-      //     let errorLine = lastInFileFrame
-      //                   ? lastInFileFrame.lineNumber - 1
-      //                   : parseInt(lastErrorLine[2]) - 1;
-
-      //     let errorText = '';
-      //     try {
-      //       errorText = apiRes.detail.traceInfo.exceptionDump.split('\n').pop().split(':')[0].trim();
-      //     } catch(err) {
-      //       return console.error(err)
-      //     }
-
-      //     let innerHTML = `
-      //         <span class="error-info">
-      //           <i class="fa fa-fw fa-times-circle"></i>
-      //           <span>${errorText}</span>
-      //         </span> `;
-
-      //     this.updateHighlightLineConfig('errorLine', {
-      //       line            : errorLine,
-      //       scroll          : 1,
-      //       marginType      : 'prev',
-      //       textClass       : 'highlight-text',
-      //       backgroundClass : 'error-line-background highlight-code-line-blink',
-      //       lineWidgetConfig: {
-      //         type     : 'errorLine',
-      //         innerHTML: innerHTML,
-      //       },
-      //     });
-      //   });
-      // }
+          // 高亮错误行
+          this.updateHighlightLineConfig('errorLine', {
+            line            : errorLine,
+            scroll          : 1,
+            marginType      : 'prev',
+            textClass       : 'highlight-text',
+            backgroundClass : 'error-line-background highlight-code-line-blink',
+            lineWidgetConfig: {
+              type     : 'errorLine',
+              innerHTML: `<span class="error-info">
+                            <i class="fa fa-fw fa-times-circle"></i>
+                            <span>${errorClass}</span>
+                          </span> `,
+            },
+          });
+        });
+      }
     },
     autoFillFuncCallKwargsJSON(draftFuncId) {
       // 清空
@@ -1138,7 +1098,7 @@ export default {
             titleLabel = this.$t('Executed Func') + this.$t(':');
             break;
         }
-        let title = `<span class="code-editor-output-info">${titleLabel} ${o.name}</span>`;
+        let title = `<span class="code-editor-output-info">${titleLabel} <code>${o.name}</code></span>`;
 
         // 日志输出
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
@@ -1165,10 +1125,13 @@ export default {
 
         // 函数返回值
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let returnValueTitle = null;
+        let returnValueInfo = null;
         let returnValue = o.returnValue;
         if (returnValue) {
-          returnValueTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value (repr)')}${this.$t(':')}</span>`;
+          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Func Return Value (repr)')}${this.$t(':')}</span> <code>${returnValue}</code>`;
+
+          // HTML 转义
+          returnValue = htmlEscaper.escape(returnValue || null);
         }
 
         // 错误堆栈
@@ -1177,6 +1140,14 @@ export default {
         let errorStack = o.errorStack;
         if (errorStack) {
           errorStackTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
+
+          // HTML 转义、添加样式
+          errorStack = errorStack
+          .split('\n')
+          .map(line => {
+            return `<code class="code-editor-output-error-stack">${htmlEscaper.escape(line)}</code>`;
+          })
+          .join('\n');
         }
 
         let section = [ divider, title ]
@@ -1188,8 +1159,8 @@ export default {
           if (peakMemoryUsageInfo) section.push(peakMemoryUsageInfo);
           if (costInfo)            section.push(costInfo);
         }
-        if (returnValueTitle) {
-          section.push('', returnValueTitle, returnValue);
+        if (returnValueInfo) {
+          section.push('', returnValueInfo);
         }
         if (errorStackTitle) {
           section.push('', errorStackTitle,  errorStack);
@@ -1504,7 +1475,6 @@ export default {
   border-radius: 3px;
 }
 pre .code-editor-output-info {
-  font-style: italic;
   color: grey;
 }
 .code-editor-output-info + .code-editor-output-info:last-child {

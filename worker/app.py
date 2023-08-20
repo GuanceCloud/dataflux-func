@@ -9,6 +9,7 @@ import ssl
 import urllib
 
 # 3rd-party Modules
+
 # Disable InsecureRequestWarning
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -52,7 +53,9 @@ def consume():
     # 生成任务对象
     task_name = task_req['name']
     task_cls = get_task(task_name)
-    if not task_cls:
+    if task_cls:
+        print('>>>>>', toolkit.json_dumps(task_req, indent=2))
+    else:
         LOGGER.warning(f'No such task: {task_name}')
         return
 

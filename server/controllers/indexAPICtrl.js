@@ -506,7 +506,7 @@ function callFuncDebugger(locals, options, callback) {
       funcCallKwargs: options.funcCallKwargs || {},
     },
     queue  : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-    timeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
+    timeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
 
     onResponse(taskResp) {
       // 失败处理
@@ -516,22 +516,6 @@ function callFuncDebugger(locals, options, callback) {
 
       } else if (taskResp.status === 'success' && taskResp.result) {
         // 预检查处理永远不会失败，且必然有返回数据
-
-        // switch(taskResp.result.status) {
-        //   // 失败
-        //   case 'failure':
-        //     return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-        //       error     : taskResp.result.error,
-        //       errorStack: taskResp.result.errorStack,
-        //     }));
-
-        //   // 超时
-        //   case 'timeout':
-        //   return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
-        //       error     : taskResp.result.error,
-        //       errorStack: taskResp.result.errorStack,
-        //     }));
-        // }
 
       } else {
         return callback(new E('EAssert', 'Unexpected pre-check result.'));

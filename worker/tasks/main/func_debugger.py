@@ -78,9 +78,9 @@ class FuncDebuggerTask(FuncBaseTask):
 
             if self.func_name and func_resp:
                 # 准备函数运行结果
-                # NOTE: `func_debugger`对应前端只使用 repr 结果
                 if func_resp.data is not None:
                     try:
+                        # NOTE: `func_debugger`对应前端只使用 repr 结果
                         return_value = pprint.saferepr(func_resp.data)
 
                     except Exception as e:
@@ -99,7 +99,8 @@ class FuncDebuggerTask(FuncBaseTask):
                 'logMessage': log_messages,
 
                 'status'         : status,
-                'error'          : None if error is None else pprint.saferepr(error),
+                'error'          : None if error is None else str(error),
+                'errorClass'     : None if error is None else error.__class__.__name__,
                 'errorStack'     : error_stack,
                 'cost'           : round(toolkit.get_timestamp(3) - self.start_time, 3),
                 'peakMemroyUsage': None,

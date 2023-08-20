@@ -1139,6 +1139,12 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     delete taskReq.onResponse;
 
     // Waiting for response
+    var _timeout = taskReq.timeout || CONFIG._TASK_DEFAULT_TIMEOUT;
+    _timeout = Math.min(_timeout, CONFIG._TASK_MAX_WAIT_TIMEOUT);
+
+    // 留出响应时间
+    _timeout += 10;
+
     setTimeout(function() {
       var onResponse = TASK_ON_RESPONSE_MAP[taskReq.id];
       delete TASK_ON_RESPONSE_MAP[taskReq.id];
@@ -1155,7 +1161,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
         }
         onResponse(taskResp);
       }
-    }, Math.min(taskReq.timeout || CONFIG._TASK_DEFAULT_TIMEOUT, CONFIG._TASK_MAX_WAIT_TIMEOUT) * 1000);
+    }, _timeout * 1000);
   }
 
   console.log('>>>>>', taskReq)

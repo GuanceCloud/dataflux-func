@@ -289,7 +289,8 @@ class BaseTask(object):
 
                 'result'    : self.result if not self.ignore_result else 'IGNORED',
                 'status'    : self.status,
-                'error'     : None if self.error is None else pprint.saferepr(self.error),
+                'error'     : None if self.error is None else str(self.error),
+                'errorClass': None if self.error is None else self.error.__class__.__name__,
                 'errorStack': self.error_stack,
             }
 
