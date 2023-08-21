@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var accessKeyMod = require('../models/accessKeyMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = accessKeyMod.createCRUDHandler();

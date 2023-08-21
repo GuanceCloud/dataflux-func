@@ -7,27 +7,43 @@ import signal
 
 # 3rd-party Modules
 
+# Disable InsecureRequestWarning
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 # Project Modules
-from worker import run_background
 from worker.utils import yaml_resources, toolkit
 
 # Init
-from worker.app_init import before_app_create, after_app_created
+from worker.app_init import before_app_create
 before_app_create()
-
-from worker.utils.log_helper import LogHelper
-from worker.utils.extra_helpers import RedisHelper
 
 CONFIG = yaml_resources.get('CONFIG')
 
-LOGGER = LogHelper()
-REDIS  = RedisHelper(logger=LOGGER)
-REDIS.skip_log = True
+from worker import LOGGER, REDIS, run_background
 
-from worker import get_matched_crontab_task_instances
+# 定时任务表
+from worker.tasks.example import ExampleSuccessTask
+
+CRONTAB_MAP = {
+    'example': {
+        'task'   : ExampleSuccessTask,
+        'crontab': '*/3 * * * * *',
+    },
+}
 
 class TickTimeoutException(Exception):
     pass
+
+def get_matched_crontab_task_instances(t, tz=None):
+    result = []
+    for item in CRONTAB_MAP.values():
+        if toolkit.is_match_crontab(item['crontab'], t, tz):
+            task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
+            result.append(task_inst)
+
+    return result
 
 def tick():
     '''
@@ -54,14 +70,14 @@ def tick():
         # 任务入队
         if task_req['delay']:
             # 延迟任务
-            cache_key = toolkit.get_delay_queue(task_req['queue'])
+            delay_queue = toolkit.get_delay_queue(task_req['queue'])
             eta = task_req['triggerTime'] + task_req['delay']
-            REDIS.zadd(cache_key, eta, task_req_dumps)
+            REDIS.zadd(delay_queue, eta, task_req_dumps)
 
         else:
             # 立即任务
-            cache_key = toolkit.get_worker_queue(task_req['queue'])
-            REDIS.lpush(cache_key, task_req_dumps)
+            worker_queue = toolkit.get_worker_queue(task_req['queue'])
+            REDIS.lpush(worker_queue, task_req_dumps)
 
     # 延迟任务进入工作队列
     for queue in range(CONFIG['_WORKER_QUEUE_COUNT']):

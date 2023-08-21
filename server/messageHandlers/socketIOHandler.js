@@ -13,7 +13,7 @@ var auth    = require('../utils/auth');
 
 var socketIOServerHelper = require('../utils/extraHelpers/socketIOServerHelper');
 
-/* Configure */
+/* Init */
 var AUTHED_SOCKET_IO_CLIENT_MAP = {};
 
 module.exports = function(app, server) {

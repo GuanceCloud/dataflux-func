@@ -21,7 +21,7 @@ var common     = require('../utils/common');
 var funcMod          = require('../models/funcMod');
 var systemSettingMod = require('../models/systemSettingMod');
 
-/* Configure */
+/* Init */
 var API_LIST_CACHE = {};
 
 var OPEN_API_PARAM_TYPES = [
@@ -445,7 +445,7 @@ exports.metrics = function(req, res, next) {
   var interval_min = 10;
   var interval     = interval_min * 60;
 
-  var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', '*']);
+  var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', '*']);
   var ignoreMetrics = [
     // 不适合作为OpenMetric导出的指标
     'matchedRouteCount', // 按每日统计的数据，非时序数据

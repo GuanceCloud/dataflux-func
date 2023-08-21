@@ -19,7 +19,7 @@ else:
 
 FILE_CACHE = {}
 
-# Configure
+# Init
 CONFIG_KEY           = 'CONFIG'
 CONFIG_FILE_PATH_KEY = 'CONFIG_FILE_PATH'
 PRINT_DETAIL         = sys.argv[0].split('/')[-1] == 'python'

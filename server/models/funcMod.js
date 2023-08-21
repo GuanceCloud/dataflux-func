@@ -12,7 +12,7 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'func',
   entityName : 'func',

@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var datafluxFuncTaskResultMod = require('../models/datafluxFuncTaskResultMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = datafluxFuncTaskResultMod.createCRUDHandler();

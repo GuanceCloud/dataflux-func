@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var scriptRecoverPointMod = require('../models/scriptRecoverPointMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptRecoverPointMod.createCRUDHandler();

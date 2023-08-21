@@ -528,8 +528,6 @@ function callFuncDebugger(locals, options, callback) {
 };
 
 function _doAPIResponse(res, taskReq, taskResp, callback) {
-  options = options || {};
-
   var returnValue     = taskResp.result.returnValue     || {};
   var responseControl = taskResp.result.responseControl || {};
 
@@ -598,16 +596,16 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
       // 当指定了响应体类型后，returnType 必须为 raw
       var returnType = taskReq.returnType;
       if (responseControl.contentType) {
-        res.type(responseControl.contentType);
         returnType = 'raw';
       }
 
       // 根据 returnType 响应
-      if (returnType === 'ALL') {
+      if (returnType === 'raw') {
+        return res.locals.sendRaw(returnValue[returnType] || null, responseControl.contentType);
+
+      } else {
         var ret = toolkit.initRet(taskResp);
         return res.locals.sendJSON(ret);
-      } else {
-        return res.locals.sendRaw(returnValue[returnType] || null);
       }
     }
   }
@@ -993,7 +991,7 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
+        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCountOnQueue', [
               'workerQueue', i]);
         res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
           if (err) return timesCallback(err);

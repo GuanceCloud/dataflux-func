@@ -7,6 +7,7 @@ import pymysql
 from pymysql.cursors import DictCursor
 
 # Project Modules
+from worker import LOGGER, REDIS
 from worker.utils import toolkit, yaml_resources
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -27,8 +28,9 @@ def get_db_connection():
 
 def before_app_create():
     # Init toolkit
-    APP_NAME_SERVER = CONFIG['APP_NAME'] + '-server'
-    APP_NAME_WORKER = CONFIG['APP_NAME'] + '-worker'
+    APP_NAME_SERVER  = CONFIG['APP_NAME'] + '-server'
+    APP_NAME_WORKER  = CONFIG['APP_NAME'] + '-worker'
+    APP_NAME_MONITOR = CONFIG['APP_NAME'] + '-monitor'
 
     def get_cache_key(topic, name, tags=None, app_name=None):
         cache_key = toolkit._get_cache_key(topic, name, tags)
@@ -44,6 +46,11 @@ def before_app_create():
         return toolkit.get_cache_key(topic, name, tags, APP_NAME_SERVER)
 
     toolkit.get_server_cache_key = get_server_cache_key
+
+    def get_monitor_cache_key(topic, name, tags=None):
+        return toolkit.get_cache_key(topic, name, tags, APP_NAME_MONITOR)
+
+    toolkit.get_monitor_cache_key = get_monitor_cache_key
 
     def get_worker_queue(name):
         worker_queue = f'{APP_NAME_WORKER}#{toolkit._get_worker_queue(name)}'
@@ -93,13 +100,26 @@ def before_app_create():
                 yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
             print(f'Database Timezone: {timezone}');
 
-def after_app_created(cache_db):
-    from worker.tasks.main import reload_data_md5_cache, auto_clean, auto_run, auto_backup_db
+def after_app_created():
+    from worker.tasks.main.utils import AutoBackupDBTask, ReloadDataMD5CacheTask, AutoRunTask, AutoCleanTask
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
-        auto_backup_db.apply_async()
-        reload_data_md5_cache.apply_async(kwargs={ 'lockTime': 15, 'all': True })
+        REDIS.put_task({
+            'name': AutoBackupDBTask.name,
+        })
 
-        auto_run.apply_async(countdown=5)
-        auto_clean.apply_async(countdown=15)
+        REDIS.put_task({
+            'name'  : ReloadDataMD5CacheTask.name,
+            'kwargs': { 'lockTime': 15, 'all': True }
+        })
+
+        REDIS.put_task({
+            'name' : AutoRunTask.name,
+            'delay': 5,
+        })
+
+        REDIS.put_task({
+            'name' : AutoCleanTask.name,
+            'delay': 15,
+        })

@@ -7,4 +7,9 @@ import time
 from worker.utils import toolkit, yaml_resources
 from worker.tasks.base import BaseTask
 
-# TODO
+class InternalHeartbeatTask(BaseTask):
+    name = 'Internal.Heartbeat'
+
+    default_timeout = 30
+
+    def run(self, **kwargs):

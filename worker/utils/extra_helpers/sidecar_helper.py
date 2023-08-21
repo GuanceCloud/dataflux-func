@@ -15,7 +15,7 @@ from . import parse_response
 from worker.utils import toolkit
 
 def get_config(c):
-    return toolkit.no_none_or_white_space({
+    return toolkit.no_none_or_whitespace({
         'host'     : c.get('host')     or '172.17.0.1',
         'port'     : c.get('port')     or 8099,
         'protocol' : c.get('protocol') or 'http',

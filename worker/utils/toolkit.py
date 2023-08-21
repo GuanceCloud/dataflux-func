@@ -246,7 +246,7 @@ def json_dumps(j, ignore_nothing=False, **kwargs):
     kwargs['indent'] = kwargs.get('indent') or 0
 
     if ignore_nothing:
-        j = no_none_or_white_space(j)
+        j = no_none_or_whitespace(j)
 
     try:
         return ujson.dumps(j, **kwargs)
@@ -277,7 +277,7 @@ def is_none_or_empty(o):
 
     return False
 
-def is_none_or_white_space(o):
+def is_none_or_whitespace(o):
     if is_none_or_empty(o):
         return True
 
@@ -286,8 +286,8 @@ def is_none_or_white_space(o):
 
     return False
 
-def no_none_or_white_space(o):
-    return dict([(k,v) for k, v in o.items() if not is_none_or_white_space(v)])
+def no_none_or_whitespace(o):
+    return dict([(k,v) for k, v in o.items() if not is_none_or_whitespace(v)])
 
 def get_timestamp(ndigits=0):
     return round(time.time(), ndigits)

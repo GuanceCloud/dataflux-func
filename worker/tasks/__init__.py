@@ -24,6 +24,8 @@ GUANCE_DATA_STATUS_MAP = {
     'timeout': 'error'
 }
 
+SYSTEM_SETTING_LOCAL_CACHE = toolkit.LocalCache(expires=15)
+
 class TaskInLockedException(Exception):
     pass
 
@@ -128,10 +130,15 @@ class BaseTask(object):
 
     @property
     def system_settings(self):
-        return self._system_settings
+        global SYSTEM_SETTING_LOCAL_CACHE
 
-    def reload_system_settings(self):
-        system_setting_ids = [
+        # 从缓存读取
+        data = SYSTEM_SETTING_LOCAL_CACHE['data']
+        if data:
+            return data
+
+        # 从数据库读取
+        ids = [
             'GUANCE_DATA_UPLOAD_ENABLED',
             'GUANCE_DATA_UPLOAD_URL',
             'GUANCE_DATA_SITE_NAME',
@@ -144,20 +151,23 @@ class BaseTask(object):
                 WHERE
                     id IN ( ? )
                 '''
-        sql_params = [ system_setting_ids ]
+        sql_params = [ ids ]
         db_res = self.db.query(sql, sql_params)
 
-        system_settings = {}
+        data = {}
 
         # 默认值
-        for _id in system_setting_ids:
-            system_settings[_id] = CONST['systemSettings'][_id]
+        for _id in ids:
+            data[_id] = CONST['systemSettings'][_id]
 
         # 用户配置
         for d in db_res:
-            system_settings[d['id']] = toolkit.json_loads(d['value'])
+            data[d['id']] = toolkit.json_loads(d['value'])
 
-        self._system_settings = system_settings
+        # 加入缓存
+        SYSTEM_SETTING_LOCAL_CACHE['data'] = data
+
+        return data
 
     def lock(self, max_age=None):
         max_age = int(max_age or 30)
@@ -182,8 +192,6 @@ class BaseTask(object):
         pass
 
     def response(self, task_resp):
-        print('>>>>>', task_resp, self.status, self.ignore_result)
-
         # 任务结束时的处理
         if self.status not in ('waiting', 'pending'):
             # 发送结果通知
@@ -228,9 +236,6 @@ class BaseTask(object):
         # 任务信息
         self.status     = 'pending'
         self.start_time = toolkit.get_timestamp(3)
-
-        # 加载系统配置
-        self.reload_system_settings()
 
         if CONFIG['MODE'] == 'prod':
             self.db.skip_log       = True

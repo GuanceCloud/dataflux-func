@@ -17,7 +17,7 @@ var funcMod      = require('../models/funcMod');
 
 var indexAPICtrl = require('./indexAPICtrl');
 
-/* Configure */
+/* Init */
 var NODE_FUNC_IMPORTS_MAP = {
   BuiltinHashNode: function(props) {
     return [ 'hashlib' ];

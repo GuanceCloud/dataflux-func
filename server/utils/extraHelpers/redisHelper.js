@@ -14,7 +14,7 @@ var logHelper = require('../logHelper');
 var LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
 var LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
-/* Configure */
+/* Init */
 
 function getConfig(c, retryStrategy) {
   var config = {
@@ -1079,7 +1079,6 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
 };
 
 RedisHelper.prototype.putTask = function(taskReq, callback) {
-  console.log('>>>>>', taskReq)
   var self = this;
 
   taskReq  = taskReq || {};
@@ -1098,7 +1097,6 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     SUB_CLIENT.psubscribe(taskRespCacheKey);
 
     SUB_CLIENT.on('pmessage', function(pattern, channel, message) {
-      console.log('>>>>>', channel, message)
       var taskId = toolkit.parseCacheKey(channel).tags.id;
 
       var onResponse = TASK_ON_RESPONSE_MAP[taskId];
@@ -1130,9 +1128,9 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   taskReq.id          = taskReq.id          || toolkit.genDataId('task');
   taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
 
-  taskReq.queue = toolkit.isNothing(taskReq.queue)
-                ? CONFIG._TASK_DEFAULT_QUEUE
-                : taskReq.queue;
+  if (toolkit.isNothing(taskReq.queue)) {
+    taskReq.queue = CONFIG._TASK_DEFAULT_QUEUE;
+  }
 
   if (taskReq.onResponse) {
     TASK_ON_RESPONSE_MAP[taskReq.id] = taskReq.onResponse;
@@ -1164,7 +1162,6 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     }, _timeout * 1000);
   }
 
-  console.log('>>>>>', taskReq)
   var taskReqDumps = JSON.stringify(taskReq);
 
   if (taskReq.delay) {

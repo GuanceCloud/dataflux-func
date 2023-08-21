@@ -15,7 +15,7 @@ var funcMod          = require('../models/funcMod');
 var crontabConfigMod = require('../models/crontabConfigMod');
 var taskInfoMod      = require('../models/taskInfoMod');
 
-/* Configure */
+/* Init */
 var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */

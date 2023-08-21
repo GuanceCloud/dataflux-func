@@ -18,7 +18,7 @@ from worker.utils.colors import colors
 
 CONFIG = yaml_resources.get('CONFIG')
 
-# Configure
+# Init
 REDIS = None
 
 RUN_UP_TIME = int(time.time())

@@ -12,7 +12,7 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'crontab config',
   entityName : 'crontabConfig',

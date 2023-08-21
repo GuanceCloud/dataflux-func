@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var envVariableMod = require('../models/envVariableMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = envVariableMod.createCRUDHandler();

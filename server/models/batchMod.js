@@ -13,7 +13,7 @@ var modelHelper = require('../utils/modelHelper');
 
 var funcMod = require('./funcMod');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'batch',
   entityName : 'batch',

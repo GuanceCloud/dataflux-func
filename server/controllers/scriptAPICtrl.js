@@ -18,7 +18,7 @@ var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
 var indexAPICtrl = require('./indexAPICtrl');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptMod.createCRUDHandler();

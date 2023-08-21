@@ -14,7 +14,7 @@ var E       = require('./serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
-/* Configure */
+/* Init */
 var UPLOAD_TEMP_FOLDER    = path.join(CONFIG.RESOURCE_ROOT_PATH, CONFIG.UPLOAD_TEMP_ROOT_FOLDER);
 var MULTIPART_BOUNDARY_RE = /^multipart\/form-data.\s?boundary=['"]?(.*?)['"]?$/i;
 

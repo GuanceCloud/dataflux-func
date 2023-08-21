@@ -13,7 +13,7 @@ var toolkit = require('../utils/toolkit');
 
 var connectorMod = require('../models/connectorMod');
 
-/* Configure */
+/* Init */
 var RESERVED_REF_NAME = 'dataflux_';
 
 function _checkConfig(locals, type, config, skipTest, callback) {

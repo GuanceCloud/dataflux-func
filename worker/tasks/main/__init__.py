@@ -122,29 +122,38 @@ os.makedirs(download_temp_folder, exist_ok=True)
 
 class DataFluxFuncBaseException(Exception):
     pass
+
 class NotFoundException(DataFluxFuncBaseException):
     pass
+
 class FuncRecursiveCallException(DataFluxFuncBaseException):
     pass
+
 class FuncChainTooLongException(DataFluxFuncBaseException):
     pass
+
 class ThreadResultKeyDuplicatedException(DataFluxFuncBaseException):
     pass
+
 class ConnectorNotSupportException(DataFluxFuncBaseException):
     pass
+
 class InvalidConnectorOptionException(DataFluxFuncBaseException):
     pass
+
 class InvalidAPIOptionException(DataFluxFuncBaseException):
     pass
+
 class DuplicatedFuncException(DataFluxFuncBaseException):
     pass
+
 class ConfigUnaccessableException(DataFluxFuncBaseException):
     pass
 
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
-        self.api_set      = set()
-        self.apis         = []
+        self.api_func_set = set()
+        self.api_funcs    = []
         self.log_messages = []
 
         self.inject_funcs = inject_funcs
@@ -591,7 +600,7 @@ class FuncConnectorHelper(object):
 
     def get(self, connector_id, **helper_kwargs):
         # 同一个连接器可能有不同的配置（如指定的数据库不同）
-        helper_kwargs = toolkit.no_none_or_white_space(helper_kwargs)
+        helper_kwargs = toolkit.no_none_or_whitespace(helper_kwargs)
 
         global CONNECTOR_HELPER_CLASS_MAP
 
@@ -898,7 +907,7 @@ class BaseFuncResponse(object):
             response_control['filePath']   = self.file_path
             response_control['autoDelete'] = self.auto_delete
 
-        response_control = toolkit.no_none_or_white_space(response_control)
+        response_control = toolkit.no_none_or_whitespace(response_control)
 
         return response_control
 
@@ -1346,12 +1355,12 @@ class FuncBaseTask(BaseTask):
             f_name, f_def, f_args, f_kwargs, f_doc = self._get_func_defination(F)
 
             # 记录至已导出函数列表
-            if f_name in safe_scope['DFF'].api_set:
+            if f_name in safe_scope['DFF'].api_func_set:
                 e = DuplicatedFuncException(f'Two or more functions named `{f_name}`')
                 raise e
 
-            safe_scope['DFF'].api_set.add(f_name)
-            safe_scope['DFF'].apis.append({
+            safe_scope['DFF'].api_func_set.add(f_name)
+            safe_scope['DFF'].api_funcs.append({
                 'name'       : f_name,
                 'title'      : title,
                 'description': f_doc,
@@ -1362,7 +1371,7 @@ class FuncBaseTask(BaseTask):
                 'args'       : f_args,
                 'kwargs'     : f_kwargs,
                 'integration': integration,
-                'defOrder'   : len(safe_scope['DFF'].apis),
+                'defOrder'   : len(safe_scope['DFF'].api_funcs),
             })
 
             @functools.wraps(F)
@@ -1860,16 +1869,3 @@ class FuncBaseTask(BaseTask):
 
     def clean_up(self):
         pass
-
-# from worker.tasks.main.func_debugger   import func_debugger
-# from worker.tasks.main.func_runner     import func_runner
-# from worker.tasks.main.crontab_starter import crontab_starter
-
-# from worker.tasks.main.utils import reload_data_md5_cache
-# from worker.tasks.main.utils import sync_cache
-# from worker.tasks.main.utils import auto_clean
-# from worker.tasks.main.utils import auto_run
-# from worker.tasks.main.utils import check_connector
-# from worker.tasks.main.utils import query_connector
-# from worker.tasks.main.utils import reset_worker_queue_pressure
-# from worker.tasks.main.utils import auto_backup_db

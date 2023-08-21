@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var taskInfoMod = require('../models/taskInfoMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = taskInfoMod.createCRUDHandler();

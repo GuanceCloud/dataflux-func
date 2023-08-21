@@ -14,7 +14,7 @@ var moment  = require('moment-timezone');
 var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
-/* Configure */
+/* Init */
 var RUN_UP_TIME = toolkit.getTimestamp();
 var HOSTNAME    = os.hostname();
 

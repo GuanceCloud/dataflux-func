@@ -16,7 +16,7 @@ var funcMod     = require('../models/funcMod');
 var batchMod    = require('../models/batchMod');
 var taskInfoMod = require('../models/taskInfoMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = batchMod.createCRUDHandler();

@@ -14,7 +14,7 @@ var toolkit = require('./utils/toolkit');
 var connectorMod = require('./models/connectorMod');
 var indexAPICtrl = require('./controllers/indexAPICtrl');
 
-/* Configure */
+/* Init */
 var IS_MASTER_NODE           = null;
 var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
@@ -243,7 +243,7 @@ exports.runListener = function runListener(app) {
     async.series([
       // 查询当前订阅处理工作单元数量
       function(asyncCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerOnQueueCount', [
+        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCountOnQueue', [
             'workerQueue', CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE]);
 
         app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {

@@ -13,7 +13,7 @@ var modelHelper  = require('../utils/modelHelper');
 
 var funcStoreMod = require('../models/funcStoreMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = funcStoreMod.createCRUDHandler();

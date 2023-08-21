@@ -13,7 +13,7 @@ var toolkit = require('../utils/toolkit');
 
 var monitorMod = require('../models/monitorMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 exports.getSystemMetrics = function(req, res, next) {

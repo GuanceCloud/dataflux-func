@@ -18,7 +18,7 @@ var connectorMod     = require('./models/connectorMod');
 var funcMod          = require('./models/funcMod');
 var indexAPICtrl     = require('./controllers/indexAPICtrl');
 
-/* Configure */
+/* Init */
 var IS_MASTER_NODE           = null;
 var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;

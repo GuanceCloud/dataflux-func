@@ -211,6 +211,16 @@ class RedisHelper(object):
     def mget(self, keys, *args):
         return self.run('mget', keys, *args)
 
+    def get_by_pattern(self, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS] GET by pattern `{}`'.format(pattern))
+
+        keys = self.keys(pattern)
+        if len(keys) <= 0:
+            return None
+        else:
+            return self.mget(keys)
+
     def mset(self, key_values, **kwargs):
         return self.run('mset', key_values, **kwargs)
 
@@ -484,3 +494,27 @@ class RedisHelper(object):
 
     def zpop_above_lpush(self, key, dest_key, score):
         return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+
+    def put_task(self, task_req):
+        task_req = task_req or {}
+
+        if not task_req.get('name'):
+            raise Exception("task_req['name'] is required")
+
+        # Put task
+        task_req['id']          = task_req.get('id')          or toolkit.gen_data_id('task')
+        task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
+
+        if toolkit.is_none_or_whitespace(task_req.get('queue')):
+            task_req['queue'] = CONFIG['_TASK_DEFAULT_QUEUE']
+
+        task_req_dumps = toolkit.json_dumps(task_req)
+
+        if task_req.get('delay'):
+            delay_queue = toolkit.get_delay_queue(task_req['queue'])
+            eta         = task_req['triggerTime'] + task_req['delay']
+            return self.zadd(delay_queue, eta, task_req_dumps)
+
+        else:
+            worker_queue = toolkit.get_worker_queue(task_req['queue'])
+            return self.lpush(worker_queue, task_req_dumps)

@@ -11,7 +11,7 @@ var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 exports.pullSystemLogs = function(req, res, next) {

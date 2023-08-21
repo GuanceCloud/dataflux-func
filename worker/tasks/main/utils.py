@@ -18,17 +18,13 @@ import arrow
 import requests
 
 # Project Modules
-from worker.app import app
 from worker.utils import toolkit, yaml_resources
-from worker.tasks import gen_task_id
-from worker.tasks.main import decipher_connector_config_fields
-from worker.utils.extra_helpers import HexStr
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
-
-# Current Module
+from worker.utils.extra_helpers import HexStr, format_sql_v2 as format_sql
 from worker.tasks import BaseTask
-from worker.tasks.main import func_runner, CONNECTOR_HELPER_CLASS_MAP
+from worker.tasks.main import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config_fields
+from worker.tasks.main.func_runner import FuncRunnerTask
 
+# Init
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
@@ -156,7 +152,7 @@ class SyncCache(BaseTask):
 
         # 写入时序数据
         for pk, c in count_map.items():
-            cache_key = toolkit.get_server_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
 
             self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
 
@@ -766,7 +762,7 @@ def auto_run(self, *args, **kwargs):
     integrated_auto_run_funcs = self.get_integrated_on_launch_funcs()
     for f in integrated_auto_run_funcs:
         # 任务 ID
-        task_id = gen_task_id()
+        task_id = toolkit.gen_data_id('task')
 
         # 任务参数
         task_kwargs = {

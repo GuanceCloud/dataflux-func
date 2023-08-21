@@ -16,7 +16,7 @@ var funcMod     = require('../models/funcMod');
 var authLinkMod = require('../models/authLinkMod');
 var taskInfoMod = require('../models/taskInfoMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
@@ -325,4 +325,3 @@ function _modify(locals, id, data, opt, callback) {
     return callback(null, id, url);
   });
 };
-

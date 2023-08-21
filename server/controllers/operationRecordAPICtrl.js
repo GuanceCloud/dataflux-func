@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var operationRecordMod = require('../models/operationRecordMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = operationRecordMod.createCRUDHandler();

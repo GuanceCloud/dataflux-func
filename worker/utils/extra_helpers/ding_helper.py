@@ -40,7 +40,7 @@ class DingHelper(object):
 
     def send_text(self, text, is_at_all=False, at_mobiles=[]):
         data = {"msgtype": "text", "at": {}}
-        if not toolkit.is_none_or_white_space(text):
+        if not toolkit.is_none_or_whitespace(text):
             data["text"] = {"content": text}
 
         if is_at_all:
@@ -54,7 +54,7 @@ class DingHelper(object):
 
     def send_link(self, title, text, message_url, pic_url=''):
         data = {"msgtype": "link", "link": {}}
-        if not toolkit.is_none_or_white_space(title) and not toolkit.is_none_or_white_space(text) and not toolkit.is_none_or_white_space(message_url):
+        if not toolkit.is_none_or_whitespace(title) and not toolkit.is_none_or_whitespace(text) and not toolkit.is_none_or_whitespace(message_url):
             data["link"]["text"]       = text
             data["link"]["title"]      = title
             data["link"]["picUrl"]     = pic_url
@@ -64,7 +64,7 @@ class DingHelper(object):
 
     def send_markdown(self, title, text, is_at_all=False, at_mobiles=[]):
         data = {"msgtype": "markdown", "markdown": {}, "at": {}}
-        if not toolkit.is_none_or_white_space(title) and not toolkit.is_none_or_white_space(text):
+        if not toolkit.is_none_or_whitespace(title) and not toolkit.is_none_or_whitespace(text):
             data['markdown']['title'] = title
             data['markdown']['text']  = text
 
@@ -79,7 +79,7 @@ class DingHelper(object):
 
     def send_single_action_card(self, title, text, single_title, single_url, btn_orientation="0", hide_avatar="0"):
         data = {"msgtype": "actionCard", "actionCard": {}}
-        if not toolkit.is_none_or_white_space(title) and not toolkit.is_none_or_white_space(text) and not toolkit.is_none_or_white_space(single_title) and not toolkit.is_none_or_white_space(single_url):
+        if not toolkit.is_none_or_whitespace(title) and not toolkit.is_none_or_whitespace(text) and not toolkit.is_none_or_whitespace(single_title) and not toolkit.is_none_or_whitespace(single_url):
             data["actionCard"]["title"]          = title
             data["actionCard"]["text"]           = text
             data["actionCard"]["hideAvatar"]     = hide_avatar
@@ -91,7 +91,7 @@ class DingHelper(object):
 
     def send_btns_action_card(self, title, text, btns, btn_orientation="0", hide_avatar="0"):
         data = {"msgtype": "actionCard", "actionCard": {}}
-        if not toolkit.is_none_or_white_space(title) and not toolkit.is_none_or_white_space(text) and not toolkit.is_none_or_white_space(btns):
+        if not toolkit.is_none_or_whitespace(title) and not toolkit.is_none_or_whitespace(text) and not toolkit.is_none_or_whitespace(btns):
             data["actionCard"]["title"]          = title
             data["actionCard"]["text"]           = text
             data["actionCard"]["hideAvatar"]     = hide_avatar
@@ -102,7 +102,7 @@ class DingHelper(object):
 
     def send_feed_card(self, feedCard):
         data = {"msgtype": "feedCard", "feedCard": {}}
-        if not toolkit.is_none_or_white_space(feedCard):
+        if not toolkit.is_none_or_whitespace(feedCard):
             data["feedCard"]["links"] = feedCard
 
         return self.client(data)
@@ -162,8 +162,3 @@ class DingHelper(object):
             self.send_feed_card(feedCard)
         else:
             raise Exception("Invalid message type")
-
-
-
-
-

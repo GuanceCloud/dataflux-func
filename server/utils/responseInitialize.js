@@ -20,7 +20,7 @@ var routeLoader   = require('./routeLoader');
 var auth          = require('./auth');
 var appInit       = require('../appInit');
 
-/* Configure */
+/* Init */
 var STATIC_RENDER_LRU = new LRU();
 
 var CLIENT_CONFIG = {
@@ -245,7 +245,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
           if (reqCost < bucket) return eachCallback();
 
           var type = `reqCost${bucket}`;
-          var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+          var cacheKey = toolkit.getMonitorCacheKey('monitor', 'abnormalRequest', ['type', type]);
           async.series([
             function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback) },
             function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
@@ -257,7 +257,7 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         if (res.statusCode < 400) return asyncCallback();
 
         var type = `statusCode${parseInt(res.statusCode / 100)}xx`;
-        var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'abnormalRequest', ['type', type]);
 
         async.series([
           function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback)         },
@@ -613,14 +613,14 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(text);
   };
 
-  res.locals.sendRaw = function(raw, contentType) {
-    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', contentType);
+  res.locals.sendRaw = function(rawData, contentType) {
+    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', contentType || `js:${typeof rawData}`);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, raw, 'raw');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, rawData, 'raw');
     }
 
     if (contentType) {
@@ -629,8 +629,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
     _recordAbnormalReq();
 
-    if ('number' === typeof raw) raw = '' + raw;
-    return res.send(raw);
+    if ('number' === typeof rawData) rawData = '' + rawData;
+    return res.send(rawData);
   };
 
   res.locals.sendData = function(ret) {

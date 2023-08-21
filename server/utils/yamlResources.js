@@ -12,7 +12,7 @@ var toolkit = require('./toolkit');
 
 var FILE_CACHE = {};
 
-/* Configure */
+/* Init */
 var CONFIG_KEY           = 'CONFIG';
 var CONFIG_FILE_PATH_KEY = 'CONFIG_FILE_PATH'
 
