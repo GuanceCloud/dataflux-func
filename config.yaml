@@ -104,9 +104,6 @@ REDIS_TS_MAX_AGE     : 3600   # 1小时
 REDIS_TS_MAX_PERIOD  : 259200 # 3天
 REDIS_TS_MIN_INTERVAL: 60     # 时间戳最小间隔（秒）
 
-# Worker 配置
-WORKER_QUEUE_ALIAS_MAP: cpu=9
-
 # 是否禁用集成登录
 DISABLE_INTEGRATED_SIGNIN: false
 
@@ -300,7 +297,7 @@ _TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL  : 40960
 
 # 自动执行任务频率
 _CRONTAB_STARTER                    : '* * * * *'
-_CRONTAB_SYNC_CACHE                 : '* * * * *'
+_CRONTAB_SYNC_CACHE_TO_DB           : '* * * * *'
 _CRONTAB_AUTO_CLEAN                 : '* * * * *'
 _CRONTAB_AUTO_BACKUP_DB             : '0 * * * *'
 _CRONTAB_RELOAD_DATA_MD5_CACHE      : '* * * * *'

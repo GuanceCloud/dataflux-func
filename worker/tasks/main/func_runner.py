@@ -7,8 +7,8 @@
 
 # Built-in Modules
 import time
-import traceback
 import pprint
+import traceback
 
 # 3rd-party Modules
 
@@ -18,7 +18,7 @@ from worker.tasks.main import FuncBaseTask, BaseFuncResponse, FuncResponse, Func
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class FuncRunnerTask(FuncBaseTask):
+class FuncRunner(FuncBaseTask):
     name = 'Main.FuncRunner'
 
     def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):

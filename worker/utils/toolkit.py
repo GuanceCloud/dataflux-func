@@ -110,6 +110,9 @@ def gen_data_id(prefix=None):
     prefix = prefix or 'data'
     return prefix + '-' + nanoid.generate('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)
 
+def gen_task_id():
+    return gen_data_id('task')
+
 def gen_time_serial_seq(d=None, rand_length=4):
     if not d:
         d = get_timestamp(3)
@@ -770,8 +773,13 @@ def to_croniter_style(crontab):
 
     return ' '.join(parts)
 
+def is_valid_crontab(crontab):
+    crontab = to_croniter_style(crontab)
+    return croniter.is_valid(crontab)
+
 def is_match_crontab(crontab, t, tz=None):
     crontab = to_croniter_style(crontab)
+
     tz = tz or 'Asia/Shanghai'
     at = arrow.get(t).to(tz)
 

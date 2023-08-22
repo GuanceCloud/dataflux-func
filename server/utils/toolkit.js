@@ -220,6 +220,10 @@ var genDataId = toolkit.genDataId = function genDataId(prefix) {
   return prefix + '-' + nanoid();
 };
 
+var genTaskId = toolkit.genTaskId = function genTaskId() {
+  return genDataId('task');
+};
+
 /**
  * Replace prefix of data ID to another prefix
  * @param  {String} dataId

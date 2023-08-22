@@ -6,9 +6,8 @@
 '''
 
 # Built-in Modules
-import time
-import traceback
 import pprint
+import traceback
 import tracemalloc
 
 # 3rd-party Modules
@@ -20,7 +19,7 @@ from worker.tasks.main import FuncBaseTask, BaseFuncResponse, FuncResponse, NotF
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class FuncDebuggerTask(FuncBaseTask):
+class FuncDebugger(FuncBaseTask):
     name = 'Main.FuncDebugger'
 
     def __init__(self, *args, **kwargs):

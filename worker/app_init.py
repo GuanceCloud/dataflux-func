@@ -101,25 +101,25 @@ def before_app_create():
             print(f'Database Timezone: {timezone}');
 
 def after_app_created():
-    from worker.tasks.main.utils import AutoBackupDBTask, ReloadDataMD5CacheTask, AutoRunTask, AutoCleanTask
+    from worker.tasks.main.utils import AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
         REDIS.put_task({
-            'name': AutoBackupDBTask.name,
+            'name': AutoBackupDB.name,
         })
 
         REDIS.put_task({
-            'name'  : ReloadDataMD5CacheTask.name,
+            'name'  : ReloadDataMD5Cache.name,
             'kwargs': { 'lockTime': 15, 'all': True }
         })
 
         REDIS.put_task({
-            'name' : AutoRunTask.name,
+            'name' : AutoRun.name,
             'delay': 5,
         })
 
         REDIS.put_task({
-            'name' : AutoCleanTask.name,
+            'name' : AutoClean.name,
             'delay': 15,
         })

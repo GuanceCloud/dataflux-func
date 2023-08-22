@@ -344,26 +344,32 @@ exports.publish = function(req, res, next) {
         nextAPIFuncs.forEach(function(func) {
           if (func.integration !== 'autoRun') return;
 
-          if (!func.extraConfig
-            || !func.extraConfig.integrationConfig
-            || !func.extraConfig.integrationConfig.onPublish) return;
+          var onScriptPublish = false;
+          try { onScriptPublish = onScriptPublish || func.extraConfig.integrationConfig.onScriptPublish } catch(err) { }
+          try { onScriptPublish = onScriptPublish || func.extraConfig.integrationConfig.onPublish       } catch(err) { }
+
+          if (!onScriptPublish) return;
+
+          var funcId = `${id}.${func.name}`;
 
           var timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
-          if (func.extraConfigJSON && func.extraConfigJSON.timeout) {
-            timeout = parseInt(func.extraConfigJSON.timeout);
+          if (func.extraConfig.timeout) {
+            timeout = parseInt(func.extraConfig.timeout);
           }
+
+          var expires = timeout;
 
           var taskReq = {
             name: 'Main.FuncRunner',
             kwargs: {
-              funcId       : toolkit.strf('{0}.{1}', id, func.name),
+              funcId       : funcId,
               origin       : 'integration',
-              originId     : 'integration',
-              timeout      : timeout,
-              expires      : timeout,
+              originId     : 'autoRun.onScriptPublish',
               taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
             },
-            queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            queue  : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            timeout: timeout,
+            expires: expires,
           }
           res.locals.cacheDB.putTask(taskReq);
         });

@@ -19,13 +19,36 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from worker.utils import yaml_resources, toolkit
 
 # Init
-from worker.app_init import before_app_create, after_app_created
+from worker.app_init import before_app_create
 before_app_create()
 
 CONFIG = yaml_resources.get('CONFIG')
 
-from worker import LOGGER, REDIS, LISTINGING_QUEUES, get_task, run_background
+from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
 from worker.tasks import TaskTimeoutException
+
+# 任务表
+from worker.tasks.example            import ExampleSuccessTask, ExampleFailureTask, ExampleTimeoutTask
+from worker.tasks.crontab_starter    import CrontabStarter, CrontabManualStarter
+from worker.tasks.main.func_debugger import FuncDebugger
+from worker.tasks.main.func_runner   import FuncRunner
+
+TASK_CLS_MAP = {
+    # 示例任务
+    ExampleSuccessTask.name      : ExampleSuccessTask,
+    ExampleFailureTask.name      : ExampleFailureTask,
+    ExampleTimeoutTask.name      : ExampleTimeoutTask,
+
+    # 自动触发任务
+    CrontabStarter.name      : CrontabStarter,
+    CrontabManualStarter.name: CrontabManualStarter,
+
+    # 函数执行任务
+    FuncDebugger.name        : FuncDebugger,
+    FuncRunner.name          : FuncRunner,
+
+    # 内部任务
+}
 
 def consume():
     '''
@@ -41,7 +64,7 @@ def consume():
 
     # 生成任务对象
     task_name = task_req['name']
-    task_cls = get_task(task_name)
+    task_cls = TASK_CLS_MAP.get(task_name)
     if not task_cls:
         LOGGER.warning(f'No such task: {task_name}')
         return

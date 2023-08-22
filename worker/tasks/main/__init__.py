@@ -8,8 +8,6 @@ import traceback
 import linecache
 from types import ModuleType
 import time
-import uuid
-import pprint
 import importlib
 import functools
 from concurrent.futures import ThreadPoolExecutor
@@ -18,18 +16,16 @@ from collections import OrderedDict
 # 3rd-party Modules
 import six
 import arrow
-import requests
-from croniter import croniter
 import funcsigs
 
 # Project Modules
 from worker.tasks import BaseTask
 from worker.utils import yaml_resources, toolkit
+from worker.utils.extra_helpers import format_sql_v2 as format_sql
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, KafkaHelper
 from worker.utils.extra_helpers import SQLServerHelper, OracleDatabaseHelper
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
 from worker.utils.extra_helpers.guance_openapi import GuanceOpenAPI
 from worker.utils.extra_helpers.datakit import DataKit
 from worker.utils.extra_helpers.dataway import DataWay
@@ -52,9 +48,9 @@ FIX_INTEGRATION_KEY_MAP = {
     # 集成为独立定时运行任务（即无需配置的自动触发配置）
     # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
-    #       crontab  : Crontab语法自动运行周期
-    #       onLaunch : True/False，是否启动后运行
-    #       onPublish: True/False，是否发布后运行
+    #       crontab        : Crontab 语法自动运行周期
+    #       onSystemLaunch : True/False，是否系统启动后运行
+    #       onScriptPublish: True/False，是否脚本发布后运行
     'autoRun': 'autoRun',
 }
 
@@ -169,15 +165,6 @@ class DFFWraper(object):
 
         else:
             return self.inject_funcs.get(name)
-
-def compute_func_store_id(key, scope):
-    '''
-    计算函数存储 ID
-    '''
-    str_to_md5 = '-'.join([key, scope])
-
-    store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
-    return store_id
 
 def decipher_connector_config_fields(config):
     '''
@@ -303,6 +290,15 @@ class FuncStoreHelper(object):
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
+    def _get_id(key, scope):
+        '''
+        计算函数存储 ID
+        '''
+        str_to_md5 = '-'.join([key, scope])
+
+        store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
+        return store_id
+
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         if scope is None:
             scope = self.default_scope
@@ -315,7 +311,7 @@ class FuncStoreHelper(object):
             raise e
 
         value_json = toolkit.json_dumps(value)
-        store_id   = compute_func_store_id(key, scope)
+        store_id   = self._get_id(key, scope)
 
         sql = '''
             SELECT
@@ -392,7 +388,7 @@ class FuncStoreHelper(object):
             e = Exception('`scope` is too long. Length of `scope` should be less then 256')
             raise e
 
-        store_id = compute_func_store_id(key, scope)
+        store_id = self._get_id(key, scope)
 
         sql = '''
             SELECT
@@ -429,7 +425,7 @@ class FuncStoreHelper(object):
             e = Exception('`scope` is too long. Length of `scope` should be less then 256')
             raise e
 
-        store_id = compute_func_store_id(key, scope)
+        store_id = self._get_id(key, scope)
 
         sql = '''
             DELETE FROM biz_main_func_store
@@ -1197,7 +1193,7 @@ class FuncBaseTask(BaseTask):
 
     def _export_as_api(self, safe_scope, title,
         # 控制类参数
-        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None, fixed_task_info_limit=None,
+        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
         # 标记类参数
         category=None, tags=None,
         # 集成处理参数
@@ -1218,7 +1214,7 @@ class FuncBaseTask(BaseTask):
 
         # 固定Crontab
         if fixed_crontab is not None:
-            if not croniter.is_valid(fixed_crontab):
+            if not toolkit.is_valid_crontab(fixed_crontab):
                 e = InvalidAPIOptionException('`fixed_crontab` is not a valid crontab expression')
                 raise e
 
@@ -1242,6 +1238,7 @@ class FuncBaseTask(BaseTask):
             extra_config['delayedCrontab'] = delayed_crontab
 
         # 执行时限
+        timeout = timeout or api_timeout # 兼容 api_timeout
         if timeout is not None:
             if not isinstance(timeout, six.integer_types):
                 e = InvalidAPIOptionException('`timeout` should be an integer or long')
@@ -1254,20 +1251,6 @@ class FuncBaseTask(BaseTask):
                 raise e
 
             extra_config['timeout'] = timeout
-
-        # API返回时限
-        if api_timeout is not None:
-            if not isinstance(api_timeout, six.integer_types):
-                e = InvalidAPIOptionException('`api_timeout` should be an integer or long')
-                raise e
-
-            _min_api_timeout = CONFIG['_FUNC_TASK_MIN_API_TIMEOUT']
-            _max_api_timeout = CONFIG['_FUNC_TASK_MAX_API_TIMEOUT']
-            if not (_min_api_timeout <= api_timeout <= _max_api_timeout):
-                e = InvalidAPIOptionException(f'`api_timeout` should be between `{_min_api_timeout}` and `{_max_api_timeout}` (seconds)')
-                raise e
-
-            extra_config['apiTimeout'] = api_timeout
 
         # 结果缓存
         if cache_result is not None:
@@ -1285,20 +1268,6 @@ class FuncBaseTask(BaseTask):
                 raise e
 
             extra_config['queue'] = queue
-
-        # 固定任务记录数量
-        if fixed_task_info_limit is not None:
-            if not isinstance(fixed_task_info_limit, int):
-                e = InvalidAPIOptionException('`fixed_task_info_limit` should be an int')
-                raise e
-
-            _min_task_info_limit = CONFIG['_TASK_INFO_MIN_LIMIT']
-            _max_task_info_limit = CONFIG['_TASK_INFO_MAX_LIMIT']
-            if not (_min_task_info_limit <= fixed_task_info_limit <= _max_task_info_limit):
-                e = InvalidAPIOptionException(f'`fixed_task_info_limit` should be between `{_min_task_info_limit}` and `{_max_task_info_limit}` (tasks)')
-                raise e
-
-            extra_config['fixedTaskInfoLimit'] = fixed_task_info_limit
 
         ##############
         # 标记类参数 #
@@ -1453,60 +1422,39 @@ class FuncBaseTask(BaseTask):
         sql_params = [func_id]
         db_res = self.db.query(sql, sql_params)
         if len(db_res) <= 0:
-            e = NotFoundException()
+            e = NotFoundException(f'Function not found: `{func_id}`')
             raise e
 
         func = db_res[0]
-        func_extra_config = None
-        if func.get('extraConfigJSON'):
-            func_extra_config = toolkit.json_loads(func['extraConfigJSON'])
+        func_extra_config = func.get('extraConfigJSON') or {}
+        if isinstance(func_extra_config, str):
+            func_extra_config = toolkit.json_loads(func_extra_config) or {}
 
-        # 组装函数配置
-        soft_time_limit = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
-        time_limit      = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT'] + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
+        timeout = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+        if func_extra_config.get('timeout'):
+            timeout = func_extra_config['timeout']
 
-        func_timeout = None
-        if func_extra_config and isinstance(func_extra_config.get('timeout'), (six.integer_types, float)):
-            func_timeout = func_extra_config['timeout']
+        expires = timeout
 
-            soft_time_limit = func_timeout
-            time_limit      = func_timeout + CONFIG['_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL']
-
-        _shift_seconds = int(soft_time_limit * CONFIG['_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE'])
-        expires = arrow.get().shift(seconds=_shift_seconds).datetime
-
-        task_headers = {
-            'origin': self.request.id,
+        # 任务请求
+        task_req = {
+            'name': 'Main.FuncRunner',
+            'kwargs': {
+                'funcId'        : func_id,
+                'funcCallKwargs': kwargs,
+                'origin'        : safe_scope.get('_DFF_ORIGIN'),
+                'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
+                'crontab'       : safe_scope.get('_DFF_CRONTAB'),
+                'taskInfoLimit' : CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
+                'rootTaskId'    : self.task_id,
+                'funcChain'     : func_chain,
+            },
+            'triggerTime': safe_scope.get('_DFF_TRIGGER_TIME'),
+            'queue'      : safe_scope.get('_DFF_QUEUE'),
+            'timeout'    : timeout,
+            'expires'    : expires,
         }
-        # 注意：
-        # 保证一次主任务调用后的所有子任务数据都能保留
-        task_kwargs = {
-            'rootTaskId'    : self.request.id,
-            'funcId'        : func_id,
-            'funcCallKwargs': kwargs,
-            'origin'        : safe_scope.get('_DFF_ORIGIN'),
-            'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
-            'saveResult'    : save_result,
-            'execMode'      : safe_scope.get('_DFF_EXEC_MODE'),
-            'triggerTime'   : safe_scope.get('_DFF_TRIGGER_TIME'),
-            'triggerTimeMs' : safe_scope.get('_DFF_TRIGGER_TIME_MS'),
-            'crontab'       : safe_scope.get('_DFF_CRONTAB'),
-            'queue'         : safe_scope.get('_DFF_QUEUE'),
-            'funcChain'     : func_chain,
-        }
-
-        # 调用执行（在原队列执行）
-        sub_task_id = gen_task_id()
-        queue       = safe_scope.get('_DFF_QUEUE')
-
-        func_runner.apply_async(
-            task_id=sub_task_id,
-            kwargs=task_kwargs,
-            headers=task_headers,
-            queue=toolkit.get_worker_queue(queue),
-            soft_time_limit=soft_time_limit,
-            time_limit=time_limit,
-            expires=expires)
+        self.cache_db.put_task(task_req)
 
     def run(self, **kwargs):
         self.logger.info(f'{self.name} Task launched. Func ID: `{self.func_id}`')
@@ -1762,22 +1710,21 @@ class FuncBaseTask(BaseTask):
         # 目标脚本
         self.script_info = self.load_script(self.script_id, draft=use_code_draft)
         if not self.script_info:
-            e = NotFoundException(f'Script `{self.script_id}` not found')
+            e = NotFoundException(f'Script not found: `{self.script_id}`')
             raise e
-
-        # 脚本运行环境
-        self.script_scope = self.create_safe_scope(self.script_id, debug=True)
 
         # 加载入口脚本
         self.logger.info(f'[ENTRY SCRIPT] `{self.script_id}`')
-        self.script_scope = self.safe_exec(self.script_info['codeObj'], globals=self.script_scope)
+
+        script_script_scope = self.create_safe_scope(self.script_id, debug=True)
+        self.script_scope   = self.safe_exec(self.script_info['codeObj'], globals=script_script_scope)
 
         # 执行脚本
         func_resp = None
         if self.func_name:
             entry_func = self.script_scope.get(self.func_name)
             if not entry_func:
-                e = NotFoundException(f'Function `{self.func_name}` not found in `{self.script_id}`')
+                e = NotFoundException(f'Function not found: `{self.script_id}.{self.func_name}`')
                 raise e
 
             # 执行函数

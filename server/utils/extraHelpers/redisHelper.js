@@ -1125,7 +1125,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   }
 
   // Push task
-  taskReq.id          = taskReq.id          || toolkit.genDataId('task');
+  taskReq.id          = taskReq.id          || toolkit.genTaskId();
   taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
 
   if (toolkit.isNothing(taskReq.queue)) {

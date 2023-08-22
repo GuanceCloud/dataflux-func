@@ -305,7 +305,6 @@ export default {
       contentLines.push('');
       contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
-      contentLines.push(`${this.$t('Exec Mode')}: ${this.C.FUNC_EXEC_MODE_MAP.get(d.execMode).name}`);
       if (d.waitCostMs > 2000) {
         contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {

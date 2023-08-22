@@ -502,7 +502,7 @@ class RedisHelper(object):
             raise Exception("task_req['name'] is required")
 
         # Put task
-        task_req['id']          = task_req.get('id')          or toolkit.gen_data_id('task')
+        task_req['id']          = task_req.get('id')          or toolkit.gen_task_id()
         task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
 
         if toolkit.is_none_or_whitespace(task_req.get('queue')):

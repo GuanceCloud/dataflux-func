@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
-import signal
 import traceback
 
 # 3rd-party Modules
-import pprint
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
@@ -61,7 +59,7 @@ class BaseTask(object):
                  ignore_result=None,
                  trigger_time=None):
 
-        self.task_id = task_id or toolkit.gen_data_id('task')
+        self.task_id = task_id or toolkit.gen_task_id()
         self.kwargs  = kwargs or dict()
 
         self.trigger_time = trigger_time or toolkit.get_timestamp(3)

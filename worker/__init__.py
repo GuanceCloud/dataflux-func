@@ -29,10 +29,6 @@ LOGGER = LogHelper()
 REDIS  = RedisHelper(logger=LOGGER)
 REDIS.skip_log = True
 
-from worker.tasks.example import ExampleSuccessTask, ExampleFailureTask, ExampleTimeoutTask
-from worker.tasks.main.func_debugger import FuncDebuggerTask
-from worker.tasks.main.func_runner import FuncRunnerTask
-
 # 系统监控
 WORKER_ID                = None
 MAIN_PROCESS             = None
@@ -44,22 +40,7 @@ if exec_filename == 'app.py':
 elif exec_filename == 'beat.py':
     WORKER_ID = f'BEAT-{toolkit.gen_time_serial_seq()}'
 
-# 任务表
-TASK_MAP = {
-    # 示例任务
-    ExampleSuccessTask.name: ExampleSuccessTask,
-    ExampleFailureTask.name: ExampleFailureTask,
-    ExampleTimeoutTask.name: ExampleTimeoutTask,
-
-    # 函数任务
-    FuncDebuggerTask.name: FuncDebuggerTask,
-    FuncRunnerTask.name  : FuncRunnerTask,
-
-    # 系统后台任务
-}
-
 def heartbeat():
-    print('heartbeat')
     global MAIN_PROCESS
     global MONITOR_REPORT_TIMESTAMP
 
@@ -74,7 +55,6 @@ def heartbeat():
         MONITOR_REPORT_TIMESTAMP = t
 
         if LISTINGING_QUEUES and WORKER_ID:
-            print('worker count')
             # 记录每个队列 Worker 数量
             _expires = int(CONFIG['_MONITOR_REPORT_INTERVAL'] * 1.5)
             for q in LISTINGING_QUEUES:
@@ -83,7 +63,6 @@ def heartbeat():
 
                 cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=['workerQueue', q, 'workerId', '*'])
                 worker_process_count_list = REDIS.get_by_pattern(cache_pattern)
-                print(worker_process_count_list)
 
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue', tags=['workerQueue', q])
                 worker_count = len(worker_process_count_list)
@@ -95,7 +74,6 @@ def heartbeat():
                     process_count += int(count)
                 REDIS.setex(cache_key, _expires, process_count)
 
-        print('cpu / mem')
         # 记录 CPU / 使用
         total_cpu_percent = MAIN_PROCESS.cpu_percent()
         total_memory_pss  = MAIN_PROCESS.memory_full_info().pss
@@ -128,9 +106,6 @@ def heartbeat():
 
         cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerMemoryPSS', 'hostname', hostname])
         REDIS.ts_add(cache_key, total_memory_pss, timestamp=t)
-
-def get_task(name):
-    return TASK_MAP.get(name)
 
 def run_background(func, pool_size, max_tasks):
     try:

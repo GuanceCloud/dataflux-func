@@ -393,13 +393,6 @@ en:
   Before Script Lib recover: 脚本库还原前
   Created by user manually : 用户手动创建
 
-  # const.js - FUNC_EXEC_MODE
-  Sync Call : 同步调用
-  Async Call: 异步调用
-  Crontab   : 定时运行
-  On Launch : 启动后运行
-  On Publish: 发布后运行
-
   # const.js - FUNC_INTEGRATION
   Sign in: 登录
 

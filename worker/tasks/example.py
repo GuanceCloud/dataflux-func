@@ -7,8 +7,8 @@ import time
 from worker.utils import toolkit, yaml_resources
 from worker.tasks import BaseTask
 
-class ExampleSuccessTask(BaseTask):
-    name = 'Example.Success'
+class ExampleSuccess(BaseTask):
+    name = 'Example.ExampleSuccess'
 
     default_timeout = 30
 
@@ -16,16 +16,16 @@ class ExampleSuccessTask(BaseTask):
         s = 'Example: Success'
         return { 'message': s }
 
-class ExampleFailureTask(BaseTask):
-    name = 'Example.Failure'
+class ExampleFailure(BaseTask):
+    name = 'Example.ExampleFailure'
 
     default_timeout = 30
 
     def run(self, **kwargs):
         raise Exception('Example: Failure')
 
-class ExampleTimeoutTask(BaseTask):
-    name = 'Example.Timeout'
+class ExampleTimeout(BaseTask):
+    name = 'Example.ExampleTimeout'
 
     default_timeout = 15
 

@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from worker.utils import yaml_resources, toolkit
 
 # Init
-from worker.app_init import before_app_create
+from worker.app_init import before_app_create, after_app_created
 before_app_create()
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -24,12 +24,46 @@ CONFIG = yaml_resources.get('CONFIG')
 from worker import LOGGER, REDIS, run_background
 
 # 定时任务表
-from worker.tasks.example import ExampleSuccessTask
+from worker.tasks.example import ExampleSuccess
+from worker.tasks.crontab_starter import CrontabStarter
+from worker.tasks.internal import SyncCacheToDB, AutoClean, AutoBackupDB, ReloadDataMD5Cache
 
 CRONTAB_MAP = {
-    'example': {
-        'task'   : ExampleSuccessTask,
-        'crontab': '*/3 * * * * *',
+    # 示例
+    # 'example': {
+    #     'task'   : ExampleSuccess,
+    #     'crontab': '*/3 * * * * *',
+    # },
+
+    # 自动触发配置启动器
+    'crontab-starter': {
+        'task'   : CrontabStarter,
+        'crontab': CONCAT['_CRONTAB_STARTER'],
+    },
+
+    # 缓存数据刷入数据库
+    'sync-cache': {
+        'task'    : SyncCacheToDB,
+        'schedule': CONFIG['_CRONTAB_SYNC_CACHE_TO_DB'],
+    },
+
+    # 自动清理
+    'auto-clean': {
+        'task'    : AutoClean,
+        'schedule': CONFIG['_CRONTAB_AUTO_CLEAN'],
+    },
+
+    # 数据库自动备份
+    'auto-backup-db': {
+        'task'    : AutoBackupDB,
+        'schedule': CONFIG['_CRONTAB_AUTO_BACKUP_DB'],
+    },
+
+    # 重新加载数据 MD5 缓存
+    'reload-data-md5-cache': {
+        'task'    : ReloadDataMD5Cache,
+        'kwargs'  : { 'lockTime': 15, 'all': True },
+        'schedule': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
     },
 }
 
@@ -107,6 +141,9 @@ if __name__ == '__main__':
     print(f'Beat is running (Press CTRL+C to quit)')
     print(f'PID: {pid}')
     print('Have fun!')
+
+    # 启动任务
+    after_app_created()
 
     # 启动后台
     run_background(func=tick, pool_size=1, max_tasks=100)

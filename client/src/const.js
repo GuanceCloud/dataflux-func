@@ -776,40 +776,6 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return new MAP_CONST(this.SCRIPT_RECOVER_POINT);
   },
 
-  // 函数执行模式
-  get FUNC_EXEC_MODE() {
-    return [
-      {
-        key      : 'sync',
-        name     : $t('Sync Call'),
-        textClass: 'text-main',
-      },
-      {
-        key      : 'async',
-        name     : $t('Async Call'),
-        textClass: 'text-watch',
-      },
-      {
-        key      : 'crontab',
-        name     : $t('Crontab'),
-        textClass: 'text-good',
-      },
-      {
-        key      : 'onLaunch',
-        name     : $t('On Launch'),
-        textClass: 'text-info',
-      },
-      {
-        key      : 'onPublish',
-        name     : $t('On Publish'),
-        textClass: 'text-info',
-      },
-    ];
-  },
-  get FUNC_EXEC_MODE_MAP() {
-    return new MAP_CONST(this.FUNC_EXEC_MODE);
-  },
-
   // 函数集成
   get FUNC_INTEGRATION() {
     return [
