@@ -1167,11 +1167,17 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   if (taskReq.delay) {
     var delayQueue = toolkit.getDelayQueue(taskReq.queue);
     var eta = taskReq.triggerTime + taskReq.delay;
-    return self.client.zadd(delayQueue, eta, taskReqDumps, callback);
+    return self.client.zadd(delayQueue, eta, taskReqDumps, function(err) {
+      if (err) return callback(err);
+      return callback(null, taskReq.id);
+    });
 
   } else {
     var workerQueue = toolkit.getWorkerQueue(taskReq.queue);
-    return self.client.lpush(workerQueue, taskReqDumps, callback);
+    return self.client.lpush(workerQueue, taskReqDumps, function(err) {
+      if (err) return callback(err);
+      return callback(null, taskReq.id);
+    });
   }
 };
 

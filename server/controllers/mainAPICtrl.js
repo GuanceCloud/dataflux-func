@@ -45,12 +45,6 @@ var THROTTLING_RULE_EXPIRES_MAP = {
   byYear  : 60 * 60 * 24 * 365,
 };
 
-var FUNC_TASK_DEFAULT_QUEUE_MAP = {
-  'sync'   : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
-  'async'  : CONFIG._FUNC_TASK_DEFAULT_ASYNC_QUEUE,
-  'crontab': CONFIG._FUNC_TASK_DEFAULT_CRONTAB_QUEUE,
-};
-
 var FUNC_CACHE_OPT = {
   max   : CONFIG._LRU_FUNC_CACHE_LIMIT,
   maxAge: CONFIG._LRU_FUNC_CACHE_MAX_AGE * 1000,
@@ -422,8 +416,11 @@ function _getFuncCallResultCache(locals, cacheKey, callback) {
 
 function callFuncRunner(locals, taskReq, callback) {
   if (taskReq.ignoreResult) {
-    // 忽略结果
-    return locals.cacheDB.putTask(taskReq, callback);
+    // 忽略结果，需要提前生成任务 ID
+    return locals.cacheDB.putTask(taskReq, function(err, taskId) {
+      if (err) return callback(err);
+      return callback(null, taskId);
+    });
 
   } else {
     // 接收结果
@@ -1368,14 +1365,15 @@ exports.callBatch = function(req, res, next) {
         return asyncCallback();
       });
     },
-
-    // 批处理不检查工作队列
   ], function(err) {
     if (err) return next(err);
 
-    callFuncRunner(res.locals, taskReq, function(err, taskResp) {
+    taskReq.ignoreResult = true;
+    callFuncRunner(res.locals, taskReq, function(err, taskId) {
       if (err) return next(err);
-      return _doAPIResponse(res, taskReq, taskResp, next);
+
+      var ret = toolkit.initRet({ id: taskId });
+      return res.locals.sendJSON(ret);
     });
   });
 };
@@ -1400,6 +1398,8 @@ exports.callFuncDraft = function(req, res, next) {
 exports.getFuncResult = function(req, res, next) {
   var taskId     = req.query.taskId;
   var returnType = req.query.returnType || 'raw';
+
+  // TODO
 };
 
 exports.getFuncList = function(req, res, next) {
@@ -1529,7 +1529,7 @@ exports.integratedSignIn = function(req, res, next) {
         funcCallKwargs: { username: username, password: password },
       },
       origin       : 'integration',
-      originId     : 'integration',
+      originId     : 'signIn',
       timeout      : timeout,
       expires      : timeout,
       taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
