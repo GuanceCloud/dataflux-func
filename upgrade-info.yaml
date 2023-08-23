@@ -395,7 +395,7 @@ upgradeInfo:
       ALTER TABLE `biz_main_script` DROP INDEX `FT`;
       ALTER TABLE `biz_main_script_publish_history` DROP INDEX `FT`;
 
-  # 与观测云SaaS 2023-08-10 迭代中实装
+  # 于观测云SaaS 2023-08-10 迭代中实装
   - seq: 23
     database: |-
       -- 统一业务实体标题字段名
@@ -422,3 +422,64 @@ upgradeInfo:
         PRIMARY KEY (`seq`),
         UNIQUE KEY `ID` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';
+
+  # 于观测云SaaS 2023-09-07 迭代中实装
+  - seq: 24
+    database: |-
+      -- 清理过时表
+      TRUNCATE biz_main_task_info;
+      TRUNCATE biz_rel_func_running_info;
+
+      -- 重建任务记录
+      CREATE TABLE `biz_main_task_record` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务名',
+        `kwargsJSON` json COMMENT '调用参数JSON',
+        `triggerTimeMs` bigint(20) unsigned NOT NULL COMMENT '触发时间（UNIX毫秒时间戳）',
+        `startTimeMs` bigint(20) unsigned NOT NULL COMMENT '启动时间（UNIX毫秒时间戳）',
+        `endTimeMs` bigint(20) unsigned NOT NULL COMMENT '结束时间（UNIX毫秒时间戳）',
+        `queue` bigint(20) unsigned NOT NULL COMMENT '执行队列',
+        `delay` bigint(20) unsigned NOT NULL COMMENT '延迟时间',
+        `timeout` bigint(20) unsigned NOT NULL COMMENT '超时时间',
+        `expires` bigint(20) unsigned NOT NULL COMMENT '过期时间',
+        `ignoreResult` tinyint(1) NOT NULL COMMENT '是否忽略结果',
+        `resultJSON` json COMMENT '结果JSON',
+        `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '状态 success|failure',
+        `errorTEXT` longtext COMMENT '错误TEXT',
+        `errorStackTEXT` longtext COMMENT '错误堆栈TEXT',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `NAME` (`name`),
+        KEY `QUEUE` (`queue`),
+        KEY `STATUS` (`status`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录';
+
+      CREATE TABLE `biz_ext_task_record_func` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `taskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务 ID',
+        `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID',
+        `scriptSetId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本集ID',
+        `scriptId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本ID',
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `funcCallKwargsJSON` json COMMENT '调用参数JSON',
+        `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源',
+        `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源 ID',
+        `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
+        `funcChainJSON` json COMMENT '函数调用链JSON',
+        `logMessageTEXT` longtext COMMENT '日志信息TEXT',
+        `returnValueJSON` json COMMENT '返回值JSON',
+        `responseControlJSON` json COMMENT '响应控制JSON',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `TASK_ID` (`taskId`),
+        KEY `ROOT_TASK_ID` (`rootTaskId`),
+        KEY `SCRIPT_TASK_ID` (`scriptSetId`),
+        KEY `SCRIPT_ID` (`scriptId`),
+        KEY `FUNC_ID` (`funcId`),
+        KEY `ORIGIN` (`origin`),
+        KEY `ORIGIN_ID` (`originId`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';

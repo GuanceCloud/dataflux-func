@@ -37,7 +37,7 @@ def before_app_create():
 
         # Add app name to cache key
         app_name = app_name or APP_NAME_WORKER
-        cache_key_with_app_name = '{}#{}'.format(app_name, cache_key)
+        cache_key_with_app_name = f'{app_name}#{cache_key}'
         return cache_key_with_app_name
 
     toolkit.get_cache_key = get_cache_key
@@ -52,6 +52,17 @@ def before_app_create():
 
     toolkit.get_monitor_cache_key = get_monitor_cache_key
 
+    def parse_cache_key(cache_key):
+        cache_key_info = toolkit._parse_cache_key(cache_key)
+
+        app_name_topic_parts = cache_key_info['topic'].split('#')
+        cache_key_info['appName'] = app_name_topic_parts[0]
+        cache_key_info['topic']   = app_name_topic_parts[1]
+
+        return cache_key_info
+
+    toolkit.parse_cache_key = parse_cache_key
+
     def get_worker_queue(name):
         worker_queue = f'{APP_NAME_WORKER}#{toolkit._get_worker_queue(name)}'
         return worker_queue
@@ -63,17 +74,6 @@ def before_app_create():
         return worker_queue
 
     toolkit.get_delay_queue = get_delay_queue
-
-    def parse_cache_key(cache_key):
-        cache_key_info = toolkit._parse_cache_key(cache_key)
-
-        app_name_topic_parts = cache_key_info['topic'].split('#')
-        cache_key_info['appName'] = app_name_topic_parts[0]
-        cache_key_info['topic']   = app_name_topic_parts[1]
-
-        return cache_key_info
-
-    toolkit.parse_cache_key = parse_cache_key
 
     # 加载数据库时区
     with get_db_connection() as conn:
@@ -101,7 +101,7 @@ def before_app_create():
             print(f'Database Timezone: {timezone}');
 
 def after_app_created():
-    from worker.tasks.main.utils import AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
+    from worker.tasks.internal import AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:

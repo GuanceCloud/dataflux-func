@@ -141,7 +141,7 @@ function startApplication() {
   });
 
   // 集成登录认证
-  app.use(require('./controllers/indexAPICtrl').integratedAuthMid);
+  app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
 
   // Dump user information
   if (CONFIG.MODE === 'dev') {
@@ -149,7 +149,7 @@ function startApplication() {
   }
 
   // Load routes
-  require('./routers/miscAPIRouter');
+  require('./routers/indexAPIRouter');
   require('./routers/authAPIRouter');
   require('./routers/userAPIRouter');
   require('./routers/accessKeyAPIRouter');
@@ -157,7 +157,7 @@ function startApplication() {
   require('./routers/systemSettingAPIRouter');
   require('./routers/debugAPIRouter');
 
-  require('./routers/indexAPIRouter');
+  require('./routers/mainAPIRouter');
   require('./routers/pythonPackageAPIRouter');
   require('./routers/resourceAPIRouter');
 
@@ -180,8 +180,6 @@ function startApplication() {
   require('./routers/apiAuthAPIRouter');
 
   require('./routers/taskInfoAPIRouter');
-
-  require('./routers/datafluxFuncTaskResultAPIRouter');
 
   require('./routers/operationRecordAPIRouter');
 

@@ -80,8 +80,7 @@ class BaseTask(object):
 
         # 实例指定配置
         if delay is not None:
-            self.delay        =  delay
-            self.trigger_time += delay
+            self.delay =  delay
 
         if queue is not None:
             self.queue = queue

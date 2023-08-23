@@ -16,7 +16,7 @@ var toolkit    = require('./utils/toolkit');
 var systemSettingMod = require('./models/systemSettingMod');
 var connectorMod     = require('./models/connectorMod');
 var funcMod          = require('./models/funcMod');
-var indexAPICtrl     = require('./controllers/indexAPICtrl');
+var mainAPICtrl     = require('./controllers/mainAPICtrl');
 
 /* Init */
 var IS_MASTER_NODE           = null;
@@ -275,7 +275,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
           originId      : connector.id,
           queue         : CONFIG._FUNC_TASK_DEFAULT_WEBSOCKET_HANDLER_QUEUE,
         }
-        indexAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
+        mainAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);
 
           taskReq = _taskReq;
@@ -285,7 +285,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        indexAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
+        mainAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
           locals.logger.debug('[GUANCE WS] GUANCE -> FUNC: `{0}`', handlerFuncId);
 
           if (err) return asyncCallback(err);

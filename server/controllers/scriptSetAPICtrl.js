@@ -27,7 +27,7 @@ var crontabConfigMod          = require('../models/crontabConfigMod');
 var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
-var indexAPICtrl = require('./indexAPICtrl');
+var mainAPICtrl = require('./mainAPICtrl');
 
 
 /* Init */
@@ -736,7 +736,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
       var opt = {
         scriptId: startupScriptId,
       }
-      indexAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
+      mainAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
         nextAPIFuncs = taskResp.result.apiFuncs;

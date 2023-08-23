@@ -12,7 +12,7 @@ var CONFIG  = require('./utils/yamlResources').get('CONFIG');
 var toolkit = require('./utils/toolkit');
 
 var connectorMod = require('./models/connectorMod');
-var indexAPICtrl = require('./controllers/indexAPICtrl');
+var mainAPICtrl = require('./controllers/mainAPICtrl');
 
 /* Init */
 var IS_MASTER_NODE           = null;
@@ -48,7 +48,7 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
           originId: connectorId,
           queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
         }
-        indexAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
+        mainAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);
 
           taskReq = _taskReq;
@@ -58,7 +58,7 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        indexAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
+        mainAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
           locals.logger.debug('[SUB] TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
 
           if (err) return asyncCallback(err);

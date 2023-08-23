@@ -77,14 +77,13 @@ class FuncDebugger(FuncBaseTask):
 
             if self.func_name and func_resp:
                 # 准备函数运行结果
-                if func_resp.data is not None:
-                    try:
-                        # NOTE: `func_debugger`对应前端只使用 repr 结果
-                        return_value = pprint.saferepr(func_resp.data)
+                try:
+                    # NOTE: `func_debugger`对应前端只使用 repr 结果
+                    return_value = pprint.saferepr(func_resp.data)
 
-                    except Exception as e:
-                        for line in traceback.format_exc().splitlines():
-                            self.logger.error(line)
+                except Exception as e:
+                    for line in traceback.format_exc().splitlines():
+                        self.logger.error(line)
 
                 # 响应控制
                 response_control = func_resp.make_response_control()

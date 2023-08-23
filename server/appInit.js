@@ -49,7 +49,7 @@ exports.beforeAppCreate = function(callback) {
 
     // Add app name to cache key
     appName = appName || APP_NAME_SERVER;
-    var cacheKeyWithAppName = toolkit.strf('{0}#{1}', appName, cacheKey);
+    var cacheKeyWithAppName = `${appName}#${cacheKey}`;
     return cacheKeyWithAppName;
   };
 
@@ -61,14 +61,6 @@ exports.beforeAppCreate = function(callback) {
     return toolkit.getCacheKey(topic, name, tags, APP_NAME_MONITOR);
   };
 
-  toolkit.getWorkerQueue = function(name) {
-    var workerQueue = toolkit._getWorkerQueue(name);
-
-    // Add app name to cache key
-    var workerQueueWithPrefix = toolkit.strf('{0}#{1}', APP_NAME_WORKER, workerQueue);
-    return workerQueueWithPrefix;
-  };
-
   toolkit.parseCacheKey = function(cacheKey) {
     var cacheKeyInfo = toolkit._parseCacheKey(cacheKey);
 
@@ -77,6 +69,14 @@ exports.beforeAppCreate = function(callback) {
     cacheKeyInfo.topic   = appNameTopicParts[1];
 
     return cacheKeyInfo;
+  };
+
+  toolkit.getWorkerQueue = function(name) {
+    return `${APP_NAME_WORKER}#${toolkit._getWorkerQueue(name)}`;
+  };
+
+  toolkit.getDelayQueue = function(name) {
+    return `${APP_NAME_WORKER}#${toolkit._getDelayQueue(name)}`;
   };
 
   async.series([

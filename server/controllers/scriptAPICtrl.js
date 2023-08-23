@@ -16,7 +16,7 @@ var scriptMod               = require('../models/scriptMod');
 var funcMod                 = require('../models/funcMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
-var indexAPICtrl = require('./indexAPICtrl');
+var mainAPICtrl = require('./mainAPICtrl');
 
 /* Init */
 
@@ -290,7 +290,7 @@ exports.publish = function(req, res, next) {
       var opt = {
         scriptId: id
       }
-      indexAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
+      mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
         nextAPIFuncs = taskResp.result.apiFuncs;

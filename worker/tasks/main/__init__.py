@@ -1043,9 +1043,6 @@ class FuncBaseTask(BaseTask):
 
         self.script_set_id, self.script_name = self.script_id.split('__', maxsplit=1)
 
-        # 执行模式
-        self.exec_mode = self.kwargs.get('execMode') or 'sync'
-
         # 任务来源
         self.origin    = self.kwargs.get('origin')
         self.origin_id = self.kwargs.get('originId')
@@ -1068,8 +1065,8 @@ class FuncBaseTask(BaseTask):
         # 缓存函数调用结果
         self.cache_result = self.kwargs.get('cacheResult') or False
 
-        # 脚本信息 / 环境
-        self.script_info = None
+        # 脚本 / 脚本环境
+        self.script       = None
         self.script_scope = None
 
     def _get_func_defination(self, F):
@@ -1440,13 +1437,13 @@ class FuncBaseTask(BaseTask):
         task_req = {
             'name': 'Main.FuncRunner',
             'kwargs': {
+                'rootTaskId'    : self.task_id,
                 'funcId'        : func_id,
                 'funcCallKwargs': kwargs,
                 'origin'        : safe_scope.get('_DFF_ORIGIN'),
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
                 'crontab'       : safe_scope.get('_DFF_CRONTAB'),
                 'taskInfoLimit' : CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
-                'rootTaskId'    : self.task_id,
                 'funcChain'     : func_chain,
             },
             'triggerTime': safe_scope.get('_DFF_TRIGGER_TIME'),
@@ -1595,7 +1592,6 @@ class FuncBaseTask(BaseTask):
             '_DFF_FUNC_CHAIN'     : self.func_chain,
             '_DFF_ORIGIN'         : self.origin,
             '_DFF_ORIGIN_ID'      : self.origin_id,
-            '_DFF_EXEC_MODE'      : self.exec_mode,
             '_DFF_TRIGGER_TIME'   : self.trigger_time,
             '_DFF_TRIGGER_TIME_MS': self.trigger_time_ms,
             '_DFF_START_TIME'     : self.start_time,
@@ -1708,8 +1704,8 @@ class FuncBaseTask(BaseTask):
 
     def apply(self, use_code_draft=False):
         # 目标脚本
-        self.script_info = self.load_script(self.script_id, draft=use_code_draft)
-        if not self.script_info:
+        self.script = self.load_script(self.script_id, draft=use_code_draft)
+        if not self.script:
             e = NotFoundException(f'Script not found: `{self.script_id}`')
             raise e
 
@@ -1717,7 +1713,7 @@ class FuncBaseTask(BaseTask):
         self.logger.info(f'[ENTRY SCRIPT] `{self.script_id}`')
 
         script_script_scope = self.create_safe_scope(self.script_id, debug=True)
-        self.script_scope   = self.safe_exec(self.script_info['codeObj'], globals=script_script_scope)
+        self.script_scope   = self.safe_exec(self.script['codeObj'], globals=script_script_scope)
 
         # 执行脚本
         func_resp = None

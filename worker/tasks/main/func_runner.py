@@ -21,34 +21,9 @@ CONFIG = yaml_resources.get('CONFIG')
 class FuncRunner(FuncBaseTask):
     name = 'Main.FuncRunner'
 
-    def cache_running_info(self, func_id, script_publish_version, exec_mode=None, is_failed=False, cost=None):
-        timestamp = int(time.time())
-
-        # 全局计数
-        data = {
-            'funcId'              : func_id,
-            'scriptPublishVersion': script_publish_version,
-            'execMode'            : exec_mode,
-            'isFailed'            : is_failed,
-            'cost'                : cost,
-            'timestamp'           : timestamp,
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-        self.cache_db.lpush(cache_key, data)
-
-        # 函数调用记数
-        data = {
-            'funcId'   : func_id,
-            'timestamp': timestamp,
-        }
-        data = toolkit.json_dumps(data, indent=0)
-
-        cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
-        self.cache_db.lpush(cache_key, data)
-
-    def cache_task_info(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
+    def callback(self, task_resp):
+        pass
+    def cache(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
             root_task_id=None, func_id=None, func_call_kwargs=None,
             log_messages=None, einfo_text=None, edump_text=None,
             task_info_limit=None):
@@ -180,7 +155,7 @@ class FuncRunner(FuncBaseTask):
 
             # 提取函数结果缓存时长
             try:
-                self.cache_result_expires = self.script_info['funcExtraConfig'][self.func_id]['cacheResult']
+                self.cache_result_expires = self.script['funcExtraConfig'][self.func_id]['cacheResult']
             except (KeyError, TypeError) as e:
                 pass
 
@@ -271,14 +246,6 @@ class FuncRunner(FuncBaseTask):
             # if status == 'failure':
             #     trace_info = trace_info or self.get_trace_info()
             #     einfo_text = einfo_text or self.get_formated_einfo(trace_info, only_in_script=True)
-
-            # # 记录函数运行信息
-            # self.cache_running_info(
-            #     func_id=func_id,
-            #     script_publish_version=target_script['publishVersion'],
-            #     exec_mode=exec_mode,
-            #     is_failed=(status == 'failure'),
-            #     cost=int(time.time() * 1000) - start_time_ms)
 
             # # 缓存任务状态
             # self.cache_task_info(

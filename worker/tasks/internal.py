@@ -43,7 +43,7 @@ class SyncCacheToDB(BaseTask):
         data = []
 
         # 搜集数据
-        cache_key = toolkit.get_cache_key('syncCache', 'funcCallInfo')
+        cache_key = toolkit.get_cache_key('syncCache', 'funcCallCount')
         for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
             cache_res = self.cache_db.run('rpop', cache_key)
             if not cache_res:
@@ -81,223 +81,6 @@ class SyncCacheToDB(BaseTask):
             cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
 
             self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
-
-    def sync_script_running_info(self):
-        data = []
-
-        # 搜集数据
-        cache_key = toolkit.get_cache_key('syncCache', 'scriptRunningInfo')
-        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-            else:
-                data.append(cache_res)
-
-        # 计算最新版本号
-        func_latest_version_map = {}
-        for d in data:
-            func_id                = d['funcId']
-            script_publish_version = d['scriptPublishVersion']
-
-            if func_id not in func_latest_version_map:
-                func_latest_version_map[func_id] = script_publish_version
-            else:
-                func_latest_version_map[func_id] = max(script_publish_version, func_latest_version_map[func_id])
-
-        # 分类计算
-        data_map = {}
-        for d in data:
-            func_id                = d['funcId']
-            script_publish_version = d['scriptPublishVersion']
-            exec_mode              = d['execMode']
-            is_failed              = d['isFailed']
-            cost                   = d['cost']
-            timestamp              = d.get('timestamp')
-
-            if not timestamp:
-                continue
-
-            latest_version = func_latest_version_map.get(func_id)
-            if latest_version and script_publish_version < latest_version:
-                continue
-
-            if exec_mode is None:
-                exec_mode = 'sync'
-
-            pk = '~'.join([func_id, str(script_publish_version), exec_mode])
-            if pk not in data_map:
-                data_map[pk] = {
-                    'funcId'              : func_id,
-                    'scriptPublishVersion': script_publish_version,
-                    'execMode'            : exec_mode,
-                }
-
-            if 'succeedCount' not in data_map[pk]:
-                data_map[pk]['succeedCount'] = 0
-
-            if 'failCount' not in data_map[pk]:
-                data_map[pk]['failCount'] = 0
-
-            data_map[pk]['latestFailTimestamp']    = None
-            data_map[pk]['latestSucceedTimestamp'] = None
-
-            if is_failed:
-                data_map[pk]['failCount']           += 1
-                data_map[pk]['latestFailTimestamp'] = timestamp
-                data_map[pk]['status']              = 'failed'
-            else:
-                data_map[pk]['succeedCount']           += 1
-                data_map[pk]['latestSucceedTimestamp'] = timestamp
-                data_map[pk]['status']                 = 'succeeded'
-
-            if 'minCost' not in data_map[pk]:
-                data_map[pk]['minCost'] = cost
-            else:
-                data_map[pk]['minCost'] = min(data_map[pk]['minCost'], cost)
-
-            if 'maxCost' not in data_map[pk]:
-                data_map[pk]['maxCost'] = cost
-            else:
-                data_map[pk]['maxCost'] = max(data_map[pk]['maxCost'], cost)
-
-            if 'totalCost' not in data_map[pk]:
-                data_map[pk]['totalCost'] = cost
-            else:
-                data_map[pk]['totalCost'] += cost
-
-            data_map[pk]['latestCost'] = cost
-
-        # 分类入库
-        for pk, d in data_map.items():
-            func_id                = d['funcId']
-            script_publish_version = d['scriptPublishVersion']
-            exec_mode              = d['execMode']
-
-            sql = '''
-                SELECT
-                     `succeedCount`
-                    ,`failCount`
-                    ,`minCost`
-                    ,`maxCost`
-                    ,`totalCost`
-                    ,`latestCost`
-                    ,UNIX_TIMESTAMP(`latestSucceedTime`) AS `latestSucceedTimestamp`
-                    ,UNIX_TIMESTAMP(`latestFailTime`)    AS `latestFailTimestamp`
-                    ,`status`
-                FROM biz_rel_func_running_info
-                WHERE
-                        `funcId`               = ?
-                    AND `scriptPublishVersion` = ?
-                    AND `execMode`             = ?
-                LIMIT 1
-                '''
-            sql_params = [
-                func_id,
-                script_publish_version,
-                exec_mode,
-            ]
-            prev_info = self.db.query(sql, sql_params)
-
-            # 删除已过时记录
-
-            if not prev_info:
-                # 无记录，则补全记录
-                sql = '''
-                    INSERT IGNORE INTO biz_rel_func_running_info
-                    SET
-                       `funcId`               = ?
-                      ,`scriptPublishVersion` = ?
-                      ,`execMode`             = ?
-
-                      ,`succeedCount`      = ?
-                      ,`failCount`         = ?
-                      ,`minCost`           = ?
-                      ,`maxCost`           = ?
-                      ,`totalCost`         = ?
-                      ,`latestCost`        = ?
-                      ,`latestSucceedTime` = FROM_UNIXTIME(?)
-                      ,`latestFailTime`    = FROM_UNIXTIME(?)
-                      ,`status`            = ?
-                '''
-                sql_params = [
-                    func_id,
-                    script_publish_version,
-                    exec_mode,
-
-                    d['succeedCount'],
-                    d['failCount'],
-                    d['minCost'],
-                    d['maxCost'],
-                    d['totalCost'],
-                    d['latestCost'],
-                    d['latestSucceedTimestamp'],
-                    d['latestFailTimestamp'],
-                    d['status'],
-                ]
-                self.db.query(sql, sql_params)
-
-            else:
-                prev_info = prev_info[0]
-
-                # 有记录，合并
-                sql = '''
-                    UPDATE biz_rel_func_running_info
-                    SET
-                         `succeedCount`      = ?
-                        ,`failCount`         = ?
-                        ,`minCost`           = ?
-                        ,`maxCost`           = ?
-                        ,`totalCost`         = ?
-                        ,`latestCost`        = ?
-                        ,`latestSucceedTime` = FROM_UNIXTIME(?)
-                        ,`latestFailTime`    = FROM_UNIXTIME(?)
-                        ,`status`            = ?
-
-                    WHERE
-                            `funcId`               = ?
-                        AND `scriptPublishVersion` = ?
-                        AND `execMode`             = ?
-                    LIMIT 1
-                '''
-                sql_params = [
-                    d['succeedCount'] + (prev_info['succeedCount'] or 0),
-                    d['failCount']    + (prev_info['failCount']    or 0),
-                    min(filter(lambda x: x is not None, (d['minCost'], prev_info['minCost']))),
-                    max(filter(lambda x: x is not None, (d['maxCost'], prev_info['maxCost']))),
-                    d['totalCost'] + (prev_info['totalCost'] or 0),
-                    d['latestCost'],
-                    d['latestSucceedTimestamp'] or prev_info['latestSucceedTimestamp'],
-                    d['latestFailTimestamp']    or prev_info['latestFailTimestamp'],
-                    d['status'],
-
-                    func_id,
-                    script_publish_version,
-                    exec_mode,
-                ]
-                self.db.query(sql, sql_params)
-
-        # 删除过时数据
-        for func_id, latest_version in func_latest_version_map.items():
-            sql = '''
-                DELETE FROM biz_rel_func_running_info
-                WHERE
-                        `funcId`                                      =  ?
-                    AND `scriptPublishVersion`                        != ?
-                    OR  UNIX_TIMESTAMP() - UNIX_TIMESTAMP(updateTime) >  ?
-                '''
-            sql_params = [
-                func_id,
-                latest_version,
-                3600 * 24 * 30,
-            ]
-            self.db.query(sql, sql_params)
 
     def sync_task_info(self):
         data = []
@@ -390,7 +173,6 @@ class SyncCacheToDB(BaseTask):
                         'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or '-',
                         'origin'        : d['origin'],
                         'func_id'       : d['funcId'],
-                        'exec_mode'     : d['execMode'],
                         'status'        : d['status'],
                         'queue'         : str(d['queue']),
                     },
@@ -408,16 +190,9 @@ class SyncCacheToDB(BaseTask):
         # 上锁
         self.lock()
 
-        # 函数调用计数刷入数据库
+        # 函数调用计数刷入简易时序数据库
         try:
             self.sync_func_call_count()
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
-
-        # 脚本运行信息刷入数据库
-        try:
-            self.sync_script_running_info()
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)

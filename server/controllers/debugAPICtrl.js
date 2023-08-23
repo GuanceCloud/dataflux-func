@@ -90,8 +90,8 @@ exports.pullSystemLogs = function(req, res, next) {
 
 exports.putTask = function(req, res, next) {
   var taskReq = req.body;
-  taskReq.handler = function(taskResp) {
-    res.locals.sendJSON(taskReq);
+  taskReq.onResponse = function(taskResp) {
+    res.locals.sendJSON(taskResp);
   }
 
   return res.locals.cacheDB.putTask(taskReq);

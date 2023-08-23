@@ -61,8 +61,8 @@ $response:
     $example  : TRACE-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 
 # 主要功能
-indexAPI:
-  $tag     : Core Feature
+mainAPI:
+  $tag     : Main Feature
   $tag_zhCN: 主要功能
 
   overview:
@@ -758,7 +758,7 @@ indexAPI:
         $type: string
 
 # 杂项
-miscAPI:
+indexAPI:
   $tag     : MISC
   $tag_zhCN: 杂项
 
@@ -5047,67 +5047,6 @@ taskInfoAPI:
         $searchType: eq
         $searchKey : task.status
 
-# DataFlux Func 函数调用任务结果
-datafluxFuncTaskResultAPI:
-  $tag     : Func Call Task Result
-  $tag_zhCN: 函数调用结果
-
-  list:
-    name         : List Func task result
-    name_zhCN    : 列出函数任务结果
-    method       : get
-    url          : /api/v1/dataflux-func-task-results/do/list
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    paging       : marker
-    fieldSelecting: true
-    orderFields:
-      seq: dftr.seq
-    fuzzySearch:
-      - dftr.id
-      - dftr.origin
-      - dftr.kwargsJSON->>$.funcId
-    query:
-      id:
-        $desc      : 按任务 ID 过滤
-        $type      : string
-        $searchType: like
-        $searchKey : dftr.id
-      origin:
-        $desc      : 按任务来源过滤
-        $type      : string
-        $searchType: like
-        $searchKey : dftr.origin
-      funcId:
-        $desc      : 按函数过滤
-        $type      : string
-        $searchType: like
-        $searchKey : dftr.kwargsJSON->>$.funcId
-      execMode:
-        $desc      : 按执行模式过滤
-        $type      : enum
-        $searchType: eq
-        $searchKey : dftr.kwargsJSON->>$.execMode
-        $in:
-          - sync
-          - async
-          - crontab
-
-  get:
-    name         : Get Func task result
-    name_zhCN    : 获取函数任务结果
-    method       : get
-    url          : /api/v1/dataflux-func-task-results/:id/do/get
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    fieldSelecting: true
-    params:
-      id:
-        $desc: 任务 ID
-        $type: string
-
 # 操作记录
 operationRecordAPI:
   $tag     : Operation Record
@@ -5731,22 +5670,18 @@ debugAPI:
         $minValue: 0
         $maxValue: 9
         $example : 0
-      expires:
-        $desc   : Expires for executing task (seconds)
+      timeout:
+        $desc   : Timeout for executing task (seconds)
         $type   : integer
         $example: 3
-      timeLimit:
-        $desc   : Time limit for executing task (seconds)
+      expires:
+        $desc   : Expires for executing task (seconds)
         $type   : integer
         $example: 3
       ignoreResult:
         $desc   : If ignore task result
         $type   : boolean
         $example: false
-      waitTimeout:
-        $desc   : Timeout for waiting task response (seconds)
-        $type   : integer
-        $example: 3
 
   testAPIBehavior:
     showInDoc: true

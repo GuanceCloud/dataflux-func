@@ -74,7 +74,7 @@ Time Cost                                                                       
 Peak Memory Allocated                                                                  : 内存分配峰值
 It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario: 耗时较长（大于 3 秒），可能不适合需要响应速度较高的场景
 'Logs by print(...)'                                                                   : print(...) 日志
-'Func Return Value (repr)'                                                             : 函数返回值（repr）
+'Return Value (pprint.saferepr)'                                                       : 返回值（pprint.saferepr）
 Stack                                                                                  : 错误堆栈
 
 Publish Failed                                                                                                                     : 发布失败
@@ -1102,11 +1102,7 @@ export default {
 
         // 日志输出
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let logMessagesTitle = null;
         let logMessages = o.logMessages;
-        if (logMessages) {
-          logMessagesTitle = `<span class="code-editor-output-info">${this.$t('Logs by print(...)')}${this.$t(':')}</span>`;
-        }
 
         // 执行内存消耗
         let peakMemoryUsageInfo = '';
@@ -1128,10 +1124,10 @@ export default {
         let returnValueInfo = null;
         let returnValue = o.returnValue;
         if (returnValue) {
-          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Func Return Value (repr)')}${this.$t(':')}</span> <code>${returnValue}</code>`;
-
           // HTML 转义
-          returnValue = htmlEscaper.escape(returnValue || null);
+          returnValue = htmlEscaper.escape(returnValue);
+
+          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span> <code>${returnValue}</code>`;
         }
 
         // 错误堆栈
@@ -1151,7 +1147,7 @@ export default {
         }
 
         let section = [ divider, title ]
-        if (logMessagesTitle) {
+        if (logMessages) {
           section.push('', logMessages);
         }
         if (costInfo || peakMemoryUsageInfo) {

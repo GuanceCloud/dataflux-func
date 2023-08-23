@@ -1221,14 +1221,14 @@ var _getWorkerQueue = toolkit._getWorkerQueue = function _getWorkerQueue(name) {
   if ('number' !== typeof name && !name) {
     throw new Error('Worker Queue name not specified.')
   }
-  return strf('workerQueue@{0}', name);
+  return `workerQueue@${name}`;
 };
 
 var _getDelayQueue = toolkit._getDelayQueue = function _getDelayQueue(name) {
   if ('number' !== typeof name && !name) {
     throw new Error('Delay Queue name not specified.')
   }
-  return strf('delayQueue@{0}', name);
+  return `delayQueue@${name}`;
 };
 
 /**

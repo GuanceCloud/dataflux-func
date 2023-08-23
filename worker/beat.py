@@ -38,32 +38,32 @@ CRONTAB_MAP = {
     # 自动触发配置启动器
     'crontab-starter': {
         'task'   : CrontabStarter,
-        'crontab': CONCAT['_CRONTAB_STARTER'],
+        'crontab': CONFIG['_CRONTAB_STARTER'],
     },
 
     # 缓存数据刷入数据库
     'sync-cache': {
-        'task'    : SyncCacheToDB,
-        'schedule': CONFIG['_CRONTAB_SYNC_CACHE_TO_DB'],
+        'task'   : SyncCacheToDB,
+        'crontab': CONFIG['_CRONTAB_SYNC_CACHE_TO_DB'],
     },
 
     # 自动清理
     'auto-clean': {
-        'task'    : AutoClean,
-        'schedule': CONFIG['_CRONTAB_AUTO_CLEAN'],
+        'task'   : AutoClean,
+        'crontab': CONFIG['_CRONTAB_AUTO_CLEAN'],
     },
 
     # 数据库自动备份
     'auto-backup-db': {
-        'task'    : AutoBackupDB,
-        'schedule': CONFIG['_CRONTAB_AUTO_BACKUP_DB'],
+        'task'   : AutoBackupDB,
+        'crontab': CONFIG['_CRONTAB_AUTO_BACKUP_DB'],
     },
 
     # 重新加载数据 MD5 缓存
     'reload-data-md5-cache': {
-        'task'    : ReloadDataMD5Cache,
-        'kwargs'  : { 'lockTime': 15, 'all': True },
-        'schedule': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
+        'task'   : ReloadDataMD5Cache,
+        'kwargs' : { 'lockTime': 15, 'all': True },
+        'crontab': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
     },
 }
 

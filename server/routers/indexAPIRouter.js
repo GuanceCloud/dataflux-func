@@ -1,91 +1,44 @@
 'use strict';
 
 /* Project Modules */
-var ROUTE       = require('../utils/yamlResources').get('ROUTE');
-var CONFIG      = require('../utils/yamlResources').get('CONFIG');
-var routeLoader = require('../utils/routeLoader');
+var ROUTE        = require('../utils/yamlResources').get('ROUTE');
+var routeLoader  = require('../utils/routeLoader');
+var captcha      = require('../utils/captcha');
 
 var indexAPICtrl = require('../controllers/indexAPICtrl');
 
-// 总览
-routeLoader.load(ROUTE.indexAPI.overview, [
-  indexAPICtrl.overview,
+routeLoader.load(ROUTE.indexAPI.api, [
+  indexAPICtrl.api,
 ]);
 
-// 函数
-routeLoader.load(ROUTE.indexAPI.describeFunc, [
-  indexAPICtrl.describeFunc,
+routeLoader.load(ROUTE.indexAPI.imageInfo, [
+  indexAPICtrl.imageInfo,
 ]);
 
-// 直接调用函数
-routeLoader.load(ROUTE.indexAPI.callFunc, [
-  indexAPICtrl.callFunc,
+routeLoader.load(ROUTE.indexAPI.systemInfo, [
+  indexAPICtrl.systemInfo,
 ]);
 
-// 通过授权链接调用函数
-routeLoader.load(ROUTE.indexAPI.callAuthLinkByGet, [
-  indexAPICtrl.callAuthLink,
-]);
-routeLoader.load(ROUTE.indexAPI.callAuthLinkByGetWithFormat, [
-  indexAPICtrl.callAuthLink,
-]);
-routeLoader.load(ROUTE.indexAPI.callAuthLinkByPost, [
-  indexAPICtrl.callAuthLink,
-]);
-routeLoader.load(ROUTE.indexAPI.callAuthLinkByPostWithFormat, [
-  indexAPICtrl.callAuthLink,
+routeLoader.load(ROUTE.indexAPI.metrics, [
+  indexAPICtrl.metrics,
 ]);
 
-// 通过自动触发配置调用（手动执行）
-routeLoader.load(ROUTE.indexAPI.runCrontabConfigManually, [
-  indexAPICtrl.runCrontabConfigManually,
+routeLoader.load(ROUTE.indexAPI.captcha, [
+  captcha.createGetCaptchaHandler(),
 ]);
 
-// 通过批处理调用
-routeLoader.load(ROUTE.indexAPI.callBatchByGet, [
-  indexAPICtrl.callBatch,
-]);
-routeLoader.load(ROUTE.indexAPI.callBatchByGetWithFormat, [
-  indexAPICtrl.callBatch,
-]);
-routeLoader.load(ROUTE.indexAPI.callBatchByPost, [
-  indexAPICtrl.callBatch,
-]);
-routeLoader.load(ROUTE.indexAPI.callBatchByPostWithFormat, [
-  indexAPICtrl.callBatch,
+routeLoader.load(ROUTE.indexAPI.ping, [
+  indexAPICtrl.ping,
 ]);
 
-// 调用函数草稿
-routeLoader.load(ROUTE.indexAPI.callFuncDraft, [
-  indexAPICtrl.callFuncDraft,
+routeLoader.load(ROUTE.indexAPI.echo, [
+  indexAPICtrl.echo,
 ]);
 
-// 获取函数结果
-routeLoader.load(ROUTE.indexAPI.getFuncResult, [
-  indexAPICtrl.getFuncResult,
+routeLoader.load(ROUTE.indexAPI.proxy, [
+  indexAPICtrl.proxy,
 ]);
 
-// 获取函数文档（JSON文档）
-routeLoader.load(ROUTE.indexAPI.getFuncList, [
-  indexAPICtrl.getFuncList,
-]);
-
-// 获取函数标签列表
-routeLoader.load(ROUTE.indexAPI.getFuncTagList, [
-  indexAPICtrl.getFuncTagList,
-]);
-
-// 获取授权链接函数文档（JSON文档）
-routeLoader.load(ROUTE.indexAPI.getAuthLinkFuncList, [
-  indexAPICtrl.getAuthLinkFuncList,
-]);
-
-// 集成登录
-routeLoader.load(ROUTE.indexAPI.integratedSignIn, [
-  indexAPICtrl.integratedSignIn,
-]);
-
-// 文件服务
-routeLoader.load(ROUTE.indexAPI.fileService, [
-  indexAPICtrl.fileService,
+routeLoader.load(ROUTE.indexAPI.systemReport, [
+  indexAPICtrl.systemReport,
 ]);

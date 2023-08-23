@@ -15,7 +15,7 @@ var scriptSetMod = require('../models/scriptSetMod');
 var scriptMod    = require('../models/scriptMod');
 var funcMod      = require('../models/funcMod');
 
-var indexAPICtrl = require('./indexAPICtrl');
+var mainAPICtrl = require('./mainAPICtrl');
 
 /* Init */
 var NODE_FUNC_IMPORTS_MAP = {
@@ -411,7 +411,7 @@ exports.deploy = function(req, res, next) {
       var opt = {
         scriptId: blueprintScriptId,
       }
-      indexAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
+      mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
         nextAPIFuncs = taskResp.result.apiFuncs;

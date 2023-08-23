@@ -28,16 +28,17 @@ from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
 from worker.tasks import TaskTimeoutException
 
 # 任务表
-from worker.tasks.example            import ExampleSuccessTask, ExampleFailureTask, ExampleTimeoutTask
+from worker.tasks.example            import ExampleSuccess, ExampleFailure, ExampleTimeout
 from worker.tasks.crontab_starter    import CrontabStarter, CrontabManualStarter
 from worker.tasks.main.func_debugger import FuncDebugger
 from worker.tasks.main.func_runner   import FuncRunner
+from worker.tasks.internal           import SyncCacheToDB, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun
 
 TASK_CLS_MAP = {
     # 示例任务
-    ExampleSuccessTask.name      : ExampleSuccessTask,
-    ExampleFailureTask.name      : ExampleFailureTask,
-    ExampleTimeoutTask.name      : ExampleTimeoutTask,
+    ExampleSuccess.name      : ExampleSuccess,
+    ExampleFailure.name      : ExampleFailure,
+    ExampleTimeout.name      : ExampleTimeout,
 
     # 自动触发任务
     CrontabStarter.name      : CrontabStarter,
@@ -48,6 +49,13 @@ TASK_CLS_MAP = {
     FuncRunner.name          : FuncRunner,
 
     # 内部任务
+    SyncCacheToDB.name       : SyncCacheToDB,
+    AutoClean.name           : AutoClean,
+    AutoBackupDB.name        : AutoBackupDB,
+    ReloadDataMD5Cache.name  : ReloadDataMD5Cache,
+    CheckConnector.name      : CheckConnector,
+    QueryConnector.name      : QueryConnector,
+    AutoRun.name             : AutoRun,
 }
 
 def consume():

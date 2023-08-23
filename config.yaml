@@ -327,25 +327,22 @@ _RECENT_FUNC_RUNNING_STATUS_LIMIT   : 50
 
 # 数据量限制
 _DBDATA_TABLE_LIMIT_MAP:
-  biz_main_task_result_dataflux_func: 10000
   biz_main_operation_record         : 50000
+  biz_main_script_publish_history   : 5000
   biz_main_script_recover_point     : 1000
   biz_main_script_set_export_history: 1000
   biz_main_script_set_import_history: 1000
-  biz_main_script_publish_history   : 1000
-_DBDATA_TABLE_EXPIRE_MAP:
-  biz_main_task_info: 7776000
 
-# 文件上传
+# 数据保存时长限制
+_DBDATA_TABLE_EXPIRE_MAP:
+  biz_main_task_record        : 7776000
+  biz_rel_task_record_ext_func: 7776000
+
+# 文件上传过期时间
 _UPLOAD_FILE_EXPIRES: 3600
 
 # 日志 / 缓存表
 _DBDATA_LOG_CACHE_TABLE_LIST:
-  - biz_main_script_log
-  - biz_main_script_failure
-  - biz_main_task_result_dataflux_func
-  - biz_main_crontab_task_info
-  - biz_main_batch_task_info
   - biz_main_task_info
   - biz_main_operation_record
 
@@ -354,17 +351,23 @@ _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
 
 # 过时的数据
 _DEPRECATED_TABLE_LIST:
+  - wat_main_task_result_example
   - biz_main_script_log
   - biz_main_script_failure
-  - biz_main_batch_task_info
   - biz_main_crontab_task_info
+  - biz_main_batch_task_info
+  - biz_main_task_result_dataflux_func
+  - biz_main_task_info
+  - biz_rel_func_running_info
+
 _DEPRECATED_CACHE_KEY_LIST:
-  - topic: syncCache
-    name : scriptFailure
-  - topic: syncCache
-    name : scriptLog
-  - topic: syncCache
-    name : taskInfo
+  - { topic: syncCache, name : scriptFailure }
+  - { topic: syncCache, name : scriptLog }
+  - { topic: syncCache, name : scriptRunningInfo }
+  - { topic: syncCache, name : funcCallInfo }
+  - { topic: syncCache, name : taskInfo }
+  - { topic: syncCache, name : taskInfoBuffer }
+
 _DEPRECATED_CACHE_KEY_PATTERN_LIST:
   - topic: syncCache
     name : taskInfo
