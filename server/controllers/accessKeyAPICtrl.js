@@ -24,7 +24,7 @@ exports.modify = crudHandler.createModifyHandler();
 exports.delete = crudHandler.createDeleteHandler();
 
 exports.testWebhook = function(req, res, next) {
-  // TODO
+  // TODO 测试 Webhook
 
   return res.locals.sendJSON();
 };

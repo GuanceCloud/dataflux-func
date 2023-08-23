@@ -1399,7 +1399,7 @@ exports.getFuncResult = function(req, res, next) {
   var taskId     = req.query.taskId;
   var returnType = req.query.returnType || 'raw';
 
-  // TODO
+  // TODO 单独获取函数返回值
 };
 
 exports.getFuncList = function(req, res, next) {

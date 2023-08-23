@@ -524,7 +524,7 @@ exports.listSubInfo = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // TODO 查询最近处理结果
+    // TODO 支持订阅的连接器展示最近处理结果
   ], function(err) {
     if (err) return next(err);
 

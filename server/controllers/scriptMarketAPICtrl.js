@@ -93,7 +93,7 @@ function _checkConfig(locals, data, callback) {
     }
   }
 
-  // TODO 尝试连接以检查配置
+  // TODO 脚本市场尝试连接以检查配置
   return callback();
 };
 
