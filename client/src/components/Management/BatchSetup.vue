@@ -111,17 +111,14 @@ recentTaskCount: '{n} 个近期任务'
 
                 <el-form-item :label="$t('Task Info')">
                   <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
-                  <el-input-number class="task-info-limit-input" v-if="fixedTaskInfoLimit"
-                    :disabled="true"
-                    :value="fixedTaskInfoLimit"></el-input-number>
-                  <el-input-number class="task-info-limit-input" v-else
-                    :min="$store.getters.SYSTEM_INFO('_TASK_INFO_MIN_LIMIT')"
-                    :max="$store.getters.SYSTEM_INFO('_TASK_INFO_MAX_LIMIT')"
+                  <el-input-number class="task-info-limit-input"
+                    :min="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MIN')"
+                    :max="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MAX')"
                     :step="10"
                     :precision="0"
-                    v-model="form.taskInfoLimit"></el-input-number>
-                  <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskInfoLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskInfoLimit = $store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_BATCH')">{{ $t('Restore Default') }}</el-link>
+                    v-model="form.taskRecordLimit"></el-input-number>
+                  <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -171,7 +168,7 @@ export default {
         switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
-            this.form.taskInfoLimit = this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_BATCH');
+            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH');
             this.data = {};
             break;
 
@@ -202,8 +199,8 @@ export default {
         nextForm.tagsJSON  = nextForm.tagsJSON || [];
         nextForm.apiAuthId = this.data.apia_id;
 
-        if (this.T.isNothing(nextForm.taskInfoLimit)) {
-          nextForm.taskInfoLimit = this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_BATCH')
+        if (this.T.isNothing(nextForm.taskRecordLimit)) {
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH')
         }
 
         this.form = nextForm;
@@ -238,10 +235,6 @@ export default {
     },
     async addData() {
       let _formData = this.T.jsonCopy(this.form);
-      if (this.fixedTaskInfoLimit) {
-        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
-      }
-
       let opt = {
         body : { data: _formData },
         alert: { okMessage: this.$t('Batch created') },
@@ -267,9 +260,6 @@ export default {
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
-      if (this.fixedTaskInfoLimit) {
-        _formData.taskInfoLimit = this.fixedTaskInfoLimit;
-      }
       delete _formData.id;
 
       let opt = {
@@ -367,16 +357,6 @@ export default {
       }
       return false;
     },
-    fixedTaskInfoLimit() {
-      let selectedFunc = this.funcMap[this.form.funcId];
-      if (selectedFunc
-          && selectedFunc.extraConfigJSON
-          && selectedFunc.extraConfigJSON.fixedTaskInfoLimit) {
-        return selectedFunc.extraConfigJSON.fixedTaskInfoLimit;
-      } else {
-        return null;
-      }
-    },
   },
   data() {
     let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
@@ -397,7 +377,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
-        taskInfoLimit     : this.$store.getters.SYSTEM_INFO('_TASK_INFO_DEFAULT_LIMIT_BATCH'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH'),
         note              : null,
       },
       formRules: {

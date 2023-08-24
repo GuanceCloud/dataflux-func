@@ -177,13 +177,13 @@ function createFuncRunnerTaskReq(locals, options, callback) {
         // 来源
         origin  : options.origin   || 'UNKNOWN',
         originId: options.originId || 'UNKNOWN',
-
-        // 任务记录保留数量
-        taskInfoLimit: options.taskInfoLimit || undefined,
       },
 
       // 延迟执行
       delay: options.delay || undefined,
+
+      // 任务记录保留数量
+      taskRecordLimit: options.taskRecordLimit || undefined,
 
       // 是否忽略结果
       ignoreResult: options.ignoreResult,
@@ -1238,11 +1238,11 @@ exports.callAuthLink = function(req, res, next) {
     // 创建函数调用选项
     function(asyncCallback) {
       var opt = {
-        funcId        : authLink.funcId,
-        funcCallKwargs: authLink.funcCallKwargsJSON,
-        origin        : 'authLink',
-        originId      : authLink.id,
-        taskInfoLimit : authLink.taskInfoLimit,
+        funcId         : authLink.funcId,
+        funcCallKwargs : authLink.funcCallKwargsJSON,
+        origin         : 'authLink',
+        originId       : authLink.id,
+        taskRecordLimit: authLink.taskRecordLimit,
       }
       createFuncRunnerTaskReqFromHTTPRequest(res.locals, req, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);
@@ -1351,11 +1351,11 @@ exports.callBatch = function(req, res, next) {
     // 创建函数调用选项
     function(asyncCallback) {
       var opt = {
-        funcId        : batch.funcId,
-        funcCallKwargs: batch.funcCallKwargsJSON,
-        origin        : 'batch',
-        originId      : batch.id,
-        taskInfoLimit : batch.taskInfoLimit,
+        funcId         : batch.funcId,
+        funcCallKwargs : batch.funcCallKwargsJSON,
+        origin         : 'batch',
+        originId       : batch.id,
+        taskRecordLimit: batch.taskRecordLimit,
       }
       createFuncRunnerTaskReqFromHTTPRequest(res.locals, req, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);
@@ -1521,11 +1521,11 @@ exports.integratedSignIn = function(req, res, next) {
         funcId        : funcId,
         funcCallKwargs: { username: username, password: password },
       },
-      origin       : 'integration',
-      originId     : 'signIn',
-      timeout      : timeout,
-      expires      : timeout,
-      taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
+      origin         : 'integration',
+      originId       : 'signIn',
+      timeout        : timeout,
+      expires        : timeout,
+      taskRecordLimit: CONFIG._TASK_RECORD_DEFAULT_LIMIT_INTEGRATION,
 
       onResponse(taskResp) {
         switch(taskResp.status) {

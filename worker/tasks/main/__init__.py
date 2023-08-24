@@ -1059,9 +1059,6 @@ class FuncBaseTask(BaseTask):
         if 'headers' in self.http_request:
             self.http_request['headers'] = toolkit.IgnoreCaseDict(self.http_request['headers'])
 
-        # 任务信息保留数量
-        self.task_info_limit = self.kwargs.get('taskInfoLimit') or 0
-
         # 缓存函数调用结果
         self.cache_result = self.kwargs.get('cacheResult') or False
 
@@ -1443,13 +1440,13 @@ class FuncBaseTask(BaseTask):
                 'origin'        : safe_scope.get('_DFF_ORIGIN'),
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
                 'crontab'       : safe_scope.get('_DFF_CRONTAB'),
-                'taskInfoLimit' : CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
                 'funcChain'     : func_chain,
             },
-            'triggerTime': safe_scope.get('_DFF_TRIGGER_TIME'),
-            'queue'      : safe_scope.get('_DFF_QUEUE'),
-            'timeout'    : timeout,
-            'expires'    : expires,
+            'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
+            'queue'          : safe_scope.get('_DFF_QUEUE'),
+            'timeout'        : timeout,
+            'expires'        : expires,
+            'taskRecordLimit': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
         }
         self.cache_db.put_task(task_req)
 

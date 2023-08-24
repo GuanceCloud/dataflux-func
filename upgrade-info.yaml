@@ -430,7 +430,18 @@ upgradeInfo:
       TRUNCATE biz_main_task_info;
       TRUNCATE biz_rel_func_running_info;
 
-      -- 重建任务记录
+      -- 更换任务记录配置字段
+      ALTER TABLE `biz_main_auth_link`
+        CHANGE 'taskInfoLimit' `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量';
+      ALTER TABLE `biz_main_batch`
+        CHANGE 'taskInfoLimit' `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量';
+      ALTER TABLE `biz_main_crontab_config`
+        CHANGE 'taskInfoLimit' `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量';
+
+      -- 删除多余字段
+      ALTER TABLE `biz_main_crontab_config` DROP COLUMN `saveResult`;
+
+      -- 重建任务记录表
       CREATE TABLE `biz_main_task_record` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,

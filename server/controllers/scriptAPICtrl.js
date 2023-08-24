@@ -362,14 +362,14 @@ exports.publish = function(req, res, next) {
           var taskReq = {
             name: 'Main.FuncRunner',
             kwargs: {
-              funcId       : funcId,
-              origin       : 'integration',
-              originId     : 'autoRun.onScriptPublish',
-              taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
+              funcId  : funcId,
+              origin  : 'integration',
+              originId: 'autoRun.onScriptPublish',
             },
-            queue  : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
-            timeout: timeout,
-            expires: expires,
+            queue          : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            timeout        : timeout,
+            expires        : expires,
+            taskRecordLimit: CONFIG._TASK_RECORD_DEFAULT_LIMIT_INTEGRATION,
           }
           res.locals.cacheDB.putTask(taskReq);
         });

@@ -31,12 +31,12 @@ class SyncCacheToDB(BaseTask):
     name = 'Internal.SyncCacheToDB'
 
     DEFAULT_TASK_INFO_LIMIT_MAP = {
-        'direct'     : CONFIG['_TASK_INFO_DEFAULT_LIMIT_DIRECT'],
-        'integration': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
-        'connector'  : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CONNECTOR'],
-        'authLink'   : CONFIG['_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK'],
-        'crontab'    : CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB'],
-        'batch'      : CONFIG['_TASK_INFO_DEFAULT_LIMIT_BATCH'],
+        'direct'     : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_DIRECT'],
+        'integration': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
+        'connector'  : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CONNECTOR'],
+        'authLink'   : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK'],
+        'crontab'    : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CRONTAB'],
+        'batch'      : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_BATCH'],
     }
 
     def sync_func_call_count(self):
@@ -853,7 +853,7 @@ class AutoRun(BaseTask):
                     'funcId'       : f['id'],
                     'origin'       : 'integration',
                     'originId'     : 'autoRun.onScriptPublish',
-                    'taskInfoLimit': CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION'],
+                    'taskInfoLimit': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
                 },
                 'queue'  : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
                 'timeout': timeout,

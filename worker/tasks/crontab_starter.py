@@ -38,8 +38,8 @@ class CrontabStarter(BaseTask):
         crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') \
                                     or crontab_config.get('crontab')
 
-        crontab_config['taskInfoLimit'] = crontab_config['funcExtraConfig'].get('fixedTaskInfoLimit') \
-                                        or crontab_config.get('taskInfoLimit') or CONFIG['_TASK_INFO_DEFAULT_LIMIT_CRONTAB']
+        crontab_config['taskRecordLimit'] = crontab_config.get('taskRecordLimit') \
+                                        or CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CRONTAB']
 
         return crontab_config
 
@@ -63,9 +63,9 @@ class CrontabStarter(BaseTask):
 
         for c in crontab_configs:
             # 补全必要数据
-            c['seq']           = 0
-            c['id']            = 'integration'
-            c['taskInfoLimit'] = CONFIG['_TASK_INFO_DEFAULT_LIMIT_INTEGRATION']
+            c['seq']             = 0
+            c['id']              = 'integration'
+            c['taskRecordLimit'] =  CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION']
 
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
@@ -78,8 +78,7 @@ class CrontabStarter(BaseTask):
                 ,`cron`.`id`
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
-                ,`cron`.`saveResult`
-                ,`cron`.`taskInfoLimit`
+                ,`cron`.`taskRecordLimit`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
@@ -145,17 +144,17 @@ class CrontabStarter(BaseTask):
                     'origin'          : origin,
                     'originId'        : origin_id,
                     'crontab'         : crontab_config['crontab'],
-                    'taskInfoLimit'   : crontab_config['taskInfoLimit'],
                     'crontabLockKey'  : crontab_lock_key,
                     'crontabLockValue': crontab_lock_value,
                 },
 
                 'triggerTime': self.trigger_time,
 
-                'queue'  : queue,
-                'delay'  : delay,
-                'timeout': timeout,
-                'expires': expires,
+                'queue'          : queue,
+                'delay'          : delay,
+                'timeout'        : timeout,
+                'expires'        : expires,
+                'taskRecordLimit': crontab_config['taskRecordLimit'],
             }
             self.cache_db.put_task(task_req)
 
@@ -200,7 +199,7 @@ class CrontabManualStarter(CrontabStarter):
                 ,`cron`.`id`
                 ,`cron`.`funcCallKwargsJSON`
                 ,`cron`.`crontab`
-                ,`cron`.`taskInfoLimit`
+                ,`cron`.`taskRecordLimit`
 
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`

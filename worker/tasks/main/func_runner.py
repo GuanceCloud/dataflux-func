@@ -21,8 +21,9 @@ CONFIG = yaml_resources.get('CONFIG')
 class FuncRunner(FuncBaseTask):
     name = 'Main.FuncRunner'
 
-    def callback(self, task_resp):
-        pass
+    def onFinish(self, task_resp):
+        super().onFinish(task_resp)
+
     def cache(self, origin, origin_id, exec_mode, status, trigger_time_ms, start_time_ms,
             root_task_id=None, func_id=None, func_call_kwargs=None,
             log_messages=None, einfo_text=None, edump_text=None,

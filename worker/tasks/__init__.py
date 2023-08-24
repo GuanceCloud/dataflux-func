@@ -46,6 +46,9 @@ class BaseTask(object):
     # 默认超时时间
     default_timeout = CONFIG['_TASK_DEFAULT_TIMEOUT']
 
+    # 默认任务记录保留数量
+    default_task_record_limit = CONFIG['']
+
     # 默认是否忽略结果
     default_ignore_result = True
 
@@ -57,6 +60,7 @@ class BaseTask(object):
                  timeout=None,
                  expires=None,
                  ignore_result=None,
+                 task_record_limit=None,
                  trigger_time=None):
 
         self.task_id = task_id or toolkit.gen_task_id()
@@ -72,11 +76,12 @@ class BaseTask(object):
         self.status      = 'waiting'
 
         # 默认配置
-        self.delay         = 0
-        self.queue         = self.default_queue
-        self.timeout       = self.default_timeout
-        self.expires       = self.default_expires
-        self.ignore_result = self.default_ignore_result
+        self.delay             = 0
+        self.queue             = self.default_queue
+        self.timeout           = self.default_timeout
+        self.expires           = self.default_expires
+        self.task_record_limit = self.default_task_record_limit
+        self.ignore_result     = self.default_ignore_result
 
         # 实例指定配置
         if delay is not None:
@@ -90,6 +95,9 @@ class BaseTask(object):
 
         if expires is not None:
             self.expires = expires
+
+        if task_record_limit is not None:
+            self.task_record_limit = task_record_limit
 
         if ignore_result is not None:
             self.ignore_result = ignore_result
@@ -185,7 +193,7 @@ class BaseTask(object):
         self._lock_key   = None
         self._lock_value = None
 
-    def callback(self, task_resp):
+    def onFinish(self, task_resp):
         pass
 
     def response(self, task_resp):
@@ -209,11 +217,12 @@ class BaseTask(object):
 
             'triggerTime': self.trigger_time,
 
-            'queue'       : self.queue,
-            'delay'       : self.delay,
-            'timeout'     : self.timeout,
-            'expires'     : self.expires,
-            'ignoreResult': self.ignore_result,
+            'queue'          : self.queue,
+            'delay'          : self.delay,
+            'timeout'        : self.timeout,
+            'expires'        : self.expires,
+            'taskRecordLimit': self.task_record_limit,
+            'ignoreResult'   : self.ignore_result,
         }
         return task_req
 
@@ -226,6 +235,7 @@ class BaseTask(object):
                             delay=task_req.get('delay'),
                             timeout=task_req.get('timeout'),
                             expires=task_req.get('expires'),
+                            task_record_limit=task_req.get('taskRecordLimit'),
                             ignore_result=task_req.get('ignoreResult'))
         return task_inst
 
@@ -297,7 +307,7 @@ class BaseTask(object):
             }
 
             # 执行后回调
-            self.callback(task_resp)
+            self.onFinish(task_resp)
 
             # 记录任务信息
             self.response(task_resp)
